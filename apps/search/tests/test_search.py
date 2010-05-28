@@ -12,8 +12,9 @@ from django.db import connection
 
 import mock
 from nose import SkipTest
-from nose.tools import assert_raises
+from nose.tools import assert_raises, eq_
 import test_utils
+from pyquery import PyQuery as pq
 import jingo
 
 from manage import settings
@@ -352,6 +353,14 @@ class SearchTest(SphinxTestCase):
         wc = WikiClient()
         self.assertEquals('<b>test</b>&lt;/style&gt;',
                           wc.excerpt('test</style>', 'test'))
+
+    def test_meta_tags(self):
+        url_ = reverse('search')
+        response = self.client.get(url_, {'q': 'contribute'})
+
+        doc = pq(response.content)
+        metas = doc('meta')
+        eq_(3, len(metas))
 
 
 def test_sphinx_down():
