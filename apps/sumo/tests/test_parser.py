@@ -224,7 +224,7 @@ class TestWikiImageTags(TestCase):
         eq_('/en-US/kb/Installing+Firefox', img_a.attr('href'))
 
     def test_page_link_edit(self):
-        """Link to an inexistent wiki page."""
+        """Link to a nonexistent wiki page."""
         img_div = pq_img('[[Image:file.png|page=Article List]]')
         img_a = img_div('a')
         img = img_a('img')

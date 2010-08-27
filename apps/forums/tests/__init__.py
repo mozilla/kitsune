@@ -1,4 +1,4 @@
-from django.test import TestCase, client
+from django.test import TestCase
 from django.contrib.auth.models import User
 
 from nose.tools import eq_
@@ -6,10 +6,7 @@ from nose.tools import eq_
 from forums.models import Forum, Thread, Post, ThreadLockedError
 from forums.views import sort_threads
 from sumo.urlresolvers import reverse
-
-
-get = lambda c, v, **kw: c.get(reverse(v, **kw), follow=True)
-post = lambda c, v, data={}, **kw: c.post(reverse(v, **kw), data, follow=True)
+from sumo.tests import get, LocalizingClient
 
 
 def fixtures_setup():
@@ -46,9 +43,7 @@ class ForumTestCase(TestCase):
         installed. This will set them to the correct values."""
 
         fixtures_setup()
-
-        self.client = client.Client()
-        self.client.get('/')
+        self.client = LocalizingClient()
 
 
 class PostTestCase(ForumTestCase):

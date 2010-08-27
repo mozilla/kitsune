@@ -1,4 +1,4 @@
-from django.test import TestCase, client
+from django.test import TestCase
 from datetime import datetime
 
 from django.conf import settings
@@ -8,6 +8,7 @@ from nose.tools import eq_
 
 from sumo.urlresolvers import reverse
 from questions.models import Question
+from sumo.tests import LocalizingClient
 
 
 get = lambda c, v, **kw: c.get(reverse(v, **kw), follow=True)
@@ -20,16 +21,14 @@ class TestCaseBase(TestCase):
     fixtures = ['users.json', 'questions.json']
 
     def setUp(self):
-        """Setup"""
-
         q = Question.objects.get(pk=1)
         q.last_answer_id = 1
         q.save()
 
-        self.client = client.Client()
-        self.client.get('/')
+        self.client = LocalizingClient()
 
         # create a new cache key for top contributors to avoid conflict
+        # TODO: May be able to go away once we flush memcache between tests.
         self.orig_tc_cache_key = settings.TOP_CONTRIBUTORS_CACHE_KEY
         settings.TOP_CONTRIBUTORS_CACHE_KEY += slugify(datetime.now())
 

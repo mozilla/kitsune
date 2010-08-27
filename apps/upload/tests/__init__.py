@@ -2,19 +2,16 @@ import json
 
 from django.conf import settings
 from django.contrib.auth.models import User
-from django.core.files import File
-from django.test import client, TestCase
+from django.test import TestCase
 
 from nose.tools import eq_
 from nose.plugins.skip import SkipTest
 
 from questions.models import Question
 from sumo.urlresolvers import reverse
+from sumo.tests import post, LocalizingClient
 from upload.models import ImageAttachment
 from upload.utils import create_image_attachment
-
-
-post = lambda c, v, data={}, **kw: c.post(reverse(v, **kw), data, follow=True)
 
 
 class CreateImageAttachmentTestCase(TestCase):
@@ -44,8 +41,7 @@ class UploadImageTestCase(TestCase):
 
     def setUp(self):
         super(UploadImageTestCase, self).setUp()
-        self.client = client.Client()
-        self.client.get('/')
+        self.client = LocalizingClient()
         self.client.login(username='pcraciunoiu', password='testpass')
 
     def tearDown(self):

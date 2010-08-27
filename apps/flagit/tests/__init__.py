@@ -1,14 +1,11 @@
 from datetime import datetime
 
-from django.test import TestCase, client
+from django.test import TestCase
 from django.conf import settings
 from django.template.defaultfilters import slugify
 
 from sumo.urlresolvers import reverse
-
-
-get = lambda c, v, **kw: c.get(reverse(v, **kw), follow=True)
-post = lambda c, v, data={}, **kw: c.post(reverse(v, **kw), data, follow=True)
+from sumo.tests import get, post, LocalizingClient
 
 
 class TestCaseBase(TestCase):
@@ -18,8 +15,7 @@ class TestCaseBase(TestCase):
 
     def setUp(self):
         """Setup"""
-        self.client = client.Client()
-        self.client.get('/')
+        self.client = LocalizingClient()
 
         # Change the CACHE_PREFIX to avoid conflicts
         self.orig_cache_prefix = getattr(settings, 'CACHE_PREFIX', None)

@@ -8,9 +8,12 @@ from forums.tasks import build_reply_notification, build_thread_notification
 import notifications.tasks
 from . import ForumTestCase
 from forums.models import Post, Thread, Forum
-from forums.tests import post
+from sumo.tests import post
 
 
+# Some of these contain a locale prefix on included links, while others don't.
+# This depends on whether the tests use them inside or outside the scope of a
+# request. See the long explanation in questions.tests.test_notifications.
 EMAIL_CONTENT = (
     u"""
 
@@ -28,7 +31,7 @@ yet another post
 To view this post on the site, click the following link, or
 paste it into your browser's location bar:
 
-https://testserver/en-US/forums/test-forum/2#post-4
+https://testserver/forums/test-forum/2#post-4
 """,
     u"""
 
@@ -64,7 +67,7 @@ This is a sticky thread
 To view this post on the site, click the following link, or
 paste it into your browser's location bar:
 
-https://testserver/en-US/forums/test-forum/2
+https://testserver/forums/test-forum/2
 """,
     u"""
 

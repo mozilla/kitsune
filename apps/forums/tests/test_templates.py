@@ -5,8 +5,9 @@ from pyquery import PyQuery as pq
 from django.contrib.auth.models import User
 
 from forums.models import Forum, Thread, Post
-from forums.tests import ForumTestCase, get, post
+from forums.tests import ForumTestCase
 from notifications import check_watch
+from sumo.tests import get, post
 from sumo.urlresolvers import reverse
 
 
