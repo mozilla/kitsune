@@ -183,6 +183,7 @@ INSTALLED_APPS = (
     'flagit',
     'upload',
     'product_details'
+    'customercare',
 )
 
 # Extra apps for testing
@@ -388,3 +389,7 @@ ANONYMOUS_COOKIE_MAX_AGE = 30 * 86400  # Seconds
 # Top contributors cache settings
 TOP_CONTRIBUTORS_CACHE_KEY = 'sumo:TopContributors'
 TOP_CONTRIBUTORS_CACHE_TIMEOUT = 60 * 60 * 12
+
+# Customare care tweet collection settings
+CC_MAX_TWEETS = 500 # Max. no. of tweets in DB
+CC_TWEETS_PERPAGE = 100 # How many tweets to collect in one go. Max: 100.
