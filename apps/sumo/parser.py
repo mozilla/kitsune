@@ -1,9 +1,9 @@
+from django.conf import settings
 from django.utils.http import urlquote
 
-import wikimarkup
+from wikimarkup.parser import Parser
 import jingo
 
-from settings import WIKI_UPLOAD_URL
 from .models import WikiPage
 
 
@@ -36,14 +36,13 @@ class WikiParser(object):
 
     def __init__(self):
         # Register this hook so it gets called
-        self.wikimarkup = wikimarkup
-        wikimarkup.registerInternalLinkHook(None, self.hookInternalLink)
-        wikimarkup.registerInternalLinkHook('Image', self.hookImageTag)
+        self.parser = Parser()
+        self.parser.registerInternalLinkHook(None, self.hookInternalLink)
+        self.parser.registerInternalLinkHook('Image', self.hookImageTag)
 
     def parse(self, text, showToc=True):
         """Given wiki markup, return HTML."""
-        return self.wikimarkup.parse(
-            text, showToc, attributes=ALLOWED_ATTRIBUTES)
+        return self.parser.parse(text, showToc, attributes=ALLOWED_ATTRIBUTES)
 
     def _getWikiLink(self, link):
         """
@@ -82,7 +81,7 @@ class WikiParser(object):
 
     def _getImagePath(self, link):
         """Returns an uploaded image's path for image paths in markup."""
-        return WIKI_UPLOAD_URL + urlquote(link)
+        return settings.WIKI_UPLOAD_URL + urlquote(link)
 
     def _buildImageParams(self, items):
         """
