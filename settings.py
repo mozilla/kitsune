@@ -173,7 +173,7 @@ INSTALLED_APPS = (
     'sumo',
     'search',
     'forums',
-    'celery',
+    'djcelery',
     'cronjobs',
     'notifications',
     'identicons',
@@ -369,6 +369,9 @@ QUESTIONS_SUGGESTION_SLOP = 3
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 # Celery
+import djcelery
+djcelery.setup_loader()
+
 BROKER_HOST = 'localhost'
 BROKER_PORT = 5672
 BROKER_USER = 'kitsune'
