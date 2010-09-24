@@ -139,6 +139,8 @@ MIDDLEWARE_CLASSES = (
 
     # TODO: Replace with Kitsune auth.
     'sumo.middleware.TikiCookieMiddleware',
+
+    'twitter.middleware.SessionMiddleware',
 )
 
 # Auth
@@ -184,6 +186,7 @@ INSTALLED_APPS = (
     'upload',
     'product_details'
     'customercare',
+    'twitter',
 )
 
 # Extra apps for testing
@@ -309,7 +312,6 @@ MINIFY_BUNDLES = {
         'customercare': (
             'js/libs/jqueryui.min.js',
             'js/libs/jquery.NobleCount.js',
-            'js/libs/jquery.cookie.js',
             'js/customercare.js',
         ),
     },
