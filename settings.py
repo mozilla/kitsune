@@ -184,7 +184,7 @@ INSTALLED_APPS = (
     'taggit',
     'flagit',
     'upload',
-    'product_details'
+    'product_details',
     'customercare',
     'twitter',
 )
