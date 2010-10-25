@@ -120,7 +120,7 @@ class TestWikiInternalLinks(TestCase):
 
     def test_simple_markup(self):
         text = '[[Installing Firefox]]'
-        eq_('<p><a href="/en-US/kb/installing-firefox">' +
+        eq_('<p><a href="/en-US/kb/Installing+Firefox">' +
             'Installing Firefox</a></p>',
             self.p.parse(text).replace('\n', ''))
 
@@ -133,8 +133,8 @@ class TestWikiInternalLinks(TestCase):
     def test_link_hash_markup(self):
         """Internal link with hash."""
         text = '[[Installing Firefox#section name]]'
-        eq_('<p><a href="/en-US/kb/installing-firefox#section_name"' +
-                '>Installing Firefox#section name</a></p>',
+        eq_('<p><a href="/en-US/kb/Installing+Firefox#section_name"' +
+            '>Installing Firefox#section name</a></p>',
             self.p.parse(text).replace('\n', ''))
 
     def test_hash_only(self):
@@ -169,7 +169,7 @@ class TestWikiInternalLinks(TestCase):
     def test_link_hash_name_markup(self):
         """Internal link with hash and name."""
         text = '[[Installing Firefox#section 3|this name]]'
-        eq_('<p><a href="/en-US/kb/installing-firefox#section_3"' +
+        eq_('<p><a href="/en-US/kb/Installing+Firefox#section_3"' +
             '>this name</a>\n</p>', self.p.parse(text))
 
     def test_simple_edit(self):

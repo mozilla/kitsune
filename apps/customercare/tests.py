@@ -4,9 +4,8 @@ from nose.tools import eq_
 import test_utils
 
 from customercare.cron import _filter_tweet
-from sumo.tests import TestCase
 
-class TwitterCronTestCase(TestCase):
+class TwitterCronTestCase(test_utils.TestCase):
     tweet_json = """{
         "profile_image_url":"http://a3.twimg.com/profile_images/688562959/jspeis_gmail.com_852af0c8__1__normal.jpg",
         "created_at":"Mon, 25 Oct 2010 18:12:20 +0000",
