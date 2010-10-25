@@ -1,9 +1,12 @@
+from datetime import datetime
 import json
 
 from nose.tools import eq_
 import test_utils
 
 from customercare.cron import _filter_tweet
+from customercare.helpers import isotime
+
 
 class TwitterCronTestCase(test_utils.TestCase):
     tweet_json = """{
@@ -54,3 +57,11 @@ class TwitterCronTestCase(test_utils.TestCase):
         """Ensure fx4status tweets are filtered out."""
         self.tweet['from_user'] = 'fx4status'
         assert _filter_tweet(self.tweet) is None
+
+
+def test_isotime():
+    """Test isotime helper."""
+    time = datetime(2009, 12, 25, 10, 11, 12)
+    eq_(isotime(time), '2009-12-25T18:11:12Z')
+
+    assert isotime(None) is None

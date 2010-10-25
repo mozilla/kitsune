@@ -114,13 +114,19 @@ body {
     font-size: 13px;
     line-height: 1.4em;
 }
-#tweets li .time {
+
+#tweets li time {
+    color: #afaba3;
     float: right;
     font-weight: normal;
     font-style: italic;
     font-size: 12px;
-    color: #afaba3;
 }
+
+#tweets li time:hover {
+    text-decoration: underline;
+}
+
 #tweets li .text {
     font-weight: normal;
     font-size: 14px;
