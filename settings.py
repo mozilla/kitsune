@@ -317,6 +317,7 @@ MINIFY_BUNDLES = {
             'js/libs/jqueryui.min.js',
             'js/libs/jquery.NobleCount.js',
             'js/libs/jquery.cookie.js',
+            'js/libs/jquery.bullseye-1.0.min.js',
             'js/customercare.js',
         ),
     },
