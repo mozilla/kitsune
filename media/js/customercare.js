@@ -261,7 +261,7 @@
             $('#scroll-busy').show();
 
             var max_id = $('#tweets li:last').attr('data-tweet-id');
-            if (!max_id) return;
+            if (!max_id) return; // no tweets, nothing for us to do.
 
             $.get(
                 $('#refresh-tweets').attr('href'), {max_id: max_id},
