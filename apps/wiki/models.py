@@ -407,10 +407,12 @@ class Document(ModelBase, BigVocabTaggableMixin):
         """
         if not (self.parent and self.current_revision):
             return False
+
+        based_on_id = self.current_revision.based_on_id
+        more_filters = {'id__gt': based_on_id} if based_on_id else {}
         return self.parent.revisions.filter(
-            id__gt=self.current_revision.based_on_id,
             is_approved=True,
-            significance__gte=MAJOR_SIGNIFICANCE).exists()
+            significance__gte=MAJOR_SIGNIFICANCE, **more_filters).exists()
 
 
 class Revision(ModelBase):
@@ -444,10 +446,10 @@ class Revision(ModelBase):
         """Return a tuple: (the correct value of based_on, whether the old
         value was correct).
 
-        based_on must be a revision of the English version of the document if
-        there are any such revisions and None otherwise. If based_on is not
-        already set when this is called, the return value defaults to the
-        current_revision of the English document.
+        based_on must be an approved revision of the English version of the
+        document if there are any such revisions and None otherwise. If
+        based_on is not already set when this is called, the return value
+        defaults to the current_revision of the English document.
 
         """
         if self.document.original.current_revision:
