@@ -46,7 +46,10 @@ def _get_tweets(limit=MAX_TWEETS, max_id=None, reply_to=None):
         date = datetime(*parsed_date[0:6])
 
         # Recursively fetch replies.
-        replies = _get_tweets(limit=0, reply_to=tweet.tweet_id)
+        if settings.CC_SHOW_REPLIES:
+            replies = _get_tweets(limit=0, reply_to=tweet.tweet_id)
+        else:
+            replies = None
 
         tweets.append({
             'profile_img': bleach.clean(data['profile_image_url']),
@@ -54,7 +57,7 @@ def _get_tweets(limit=MAX_TWEETS, max_id=None, reply_to=None):
             'text': bleach.clean(data['text']),
             'id': int(tweet.tweet_id),
             'date': date,
-            'reply_count': len(replies),
+            'reply_count': len(replies) if replies else 0,
             'replies': replies,
             'reply_to': tweet.reply_to,
         })
