@@ -287,6 +287,7 @@
             }
             $(this).toggleClass('opened');
 
+            $(this).blur();
             e.preventDefault();
         });
 
