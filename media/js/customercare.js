@@ -94,7 +94,7 @@
         $('#accordion').accordion({
             'icons': false,
             'autoHeight': false,
-            'collpsible': true,
+            'collapsible': true,
             'active': false,
         });
 
