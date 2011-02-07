@@ -144,6 +144,11 @@ MIDDLEWARE_CLASSES = (
     # LocaleURLMiddleware must be before any middleware that uses
     # sumo.urlresolvers.reverse() to add locale prefixes to URLs:
     'sumo.middleware.LocaleURLMiddleware',
+
+    # Mobile detection should happen in Zeus.
+    'mobility.middleware.DetectMobileMiddleware',
+    'mobility.middleware.XMobileMiddleware',
+
     'sumo.middleware.Forbidden403Middleware',
     'django.middleware.common.CommonMiddleware',
     'sumo.middleware.RemoveSlashMiddleware',
@@ -341,6 +346,9 @@ MINIFY_BUNDLES = {
         'monitor': (
             'css/monitor.css',
         ),
+        'mobile': (
+            'css/mobile.css',
+        )
     },
     'js': {
         'common': (
@@ -396,6 +404,10 @@ MINIFY_BUNDLES = {
         ),
         'users': (
             'js/users.js',
+        ),
+        'mobile': (
+            'js/libs/jquery.min.js',
+            'js/mobile.js',
         ),
     },
 }
@@ -575,3 +587,5 @@ WEBTRENDS_PASSWORD = 'password'
 WEBTRENDS_EPOCH = date(2010, 8, 1)  # When WebTrends started gathering stats on
                                     # the KB
 WEBTRENDS_REALM = 'Webtrends Basic Authentication'
+
+MOBILE_COOKIE = 'msumo'

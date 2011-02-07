@@ -102,3 +102,9 @@ class MigrationTests(TestCase):
             assert encodings >= creates, ("There weren't as many "
                 'UTF-8 declarations as "CREATE TABLE" occurrences in '
                 'migration %s.' % filename)
+
+
+class MobileTestCase(TestCase):
+
+    def setUp(self):
+        self.client.cookies[settings.MOBILE_COOKIE] = 'on'

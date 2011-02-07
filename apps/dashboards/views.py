@@ -6,6 +6,7 @@ from django.utils.datastructures import SortedDict
 from django.views.decorators.http import require_GET
 
 import jingo
+from mobility.decorators import mobile_template
 from tower import ugettext_lazy as _lazy, ugettext as _
 
 from dashboards.readouts import (overview_rows, READOUTS, L10N_READOUTS,
@@ -25,7 +26,8 @@ MOBILE_DOCS = {'quick': 'Mobile home - Quick',
                'explore': 'Mobile home - Explore'}
 
 
-def home(request):
+@mobile_template('dashboards/{mobile/}home.html')
+def home(request, template=None):
     data = {}
     for side, title in HOME_DOCS.iteritems():
         message = _lazy(u'The template "%s" does not exist.') % title
@@ -33,7 +35,7 @@ def home(request):
             Document, title, request.locale, message)
 
     data.update(SHOWFOR_DATA)
-    return jingo.render(request, 'dashboards/home.html', data)
+    return jingo.render(request, template, data)
 
 
 def mobile(request):
