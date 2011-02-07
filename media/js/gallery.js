@@ -1,389 +1,531 @@
-$(document).ready(function () {
+(function($) {
+    "use strict";
     var CONSTANTS = {
-            maxFilenameLength: 80  // truncated on display, if longer
-        },
-        $uploadModal = $('#gallery-upload-modal'),
-        $radios = $('input[type="radio"]', $uploadModal),
-        $forms = $('#gallery-upload-image, #gallery-upload-video'),
-        current = 0;
-
-    CONSTANTS.messages = [
-            {'invalid': gettext('Invalid image. Please select a valid image file.'),
-             'cancelled': gettext('Upload cancelled. Please select an image file.'),
-             'del': gettext('Delete this image')},
-            {'invalid': gettext('Invalid video. Please select a valid video file (%s).'),
-             'cancelled': gettext('Upload cancelled. Please select a video file (%s).'),
-             'del': gettext('Delete %s file')}];
-
-    jQuery.fn.makeCancelUpload = function (options) {
-        var $this = this,
-            field_name = $this.data('name');
-        if (!$this.is('input')) {
-            return $this;
-        }
-
-        $this.wrap('<form class="inline" method="POST" action="' +
-                     $this.data('action') + '"/>')
-               .closest('form')
-               .append($('input[name="csrfmiddlewaretoken"]').first()
-                       .clone());
-
-        // delete buttons must not close the modal, remove kbox-cancel class
-        if (field_name !== undefined) {
-            $this.removeClass('kbox-cancel');
-        }
-
-        // now bind to the click event
-        $this.click(function (ev) {
-            ev.preventDefault();
-            if ($this.hasClass('draft') ||
-                $this.closest('.upload-form').hasClass('uploading')) {
-
-                // Delete draft asynchronously
-                var $cancelForm = $this.closest('form'),
-                    in_progress = $('.progress:visible', $uploadForm).length,
-                    $add = $('.upload-media.' + field_name, $uploadForm),
-                    $uploadForm = $this.closest('.upload-form');
-
-                $.ajax({
-                    url: $cancelForm.attr('action'),
-                    type: 'POST',
-                    data: $cancelForm.serialize(),
-                    dataType: 'json'
-                    // Ignore the response, nothing to do.
-                });
-
-                if (field_name === undefined) {
-                    // cancel/close modal must reset the form
-                    resetForms();
-                    return;
-                }
-
-                reShowFileUpload({
-                    add: $add, form: $uploadForm,
-                    progress: $('.progress', $uploadForm)
-                        .filter('.' + field_name),
-                    metadata: $('.metadata', $uploadForm),
-                    cancel_btn: $this
-                }, true /* hide preview */);
-
+            maxFilenameLength: 70,  // truncated on display, if longer
+            // the remainder are set by input name, not file type
+            messages: {},
+            extensions: {
+                file: ['jpg', 'jpeg', 'png', 'bmp', 'gif', 'tiff'],
+                flv: ['flv'],
+                ogv: ['ogv', 'ogg'],
+                webm: ['webm']},
+            max_size: {
+                file: $('#gallery-upload-modal').data('max-image-size'),
+                flv: $('#gallery-upload-modal').data('max-video-size'),
             }
-        });
+        };
+    CONSTANTS.extensions['thumbnail'] = CONSTANTS.extensions['file'];
+    CONSTANTS.max_size['thumbnail'] = CONSTANTS.max_size['file'];
+    CONSTANTS.max_size['ogv'] = CONSTANTS.max_size['flv'];
+    CONSTANTS.max_size['webm'] = CONSTANTS.max_size['flv'];
 
-        return $this;
-    };
+    CONSTANTS.messages['server'] = gettext('Could not upload file. Please try again later.');
+    CONSTANTS.messages['file'] = {
+        'server': CONSTANTS.messages['server'],
+        'invalid': gettext('Invalid image. Please select a valid image file.'),
+        'cancelled': gettext('Upload cancelled. Please select an image file.'),
+        'deleted': gettext('File deleted. Please select an image file.'),
+        'del': gettext('Delete this image')};
+    CONSTANTS.messages['flv'] = {
+        'server': CONSTANTS.messages['server'],
+        'invalid': gettext('Invalid video. Please select a valid FLV video.'),
+        'cancelled': gettext('Upload cancelled. Please select an FLV video.'),
+        'deleted': gettext('File deleted. Please select an FLV video.'),
+        'del': gettext('Delete FLV video')};
+    CONSTANTS.messages['ogv'] = {
+        'server': CONSTANTS.messages['server'],
+        'invalid': gettext('Invalid video. Please select a valid OGV video.'),
+        'cancelled': gettext('Upload cancelled. Please select an OGV video.'),
+        'deleted': gettext('File deleted. Please select an OGV video.'),
+        'del': gettext('Delete OGV video')};
+    CONSTANTS.messages['webm'] = {
+        'server': CONSTANTS.messages['server'],
+        'invalid': gettext('Invalid video. Please select a valid WebM video.'),
+        'cancelled': gettext('Upload cancelled. Please select a WebM video.'),
+        'deleted': gettext('File deleted. Please select a WebM video.'),
+        'del': gettext('Delete WebM video')};
+    // necessary for video thumbnail
+    CONSTANTS.messages['thumbnail'] = CONSTANTS.messages['file'];
 
-    function resetForms() {
-        $forms.data('disabled', false).removeClass('disabled');
-        $forms.find('.uploading').removeClass('uploading');
-        $forms.find('.draft').removeClass('draft');
-        $forms.find('.invalid').removeClass('invalid');
-        $forms.find('.metadata').hide();
-        $forms.first().find('.preview').hide().filter('.row-right').html('');
-        $forms.last().find('.preview').hide();
-        $forms.last().find('.video-preview').remove();
-        $forms.last().find('.upload-media.row-right.thumbnail')
-            .find('.image-preview,form.inline').remove();
-        $forms.last().find('.upload-media.row-right.thumbnail')
-            .children().show()
-        $('#gallery-upload-type').show();
-        $forms.find('.upload-media').show();
-    }
-
-    function reShowFileUpload($options, delete_button) {
-        var $inputs_remaining = $('input[type="file"]:visible', $options.form),
-            in_progress = $('.progress:visible', $options.form).length,
-            total_files = (current ? 4 : 1),
-            uploaded_files = ($inputs_remaining.length < total_files - 1);
-
-        if (current === 0) {
-            $options.form.find('.preview').hide().filter('.row-right').html('');
-        }
-
-        if (in_progress <= 2 && !uploaded_files) {
-            $options.metadata.fadeOut('fast');
-        }
-
-        if (in_progress > 2) {
-            $options.progress = $options.progress.not('label');
-        }
-
-        if ($options.add.hasClass('thumbnail') && delete_button) {
-            $options.add.find('.image-preview,form.inline').remove();
-            $options.add = $options.add.children();
-            // if thumbnail starts loaded, it will be hidden by
-            // showEmptyMediaFields
-            $options.add.children().children().show();
-            $options.add.find('input').show();
-        }
-
-        if (!$options.add.hasClass('file') &&
-            !$options.add.hasClass('thumbnail') && delete_button) {
-            var $preview = $options.cancel_btn.closest('.video-preview');
-            if ($preview.parent().children().length === 1) {
-               $preview.parent().html('');
-                $('.preview', $options.form).hide();
-            } else {
-                $preview.remove();
-            }
-        }
-
-        $options.progress.first().fadeOut('fast', function chooseAgain() {
-            $options.add.fadeIn('fast').removeClass('uploading');
-            $options.form.removeClass('uploading');
-            $('label.upload-media', $options.form).fadeIn('fast');
-            // allow to change type if: nothing has been uploaded
-            // and nothing is in progress
-            if (in_progress <= 2 && !uploaded_files) {
-                $('#gallery-upload-type').fadeIn('fast');
-            }
-        });
-        $options.progress.not(':first').fadeOut('fast');
-    }
-
-    init();
-
-    /**
-     * Shows and hides media fields depending on which have been uploaded to
-     * the preview area.
-     */
-    function showEmptyMediaFields($form) {
-        $('.upload-media', $form).each(function () {
-            // if there's a preview with the class of the input name
-            if ($('.image-preview,.video-preview', $form).filter('.' +
-                $(this).find('input').attr('name')).length) {
-                $(this).hide();
-            } else {
-                $(this).show();
-            }
-        });
-        if ($('.upload-media:visible', $form).not('.thumbnail').length === 1) {
-            // only label is left, hide it too
-            $('label.upload-media', $form).not('.thumbnail').hide();
-        }
-        if ($('.upload-media.thumbnail .image-preview').length > 0) {
-            $('.upload-media.thumbnail').children('label,input[name="thumbnail"]')
-                .hide();
-        }
-    }
-
-    /**
-     * Hides and shows form fields depending on the received media types.
-     * toShow and toHide are the corresponding integer indices in
-     * MEDIA_TYPES.
-     */
-    $radios.click(function changeMediaType() {
-        // TODO: change this to use CSS classes + transitions instead of fades
-        current = $radios.index($(this));
-        var $toShow = $forms.eq(current),
-            $toHide = $forms.not($toShow),
-            $preview = $('.preview', $toShow),
-            $toShowMetadata = $('.metadata', $toShow);
-        $('.progress', $toShow).hide();
-        if ($toShowMetadata.length === 0) {
-            $('.metadata', $uploadModal).insertBefore(
-                $('.upload-action', $toShow));
-        }
-        if ($preview.find('.image-preview,.video-preview').length > 0 ||
-            $('.upload-media.thumbnail .image-preview').length > 0) {
-            showEmptyMediaFields($toShow);
-            if ($preview.find('.image-preview,.video-preview').length > 0) {
-                $preview.show();
-            } else {
-                $preview.hide();
-            }
-            // move metadata from one form to another
-            $('.metadata', $toShow).show();
-        } else {
-            $preview.hide();
-            $('.upload-media', $toShow).show();
-            $('.metadata', $toShow).hide();
-        }
-        $toHide.fadeOut('fast', function toggleForms() {
-            $toHide.hide();
-            $toShow.fadeIn('fast');
-        });
+    // Save all initial values of input details:
+    CONSTANTS.messages.initial = {};
+    $('#gallery-upload-modal .upload-media').each(function () {
+        var $self = $(this);
+        var type = $self.find('input').attr('name'),
+            details = $self.find('.details').html();
+        CONSTANTS.messages.initial[type] = details;
     });
 
-    // this makes it play nice with form history and page reloads
-    $radios.filter(':checked').click();
+    // jQuery helpers to show/hide content, provide flexibility in animation.
+    // TODO: use transitions to fade these.
+    $.fn.showFade = function() {
+        this.removeClass('off').addClass('on');
+        return this;
+    };
+    $.fn.hideFade = function() {
+        this.removeClass('on').addClass('off');
+        return this;
+    };
 
-    // Upload a file on input value change
-    $('input[type="file"]', $uploadModal).each(function() {
-        var $form = $(this).closest('.upload-form'),
-            type = 'image';
-        $form.removeAttr('enctype');
-        $(this).ajaxSubmitInput({
-            url: $form.data('post-url'),
-            beforeSubmit: function($input) {
-                var upName = $input.attr('name'),
-                    $options = {
-                        form: $form,
-                        add: $input.closest('.upload-media'),
-                        metadata: $('.metadata', $form),
-                        filename: $input.val().split(/[\/\\]/).pop(),
-                        progress: $('.progress', $form).filter('.' + upName)
-                    };
-                $form.find('input[type="submit"]').not('[name="cancel"]')
-                    .attr('disabled', 'disabled');
-                $options.remaining = $('.upload-media:visible', $form)
-                    .not('.thumbnail');
-                // if there are other inputs remaining to upload
-                // don't hide the Video label
-                if ($options.remaining.length > 2 && upName !== 'thumbnail') {
-                    $options.remaining = $();  // empty
-                } else if (upName === 'thumbnail') {
-                    $options.remaining = $('.upload-media.thumbnail', $form)
-                        .not($options.add);
+    /*
+     * Tiny helper function returns true/false depending on whether x is in
+     * array arr.
+     */
+    function in_array(needle, haystack) {
+        return (-1 !== Array.prototype.indexOf.call(haystack, needle));
+    }
+
+    /*
+     * This is the core of the gallery upload process.
+     *
+     * Summary:
+     * init: initialize DOM events, dispatch on draft vs new upload
+     * validateForm: TODO, prevent form submission if data is not valid
+     * isValidFile: boolean result for each type of file, checks size and
+     *              extenson
+     * startUpload: validates before upload and initiates progress
+     * uploadComplete: once upload is done, dispatch to success or error
+     * uploadSuccess: successful upload is shown in a preview
+     * uploadError: if an error occured, show a message and chance to re-upload
+     * deleteUpload: for already uploaded files, send delete request and
+     *               show the file <input>
+     * cancelUpload: cancel an upload that is in progress
+     * draftSetup: show/hide fields according to an existing draft
+     *             (image drafts take precedence)
+     * modalClose: when closing the modal, delete the draft and reset (below)
+     * modalReset: clean up the form in anticipation of a complete do-over
+     */
+    var GalleryUpload = {
+        forms: {$type: $('#gallery-upload-type'),
+                $image: $('#gallery-upload-image'),
+                $video: $('#gallery-upload-video')},
+        $modal: $('#gallery-upload-modal'),
+        // some mapping here for what to show/hide and when
+        /*
+         * -- check if a draft exists and open the modal if so
+         * -- set up DOM events: selecting media type, click to cancel upload
+         *    ajax uploads, require metadata, bind modal close event
+         */
+        init: function() {
+            var self = this;
+            self.$radios = $('input[type="radio"]', self.$modal);
+            /*
+             * Show/Hide media type form.
+             */
+            self.$radios.click(function changeMediaType() {
+                var current = self.$radios.index($(this));
+                if (0 === current) {
+                    self.forms.$video.hideFade();
+                    self.forms.$image.showFade();
                 } else {
-                    $options.remaining = $options.remaining.not($options.add);
+                    self.forms.$image.hideFade();
+                    self.forms.$video.showFade();
                 }
-                $options.adding = $options.progress.find('span');
-                $options.add.find('.invalid').removeClass('invalid');
+            });
+            self.$radios.filter(':checked').click();
 
-                // truncate filename
-                if ($options.filename.length > CONSTANTS.maxFilenameLength) {
-                    $options.filename = $options.filename
-                        .substr(0, CONSTANTS.maxFilenameLength - 3) + '...';
-                }
+            // Bind cancel upload event.
+            $('.progress a', self.$modal).click(function cancelUpload(ev) {
+                var type = $(this).attr('class');
+                ev.preventDefault();
+                self.cancelUpload($(this));
+                self.setInputError($(this).closest('.upload-form')
+                                          .find('input[name="' + type + '"]'),
+                                   'cancelled');
+                return false;
+            });
 
-                $options.progress.find('a').click(function cancelUpload() {
-                    $('iframe[name="' + $input.closest('form').attr('target') +
-                      '"]')[0].src = null;
-                    var message = CONSTANTS.messages[current].cancelled;
-                    message = interpolate(message, [upName]);
-                    reUploadWithMessage($options, message);
-                    $options.remaining.fadeIn('fast');
-                    return false;
-                });
-                $options.adding.html(interpolate(gettext('Uploading "%s"...'),
-                                                 [$options.filename]));
-                $('#gallery-upload-type').fadeOut('fast');
-                $options.remaining.fadeOut('fast');
-                $options.add.fadeOut('fast', function editMetadata() {
-                    if ($options.add.find('.invalid').length === 0) {
-                        $options.progress.fadeIn('fast');
-                        $options.metadata.fadeIn('fast');
-                    }
-                }).addClass('uploading');
-                $form.addClass('uploading');
-
-                return $options;
-            },
-            onComplete: function($input, iframeContent, $options) {
-                $input.closest('form')[0].reset();
-                $form.find('input[type="submit"]').attr('disabled', '');
-                if (!iframeContent) {
-                    return;
-                }
-                var iframeJSON;
-                try {
-                    iframeJSON = $.parseJSON(iframeContent);
-                } catch(err) {
-                    if (err.substr(0, 12)  === 'Invalid JSON') {
-                        alert(err);
-                        return false;
-                    }
-                }
-
-                var upName = $input.attr('name'),
-                    upStatus = iframeJSON.status, upFile, $thumbnail,
-                    $cancel_btn = $('.upload-action input[name="cancel"]',
-                                    $options.form),
-                    message, message_index, attrs
-                    $appendCancelTo = $('.row-right.preview', $options.form);
-
-                message_index = current;
-                if (upName === 'thumbnail') {
-                    // treat thumbnails like images
-                    message_index = 0;  // image index
-                }
-                if (upStatus !== 'success') {
-                    message = CONSTANTS.messages[message_index].invalid;
-                    message = interpolate(message, [upName]);
-                    reUploadWithMessage($options, message, true);
-                    return false;
-                }
-                upFile = iframeJSON.file;
-
-                // Make cancel buttons delete the draft
-                $cancel_btn.addClass('draft');
-                message = CONSTANTS.messages[message_index].del;
-                if (upName === 'file') {
-                    // create thumbnail
-                    $thumbnail = $('<img/>')
-                        .attr({alt: upFile.name, title: upFile.name,
-                               width: upFile.width, height: upFile.height,
-                               src: upFile.thumbnail_url})
-                        .wrap('<div class="image-preview"/>').closest('div')
-                        .appendTo($('.row-right.preview', $options.form));
-                } else if (upName === 'thumbnail') {
-                    $('.row-right.thumbnail', $options.form)
-                        .children().hide();
-                    $thumbnail = $('<img/>')
-                        .attr({alt: upFile.name, title: upFile.name,
-                               width: upFile.width, height: upFile.height,
-                               src: upFile.thumbnail_url})
-                        .wrap('<div class="image-preview"/>').closest('div')
-                        .appendTo($('.row-right.uploading.thumbnail',
-                                    $options.form));
-                    $('.upload-media.thumbnail', $options.form).show();
-                    $appendCancelTo = $('.row-right.uploading.thumbnail', $options.form);
-                } else {
-                    $appendCancelTo = $('<li class="video-preview"/>');
-                    $appendCancelTo.html($options.filename)
-                        .appendTo($('.row-right.preview ul', $options.form));
-                    message = interpolate(message, [upName]);
-                }
-                attrs = {};
-                attrs['data-action'] = $cancel_btn.data('action') +
-                                           '?field=' + upName;
-                attrs['data-name'] = upName;
-                $cancel_btn.clone().val(message).attr(attrs)
-                           .appendTo($appendCancelTo)
-                           .makeCancelUpload();
-                $options.progress.fadeOut('fast', function () {
-                    if (!$options.progress.hasClass('thumbnail')) {
-                        $('.preview', $options.form).fadeIn('fast');
+            // Bind ajax uploads for inputs
+            $('input[type="file"]', self.$modal).each(function() {
+                var $file = $(this), $form = $file.closest('.upload-form');
+                $file.ajaxSubmitInput({
+                    url: $form.data('post-url'),
+                    beforeSubmit: function($input) {
+                        if (!self.isValidFile($file)) {
+                            self.uploadError($file, 'invalid');
+                            return false;
+                        }
+                        return self.startUpload($file);
+                    },
+                    onComplete: function($input, iframeContent, options) {
+                        $input.closest('form')
+                            .trigger('ajaxComplete')[0].reset();
+                        self.uploadComplete($file, iframeContent, options);
                     }
                 });
+            });
 
-                $form.trigger('ajaxComplete');
+            // Deleting uploaded files sends ajax request.
+            jQuery.fn.makeCancelUpload = function(options) {
+                var $input = this,
+                    field_name = $input.data('name');
+                if (!$input.is('input')) {
+                    return $input;
+                }
+                if ($input.length > 1) {
+                    // Apply to each individually.
+                    $input.each(function() {
+                        $(this).makeCancelUpload();
+                    });
+                    return $input;
+                }
+
+                var $form = $input.wrap('<form class="inline" method="POST" ' +
+                                        'action=""/>').closest('form');
+                // Also send the csrf token.
+                $form.append($('input[name="csrfmiddlewaretoken"]')
+                     .first().clone());
+
+                $input.click(function deleteField(ev) {
+                    ev.preventDefault();
+                    self.deleteUpload($input);
+                    return false;
+                });
             }
-        });
-    }); // end ajax upload gallery code
 
+            // Metadata should be required.
+            self.$modal.find('.metadata input,.metadata textarea')
+                       .attr('required', 'required');
 
-    function reUploadWithMessage($options, message, invalid) {
-        var $msgContainer = $options.add.filter('.row-right').find('label');
-        $msgContainer.html(message);
-        $options.form.find('input[type="submit"]').attr('disabled', '');
-        if (invalid) {
-            $msgContainer.addClass('invalid');
-        } else {
-            $msgContainer.removeClass('invalid');
+            // Closing the modal with top-right X cancels upload drafts
+            self.$modal.delegate('a.close', 'click', function(e) {
+                self.$modal.find('input[name="cancel"]:last').click();
+            });
+
+            if (self.forms.$type.hasClass('draft')) {
+                // draft
+                self.draftSetup();
+            } else {
+                // not draft
+                self.modalReset();
+            }
+        },
+        /*
+         * Validates the entire upload form before publishing a draft.
+         * TODO
+         */
+        validateForm: function() {
+            /*
+            var $current_form = self.forms.$image;
+            if (!$current_form.is(':visible')) {
+                $current_form = self.forms.$video;
+            }
+            */
+        },
+        /*
+         * Validates uploaded file meets criteria in mapping:
+         * -- correct extension
+         * -- enable submit button if form is ready to submit
+         * TODO: test in IE/no-file-API-supported browser
+         */
+        isValidFile: function ($input) {
+            var file = $input[0].files[0],
+                type = $input.attr('name');
+            var file_ext = file.name.split(/\./).pop().toLowerCase();
+            return (in_array(file_ext, CONSTANTS.extensions[type]) &&
+                    file.size < CONSTANTS.max_size[type]);
+        },
+        /*
+         * Fired when upload starts, if isValidFile returns true
+         * -- hide the file input
+         * -- show progress
+         * -- show metadata
+         * -- disable submit buttons (happens automatically)
+         * -- return the truncated filename for later use
+         */
+        startUpload: function($input) {
+            var $form = $input.closest('.upload-form'),
+                filename = $input.val().split(/[\/\\]/).pop(),
+                $progress = $('.progress', $form)
+                    .filter('.' + $input.attr('name'));
+            // truncate filename
+            if (filename.length > CONSTANTS.maxFilenameLength) {
+                filename = filename.substr(0, CONSTANTS.maxFilenameLength) +
+                           '...';
+            }
+            $form.find('.upload-media.' + $input.attr('name')).hideFade();
+            var message = interpolate(gettext('Uploading "%s"...'), [filename]);
+            $progress.filter('.row-right').find('span').html(message);
+            $progress.showFade();
+            $form.find('.metadata').showFade();
+            $('#gallery-upload-type').find('input[type="radio"]')
+                                     .attr('disabled', 'disabled');
+            return {filename: filename};
+        },
+        /*
+         * Dispatches to uploadError or uploadSuccess depending on the
+         * response received from the ajax request.
+         */
+        uploadComplete: function($input, iframeContent, options) {
+            if (!iframeContent) {
+                return;
+            }
+            var iframeJSON, self = this;
+            try {
+                iframeJSON = $.parseJSON(iframeContent);
+            } catch(err) {
+                self.uploadError($input, 'server');
+                if (err.substr(0, 12)  === 'Invalid JSON') {
+                    // This will help debug, if it's a lasting problem.
+                    if (undefined !== console) {
+                        console.log(err);
+                    }
+                    return false;
+                }
+            }
+
+            var upStatus = iframeJSON.status;
+
+            if (upStatus !== 'success') {
+                self.uploadError($input, 'invalid');
+                return false;
+            }
+            // Success!
+            self.uploadSuccess($input, iframeJSON, options.filename);
+        },
+        /*
+         * Fired after upload is complete, if isValidFile is true, and server
+         * returned succes.
+         * -- hide progress
+         * -- generate image/video preview
+         * -- create cancel button and bind its click event
+         */
+        uploadSuccess: function($input, iframeJSON, filename) {
+            var type = $input.attr('name'),
+                $form = $input.closest('.upload-form'),
+                $cancel_btn = $('.upload-action input[name="cancel"]', $form),
+                $appendCancelTo,
+                $thumbnail, attrs = {},
+                upFile = iframeJSON.file;
+            var message = CONSTANTS.messages[type].del;
+
+            // Upload is no longer in progress.
+            $form.find('.progress.' + type).hideFade();
+
+            // generate preview
+            if (type === 'file' || type === 'thumbnail') {
+                // create thumbnail
+                $('.row-right.preview', $form).html('');
+                $thumbnail = $('<img/>')
+                    .attr({alt: upFile.name, title: upFile.name,
+                           width: upFile.width, height: upFile.height,
+                           src: upFile.thumbnail_url})
+                    .wrap('<div class="preview-' + type + '"/>').closest('div')
+                    .appendTo($('.row-right.preview', $form));
+                    $('.preview', $form).showFade();
+                $appendCancelTo = $('.row-right.preview', $form);
+            } else {
+                // Add a list item to video preview.
+                $appendCancelTo = $('<li class="video-preview"/>');
+                $appendCancelTo.html(filename)
+                    .appendTo($('.row-right.video-preview ul', $form));
+                $('.video-preview', $form).showFade();
+            }
+            // Create cancel button.
+            attrs['data-action'] = $cancel_btn.data('action') +
+                                       '?field=' + type;
+            attrs['data-name'] = type;
+            $cancel_btn.clone().val(message).attr(attrs)
+                       .removeClass('kbox-cancel')
+                       .appendTo($appendCancelTo)
+                       .makeCancelUpload();
+        },
+        /*
+         * Little helper function to set an error next to the file input.
+         * Takes the file $input and a reason.
+         */
+        setInputError: function($input, reason) {
+            var type = $input.attr('name');
+            var message = CONSTANTS.messages[type][reason];
+            var $row_input = $('.upload-media.row-right.' + type);
+            $row_input.find('div.details').addClass('error')
+                  .html(message);
+        },
+        /*
+         * Fired if isValidFile is false or server returned failure.
+         * -- hide progress (i.e. click the cancel button)
+         * -- show an error message
+         */
+        uploadError: function($input, reason) {
+            var self = this,
+                type = $input.attr('name');
+            // Cancel existing upload.
+            $('.progress.' + type).find('a.' + type).click();
+            // Show an error message.
+            self.setInputError($input, reason);
+        },
+        /*
+         * Fired when deleting an uploaded image or video.
+         * -- hide preview of image or video
+         * -- send off an ajax request to remove the uploaded file
+         * -- show file input along with a message
+         */
+        deleteUpload: function($input) {
+            var self = this,
+                $cancelForm = $input.closest('form'),
+                $mediaForm = $input.closest('.upload-form'),
+                type = $input.data('name');
+            // Clean up all the preview and progress information.
+            if (type === 'file' || type === 'thumbnail') {
+                $mediaForm.find('.preview').hideFade()
+                          .filter('.row-right').html('');
+            } else {
+                // Video has a <ul>, bit tricky.
+                var $video_ul = $mediaForm.find('.video-preview ul');
+                // Remove this list item.
+                $input.closest('li').remove();
+                // Last video? Delete the list and hide the preview.
+                if ($video_ul.children().length === 0) {
+                    $mediaForm.find('.video-preview').hideFade();
+                }
+            }
+
+            // Send ajax request over to remove file.
+            $.ajax({
+                url: $input.data('action'),
+                type: 'POST',
+                data: $cancelForm.serialize(),
+                dataType: 'json'
+                // Ignore the response, nothing to do.
+            });
+            self.setInputError($mediaForm.find('input[name="' + type + '"]'),
+                               'deleted');
+            self._reUpload($mediaForm, type);
+        },
+        /*
+         * Fired after user closes modal or clicks to cancel an upload in
+         * progress.
+         * -- hide the progress
+         * -- show the file input
+         */
+        cancelUpload: function($a) {
+            var self = this,
+                type = $a.attr('class'),
+                $form = $a.closest('form');
+            var $input = $form.find('input[name="' + type + '"]');
+            var form_target = $input.closest('form').attr('target');
+            $('iframe[name="' + form_target + '"]')[0].src = null;
+            $form.find('.progress.' + type).hideFade();
+            self._reUpload($form, type);
+        },
+        /*
+         * Abstracts common code for re-uploading image/video
+         * -- if no other uploads are in progress and none have completed,
+         *    hide the metadata fields
+         * -- show the file input
+         */
+        _reUpload: function($form, type) {
+            // If nothing else is being or has been uploaded, hide the metadata
+            // and enable the upload input.
+            if (!$form.find('.progress').is(':visible') &&
+                !$form.find('.preview').is(':visible') &&
+                !$form.find('.video-preview').is(':visible')) {
+                $form.find('.metadata').hideFade();
+                $('#gallery-upload-type').find('input[type="radio"]')
+                                         .attr('disabled', '');
+            }
+            // finally, show the input again
+            $form.find('.upload-media.' + type).showFade();
+        },
+        /*
+         * If there is a draft, this will be fired off from init()
+         * -- hide fields that are already set, use the data-[field] on the
+         *    form
+         * -- show metadata
+         * -- make cancel buttons work
+         * -- disable changing upload type
+         */
+        draftSetup: function() {
+            var self = this;
+            self.$modal.find('.progress').hideFade();
+            var $uploads = self.$modal.find('input[type="file"]');
+            $uploads.each(function () {
+                var $self = $(this);
+                var type = $self.attr('name'),
+                    $form = $self.closest('.upload-form');
+                if ($form.data(type)) {
+                    $form.find('.upload-media.' + type).hideFade();
+                }
+            });
+            if (self.forms.$image.hasClass('draft')) {
+                self.$radios.first().click();
+                self.forms.$image.find('.upload-media').hideFade();
+            } else {
+                self.$radios.last().click();
+                var $video_preview = self.forms.$video.find('.video-preview');
+                if (!$video_preview.find('li').length) {
+                    $video_preview.hideFade();
+                }
+            }
+            self.$modal.find('input[name="cancel"]').not('.kbox-cancel')
+                       .makeCancelUpload();
+            $('#gallery-upload-type').find('input[type="radio"]')
+                                     .attr('disabled', 'disabled');
+        },
+        /*
+         * Fired when user closes modal.
+         * -- delete selected draft, image or video
+         * -- call modalReset
+         */
+        modalClose: function() {
+            var self = this,
+                checked_index = self.$radios.index(self.$radios.filter(':checked')),
+                csrf = $('input[name="csrfmiddlewaretoken"]').first().val();
+            var $input = $('.upload-action input[name="cancel"]', self.$modal)
+                            .eq(checked_index);
+            $.ajax({
+                url: $input.data('action'),
+                type: 'POST',
+                data: 'csrfmiddlewaretoken=' + csrf,
+                dataType: 'json'
+                // Ignore the response, nothing to do.
+            });
+            self.modalReset();
+        },
+        /*
+         * Fired on modal close.
+         * -- reset all form elements and clean up
+         */
+        modalReset: function() {
+            var self = this,
+                $uploads = self.$modal.find('.upload-media');
+            self.$modal.find('.draft').removeClass('draft');
+            // Hide metadata
+            self.$modal.find('.metadata').hideFade();
+            // Clean up all the preview and progress information.
+            self.$modal.find('.progress,.preview,.video-preview').hideFade();
+            self.$modal.find('.preview.row-right').html('');
+            self.$modal.find('.video-preview.row-right').html('<ul/>');
+            self.$modal.find('.progress.row-right span').html('');
+            // Show all the file inputs with default messages.
+            $uploads.filter('.row-right').each(function () {
+                var $input = $(this).find('input[type="file"]'),
+                    type = $input.attr('name');
+                $input.closest('form')[0].reset();
+                $(this).find('.details').html(CONSTANTS.messages.initial[type]);
+            }).find('.error').removeClass('error');
+            $uploads.showFade();
+            // Cancel all uploads in progress.
+            self.$modal.find('.progress a').each(function() {
+                self.cancelUpload($(this));
+            });
+            // Reset the forms.
+            self.forms.$image[0].reset();
+            self.forms.$video[0].reset();
         }
-        reShowFileUpload($options);
+    };
+
+    // Initialize GalleryUpload and kbox
+    GalleryUpload.init();
+    function preClose() {
+        GalleryUpload.modalClose();
+        return true;
     }
 
-    function init() {
-        // If fragment identifier is #upload, open the modal
-        if (document.location.hash === '#upload') {
-            $('#btn-upload').click();
-        }
-        // if there are drafts, open the modal
-        if ($forms.hasClass('draft')) {
-            $radios.eq($forms.index($forms.filter('.draft'))).click();
-            $('#btn-upload').click();
-        }
+    var kbox = $('#gallery-upload-modal').kbox({preClose: preClose});
 
-        $uploadModal.find('input[name="cancel"]').each(function () {
-            $(this).makeCancelUpload();
-        });
-        // Closing the modal with top-right X cancels upload drafts
-        $uploadModal.delegate('a.close', 'click', function(e) {
-            $uploadModal.find('input.draft[name="cancel"]:last').click();
-        });
+    // Got draft? Show it.
+    if ($('#gallery-upload-type').hasClass('draft')) {
+        $('#btn-upload').click();
     }
-});
-
+})(jQuery);

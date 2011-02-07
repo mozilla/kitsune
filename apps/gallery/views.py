@@ -15,7 +15,7 @@ from tower import ugettext_lazy as _lazy
 
 from access.decorators import login_required
 from gallery import ITEMS_PER_PAGE, DRAFT_TITLE_PREFIX
-from gallery.forms import ImageForm, VideoForm
+from gallery.forms import ImageForm, VideoForm, UploadTypeForm
 from gallery.models import Image, Video
 from gallery.utils import upload_image, upload_video, check_media_permissions
 from sumo.urlresolvers import reverse
@@ -46,11 +46,12 @@ def gallery(request, media_type='image'):
     media = paginate(request, media_qs, per_page=ITEMS_PER_PAGE)
 
     draft = _get_draft_info(request.user)
-    image_form, video_form = _init_upload_forms(request, draft)
+    image_form, video_form, upload_type_form = _init_forms(request, draft)
 
     return jingo.render(request, 'gallery/gallery.html',
                         {'media': media,
                          'media_type': media_type,
+                         'upload_type_form': upload_type_form,
                          'image_form': image_form,
                          'video_form': video_form})
 
@@ -327,15 +328,17 @@ def _init_media_form(form_cls, request=None, obj=None,
     if obj and obj.title.startswith(DRAFT_TITLE_PREFIX):
         obj.title = ''
 
-    return form_cls(post_data, file_data, instance=obj, initial=initial)
+    return form_cls(post_data, file_data, instance=obj, initial=initial,
+                    is_ajax=False)
 
 
-def _init_upload_forms(request, draft):
+def _init_forms(request, draft):
     """Initialize video and image upload forms given the request and drafts."""
     image_form = _init_media_form(ImageForm, request, draft['image'])
     video_form = _init_media_form(VideoForm, request, draft['video'])
+    upload_type_form = UploadTypeForm()
     if request.method == 'POST':
         image_form.is_valid()
         video_form.is_valid()
 
-    return (image_form, video_form)
+    return (image_form, video_form, upload_type_form)

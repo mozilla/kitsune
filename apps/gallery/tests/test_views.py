@@ -24,17 +24,17 @@ INVALID_VID = 'apps/gallery/tests/media/test.rtf'
 VIDEO_PATH = settings.MEDIA_URL + settings.GALLERY_VIDEO_PATH
 
 
-class DeleteEditImageTestCase(TestCase):
+class DeleteEditImageTests(TestCase):
     fixtures = ['users.json']
 
     def setUp(self):
-        super(DeleteEditImageTestCase, self).setUp()
+        super(DeleteEditImageTests, self).setUp()
         self.client = LocalizingClient()
         self.client.login(username='jsocol', password='testpass')
 
     def tearDown(self):
         Image.objects.all().delete()
-        super(DeleteEditImageTestCase, self).tearDown()
+        super(DeleteEditImageTests, self).tearDown()
 
     def test_delete_image(self):
         """Deleting an uploaded image works."""
@@ -94,17 +94,17 @@ class DeleteEditImageTestCase(TestCase):
         eq_('admin', Image.objects.get().updated_by.username)
 
 
-class UploadImageTestCase(TestCase):
+class UploadImageTests(TestCase):
     fixtures = ['users.json']
 
     def setUp(self):
-        super(UploadImageTestCase, self).setUp()
+        super(UploadImageTests, self).setUp()
         self.client = LocalizingClient()
         self.client.login(username='pcraciunoiu', password='testpass')
 
     def tearDown(self):
         Image.objects.all().delete()
-        super(UploadImageTestCase, self).tearDown()
+        super(UploadImageTests, self).tearDown()
 
     def test_empty_image(self):
         """Specifying an invalid model returns 400."""
@@ -249,13 +249,13 @@ class UploadImageTestCase(TestCase):
         assert doc('ul.errorlist li').text().startswith(msg)
 
 
-class ViewHelpersTestCase(TestCase):
+class ViewHelpersTests(TestCase):
     fixtures = ['users.json']
 
     def tearDown(self):
         Image.objects.all().delete()
         Video.objects.all().delete()
-        super(ViewHelpersTestCase, self).setUp()
+        super(ViewHelpersTests, self).setUp()
 
     def test_get_media_info_video(self):
         """Gets video and format info."""
@@ -272,17 +272,17 @@ class ViewHelpersTestCase(TestCase):
         eq_('jpeg', info_format)
 
 
-class UploadVideoTestCase(TestCase):
+class UploadVideoTests(TestCase):
     fixtures = ['users.json']
 
     def setUp(self):
-        super(UploadVideoTestCase, self).setUp()
+        super(UploadVideoTests, self).setUp()
         self.client = LocalizingClient()
         self.client.login(username='pcraciunoiu', password='testpass')
 
     def tearDown(self):
         Video.objects.all().delete()
-        super(UploadVideoTestCase, self).tearDown()
+        super(UploadVideoTests, self).tearDown()
 
     def _upload_extension(self, ext):
         with open(TEST_VID[ext]) as f:
@@ -426,7 +426,7 @@ class UploadVideoTestCase(TestCase):
         eq_(90, vid.thumbnail.width)
 
 
-class SearchTestCase(TestCase):
+class SearchTests(TestCase):
     client = LocalizingClient()
     fixtures = ['users.json', 'gallery/media.json']
 
@@ -460,7 +460,7 @@ class SearchTestCase(TestCase):
         eq_(404, response.status_code)
 
 
-class GalleryTestCase(TestCase):
+class GalleryTests(TestCase):
     def test_gallery_invalid_type(self):
         url = reverse('gallery.gallery', args=['foo'])
         response = self.client.get(url, follow=True)

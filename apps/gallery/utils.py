@@ -3,7 +3,7 @@ from django.core.exceptions import PermissionDenied
 from django.core.files import File
 
 from gallery import DRAFT_TITLE_PREFIX
-from gallery.forms import ImageUploadFormAsync, VideoUploadFormAsync
+from gallery.forms import ImageForm, VideoForm
 from gallery.models import Image, Video
 from sumo.urlresolvers import reverse
 from upload.utils import upload_media, check_file_size
@@ -35,7 +35,7 @@ def create_image(files, user):
 
 def upload_image(request):
     """Uploads an image from the request."""
-    return upload_media(request, ImageUploadFormAsync, create_image)
+    return upload_media(request, ImageForm, create_image)
 
 
 def create_video(files, user):
@@ -77,7 +77,7 @@ def create_video(files, user):
 
 def upload_video(request):
     """Uploads a video from the request; accepts multiple submitted formats"""
-    return upload_media(request, VideoUploadFormAsync, create_video)
+    return upload_media(request, VideoForm, create_video)
 
 
 def check_media_permissions(media, user, perm_type):

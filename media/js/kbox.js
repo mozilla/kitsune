@@ -59,6 +59,9 @@
  *      preOpen:
  *          A function to call before opening the kbox. If the function
  *          returns false, the kbox isn't opened. Optional.
+ *      preClose:
+ *          A function to call before closing the kbox. If the function
+ *          returns false, the kbox isn't closed. Optional.
  *      template:
  *          Override the template to use for creating the modal.
  *      title:
@@ -102,6 +105,7 @@ KBox.prototype = {
             modal: !!self.$el.data('modal'),
             position: self.$el.data('position') || 'center',
             preOpen: false,
+            preClose: false,
             template: TEMPLATE,
             title: self.$el.attr('title') || self.$el.attr('data-title')
         }, options);
@@ -240,6 +244,11 @@ KBox.prototype = {
     },
     close: function() {
         var self = this;
+        if (self.options.preClose && !self.options.preClose.call(self)) {
+            // If we have a preClose callback and it returns false,
+            // we don't open anything.
+            return;
+        }
         self.$kbox.removeClass('kbox-open');
         self.options.modal && self.destroyOverlay();
         self.options.destroy && self.destroy();
