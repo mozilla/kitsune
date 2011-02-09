@@ -1,16 +1,73 @@
 {# vim: set ts=2 et sts=2 sw=2: #}
+{% if not site_title %}
+  {% set site_title = _('Firefox Help <span>for Mobile</span>')|safe %}
+{% endif %}
 <!DOCTYPE html>
 <html lang="{{ request.locale }}" {% if dir %}dir="{{ dir }}"{% endif %}>
   <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ title }} | {{ _('Firefox Help', 'site_title') }}</title>
-    {# TODO #}
+
+    <link rel="shortcut icon" type="image/x-icon" href="{{ MEDIA_URL }}img/favicon.ico">
+    <link rel="search" type="application/opensearchdescription+xml" title="{{ _('Firefox Help') }}" href="{{ url('search.plugin') }}"/>
+
+    {{ css('mobile') }}
+    {% for style in styles %}
+      {{ css(style) }}
+    {% endfor %}
   </head>
   <body class="{{ classes }}"
         data-readonly="{{ settings.READ_ONLY|json }}"
         data-for-os="{{ for_os|json }}"
         data-for-version="{{ for_version|json }}">
+    {% block header %}
+      <header class="mini-header">
+        {% include "global/mobile/header.html" %}
+        <hgroup>
+          <h1 class="site-title">
+            <a href="{{ url('home') }}"
+              title="{{ _('Return to Firefox Support homepage') }}">
+              <img alt="" src="{{ MEDIA_URL }}img/ff-logo.png">
+              {{ site_title }}
+            </a>
+          </h1>
+        </hgroup>
+        <a href="{{ url('home') }}" id="home">
+          <svg width="18" height="16"><polygon fill="#447BC4" points="9,0 18,9 15,9 15,16 11,16 11,11 7,11 7,18 3,16 3,9 0,9"/></svg>
+          {{ _('Firefox Help Home') }}</a>
+      </header>
+    {% endblock %}
+
     {% block content %}{% endblock %}
-    {# TODO #}
+
+    <footer>
+      {% include "includes/lang_form.html" %}
+      {% block footer %}
+        {# TODO: make this work without JS #}
+        <a class="desktop-link" href="{{ url('home') }}?desktop">{{ _('View full site') }}</a>
+        <p>
+          {% trans %}
+            Except where otherwise <a href="http://mozilla.com/about/legal.html#site">noted</a>,
+            content on this site is licensed under the <br />
+            <a href="http://creativecommons.org/licenses/by-sa/3.0/">
+              Creative Commons Attribution Share-Alike License v3.0
+            </a> or any later version.
+          {% endtrans %}
+        </p>
+      {% endblock footer %}
+    </footer>
+
+    {{ js('mobile') }}
+    {% for script in scripts %}
+      {{ js(script) }}
+    {% endfor %}
+
+    {# Webtrends Stats Tracking #}
+    <script defer src="{{ MEDIA_URL }}js/webtrends.js" defer></script>
+    <noscript>
+        <img id="DCSIMG" width="1" height="1" src="http://statse.webtrendslive.com/dcskot6d000000w0qxqho15rf_7r6o/njs.gif?dcsuri=/nojavascript&amp;WT.js=No&amp;WT.tv=8.6.2"/>
+    </noscript>
+    {# End Webtrends #}
   </body>
 </html>

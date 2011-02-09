@@ -347,6 +347,7 @@ MINIFY_BUNDLES = {
             'css/monitor.css',
         ),
         'mobile': (
+            'global/mobile.css',
             'css/mobile.css',
         )
     },
@@ -408,6 +409,7 @@ MINIFY_BUNDLES = {
         ),
         'mobile': (
             'js/libs/jquery.min.js',
+            'js/libs/jquery.cookie.js',
             'js/mobile.js',
         ),
     },

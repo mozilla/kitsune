@@ -1,3 +1,35 @@
 /**
  * Mobile SUMO styles
  */
+
+/************************************/
+/*              HEADER              */
+/************************************/
+.moz-menu .tab a {
+    background: url(../img/mobile/wordmark.png) no-repeat 8px 6px;
+}
+
+.listview li > a:before,
+a.listview:before {
+    background: url(../img/mobile/arrow.svg) no-repeat center;
+}
+
+.mini-header .site-title a {
+    font-size: 18px;
+    line-height: 20px;
+    text-transform: none;
+}
+
+.mini-header .site-title a span {
+    display: block;
+    font-size: 80%;
+    font-style: italic;
+}
+
+article {
+    margin: 14px;
+}
+
+article p {
+    margin: 14px 0;
+}

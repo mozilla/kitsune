@@ -1,0 +1,14 @@
+{# vim: set ts=2 et sts=2 sw=2: #}
+<form id="lang_form" dir="ltr" method="get" action="{{ localizable_url }}">
+  <div>
+    <label for="flang">{{ _('Other Languages') }}</label>
+    <select id="flang" class="autosubmit" name="lang" dir="ltr">
+      {% for locale in settings.LANGUAGE_CHOICES %}
+        <option value="{{ locale[0] }}" {% if request.locale == locale[0] %}selected="selected"{% endif %}>{{ locale[1] }}</option>
+      {% endfor %}
+    </select>
+    <noscript>
+      <div><input type="submit" id="lang_submit" value="_('Go')" /></div>
+    </noscript>
+  </div>
+</form>
