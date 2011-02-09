@@ -410,6 +410,8 @@ MINIFY_BUNDLES = {
         'mobile': (
             'js/libs/jquery.min.js',
             'js/libs/jquery.cookie.js',
+            'js/browserdetect.js',
+            'js/showfor.js',
             'js/mobile.js',
         ),
     },

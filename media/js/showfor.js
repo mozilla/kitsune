@@ -2,7 +2,8 @@
  * showfor.js
  * Scripts for the showfor browser/os detection.
  *
- * Depends on: browserdetect.js, jquery.selectbox-1.2.js
+ * Depends on: browserdetect.js
+ * Optional for dhtml selects: jquery.selectbox-1.2.js
  */
 
 (function($) {
@@ -186,7 +187,7 @@ var ShowFor = {
                     if ($detectedOS.data('dependency') != currentDependency) {
                         // The detected OS is valid. Make it the new selection.
                         $osMenu.val($detectedOS.attr('value'));
-                        $browserMenu.val(this.detectBrowser());
+                        $browserMenu.val(ShowFor.detectBrowser());
                         clearSelectionCookies();
                     } else {
                         // Force a new selection.
@@ -205,7 +206,7 @@ var ShowFor = {
 
         // Select the sniffed, cookied, or hashed browser or OS if there is one:
         isSetManually = setSelectorValue("for_os", "os", hash, function() { return BrowserDetect.OS; }, $osMenu);
-        isSetManually |= setSelectorValue("for_browser", "browser", hash, this.detectBrowser, $browserMenu);
+        isSetManually |= setSelectorValue("for_browser", "browser", hash, ShowFor.detectBrowser, $browserMenu);
         isSetManually |= checkSelectorValues();
 
         // Possibly change the settings based on dependency rules:
@@ -333,8 +334,12 @@ var ShowFor = {
     },
 
     updateShowforSelectors: function() {
-        $('#support-for input.selectbox, #support-for div.selectbox-wrapper').remove();
-        $('#support-for select').selectbox();
+        if ($.fn.selectbox) {
+            $('#support-for input.selectbox, #support-for div.selectbox-wrapper').remove();
+            $('#support-for select').selectbox();
+        } else {
+            $('#support-for select').removeAttr('disabled');
+        }
     }
 
 };

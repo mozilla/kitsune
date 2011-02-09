@@ -24,12 +24,17 @@ from wiki.views import SHOWFOR_DATA
 HOME_DOCS = {'quick': 'Home page - Quick', 'explore': 'Home page - Explore'}
 MOBILE_DOCS = {'quick': 'Mobile home - Quick',
                'explore': 'Mobile home - Explore'}
+HOME_DOCS_FOR_MOBILE = {'common':
+                        'Desktop home for mobile - Common Questions'}
+MOBILE_DOCS_FOR_MOBILE = {'common':
+                          'Mobile home for mobile - Common Questions'}
 
 
 @mobile_template('dashboards/{mobile/}home.html')
 def home(request, template=None):
     data = {}
-    for side, title in HOME_DOCS.iteritems():
+    docs = HOME_DOCS_FOR_MOBILE if request.MOBILE else HOME_DOCS
+    for side, title in docs.iteritems():
         message = _lazy(u'The template "%s" does not exist.') % title
         data[side] = get_object_fallback(
             Document, title, request.locale, message)
@@ -38,15 +43,17 @@ def home(request, template=None):
     return jingo.render(request, template, data)
 
 
-def mobile(request):
+@mobile_template('dashboards/{mobile/}mobile.html')
+def mobile(request, template=None):
     data = {}
-    for side, title in MOBILE_DOCS.iteritems():
+    docs = MOBILE_DOCS_FOR_MOBILE if request.MOBILE else MOBILE_DOCS
+    for side, title in docs.iteritems():
         message = _lazy(u'The template "%s" does not exist.') % title
         data[side] = get_object_fallback(
             Document, title, request.locale, message)
 
     data.update(SHOWFOR_DATA)
-    return jingo.render(request, 'dashboards/mobile.html', data)
+    return jingo.render(request, template, data)
 
 
 def _kb_readout(request, readout_slug, readouts, locale=None, mode=None):

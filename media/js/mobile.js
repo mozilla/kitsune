@@ -12,6 +12,10 @@
         $.cookie('msumo', 'off', {path: '/'});
     });
 
+    // Set up showfor
+    ShowFor.initForTags();
+    ShowFor.updateShowforSelectors();
+
 })();
 
 function _pd(func) {

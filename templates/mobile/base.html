@@ -21,25 +21,31 @@
         data-readonly="{{ settings.READ_ONLY|json }}"
         data-for-os="{{ for_os|json }}"
         data-for-version="{{ for_version|json }}">
-    {% block header %}
-      <header class="mini-header">
-        {% include "global/mobile/header.html" %}
-        <hgroup>
-          <h1 class="site-title">
-            <a href="{{ url('home') }}"
-              title="{{ _('Return to Firefox Support homepage') }}">
-              <img alt="" src="{{ MEDIA_URL }}img/ff-logo.png">
-              {{ site_title }}
-            </a>
-          </h1>
-        </hgroup>
+    <header{{ '' if full_width_header else ' class="mini-header"' }}{% if header_id %} id="{{ header_id }}"{% endif %}>
+      {% include "global/mobile/header.html" %}
+      <hgroup>
+        <h1 class="site-title">
+          <a href="{{ url('home') }}"
+            title="{{ _('Return to Firefox Support homepage') }}">
+            <img alt="" src="{{ MEDIA_URL }}img/firefox.png">
+            {{ site_title }}
+          </a>
+        </h1>
+      </hgroup>
+      {% if show_search %}
+        {{ mobile_form() }}
+      {% endif %}
+      {% if not hide_home_link %}
         <a href="{{ url('home') }}" id="home">
           <svg width="18" height="16"><polygon fill="#447BC4" points="9,0 18,9 15,9 15,16 11,16 11,11 7,11 7,18 3,16 3,9 0,9"/></svg>
-          {{ _('Firefox Help Home') }}</a>
-      </header>
-    {% endblock %}
+          {{ _('Firefox Help Home') }}
+        </a>
+      {% endif %}
+    </header>
 
-    {% block content %}{% endblock %}
+    <section id="content">
+      {% block content %}{% endblock %}
+    </section>
 
     <footer>
       {% include "includes/lang_form.html" %}
@@ -58,6 +64,7 @@
       {% endblock footer %}
     </footer>
 
+    <script src="{{ url('jsi18n') }}/build:{{ BUILD_ID_JS }}"></script>
     {{ js('mobile') }}
     {% for script in scripts %}
       {{ js(script) }}

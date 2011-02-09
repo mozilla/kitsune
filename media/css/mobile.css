@@ -14,17 +14,51 @@ a.listview:before {
     background: url(../img/mobile/arrow.svg) no-repeat center;
 }
 
-.mini-header .site-title a {
-    font-size: 18px;
-    line-height: 20px;
+.site-title a {
     text-transform: none;
 }
 
-.mini-header .site-title a span {
+.site-title a {
+    font-size: 30px;
+    line-height: 30px;
+}
+
+.mini-header .site-title a {
+    font-size: 18px;
+    line-height: 20px;
+}
+
+.site-title a span {
     display: block;
     font-size: 80%;
     font-style: italic;
 }
+
+body.desktop #home-header h1 {
+    padding-top: 20px;
+}
+
+/*************************************/
+/*              Content              */
+/*************************************/
+#content h2 {
+    margin-top: 28px;
+}
+
+.listview .icon {
+    height: 32px;
+    width: 32px;
+}
+
+.listview .item > a {
+    line-height: 32px;
+}
+
+#search input[type="search"] {
+    font-size: 18px;
+    padding-left: 14px;
+}
+
 
 article {
     margin: 14px;
@@ -32,4 +66,39 @@ article {
 
 article p {
     margin: 14px 0;
+}
+
+/*************************************/
+/*  Landing Page - Common Questions  */
+/*************************************/
+.common-questions ul {
+    font-size: 18px;
+    margin: 0 14px;
+}
+
+.common-questions li {
+    margin: 0 0 10px;
+    padding: 0 10px;
+}
+
+
+/*************************************/
+/*            Help With              */
+/*************************************/
+#support-for {
+    margin: 28px 14px 14px;
+}
+
+#support-for h1 {
+    font-size: 1.2em;
+    font-style: italic;
+    margin: 0 0 14px;
+}
+
+#support-for select {
+    border-radius: 6px;
+    display: block;
+    height: 30px;
+    margin: 4px 0 14px;
+    width: 100%;
 }
