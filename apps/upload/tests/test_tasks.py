@@ -99,19 +99,35 @@ class GenerateThumbnail(TestCase):
         eq_(90, image.thumbnail.width)
         eq_(120, image.thumbnail.height)
 
+    def test_generate_no_file(self):
+        """generate_thumbnail does not fail when no file is provided."""
+        image = ImageAttachment(content_object=self.obj, creator=self.user)
+        generate_thumbnail(image, 'file', 'thumbnail')
+
+    def test_generate_deleted_file(self):
+        """generate_thumbnail does not fail if file doesn't actually exist."""
+        image = ImageAttachment(content_object=self.obj, creator=self.user)
+        with open('apps/upload/tests/media/test.jpg') as f:
+            up_file = File(f)
+            image.file.save(up_file.name, up_file, save=True)
+        # The field will be set but the file isn't there.
+        os.remove(image.file.path)
+        generate_thumbnail(image, 'file', 'thumbnail')
+
     def test_generate_thumbnail_twice(self):
         """generate_thumbnail replaces old thumbnail."""
         image = self._image_with_thumbnail()
         old_path = image.thumbnail.path
 
         # The thumbnail exists.
-        assert os.path.exists(old_path)
         assert os.path.isfile(old_path)
 
         generate_thumbnail(image, 'file', 'thumbnail')
         new_path = image.thumbnail.path
 
         # The thumbnail was replaced.
-        eq_(old_path, new_path)
-        assert os.path.exists(new_path)
+        # Avoid potential failure when old thumbnail was saved 1 second ago.
         assert os.path.isfile(new_path)
+        # Old file is either replaced or deleted.
+        if old_path != new_path:
+            assert not os.path.exists(old_path)

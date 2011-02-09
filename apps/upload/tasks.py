@@ -1,4 +1,5 @@
 import logging
+import os
 import StringIO
 
 from django.conf import settings
@@ -18,9 +19,16 @@ def generate_thumbnail(for_obj, from_field, to_field,
     Optionally specify a max_size.
 
     """
-
     from_ = getattr(for_obj, from_field)
     to_ = getattr(for_obj, to_field)
+
+    # Bail silently if nothing to generate from, image was probably deleted.
+    if not (from_ and os.path.isfile(from_.path)):
+        log_msg = 'No file to generate from: {model} {id}, {from_f} -> {to_f}'
+        log.info(log_msg.format(model=for_obj.__class__.__name__,
+                                id=for_obj.id, from_f=from_field,
+                                to_f=to_field))
+        return
 
     log_msg = 'Generating thumbnail for {model} {id}: {from_f} -> {to_f}'
     log.info(log_msg.format(model=for_obj.__class__.__name__, id=for_obj.id,
