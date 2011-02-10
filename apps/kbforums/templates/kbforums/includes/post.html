@@ -3,7 +3,10 @@
     <img src="{{ profile_avatar(post.creator) }}" height="45" width="45" alt=""/>
   </a>
   <a href="{{ profile_url(post.creator) }}">{{ post.creator }}</a>
-  <span class="posts">{{ _('{0} posts')|f(post.creator.wiki_post_set.count()) }}</span>
+  {% with count = post.author.post_set.count() %}
+    {# L10n: {0} is the number of posts. #}
+    <span class="posts">{{ ngettext('1 post', '{0} posts', count)|f(count) }}</span>
+  {% endwith %}
   <div class="post-actions">
   {% if post.id and (perms.kbforums.edit_post or (post.creator == request.user and not thread.is_locked)) %}
     <a href="{{ url('wiki.discuss.edit_post', document.slug, thread.id, post.id) }}"><img src="{{ MEDIA_URL }}img/forums/edit.png" alt="{{ _('Edit') }}" title="{{ _('Edit') }}"/></a>
