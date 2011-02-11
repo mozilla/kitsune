@@ -154,7 +154,7 @@ class Event(object):
         # were willing to have 2 subqueries run for every watch row--select
         # {are there any filters with name=x?} and select {is there a filter
         # with name=x and value=y?}--we could do it with extra(). Then we could
-        # have EventUnion simple | the QuerySets together, which would avoid
+        # have EventUnion simply | the QuerySets together, which would avoid
         # having to merge in Python.
 
         def filter_conditions():

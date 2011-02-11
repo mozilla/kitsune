@@ -96,7 +96,8 @@ class Watch(ModelBase):
 
     def __unicode__(self):
         rest = self.content_object or self.content_type or self.object_id
-        return u'[%s] %s, %s' % (self.pk, self.event_type, str(rest))
+        return u'Watch %s: %s, %s' % (self.pk, self.event_type,
+                                         unicode(rest))
 
     def activate(self):
         """Enable this watch so it actually fires.
@@ -125,6 +126,9 @@ class WatchFilter(ModelBase):
         #
         # This ordering makes the index usable for lookups by name.
         unique_together = ('name', 'watch')
+
+    def __unicode__(self):
+        return u'WatchFilter %s: %s=%s' % (self.pk, self.name, self.value)
 
 
 class NotificationsMixin(models.Model):
