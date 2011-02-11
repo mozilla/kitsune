@@ -2,15 +2,15 @@ import logging
 import os
 import socket
 import StringIO
-import time
 
 from django.conf import settings
-from django.core.cache import cache, parse_backend_uri
+from django.core.cache import parse_backend_uri
 from django.http import (HttpResponsePermanentRedirect, HttpResponseRedirect,
                          HttpResponse)
 from django.views.decorators.cache import never_cache
 
-import celery.task
+from commonware.decorators import xframe_allow
+import django_qunit.views
 import jingo
 from PIL import Image
 
@@ -93,7 +93,6 @@ def monitor(request):
         status_summary['memcache'] = False
         log.warning('Memcache is not configured.')
 
-
     # Check Libraries and versions
     libraries_results = []
     status_summary['libraries'] = True
@@ -104,7 +103,6 @@ def monitor(request):
         status_summary['libraries'] = False
         msg = "Failed to create a jpeg image: %s" % e
         libraries_results.append(('PIL+JPEG', False, msg))
-
 
     msg = 'We want read + write.'
     filepaths = (
@@ -143,3 +141,12 @@ def monitor(request):
                          'filepath_results': filepath_results,
                          'status_summary': status_summary},
                          status=status)
+
+
+# Allows another site to embed the QUnit suite
+# in an iframe (for CI).
+@xframe_allow
+def kitsune_qunit(request, path):
+    """View that hosts QUnit tests."""
+    ctx = django_qunit.views.get_suite_context(request, path)
+    return jingo.render(request, 'tests/qunit.html', ctx)

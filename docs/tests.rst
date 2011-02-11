@@ -93,3 +93,48 @@ the tests for it, as well.
 
 If we liberate some functionality into a new package, the tests for that
 functionality should move to that package, too.
+
+
+JavaScript Tests
+================
+
+Frontend JavaScript is currently tested with QUnit_, a simple set of
+functions for test setup/teardown and assertions.
+
+Running JavaScript Tests
+------------------------
+
+You can run the tests a few different ways but during development you
+probably want to run them in a web browser by opening this page:
+http://127.0.0.1:8000/en-US/qunit/
+
+Before you can load that page, you'll need to adjust your settings_local.py
+file so it includes django-qunit::
+
+    INSTALLED_APPS += (
+        # ...
+        'django_qunit',
+    )
+
+Writing JavaScript Tests
+------------------------
+
+QUnit_ tests for the HTML page above are discovered automatically.  Just add
+some_test.js to ``media/js/tests/`` and it will run in the suite.  If
+you need to include a library file to test against, edit
+``media/js/tests/suite.json``.
+
+QUnit_ has some good examples for writing tests.  Here are a few
+additional tips:
+
+* Any HTML required for your test should go in a sandbox using
+  ``tests.createSandbox('#your-template')``.
+  See js/testutils.js for details.
+* To make a useful test based on an actual production template, you can create
+  a snippet and include that in ``templates/tests/qunit.html`` assigned to its own
+  div.  During test setup, reference the div in createSandbox()
+* You can use `$.mockjax`_ to test how your code handles server responses,
+  errors, and timeouts.
+
+.. _Qunit: http://docs.jquery.com/Qunit
+.. _`$.mockjax`: http://enterprisejquery.com/2010/07/mock-your-ajax-requests-with-mockjax-for-rapid-development/

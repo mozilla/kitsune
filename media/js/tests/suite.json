@@ -1,0 +1,7 @@
+{
+    "name": "Main Test Suite",
+    "extra_media_urls": [
+        "js/libs/jstestnet.js",
+        "js/testutils.js"
+    ]
+}

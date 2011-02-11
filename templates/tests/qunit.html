@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>QUnit Test Suite</title>
+  <link rel="stylesheet" href="{{ url('qunit_css') }}" type="text/css" media="screen">
+  <link rel="stylesheet" href="{{ MEDIA_URL }}css/kbox.css" type="text/css" media="screen">
+</head>
+<body>
+  <h1 id="qunit-header">QUnit Test Suite ({{ suite.name }})</h1>
+	<h2 id="qunit-banner"></h2>
+	<div id="qunit-testrunner-toolbar"></div>
+  {% if in_directory or subsuites %}
+  <div id="navigation">
+    {% if in_subdirectory %}
+    <a href="{{ url('qunit_test_overview', previous_directory) }}">..</a>
+    {% endif %}
+
+    {% for suite in subsuites %}
+    <a href="{{ suite }}/">{{ suite }}</a>
+    {% endfor %}
+  </div>
+  {% endif %}
+	<h2 id="qunit-userAgent"></h2>
+	<ol id="qunit-tests"></ol>
+  <div id="qunit-fixture">test markup, will be hidden</div>
+  <div id="sandbox"><!-- custom Kitsune sandbox area --></div>
+
+  {# Test Sandboxes: #}
+  <div style="display:none;">
+    <div id="kbox">
+      <div class="kbox" title="test kbox" data-target="#sandbox a.kbox-target">
+        <p>lorem ipsum dolor sit amet.</p>
+      </div>
+      <a href="#" class="kbox-target">click me</a>
+      <div class="kbox" title="modal kbox" data-modal="true">
+        <p>modal kbox</p>
+      </div>
+    </div>
+  </div>
+
+
+  <script src="{{ url('jsi18n') }}/build:{{ BUILD_ID_JS }}"></script>
+  {{ js('common') }}
+  <script type="text/javascript" src="{{ url('qunit_js') }}"></script>
+  <script type="text/javascript" src="{{ MEDIA_URL }}js/libs/jquery.mockjax.js"></script>
+  {% for url in suite.extra_urls %}
+    <script type="text/javascript" src="{{ url }}"></script>
+  {% endfor %}
+  {% for url in suite.extra_media_urls %}
+    <script type="text/javascript" src="{{ MEDIA_URL }}{{ url }}"></script>
+  {% endfor %}
+  {% for file in files %}
+    <script type="text/javascript" src="{{ url('qunit_test', file) }}"></script>
+  {% endfor %}
+
+</body>
+</html>

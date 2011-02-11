@@ -614,3 +614,6 @@ WEBTRENDS_EPOCH = date(2010, 8, 1)  # When WebTrends started gathering stats on
 WEBTRENDS_REALM = 'Webtrends Basic Authentication'
 
 MOBILE_COOKIE = 'msumo'
+
+# Directory of JavaScript test files for django_qunit to run
+QUNIT_TEST_DIRECTORY = os.path.join(MEDIA_ROOT, 'js', 'tests')
