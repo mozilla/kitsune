@@ -627,6 +627,10 @@ ul.description textarea {
     width: 345px;
 }
 
+div.localized div.editor-tools {
+    height: 80px;
+}
+
 body.translate div.significance {
     padding: 15px 0;
 }
