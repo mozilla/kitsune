@@ -1,4 +1,5 @@
 {# vim: set ts=2 et sts=2 sw=2: #}
+{% from "search/basic-form.html" import mobile_form %}
 {% if not site_title %}
   {% set site_title = _('Firefox Help <span>for Mobile</span>')|safe %}
 {% endif %}
@@ -21,7 +22,7 @@
         data-readonly="{{ settings.READ_ONLY|json }}"
         data-for-os="{{ for_os|json }}"
         data-for-version="{{ for_version|json }}">
-    <header{{ '' if full_width_header else ' class="mini-header"' }}{% if header_id %} id="{{ header_id }}"{% endif %}>
+    <header{{ '' if full_width_header else ' class="mini-header"'|safe }}{% if header_id %} id="{{ header_id }}"{% endif %}>
       {% include "global/mobile/header.html" %}
       <hgroup>
         <h1 class="site-title">
@@ -32,19 +33,40 @@
           </a>
         </h1>
       </hgroup>
-      {% if show_search %}
-        {{ mobile_form() }}
-      {% endif %}
       {% if not hide_home_link %}
         <a href="{{ url('home') }}" id="home">
           <svg width="18" height="16"><polygon fill="#447BC4" points="9,0 18,9 15,9 15,16 11,16 11,11 7,11 7,18 3,16 3,9 0,9"/></svg>
           {{ _('Firefox Help Home') }}
         </a>
       {% endif %}
+      {% if show_search %}
+        {{ mobile_form(q) }}
+      {% endif %}
     </header>
 
     <section id="content">
       {% block content %}{% endblock %}
+
+      <h2>{{ _('Need More Personal Help?') }}</h2>
+      <ul class="listview">
+        {{ list_view_item(url('wiki.document', 'ask'), _('Ask a Question')) }}
+        {{ list_view_item(url('questions.questions'), _('Browse our Support Forum')) }}
+      </ul>
+
+      <h2>{{ _('Other Products') }}</h2>
+      <ul class="listview">
+        {% if is_mobile_page %}
+          {{ list_view_item(url('home'), _('Firefox for Desktop'), 'item', MEDIA_URL + 'img/firefox.png') }}
+        {% else %}
+          {{ list_view_item(url('home.mobile'), _('Firefox for Mobile'), 'item', MEDIA_URL + 'img/firefox.png') }}
+        {% endif %}
+        {{ list_view_item(url('wiki.document', 'How to set up Firefox Home on your iPhone'), _('Firefox Home'), 'item', MEDIA_URL + 'img/firefox-home.png') }}
+        {{ list_view_item(url('wiki.document', 'what-firefox-sync'), _('Firefox Sync'), 'item', MEDIA_URL + 'img/firefox-sync.png') }}
+      </ul>
+
+      {% if include_showfor %}
+        {% include 'wiki/includes/support_for_selectors.html' %}
+      {% endif %}
     </section>
 
     <footer>

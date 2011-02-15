@@ -1,0 +1,20 @@
+{# vim: set ts=2 et sts=2 sw=2: #}
+<ul class="paginator">
+  <li class="prev">
+    {% if pager.has_previous() %}
+      <a href="{{ pager.url|urlparams(page=pager.previous_page_number()) }}">{{ _('Prev') }}</a>
+    {% else %}
+      <a>{{ _('Prev') }}</a>
+    {% endif %}
+  </li>
+  <li class="page">
+    {{ ngettext('Page {n}', 'Page {n}', pager.number)|f(n=pager.number) }}
+  </li>
+  <li class="next">
+    {% if pager.has_next() %}
+      <a href="{{ pager.url|urlparams(page=pager.next_page_number()) }}">{{ _('Next') }}</a>
+    {% else %}
+      <a>{{ _('Next') }}</a>
+    {% endif %}
+  </li>
+</ul>

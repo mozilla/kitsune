@@ -1,0 +1,10 @@
+{# vim: set ts=2 et sts=2 sw=2: #}
+{% extends "mobile/base.html" %}
+{% set title = _('Search') %}
+{% set show_search = True %}
+
+{% block content %}
+  <h1>{{ _('Search Unavailable') }}</h1>
+
+  <p>{{ _('Search is temporarily unavailable. Please try again in a few minutes.') }}</p>
+{% endblock %}

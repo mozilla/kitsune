@@ -1,6 +1,5 @@
 {# vim: set ts=2 et sts=2 sw=2: #}
 {% extends "mobile/base.html" %}
-{% from "search/basic-form.html" import mobile_form %}
 {% from "includes/common_macros.html" import list_view_item %}
 {% set title = _('Firefox Support Home Page') %}
 {% if not classes %}
@@ -13,29 +12,11 @@
 {% set hide_home_link = True %}
 {% set header_id = 'home-header' %}
 {% set full_width_header = True %}
+{% set include_showfor = True %}
 
 {% block content %}
   <h2>{{ _('Common Questions') }}</h2>
   <div class="common-questions">
     {{ common.html|safe }}
   </div>
-
-  <h2>{{ _('Need More Personal Help?') }}</h2>
-  <ul class="listview">
-    {{ list_view_item(url('wiki.document', 'ask'), _('Ask a Question')) }}
-    {{ list_view_item(url('questions.questions'), _('Browse our Support Forum')) }}
-  </ul>
-
-  <h2>{{ _('Other Products') }}</h2>
-  <ul class="listview">
-    {% if is_mobile_page %}
-      {{ list_view_item(url('home'), _('Firefox for Desktop'), 'item', MEDIA_URL + 'img/firefox.png') }}
-    {% else %}
-      {{ list_view_item(url('home.mobile'), _('Firefox for Mobile'), 'item', MEDIA_URL + 'img/firefox.png') }}
-    {% endif %}
-    {{ list_view_item(url('wiki.document', 'How to set up Firefox Home on your iPhone'), _('Firefox Home'), 'item', MEDIA_URL + 'img/firefox-home.png') }}
-    {{ list_view_item(url('wiki.document', 'what-firefox-sync'), _('Firefox Sync'), 'item', MEDIA_URL + 'img/firefox-sync.png') }}
-  </ul>
-
-  {% include 'wiki/includes/support_for_selectors.html' %}
 {% endblock %}

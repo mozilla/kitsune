@@ -12,6 +12,7 @@ from django.views.decorators.cache import cache_page
 
 import jingo
 import jinja2
+from mobility.decorators import mobile_template
 from tower import ugettext as _
 
 from search.clients import (QuestionsClient, WikiClient,
@@ -31,7 +32,8 @@ def jsonp_is_valid(func):
     return func_regex.match(func)
 
 
-def search(request):
+@mobile_template('search/{mobile/}results.html')
+def search(request, template=None):
     """Performs search or displays the search form."""
 
     # JSON-specific variables
@@ -90,9 +92,10 @@ def search(request):
                 mimetype=mimetype,
                 status=400)
 
-        search_ = jingo.render(request, 'search/form.html',
-                            {'advanced': a, 'request': request,
-                             'search_form': search_form})
+        t = template if request.MOBILE else 'search/form.html'
+        search_ = jingo.render(request, t,
+                               {'advanced': a, 'request': request,
+                                'search_form': search_form})
         search_['Cache-Control'] = 'max-age=%s' % \
                                    (settings.SEARCH_CACHE_PERIOD * 60)
         search_['Expires'] = (datetime.utcnow() +
@@ -297,7 +300,8 @@ def search(request):
                                              _('Search Unavailable')}),
                                 mimetype=mimetype, status=503)
 
-        return jingo.render(request, 'search/down.html', {}, status=503)
+        t = 'search/mobile/down.html' if request.MOBILE else 'search/down.html'
+        return jingo.render(request, t, {'q': cleaned['q']}, status=503)
 
     pages = paginate(request, documents, settings.SEARCH_RESULTS_PER_PAGE)
 
@@ -362,7 +366,7 @@ def search(request):
 
         return HttpResponse(json_data, mimetype=mimetype)
 
-    results_ = jingo.render(request, 'search/results.html',
+    results_ = jingo.render(request, template,
         {'num_results': len(documents), 'results': results, 'q': cleaned['q'],
          'pages': pages, 'w': cleaned['w'], 'refine_query': refine_query,
          'search_form': search_form, 'lang_name': lang_name, })
