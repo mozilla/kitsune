@@ -74,14 +74,9 @@
       {% block footer %}
         {# TODO: make this work without JS #}
         <a class="desktop-link" href="{{ url('home') }}?desktop">{{ _('View full site') }}</a>
-        <p>
-          {% trans %}
-            Except where otherwise <a href="http://mozilla.com/about/legal.html#site">noted</a>,
-            content on this site is licensed under the <br />
-            <a href="http://creativecommons.org/licenses/by-sa/3.0/">
-              Creative Commons Attribution Share-Alike License v3.0
-            </a> or any later version.
-          {% endtrans %}
+        <p id="footer-links">
+          <a href="http://mozilla.com/privacy-policy.html">{{ _('Privacy Policy') }}</a> &nbsp;|&nbsp;
+          <a href="http://mozilla.com/about/legal.html">{{ _('Legal Notices') }}</a>
         </p>
       {% endblock footer %}
     </footer>
