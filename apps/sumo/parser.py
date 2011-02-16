@@ -22,7 +22,8 @@ ALLOWED_ATTRIBUTES = {
     'li': ['class'],
     'span': ['class', 'data-for'],
     'img': ['class', 'src', 'alt', 'title', 'height', 'width', 'style'],
-    'video': ['height', 'width', 'controls', 'data-fallback', 'poster'],
+    'video': ['height', 'width', 'controls', 'data-fallback', 'poster',
+              'data-width', 'data-height'],
     'source': ['src', 'type'],
 }
 IMAGE_PARAMS = ['alt', 'align', 'caption', 'valign', 'frame', 'page', 'link',

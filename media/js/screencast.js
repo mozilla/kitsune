@@ -19,8 +19,8 @@
         if ($video[0].tagName !== 'VIDEO') return;
 
         var formats = {ogg: false, webm: false}, i,
-            width = Number($video.attr('width')),
-            height = Number($video.attr('height')),
+            width = Number($video.data('width')),
+            height = Number($video.data('height')),
             // Build a unique ID for the object container
             unique_id = VIDEO_ID_PREFIX + id_counter,
             flash_file;
