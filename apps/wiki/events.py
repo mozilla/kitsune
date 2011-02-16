@@ -46,7 +46,7 @@ class EditDocumentEvent(InstanceEvent):
         document = self.revision.document
         log.debug('Sending edited notification email for document (id=%s)' %
                   document.id)
-        subject = _('{title} was edited by {creator}')
+        subject = _(u'{title} was edited by {creator}')
         url = reverse('wiki.document_revisions', locale=document.locale,
                       args=[document.slug])
         return notification_mails(self.revision, subject,
@@ -82,7 +82,7 @@ class ReviewableRevisionInLocaleEvent(_RevisionInLocaleEvent):
         document = revision.document
         log.debug('Sending ready for review email for revision (id=%s)' %
                   revision.id)
-        subject = _('{title} is ready for review ({creator})')
+        subject = _(u'{title} is ready for review ({creator})')
         url = reverse('wiki.review_revision', locale=document.locale,
                       args=[document.slug, revision.id])
         return notification_mails(revision, subject,
@@ -101,7 +101,7 @@ class ApproveRevisionInLocaleEvent(_RevisionInLocaleEvent):
         document = revision.document
         log.debug('Sending approved email for revision (id=%s)' %
                   revision.id)
-        subject = _('{title} ({locale}) has a new approved revision')
+        subject = _(u'{title} ({locale}) has a new approved revision')
         url = reverse('wiki.document', locale=document.locale,
                       args=[document.slug])
         return notification_mails(revision, subject,

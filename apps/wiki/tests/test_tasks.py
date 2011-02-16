@@ -126,3 +126,17 @@ class ReviewMailTestCase(TestCaseBase):
 
         # Verify no email was sent
         eq_(0, len(mail.outbox))
+
+    @mock.patch_object(Site.objects, 'get_current')
+    def test_unicode_notifications(self, get_current):
+        get_current.return_value.domain = 'testserver'
+
+        rev = revision()
+        doc = rev.document
+        doc.title = u'Foo \xe8 incode'
+        msg = 'foo'
+        self._approve_and_send(rev, User.objects.get(username='admin'), msg)
+
+        eq_(1, len(mail.outbox))
+        eq_('Your revision has been approved: %s' % doc.title,
+            mail.outbox[0].subject)

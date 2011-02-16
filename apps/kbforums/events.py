@@ -26,7 +26,7 @@ class NewPostEvent(InstanceEvent):
         return EventUnion(self, NewThreadEvent(self.reply)).fire(**kwargs)
 
     def _mails(self, users_and_watches):
-        subject = _('Reply to: %s') % self.reply.thread.title
+        subject = _(u'Reply to: %s') % self.reply.thread.title
         t = loader.get_template('kbforums/email/new_post.ltxt')
         c = {'post': self.reply.content, 'author': self.reply.creator.username,
              'host': Site.objects.get_current().domain,
@@ -51,7 +51,7 @@ class NewThreadEvent(InstanceEvent):
         self.post = post
 
     def _mails(self, users_and_watches):
-        subject = _('New thread in %s forum: %s') % (
+        subject = _(u'New thread in %s: %s') % (
             self.post.thread.document.title, self.post.thread.title)
         t = loader.get_template('kbforums/email/new_thread.ltxt')
         c = {'post': self.post.content, 'author': self.post.creator.username,
