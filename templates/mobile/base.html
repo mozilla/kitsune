@@ -1,4 +1,5 @@
 {# vim: set ts=2 et sts=2 sw=2: #}
+{% from "includes/common_macros.html" import list_view_item %}
 {% from "search/basic-form.html" import mobile_form %}
 {% if not site_title %}
   {% set site_title = _('Firefox Help <span>for Mobile</span>')|safe %}
@@ -39,7 +40,7 @@
           {{ _('Firefox Help Home') }}
         </a>
       {% endif %}
-      {% if show_search %}
+      {% if show_search == 'top' %}
         {{ mobile_form(q) }}
       {% endif %}
     </header>
@@ -47,11 +48,19 @@
     <section id="content">
       {% block content %}{% endblock %}
 
-      <h2>{{ _('Need More Personal Help?') }}</h2>
-      <ul class="listview">
-        {{ list_view_item(url('wiki.document', 'ask'), _('Ask a Question')) }}
-        {{ list_view_item(url('questions.questions'), _('Browse our Support Forum')) }}
-      </ul>
+      {% if show_search == 'bottom' %}
+        <h2>{{ _("Couldn't find what you were looking for?") }}</h2>
+        <ul class="listview">
+          <li class="search">{{ mobile_form(q) }}</li>
+          {{ list_view_item(url('wiki.document', 'ask'), _('Ask a Question')) }}
+        </ul>
+      {% else %}
+        <h2>{{ _('Need More Personal Help?') }}</h2>
+        <ul class="listview">
+          {{ list_view_item(url('wiki.document', 'ask'), _('Ask a Question')) }}
+          {{ list_view_item(url('questions.questions'), _('Browse our Support Forum')) }}
+        </ul>
+      {% endif %}
 
       <h2>{{ _('Other Products') }}</h2>
       <ul class="listview">

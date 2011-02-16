@@ -18,6 +18,10 @@
         ShowFor.updateShowforSelectors();
     }
 
+    if($('body').is('.document')) {
+        new ArticleHelpfulVote(false);
+    }
+
 })();
 
 function _pd(func) {

@@ -1,0 +1,14 @@
+{# vim: set ts=2 et sts=2 sw=2: #}
+{% if not document.has_voted(request) %}
+  <div id="helpful-vote">
+    <form class="helpful" action="{{ url('wiki.document_vote', document_slug=document.slug) }}" method="post">
+      {{ csrf() }}
+      <p>
+        <span>{{ _('Was this article helpful?') }}</span>
+        <input type="submit" class="btn" name="helpful" value="{{ _('Yes') }}" />
+        <input type="submit" class="btn" name="not-helpful" value="{{ _('No') }}" />
+        <img class="wait" src="{{ settings.MEDIA_URL }}img/customercare/spinner.gif" alt="{{ _('Please wait...') }}" />
+      </p>
+    </form>
+  </div>
+{% endif %}

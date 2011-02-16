@@ -1,8 +1,7 @@
 {# vim: set ts=2 et sts=2 sw=2: #}
 {% extends "mobile/base.html" %}
-{% from "includes/common_macros.html" import list_view_item %}
 {% set title = _('Search') %}
-{% set show_search = True %}
+{% set show_search = 'top' %}
 {% set is_mobile_page = True %} {# TODO: set based on showfor selection? #}
 {% set meta = (('WT.oss', q),
                ('WT.oss_r', num_results)) %}
@@ -17,19 +16,20 @@
                   num_results)|fe(n=num_results, q=q, l=lang_name) }}
     </div>
 
-    <ol class="search-results">
-      {% for doc in results %}
-        <li class="{{ doc.type }}">
-          <a class="title" href="{{ doc.url|urlparams(s=q,as='s') }}">{{ doc.title }}</a>
-          <p>
-            <a href="{{ doc.url|urlparams(s=q,as='s') }}">
-              {{ doc.search_summary|safe }}
-            </a>
-          </p>
-        </li>
-      {% endfor %}
-    </ol>
-
-    {{ pages|mobile_paginator }}
+    {% if results %}
+      <ol class="search-results">
+        {% for doc in results %}
+          <li class="{{ doc.type }}">
+            <a href="{{ doc.url|urlparams(s=q,as='s') }}">{{ doc.title }}</a>
+            <p>
+              <a href="{{ doc.url|urlparams(s=q,as='s') }}">
+                {{ doc.search_summary|safe }}
+              </a>
+            </p>
+          </li>
+        {% endfor %}
+      </ol>
+      {{ pages|mobile_paginator }}
+    {% endif %}
   {% endif %}
 {% endblock %}

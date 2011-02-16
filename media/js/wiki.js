@@ -13,7 +13,7 @@
         if ($('body').is('.document') || $('body').is('.home')) {  // Document page
             ShowFor.initForTags();
             ShowFor.updateShowforSelectors();
-            initHelpfulVote();
+            new ArticleHelpfulVote(true);
         } else if ($('body').is('.review')) { // Review pages
             ShowFor.initForTags();
             ShowFor.updateShowforSelectors();
@@ -192,68 +192,6 @@
             e.preventDefault();
             return false;
         });
-    }
-
-    /*
-     * Ajaxify the Helpful/NotHelpful voting form on Document page
-     */
-    var voted = false;
-    function initHelpfulVote() {
-        var $btns = $('#helpful-vote input[type="submit"]');
-        $btns.click(function(e) {
-            if (!voted) {
-                var $btn = $(this),
-                    $form = $btn.closest('form'),
-                    data = {};
-                $btns.attr('disabled', 'disabled');
-                $form.addClass('busy');
-                data[$btn.attr('name')] = $btn.val();
-                $.ajax({
-                    url: $btn.closest('form').attr('action'),
-                    type: 'POST',
-                    data: data,
-                    dataType: 'json',
-                    success: function(data) {
-                        showMessage(data.message, $btn);
-                        $btn.addClass('active');
-                        $btns.removeAttr('disabled');
-                        $form.removeClass('busy');
-                        voted = true;
-                    },
-                    error: function() {
-                        var msg = gettext('There was an error generating the preview.');
-                        showMessage(msg, $btn);
-                        $btns.removeAttr('disabled');
-                        $form.removeClass('busy');
-                    }
-               });
-            }
-
-            $(this).blur();
-            e.preventDefault();
-            return false;
-        });
-    }
-
-    function showMessage(message, $showAbove) {
-        var $html = $('<div class="message-box"><p></p></div>'),
-            offset = $showAbove.offset();
-        $html.find('p').html(message);
-        $('body').append($html);
-        $html.css({
-            top: offset.top - $html.height() - 30,
-            left: offset.left + $showAbove.width()/2 - $html.width()/2
-        });
-        var timer = setTimeout(fadeOut, 10000);
-        $('body').one('click', fadeOut);
-
-        function fadeOut() {
-            $html.fadeOut(function(){
-                $html.remove();
-            });
-            $('body').unbind('click', fadeOut);
-            clearTimeout(timer);
-        }
     }
 
     function initTitleAndSlugCheck() {

@@ -1,0 +1,73 @@
+{# vim: set ts=2 et sts=2 sw=2: #}
+{% macro related_articles(related, document) -%}
+  {% if related %}
+    <section id="related-articles">
+      <h1>{{ _('Related Articles') }}</h1>
+      <ul>
+        {% for art in document.related_documents.all()[0:5] %}
+          <li><a href="{{ art.get_absolute_url() }}">{{ art.title }}</a></li>
+        {% endfor %}
+      </ul>
+    </section>
+  {% endif %}
+{%- endmacro %}
+
+{% macro contributor_list(contributors) -%}
+  <section id="doc-contributors">
+    {% trans contributors=user_list(contributors) %}
+      Contributors to this page: {{ contributors }}
+    {% endtrans %}
+  </section>
+{%- endmacro %}
+
+{% macro document_title(document) -%}
+  <h1 class="title">{{ document.title }}</h1>
+{%- endmacro %}
+
+{% macro document_messages(document, redirected_from) -%}
+  {% if redirected_from %}
+    <div id="redirected-from">
+      {{ _('(Redirected from <a href="{href}">{title}</a>)')|fe(href=redirected_from.get_absolute_url()|urlparams(redirect='no'), title=redirected_from.title) }}
+    </div>
+  {% endif %}
+  {% if document.is_majorly_outdated() %}
+    <div class="warning-box">
+      {% trans url=document.parent.get_absolute_url(), title=document.parent.title %}
+        <p>This article may be out of date.</p>
+        <p>
+          An important change has been made to the English article on which
+          this is based. Until this page is updated, you might find this
+          helpful: <a href="{{ url }}">{{ title }}</a>
+        </p>
+      {% endtrans %}
+    </div>
+  {% endif %}
+{%- endmacro %}
+
+{% macro document_content(document, fallback_reason, request, settings) -%}
+  <section id="doc-content">
+    {% if not fallback_reason %}
+      {{ document.html|safe }}
+    {% elif fallback_reason == 'no_translation' %}
+      <div id="doc-pending-fallback" class="warning-box">
+        {% trans help_link=url('wiki.document', 'localize-firefox-help'),
+                 locale=settings.LOCALES[request.locale].native %}
+          Our volunteers haven't translated this article into {{ locale }} yet.
+          <a href="{{ help_link }}">Join us and help get the job done!</a>
+        {% endtrans %}
+      </div>
+      {{ document.html|safe }}
+    {% elif fallback_reason == 'translation_not_approved' %}
+      <div id="doc-pending-fallback" class="warning-box">
+        {# L10n: This is shown for existing, never-approved translations #}
+        {% trans %}
+          Our volunteers are working on translating this article.
+          Until it's ready, maybe the English version can be of some help.
+        {% endtrans %}
+      </div>
+      {{ document.parent.html|safe }}
+    {% else %}
+      {{ _("This article doesn't have approved content yet.") }}
+    {% endif %}
+  </section>
+{%- endmacro %}

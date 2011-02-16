@@ -12,6 +12,7 @@ from django.views.decorators.http import (require_GET, require_POST,
                                           require_http_methods)
 
 import jingo
+from mobility.decorators import mobile_template
 from taggit.models import Tag
 from tower import ugettext_lazy as _lazy
 from tower import ugettext as _
@@ -75,7 +76,8 @@ SHOWFOR_DATA = {
 
 
 @require_GET
-def document(request, document_slug):
+@mobile_template('wiki/{mobile/}document.html')
+def document(request, document_slug, template=None):
     """View a wiki document."""
     fallback_reason = None
     # If a slug isn't available in the requested locale, fall back to en-US:
@@ -143,7 +145,7 @@ def document(request, document_slug):
             'related': related, 'contributors': contributors,
             'fallback_reason': fallback_reason}
     data.update(SHOWFOR_DATA)
-    return jingo.render(request, 'wiki/document.html', data)
+    return jingo.render(request, template, data)
 
 
 def revision(request, document_slug, revision_id):
@@ -598,8 +600,8 @@ def helpful_vote(request, document_slug):
             vote.helpful = True
             message = _('Glad to hear it &mdash; thanks for the feedback!')
         else:
-            message = _('Sorry to hear that. Perhaps one of the solutions '
-                        'below can help.')
+            message = _('Sorry to hear that. Try searching for solutions '
+                        'below.')
 
         if request.user.is_authenticated():
             vote.creator = request.user

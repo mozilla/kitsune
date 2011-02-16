@@ -1,6 +1,5 @@
 {# vim: set ts=2 et sts=2 sw=2: #}
 {% extends "mobile/base.html" %}
-{% from "includes/common_macros.html" import list_view_item %}
 {% set title = _('Firefox Support Home Page') %}
 {% if not classes %}
   {% set classes = ('home desktop') %}
@@ -8,7 +7,7 @@
 {% if not site_title %}
   {% set site_title = _('Firefox Help')|safe %}
 {% endif %}
-{% set show_search = True %}
+{% set show_search = 'top' %}
 {% set hide_home_link = True %}
 {% set header_id = 'home-header' %}
 {% set full_width_header = True %}
