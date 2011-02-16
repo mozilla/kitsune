@@ -13,5 +13,3 @@ Every Time
 
 This Time
 =========
-
-1. Update Sphinx config.
