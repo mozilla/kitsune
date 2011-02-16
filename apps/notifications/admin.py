@@ -1,10 +1,6 @@
 from django.contrib import admin
 
-from notifications.models import EventWatch, Watch, WatchFilter
-
-
-class EventWatchAdmin(admin.ModelAdmin):
-    list_filter = ['content_type', 'event_type', 'locale']
+from notifications.models import Watch, WatchFilter
 
 
 class FilterInline(admin.TabularInline):
@@ -22,6 +18,5 @@ class WatchFilterAdmin(admin.ModelAdmin):
     raw_id_fields = ['watch']
 
 
-admin.site.register(EventWatch, EventWatchAdmin)
 admin.site.register(Watch, WatchAdmin)
 admin.site.register(WatchFilter, WatchFilterAdmin)
