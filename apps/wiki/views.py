@@ -412,9 +412,6 @@ def translate(request, document_slug, revision_id=None):
         return jingo.render(request, 'handlers/400.html',
                             {'message': message}, status=400)
 
-    if revision_id:
-        initial_rev = get_object_or_404(Revision, pk=revision_id)
-
     based_on_rev = get_current_or_latest_revision(parent_doc,
                                                   reviewed_only=False)
 

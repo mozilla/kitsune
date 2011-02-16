@@ -19,7 +19,7 @@
       {{ css(style) }}
     {% endfor %}
   </head>
-  <body class="{{ classes }}"
+  <body class="no-js {{ classes }}"
         data-readonly="{{ settings.READ_ONLY|json }}"
         data-for-os="{{ for_os|json }}"
         data-for-version="{{ for_version|json }}">

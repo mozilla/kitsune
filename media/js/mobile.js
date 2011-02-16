@@ -1,4 +1,14 @@
 (function() {
+    // Used for styling.
+    $('body').removeClass('no-js').addClass('js');
+    var $toc = $('#toc');
+    if ($toc.length) {
+        // Add icon and collapse it.
+        $toc.find('h2')
+            .addClass('expando')
+            .data('manages', '#toc > ul');
+    }
+
     $('select.autosubmit').change(function() {
         $(this).closest('form').submit();
     });
@@ -21,6 +31,20 @@
     if($('body').is('.document')) {
         new ArticleHelpfulVote(false);
     }
+
+    $(".expando").each(function() {
+        var $trigger = $(this);
+        $trigger.click(_pd(function () {
+            var $managed = $($trigger.data('manages'));
+            $managed.toggleClass("expand");
+            if ($managed.hasClass("expand")) {
+                $managed.slideDown();
+            } else {
+                $managed.slideUp();
+            }
+            $trigger.toggleClass("expand").blur();
+        }));
+    });
 
 })();
 

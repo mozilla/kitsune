@@ -169,8 +169,12 @@ article p {
 /*************************************/
 #wiki-doc h1 {
     border-bottom: 1px solid #ddd;
+    font-style: normal;
     margin-left: 0;
     padding-bottom: 3px;
+}
+#wiki-doc h1.title {
+    font-size: 150%;
 }
 
 #doc-content {
@@ -183,6 +187,7 @@ article p {
 #doc-content h4,
 #doc-content h5,
 #doc-content h6 {
+    font-style: normal;
     margin-top: 14px;
 }
 #doc-content p,
@@ -201,8 +206,78 @@ article p {
     list-style: decimal;
 }
 
-#toc ul ul {
+/***** Table of Contents ******/
+#doc-content #toc ul ul {
     display: none;  /* Only show one level of TOC */
+}
+#toc {
+    border-radius: 6px;
+    -moz-border-radius: 6px;
+    -webkit-border-radius: 6px;
+    background-color: #f2f7fc;
+    background-image: -moz-linear-gradient(#fff, rgba(255,255,255,0) 12px);
+    border: 1px solid #98b1de;
+    -moz-box-shadow: 0 -3px #d0e1f8 inset;
+    -webkit-box-shadow: 0 -3px #d0e1f8 inset;
+    margin: 14px 0;
+}
+#toc,
+#toc a {
+    color: #3c65bb;
+}
+#toc li {
+    border-top: 1px solid #ccc;
+    margin: 0;
+}
+#toc li a {
+    padding: 14px 10px;
+    font-family: Georgia, serif;
+    font-size: 1.1em;
+    display: block;
+    overflow: hidden;
+    text-decoration: none;
+    position: relative;
+}
+#toc h2 {
+    cursor: pointer;
+    height: 50px;
+    line-height: 50px;
+    margin: 0;
+    -moz-user-select: none;
+}
+#toc h2:before {
+    content: ' ';
+    display: inline-block;
+    float: left;
+    height: 50px;
+    line-height: 50px;
+    background: url("../img/markup.png") no-repeat -352px 50%;
+    width: 34px;
+}
+.js #toc h2:after,
+.no-js #toc h2:after {
+    content: '+';
+    display: block;
+    float: right;
+    height: 50px;
+    line-height: 50px;
+    margin-right: 14px;
+}
+.js #toc h2.expand:after,
+.no-js #toc h2:after {
+    content: '-';
+}
+#toc ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+.js #toc ul {
+    display: none;
+}
+#toc .tocnumber {
+    display: none;
+    -moz-user-select: none;
 }
 
 #doc-contributors {

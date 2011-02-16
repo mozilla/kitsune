@@ -318,6 +318,7 @@ MINIFY_BUNDLES = {
         ),
         'wiki': (
             'css/wiki.css',
+            'css/wiki_syntax.css',
             # The dashboard app uses the wiki bundle because only the wiki app
             # has the new theme at the moment.
             'css/dashboards.css',
@@ -347,6 +348,7 @@ MINIFY_BUNDLES = {
             'css/monitor.css',
         ),
         'mobile': (
+            'css/wiki_syntax.css',
             'global/mobile.css',
             'css/mobile.css',
         )

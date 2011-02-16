@@ -226,7 +226,7 @@ var ShowFor = {
         updateForsAndToc();
     },
 
-    // Return a table of contents (an <ol>) listing the visible headers within
+    // Return a table of contents (an <ul>) listing the visible headers within
     // elements in the $pageBody set.
     //
     // The highest header level found within $pageBody is considered to be the
@@ -242,9 +242,9 @@ var ShowFor = {
         }
 
         var $headers = $pageBody.find(':header:not(:hidden)'),  // :hidden is a little overkill, but it's short.
-            $root = $('<ol />'),
-            $cur_ol = $root,
-            ol_level = Math.min.apply(Math, $headers.map(headerLevel).get());
+            $root = $('<ul />'),
+            $cur_ul = $root,
+            ul_level = Math.min.apply(Math, $headers.map(headerLevel).get());
 
         // For each header in the document, look upward until you hit something that's hidden. If nothing is found, add the header to the TOC.
         $headers.each(function addIfShown(index) {
@@ -257,29 +257,29 @@ var ShowFor = {
             }
 
             // If we're too far down the tree, walk up it.
-            for (; ol_level > h_level; ol_level--) {
-                $cur_ol = $cur_ol.parent().closest('ol');
+            for (; ul_level > h_level; ul_level--) {
+                $cur_ul = $cur_ul.parent().closest('ul');
             }
 
-            // If we're too far up the tree, walk down it, create <ol>s until we aren't:
-            for (; ol_level < h_level; ol_level++) {
-                var $last_li = $cur_ol.children().last();
+            // If we're too far up the tree, walk down it, create <ul>s until we aren't:
+            for (; ul_level < h_level; ul_level++) {
+                var $last_li = $cur_ul.children().last();
                 if ($last_li.length === 0) {
                     $last_li = $('<li />').append($('<em />')
                                                   .text(MISSING_MSG))
-                                          .appendTo($cur_ol);
+                                          .appendTo($cur_ul);
                 }
-                // Now the current <ol> ends in an <li>, one way or another.
-                $cur_ol = $('<ol />').appendTo($last_li);
+                // Now the current <ul> ends in an <li>, one way or another.
+                $cur_ul = $('<ul />').appendTo($last_li);
             }
 
-            // Now $cur_ol is at exactly the right level to add a header by appending an <li>.
+            // Now $cur_ul is at exactly the right level to add a header by appending an <li>.
             // Clone the header, remove any hidden elements and get the text,
             // and replace back with the clone.
             var $tmpClone = $h.clone(),
                 text = $h.find(':hidden').remove().end().text();
             $h.replaceWith($tmpClone);
-            $cur_ol.append($('<li />').text(text).wrapInner($('<a>').attr('href', '#' + $h.attr('id'))));
+            $cur_ul.append($('<li />').text(text).wrapInner($('<a>').attr('href', '#' + $h.attr('id'))));
         });
         return $root;
     },
