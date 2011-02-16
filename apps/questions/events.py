@@ -44,7 +44,7 @@ class QuestionReplyEvent(QuestionEvent):
     def _mails(self, users_and_watches):
         # Cache answer.question, similar to caching solution.question below.
         self.answer.question = self.instance
-        subject = _('New answer to: %s') % self.instance.title
+        subject = _(u'New answer to: %s') % self.instance.title
         t = loader.get_template('questions/email/new_answer.ltxt')
         c = {'answer': self.answer.content,
              'author': self.answer.creator.username,
@@ -74,7 +74,7 @@ class QuestionSolvedEvent(QuestionEvent):
         question.solution = self.answer
         question.solution.question = question
 
-        subject = _('Solution to: %s') % question.title
+        subject = _(u'Solution to: %s') % question.title
         t = loader.get_template('questions/email/solution.ltxt')
         c = {'solution': question.solution.content,
              'author': question.creator.username,

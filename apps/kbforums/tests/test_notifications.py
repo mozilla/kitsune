@@ -152,7 +152,7 @@ class NotificationsTests(KBForumTestCase):
 
         t = Thread.objects.all().order_by('-id')[0]
         attrs_eq(mail.outbox[0], to=['user47963@nowhere'],
-                 subject='New thread in an article title forum: a title',
+                 subject=u'New thread in an article title: a title',
                  body=EMAIL_CONTENT[1] % t.id)
 
         self._toggle_watch_kbforum_as('pcraciunoiu', turn_on=False)
