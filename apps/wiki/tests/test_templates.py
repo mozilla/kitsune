@@ -1144,8 +1144,7 @@ class TranslateTests(TestCaseBase):
                       args=[en_revision.document.slug])
         response = self.client.get(url)
         doc = pq(response.content)
-        eq_('You are translating an unreviewed or rejected English document.',
-            doc('.warning-box').text())
+        assert doc('.warning-box').text()
 
 
 def _test_form_maintains_based_on_rev(client, doc, view, post_data,
