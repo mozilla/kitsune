@@ -151,6 +151,7 @@ class Readout(object):
 
 
 class MostVisitedDefaultLanguageReadout(Readout):
+    """Most-Visited readout for the default language"""
     title = _lazy(u'Most-Visited Articles')
     # No short_title; the link to this one is hard-coded in Overview readout
     details_link_text = _lazy(u'All knowledge base articles...')
@@ -166,18 +167,18 @@ class MostVisitedDefaultLanguageReadout(Readout):
         return ('SELECT engdoc.slug, engdoc.title, '
                 'dashboards_wikidocumentvisits.visits, '
                 'count(engrev.document_id) '
-               'FROM wiki_document engdoc '
-               'LEFT JOIN dashboards_wikidocumentvisits ON '
-                   'engdoc.id=dashboards_wikidocumentvisits.document_id '
-                   'AND dashboards_wikidocumentvisits.period=%s '
-               'LEFT JOIN wiki_revision engrev ON '
-                   'engrev.document_id=engdoc.id '
-                   'AND engrev.reviewed IS NULL '
-                   'AND engrev.id>engdoc.current_revision_id '
-               'WHERE engdoc.locale=%s '
-               'GROUP BY engdoc.id '
-               'ORDER BY dashboards_wikidocumentvisits.visits DESC, '
-                        'engdoc.title ASC' + self._limit_clause(max),
+                'FROM wiki_document engdoc '
+                'LEFT JOIN dashboards_wikidocumentvisits ON '
+                    'engdoc.id=dashboards_wikidocumentvisits.document_id '
+                    'AND dashboards_wikidocumentvisits.period=%s '
+                'LEFT JOIN wiki_revision engrev ON '
+                    'engrev.document_id=engdoc.id '
+                    'AND engrev.reviewed IS NULL '
+                    'AND engrev.id>engdoc.current_revision_id '
+                'WHERE engdoc.locale=%s '
+                'GROUP BY engdoc.id '
+                'ORDER BY dashboards_wikidocumentvisits.visits DESC, '
+                         'engdoc.title ASC' + self._limit_clause(max),
             (ALL_TIME if self.mode == ALL_TIME else THIS_WEEK, self.locale))
 
     def _format_row(self, (slug, title, visits, num_unreviewed)):
@@ -194,6 +195,11 @@ class MostVisitedDefaultLanguageReadout(Readout):
 
 
 class MostVisitedTranslationsReadout(MostVisitedDefaultLanguageReadout):
+    """Most-Visited readout for non-default languages
+
+    Adds a few subqueries to determine the status of translations.
+
+    """
     slug = 'most-visited-translations'
 
     # L10n: Replace "English" with your language.
