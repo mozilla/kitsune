@@ -23,8 +23,7 @@
       {% endif %}
 
       {% if settings.CC_ALLOW_REMOVE and not (tweet.reply_to or tweet.replies) %}
-        <a class="remove_tweet" href="{{ url('customercare.hide_tweet') }}">{{
-          _('Remove') }}</a>
+        <a class="remove_tweet" href="{{ url('customercare.hide_tweet') }}">{{ _('Remove') }}</a>
       {% endif %}
 
       <p class="text">{{ tweet.text|safe }}</p>
