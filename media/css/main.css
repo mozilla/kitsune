@@ -540,12 +540,12 @@ ol.pagination li.selected a:hover {
     Form element styles
 ----------------------------------*/
 
-article.main input[type="text"],
-article.main input[type="email"],
-article.main input[type="url"],
-article.main input[type="password"],
-article.main textarea,
-section.marky input[type="text"] {
+input[type="text"],
+input[type="email"],
+input[type="url"],
+input[type="password"],
+textarea,
+input[type="text"] {
     background: -moz-linear-gradient(top, #deebf4, #deebf4 2px, #fff 3px, #fff 100%);
     background: -webkit-gradient(linear, center top, center bottom, from(#deebf4), to(#fff), color-stop(5%, #deebf4), color-stop(10%, #fff));
     border: solid 1px #97cbf7;
@@ -1006,6 +1006,7 @@ input[type="submit"].link-btn:hover {
     text-decoration: underline;
 }
 
+textarea[disabled],
 input[disabled]:not(.remover) {
     background: #ddd;
     color: #888;
@@ -1020,6 +1021,7 @@ button.img-submit {
     padding: 0;
 }
 
+/* Used when we submit a form to prevent double submission. */
 form.disabled input[type="submit"],
 form.disabled input[type="image"],
 form.disabled button {

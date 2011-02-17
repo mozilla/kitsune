@@ -12,10 +12,11 @@ k = {};
                 return false;
             });
 
-        if ($('body').data('readonly') == 'true') {
+        if ($('body').data('readonly')) {
             $forms = $('form[method=post]');
             $forms.find('input, button, select, textarea').attr('disabled', 'disabled');
             $forms.find('input[type=image]').css('opacity', .5);
+            $('div.editor-tools').remove();
         }
 
         initAutoSubmitSelects();
