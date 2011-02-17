@@ -155,6 +155,10 @@ div.warning-box {
     border-top: 1px solid #fef1ad;
 }
 
+#tweets li {
+    position: relative;
+}
+
 #tweets li img {
     border: solid 1px #cacccb;
     float: left;
@@ -193,7 +197,23 @@ div.warning-box {
     width: 550px;
 }
 
-#tweets li .reply_count {
+#tweets .remove_tweet {
+    display: none;
+}
+html.js #tweets li:hover .remove_tweet,
+#tweets li .remove_tweet.clicked {
+    display: inline;
+    position: absolute;
+    right: 10px;
+    bottom: 10px;
+}
+#tweets li .remove_tweet.clicked {
+    padding-left: 20px;
+    background: url('../img/customercare/spinner.gif') left top no-repeat;
+}
+
+#tweets li .reply_count,
+#tweets li .remove_tweet {
     clear: right;
     float: right;
     font-family: Verdana, sans-serif;
@@ -206,13 +226,19 @@ div.warning-box {
     color: #0ba643;
 }
 #tweets li a.reply_count:before {
-    content: '\25B6\A0';
+    content: '\25B6\A0';  /* rightarrow, space */
 }
 #tweets li a.reply_count.opened:before {
-    content: '\25BC\A0';
+    content: '\25BC\A0';  /* downarrow, space */
 }
-#tweets li a.reply_count:hover {
+#tweets li .reply_count:hover,
+#tweets li .remove_tweet:hover {
     text-decoration: underline;
+}
+#tweets li .remove_tweet:before {
+    color: #e45d49;
+    content: '\2716\A0';  /* big X, space */
+    font-size: 110%;
 }
 
 .tweets-buttons {

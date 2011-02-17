@@ -15,6 +15,7 @@ class Tweet(ModelBase):
     created = models.DateTimeField(default=datetime.now, db_index=True)
     reply_to = models.BigIntegerField(blank=True, null=True, default=None,
                                       db_index=True)
+    hidden = models.BooleanField(default=False, db_index=True)
 
     class Meta:
         get_latest_by = 'created'

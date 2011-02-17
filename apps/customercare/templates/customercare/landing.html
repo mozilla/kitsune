@@ -45,6 +45,7 @@
     <br style="clear:both; height: 1px" />
 
     <div id="tweets-wrap">
+      {{ csrf() }}{# CSRF token for AJAX actions. #}
       {% if not tweets %}
         <div class="warning-box">
           {% trans language=settings.LOCALES[request.locale].native %}

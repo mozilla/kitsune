@@ -568,6 +568,7 @@ VIDEO_MAX_FILESIZE = 16777216  # 16 megabytes, in bytes
 CC_MAX_TWEETS = 500   # Max. no. of tweets in DB
 CC_TWEETS_PERPAGE = 100   # How many tweets to collect in one go. Max: 100.
 CC_SHOW_REPLIES = True  # Show replies to tweets?
+CC_ALLOW_REMOVE = True  # Allow users to hide tweets?
 
 CC_TWEET_ACTIVITY_URL = 'https://metrics.mozilla.com/stats/twitter/armyOfAwesomeKillRate.json'  # Tweet activity stats
 CC_TOP_CONTRIB_URL = 'https://metrics.mozilla.com/stats/twitter/armyOfAwesomeTopSoldiers.json'  # Top contributor stats

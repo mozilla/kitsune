@@ -6,7 +6,9 @@ import logging
 
 from django.conf import settings
 from django.core.cache import cache
-from django.http import HttpResponseBadRequest
+from django.http import (HttpResponse, HttpResponseBadRequest,
+                         HttpResponseNotFound, HttpResponseServerError)
+from django.shortcuts import get_object_or_404
 from django.views.decorators.http import require_POST, require_GET
 
 from babel.numbers import format_number
@@ -15,7 +17,7 @@ import jingo
 from tower import ugettext as _
 import tweepy
 
-from .models import CannedCategory, Tweet
+from customercare.models import CannedCategory, Tweet
 import twitter
 
 
@@ -58,7 +60,7 @@ def _get_tweets(locale=settings.LANGUAGE_CODE,
     max_id will only return tweets with the status ids less than the given id.
     """
     locale = settings.LOCALES[locale].iso639_1
-    q = Tweet.objects.filter(locale=locale, reply_to=reply_to)
+    q = Tweet.objects.filter(locale=locale, reply_to=reply_to, hidden=False)
     if max_id:
         q = q.filter(tweet_id__lt=max_id)
     if limit:
@@ -188,3 +190,39 @@ def twitter_post(request):
     # We could optimize by not encoding and then decoding JSON.
     return jingo.render(request, 'customercare/tweets.html',
         {'tweets': [_tweet_for_template(tweet)]})
+
+
+@require_POST
+def hide_tweet(request):
+    """
+    Hide the tweet with a given ID. Only hides tweets that are not replies
+    and do not have replies.
+
+    Returns proper HTTP status codes.
+    """
+    # If feature disabled, bail.
+    if not settings.CC_ALLOW_REMOVE:
+        return HttpResponse(status=418)  # I'm a teapot.
+
+    try:
+        id = int(request.POST.get('id'))
+    except (ValueError, TypeError):
+        return HttpResponseBadRequest(_('Invalid ID.'))
+
+    try:
+        tweet = Tweet.objects.get(tweet_id=id)
+    except Tweet.DoesNotExist:
+        return HttpResponseNotFound(_('Invalid ID.'))
+
+    if tweet.reply_to or Tweet.objects.filter(reply_to=id).count():
+        return HttpResponseBadRequest(_('Tweets that are replies or have '
+                                        'replies must not be hidden.'))
+
+    try:
+        tweet.hidden = True
+        tweet.save(force_update=True)
+    except Exception, e:
+        return HttpResponseServerError(
+            _('An error occured: {message}').format(message=e))
+
+    return HttpResponse('ok')

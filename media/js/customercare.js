@@ -1,6 +1,7 @@
 (function($){
     // Tweet IDs are too high. Using .data('tweet-id') returns incorrect
-    // results. See jQuery bug 7579 - http://bugs.jquery.com/ticket/7579
+    // results. Use .attr('data-tweet-id') instead.
+    // See jQuery bug 7579 - http://bugs.jquery.com/ticket/7579
 
     function Memory(name) {
         this._id = null;
@@ -368,6 +369,37 @@
                 replies.slideUp();
             }
             $(this).toggleClass('opened');
+
+            $(this).blur();
+            e.preventDefault();
+        });
+
+        /* Remove tweet functionality */
+        $('#tweets a.remove_tweet').live('click', function(e) {
+            if ($(this).hasClass('clicked')) return false;
+            $(this).addClass('clicked');
+
+            var tweet = $(this).closest('li'),
+                tweet_id = tweet.attr('data-tweet-id');
+            $.ajax({
+                url: $(this).attr('href'),
+                type: 'POST',
+                data: {
+                    csrfmiddlewaretoken: $('#tweets-wrap input[name=csrfmiddlewaretoken]').val(),
+                    id: tweet_id
+                },
+                dataType: 'text',
+                success: function() {
+                    $(this).removeClass('clicked');
+                    tweet.slideUp('fast', function() {
+                        $(this).remove();
+                    });
+                },
+                error: function(err) {
+                    $(this).removeClass('clicked');
+                    alert('Error removing tweet: ' + err.responseText);
+                }
+            });
 
             $(this).blur();
             e.preventDefault();
