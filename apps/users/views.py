@@ -25,7 +25,7 @@ from users.backends import Sha256Backend  # Monkey patch User.set_password.
 from users.forms import (ProfileForm, AvatarForm, EmailConfirmationForm,
                          AuthenticationForm, EmailChangeForm)
 from users.models import Profile, RegistrationProfile, EmailChange
-from users.utils import handle_login, handle_register
+from users.utils import handle_login, handle_register, try_send_email_with_form
 
 
 @ssl_required
@@ -89,13 +89,18 @@ def resend_confirmation(request):
             try:
                 reg_prof = RegistrationProfile.objects.get(
                     user__email=email, user__is_active=False)
-                RegistrationProfile.objects.send_confirmation_email(reg_prof)
+                form = try_send_email_with_form(
+                    RegistrationProfile.objects.send_confirmation_email,
+                    form, 'email',
+                    reg_prof)
             except RegistrationProfile.DoesNotExist:
                 # Don't leak existence of email addresses.
                 pass
-            return jingo.render(request,
-                                'users/resend_confirmation_done.html',
-                                {'email': email})
+            # Form may now be invalid if email failed to send.
+            if form.is_valid():
+                return jingo.render(request,
+                                    'users/resend_confirmation_done.html',
+                                    {'email': email})
     else:
         form = EmailConfirmationForm()
     return jingo.render(request, 'users/resend_confirmation.html',

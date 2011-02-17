@@ -1,6 +1,7 @@
 from copy import deepcopy
 import hashlib
 import os
+from smtplib import SMTPRecipientsRefused
 
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -18,7 +19,8 @@ from test_utils import RequestFactory
 from sumo.urlresolvers import reverse
 from sumo.helpers import urlparams
 from sumo.tests import post
-from users.models import Profile, RegistrationProfile
+from users import ERROR_SEND_EMAIL
+from users.models import Profile, RegistrationProfile, RegistrationManager
 from users.tests import TestCaseBase
 from users.views import _clean_next_url
 
@@ -387,3 +389,18 @@ class ResendConfirmationTests(TestCaseBase):
         eq_(200, r.status_code)
         eq_(2, len(mail.outbox))
         assert mail.outbox[1].subject.find('Please confirm your email') == 0
+
+    @mock.patch_object(RegistrationManager, 'send_confirmation_email')
+    @mock.patch_object(Site.objects, 'get_current')
+    def test_smtp_error(self, get_current, send_confirmation_email):
+        get_current.return_value.domain = 'testserver.com'
+
+        RegistrationProfile.objects.create_inactive_user(
+            'testuser', 'testpass', 'testuser@email.com')
+
+        def raise_smtp(reg_profile):
+            raise SMTPRecipientsRefused(recipients=[reg_profile.user.email])
+        send_confirmation_email.side_effect = raise_smtp
+        r = self.client.post(reverse('users.resend_confirmation'),
+                             {'email': 'testuser@email.com'})
+        self.assertContains(r, unicode(ERROR_SEND_EMAIL))

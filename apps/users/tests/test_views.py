@@ -1,3 +1,5 @@
+from smtplib import SMTPRecipientsRefused
+
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
@@ -11,7 +13,8 @@ from notifications.tests import watch
 from questions.models import Question, CONFIRMED, UNCONFIRMED
 from sumo.tests import TestCase, LocalizingClient
 from sumo.urlresolvers import reverse
-from users.models import RegistrationProfile, EmailChange
+from users.models import RegistrationProfile, EmailChange, RegistrationManager
+from users import ERROR_SEND_EMAIL
 
 
 class RegisterTestCase(TestCase):
@@ -50,6 +53,22 @@ class RegisterTestCase(TestCase):
                                      'password': 'foo'}, follow=True)
         eq_(200, response.status_code)
         eq_('http://testserver/en-US/home', response.redirect_chain[0][0])
+
+    @mock.patch_object(RegistrationManager, 'send_confirmation_email')
+    @mock.patch_object(Site.objects, 'get_current')
+    def test_new_user_smtp_error(self, get_current, send_confirmation_email):
+        get_current.return_value.domain = 'su.mo.com'
+
+        def raise_smtp(reg_profile):
+            raise SMTPRecipientsRefused(recipients=[reg_profile.user.email])
+        send_confirmation_email.side_effect = raise_smtp
+        response = self.client.post(reverse('users.register', locale='en-US'),
+                                    {'username': 'newbie',
+                                     'email': 'newbie@example.com',
+                                     'password': 'foo',
+                                     'password2': 'foo'}, follow=True)
+        eq_(200, response.status_code)
+        self.assertContains(response, unicode(ERROR_SEND_EMAIL))
 
     @mock.patch_object(Site.objects, 'get_current')
     def test_unicode_password(self, get_current):
