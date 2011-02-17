@@ -1,8 +1,30 @@
-.search-results .title {
+.result .title {
     background: transparent url(../img/search/icons.png) no-repeat left -45px;
     display: block;
     font-size: 130%;
     padding: 0 0 5px 50px;
+}
+
+.result p {
+    padding: 0 0 0 50px;
+}
+
+.result p a {
+    color: #000;
+    display: block;
+    line-height: 140%;
+}
+
+.result {
+    margin-bottom: 15px;
+}
+
+.result:hover a {
+    text-decoration: underline;
+}
+
+.result:hover p a {
+    text-decoration: none;
 }
 
 .document .title {
@@ -27,19 +49,6 @@
 
 .thread:hover .title {
     background-position: 5px -497px;
-}
-
-.search-results p {
-    padding: 0 0 0 50px;
-}
-
-.search-results p a {
-    color: #000;
-    line-height: 140%;
-}
-
-.search-results .result {
-    margin-bottom: 15px;
 }
 
 .search-query {
