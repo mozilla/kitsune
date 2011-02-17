@@ -27,9 +27,10 @@
     vertical-align: bottom;
 }
 
-.dashboards .denominator {
+.dashboards table.overview small {
     font-size: 80%;
     color: #999;
+    display: block;
     white-space: nowrap;
 }
 

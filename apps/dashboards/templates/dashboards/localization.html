@@ -36,8 +36,10 @@
               {% endif %}
             </td>
             <td>
-              {{ number(row.numerator) }}
-              <div class="denominator">of {{ number(row.denominator) }}</div>
+              {% trans numerator=number(row.numerator), denominator=number(row.denominator) %}
+                {{ numerator }}
+                <small>of {{ denominator }}</small>
+              {% endtrans %}
             </td>
             <td>
               {{ row.percent }}%
