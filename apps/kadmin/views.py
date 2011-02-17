@@ -2,6 +2,7 @@ import re
 
 from django import http
 from django.contrib import admin
+from django.db import connection
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 from django.views import debug
@@ -40,3 +41,14 @@ def celery_settings(request):
 def env(request):
     """Admin view that displays the wsgi env."""
     return http.HttpResponse(u'<pre>%s</pre>' % (jinja2.escape(request)))
+
+
+@admin.site.admin_view
+def schema_version(request):
+    """Admin view that displays the current schema_version."""
+    cursor = connection.cursor()
+    cursor.execute('SELECT version FROM schema_version')
+    version = [x for x in cursor][0][0]
+    return render_to_response('kadmin/schema.html',
+                              {'schema_version': version},
+                              RequestContext(request, {}))

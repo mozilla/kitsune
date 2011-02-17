@@ -1,0 +1,14 @@
+{% extends "admin/base_site.html" %}
+
+{% block title %}Schema Version {{ block.super }}{% endblock %}
+
+{% block extrastyle %}
+  {{ block.super }}
+  <link rel="stylesheet" media="screen,projection,tv" href="{{ MEDIA_URL }}css/kadmin.css" />
+{% endblock %}
+
+{% block content %}
+  <h2>Schema Version</h2>
+
+  <p>The current schema version is: <strong>{{ schema_version }}</strong>.</p>
+{% endblock %}
