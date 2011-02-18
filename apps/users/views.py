@@ -259,12 +259,21 @@ def password_reset(request):
     """
     if request.method == "POST":
         form = PasswordResetForm(request.POST)
-        if form.is_valid():
-            form.save(use_https=request.is_secure(),
-                      token_generator=default_token_generator,
-                      email_template_name='users/email/pw_reset.ltxt')
-        # Don't leak existence of email addresses.
-        return HttpResponseRedirect(reverse('users.pw_reset_sent'))
+        was_valid = form.is_valid()
+        if was_valid:
+            try_send_email_with_form(
+                form.save, form, 'email',
+                use_https=request.is_secure(),
+                token_generator=default_token_generator,
+                email_template_name='users/email/pw_reset.ltxt')
+        # Form may now be invalid if email failed to send.
+        # PasswordResetForm is invalid iff there is no user with the entered
+        # email address.
+        # The condition below ensures we don't leak existence of email address
+        # _unless_ sending an email fails.
+        if form.is_valid() or not was_valid:
+            # Don't leak existence of email addresses.
+            return HttpResponseRedirect(reverse('users.pw_reset_sent'))
     else:
         form = PasswordResetForm()
 

@@ -4,6 +4,7 @@ import os
 from smtplib import SMTPRecipientsRefused
 
 from django.conf import settings
+from django.contrib.auth.forms import PasswordResetForm
 from django.contrib.auth.models import User
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.sites.models import Site
@@ -142,11 +143,11 @@ class LoginTests(TestCaseBase):
         eq_(302, response.status_code)
 
 
-class PasswordReset(TestCaseBase):
+class PasswordResetTests(TestCaseBase):
     fixtures = ['users.json']
 
     def setUp(self):
-        super(PasswordReset, self).setUp()
+        super(PasswordResetTests, self).setUp()
         self.user = User.objects.get(username='rrosario')
         self.user.email = 'valid@email.com'
         self.user.save()
@@ -156,7 +157,7 @@ class PasswordReset(TestCaseBase):
         settings.DEBUG = True
 
     def tearDown(self):
-        super(PasswordReset, self).tearDown()
+        super(PasswordResetTests, self).tearDown()
         settings.DEBUG = self.orig_debug
 
     def test_bad_email(self):
@@ -176,6 +177,15 @@ class PasswordReset(TestCaseBase):
         eq_(1, len(mail.outbox))
         assert mail.outbox[0].subject.find('Password reset') == 0
         assert mail.outbox[0].body.find('pwreset/%s' % self.uidb36) > 0
+
+    @mock.patch_object(PasswordResetForm, 'save')
+    def test_smtp_error(self, pwform_save):
+        def raise_smtp(*a, **kw):
+            raise SMTPRecipientsRefused(recipients=[self.user.email])
+        pwform_save.side_effect = raise_smtp
+        r = self.client.post(reverse('users.pw_reset'),
+                             {'email': self.user.email})
+        self.assertContains(r, unicode(ERROR_SEND_EMAIL))
 
     def _get_reset_url(self):
         return reverse('users.pw_reset_confirm',
