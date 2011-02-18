@@ -18,6 +18,7 @@ from django.views.decorators.http import (require_POST, require_GET,
                                           require_http_methods)
 
 import jingo
+from mobility.decorators import mobile_template
 from taggit.models import Tag
 from tower import ugettext as _
 from tower import ugettext_lazy as _lazy
@@ -122,7 +123,8 @@ def answers(request, question_id, form=None, watch_form=None,
     return jingo.render(request, 'questions/answers.html', ans_)
 
 
-def new_question(request):
+@mobile_template('questions/{mobile/}new_question.html')
+def new_question(request, template=None):
     """Ask a new question."""
 
     product_key = request.GET.get('product')
@@ -163,7 +165,7 @@ def new_question(request):
                 login_form = AuthenticationForm()
                 register_form = RegisterForm()
                 return jingo.render(request,
-                                    'questions/new_question_login.html',
+                                    'questions/new_question_login.html', # TODO: mobile
                                     {'product': product, 'category': category,
                                      'title': search,
                                      'register_form': register_form,
@@ -174,7 +176,7 @@ def new_question(request):
         else:
             form = None
 
-        return jingo.render(request, 'questions/new_question.html',
+        return jingo.render(request, template,
                             {'form': form, 'search_results': search_results,
                              'tried_search': tried_search,
                              'products': products,
@@ -205,7 +207,7 @@ def new_question(request):
                             {'message': message}, status=400)
         if not request.user.is_authenticated():
             return jingo.render(request,
-                                'questions/new_question_login.html',
+                                'questions/new_question_login.html', # TODO: mobile
                                 {'product': product, 'category': category,
                                  'title': request.POST.get('title'),
                                  'register_form': register_form,
@@ -244,10 +246,10 @@ def new_question(request):
             return HttpResponseRedirect(urlparams(url, new=1))
 
         auth.logout(request)
-        return jingo.render(request, 'questions/confirm_email.html',
+        return jingo.render(request, 'questions/confirm_email.html', # TODO: mobile
                             {'question': question})
 
-    return jingo.render(request, 'questions/new_question.html',
+    return jingo.render(request, template,
                         {'form': form, 'products': products,
                          'current_product': product,
                          'current_category': category,

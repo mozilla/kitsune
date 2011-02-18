@@ -47,34 +47,35 @@
 
     <section id="content">
       {% block content %}{% endblock %}
-
-      {% if show_search == 'bottom' %}
-        <h2>{{ _("Couldn't find what you were looking for?") }}</h2>
-        <ul class="listview">
-          <li class="search">{{ mobile_form(q) }}</li>
-          {{ list_view_item(url('wiki.document', 'ask'), _('Ask a Question')) }}
-        </ul>
-      {% else %}
-        <h2>{{ _('Need More Personal Help?') }}</h2>
-        <ul class="listview">
-          {{ list_view_item(url('wiki.document', 'ask'), _('Ask a Question')) }}
-          {{ list_view_item(url('questions.questions'), _('Browse our Support Forum')) }}
-        </ul>
-      {% endif %}
-
-      <h2>{{ _('Other Products') }}</h2>
-      <ul class="listview">
-        {% if is_mobile_page %}
-          {{ list_view_item(url('home'), _('Firefox for Desktop'), 'item', MEDIA_URL + 'img/firefox.png') }}
+      {% if not hide_extra_content %}
+        {% if show_search == 'bottom' %}
+          <h2>{{ _("Couldn't find what you were looking for?") }}</h2>
+          <ul class="listview">
+            <li class="search">{{ mobile_form(q) }}</li>
+            {{ list_view_item(url('wiki.document', 'ask'), _('Ask a Question')) }}
+          </ul>
         {% else %}
-          {{ list_view_item(url('home.mobile'), _('Firefox for Mobile'), 'item', MEDIA_URL + 'img/firefox.png') }}
+          <h2>{{ _('Need More Personal Help?') }}</h2>
+          <ul class="listview">
+            {{ list_view_item(url('wiki.document', 'ask'), _('Ask a Question')) }}
+            {{ list_view_item(url('questions.questions'), _('Browse our Support Forum')) }}
+          </ul>
         {% endif %}
-        {{ list_view_item(url('wiki.document', 'How to set up Firefox Home on your iPhone'), _('Firefox Home'), 'item', MEDIA_URL + 'img/firefox-home.png') }}
-        {{ list_view_item(url('wiki.document', 'what-firefox-sync'), _('Firefox Sync'), 'item', MEDIA_URL + 'img/firefox-sync.png') }}
-      </ul>
 
-      {% if include_showfor %}
-        {% include 'wiki/includes/support_for_selectors.html' %}
+        <h2>{{ _('Other Products') }}</h2>
+        <ul class="listview">
+          {% if is_mobile_page %}
+            {{ list_view_item(url('home'), _('Firefox for Desktop'), 'item', MEDIA_URL + 'img/firefox.png') }}
+          {% else %}
+            {{ list_view_item(url('home.mobile'), _('Firefox for Mobile'), 'item', MEDIA_URL + 'img/firefox.png') }}
+          {% endif %}
+          {{ list_view_item(url('wiki.document', 'How to set up Firefox Home on your iPhone'), _('Firefox Home'), 'item', MEDIA_URL + 'img/firefox-home.png') }}
+          {{ list_view_item(url('wiki.document', 'what-firefox-sync'), _('Firefox Sync'), 'item', MEDIA_URL + 'img/firefox-sync.png') }}
+        </ul>
+
+        {% if include_showfor %}
+          {% include 'wiki/includes/support_for_selectors.html' %}
+        {% endif %}
       {% endif %}
     </section>
 

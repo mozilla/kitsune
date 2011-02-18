@@ -4,7 +4,8 @@ from tower import ugettext_lazy as _lazy
 
 products = SortedDict([
     ('desktop', {
-        'name': _lazy(u'Firefox 3.6 or earlier on Desktops/Laptops/Netbooks'),
+        'name': _lazy(u'Firefox 3.6'),
+        'subtitle': _lazy(u'on Desktops/Laptops/Netbooks'),
         'extra_fields': ['troubleshooting', 'ff_version', 'os', 'plugins'],
         'tags': ['desktop'],
         'categories': SortedDict([
@@ -106,7 +107,8 @@ products = SortedDict([
         ])
     }),
     ('beta', {
-        'name': _lazy(u'Firefox 4 betas on Desktops/Laptops/Netbooks'),
+        'name': _lazy(u'Firefox 4 Betas '),
+        'subtitle': _lazy(u'on Desktops/Laptops/Netbooks'),
         'extra_fields': ['troubleshooting', 'ff_version', 'os', 'plugins'],
         'tags': ['beta'],
         'categories': SortedDict([
@@ -145,7 +147,8 @@ products = SortedDict([
         ])
     }),
     ('mobile', {
-        'name': _lazy(u'Firefox on Mobile (Android or Maemo systems)'),
+        'name': _lazy(u'Firefox for Mobile'),
+        'subtitle': _lazy(u'Android or Maemo systems'),
         'extra_fields': ['ff_version', 'os', 'plugins'],
         'tags': ['mobile'],
         'categories': SortedDict([
@@ -226,7 +229,8 @@ products = SortedDict([
         ])
     }),
     ('home', {
-        'name': _lazy(u'Firefox Home App for iPhone'),
+        'name': _lazy(u'Firefox Home'),
+        'subtitle':  _lazy(u'App for iPhone'),
         'tags': ['FxHome'],
         'categories': SortedDict([
             ('i1', {
@@ -340,7 +344,8 @@ products = SortedDict([
         ])
     }),
     ('other', {
-        'name': _lazy(u"Thunderbird (Mozilla's email client) or other Mozilla product"),
+        'name': _lazy(u"Thunderbird"),
+        'subtitle':  _lazy(u"or other Mozilla product"),
         'html': 'Support for Thunderbird and other Mozilla products can be found at'
                 ' <a href="http://www.mozilla.org/support">Mozilla Support</a>.',
         'categories': SortedDict([]),

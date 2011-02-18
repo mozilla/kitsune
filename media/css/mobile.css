@@ -69,6 +69,13 @@ body.desktop #home-header h1 {
     margin-right: 14px;
 }
 
+#content h1.title {
+    border-bottom: 1px solid #ddd;
+    font-style: normal;
+    font-size: 150%;
+    padding: 0 0 5px;
+}
+
 .listview .icon {
     height: 32px;
     width: 32px;
@@ -172,9 +179,6 @@ article p {
     font-style: normal;
     margin-left: 0;
     padding-bottom: 3px;
-}
-#wiki-doc h1.title {
-    font-size: 150%;
 }
 
 #doc-content {
@@ -415,4 +419,53 @@ article p {
 
 #helpful-vote .No div.message-box:after {
     left: 90px;
+}
+
+
+/**************************/
+/*          AAQ           */
+/**************************/
+body.aaq #content h2 {
+    font-style: normal;
+}
+
+body.aaq #content h3 {
+    margin: 0 14px;
+}
+
+.select-one {
+    margin: 14px;
+}
+
+.select-one li {
+    padding: 7px 0;
+}
+
+.select-one li a {
+}
+
+.select-one span {
+    display: block;
+}
+
+.selections {
+    border-top: solid 1px #ddd;
+    margin: 14px;
+    padding: 14px 0;
+}
+
+.selected {
+    margin: 0 0 14px;
+}
+
+.selected label {
+    display: block;
+}
+
+form.aaq {
+    margin: 14px;
+}
+
+.selections form.aaq {
+    margin: 0;
 }

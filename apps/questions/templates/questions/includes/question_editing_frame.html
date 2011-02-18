@@ -12,6 +12,7 @@ we can compute the edit-title URL.
 {% extends "questions/base.html" %}
 {% from "layout/errorlist.html" import errorlist %}
 {% from "includes/common_macros.html" import content_editor %}
+{% from "questions/includes/aaq_macros.html" import selected_product, selected_category %}
 {% set classes = 'new-question' %}
 
 {% block content %}
@@ -22,23 +23,13 @@ we can compute the edit-title URL.
 
         {% block product %}
           {% if current_product %}
-            <div class="selected">
-              <label>{{ _('Firefox Product') }}:</label>
-              <span>{{ current_product.name }}</span>
-              {% block product_changer %}
-              {% endblock %}
-            </div>
+            {{ selected_product(current_product, can_edit_product) }}
           {% endif %}
         {% endblock %}
 
         {% block category %}
           {% if current_product and current_category %}
-            <div class="selected">
-              <label>Category:</label>
-              <span>{{ current_category.name }}</span>
-              {% block category_changer %}
-              {% endblock %}
-            </div>
+            {{ selected_category(current_category, current_product, can_edit_category) }}
           {% endif %}
         {% endblock %}
 
