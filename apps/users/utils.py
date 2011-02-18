@@ -2,6 +2,7 @@ import logging
 from smtplib import SMTPException
 
 from django.contrib import auth
+from django.contrib.auth.models import User
 
 from users import ERROR_SEND_EMAIL
 from users.forms import RegisterForm, AuthenticationForm
@@ -39,6 +40,11 @@ def handle_register(request):
                 form.cleaned_data['username'],
                 form.cleaned_data['password'],
                 form.cleaned_data['email'])
+            if not form.is_valid():
+                # Delete user if form is not valid, i.e. email was not sent.
+                # This is in a POST request and so always pinned to master,
+                # so there is no race condition.
+                User.objects.filter(email=form.instance.email).delete()
         return form
     return RegisterForm()
 

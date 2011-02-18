@@ -17,7 +17,7 @@ from users.models import RegistrationProfile, EmailChange, RegistrationManager
 from users import ERROR_SEND_EMAIL
 
 
-class RegisterTestCase(TestCase):
+class RegisterTests(TestCase):
     fixtures = ['users.json']
 
     def setUp(self):
@@ -67,8 +67,8 @@ class RegisterTestCase(TestCase):
                                      'email': 'newbie@example.com',
                                      'password': 'foo',
                                      'password2': 'foo'}, follow=True)
-        eq_(200, response.status_code)
         self.assertContains(response, unicode(ERROR_SEND_EMAIL))
+        assert not User.objects.filter(username='newbie').exists()
 
     @mock.patch_object(Site.objects, 'get_current')
     def test_unicode_password(self, get_current):
