@@ -11,7 +11,7 @@ RewriteRule ^tiki-remind_password.php /users/pwreset [L,R=301]
 RewriteRule ^tiki-user_preferences.php /users/edit [L,R=301]
 
 # Contribute shortcut
-RewriteRule ^contribute/?$ /kb/How+to+contribute [L,QSA,R=302]
+RewriteRule ^contribute/?$ /kb/superheroes-wanted [L,QSA,R=302]
 
 # Redirect old discussion forums to new discussion forums
 RewriteRule ^forum/3(.*) /en-US/forums/contributors$1 [L,QSA,R=301]
