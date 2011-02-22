@@ -188,22 +188,21 @@ def new_question(request):
     # Handle the form post.
     just_logged_in = False  # Used below for whether to pre-load Question form.
     if not request.user.is_authenticated():
-        type = request.POST.get('type')
-        if type not in ('login', 'register'):
-            # L10n: This shouldn't happen unless people tamper with POST data
-            message = _lazy('Request type not recognized.')
-            return jingo.render(request, 'handlers/400.html',
-                            {'message': message}, status=400)
-        if type == 'login':
+        if request.POST.get('login', None):
             login_form = handle_login(request, only_active=False)
             register_form = RegisterForm()
-        else:  # must be 'register'
+        elif request.POST.get('register', None):
             login_form = AuthenticationForm()
             register_form = handle_register(request)
             if register_form.is_valid():  # now try to log in
                 user = auth.authenticate(username=request.POST.get('username'),
                                          password=request.POST.get('password'))
                 auth.login(request, user)
+        else:
+            # L10n: This shouldn't happen unless people tamper with POST data
+            message = _lazy('Request type not recognized.')
+            return jingo.render(request, 'handlers/400.html',
+                            {'message': message}, status=400)
         if not request.user.is_authenticated():
             return jingo.render(request,
                                 'questions/new_question_login.html',

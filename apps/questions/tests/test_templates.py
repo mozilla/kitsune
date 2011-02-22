@@ -1072,7 +1072,7 @@ class AAQTemplateTestCase(TestCaseBase):
                         product='desktop', category='d1',
                         search='A test question', showform=1)
         # Register before asking question
-        data = {'type': 'invalid', 'username': 'testaaq',
+        data = {'username': 'testaaq',
                 'password': 'testpass', 'password2': 'testpass',
                 'email': 'testaaq@example.com'}
         data.update(**self.data)
@@ -1090,7 +1090,7 @@ class AAQTemplateTestCase(TestCaseBase):
                         product='desktop', category='d1',
                         search='A test question', showform=1)
         # Register before asking question
-        data = {'type': 'register', 'username': 'testaaq',
+        data = {'register': 'Register', 'username': 'testaaq',
                 'password': 'testpass', 'password2': 'testpass',
                 'email': 'testaaq@example.com'}
         data.update(**self.data)

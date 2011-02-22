@@ -1,5 +1,6 @@
 {# vim: set ts=2 et sts=2 sw=2: #}
 {% extends "users/base.html" %}
+{% from "users/includes/macros.html" import login_form %}
 {% if account %}
   {% set title = _('Account successfully verified!') %}
 {% else %}
@@ -25,7 +26,7 @@
           {% endfor %}
         </ul>
       {% endif %}
-      {% include "users/login_form.html" %}
+      {{ login_form(form, csrf=csrf()) }}
     {% else %}
       <p class="failure">{% trans %}We could not activate your account.
         Please make sure that you have clicked the correct link in your

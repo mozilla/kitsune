@@ -1,0 +1,54 @@
+{# vim: set ts=2 et sts=2 sw=2: #}
+{% from "layout/errorlist.html" import errorlist %}
+{# csrf() is contextual, so we need to pass in its output #}
+{% macro login_form(form, csrf, next_url='', action=None,
+                    only_pwreset=False) -%}
+  {{ errorlist(form) }}
+  <form method="post" action="{{ action if action != None else url('users.login') }}">
+    {{ csrf|safe }}
+    <input type="hidden" name="next" value="{{ next_url }}" />
+    <fieldset>
+      <ul>
+        <li>
+          <label for="id_username">{{ _('Username:') }}</label>
+          {{ form.username|safe }}
+        </li>
+        <li>
+          <label for="id_password">{{ _('Password:') }}</label>
+          {{ form.password|safe }}
+        </li>
+      </ul>
+    </fieldset>
+    <div class="submit">
+      <input type="submit" name="login" class="btn" value="{{ _('Log in') }}" data-progress="{{ _('Logging in...') }}" data-done="{{ _('Logged in!') }}" data-reset="{{ _('Log in') }}" />
+    </div>
+  </form>
+  <div id="login-help">
+    {% if only_pwreset %}
+      <a id="reset_password" target="_blank" href="{{ url('users.pw_reset') }}">{{ _("I forgot my password.") }}</a>
+    {% else %}
+      <h3>{{ _('Login Problems?') }}</h3>
+      <ul>
+        <li><a href="{{ url('users.register') }}">{{ _("I don't have an account.") }} </a></li>
+        <li><a href="{{ url('users.pw_reset') }}">{{ _('I forgot my password.') }}</a></li>
+        <li><a href="{{ url('users.resend_confirmation') }}">{{ _('My account is inactive.') }}</a></li>
+      </ul>
+    {% endif %}
+  </div>
+{%- endmacro %}
+
+{% macro register_form(form, csrf, action=None) -%}
+  {{ errorlist(form) }}
+  <form method="post" action="{{ action if action != None else
+                                 url('users.register') }}">
+    {{ csrf|safe }}
+    <ul>
+      {% for field in form %}
+        <li>{{ field|label_with_help }} {{ field|safe }}</li>
+      {% endfor %}
+    </ul>
+    <div class="submit">
+      <input type="submit" name="register" class="btn" value="{{ _('Register') }}" />
+    </div>
+  </form>
+{%- endmacro %}
