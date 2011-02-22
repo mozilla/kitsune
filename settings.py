@@ -334,6 +334,10 @@ MINIFY_BUNDLES = {
         ),
         'ie': (
             'css/ie.css',
+            'css/ie8.css',
+        ),
+        'ie8': (  # IE 8 needs some specific help.
+            'css/ie8.css',
         ),
         'customercare': (
             'css/customercare.css',

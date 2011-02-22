@@ -1,0 +1,8 @@
+a.btn,
+input[type=submit].btn-important {
+    border: none;
+    color: #fff;
+    font-family: "Trebuchet MS",Helvetica,sans-serif;
+    font-weight: bold;
+}
+
