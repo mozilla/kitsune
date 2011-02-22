@@ -2,10 +2,10 @@
 {% from "users/includes/macros.html" import login_form, register_form %}
 
 {% macro select_product(products) -%}
-  <h2>{{ _('Which Firefox product would you like to post a question about?') }}</h2>
-  <ul class="select-one">
+  <h2>{{ _('Which product would you like to post a question about?') }}</h2>
+  <ul class="products select-one">
     {% for key, product in products.iteritems() %}
-      <li>
+      <li class="{{ key }}-icon">
         <a href="{{ url('questions.new_question')|urlparams(product=key) }}">
           {{ product.name }}
           <span>{{ product.subtitle }}</span>
@@ -26,7 +26,7 @@
 {%- endmacro %}
 
 {% macro select_category(product) -%}
-  <h2>{{ _('Which of these categories best describes your problem?') }}</h2>
+  <h2>{{ _('Which category best describes your problem?') }}</h2>
   <ul class="select-one">
     {% for key, category in product.categories.iteritems() %}
       <li>
@@ -46,11 +46,11 @@
   </div>
 {%- endmacro %}
 
-{% macro current_articles_and_html(articles, html, category) -%}
+{% macro current_articles_and_message(articles, category, html=None) -%}
   {% if html %}
     <h2>{{ html|safe }}</h2>
   {% else %}
-    <h2>{{ _('We have lots of helpful articles on <mark>{category}</mark> and hundreds of questions in our database. Try one of the following:')|fe(category=category.name) }}</h2>
+    <h2>{{ _('We have lots of helpful articles on that topic. Try one of the following:') }}</h2>
   {% endif %}
   {% if articles %}
     <ul class="articles select-one">

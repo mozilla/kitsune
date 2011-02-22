@@ -63,14 +63,14 @@
         {% endif %}
 
         <h2>{{ _('Other Products') }}</h2>
-        <ul class="listview">
+        <ul class="listview products">
           {% if is_mobile_page %}
-            {{ list_view_item(url('home'), _('Firefox for Desktop'), 'item', MEDIA_URL + 'img/firefox.png') }}
+            {{ list_view_item(url('home'), _('Firefox for Desktop'), 'desktop-icon') }}
           {% else %}
-            {{ list_view_item(url('home.mobile'), _('Firefox for Mobile'), 'item', MEDIA_URL + 'img/firefox.png') }}
+            {{ list_view_item(url('home.mobile'), _('Firefox for Mobile'), 'mobile-icon') }}
           {% endif %}
-          {{ list_view_item(url('wiki.document', 'How to set up Firefox Home on your iPhone'), _('Firefox Home'), 'item', MEDIA_URL + 'img/firefox-home.png') }}
-          {{ list_view_item(url('wiki.document', 'what-firefox-sync'), _('Firefox Sync'), 'item', MEDIA_URL + 'img/firefox-sync.png') }}
+          {{ list_view_item(url('wiki.document', 'How to set up Firefox Home on your iPhone'), _('Firefox Home'), 'home-icon') }}
+          {{ list_view_item(url('wiki.document', 'what-firefox-sync'), _('Firefox Sync'), 'sync-icon') }}
         </ul>
 
         {% if include_showfor %}

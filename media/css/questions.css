@@ -1130,7 +1130,6 @@ form div.attachments-upload img {
     margin: 0 0 0 5px;
 }
 
-#ask-question ul.articles,
 #ask-question ul.select-one {
     font-size: 18px;
     margin: 0.5em 0 1em;
@@ -1145,7 +1144,6 @@ form div.attachments-upload img {
     list-style: none;
 }
 
-#ask-question ul.articles li,
 #ask-question ul.select-one li {
     margin: 0 0 0 30px;
     padding: 5px 0;
@@ -1154,6 +1152,36 @@ form div.attachments-upload img {
 #ask-question ul.articles li {
     margin: 0;
 }
+
+
+#ask-question ul.products li {
+    padding-left: 45px;
+}
+
+#ask-question ul.products span {
+    color: #6d7581;
+    display: block;
+    font-size: 14px;
+}
+
+.desktop-icon,
+.beta-icon,
+.mobile-icon {
+    background: transparent url(../img/logos.sprite.png) no-repeat 0 6px;
+}
+
+.home-icon {
+    background: transparent url(../img/logos.sprite.png) no-repeat 0 -42px;
+}
+
+.sync-icon {
+    background: transparent url(../img/logos.sprite.png) no-repeat 0 -98px;
+}
+
+.other-icon {
+    background: transparent url(../img/logos.sprite.png) no-repeat 0 -142px;
+}
+
 
 #ask-question form.search {
     padding: 10px 0 15px;

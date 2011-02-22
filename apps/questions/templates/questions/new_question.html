@@ -1,6 +1,6 @@
 {# vim: set ts=2 et sts=2 sw=2: #}
 {% extends "questions/includes/question_editing_frame.html" %}
-{% from "questions/includes/aaq_macros.html" import select_product, select_category, current_articles_and_html, aaq_search_form, show_results %}
+{% from "questions/includes/aaq_macros.html" import select_product, select_category, current_articles_and_message, aaq_search_form, show_results %}
 {% set title = _('Ask a Question') %}
 {% set crumbs = [(url('questions.questions'), _('Forum')),
                  (None, _('Ask a New Question'))] %}
@@ -28,7 +28,7 @@
 {% block articles_and_search_results %}
   {% set form_header_set = False %}
   {% if (current_articles or current_html) and not search_results and not form %}
-    {{ current_articles_and_html(current_articles, current_html, current_category) }}
+    {{ current_articles_and_message(current_articles, current_category, current_html) }}
     {% if not form and not deadend %}
       {% set form_header_set = True %}
       <h2>{{ _('or, summarize your question in a sentence:') }}</h2>

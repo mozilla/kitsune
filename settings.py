@@ -352,9 +352,9 @@ MINIFY_BUNDLES = {
             'css/monitor.css',
         ),
         'mobile': (
-            'css/wiki_syntax.css',
             'global/mobile.css',
             'css/mobile.css',
+            'css/wiki_syntax.css',
         )
     },
     'js': {
