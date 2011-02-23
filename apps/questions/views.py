@@ -246,7 +246,9 @@ def new_question(request, template=None):
             return HttpResponseRedirect(urlparams(url, new=1))
 
         auth.logout(request)
-        return jingo.render(request, 'questions/confirm_email.html', # TODO: mobile
+        confirm_t = ('questions/mobile/confirm_email.html' if request.MOBILE
+                     else 'questions/confirm_email.html')
+        return jingo.render(request, confirm_t,
                             {'question': question})
 
     return jingo.render(request, template,

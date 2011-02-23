@@ -667,6 +667,12 @@ body.aaq ul.errorlist li {
     margin: 7px;
 }
 
+/* Confirm email styling */
+body.confirm-email #content strong {
+    display: block;
+    text-align: center;
+}
+
 /*************************************/
 /*          Product Icons            */
 /*************************************/
