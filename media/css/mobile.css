@@ -214,7 +214,8 @@ article p {
 #doc-content #toc ul ul {
     display: none;  /* Only show one level of TOC */
 }
-#toc {
+#toc,
+.slidebox {
     border-radius: 6px;
     -moz-border-radius: 6px;
     -webkit-border-radius: 6px;
@@ -226,7 +227,9 @@ article p {
     margin: 14px 0;
 }
 #toc,
-#toc a {
+#toc a,
+.slidebox .slide,
+.slidebox a {
     color: #3c65bb;
 }
 #toc li {
@@ -235,14 +238,15 @@ article p {
 }
 #toc li a {
     padding: 14px 10px;
-    font-family: Georgia, serif;
+    font-family: Georgia, freeserif, serif;
     font-size: 1.1em;
     display: block;
     overflow: hidden;
     text-decoration: none;
     position: relative;
 }
-#toc h2 {
+#toc h2,
+.slidebox .slide {
     cursor: pointer;
     height: 50px;
     line-height: 50px;
@@ -258,8 +262,8 @@ article p {
     background: url("../img/markup.png") no-repeat -352px 50%;
     width: 34px;
 }
-.js #toc h2:after,
-.no-js #toc h2:after {
+#toc h2:after,
+.slidebox .slide:after {
     content: '+';
     display: block;
     float: right;
@@ -268,7 +272,9 @@ article p {
     margin-right: 14px;
 }
 .js #toc h2.expand:after,
-.no-js #toc h2:after {
+.no-js #toc h2:after,
+.slidebox .slide.expand:after,
+.no-js .slidebox .slide:after {
     content: '-';
 }
 #toc ul {
@@ -427,14 +433,29 @@ article p {
 /**************************/
 body.aaq #content h2 {
     font-style: normal;
-}
-
-body.aaq #content h3 {
     margin: 0 14px;
 }
 
+body.aaq #content h3 {
+    margin: 0;
+}
+
+body.aaq #content p,
+body.aaq #question-form h3 {
+    color: #666;
+    margin-top: 7px;
+}
+
+#content #question-form h2 {
+    margin-left: 0;
+}
+
+#question-form ol {
+    margin-top: 14px;
+}
+
 .select-one {
-    margin: 14px;
+    margin: 14px 14px 14px 28px;
 }
 
 .select-one li {
@@ -448,24 +469,140 @@ body.aaq #content h3 {
     display: block;
 }
 
-.selections {
+.selections .selected:first-child {
     border-top: solid 1px #ddd;
+    padding-top: 14px;
+}
+.selections {
     margin: 14px;
-    padding: 14px 0;
+    padding-bottom: 14px;
 }
 
 .selected {
-    margin: 0 0 14px;
+    margin: 0 0 21px;
 }
 
 .selected label {
     display: block;
 }
 
+.selected span {
+    color: #666;
+}
+
+.selected a {
+    float: right;
+    font-style: italic;
+    margin-right: 14px;
+}
+
 form.aaq {
     margin: 14px;
 }
 
-.selections form.aaq {
+body.aaq #content .selections form.aaq {
     margin: 0;
+    padding: 0;
+}
+
+#content #ask-search-form input[type="submit"] {
+    margin: 14px 0;
+}
+
+body.aaq #content input[type="submit"] {
+    background-image: -moz-linear-gradient(#83c53c, #4f9c19);
+    background-image: -webkit-gradient(linear, left top, left bottom, from(#83c53c), to(#4f9c19));
+    border: 0;
+    -webkit-border-radius: 6px;
+    -moz-border-radius: 6px;
+    border-radius: 6px;
+    -webkit-box-shadow: 0 -3px rgba(0,0,0,.1) inset;
+    -moz-box-shadow: 0 -3px rgba(0,0,0,.1) inset;
+    color: #fff;
+    font-size: 150%;
+    font-family: Georgia, freeserif, serif;
+    height: 54px;
+    margin: 7px 0;
+    vertical-align: middle;
+    width: 100%;
+}
+
+body.aaq #content form li {
+    padding: 7px 0;
+}
+
+body.aaq #content form label {
+    color: #666;
+    display: block;
+    margin-bottom: 7px;
+}
+
+body.aaq #content form textarea,
+body.aaq #content form input[type="text"],
+body.aaq #content form input[type="email"],
+body.aaq #content form input[type="password"] {
+    border: 1px solid #333;
+    -moz-border-radius: 5px;
+    -webkit-border-radius: 5px;
+    border-radius: 5px;
+    font-size: 20px;
+    padding: 2px;
+    width: 99%;
+}
+body.aaq #content form input[type="text"],
+body.aaq #content form input[type="email"],
+body.aaq #content form input[type="password"] {
+    height: 28px;
+}
+
+body.aaq.logreg #content h3 {
+    font-size: 20px;
+    margin: 0;
+    padding-left: 14px;
+}
+
+body.aaq #content .slide.expand {
+    border-bottom: 1px solid #ccc;
+}
+
+body.aaq #content form {
+    padding: 7px 14px 0;
+}
+
+/* Login/register styling */
+body.aaq #content #register_form div.submit input {
+    margin-bottom: 14px;
+}
+.slidebox {
+    margin: 14px auto;
+    width: 290px;
+}
+.js .slidebox form,
+.js .slidebox .errorlist,
+.js .slidebox #login-help {
+    display: none;
+}
+
+.slidebox.errors form,
+.slidebox.errors .errorlist,
+.slidebox.errors #login-help, {
+    display: block;
+}
+
+#login-help {
+    margin: 7px 14px 14px;
+}
+
+/* Errorlist on mobile login/registration */
+body.aaq ul.errorlist {
+    color: #f00;
+    list-style: disc;
+    margin: 20px;
+}
+body.aaq ul.errorlist a {
+    color: #f00;
+    text-decoration: underline;
+}
+body.aaq ul.errorlist li {
+    margin: 7px;
 }

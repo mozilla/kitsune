@@ -68,7 +68,7 @@
     {% if current_product and current_category %}
       {{ selected_category(current_category, current_product, True) }}
     {% endif %}
-    {% if tried_search %}
+    {% if tried_search and not form %}
       {{ aaq_search_form(current_product, current_category, settings, request) }}
     {% endif %}
   </div>

@@ -1,4 +1,6 @@
 {# vim: set ts=2 et sts=2 sw=2: #}
+{% from "users/includes/macros.html" import login_form, register_form %}
+
 {% macro select_product(products) -%}
   <h2>{{ _('Which Firefox product would you like to post a question about?') }}</h2>
   <ul class="select-one">
@@ -96,4 +98,19 @@
     <input type="hidden" name="showform" value="1" />
     <input type="submit" id="show-form-btn" class="btn" value="{{ button_text }}" />
   </form>
+{%- endmacro %}
+
+{% macro register_login_forms(register, login, csrf) -%}
+  <h2>{{ _('Before you continue, we ask you to create a support account so we can contact you.') }}</h2>
+  <p>{{ _('A support account lets us alert you when people respond to your question.') }}</p>
+  <div id="register_form" class="slidebox">
+{# TODO: these may have regressed the layout, h2 -> h3. Check! #}
+    <h3 class="slide">{{ _('Create an account') }}</h3>
+    {{ register_form(register, csrf=csrf, action='') }}
+  </div>
+
+  <div id="login_form" class="slidebox">
+    <h3 class="slide">{{ _('I already have an account') }}</h3>
+    {{ login_form(login, csrf=csrf, action='', only_pwreset=True) }}
+  </div>
 {%- endmacro %}

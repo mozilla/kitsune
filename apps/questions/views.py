@@ -145,6 +145,8 @@ def new_question(request, template=None):
         html = product.get('html') if product else None
         articles = None
 
+    login_t = ('questions/mobile/new_question_login.html' if request.MOBILE
+               else 'questions/new_question_login.html')
     if request.method == 'GET':
         search = request.GET.get('search', '')
         if search:
@@ -164,8 +166,7 @@ def new_question(request, template=None):
             if not request.user.is_authenticated():
                 login_form = AuthenticationForm()
                 register_form = RegisterForm()
-                return jingo.render(request,
-                                    'questions/new_question_login.html', # TODO: mobile
+                return jingo.render(request, login_t,
                                     {'product': product, 'category': category,
                                      'title': search,
                                      'register_form': register_form,
@@ -206,8 +207,7 @@ def new_question(request, template=None):
             return jingo.render(request, 'handlers/400.html',
                             {'message': message}, status=400)
         if not request.user.is_authenticated():
-            return jingo.render(request,
-                                'questions/new_question_login.html', # TODO: mobile
+            return jingo.render(request, login_t,
                                 {'product': product, 'category': category,
                                  'title': request.POST.get('title'),
                                  'register_form': register_form,

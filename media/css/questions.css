@@ -1097,7 +1097,9 @@ form div.attachments-upload img {
     padding: 15px;
 }
 
-#ask-question h2 {
+#ask-question h2,
+#ask-question #register_form h3,
+#ask-question #login_form h3 {
     font-size: 20px;
 }
 
@@ -1404,8 +1406,8 @@ body.flagged #main {
 #login_form label {
     width: 6em;
 }
-#register_form h2,
-#login_form h2 {
+#register_form h3,
+#login_form h3 {
     margin-bottom: 1em;
     text-align: center;
 }

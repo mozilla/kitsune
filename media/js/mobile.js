@@ -9,6 +9,10 @@
             .data('manages', '#toc > ul');
     }
 
+    $('.slidebox h3').addClass('expando').each(function() {
+        $(this).data('manages', $(this).parent().children().not('h3'));
+    });
+
     $('select.autosubmit').change(function() {
         $(this).closest('form').submit();
     });
@@ -44,6 +48,13 @@
             }
             $trigger.toggleClass("expand").blur();
         }));
+    });
+
+    // This must be called after expando code
+    $('.slidebox').each(function() {
+        if ($(this).find('.errorlist').length) {
+            $(this).closest('.slidebox').find('h3').click();
+        }
     });
 
 })();
