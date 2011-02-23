@@ -507,11 +507,8 @@ body.aaq #question-form h3 {
     padding-left: 45px;
 }
 
-.selections .selected:first-child {
-    border-top: solid 1px #ddd;
-    padding-top: 14px;
-}
 .selections {
+    border-top: solid 1px #ddd;
     margin: 14px;
     padding: 14px 10px;
 }

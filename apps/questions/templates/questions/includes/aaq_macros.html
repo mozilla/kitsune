@@ -63,7 +63,7 @@
   {% endif %}
 {%- endmacro %}
 
-{% macro aaq_search_form(product, category, settings, request) -%}
+{% macro aaq_search_form(product, category, settings, host, request) -%}
   <form id="ask-search-form" class="aaq search" action="{% if settings.SESSION_COOKIE_SECURE %}https://{{ host }}{{ request.get_full_path() }}{% endif %}" method="get">
     <input type="hidden" name="product" value="{{ product.key }}" />
     <input type="hidden" name="category" value="{{ category.key }}" />
