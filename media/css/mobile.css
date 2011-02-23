@@ -581,10 +581,13 @@ body.aaq #content input[type="submit"] {
     color: #fff;
     font-size: 150%;
     font-family: Georgia, freeserif, serif;
-    height: 54px;
+    min-height: 54px;
+    height: auto;
     margin: 7px 0;
+    padding: 10px 0;
     vertical-align: middle;
     width: 100%;
+    white-space: normal;  /* Some buttons are too long for one line */
 }
 
 body.aaq #content form li {
