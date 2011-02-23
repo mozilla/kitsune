@@ -61,7 +61,7 @@
     </form>
   {% endif %}
 
-  {% if current_product %}
+  {% if current_product and not form %}
     <div class="selections">
       {{ selected_product(current_product, True) }}
       {% if current_category %}
