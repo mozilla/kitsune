@@ -371,6 +371,8 @@ MINIFY_BUNDLES = {
         'questions': (
             'js/markup.js',
             'js/libs/jquery.ajaxupload.js',
+            'js/browserdetect.js',
+            'js/aaq.js',
             'js/upload.js',
             'js/questions.js',
             'js/tags.js',
@@ -420,6 +422,7 @@ MINIFY_BUNDLES = {
             'js/browserdetect.js',
             'js/showfor.js',
             'js/wikivote.js',
+            'js/aaq.js',
             'js/mobile.js',
         ),
     },

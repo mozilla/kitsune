@@ -1,4 +1,4 @@
-// Detect the set of OSes and browsers we care about in the wiki.
+// Detect the set of OSes and browsers we care about in the wiki and AAQ.
 // Adapted from http://www.quirksmode.org/js/detect.html with these changes:
 //
 // * Changed the dataOS identity properties to lowercase to match the {for}

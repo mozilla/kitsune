@@ -57,6 +57,9 @@
         }
     });
 
+    if($('body').is('.aaq')) {
+        new AAQSystemInfo($('#question-form'));
+    }
 })();
 
 function _pd(func) {
