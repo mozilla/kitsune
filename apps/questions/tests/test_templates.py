@@ -17,9 +17,9 @@ from questions.models import Question, Answer, QuestionVote
 from questions.tests import TestCaseBase, TaggingTestCaseBase, tags_eq
 from questions.views import UNAPPROVED_TAG, NO_TAG
 from questions.tasks import cache_top_contributors
-from sumo.urlresolvers import reverse
 from sumo.helpers import urlparams
 from sumo.tests import get, post, attrs_eq
+from sumo.urlresolvers import reverse
 from upload.models import ImageAttachment
 from users.models import RegistrationProfile
 
@@ -1013,8 +1013,8 @@ class AAQTemplateTestCase(TestCaseBase):
             'ff_version': '3.6.6',
             'os': 'Intel Mac OS X 10.6',
             'plugins': '* Shockwave Flash 10.1 r53',
-            'useragent': 'Mozilla/5.0 (Macintosh; U; Intel Mac OS X ' +
-                         '10.6; en-US; rv:1.9.2.6) Gecko/20100625 ' +
+            'useragent': 'Mozilla/5.0 (Macintosh; U; Intel Mac OS X '
+                         '10.6; en-US; rv:1.9.2.6) Gecko/20100625 '
                          'Firefox/3.6.6'}
 
     def setUp(self):
