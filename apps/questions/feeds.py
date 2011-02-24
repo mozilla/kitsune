@@ -52,7 +52,7 @@ class TaggedQuestionsFeed(QuestionsFeed):
 
     def items(self, tag):
         qs = Question.objects.filter(creator__is_active=True, status=CONFIRMED,
-                                     tags__in=[tag.name])
+                                     tags__name__in=[tag.name])
         return qs.order_by('-updated')[:constants.QUESTIONS_PER_PAGE]
 
 

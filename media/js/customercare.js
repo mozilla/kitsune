@@ -210,6 +210,7 @@
             this.kbox = $(this.$el).data('kbox');
 
             this.$el.find('#submit').bind('click', {reply: this}, function(e) {
+                // TODO(csrf): send CSRF token
                 var reply = e.data.reply,
                     data = {
                         'content': reply.content,

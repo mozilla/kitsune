@@ -6,8 +6,10 @@ from django.db import models
 
 from sumo.helpers import reverse
 from sumo.models import ModelBase
+from sumo.utils import auto_delete_files
 
 
+@auto_delete_files
 class ImageAttachment(ModelBase):
     """An image attached to an object using a generic foreign key"""
     file = models.ImageField(upload_to=settings.IMAGE_UPLOAD_PATH,

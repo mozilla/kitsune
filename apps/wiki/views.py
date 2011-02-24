@@ -174,7 +174,7 @@ def list_documents(request, category=None, tag=None):
 
     if tag:
         tagobj = get_object_or_404(Tag, slug=tag)
-        docs = docs.filter(tags__in=[tagobj.name])
+        docs = docs.filter(tags__name__in=[tagobj.name])
 
     docs = paginate(request, docs, per_page=DOCUMENTS_PER_PAGE)
     return jingo.render(request, 'wiki/list_documents.html',

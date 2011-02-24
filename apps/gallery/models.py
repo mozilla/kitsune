@@ -6,6 +6,7 @@ from django.db import models
 
 from sumo.models import ModelBase, LocaleField
 from sumo.urlresolvers import reverse
+from sumo.utils import auto_delete_files
 
 
 class Media(ModelBase):
@@ -27,6 +28,7 @@ class Media(ModelBase):
         return '[%s] %s' % (self.locale, self.title)
 
 
+@auto_delete_files
 class Image(Media):
     creator = models.ForeignKey(User, related_name='gallery_images')
     file = models.ImageField(upload_to=settings.GALLERY_IMAGE_PATH,
@@ -43,6 +45,7 @@ class Image(Media):
         return self.thumbnail.url if self.thumbnail else self.file.url
 
 
+@auto_delete_files
 class Video(Media):
     creator = models.ForeignKey(User, related_name='gallery_videos')
     webm = models.FileField(upload_to=settings.GALLERY_VIDEO_PATH, null=True,

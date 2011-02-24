@@ -94,7 +94,7 @@ def questions(request):
         tags = Tag.objects.filter(slug__in=tag_slugs)
         if tags:
             for t in tags:
-                question_qs = question_qs.filter(tags__in=[t.name])
+                question_qs = question_qs.filter(tags__name__in=[t.name])
             if len(tags) == 1:
                 feed_urls += ((reverse('questions.tagged_feed',
                                        args=[tags[0].slug]),

@@ -88,7 +88,7 @@
                                    // Starting small for discoverability.
                     close: tender
                 });
-                
+
                 // keyup isn't triggered by pasting into the field. FWIW,
                 // Google Suggest also punts on this.
                 $input.keyup(tender);
@@ -132,6 +132,7 @@
 
                 if (async) {
                     $tag.addClass("in-progress");  // Dim for immediate feedback.
+                    // TODO(csrf): send CSRF token
                     $.ajax({
                         type: "POST",
                         url: $remover.closest("form.remove-tag-form").data("action-async"),
@@ -189,6 +190,7 @@
         $tag = putTagOnscreen(tagName);
 
         if ($tag && async) {
+            // TODO(csrf): send CSRF token
             $.ajax({
                 type: "POST",
                 url: $container.data("action-async"),

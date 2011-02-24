@@ -17,11 +17,13 @@ from tower import ugettext_lazy as _lazy
 from countries import COUNTRIES
 from sumo.models import ModelBase
 from sumo.urlresolvers import reverse
+from sumo.utils import auto_delete_files
 
 
 SHA1_RE = re.compile('^[a-f0-9]{40}$')
 
 
+@auto_delete_files
 class Profile(ModelBase):
     """Profile model for django users, get it with user.get_profile()."""
 
