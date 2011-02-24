@@ -362,7 +362,7 @@ MINIFY_BUNDLES = {
             'global/mobile.css',
             'css/mobile.css',
             'css/wiki_syntax.css',
-        )
+        ),
     },
     'js': {
         'common': (
@@ -373,6 +373,7 @@ MINIFY_BUNDLES = {
             'js/kbox.js',
             'global/menu.js',
             'js/main.js',
+            'js/format.js',
         ),
         'libs/jqueryui': (
             'js/libs/jqueryui.min.js',
