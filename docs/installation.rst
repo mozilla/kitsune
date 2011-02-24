@@ -114,7 +114,7 @@ configuration is::
             'ENGINE': 'django.db.backends.mysql',
             'HOST': 'localhost',
             'USER': 'kitsune',
-            'PASSWORD': '',
+            'PASSWORD': 'password',
             'OPTIONS': {'init_command': 'SET storage_engine=InnoDB'},
             'TEST_CHARSET': 'utf8',
             'TEST_COLLATION': 'utf8_unicode_ci',
@@ -125,12 +125,31 @@ Note the two settings ``TEST_CHARSET`` and ``TEST_COLLATION``. Without these,
 the test suite will use MySQL's (moronic) defaults when creating the test
 database (see below) and lots of tests will fail. Hundreds.
 
-Once you've set up the database, you can generate the schema with Django's
-``syncdb`` command::
+Create the database and grant permissions to the user, based on your database
+settings. For example, using the settings above::
 
-    ./manage.py syncdb
+    $ mysql -uroot -p
+    mysql> CREATE DATABASE kitsune;
+    mysql> GRANT ALL ON kitsune.* TO kitsune@localhost IDENTIFIED BY \
+        'password';
 
-This will generate an empty database, which will get you started!
+To load the latest database schema, use ``scripts/schema.sql`` and
+``schematic``::
+
+    $ mysql kitsune < scripts/schema.sql
+    $ ./vendor/src/schematic/schematic migrations/
+
+You'll now have an empty but up-to-date database!
+
+Finally, you'll probably want to create a superuser. Just use Django's
+``createsuperuser`` management command::
+
+    $ ./manage.py createsuperuser
+
+And follow the prompts. After logging in, you can create a profile for the
+user by going to ``/users/edit`` in your browser.
+
+See also the `important wiki documents <wikidocs.rst>`_ documentation.
 
 
 Testing it Out
