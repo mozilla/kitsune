@@ -47,6 +47,9 @@ class SearchClient(object):
             filters = []
 
         for f in filters:
+            if f.get('exclude') and not f.get('value'):
+                # Sphinx doesn't like excluding nothing: excludes everything.
+                continue
             if f.get('range', False):
                 sc.SetFilterRange(f['filter'], f['min'],
                                   f['max'], f.get('exclude', False))

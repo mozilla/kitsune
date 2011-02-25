@@ -137,6 +137,16 @@ class SearchTest(SphinxTestCase):
         results = wc.query('', ({'filter': 'category', 'value': [30]},))
         eq_(1, len(results))
 
+    def test_category_exclude_nothing(self):
+        """Excluding no categories should return results."""
+        clients = ((WikiClient(), 'category'),
+                   (QuestionsClient(), 'replies'),
+                   (DiscussionClient(), 'author_ord'))
+        for client, filter in clients:
+            results = client.query('', ({'filter': filter, 'exclude': True,
+                                         'value': []},))
+            self.assertNotEquals(0, len(results))
+
     def test_category_exclude(self):
         q = {'q': 'audio', 'format': 'json', 'w': 1}
         response = self.client.get(reverse('search'), q)
