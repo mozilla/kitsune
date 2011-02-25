@@ -6,8 +6,6 @@
 (function($){
 
     function init() {
-        initSearch();
-
         if($('body').is('.new-question')) {
             initNewQuestion();
         }
@@ -19,22 +17,6 @@
         }
 
         Marky.createSimpleToolbar('.editor-tools', '#reply-content, #id_content');
-    }
-
-    /*
-     * Initialize the search widget
-     */
-    function initSearch() {
-        // Setup the placeholder text
-        $('#support-search input[name="q"]')
-            // Setup the placeholder text
-            .autoPlaceholderText()
-            // Submit the form on Enter
-            .keyup(function(ev) {
-                if(ev.keyCode === 13 && $input.val()) {
-                    $('#support-search form').submit();
-                }
-            });
     }
 
     /*

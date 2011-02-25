@@ -405,9 +405,6 @@
             e.preventDefault();
         });
 
-        /* Search box */
-        $('#side-search input[name="q"]').autoPlaceholderText();
-
         /* Infinite scrolling */
         $('#infinite-scroll').bind('enterviewport', function() {
             if (!$('#tweets').children().length) {

@@ -19,6 +19,8 @@ k = {};
             $('div.editor-tools').remove();
         }
 
+        $('input[placeholder]').autoPlaceholderText();
+
         initAutoSubmitSelects();
         initSearchAutoFilters();
         disableFormsOnSubmit();
