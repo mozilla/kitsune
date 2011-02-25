@@ -5,6 +5,13 @@ k = {};
     k.LAZY_DELAY = 500;  // delay to lazy loading scripts, in ms
     k.MEDIA_URL = '/media/';
 
+    // Pass CSRF token in XHR header
+    $.ajaxSetup({
+        beforeSend: function(xhr, settings) {
+            xhr.setRequestHeader("X-CSRFToken", $.cookie('csrftoken'));
+        }
+    });
+
     $(document).ready(function() {
         /* Focus form field when clicking on error message. */
         $('#content ul.errorlist a').click(function () {

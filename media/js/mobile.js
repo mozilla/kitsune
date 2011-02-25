@@ -1,4 +1,4 @@
-(function() {
+$(document).ready(function() {
     // Used for styling.
     $('body').removeClass('no-js').addClass('js');
     var $toc = $('#toc');
@@ -58,9 +58,10 @@
     });
 
     if($('body').is('.aaq')) {
+        // Prepolate form with user's system info
         new AAQSystemInfo($('#question-form'));
     }
-})();
+});
 
 function _pd(func) {
     return function(e) {
@@ -68,3 +69,10 @@ function _pd(func) {
         func.apply(this, arguments);
     };
 }
+
+// Pass CSRF token in XHR header
+$.ajaxSetup({
+    beforeSend: function(xhr, settings) {
+        xhr.setRequestHeader("X-CSRFToken", $.cookie('csrftoken'));
+    }
+});
