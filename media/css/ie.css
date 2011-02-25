@@ -105,3 +105,10 @@ form div.attachments-upload img {
     height: expression(this.scrollHeight > this.scrollWidth ? "120px" : "auto");
     width: expression(this.scrollHeight < this.scrollWidth ? "120px" : "auto");
 }
+
+/* marky buttons */
+div.editor-tools span.separator,
+button.markup-toolbar-button {
+    display: block;
+    float: left;
+}

@@ -39,7 +39,7 @@
 {% macro content_editor(field) %}
   <div class="editor{% if field.errors %} invalid{% endif %}" data-media-search-url="{{ url('gallery.async') }}" data-media-gallery-url="{{ url('gallery.home') }}">
     <div class="editor-tools"></div>
-    {{ field|safe }}
+    <div>{{ field|safe }}</div>
   </div>
 {% endmacro %}
 
