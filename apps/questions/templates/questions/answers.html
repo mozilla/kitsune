@@ -158,7 +158,7 @@
           </ul>
         {% endblock %}
         <p><a id="show-more-details" href="#more-system-details">{{ _('More system details...') }}</a></p>
-        <section id="more-system-details" class="kbox" title="{{ _('Additional System Details') }}" data-target="#show-more-details" data-modal="true" data-id="more-system-details-kbox">
+        <section id="more-system-details" class="kbox" title="{{ _('Additional System Details') }}" data-target="#show-more-details" data-modal="true" data-id="more-system-details-kbox" data-close-on-out-click="true">
           <h1>{{ _('Additional System Details') }}</h1>
           {{ self.system_info() }}
           {% if question.metadata.sites_affected %}
@@ -191,6 +191,9 @@
             <h2>{{ _('User Agent') }}</h2>
             <p>{{ question.metadata.useragent }}</p>
           {% endif %}
+          <div class="bottom-close">
+            <a href="#close" class="kbox-cancel">{{ _('Close') }}</a>
+          </div>
         </section>
 
         {% set tags = question.tags.all() %}

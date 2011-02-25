@@ -802,6 +802,11 @@ ul.related li {
     padding: 2px 0 2px 25px;
 }
 
+#more-system-details .bottom-close {
+    margin: 10px 0 0;
+    text-align: right;
+}
+
 /* answers */
 #answers {
     background: #f0f7fe;
