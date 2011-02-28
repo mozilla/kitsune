@@ -13,17 +13,19 @@ function AAQSystemInfo($form) {
 AAQSystemInfo.prototype = {
     init: function($form) {
         var self = this,
-            $input = $form.find('input[name="os"]');
+            $input;
 
-        // Autofill in the info we can get via js
-        if(!$input.val()) {
-            $input.val(self.getOS());
-        }
+        // Autofill the user agent via js
+        $form.find('input[name="useragent"]').val(navigator.userAgent);
 
+        // Only guess at OS, FF version, plugins if we are on the desktop
+        // asking a firefox desktop question (or s/desktop/mobile/).
         if((BrowserDetect.browser === 'fx' && self.isDesktopFF()) ||
            (BrowserDetect.browser === 'm' && self.isMobileFF())) {
-            $form.find('input[name="useragent"]').val(navigator.userAgent);
-
+            $input = $form.find('input[name="os"]');
+            if(!$input.val()) {
+               $input.val(self.getOS());
+            }
             $input = $form.find('input[name="ff_version"]')
             if(!$input.val()) {
                 $input.val(self.getFirefoxVersion());
