@@ -70,7 +70,9 @@ def _get_tweets(locale=settings.LANGUAGE_CODE, limit=MAX_TWEETS, max_id=None,
         filter: One of the keys from FILTERS
     """
     locale = settings.LOCALES[locale].iso639_1
-    q = Tweet.objects.filter(locale=locale, reply_to=reply_to)
+    # Uncached so we can immediately see our reply if we switch to the Answered
+    # filter:
+    q = Tweet.uncached.filter(locale=locale, reply_to=reply_to)
     if max_id:
         q = q.filter(pk__lt=max_id)
 
