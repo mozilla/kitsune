@@ -26,7 +26,7 @@ AAQSystemInfo.prototype = {
             if(!$input.val()) {
                $input.val(self.getOS());
             }
-            $input = $form.find('input[name="ff_version"]')
+            $input = $form.find('input[name="ff_version"]');
             if(!$input.val()) {
                 $input.val(self.getFirefoxVersion());
             }
@@ -61,10 +61,11 @@ AAQSystemInfo.prototype = {
                 ['Mac OS', /(Mac_PowerPC)|(Macintosh)/i],
                 ['QNX', /QNX/i],
                 ['BeOS', /BeOS/i],
-                ['OS/2', /OS\/2/i],
+                ['OS/2', /OS\/2/i]
             ],
-            ua = navigator.userAgent;
-        for (var i=0, l=os.length; i<l; i++) {
+            ua = navigator.userAgent,
+            i, l;
+        for (i=0, l=os.length; i<l; i++) {
             if (os[i][1].test(ua)) {
                 return os[i][0];
             }
@@ -73,9 +74,10 @@ AAQSystemInfo.prototype = {
     },
     getPlugins: function() {
         // Returns wiki markup for the list of plugins
-        var plugins = [];
-        for (var i = 0; i < navigator.plugins.length; i++) {
-            var d = navigator.plugins[i].description.replace(/<[^>]+>/ig,'');
+        var plugins = [],
+            i, d;
+        for (i = 0; i < navigator.plugins.length; i++) {
+            d = navigator.plugins[i].description.replace(/<[^>]+>/ig,'');
             if (plugins.indexOf(d) == -1) {
                 plugins.push(d);
             }

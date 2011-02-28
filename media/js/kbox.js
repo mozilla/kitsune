@@ -113,7 +113,7 @@ KBox.prototype = {
         self.$kbox = $();
 
         // Make the instance accessible from the DOM element.
-        self.$el.data('kbox', self)
+        self.$el.data('kbox', self);
 
         // If we have a click target, open the kbox when it is clicked.
         if (self.$clickTarget) {

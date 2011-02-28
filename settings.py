@@ -361,7 +361,7 @@ MINIFY_BUNDLES = {
         'common': (
             'js/i18n.js',
             'js/libs/jquery.min.js',
-            'js/libs/modernizr-1.7.min.js',
+            'js/libs/modernizr-1.7.js',
             'js/kbox.js',
             'global/menu.js',
             'js/main.js',
