@@ -262,7 +262,7 @@ article p {
     text-decoration: none;
     position: relative;
 }
-#toc h2,
+#doc-content #toc h2,
 .slidebox .slide {
     cursor: pointer;
     height: 50px;
@@ -294,7 +294,7 @@ article p {
 .no-js .slidebox .slide:after {
     content: '-';
 }
-#toc ul {
+#doc-content #toc ul {
     list-style: none;
     margin: 0;
     padding: 0;
