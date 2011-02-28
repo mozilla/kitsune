@@ -55,9 +55,8 @@ Getting the Source
 
 Grab the source from Github using::
 
-    git clone git://github.com/jsocol/kitsune.git
+    git clone --recursive git://github.com/jsocol/kitsune.git
     cd kitsune
-    git submodule update --init
 
 
 Installing the Packages
@@ -82,12 +81,13 @@ a vendor library. This allows them to be available on the Python path without
 needing to be installed in the system, allowing multiple versions for multiple
 projects simultaneously.
 
-To get the vendor library, just::
+The vendor library is a submodule in ``vendor/``. If you clone Kitsune with
+``--recursive`` above, you should have everything, but to be safe, or when the
+vendor submodule changes, you should run this::
 
-    git clone --recursive git://github.com/jsocol/kitsune-lib.git vendor
-
-This will clone the repository and all its submodules into a directory called
-``vendor``.
+    cd vendor
+    git submodule update --init --recursive
+    cd ..
 
 
 Configuration
