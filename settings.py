@@ -418,6 +418,7 @@ MINIFY_BUNDLES = {
             'js/users.js',
         ),
         'mobile': (
+            'global/mobilefeatures.js',
             'js/i18n.js',
             'js/libs/jquery.min.js',
             'js/libs/jquery.cookie.js',
