@@ -58,8 +58,8 @@ def _unique_by_email(users_and_watches):
                 yield ensure_user_has_email(favorite_user, favorite_watch)
             favorite_user, favorite_watch = u, w
             email = row_email
-        elif ((not favorite_user.email or isinstance(u, EmailUser))
-              and u.email and not isinstance(u, EmailUser)):
+        elif ((not favorite_user.email or u.is_anonymous()) and
+              u.email and not u.is_anonymous()):
             favorite_user, favorite_watch = u, w
     if favorite_user is not None:
         yield ensure_user_has_email(favorite_user, favorite_watch)

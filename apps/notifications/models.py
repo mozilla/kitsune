@@ -102,7 +102,11 @@ class NotificationsMixin(models.Model):
 
 
 class EmailUser(AnonymousUser):
-    """An anonymous user identified only by email address"""
+    """An anonymous user identified only by email address
+
+    To test whether a returned user is an anonymous user, call is_anonymous().
+
+    """
 
     def __init__(self, email=''):
         self.email = email
@@ -120,6 +124,3 @@ class EmailUser(AnonymousUser):
 
     def __hash__(self):
         return hash(self.email)
-
-    def is_anonymous(self):
-        return False
