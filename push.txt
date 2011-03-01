@@ -13,3 +13,5 @@ Every Time
 
 This Time
 =========
+
+1. Make sure vendor/ works as a submodule.
