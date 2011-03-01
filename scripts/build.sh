@@ -33,15 +33,8 @@ source $VENV/bin/activate
 pip install -r requirements/compiled.txt
 
 # Using a vendor library for the rest.
-if [ ! -d "$VENDOR" ]; then
-    echo "No vendor library found; making one..."
-    git clone --recursive git://github.com/jsocol/kitsune-lib.git $VENDOR
-fi
-echo "Updating vendor library..."
-pushd $VENDOR > /dev/null
-git pull -q origin master
-git submodule --quiet update --init
-popd > /dev/null
+cd $WORKSPACE
+git submodule update --init --recursive
 
 python manage.py update_product_details
 
