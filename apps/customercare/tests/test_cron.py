@@ -69,9 +69,9 @@ class GetOldestTweetTestCase(TestCase):
     fixtures = ['tweets.json']
 
     def test_get_oldest_tweet_exists(self):
-        eq_(11, _get_oldest_tweet('en', 2).pk)
-        eq_(4, _get_oldest_tweet('en', 0).pk)
-        eq_(21, _get_oldest_tweet('en', 6).pk)
+        eq_(25309157145, _get_oldest_tweet('en', 2).pk)
+        eq_(25309381333, _get_oldest_tweet('en', 0).pk)
+        eq_(25308851981, _get_oldest_tweet('en', 6).pk)
 
     def test_get_oldest_tweet_offset_too_big(self):
         eq_(None, _get_oldest_tweet('en', 100))

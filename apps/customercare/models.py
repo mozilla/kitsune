@@ -8,13 +8,12 @@ from sumo.models import ModelBase, LocaleField
 
 class Tweet(ModelBase):
     """An entry on twitter."""
-    tweet_id = models.BigIntegerField(unique=True)
+    tweet_id = models.BigIntegerField(primary_key=True)
     raw_json = models.TextField()
     # This is different from our usual locale, so not using LocaleField.
     locale = models.CharField(max_length=20, db_index=True)
     created = models.DateTimeField(default=datetime.now, db_index=True)
-    reply_to = models.BigIntegerField(blank=True, null=True, default=None,
-                                      db_index=True)
+    reply_to = models.ForeignKey('self', null=True, related_name='replies')
     hidden = models.BooleanField(default=False, db_index=True)
 
     class Meta:

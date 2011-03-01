@@ -55,7 +55,7 @@ class TweetListTestCase(TestCase):
     def test_hide_tweets_with_replies(self):
         """Hiding tweets with replies is not allowed."""
         tw = Tweet.objects.filter(reply_to=None)[0]
-        tw.reply_to = 123
+        tw.reply_to_id = 25309168529
         tw.save()
 
         r = self.client.post(

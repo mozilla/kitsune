@@ -37,18 +37,19 @@ def _tweet_for_template(tweet):
 
     # Recursively fetch replies.
     if settings.CC_SHOW_REPLIES:
-        replies = _get_tweets(limit=0, reply_to=tweet.tweet_id)
+        # If ever slow, optimize to do fewer queries.
+        replies = _get_tweets(limit=0, reply_to=tweet)
     else:
         replies = None
 
     return {'profile_img': bleach.clean(data['profile_image_url']),
             'user': bleach.clean(data['from_user']),
             'text': bleach.clean(data['text']),
-            'id': int(tweet.tweet_id),
+            'id': tweet.pk,
             'date': date,
             'reply_count': len(replies) if replies else 0,
             'replies': replies,
-            'reply_to': tweet.reply_to}
+            'reply_to': tweet.reply_to and tweet.reply_to.pk}
 
 
 def _get_tweets(locale=settings.LANGUAGE_CODE,
@@ -138,7 +139,7 @@ def twitter_post(request):
     """Post a tweet, and return a rendering of it (and any replies)."""
 
     try:
-        reply_to = int(request.POST.get('reply_to', ''))
+        reply_to_id = int(request.POST.get('reply_to', ''))
     except ValueError:
         # L10n: the tweet needs to be a reply to another tweet.
         return HttpResponseBadRequest(_('Reply-to is empty'))
@@ -152,7 +153,7 @@ def twitter_post(request):
         return HttpResponseBadRequest(_('Message is too long'))
 
     try:
-        result = request.twitter.api.update_status(content, reply_to)
+        result = request.twitter.api.update_status(content, reply_to_id)
     except tweepy.TweepError, e:
         # L10n: {message} is an error coming from our twitter api library
         return HttpResponseBadRequest(
@@ -176,16 +177,16 @@ def twitter_post(request):
         'from_user': author['screen_name'],
         'profile_image_url': author['profile_image_url'],
     }
-    # Tweet metadata
-    tweet_model_data = {
-        'tweet_id': status['id'],
-        'raw_json': json.dumps(raw_tweet_data),
-        'locale': author['lang'],
-        'created': status['created_at'],
-        'reply_to': reply_to,
-    }
-    tweet = Tweet(**tweet_model_data)
-    tweet.save()
+
+    # The tweet with id `reply_to_id` will not be missing from the DB unless
+    # the purge cron job has run since the user loaded the form and we are
+    # replying to a deleted tweet. TODO: Catch integrity error and log or
+    # something.
+    tweet = Tweet.objects.create(pk=status['id'],
+                         raw_json=json.dumps(raw_tweet_data),
+                         locale=author['lang'],
+                         created=status['created_at'],
+                         reply_to_id=reply_to_id)
 
     # We could optimize by not encoding and then decoding JSON.
     return jingo.render(request, 'customercare/tweets.html',
@@ -210,11 +211,12 @@ def hide_tweet(request):
         return HttpResponseBadRequest(_('Invalid ID.'))
 
     try:
-        tweet = Tweet.objects.get(tweet_id=id)
+        tweet = Tweet.objects.get(pk=id)
     except Tweet.DoesNotExist:
         return HttpResponseNotFound(_('Invalid ID.'))
 
-    if tweet.reply_to or Tweet.objects.filter(reply_to=id).count():
+    if (tweet.reply_to is not None or
+        Tweet.objects.filter(reply_to=tweet).exists()):
         return HttpResponseBadRequest(_('Tweets that are replies or have '
                                         'replies must not be hidden.'))
 
