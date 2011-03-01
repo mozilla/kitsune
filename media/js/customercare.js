@@ -336,11 +336,12 @@
         });
 
 
-        /** Refresh button */
-        $('#refresh-tweets').click(function(e) {
+        /** Refresh button and Show menu */
+        function refresh() {
             $("#refresh-busy").show();
             $.get(
-                $(this).attr('href'), {},
+                $("#refresh-tweets").attr("href"),
+                {filter: $("#show").val()},
                 function(data) {
                     $('#tweets').fadeOut('fast', function() {
                         if (data.length) {
@@ -354,8 +355,16 @@
                     });
                 }
             );
+        }
+
+        $('#refresh-tweets').click(function(e) {
+            refresh();
             e.preventDefault();
             return false;
+        });
+
+        $('#show').change(function(e) {
+            refresh();
         });
 
         /* Show/hide replies */
@@ -416,7 +425,8 @@
             if (!max_id) return;
 
             $.get(
-                $('#refresh-tweets').attr('href'), {max_id: max_id},
+                $('#refresh-tweets').attr('href'),
+                {max_id: max_id, filter: $("#show").val()},
                 function(data) {
                     if (data) {
                         $('#tweets').append(data);

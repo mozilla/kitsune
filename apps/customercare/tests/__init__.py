@@ -3,9 +3,11 @@ import random
 
 from django.conf import settings
 
-from customercare import models
+from customercare.models import (Tweet, CategoryMembership, CannedCategory,
+                                 CannedResponse)
 
 
+# TODO: Change save kwarg defaults to False to match other apps.
 def cc_category(save=True, **kwargs):
     """Return a canned category."""
     responses = kwargs.pop('responses', [])
@@ -15,12 +17,12 @@ def cc_category(save=True, **kwargs):
                 'locale': settings.LANGUAGE_CODE}
     defaults.update(kwargs)
 
-    category = models.CannedCategory(**defaults)
+    category = CannedCategory(**defaults)
     if save:
         category.save()
     # Add responses to this category.
     for response, weight in responses:
-        models.CategoryMembership.objects.create(
+        CategoryMembership.objects.create(
             category=category, response=response, weight=weight)
 
     return category
@@ -36,13 +38,45 @@ def cc_response(save=True, **kwargs):
                 'locale': settings.LANGUAGE_CODE}
     defaults.update(kwargs)
 
-    response = models.CannedResponse(**defaults)
+    response = CannedResponse(**defaults)
     if save:
         response.save()
     # Add categories to this response.
     for category, weight in categories:
         weight = random.choice(range(50))
-        models.CategoryMembership.objects.create(
+        CategoryMembership.objects.create(
             category=category, response=response, weight=weight)
 
     return response
+
+
+next_tweet_id = 1
+
+
+def tweet(save=False, **kwargs):
+    """Return a Tweet with valid default values or the ones passed in.
+
+    Args:
+        save: whether to save the Tweet before returning it
+        text: the `text` attribute of the Tweet's raw_json
+    """
+    global next_tweet_id
+    defaults = {'locale': 'en', 'raw_json':
+        '{"iso_language_code": "en", "text": "%s", '
+        '"created_at": "Thu, 23 Sep 2010 13:58:06 +0000", '
+        '"profile_image_url": '
+        '"http://a1.twimg.com/profile_images/1117809237/cool_cat_normal.jpg", '
+        '"source": "&lt;a href=&quot;http://www.tweetdeck.com&quot; '
+            'rel=&quot;nofollow&quot;&gt;TweetDeck&lt;/a&gt;", '
+            '"from_user": "__jimcasey__", "from_user_id": 142651388, '
+            '"to_user_id": null, "geo": null, "id": 25309168521, '
+            '"metadata": {"result_type": "recent"}}' %
+            kwargs.pop('text', 'Hey #Firefox')}  # TODO: Escape quotes and such
+    defaults.update(kwargs)
+    if 'tweet_id' not in kwargs:
+        defaults['tweet_id'] = next_tweet_id
+        next_tweet_id += 1
+    t = Tweet(**defaults)
+    if save:
+        t.save()
+    return t

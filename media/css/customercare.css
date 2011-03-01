@@ -89,8 +89,10 @@
 
 #refresh-busy {
     display: none;
+    float: right;
     height: 10px;
-    padding-left: 10px;
+    margin: 17px 5px 0 0;
+    padding: 6px 8px;
     width: 10px;
 }
 
@@ -157,6 +159,10 @@ div.warning-box {
 
 #tweets li {
     position: relative;
+}
+
+#tweets li.hidden-reply {
+    opacity: .4;
 }
 
 #tweets li img {
@@ -530,6 +536,12 @@ html.js #tweets li:hover .remove_tweet,
     padding: 3px 8px;
     text-align: center;
     text-shadow: none;
+}
+
+.tweets-header select {
+    margin: 15px 5px 0 0;
+    float: right;
+    padding: 4px 8px;
 }
 
 .header-button:hover,

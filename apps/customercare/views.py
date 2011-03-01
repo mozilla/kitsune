@@ -8,13 +8,13 @@ from django.conf import settings
 from django.core.cache import cache
 from django.http import (HttpResponse, HttpResponseBadRequest,
                          HttpResponseNotFound, HttpResponseServerError)
-from django.shortcuts import get_object_or_404
 from django.views.decorators.http import require_POST, require_GET
+from django.utils.datastructures import SortedDict
 
 from babel.numbers import format_number
 from bleach import Bleach
 import jingo
-from tower import ugettext as _
+from tower import ugettext as _, ugettext_lazy as _lazy
 import tweepy
 
 from customercare.models import CannedCategory, Tweet
@@ -26,6 +26,10 @@ log = logging.getLogger('k.customercare')
 bleach = Bleach()
 
 MAX_TWEETS = 20
+FILTERS = SortedDict([('recent', _lazy('Most Recent')),
+                      ('unanswered', _lazy('Unanswered')),
+                      ('answered', _lazy('Answered')),
+                      ('all', _lazy('All'))])
 
 
 def _tweet_for_template(tweet):
@@ -49,21 +53,34 @@ def _tweet_for_template(tweet):
             'date': date,
             'reply_count': len(replies) if replies else 0,
             'replies': replies,
-            'reply_to': tweet.reply_to and tweet.reply_to.pk}
+            'reply_to': tweet.reply_to and tweet.reply_to.pk,
+            'hidden': tweet.hidden}
 
 
-def _get_tweets(locale=settings.LANGUAGE_CODE,
-                limit=MAX_TWEETS, max_id=None, reply_to=None):
+def _get_tweets(locale=settings.LANGUAGE_CODE, limit=MAX_TWEETS, max_id=None,
+                reply_to=None, filter=None):
     """
     Fetch a list of tweets.
 
-    limit is the maximum number of tweets returned.
-    max_id will only return tweets with the status ids less than the given id.
+    Args:
+        limit: the maximum number of tweets returned
+        max_id: return tweets with the status ids less than max_id
+        reply_to: Return only tweets that are replies to the given Tweet. If
+            None, return only top-level (non-reply) tweets.
+        filter: One of the keys from FILTERS
     """
     locale = settings.LOCALES[locale].iso639_1
-    q = Tweet.objects.filter(locale=locale, reply_to=reply_to, hidden=False)
+    q = Tweet.objects.filter(locale=locale, reply_to=reply_to)
     if max_id:
-        q = q.filter(tweet_id__lt=max_id)
+        q = q.filter(pk__lt=max_id)
+
+    if filter != 'all':
+        q = q.filter(hidden=False)
+    if filter == 'unanswered':
+        q = q.filter(replies__pk__isnull=True)
+    elif filter == 'answered':
+        q = q.filter(replies__pk__isnull=False)
+
     if limit:
         q = q[:limit]
 
@@ -74,9 +91,14 @@ def _get_tweets(locale=settings.LANGUAGE_CODE,
 def more_tweets(request):
     """AJAX view returning a list of tweets."""
     max_id = request.GET.get('max_id')
+
+    raw_filter = request.GET.get('filter')
+    filter = raw_filter if raw_filter in FILTERS else 'recent'
+
     return jingo.render(request, 'customercare/tweets.html',
                         {'tweets': _get_tweets(locale=request.locale,
-                                               max_id=max_id)})
+                                               max_id=max_id,
+                                               filter=filter)})
 
 
 @require_GET
@@ -130,6 +152,7 @@ def landing(request):
         'authed': twitter.authed,
         'twitter_user': (twitter.api.auth.get_username() if
                          twitter.authed else None),
+        'filters': FILTERS,
     })
 
 

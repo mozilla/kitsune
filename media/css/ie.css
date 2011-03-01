@@ -112,3 +112,8 @@ button.markup-toolbar-button {
     display: block;
     float: left;
 }
+
+/* Customer Care hidden tweets */
+#tweets li.hidden-reply {
+    filter: alpha(opacity=40);
+}

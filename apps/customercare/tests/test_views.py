@@ -3,13 +3,14 @@ from django.conf import settings
 from mock import patch_object
 from nose.tools import eq_
 
+from customercare.tests import tweet
 from customercare.models import Tweet
 from customercare.views import _get_tweets
-from sumo.tests import TestCase
+from sumo.tests import TestCase, LocalizingClient
 from sumo.urlresolvers import reverse
 
 
-class TweetListTestCase(TestCase):
+class TweetListTests(TestCase):
     """Tests for the customer care tweet list."""
 
     fixtures = ['tweets.json']
@@ -83,3 +84,56 @@ class TweetListTestCase(TestCase):
             reverse('customercare.hide_tweet', locale='en-US'),
             {'id': tw.tweet_id})
         eq_(r.status_code, 418)  # Don't tell a teapot to brew coffee.
+
+
+class FilterTests(TestCase):
+    """Test tweet filtering"""
+
+    def setUp(self):
+        """Make a tweet, an answer to it, an unanswered tweet, and a hidden
+        one."""
+        super(FilterTests, self).setUp()
+        self.client = LocalizingClient()
+
+        tweet(text='YO_UNANSWERED').save()
+        cry_for_help = tweet(text='YO_HELP_ME', save=True)
+        tweet(text='YO_REPLY', reply_to=cry_for_help).save()
+        tweet(text='YO_HIDDEN', hidden=True).save()
+
+    def _landing_page(self, filter):
+        """Return the content of the landing page.
+
+        Also, assert the request returns a 200.
+
+        """
+        response = self.client.get(
+            reverse('customercare.more_tweets'),
+            {'filter': filter})
+        eq_(response.status_code, 200)
+        return response.content
+
+    def _test_a_filter(self, filter, should_show_unanswered,
+                       should_show_answered, should_show_reply,
+                       should_show_hidden):
+        """Ensure the given filter shows the tweets specified."""
+        content = self._landing_page(filter)
+        assert ('YO_UNANSWERED' in content) == should_show_unanswered
+        assert ('YO_HELP_ME' in content) == should_show_answered
+        assert ('YO_REPLY' in content) == should_show_reply
+        assert ('YO_HIDDEN' in content) == should_show_hidden
+
+    def test_unanswered(self):
+        self._test_a_filter('unanswered', True, False, False, False)
+
+    def test_answered(self):
+        self._test_a_filter('answered', False, True, True, False)
+
+    def test_all(self):
+        self._test_a_filter('all', True, True, True, True)
+
+    def test_recent(self):
+        self._test_a_filter('recent', True, True, True, False)
+
+    def test_bogus(self):
+        """Test a bogus filter, which should fall back to Recent."""
+        self._test_a_filter('bogus', True, True, True, False)

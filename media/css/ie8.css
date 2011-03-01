@@ -6,3 +6,7 @@ input[type=submit].btn-important {
     font-weight: bold;
 }
 
+/* Customer Care hidden tweets */
+#tweets li.hidden-reply {
+    -ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=40)";
+}
