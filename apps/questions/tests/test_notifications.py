@@ -1,9 +1,10 @@
+from django.conf import settings
 from django.contrib.sites.models import Site
 from django.contrib.auth.models import User
 from django.core import mail
 
-from nose.tools import eq_
 import mock
+from nose.tools import eq_
 
 from questions.events import QuestionReplyEvent, QuestionSolvedEvent
 from questions.models import Question, Answer
@@ -44,24 +45,25 @@ paste it into your browser's location bar:
 
 https://testserver/en-US/questions/1#answer-%s
 """
-SOLUTION_EMAIL_INSIDE_REQUEST = """
+SOLUTION_EMAIL_INSIDE_REQUEST_ANONYMOUS = \
+"""We just wanted to let you know that pcraciunoiu
+has found a solution to a Firefox question that you're following.
+The question
 
-Solution to question: Lorem ipsum dolor sit amet?
+Lorem ipsum dolor sit amet?
 
-jsocol has accepted a solution to the question 
-Lorem ipsum dolor sit amet?.
+was marked as solved by its asker, jsocol.
 
-========
+You can view the solution using the link below.
 
-An answer & stuff.
-
-========
-
-To view the solution on the site, click the following link, or
-paste it into your browser's location bar:
+Did this answer also help you? Did you find another post more
+helpful? Let other Firefox users know by voting next to the
+answer.
 
 https://testserver/en-US/questions/1#answer-%s
 """
+SOLUTION_EMAIL_INSIDE_REQUEST = ('Hi pcraciunoiu,\n\n' +
+                                 SOLUTION_EMAIL_INSIDE_REQUEST_ANONYMOUS)
 
 
 class NotificationsTests(TestCaseBase):
@@ -117,18 +119,24 @@ class NotificationsTests(TestCaseBase):
         return question
 
     @mock.patch_object(Site.objects, 'get_current')
+    @mock.patch_object(settings._wrapped, 'CONFIRM_ANONYMOUS_WATCHES', False)
     def test_solution_notification(self, get_current):
         get_current.return_value.domain = 'testserver'
 
         question = self._toggle_watch_question('solution', turn_on=True)
+        QuestionSolvedEvent.notify('anon@ymous.com', question)
+        
         answer = question.answers.all()[0]
         # Post a reply
         self.client.login(username='jsocol', password='testpass')
         post(self.client, 'questions.solution', args=[question.id, answer.id])
 
         attrs_eq(mail.outbox[0], to=['user47963@nowhere'],
-                 subject='Solution to: Lorem ipsum dolor sit amet?',
+                 subject='Solution found to Firefox Help question',
                  body=SOLUTION_EMAIL_INSIDE_REQUEST % answer.id)
+        attrs_eq(mail.outbox[1], to=['anon@ymous.com'],
+                 subject='Solution found to Firefox Help question',
+                 body=SOLUTION_EMAIL_INSIDE_REQUEST_ANONYMOUS % answer.id)
 
         self._toggle_watch_question('solution', turn_on=False)
 

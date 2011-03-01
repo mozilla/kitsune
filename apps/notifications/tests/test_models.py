@@ -1,6 +1,6 @@
 from nose.tools import eq_
 
-from notifications.models import WatchFilter
+from notifications.models import WatchFilter, EmailUser
 from notifications.tests import watch_filter
 from sumo.tests import TestCase
 
@@ -22,3 +22,17 @@ class WatchFilterTests(TestCase):
         MAX_INT = 2 ** 32 - 1
         watch_filter(name='maxint', value=MAX_INT).save()
         eq_(MAX_INT, WatchFilter.objects.get(name='maxint').value)
+
+
+class EmailUserTests(TestCase):
+    """Tests for EmailUser class"""
+
+    def test_blank_username(self):
+        """Assert EmailUsers' username is ''.
+
+        This isn't covered by the tests in django.contrib.auth, and we need to
+        hear about it if it changes, as some implementations of _mails() depend
+        on it.
+
+        """
+        eq_('', EmailUser().username)

@@ -74,18 +74,21 @@ class QuestionSolvedEvent(QuestionEvent):
         question.solution = self.answer
         question.solution.question = question
 
-        subject = _(u'Solution to: %s') % question.title
+        subject = _(u'Solution found to Firefox Help question')
         t = loader.get_template('questions/email/solution.ltxt')
-        c = {'solution': question.solution.content,
-             'author': question.creator.username,
+        c = {'answerer': question.solution.creator,
+             'asker': question.creator.username,
              'question_title': question.title,
              'host': Site.objects.get_current().domain,
              'solution_url': question.solution.get_absolute_url()}
-        content = t.render(Context(c))
-        return (EmailMessage(subject, content,
-                             settings.NOTIFICATIONS_FROM_ADDRESS,
-                             [u.email]) for
-                u, dummy in users_and_watches)
+        for u, dummy in users_and_watches:
+            c['username'] = u.username  # '' if anonymous
+            content = t.render(Context(c))
+            yield EmailMessage(
+                subject,
+                content,
+                settings.NOTIFICATIONS_FROM_ADDRESS,
+                [u.email])
 
     @classmethod
     def get_watch_description(cls, watch):
