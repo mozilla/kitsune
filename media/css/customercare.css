@@ -159,6 +159,7 @@ div.warning-box {
 
 #tweets li {
     position: relative;
+    width: 710px;
 }
 
 #tweets li.hidden-reply {
