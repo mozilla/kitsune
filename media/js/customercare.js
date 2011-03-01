@@ -18,7 +18,7 @@
                 }
             }
 
-            return parseInt(this._id, 10);
+            return this._id;
         });
         this.__defineSetter__('id', function(val) {
             this._id = val;
@@ -315,7 +315,7 @@
         });
 
         if (signin.authed && memory.id) {
-            $('#tweet-'+ memory.id).trigger('click');
+            $('#tweet-'+ memory.id).find('.tweet-contents').trigger('click');
             memory.del();
         }
 
