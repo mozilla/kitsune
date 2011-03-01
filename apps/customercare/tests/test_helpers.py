@@ -2,7 +2,7 @@ from datetime import datetime
 
 from nose.tools import eq_
 
-from customercare.helpers import isotime, round_percent
+from customercare.helpers import isotime, round_percent, utctimesince
 from sumo.tests import TestCase
 
 
@@ -27,3 +27,25 @@ class RoundPercentTests(TestCase):
 
     def test_low_percent_float(self):
         eq_('6.3', str(round_percent(6.299)))
+
+
+class UTCTimesinceTests(TestCase):
+    """Tests for the utctimesince function
+
+    These are largely copied from sumo.tests.test_helpers.TimesinceTests
+
+    """
+
+    def test_none(self):
+        """If None is passed in, utctimesince returns ''."""
+        eq_('', utctimesince(None))
+
+    def test_trunc(self):
+        """Assert it returns only the most significant time division."""
+        eq_('1 year ago',
+            utctimesince(datetime(2000, 1, 2), now=datetime(2001, 2, 3)))
+
+    def test_future(self):
+        """Test behavior when date is in the future and also when omitting the
+        `now` kwarg."""
+        eq_('', utctimesince(datetime(9999, 1, 2)))

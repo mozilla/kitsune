@@ -1,15 +1,17 @@
 from datetime import datetime
 
 from django.conf import settings
-from django.template import defaultfilters
 
 from jingo import register
 import pytz
 
+from sumo.helpers import timesince
+
 
 @register.filter
-def utctimesince(time):
-    return defaultfilters.timesince(time, datetime.utcnow())
+def utctimesince(time, now=None):
+    now = now or datetime.utcnow()
+    return timesince(time, now)
 
 
 def _append_tz(t):
