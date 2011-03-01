@@ -1,4 +1,6 @@
 (function($){
+    "use strict";
+
     // Tweet IDs are too high. Using .data('tweet-id') returns incorrect
     // results. Use .attr('data-tweet-id') instead.
     // See jQuery bug 7579 - http://bugs.jquery.com/ticket/7579
@@ -54,7 +56,7 @@
         this.__defineGetter__('avatar', function() {
             return {
                 href: this.$avatar_el.attr('href'),
-                src: this.$avatar_el.find('img').attr('src'),
+                src: this.$avatar_el.find('img').attr('src')
             };
         });
         this.__defineSetter__('avatar', function(val) {
@@ -115,10 +117,49 @@
             'icons': false,
             'autoHeight': false,
             'collapsible': true,
-            'active': false,
+            'active': false
         });
 
+        // Update the "Such and such replied" link text and formatting based on
+        // the data-count attr of a parent tweet.
+        function update_reply_indicator($parent) {
+            var reply_txt = $parent.find('.reply_count').first(),  // first() avoids nested tweets.
+                count = reply_txt.data('count') - 1;
+            reply_txt.addClass('you');
+            if (count === 0) {
+                reply_txt.text(gettext('You replied'));
+            } else if (count === 1) {
+                reply_txt.text(gettext('You and 1 other replied'));
+            } else {
+                reply_txt.text(interpolate('You and %s others replied',
+                                           [count]));
+            }
+        }
+
+        // Append a new tweet, given as the HTML of an <li>, to this thread.
+        function appendReply(html, parentId) {
+            var $parent = $('#tweet-' + parentId),
+                $count,
+                $replyList = $('#replies_' + parentId).children('ul');
+            $replyList.append($(html).hide());
+
+            $count = $parent.find('.reply_count').first();
+            if ($count.is('span')) {
+                var $zeroCount = $('<a href="#" class="reply_count you" data-count="0"></a>');
+                $count.replaceWith($zeroCount);
+                $count = $zeroCount;
+            }
+            $count.addClass('opened')
+                  .data('count', parseInt($count.data('count'), 10) + 1);
+            $parent.children('.replies:hidden').slideDown();
+
+            update_reply_indicator($parent);
+
+            $replyList.children().last().slideDown();
+        }
+
         function Reply() {
+            var modal = this;
 
             this.__defineGetter__('content', function() {
                 return this.$textarea.val();
@@ -166,14 +207,13 @@
             this.$success_msg = this.$el.find("#submit-message");
             this.$error_msg = this.$el.find("#error-message");
 
-            var modal = this;
             this.kbox = $(this.$el).data('kbox');
 
             this.$el.find('#submit').bind('click', {reply: this}, function(e) {
                 var reply = e.data.reply,
                     data = {
                         'content': reply.content,
-                        'reply_to': reply.tweet.id,
+                        'reply_to': reply.tweet.id
                     },
                     $btn = $(this);
                 if (!$btn.is('.busy')) {
@@ -232,44 +272,6 @@
             this.kbox = this.$el.data('kbox');
         }
         var signin = new Signin();
-
-        // Update the "Such and such replied" link text and formatting based on
-        // the data-count attr of a parent tweet.
-        function update_reply_indicator($parent) {
-            var reply_txt = $parent.find('.reply_count').first(),  // first() avoids nested tweets.
-                count = reply_txt.data('count') - 1;
-            reply_txt.addClass('you');
-            if (count === 0) {
-                reply_txt.text(gettext('You replied'));
-            } else if (count === 1) {
-                reply_txt.text(gettext('You and 1 other replied'));
-            } else {
-                reply_txt.text(interpolate('You and %s others replied',
-                                           [count]));
-            }
-        }
-
-        // Append a new tweet, given as the HTML of an <li>, to this thread.
-        function appendReply(html, parentId) {
-            var $parent = $('#tweet-' + parentId),
-                $count,
-                $replyList = $('#replies_' + parentId).children('ul');
-            $replyList.append($(html).hide());
-
-            $count = $parent.find('.reply_count').first();
-            if ($count.is('span')) {
-                var $zeroCount = $('<a href="#" class="reply_count you" data-count="0"></a>');
-                $count.replaceWith($zeroCount);
-                $count = $zeroCount;
-            }
-            $count.addClass('opened')
-                  .data('count', parseInt($count.data('count')) + 1);
-            $parent.children('.replies:hidden').slideDown();
-
-            update_reply_indicator($parent);
-
-            $replyList.children().last().slideDown();
-        }
 
         /** Mark the tweets that the logged-in user has replied to. */
         function mark_my_replies() {
@@ -444,9 +446,9 @@
         $('#side-stats select').change(function(e) {
             var $this = $(this),
                 option = $this.children('option[value=' + $this.val() + ']'),
-                bubble = $('#side-stats .bubble')
+                bubble = $('#side-stats .bubble'),
                 percent = interpolate(gettext('%s%'),
-                                      [option.data('perc')]);
+                                      [option.data('perc')]),
                 contribs = $('#side-stats .contribs');
             // Update numbers
             bubble.find('.perc mark').text(percent);
