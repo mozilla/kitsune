@@ -13,6 +13,7 @@ from nose.tools import eq_
 from test_utils import RequestFactory
 
 from sumo.tests import TestCase
+from wiki.models import Document
 from wiki.tasks import (send_reviewed_notification, rebuild_kb,
                         schedule_rebuild_kb, _rebuild_kb_chunk)
 from wiki.tests import TestCaseBase, revision
@@ -87,6 +88,24 @@ class RebuildTestCase(TestCase):
         data = set((1, 2, 4, 5))
         assert 'args' in apply_async.call_args[1]
         eq_(data, set(apply_async.call_args[1]['args'][0]))
+
+    def test_delete_redirects(self):
+        """Test that the rebuild deletes redirects that point to deleted
+        documents."""
+        # Change slug so redirect is created
+        d = Document.objects.get(pk=1)
+        slug = d.slug
+        new_slug = slug + '-1'
+        d.slug = new_slug
+        d.save()
+        # Rebuild kb and make sure redirect is still there
+        rebuild_kb()
+        redirect = Document.objects.get(slug=slug)
+        eq_(d.slug, redirect.redirect_document().slug)
+        # Delete the document, make sure redirect is gone
+        d.delete()
+        rebuild_kb()
+        eq_(0, Document.objects.filter(slug=slug).count())
 
 
 class ReviewMailTestCase(TestCaseBase):

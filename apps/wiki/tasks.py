@@ -89,8 +89,12 @@ def _rebuild_kb_chunk(data, **kwargs):
         message = None
         try:
             document = Document.objects.get(pk=pk)
-            document.html = document.current_revision.content_parsed
-            document.save()
+            if document.redirect_url():
+                if not document.redirect_document():
+                    document.delete()
+            else:
+                document.html = document.current_revision.content_parsed
+                document.save()
         except Document.DoesNotExist:
             message = 'Missing document: %d' % pk
         except ValidationError as e:
