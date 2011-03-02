@@ -11,6 +11,9 @@ if [ -z $1 ]; then
     echo "Warning: You should provide a unique name for this job to prevent database collisions."
     echo "Usage: ./build.sh <name>"
     echo "Continuing, but don't say you weren't warned."
+    BUILD_NAME='default'
+else
+    BUILD_NAME=$1
 fi
 
 if [ -z $2 ]; then
@@ -33,7 +36,6 @@ source $VENV/bin/activate
 pip install -r requirements/compiled.txt
 
 # Using a vendor library for the rest.
-cd $WORKSPACE
 git submodule update --init --recursive
 
 python manage.py update_product_details
@@ -42,17 +44,19 @@ cat > settings_local.py <<SETTINGS
 from settings import *
 ROOT_URLCONF = '%s.urls' % ROOT_PACKAGE
 LOG_LEVEL = logging.ERROR
-DATABASES['default']['NAME'] = 'kitsune_$1'
-DATABASES['default']['HOST'] = 'sm-hudson01'
+DATABASES['default']['NAME'] = 'kitsune_$BUILD_NAME'
+DATABASES['default']['HOST'] = 'localhost'
 DATABASES['default']['USER'] = 'hudson'
-DATABASES['default']['TEST_NAME'] = 'test_kitsune_$1'
+DATABASES['default']['TEST_NAME'] = 'test_kitsune_$BUILD_NAME'
 DATABASES['default']['TEST_CHARSET'] = 'utf8'
 DATABASES['default']['TEST_COLLATION'] = 'utf8_general_ci'
 TEST_SPHINX_PORT = $SPHINX_PORT
 TEST_SPHINXQL_PORT = TEST_SPHINX_PORT + 1
+CELERY_ALWAYS_EAGER = True
+CACHE_BACKEND = 'caching.backends.locmem://'
 SETTINGS
 
-echo "Starting tests..."
+echo "Starting tests..." `date`
 export FORCE_DB=1
 coverage run manage.py test --noinput --logging-clear-handlers --with-xunit
 coverage xml $(find apps lib -name '*.py')
