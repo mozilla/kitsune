@@ -392,6 +392,14 @@ div.user-section div.asked-by {
     margin: 6px 0 0;
 }
 
+div.user-section div.asked-by span {
+    display: block;
+}
+
+div.user-section div.asked-by span.answers {
+    font-weight: normal;
+}
+
 div.user-section div.asked-on {
     margin: 4px 0 0;
 }

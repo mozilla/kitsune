@@ -12,6 +12,10 @@
   </div>
   <div class="asked-by">
     <a href="{{ profile_url(answer.creator) }}">{{ answer.creator }}</a>
+    {% if question.creator != answer.creator %}
+      <span class="solutions">{{ _('{num} solutions')|f(num=answer.creator_num_answers) }}</span>
+      <span class="answers">{{ _('{num} answers')|f(num=answer.creator_num_posts) }}</span>
+    {% endif %}
   </div>
   <div class="asked-on">
     {{ answer.created|timesince }}
