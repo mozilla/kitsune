@@ -140,7 +140,9 @@ class RegistrationManager(ConfirmationManager):
                 return user
         return False
 
-    def create_inactive_user(self, username, password, email):
+    def create_inactive_user(self, username, password, email,
+                             email_template=None, email_subject=None,
+                             email_data=None):
         """
         Create a new, inactive ``User`` and ``Profile``, generates a
         ``RegistrationProfile`` and email its activation key to the
@@ -153,20 +155,25 @@ class RegistrationManager(ConfirmationManager):
 
         registration_profile = self.create_profile(new_user)
 
-        self.send_confirmation_email(registration_profile)
+        self.send_confirmation_email(registration_profile, email_template,
+                                     email_subject, email_data)
 
         return new_user
 
-    def send_confirmation_email(self, registration_profile):
+    def send_confirmation_email(self, registration_profile,
+                                email_template=None, email_subject=None,
+                                email_data=None):
         """Send the user confirmation email."""
         self._send_email(
             confirmation_profile=registration_profile,
             url=reverse('users.activate',
                         args=[registration_profile.activation_key]),
-            subject=_('Please confirm your email address'),
-            email_template='users/email/activate.ltxt',
+            subject=email_subject or _('Please confirm your email address'),
+            email_template=email_template or 'users/email/activate.ltxt',
             send_to=registration_profile.user.email,
-            expiration_days=settings.ACCOUNT_ACTIVATION_DAYS)
+            expiration_days=settings.ACCOUNT_ACTIVATION_DAYS,
+            username=registration_profile.user.username,
+            email_data=email_data)
 
     def delete_expired_users(self):
         """

@@ -1,7 +1,25 @@
-{% load i18n %}
-{# L10n: This is an email. Whitespace matters! #}{% autoescape off %}
-{% blocktrans %}Please confirm your question ({{ question_title }}) at the link below:
+{% load i18n %}{# L10n: This is an email. Whitespace matters! #}{% autoescape off %}{% blocktrans %}
+Please confirm your Firefox Help question
 
-https://{{ host }}{{ confirm_url }}
-{% endblocktrans %}
-{% endautoescape %}
+Hi {{ username }},
+
+Before your Firefox Help question ({{ email_data }})
+can be seen by our support community, you need to confirm the
+account you just created by clicking on the link below:
+
+https://{{ domain }}{{ activate_url }}
+
+If you did not ask a question or changed your mind, simply delete
+or ignore this email; you will not receive any more email from
+us.
+
+Thanks again for asking the question -- we're sorry you're having
+trouble with Firefox, but our community of volunteers is looking
+forward to helping you get it resolved as quickly as possible.
+
+As you may know, Firefox Support (like all of Mozilla) is
+community powered -- help is provided by users like you!  Want to
+take part? Browse other users' questions at
+https://{{ domain }}/questions?filter=unsolved -- you might
+just make someone's day!
+{% endblocktrans %}{% endautoescape %}

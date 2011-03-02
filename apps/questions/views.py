@@ -196,7 +196,11 @@ def new_question(request, template=None):
             register_form = RegisterForm()
         elif request.POST.get('register', None):
             login_form = AuthenticationForm()
-            register_form = handle_register(request)
+            email_template = 'questions/email/confirm_question.ltxt'
+            email_subject = _('Please confirm your Firefox Help question')
+            email_data = request.GET.get('search')
+            register_form = handle_register(request, email_template,
+                                            email_subject, email_data)
             if register_form.is_valid():  # now try to log in
                 user = auth.authenticate(username=request.POST.get('username'),
                                          password=request.POST.get('password'))

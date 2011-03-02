@@ -1085,10 +1085,10 @@ class AAQTemplateTestCase(TestCaseBase):
         """Registering through AAQ form sends confirmation email."""
         get_current.return_value.domain = 'testserver'
         self.client.logout()
-
+        title = 'A test question'
         url = urlparams(reverse('questions.new_question'),
                         product='desktop', category='d1',
-                        search='A test question', showform=1)
+                        search=title, showform=1)
         # Register before asking question
         data = {'register': 'Register', 'username': 'testaaq',
                 'password': 'testpass', 'password2': 'testpass',
@@ -1098,13 +1098,15 @@ class AAQTemplateTestCase(TestCaseBase):
 
         # Confirmation email is sent
         eq_(1, len(mail.outbox))
-        assert mail.outbox[0].subject == 'Please confirm your email address'
+        eq_(mail.outbox[0].subject,
+            'Please confirm your Firefox Help question')
+        assert mail.outbox[0].body.find('(%s)' % title) > 0
 
         # Finally post question
         self.client.post(url, self.data, follow=True)
 
         # Verify question is in db now
-        question = Question.objects.filter(title='A test question')
+        question = Question.objects.filter(title=title)
         eq_(1, question.count())
         eq_('testaaq', question[0].creator.username)
 

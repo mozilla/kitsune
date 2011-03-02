@@ -59,7 +59,7 @@ class RegisterTests(TestCase):
     def test_new_user_smtp_error(self, get_current, send_confirmation_email):
         get_current.return_value.domain = 'su.mo.com'
 
-        def raise_smtp(reg_profile):
+        def raise_smtp(reg_profile, t, s, d):
             raise SMTPRecipientsRefused(recipients=[reg_profile.user.email])
         send_confirmation_email.side_effect = raise_smtp
         response = self.client.post(reverse('users.register', locale='en-US'),

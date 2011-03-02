@@ -29,7 +29,8 @@ def handle_login(request, only_active=True):
     return AuthenticationForm()
 
 
-def handle_register(request):
+def handle_register(request, email_template=None, email_subject=None,
+                    email_data=None):
     """Handle to help registration."""
     if request.method == 'POST':
         form = RegisterForm(request.POST)
@@ -39,7 +40,10 @@ def handle_register(request):
                 form, 'email',
                 form.cleaned_data['username'],
                 form.cleaned_data['password'],
-                form.cleaned_data['email'])
+                form.cleaned_data['email'],
+                email_template=email_template,
+                email_subject=email_subject,
+                email_data=email_data)
             if not form.is_valid():
                 # Delete user if form is not valid, i.e. email was not sent.
                 # This is in a POST request and so always pinned to master,
