@@ -27,25 +27,46 @@ from users.tests import user
 # never prepend a locale code unless passed force_locale=True. Thus, these
 # test-emails with locale prefixes are not identical to the ones sent in
 # production.
-ANSWER_EMAIL_INSIDE_REQUEST = """
+ANSWER_EMAIL_TO_ANONYMOUS = """rrosario has posted an answer to the question on
+testserver with the title:
 
-Answer to question: Lorem ipsum dolor sit amet?
+Lorem ipsum dolor sit amet?
 
-jsocol has posted an answer to the question 
-Lorem ipsum dolor sit amet?.
-
-========
-
-an answer
-
-========
-
-To view this answer on the site, click the following link, or
-paste it into your browser's location bar:
+You can see the response by using the link below.  Please also
+let us know if this was helpful using the options on the right of
+that page. This helps other Firefox users find good answers to
+their support questions.
 
 https://testserver/en-US/questions/1#answer-%s
+
+Did you know that rrosario is a Firefox user just
+like you? Get started helping other Firefox users by browsing
+questions at https://testserver/questions?filter=unsolved --
+you might just make someone's day!
 """
-SOLUTION_EMAIL_INSIDE_REQUEST_ANONYMOUS = \
+ANSWER_EMAIL = 'Hi pcraciunoiu,\n\n' + ANSWER_EMAIL_TO_ANONYMOUS
+ANSWER_EMAIL_TO_ASKER = """Hi jsocol,
+
+rrosario has posted an answer to your question on
+testserver with the title:
+
+Lorem ipsum dolor sit amet?
+
+You can use the link below to access the response. While
+you're there, please let us know if this was helpful to you.
+This helps other Firefox users find good answers to their
+support questions. You can also reply to rrosario
+or add more information about your question from that page.
+
+https://testserver/en-US/questions/1#answer-%s
+
+Did you know that rrosario is a Firefox user
+just like you? Get started helping other Firefox users by
+browsing questions at
+https://testserver/questions?filter=unsolved -- you
+might just make someone's day!
+"""
+SOLUTION_EMAIL_TO_ANONYMOUS = \
 """We just wanted to let you know that pcraciunoiu
 has found a solution to a Firefox question that you're following.
 The question
@@ -62,8 +83,7 @@ answer.
 
 https://testserver/en-US/questions/1#answer-%s
 """
-SOLUTION_EMAIL_INSIDE_REQUEST = ('Hi pcraciunoiu,\n\n' +
-                                 SOLUTION_EMAIL_INSIDE_REQUEST_ANONYMOUS)
+SOLUTION_EMAIL = 'Hi pcraciunoiu,\n\n' + SOLUTION_EMAIL_TO_ANONYMOUS
 
 
 class NotificationsTests(TestCaseBase):
@@ -121,6 +141,9 @@ class NotificationsTests(TestCaseBase):
     @mock.patch_object(Site.objects, 'get_current')
     @mock.patch_object(settings._wrapped, 'CONFIRM_ANONYMOUS_WATCHES', False)
     def test_solution_notification(self, get_current):
+        """Assert that hitting the watch toggle toggles and that proper mails
+        are sent to anonymous and registered watchers."""
+        # TODO: Too monolithic. Split this test into several.
         get_current.return_value.domain = 'testserver'
 
         question = self._toggle_watch_question('solution', turn_on=True)
@@ -131,29 +154,54 @@ class NotificationsTests(TestCaseBase):
         self.client.login(username='jsocol', password='testpass')
         post(self.client, 'questions.solution', args=[question.id, answer.id])
 
+        # Order of emails is not important.
         attrs_eq(mail.outbox[0], to=['user47963@nowhere'],
                  subject='Solution found to Firefox Help question',
-                 body=SOLUTION_EMAIL_INSIDE_REQUEST % answer.id)
+                 body=SOLUTION_EMAIL % answer.id)
         attrs_eq(mail.outbox[1], to=['anon@ymous.com'],
                  subject='Solution found to Firefox Help question',
-                 body=SOLUTION_EMAIL_INSIDE_REQUEST_ANONYMOUS % answer.id)
+                 body=SOLUTION_EMAIL_TO_ANONYMOUS % answer.id)
 
         self._toggle_watch_question('solution', turn_on=False)
 
     @mock.patch_object(Site.objects, 'get_current')
+    @mock.patch_object(settings._wrapped, 'CONFIRM_ANONYMOUS_WATCHES', False)
     def test_answer_notification(self, get_current):
+        """Assert that hitting the watch toggle toggles and that proper mails
+        are sent to anonymous users, registered users, and the question
+        asker."""
+        # TODO: This test is way too monolithic, and the fixtures encode
+        # assumptions that aren't obvious here. Split this test into about 5,
+        # each of which tests just 1 thing. Consider using instantiation
+        # helpers.
         get_current.return_value.domain = 'testserver'
 
+        # An arbitrary registered user (pcraciunoiu) watches:
         question = self._toggle_watch_question('reply', turn_on=True)
+        # An anonymous user watches:
+        QuestionReplyEvent.notify('anon@ymous.com', question)
+        # The question asker (jsocol) watches:
+        QuestionReplyEvent.notify(question.creator, question)
+
         # Post a reply
-        self.client.login(username='jsocol', password='testpass')
+        self.client.login(username='rrosario', password='testpass')
         post(self.client, 'questions.reply', {'content': 'an answer'},
              args=[question.id])
 
         answer = Answer.uncached.filter().order_by('-id')[0]
+
+        # Order of emails is not important.
         attrs_eq(mail.outbox[0], to=['user47963@nowhere'],
-                 subject='New answer to: Lorem ipsum dolor sit amet?',
-                 body=ANSWER_EMAIL_INSIDE_REQUEST % answer.id)
+                 subject='A new answer was posted to a Firefox question '
+                         "you're watching",
+                 body=ANSWER_EMAIL % answer.id)
+        attrs_eq(mail.outbox[1], to=[question.creator.email],
+                 subject='A new answer was posted to your Firefox question',
+                 body=ANSWER_EMAIL_TO_ASKER % answer.id)
+        attrs_eq(mail.outbox[2], to=['anon@ymous.com'],
+                 subject='A new answer was posted to a Firefox question '
+                         "you're watching",
+                 body=ANSWER_EMAIL_TO_ANONYMOUS % answer.id)
 
         self._toggle_watch_question('reply', turn_on=False)
 

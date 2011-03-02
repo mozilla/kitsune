@@ -285,7 +285,7 @@ class Answer(ModelBase):
             self.question.save(no_update)
 
             if not no_notify:
-                # Avoid circular import, events.py imports Question
+                # Avoid circular import: events.py imports Question.
                 from questions.events import QuestionReplyEvent
                 QuestionReplyEvent(self).fire(exclude=self.creator)
 

@@ -1,18 +1,19 @@
-{% load i18n %}
-{# L10n: This is an email. Whitespace matters! #}{% autoescape off %}
-{% blocktrans %}Answer to question: {{ question_title }}
+{% load i18n %}{# L10n: This is an email. Whitespace matters! #}{% autoescape off %}{% if username %}{% blocktrans %}Hi {{ username }},{% endblocktrans %}
 
-{{ author }} has posted an answer to the question 
-{{ question_title }}.
-{% endblocktrans %}
-========
+{% endif %}{% blocktrans %}{{ answerer }} has posted an answer to the question on
+{{ host }} with the title:
 
-{{ answer }}
+{{ question_title }}
 
-========
-{% blocktrans %}
-To view this answer on the site, click the following link, or
-paste it into your browser's location bar:
-{% endblocktrans %}
+You can see the response by using the link below.  Please also
+let us know if this was helpful using the options on the right of
+that page. This helps other Firefox users find good answers to
+their support questions.
+
 https://{{ host }}{{ answer_url }}
-{% endautoescape %}
+
+Did you know that {{ answerer }} is a Firefox user just
+like you? Get started helping other Firefox users by browsing
+questions at https://{{ host }}/questions?filter=unsolved --
+you might just make someone's day!
+{% endblocktrans %}{% endautoescape %}

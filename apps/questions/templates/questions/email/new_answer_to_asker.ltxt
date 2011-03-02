@@ -1,0 +1,21 @@
+{% load i18n %}{# L10n: This is an email. Whitespace matters! #}{% autoescape off %}{% blocktrans %}Hi {{ username }},
+
+{{ answerer }} has posted an answer to your question on
+{{ host }} with the title:
+
+{{ question_title }}
+
+You can use the link below to access the response. While
+you're there, please let us know if this was helpful to you.
+This helps other Firefox users find good answers to their
+support questions. You can also reply to {{ answerer }}
+or add more information about your question from that page.
+
+https://{{ host }}{{ answer_url }}
+
+Did you know that {{ answerer }} is a Firefox user
+just like you? Get started helping other Firefox users by
+browsing questions at
+https://{{ host }}/questions?filter=unsolved -- you
+might just make someone's day!
+{% endblocktrans %}{% endautoescape %}

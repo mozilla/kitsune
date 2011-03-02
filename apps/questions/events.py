@@ -42,21 +42,37 @@ class QuestionReplyEvent(QuestionEvent):
     event_type = 'question reply'
 
     def _mails(self, users_and_watches):
+        """Send one kind of mail to the asker and another to other watchers."""
         # Cache answer.question, similar to caching solution.question below.
         self.answer.question = self.instance
-        subject = _(u'New answer to: %s') % self.instance.title
-        t = loader.get_template('questions/email/new_answer.ltxt')
+        asker_id = self.answer.question.creator.id
+
+        watcher_subject = _(u'A new answer was posted to a Firefox question '
+                            "you're watching")
+        asker_subject = _(u'A new answer was posted to your Firefox '
+                          'question')
+
+        watcher_template = loader.get_template(
+            'questions/email/new_answer.ltxt')
+        asker_template = loader.get_template(
+            'questions/email/new_answer_to_asker.ltxt')
+
         c = {'answer': self.answer.content,
-             'author': self.answer.creator.username,
+             'answerer': self.answer.creator.username,
              'question_title': self.instance.title,
              'host': Site.objects.get_current().domain,
              'answer_url': self.answer.get_absolute_url()}
-        content = t.render(Context(c))
 
-        return (EmailMessage(subject, content,
-                             settings.NOTIFICATIONS_FROM_ADDRESS,
-                             [u.email]) for
-                u, dummy in users_and_watches)
+        for u, dummy in users_and_watches:
+            c['username'] = u.username
+            is_asker = asker_id == u.id
+            content = (asker_template if is_asker else
+                       watcher_template).render(Context(c))
+            yield EmailMessage(asker_subject if is_asker
+                                   else watcher_subject,
+                               content,
+                               settings.NOTIFICATIONS_FROM_ADDRESS,
+                               [u.email])
 
     @classmethod
     def get_watch_description(cls, watch):
