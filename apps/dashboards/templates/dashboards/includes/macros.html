@@ -1,4 +1,4 @@
-{% macro print_readout(readout, detail_view_name, locale=None) %}
+{% macro print_readout(readout, detail_view_name, locale=None, max_rows=10) %}
   <details class="h2" open="open">
     <summary class="with-mode-selectors">
       <a id="{{ readout.slug }}">{{ readout.title }}</a>
@@ -11,7 +11,7 @@
       {% endfor %}
     </ul>
     <table class="documents" id="{{ readout.slug }}-table">
-      {{ readout.render(max_rows=10)|safe }}
+      {{ readout.render(max_rows=max_rows)|safe }}
     </table>
     <div class="table-footer">
       <a href="{{ url(detail_view_name, readout.slug) }}">{{ readout.details_link_text }}</a>

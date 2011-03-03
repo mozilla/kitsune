@@ -199,6 +199,10 @@ class MostVisitedTranslationsReadout(MostVisitedDefaultLanguageReadout):
 
     Adds a few subqueries to determine the status of translations.
 
+    Shows the articles that are most visited in English, even if there are no
+    translations of those articles yet. This draws attention to articles that
+    we should drop everything to translate.
+
     """
     slug = 'most-visited-translations'
 
@@ -213,8 +217,8 @@ class MostVisitedTranslationsReadout(MostVisitedDefaultLanguageReadout):
         # Out of Date or Update Needed: link to /edit.
         # Review Needed: link to /history.
         # These match the behavior of the corresponding readouts.
-        return ('SELECT transdoc.slug, transdoc.title, '
-                'dashboards_wikidocumentvisits.visits, '
+        return ('SELECT engdoc.slug, engdoc.title, transdoc.slug, '
+                'transdoc.title, dashboards_wikidocumentvisits.visits, '
                 # The most significant approved change to the English article
                 # since the English revision the current translated revision is
                 # based on:
@@ -235,26 +239,40 @@ class MostVisitedTranslationsReadout(MostVisitedDefaultLanguageReadout):
                      'AND transrev.id>transdoc.current_revision_id '
                     ')'
                 ') '
-               'FROM wiki_document transdoc '
-               'LEFT JOIN dashboards_wikidocumentvisits ON transdoc.parent_id='
+               'FROM wiki_document engdoc '
+               'LEFT JOIN wiki_document transdoc ON '
+                   'transdoc.parent_id=engdoc.id '
+                   'AND transdoc.locale=%s '
+               'LEFT JOIN dashboards_wikidocumentvisits ON engdoc.id='
                    'dashboards_wikidocumentvisits.document_id '
                    'AND dashboards_wikidocumentvisits.period=%s '
-               'WHERE transdoc.locale=%s '
+               'WHERE engdoc.locale=%s '
                'ORDER BY dashboards_wikidocumentvisits.visits DESC, '
-                        'transdoc.title ASC' + self._limit_clause(max),
-            (ALL_TIME if self.mode == ALL_TIME else THIS_WEEK, self.locale))
+                        'COALESCE(transdoc.title, engdoc.title) ASC' +
+               self._limit_clause(max),
+            (self.locale,
+             ALL_TIME if self.mode == ALL_TIME else THIS_WEEK,
+             settings.WIKI_DEFAULT_LANGUAGE))
 
-    def _format_row(self, (slug, title, visits, significance, needs_review)):
+    def _format_row(self, (eng_slug, eng_title, slug, title,
+                           visits, significance, needs_review)):
         status, view_name = self.significance_statuses.get(
-                                significance,
-                                self.review_statuses[needs_review])
+            significance, self.review_statuses[needs_review])
+
+        if not slug:  # A translation doesn't exist.
+            slug = eng_slug
+            title = eng_title
+            locale = settings.WIKI_DEFAULT_LANGUAGE
+        else:
+            locale = self.locale
+
         return (dict(title=title,
                      url=reverse('wiki.document', args=[slug],
-                                 locale=self.locale),
+                                 locale=locale),
                      visits=visits,
                      status=status,
                      status_url=reverse(view_name, args=[slug],
-                                        locale=self.locale)
+                                        locale=locale)
                                 if view_name else ''))
 
 
