@@ -1,6 +1,8 @@
 import json
 
 from django.conf import settings
+from django.contrib.auth.models import User, Permission
+from django.contrib.contenttypes.models import ContentType
 
 from nose.tools import eq_
 
@@ -88,17 +90,63 @@ class UploadImageTestCase(TestCase):
         json_r = json.loads(r.content)
         eq_('success', json_r['status'])
 
-    def test_delete_image(self):
-        """Deleting an uploaded image works."""
+    def test_delete_image_logged_out(self):
+        """Can't delete an image logged out."""
         # Upload the image first
         self.test_upload_image()
         im = ImageAttachment.objects.all()[0]
+        self.client.logout()
         r = post(self.client, 'upload.del_image_async', args=[im.id])
+        eq_(403, r.status_code)
+        assert ImageAttachment.uncached.exists()
 
+    def test_delete_image_no_permission(self):
+        """Can't delete an image without permission."""
+        u = User.objects.get(username='tagger')
+        assert not u.has_perm('upload.delete_imageattachment')
+        self.test_upload_image()
+        im = ImageAttachment.objects.all()[0]
+        self.client.login(username='tagger', password='testpass')
+        r = post(self.client, 'upload.del_image_async', args=[im.id])
+        eq_(403, r.status_code)
+        assert ImageAttachment.uncached.exists()
+
+    def test_delete_image_owner(self):
+        """Users can delete their own images."""
+        self.test_upload_image()
+        im = ImageAttachment.objects.all()[0]
+        r = post(self.client, 'upload.del_image_async', args=[im.id])
         eq_(200, r.status_code)
         json_r = json.loads(r.content)
         eq_('success', json_r['status'])
-        eq_(0, ImageAttachment.objects.count())
+        assert not ImageAttachment.uncached.exists()
+
+    def test_delete_image_with_permission(self):
+        """Users with permission can delete images."""
+        u = User.objects.get(username='jsocol')
+        ct = ContentType.objects.get_for_model(ImageAttachment)
+        p = Permission.objects.get_or_create(
+            codename='delete_imageattachment',
+            content_type=ct)[0]
+        u.user_permissions.add(p)
+        assert u.has_perm('upload.delete_imageattachment')
+
+        self.test_upload_image()
+        im = ImageAttachment.objects.all()[0]
+
+        self.client.login(username='jsocol', password='testpass')
+        r = post(self.client, 'upload.del_image_async', args=[im.id])
+        eq_(200, r.status_code)
+        json_r = json.loads(r.content)
+        eq_('success', json_r['status'])
+        assert not ImageAttachment.uncached.exists()
+
+    def test_delete_no_image(self):
+        """Trying to delete a non-existent image 404s."""
+        r = post(self.client, 'upload.del_image_async', args=[123])
+        eq_(404, r.status_code)
+        data = json.loads(r.content)
+        eq_('error', data['status'])
 
     def test_invalid_image(self):
         """Make sure invalid files are not accepted as images."""

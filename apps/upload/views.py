@@ -4,12 +4,12 @@ from django.views.decorators.http import require_POST
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import get_model
 from django.http import (HttpResponse, HttpResponseNotFound,
-                         HttpResponseBadRequest)
+                         HttpResponseBadRequest, HttpResponseForbidden)
 
 from commonware.decorators import xframe_sameorigin
 from tower import ugettext as _
 
-from access.decorators import has_perm_or_owns_or_403, login_required
+from access.decorators import login_required
 from upload.models import ImageAttachment
 from upload.utils import upload_imageattachment, FileTooLargeError
 
@@ -51,19 +51,27 @@ def up_image_async(request, model_name, object_pk):
                     'errors': file_info}))
 
 
-@login_required
 @require_POST
 @xframe_sameorigin
-@has_perm_or_owns_or_403('upload.image_upload', 'creator',
-                         (ImageAttachment, 'id__iexact', 'image_id'),
-                         (ImageAttachment, 'id__iexact', 'image_id'))
 def del_image_async(request, image_id):
     """Delete an image given its object id."""
+    user = request.user
+    if not user.is_authenticated():
+        message = _('You are not logged in.')
+        return HttpResponseForbidden(
+            json.dumps({'status': 'error', 'message': message}))
+
     try:
         image = ImageAttachment.objects.get(pk=image_id)
     except ImageAttachment.DoesNotExist:
         message = _('The requested image could not be found.')
         return HttpResponseNotFound(
+            json.dumps({'status': 'error', 'message': message}))
+
+    if not ((user == image.creator) or
+            (user.has_perm('upload.delete_imageattachment'))):
+        message = _('You do not have permission to do that.')
+        return HttpResponseForbidden(
             json.dumps({'status': 'error', 'message': message}))
 
     image.file.delete()
