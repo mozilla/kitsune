@@ -54,6 +54,15 @@ body.questions #main {
     width: 754px;
 }
 
+body.notifications #main,
+body.notifications #side {
+    padding-top: 40px;
+}
+
+body.notifications #main article.main {
+    padding-left: 10px;
+}
+
 /* Questions filter/tagging */
 #filter, #tagged {
     font-family: Helvetica,Arial,sans-serif;
@@ -122,9 +131,9 @@ body.questions #main {
     font-size: 150%;
     font-style: italic;
     padding: 10px 0;
-    position: absolute;
+    position: relative;
     text-align: center;
-    top: -100px;
+    top: -25px;
     width: 100%;
 }
 
@@ -1469,9 +1478,14 @@ div.confirm-question p {
     padding: .3em 0;
 }
 
+div.activate-watch h1,
+div.unsubscribe-watch h1 {
+    margin-bottom: 1em;
+}
+
 div.activate-watch h2,
 div.unsubscribe-watch h2 {
-    margin-bottom: 1em;
+    font-size: 16px;
 }
 
 div.activate-watch ul {
