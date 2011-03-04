@@ -201,6 +201,7 @@ INSTALLED_APPS = (
     ROOT_PACKAGE,
     'authority',
     'timezones',
+    'waffle',
     'access',
     'sumo',
     'search',
