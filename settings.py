@@ -211,6 +211,7 @@ INSTALLED_APPS = (
     'notifications',
     'activity',
     'questions',
+    'adminplus',
     'kadmin',
     'taggit',
     'flagit',
