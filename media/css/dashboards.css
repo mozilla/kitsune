@@ -45,6 +45,18 @@
     height: 10px;
 }
 
+.dashboards div.percent-graph div.bad {
+    background-color: #ff6b6b;
+}
+
+.dashboards div.percent-graph div.better {
+    background-color: #e8c679;
+}
+
+.dashboards div.percent-graph div.best {
+    background-color: #c1e58f;
+}
+
 .dashboards div.absolute-graph {
     background-color: #e5e5e5;
     height: 12px;
@@ -79,7 +91,7 @@
 }
 
 .dashboards table.documents td:nth-child(1) {
-    width: 281px;
+    width: 261px;
 }
 
 .dashboards table.documents td:nth-child(2) {
@@ -98,7 +110,7 @@
 .dashboards table.documents th:nth-child(4) {
     text-align: right;
     vertical-align: middle;
-    width: 183px;
+    width: 203px;
 }
 
 .dashboards table.busy {
@@ -152,4 +164,42 @@
 
 .dashboards details table {
     display: block;  /* Makes collapse animation work */
+}
+
+
+/* Status badges */
+
+.dashboards td.status .review,
+.dashboards td.status .ok,
+.dashboards td.status .update,
+.dashboards td.status .out-of-date,
+.dashboards td.status .untranslated {
+    display: inline-block;  /* so width applies */
+    line-height: 0;
+    text-align: center;
+    width: 15pt;
+}
+
+.dashboards td.status .update:after {
+    content: '\25C6';
+    color: #f8e687;
+    font-size: 130%; /* Compromise between looking huge on Windows and tiny on the Mac. Using an explicit font-family avails not. */
+}
+
+.dashboards td.status .out-of-date:after {
+    content: '\25C6';
+    color: orange;
+    font-size: 130%;
+}
+
+.dashboards td.status .untranslated:after {
+    content: '\25B2';
+    color: red;
+    font-size: 120%;
+}
+
+.dashboards td.status .ok:after {
+    content: '\25CF';
+    color: #add575;
+    font-size: 200%;
 }

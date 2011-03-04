@@ -159,8 +159,8 @@ class MostVisitedDefaultLanguageReadout(Readout):
     column3_label = _lazy(u'Visits')
     modes = PERIODS
     review_statuses = {
-        1: (_lazy(u'Review Needed'), 'wiki.document_revisions'),
-        0: (u'', '')}
+        1: (_lazy(u'Review Needed'), 'wiki.document_revisions', 'review'),
+        0: (u'', '', 'ok')}
 
     def _query_and_params(self, max):
         # Review Needed: link to /history.
@@ -183,7 +183,7 @@ class MostVisitedDefaultLanguageReadout(Readout):
 
     def _format_row(self, (slug, title, visits, num_unreviewed)):
         needs_review = int(num_unreviewed > 0)
-        status, view_name = self.review_statuses[needs_review]
+        status, view_name, dummy = self.review_statuses[needs_review]
         return (dict(title=title,
                      url=reverse('wiki.document', args=[slug],
                                  locale=self.locale),
@@ -199,6 +199,10 @@ class MostVisitedTranslationsReadout(MostVisitedDefaultLanguageReadout):
 
     Adds a few subqueries to determine the status of translations.
 
+    Shows the articles that are most visited in English, even if there are no
+    translations of those articles yet. This draws attention to articles that
+    we should drop everything to translate.
+
     """
     slug = 'most-visited-translations'
 
@@ -206,15 +210,17 @@ class MostVisitedTranslationsReadout(MostVisitedDefaultLanguageReadout):
     details_link_text = _lazy(u'All translations in English...')
 
     significance_statuses = {
-        MEDIUM_SIGNIFICANCE: (_lazy(u'Update Needed'), 'wiki.edit_document'),
-        MAJOR_SIGNIFICANCE: (_lazy(u'Out of Date'), 'wiki.edit_document')}
+        MEDIUM_SIGNIFICANCE:
+            (_lazy(u'Update Needed'), 'wiki.edit_document', 'update'),
+        MAJOR_SIGNIFICANCE:
+            (_lazy(u'Out of Date'), 'wiki.edit_document', 'out-of-date')}
 
     def _query_and_params(self, max):
         # Out of Date or Update Needed: link to /edit.
         # Review Needed: link to /history.
         # These match the behavior of the corresponding readouts.
-        return ('SELECT transdoc.slug, transdoc.title, '
-                'dashboards_wikidocumentvisits.visits, '
+        return ('SELECT engdoc.slug, engdoc.title, transdoc.slug, '
+                'transdoc.title, dashboards_wikidocumentvisits.visits, '
                 # The most significant approved change to the English article
                 # since the English revision the current translated revision is
                 # based on:
@@ -235,27 +241,46 @@ class MostVisitedTranslationsReadout(MostVisitedDefaultLanguageReadout):
                      'AND transrev.id>transdoc.current_revision_id '
                     ')'
                 ') '
-               'FROM wiki_document transdoc '
-               'LEFT JOIN dashboards_wikidocumentvisits ON transdoc.parent_id='
+               'FROM wiki_document engdoc '
+               'LEFT JOIN wiki_document transdoc ON '
+                   'transdoc.parent_id=engdoc.id '
+                   'AND transdoc.locale=%s '
+               'LEFT JOIN dashboards_wikidocumentvisits ON engdoc.id='
                    'dashboards_wikidocumentvisits.document_id '
                    'AND dashboards_wikidocumentvisits.period=%s '
-               'WHERE transdoc.locale=%s '
+               'WHERE engdoc.locale=%s '
                'ORDER BY dashboards_wikidocumentvisits.visits DESC, '
-                        'transdoc.title ASC' + self._limit_clause(max),
-            (ALL_TIME if self.mode == ALL_TIME else THIS_WEEK, self.locale))
+                        'COALESCE(transdoc.title, engdoc.title) ASC' +
+               self._limit_clause(max),
+            (self.locale,
+             ALL_TIME if self.mode == ALL_TIME else THIS_WEEK,
+             settings.WIKI_DEFAULT_LANGUAGE))
 
-    def _format_row(self, (slug, title, visits, significance, needs_review)):
-        status, view_name = self.significance_statuses.get(
-                                significance,
-                                self.review_statuses[needs_review])
+    def _format_row(self, (eng_slug, eng_title, slug, title,
+                           visits, significance, needs_review)):
+        if slug:  # A translation exists.
+            locale = self.locale
+            status, view_name, status_class = self.significance_statuses.get(
+                significance, self.review_statuses[needs_review])
+            status_url = (reverse(view_name, args=[slug], locale=locale)
+                          if view_name else '')
+        else:
+            slug = eng_slug
+            title = eng_title
+            locale = settings.WIKI_DEFAULT_LANGUAGE
+            status = _(u'Translation Needed')
+            # When calling the translate view, specify locale to translate to:
+            status_url = reverse('wiki.translate', args=[slug],
+                                 locale=self.locale)
+            status_class = 'untranslated'
+
         return (dict(title=title,
                      url=reverse('wiki.document', args=[slug],
-                                 locale=self.locale),
+                                 locale=locale),
                      visits=visits,
                      status=status,
-                     status_url=reverse(view_name, args=[slug],
-                                        locale=self.locale)
-                                if view_name else ''))
+                     status_class=status_class,
+                     status_url=status_url))
 
 
 class UntranslatedReadout(Readout):
