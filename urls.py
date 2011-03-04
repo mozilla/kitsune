@@ -31,6 +31,7 @@ urlpatterns = patterns('',
         {'domain': 'javascript', 'packages': ['kitsune']}, name='jsi18n'),
 
     url(r'^', include('dashboards.urls')),
+    url(r'^', include('landings.urls')),
 
     # Users
     ('', include('users.urls')),
