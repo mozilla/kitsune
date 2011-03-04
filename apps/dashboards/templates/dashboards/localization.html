@@ -7,6 +7,33 @@
 {% set crumbs = [(None, title)] %}
 {# TODO: Move required dashboard styles/scripts out of wiki.css into their own or refactor up? #}
 
+{% macro print_overview_row(row, should_color=False) %}
+  <tr>
+    <td>
+      {% if row.url %}
+        <a href="{{ row.url }}">{{ row.title }}</a>
+      {% else %}
+        {{ row.title }}
+      {% endif %}
+    </td>
+    <td>
+      {% trans numerator=number(row.numerator), denominator=number(row.denominator) %}
+        {{ numerator }}
+        <small>of {{ denominator }}</small>
+      {% endtrans %}
+    </td>
+    <td>
+      {{ row.percent }}%
+      <div class="percent-graph">
+        <div style="width: {{ row.percent }}%"{% if should_color %} class="{{ 'best' if row.percent == 100 else ('better' if row.percent >= 20 else 'bad') }}"{% endif %}></div>
+      </div>
+    </td>
+    <td>
+      {{ row.description }}
+    </td>
+  </tr>
+{% endmacro %}
+
 {% block content %}
   <article id="localize" class="main dashboards">
     <h1>{{ title }}</h1>
@@ -26,32 +53,10 @@
     <details class="h2" open="open">
       <summary>{{ _('Overview') }}</summary>
       <table class="overview">
-        {% for row in overview_rows() %}
-          <tr>
-            <td>
-              {% if row.url %}
-                <a href="{{ row.url }}">{{ row.title }}</a>
-              {% else %}
-                {{ row.title }}
-              {% endif %}
-            </td>
-            <td>
-              {% trans numerator=number(row.numerator), denominator=number(row.denominator) %}
-                {{ numerator }}
-                <small>of {{ denominator }}</small>
-              {% endtrans %}
-            </td>
-            <td>
-              {{ row.percent }}%
-              <div class="percent-graph">
-                <div style="width: {{ row.percent }}%"></div>
-              </div>
-            </td>
-            <td>
-              {{ row.description }}
-            </td>
-          </tr>
-        {% endfor %}
+        {% with rows = overview_rows() %}
+          {{ print_overview_row(rows[0], should_color=True) }}
+          {{ print_overview_row(rows[1], should_color=False) }}
+        {% endwith %}
         <tr>
           <td>{{ _('User Interface') }}</td>
           <td></td>

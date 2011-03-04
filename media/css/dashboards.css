@@ -45,6 +45,18 @@
     height: 10px;
 }
 
+.dashboards div.percent-graph div.bad {
+    background-color: #ff6b6b;
+}
+
+.dashboards div.percent-graph div.better {
+    background-color: #e8c679;
+}
+
+.dashboards div.percent-graph div.best {
+    background-color: #c1e58f;
+}
+
 .dashboards div.absolute-graph {
     background-color: #e5e5e5;
     height: 12px;
