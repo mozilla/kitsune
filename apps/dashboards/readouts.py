@@ -256,24 +256,27 @@ class MostVisitedTranslationsReadout(MostVisitedDefaultLanguageReadout):
 
     def _format_row(self, (eng_slug, eng_title, slug, title,
                            visits, significance, needs_review)):
-        status, view_name = self.significance_statuses.get(
-            significance, self.review_statuses[needs_review])
-
-        if not slug:  # A translation doesn't exist.
+        if slug:  # A translation exists.
+            locale = self.locale
+            status, view_name = self.significance_statuses.get(
+                significance, self.review_statuses[needs_review])
+            status_url = (reverse(view_name, args=[slug], locale=locale)
+                          if view_name else '')
+        else:
             slug = eng_slug
             title = eng_title
             locale = settings.WIKI_DEFAULT_LANGUAGE
-        else:
-            locale = self.locale
+            status = _(u'Translation Needed')
+            # When calling the translate view, specify locale to translate to:
+            status_url = reverse('wiki.translate', args=[slug],
+                                 locale=self.locale)
 
         return (dict(title=title,
                      url=reverse('wiki.document', args=[slug],
                                  locale=locale),
                      visits=visits,
                      status=status,
-                     status_url=reverse(view_name, args=[slug],
-                                        locale=locale)
-                                if view_name else ''))
+                     status_url=status_url))
 
 
 class UntranslatedReadout(Readout):
