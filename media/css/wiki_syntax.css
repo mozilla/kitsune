@@ -12,7 +12,9 @@
 /* Blocks in the content that need margins. */
 #doc-content p,
 #doc-content pre,
+#home-content .warning,
 #doc-content .warning,
+#home-content .note,
 #doc-content .note {
     margin: 1em 0;
 }
@@ -104,12 +106,14 @@
     padding: 2px 4px;
 }
 
+#home-content .note,
 #doc-content .note {
    background: #F5F5FF;
    color: #626266;
    padding: .5em 1em;
 }
 
+#home-content .warning,
 #doc-content .warning {
    background: #FFF9DB url(../img/wiki/bkg.warning.png) repeat-y left top;
    color: #666458;
