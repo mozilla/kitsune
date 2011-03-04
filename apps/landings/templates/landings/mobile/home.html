@@ -1,21 +1,6 @@
 {# vim: set ts=2 et sts=2 sw=2: #}
-{% extends "mobile/base.html" %}
+{% extends "landings/mobile/base.html" %}
 {% set title = _('Firefox Support Home Page') %}
-{% if not classes %}
-  {% set classes = ('home desktop') %}
-{% endif %}
-{% if not site_title %}
-  {% set site_title = _('Firefox Help')|safe %}
-{% endif %}
-{% set show_search = 'top' %}
-{% set hide_home_link = True %}
-{% set header_id = 'home-header' %}
-{% set full_width_header = True %}
-{% set include_showfor = True %}
-
-{% block content %}
-  <h2>{{ _('Common Questions') }}</h2>
-  <div class="common-questions">
-    {{ common.html|safe }}
-  </div>
-{% endblock %}
+{% set classes = ('home desktop') %}
+{% set site_title = _('Firefox Help')|safe %}
+{% set is_desktop_page = True %}

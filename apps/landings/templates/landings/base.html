@@ -1,0 +1,36 @@
+{# vim: set ts=2 et sts=2 sw=2: #}
+{% extends "base.html" %}
+{% from "includes/common_macros.html" import search_box %}
+{% set styles = ('wiki', 'home') %}
+{% set scripts = ('wiki',) %}
+{% set hide_header_search = True %}
+
+{% block content %}
+  <div id="featured-wrap">{# Top area, includes "Need Help With FIREFOX?" #}
+    <div id="featured">
+      <h1>{{ h1_text|safe }}</h1>
+      <p>{% block intro_text %}{% trans %}
+        You've come to the right place! Start by searching for solutions,
+        or by choosing one of our support articles below. If you can't
+        find the answer you need, our community of volunteers are ready
+        to help.
+      {% endtrans %}{% endblock %}</p>
+      {{ search_box(settings, id='support-search') }}
+    </div>
+  </div>
+  <div id="home-content">
+    <div id="home-content-quick">
+      {{ quick.html|safe }}
+    </div>
+    <div id="home-content-explore">
+      {{ explore.html|safe }}
+    </div>
+  </div>
+{% endblock %}
+
+{% block side %}
+  {% include 'wiki/includes/support_for_selectors.html' %}
+{% endblock %}
+
+{% block breadcrumbs %}
+{% endblock %}

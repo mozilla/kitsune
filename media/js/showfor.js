@@ -113,7 +113,7 @@ var ShowFor = {
             var currentDependency = getCurrentDependency(),
                 currentBrowser, newBrowser, availableBrowsers;
 
-            if (!noRedirect && $body.is('.home') &&
+            if (!noRedirect && $body.is('.mobile, .desktop') &&
                 !$body.is('.' + currentDependency)) {
                 // If we are on the mobile page and select a desktop OS,
                 // redirect to the desktop home page. And vice-versa.
@@ -172,12 +172,13 @@ var ShowFor = {
                              '"]):first').attr('value'));
         }
 
-        // If we are on home page, make sure appropriate OS is selected
+        // If we are on mobile or desktop home page, make sure
+        // appropriate OS is selected
         function checkSelectorValues() {
             var currentDependency,
                 isManual = false;
 
-            if ($body.is('.home')) {
+            if ($body.is('.desktop, .mobile')) {
                 currentDependency = getCurrentDependency();
                 // currentDependency will be 'desktop' or 'mobile'
                 // Make sure we are on the corresponding home page. Otherwise,

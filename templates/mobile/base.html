@@ -64,13 +64,18 @@
 
         <h2>{{ _('Other Products') }}</h2>
         <ul class="listview products">
-          {% if is_mobile_page %}
+          {% if not is_desktop_page %}
             {{ list_view_item(url('home'), _('Firefox for Desktop'), 'desktop-icon') }}
-          {% else %}
+          {% endif %}
+          {% if not is_mobile_page %}
             {{ list_view_item(url('home.mobile'), _('Firefox for Mobile'), 'mobile-icon') }}
           {% endif %}
-          {{ list_view_item(url('wiki.document', 'How to set up Firefox Home on your iPhone'), _('Firefox Home'), 'home-icon') }}
-          {{ list_view_item(url('wiki.document', 'what-firefox-sync'), _('Firefox Sync'), 'sync-icon') }}
+          {% if not is_fxhome_page %}
+            {{ list_view_item(url('home.fxhome'), _('Firefox Home'), 'home-icon') }}
+          {% endif %}
+          {% if not is_sync_page %}
+            {{ list_view_item(url('home.sync'), _('Firefox Sync'), 'sync-icon') }}
+          {% endif %}
         </ul>
 
         {% if include_showfor %}
