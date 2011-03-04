@@ -159,8 +159,8 @@ class MostVisitedDefaultLanguageReadout(Readout):
     column3_label = _lazy(u'Visits')
     modes = PERIODS
     review_statuses = {
-        1: (_lazy(u'Review Needed'), 'wiki.document_revisions'),
-        0: (u'', '')}
+        1: (_lazy(u'Review Needed'), 'wiki.document_revisions', 'review'),
+        0: (u'', '', 'ok')}
 
     def _query_and_params(self, max):
         # Review Needed: link to /history.
@@ -183,7 +183,7 @@ class MostVisitedDefaultLanguageReadout(Readout):
 
     def _format_row(self, (slug, title, visits, num_unreviewed)):
         needs_review = int(num_unreviewed > 0)
-        status, view_name = self.review_statuses[needs_review]
+        status, view_name, dummy = self.review_statuses[needs_review]
         return (dict(title=title,
                      url=reverse('wiki.document', args=[slug],
                                  locale=self.locale),
@@ -210,8 +210,10 @@ class MostVisitedTranslationsReadout(MostVisitedDefaultLanguageReadout):
     details_link_text = _lazy(u'All translations in English...')
 
     significance_statuses = {
-        MEDIUM_SIGNIFICANCE: (_lazy(u'Update Needed'), 'wiki.edit_document'),
-        MAJOR_SIGNIFICANCE: (_lazy(u'Out of Date'), 'wiki.edit_document')}
+        MEDIUM_SIGNIFICANCE:
+            (_lazy(u'Update Needed'), 'wiki.edit_document', 'update'),
+        MAJOR_SIGNIFICANCE:
+            (_lazy(u'Out of Date'), 'wiki.edit_document', 'out-of-date')}
 
     def _query_and_params(self, max):
         # Out of Date or Update Needed: link to /edit.
@@ -258,7 +260,7 @@ class MostVisitedTranslationsReadout(MostVisitedDefaultLanguageReadout):
                            visits, significance, needs_review)):
         if slug:  # A translation exists.
             locale = self.locale
-            status, view_name = self.significance_statuses.get(
+            status, view_name, status_class = self.significance_statuses.get(
                 significance, self.review_statuses[needs_review])
             status_url = (reverse(view_name, args=[slug], locale=locale)
                           if view_name else '')
@@ -270,12 +272,14 @@ class MostVisitedTranslationsReadout(MostVisitedDefaultLanguageReadout):
             # When calling the translate view, specify locale to translate to:
             status_url = reverse('wiki.translate', args=[slug],
                                  locale=self.locale)
+            status_class = 'untranslated'
 
         return (dict(title=title,
                      url=reverse('wiki.document', args=[slug],
                                  locale=locale),
                      visits=visits,
                      status=status,
+                     status_class=status_class,
                      status_url=status_url))
 
 

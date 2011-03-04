@@ -22,12 +22,18 @@
     <td>
       <div class="absolute-graph" style="width: {{ row.percent }}%"></div>
     </td>
-    <td>
+    <td class="status">
       {% if row.updated is defined %}
         {{ row.updated|timesince }}
       {% else %}
         {% if row.status %}
-          <a href="{{ row.status_url }}">{{ row.status }}</a>
+          <a href="{{ row.status_url }}">
+            {{ row.status }}
+            {% if row.status_class %}<span class="{{ row.status_class }}" />{% endif %}
+          </a>
+        {% else %}
+          {# For having a bullet char without a link #}
+          <span class="{{ row.status_class }}" />
         {% endif %}
       {% endif %}
     </td>
