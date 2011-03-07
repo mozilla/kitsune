@@ -323,8 +323,17 @@ var ShowFor = {
                 }
             });
 
-            shouldHide = (foundAnyOses && osAttrs[os] == undefined) ||
-                         (foundAnyBrowsers && browserAttrs[browser] == undefined);
+            shouldHide = ((foundAnyOses && osAttrs[os] == undefined) ||
+                         (foundAnyBrowsers && browserAttrs[browser] == undefined)) &&
+                         // Special cases ):
+                         // TODO: make this easier to maintain somehow?
+                         // Show android/m4 on desktop selection
+                         !(osAttrs['android'] && os !== 'maemo' /* only one mobile browser ATM */) &&
+                         !(browserAttrs['m4'] && browser !== 'm4' && (osAttrs['android'] || !foundAnyOses)) &&
+                         // Show win/fx4 on mobile selection
+                         !(osAttrs['win'] && (os === 'android' || os == 'maemo') && (browserAttrs['fx4'] || !foundAnyBrowsers)) &&
+                         !(browserAttrs['fx4'] && browser === 'm4' && (osAttrs['win'] || !foundAnyOses));
+
             if ((shouldHide && !isInverted) || (!shouldHide && isInverted)) {
                 $(this).hide();  // saves original visibility, which is nice but not necessary
             }
