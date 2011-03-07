@@ -2,6 +2,7 @@ from django.conf.urls.defaults import patterns, url
 
 
 urlpatterns = patterns('dashboards.views',
+    url(r'^review$', 'review', name='dashboards.review'),
     url(r'^localization$', 'localization', name='dashboards.localization'),
     url(r'^contributors$', 'contributors', name='dashboards.contributors'),
     url(r'^wiki-rows/(?P<readout_slug>[^/]+)', 'wiki_rows',

@@ -8,6 +8,7 @@ from django.views.decorators.http import require_GET
 import jingo
 from tower import ugettext as _
 
+from access.decorators import login_required
 from dashboards.readouts import (overview_rows, READOUTS, L10N_READOUTS,
                                  CONTRIBUTOR_READOUTS)
 from sumo_locales import LOCALES
@@ -104,3 +105,12 @@ def wiki_rows(request, readout_slug):
                           mode=smart_int(request.GET.get('mode'), None))
     max_rows = smart_int(request.GET.get('max'), fallback=None)
     return HttpResponse(readout.render(max_rows=max_rows))
+
+
+@require_GET
+@login_required
+def review(request):
+    """Review dashboard for a user, includes activity, announcements, etc."""
+    # TODO: site-wide announcements.
+    # TODO: activity stream.
+    return jingo.render(request, 'dashboards/review.html')
