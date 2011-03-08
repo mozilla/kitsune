@@ -2,7 +2,8 @@ import contextlib
 import re
 import urllib
 
-from django.http import HttpResponsePermanentRedirect, HttpResponseForbidden
+from django.http import HttpResponseRedirect, HttpResponsePermanentRedirect
+from django.http import HttpResponseForbidden
 from django.middleware import common
 from django.utils.encoding import iri_to_uri, smart_str, smart_unicode
 
@@ -37,7 +38,7 @@ class LocaleURLMiddleware(object):
             new_path = prefixer.fix(prefixer.shortened_path)
             query = dict((smart_str(k), v) for
                          k, v in request.GET.iteritems() if k != 'lang')
-            return HttpResponsePermanentRedirect(urlparams(new_path, **query))
+            return HttpResponseRedirect(urlparams(new_path, **query))
 
         if full_path != request.path:
             query_string = request.META.get('QUERY_STRING', '')
@@ -46,7 +47,7 @@ class LocaleURLMiddleware(object):
             if query_string:
                 full_path = '%s?%s' % (full_path, query_string)
 
-            response = HttpResponsePermanentRedirect(full_path)
+            response = HttpResponseRedirect(full_path)
 
             # Vary on Accept-Language if we changed the locale
             old_locale = prefixer.locale
