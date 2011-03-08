@@ -43,3 +43,9 @@ class TestLocaleMiddleware(TestCase):
         """/en-us should redirect to /en-US."""
         response = self.client.get('/en-us/search', follow=True)
         self.assertRedirects(response, '/en-US/search', status_code=301)
+
+    def test_upper_accept_lang(self):
+        """'en-US' and 'en-us' are both OK in Accept-Language."""
+        response = self.client.get('/search', follow=True,
+                                   HTTP_ACCEPT_LANGUAGE='en-US,fr;q=0.3')
+        self.assertRedirects(response, '/en-US/search', status_code=301)

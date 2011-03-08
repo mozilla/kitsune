@@ -107,8 +107,8 @@ class Prefixer(object):
                 self.request.META['HTTP_ACCEPT_LANGUAGE'])
 
             # Do we support or remap their locale?
-            supported = [lang[0] for lang in ranked_languages if lang[0]
-                        in settings.LANGUAGE_URL_MAP]
+            supported = [lang[0] for lang in ranked_languages if
+                         lang[0].lower() in settings.LANGUAGE_URL_MAP]
 
             # Do we support a less specific locale? (xx-YY -> xx)
             if not len(supported):
