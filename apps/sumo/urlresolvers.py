@@ -61,6 +61,25 @@ def find_supported(test):
             x.split('-', 1)[0] == test.lower().split('-', 1)[0]]
 
 
+def get_best_language(accept_lang):
+    """Given an Accept-Language header, return the best-matching language."""
+
+    LUM = settings.LANGUAGE_URL_MAP
+    langs = dict(LUM)
+    langs.update((k.split('-')[0], v) for k, v in LUM.items() if
+                 k.split('-')[0] not in langs)
+    ranked = parse_accept_lang_header(accept_lang)
+    for lang, _ in ranked:
+        lang = lang.lower()
+        if lang in langs:
+            return langs[lang]
+        pre = lang.split('-')[0]
+        if pre in langs:
+            return langs[pre]
+    # Could not find an acceptable language.
+    return False
+
+
 def split_path(path):
     """
     Split the requested path into (locale, path).
@@ -103,22 +122,10 @@ class Prefixer(object):
                 return settings.LANGUAGE_URL_MAP[lang]
 
         if self.request.META.get('HTTP_ACCEPT_LANGUAGE'):
-            ranked_languages = parse_accept_lang_header(
+            best = get_best_language(
                 self.request.META['HTTP_ACCEPT_LANGUAGE'])
-
-            # Do we support or remap their locale?
-            supported = [lang[0] for lang in ranked_languages if
-                         lang[0].lower() in settings.LANGUAGE_URL_MAP]
-
-            # Do we support a less specific locale? (xx-YY -> xx)
-            if not len(supported):
-                for lang in ranked_languages:
-                    supported = find_supported(lang[0])
-                    if supported:
-                        break
-
-            if len(supported):
-                return settings.LANGUAGE_URL_MAP[supported[0].lower()]
+            if best:
+                return best
 
         return settings.LANGUAGE_CODE
 
