@@ -2,12 +2,15 @@ from django.utils.datastructures import SortedDict
 
 from tower import ugettext_lazy as _lazy
 
+
 products = SortedDict([
     ('desktop', {
-        'name': _lazy(u'Firefox 3.6'),
-        'subtitle': _lazy(u'on Desktops/Laptops/Netbooks'),
+        'name': _lazy(u'Firefox for Desktops or Laptops'),
+        'subtitle': _lazy(u'Windows, Mac, or Linux'),
         'extra_fields': ['troubleshooting', 'ff_version', 'os', 'plugins'],
         'tags': ['desktop'],
+        'class': 'for-fx3',  # If this sort of thing is needed more than once,
+                             # refactor to use {for} machinery.
         'categories': SortedDict([
         ('d1', {
             'name': _lazy(u'Firefox is having problems with certain web sites'),
@@ -16,8 +19,12 @@ products = SortedDict([
                     ' sites</em> and hundreds of questions in our database. '
                     'Try one of the following:',
             'articles': [
+                {'title': 'Errors when loading web sites',
+                 'url': '/en-US/kb/Error%20loading%20web%20sites'},
                 {'title': 'Firefox cannot load websites but other programs can',
                  'url': '/en-US/kb/Firefox+cannot+load+websites+but+other+programs+can'},
+                {'title': 'Web sites look wrong',
+                 'url': 'en-US/kb/Websites%20look%20wrong'},
                 {'title': 'Problems using Facebook in Firefox',
                  'url': '/en-US/kb/Problems+using+Facebook+in+Firefox'},
             ],
@@ -49,6 +56,10 @@ products = SortedDict([
                     'cookies, history or settings</em> and hundreds of '
                     'questions in our database. Try one of the following:',
             'articles': [
+                {'title': 'Using Bookmarks',
+                 'url': '/en-US/kb/Bookmarks'},
+                {'title': 'Lost Bookmarks',
+                 'url': '/en-US/kb/Lost%20Bookmarks'},
                 {'title': 'Deleting Cookies',
                  'url': '/en-US/kb/Deleting+cookies'},
                 {'title': 'Enabling and disabling cookies',
@@ -57,7 +68,7 @@ products = SortedDict([
             'tags': ['data'],
         }),
         ('d4', {
-            'name': _lazy(u'I need help learning to use a Firefox feature'),
+            'name': _lazy(u'I have a question about using a Firefox feature'),
             'html': 'We have lots of helpful articles to get you started <em>'
                     'learning and using Firefox</em> and hundreds of questions'
                     ' in our database. Try one of the following:',
@@ -107,41 +118,121 @@ products = SortedDict([
         ])
     }),
     ('beta', {
-        'name': _lazy(u'Firefox 4 Betas '),
-        'subtitle': _lazy(u'on Desktops/Laptops/Netbooks'),
+        'name': _lazy(u'Firefox for Desktops or Laptops'),
+        'subtitle': _lazy(u'Windows, Mac, or Linux'),
         'extra_fields': ['troubleshooting', 'ff_version', 'os', 'plugins'],
-        'tags': ['beta'],
+        'tags': ['desktop'],
+        'class': 'for-not-fx3',
         'categories': SortedDict([
-        ('b1', {
-            'name': _lazy(u"I'm having trouble with the look and feel of the Firefox beta"),
-            'tags': ['ui'],
-        }),
         ('b2', {
             'name': _lazy(u'Firefox is having problems with certain web sites'),
             'extra_fields': ['sites_affected'],
+            'html': 'We have lots of helpful articles on <em>problems with web'
+                    ' sites</em> and hundreds of questions in our database. '
+                    'Try one of the following:',
+            'articles': [
+                {'title': 'Errors when loading web sites',
+                 'url': '/en-US/kb/Error%20loading%20web%20sites'},
+                {'title': 'Firefox cannot load websites but other programs can',
+                 'url': '/en-US/kb/Firefox+cannot+load+websites+but+other+programs+can'},
+                {'title': 'Web sites look wrong',
+                 'url': 'en-US/kb/Websites%20look%20wrong'},
+                {'title': 'Problems using Facebook in Firefox',
+                 'url': '/en-US/kb/Problems+using+Facebook+in+Firefox'},
+            ],
             'tags': ['websites'],
         }),
         ('b3', {
             'name': _lazy(u'Firefox is crashing or closing unexpectedly'),
             'extra_fields': ['crash_id'],
+            'html': 'We have lots of helpful articles on <em>crashes</em> '
+                    'and hundreds of questions in our database. Try one of '
+                    'the following:',
+            'articles': [
+                {'title': 'Firefox crashes',
+                 'url': '/en-US/kb/Firefox+Crashes'},
+                {'title': 'Firefox crashes when you open it',
+                 'url': '/en-US/kb/Firefox+crashes+when+you+open+it'},
+                {'title': 'Firefox crashes when loading certain pages',
+                 'url': '/en-US/kb/Firefox+crashes+when+loading+certain+pages'},
+                {'title': 'Firefox crashes when you exit it',
+                 'url': '/en-US/kb/Firefox+crashes+when+you+exit+it'},
+                {'title': 'The Adobe Flash plugin has crashed',
+                 'url': '/en-US/kb/The+Adobe+Flash+plugin+has+crashed'},
+            ],
             'tags': ['crash'],
+        }),
+        ('data', {
+            'name': _lazy(u'I have a problem with my bookmarks, cookies, history or settings'),
+            'html': 'We have lots of helpful articles on <em>bookmarks, '
+                    'cookies, history or settings</em> and hundreds of '
+                    'questions in our database. Try one of the following:',
+            'articles': [
+                {'title': 'Using Bookmarks',
+                 'url': '/en-US/kb/Bookmarks'},
+                {'title': 'Lost Bookmarks',
+                 'url': '/en-US/kb/Lost%20Bookmarks'},
+                {'title': 'What happened to the bookmarks bar',
+                 'url': '/en-US/kb/what-happened-bookmarks-toolbar'},
+                {'title': 'Deleting Cookies',
+                 'url': '/en-US/kb/Deleting+cookies'},
+                {'title': 'Enabling and disabling cookies',
+                 'url': '/en-US/kb/Enabling+and+disabling+cookies'},
+            ],
+            'tags': ['data'],
+        }),
+        ('learning', {
+            'name': _lazy(u'I have a question about using a Firefox feature'),
+            'html': 'We have lots of helpful articles to get you started <em>'
+                    'learning and using Firefox</em> and hundreds of questions'
+                    ' in our database. Try one of the following:',
+            'articles': [
+                {'title': 'What is Firefox Sync?',
+                 'url': '/en-US/kb/what-firefox-sync'},
+                {'title': 'What are App Tabs?',
+                 'url': '/en-US/kb/what-are-app-tabs'},
+                {'title': 'What is Panorama (also known as Tab Groups)?',
+                 'url': '/en-US/kb/what-panorama'},
+                {'title': 'What is the Add-on Bar?',
+                 'url': '/en-US/kb/what-add-bar'},
+                {'title': 'How do I use Private Browsing?',
+                 'url': '/en-US/kb/Private+Browsing'},
+            ],
+            'tags': ['learning'],
         }),
         ('b4', {
             'name': _lazy(u'I have a problem with an extension or plugin'),
             'extra_fields': ['addon'],
+            'html': 'Most extensions or plugins are not written by Mozilla '
+                    'and you will need to contact the people or company who '
+                    'made the extension/plugin for support, if you need help '
+                    'removing an extension or plugin, see <a '
+                    'href="/en-US/kb/Uninstalling+add-ons">Uninstalling '
+                    'add-ons</a>.',
             'tags': ['addon'],
         }),
         ('b5', {
             'name': _lazy(u'I have another kind of problem with Firefox'),
             'extra_fields': ['frequency', 'started'],
+            'html': 'We have lots of helpful articles on <em>general Firefox '
+                    'issues</em> and hundreds of questions in our database. '
+                    'Try one of the following:',
+            'articles': [
+                {'title': 'What happened to the Status bar?',
+                 'url': '/en-US/kb/what-happened-status-bar'},
+                {'title': 'What is plugin-container',
+                 'url': '/en-US/kb/What+is+plugin-container'},
+                {'title': 'Menu bar is mising',
+                 'url': '/en-US/kb/Menu+bar+is+missing'},
+            ],
             'tags': ['general'],
         }),
         ('b6', {
-            'name': _lazy(u'I have feedback/suggestions about the beta'),
-            'html': 'Firefox 4 beta versions have a feedback system built in.'
-                    ' For more details, see our '
-                    '<a href="http://www.mozilla.com/en-US/firefox/beta/feedback/">'
-                    'beta feedback page</a>.',
+            'name': _lazy(u'I have suggestions for future versions of Firefox'),
+            'html': 'If you\'re using the latest version of Firefox 4, you can '
+                    'leave us suggestions for features at our '
+                    '<a href="http://input.mozilla.com/feedback/">'
+                    'feedback page</a>.',
             'deadend': True,
         }),
         ])
@@ -353,8 +444,13 @@ products = SortedDict([
     }),
 ])
 
-# Insert 'key' keys so we can go from product or category back to key:
-for p_k, p_v in products.iteritems():
-    p_v['key'] = p_k
-    for c_k, c_v in p_v['categories'].iteritems():
-        c_v['key'] = c_k
+
+def add_backtrack_keys(products):
+    """Insert 'key' keys so we can go from product or category back to key."""
+    for p_k, p_v in products.iteritems():
+        p_v['key'] = p_k
+        for c_k, c_v in p_v['categories'].iteritems():
+            c_v['key'] = c_k
+
+
+add_backtrack_keys(products)

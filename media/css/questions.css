@@ -1200,6 +1200,10 @@ form div.attachments-upload img {
     background: transparent url(../img/logos.sprite.png) no-repeat 0 6px;
 }
 
+.for-fx3 {
+    display: none;
+}
+
 .home-icon {
     background: transparent url(../img/logos.sprite.png) no-repeat 0 -42px;
 }

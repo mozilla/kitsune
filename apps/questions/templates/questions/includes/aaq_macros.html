@@ -5,7 +5,7 @@
   <h2>{{ _('Which product would you like to post a question about?') }}</h2>
   <ul class="products select-one">
     {% for key, product in products.iteritems() %}
-      <li class="{{ key }}-icon">
+      <li class="{{ key }}-icon {{ product.class }}">
         <a href="{{ url('questions.new_question')|urlparams(product=key) }}">
           {{ product.name }}
           <span>{{ product.subtitle }}</span>
