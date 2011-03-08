@@ -15,7 +15,7 @@ from tower import ugettext as _
 from tower import ugettext_lazy as _lazy
 
 from countries import COUNTRIES
-from sumo.models import ModelBase
+from sumo.models import ModelBase, LocaleField
 from sumo.urlresolvers import reverse
 from sumo.utils import auto_delete_files
 
@@ -59,6 +59,8 @@ class Profile(ModelBase):
     livechat_id = models.CharField(default=None, null=True, blank=True,
                                    max_length=255,
                                    verbose_name=_lazy(u'Livechat ID'))
+    locale = LocaleField(default=settings.LANGUAGE_CODE,
+                         verbose_name=_lazy(u'Preferred language for email'))
 
     def __unicode__(self):
         return unicode(self.user)
