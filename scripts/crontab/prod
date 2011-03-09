@@ -1,0 +1,26 @@
+#
+# !!AUTO-GENERATED!!  Edit scripts/crontab/make-crons.py instead.
+#
+
+MAILTO=cron-sumo@mozilla.com
+
+HOME = /tmp
+
+# Every minute!
+* * * * * cd /data/www/support.mozilla.com/kitsune; /usr/bin/python26 manage.py cron collect_tweets
+* * * * * cd /data/www/support.mozilla.com/kitsune; /usr/bin/python26 manage.py cron get_queue_status
+
+# Every 2 hours.
+1 */2 * * * cd /data/www/support.mozilla.com/kitsune; /usr/bin/python26 manage.py cron calculate_related_documents
+
+# Every 6 hours.
+0 */6 * * * cd /data/www/support.mozilla.com/kitsune; /usr/bin/python26 manage.py update_product_details -q > /dev/null
+30 */6 * * * cd /data/www/support.mozilla.com/kitsune; /usr/bin/python26 manage.py cron get_customercare_stats
+
+# Once per day.
+0 16 * * * cd /data/www/support.mozilla.com/kitsune; /usr/bin/python26 manage.py cron reload_wiki_traffic_stats
+
+# Twice per week.
+05 01 * * 1,4 cd /data/www/support.mozilla.com/kitsune; /usr/bin/python26 manage.py cron update_weekly_votes
+
+MAILTO=root
