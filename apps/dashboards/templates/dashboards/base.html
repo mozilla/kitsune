@@ -16,10 +16,14 @@
   <nav id="doc-tabs">
     <ul>{# If form is set, we're editing #}
       <li class="{{ review_classes }}">
-        <a href="{{ url('dashboards.review') }}">{{ title }}</a>
+        <a href="{{ url('dashboards.review') }}">{{ _('Review') }}</a>
       </li>
-      <li class="{{ forum_classes }}"><a href="#TODO">Forum</a></li>
-      <li class="{{ locale_classes }}"><a href="{{ url('dashboards.localization') }}">My locale</a></li>
+      <li class="{{ forum_classes }}">
+        <a href="{{ url('dashboards.questions') }}">{{ _('Forum') }}</a>
+      </li>
+      <li class="{{ locale_classes }}">
+        <a href="{{ url('dashboards.localization') }}">My locale</a>
+      </li>
       <li><a href="{{ profile_url(user) }}">Profile</a></li>
     </ul>
   </nav>

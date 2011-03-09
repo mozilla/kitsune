@@ -1,6 +1,7 @@
 from nose.tools import eq_
 from pyquery import PyQuery as pq
 
+from forums.models import Post
 from sumo.tests import TestCase
 from sumo.urlresolvers import reverse
 from wiki.models import MAJOR_SIGNIFICANCE, MEDIUM_SIGNIFICANCE
@@ -80,3 +81,30 @@ class LocalizationDashTests(TestCase):
                                            args=['untranslated'],
                                            locale='de'))
         self.assertContains(response, untranslated.document.title)
+
+
+class ContributorForumDashTests(TestCase):
+    fixtures = ['users.json', 'posts.json', 'forums_permissions.json']
+
+    def setUp(self):
+        super(ContributorForumDashTests, self).setUp()
+        self.client.login(username='jsocol', password='testpass')
+
+    def test_no_activity(self):
+        """Test the page with no activity."""
+        response = self.client.get(reverse('dashboards.review'), follow=True)
+        eq_(200, response.status_code)
+        doc = pq(response.content)
+        eq_('No recent activity.', doc('#forums-dashboard p').text())
+
+    def test_with_activity(self):
+        """Test the page with some activity."""
+        # Add a reply
+        import forums.tasks  # For signal connection
+        post = Post(thread_id=4, content='lorem ipsum', author_id=118577)
+        post.save()
+        # Verify activity on the page
+        response = self.client.get(reverse('dashboards.review'), follow=True)
+        eq_(200, response.status_code)
+        doc = pq(response.content)
+        eq_(1, len(doc('ol.actions li')))

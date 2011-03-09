@@ -1,6 +1,7 @@
 from functools import partial
 
 from django.conf import settings
+from django.contrib.contenttypes.models import ContentType
 from django.http import Http404, HttpResponseRedirect, HttpResponse
 from django.utils.datastructures import SortedDict
 from django.views.decorators.http import require_GET
@@ -9,11 +10,14 @@ import jingo
 from tower import ugettext as _
 
 from access.decorators import login_required
+from dashboards import ACTIONS_PER_PAGE
 from dashboards.readouts import (overview_rows, READOUTS, L10N_READOUTS,
                                  CONTRIBUTOR_READOUTS)
+from forums.models import Post
 from sumo_locales import LOCALES
 from sumo.urlresolvers import reverse
-from sumo.utils import smart_int
+from sumo.utils import paginate, smart_int
+from questions.models import Answer
 from wiki.events import (ApproveRevisionInLocaleEvent,
                          ReviewableRevisionInLocaleEvent)
 
@@ -112,5 +116,22 @@ def wiki_rows(request, readout_slug):
 def review(request):
     """Review dashboard for a user, includes activity, announcements, etc."""
     # TODO: site-wide announcements.
-    # TODO: activity stream.
-    return jingo.render(request, 'dashboards/review.html')
+    return jingo.render(request, 'dashboards/review.html',
+                        {'actions': _actions(Post, request)})
+
+
+@require_GET
+@login_required
+def questions(request):
+    """Support Forum dashboard for a user, includes activity,
+    announcements, etc."""
+    # TODO: site-wide announcements.
+    return jingo.render(request, 'dashboards/questions.html',
+                        {'actions': _actions(Answer, request)})
+
+
+def _actions(model_class, request):
+    """Returns paginated activity for the given model."""
+    ct = ContentType.objects.get_for_model(model_class)
+    actions = request.user.action_inbox.filter(content_type=ct)
+    return paginate(request, actions, per_page=ACTIONS_PER_PAGE)

@@ -203,3 +203,30 @@
     color: #add575;
     font-size: 200%;
 }
+
+/* activity stream */
+ol.actions li {
+    border-bottom: solid 1px #ccc;
+    list-style: none;
+    padding: 10px 0;
+}
+
+ol.actions li:last-child {
+    border-bottom: none;
+}
+
+ol.actions h2 {
+    font-size: 16px;
+    margin: 0 0 5px;
+}
+
+ol.actions time {
+    color: #666;
+    display: block;
+    font-style: italic;
+    margin: 5px 0 0;
+}
+
+ol.pagination {
+    border: none;
+}
