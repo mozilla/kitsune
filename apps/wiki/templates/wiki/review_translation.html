@@ -53,21 +53,21 @@
               <h3>{{ _('Submitted {locale} translation:')|f(locale=settings.LANGUAGES[document.locale.lower()]) }}</h3>
               <p>{{ _('Revision {id} by {user} on {date}')|fe(id=revision.id, user=revision.creator, date=datetimeformat(revision.created, format='longdatetime')) }}</p>
             </div>
-            <h4>{{ ('Keywords:') }}</h4>
+            <h4>{{ _('Keywords:') }}</h4>
             <div class="approved">
               <p>{{ parent_revision.keywords }}</p>
             </div>
             <div class="localized">
               <p>{{ revision.keywords }}</p>
             </div>
-            <h4>{{ ('Search results summary:') }}</h4>
+            <h4>{{ _('Search results summary:') }}</h4>
             <div class="approved">
               <p>{{ parent_revision.summary }}</p>
             </div>
             <div class="localized">
               <p>{{ revision.summary }}</p>
             </div>
-            <h4>{{ ('Content:') }}</h4>
+            <h4>{{ _('Content:') }}</h4>
             <div class="approved">
               <textarea readonly="readonly">{{ parent_revision.content }}</textarea>
             </div>
