@@ -220,7 +220,8 @@ ol.actions h2 {
     margin: 0 0 5px;
 }
 
-ol.actions time {
+ol.actions time,
+ul.announcements time {
     color: #666;
     display: block;
     font-style: italic;
@@ -229,4 +230,31 @@ ol.actions time {
 
 ol.pagination {
     border: none;
+}
+
+ul#doc-content.announcements {
+    list-style: none;
+    margin: 10px 0 20px;
+}
+
+ul#doc-content.announcements > li {
+    background: #fffaed;
+    border: 1px solid #f2d273;
+    -moz-border-radius: 12px;
+    -webkit-border-radius: 12px;
+    border-radius: 12px;
+    margin: 10px 0;
+    padding: 10px;
+}
+
+ul#doc-content p {
+    margin: 1em 0;
+}
+
+ul#doc-content p:first-child {
+    margin-top: 0;
+}
+
+ul#doc-content p:last-child {
+    margin-bottom: 0;
 }

@@ -227,6 +227,7 @@ INSTALLED_APPS = (
     'inproduct',
     'postcrash',
     'landings',
+    'announcements',
 
     # Extra apps for testing.
     'django_nose',

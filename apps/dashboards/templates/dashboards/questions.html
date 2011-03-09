@@ -5,5 +5,6 @@
 {% set forum_classes = 'active' %}
 
 {% block dashboard_content %}
+  {% include 'dashboards/includes/announcement_list.html' %}
   {% include 'dashboards/includes/action_list.html' %}
 {% endblock %}

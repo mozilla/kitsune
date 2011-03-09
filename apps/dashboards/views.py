@@ -10,6 +10,7 @@ import jingo
 from tower import ugettext as _
 
 from access.decorators import login_required
+from announcements.models import Announcement
 from dashboards import ACTIONS_PER_PAGE
 from dashboards.readouts import (overview_rows, READOUTS, L10N_READOUTS,
                                  CONTRIBUTOR_READOUTS)
@@ -115,9 +116,9 @@ def wiki_rows(request, readout_slug):
 @login_required
 def review(request):
     """Review dashboard for a user, includes activity, announcements, etc."""
-    # TODO: site-wide announcements.
     return jingo.render(request, 'dashboards/review.html',
-                        {'actions': _actions(Post, request)})
+                        {'actions': _actions(Post, request),
+                         'announcements': Announcement.get_site_wide()})
 
 
 @require_GET
@@ -125,9 +126,9 @@ def review(request):
 def questions(request):
     """Support Forum dashboard for a user, includes activity,
     announcements, etc."""
-    # TODO: site-wide announcements.
     return jingo.render(request, 'dashboards/questions.html',
-                        {'actions': _actions(Answer, request)})
+                        {'actions': _actions(Answer, request),
+                         'announcements': Announcement.get_site_wide()})
 
 
 def _actions(model_class, request):
