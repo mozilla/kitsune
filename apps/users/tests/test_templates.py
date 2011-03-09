@@ -243,7 +243,8 @@ class EditProfileTests(TestCaseBase):
                 'irc_handle': 'johndoe',
                 'timezone': 'America/New_York',
                 'country': 'US',
-                'city': 'Disney World'}
+                'city': 'Disney World',
+                'locale': 'en-US'}
         r = self.client.post(url, data)
         eq_(302, r.status_code)
         profile = User.objects.get(username='rrosario').get_profile()
