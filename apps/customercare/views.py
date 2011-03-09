@@ -12,7 +12,7 @@ from django.views.decorators.http import require_POST, require_GET
 from django.utils.datastructures import SortedDict
 
 from babel.numbers import format_number
-from bleach import Bleach
+import bleach
 import jingo
 from tower import ugettext as _, ugettext_lazy as _lazy
 import tweepy
@@ -22,8 +22,6 @@ import twitter
 
 
 log = logging.getLogger('k.customercare')
-
-bleach = Bleach()
 
 MAX_TWEETS = 20
 FILTERS = SortedDict([('recent', _lazy('Most Recent')),

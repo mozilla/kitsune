@@ -26,6 +26,7 @@ ALLOWED_ATTRIBUTES = {
               'data-width', 'data-height'],
     'source': ['src', 'type'],
 }
+ALLOWED_STYLES = ['vertical-align']
 IMAGE_PARAMS = ['alt', 'align', 'caption', 'valign', 'frame', 'page', 'link',
                 'width', 'height']
 IMAGE_PARAM_VALUES = {
@@ -172,7 +173,7 @@ class WikiParser(Parser):
         self.registerInternalLinkHook('Image', self._hook_image_tag)
 
     def parse(self, text, show_toc=None, tags=None, attributes=None,
-              locale=settings.WIKI_DEFAULT_LANGUAGE):
+              styles=None, locale=settings.WIKI_DEFAULT_LANGUAGE):
         """Given wiki markup, return HTML.
 
         Pass a locale to get all the hooks to look up Documents or Media
@@ -185,7 +186,8 @@ class WikiParser(Parser):
 
         parser_kwargs = {'tags': tags} if tags else {}
         return super(WikiParser, self).parse(text, show_toc=show_toc,
-            attributes=attributes or ALLOWED_ATTRIBUTES, **parser_kwargs)
+            attributes=attributes or ALLOWED_ATTRIBUTES,
+            styles=styles or ALLOWED_STYLES, **parser_kwargs)
 
     def _hook_internal_link(self, parser, space, name):
         """Parses text and returns internal link."""
