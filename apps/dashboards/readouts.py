@@ -248,7 +248,7 @@ class MostVisitedTranslationsReadout(MostVisitedDefaultLanguageReadout):
                'LEFT JOIN dashboards_wikidocumentvisits ON engdoc.id='
                    'dashboards_wikidocumentvisits.document_id '
                    'AND dashboards_wikidocumentvisits.period=%s '
-               'WHERE engdoc.locale=%s '
+               'WHERE engdoc.locale=%s AND engdoc.is_localizable '
                'ORDER BY dashboards_wikidocumentvisits.visits DESC, '
                         'COALESCE(transdoc.title, engdoc.title) ASC' +
                self._limit_clause(max),

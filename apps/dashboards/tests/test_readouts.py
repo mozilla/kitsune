@@ -1,9 +1,12 @@
 from datetime import datetime
 from functools import partial
 
-from dashboards.readouts import UnreviewedReadout
+from nose.tools import eq_
+
+from dashboards.readouts import (UnreviewedReadout,
+                                 MostVisitedTranslationsReadout)
 from sumo.tests import TestCase
-from wiki.tests import revision, translated_revision
+from wiki.tests import revision, translated_revision, document
 
 
 NON_DEFAULT_LOCALE = 'de'
@@ -21,14 +24,13 @@ class UnreviewedChangesTests(TestCase):
     bits.
 
     """
-
     fixtures = ['users.json']
 
     @staticmethod
     def titles():
         """Return the titles shown by the Unreviewed Changes readout."""
         return [row['title'] for row in
-            UnreviewedReadout(MockRequest()).rows()]
+                UnreviewedReadout(MockRequest()).rows()]
 
     def test_unrevieweds_after_current(self):
         """Show the unreviewed revisions with later creation dates than the
@@ -53,3 +55,20 @@ class UnreviewedChangesTests(TestCase):
         rejected = translated_revision(reviewed=datetime.now())
         rejected.save()
         assert rejected.document.title not in self.titles()
+
+
+class MostVisitedTranslationsTests(TestCase):
+    fixtures = ['users.json']
+
+    @staticmethod
+    def rows():
+        """Return first row shown by the Most Visited Translations readout."""
+        return MostVisitedTranslationsReadout(MockRequest()).rows()
+
+    def test_unlocalizable(self):
+        """Unlocalizable docs shouldn't show up in the list."""
+        revision(
+            document=document(is_localizable=False, save=True),
+            is_approved=True,
+            save=True)
+        eq_([], self.rows())
