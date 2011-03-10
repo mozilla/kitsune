@@ -229,7 +229,7 @@ class ThreadPermissionsTests(ForumTestCase):
                         {'forum': 2},
                         args=[self.forum.slug, self.thread.id])
         eq_(200, response.status_code)
-        thread = Thread.objects.get(pk=self.thread.pk)
+        thread = Thread.uncached.get(pk=self.thread.pk)
         eq_(2, thread.forum.id)
 
     def test_post_edit_403(self):
