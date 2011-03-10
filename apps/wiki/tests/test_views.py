@@ -1,7 +1,9 @@
 import json
 
 from django.conf import settings
+from django.contrib.sites.models import Site
 
+import mock
 from nose.tools import eq_
 from pyquery import PyQuery as pq
 
@@ -140,8 +142,10 @@ class DocumentEditingTests(TestCase):
         eq_(2, d.firefox_versions.count())
         eq_(1, d.operating_systems.count())
 
-    def test_invalid_slug(self):
+    @mock.patch_object(Site.objects, 'get_current')
+    def test_invalid_slug(self, get_current):
         """Slugs cannot contain /."""
+        get_current.return_value.domain = 'testserver'
         client = LocalizingClient()
         client.login(username='admin', password='testpass')
         data = new_document_data()

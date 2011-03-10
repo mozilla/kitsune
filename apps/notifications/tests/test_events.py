@@ -249,6 +249,7 @@ class EventUnionTests(TestCase):
     @mock.patch_object(SimpleEvent, '_mails')
     def test_fire(self, _mails):
         """Assert firing the union gets the mails from the first event."""
+        _mails.return_value = []
         watch(event_type=TYPE, email='he@llo.com').save()
         EventUnion(SimpleEvent(), AnotherEvent()).fire()
         assert _mails.called

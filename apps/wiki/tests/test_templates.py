@@ -378,8 +378,10 @@ class NewDocumentTests(TestCaseBase):
         eq_('Document with this Title and Locale already exists.',
             ul('li').text())
 
-    def test_slug_3_chars(self):
+    @mock.patch_object(Site.objects, 'get_current')
+    def test_slug_3_chars(self, get_current):
         """Make sure we can create a slug with only 3 characters."""
+        get_current.return_value.domain = 'testserver'
         self.client.login(username='admin', password='testpass')
         data = new_document_data()
         data['slug'] = 'ask'
@@ -520,10 +522,12 @@ class NewRevisionTests(TestCaseBase):
                          data)
         eq_(tags, list(self.d.tags.values_list('name', flat=True)))
 
-    def test_new_form_maintains_based_on_rev(self):
+    @mock.patch_object(Site.objects, 'get_current')
+    def test_new_form_maintains_based_on_rev(self, get_current):
         """Revision.based_on should be the rev that was current when the Edit
         button was clicked, even if other revisions happen while the user is
         editing."""
+        get_current.return_value.domain = 'testserver'
         _test_form_maintains_based_on_rev(
             self.client, self.d, 'wiki.edit_document',
             {'summary': 'Windy', 'content': 'gerbils', 'form': 'rev'},
@@ -765,8 +769,10 @@ class ReviewRevisionTests(TestCaseBase):
                  str(self.revision.id)),
             redirect[0])
 
-    def test_review_translation(self):
+    @mock.patch_object(Site.objects, 'get_current')
+    def test_review_translation(self, get_current):
         """Make sure it works for localizations as well."""
+        get_current.return_value.domain = 'testserver'
         doc = self.document
         user = User.objects.get(pk=118533)
 
@@ -1061,10 +1067,12 @@ class TranslateTests(TestCaseBase):
         edited_fire.assert_called()
         ready_fire.assert_called()
 
-    def test_translate_form_maintains_based_on_rev(self):
+    @mock.patch_object(Site.objects, 'get_current')
+    def test_translate_form_maintains_based_on_rev(self, get_current):
         """Revision.based_on should be the rev that was current when the
         Translate button was clicked, even if other revisions happen while the
         user is editing."""
+        get_current.return_value.domain = 'testserver'
         _test_form_maintains_based_on_rev(self.client, self.d,
                                           'wiki.translate',
                                           _translation_data(), locale='es')
@@ -1087,9 +1095,11 @@ class TranslateTests(TestCaseBase):
         d = Document.objects.get(id=rev_es.document.id)
         eq_(new_title, d.title)  # Title is updated
 
-    def test_translate_update_rev_only(self):
+    @mock.patch_object(Site.objects, 'get_current')
+    def test_translate_update_rev_only(self, get_current):
         """Submitting the revision form should create a new revision.
         No document fields should be updated."""
+        get_current.return_value.domain = 'testserver'
         rev_es = self._create_and_approve_first_translation()
         orig_title = rev_es.document.title
         url = reverse('wiki.translate', locale='es', args=[self.d.slug])
