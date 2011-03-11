@@ -12,11 +12,9 @@
 
         if ($('body').is('.document') || $('body').is('.home')) {  // Document page
             ShowFor.initForTags();
-            ShowFor.updateShowforSelectors();
             new ArticleHelpfulVote(true);
         } else if ($('body').is('.review')) { // Review pages
             ShowFor.initForTags();
-            ShowFor.updateShowforSelectors();
         }
 
         if ($('body').is('.home')) {
@@ -177,7 +175,6 @@
                         .find('select.enable-if-js').removeAttr('disabled');
                     document.location.hash = 'preview';
                     ShowFor.initForTags();
-                    ShowFor.updateShowforSelectors();
                     $preview.find('.kbox').kbox();
                     k.initVideo();
                     $btn.removeAttr('disabled');

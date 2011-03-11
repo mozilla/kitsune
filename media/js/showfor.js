@@ -48,10 +48,17 @@ var ShowFor = {
     // Hide/show the proper page sections that are marked with {for} tags as
     // applying to only certain browsers or OSes. Update the table of contents
     // to reflect what was hidden/shown.
-    initForTags: function() {
+    initForTags: function(options, $container) {
+        if (!$container) {
+            $container = $('body');
+        }
+        options = $.extend({
+            osSelector: '#os',
+            browserSelector: '#browser'
+        }, options);
         var self = this,
-            $osMenu = $('#os'),
-            $browserMenu = $('#browser'),
+            $osMenu = $container.find(options.osSelector),
+            $browserMenu = $container.find(options.browserSelector),
             $origBrowserOptions = $browserMenu.find('option').clone(),
             $body = $('body'),
             hash = self.hashFragment(),
@@ -67,14 +74,83 @@ var ShowFor = {
 
         function updateForsAndToc() {
             // Hide and show document sections accordingly:
-            self.showAndHideFors($('select#os').val(),
-                                 $('select#browser').val());
+            showAndHideFors($osMenu.val(), $browserMenu.val());
 
             // Update the table of contents in case headers were hidden or shown:
             $('#toc > :not(h2)').remove(); // __TOC__ generates <ul/>'s.
             $('#toc').append(self.filteredToc($('#doc-content'), '#toc h2'));
 
             return false;
+        }
+        
+        // Set the {for} nodes to the proper visibility for the given OS and
+        // browser combination.
+        //
+        // Hidden are {for}s that {list at least one OS but not the passed-in one}
+        // or that {list at least one browser but not the passed-in one}. Also, the
+        // entire condition can be inverted by prefixing it with "not ", as in {for
+        // not mac,linux}.
+        function showAndHideFors(os, browser) {
+            $container.find('.for').each(function(index) {
+                var osAttrs = {}, browserAttrs = {},
+                    foundAnyOses = false, foundAnyBrowsers = false,
+                    forData,
+                    isInverted,
+                    shouldHide;
+
+                // Catch the "not" operator if it's there:
+                forData = $(this).data('for');
+                if (!forData) {
+                    // If the data-for attribute is missing, move on.
+                    return;
+                }
+
+                isInverted = forData.substring(0, 4) == 'not ';
+                if (isInverted) {
+                    forData = forData.substring(4);  // strip off "not "
+                }
+
+                // Divide {for} attrs into OSes and browsers:
+                $(forData.split(',')).each(function(index) {
+                    if (OSES[this] != undefined) {
+                        osAttrs[this] = true;
+                        foundAnyOses = true;
+                    } else if (BROWSERS[this] != undefined) {
+                        browserAttrs[this] = true;
+                        foundAnyBrowsers = true;
+                    }
+                });
+
+                shouldHide = ((foundAnyOses && osAttrs[os] == undefined) ||
+                             (foundAnyBrowsers && browserAttrs[browser] == undefined)) &&
+                             // Special cases ):
+                             // TODO: make this easier to maintain somehow?
+                             // Show android/m4 on desktop selection
+                             !(osAttrs['android'] && os !== 'maemo' /* only one mobile browser ATM */) &&
+                             !(browserAttrs['m4'] && browser !== 'm4' && (osAttrs['android'] || !foundAnyOses)) &&
+                             // Show win/fx4 on mobile selection
+                             !(osAttrs['win'] && (os === 'android' || os == 'maemo') && (browserAttrs['fx4'] || !foundAnyBrowsers)) &&
+                             !(browserAttrs['fx4'] && browser === 'm4' && (osAttrs['win'] || !foundAnyOses));
+
+                if ((shouldHide && !isInverted) || (!shouldHide && isInverted)) {
+                    $(this).hide();  // saves original visibility, which is nice but not necessary
+                }
+                else {
+                    $(this).show();  // restores original visibility
+                }
+            });
+        }
+
+        function updateShowforSelectors() {
+            if ($.fn.selectbox) {
+                $browserMenu.siblings('input.selectbox, div.selectbox-wrapper').remove();
+                $osMenu.siblings('input.selectbox, div.selectbox-wrapper').remove();
+                $browserMenu.selectbox();
+                $osMenu.selectbox();
+            } else {
+                $browserMenu.removeAttr('disabled');
+                $osMenu.removeAttr('disabled');
+            }
         }
 
         // If there isn't already a hash for purposes of actual navigation,
@@ -140,7 +216,7 @@ var ShowFor = {
                     $browserMenu.val($this.val());
                 }
             });
-            self.updateShowforSelectors();
+            updateShowforSelectors();
         }
 
         // Select the right item from the browser or OS menu, taking cues from
@@ -159,7 +235,7 @@ var ShowFor = {
             }
             if (initial) {
                 $menu.val(initial);  // does not fire change event
-                self.updateShowforSelectors();
+                updateShowforSelectors();
             }
             return isManual;
         }
@@ -225,6 +301,8 @@ var ShowFor = {
 
         // Fire off the change handler for the first time:
         updateForsAndToc();
+        
+        updateShowforSelectors();
     },
 
     // Return a table of contents (an <ul>) listing the visible headers within
@@ -283,75 +361,7 @@ var ShowFor = {
             $cur_ul.append($('<li />').text(text).wrapInner($('<a>').attr('href', '#' + $h.attr('id'))));
         });
         return $root;
-    },
-
-    // Set the {for} nodes to the proper visibility for the given OS and
-    // browser combination.
-    //
-    // Hidden are {for}s that {list at least one OS but not the passed-in one}
-    // or that {list at least one browser but not the passed-in one}. Also, the
-    // entire condition can be inverted by prefixing it with "not ", as in {for
-    // not mac,linux}.
-    showAndHideFors: function(os, browser) {
-        $('.for').each(function(index) {
-            var osAttrs = {}, browserAttrs = {},
-                foundAnyOses = false, foundAnyBrowsers = false,
-                forData,
-                isInverted,
-                shouldHide;
-
-            // Catch the "not" operator if it's there:
-            forData = $(this).data('for');
-            if (!forData) {
-                // If the data-for attribute is missing, move on.
-                return;
-            }
-
-            isInverted = forData.substring(0, 4) == 'not ';
-            if (isInverted) {
-                forData = forData.substring(4);  // strip off "not "
-            }
-
-            // Divide {for} attrs into OSes and browsers:
-            $(forData.split(',')).each(function(index) {
-                if (OSES[this] != undefined) {
-                    osAttrs[this] = true;
-                    foundAnyOses = true;
-                } else if (BROWSERS[this] != undefined) {
-                    browserAttrs[this] = true;
-                    foundAnyBrowsers = true;
-                }
-            });
-
-            shouldHide = ((foundAnyOses && osAttrs[os] == undefined) ||
-                         (foundAnyBrowsers && browserAttrs[browser] == undefined)) &&
-                         // Special cases ):
-                         // TODO: make this easier to maintain somehow?
-                         // Show android/m4 on desktop selection
-                         !(osAttrs['android'] && os !== 'maemo' /* only one mobile browser ATM */) &&
-                         !(browserAttrs['m4'] && browser !== 'm4' && (osAttrs['android'] || !foundAnyOses)) &&
-                         // Show win/fx4 on mobile selection
-                         !(osAttrs['win'] && (os === 'android' || os == 'maemo') && (browserAttrs['fx4'] || !foundAnyBrowsers)) &&
-                         !(browserAttrs['fx4'] && browser === 'm4' && (osAttrs['win'] || !foundAnyOses));
-
-            if ((shouldHide && !isInverted) || (!shouldHide && isInverted)) {
-                $(this).hide();  // saves original visibility, which is nice but not necessary
-            }
-            else {
-                $(this).show();  // restores original visibility
-            }
-        });
-    },
-
-    updateShowforSelectors: function() {
-        if ($.fn.selectbox) {
-            $('#support-for input.selectbox, #support-for div.selectbox-wrapper').remove();
-            $('#support-for select').selectbox();
-        } else {
-            $('#support-for select').removeAttr('disabled');
-        }
     }
-
 };
 
 window.ShowFor = ShowFor;

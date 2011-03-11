@@ -29,7 +29,6 @@ $(document).ready(function() {
     if($('#support-for').length > 0) {
         // Set up showfor
         ShowFor.initForTags();
-        ShowFor.updateShowforSelectors();
     }
 
     if($('body').is('.document')) {

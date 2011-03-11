@@ -1,6 +1,9 @@
 {
     "name": "Main Test Suite",
     "extra_media_urls": [
+        "js/libs/jquery.selectbox-1.2.js",
+        "js/browserdetect.js",
+        "js/showfor.js",
         "js/libs/jstestnet.js",
         "js/testutils.js"
     ]
