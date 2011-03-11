@@ -6,7 +6,9 @@ from django.contrib.auth.models import User
 from django.db import transaction
 
 from celery.decorators import task
+from multidb.pinning import pin_this_thread, unpin_this_thread
 
+from activity.models import Action
 from questions import ANSWERS_PER_PAGE
 
 
@@ -65,3 +67,30 @@ def update_answer_pages(question):
         answer.page = i / ANSWERS_PER_PAGE + 1
         answer.save(no_update=True, no_notify=True)
         i += 1
+
+
+@task
+def log_answer(answer):
+    pin_this_thread()
+
+    creator = answer.creator
+    created = answer.created
+    question = answer.question
+    users = [a.creator for a in
+             question.answers.select_related('creator').exclude(
+                creator=creator)]
+    if question.creator != creator:
+        users += [question.creator]
+    users = set(users)  # Remove duplicates.
+
+    if users:
+        action = Action.objects.create(
+            creator=creator,
+            created=created,
+            url=answer.get_absolute_url(),
+            content_object=answer,
+            formatter_cls='questions.formatters.AnswerFormatter')
+        action.users.add(*users)
+
+    transaction.commit_unless_managed()
+    unpin_this_thread()

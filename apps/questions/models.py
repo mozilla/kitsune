@@ -14,7 +14,8 @@ from taggit.models import Tag
 from flagit.models import FlaggedObject
 import questions as constants
 from questions.question_config import products
-from questions.tasks import update_question_votes, update_answer_pages
+from questions.tasks import (update_question_votes, update_answer_pages,
+                             log_answer)
 from sumo.helpers import urlparams
 from sumo.models import ModelBase
 from sumo.parser import wiki_to_html
@@ -353,6 +354,14 @@ class Answer(ModelBase):
             return False
 
         return qs.exists()
+
+
+def answer_connector(sender, instance, created, **kw):
+    if created:
+        log_answer.delay(instance)
+
+post_save.connect(answer_connector, sender=Answer,
+                  dispatch_uid='question_answer_activity')
 
 
 class QuestionVote(ModelBase):
