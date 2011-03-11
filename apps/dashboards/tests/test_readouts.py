@@ -6,6 +6,7 @@ from nose.tools import eq_
 from dashboards.readouts import (UnreviewedReadout,
                                  MostVisitedTranslationsReadout)
 from sumo.tests import TestCase
+from wiki.models import MAJOR_SIGNIFICANCE, MEDIUM_SIGNIFICANCE
 from wiki.tests import revision, translated_revision, document
 
 
@@ -58,6 +59,12 @@ class UnreviewedChangesTests(TestCase):
 
 
 class MostVisitedTranslationsTests(TestCase):
+    """Tests for the Most Visited Translations readout
+
+    This is an especially tricky readout, since it effectively implements a
+    superset of all other readouts' status discriminators.
+
+    """
     fixtures = ['users.json']
 
     @staticmethod
@@ -79,4 +86,40 @@ class MostVisitedTranslationsTests(TestCase):
             document=document(is_localizable=False, save=True),
             is_approved=True,
             save=True)
-        eq_([], self.rows())
+        eq_(self.rows(), [])
+
+    def _test_significance(self, significance, status):
+        """Assert that a translation out of date due to a `significance`-level
+        update to the original article shows status `status`."""
+        translation = translated_revision(is_approved=True)
+        translation.save()
+        revision(document=translation.document.parent,
+                 is_approved=True,
+                 significance=significance).save()
+        row = self.rows()[0]
+        eq_(row['title'], translation.document.title)
+        eq_(row['status'], status)
+
+    def test_out_of_date(self):
+        """Assert out-of-date translations are labeled such."""
+        self._test_significance(MAJOR_SIGNIFICANCE, 'Out of Date')
+
+    def test_update_needed(self):
+        """Assert update-needed translations are labeled such."""
+        self._test_significance(MEDIUM_SIGNIFICANCE, 'Update Needed')
+
+    def test_untranslated(self):
+        """Assert untranslated documents are labeled such."""
+        untranslated = revision(save=True)
+        row = self.rows()[0]
+        eq_(row['title'], untranslated.document.title)
+        eq_(unicode(row['status']), 'Translation Needed')
+
+    def test_up_to_date(self):
+        """Show up-to-date translations have no status, just a happy class."""
+        translation = translated_revision(is_approved=True)
+        translation.save()
+        row = self.rows()[0]
+        eq_(row['title'], translation.document.title)
+        eq_(unicode(row['status']), '')
+        eq_(row['status_class'], 'ok')

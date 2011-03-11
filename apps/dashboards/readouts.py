@@ -259,7 +259,7 @@ class MostVisitedTranslationsReadout(MostVisitedDefaultLanguageReadout):
 
     def _format_row(self, (eng_slug, eng_title, slug, title,
                            visits, significance, needs_review)):
-        if slug:  # A translation exists.
+        if slug:  # A translation exists but may not be approved.
             locale = self.locale
             status, view_name, status_class = self.significance_statuses.get(
                 significance, self.review_statuses[needs_review])
