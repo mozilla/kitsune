@@ -65,6 +65,14 @@ class MostVisitedTranslationsTests(TestCase):
         """Return first row shown by the Most Visited Translations readout."""
         return MostVisitedTranslationsReadout(MockRequest()).rows()
 
+    def test_unreviewed(self):
+        """Assert articles in need of review are labeled as such."""
+        unreviewed = translated_revision(is_approved=False)
+        unreviewed.save()
+        row = self.rows()[0]
+        eq_(row['title'], unreviewed.document.title)
+        eq_(row['status'], 'Review Needed')
+
     def test_unlocalizable(self):
         """Unlocalizable docs shouldn't show up in the list."""
         revision(
