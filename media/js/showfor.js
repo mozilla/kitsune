@@ -72,7 +72,7 @@ var ShowFor = {
         // Make the 'Table of Contents' header localizable.
         $('#toc > h2').text(gettext('Table of Contents'));
 
-        function updateForsAndToc() {
+        function updateForsAndToc(calledOnLoad) {
             // Hide and show document sections accordingly:
             showAndHideFors($osMenu.val(), $browserMenu.val());
 
@@ -80,6 +80,17 @@ var ShowFor = {
             $('#toc > :not(h2)').remove(); // __TOC__ generates <ul/>'s.
             $('#toc').append(self.filteredToc($('#doc-content'), '#toc h2'));
 
+            if (true === calledOnLoad) {
+                // Called on document load. Scroll to hash if there is one.
+                var hash = document.location.hash.substring(1),
+                    element;
+                if (hash) {
+                    element = document.getElementById(hash);
+                    if (element) {
+                        element.scrollIntoView();
+                    }
+                }
+            }
             return false;
         }
         
@@ -300,7 +311,7 @@ var ShowFor = {
         $browserMenu.change(updateForsAndToc);
 
         // Fire off the change handler for the first time:
-        updateForsAndToc();
+        updateForsAndToc(true);
         
         updateShowforSelectors();
     },
