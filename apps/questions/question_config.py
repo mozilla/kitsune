@@ -24,7 +24,7 @@ products = SortedDict([
                 {'title': 'Firefox cannot load websites but other programs can',
                  'url': '/en-US/kb/Firefox+cannot+load+websites+but+other+programs+can'},
                 {'title': 'Web sites look wrong',
-                 'url': 'en-US/kb/Websites%20look%20wrong'},
+                 'url': '/en-US/kb/Websites+look+wrong'},
                 {'title': 'Problems using Facebook in Firefox',
                  'url': '/en-US/kb/Problems+using+Facebook+in+Firefox'},
             ],
@@ -256,17 +256,17 @@ products = SortedDict([
                         ' following:',
                 'articles': [
                     {'title': 'How to navigate Web pages',
-                     'url': 'http://mobile.support.mozilla.com/en-US/kb/How+to+navigate+Web+pages'},
+                     'url': 'http://support.mozilla.com/en-US/kb/surf-web-with-mobile-firefox'},
                     {'title': 'How to open a new tab',
-                     'url': 'http://mobile.support.mozilla.com/en-US/kb/How+to+open+a+new+tab'},
+                     'url': 'http://support.mozilla.com/en-US/kb/open-new-tab'},
                     {'title': 'How to add a bookmark',
-                     'url': 'http://mobile.support.mozilla.com/en-US/kb/How+to+add+a+bookmark'},
+                     'url': 'http://support.mozilla.com/en-US/kb/how-do-i-add-bookmark'},
                     {'title': 'How to use the Location Bar',
-                     'url': 'http://mobile.support.mozilla.com/en-US/kb/How+to+use+the+Location+Bar'},
+                     'url': 'http://support.mozilla.com/en-US/kb/how-do-i-use-awesome-screen'},
                     {'title': 'How to zoom in and out',
-                     'url': 'http://mobile.support.mozilla.com/en-US/kb/How+to+zoom+in+and+out'},
+                     'url': 'http://support.mozilla.com/en-US/kb/zoom-in-and-out'},
                     {'title': 'How to manage downloads',
-                     'url': 'http://mobile.support.mozilla.com/en-US/kb/How+to+manage+downloads'},
+                     'url': 'http://support.mozilla.com/en-US/kb/manage-downloads'},
                 ],
                 'tags': ['learning'],
             }),
@@ -281,8 +281,8 @@ products = SortedDict([
                         'and you will need to contact the people or company who '
                         'made the extension/plugin for support, if you need help '
                         'removing an extension or plugin, see <a '
-                        'href="http://mobile.support.mozilla.com'
-                        '/en-US/kb/How+to+remove+or+disable+add-ons">'
+                        'href="http://support.mozilla.com'
+                        '/en-US/kb/remove-or-disable-add-ons">'
                         'How to remove or disable add-ons</a>.',
                 'tags': ['addon'],
             }),
@@ -295,17 +295,17 @@ products = SortedDict([
                         'following:',
                 'articles': [
                     {'title': 'Will Firefox work on my phone',
-                     'url': 'http://mobile.support.mozilla.com/en-US/kb/Will+Firefox+work+on+my+phone'},
+                     'url': 'http://support.mozilla.com/en-US/kb/will-firefox-work-my-phone'},
                     {'title': 'How to install Firefox on N900',
-                     'url': 'http://mobile.support.mozilla.com/en-US/kb/How+to+install+Firefox+on+N900'},
+                     'url': 'http://support.mozilla.com/en-US/kb/install-firefox-mobile'},
                     {'title': 'How to find and install add-ons',
-                     'url': 'http://mobile.support.mozilla.com/en-US/kb/How+to+find+and+install+add-ons'},
-                    {'title': 'How to sync Firefox settings with a mobile device',
-                     'url': 'http://mobile.support.mozilla.com/en-US/kb/How+to+sync+Firefox+settings+with+a+mobile+device'},
-                    {'title': 'How to remove or disable add-ons',
-                     'url': 'http://mobile.support.mozilla.com/en-US/kb/How+to+remove+or+disable+add-ons'},
-                    {'title': 'How to change preferences',
-                     'url': 'http://mobile.support.mozilla.com/en-US/kb/How+to+change+preferences'},
+                     'url': 'http://support.mozilla.com/en-US/kb/find-and-install-add-ons'},
+                    {'title': 'How do I sync Firefox between my desktop and mobile?',
+                     'url': 'http://support.mozilla.com/en-US/kb/sync-firefox-between-desktop-and-mobile'},
+                    {'title': 'How do I remove or disable Add-ons?',
+                     'url': 'http://support.mozilla.com/en-US/kb/remove-or-disable-add-ons'},
+                    {'title': 'How do I change preferences?',
+                     'url': 'http://support.mozilla.com/en-US/kb/change-preferences'},
                 ],
                 'tags': ['general'],
             }),
@@ -381,8 +381,8 @@ products = SortedDict([
                         'Firefox Sync in Firefox for mobile</em> and hundreds '
                         'of questions in our database. Try the following:',
                 'articles': [
-                    {'title': 'How to sync Firefox settings with a mobile device',
-                     'url': 'http://mobile.support.mozilla.com/en-US/kb/How+to+sync+Firefox+settings+with+a+mobile+device'},
+                    {'title': 'How do I sync Firefox between my desktop and mobile?',
+                     'url': 'http://support.mozilla.com/en-US/kb/sync-firefox-between-desktop-and-mobile'},
                 ],
                 'tags': ['mobile'],
             }),
