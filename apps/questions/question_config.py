@@ -136,7 +136,7 @@ products = SortedDict([
                 {'title': 'Firefox cannot load websites but other programs can',
                  'url': '/en-US/kb/Firefox+cannot+load+websites+but+other+programs+can'},
                 {'title': 'Web sites look wrong',
-                 'url': 'en-US/kb/Websites%20look%20wrong'},
+                 'url': '/en-US/kb/Websites%20look%20wrong'},
                 {'title': 'Problems using Facebook in Firefox',
                  'url': '/en-US/kb/Problems+using+Facebook+in+Firefox'},
             ],
