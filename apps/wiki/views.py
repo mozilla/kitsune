@@ -438,10 +438,13 @@ def translate(request, document_slug, revision_id=None):
     if user_has_rev_perm:
         initial = {'based_on': based_on_rev.id, 'comment': ''}
         if revision_id:
-            initial.update(
-                content=Revision.objects.get(pk=revision_id).content)
+            r = Revision.objects.get(pk=revision_id)
+            initial.update(content=r.content, summary=r.summary,
+                           keywords=r.keywords)
         elif not doc:
-            initial.update(content=based_on_rev.content)
+            initial.update(content=based_on_rev.content,
+                           summary=based_on_rev.summary,
+                           keywords=based_on_rev.keywords)
         instance = doc and get_current_or_latest_revision(doc)
         rev_form = RevisionForm(instance=instance, initial=initial)
 

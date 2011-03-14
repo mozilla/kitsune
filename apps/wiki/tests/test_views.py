@@ -165,9 +165,14 @@ class DocumentEditingTests(TestCase):
         self.client.login(username='admin', password='testpass')
         en_r = revision(save=True)
         fr_d = document(parent=en_r.document, locale='fr', save=True)
-        fr_r = revision(document=fr_d, based_on=en_r, save=True)
+        revision(document=fr_d, based_on=en_r, is_approved=True, save=True)
+        fr_r = revision(document=fr_d, based_on=en_r, keywords="oui",
+                        summary="lipsum", save=True)
         url = reverse('wiki.new_revision_based_on',
                       locale='fr', args=(fr_d.slug, fr_r.pk,))
         response = self.client.get(url)
-        input = pq(response.content)('#id_based_on')[0]
+        doc = pq(response.content)
+        input = doc('#id_based_on')[0]
         eq_(int(input.value), en_r.pk)
+        eq_(doc('#id_keywords')[0].attrib['value'], 'oui')
+        eq_(doc('#id_summary').text(), 'lipsum')
