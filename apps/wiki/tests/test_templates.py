@@ -70,6 +70,9 @@ class DocumentTests(TestCaseBase):
         doc = pq(response.content)
         eq_(r.document.title, doc('#main h1.title').text())
         eq_(pq(r.document.html)('div').text(), doc('#doc-content div').text())
+        # There's a canonical URL in the <head>.
+        eq_(r.document.get_absolute_url(),
+            doc('link[rel=canonical]').attr('href'))
 
     def test_english_document_no_approved_content(self):
         """Load an English document with no approved content."""
@@ -170,6 +173,9 @@ class DocumentTests(TestCaseBase):
                                                 redirectlocale=redirect.locale,
                                                 redirectslug=redirect.slug))
         self.assertContains(response, redirect_url + '?redirect=no')
+        # There's a canonical URL in the <head>.
+        doc = pq(response.content)
+        eq_(target_url, doc('link[rel=canonical]').attr('href'))
 
     def test_redirect_from_nonexistent(self):
         """The template shouldn't crash or print a backlink if the "from" page
