@@ -37,8 +37,8 @@ class peekable(object):
         return ret
 
 
-def merge(*iterables, **kwargs):
-    """Return an iterable ordered merge of the already-sorted items
+def collate(*iterables, **kwargs):
+    """Return an iterable ordered collation of the already-sorted items
     from each of `iterables`, compared by kwarg `key`.
 
     If reverse=True is passed, iterables must return their results in

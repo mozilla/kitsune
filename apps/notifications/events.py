@@ -11,7 +11,7 @@ from django.db.models import Q
 from celery.decorators import task
 
 from notifications.models import Watch, WatchFilter, EmailUser, multi_raw
-from notifications.utils import merge, hash_to_unsigned
+from notifications.utils import collate, hash_to_unsigned
 
 
 class ActivationRequestFailed(Exception):
@@ -469,10 +469,10 @@ class EventUnion(Event):
 
     def _users_watching(self, **kwargs):
         # Get a sorted iterable of user-watch pairs:
-        users_and_watches = merge(*[e._users_watching(**kwargs)
-                                    for e in self.events],
-                                  key=lambda (user, watch): user.email.lower(),
-                                  reverse=True)
+        users_and_watches = collate(
+            *[e._users_watching(**kwargs) for e in self.events],
+            key=lambda (user, watch): user.email.lower(),
+            reverse=True)
 
         # Pick the best User out of each cluster of identical email addresses:
         return _unique_by_email(users_and_watches)
