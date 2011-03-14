@@ -65,7 +65,12 @@
           Until it's ready, maybe the English version can be of some help.
         {% endtrans %}
       </div>
-      {{ document.parent.html|safe }}
+      {% if document.locale == settings.WIKI_DEFAULT_LANGUAGE %}
+        {# This is the actual fallback document, show it. #}
+        {{ document.html|safe }}
+      {% else %}
+        {{ document.parent.html|safe }}
+      {% endif %}
     {% else %}
       {{ _("This article doesn't have approved content yet.") }}
     {% endif %}

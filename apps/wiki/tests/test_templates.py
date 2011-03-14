@@ -112,7 +112,26 @@ class DocumentTests(TestCaseBase):
         # on its localization.
         doc('#doc-pending-fallback').remove()
         # Included content is English.
-        eq_(pq(r.document.html)('div').text(), doc('#doc-content div').text())
+        eq_(pq(r.document.html).text(), doc('#doc-content').text())
+
+    def test_document_fallback_with_translation_english_slug(self):
+        """The document template falls back to English if translation exists
+        but it has no approved revisions, while visiting the English slug."""
+        r = revision(save=True, content='Test', is_approved=True)
+        d2 = document(parent=r.document, locale='fr', slug='french', save=True)
+        revision(document=d2, is_approved=False, save=True)
+        url = reverse('wiki.document', args=[r.document.slug], locale='fr')
+        response = self.client.get(url)
+        doc = pq(response.content)
+        eq_(r.document.title, doc('#main h1.title').text())
+
+        # Fallback message is shown.
+        eq_(1, len(doc('#doc-pending-fallback')))
+        # Removing this as it shows up in text(), and we don't want to depend
+        # on its localization.
+        doc('#doc-pending-fallback').remove()
+        # Included content is English.
+        eq_(pq(r.document.html).text(), doc('#doc-content').text())
 
     def test_document_fallback_no_translation(self):
         """The document template falls back to English if no translation
