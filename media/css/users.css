@@ -26,8 +26,10 @@ article.main form li {
 
 article.main form label {
     display: inline-block;
+    padding-top: 6px;
+    text-align: right;
     vertical-align: top;
-    width: 100px;
+    width: 140px;
 }
 
 article.main form li input {
@@ -57,7 +59,7 @@ article.main form textarea {
 
 article.main form li ul.errorlist {
     margin: 0;
-    padding: 0 0 0 100px;
+    padding: 0 0 0 140px;
 }
 
 article.main form li ul.errorlist li {
@@ -66,7 +68,7 @@ article.main form li ul.errorlist li {
 }
 
 article.main div.submit {
-    padding: 10px 0 0 103px;
+    padding: 10px 0 0 143px;
 }
 
 /* login page help */

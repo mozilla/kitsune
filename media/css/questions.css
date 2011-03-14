@@ -1420,7 +1420,7 @@ body.flagged #main {
 #register_form {
     float: left;
     margin: 40px 0;
-    width: 240px;
+    width: 290px;
 }
 #register_form {
     border-right: 2px dotted #EDECE9;
@@ -1428,7 +1428,7 @@ body.flagged #main {
 }
 #login_form {
     margin-left: 25px;
-    width: 230px;
+    width: 340px;
 }
 
 #register_form input[type="text"],
@@ -1443,16 +1443,16 @@ body.flagged #main {
 
 #login_form .submit {
     padding-left: 9px;
-    margin-left: 6em;
+    margin-left: 10em;
 }
 #register_form .submit {
     padding-left: 9px;
-    margin-left: 9em;
+    margin-left: 12em;
 }
 
 #reset_password {
     display: block;
-    margin: 1em 0 0 6em;
+    margin: 1em 0 0 10em;
     padding-left: 9px;
 }
 
@@ -1461,12 +1461,12 @@ body.flagged #main {
     display: inline-block;
     *display: inline;
     zoom: 1;
-    width: 9em;
+    width: 12em;
     text-align: right;
     margin-right: .5em;
 }
 #login_form label {
-    width: 6em;
+    width: 10em;
 }
 #register_form h3,
 #login_form h3 {
