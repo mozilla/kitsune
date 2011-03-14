@@ -423,7 +423,7 @@
             }
             $('#scroll-busy').show();
 
-            var max_id = $('#tweets li:last').attr('data-tweet-id');
+            var max_id = $('#tweets > li:last').attr('data-tweet-id');
             if (!max_id) return;
 
             $.get(

@@ -62,7 +62,7 @@ def _get_tweets(locale=settings.LANGUAGE_CODE, limit=MAX_TWEETS, max_id=None,
 
     Args:
         limit: the maximum number of tweets returned
-        max_id: return tweets with the status ids less than max_id
+        max_id: Return tweets with tweet_id less than this.
         reply_to: Return only tweets that are replies to the given Tweet. If
             None, return only top-level (non-reply) tweets.
         filter: One of the keys from FILTERS

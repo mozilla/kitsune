@@ -17,8 +17,19 @@ class Tweet(ModelBase):
     hidden = models.BooleanField(default=False, db_index=True)
 
     class Meta:
-        get_latest_by = 'created'
-        ordering = ('-created',)
+        ordering = ('-tweet_id',)
+
+    @classmethod
+    def latest(cls):
+        """Return the most recent tweet.
+
+        Raise Tweet.DoesNotExist if there are None.
+
+        This is like Tweet.objects.latest(), except it sorts by tweet_id rather
+        than a date column.
+
+        """
+        return cls.objects.order_by('-tweet_id')[0:1].get()
 
     def __unicode__(self):
         tweet = json.loads(self.raw_json)

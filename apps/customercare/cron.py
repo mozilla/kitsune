@@ -40,7 +40,7 @@ def collect_tweets():
 
     # If we already have some tweets, collect nothing older than what we have.
     try:
-        latest_tweet = Tweet.objects.latest()
+        latest_tweet = Tweet.latest()
     except Tweet.DoesNotExist:
         log.debug('No existing tweets. Retrieving %d tweets from search.' % (
             settings.CC_TWEETS_PERPAGE))
