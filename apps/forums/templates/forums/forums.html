@@ -20,7 +20,7 @@
             <a href="{{ url('forums.threads', forum_slug=forum.slug) }}">{{ forum.name }}</a><br/>
             {{ forum.description|safe }}
           </div>
-          <div class="threads">{{ forum.thread_set.count() }}</div>
+          <div class="threads">{{ forum.thread_count }}</div>
           <div class="last-post">
           {% if forum.last_post %}
             <a href="{{ forum.last_post.get_absolute_url() }}">

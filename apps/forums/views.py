@@ -24,8 +24,11 @@ log = logging.getLogger('k.forums')
 
 def forums(request):
     """View all the forums."""
-    forums_ = [f for f in Forum.objects.all() if
-               f.allows_viewing_by(request.user)]
+    qs = Forum.objects.select_related('last_post', 'last_post__author')
+    qs = qs.extra(select={'thread_count': 'SELECT COUNT(*) FROM forums_thread '
+                                          'WHERE forums_thread.forum_id = '
+                                          'forums_forum.id'})
+    forums_ = [f for f in qs if f.allows_viewing_by(request.user)]
     return jingo.render(request, 'forums/forums.html',
                        {'forums': paginate(request, forums_)})
 
