@@ -1,12 +1,9 @@
-import hashlib
-
 from django.db import models, connections, router
 from django.contrib.auth.models import User, AnonymousUser
 from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
 
-from sumo.models import ModelBase, LocaleField
-from sumo.urlresolvers import reverse
+from sumo.models import ModelBase
 
 
 def multi_raw(query, params, models):
@@ -32,7 +29,13 @@ def multi_raw(query, params, models):
 
 
 class Watch(ModelBase):
-    """Watch events."""
+    """The registration of a user's interest in a certain event
+
+    At minimum, specifies an event_type and thereby an Event subclass. May also
+    specify a content type and/or object ID and, indirectly, any number of
+    WatchFilters.
+
+    """
     # Key used by an Event to find watches it manages:
     event_type = models.CharField(max_length=30, db_index=True)
 
@@ -94,8 +97,9 @@ class NotificationsMixin(models.Model):
     So we get cascading deletes for free, yay!
 
     """
-    watches = generic.GenericRelation(Watch,
-                  related_name='%(app_label)s_%(class)s_watches')
+    watches = generic.GenericRelation(
+        Watch,
+        related_name='%(app_label)s_%(class)s_watches')
 
     class Meta(object):
         abstract = True
@@ -107,7 +111,6 @@ class EmailUser(AnonymousUser):
     To test whether a returned user is an anonymous user, call is_anonymous().
 
     """
-
     def __init__(self, email=''):
         self.email = email
 

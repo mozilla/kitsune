@@ -75,7 +75,9 @@ class Event(object):
     Fire an Event (SomeEvent.fire()) from the code that causes the interesting
     event to occur. Fire it any time the event *might* have occurred. The Event
     will determine whether conditions are right to actually send notifications;
-    don't succumb to the temptation to do these tests outside the Event.
+    don't succumb to the temptation to do these tests outside the Event,
+    because you'll end up repeating yourself if the event is ever fired from
+    more than one place.
 
     Event subclasses can optionally represent a more limited scope of interest
     by populating the Watch.content_type field and/or adding related

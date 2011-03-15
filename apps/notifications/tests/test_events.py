@@ -234,6 +234,7 @@ class EventUnionTests(TestCase):
         class OneEvent(object):
             def _users_watching(self):
                 return [(user(email='HE@LLO.COM'), watch())]
+
         class AnotherEvent(object):
             def _users_watching(self):
                 return [(user(email='he@llo.com'), watch()),
