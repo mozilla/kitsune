@@ -9,7 +9,13 @@ def has_perm_or_owns(user, perm, obj, perm_obj,
     """Given a user, a permission, an object (obj) and another object to check
     permissions against (perm_obj), return True if the user has perm on
     obj."""
-    if user == getattr(obj, field_name):
+    if user.is_anonymous():
+        return False
+
+    if hasattr(obj, '%s_id' % field_name):
+        if getattr(obj, '%s_id' % field_name) == user.pk:
+            return True
+    elif user == getattr(obj, field_name):
         return True
 
     check = get_check(user, perm)
