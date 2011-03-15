@@ -25,6 +25,7 @@
         if ($('body').is('.edit, .new, .translate')) {
             initArticlePreview();
             initTitleAndSlugCheck();
+            initPreValidation();
         }
 
         Marky.createFullToolbar('.editor-tools', '#id_content');
@@ -270,9 +271,29 @@
         			    $banner.animate(cssFrom, 500, 'swing', function() {
         				    $banner.css({ display: 'none' });
         			    });
-        		});
+        		    });
         	}, 500);
     	}
+    }
+
+    // On document edit/translate/new pages, run validation before opening the
+    // submit modal.
+    function initPreValidation() {
+        var $modal = $('#submit-modal'),
+            kbox = $modal.data('kbox');
+        kbox.updateOptions({
+            preOpen: function() {
+                var form = $('#btn-submit').closest('form')[0];
+                if (form.checkValidity && !form.checkValidity()) {
+                    // If form isn't valid, click the modal submit button
+                    // so the validation error is shown. (I couldn't find a
+                    // better way to trigger this.)
+                    $modal.find('input[type="submit"]').click();
+                    return false;
+                }
+                return true;
+            }
+        });
     }
 
     $(document).ready(init);
