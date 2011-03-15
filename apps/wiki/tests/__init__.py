@@ -41,10 +41,7 @@ def revision(save=False, **kwargs):
     Requires a users fixture if no creator is provided.
 
     """
-    d = None
-    if 'document' not in kwargs:
-        d = document()
-        d.save()
+    d = kwargs.pop('document', None) or document(save=True)
 
     defaults = {'summary': 'Some summary', 'content': 'Some content',
                 'significance': SIGNIFICANCES[0][0], 'comment': 'Some comment',
@@ -58,16 +55,14 @@ def revision(save=False, **kwargs):
     return r
 
 
-def translated_revision(locale='de', **kwargs):
+def translated_revision(locale='de', save=False, **kwargs):
     """Return a revision that is the translation of a default-language one."""
-    parent_rev = revision(is_approved=True)
-    parent_rev.save()
-    translation = document(parent=parent_rev.document,
-                           locale=locale)
-    translation.save()
+    parent_rev = revision(is_approved=True, save=True)
+    translation = document(parent=parent_rev.document, locale=locale,
+                           save=True)
     new_kwargs = {'document': translation, 'based_on': parent_rev}
     new_kwargs.update(kwargs)
-    return revision(**new_kwargs)
+    return revision(save=save, **new_kwargs)
 
 
 # I don't like this thing. revision() is more flexible. All this adds is

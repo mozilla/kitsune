@@ -55,7 +55,8 @@
       <table class="overview">
         {% with rows = overview_rows() %}
           {{ print_overview_row(rows[0], should_color=True) }}
-          {{ print_overview_row(rows[1], should_color=False) }}
+          {{ print_overview_row(rows[1], should_color=True) }}
+          {{ print_overview_row(rows[2], should_color=False) }}
         {% endwith %}
         <tr>
           <td>{{ _('User Interface') }}</td>

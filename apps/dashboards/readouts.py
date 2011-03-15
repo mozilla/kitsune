@@ -55,6 +55,16 @@ def overview_rows(locale):
         (locale, THIS_WEEK, TOP_N))
     popular_translated = cursor.fetchone()[0]
 
+    # Template overview
+    template_total = Document.uncached.exclude(current_revision=None).filter(
+                locale=settings.WIKI_DEFAULT_LANGUAGE, is_template=True,
+                is_localizable=True).count()
+
+    # How many approved templates are there in German that have parents?
+    template_translated = Document.uncached.filter(locale=locale,
+        is_template=True).exclude(current_revision=None).exclude(
+        parent=None).count()
+
     return [dict(title=_('Most-Visited Articles'),
                  url='#' + MostVisitedTranslationsReadout.slug,
                  numerator=popular_translated, denominator=TOP_N,
@@ -62,6 +72,13 @@ def overview_rows(locale):
                  description=_('These are the top 20 most visited articles, '
                                'which account for over 50% of the traffic to '
                                'the Knowledge Base.')),
+            dict(title=_('Templates'),
+                 url='#' + TemplateTranslationsReadout.slug,
+                 numerator=template_translated, denominator=template_total,
+                 percent=percent_or_100(template_translated, template_total),
+                 description=_('How many of the approved templates '
+                               'which allow translations have an approved '
+                               'translation into this language')),
             dict(title=_('All Knowledge Base Articles'),
                  numerator=translated, denominator=total,
                  percent=percent_or_100(translated, total),
@@ -215,11 +232,11 @@ class MostVisitedTranslationsReadout(MostVisitedDefaultLanguageReadout):
         MAJOR_SIGNIFICANCE:
             (_lazy(u'Out of Date'), 'wiki.edit_document', 'out-of-date')}
 
-    def _query_and_params(self, max):
+    def _most_visited_query_and_params(self, max, extra_where=''):
         # Out of Date or Update Needed: link to /edit.
         # Review Needed: link to /history.
         # These match the behavior of the corresponding readouts.
-        return ('SELECT engdoc.slug, engdoc.title, transdoc.slug, '
+        return (('SELECT engdoc.slug, engdoc.title, transdoc.slug, '
                 'transdoc.title, dashboards_wikidocumentvisits.visits, '
                 # The most significant approved change to the English article
                 # since the English revision the current translated revision is
@@ -250,12 +267,16 @@ class MostVisitedTranslationsReadout(MostVisitedDefaultLanguageReadout):
                    'dashboards_wikidocumentvisits.document_id '
                    'AND dashboards_wikidocumentvisits.period=%s '
                'WHERE engdoc.locale=%s AND engdoc.is_localizable '
+                       '{extra_where} '  # extra WHERE conditions
                'ORDER BY dashboards_wikidocumentvisits.visits DESC, '
                         'COALESCE(transdoc.title, engdoc.title) ASC' +
-               self._limit_clause(max),
+               self._limit_clause(max)).format(extra_where=extra_where),
             (self.locale,
              ALL_TIME if self.mode == ALL_TIME else THIS_WEEK,
              settings.WIKI_DEFAULT_LANGUAGE))
+
+    def _query_and_params(self, max):
+        return self._most_visited_query_and_params(max)
 
     def _format_row(self, (eng_slug, eng_title, slug, title,
                            visits, significance, needs_review)):
@@ -282,6 +303,27 @@ class MostVisitedTranslationsReadout(MostVisitedDefaultLanguageReadout):
                      status=status,
                      status_class=status_class,
                      status_url=status_url))
+
+
+class TemplateTranslationsReadout(MostVisitedTranslationsReadout):
+    """Readout for templates in non-default languages
+
+    Adds a few subqueries to determine the status of translations.
+
+    Shows the templates even if there are no translations of them yet.
+    This draws attention to templates that we should drop everything to
+    translate.
+
+    """
+    title = _lazy(u'Templates')
+    slug = 'template-translations'
+
+    # L10n: Replace "English" with your language.
+    details_link_text = _lazy(u'All templates in English...')
+
+    def _query_and_params(self, max):
+        return self._most_visited_query_and_params(max,
+                                                   'AND engdoc.is_template')
 
 
 class UntranslatedReadout(Readout):
@@ -467,8 +509,9 @@ class UnreviewedReadout(Readout):
 
 # L10n Dashboard tables that have their own whole-page views:
 L10N_READOUTS = SortedDict((t.slug, t) for t in
-    [MostVisitedTranslationsReadout, UntranslatedReadout, OutOfDateReadout,
-     NeedingUpdatesReadout, UnreviewedReadout])
+    [MostVisitedTranslationsReadout, TemplateTranslationsReadout,
+     UntranslatedReadout, OutOfDateReadout, NeedingUpdatesReadout,
+     UnreviewedReadout])
 
 # Contributors ones:
 CONTRIBUTOR_READOUTS = SortedDict((t.slug, t) for t in
