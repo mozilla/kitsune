@@ -7,6 +7,9 @@
 {% set include_showfor = True %}
 
 {% block content %}
+  <div id="home-content">
+    {% if top %}{{ top.html|safe }}{% endif %}
+  </div>
   <h2>{{ _('Common Questions') }}</h2>
   <div class="common-questions">
     {{ common.html|safe }}

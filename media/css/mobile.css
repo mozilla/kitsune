@@ -116,6 +116,13 @@ article p {
 }
 
 /*************************************/
+/*    Landing Page - Top content     */
+/*************************************/
+#home-content {
+    margin: 21px 14px 0;
+}
+
+/*************************************/
 /*  Landing Page - Common Questions  */
 /*************************************/
 .common-questions ul {

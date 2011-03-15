@@ -1,26 +1,33 @@
 import jingo
 from mobility.decorators import mobile_template
-from tower import ugettext_lazy as _lazy
 
 from sumo.parser import get_object_fallback
 from wiki.models import Document
 from wiki.views import SHOWFOR_DATA
 
 
-HOME_DOCS = {'quick': 'Home page - Quick', 'explore': 'Home page - Explore'}
+HOME_DOCS = {'quick': 'Home page - Quick', 'explore': 'Home page - Explore',
+             'top': 'Home page - Top'}
 MOBILE_DOCS = {'quick': 'Mobile home - Quick',
-               'explore': 'Mobile home - Explore'}
-SYNC_DOCS = {'quick': 'Sync home - Quick', 'explore': 'Sync home - Explore'}
+               'explore': 'Mobile home - Explore',
+               'top': 'Mobile home - Top'}
+SYNC_DOCS = {'quick': 'Sync home - Quick', 'explore': 'Sync home - Explore',
+             'top': 'Sync home - Top'}
 FXHOME_DOCS = {'quick': 'FxHome home - Quick',
-              'explore': 'FxHome home - Explore'}
+               'explore': 'FxHome home - Explore',
+               'top': 'FxHome home - Top'}
 HOME_DOCS_FOR_MOBILE = {'common':
-                        'Desktop home for mobile - Common Questions'}
+                        'Desktop home for mobile - Common Questions',
+                        'top': 'Home page - Top'}
 MOBILE_DOCS_FOR_MOBILE = {'common':
-                          'Mobile home for mobile - Common Questions'}
+                          'Mobile home for mobile - Common Questions',
+                          'top': 'Mobile home - Top'}
 SYNC_DOCS_FOR_MOBILE = {'common':
-                        'Sync home for mobile - Common Questions'}
+                        'Sync home for mobile - Common Questions',
+                        'top': 'Sync home - Top'}
 FXHOME_DOCS_FOR_MOBILE = {'common':
-                          'FxHome home for mobile - Common Questions'}
+                          'FxHome home for mobile - Common Questions',
+                          'top': 'FxHome home - Top'}
 
 
 @mobile_template('landings/{mobile/}home.html')
@@ -51,7 +58,6 @@ def _data(docs, locale):
     """Add the documents and showfor data to the context data."""
     data = {}
     for side, title in docs.iteritems():
-        message = _lazy(u'The template "%s" does not exist.') % title
-        data[side] = get_object_fallback(Document, title, locale, message)
+        data[side] = get_object_fallback(Document, title, locale)
     data.update(SHOWFOR_DATA)
     return data

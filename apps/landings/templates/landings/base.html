@@ -19,6 +19,9 @@
     </div>
   </div>
   <div id="home-content">
+    <div id="home-content-top">
+      {% if top %}{{ top.html|safe }}{% endif %}
+    </div>
     <div id="home-content-quick">
       {{ quick.html|safe }}
     </div>
