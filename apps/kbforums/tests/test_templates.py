@@ -5,6 +5,7 @@ from django.contrib.auth.models import User
 
 from kbforums.models import Thread, Post
 from kbforums.tests import KBForumTestCase
+from sumo.urlresolvers import reverse
 from sumo.tests import get, post
 from wiki.models import Document
 
@@ -201,6 +202,21 @@ class ThreadsTemplateTests(KBForumTestCase):
         response = post(self.client, 'wiki.discuss.watch_forum',
                         {'watch': 'no'}, args=[d.slug])
         self.assertNotContains(response, 'Watching')
+
+    def test_watch_locale(self):
+        """Watch and unwatch a locale."""
+        self.client.login(username='rrosario', password='testpass')
+
+        d = Document.objects.all()[0]
+        next_url = reverse('wiki.discuss.threads', args=[d.slug])
+        response = post(self.client, 'wiki.discuss.watch_locale',
+                        {'watch': 'yes', 'next': next_url})
+        self.assertContains(response, 'Turn off emails')
+
+        response = post(self.client, 'wiki.discuss.watch_locale',
+                        {'watch': 'no', 'next': next_url})
+        self.assertContains(response,
+                            'Get emailed when there is new discussion')
 
 
 class NewThreadTemplateTests(KBForumTestCase):

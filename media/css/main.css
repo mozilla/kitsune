@@ -581,6 +581,15 @@ article.main div.submit {
     padding: 10px 0 0;
 }
 
+/* Notification watch buttons */
+#doc-watch {
+    margin: 20px 0 0 20px;
+}
+
+#doc-watch input {
+    margin: 0 0 10px;
+}
+
 /*----------------------------------
     Markup editor styles
 ----------------------------------*/

@@ -2,15 +2,6 @@
  * Knowledge Base CSS
  */
 
-/* Notification watch buttons */
-#doc-watch {
-    margin: 20px 0 0 20px;
-}
-
-#doc-watch input {
-    margin: 0 0 10px;
-}
-
 /* Document view */
 #main-content #wiki-doc {
     padding-right: 0;

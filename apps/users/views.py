@@ -1,5 +1,4 @@
 import os
-import urlparse
 
 from django.conf import settings
 from django.contrib import auth
@@ -7,7 +6,6 @@ from django.contrib.auth.forms import (PasswordResetForm, SetPasswordForm,
                                        PasswordChangeForm)
 from django.contrib.auth.models import User
 from django.contrib.auth.tokens import default_token_generator
-from django.contrib.sites.models import Site
 from django.http import HttpResponseRedirect, Http404
 from django.views.decorators.http import require_http_methods, require_GET
 from django.shortcuts import get_object_or_404
@@ -20,6 +18,7 @@ from notifications.tasks import claim_watches
 from questions.models import Question, CONFIRMED
 from sumo.decorators import ssl_required
 from sumo.urlresolvers import reverse
+from sumo.utils import get_next_url
 from upload.tasks import _create_image_thumbnail
 from users.backends import Sha256Backend  # Monkey patch User.set_password.
 from users.forms import (ProfileForm, AvatarForm, EmailConfirmationForm,
@@ -31,7 +30,7 @@ from users.utils import handle_login, handle_register, try_send_email_with_form
 @ssl_required
 def login(request):
     """Try to log the user in."""
-    next_url = _clean_next_url(request) or reverse('home')
+    next_url = get_next_url(request) or reverse('home')
     form = handle_login(request)
 
     if request.user.is_authenticated():
@@ -45,7 +44,7 @@ def login(request):
 def logout(request):
     """Log the user out."""
     auth.logout(request)
-    next_url = _clean_next_url(request) if 'next' in request.GET else ''
+    next_url = get_next_url(request) if 'next' in request.GET else ''
 
     return HttpResponseRedirect(next_url or reverse('home'))
 
@@ -350,31 +349,3 @@ def password_change(request):
 def password_change_complete(request):
     """Change password complete page."""
     return jingo.render(request, 'users/pw_change_complete.html')
-
-
-def _clean_next_url(request):
-    if 'next' in request.POST:
-        url = request.POST.get('next')
-    elif 'next' in request.GET:
-        url = request.GET.get('next')
-    else:
-        url = request.META.get('HTTP_REFERER')
-
-    if url:
-        parsed_url = urlparse.urlparse(url)
-        # Don't redirect outside of SUMO.
-        # Don't include protocol+domain, so if we are https we stay that way.
-        if parsed_url.scheme:
-            site_domain = Site.objects.get_current().domain
-            url_domain = parsed_url.netloc
-            if site_domain != url_domain:
-                url = None
-            else:
-                url = u'?'.join([getattr(parsed_url, x) for x in
-                                ('path', 'query') if getattr(parsed_url, x)])
-
-        # Don't redirect right back to login or logout page
-        if parsed_url.path in [settings.LOGIN_URL, settings.LOGOUT_URL]:
-            url = None
-
-    return url

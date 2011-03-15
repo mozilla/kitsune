@@ -4,8 +4,8 @@ from kbforums.feeds import ThreadsFeed, PostsFeed
 from sumo.views import redirect_to
 
 
-# These patterns inherit from /discuss
-discuss_patterns = patterns('kbforums.views',
+# These patterns inherit from /document/discuss
+doc_discuss_patterns = patterns('kbforums.views',
     url(r'^$', 'threads', name='wiki.discuss.threads'),
     url(r'^/feed', ThreadsFeed(), name='wiki.discuss.threads.feed'),
     url(r'^/new', 'new_thread', name='wiki.discuss.new_thread'),
@@ -53,7 +53,7 @@ document_patterns = patterns('wiki.views',
     url(r'^/vote', 'helpful_vote', name="wiki.document_vote"),
 
     # KB discussion forums
-    (r'^/discuss', include(discuss_patterns)),
+    (r'^/discuss', include(doc_discuss_patterns)),
 
     # Delete a revision
     url(r'^/revision/(?P<revision_id>\d+)/delete$', 'delete_revision',
@@ -84,4 +84,9 @@ urlpatterns = patterns('wiki.views',
         name='wiki.category'),
     url(r'^/tag/(?P<tag>[^/]+)$', 'list_documents', name='wiki.tag'),
     (r'^/(?P<document_slug>[^/]+)', include(document_patterns)),
+)
+
+urlpatterns += patterns('kbforums.views',
+    url(r'^/discuss/watch_locale$', 'watch_locale',
+        name='wiki.discuss.watch_locale'),
 )

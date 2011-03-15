@@ -15,7 +15,6 @@ from django.utils.http import int_to_base36
 import mock
 from nose.tools import eq_
 from pyquery import PyQuery as pq
-from test_utils import RequestFactory
 
 from sumo.urlresolvers import reverse
 from sumo.helpers import urlparams
@@ -23,7 +22,6 @@ from sumo.tests import post
 from users import ERROR_SEND_EMAIL
 from users.models import Profile, RegistrationProfile, RegistrationManager
 from users.tests import TestCaseBase
-from users.views import _clean_next_url
 
 
 class LoginTests(TestCaseBase):
@@ -85,17 +83,6 @@ class LoginTests(TestCaseBase):
                                      'next': next})
         eq_(302, response.status_code)
         eq_('http://testserver' + next, response['location'])
-
-    @mock.patch.object(Site.objects, 'get_current')
-    def test_clean_url(self, get_current):
-        '''Verify that protocol and domain get removed.'''
-        get_current.return_value.domain = 'su.mo.com'
-        r = RequestFactory().post('/users/login',
-                                  {'next': 'https://su.mo.com/kb/new?f=b'})
-        eq_('/kb/new?f=b', _clean_next_url(r))
-        r = RequestFactory().post('/users/login',
-                                  {'next': 'http://su.mo.com/kb/new'})
-        eq_('/kb/new', _clean_next_url(r))
 
     @mock.patch.object(Site.objects, 'get_current')
     def test_login_invalid_next_parameter(self, get_current):

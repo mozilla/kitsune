@@ -220,3 +220,92 @@ class NotificationsTests(KBForumTestCase):
 
         self._toggle_watch_kbforum_as('pcraciunoiu', turn_on=False)
         self._toggle_watch_thread_as('pcraciunoiu', turn_on=False)
+
+    @mock.patch.object(Site.objects, 'get_current')
+    def test_watch_locale_then_new_post(self, get_current):
+        """Watching locale and reply to a thread."""
+        get_current.return_value.domain = 'testserver'
+
+        d = Document.objects.filter(locale='en-US')[0]
+        t = d.thread_set.all()[0]
+        # Log in as pcraciunoiu.
+        self.client.login(username='pcraciunoiu', password='testpass')
+        post(self.client, 'wiki.discuss.watch_locale', {'watch': 'yes'})
+
+        # Reply as jsocol to document d.
+        self.client.login(username='jsocol', password='testpass')
+        post(self.client, 'wiki.discuss.reply', {'content': 'a post'},
+             args=[d.slug, t.id])
+
+        # Email was sent as expected.
+        eq_(1, len(mail.outbox))
+        p = Post.objects.all().order_by('-id')[0]
+        attrs_eq(mail.outbox[0], to=['user47963@nowhere'],
+                 subject='Reply to: Sticky Thread',
+                 body=EMAIL_CONTENT[0] % p.id)
+
+    @mock.patch.object(Site.objects, 'get_current')
+    def test_watch_all_then_new_post(self, get_current):
+        """Watching document + thread + locale and reply to thread."""
+        get_current.return_value.domain = 'testserver'
+
+        d = self._toggle_watch_kbforum_as('pcraciunoiu', turn_on=True)
+        t = d.thread_set.all()[0]
+        self._toggle_watch_thread_as('pcraciunoiu', turn_on=True,
+                                     thread_id=t.id)
+        # Log in as pcraciunoiu.
+        self.client.login(username='pcraciunoiu', password='testpass')
+        post(self.client, 'wiki.discuss.watch_locale', {'watch': 'yes'})
+
+        # Reply as jsocol to document d.
+        self.client.login(username='jsocol', password='testpass')
+        post(self.client, 'wiki.discuss.reply', {'content': 'a post'},
+             args=[d.slug, t.id])
+
+        # Only ONE email was sent. As expected.
+        eq_(1, len(mail.outbox))
+        p = Post.objects.all().order_by('-id')[0]
+        attrs_eq(mail.outbox[0], to=['user47963@nowhere'],
+                 subject='Reply to: Sticky Thread',
+                 body=EMAIL_CONTENT[0] % p.id)
+
+    @mock.patch.object(Site.objects, 'get_current')
+    def test_watch_other_locale_then_new_thread(self, get_current):
+        """Watching a different locale and createing a thread does not
+        notify."""
+        get_current.return_value.domain = 'testserver'
+
+        d = Document.objects.filter(locale='en-US')[0]
+        # Log in as pcraciunoiu.
+        self.client.login(username='pcraciunoiu', password='testpass')
+        post(self.client, 'wiki.discuss.watch_locale', {'watch': 'yes'},
+             locale='ja')
+
+        # Create new thread as jsocol for document d.
+        self.client.login(username='jsocol', password='testpass')
+        post(self.client, 'wiki.discuss.new_thread',
+             {'title': 'a title', 'content': 'a post'}, args=[d.slug])
+
+        # Email was not sent.
+        eq_(0, len(mail.outbox))
+
+    @mock.patch.object(Site.objects, 'get_current')
+    def test_watch_locale_then_new_thread(self, get_current):
+        """Watching locale and create a thread."""
+        get_current.return_value.domain = 'testserver'
+
+        d = Document.objects.filter(locale='en-US')[0]
+        # Log in as pcraciunoiu.
+        self.client.login(username='pcraciunoiu', password='testpass')
+        post(self.client, 'wiki.discuss.watch_locale', {'watch': 'yes'})
+
+        # Create new thread as jsocol for document d.
+        self.client.login(username='jsocol', password='testpass')
+        post(self.client, 'wiki.discuss.new_thread',
+             {'title': 'a title', 'content': 'a post'}, args=[d.slug])
+
+        # Email was sent as expected.
+        t = Thread.objects.all().order_by('-id')[0]
+        attrs_eq(mail.outbox[0], to=['user47963@nowhere'],
+                 subject=u'New thread in an article title: a title',
+                 body=EMAIL_CONTENT[1] % t.id)

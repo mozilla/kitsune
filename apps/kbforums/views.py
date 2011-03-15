@@ -10,13 +10,14 @@ import jingo
 
 from access.decorators import permission_required, login_required
 import kbforums
-from kbforums.events import NewPostEvent, NewThreadEvent
+from kbforums.events import (NewPostEvent, NewThreadEvent,
+                             NewPostInLocaleEvent, NewThreadInLocaleEvent)
 from kbforums.feeds import ThreadsFeed, PostsFeed
 from kbforums.forms import (ReplyForm, NewThreadForm,
                             EditThreadForm, EditPostForm)
 from kbforums.models import Thread, Post
 from sumo.urlresolvers import reverse
-from sumo.utils import paginate
+from sumo.utils import paginate, get_next_url
 from wiki.models import Document
 
 
@@ -328,6 +329,21 @@ def watch_thread(request, document_slug, thread_id):
 
     return HttpResponseRedirect(reverse('wiki.discuss.posts',
                                         args=[document_slug, thread_id]))
+
+
+@require_POST
+@login_required
+def watch_locale(request):
+    """Watch/unwatch a locale."""
+    locale = request.locale
+    if request.POST.get('watch') == 'yes':
+        NewPostInLocaleEvent.notify(request.user, locale=locale)
+        NewThreadInLocaleEvent.notify(request.user, locale=locale)
+    else:
+        NewPostInLocaleEvent.stop_notifying(request.user, locale=locale)
+        NewThreadInLocaleEvent.stop_notifying(request.user, locale=locale)
+
+    return HttpResponseRedirect(get_next_url(request))
 
 
 @require_POST

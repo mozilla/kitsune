@@ -6,4 +6,9 @@
 
 {% block side_top %}
   {{ document_tabs(document, document.parent, user, 'discussion', settings) }}
+  {% if user.is_authenticated() %}
+    <div id="doc-watch">
+      {% include "kbforums/includes/watch_locale.html" %}
+    </div>
+  {% endif %}
 {% endblock %}
