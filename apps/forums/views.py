@@ -68,8 +68,11 @@ def threads(request, forum_slug):
     desc_toggle = 0 if desc else 1
 
     threads_ = sort_threads(forum.thread_set, sort, desc)
+    count = threads_.count()
+    threads_ = threads_.select_related('creator', 'last_post',
+                                       'last_post__author')
     threads_ = paginate(request, threads_,
-                        per_page=constants.THREADS_PER_PAGE)
+                        per_page=constants.THREADS_PER_PAGE, count=count)
 
     feed_urls = ((reverse('forums.threads.feed', args=[forum_slug]),
                   ThreadsFeed().title(forum)),)

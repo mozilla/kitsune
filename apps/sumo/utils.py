@@ -1,12 +1,13 @@
-from django.core import paginator
 from django.db import models
 from django.db.models.signals import pre_delete
 from django.utils.http import urlencode
 
+from sumo import paginator
 
-def paginate(request, queryset, per_page=20):
+
+def paginate(request, queryset, per_page=20, count=None):
     """Get a Paginator, abstracting some common paging actions."""
-    p = paginator.Paginator(queryset, per_page)
+    p = paginator.Paginator(queryset, per_page, count=count)
 
     # Get the page from the request, make sure it's an int.
     try:
