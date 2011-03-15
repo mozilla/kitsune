@@ -79,6 +79,11 @@
                 {{ _('No replies') }}
               {% endif %}
             </a></span>
+            {% if question.num_answers > 0 and question.last_answer %}
+              <span><a class="last-reply" href="{{ question.last_answer.get_absolute_url() }}">
+                {{ _('last reply by {user}')|f(user=question.last_answer.creator.username) }}
+              </a></span>
+            {% endif %}
             {% if question.is_locked %}
               <span class="locked">{{ _('Locked') }}</span>
             {% endif %}
