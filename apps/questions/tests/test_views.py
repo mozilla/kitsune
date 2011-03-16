@@ -42,7 +42,7 @@ class MobileAAQTests(MobileTestCase):
         self.assertTemplateUsed(response,
                                 'questions/mobile/new_question_login.html')
 
-    @mock.patch_object(Site.objects, 'get_current')
+    @mock.patch.object(Site.objects, 'get_current')
     def test_logged_in_get(self, get_current):
         """New question is posted through mobile."""
         get_current.return_value.domain = 'testserver'
@@ -52,7 +52,7 @@ class MobileAAQTests(MobileTestCase):
         self.assertTemplateUsed(response,
                                 'questions/mobile/new_question.html')
 
-    @mock.patch_object(Site.objects, 'get_current')
+    @mock.patch.object(Site.objects, 'get_current')
     def test_logged_in_post(self, get_current):
         """New question is posted through mobile."""
         get_current.return_value.domain = 'testserver'
@@ -61,7 +61,7 @@ class MobileAAQTests(MobileTestCase):
         eq_(200, response.status_code)
         assert Question.objects.filter(title='A test question')
 
-    @mock.patch_object(Site.objects, 'get_current')
+    @mock.patch.object(Site.objects, 'get_current')
     def test_aaq_new_question_inactive(self, get_current):
         """New question is posted through mobile."""
         get_current.return_value.domain = 'testserver'

@@ -92,7 +92,7 @@ class NotificationsTests(TestCaseBase):
     def setUp(self):
         super(NotificationsTests, self).setUp()
 
-    @mock.patch_object(QuestionReplyEvent, 'fire')
+    @mock.patch.object(QuestionReplyEvent, 'fire')
     def test_fire_on_new_answer(self, fire):
         """The event fires when a new answer is saved."""
         question = Question.objects.all()[0]
@@ -100,7 +100,7 @@ class NotificationsTests(TestCaseBase):
 
         assert fire.called
 
-    @mock.patch_object(QuestionSolvedEvent, 'fire')
+    @mock.patch.object(QuestionSolvedEvent, 'fire')
     def test_fire_on_solution(self, fire):
         """The event also fires when an answer is marked as a solution."""
         answer = Answer.objects.get(pk=1)
@@ -138,8 +138,8 @@ class NotificationsTests(TestCaseBase):
                 '%s should not be notifying.' % event_cls.__name__)
         return question
 
-    @mock.patch_object(Site.objects, 'get_current')
-    @mock.patch_object(settings._wrapped, 'CONFIRM_ANONYMOUS_WATCHES', False)
+    @mock.patch.object(Site.objects, 'get_current')
+    @mock.patch.object(settings._wrapped, 'CONFIRM_ANONYMOUS_WATCHES', False)
     def test_solution_notification(self, get_current):
         """Assert that hitting the watch toggle toggles and that proper mails
         are sent to anonymous and registered watchers."""
@@ -164,8 +164,8 @@ class NotificationsTests(TestCaseBase):
 
         self._toggle_watch_question('solution', turn_on=False)
 
-    @mock.patch_object(Site.objects, 'get_current')
-    @mock.patch_object(settings._wrapped, 'CONFIRM_ANONYMOUS_WATCHES', False)
+    @mock.patch.object(Site.objects, 'get_current')
+    @mock.patch.object(settings._wrapped, 'CONFIRM_ANONYMOUS_WATCHES', False)
     def test_answer_notification(self, get_current):
         """Assert that hitting the watch toggle toggles and that proper mails
         are sent to anonymous users, registered users, and the question
@@ -205,7 +205,7 @@ class NotificationsTests(TestCaseBase):
 
         self._toggle_watch_question('reply', turn_on=False)
 
-    @mock.patch_object(Site.objects, 'get_current')
+    @mock.patch.object(Site.objects, 'get_current')
     def test_solution_notification_deleted(self, get_current):
         """Calling QuestionSolvedEvent.fire() should not query the
         questions_question table.

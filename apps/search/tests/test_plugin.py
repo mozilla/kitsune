@@ -10,7 +10,7 @@ from sumo.urlresolvers import reverse
 class OpenSearchTestCase(TestCase):
     """Test the SUMO OpenSearch plugin."""
 
-    @mock.patch_object(Site.objects, 'get_current')
+    @mock.patch.object(Site.objects, 'get_current')
     def test_plugin(self, get_current):
         """The plugin loads with the correct mimetype."""
         get_current.return_value.domain = 'testserver'
@@ -21,7 +21,7 @@ class OpenSearchTestCase(TestCase):
         assert 'expires' in response
         eq_('application/opensearchdescription+xml', response['content-type'])
 
-    @mock.patch_object(Site.objects, 'get_current')
+    @mock.patch.object(Site.objects, 'get_current')
     def test_localized_plugin(self, get_current):
         """Every locale gets its own plugin!"""
         get_current.return_value.domain = 'testserver'

@@ -86,7 +86,7 @@ class LoginTests(TestCaseBase):
         eq_(302, response.status_code)
         eq_('http://testserver' + next, response['location'])
 
-    @mock.patch_object(Site.objects, 'get_current')
+    @mock.patch.object(Site.objects, 'get_current')
     def test_clean_url(self, get_current):
         '''Verify that protocol and domain get removed.'''
         get_current.return_value.domain = 'su.mo.com'
@@ -97,7 +97,7 @@ class LoginTests(TestCaseBase):
                                   {'next': 'http://su.mo.com/kb/new'})
         eq_('/kb/new', _clean_next_url(r))
 
-    @mock.patch_object(Site.objects, 'get_current')
+    @mock.patch.object(Site.objects, 'get_current')
     def test_login_invalid_next_parameter(self, get_current):
         '''Test with an invalid ?next=http://example.com parameter.'''
         get_current.return_value.domain = 'testserver.com'
@@ -167,7 +167,7 @@ class PasswordResetTests(TestCaseBase):
         eq_('http://testserver/en-US/users/pwresetsent', r['location'])
         eq_(0, len(mail.outbox))
 
-    @mock.patch_object(Site.objects, 'get_current')
+    @mock.patch.object(Site.objects, 'get_current')
     def test_success(self, get_current):
         get_current.return_value.domain = 'testserver.com'
         r = self.client.post(reverse('users.pw_reset'),
@@ -178,7 +178,7 @@ class PasswordResetTests(TestCaseBase):
         assert mail.outbox[0].subject.find('Password reset') == 0
         assert mail.outbox[0].body.find('pwreset/%s' % self.uidb36) > 0
 
-    @mock.patch_object(PasswordResetForm, 'save')
+    @mock.patch.object(PasswordResetForm, 'save')
     def test_smtp_error(self, pwform_save):
         def raise_smtp(*a, **kw):
             raise SMTPRecipientsRefused(recipients=[self.user.email])
@@ -387,7 +387,7 @@ class PasswordChangeTests(TestCaseBase):
 
 
 class ResendConfirmationTests(TestCaseBase):
-    @mock.patch_object(Site.objects, 'get_current')
+    @mock.patch.object(Site.objects, 'get_current')
     def test_resend_confirmation(self, get_current):
         get_current.return_value.domain = 'testserver.com'
 
@@ -401,8 +401,8 @@ class ResendConfirmationTests(TestCaseBase):
         eq_(2, len(mail.outbox))
         assert mail.outbox[1].subject.find('Please confirm your email') == 0
 
-    @mock.patch_object(RegistrationManager, 'send_confirmation_email')
-    @mock.patch_object(Site.objects, 'get_current')
+    @mock.patch.object(RegistrationManager, 'send_confirmation_email')
+    @mock.patch.object(Site.objects, 'get_current')
     def test_smtp_error(self, get_current, send_confirmation_email):
         get_current.return_value.domain = 'testserver.com'
 

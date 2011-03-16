@@ -142,7 +142,7 @@ class DocumentEditingTests(TestCase):
         eq_(2, d.firefox_versions.count())
         eq_(1, d.operating_systems.count())
 
-    @mock.patch_object(Site.objects, 'get_current')
+    @mock.patch.object(Site.objects, 'get_current')
     def test_invalid_slug(self, get_current):
         """Slugs cannot contain /."""
         get_current.return_value.domain = 'testserver'

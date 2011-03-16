@@ -261,8 +261,8 @@ class NewDocumentTests(TestCaseBase):
         eq_(7, len(doc('input[checked=checked]')))
         eq_(None, doc('input[name="tags"]').attr('required'))
 
-    @mock.patch_object(ReviewableRevisionInLocaleEvent, 'fire')
-    @mock.patch_object(Site.objects, 'get_current')
+    @mock.patch.object(ReviewableRevisionInLocaleEvent, 'fire')
+    @mock.patch.object(Site.objects, 'get_current')
     def test_new_document_POST(self, get_current, ready_fire):
         """HTTP POST to new document URL creates the document."""
         get_current.return_value.domain = 'testserver'
@@ -288,8 +288,8 @@ class NewDocumentTests(TestCaseBase):
         eq_(data['content'], r.content)
         ready_fire.assert_called()
 
-    @mock.patch_object(ReviewableRevisionInLocaleEvent, 'fire')
-    @mock.patch_object(Site.objects, 'get_current')
+    @mock.patch.object(ReviewableRevisionInLocaleEvent, 'fire')
+    @mock.patch.object(Site.objects, 'get_current')
     def test_new_document_other_locale(self, get_current, ready_fire):
         """Make sure we can create a document in a non-default locale."""
         # You shouldn't be able to make a new doc in a non-default locale
@@ -403,7 +403,7 @@ class NewDocumentTests(TestCaseBase):
         eq_('Document with this Title and Locale already exists.',
             ul('li').text())
 
-    @mock.patch_object(Site.objects, 'get_current')
+    @mock.patch.object(Site.objects, 'get_current')
     def test_slug_3_chars(self, get_current):
         """Make sure we can create a slug with only 3 characters."""
         get_current.return_value.domain = 'testserver'
@@ -460,8 +460,8 @@ class NewRevisionTests(TestCaseBase):
         eq_(doc('#id_summary')[0].value, r.summary)
         eq_(doc('#id_content')[0].value, r.content)
 
-    @mock.patch_object(Site.objects, 'get_current')
-    @mock.patch_object(settings._wrapped, 'CONFIRM_ANONYMOUS_WATCHES', False)
+    @mock.patch.object(Site.objects, 'get_current')
+    @mock.patch.object(settings._wrapped, 'CONFIRM_ANONYMOUS_WATCHES', False)
     def test_new_revision_POST_document_with_current(self, get_current):
         """HTTP POST to new revision URL creates the revision on a document.
 
@@ -503,9 +503,9 @@ class NewRevisionTests(TestCaseBase):
                     (self.d.title, self.d.slug),
                  to=['sam@example.com'])
 
-    @mock.patch_object(ReviewableRevisionInLocaleEvent, 'fire')
-    @mock.patch_object(EditDocumentEvent, 'fire')
-    @mock.patch_object(Site.objects, 'get_current')
+    @mock.patch.object(ReviewableRevisionInLocaleEvent, 'fire')
+    @mock.patch.object(EditDocumentEvent, 'fire')
+    @mock.patch.object(Site.objects, 'get_current')
     def test_new_revision_POST_document_without_current(
             self, get_current, edited_fire, ready_fire):
         """HTTP POST to new revision URL creates the revision on a document.
@@ -547,7 +547,7 @@ class NewRevisionTests(TestCaseBase):
                          data)
         eq_(tags, list(self.d.tags.values_list('name', flat=True)))
 
-    @mock.patch_object(Site.objects, 'get_current')
+    @mock.patch.object(Site.objects, 'get_current')
     def test_new_form_maintains_based_on_rev(self, get_current):
         """Revision.based_on should be the rev that was current when the Edit
         button was clicked, even if other revisions happen while the user is
@@ -722,9 +722,9 @@ class ReviewRevisionTests(TestCaseBase):
         # Does the {for} syntax seem to have rendered?
         assert pq(response.content)('span[class=for]')
 
-    @mock.patch_object(send_reviewed_notification, 'delay')
-    @mock.patch_object(Site.objects, 'get_current')
-    @mock.patch_object(settings._wrapped, 'CONFIRM_ANONYMOUS_WATCHES', False)
+    @mock.patch.object(send_reviewed_notification, 'delay')
+    @mock.patch.object(Site.objects, 'get_current')
+    @mock.patch.object(settings._wrapped, 'CONFIRM_ANONYMOUS_WATCHES', False)
     def test_approve_revision(self, get_current, reviewed_delay):
         """Verify revision approval with proper notifications."""
         get_current.return_value.domain = 'testserver'
@@ -756,8 +756,8 @@ class ReviewRevisionTests(TestCaseBase):
                     (self.document.title, self.document.slug),
                  to=['joe@example.com'])
 
-    @mock.patch_object(send_reviewed_notification, 'delay')
-    @mock.patch_object(Site.objects, 'get_current')
+    @mock.patch.object(send_reviewed_notification, 'delay')
+    @mock.patch.object(Site.objects, 'get_current')
     def test_reject_revision(self, get_current, delay):
         """Verify revision rejection."""
         get_current.return_value.domain = 'testserver'
@@ -794,7 +794,7 @@ class ReviewRevisionTests(TestCaseBase):
                  str(self.revision.id)),
             redirect[0])
 
-    @mock.patch_object(Site.objects, 'get_current')
+    @mock.patch.object(Site.objects, 'get_current')
     def test_review_translation(self, get_current):
         """Make sure it works for localizations as well."""
         get_current.return_value.domain = 'testserver'
@@ -1019,9 +1019,9 @@ class TranslateTests(TestCaseBase):
         eq_(200, response.status_code)
         eq_(0, self.d.translations.count())
 
-    @mock.patch_object(ReviewableRevisionInLocaleEvent, 'fire')
-    @mock.patch_object(EditDocumentEvent, 'fire')
-    @mock.patch_object(Site.objects, 'get_current')
+    @mock.patch.object(ReviewableRevisionInLocaleEvent, 'fire')
+    @mock.patch.object(EditDocumentEvent, 'fire')
+    @mock.patch.object(Site.objects, 'get_current')
     def test_first_translation_to_locale(self, get_current, edited_fire,
                                          ready_fire):
         """Create the first translation of a doc to new locale."""
@@ -1052,9 +1052,9 @@ class TranslateTests(TestCaseBase):
         rev_es.save()
         return rev_es
 
-    @mock.patch_object(ReviewableRevisionInLocaleEvent, 'fire')
-    @mock.patch_object(EditDocumentEvent, 'fire')
-    @mock.patch_object(Site.objects, 'get_current')
+    @mock.patch.object(ReviewableRevisionInLocaleEvent, 'fire')
+    @mock.patch.object(EditDocumentEvent, 'fire')
+    @mock.patch.object(Site.objects, 'get_current')
     def test_another_translation_to_locale(self, get_current, edited_fire,
                                            ready_fire):
         """Create the second translation of a doc."""
@@ -1092,7 +1092,7 @@ class TranslateTests(TestCaseBase):
         edited_fire.assert_called()
         ready_fire.assert_called()
 
-    @mock.patch_object(Site.objects, 'get_current')
+    @mock.patch.object(Site.objects, 'get_current')
     def test_translate_form_maintains_based_on_rev(self, get_current):
         """Revision.based_on should be the rev that was current when the
         Translate button was clicked, even if other revisions happen while the
@@ -1120,7 +1120,7 @@ class TranslateTests(TestCaseBase):
         d = Document.objects.get(id=rev_es.document.id)
         eq_(new_title, d.title)  # Title is updated
 
-    @mock.patch_object(Site.objects, 'get_current')
+    @mock.patch.object(Site.objects, 'get_current')
     def test_translate_update_rev_only(self, get_current):
         """Submitting the revision form should create a new revision.
         No document fields should be updated."""

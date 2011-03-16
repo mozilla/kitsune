@@ -52,35 +52,35 @@ class RebuildTestCase(TestCase):
         settings._wrapped.__dict__ = self.old_settings
         celery.conf.ALWAYS_EAGER = self.ALWAYS_EAGER
 
-    @mock.patch_object(rebuild_kb, 'delay')
+    @mock.patch.object(rebuild_kb, 'delay')
     def test_eager_queue(self, delay):
         schedule_rebuild_kb()
         assert not cache.get(settings.WIKI_REBUILD_TOKEN)
         assert not delay.called
 
-    @mock.patch_object(rebuild_kb, 'delay')
+    @mock.patch.object(rebuild_kb, 'delay')
     def test_task_queue(self, delay):
         celery.conf.ALWAYS_EAGER = False
         schedule_rebuild_kb()
         assert cache.get(settings.WIKI_REBUILD_TOKEN)
         assert delay.called
 
-    @mock.patch_object(rebuild_kb, 'delay')
+    @mock.patch.object(rebuild_kb, 'delay')
     def test_already_queued(self, delay):
         cache.set(settings.WIKI_REBUILD_TOKEN, True)
         schedule_rebuild_kb()
         assert cache.get(settings.WIKI_REBUILD_TOKEN)
         assert not delay.called
 
-    @mock.patch_object(rebuild_kb, 'delay')
-    @mock.patch_object(cache, 'get')
+    @mock.patch.object(rebuild_kb, 'delay')
+    @mock.patch.object(cache, 'get')
     def test_dont_queue(self, get, delay):
         settings.WIKI_REBUILD_ON_DEMAND = False
         schedule_rebuild_kb()
         assert not get.called
         assert not delay.called
 
-    @mock.patch_object(_rebuild_kb_chunk, 'apply_async')
+    @mock.patch.object(_rebuild_kb_chunk, 'apply_async')
     def test_rebuild_chunk(self, apply_async):
         cache.set(settings.WIKI_REBUILD_TOKEN, True)
         rebuild_kb()
@@ -119,7 +119,7 @@ class ReviewMailTestCase(TestCaseBase):
         revision.save()
         send_reviewed_notification(revision, revision.document, message)
 
-    @mock.patch_object(Site.objects, 'get_current')
+    @mock.patch.object(Site.objects, 'get_current')
     def test_reviewed_notification(self, get_current):
         get_current.return_value.domain = 'testserver'
 
@@ -135,7 +135,7 @@ class ReviewMailTestCase(TestCaseBase):
         eq_(REVIEWED_EMAIL_CONTENT % (doc.title, msg, doc.slug),
             mail.outbox[0].body)
 
-    @mock.patch_object(Site.objects, 'get_current')
+    @mock.patch.object(Site.objects, 'get_current')
     def test_reviewed_by_creator_no_notification(self, get_current):
         get_current.return_value.domain = 'testserver'
 
@@ -146,7 +146,7 @@ class ReviewMailTestCase(TestCaseBase):
         # Verify no email was sent
         eq_(0, len(mail.outbox))
 
-    @mock.patch_object(Site.objects, 'get_current')
+    @mock.patch.object(Site.objects, 'get_current')
     def test_unicode_notifications(self, get_current):
         get_current.return_value.domain = 'testserver'
 

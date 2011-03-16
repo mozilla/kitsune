@@ -56,7 +56,7 @@ https://testserver/en-US/forums/test-forum/%s
 class NotificationsTests(ForumTestCase):
     """Test that notifications get sent."""
 
-    @mock.patch_object(NewPostEvent, 'fire')
+    @mock.patch.object(NewPostEvent, 'fire')
     def test_fire_on_reply(self, fire):
         """The event fires when there is a reply."""
         t = Thread.objects.get(pk=2)
@@ -66,7 +66,7 @@ class NotificationsTests(ForumTestCase):
         # NewPostEvent.fire() is called.
         assert fire.called
 
-    @mock.patch_object(NewThreadEvent, 'fire')
+    @mock.patch.object(NewThreadEvent, 'fire')
     def test_fire_on_new_thread(self, fire):
         """The event fires when there is a new thread."""
         f = Forum.objects.get(pk=1)
@@ -111,7 +111,7 @@ class NotificationsTests(ForumTestCase):
                    'NewThreadEvent should not be notifying.')
         return forum
 
-    @mock.patch_object(Site.objects, 'get_current')
+    @mock.patch.object(Site.objects, 'get_current')
     def test_watch_thread_then_reply(self, get_current):
         """The event fires and sends emails when watching a thread."""
         get_current.return_value.domain = 'testserver'
@@ -139,7 +139,7 @@ class NotificationsTests(ForumTestCase):
 
         assert not mail.outbox
 
-    @mock.patch_object(Site.objects, 'get_current')
+    @mock.patch.object(Site.objects, 'get_current')
     def test_watch_forum_then_new_thread(self, get_current):
         """Watching a forum and creating a new thread should send email."""
         get_current.return_value.domain = 'testserver'
@@ -156,7 +156,7 @@ class NotificationsTests(ForumTestCase):
 
         self._toggle_watch_forum_as('pcraciunoiu', turn_on=False)
 
-    @mock.patch_object(Site.objects, 'get_current')
+    @mock.patch.object(Site.objects, 'get_current')
     def test_watch_forum_then_new_thread_as_self(self, get_current):
         """Watching a forum and creating a new thread as myself should not
         send email."""
@@ -169,7 +169,7 @@ class NotificationsTests(ForumTestCase):
         # Assert no email is sent.
         assert not mail.outbox
 
-    @mock.patch_object(Site.objects, 'get_current')
+    @mock.patch.object(Site.objects, 'get_current')
     def test_watch_forum_then_new_post(self, get_current):
         """Watching a forum and replying to a thread should send email."""
         get_current.return_value.domain = 'testserver'
@@ -185,7 +185,7 @@ class NotificationsTests(ForumTestCase):
                  subject='Reply to: Sticky Thread',
                  body=EMAIL_CONTENT[0] % p.id)
 
-    @mock.patch_object(Site.objects, 'get_current')
+    @mock.patch.object(Site.objects, 'get_current')
     def test_watch_forum_then_new_post_as_self(self, get_current):
         """Watching a forum and replying as myself should not send email."""
         get_current.return_value.domain = 'testserver'
@@ -198,7 +198,7 @@ class NotificationsTests(ForumTestCase):
         # Assert no email is sent.
         assert not mail.outbox
 
-    @mock.patch_object(Site.objects, 'get_current')
+    @mock.patch.object(Site.objects, 'get_current')
     def test_watch_both_then_new_post(self, get_current):
         """Watching both and replying to a thread should send ONE email."""
         get_current.return_value.domain = 'testserver'

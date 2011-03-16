@@ -28,7 +28,7 @@ class RegisterTests(TestCase):
     def tearDown(self):
         settings.DEBUG = self.old_debug
 
-    @mock.patch_object(Site.objects, 'get_current')
+    @mock.patch.object(Site.objects, 'get_current')
     def test_new_user(self, get_current):
         get_current.return_value.domain = 'su.mo.com'
         response = self.client.post(reverse('users.register', locale='en-US'),
@@ -54,8 +54,8 @@ class RegisterTests(TestCase):
         eq_(200, response.status_code)
         eq_('http://testserver/en-US/home', response.redirect_chain[0][0])
 
-    @mock.patch_object(RegistrationManager, 'send_confirmation_email')
-    @mock.patch_object(Site.objects, 'get_current')
+    @mock.patch.object(RegistrationManager, 'send_confirmation_email')
+    @mock.patch.object(Site.objects, 'get_current')
     def test_new_user_smtp_error(self, get_current, send_confirmation_email):
         get_current.return_value.domain = 'su.mo.com'
 
@@ -70,7 +70,7 @@ class RegisterTests(TestCase):
         self.assertContains(response, unicode(ERROR_SEND_EMAIL))
         assert not User.objects.filter(username='newbie').exists()
 
-    @mock.patch_object(Site.objects, 'get_current')
+    @mock.patch.object(Site.objects, 'get_current')
     def test_unicode_password(self, get_current):
         u_str = u'\xe5\xe5\xee\xe9\xf8\xe7\u6709\u52b9'
         get_current.return_value.domain = 'su.mo.com'
@@ -92,7 +92,7 @@ class RegisterTests(TestCase):
         eq_(200, response.status_code)
         eq_('http://testserver/ja/home', response.redirect_chain[0][0])
 
-    @mock.patch_object(Site.objects, 'get_current')
+    @mock.patch.object(Site.objects, 'get_current')
     def test_new_user_activation(self, get_current):
         get_current.return_value.domain = 'su.mo.com'
         user = RegistrationProfile.objects.create_inactive_user(
@@ -105,7 +105,7 @@ class RegisterTests(TestCase):
         user = User.objects.get(pk=user.pk)
         assert user.is_active
 
-    @mock.patch_object(Site.objects, 'get_current')
+    @mock.patch.object(Site.objects, 'get_current')
     def test_new_user_claim_watches(self, get_current):
         """Claim user watches upon activation."""
         watch(email='sumouser@test.com', save=True)
@@ -119,7 +119,7 @@ class RegisterTests(TestCase):
         # Watches are claimed.
         assert user.watch_set.exists()
 
-    @mock.patch_object(Site.objects, 'get_current')
+    @mock.patch.object(Site.objects, 'get_current')
     def test_new_user_with_questions(self, get_current):
         """Unconfirmed questions get confirmed with account confirmation."""
         get_current.return_value.domain = 'su.mo.com'
@@ -176,7 +176,7 @@ class ChangeEmailTestCase(TestCase):
     def setUp(self):
         self.client = LocalizingClient()
 
-    @mock.patch_object(Site.objects, 'get_current')
+    @mock.patch.object(Site.objects, 'get_current')
     def test_user_change_email(self, get_current):
         """Send email to change user's email and then change it."""
         get_current.return_value.domain = 'su.mo.com'
@@ -226,7 +226,7 @@ class ChangeEmailTestCase(TestCase):
         eq_('A user with that email address already exists.',
             doc('ul.errorlist').text())
 
-    @mock.patch_object(Site.objects, 'get_current')
+    @mock.patch.object(Site.objects, 'get_current')
     def test_user_confirm_email_duplicate(self, get_current):
         """If we detect a duplicate email when confirming an email change,
         don't change it and notify the user."""

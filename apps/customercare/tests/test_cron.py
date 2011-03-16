@@ -2,7 +2,7 @@ import copy
 
 from django.conf import settings
 
-from mock import patch_object
+from mock import patch
 from nose.tools import eq_
 
 from customercare.cron import _filter_tweet, _get_oldest_tweet, purge_tweets
@@ -86,20 +86,20 @@ class PurgeTweetsTestCase(TestCase):
     """Tweets are deleted for each locale."""
     fixtures = ['tweets.json']
 
-    @patch_object(settings._wrapped, 'CC_MAX_TWEETS', 1)
+    @patch.object(settings._wrapped, 'CC_MAX_TWEETS', 1)
     def test_purge_tweets_two_locales(self):
         purge_tweets()
         eq_(1, Tweet.objects.filter(locale='en').count())
         eq_(1, Tweet.objects.filter(locale='ro').count())
 
-    @patch_object(settings._wrapped, 'CC_MAX_TWEETS', 3)
+    @patch.object(settings._wrapped, 'CC_MAX_TWEETS', 3)
     def test_purge_tweets_one_locale(self):
         purge_tweets()
         eq_(3, Tweet.objects.filter(locale='en').count())
         # Does not touch Romanian tweets.
         eq_(2, Tweet.objects.filter(locale='ro').count())
 
-    @patch_object(settings._wrapped, 'CC_MAX_TWEETS', 0)
+    @patch.object(settings._wrapped, 'CC_MAX_TWEETS', 0)
     def test_purge_all_tweets(self):
         purge_tweets()
         eq_(0, Tweet.objects.count())

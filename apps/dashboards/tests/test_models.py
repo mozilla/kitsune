@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from django.conf import settings
 
-from mock import patch_object
+from mock import patch
 from nose.tools import raises, eq_
 
 from dashboards.models import (WikiDocumentVisits, StatsException, THIS_WEEK,
@@ -108,7 +108,7 @@ class DocumentVisitsTests(TestCase):
             'Viewed":25.0},"SubRows":null}}}}}'
             % ((settings.LANGUAGE_CODE,) * 2)))
 
-    @patch_object(settings._wrapped, 'WEBTRENDS_WIKI_REPORT_URL',
+    @patch.object(settings._wrapped, 'WEBTRENDS_WIKI_REPORT_URL',
                   'https://localhost:123654/nonexistent')
     def test_networking_failure(self):
         """Assert a StatsIOError is thrown when networking fails."""

@@ -1,4 +1,4 @@
-from mock import patch_object, Mock
+from mock import patch, Mock
 from nose.tools import eq_
 
 from django.contrib.auth.models import User
@@ -29,7 +29,7 @@ class PostPermissionsTests(ForumTestCase):
     def test_reply_without_post_permission(self):
         """Posting without post_in_forum permission should 403."""
         self.client.login(username='jsocol', password='testpass')
-        with patch_object(Forum, 'allows_viewing_by', Mock(return_value=True)):
+        with patch.object(Forum, 'allows_viewing_by', Mock(return_value=True)):
             response = post(self.client, 'forums.reply', {'content': 'Blahs'},
                             args=['restricted-forum', 6])
         eq_(403, response.status_code)
@@ -49,7 +49,7 @@ class ThreadAuthorityPermissionsTests(ForumTestCase):
     def test_new_thread_without_post_permission(self):
         """Making a new thread without post permission should 403."""
         self.client.login(username='jsocol', password='testpass')
-        with patch_object(Forum, 'allows_viewing_by', Mock(return_value=True)):
+        with patch.object(Forum, 'allows_viewing_by', Mock(return_value=True)):
             response = post(self.client, 'forums.new_thread',
                             {'title': 'Blahs', 'content': 'Blahs'},
                             args=['restricted-forum'])

@@ -572,7 +572,7 @@ class SearchTest(SphinxTestCase):
         results = wc.query('ghosts')
         eq_(1, len(results))
 
-    @mock.patch_object(Site.objects, 'get_current')
+    @mock.patch.object(Site.objects, 'get_current')
     def test_suggestions(self, get_current):
         """Suggestions API is well-formatted."""
         get_current.return_value.domain = 'testserver'
@@ -588,7 +588,7 @@ class SearchTest(SphinxTestCase):
         eq_(0, len(results[2]))
         eq_(2, len(results[3]))
 
-    @mock.patch_object(Site.objects, 'get_current')
+    @mock.patch.object(Site.objects, 'get_current')
     def test_invalid_suggestions(self, get_current):
         """The suggestions API needs a query term."""
         get_current.return_value.domain = 'testserver'

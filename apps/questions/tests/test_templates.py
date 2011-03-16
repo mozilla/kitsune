@@ -479,7 +479,7 @@ class AnswersTemplateTestCase(TestCaseBase):
                        args=[self.question.id])
         eq_(405, response.status_code)
 
-    @mock.patch_object(Site.objects, 'get_current')
+    @mock.patch.object(Site.objects, 'get_current')
     def test_watch_replies(self, get_current):
         """Watch a question for replies."""
         get_current.return_value.domain = 'testserver'
@@ -501,7 +501,7 @@ class AnswersTemplateTestCase(TestCaseBase):
         get(self.client, 'questions.activate_watch', args=[w.id, w.secret])
         assert Watch.objects.get().is_active
 
-    @mock.patch_object(Site.objects, 'get_current')
+    @mock.patch.object(Site.objects, 'get_current')
     def test_watch_replies_wrong_secret(self, get_current):
         """Watch a question for replies."""
         # This also covers test_watch_solution_wrong_secret.
@@ -528,7 +528,7 @@ class AnswersTemplateTestCase(TestCaseBase):
         assert QuestionReplyEvent.is_notifying(user, self.question), (
                'Watch was not created')
 
-    @mock.patch_object(Site.objects, 'get_current')
+    @mock.patch.object(Site.objects, 'get_current')
     def test_watch_solution(self, get_current):
         """Watch a question for solution."""
         self.client.logout()
@@ -1080,7 +1080,7 @@ class AAQTemplateTestCase(TestCaseBase):
         eq_(400, response.status_code)
         assert 'Request type not recognized' in response.content
 
-    @mock.patch_object(Site.objects, 'get_current')
+    @mock.patch.object(Site.objects, 'get_current')
     def test_register_through_aaq(self, get_current):
         """Registering through AAQ form sends confirmation email."""
         get_current.return_value.domain = 'testserver'
