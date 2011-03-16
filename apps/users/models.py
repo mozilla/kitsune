@@ -65,6 +65,9 @@ class Profile(ModelBase):
     def __unicode__(self):
         return unicode(self.user)
 
+    def get_absolute_url(self):
+        return reverse('users.profile', args=[self.user_id])
+
 
 # Activation model and manager:
 # (based on http://bitbucket.org/ubernostrum/django-registration)
