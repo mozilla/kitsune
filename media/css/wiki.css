@@ -848,3 +848,82 @@ div.video .kbox-container {
     height: 550px;
     text-align: left;
 }
+
+
+/************************************/
+/* Army of Awesome Referral Banner  */
+/************************************/
+#banner {
+    background: #c3e4f8;
+    background: -moz-linear-gradient(-90deg, #c3e4f8, #a6d7f5);
+    border-radius: 0 0 8px 8px;
+    -moz-border-radius: 0 0 8px 8px;
+    -webkit-border-radius: 0 0 8px 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,.25), inset -1px -1px 1px rgba(0,0,0,.125), inset 1px 0 1px rgba(255,255,255,.25);
+    -moz-box-shadow: 0 2px 10px rgba(0,0,0,.25), inset -1px -1px 1px rgba(0,0,0,.125), inset 1px 0 1px rgba(255,255,255,.25);
+    -webkit-box-shadow: 0 2px 10px rgba(0,0,0,.25), inset -1px -1px 1px rgba(0,0,0,.125), inset 1px 0 1px rgba(255,255,255,.25);
+    color: #425662;
+    display: none;
+    font-size: 14px;
+    left: 50%;
+    margin: 0 0 0 -480px;
+    padding: 25px 30px 15px;
+    position: absolute;
+    top: -10px;
+    width: 900px;
+    z-index: 100;
+}
+
+#banner .inner {
+    position: relative;
+}
+
+#banner a {
+    color: #1c1b18;
+    text-decoration: none;
+}
+
+#banner a:hover {
+    text-decoration: underline;
+}
+
+#banner .mascot {
+    background: url(../img/wiki/aoa.banner.nurse.png) no-repeat left bottom;
+    bottom: -15px;
+    height: 75px;
+    left: -5px;
+    position: absolute;
+    width: 67px;
+}
+
+#banner .what {
+    line-height: 1.3em;
+    padding-left: 71px;
+}
+
+#banner .what h1 {
+    color: #4B4742;
+    font-size: 18px;
+    font-style: italic;
+    margin-bottom: .3em;
+}
+
+#banner .who {
+    bottom: 0;
+    font: 11px Helvetica, Arial, sans-serif;
+    position: absolute;
+    right: 0;
+    text-align: right;
+}
+
+#banner .bye {
+    position: absolute;
+    right: 0;
+    top: -5px;
+}
+
+#banner .bye a {
+    color: #447BC4;
+    font-size: 21px;
+    font-family: Helvetica, Arial, sans-serif;
+}

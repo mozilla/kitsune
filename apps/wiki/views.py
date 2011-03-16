@@ -143,7 +143,8 @@ def document(request, document_slug, template=None):
 
     data = {'document': doc, 'redirected_from': redirected_from,
             'related': related, 'contributors': contributors,
-            'fallback_reason': fallback_reason}
+            'fallback_reason': fallback_reason,
+            'is_aoa_referral': request.GET.get('ref') == 'aoa'}
     data.update(SHOWFOR_DATA)
     return jingo.render(request, template, data)
 

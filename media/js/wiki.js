@@ -13,6 +13,7 @@
         if ($('body').is('.document') || $('body').is('.home')) {  // Document page
             ShowFor.initForTags();
             new ArticleHelpfulVote(true);
+            initAOABanner();
         } else if ($('body').is('.review')) { // Review pages
             ShowFor.initForTags();
         }
@@ -251,6 +252,27 @@
                 }
             });
         }
+    }
+
+    // If the Customer Care banner is present, animate it and handle closing.
+    function initAOABanner() {
+        var $banner = $('#banner'),
+    	    cssFrom = { top: -100 },
+    	    cssTo = { top: -10 };
+        if ($banner.length > 0) {
+        	setTimeout(function() {
+        		$banner
+        		    .css({ display: 'block' })
+        		    .css(cssFrom)
+        		    .animate(cssTo, 500)
+                    .find('a.close').click(function(e) {
+                        e.preventDefault();
+        			    $banner.animate(cssFrom, 500, 'swing', function() {
+        				    $banner.css({ display: 'none' });
+        			    });
+        		});
+        	}, 500);
+    	}
     }
 
     $(document).ready(init);
