@@ -5,7 +5,6 @@ from django import forms
 from django.utils.encoding import smart_str
 
 from tower import ugettext_lazy as _lazy
-from tower import ugettext as _
 
 from sumo.form_fields import StrippedCharField
 from tags import forms as tag_forms

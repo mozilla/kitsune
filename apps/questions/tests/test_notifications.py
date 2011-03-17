@@ -148,7 +148,7 @@ class NotificationsTests(TestCaseBase):
 
         question = self._toggle_watch_question('solution', turn_on=True)
         QuestionSolvedEvent.notify('anon@ymous.com', question)
-        
+
         answer = question.answers.all()[0]
         # Post a reply
         self.client.login(username='jsocol', password='testpass')

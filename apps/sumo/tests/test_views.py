@@ -29,7 +29,6 @@ class RedirectToTestcase(TestCase):
             resp['location'])
 
 
-
 class RobotsTestCase(TestCase):
     # Use the hard-coded URL because it's well-known.
     old_setting = settings.ENGAGE_ROBOTS

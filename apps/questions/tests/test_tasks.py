@@ -56,7 +56,7 @@ class AnswerLogTests(TestCase):
         q = Question.objects.create(creator=orig, title='foo', content='bar')
         assert not Action.uncached.exists(), 'No actions after question.'
 
-        a = Answer.objects.create(question=q, creator=replier, content='baz')
+        Answer.objects.create(question=q, creator=replier, content='baz')
         eq_(1, Action.uncached.count())
 
         act = Action.uncached.all()[0]
