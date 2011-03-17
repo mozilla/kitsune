@@ -25,11 +25,12 @@ def notification_mails(revision, subject, template, url, users_and_watches):
          'creator': revision.creator,
          'url': url,
          'host': Site.objects.get_current().domain}
-    content = t.render(Context(c))
-    mail = EmailMessage(subject, content, settings.NOTIFICATIONS_FROM_ADDRESS)
+    mail = EmailMessage(subject, '', settings.NOTIFICATIONS_FROM_ADDRESS)
 
-    for u, dummy in users_and_watches:
+    for u, w in users_and_watches:
+        c['watch'] = w
         mail.to = [u.email]
+        mail.body = t.render(Context(c))
         yield mail
 
 

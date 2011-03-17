@@ -32,7 +32,10 @@ To review this revision, click the following
 link, or paste it into your browser's location bar:
 
 https://testserver/en-US/kb/%s/review/%s
-"""
+
+--
+Unsubscribe from these emails:
+https://testserver/en-US/unsubscribe/%s?s=%s"""
 
 DOCUMENT_EDITED_EMAIL_CONTENT = """
 
@@ -44,7 +47,10 @@ To view this document's history, click the following
 link, or paste it into your browser's location bar:
 
 https://testserver/en-US/kb/%s/history
-"""
+
+--
+Unsubscribe from these emails:
+https://testserver/en-US/unsubscribe/%s?s=%s"""
 
 APPROVED_EMAIL_CONTENT = """
 
@@ -55,7 +61,10 @@ To view the updated document, click the following
 link, or paste it into your browser's location bar:
 
 https://testserver/en-US/kb/%s
-"""
+
+--
+Unsubscribe from these emails:
+https://testserver/en-US/unsubscribe/%s?s=%s"""
 
 
 class DocumentTests(TestCaseBase):
@@ -474,9 +483,11 @@ class NewRevisionTests(TestCaseBase):
         get_current.return_value.domain = 'testserver'
 
         # Sign up for notifications:
-        EditDocumentEvent.notify('sam@example.com', self.d).activate().save()
-        ReviewableRevisionInLocaleEvent.notify('joe@example.com',
-            locale='en-US').activate().save()
+        edit_watch = EditDocumentEvent.notify('sam@example.com', self.d)
+        edit_watch.activate().save()
+        reviewable_watch = ReviewableRevisionInLocaleEvent.notify(
+            'joe@example.com', locale='en-US')
+        reviewable_watch.activate().save()
 
         # Edit a document:
         response = self.client.post(
@@ -494,13 +505,15 @@ class NewRevisionTests(TestCaseBase):
                  subject=u'%s is ready for review (%s)' % (self.d.title,
                                                            new_rev.creator),
                  body=READY_FOR_REVIEW_EMAIL_CONTENT %
-                    (self.d.title, self.d.slug, new_rev.id),
+                    (self.d.title, self.d.slug, new_rev.id,
+                     reviewable_watch.pk, reviewable_watch.secret),
                  to=['joe@example.com'])
         attrs_eq(mail.outbox[1],
                  subject=u'%s was edited by %s' % (self.d.title,
                                                    new_rev.creator),
                  body=DOCUMENT_EDITED_EMAIL_CONTENT %
-                    (self.d.title, self.d.slug),
+                    (self.d.title, self.d.slug, edit_watch.pk,
+                     edit_watch.secret),
                  to=['sam@example.com'])
 
     @mock.patch.object(ReviewableRevisionInLocaleEvent, 'fire')
@@ -730,8 +743,9 @@ class ReviewRevisionTests(TestCaseBase):
         get_current.return_value.domain = 'testserver'
 
         # Subscribe to approvals:
-        ApproveRevisionInLocaleEvent.notify('joe@example.com',
-                                            locale='en-US').activate().save()
+        watch = ApproveRevisionInLocaleEvent.notify('joe@example.com',
+                                                    locale='en-US')
+        watch.activate().save()
 
         # Approve something:
         significance = SIGNIFICANCES[0][0]
@@ -753,7 +767,8 @@ class ReviewRevisionTests(TestCaseBase):
                  subject='%s (%s) has a new approved revision' %
                      (self.document.title, self.document.locale),
                  body=APPROVED_EMAIL_CONTENT %
-                    (self.document.title, self.document.slug),
+                    (self.document.title, self.document.slug, watch.pk,
+                     watch.secret),
                  to=['joe@example.com'])
 
     @mock.patch.object(send_reviewed_notification, 'delay')

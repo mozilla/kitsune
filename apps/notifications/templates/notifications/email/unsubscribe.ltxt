@@ -1,0 +1,4 @@
+{% load i18n %}
+--
+{% blocktrans with watch.unsubscribe_url as unsubscribe_url %}Unsubscribe from these emails:
+{{ unsubscribe_url }}{% endblocktrans %}

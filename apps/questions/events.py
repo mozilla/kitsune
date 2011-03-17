@@ -25,7 +25,7 @@ class QuestionEvent(InstanceEvent):
         subject = _('Please confirm your email address')
         email_kwargs = {'activation_url': cls._activation_url(watch),
                         'domain': Site.objects.get_current().domain,
-                        'watch_description': cls.get_watch_description(watch)}
+                        'watch_description': cls.description_of_watch(watch)}
         template_path = 'questions/email/activate_watch.ltxt'
         message = loader.render_to_string(template_path, email_kwargs)
         return EmailMessage(subject, message,
@@ -63,8 +63,9 @@ class QuestionReplyEvent(QuestionEvent):
              'host': Site.objects.get_current().domain,
              'answer_url': self.answer.get_absolute_url()}
 
-        for u, dummy in users_and_watches:
+        for u, w in users_and_watches:
             c['username'] = u.username
+            c['watch'] = w
             is_asker = asker_id == u.id
             content = (asker_template if is_asker else
                        watcher_template).render(Context(c))
@@ -75,7 +76,7 @@ class QuestionReplyEvent(QuestionEvent):
                                [u.email])
 
     @classmethod
-    def get_watch_description(cls, watch):
+    def description_of_watch(cls, watch):
         return _('New answers for question: %s') % watch.content_object.title
 
 
@@ -97,8 +98,9 @@ class QuestionSolvedEvent(QuestionEvent):
              'question_title': question.title,
              'host': Site.objects.get_current().domain,
              'solution_url': question.solution.get_absolute_url()}
-        for u, dummy in users_and_watches:
+        for u, w in users_and_watches:
             c['username'] = u.username  # '' if anonymous
+            c['watch'] = w
             content = t.render(Context(c))
             yield EmailMessage(
                 subject,
@@ -107,6 +109,6 @@ class QuestionSolvedEvent(QuestionEvent):
                 [u.email])
 
     @classmethod
-    def get_watch_description(cls, watch):
+    def description_of_watch(cls, watch):
         question = watch.content_object
         return _('Solution found for question: %s') % question.title

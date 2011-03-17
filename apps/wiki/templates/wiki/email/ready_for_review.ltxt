@@ -1,4 +1,4 @@
-{% load i18n %}
+{% load i18n %}{% load unsubscribe_instructions %}
 {# L10n: This is an email. Whitespace matters! #}
 {% blocktrans %}
 {{ creator }} submitted a new revision to the document
@@ -8,3 +8,4 @@ To review this revision, click the following
 link, or paste it into your browser's location bar:
 {% endblocktrans %}
 https://{{ host }}{{ url }}
+{% unsubscribe_instructions watch %}

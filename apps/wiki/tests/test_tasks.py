@@ -33,8 +33,7 @@ Message from the reviewer:
 To view the history of this document, click the following
 link, or paste it into your browser's location bar:
 
-https://testserver/en-US/kb/%s/history
-"""
+https://testserver/en-US/kb/%s/history"""
 
 
 class RebuildTestCase(TestCase):

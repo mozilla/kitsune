@@ -2,8 +2,13 @@ from django.db import models, connections, router
 from django.contrib.auth.models import User, AnonymousUser
 from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
+from django.contrib.sites.models import Site
 
+from sumo.helpers import urlparams
 from sumo.models import ModelBase
+# TODO: Find the implementation of reverse() according to a setting, or turn
+# sumo's reverse() into a monkeypatch to Django's.
+from sumo.urlresolvers import reverse
 
 
 def multi_raw(query, params, models):
@@ -55,6 +60,8 @@ class Watch(ModelBase):
     is_active = models.BooleanField(default=False, db_index=True)
 
     def __unicode__(self):
+        # TODO: Trace event_type back to find the Event subclass, and ask it
+        # how to describe me in English.
         rest = self.content_object or self.content_type or self.object_id
         return u'Watch %s: %s, %s' % (self.pk, self.event_type,
                                          unicode(rest))
@@ -67,6 +74,14 @@ class Watch(ModelBase):
         """
         self.is_active = True
         return self
+
+    def unsubscribe_url(self):
+        """Return the absolute URL to visit to delete me."""
+        server_relative = urlparams(
+            reverse('notifications.unsubscribe', args=[self.pk]),
+            s=self.secret)
+        return 'https://%s%s' % (Site.objects.get_current().domain,
+                                 server_relative)
 
 
 class WatchFilter(ModelBase):

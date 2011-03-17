@@ -1,6 +1,5 @@
 import random
 from smtplib import SMTPException
-from string import letters
 
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -331,7 +330,12 @@ class Event(object):
                     ContentType.objects.get_for_model(cls.content_type)
             create_kwargs['email' if isinstance(user_or_email_, basestring)
                           else 'user'] = user_or_email_
-            secret = ''.join(random.choice(letters) for x in xrange(10))
+            # Letters that can't be mistaken for other letters or numbers in
+            # most fonts, in case people try to type these:
+            distinguishable_letters = \
+                'abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRTUVWXYZ'
+            secret = ''.join(random.choice(distinguishable_letters)
+                             for x in xrange(10))
             # Registered users don't need to confirm, but anonymous users do.
             is_active = ('user' in create_kwargs or
                           not settings.CONFIRM_ANONYMOUS_WATCHES)
@@ -430,8 +434,12 @@ class Event(object):
         raise NotImplementedError
 
     @classmethod
-    def watch_description(cls, watch):
-        """Return a description of the watch which can be used in emails."""
+    def description_of_watch(cls, watch):
+        """Return a description of the Watch which can be used in emails.
+
+        For example, "changes to English articles"
+
+        """
         raise NotImplementedError
 
 

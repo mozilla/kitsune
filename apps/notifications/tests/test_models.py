@@ -1,13 +1,21 @@
 from nose.tools import eq_
 
 from notifications.models import WatchFilter, EmailUser
-from notifications.tests import watch_filter
+from notifications.tests import watch, watch_filter
 from sumo.tests import TestCase
 
 
 # TODO: write a test to ensure that event types don't collide
 # case-insensitive-ly
 # E.g. No duplicates in this list: [et.lower() for et in EVENT_TYPES]
+
+
+class WatchTests(TestCase):
+    """Tests for Watch model"""
+
+    def test_unsubscribe_url(self):
+        """Make sure unsubscribe_url() returns something URL-ish."""
+        assert watch().unsubscribe_url().startswith('http')
 
 
 class WatchFilterTests(TestCase):

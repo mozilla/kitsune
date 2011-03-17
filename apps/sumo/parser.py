@@ -6,7 +6,6 @@ from wikimarkup.parser import Parser
 
 from gallery.models import Image
 from sumo.urlresolvers import reverse
-from wiki.models import Document
 
 
 ALLOWED_ATTRIBUTES = {
@@ -96,6 +95,11 @@ def _get_wiki_link(title, locale):
     found is False if the document does not exist.
 
     """
+    # Prevent circular import. sumo is conceptually a utils apps and shouldn't
+    # have import-time (or really, any, but that's not going to happen)
+    # dependencies on client apps.
+    from wiki.models import Document
+
     d = get_object_fallback(Document, locale=locale, title=title,
                             is_template=False)
     if d:

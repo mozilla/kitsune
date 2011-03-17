@@ -32,8 +32,9 @@ urlpatterns = patterns('',
     url(r'^jsi18n/.*$', cache_page(60 * 60 * 24 * 365)(javascript_catalog),
         {'domain': 'javascript', 'packages': ['kitsune']}, name='jsi18n'),
 
-    url(r'^', include('dashboards.urls')),
-    url(r'^', include('landings.urls')),
+    (r'^', include('dashboards.urls')),
+    (r'^', include('landings.urls')),
+    (r'^', include('notifications.urls')),  # Keep short for email wrapping.
 
     # Users
     ('', include('users.urls')),
