@@ -23,6 +23,12 @@ def attrs_eq(received, **expected):
         eq_(v, getattr(received, k))
 
 
+def starts_with(text, substring):
+    """Assert `text` starts with `substring`."""
+    assert text.startswith(substring), "%r doesn't start with %r" % (text,
+                                                                     substring)
+
+
 class LocalizingClient(Client):
     """Client which prepends a locale so test requests can get through
     LocaleURLMiddleware without resulting in a locale-prefix-adding 301.

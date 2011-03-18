@@ -1,5 +1,9 @@
 from zlib import crc32
 
+from django.conf import settings
+from django.core.mail import EmailMessage
+from django.template import Context, loader
+
 
 class peekable(object):
     """Wrapper for an iterator to allow 1-item lookahead"""
@@ -82,3 +86,30 @@ def hash_to_unsigned(data):
         return crc32(data.encode('utf-8')) & 0xffffffff
     else:
         return int(data)
+
+
+def emails_with_users_and_watches(subject, template_path, vars,
+    users_and_watches, from_email=settings.NOTIFICATIONS_FROM_ADDRESS,
+    **extra_kwargs):
+    """Return iterable of EmailMessages with user and watch values substituted.
+
+    A convenience function for generating emails by repeatedly rendering a
+    Django template with the given vars plus a `user` and `watch` key for each
+    pair in `users_and_watches`
+
+    Args:
+        template_path -- path to template file
+        vars -- a map which becomes the Context passed in to the template
+        extra_kwargs -- additional kwargs to pass into EmailMessage constructor
+
+    """
+    template = loader.get_template(template_path)
+    context = Context(vars)
+    for u, w in users_and_watches:
+        context['user'] = u
+        context['watch'] = w
+        yield EmailMessage(subject,
+                           template.render(context),
+                           from_email,
+                           [u.email],
+                           **extra_kwargs)

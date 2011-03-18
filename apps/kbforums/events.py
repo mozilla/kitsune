@@ -1,47 +1,43 @@
-from django.conf import settings
 from django.contrib.sites.models import Site
-from django.core.mail import EmailMessage
-from django.template import Context, loader
 
 from tower import ugettext as _
 
 from kbforums.models import Thread
 from notifications.events import InstanceEvent, EventUnion, Event
+from notifications.utils import emails_with_users_and_watches
 from wiki.models import Document
 
 
 def new_post_mails(reply, users_and_watches):
-    """Returns an interable of EmailMessage's to send when a new post
-    is created."""
-    subject = _(u'Reply to: %s') % reply.thread.title
-    t = loader.get_template('kbforums/email/new_post.ltxt')
+    """Return an interable of EmailMessages to send when a new post is
+    created."""
     c = {'post': reply.content, 'author': reply.creator.username,
          'host': Site.objects.get_current().domain,
          'thread_title': reply.thread.title,
          'post_url': reply.get_absolute_url()}
-    content = t.render(Context(c))
-    return (EmailMessage(subject, content,
-                         settings.NOTIFICATIONS_FROM_ADDRESS,
-                         [u.email]) for
-            u, dummy in users_and_watches)
+
+    return emails_with_users_and_watches(
+        _(u'Reply to: %s') % reply.thread.title,
+        'kbforums/email/new_post.ltxt',
+        c,
+        users_and_watches)
 
 
 def new_thread_mails(post, users_and_watches):
-    """Returns an interable of EmailMessage's to send when a new thread
-    is created."""
+    """Return an interable of EmailMessages to send when a new thread is
+    created."""
     subject = _(u'New thread in %s: %s') % (
         post.thread.document.title, post.thread.title)
-    t = loader.get_template('kbforums/email/new_thread.ltxt')
     c = {'post': post.content, 'author': post.creator.username,
          'host': Site.objects.get_current().domain,
          'thread_title': post.thread.title,
          'post_url': post.thread.get_absolute_url()}
-    content = t.render(Context(c))
 
-    return (EmailMessage(subject, content,
-                         settings.NOTIFICATIONS_FROM_ADDRESS,
-                         [u.email]) for
-            u, dummy in users_and_watches)
+    return emails_with_users_and_watches(
+        subject,
+        'kbforums/email/new_thread.ltxt',
+        c,
+        users_and_watches)
 
 
 class NewPostEvent(InstanceEvent):

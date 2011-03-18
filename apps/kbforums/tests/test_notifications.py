@@ -8,17 +8,14 @@ from nose.tools import eq_
 from kbforums.events import NewPostEvent, NewThreadEvent
 from kbforums.models import Thread, Post
 from kbforums.tests import KBForumTestCase
-from sumo.tests import post, attrs_eq
+from sumo.tests import post, attrs_eq, starts_with
 from wiki.models import Document
 
 
 # Some of these contain a locale prefix on included links, while others don't.
 # This depends on whether the tests use them inside or outside the scope of a
 # request. See the long explanation in questions.tests.test_notifications.
-EMAIL_CONTENT = (
-    u"""
-
-Reply to thread: Sticky Thread
+REPLY_EMAIL = u"""Reply to thread: Sticky Thread
 
 User jsocol has replied to a thread you're watching. Here
 is their reply:
@@ -33,10 +30,11 @@ To view this post on the site, click the following link, or
 paste it into your browser's location bar:
 
 https://testserver/en-US/kb/article-title/discuss/2#post-%s
-""",
-    u"""
 
-New thread: a title
+--
+Unsubscribe from these emails:
+https://testserver/en-US/unsubscribe/"""
+NEW_THREAD_EMAIL = u"""New thread: a title
 
 User jsocol has posted a new thread in a forum you're watching.
 Here is the thread:
@@ -51,7 +49,10 @@ To view this post on the site, click the following link, or
 paste it into your browser's location bar:
 
 https://testserver/en-US/kb/article-title/discuss/%s
-""",)
+
+--
+Unsubscribe from these emails:
+https://testserver/en-US/unsubscribe/"""
 
 
 class NotificationsTests(KBForumTestCase):
@@ -124,8 +125,8 @@ class NotificationsTests(KBForumTestCase):
 
         p = Post.objects.all().order_by('-id')[0]
         attrs_eq(mail.outbox[0], to=['user47963@nowhere'],
-                 subject='Reply to: Sticky Thread',
-                 body=EMAIL_CONTENT[0] % p.id)
+                 subject='Reply to: Sticky Thread')
+        starts_with(mail.outbox[0].body, REPLY_EMAIL % p.id)
 
         self._toggle_watch_thread_as('pcraciunoiu', turn_on=False)
 
@@ -152,8 +153,8 @@ class NotificationsTests(KBForumTestCase):
 
         t = Thread.objects.all().order_by('-id')[0]
         attrs_eq(mail.outbox[0], to=['user47963@nowhere'],
-                 subject=u'New thread in an article title: a title',
-                 body=EMAIL_CONTENT[1] % t.id)
+                 subject=u'New thread in an article title: a title')
+        starts_with(mail.outbox[0].body, NEW_THREAD_EMAIL % t.id)
 
         self._toggle_watch_kbforum_as('pcraciunoiu', turn_on=False)
 
@@ -183,8 +184,8 @@ class NotificationsTests(KBForumTestCase):
 
         p = Post.objects.all().order_by('-id')[0]
         attrs_eq(mail.outbox[0], to=['user47963@nowhere'],
-                 subject='Reply to: Sticky Thread',
-                 body=EMAIL_CONTENT[0] % p.id)
+                 subject='Reply to: Sticky Thread')
+        starts_with(mail.outbox[0].body, REPLY_EMAIL % p.id)
 
     @mock.patch.object(Site.objects, 'get_current')
     def test_watch_forum_then_new_post_as_self(self, get_current):
@@ -215,8 +216,8 @@ class NotificationsTests(KBForumTestCase):
         eq_(1, len(mail.outbox))
         p = Post.objects.all().order_by('-id')[0]
         attrs_eq(mail.outbox[0], to=['user47963@nowhere'],
-                 subject='Reply to: Sticky Thread',
-                 body=EMAIL_CONTENT[0] % p.id)
+                 subject='Reply to: Sticky Thread')
+        starts_with(mail.outbox[0].body, REPLY_EMAIL % p.id)
 
         self._toggle_watch_kbforum_as('pcraciunoiu', turn_on=False)
         self._toggle_watch_thread_as('pcraciunoiu', turn_on=False)
@@ -241,8 +242,8 @@ class NotificationsTests(KBForumTestCase):
         eq_(1, len(mail.outbox))
         p = Post.objects.all().order_by('-id')[0]
         attrs_eq(mail.outbox[0], to=['user47963@nowhere'],
-                 subject='Reply to: Sticky Thread',
-                 body=EMAIL_CONTENT[0] % p.id)
+                 subject='Reply to: Sticky Thread')
+        starts_with(mail.outbox[0].body, REPLY_EMAIL % p.id)
 
     @mock.patch.object(Site.objects, 'get_current')
     def test_watch_all_then_new_post(self, get_current):
@@ -266,8 +267,8 @@ class NotificationsTests(KBForumTestCase):
         eq_(1, len(mail.outbox))
         p = Post.objects.all().order_by('-id')[0]
         attrs_eq(mail.outbox[0], to=['user47963@nowhere'],
-                 subject='Reply to: Sticky Thread',
-                 body=EMAIL_CONTENT[0] % p.id)
+                 subject='Reply to: Sticky Thread')
+        starts_with(mail.outbox[0].body, REPLY_EMAIL % p.id)
 
     @mock.patch.object(Site.objects, 'get_current')
     def test_watch_other_locale_then_new_thread(self, get_current):
@@ -307,5 +308,5 @@ class NotificationsTests(KBForumTestCase):
         # Email was sent as expected.
         t = Thread.objects.all().order_by('-id')[0]
         attrs_eq(mail.outbox[0], to=['user47963@nowhere'],
-                 subject=u'New thread in an article title: a title',
-                 body=EMAIL_CONTENT[1] % t.id)
+                 subject=u'New thread in an article title: a title')
+        starts_with(mail.outbox[0].body, NEW_THREAD_EMAIL % t.id)

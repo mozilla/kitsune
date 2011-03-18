@@ -1,12 +1,10 @@
-from django.conf import settings
 from django.contrib.sites.models import Site
-from django.core.mail import EmailMessage
-from django.template import Context, loader
 
 from tower import ugettext as _
 
-from notifications.events import InstanceEvent, EventUnion
 from forums.models import Thread, Forum
+from notifications.events import InstanceEvent, EventUnion
+from notifications.utils import emails_with_users_and_watches
 
 
 class NewPostEvent(InstanceEvent):
@@ -28,17 +26,16 @@ class NewPostEvent(InstanceEvent):
         return EventUnion(self, NewThreadEvent(self.reply)).fire(**kwargs)
 
     def _mails(self, users_and_watches):
-        subject = _(u'Reply to: %s') % self.reply.thread.title
-        t = loader.get_template('forums/email/new_post.ltxt')
         c = {'post': self.reply.content, 'author': self.reply.author.username,
              'host': Site.objects.get_current().domain,
              'thread_title': self.instance.title,
              'post_url': self.reply.get_absolute_url()}
-        content = t.render(Context(c))
-        return (EmailMessage(subject, content,
-                             settings.NOTIFICATIONS_FROM_ADDRESS,
-                             [u.email]) for
-                u, dummy in users_and_watches)
+
+        return emails_with_users_and_watches(
+            _(u'Reply to: %s') % self.reply.thread.title,
+            'forums/email/new_post.ltxt',
+            c,
+            users_and_watches)
 
 
 class NewThreadEvent(InstanceEvent):
@@ -55,14 +52,13 @@ class NewThreadEvent(InstanceEvent):
     def _mails(self, users_and_watches):
         subject = _(u'New thread in %s forum: %s') % (
             self.post.thread.forum.name, self.post.thread.title)
-        t = loader.get_template('forums/email/new_thread.ltxt')
         c = {'post': self.post.content, 'author': self.post.author.username,
              'host': Site.objects.get_current().domain,
              'thread_title': self.post.thread.title,
              'post_url': self.post.thread.get_absolute_url()}
-        content = t.render(Context(c))
 
-        return (EmailMessage(subject, content,
-                             settings.NOTIFICATIONS_FROM_ADDRESS,
-                             [u.email]) for
-                u, dummy in users_and_watches)
+        return emails_with_users_and_watches(
+            subject,
+            'forums/email/new_thread.ltxt',
+            c,
+            users_and_watches)
