@@ -20,7 +20,7 @@ from tower import ugettext as _
 from access.decorators import permission_required, login_required
 from sumo.helpers import urlparams
 from sumo.urlresolvers import reverse
-from sumo.utils import paginate, smart_int
+from sumo.utils import paginate, smart_int, get_next_url
 from wiki import DOCUMENTS_PER_PAGE
 from wiki.events import (EditDocumentEvent, ReviewableRevisionInLocaleEvent,
                          ApproveRevisionInLocaleEvent)
@@ -528,7 +528,7 @@ def watch_locale(request):
     ReviewableRevisionInLocaleEvent.notify(request.user, locale=request.locale)
     # This redirect is pretty bad, because you might also have been on the
     # Contributor Dashboard:
-    return HttpResponseRedirect(reverse('dashboards.localization'))
+    return HttpResponseRedirect(_get_next_url_fallback_localization(request))
 
 
 @require_POST
@@ -537,7 +537,7 @@ def unwatch_locale(request):
     """Stop watching a locale for revisions ready for review."""
     ReviewableRevisionInLocaleEvent.stop_notifying(request.user,
                                                    locale=request.locale)
-    return HttpResponseRedirect(reverse('dashboards.localization'))
+    return HttpResponseRedirect(_get_next_url_fallback_localization(request))
 
 
 @require_POST
@@ -549,7 +549,7 @@ def watch_approved(request):
         raise Http404
 
     ApproveRevisionInLocaleEvent.notify(request.user, locale=locale)
-    return HttpResponseRedirect(reverse('dashboards.localization'))
+    return HttpResponseRedirect(_get_next_url_fallback_localization(request))
 
 
 @require_POST
@@ -561,7 +561,7 @@ def unwatch_approved(request):
         raise Http404
 
     ApproveRevisionInLocaleEvent.stop_notifying(request.user, locale=locale)
-    return HttpResponseRedirect(reverse('dashboards.localization'))
+    return HttpResponseRedirect(_get_next_url_fallback_localization(request))
 
 
 @require_GET
@@ -681,3 +681,7 @@ def _maybe_schedule_rebuild(form):
     """Try to schedule a KB rebuild if a title or slug has changed."""
     if 'title' in form.changed_data or 'slug' in form.changed_data:
         schedule_rebuild_kb()
+
+
+def _get_next_url_fallback_localization(request):
+    return get_next_url(request) or reverse('dashboards.localization')
