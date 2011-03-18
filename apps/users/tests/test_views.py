@@ -1,5 +1,3 @@
-from smtplib import SMTPRecipientsRefused
-
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
@@ -13,7 +11,8 @@ from notifications.tests import watch
 from questions.models import Question, CONFIRMED, UNCONFIRMED
 from sumo.tests import TestCase, LocalizingClient
 from sumo.urlresolvers import reverse
-from users.models import RegistrationProfile, EmailChange, RegistrationManager
+from sumo.tests import send_mail_raise_smtp
+from users.models import RegistrationProfile, EmailChange
 from users import ERROR_SEND_EMAIL
 
 
@@ -54,14 +53,12 @@ class RegisterTests(TestCase):
         eq_(200, response.status_code)
         eq_('http://testserver/en-US/home', response.redirect_chain[0][0])
 
-    @mock.patch.object(RegistrationManager, 'send_confirmation_email')
+    @mock.patch.object(mail, 'send_mail')
     @mock.patch.object(Site.objects, 'get_current')
-    def test_new_user_smtp_error(self, get_current, send_confirmation_email):
+    def test_new_user_smtp_error(self, get_current, send_mail):
         get_current.return_value.domain = 'su.mo.com'
 
-        def raise_smtp(reg_profile, t, s, d):
-            raise SMTPRecipientsRefused(recipients=[reg_profile.user.email])
-        send_confirmation_email.side_effect = raise_smtp
+        send_mail.side_effect = send_mail_raise_smtp
         response = self.client.post(reverse('users.register', locale='en-US'),
                                     {'username': 'newbie',
                                      'email': 'newbie@example.com',

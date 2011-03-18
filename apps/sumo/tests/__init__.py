@@ -1,6 +1,7 @@
 from os import listdir
 from os.path import join, dirname
 import re
+from smtplib import SMTPRecipientsRefused
 
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -27,6 +28,14 @@ def starts_with(text, substring):
     """Assert `text` starts with `substring`."""
     assert text.startswith(substring), "%r doesn't start with %r" % (text,
                                                                      substring)
+def send_mail_raise_smtp(subject, content, from_emal, recipients):
+    """Patch mail.send_mail with this in your tests to check what happens when
+    an email fails to send."""
+    raise SMTPRecipientsRefused(recipients=recipients)
+
+
+def emailmessage_raise_smtp():
+    raise SMTPRecipientsRefused(recipients=[])
 
 
 class LocalizingClient(Client):

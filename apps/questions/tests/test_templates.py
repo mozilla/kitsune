@@ -18,7 +18,7 @@ from questions.tests import TestCaseBase, TaggingTestCaseBase, tags_eq
 from questions.views import UNAPPROVED_TAG, NO_TAG
 from questions.tasks import cache_top_contributors
 from sumo.helpers import urlparams
-from sumo.tests import get, post, attrs_eq
+from sumo.tests import get, post, attrs_eq, emailmessage_raise_smtp
 from sumo.urlresolvers import reverse
 from upload.models import ImageAttachment
 from users.models import RegistrationProfile
@@ -500,6 +500,19 @@ class AnswersTemplateTestCase(TestCaseBase):
         w = Watch.objects.get()
         get(self.client, 'questions.activate_watch', args=[w.id, w.secret])
         assert Watch.objects.get().is_active
+
+    @mock.patch.object(mail.EmailMessage, 'send')
+    def test_watch_replies_smtp_error(self, emailmessage_send):
+        """Watch a question for replies and fail to send email."""
+        emailmessage_send.side_effect = emailmessage_raise_smtp
+        self.client.logout()
+
+        r = post(self.client, 'questions.watch',
+                 {'email': 'some@bo.dy', 'event_type': 'reply'},
+                 args=[self.question.id])
+        assert not QuestionReplyEvent.is_notifying(
+            'some@bo.dy', self.question), 'Watch was created'
+        self.assertContains(r, 'Could not send a message to that email')
 
     @mock.patch.object(Site.objects, 'get_current')
     def test_watch_replies_wrong_secret(self, get_current):

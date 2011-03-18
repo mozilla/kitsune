@@ -6,7 +6,7 @@ import re
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
-from django.core.mail import send_mail
+from django.core import mail
 from django.db import models
 from django.template.loader import render_to_string
 
@@ -92,7 +92,8 @@ class ConfirmationManager(models.Manager):
                         'activate_url': url}
         email_kwargs.update(kwargs)
         message = render_to_string(email_template, email_kwargs)
-        send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [send_to])
+        mail.send_mail(subject, message, settings.DEFAULT_FROM_EMAIL,
+                       [send_to])
 
     def send_confirmation_email(self, *args, **kwargs):
         """This is meant to be overwritten."""
