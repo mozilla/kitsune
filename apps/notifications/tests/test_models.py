@@ -15,7 +15,10 @@ class WatchTests(TestCase):
 
     def test_unsubscribe_url(self):
         """Make sure unsubscribe_url() returns something URL-ish."""
-        assert watch().unsubscribe_url().startswith('http')
+        w = watch()
+        url = w.unsubscribe_url()
+        assert url.startswith('http')
+        assert url.endswith('?s=%s' % w.secret)
 
 
 class WatchFilterTests(TestCase):
