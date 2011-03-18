@@ -1,4 +1,4 @@
-{% load i18n %}{# L10n: This is an email. Whitespace matters! #}{% autoescape off %}{% if username %}{% blocktrans %}Hi {{ username }},{% endblocktrans %}
+{% load i18n %}{% load unsubscribe_instructions %}{# L10n: This is an email. Whitespace matters! #}{% autoescape off %}{% if username %}{% blocktrans %}Hi {{ username }},{% endblocktrans %}
 
 {% endif %}{% blocktrans %}We just wanted to let you know that {{ answerer }}
 has found a solution to a Firefox question that you're following.
@@ -15,4 +15,4 @@ helpful? Let other Firefox users know by voting next to the
 answer.
 
 https://{{ host }}{{ solution_url }}
-{% endblocktrans %}{% endautoescape %}
+{% endblocktrans %}{% endautoescape %}{% unsubscribe_instructions watch %}

@@ -9,7 +9,7 @@ from nose.tools import eq_
 from questions.events import QuestionReplyEvent, QuestionSolvedEvent
 from questions.models import Question, Answer
 from questions.tests import TestCaseBase
-from sumo.tests import post, attrs_eq
+from sumo.tests import post, attrs_eq, starts_with
 from users.tests import user
 
 
@@ -43,7 +43,10 @@ Did you know that rrosario is a Firefox user just
 like you? Get started helping other Firefox users by browsing
 questions at https://testserver/questions?filter=unsolved --
 you might just make someone's day!
-"""
+
+--
+Unsubscribe from these emails:
+https://testserver/en-US/unsubscribe/"""
 ANSWER_EMAIL = 'Hi pcraciunoiu,\n\n' + ANSWER_EMAIL_TO_ANONYMOUS
 ANSWER_EMAIL_TO_ASKER = """Hi jsocol,
 
@@ -65,7 +68,10 @@ just like you? Get started helping other Firefox users by
 browsing questions at
 https://testserver/questions?filter=unsolved -- you
 might just make someone's day!
-"""
+
+--
+Unsubscribe from these emails:
+https://testserver/en-US/unsubscribe/"""
 SOLUTION_EMAIL_TO_ANONYMOUS = \
 """We just wanted to let you know that pcraciunoiu
 has found a solution to a Firefox question that you're following.
@@ -82,7 +88,10 @@ helpful? Let other Firefox users know by voting next to the
 answer.
 
 https://testserver/en-US/questions/1#answer-%s
-"""
+
+--
+Unsubscribe from these emails:
+https://testserver/en-US/unsubscribe/"""
 SOLUTION_EMAIL = 'Hi pcraciunoiu,\n\n' + SOLUTION_EMAIL_TO_ANONYMOUS
 
 
@@ -156,11 +165,13 @@ class NotificationsTests(TestCaseBase):
 
         # Order of emails is not important.
         attrs_eq(mail.outbox[0], to=['user47963@nowhere'],
-                 subject='Solution found to Firefox Help question',
-                 body=SOLUTION_EMAIL % answer.id)
+                 subject='Solution found to Firefox Help question')
+        starts_with(mail.outbox[0].body, SOLUTION_EMAIL % answer.id)
+
         attrs_eq(mail.outbox[1], to=['anon@ymous.com'],
-                 subject='Solution found to Firefox Help question',
-                 body=SOLUTION_EMAIL_TO_ANONYMOUS % answer.id)
+                 subject='Solution found to Firefox Help question')
+        starts_with(mail.outbox[1].body,
+                    SOLUTION_EMAIL_TO_ANONYMOUS % answer.id)
 
         self._toggle_watch_question('solution', turn_on=False)
 
@@ -193,15 +204,17 @@ class NotificationsTests(TestCaseBase):
         # Order of emails is not important.
         attrs_eq(mail.outbox[0], to=['user47963@nowhere'],
                  subject='A new answer was posted to a Firefox question '
-                         "you're watching",
-                 body=ANSWER_EMAIL % answer.id)
+                         "you're watching")
+        starts_with(mail.outbox[0].body, ANSWER_EMAIL % answer.id)
+
         attrs_eq(mail.outbox[1], to=[question.creator.email],
-                 subject='A new answer was posted to your Firefox question',
-                 body=ANSWER_EMAIL_TO_ASKER % answer.id)
+                 subject='A new answer was posted to your Firefox question')
+        starts_with(mail.outbox[1].body, ANSWER_EMAIL_TO_ASKER % answer.id)
+
         attrs_eq(mail.outbox[2], to=['anon@ymous.com'],
                  subject='A new answer was posted to a Firefox question '
-                         "you're watching",
-                 body=ANSWER_EMAIL_TO_ANONYMOUS % answer.id)
+                         "you're watching")
+        starts_with(mail.outbox[2].body, ANSWER_EMAIL_TO_ANONYMOUS % answer.id)
 
         self._toggle_watch_question('reply', turn_on=False)
 

@@ -1,4 +1,4 @@
-{% load i18n %}{# L10n: This is an email. Whitespace matters! #}{% autoescape off %}{% blocktrans %}Hi {{ username }},
+{% load i18n %}{% load unsubscribe_instructions %}{# L10n: This is an email. Whitespace matters! #}{% autoescape off %}{% blocktrans %}Hi {{ username }},
 
 {{ answerer }} has posted an answer to your question on
 {{ host }} with the title:
@@ -18,4 +18,4 @@ just like you? Get started helping other Firefox users by
 browsing questions at
 https://{{ host }}/questions?filter=unsolved -- you
 might just make someone's day!
-{% endblocktrans %}{% endautoescape %}
+{% endblocktrans %}{% endautoescape %}{% unsubscribe_instructions watch %}

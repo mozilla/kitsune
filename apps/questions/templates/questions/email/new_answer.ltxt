@@ -1,4 +1,4 @@
-{% load i18n %}{# L10n: This is an email. Whitespace matters! #}{% autoescape off %}{% if username %}{% blocktrans %}Hi {{ username }},{% endblocktrans %}
+{% load i18n %}{% load unsubscribe_instructions %}{# L10n: This is an email. Whitespace matters! #}{% autoescape off %}{% if username %}{% blocktrans %}Hi {{ username }},{% endblocktrans %}
 
 {% endif %}{% blocktrans %}{{ answerer }} has posted an answer to the question on
 {{ host }} with the title:
@@ -16,4 +16,4 @@ Did you know that {{ answerer }} is a Firefox user just
 like you? Get started helping other Firefox users by browsing
 questions at https://{{ host }}/questions?filter=unsolved --
 you might just make someone's day!
-{% endblocktrans %}{% endautoescape %}
+{% endblocktrans %}{% endautoescape %}{% unsubscribe_instructions watch %}
