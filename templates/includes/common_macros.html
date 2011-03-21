@@ -22,7 +22,7 @@
     {% if user.is_authenticated() %}
       {{ _('Welcome, <span class="user">{user}</span>.')|fe(user=user) }}
       <nav>
-        <a href="{{ profile_url(user) }}">{{ _('Profile') }}</a>
+        <a href="{{ url('dashboards.review') }}">{{ _('Dashboard') }}</a>
         |
         <a href="{{ url('users.logout') }}">{{ _('Sign Out') }}</a>
       </nav>
