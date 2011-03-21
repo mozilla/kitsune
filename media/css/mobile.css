@@ -66,7 +66,7 @@ body.desktop #home-header h1 {
 }
 
 .listview.products li a.sync-icon {
-    background-position: 0 -94px;
+    background-position: 0 -294px;
 }
 
 /*************************************/
@@ -697,13 +697,13 @@ body.confirm-email #content strong {
 }
 
 .home-icon {
-    background: transparent url(../img/logos.sprite.png) no-repeat 0 -42px;
+    background: transparent url(../img/logos.sprite.png) no-repeat 0 -142px;
 }
 
 .sync-icon {
-    background: transparent url(../img/logos.sprite.png) no-repeat 0 -98px;
+    background: transparent url(../img/logos.sprite.png) no-repeat 0 -298px;
 }
 
 .other-icon {
-    background: transparent url(../img/logos.sprite.png) no-repeat 0 -142px;
+    background: transparent url(../img/logos.sprite.png) no-repeat 0 -442px;
 }
