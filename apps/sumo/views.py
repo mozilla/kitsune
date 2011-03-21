@@ -9,6 +9,7 @@ from django.http import (HttpResponsePermanentRedirect, HttpResponseRedirect,
                          HttpResponse)
 from django.views.decorators.cache import never_cache
 
+from celery.messaging import establish_connection
 from commonware.decorators import xframe_allow
 import django_qunit.views
 import jingo
@@ -126,7 +127,19 @@ def monitor(request):
 
     status_summary['filepaths'] = filepath_status
 
-    # Check Rabbit
+    # Check RabbitMQ.
+    rabbitmq_status = True
+    rabbitmq_result = ''
+    rabbit_conn = establish_connection(connect_timeout=2)
+    try:
+        rabbit_conn.connect()
+        rabbitmq_result = 'Successfully connected to RabbitMQ.'
+    except socket.error:
+        rabbitmq_result = 'There was an error connecting to RabbitMQ!'
+        rabbitmq_status = False
+    status_summary['rabbitmq'] = rabbitmq_status
+
+    # Check Celery.
     # start = time.time()
     # pong = celery.task.ping()
     # rabbit_results = r = {'duration': time.time() - start}
@@ -139,6 +152,7 @@ def monitor(request):
                         {'memcache_results': memcache_results,
                          'libraries_results': libraries_results,
                          'filepath_results': filepath_results,
+                         'rabbitmq_result': rabbitmq_result,
                          'status_summary': status_summary},
                          status=status)
 

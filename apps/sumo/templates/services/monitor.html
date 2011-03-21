@@ -72,6 +72,11 @@
     </dl>
   </div>
 
+  <div class="notification-box {{ status(status_summary.rabbitmq) }}">
+    <h2>[RabbitMQ] Message Broker Connection</h2>
+    <p>{{ rabbitmq_result }}</p>
+  </div>
+
   {#
   <div class="notification-box {{ status(status_summary.rabbit) }}">
     <h2>[RabbitMQ] celeryd connection</h2>
