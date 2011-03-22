@@ -121,7 +121,7 @@ def landing(request):
                 'perc': act[3] * 100,
             }))
     else:
-        activity_stats = None
+        activity_stats = []
 
     contributors = cache.get(settings.CC_TOP_CONTRIB_CACHE_KEY)
     if contributors:
@@ -142,7 +142,7 @@ def landing(request):
                 'avatar': contributors['avatars'].get(contrib[3]),
             })
     else:
-        contributor_stats = None
+        contributor_stats = []
 
     return jingo.render(request, 'customercare/landing.html', {
         'activity_stats': activity_stats,

@@ -123,7 +123,7 @@
       {% endif %}
 
       <div class="contribs">
-        {% if contributor_stats %}
+        {% if contributor_stats and activity_stats %}
           {% for act in activity_stats %}
             {% set period = act[0] %}
             <div class="contributors period{{ loop.index0 }}"
