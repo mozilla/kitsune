@@ -25,12 +25,16 @@
       <li{% if active == 'review' %} class="active"{% endif %}>
         <a href="{{ url('dashboards.review') }}">{{ _('Review') }}</a>
       </li>
+      {# TODO: support forum group
       <li{% if active == 'forum' %} class="active"{% endif %}>
         <a href="{{ url('dashboards.questions') }}">{{ _('Forum') }}</a>
       </li>
-      <li>{# TODO: intergrate locale groups #}
+      #}
+      {# TODO: l10n groups
+      <li>
         <a href="{{ url('dashboards.localization') }}">{{ _('My locale') }}</a>
       </li>
+      #}
       <li{% if active == 'my-profile' %} class="active"{% endif %}>
         <a href="{{ profile_url(user) }}">{{ _('My profile') }}</a>
       </li>
