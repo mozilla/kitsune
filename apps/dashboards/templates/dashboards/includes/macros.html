@@ -23,7 +23,7 @@
   <nav id="doc-tabs">
     <ul>
       <li{% if active == 'review' %} class="active"{% endif %}>
-        <a href="{{ url('dashboards.review') }}">{{ _('Review') }}</a>
+        <a href="{{ url('dashboards.review') }}">{{ _('Review', 'dashboard') }}</a>
       </li>
       {# TODO: support forum group
       <li{% if active == 'forum' %} class="active"{% endif %}>
