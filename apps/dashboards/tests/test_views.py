@@ -28,3 +28,12 @@ class ContributorDashTests(TestCase):
             args=[CONTRIBUTOR_READOUTS[CONTRIBUTOR_READOUTS.keys()[0]].slug],
             locale='en-US'))
         eq_(200, response.status_code)
+
+
+class DefaultDashboardRedirect(TestCase):
+    def test_redirect(self):
+        """Test redirect from /dashboard to dashboard/forums."""
+        r = self.client.get(reverse('dashboards.default', locale='en-US'),
+                            follow=False)
+        eq_(301, r.status_code)
+        eq_('http://testserver/en-US/dashboard/forums', r['location'])

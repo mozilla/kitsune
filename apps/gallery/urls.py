@@ -1,8 +1,10 @@
 from django.conf.urls.defaults import patterns, url
-from django.views.generic.simple import redirect_to
+
+from sumo.views import redirect_to
 
 urlpatterns = patterns('gallery.views',
-    url(r'^/$', redirect_to, {'url': 'images'}, name='gallery.home'),
+    url(r'^/$', redirect_to, {'url': 'gallery.gallery', 'media_type': 'image'},
+        name='gallery.home'),
     url(r'^/async$', 'gallery_async', name='gallery.async'),
     url(r'^/(?P<media_type>\w+)s$', 'gallery', name='gallery.gallery'),
     url(r'^/(?P<media_type>\w+)s/search$', 'search', name='gallery.search'),

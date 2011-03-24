@@ -173,6 +173,13 @@ class ChangeEmailTestCase(TestCase):
     def setUp(self):
         self.client = LocalizingClient()
 
+    def test_redirect(self):
+        """Test our redirect from old url to new one."""
+        response = self.client.get(reverse('users.old_change_email',
+                                           locale='en-US'), follow=False)
+        eq_(301, response.status_code)
+        eq_('http://testserver/en-US/users/change_email', response['location'])
+
     @mock.patch.object(Site.objects, 'get_current')
     def test_user_change_email(self, get_current):
         """Send email to change user's email and then change it."""

@@ -465,3 +465,10 @@ class GalleryTestCase(TestCase):
         url = reverse('gallery.gallery', args=['foo'])
         response = self.client.get(url, follow=True)
         eq_(404, response.status_code)
+
+    def test_redirect(self):
+        """/gallery redirects to /gallery/images"""
+        response = self.client.get(reverse('gallery.home', locale='en-US'),
+                                   follow=False)
+        eq_(301, response.status_code)
+        eq_('http://testserver/en-US/gallery/images', response['location'])

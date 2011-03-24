@@ -1,6 +1,6 @@
 from nose.tools import eq_
 
-from sumo.tests import MobileTestCase
+from sumo.tests import MobileTestCase, TestCase
 from sumo.urlresolvers import reverse
 
 
@@ -24,3 +24,12 @@ class MobileHomeTests(MobileTestCase):
         r = self.client.get(reverse('home.fxhome'), follow=True)
         eq_(r.status_code, 200)
         self.assertTemplateUsed(r, 'landings/mobile/fxhome.html')
+
+
+class HomeRedirects(TestCase):
+    def test_default_redirect(self):
+        """/ redirects to /home"""
+        response = self.client.get(reverse('home.default', locale='en-US'),
+                                   follow=False)
+        eq_(301, response.status_code)
+        eq_('http://testserver/en-US/home', response['location'])
