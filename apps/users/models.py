@@ -149,6 +149,7 @@ class RegistrationManager(ConfirmationManager):
         return False
 
     def create_inactive_user(self, username, password, email,
+                             locale=settings.LANGUAGE_CODE,
                              email_template=None, email_subject=None,
                              email_data=None):
         """
@@ -159,7 +160,7 @@ class RegistrationManager(ConfirmationManager):
         new_user = User.objects.create_user(username, email, password)
         new_user.is_active = False
         new_user.save()
-        Profile.objects.create(user=new_user)
+        Profile.objects.create(user=new_user, locale=locale)
 
         registration_profile = self.create_profile(new_user)
 

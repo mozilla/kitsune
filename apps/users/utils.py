@@ -41,6 +41,7 @@ def handle_register(request, email_template=None, email_subject=None,
                 form.cleaned_data['username'],
                 form.cleaned_data['password'],
                 form.cleaned_data['email'],
+                locale=request.locale,
                 email_template=email_template,
                 email_subject=email_subject,
                 email_data=email_data)
