@@ -223,6 +223,7 @@ html.js #tweets li:hover .remove_tweet,
 #tweets li .reply_count,
 #tweets li .remove_tweet {
     clear: right;
+    color: #447BC4;
     float: right;
     font-family: Verdana, sans-serif;
     font-size: 11px;
