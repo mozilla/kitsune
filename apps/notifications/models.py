@@ -4,10 +4,11 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.sites.models import Site
 from django.db import models, connections, router
 
-from sumo.models import ModelBase
-# TODO: Find the implementation of reverse() according to a setting, or turn
-# sumo's reverse() into a monkeypatch to Django's.
-from sumo.urlresolvers import reverse
+from notifications.utils import import_from_setting, reverse
+
+
+ModelBase = import_from_setting('NOTIFICATIONS_MODEL_BASE',
+                                'django.db.models.Model')
 
 
 def multi_raw(query, params, models):

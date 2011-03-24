@@ -1,7 +1,11 @@
-from nose.tools import eq_
+from django.conf import settings
+from django.core.exceptions import ImproperlyConfigured
 
-from notifications.utils import collate
-from sumo.tests import TestCase
+from mock import patch
+from nose.tools import eq_, raises
+
+from notifications.tests import TestCase
+from notifications.utils import collate, import_from_setting
 
 
 class MergeTests(TestCase):
@@ -36,3 +40,31 @@ class MergeTests(TestCase):
         eq_(sorted(reduce(list.__add__, [list(it) for it in iterables]),
                    reverse=True),
             list(collate(*iterables, reverse=True)))
+
+
+class ImportedFromSettingTests(TestCase):
+    """Tests for import_from_setting() and _imported_symbol()"""
+
+    @patch.object(settings._wrapped,
+                  'NOTIFICATIONS_MODEL_BASE',
+                  'django.db.models.Model',
+                  create=True)
+    def test_success(self):
+        from django.db.models import Model
+        assert import_from_setting('NOTIFICATIONS_MODEL_BASE', 'blah') == Model
+
+    @raises(ImproperlyConfigured)
+    @patch.object(settings._wrapped,
+                  'NOTIFICATIONS_MODEL_BASE',
+                  'hummahummanookanookanonexistent.thing',
+                  create=True)
+    def test_module_missing(self):
+        import_from_setting('NOTIFICATIONS_MODEL_BASE', 'blah')
+
+    @raises(ImproperlyConfigured)
+    @patch.object(settings._wrapped,
+                  'NOTIFICATIONS_MODEL_BASE',
+                  'django.hummahummanookanookanonexistent',
+                  create=True)
+    def test_symbol_missing(self):
+        import_from_setting('NOTIFICATIONS_MODEL_BASE', 'blah')

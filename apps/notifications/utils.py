@@ -1,8 +1,10 @@
 from zlib import crc32
 
 from django.conf import settings
+from django.core.exceptions import ImproperlyConfigured
 from django.core.mail import EmailMessage
 from django.template import Context, loader
+from django.utils.importlib import import_module
 
 
 class peekable(object):
@@ -113,3 +115,42 @@ def emails_with_users_and_watches(subject, template_path, vars,
                            from_email,
                            [u.email],
                            **extra_kwargs)
+
+
+def _imported_symbol(import_path):
+    """Resolve a dotted path into a symbol, and return that.
+
+    For example...
+
+    >>> _imported_symbol('django.db.models.Model')
+    <class 'django.db.models.base.Model'>
+
+    Raise ImportError is there's no such module, AttributeError if no such
+    symbol.
+
+    """
+    module_name, symbol_name = import_path.rsplit('.', 1)
+    module = import_module(module_name)
+    return getattr(module, symbol_name)
+
+
+def import_from_setting(setting_name, fallback):
+    """Return the resolution of an import path stored in a Django setting.
+
+    Args:
+        setting_name: The name of the setting holding the import path
+        fallback: An import path to use if the given setting doesn't exist
+
+    Raise ImproperlyConfigured if a path is given that can't be resolved.
+
+    """
+    path = getattr(settings, setting_name, fallback)
+    try:
+        return _imported_symbol(path)
+    except (ImportError, AttributeError):
+        raise ImproperlyConfigured('No such module or attribute: %s' % path)
+
+
+# Here to be imported by others:
+reverse = import_from_setting('NOTIFICATIONS_REVERSE',
+                              'django.core.urlresolvers.reverse')

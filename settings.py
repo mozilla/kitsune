@@ -583,8 +583,8 @@ THUMBNAIL_PROGRESS_HEIGHT = 32  # height of the above image
 VIDEO_MAX_FILESIZE = 16777216  # 16 megabytes, in bytes
 
 # Customer Care settings
-CC_MAX_TWEETS = 500   # Max. no. of tweets in DB
-CC_TWEETS_PERPAGE = 100   # How many tweets to collect in one go. Max: 100.
+CC_MAX_TWEETS = 500  # Max. no. of tweets in DB
+CC_TWEETS_PERPAGE = 100  # How many tweets to collect in one go. Max: 100.
 CC_SHOW_REPLIES = True  # Show replies to tweets?
 CC_ALLOW_REMOVE = True  # Allow users to hide tweets?
 
@@ -603,6 +603,9 @@ TWITTER_CONSUMER_SECRET = ''
 NOTIFICATIONS_FROM_ADDRESS = 'notifications@support.mozilla.com'
 # Anonymous watches must be confirmed.
 CONFIRM_ANONYMOUS_WATCHES = True
+NOTIFICATIONS_MODEL_BASE = 'sumo.models.ModelBase'
+NOTIFICATIONS_REVERSE = 'sumo.urlresolvers.reverse'
+NOTIFICATIONS_TEST_CASE = 'sumo.tests.TestCase'
 
 
 # URL of the chat server.

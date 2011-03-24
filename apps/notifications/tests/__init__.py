@@ -3,8 +3,12 @@ from django.core.management import call_command
 from django.db.models import loading
 
 from notifications.models import Watch, WatchFilter
-from sumo.tests import TestCase
+from notifications.utils import import_from_setting
 from users.tests import user
+
+
+TestCase = import_from_setting('NOTIFICATIONS_TEST_CASE',
+                               'django.test.TestCase')
 
 
 def watch(save=False, **kwargs):

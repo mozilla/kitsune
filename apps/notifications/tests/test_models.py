@@ -2,7 +2,7 @@ from nose.tools import eq_
 
 from notifications.models import WatchFilter, EmailUser
 from notifications.tests import watch, watch_filter
-from sumo.tests import TestCase
+from notifications.tests import TestCase
 
 
 # TODO: write a test to ensure that event types don't collide

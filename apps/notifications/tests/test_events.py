@@ -13,7 +13,7 @@ from notifications.events import (Event, _unique_by_email, EventUnion,
 from notifications.models import Watch, EmailUser
 from notifications.tests import watch, watch_filter, ModelsTestCase
 from notifications.tests.models import MockModel
-from sumo.tests import TestCase
+from notifications.tests import TestCase
 from users.tests import user
 
 

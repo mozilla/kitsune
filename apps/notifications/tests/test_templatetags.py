@@ -1,7 +1,7 @@
 from django.template import Context, Template
 
 from notifications.tests import watch
-from sumo.tests import TestCase
+from notifications.tests import TestCase
 
 
 class Tests(TestCase):

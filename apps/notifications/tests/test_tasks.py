@@ -3,7 +3,7 @@ from nose.tools import eq_
 from notifications.models import Watch
 from notifications.tasks import claim_watches
 from notifications.tests import watch
-from sumo.tests import TestCase
+from notifications.tests import TestCase
 from users.tests import user
 
 
