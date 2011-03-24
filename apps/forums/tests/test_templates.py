@@ -66,6 +66,13 @@ class PostsTemplateTests(ForumTestCase):
 
         eq_('Some new content', edited_p.content)
 
+    def test_posts_fr(self):
+        """Posts render for [fr] locale."""
+        forum = Forum.objects.filter()[0]
+        response = get(self.client, 'forums.posts', args=[forum.slug, 4],
+                       locale='fr')
+        eq_(200, response.status_code)
+
     def test_long_title_truncated_in_crumbs(self):
         """A very long thread title gets truncated in the breadcrumbs"""
         forum = Forum.objects.filter()[0]
