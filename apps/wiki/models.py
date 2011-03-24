@@ -61,10 +61,10 @@ GROUPED_FIREFOX_VERSIONS = (
     ((_lazy(u'Desktop:'), 'desktop'), (
         # The first option is the default for {for} display. This should be the
         # newest version.
-        VersionMetadata(2, _lazy(u'Firefox 3.5-3.6'),
-                        _lazy(u'Firefox 3.5-3.6'), 'fx35', 3.9999, True),
         VersionMetadata(1, _lazy(u'Firefox 4'),
                         _lazy(u'Firefox 4'), 'fx4', 4.9999, True),
+        VersionMetadata(2, _lazy(u'Firefox 3.5-3.6'),
+                        _lazy(u'Firefox 3.5-3.6'), 'fx35', 3.9999, True),
         VersionMetadata(3, _lazy(u'Firefox 3.0'),
                         _lazy(u'Firefox 3.0'), 'fx3', 3.4999, False))),
     ((_lazy(u'Mobile:'), 'mobile'), (
