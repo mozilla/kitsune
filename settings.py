@@ -208,7 +208,7 @@ INSTALLED_APPS = (
     'forums',
     'djcelery',
     'cronjobs',
-    'notifications',
+    'tidings',
     'activity',
     'questions',
     'adminplus',

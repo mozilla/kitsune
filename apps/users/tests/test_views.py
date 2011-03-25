@@ -6,8 +6,8 @@ from django.core import mail
 import mock
 from nose.tools import eq_
 from pyquery import PyQuery as pq
+from tidings.tests import watch
 
-from notifications.tests import watch
 from questions.models import Question, CONFIRMED, UNCONFIRMED
 from sumo.tests import TestCase, LocalizingClient
 from sumo.urlresolvers import reverse

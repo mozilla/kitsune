@@ -3,12 +3,13 @@ import datetime
 from django.db import models
 from django.contrib.auth.models import User
 
+from tidings.models import NotificationsMixin
+
 from access import has_perm, perm_is_defined_on
-from notifications.models import NotificationsMixin
+import forums
 from sumo.helpers import urlparams, wiki_to_html
 from sumo.urlresolvers import reverse
 from sumo.models import ModelBase
-import forums
 
 
 def _last_post_from(posts, exclude_post=None):

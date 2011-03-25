@@ -5,9 +5,9 @@ from django.contrib.sites.models import Site
 from django.core.mail import EmailMessage
 from django.template import Context, loader
 
+from tidings.events import InstanceEvent, Event
 from tower import ugettext as _
 
-from notifications.events import InstanceEvent, Event
 from sumo.urlresolvers import reverse
 from wiki.models import Document
 

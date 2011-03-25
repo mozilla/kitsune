@@ -10,8 +10,8 @@ import mock
 from nose.plugins.skip import SkipTest
 from nose.tools import eq_
 from pyquery import PyQuery as pq
+from tidings.models import Watch
 
-from notifications.models import Watch
 from questions.events import QuestionReplyEvent, QuestionSolvedEvent
 from questions.models import Question, Answer, QuestionVote
 from questions.tests import TestCaseBase, TaggingTestCaseBase, tags_eq

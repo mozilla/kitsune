@@ -3,9 +3,6 @@ from datetime import datetime
 from itertools import chain
 from urlparse import urlparse
 
-from pyquery import PyQuery
-from tower import ugettext_lazy as _lazy, ugettext as _
-
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
@@ -13,7 +10,10 @@ from django.core.urlresolvers import resolve
 from django.db import models
 from django.http import Http404
 
-from notifications.models import NotificationsMixin
+from pyquery import PyQuery
+from tidings.models import NotificationsMixin
+from tower import ugettext_lazy as _lazy, ugettext as _
+
 from sumo import ProgrammingError
 from sumo_locales import LOCALES
 from sumo.models import ModelBase, LocaleField

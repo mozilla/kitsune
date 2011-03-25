@@ -1,10 +1,10 @@
 from django.contrib.sites.models import Site
 
+from tidings.events import InstanceEvent, EventUnion
+from tidings.utils import emails_with_users_and_watches
 from tower import ugettext as _
 
 from forums.models import Thread, Forum
-from notifications.events import InstanceEvent, EventUnion
-from notifications.utils import emails_with_users_and_watches
 
 
 class NewPostEvent(InstanceEvent):

@@ -1,10 +1,10 @@
 from django.contrib.sites.models import Site
 
+from tidings.events import InstanceEvent, EventUnion, Event
+from tidings.utils import emails_with_users_and_watches
 from tower import ugettext as _
 
 from kbforums.models import Thread
-from notifications.events import InstanceEvent, EventUnion, Event
-from notifications.utils import emails_with_users_and_watches
 from wiki.models import Document
 
 

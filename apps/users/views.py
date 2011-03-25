@@ -12,9 +12,9 @@ from django.shortcuts import get_object_or_404
 from django.utils.http import base36_to_int
 
 import jingo
+from tidings.tasks import claim_watches
 
 from access.decorators import logout_required, login_required
-from notifications.tasks import claim_watches
 from questions.models import Question, CONFIRMED
 from sumo.decorators import ssl_required
 from sumo.urlresolvers import reverse

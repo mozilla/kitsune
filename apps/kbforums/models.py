@@ -3,8 +3,9 @@ import datetime
 from django.contrib.auth.models import User
 from django.db import models
 
+from tidings.models import NotificationsMixin
+
 import kbforums
-from notifications.models import NotificationsMixin
 from sumo.helpers import urlparams, wiki_to_html
 from sumo.models import ModelBase
 from sumo.urlresolvers import reverse

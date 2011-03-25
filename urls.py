@@ -34,7 +34,7 @@ urlpatterns = patterns('',
 
     (r'^', include('dashboards.urls')),
     (r'^', include('landings.urls')),
-    (r'^', include('notifications.urls')),  # Keep short for email wrapping.
+    (r'^', include('tidings.urls')),  # Keep short for email wrapping.
 
     # Users
     ('', include('users.urls')),

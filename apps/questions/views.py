@@ -20,13 +20,12 @@ from django.views.decorators.http import (require_POST, require_GET,
 import jingo
 from mobility.decorators import mobile_template
 from taggit.models import Tag
-from tower import ugettext as _
-from tower import ugettext_lazy as _lazy
+from tidings.events import ActivationRequestFailed
+from tidings.models import Watch
+from tower import ugettext as _, ugettext_lazy as _lazy
 
 from access.decorators import (has_perm_or_owns_or_403, permission_required,
                                login_required)
-from notifications.models import Watch
-from notifications.events import ActivationRequestFailed
 import questions as constants
 from questions.events import QuestionReplyEvent, QuestionSolvedEvent
 from questions.feeds import QuestionsFeed, AnswersFeed, TaggedQuestionsFeed
