@@ -34,7 +34,6 @@ from questions.forms import (NewQuestionForm, EditQuestionForm, AnswerForm,
                              WatchQuestionForm, FREQUENCY_CHOICES)
 from questions.models import (Question, Answer, QuestionVote, AnswerVote,
                               CONFIRMED, UNCONFIRMED)
-from questions.tasks import cache_top_contributors
 from questions.question_config import products
 from search.clients import WikiClient, QuestionsClient, SearchError
 from search.utils import locale_or_default, sphinx_locale
@@ -841,14 +840,10 @@ def _add_tag(request, question_id):
 
 def _get_top_contributors():
     """Retrieves the top contributors from cache, if available.
-    Otherwise it creates a task for computing and caching them.
 
     These are the users with the most solutions in the last week.
     """
-    users = cache.get(settings.TOP_CONTRIBUTORS_CACHE_KEY)
-    if not users:
-        cache_top_contributors.delay()
-    return users
+    return cache.get(settings.TOP_CONTRIBUTORS_CACHE_KEY)
 
 
 # Initialize a WatchQuestionForm
