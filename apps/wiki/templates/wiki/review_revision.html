@@ -34,6 +34,7 @@
         <div id="doc-content">
           {{ revision.content_parsed|safe }}
         </div>
+        {% include 'wiki/includes/support_for_selectors.html' %}
       </details>
     {% else %}
       <p>{{ _('This document does not have a current revision.') }}</p>
@@ -66,5 +67,4 @@
 {% endblock %}
 
 {% block side %}
-  {% include 'wiki/includes/support_for_selectors.html' %}
 {% endblock %}

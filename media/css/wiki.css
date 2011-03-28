@@ -158,6 +158,7 @@ article #toc ul li {
     color: #32559b;
     cursor: pointer;
     font-size: 13px;
+    min-width: 90px;
     padding: 2px 0 2px 20px;
 }
 
@@ -416,12 +417,30 @@ article.main div.tags input.adder {
     position: relative;
 }
 
-#preview #support-for {
-    margin: 0;
-    position: absolute;
-    right: -165px;
-    top: 0;
+#preview #support-for,
+#review-revision #support-for {
+    background: #fff;
+    border-radius: 10px;
+    -moz-border-radius: 10px;
+    -webkit-border-radius: 10px;
+    box-shadow: 0 4px 10px #999;
+    -moz-box-shadow: 0 4px 10px #999;
+    -webkit-box-shadow: 0 4px 10px #999;
+    margin: -90px 0 0;
+    padding: 15px;
+    position: fixed;
+    right: 100px;
+    top: 50%;
     width: 165px;
+    z-index: 10;
+}
+
+#review-revision #support-for {
+    display: none;
+}
+
+#review-revision .open #support-for {
+    display: block;
 }
 
 /* Translate specific */
