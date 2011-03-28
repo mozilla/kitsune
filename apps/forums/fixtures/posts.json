@@ -25,6 +25,29 @@
         }
     },
     {
+        "pk": 4,
+        "model": "forums.forum",
+        "fields": {
+            "name": "Visible Restricted Forum",
+            "slug": "visible",
+            "last_post": 6
+        }
+    },
+    {
+        "pk": 7,
+        "model": "forums.thread",
+        "fields": {
+            "is_sticky": false,
+            "forum": 4,
+            "created": "2011-03-28 16:04:42",
+            "is_locked": false,
+            "creator": 47963,
+            "replies": 0,
+            "title": "Thread in a visible restricted forum",
+            "last_post": 6
+        }
+    },
+    {
         "pk": 6,
         "model": "forums.thread",
         "fields": {
@@ -105,6 +128,17 @@
             "replies": 20,
             "title": "My first thread",
             "last_post": 24
+        }
+    },
+    {
+        "pk": 6,
+        "model": "forums.post",
+        "fields": {
+            "content": "A post in a visible restricted thread",
+            "updated": "2011-03-28 16:04:42",
+            "created": "2011-03-28 16:04:42",
+            "thread": 7,
+            "author": 47963
         }
     },
     {

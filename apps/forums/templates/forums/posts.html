@@ -95,7 +95,7 @@
     <p>{{ _('Oh, no! Looks like there are no posts!') }}</p>
   {% endif %}
 
-  {% if user.is_authenticated() and not thread.is_locked %}
+  {% if user.is_authenticated() and not thread.is_locked and forum.allows_posting_by(user) %}
     <div id="thread-reply">
       <h3>{{ _('Post a reply') }}</h3>
 

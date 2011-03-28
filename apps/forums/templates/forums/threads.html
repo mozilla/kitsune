@@ -28,7 +28,9 @@
         <input type="image" alt="{{ watch }}" title="{{ watch }}" src="{{ MEDIA_URL }}img/forums/watch.png"/>
       </form>
     {% endif %}
-    <a id="new-thread" href="{{ url('forums.new_thread', forum_slug=forum.slug) }}">{{ _('Post a new thread') }}</a>
+    {% if not user.is_authenticated() or forum.allows_posting_by(user) %}
+      <a id="new-thread" href="{{ url('forums.new_thread', forum_slug=forum.slug) }}">{{ _('Post a new thread') }}</a>
+    {% endif %}
   </div>
   <ol class="threads-columns {% if not desc_toggle %}desc{% endif %}">
     <li class="type"><a href="{{ url('forums.threads', forum_slug=forum.slug) }}">{{ _('Type') }}</a></li>
