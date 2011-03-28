@@ -16,7 +16,7 @@ from questions.events import QuestionReplyEvent, QuestionSolvedEvent
 from questions.models import Question, Answer, QuestionVote
 from questions.tests import TestCaseBase, TaggingTestCaseBase, tags_eq
 from questions.views import UNAPPROVED_TAG, NO_TAG
-from questions.tasks import cache_top_contributors
+from questions.cron import cache_top_contributors
 from sumo.helpers import urlparams
 from sumo.tests import get, post, attrs_eq, emailmessage_raise_smtp
 from sumo.urlresolvers import reverse

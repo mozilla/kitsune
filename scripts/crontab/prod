@@ -17,6 +17,7 @@ HOME = /tmp
 0 */6 * * * cd /data/www/support.mozilla.com/kitsune; /usr/bin/python26 manage.py update_product_details -q > /dev/null
 30 */6 * * * cd /data/www/support.mozilla.com/kitsune; /usr/bin/python26 manage.py cron get_customercare_stats
 40 */6 * * * cd /data/www/support.mozilla.com/kitsune; /usr/bin/python26 manage.py cron purge_tweets
+50 */6 * * * cd /data/www/support.mozilla.com/kitsune; /usr/bin/python26 manage.py cron cache_top_contributors
 
 # Once per day.
 0 16 * * * cd /data/www/support.mozilla.com/kitsune; /usr/bin/python26 manage.py cron reload_wiki_traffic_stats
