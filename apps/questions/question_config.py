@@ -20,13 +20,13 @@ products = SortedDict([
                     'Try one of the following:',
             'articles': [
                 {'title': 'Errors when loading web sites',
-                 'url': '/en-US/kb/Error%20loading%20web%20sites'},
+                 'url': '/kb/Error%20loading%20web%20sites'},
                 {'title': 'Firefox cannot load websites but other programs can',
-                 'url': '/en-US/kb/Firefox+cannot+load+websites+but+other+programs+can'},
+                 'url': '/kb/Firefox+cannot+load+websites+but+other+programs+can'},
                 {'title': 'Web sites look wrong',
-                 'url': '/en-US/kb/Websites+look+wrong'},
+                 'url': '/kb/Websites+look+wrong'},
                 {'title': 'Problems using Facebook in Firefox',
-                 'url': '/en-US/kb/Problems+using+Facebook+in+Firefox'},
+                 'url': '/kb/Problems+using+Facebook+in+Firefox'},
             ],
             'tags': ['websites'],
         }),
@@ -38,15 +38,15 @@ products = SortedDict([
                     'the following:',
             'articles': [
                 {'title': 'Firefox crashes',
-                 'url': '/en-US/kb/Firefox+Crashes'},
+                 'url': '/kb/Firefox+Crashes'},
                 {'title': 'Firefox crashes when you open it',
-                 'url': '/en-US/kb/Firefox+crashes+when+you+open+it'},
+                 'url': '/kb/Firefox+crashes+when+you+open+it'},
                 {'title': 'Firefox crashes when loading certain pages',
-                 'url': '/en-US/kb/Firefox+crashes+when+loading+certain+pages'},
+                 'url': '/kb/Firefox+crashes+when+loading+certain+pages'},
                 {'title': 'Firefox crashes when you exit it',
-                 'url': '/en-US/kb/Firefox+crashes+when+you+exit+it'},
+                 'url': '/kb/Firefox+crashes+when+you+exit+it'},
                 {'title': 'The Adobe Flash plugin has crashed',
-                 'url': '/en-US/kb/The+Adobe+Flash+plugin+has+crashed'},
+                 'url': '/kb/The+Adobe+Flash+plugin+has+crashed'},
             ],
             'tags': ['crash'],
         }),
@@ -57,13 +57,13 @@ products = SortedDict([
                     'questions in our database. Try one of the following:',
             'articles': [
                 {'title': 'Using Bookmarks',
-                 'url': '/en-US/kb/Bookmarks'},
+                 'url': '/kb/Bookmarks'},
                 {'title': 'Lost Bookmarks',
-                 'url': '/en-US/kb/Lost%20Bookmarks'},
+                 'url': '/kb/Lost%20Bookmarks'},
                 {'title': 'Deleting Cookies',
-                 'url': '/en-US/kb/Deleting+cookies'},
+                 'url': '/kb/Deleting+cookies'},
                 {'title': 'Enabling and disabling cookies',
-                 'url': '/en-US/kb/Enabling+and+disabling+cookies'},
+                 'url': '/kb/Enabling+and+disabling+cookies'},
             ],
             'tags': ['data'],
         }),
@@ -74,15 +74,15 @@ products = SortedDict([
                     ' in our database. Try one of the following:',
             'articles': [
                 {'title': 'How to set the home page',
-                 'url': '/en-US/kb/How+to+set+the+home+page'},
+                 'url': '/kb/How+to+set+the+home+page'},
                 {'title': 'Private Browsing',
-                 'url': '/en-US/kb/Private+Browsing'},
+                 'url': '/kb/Private+Browsing'},
                 {'title': 'Bookmarks',
-                 'url': '/en-US/kb/Bookmarks'},
+                 'url': '/kb/Bookmarks'},
                 {'title': 'Tabbed browsing',
-                 'url': '/en-US/kb/Tabbed+browsing'},
+                 'url': '/kb/Tabbed+browsing'},
                 {'title': 'Location bar autocomplete',
-                 'url': '/en-US/kb/Location+bar+autocomplete'},
+                 'url': '/kb/Location+bar+autocomplete'},
             ],
             'tags': ['learning'],
         }),
@@ -93,7 +93,7 @@ products = SortedDict([
                     'and you will need to contact the people or company who '
                     'made the extension/plugin for support, if you need help '
                     'removing an extension or plugin, see <a '
-                    'href="/en-US/kb/Uninstalling+add-ons">Uninstalling '
+                    'href="/kb/Uninstalling+add-ons">Uninstalling '
                     'add-ons</a>.',
             'tags': ['addon'],
         }),
@@ -105,13 +105,13 @@ products = SortedDict([
                     'Try one of the following:',
             'articles': [
                 {'title': 'The Adobe Flash plugin has crashed',
-                 'url': '/en-US/kb/The+Adobe+Flash+plugin+has+crashed'},
+                 'url': '/kb/The+Adobe+Flash+plugin+has+crashed'},
                 {'title': 'What is plugin-container',
-                 'url': '/en-US/kb/What+is+plugin-container'},
+                 'url': '/kb/What+is+plugin-container'},
                 {'title': 'How do I edit options to add Adobe to the list of allowed sites',
-                 'url': '/en-US/kb/How+do+I+edit+options+to+add+Adobe+to+the+list+of+allowed+sites'},
+                 'url': '/kb/How+do+I+edit+options+to+add+Adobe+to+the+list+of+allowed+sites'},
                 {'title': 'Menu bar is mising',
-                 'url': '/en-US/kb/Menu+bar+is+missing'},
+                 'url': '/kb/Menu+bar+is+missing'},
             ],
             'tags': ['general'],
         }),
@@ -132,13 +132,13 @@ products = SortedDict([
                     'Try one of the following:',
             'articles': [
                 {'title': 'Errors when loading web sites',
-                 'url': '/en-US/kb/Error%20loading%20web%20sites'},
+                 'url': '/kb/Error%20loading%20web%20sites'},
                 {'title': 'Firefox cannot load websites but other programs can',
-                 'url': '/en-US/kb/Firefox+cannot+load+websites+but+other+programs+can'},
+                 'url': '/kb/Firefox+cannot+load+websites+but+other+programs+can'},
                 {'title': 'Web sites look wrong',
-                 'url': '/en-US/kb/Websites%20look%20wrong'},
+                 'url': '/kb/Websites%20look%20wrong'},
                 {'title': 'Problems using Facebook in Firefox',
-                 'url': '/en-US/kb/Problems+using+Facebook+in+Firefox'},
+                 'url': '/kb/Problems+using+Facebook+in+Firefox'},
             ],
             'tags': ['websites'],
         }),
@@ -150,15 +150,15 @@ products = SortedDict([
                     'the following:',
             'articles': [
                 {'title': 'Firefox crashes',
-                 'url': '/en-US/kb/Firefox+Crashes'},
+                 'url': '/kb/Firefox+Crashes'},
                 {'title': 'Firefox crashes when you open it',
-                 'url': '/en-US/kb/Firefox+crashes+when+you+open+it'},
+                 'url': '/kb/Firefox+crashes+when+you+open+it'},
                 {'title': 'Firefox crashes when loading certain pages',
-                 'url': '/en-US/kb/Firefox+crashes+when+loading+certain+pages'},
+                 'url': '/kb/Firefox+crashes+when+loading+certain+pages'},
                 {'title': 'Firefox crashes when you exit it',
-                 'url': '/en-US/kb/Firefox+crashes+when+you+exit+it'},
+                 'url': '/kb/Firefox+crashes+when+you+exit+it'},
                 {'title': 'The Adobe Flash plugin has crashed',
-                 'url': '/en-US/kb/The+Adobe+Flash+plugin+has+crashed'},
+                 'url': '/kb/The+Adobe+Flash+plugin+has+crashed'},
             ],
             'tags': ['crash'],
         }),
@@ -169,15 +169,15 @@ products = SortedDict([
                     'questions in our database. Try one of the following:',
             'articles': [
                 {'title': 'Using Bookmarks',
-                 'url': '/en-US/kb/Bookmarks'},
+                 'url': '/kb/Bookmarks'},
                 {'title': 'Lost Bookmarks',
-                 'url': '/en-US/kb/Lost%20Bookmarks'},
+                 'url': '/kb/Lost%20Bookmarks'},
                 {'title': 'What happened to the bookmarks bar',
-                 'url': '/en-US/kb/what-happened-bookmarks-toolbar'},
+                 'url': '/kb/what-happened-bookmarks-toolbar'},
                 {'title': 'Deleting Cookies',
-                 'url': '/en-US/kb/Deleting+cookies'},
+                 'url': '/kb/Deleting+cookies'},
                 {'title': 'Enabling and disabling cookies',
-                 'url': '/en-US/kb/Enabling+and+disabling+cookies'},
+                 'url': '/kb/Enabling+and+disabling+cookies'},
             ],
             'tags': ['data'],
         }),
@@ -188,15 +188,15 @@ products = SortedDict([
                     ' in our database. Try one of the following:',
             'articles': [
                 {'title': 'What is Firefox Sync?',
-                 'url': '/en-US/kb/what-firefox-sync'},
+                 'url': '/kb/what-firefox-sync'},
                 {'title': 'What are App Tabs?',
-                 'url': '/en-US/kb/what-are-app-tabs'},
+                 'url': '/kb/what-are-app-tabs'},
                 {'title': 'What is Panorama (also known as Tab Groups)?',
-                 'url': '/en-US/kb/what-panorama'},
+                 'url': '/kb/what-panorama'},
                 {'title': 'What is the Add-on Bar?',
-                 'url': '/en-US/kb/what-add-bar'},
+                 'url': '/kb/what-add-bar'},
                 {'title': 'How do I use Private Browsing?',
-                 'url': '/en-US/kb/Private+Browsing'},
+                 'url': '/kb/Private+Browsing'},
             ],
             'tags': ['learning'],
         }),
@@ -207,7 +207,7 @@ products = SortedDict([
                     'and you will need to contact the people or company who '
                     'made the extension/plugin for support, if you need help '
                     'removing an extension or plugin, see <a '
-                    'href="/en-US/kb/Uninstalling+add-ons">Uninstalling '
+                    'href="/kb/Uninstalling+add-ons">Uninstalling '
                     'add-ons</a>.',
             'tags': ['addon'],
         }),
@@ -219,20 +219,20 @@ products = SortedDict([
                     'Try one of the following:',
             'articles': [
                 {'title': 'What happened to the Status bar?',
-                 'url': '/en-US/kb/what-happened-status-bar'},
+                 'url': '/kb/what-happened-status-bar'},
                 {'title': 'What is plugin-container',
-                 'url': '/en-US/kb/What+is+plugin-container'},
+                 'url': '/kb/What+is+plugin-container'},
                 {'title': 'Menu bar is mising',
-                 'url': '/en-US/kb/Menu+bar+is+missing'},
+                 'url': '/kb/Menu+bar+is+missing'},
             ],
             'tags': ['general'],
         }),
         ('b6', {
             'name': _lazy(u'I have suggestions for future versions of Firefox'),
             'html': 'If you\'re using the latest version of Firefox 4, you can '
-                    'leave us suggestions for features at our '
-                    '<a href="http://input.mozilla.com/feedback/">'
-                    'feedback page</a>.',
+                    'leave us suggestions for features at '
+                    '<a href="//input.mozilla.com/feedback/">'
+                    'Firefox Input</a>.',
             'deadend': True,
         }),
         ])
@@ -243,8 +243,24 @@ products = SortedDict([
         'extra_fields': ['ff_version', 'os', 'plugins'],
         'tags': ['mobile'],
         'categories': SortedDict([
+            ('m0', {
+                'name': _lazy(u"I can't install Firefox for Mobile."),
+                'articles': [
+                    {'title': 'Will Firefox work on my mobile device?',
+                     'url': '/kb/will-firefox-work-my-mobile-device'},
+                    {'title': 'How do I install Firefox on a mobile device?',
+                     'url': '/kb/install-firefox-mobile'},
+                ],
+                'tags': ['install'],
+            }),
             ('m1', {
                 'name': _lazy(u'Firefox for mobile is having problems with certain web sites'),
+                'html': 'You can try using the <a href="https://addons.mozilla.org/mobile/addon/phony/">Phony extension</a> '
+                        'and setting your user agent to Android. Or try one of the following:',
+                'articles': [
+                    {'title': 'How can I use Youtube in Firefox for Mobile?',
+                     'url': '/kb/firefox-mobile-doesnt-support-flash'},
+                ],
                 'extra_fields': ['sites_affected'],
                 'tags': ['websites'],
             }),
@@ -255,36 +271,43 @@ products = SortedDict([
                         'hundreds of questions in our database. Try one of the'
                         ' following:',
                 'articles': [
-                    {'title': 'How to navigate Web pages',
-                     'url': 'http://support.mozilla.com/en-US/kb/surf-web-with-mobile-firefox'},
-                    {'title': 'How to open a new tab',
-                     'url': 'http://support.mozilla.com/en-US/kb/open-new-tab'},
-                    {'title': 'How to add a bookmark',
-                     'url': 'http://support.mozilla.com/en-US/kb/how-do-i-add-bookmark'},
-                    {'title': 'How to use the Location Bar',
-                     'url': 'http://support.mozilla.com/en-US/kb/how-do-i-use-awesome-screen'},
-                    {'title': 'How to zoom in and out',
-                     'url': 'http://support.mozilla.com/en-US/kb/zoom-in-and-out'},
-                    {'title': 'How to manage downloads',
-                     'url': 'http://support.mozilla.com/en-US/kb/manage-downloads'},
+                    {'title': 'Getting started with Firefox for mobile.',
+                     'url': '/kb/getting-started-firefox-mobile'},
+                    {'title': 'How do I use the Awesome Screen?',
+                     'url': '/kb/how-do-i-use-awesome-screen'},
+                    {'title': 'How do I use tabs on mobile?',
+                     'url': '/kb/how-do-i-use-tabs-mobile'},
+                    {'title': 'How do I use bookmarks on mobile?',
+                     'url': '/kb/how-do-i-use-bookmarks-mobile'},
+                    {'title': 'How do I zoom in and out of a website?',
+                     'url': '/kb/zoom-in-and-out'},
+                    {'title': 'How do I find and install Add-ons?',
+                     'url': '/kb/find-and-install-add-ons'},
                 ],
                 'tags': ['learning'],
             }),
             ('m3', {
-                'name': _lazy(u'Firefox for mobile is crashing or closing unexpectedly'),
-                'tags': ['crash'],
-            }),
-            ('m4', {
                 'name': _lazy(u'I have a problem with an extension or plugin'),
                 'extra_fields': ['addon'],
-                'html': 'Most extensions or plugins are not written by Mozilla '
-                        'and you will need to contact the people or company who '
-                        'made the extension/plugin for support, if you need help '
-                        'removing an extension or plugin, see <a '
-                        'href="http://support.mozilla.com'
-                        '/en-US/kb/remove-or-disable-add-ons">'
-                        'How to remove or disable add-ons</a>.',
+                'articles': [
+                    {'title': "Firefox for mobile doesn't support Flash",
+                     'url': '/kb/firefox-mobile-doesnt-support-flash'},
+                    {'title': 'How do I find and install Add-ons?',
+                     'url': '/kb/find-and-install-add-ons'},
+                ],
                 'tags': ['addon'],
+            }),
+            ('m4', {
+                'name': _lazy(u'I need help syncing desktop Firefox with mobile'),
+                'articles': [
+                    {'title': 'How do I sync Firefox between my desktop and mobile?',
+                     'url': '/kb/sync-firefox-between-desktop-and-mobile'},
+                    {'title': "I've lost my phone - how do I deactivate Sync?",
+                     'url': '/kb/ive-lost-my-phone-how-do-i-deactivate-sync'},
+                    {'title': 'I have another question about sync',
+                     'url': '/questions/new?product=sync'},
+                ],
+                'tags': ['sync'],
             }),
             ('m5', {
                 'name': _lazy(u'I have another kind of problem with Firefox for mobile'),
@@ -295,26 +318,25 @@ products = SortedDict([
                         'following:',
                 'articles': [
                     {'title': 'Will Firefox work on my phone',
-                     'url': 'http://support.mozilla.com/en-US/kb/will-firefox-work-my-phone'},
+                     'url': '/kb/will-firefox-work-my-phone'},
                     {'title': 'How to install Firefox on N900',
-                     'url': 'http://support.mozilla.com/en-US/kb/install-firefox-mobile'},
+                     'url': '/kb/install-firefox-mobile'},
                     {'title': 'How to find and install add-ons',
-                     'url': 'http://support.mozilla.com/en-US/kb/find-and-install-add-ons'},
+                     'url': '/kb/find-and-install-add-ons'},
                     {'title': 'How do I sync Firefox between my desktop and mobile?',
-                     'url': 'http://support.mozilla.com/en-US/kb/sync-firefox-between-desktop-and-mobile'},
+                     'url': '/kb/sync-firefox-between-desktop-and-mobile'},
                     {'title': 'How do I remove or disable Add-ons?',
-                     'url': 'http://support.mozilla.com/en-US/kb/remove-or-disable-add-ons'},
+                     'url': '/kb/remove-or-disable-add-ons'},
                     {'title': 'How do I change preferences?',
-                     'url': 'http://support.mozilla.com/en-US/kb/change-preferences'},
+                     'url': '/kb/change-preferences'},
                 ],
                 'tags': ['general'],
             }),
             ('m6', {
                 'name': _lazy(u'I have suggestions for how to improve Firefox for mobile'),
-                'html': '<p>You can provide suggestions for '
-                        '<strong>Firefox on Android or Maemo</strong> in the '
-                        '<a href="http://firefoxformobile.uservoice.com/forums/70211-firefox-for-mobile-ideas">'
-                        'Firefox for mobile feedback forum</a>.</p>',
+                'html': '<p>Please use our feedback system for suggestions for new Firefox features: '
+                        '<a href="//input.mozilla.com/release/feedback">'
+                        'Firefox Input</a></p>',
                 'deadend': True,
             }),
         ])
@@ -331,7 +353,7 @@ products = SortedDict([
                         'database. Try the following:',
                 'articles': [
                     {'title': 'How to set up Firefox Home on your iPhone',
-                     'url': '/en-US/kb/How+to+set+up+Firefox+Home+on+your+iPhone'},
+                     'url': '/kb/How+to+set+up+Firefox+Home+on+your+iPhone'},
                 ],
                 'tags': ['iphone'],
             }),
@@ -342,7 +364,7 @@ products = SortedDict([
                         'database. Try the following:',
                 'articles': [
                     {'title': 'How to sync Firefox settings between computers',
-                     'url': '/en-US/kb/How+to+sync+Firefox+settings+between+computers'},
+                     'url': '/kb/How+to+sync+Firefox+settings+between+computers'},
                 ],
                 'tags': ['desktop', 'sync'],
             }),
@@ -365,7 +387,7 @@ products = SortedDict([
             ('i4', {
                 'name': _lazy(u'I have suggestions for how to improve Firefox Home for iPhone'),
                 'html': 'You can provide suggestions in our '
-                        '<a href="http://firefoxformobile.uservoice.com/forums/67057-firefox-home-ideas">'
+                        '<a href="//firefoxformobile.uservoice.com/forums/67057-firefox-home-ideas">'
                         'Firefox Home feedback forum</a>.',
                 'deadend': True,
             }),
@@ -382,7 +404,7 @@ products = SortedDict([
                         'of questions in our database. Try the following:',
                 'articles': [
                     {'title': 'How do I sync Firefox between my desktop and mobile?',
-                     'url': 'http://support.mozilla.com/en-US/kb/sync-firefox-between-desktop-and-mobile'},
+                     'url': '/kb/sync-firefox-between-desktop-and-mobile'},
                 ],
                 'tags': ['mobile'],
             }),
@@ -393,7 +415,7 @@ products = SortedDict([
                         'database. Try one of the following:',
                 'articles': [
                     {'title': 'How to set up Firefox Home on your iPhone',
-                     'url': '/en-US/kb/How+to+set+up+Firefox+Home+on+your+iPhone'},
+                     'url': '/kb/How+to+set+up+Firefox+Home+on+your+iPhone'},
                 ],
                 'tags': ['iphone'],
             }),
@@ -404,7 +426,7 @@ products = SortedDict([
                         'database. Try one of the following:',
                 'articles': [
                     {'title': 'How to sync Firefox settings between computers',
-                     'url': '/en-US/kb/How+to+sync+Firefox+settings+between+computers'},
+                     'url': '/kb/How+to+sync+Firefox+settings+between+computers'},
                 ],
                 'tags': ['desktop'],
             }),
@@ -415,7 +437,7 @@ products = SortedDict([
                         'one of the following:',
                 'articles': [
                     {'title': 'Firefox Sync is not working',
-                     'url': '/en-US/kb/Firefox+Sync+is+not+working'},
+                     'url': '/kb/Firefox+Sync+is+not+working'},
                     {'title': 'Firefox Home does not work ',
                      'url': '/kb/Firefox+Home+does+not+work'},
                     {'title': 'Cannot log in to Firefox Home App ',
@@ -438,7 +460,7 @@ products = SortedDict([
         'name': _lazy(u"Thunderbird"),
         'subtitle':  _lazy(u"or other Mozilla product"),
         'html': 'Support for Thunderbird and other Mozilla products can be found at'
-                ' <a href="http://www.mozilla.org/support">Mozilla Support</a>.',
+                ' <a href="//www.mozilla.org/support">Mozilla Support</a>.',
         'categories': SortedDict([]),
         'deadend': True,
     }),
