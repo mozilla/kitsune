@@ -847,7 +847,8 @@ def _get_top_contributors():
     """
     users = cache.get(settings.TOP_CONTRIBUTORS_CACHE_KEY)
     if not users:
-        cache_top_contributors.delay()
+        #cache_top_contributors.delay()
+        pass
     return users
 
 
