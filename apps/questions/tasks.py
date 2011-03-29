@@ -41,6 +41,7 @@ def update_question_vote_chunk(data, **kwargs):
 @task
 def cache_top_contributors():
     """Compute the top contributors and store in cache."""
+    return
     log.info('Computing the top contributors.')
     sql = '''SELECT u.*, COUNT(*) AS num_solutions
              FROM auth_user AS u, questions_answer AS a,
