@@ -170,8 +170,8 @@ def search(request, template=None):
     if cleaned['w'] & constants.WHERE_SUPPORT:
 
         # Solved is set by default if using basic search
-        if a == '0' and not cleaned['is_solved']:
-            cleaned['is_solved'] = constants.TERNARY_YES
+        if a == '0' and not cleaned['has_helpful']:
+            cleaned['has_helpful'] = constants.TERNARY_YES
 
         # These filters are ternary, they can be either YES, NO, or OFF
         toggle_filters = ('is_locked', 'is_solved', 'has_answers',
