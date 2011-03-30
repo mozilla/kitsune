@@ -721,7 +721,8 @@ ul.actions {
 ul.actions li {
     font-size: 14px;
     font-weight: bold;
-    margin: 0 0 7px;
+    line-height: 17px;
+    margin: 0 0 4px;
 }
 
 ul.actions li.email {
