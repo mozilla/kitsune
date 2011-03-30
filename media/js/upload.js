@@ -3,22 +3,19 @@ $(document).ready(function () {
             max_filename_length: 80,  // max filename length in characters
             error_title_up: gettext('Error uploading image'),
             error_title_del: gettext('Error deleting image'),
-            error_login: gettext('Please check you are logged in, and try again.'),
-            $dialog: $('#upload_dialog')
+            error_login: gettext('Please check you are logged in, and try again.')
         };
-    if (UPLOAD.$dialog.length <= 0) {
-        UPLOAD.$dialog = $('<div id="upload-dialog"></div>')
-                    .appendTo('body');
-    }
-    UPLOAD.$dialog.dialog({autoOpen: false});
 
-    function dialogSet(inner, title, stayClosed) {
-        UPLOAD.$dialog.html(inner);
-        UPLOAD.$dialog.dialog('option', 'title', title);
-        if (stayClosed === true) {
-            return;
-        }
-        UPLOAD.$dialog.dialog('open');
+    function dialogSet(inner, title) {
+        var kbox = new KBox($('<p/>').text(inner), {
+            title: title,
+            destroy: true,
+            closeOnOutClick: true,
+            modal: true,
+            id: 'upload-dialog',
+            container: $('body')
+        });
+        kbox.open();
     }
 
     $('input.delete', 'div.attachments-list').each(function () {
@@ -127,7 +124,7 @@ $(document).ready(function () {
                     destroy: true
                 });
             kbox.open();
-            
+
             function setWidth() {
                 $('#image-attachment-kbox').width(image.width)
                     .find('img').removeClass('loading').attr('src', imgUrl);

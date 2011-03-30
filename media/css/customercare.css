@@ -611,39 +611,6 @@ a.header-button {
     height: 50px;
 }
 
-.ui-corner-all {
-    border-radius: 0px;
-    -moz-border-radius: 0px;
-    -webkit-border-radius: 0px;
-}
-
-.ui-widget-header {
-    background: none;
-    border: none;
-}
-
-.ui-dialog {
-    box-shadow: 0 0 10px #aaa;
-    -moz-box-shadow: 0 0 10px #aaa;
-}
-
-.ui-widget-content {
-    background: #fff;
-    border: none;
-    border-radius: 4px;
-    -moz-border-radius: 4px;
-    -webkit-border-radius: 4px;
-}
-.ui-dialog-titlebar-close {
-    background-color: #fff;
-}
-.ui-dialog-titlebar-close .ui-icon {
-    background-image: url("jqueryui/images/ui-icons_222222_256x240.png");
-}
-.ui-dialog-titlebar-close.ui-state-hover {
-    background: none;
-}
-
 /*----------------------------------
     AoA Sidebar
 ----------------------------------*/
