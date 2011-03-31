@@ -99,14 +99,10 @@ def document(request, document_slug, template=None):
                                 slug=document_slug)
         # If there's a translation to the requested locale, take it:
         translation = doc.translated_to(request.locale)
-        if translation and translation.current_revision:
+        if translation:
             url = translation.get_absolute_url()
             url = urlparams(url, query_dict=request.GET)
             return HttpResponseRedirect(url)
-        elif translation and doc.current_revision:
-            # Found a translation but its current_revision is None
-            # and OK to fall back to parent (parent is approved).
-            fallback_reason = 'translation_not_approved'
         elif doc.current_revision:
             # There is no translation
             # and OK to fall back to parent (parent is approved).

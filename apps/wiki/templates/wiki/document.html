@@ -76,7 +76,15 @@
 {% endblock %}
 
 {% block side_top %}
-  {{ document_tabs(document, document.parent, user, 'article', settings) }}
+  {% if fallback_reason == 'no_translation' %}
+    {# If there is no translation, there is no document and the (future) parent is document. #}
+    {% set doc = None %}
+    {% set parent = document %}
+  {% else %}
+    {% set doc = document %}
+    {% set parent = doc.parent %}
+  {% endif %}
+  {{ document_tabs(doc, parent, user, 'article', settings) }}
 
   {% if user.is_authenticated() and document %}
     <div id="doc-watch">

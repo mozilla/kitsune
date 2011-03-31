@@ -133,10 +133,9 @@ class DocumentTests(TestCaseBase):
         d2 = document(parent=r.document, locale='fr', slug='french', save=True)
         revision(document=d2, is_approved=False, save=True)
         url = reverse('wiki.document', args=[r.document.slug], locale='fr')
-        response = self.client.get(url)
+        response = self.client.get(url, follow=True)
+        eq_('http://testserver/fr/kb/french', response.redirect_chain[0][0])
         doc = pq(response.content)
-        eq_(r.document.title, doc('#main h1.title').text())
-
         # Fallback message is shown.
         eq_(1, len(doc('#doc-pending-fallback')))
         # Removing this as it shows up in text(), and we don't want to depend
@@ -161,6 +160,8 @@ class DocumentTests(TestCaseBase):
         doc('#doc-pending-fallback').remove()
         # Included content is English.
         eq_(pq(r.document.html)('div').text(), doc('#doc-content div').text())
+        # Only two document tabs show (Article,Translate)
+        eq_(2, len(doc('#doc-tabs li')))
 
     def test_redirect(self):
         """Make sure documents with REDIRECT directives redirect properly.

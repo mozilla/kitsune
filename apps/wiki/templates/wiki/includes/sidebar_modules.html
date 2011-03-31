@@ -39,9 +39,20 @@
           {% endif %}
         </li>
       {% endif %}
-      <li{% if active == 'history' %} class="active"{% endif %}>
-        <a href="{% if document %}{{ url('wiki.document_revisions', document.slug) }}{% else %}{{ url('wiki.document_revisions', parent.slug, locale=settings.WIKI_DEFAULT_LANGUAGE) }}{% endif %}">{{ _('Show History') }}</a>
-      </li>
+      {% if not document and parent and parent.is_localizable %}
+        <li{% if active == 'localize' %} class="active"{% endif %}>
+          {% if active == 'localize' %}
+            <span>{{ _('Translate Article') }}</span>
+          {% else %}
+            <a href="{{ url('wiki.translate', parent.slug) }}">{{ _('Translate Article') }}</a>
+          {% endif %}
+        </li>
+      {% endif %}
+      {% if document %}
+        <li{% if active == 'history' %} class="active"{% endif %}>
+          <a href="{% if document %}{{ url('wiki.document_revisions', document.slug) }}{% else %}{{ url('wiki.document_revisions', parent.slug, locale=settings.WIKI_DEFAULT_LANGUAGE) }}{% endif %}">{{ _('Show History') }}</a>
+        </li>
+      {% endif %}
     </ul>
   </nav>
 {%- endmacro %}
