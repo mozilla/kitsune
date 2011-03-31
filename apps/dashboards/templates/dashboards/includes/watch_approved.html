@@ -5,11 +5,11 @@
       {{ csrf() }}
       <input type="hidden" name="locale" value="{{ locale }}" />
       {% if locale == 'en-US' %}
-        {# L10n: Please localize 'English' here. #}
-        <input type="submit" class="link-btn" value="{{ _('Stop getting emailed when English revisions are approved', 'english') }}" />
+        {# L10n: Please localize 'English' here. For example: 'inglés' in es, 'anglais' in fr, etc. #}
+        <input type="submit" class="link-btn" value="{{ _('Stop getting emailed when English revisions are approved') }}" />
       {% else %}
-        {# L10n: Please replace 'English' with your language. #}
-        <input type="submit" class="link-btn" value="{{ _('Stop getting emailed when English revisions are approved', 'locale') }}" />
+        {# L10n: Please replace 'YOUR_LOCALE' with your language. For example: 'español' in es, 'française' in fr, etc. #}
+        <input type="submit" class="link-btn" value="{{ _('Stop getting emailed when YOUR_LOCALE revisions are approved') }}" />
       {% endif %}
     </form>
   {% else %}
@@ -17,11 +17,11 @@
       {{ csrf() }}
       <input type="hidden" name="locale" value="{{ locale }}" />
       {% if locale == 'en-US' %}
-        {# L10n: Please localize 'English' here. #}
-        <input type="submit" class="link-btn" value="{{ _('Get emailed when English revisions are approved', 'english') }}" />
+        {# L10n: Please localize 'English' here. For example: 'inglés' in es, 'anglais' in fr, etc. #}
+        <input type="submit" class="link-btn" value="{{ _('Get emailed when English revisions are approved') }}" />
       {% else %}
-        {# L10n: Please replace 'English' with your language. #}
-        <input type="submit" class="link-btn" value="{{ _('Get emailed when English revisions are approved', 'locale') }}" />
+        {# L10n: Please replace 'YOUR_LOCALE' with your language. For example: 'español' in es, 'française' in fr, etc. #}
+        <input type="submit" class="link-btn" value="{{ _('Get emailed when YOUR_LOCALE revisions are approved') }}" />
       {% endif %}
     </form>
   {% endif %}

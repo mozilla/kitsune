@@ -4,22 +4,22 @@
     <form action="{{ url('wiki.locale_unwatch') }}" method="post">
       {{ csrf() }}
       {% if locale == 'en-US' %}
-        {# L10n: Please localize 'English' here. #}
-        <input type="submit" class="link-btn" value="{{ _('Stop getting emailed when English reviews are waiting', 'english') }}" />
+        {# L10n: Please localize 'English' here. For example: 'inglés' in es, 'anglais' in fr, etc. #}
+        <input type="submit" class="link-btn" value="{{ _('Stop getting emailed when English reviews are waiting') }}" />
       {% else %}
-        {# L10n: Please replace 'English' with your language. #}
-        <input type="submit" class="link-btn" value="{{ _('Stop getting emailed when English reviews are waiting', 'locale') }}" />
+        {# L10n: Please replace 'YOUR_LOCALE' with your language. For example: 'español' in es, 'française' in fr, etc. #}
+        <input type="submit" class="link-btn" value="{{ _('Stop getting emailed when YOUR_LOCALE reviews are waiting') }}" />
       {% endif %}
     </form>
   {% else %}
     <form action="{{ url('wiki.locale_watch') }}" method="post">
       {{ csrf() }}
       {% if locale == 'en-US' %}
-        {# L10n: Please localize 'English' here. #}
-        <input type="submit" class="link-btn" value="{{ _('Get emailed when English reviews are waiting', 'english') }}" />
+        {# L10n: Please localize 'English' here. For example: 'inglés' in es, 'anglais' in fr, etc. #}
+        <input type="submit" class="link-btn" value="{{ _('Get emailed when English reviews are waiting') }}" />
       {% else %}
-        {# L10n: Please replace 'English' with your language. #}
-        <input type="submit" class="link-btn" value="{{ _('Get emailed when English reviews are waiting', 'locale') }}" />
+        {# L10n: Please replace 'YOUR_LOCALE' with your language. For example: 'español' in es, 'française' in fr, etc. #}
+        <input type="submit" class="link-btn" value="{{ _('Get emailed when YOUR_LOCALE reviews are waiting') }}" />
       {% endif %}
     </form>
   {% endif %}
