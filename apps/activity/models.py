@@ -48,6 +48,9 @@ class Action(ModelBase):
         return self.url
 
 
-class ActionMixin(object):
+class ActionMixin(ModelBase):
     """Add a GenericRelation to a model."""
     actions = generic.GenericRelation(Action)
+
+    class Meta(object):
+        abstract = True

@@ -11,6 +11,7 @@ from django.contrib.contenttypes import generic
 from product_details import product_details
 from taggit.models import Tag
 
+from activity.models import ActionMixin
 from flagit.models import FlaggedObject
 import questions as constants
 from questions.question_config import products
@@ -239,7 +240,7 @@ class QuestionMetaData(ModelBase):
         return u'%s: %s' % (self.name, self.value[:50])
 
 
-class Answer(ModelBase):
+class Answer(ActionMixin, ModelBase):
     """An answer to a support question."""
     question = models.ForeignKey('Question', related_name='answers')
     creator = models.ForeignKey(User, related_name='answers')
