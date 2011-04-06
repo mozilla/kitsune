@@ -3,6 +3,10 @@
 {# L10n: {f} is the name of the forum. #}
 {% set title = _('{f} | Forums')|f(f=forum.name) %}
 {% set crumbs = [(url('forums.forums'), _('Forums')), (None, forum.name)] %}
+{% set canonical_url = unlocalized_url('forums.threads', forum.slug) %}
+{% if threads.number > 1 %}
+  {% set canonical_url = canonical_url|urlparams(page=threads.number) %}
+{% endif %}
 
 {% block content %}
 <article id="threads" class="main">

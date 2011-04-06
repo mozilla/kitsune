@@ -72,6 +72,8 @@ class PostsTemplateTests(ForumTestCase):
         response = get(self.client, 'forums.posts', args=[forum.slug, 4],
                        locale='fr')
         eq_(200, response.status_code)
+        eq_('/forums/test-forum/4',
+            pq(response.content)('link[rel="canonical"]')[0].attrib['href'])
 
     def test_long_title_truncated_in_crumbs(self):
         """A very long thread title gets truncated in the breadcrumbs"""
@@ -206,6 +208,11 @@ class ThreadsTemplateTests(ForumTestCase):
                         args=[f.slug])
         self.assertNotContains(response, 'Watching')
 
+    def test_canonical_url(self):
+        response = get(self.client, 'forums.threads', args=['test-forum'])
+        eq_('/forums/test-forum',
+            pq(response.content)('link[rel="canonical"]')[0].attrib['href'])
+
 
 class ForumsTemplateTests(ForumTestCase):
 
@@ -234,6 +241,11 @@ class ForumsTemplateTests(ForumTestCase):
         """Forums with restricted view_in permission shouldn't show up."""
         response = get(self.client, 'forums.forums')
         self.assertNotContains(response, 'restricted-forum')
+
+    def test_canonical_url(self):
+        response = get(self.client, 'forums.forums')
+        eq_('/forums',
+            pq(response.content)('link[rel="canonical"]')[0].attrib['href'])
 
 
 class NewThreadTemplateTests(ForumTestCase):

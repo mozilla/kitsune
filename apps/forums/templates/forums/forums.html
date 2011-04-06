@@ -2,6 +2,10 @@
 {% extends "forums/base.html" %}
 {% set title = _('Forums') %}
 {% set crumbs = [(None, title)] %}
+{% set canonical_url = unlocalized_url('forums.forums') %}
+{% if forums.number > 1 %}
+  {% set canonical_url = canonical_url|urlparams(page=forums.number) %}
+{% endif %}
 
 {% block content %}
 <article id="forums" class="main">
