@@ -295,7 +295,7 @@ div.thread-meta ul.tag-list a {
 }
 
 /* questions pagination tweak */
-ol.pagination {
+body.questions ol.pagination {
     background: #E0EFFD;
     border: none;
     border-radius: 0 0 10px 10px;
@@ -304,6 +304,11 @@ ol.pagination {
     margin: 0 9px;
     padding: 15px 30px;
     zoom: 1;
+}
+
+body.answers ol.pagination {
+    margin-bottom: 0;
+    padding: 15px 0 0 25px;
 }
 
 ol.pagination:after {
@@ -852,7 +857,7 @@ ul.related li {
     -moz-border-radius: 20px;
     -webkit-border-radius: 20px;
     margin: 40px 0;
-    padding: 40px 0;
+    padding: 40px 0 20px;
 }
 
 body.answers #main section header {
@@ -872,6 +877,7 @@ body.answers #main section header {
 
 ol.answers {
     list-style: none;
+    padding: 0 0 20px;
 }
 
 ol.answers li.answer {

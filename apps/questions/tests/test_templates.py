@@ -51,6 +51,9 @@ class AnswersTemplateTestCase(TestCaseBase):
 
         new_answer = self.question.answers.order_by('-created')[0]
         eq_(content, new_answer.content)
+        # Check canonical url
+        doc = pq(response.content)
+        eq_('/questions/1', doc('link[rel="canonical"]')[0].attrib['href'])
 
     def test_answer_upload(self):
         """Posting answer attaches an existing uploaded image to the answer."""
@@ -824,6 +827,8 @@ class QuestionsTemplateTestCase(TestCaseBase):
         doc = pq(response.content)
         eq_('active', doc('div#filter ul li')[-1].attrib['class'])
         eq_('question-2', doc('ol.questions li')[0].attrib['id'])
+        eq_('/questions?filter=no-replies',
+            doc('link[rel="canonical"]')[0].attrib['href'])
 
     def test_solved_filter(self):
         # initially there should be no solved answers
@@ -833,6 +838,8 @@ class QuestionsTemplateTestCase(TestCaseBase):
         doc = pq(response.content)
         eq_('active', doc('div#filter ul li')[4].attrib['class'])
         eq_(0, len(doc('ol.questions li')))
+        eq_('/questions?filter=solved',
+            doc('link[rel="canonical"]')[0].attrib['href'])
 
         # solve one question then verify that it shows up
         answer = Answer.objects.all()[0]
@@ -861,6 +868,8 @@ class QuestionsTemplateTestCase(TestCaseBase):
         doc = pq(response.content)
         eq_(3, len(doc('ol.questions li')))
         eq_(0, len(doc('ol.questions li#question-%s' % answer.question.id)))
+        eq_('/questions?filter=unsolved',
+            doc('link[rel="canonical"]')[0].attrib['href'])
 
     def _my_contributions_test_helper(self, username, expected_qty):
         url_ = urlparams(reverse('questions.questions'),
@@ -870,6 +879,8 @@ class QuestionsTemplateTestCase(TestCaseBase):
         doc = pq(response.content)
         eq_('active', doc('div#filter ul li')[6].attrib['class'])
         eq_(expected_qty, len(doc('ol.questions li')))
+        eq_('/questions?filter=my-contributions',
+            doc('link[rel="canonical"]')[0].attrib['href'])
 
     def test_my_contributions_filter(self):
         # jsocol should have 2 questions in his contributions
@@ -904,6 +915,8 @@ class QuestionsTemplateTestCase(TestCaseBase):
         response = self.client.get(sorted)
         doc = pq(response.content)
         eq_('question-2', doc('ol.questions li')[0].attrib['id'])
+        eq_('/questions?sort=requested',
+            doc('link[rel="canonical"]')[0].attrib['href'])
 
     def test_top_contributors(self):
         # There should be no top contributors since there are no solutions.
@@ -954,6 +967,8 @@ class QuestionsTemplateTestCase(TestCaseBase):
         response = self.client.get(tagged)
         doc = pq(response.content)
         eq_(1, len(doc('ol.questions > li')))
+        eq_('/questions?tagged=mobile',
+            doc('link[rel="canonical"]')[0].attrib['href'])
 
 
 class QuestionEditingTests(TestCaseBase):

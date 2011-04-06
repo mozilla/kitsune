@@ -4,6 +4,10 @@
 {% set title = _('Firefox Support Forum') %}
 {% set classes = 'questions' %}
 {% set crumbs = [(None, _('Forum'))] %}
+{% set canonical_url = unlocalized_url('questions.questions')|urlparams(filter=filter, sort=sort, tagged=tagged) %}
+{% if questions.number > 1 %}
+  {% set canonical_url = canonical_url|urlparams(page=questions.number) %}
+{% endif %}
 
 {% block above_main %}
   <hgroup>
