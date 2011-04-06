@@ -2,6 +2,7 @@
 {% extends "users/base.html" %}
 {% set title = _('{user} | Profile')|f(user=profile.user.username) %}
 {% set classes = 'profile' %}
+{% set canonical_url = unlocalized_url('users.profile', profile.user.pk) %}
 
 {% block content %}
   <article id="profile" class="main">
