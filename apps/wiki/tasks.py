@@ -10,7 +10,6 @@ from django.template import Context, loader
 
 import celery.conf
 from celery.decorators import task
-from celery.messaging import establish_connection
 from multidb.pinning import pin_this_thread, unpin_this_thread
 from tower import ugettext as _
 
@@ -71,13 +70,11 @@ def rebuild_kb():
     d = (Document.objects.using('default')
          .filter(current_revision__isnull=False).values_list('id', flat=True))
 
-    with establish_connection() as conn:
-        for chunk in chunked(d, 100):
-            _rebuild_kb_chunk.apply_async(args=[chunk],
-                                          connection=conn)
+    for chunk in chunked(d, 100):
+        _rebuild_kb_chunk.apply_async(args=[chunk])
 
 
-@task(rate_limit='10/m')
+@task(rate_limit='20/m')
 def _rebuild_kb_chunk(data, **kwargs):
     """Re-render a chunk of documents."""
     log.info('Rebuilding %s documents.' % len(data))
