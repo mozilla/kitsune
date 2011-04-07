@@ -1,4 +1,3 @@
-
 //
 // Adapter for JS TestNet
 // https://github.com/kumar303/jstestnet
@@ -26,6 +25,18 @@
         }
         window.top.postMessage(msg, '*');
     }
+
+    window.onerror = function(errorMsg, url, lineNumber) {
+        var msg = {
+            action: 'log',
+            result: false, // failure
+            message: 'Exception: ' + errorMsg + ' at ' + url + ':' + lineNumber,
+            // TODO(Kumar) add stacktrace on platforms that support it
+            // (like Firefox)
+            stacktrace: null
+        };
+        postMsg(msg);
+    };
 
     // QUnit (jQuery)
     // http://docs.jquery.com/QUnit

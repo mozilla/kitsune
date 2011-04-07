@@ -1,39 +1,34 @@
-#!/bin/bash
-# This script should run from inside Hudson
+# This script should be called from within Hudson
+
 
 cd $WORKSPACE
 VENV=$WORKSPACE/venv
 VENDOR=$WORKSPACE/vendor
+LOG=$WORKSPACE/jstests-runserver.log
 
-echo "Starting build..."
+echo "Starting build on executor $EXECUTOR_NUMBER..." `date`
 
 if [ -z $1 ]; then
     echo "Warning: You should provide a unique name for this job to prevent database collisions."
-    echo "Usage: ./build.sh <name>"
+    echo "Usage: $0 <name>"
     echo "Continuing, but don't say you weren't warned."
     BUILD_NAME='default'
 else
     BUILD_NAME=$1
 fi
 
-if [ -z $2 ]; then
-    echo "Warning: You should provide a unique Sphinx port for this build."
-    SPHINX_PORT=3381
-else
-    SPHINX_PORT=$2
-fi
+echo "Setup..." `date`
 
-
-# Clean up after last time.
-find . -name '*.pyc' -delete;
+# Make sure there's no old pyc files around.
+find . -name '*.pyc' | xargs rm
 
 # Using a virtualenv for python26 and compiled requirements.
 if [ ! -d "$VENV/bin" ]; then
-    echo "No virtualenv found; making one..."
-    virtualenv --no-site-packages $VENV
+  echo "No virtualenv found.  Making one..."
+  virtualenv $VENV
 fi
 source $VENV/bin/activate
-pip install -r requirements/tests-compiled.txt
+pip install -q -r requirements/tests-compiled.txt
 
 # Using a vendor library for the rest.
 git submodule update --init --recursive
@@ -50,15 +45,25 @@ DATABASES['default']['USER'] = 'hudson'
 DATABASES['default']['TEST_NAME'] = 'test_kitsune_$BUILD_NAME'
 DATABASES['default']['TEST_CHARSET'] = 'utf8'
 DATABASES['default']['TEST_COLLATION'] = 'utf8_general_ci'
-TEST_SPHINX_PORT = $SPHINX_PORT
-TEST_SPHINXQL_PORT = TEST_SPHINX_PORT + 1
-CELERY_ALWAYS_EAGER = True
 CACHE_BACKEND = 'caching.backends.locmem://'
+CELERY_ALWAYS_EAGER = True
+
+# Activate Qunit:
+INSTALLED_APPS += (
+    'django_qunit',
+)
+
 SETTINGS
 
-echo "Starting tests..." `date`
-export FORCE_DB=1
-coverage run manage.py test --noinput --logging-clear-handlers --with-xunit
-coverage xml $(find apps lib -name '*.py')
 
-echo 'Booyahkasha!'
+# All DB tables need to exist so that runserver can start up.
+python manage.py syncdb --noinput
+
+echo "Starting JS tests..." `date`
+
+rm $LOG
+# NOTE: the host value here needs to match the 'kitsune' suite in jstestnet
+cd scripts
+python run_jstests.py -v --with-xunit --with-kitsune --kitsune-host sm-hudson01 --kitsune-log $LOG --with-jstests --jstests-server http://jstestnet.farmdev.com/ --jstests-suite sumo --jstests-browsers firefox --debug nose.plugins.jstests
+
+echo 'shazam!'
