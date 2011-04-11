@@ -1,6 +1,5 @@
 {# vim: set ts=2 et sts=2 sw=2: #}
 {% extends "base.html" %}
-{% from "dashboards/includes/macros.html" import dashboard_tabs %}
 {% set scripts = ('wiki',) %}
 {% set styles = ('wiki',) %}
 
@@ -14,7 +13,7 @@
 {% endblock %}
 
 {% block side_top %}
-  {{ dashboard_tabs(user, active_tab) }}
+  {{ user_dashboard_tabs(active_tab) }}
 {% endblock %}
 
 {% block breadcrumbs %}

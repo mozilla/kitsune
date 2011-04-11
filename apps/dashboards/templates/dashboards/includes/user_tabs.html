@@ -1,0 +1,9 @@
+<nav id="doc-tabs">
+  <ul>
+    {% for dash in dashboards %}
+      <li{% if active == dash.slug %} class="active"{% endif %}>
+        <a href="{{ dash.url }}">{{ dash.title }}</a>
+      </li>
+    {% endfor %}
+  </ul>
+</nav>

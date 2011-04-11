@@ -124,8 +124,7 @@ def review(request):
 @require_GET
 @login_required
 def questions(request):
-    """Support Forum dashboard for a user, includes activity,
-    announcements, etc."""
+    """Support Forum dashboard for a user"""
     return jingo.render(request, 'dashboards/questions.html',
                         {'actions': _actions(Answer, request),
                          'announcements': Announcement.get_site_wide()})
