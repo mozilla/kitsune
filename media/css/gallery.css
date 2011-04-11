@@ -278,20 +278,6 @@ div.error {
     color: #f00;
 }
 
-#gallery-upload-modal .image-preview img {
-    max-width: 120px;
-    max-height: 120px;
-}
-
-#gallery-upload-video .video-preview ul {
-    margin-left: 1em;
-}
-
-#gallery-upload-video li.video-preview {
-    margin-bottom: .5em;
-    margin-top: .5em;
-}
-
 #gallery-upload-modal form.inline {
     display: inline;
 }

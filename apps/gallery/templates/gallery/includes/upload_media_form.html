@@ -33,7 +33,8 @@
 {% endmacro %}
 
 {% macro image_preview(form, type, name) %}
-  {% if form.instance.pk %}
+  {% set classes = 'preview ' + name %}
+  {% if form.instance.pk and form.instance.thumbnail %}
     {% set html =
       '<div class="preview-{type} {name}">
         <img src="{thumbnail_url}">
@@ -44,8 +45,11 @@
         thumbnail_url=form.instance.thumbnail_url_if_set(),
         action=url('gallery.cancel_draft', media_type=type),
         value=_('Delete this image')) %}
+    {% set classes = classes + ' on' %}
+  {% else %}
+    {% set classes = classes + ' off' %}
   {% endif %}
-  {{ raw_row(html, 'preview', _('Preview')) }}
+  {{ raw_row(html, classes, _('Preview')) }}
 {% endmacro %}
 
 {% macro image_fields(form, type, name) %}
@@ -57,16 +61,23 @@
     {{ image_preview(form, type, name) }}
 {% endmacro %}
 
-{% macro video_preview(file, field_name) %}
+{% macro video_preview(file, name) %}
+  {% set classes = 'preview ' + name %}
   {% if file %}
-    <li class="{{ field_name }}">
-      {{ file.name.rsplit('/', 1)[-1] }}
-      <input type="submit" name="cancel" class="link-btn"
-             data-name="{{ field_name }}"
-             data-action="{{ url('gallery.cancel_draft', media_type='video')|urlparams(field=field_name) }}"
-             value="{{ _('Delete {format} file')|f(format=field_name) }}">
-    </li>
+    {% set html =
+      '{file_info}
+       <input type="submit" name="cancel" class="link-btn"
+              data-name="{name}"
+              data-action="{url}"
+              value="{value}">'|fe(
+        name=name, file_info=file.name.rsplit('/', 1)[-1],
+        url=url('gallery.cancel_draft', media_type='video')|urlparams(field=name),
+        value=_('Delete {format} file')|f(format=name)) %}
+    {% set classes = classes + ' on' %}
+  {% else %}
+    {% set classes = classes + ' off' %}
   {% endif %}
+  {{ raw_row(html, classes, _('Preview ({format})')|f(format=name)) }}
 {% endmacro %}
 
 {% if image_form.instance.pk %}
@@ -86,7 +97,6 @@ TODO: use easing to fade in/out instead of JS
 TODO: better error messages ("invalid file" means too big, or extension, etc)
 
 #}
-
 <div id="gallery-upload-modal" title="{% if has_draft %}{{ _('Continue Uploading Media') }}{% else %}{{ _('Upload a New Media File') }}{% endif %}" data-modal="true" data-target="#btn-upload" data-id="upload-kbox" data-position="none"
   data-max-image-size="{{ settings.IMAGE_MAX_FILESIZE }}"
   data-max-video-size="{{ settings.VIDEO_MAX_FILESIZE }}">
@@ -119,27 +129,23 @@ TODO: better error messages ("invalid file" means too big, or extension, etc)
     {{ csrf() }}
     {{ errorlist(video_form) }}
     {{ form_row(video_form, 'flv', classes='upload-media') }}
-    {{ raw_row('<span></span><a class="flv" href="' +
-               url('gallery.gallery', media_type=media_type) + '">' +
-               _('Cancel') + '</a>', 'progress flv', _('Progress (flv)')) }}
+    {{ raw_row('<span></span><a class="flv" href="{url}">{label}</a>'|fe(
+                   url=url('gallery.gallery', media_type=media_type),
+                   label=_('Cancel')),
+               'progress flv', _('Progress (flv)')) }}
+    {{ video_preview(video_form.instance.flv, 'flv') }}
     {{ form_row(video_form, 'ogv', classes='upload-media') }}
-    {{ raw_row('<span></span><a class="ogv" href="' +
-               url('gallery.gallery', media_type=media_type) + '">' +
-               _('Cancel') + '</a>', 'progress ogv', _('Progress (ogv)')) }}
+    {{ raw_row('<span></span><a class="ogv" href="{url}">{label}</a>'|fe(
+                   url=url('gallery.gallery', media_type=media_type),
+                   label=_('Cancel')),
+               'progress ogv', _('Progress (ogv)')) }}
+    {{ video_preview(video_form.instance.ogv, 'ogv') }}
     {{ form_row(video_form, 'webm', classes='upload-media') }}
-    {{ raw_row('<span></span><a class="webm" href="' +
-               url('gallery.gallery', media_type=media_type) + '">' +
-               _('Cancel') + '</a>', 'progress webm', _('Progress (webm)')) }}
-    <label class="row-left video-preview">{{ _('Uploaded types') }}</label>
-    <div class="row-right video-preview">
-      <ul>
-        {% if video_form.instance.pk %}
-          {{ video_preview(video_form.instance.flv, 'flv') }}
-          {{ video_preview(video_form.instance.ogv, 'ogv') }}
-          {{ video_preview(video_form.instance.webm, 'webm') }}
-        {% endif %}
-      </ul>
-    </div>
+    {{ raw_row('<span></span><a class="webm" href="{url}">{label}</a>'|fe(
+                   url=url('gallery.gallery', media_type=media_type),
+                   label=_('Cancel')),
+               'progress webm', _('Progress (webm)')) }}
+    {{ video_preview(video_form.instance.webm, 'webm') }}
     {{ image_fields(video_form, 'video', 'thumbnail') }}
     {{ form_row(image_form, 'locale', classes='metadata') }}
     {{ form_row(image_form, 'title', classes='metadata') }}

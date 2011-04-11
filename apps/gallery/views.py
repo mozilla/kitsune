@@ -59,12 +59,7 @@ def gallery(request, media_type='image'):
 @login_required
 @require_POST
 def upload(request, media_type='image'):
-    """Finalizes an uploaded draft.
-
-    We could probably use this same form to handle no-JS fallback, if
-    we ever need to support that.
-
-    """
+    """Finalizes an uploaded draft."""
     draft = _get_draft_info(request.user)
     if media_type == 'image' and draft['image']:
         # We're publishing an image draft!

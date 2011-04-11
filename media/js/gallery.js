@@ -294,8 +294,8 @@
             var type = $input.attr('name'),
                 $form = $input.closest('.upload-form'),
                 $cancel_btn = $('.upload-action input[name="cancel"]', $form),
-                $appendCancelTo,
-                $thumbnail, attrs = {},
+                $content, attrs = {},
+                $preview_area,
                 upFile = iframeJSON.file;
             var message = CONSTANTS.messages[type].del;
 
@@ -305,30 +305,27 @@
             // generate preview
             if (type === 'file' || type === 'thumbnail') {
                 // create thumbnail
-                $('.row-right.preview', $form).html('');
-                $thumbnail = $('<img/>')
+                $content = $('<img/>')
                     .attr({alt: upFile.name, title: upFile.name,
                            width: upFile.width, height: upFile.height,
                            src: upFile.thumbnail_url})
-                    .wrap('<div class="preview-' + type + '"/>').closest('div')
-                    .appendTo($('.row-right.preview', $form));
-                    $('.preview', $form).showFade();
-                $appendCancelTo = $('.row-right.preview', $form);
+                    .wrap('<div class="preview-' + type + '"/>').parent();
             } else {
-                // Add a list item to video preview.
-                $appendCancelTo = $('<li class="video-preview"/>');
-                $appendCancelTo.html(filename)
-                    .appendTo($('.row-right.video-preview ul', $form));
-                $('.video-preview', $form).showFade();
+                // Show file name for the video.
+                $content = $('<span class="text"/>').html(filename);
             }
+            $preview_area = $('.preview.' + type, $form);
+            $preview_area.filter('.row-right').html($content);
             // Create cancel button.
             attrs['data-action'] = $cancel_btn.data('action') +
                                        '?field=' + type;
             attrs['data-name'] = type;
             $cancel_btn.clone().val(message).attr(attrs)
                        .removeClass('kbox-cancel')
-                       .appendTo($appendCancelTo)
+                       .appendTo($preview_area.filter('.row-right'))
                        .makeCancelUpload();
+            // Show the preview area
+            $preview_area.showFade();
         },
         /*
          * Little helper function to set an error next to the file input.
@@ -366,19 +363,8 @@
                 $mediaForm = $input.closest('.upload-form'),
                 type = $input.data('name');
             // Clean up all the preview and progress information.
-            if (type === 'file' || type === 'thumbnail') {
-                $mediaForm.find('.preview').hideFade()
-                          .filter('.row-right').html('');
-            } else {
-                // Video has a <ul>, bit tricky.
-                var $video_ul = $mediaForm.find('.video-preview ul');
-                // Remove this list item.
-                $input.closest('li').remove();
-                // Last video? Delete the list and hide the preview.
-                if ($video_ul.children().length === 0) {
-                    $mediaForm.find('.video-preview').hideFade();
-                }
-            }
+            $mediaForm.find('.preview.' + type).hideFade()
+                      .filter('.row-right').html('');
 
             // Send ajax request over to remove file.
             $.ajax({
@@ -418,8 +404,7 @@
             // If nothing else is being or has been uploaded, hide the metadata
             // and enable the upload input.
             if (!$form.find('.progress').is(':visible') &&
-                !$form.find('.preview').is(':visible') &&
-                !$form.find('.video-preview').is(':visible')) {
+                !$form.find('.preview').is(':visible')) {
                 $form.find('.metadata').hideFade();
                 $('#gallery-upload-type').find('input[type="radio"]')
                                          .attr('disabled', '');
@@ -452,10 +437,6 @@
                 self.forms.$image.find('.upload-media').hideFade();
             } else {
                 self.$radios.last().click();
-                var $video_preview = self.forms.$video.find('.video-preview');
-                if (!$video_preview.find('li').length) {
-                    $video_preview.hideFade();
-                }
             }
             self.$modal.find('input[name="cancel"]').not('.kbox-cancel')
                        .makeCancelUpload();
@@ -493,9 +474,8 @@
             // Hide metadata
             self.$modal.find('.metadata').hideFade();
             // Clean up all the preview and progress information.
-            self.$modal.find('.progress,.preview,.video-preview').hideFade();
+            self.$modal.find('.progress,.preview').hideFade();
             self.$modal.find('.preview.row-right').html('');
-            self.$modal.find('.video-preview.row-right').html('<ul/>');
             self.$modal.find('.progress.row-right span').html('');
             // Show all the file inputs with default messages.
             $uploads.filter('.row-right').each(function () {
