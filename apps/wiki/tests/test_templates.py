@@ -219,6 +219,23 @@ class DocumentTests(TestCaseBase):
         doc = pq(resp.content)
         assert 'Localize' not in doc('#doc-tabs li').text()
 
+    def test_topics_enUS(self):
+        """Make sure an en-US document shows the right topics."""
+        d = document(is_localizable=True, save=True)
+        d.tags.add('tag1', 'tag2')
+        r = self.client.get(d.get_absolute_url())
+        doc = pq(r.content)
+        eq_('tag1 tag2', doc('li.topic a').text())
+
+    def test_topics_es(self):
+        """Make sure an es document shows the right topics (inherited)."""
+        d_enUS = document(is_localizable=True, save=True)
+        d_enUS.tags.add('tag1')
+        d_es = document(parent=d_enUS, locale='es', save=True)
+        r = self.client.get(d_es.get_absolute_url())
+        doc = pq(r.content)
+        eq_('tag1', doc('li.topic a').text())
+
 
 class RevisionTests(TestCaseBase):
     """Tests for the Revision template"""

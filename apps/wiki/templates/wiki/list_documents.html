@@ -3,7 +3,7 @@
 {% if category %}
   {% set title = category %}
 {% elif tag %}
-  {% set title = _('Articles tagged: {tag}')|f(tag=tag) %}
+  {% set title = _('Topic: {topic}')|f(topic=_(tag)) %}
 {% else %}
   {% set title = _('All Articles') %}
 {% endif %}

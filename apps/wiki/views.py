@@ -171,7 +171,15 @@ def list_documents(request, category=None, tag=None):
 
     if tag:
         tagobj = get_object_or_404(Tag, slug=tag)
-        docs = docs.filter(tags__name__in=[tagobj.name])
+        default_lang = settings.WIKI_DEFAULT_LANGUAGE
+        if request.locale == default_lang:
+            docs = docs.filter(tags__name=tagobj.name)
+        else:
+            # blows up: docs = docs.filter(parent__tags__name=tagobj.name)
+            parent_ids = Document.objects.filter(
+                locale=default_lang, tags__name=tagobj.name) \
+                .values_list('id', flat=True)
+            docs = docs.filter(parent__in=parent_ids)
 
     docs = paginate(request, docs, per_page=DOCUMENTS_PER_PAGE)
     return jingo.render(request, 'wiki/list_documents.html',
