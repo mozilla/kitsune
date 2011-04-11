@@ -222,6 +222,14 @@ a.btn-upload {
     padding-top: 20px;
 }
 
+#gallery-upload-video.off {
+    display: none;
+}
+
+#gallery-upload-image.off {
+    display: none;
+}
+
 #gallery-upload-type .row-right ul {
     list-style-type: none;
 }
@@ -287,12 +295,34 @@ article.main #gallery-upload-modal input[name="cancel"] {
     margin: 0;
 }
 
-.on {
-    display: default;
+.off {
+    opacity: 0;
+    position: relative;
+    -moz-transition: opacity .5s ease-in-out;
+    z-index: 0;
 }
 
-.off {
-    display: none !important;
+.on {
+    opacity: 1;
+    position: relative;
+    -moz-transition: opacity .5s ease-in-out;
+    z-index: 100;
+}
+
+#gallery-upload-modal .upload-media {
+    position: relative;
+}
+
+#gallery-upload-modal .progress {
+    margin-bottom: -42px;
+    position: relative;
+    top: -57px;
+}
+
+#gallery-upload-modal .preview {
+    margin-bottom: -42px;
+    position: relative;
+    top: -57px;
 }
 
 #gallery-upload-modal .progress a {

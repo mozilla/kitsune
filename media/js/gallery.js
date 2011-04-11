@@ -57,7 +57,6 @@
     });
 
     // jQuery helpers to show/hide content, provide flexibility in animation.
-    // TODO: use transitions to fade these.
     $.fn.showFade = function() {
         this.removeClass('off').addClass('on');
         return this;
@@ -247,7 +246,7 @@
             var message = interpolate(gettext('Uploading "%s"...'), [filename]);
             $progress.filter('.row-right').find('span').html(message);
             $progress.showFade();
-            $form.find('.metadata').showFade();
+            $form.find('.metadata').show();
             $('#gallery-upload-type').find('input[type="radio"]')
                                      .attr('disabled', 'disabled');
             return {filename: filename};
@@ -403,9 +402,9 @@
         _reUpload: function($form, type) {
             // If nothing else is being or has been uploaded, hide the metadata
             // and enable the upload input.
-            if (!$form.find('.progress').is(':visible') &&
-                !$form.find('.preview').is(':visible')) {
-                $form.find('.metadata').hideFade();
+            if (!$form.find('.progress').hasClass('on') &&
+                !$form.find('.preview').hasClass('on')) {
+                $form.find('.metadata').hide();
                 $('#gallery-upload-type').find('input[type="radio"]')
                                          .attr('disabled', '');
             }
@@ -430,6 +429,8 @@
                     $form = $self.closest('.upload-form');
                 if ($form.data(type)) {
                     $form.find('.upload-media.' + type).hideFade();
+                } else {
+                    $form.find('.upload-media.' + type).showFade();
                 }
             });
             if (self.forms.$image.hasClass('draft')) {
@@ -472,7 +473,7 @@
                 $uploads = self.$modal.find('.upload-media');
             self.$modal.find('.draft').removeClass('draft');
             // Hide metadata
-            self.$modal.find('.metadata').hideFade();
+            self.$modal.find('.metadata').hide();
             // Clean up all the preview and progress information.
             self.$modal.find('.progress,.preview').hideFade();
             self.$modal.find('.preview.row-right').html('');
