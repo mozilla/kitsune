@@ -1,4 +1,4 @@
-from .models import Forum
+from forums.models import Forum
 
 import authority
 

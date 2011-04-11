@@ -3,7 +3,7 @@ from django import forms
 from tower import ugettext_lazy as _lazy
 
 from sumo.form_fields import StrippedCharField
-from .models import Thread, Post
+from forums.models import Thread, Post
 
 
 MSG_TITLE_REQUIRED = _lazy(u'Please provide a title.')

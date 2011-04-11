@@ -1,8 +1,8 @@
 from django.conf.urls.defaults import patterns, url
 from django.contrib.contenttypes.models import ContentType
 
-from .feeds import QuestionsFeed, AnswersFeed, TaggedQuestionsFeed
-from .models import Question, Answer
+from questions.feeds import QuestionsFeed, AnswersFeed, TaggedQuestionsFeed
+from questions.models import Question, Answer
 from flagit import views as flagit_views
 
 

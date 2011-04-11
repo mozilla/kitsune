@@ -6,7 +6,7 @@ from django.utils.feedgenerator import Atom1Feed
 
 from tower import ugettext as _
 
-from .models import Forum, Thread
+from forums.models import Forum, Thread
 import forums as constants
 
 

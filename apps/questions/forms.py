@@ -3,7 +3,7 @@ from django import forms
 from tower import ugettext_lazy as _lazy, ugettext as _
 
 from sumo.form_fields import StrippedCharField
-from .models import Answer
+from questions.models import Answer
 
 # labels and help text
 SITE_AFFECTED_LABEL = _lazy(u'URL of affected site')

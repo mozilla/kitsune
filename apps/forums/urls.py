@@ -1,5 +1,5 @@
 from django.conf.urls.defaults import patterns, url
-from .feeds import ThreadsFeed, PostsFeed
+from forums.feeds import ThreadsFeed, PostsFeed
 
 urlpatterns = patterns('forums.views',
     url(r'^$', 'forums', name='forums.forums'),
