@@ -79,7 +79,7 @@
      *
      * Summary:
      * init: initialize DOM events, dispatch on draft vs new upload
-     * validateForm: TODO, prevent form submission if data is not valid
+     * validateForm: prevent form submission if data is not valid
      * isValidFile: boolean result for each type of file, checks size and
      *              extenson
      * startUpload: validates before upload and initiates progress
@@ -191,6 +191,17 @@
                 self.$modal.find('input[name="cancel"]:last').click();
             });
 
+            // Submitting the form should call for validation first.
+            function validateSubmit(ev) {
+                if (!self.validateForm($(ev.target))) {
+                    ev.preventDefault();
+                    return false;
+                }
+            }
+            self.forms.$image.find('input[name="upload"]').click(validateSubmit);
+            self.forms.$video.find('input[name="upload"]').click(validateSubmit);
+
+
             if (self.forms.$type.hasClass('draft')) {
                 // draft
                 self.draftSetup();
@@ -201,15 +212,30 @@
         },
         /*
          * Validates the entire upload form before publishing a draft.
-         * TODO
          */
-        validateForm: function() {
-            /*
-            var $current_form = self.forms.$image;
-            if (!$current_form.is(':visible')) {
-                $current_form = self.forms.$video;
+        validateForm: function($input) {
+            var self = this,
+                $form = $input.closest('.upload-form');
+            // An image must be uploaded
+            if ($form[0] == self.forms.$image[0] &&
+                $form.find('.on input[type="file"]').length) {
+                return false;
             }
-            */
+            // ... or a video must be uploaded
+            if ($form[0] == self.forms.$video[0] &&
+                $form.find('.on input[type="file"]')
+                      .not('[name="thumbnail"]').length == 3) {
+                return false;
+            }
+            // Metadata must be filled out
+            if (!Modernizr.input.required &&
+                (!$form.find('input[name="title"]').val() ||
+                 !$form.find('textarea[name="description"]').val() ||
+                 !$form.find('select[name="locale"]').val())) {
+                return false;
+            }
+
+            return true;
         },
         /*
          * Validates uploaded file meets criteria in mapping:
