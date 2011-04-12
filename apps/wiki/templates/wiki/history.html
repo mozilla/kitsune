@@ -78,6 +78,9 @@
               <div class="comment">
                 {{ rev.comment }}
               </div>
+              <div class="edit">
+                <a href="{{ url('wiki.new_revision_based_on', document.slug, rev.id) }}" title="{{ _('Edit article based on this revision') }}">{{ _('Edit') }}</a>
+              </div>
               {% if document.current_revision != rev and user.has_perm('wiki.delete_revision') %}
                 <div class="delete">
                   <a href="{{ url('wiki.delete_revision', document.slug, rev.id) }}">{{ _('Delete') }}</a>

@@ -704,6 +704,9 @@ class DocumentRevisionsTests(TestCaseBase):
         # Verify there are Review links now
         eq_(2, len(doc('#revision-list div.status a')))
         eq_('Review', doc('#revision-list div.status:first').text())
+        # Verify edit revision link
+        eq_('/en-US/kb/test-document/edit/{r}'.format(r=r2.id),
+            doc('#revision-list div.edit a')[0].attrib['href'])
 
 
 class ReviewRevisionTests(TestCaseBase):

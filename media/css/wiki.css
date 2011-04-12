@@ -647,9 +647,10 @@ details.h2 > summary {
 
 #revision-list div.comment {
     display: inline-block;
-    width: 280px;
+    width: 230px;
 }
 
+#revision-list div.edit,
 #revision-list div.delete {
     display: inline-block;
     text-align: center;

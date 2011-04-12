@@ -302,7 +302,7 @@ def document_revisions(request, document_slug):
         Document, locale=request.locale, slug=document_slug)
     revs = Revision.objects.filter(document=doc).order_by('-created', '-id')
 
-    return jingo.render(request, 'wiki/document_revisions.html',
+    return jingo.render(request, 'wiki/history.html',
                         {'revisions': revs, 'document': doc})
 
 
