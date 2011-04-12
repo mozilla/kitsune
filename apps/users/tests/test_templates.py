@@ -333,6 +333,15 @@ class ViewProfileTests(TestCaseBase):
         eq_('Edit my profile', doc('#doc-tabs li:last').text())
         self.client.logout()
 
+    def test_bio_links_nofollow(self):
+        profile = Profile.objects.get(user__id=47963)
+        profile.bio = 'http://getseo.com, [http://getseo.com]'
+        profile.save()
+        r = self.client.get(reverse('users.profile', args=[47963]))
+        eq_(200, r.status_code)
+        doc = pq(r.content)
+        eq_(2, len(doc('#bio a[rel="nofollow"]')))
+
 
 class PasswordChangeTests(TestCaseBase):
     fixtures = ['users.json']

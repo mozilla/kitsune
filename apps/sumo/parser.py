@@ -35,9 +35,11 @@ IMAGE_PARAM_VALUES = {
 }
 
 
-def wiki_to_html(wiki_markup, locale=settings.WIKI_DEFAULT_LANGUAGE):
+def wiki_to_html(wiki_markup, locale=settings.WIKI_DEFAULT_LANGUAGE,
+                 nofollow=False):
     """Wiki Markup -> HTML"""
-    return WikiParser().parse(wiki_markup, show_toc=False, locale=locale)
+    return WikiParser().parse(wiki_markup, show_toc=False, locale=locale,
+                              nofollow=nofollow)
 
 
 def get_object_fallback(cls, title, locale, default=None, **kwargs):
@@ -177,7 +179,8 @@ class WikiParser(Parser):
         self.registerInternalLinkHook('Image', self._hook_image_tag)
 
     def parse(self, text, show_toc=None, tags=None, attributes=None,
-              styles=None, locale=settings.WIKI_DEFAULT_LANGUAGE):
+              styles=None, locale=settings.WIKI_DEFAULT_LANGUAGE,
+              nofollow=False):
         """Given wiki markup, return HTML.
 
         Pass a locale to get all the hooks to look up Documents or Media
@@ -191,7 +194,8 @@ class WikiParser(Parser):
         parser_kwargs = {'tags': tags} if tags else {}
         return super(WikiParser, self).parse(text, show_toc=show_toc,
             attributes=attributes or ALLOWED_ATTRIBUTES,
-            styles=styles or ALLOWED_STYLES, **parser_kwargs)
+            styles=styles or ALLOWED_STYLES, nofollow=nofollow,
+            **parser_kwargs)
 
     def _hook_internal_link(self, parser, space, name):
         """Parses text and returns internal link."""

@@ -51,7 +51,7 @@ def url(viewname, *args, **kwargs):
 @register.function
 def unlocalized_url(viewname, *args, **kwargs):
     """Helper for Django's ``reverse`` in templates.
-    
+
     Uses django's default reverse."""
     return django_reverse(viewname, args=args, kwargs=kwargs)
 
@@ -87,9 +87,11 @@ def urlparams(url_, hash=None, query_dict=None, **query):
 
 
 @register.filter
-def wiki_to_html(wiki_markup, locale=settings.WIKI_DEFAULT_LANGUAGE):
+def wiki_to_html(wiki_markup, locale=settings.WIKI_DEFAULT_LANGUAGE,
+                 nofollow=False):
     """Wiki Markup -> HTML jinja2.Markup object"""
-    return jinja2.Markup(sumo.parser.wiki_to_html(wiki_markup, locale=locale))
+    return jinja2.Markup(sumo.parser.wiki_to_html(wiki_markup, locale=locale,
+                                                  nofollow=nofollow))
 
 
 class Paginator(object):
