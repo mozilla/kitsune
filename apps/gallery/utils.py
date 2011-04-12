@@ -2,7 +2,6 @@ from django.conf import settings
 from django.core.exceptions import PermissionDenied
 from django.core.files import File
 
-from gallery import DRAFT_TITLE_PREFIX
 from gallery.forms import ImageForm, VideoForm
 from gallery.models import Image, Video
 from sumo.urlresolvers import reverse
@@ -15,14 +14,20 @@ def create_image(files, user):
     up_file = files.values()[0]
     check_file_size(up_file, settings.IMAGE_MAX_FILESIZE)
 
-    # Async uploads fallback to these defaults.
-    title = get_draft_title(user)
-    description = u'Autosaved draft.'
-    # Use default locale to make sure a user can only have one draft
-    locale = settings.WIKI_DEFAULT_LANGUAGE
+    try:
+        image = Image.objects.filter(creator=user, is_draft=True)
+        # Delete other drafts, if any:
+        image.exclude(pk=image[0].pk).delete()
+        image = image[0]
+    except IndexError:  # No drafts, create one
+        image = Image(creator=user, is_draft=True)
 
-    image = Image(title=title, creator=user, locale=locale,
-                  description=description)
+    # Async uploads fallback to these defaults.
+    image.title = get_draft_title(user)
+    image.description = u'Autosaved draft.'
+    image.locale = settings.WIKI_DEFAULT_LANGUAGE
+
+    # Finally save the image along with uploading the file.
     image.file.save(up_file.name, File(up_file), save=True)
 
     (width, height) = _scale_dimensions(image.file.width, image.file.height)
@@ -40,16 +45,18 @@ def upload_image(request):
 
 def create_video(files, user):
     """Given an uploaded file, a user, and other data, it creates a Video"""
-    # Async uploads fallback to these defaults.
-    title = get_draft_title(user)
-    description = u'Autosaved draft.'
-    # Use default locale to make sure a user can only have one draft
-    locale = settings.WIKI_DEFAULT_LANGUAGE
     try:
-        vid = Video.objects.get(title=title, locale=locale)
-    except Video.DoesNotExist:
-        vid = Video(title=title, creator=user, description=description,
-                    locale=locale)
+        vid = Video.objects.filter(creator=user, is_draft=True)
+        # Delete other drafts, if any:
+        vid.exclude(pk=vid[0].pk).delete()
+        vid = vid[0]
+    except IndexError:  # No drafts, create one
+        vid = Video(creator=user, is_draft=True)
+    # Async uploads fallback to these defaults.
+    vid.title = get_draft_title(user)
+    vid.description = u'Autosaved draft.'
+    vid.locale = settings.WIKI_DEFAULT_LANGUAGE
+
     for name in files:
         up_file = files[name]
         check_file_size(up_file, settings.VIDEO_MAX_FILESIZE)
@@ -96,4 +103,4 @@ def check_media_permissions(media, user, perm_type):
 
 
 def get_draft_title(user):
-    return DRAFT_TITLE_PREFIX + str(user.pk)
+    return u'Draft for user %s' % user.username

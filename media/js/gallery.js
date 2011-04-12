@@ -323,8 +323,9 @@
                        .removeClass('kbox-cancel')
                        .appendTo($preview_area.filter('.row-right'))
                        .makeCancelUpload();
-            // Show the preview area
+            // Show the preview area and make it a draft
             $preview_area.showFade();
+            $form.addClass('draft');
         },
         /*
          * Little helper function to set an error next to the file input.
@@ -407,6 +408,7 @@
                 $form.find('.metadata').hide();
                 $('#gallery-upload-type').find('input[type="radio"]')
                                          .attr('disabled', '');
+                $form.removeClass('draft');
             }
             // finally, show the input again
             $form.find('.upload-media.' + type).showFade();
@@ -452,16 +454,19 @@
         modalClose: function() {
             var self = this,
                 checked_index = self.$radios.index(self.$radios.filter(':checked')),
-                csrf = $('input[name="csrfmiddlewaretoken"]').first().val();
-            var $input = $('.upload-action input[name="cancel"]', self.$modal)
+                csrf = $('input[name="csrfmiddlewaretoken"]').first().val(),
+                $input = $('.upload-action input[name="cancel"]', self.$modal)
                             .eq(checked_index);
-            $.ajax({
-                url: $input.data('action'),
-                type: 'POST',
-                data: 'csrfmiddlewaretoken=' + csrf,
-                dataType: 'json'
-                // Ignore the response, nothing to do.
-            });
+            if (self.$modal.find('.draft').length) {
+                // If there's a draft to cancel.
+                $.ajax({
+                    url: $input.data('action'),
+                    type: 'POST',
+                    data: 'csrfmiddlewaretoken=' + csrf,
+                    dataType: 'json'
+                    // Ignore the response, nothing to do.
+                });
+            }
             self.modalReset();
         },
         /*
@@ -506,7 +511,8 @@
     var kbox = $('#gallery-upload-modal').kbox({preClose: preClose});
 
     // Got draft? Show it.
-    if ($('#gallery-upload-type').hasClass('draft')) {
+    if (document.location.hash === '#upload' ||
+        $('#gallery-upload-type').hasClass('draft')) {
         $('#btn-upload').click();
     }
 })(jQuery);

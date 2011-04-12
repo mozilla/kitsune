@@ -242,6 +242,14 @@ a.btn-upload {
     margin-right: 2em;
 }
 
+#gallery-upload-modal {
+    display: none;
+}
+
+.kbox-wrap #gallery-upload-modal {
+    display: block;
+}
+
 #gallery-upload-modal .row-left {
     float: left;
     font-weight: bold;
@@ -299,6 +307,8 @@ article.main #gallery-upload-modal input[name="cancel"] {
     opacity: 0;
     position: relative;
     -moz-transition: opacity .5s ease-in-out;
+    -webkit-transition: opacity .5s ease-in-out;
+    transition: opacity .5s ease-in-out;
     z-index: 0;
 }
 
@@ -306,6 +316,8 @@ article.main #gallery-upload-modal input[name="cancel"] {
     opacity: 1;
     position: relative;
     -moz-transition: opacity .5s ease-in-out;
+    -webkit-transition: opacity .5s ease-in-out;
+    transition: opacity .5s ease-in-out;
     z-index: 100;
 }
 

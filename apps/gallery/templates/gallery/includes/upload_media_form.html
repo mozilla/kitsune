@@ -34,7 +34,7 @@
 
 {% macro image_preview(form, type, name) %}
   {% set classes = 'preview ' + name %}
-  {% if form.instance.pk and form.instance.thumbnail %}
+  {% if form.instance.pk and (type == 'image' or form.instance.thumbnail) %}
     {% set html =
       '<div class="preview-{type} {name}">
         <img src="{thumbnail_url}">
@@ -91,9 +91,7 @@ What JS needs to do:
 * Hide/Show progress
     * Show progress => Disable submit
     * Hide progress => Enable submit
-* Validate form for submission
 
-TODO: use easing to fade in/out instead of JS
 TODO: better error messages ("invalid file" means too big, or extension, etc)
 
 #}

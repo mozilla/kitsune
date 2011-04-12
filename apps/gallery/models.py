@@ -18,11 +18,12 @@ class Media(ModelBase):
     description = models.TextField(max_length=10000)
     locale = LocaleField(default=settings.GALLERY_DEFAULT_LANGUAGE,
                          db_index=True)
+    is_draft = models.NullBooleanField(default=None, null=True, editable=False)
 
-    class Meta:
+    class Meta(object):
         abstract = True
         ordering = ['-created']
-        unique_together = ('locale', 'title')
+        unique_together = (('locale', 'title'), ('is_draft', 'creator'))
 
     def __unicode__(self):
         return '[%s] %s' % (self.locale, self.title)

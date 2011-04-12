@@ -9,7 +9,6 @@ from sumo.tests import TestCase, get, LocalizingClient, post
 from sumo.urlresolvers import reverse
 from gallery.models import Image, Video
 from gallery.tests import image, video
-from gallery.utils import get_draft_title
 
 
 class GalleryPageCase(TestCase):
@@ -50,12 +49,6 @@ class GalleryPageCase(TestCase):
         doc = pq(response.content)
         imgs = doc('#media-list li img')
         eq_(1, len(imgs))
-
-    def test_gallery_upload_modal(self):
-        # TODO(paul) this will probably be broken up into separate tests:
-        # * Upload modal has the URL's locale selected
-        # * POSTing invalid data shows error messages and pre-fills that data
-        raise SkipTest
 
 
 class GalleryAsyncCase(TestCase):
@@ -111,25 +104,25 @@ class GalleryUploadTestCase(TestCase):
 
     def test_image_draft_shows(self):
         """The image draft is loaded for this user."""
-        image(title=get_draft_title(self.u), creator=self.u)
+        image(is_draft=True, creator=self.u)
         response = get(self.client, 'gallery.gallery', args=['image'])
         eq_(200, response.status_code)
         doc = pq(response.content)
-        assert doc('.image-preview img').attr('src').endswith('098f6b.jpg')
-        eq_(1, doc('.image-preview img').length)
+        assert doc('.file.preview img').attr('src').endswith('098f6b.jpg')
+        eq_(1, doc('.file.preview img').length)
 
     def test_video_draft_shows(self):
         """The video draft is loaded for this user."""
-        video(title=get_draft_title(self.u), creator=self.u)
+        video(is_draft=True, creator=self.u)
         response = get(self.client, 'gallery.gallery', args=['image'])
         eq_(200, response.status_code)
         doc = pq(response.content)
         # Preview for all 3 video formats: flv, ogv, webm
-        eq_(3, doc('ul li.video-preview').length)
+        eq_(3, doc('#gallery-upload-video .preview input').length)
 
     def test_image_draft_post(self):
         """Posting to the page saves the field values for the image draft."""
-        image(title=get_draft_title(self.u), creator=self.u)
+        image(is_draft=True, creator=self.u)
         response = post(self.client, 'gallery.gallery',
                         {'description': '??', 'title': 'test'}, args=['image'])
         eq_(200, response.status_code)
@@ -140,13 +133,27 @@ class GalleryUploadTestCase(TestCase):
 
     def test_video_draft_post(self):
         """Posting to the page saves the field values for the video draft."""
-        video(title=get_draft_title(self.u), creator=self.u)
+        video(is_draft=True, creator=self.u)
         response = post(self.client, 'gallery.gallery',
                         {'title': 'zTestz'}, args=['image'])
         eq_(200, response.status_code)
         doc = pq(response.content)
         # Preview for all 3 video formats: flv, ogv, webm
         eq_('zTestz', doc('#gallery-upload-modal input[name="title"]').val())
+
+    def test_modal_locale_selected(self):
+        """Locale value is selected for upload modal."""
+        response = get(self.client, 'gallery.gallery', args=['image'],
+                       locale='fr')
+        doc = pq(response.content)
+        eq_('fr',
+            doc('#gallery-upload-image option[selected="selected"]').val())
+        eq_('fr',
+            doc('#gallery-upload-video option[selected="selected"]').val())
+
+    def test_invalid_messages(self):
+        # TODO(paul) POSTing invalid data shows error messages and pre-fills
+        raise SkipTest
 
 
 class MediaPageCase(TestCase):

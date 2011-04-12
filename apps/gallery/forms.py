@@ -4,7 +4,6 @@ from django.core.exceptions import ValidationError
 
 from tower import ugettext_lazy as _lazy, ugettext as _
 
-from gallery import DRAFT_TITLE_PREFIX
 from gallery.models import Image, Video
 from sumo.form_fields import StrippedCharField
 from sumo_locales import LOCALES
@@ -82,8 +81,8 @@ class MediaForm(forms.ModelForm):
             self.fields['title'].required = True
             self.fields['description'].required = True
 
-    def save(self, update_user=None, **kwargs):
-        return save_form(self, update_user, **kwargs)
+    def save(self, update_user=None, is_draft=True, **kwargs):
+        return save_form(self, update_user, is_draft=is_draft, **kwargs)
 
 
 class ImageForm(MediaForm):
@@ -103,7 +102,6 @@ class ImageForm(MediaForm):
 
     def clean(self):
         c = super(ImageForm, self).clean()
-        c = clean_draft(self, c)
         clean_image_extension(c.get('file'))
         return c
 
@@ -149,7 +147,6 @@ class VideoForm(MediaForm):
                 'flv' in c and c['flv'] and c['flv'].name.endswith('.flv') or
                 'thumbnail' in c and c['thumbnail']):
             raise ValidationError(MSG_VID_REQUIRED)
-        clean_draft(self, c)
         clean_image_extension(c.get('thumbnail'))
         return self.cleaned_data
 
@@ -159,15 +156,7 @@ class VideoForm(MediaForm):
                   'title', 'description')
 
 
-def clean_draft(form, cleaned_data):
-    """Drafts reserve a special title."""
-    c = cleaned_data
-    if 'title' in c and c['title'].startswith(DRAFT_TITLE_PREFIX):
-        raise ValidationError(MSG_TITLE_DRAFT)
-    return c
-
-
-def save_form(form, update_user=None, **kwargs):
+def save_form(form, update_user=None, is_draft=True, **kwargs):
     """Save a media form, add user to updated_by.
 
     Warning: this assumes you're calling it from a subclass of MediaForm.
@@ -176,5 +165,6 @@ def save_form(form, update_user=None, **kwargs):
     obj = super(MediaForm, form).save(commit=False, **kwargs)
     if update_user:
         obj.updated_by = update_user
+    obj.is_draft = is_draft
     obj.save()
     return obj

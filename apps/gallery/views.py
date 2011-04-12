@@ -14,7 +14,7 @@ import jingo
 from tower import ugettext_lazy as _lazy
 
 from access.decorators import login_required
-from gallery import ITEMS_PER_PAGE, DRAFT_TITLE_PREFIX
+from gallery import ITEMS_PER_PAGE
 from gallery.forms import ImageForm, VideoForm, UploadTypeForm
 from gallery.models import Image, Video
 from gallery.utils import upload_image, upload_video, check_media_permissions
@@ -45,8 +45,8 @@ def gallery(request, media_type='image'):
 
     media = paginate(request, media_qs, per_page=ITEMS_PER_PAGE)
 
-    draft = _get_draft_info(request.user)
-    image_form, video_form, upload_type_form = _init_forms(request, draft)
+    drafts = _get_drafts(request.user)
+    image_form, video_form, upload_type_form = _init_forms(request, drafts)
 
     return jingo.render(request, 'gallery/gallery.html',
                         {'media': media,
@@ -60,12 +60,12 @@ def gallery(request, media_type='image'):
 @require_POST
 def upload(request, media_type='image'):
     """Finalizes an uploaded draft."""
-    draft = _get_draft_info(request.user)
-    if media_type == 'image' and draft['image']:
+    drafts = _get_drafts(request.user)
+    if media_type == 'image' and drafts['image']:
         # We're publishing an image draft!
-        image_form = _init_media_form(ImageForm, request, draft['image'])
+        image_form = _init_media_form(ImageForm, request, drafts['image'][0])
         if image_form.is_valid():
-            img = image_form.save()
+            img = image_form.save(is_draft=None)
             generate_thumbnail.delay(img, 'file', 'thumbnail')
             # TODO: We can drop this when we start using Redis.
             invalidate = Image.objects.exclude(pk=img.pk)
@@ -74,11 +74,11 @@ def upload(request, media_type='image'):
             return HttpResponseRedirect(img.get_absolute_url())
         else:
             return gallery(request, media_type='image')
-    elif media_type == 'video' and draft['video']:
+    elif media_type == 'video' and drafts['video']:
         # We're publishing a video draft!
-        video_form = _init_media_form(VideoForm, request, draft['video'])
+        video_form = _init_media_form(VideoForm, request, drafts['video'][0])
         if video_form.is_valid():
-            vid = video_form.save()
+            vid = video_form.save(is_draft=None)
             if vid.thumbnail:
                 generate_thumbnail.delay(vid, 'poster', 'poster',
                                          max_size=settings.WIKI_VIDEO_WIDTH)
@@ -98,22 +98,22 @@ def upload(request, media_type='image'):
 @require_POST
 def cancel_draft(request, media_type='image'):
     """Delete an existing draft for the user."""
-    draft = _get_draft_info(request.user)
-    if media_type == 'image' and draft['image']:
-        draft['image'].delete()
-        draft['image'] = None
-    elif media_type == 'video' and draft['video']:
+    drafts = _get_drafts(request.user)
+    if media_type == 'image' and drafts['image']:
+        drafts['image'].delete()
+        drafts['image'] = None
+    elif media_type == 'video' and drafts['video']:
         delete_file = request.GET.get('field')
         if delete_file not in ('flv', 'ogv', 'webm', 'thumbnail'):
             delete_file = None
 
-        if delete_file and getattr(draft['video'], delete_file):
-            getattr(draft['video'], delete_file).delete()
-            if delete_file == 'thumbnail' and draft['video'].poster:
-                draft['video'].poster.delete()
+        if delete_file and getattr(drafts['video'][0], delete_file):
+            getattr(drafts['video'][0], delete_file).delete()
+            if delete_file == 'thumbnail' and drafts['video'][0].poster:
+                drafts['video'][0].poster.delete()
         elif not delete_file:
-            draft['video'].delete()
-            draft['video'] = None
+            drafts['video'].delete()
+            drafts['video'] = None
     else:
         msg = u'Unrecognized request or nothing to cancel.'
         mimetype = None
@@ -280,18 +280,13 @@ def _get_media_info(media_id, media_type):
     return (media, media_format)
 
 
-def _get_draft_info(user):
+def _get_drafts(user):
     """Get video and image drafts for a given user."""
-    draft = {'image': None, 'video': None}
+    drafts = {'image': None, 'video': None}
     if user.is_authenticated():
-        title = DRAFT_TITLE_PREFIX + str(user.pk)
-        draft['image'] = Image.objects.filter(
-            creator=user, title=title, locale=settings.WIKI_DEFAULT_LANGUAGE)
-        draft['image'] = draft['image'][0] if draft['image'] else None
-        draft['video'] = Video.objects.filter(
-            creator=user, title=title, locale=settings.WIKI_DEFAULT_LANGUAGE)
-        draft['video'] = draft['video'][0] if draft['video'] else None
-    return draft
+        drafts['image'] = Image.objects.filter(creator=user, is_draft=True)
+        drafts['video'] = Video.objects.filter(creator=user, is_draft=True)
+    return drafts
 
 
 def _init_media_form(form_cls, request=None, obj=None,
@@ -316,21 +311,16 @@ def _init_media_form(form_cls, request=None, obj=None,
             for f in ignore_fields:
                 post_data[f] = getattr(obj, f)
 
-        if ('title' in post_data and
-            post_data['title'].startswith(DRAFT_TITLE_PREFIX)):
-            post_data['title'] = ''
-
-    if obj and obj.title.startswith(DRAFT_TITLE_PREFIX):
-        obj.title = ''
-
     return form_cls(post_data, file_data, instance=obj, initial=initial,
                     is_ajax=False)
 
 
-def _init_forms(request, draft):
+def _init_forms(request, drafts):
     """Initialize video and image upload forms given the request and drafts."""
-    image_form = _init_media_form(ImageForm, request, draft['image'])
-    video_form = _init_media_form(VideoForm, request, draft['video'])
+    image = drafts['image'][0] if drafts['image'] else None
+    image_form = _init_media_form(ImageForm, request, image)
+    video = drafts['video'][0] if drafts['video'] else None
+    video_form = _init_media_form(VideoForm, request, video)
     upload_type_form = UploadTypeForm()
     if request.method == 'POST':
         image_form.is_valid()
