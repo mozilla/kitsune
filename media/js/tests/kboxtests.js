@@ -24,7 +24,8 @@ test('declarative', function() {
             $(this).data('kbox').open();
         }
         ok($(this).is(':visible'), 'kbox is now visible');
-        equals($(this).attr('title'), $sandbox.find('.kbox-title').text(),
+        equals($(this).attr('title') || $(this).attr('data-title'),
+               $sandbox.find('.kbox-title').text(),
                'kbox title is correct');
         if($(this).data('modal')) {
             ok($('#kbox-overlay').length === 1 &&

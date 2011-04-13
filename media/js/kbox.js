@@ -103,7 +103,7 @@ KBox.prototype = {
             position: self.$el.data('position') || 'center',
             preOpen: false,
             template: TEMPLATE,
-            title: self.$el.attr('title')
+            title: self.$el.attr('title') || self.$el.attr('data-title')
         }, options);
         self.options = options;
         self.$clickTarget = options.clickTarget && $(options.clickTarget);

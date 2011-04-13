@@ -12,7 +12,7 @@
       <a href="{{ url('wiki.document_revisions', document.slug) }}">{{ _('Cancel Review') }}</a>
     </form>
 
-    <form id="approve-modal" class="kbox" action="" method="post" title="{% if document.parent %}{{ _('Accept this Translation') }}{% else %}{{ _('Accept this Revision') }}{% endif %}" data-modal="true" data-target="#btn-approve">
+    <form id="approve-modal" class="kbox" action="" method="post" data-title="{% if document.parent %}{{ _('Accept this Translation') }}{% else %}{{ _('Accept this Revision') }}{% endif %}" data-modal="true" data-target="#btn-approve">
       {{ csrf() }}
       <p>
         {% if document.parent %}
@@ -35,7 +35,7 @@
       <a class="kbox-cancel" href="{{ url('wiki.document_revisions', document.slug) }}">{{ _('Cancel') }}</a>
     </form>
 
-    <form id="reject-modal" class="kbox" action="" method="post" title="{% if document.parent %}{{ _('Reject this Translation') }}{% else %}{{ _('Reject this Revision') }}{% endif %}" data-modal="true" data-target="#btn-reject">
+    <form id="reject-modal" class="kbox" action="" method="post" data-title="{% if document.parent %}{{ _('Reject this Translation') }}{% else %}{{ _('Reject this Revision') }}{% endif %}" data-modal="true" data-target="#btn-reject">
       {{ csrf() }}
       <p>
         {% trans %}Thanks for taking the time to review these changes. Please consider leaving a

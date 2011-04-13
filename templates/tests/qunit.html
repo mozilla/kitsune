@@ -31,12 +31,15 @@
   {# Test Sandboxes: #}
   <div style="display:none;">
     <div id="kbox">
-      <div class="kbox" title="test kbox" data-target="#sandbox a.kbox-target">
+      <div class="kbox" data-title="ignored title" title="test kbox" data-target="#sandbox a.kbox-target">
         <p>lorem ipsum dolor sit amet.</p>
       </div>
       <a href="#" class="kbox-target">click me</a>
       <div class="kbox" title="modal kbox" data-modal="true">
         <p>modal kbox</p>
+      </div>
+      <div class="kbox" data-title="data-title kbox">
+        <p>data-title kbox</p>
       </div>
     </div>
     
