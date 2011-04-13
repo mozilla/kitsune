@@ -442,9 +442,10 @@ MINIFY_BUNDLES = {
 JAVA_BIN = '/usr/bin/java'
 
 #
-# Session cookies
+# Sessions
 SESSION_COOKIE_SECURE = True
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+SESSION_ENGINE = 'django.contrib.sessions.backends.cached_db'
 
 #
 # Connection information for Sphinx search
