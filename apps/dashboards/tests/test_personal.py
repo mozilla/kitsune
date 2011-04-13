@@ -66,5 +66,5 @@ class DashboardsTests(TestCase):
                            MockDashboard(request, '1'),
                            MockDashboard(request, '2')],
                           [ReviewDashboard(request),
-                           MockDashboard(request, '1'),
-                           MockDashboard(request, '2')]]
+                           MockDashboard(request, '2'),
+                           MockDashboard(request, '1')]]
