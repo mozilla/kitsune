@@ -6,7 +6,7 @@ from dashboards.personal import personal_dashboards
 
 @register.function
 @jinja2.contextfunction
-def user_dashboard_tabs(context, active_tab_slug):
+def personal_dashboard_tabs(context, active_tab_slug):
     """Render the tabs for the user/group dashboard."""
     c = {'dashboards': personal_dashboards(context['request']),
          'active': active_tab_slug}
