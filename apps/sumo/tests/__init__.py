@@ -99,12 +99,16 @@ class MigrationTests(TestCase):
 
     def test_innodb_and_utf8(self):
         """Make sure each created table uses the InnoDB engine and UTF-8."""
+        # Migrations are immutable, so just skip known failures:
+        KNOWN_FAILURES = set(['95-group-dashboards.sql'])
+
         # Heuristic: make sure there are at least as many "ENGINE=InnoDB"s as
         # "CREATE TABLE"s. (There might be additional "InnoDB"s in ALTER TABLE
         # statements, which are fine.)
         path = self._migrations_path()
-        # The ones before 66 have known failures.
-        for filename in sorted(listdir(path))[66:]:
+        for filename in sorted(listdir(path)):
+            if filename in KNOWN_FAILURES:
+                continue
             with open(join(path, filename)) as f:
                 contents = f.read()
             creates = contents.count('CREATE TABLE')
