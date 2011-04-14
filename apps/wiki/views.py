@@ -630,11 +630,17 @@ def delete_revision(request, document_slug, revision_id):
     revision = get_object_or_404(Revision, pk=revision_id,
                                  document__slug=document_slug)
     document = revision.document
+    only_revision = document.revisions.count() == 1
 
     if request.method == 'GET':
         # Render the confirmation page
         return jingo.render(request, 'wiki/confirm_revision_delete.html',
-                            {'revision': revision, 'document': document})
+                            {'revision': revision, 'document': document,
+                             'only_revision': only_revision})
+
+    # Don't delete the only revision of a document
+    if only_revision:
+        return HttpResponseBadRequest()
 
     # Handle confirm delete form POST
     log.warning('User %s is deleting revision with id=%s' %

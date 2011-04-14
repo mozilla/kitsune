@@ -1513,6 +1513,27 @@ class RevisionDeleteTestCase(TestCaseBase):
         d = Document.objects.get(pk=d.pk)
         eq_(prev_revision, d.current_revision)
 
+    def test_delete_only_revision(self):
+        """If there is only one revision, it can't be deleted."""
+        self.client.login(username='admin', password='testpass')
+
+        # Create document with only 1 revision
+        doc = document(save=True)
+        rev = revision(document=doc, save=True)
+
+        # Confirm page should show the message
+        response = get(self.client, 'wiki.delete_revision',
+                       args=[doc.slug, rev.id])
+        eq_(200, response.status_code)
+        eq_('Unable to delete only revision of the document',
+            pq(response.content)('h1.title').text())
+
+        # POST should return bad request and revision should still exist
+        response = post(self.client, 'wiki.delete_revision',
+                        args=[doc.slug, rev.id])
+        eq_(400, response.status_code)
+        Revision.uncached.get(id=rev.id)
+
 
 class ApprovedWatchTests(TestCaseBase):
     """Tests for un/subscribing to revision approvals."""
