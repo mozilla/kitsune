@@ -12,6 +12,7 @@ from tower import ugettext as _
 from access.decorators import login_required
 from announcements.models import Announcement
 from dashboards import ACTIONS_PER_PAGE
+from dashboards.personal import ReviewDashboard, QuestionsDashboard
 from dashboards.readouts import (overview_rows, READOUTS, L10N_READOUTS,
                                  CONTRIBUTOR_READOUTS)
 from forums.models import Post
@@ -118,7 +119,9 @@ def review(request):
     """Review dashboard for a user, includes activity, announcements, etc."""
     return jingo.render(request, 'dashboards/review.html',
                         {'actions': _actions(Post, request),
-                         'announcements': Announcement.get_site_wide()})
+                         'announcements': Announcement.get_site_wide(),
+                         'dashboard_signature':
+                             ReviewDashboard(request).signature})
 
 
 @require_GET
@@ -127,7 +130,9 @@ def questions(request):
     """Support Forum dashboard for a user"""
     return jingo.render(request, 'dashboards/questions.html',
                         {'actions': _actions(Answer, request),
-                         'announcements': Announcement.get_site_wide()})
+                         'announcements': Announcement.get_site_wide(),
+                         'dashboard_signature':
+                             QuestionsDashboard(request).signature})
 
 
 def _actions(model_class, request):

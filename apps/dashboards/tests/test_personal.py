@@ -10,12 +10,22 @@ from sumo.tests import TestCase
 from users.tests import user
 
 
-class MockDashboard(Dashboard):
+class DictDashboard(Dashboard):
+    """Dashboard that uses a dict for its params"""
     slug = 'sea'
 
-    def __init__(self, request, params=''):
-        super(MockDashboard, self).__init__(request, params)
-        self._params = {'stuff': params}
+    def digested_params(self, params):
+        return {'stuff': params}
+
+
+class FlatDashboard(Dashboard):
+    """Dashboard that represents its params just as they're passed in"""
+    slug = 'earth'
+
+
+class AnotherDashboard(Dashboard):
+    """Dashboard that represents its params just as they're passed in"""
+    slug = 'other'
 
 
 class BaseClassTests(TestCase):
@@ -23,18 +33,25 @@ class BaseClassTests(TestCase):
 
     def test_compare_by_value(self):
         """Make sure Dashboard instances compare according to instance vars."""
-        eq_(Dashboard(3, 'fred'), Dashboard(3, 'fred'))
+        eq_(FlatDashboard(3, 'fred'), FlatDashboard(3, 'fred'))
 
     def test_differ_by_class(self):
         """Dashboard subclass instances must compare different when of
-        different classes."""
-        assert Dashboard(3, 'fred') != MockDashboard(3, 'fred')
+        different slugs."""
+        assert FlatDashboard(3, 'fred') != AnotherDashboard(3, 'fred')
 
     def test_unique_in_set(self):
-        """Dashboard subclass instances must compare different when of
-        different classes."""
-        eq_(1, len(set([Dashboard(3, 'fred'), Dashboard(3, 'fred')])))
-        eq_(2, len(set([Dashboard(3, 'fred'), MockDashboard(3, 'fred')])))
+        """Dashboard subclasses instances must hash differently when having
+        different slugs, the same when having the same."""
+        eq_(1, len(set([FlatDashboard(3, 'fred'),
+                        FlatDashboard(3, 'fred')])))
+        eq_(2, len(set([FlatDashboard(3, 'fred'),
+                        AnotherDashboard(3, 'fred')])))
+
+    def test_dict_unique_in_set(self):
+        """Ensure hashing works when using dicts for Dashboard._params."""
+        eq_(1, len(set([DictDashboard(3, 'fred'), DictDashboard(3, 'fred')])))
+        eq_(2, len(set([DictDashboard(3, 'fred'), DictDashboard(3, 'jorg')])))
 
 
 class DashboardsTests(TestCase):
@@ -42,7 +59,7 @@ class DashboardsTests(TestCase):
 
     @mock.patch.object(dashboards.personal,
                        'DYNAMIC_DASHBOARDS',
-                       {MockDashboard.slug: MockDashboard})
+                       {DictDashboard.slug: DictDashboard})
     @mock.patch.object(dashboards.personal,
                        'STATIC_DASHBOARDS',
                        [ReviewDashboard])
@@ -61,10 +78,10 @@ class DashboardsTests(TestCase):
 
         request = MockRequest()
         dashes = personal_dashboards(request)
-        # Sort order of the two MockDashboards is indeterminite at the moment.
+        # Sort order of the two DictDashboards is indeterminite at the moment.
         assert dashes in [[ReviewDashboard(request),
-                           MockDashboard(request, '1'),
-                           MockDashboard(request, '2')],
+                           DictDashboard(request, '1'),
+                           DictDashboard(request, '2')],
                           [ReviewDashboard(request),
-                           MockDashboard(request, '2'),
-                           MockDashboard(request, '1')]]
+                           DictDashboard(request, '2'),
+                           DictDashboard(request, '1')]]

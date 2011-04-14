@@ -1,7 +1,7 @@
 <nav id="doc-tabs">
   <ul>
     {% for dash in dashboards %}
-      <li{% if active == dash.slug %} class="active"{% endif %}>
+      <li{% if dash.signature == dashboard_signature %} class="active"{% endif %}>
         <a href="{{ dash.url }}">{{ dash.title }}</a>
       </li>
     {% endfor %}

@@ -159,7 +159,7 @@ class GroupDashboard(ModelBase):
     # Slug of a Dashboard subclass
     dashboard = models.CharField(
         max_length=10,
-        choices=sorted([(d.slug, d.title)
+        choices=sorted([(d.slug, d.__name__)
                         for d in DYNAMIC_DASHBOARDS.values()],
                        key=lambda tup: tup[1]))
 

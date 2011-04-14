@@ -9,9 +9,9 @@ from users.helpers import profile_url
 class Dashboard(object):
     """Abstract base class for user or group ("personal") dashboards
 
-    Compares and hashes according to the value of its fields so that
-    identically parametrized dashboards of the same class end up
-    de-duplicating.
+    Compares and hashes according to the value of its slug and _params fields
+    (its "signature") so that identically parametrized dashboards of the same
+    class end up de-duplicating.
 
     """
     # Value of the "active" template var when this dash is active. Wouldn't
@@ -25,32 +25,52 @@ class Dashboard(object):
     # title = _lazy(u'Title for tab')
 
     def __init__(self, request, params=''):
-        """Override to unpack and retain parameters in the dict self._params.
-
-        Don't stick params anywhere else, as only self._params will be
-        considered when comparing or hashing.
-
+        """
         Args:
+            request: an HTTP request
             params: string params from a GroupDashboard
 
         """
-        self._params = {}
+        # self.params must be hashable or a dict. Equivalent self.params values
+        # must compare equal.
+        self._params = self._digested_params(params)
         self._request = request
 
+    @property
+    def signature(self):
+        """Return my signature."""
+        return self.slug, self._params
+
+    def _digested_params(self, params):
+        """Parse params into a canonical, comparable data structure.
+
+        For example, this might turn a big JSON blob string into a dict. If it
+        were nontrivial to convert to digested representation, you could
+        convert to params representation in the view yourself and then call
+        this.
+
+        """
+        return params
+
     def __eq__(self, other):
-        return (self.__class__ is other.__class__ and
-                getattr(self, '_params', None) ==
-                getattr(other, '_params', None))
+        # Note: could just as well use slug as __class__.
+        return (self.slug is other.slug and
+                getattr(self, 'params', None) ==
+                getattr(other, 'params', None))
 
     def __ne__(self, other):
         return not self.__eq__(other)
 
     def __hash__(self):
-        items = self._params.items()
-        items.sort()
-        # Different subclasses should hash differently:
-        items.append(self.__class__)
-        return hash(tuple(items))
+        try:
+            return hash((self._params, self.slug))
+        except TypeError:
+            # If params is not hashable, it's required to be a dict.
+            items = self._params.items()
+            items.sort()
+            # Different subclasses should hash differently:
+            items.append(self.slug)
+            return hash(tuple(items))
 
     @property
     def url(self):
