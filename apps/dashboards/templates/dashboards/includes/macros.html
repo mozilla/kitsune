@@ -1,3 +1,4 @@
+{# vim: set ts=2 et sts=2 sw=2: #}
 {% macro print_readout(readout, detail_view_name, locale=None, max_rows=10) %}
   <details class="h2" open="open">
     <summary class="with-mode-selectors">
@@ -15,6 +16,62 @@
     </table>
     <div class="table-footer">
       <a href="{{ url(detail_view_name, readout.slug) }}">{{ readout.details_link_text }}</a>
+    </div>
+  </details>
+{% endmacro %}
+
+{% macro overview_section(readouts, printed_rows) %}
+{# printed_rows is a tuple of pairs, (row, should_color), like so:
+  ((row1, True/False), (row2, True/False), ... etc) #}
+  <details class="h2" open="open">
+    <summary>{{ _('Overview') }}</summary>
+    <table class="overview">
+      {% for row, should_color in printed_rows %}
+        <tr>
+          <td>
+            {% if row.url %}
+              <a href="{{ row.url }}">{{ row.title }}</a>
+            {% else %}
+              {{ row.title }}
+            {% endif %}
+          </td>
+          <td>
+            {% trans numerator=number(row.numerator), denominator=number(row.denominator) %}
+              {{ numerator }}
+              <small>of {{ denominator }}</small>
+            {% endtrans %}
+          </td>
+          <td>
+            {{ row.percent }}%
+            <div class="percent-graph">
+              <div style="width: {{ row.percent }}%"{% if should_color %} class="{{ 'best' if row.percent == 100 else ('better' if row.percent >= 20 else 'bad') }}"{% endif %}></div>
+            </div>
+          </td>
+          <td>
+            {{ row.description }}
+          </td>
+        </tr>
+      {% endfor %}
+      <tr>
+        <td>{{ _('User Interface') }}</td>
+        <td></td>
+        <td></td>
+        <td>
+          {% trans url='https://localize.mozilla.org/' %}
+            A fully translated user interface improves the experience for
+            site visitors in your language. Help
+            <a href="{{ url }}">translate the interface</a>.
+          {% endtrans %}
+        </td>
+      </tr>
+    </table>
+    <div id="overview-options" class="choice-list">
+      <label>{{ _('More options:') }}</label>
+      <ul>
+        {% for slug, readout in readouts.iteritems() %}
+          <li><a href="#{{ slug }}">{{ readout.short_title }}</a></li>
+        {% endfor %}
+      </ul>
     </div>
   </details>
 {% endmacro %}

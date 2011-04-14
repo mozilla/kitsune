@@ -97,8 +97,8 @@ class DocumentVisitsTests(TestCase):
         # We get a str, not a unicode obj, out of the urllib call.
         eq_({d.pk: 1037639, d2.pk: 213817}, WikiDocumentVisits._visit_counts(
             '{"data": {"12/01/2010-12/07/2010": {"SubRows":{'
-            '"http://support.mozilla.com/%s/kb/hellỗ":{"Attributes":{"Title":'
-            '"Firefox Support Home Page | Firefox Support","UrlLink":'
+            '"http://support.mozilla.com/%s/kb/hellỗ":{"Attributes":{'
+            '"Title":"Firefox Support Home Page | Firefox Support","UrlLink":'
             '"http://support.mozilla.com/en-US/home/"},"measures":'
             '{"Visits":1037639.0,"Views":3357731.0,"Average Time Viewed":23.0'
             '},"SubRows":null},"http://support.mozilla.com/%s/kb/there":'

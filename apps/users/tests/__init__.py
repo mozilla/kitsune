@@ -2,7 +2,7 @@ import random
 from string import letters
 from sumo.tests import LocalizingClient, TestCase
 
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 
 from users.models import Profile
 from sumo.tests import with_save
@@ -37,3 +37,12 @@ def user(**kwargs):
                                        for x in xrange(15))
     defaults.update(kwargs)
     return User(**defaults)
+
+
+@with_save
+def group(save=False, **kwargs):
+    defaults = {}
+    if 'name' not in kwargs:
+        defaults['name'] = ''.join(random.choice(letters) for x in xrange(15))
+    defaults.update(kwargs)
+    return Group(**defaults)

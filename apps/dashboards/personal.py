@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.utils.datastructures import SortedDict
 
 from tower import ugettext_lazy as _lazy
@@ -87,11 +88,22 @@ class ReviewDashboard(Dashboard):
     title = _lazy(u'Review', 'dashboard')
 
 
-# TODO: enable
-# class MyLocale(Dashboard):
-#     slug = 'my-locale'
-#     view = 'dashboards.localization'
-#     title = _lazy(u'My locale')
+class LocaleDashboard(Dashboard):
+    slug = 'locale'
+
+    @property
+    def title(self):
+        try:
+            return settings.LOCALES[self._params.strip()].native
+        except KeyError:
+            return u'Unkown locale'
+
+    @property
+    def url(self):
+        locale = self._params.strip()
+        if locale not in settings.LOCALES:
+            locale = settings.WIKI_DEFAULT_LANGUAGE
+        return reverse('dashboards.group_locale', args=[locale])
 
 
 class ProfileDashboard(Dashboard):
@@ -118,8 +130,9 @@ def personal_dashboards(request):
     from dashboards.models import GroupDashboard
 
     # Gather dashboards the user has access to:
-    group_dashes = GroupDashboard.objects.filter(
-        group__in=request.user.groups.all())
+    # Must fall back to [] because __in=<Empty QuerySet> fails.
+    user_groups = request.user.groups.all() or []
+    group_dashes = GroupDashboard.objects.filter(group__in=user_groups)
 
     # Parametrize dashboard classes, and uniquify on class and params:
     dashes = set()
@@ -141,4 +154,5 @@ STATIC_DASHBOARDS = [
     ReviewDashboard, ProfileDashboard, EditProfileDashboard]
 
 # Shown only when mapped to a group:
-DYNAMIC_DASHBOARDS = SortedDict((d.slug, d) for d in [QuestionsDashboard])
+DYNAMIC_DASHBOARDS = SortedDict((d.slug, d) for d in
+    [QuestionsDashboard, LocaleDashboard])

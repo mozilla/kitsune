@@ -12,9 +12,11 @@ from tower import ugettext as _
 from access.decorators import login_required
 from announcements.models import Announcement
 from dashboards import ACTIONS_PER_PAGE
-from dashboards.personal import ReviewDashboard, QuestionsDashboard
+from dashboards.personal import (ReviewDashboard, QuestionsDashboard,
+                                 LocaleDashboard)
 from dashboards.readouts import (overview_rows, READOUTS, L10N_READOUTS,
-                                 CONTRIBUTOR_READOUTS)
+                                 CONTRIBUTOR_READOUTS, GROUP_L10N_READOUTS,
+                                 GROUP_CONTRIBUTOR_READOUTS)
 from forums.models import Post
 from sumo_locales import LOCALES
 from sumo.urlresolvers import reverse
@@ -68,12 +70,14 @@ def _kb_main(request, readouts, template, locale=None, extra_data=None):
     `extra_data` dict to the template in addition to the standard data.
 
     """
+    current_locale = locale or request.locale
     data = {'readouts': SortedDict((slug, class_(request, locale=locale))
                          for slug, class_ in readouts.iteritems()),
             'default_locale': settings.WIKI_DEFAULT_LANGUAGE,
             'default_locale_name':
                 LOCALES[settings.WIKI_DEFAULT_LANGUAGE].native,
-            'current_locale_name': LOCALES[request.locale].native,
+            'current_locale': current_locale,
+            'current_locale_name': LOCALES[current_locale].native,
             'is_watching_approved': ApproveRevisionInLocaleEvent.is_notifying(
                 request.user, locale=request.locale),
             'is_watching_locale': ReviewableRevisionInLocaleEvent.is_notifying(
@@ -133,6 +137,23 @@ def questions(request):
                          'announcements': Announcement.get_site_wide(),
                          'dashboard_signature':
                              QuestionsDashboard(request).signature})
+
+
+@require_GET
+def group_locale(request, explicit_locale):
+    """Group Locale dashboard for a locale group."""
+    readouts = GROUP_L10N_READOUTS
+    data = {}
+    if explicit_locale == settings.WIKI_DEFAULT_LANGUAGE:
+        readouts = GROUP_CONTRIBUTOR_READOUTS
+    else:
+        data['overview_rows'] = partial(overview_rows, explicit_locale)
+    # TODO: get dashboard announcements here
+    data['announcements'] = Announcement.get_for_group()
+    data['dashboard_signature'] = LocaleDashboard(
+        request, explicit_locale).signature
+    return _kb_main(request, readouts, 'group_locale.html',
+                    extra_data=data, locale=explicit_locale)
 
 
 def _actions(model_class, request):

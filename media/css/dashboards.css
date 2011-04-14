@@ -1,5 +1,9 @@
 /* L10n and Contributor Dashboards */
 
+h2.subtitle {
+    font-size: 160%;
+}
+
 .dashboards table {
     border-collapse: collapse;
     font-family: Helvetica, Arial, sans-serif;
@@ -257,4 +261,11 @@ ul#doc-content p:first-child {
 
 ul#doc-content p:last-child {
     margin-bottom: 0;
+}
+
+/* Group locale dashboard */
+a.full-dash {
+    display: block;
+    font-size: 150%;
+    text-align: center;
 }

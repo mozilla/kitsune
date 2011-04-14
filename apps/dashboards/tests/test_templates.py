@@ -6,9 +6,11 @@ from pyquery import PyQuery as pq
 from django.contrib.auth.models import User
 
 from announcements.models import Announcement
+from dashboards.tests import group_dashboard
 from forums.models import Post
 from sumo.tests import TestCase
 from sumo.urlresolvers import reverse
+from users.tests import user, group
 from wiki.models import MAJOR_SIGNIFICANCE, MEDIUM_SIGNIFICANCE
 from wiki.tests import revision, translated_revision
 
@@ -139,3 +141,35 @@ class AnnouncementForumDashTests(TestCase):
         response = self.client.get(reverse('dashboards.review'), follow=True)
         doc = pq(response.content)
         assert not len(doc('ol.announcements'))
+
+
+class GroupLocaleDashTests(TestCase):
+
+    def test_anonymous_user(self):
+        """Checks the locale dashboard loads for an anonymous user."""
+        response = self.client.get(reverse('dashboards.group_locale',
+                                           locale='de', args=['fr']))
+        eq_(200, response.status_code)
+        doc = pq(response.content)
+        # The locale dash tab does not show up.
+        eq_(3, len(doc('#doc-tabs li')))
+        # The subtitle shows French.
+        eq_(u'Fran\xe7ais', doc('#main h2.subtitle').text())
+
+    def test_for_user_active(self):
+        """Checks the locale dashboard loads for a user associated with it."""
+        u = user(username='test', save=True)
+        g = group(save=True)
+        u.groups.add(g)
+        group_dashboard(save=True)  # defaults to a 'de' localization dashboard
+        self.client.login(username='test', password='testpass')
+        response = self.client.get(reverse('dashboards.group_locale',
+                                           locale='fr', args=['de']))
+        eq_(200, response.status_code)
+        doc = pq(response.content)
+        # The locale dash tab shows up.
+        eq_(4, len(doc('#doc-tabs li')))
+        # The locale dash tabs shows up and is active
+        eq_(u'Deutsch', doc('#doc-tabs li.active').text())
+        # The subtitle shows French.
+        eq_(u'Deutsch', doc('#main h2.subtitle').text())
