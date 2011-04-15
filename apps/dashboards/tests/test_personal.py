@@ -31,9 +31,13 @@ class AnotherDashboard(Dashboard):
 class BaseClassTests(TestCase):
     """Tests for the Dashboards base class"""
 
-    def test_compare_by_value(self):
-        """Make sure Dashboard instances compare according to instance vars."""
+    def test_equal_by_value(self):
+        """Ensure Dashboard instances compare equal according to params."""
         eq_(FlatDashboard(3, 'fred'), FlatDashboard(3, 'fred'))
+
+    def test_differ_by_value(self):
+        """Ensure Dashboard instances compare unequal according to params."""
+        assert FlatDashboard(3, 'fred') != FlatDashboard(3, 'jorg')
 
     def test_differ_by_class(self):
         """Dashboard subclass instances must compare different when of

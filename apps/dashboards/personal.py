@@ -53,10 +53,7 @@ class Dashboard(object):
         return params
 
     def __eq__(self, other):
-        # Note: could just as well use slug as __class__.
-        return (self.slug is other.slug and
-                getattr(self, 'params', None) ==
-                getattr(other, 'params', None))
+        return self.slug is other.slug and self._params == other._params
 
     def __ne__(self, other):
         return not self.__eq__(other)
