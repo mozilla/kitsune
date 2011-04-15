@@ -13,14 +13,6 @@ RewriteRule ^tiki-user_preferences.php /users/edit [L,R=301]
 # Contribute shortcut
 RewriteRule ^contribute/?$ /kb/superheroes-wanted [L,QSA,R=302]
 
-# Redirect old discussion forums to new discussion forums
-RewriteRule ^forum/3(.*) /en-US/forums/contributors$1 [L,QSA,R=301]
-RewriteRule ^([\-a-zA-Z]+)/forum/3(.*) /en-US/forums/contributors$2 [L,QSA,R=301]
-RewriteRule ^forum/4(.*) /en-US/forums/off-topic$1 [L,QSA,R=301]
-RewriteRule ^([\-a-zA-Z]+)/forum/4(.*) /en-US/forums/off-topic$2 [L,QSA,R=301]
-RewriteRule ^forum/5(.*) /en-US/forums/knowledge-base-articles$1 [L,QSA,R=301]
-RewriteRule ^([\-a-zA-Z]+)/forum/5(.*) /en-US/forums/knowledge-base-articles$2 [L,QSA,R=301]
-
 # Redirect old KB docs to new locations
 RewriteRule ^kb/Firefox\+Help$ /home/ [L,NC,R=301]
 RewriteRule ^kb/Windows\+start\+page$ /home/ [L,NC,R=301]
