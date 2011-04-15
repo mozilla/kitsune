@@ -38,6 +38,10 @@
   {% endfor %}
 {% endif %}
 
+{% if refresh %}
+  <meta http-equiv="refresh" content="{{ refresh[1] }};url={{ refresh[0] }}"/>
+{% endif %}
+
 {% if canonical_url %}
   <link rel="canonical" href="{{ canonical_url }}" />
 {% endif %}

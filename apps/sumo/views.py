@@ -4,6 +4,7 @@ import socket
 import StringIO
 
 from django.conf import settings
+from django.contrib.sites.models import Site
 from django.core.cache import parse_backend_uri
 from django.http import (HttpResponsePermanentRedirect, HttpResponseRedirect,
                          HttpResponse)
@@ -46,6 +47,17 @@ def redirect_to(request, url, permanent=True, **kwargs):
         return HttpResponsePermanentRedirect(dest)
 
     return HttpResponseRedirect(dest)
+
+
+def deprecated_redirect(request, url, **kwargs):
+    """Redirect with an interstitial page telling folks to update their
+    bookmarks.
+    """
+    dest = reverse(url, kwargs=kwargs)
+    proto = 'https://' if request.is_secure() else 'http://'
+    host = Site.objects.get_current().domain
+    return jingo.render(request, 'sumo/deprecated.html',
+                        {'dest': dest, 'proto': proto, 'host': host})
 
 
 def robots(request):

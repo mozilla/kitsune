@@ -1,0 +1,19 @@
+{# vim: set ts=2 et sts=2 sw=2: #}
+{% extends "base.html" %}
+{% set title = _('Redirecting') %}
+{% set refresh = (dest, 10) %}
+
+{% block content %}
+<article id="error-page" class="main">
+  <h1>{{ _('A URL has changed!') }}</h1>
+
+  <p>
+    {% trans %}
+      It looks like you've bookmarked an old URL. The new URL for this page
+      is below. You should update your bookmarks. We will forward you to the
+      new URL in 10 seconds.
+    {% endtrans %}
+  </p>
+  <p><strong>{{ proto }}{{ host }}{{ dest }}</strong></p>
+</article>
+{% endblock %}
