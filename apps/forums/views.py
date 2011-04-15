@@ -143,6 +143,8 @@ def reply(request, forum_slug, thread_id):
             reply_.author = request.user
             if 'preview' in request.POST:
                 reply_preview = reply_
+                reply_preview.author_post_count = \
+                    reply_.author.post_set.count()
             else:
                 reply_.save()
 
