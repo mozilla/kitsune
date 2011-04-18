@@ -142,14 +142,14 @@ def questions(request):
 @require_GET
 def group_locale(request, explicit_locale):
     """Group Locale dashboard for a locale group."""
-    readouts = GROUP_L10N_READOUTS
     data = {}
     if explicit_locale == settings.WIKI_DEFAULT_LANGUAGE:
         readouts = GROUP_CONTRIBUTOR_READOUTS
     else:
+        readouts = GROUP_L10N_READOUTS
         data['overview_rows'] = partial(overview_rows, explicit_locale)
-    # TODO: get dashboard announcements here
-    data['announcements'] = Announcement.get_for_group()
+    data['announcements'] = Announcement.get_for_groups(
+        request.user.groups.all())
     data['dashboard_signature'] = LocaleDashboard(
         request, explicit_locale).signature
     return _kb_main(request, readouts, 'group_locale.html',

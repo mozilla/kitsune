@@ -40,7 +40,7 @@ def user(**kwargs):
 
 
 @with_save
-def group(save=False, **kwargs):
+def group(**kwargs):
     defaults = {}
     if 'name' not in kwargs:
         defaults['name'] = ''.join(random.choice(letters) for x in xrange(15))

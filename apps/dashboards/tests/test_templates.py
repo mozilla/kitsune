@@ -1,11 +1,9 @@
-from datetime import datetime, timedelta
-
 from nose.tools import eq_
 from pyquery import PyQuery as pq
 
 from django.contrib.auth.models import User
 
-from announcements.models import Announcement
+from announcements.tests import announcement
 from dashboards.tests import group_dashboard
 from forums.models import Post
 from sumo.tests import TestCase
@@ -118,7 +116,6 @@ class ContributorForumDashTests(TestCase):
 
 class AnnouncementForumDashTests(TestCase):
     fixtures = ['users.json']
-    content = "*crackles* Captain's log, stardate 43124.5 We are doomed."
 
     def setUp(self):
         super(AnnouncementForumDashTests, self).setUp()
@@ -127,11 +124,7 @@ class AnnouncementForumDashTests(TestCase):
 
     def test_active(self):
         """Active announcement shows."""
-        Announcement.objects.create(
-            creator=self.creator,
-            show_after=datetime.now() - timedelta(days=2),
-            show_until=datetime.now() + timedelta(days=2),
-            content=self.content)
+        announcement(creator=self.creator).save()
 
         response = self.client.get(reverse('dashboards.review'), follow=True)
         self.assertContains(response, 'stardate 43124.5')
@@ -158,10 +151,17 @@ class GroupLocaleDashTests(TestCase):
 
     def test_for_user_active(self):
         """Checks the locale dashboard loads for a user associated with it."""
+        # Create user/group and add user to group.
         u = user(username='test', save=True)
         g = group(save=True)
         u.groups.add(g)
+        # Create site-wide and group announcements and dashboard.
+        announcement().save()
+        content = 'stardate 12341'
+        announcement(group=g, content=content).save()
         group_dashboard(save=True)  # defaults to a 'de' localization dashboard
+
+        # Log in and check response.
         self.client.login(username='test', password='testpass')
         response = self.client.get(reverse('dashboards.group_locale',
                                            locale='fr', args=['de']))
@@ -173,3 +173,5 @@ class GroupLocaleDashTests(TestCase):
         eq_(u'Deutsch', doc('#doc-tabs li.active').text())
         # The subtitle shows French.
         eq_(u'Deutsch', doc('#main h2.subtitle').text())
+        # The correct announcement shows up.
+        self.assertContains(response, content)

@@ -224,7 +224,7 @@ class MostVisitedTranslationsReadout(MostVisitedDefaultLanguageReadout):
     slug = 'most-visited-translations'
 
     # L10n: Replace "English" with your language.
-    details_link_text = _lazy(u'All translations in English...')
+    details_link_text = _lazy(u'All translations...')
 
     significance_statuses = {
         MEDIUM_SIGNIFICANCE:
