@@ -228,6 +228,7 @@ INSTALLED_APPS = (
     'postcrash',
     'landings',
     'announcements',
+    'messages',
 
     # Extra apps for testing.
     'django_nose',
