@@ -24,9 +24,9 @@ class CannedResponsesTestCase(TestCase):
 
     def test_list_canned_responses(self):
         """Listing canned responses works as expected."""
-        c1 = cc_category(weight=0)
-        c2 = cc_category(weight=20)
-        c3 = cc_category(locale='fr')
+        c1 = cc_category(weight=0, save=True)
+        c2 = cc_category(weight=20, save=True)
+        c3 = cc_category(locale='fr', save=True)
         r1 = cc_response(categories=[(c1, 0)])
         r2 = cc_response(categories=[(c1, 1), (c2, 0)])
         r3 = cc_response(categories=[(c1, 2), (c2, 1), (c3, 0)])

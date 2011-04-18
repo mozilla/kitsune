@@ -8,9 +8,12 @@ from customercare.models import (Tweet, CategoryMembership, CannedCategory,
 from sumo.tests import with_save
 
 
-# TODO: Change save kwarg defaults to False to match other apps.
-def cc_category(save=True, **kwargs):
-    """Return a canned category."""
+def cc_category(save=False, **kwargs):
+    """Return a canned category.
+
+    Save it if save=True or if a `responses` kwarg is nonempty.
+
+    """
     responses = kwargs.pop('responses', [])
     save = save or responses  # Adding responses forces save.
     defaults = {'title': str(datetime.now()),
@@ -19,7 +22,7 @@ def cc_category(save=True, **kwargs):
     defaults.update(kwargs)
 
     category = CannedCategory(**defaults)
-    if save:
+    if save or responses:
         category.save()
     # Add responses to this category.
     for response, weight in responses:
@@ -29,9 +32,12 @@ def cc_category(save=True, **kwargs):
     return category
 
 
-# TODO: Change save kwarg defaults to False to match other apps.
-def cc_response(save=True, **kwargs):
-    """Return a canned response."""
+def cc_response(save=False, **kwargs):
+    """Return a canned response.
+
+    Save it if save=True or if a `categories` kwarg is nonempty.
+
+    """
     categories = kwargs.pop('categories', [])
     save = save or categories  # Adding categories forces save.
 
@@ -41,7 +47,7 @@ def cc_response(save=True, **kwargs):
     defaults.update(kwargs)
 
     response = CannedResponse(**defaults)
-    if save:
+    if save or categories:
         response.save()
     # Add categories to this response.
     for category, weight in categories:
