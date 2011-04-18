@@ -1,0 +1,19 @@
+from messages.models import InboxMessage, OutboxMessage
+from messages.signals import message_sent
+
+
+def send_message(to, text, sender=None):
+    """Send a private message.
+
+    :arg to: a list of Users to send the message to
+    :arg sender: the User who is sending the message
+    :arg text: the message text
+    """
+    if sender:
+        msg = OutboxMessage.objects.create(sender=sender, message=text)
+        msg.to.add(*to)
+    for user in to:
+        InboxMessage.objects.create(sender=sender, to=user, message=text)
+
+    message_sent.send(sender=InboxMessage, to=to, text=text,
+                      msg_sender=sender)
