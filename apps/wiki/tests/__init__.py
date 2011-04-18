@@ -2,7 +2,7 @@ from datetime import datetime
 
 from django.template.defaultfilters import slugify
 
-from sumo.tests import LocalizingClient, TestCase, get_user
+from sumo.tests import LocalizingClient, TestCase, get_user, with_save
 from wiki.models import Document, Revision, CATEGORIES, SIGNIFICANCES
 
 
@@ -19,20 +19,19 @@ class TestCaseBase(TestCase):
 # than being hidden amongst the values needed merely to get the model to
 # validate.
 
-def document(save=False, **kwargs):
+@with_save
+def document(**kwargs):
     """Return an empty document with enough stuff filled out that it can be
     saved."""
     defaults = {'category': CATEGORIES[0][0], 'title': str(datetime.now())}
     defaults.update(kwargs)
     if 'slug' not in kwargs:
         defaults['slug'] = slugify(defaults['title'])
-    d = Document(**defaults)
-    if save:
-        d.save()
-    return d
+    return Document(**defaults)
 
 
-def revision(save=False, **kwargs):
+@with_save
+def revision(**kwargs):
     """Return an empty revision with enough stuff filled out that it can be
     saved.
 
@@ -46,13 +45,9 @@ def revision(save=False, **kwargs):
     defaults = {'summary': 'Some summary', 'content': 'Some content',
                 'significance': SIGNIFICANCES[0][0], 'comment': 'Some comment',
                 'creator': kwargs.get('creator', get_user()), 'document': d}
-
     defaults.update(kwargs)
 
-    r = Revision(**defaults)
-    if save:
-        r.save()
-    return r
+    return Revision(**defaults)
 
 
 def translated_revision(locale='de', save=False, **kwargs):

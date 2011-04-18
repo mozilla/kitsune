@@ -1,3 +1,4 @@
+from functools import wraps
 from os import listdir
 from os.path import join, dirname
 import re
@@ -127,3 +128,20 @@ class MobileTestCase(TestCase):
 
     def setUp(self):
         self.client.cookies[settings.MOBILE_COOKIE] = 'on'
+
+
+def with_save(func):
+    """Decorate a model maker to add a `save` kwarg.
+
+    If save=True, the model maker will save the object before returning it.
+
+    """
+    @wraps(func)
+    def saving_func(*args, **kwargs):
+        save = kwargs.pop('save', False)
+        ret = func(*args, **kwargs)
+        if save:
+            ret.save()
+        return ret
+
+    return saving_func

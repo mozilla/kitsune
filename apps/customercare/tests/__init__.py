@@ -5,6 +5,7 @@ from django.conf import settings
 
 from customercare.models import (Tweet, CategoryMembership, CannedCategory,
                                  CannedResponse)
+from sumo.tests import with_save
 
 
 # TODO: Change save kwarg defaults to False to match other apps.
@@ -28,6 +29,7 @@ def cc_category(save=True, **kwargs):
     return category
 
 
+# TODO: Change save kwarg defaults to False to match other apps.
 def cc_response(save=True, **kwargs):
     """Return a canned response."""
     categories = kwargs.pop('categories', [])
@@ -53,7 +55,8 @@ def cc_response(save=True, **kwargs):
 next_tweet_id = 1
 
 
-def tweet(save=False, **kwargs):
+@with_save
+def tweet(**kwargs):
     """Return a Tweet with valid default values or the ones passed in.
 
     Args:
@@ -76,7 +79,4 @@ def tweet(save=False, **kwargs):
     if 'tweet_id' not in kwargs:
         defaults['tweet_id'] = next_tweet_id
         next_tweet_id += 1
-    t = Tweet(**defaults)
-    if save:
-        t.save()
-    return t
+    return Tweet(**defaults)
