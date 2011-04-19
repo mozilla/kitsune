@@ -18,8 +18,5 @@
         });
     }
 
-    $(document).ready(function () {
-        makeEmailsClickable();
-    });
-
+    $(document).ready(makeEmailsClickable);
 }());

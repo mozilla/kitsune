@@ -17,8 +17,10 @@ def usernames(request):
     if not pre:
         return HttpResponse(json.dumps([]), mimetype=mimetype)
 
-    q = Q(username__istartswith=pre) | Q(profile__name__istartswith=pre)
-
+    # Eventually, when display name becomes more prominent, we'll want to
+    # include that. Don't just OR this with Q(profile__name__startswith=pre).
+    # That way lies horrid performance.
+    q = Q(username__istartswith=pre)
     users = User.objects.filter(q).values_list('username', flat=True)[0:5]
     # json.dumps won't serialize a QuerySet, so list comp.
     return HttpResponse(json.dumps([u for u in users]), mimetype=mimetype)

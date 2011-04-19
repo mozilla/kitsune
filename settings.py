@@ -107,7 +107,7 @@ ADMIN_MEDIA_PREFIX = '/admin-media/'
 
 # Paths that don't require a locale prefix.
 SUPPORTED_NONLOCALES = ('media', 'admin', 'robots.txt', 'services', '1',
-                        'postcrash')
+                        'postcrash', 'wafflejs')
 
 # Make this unique, and don't share it with anybody.
 SECRET_KEY = '#%tc(zja8j01!r#h_y)=hy!^k)9az74k+-ib&ij&+**s3-e^_z'
@@ -376,6 +376,7 @@ MINIFY_BUNDLES = {
             'global/menu.js',
             'js/main.js',
             'js/format.js',
+            'js/loadtest.js',
         ),
         'libs/jqueryui': (
             'js/libs/jqueryui.min.js',

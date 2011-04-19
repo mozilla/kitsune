@@ -6,6 +6,7 @@ from django.views.decorators.cache import cache_page
 
 from adminplus import AdminSitePlus
 import authority
+from waffle.views import wafflejs
 
 
 admin.site = AdminSitePlus()
@@ -31,6 +32,8 @@ urlpatterns = patterns('',
     # Javascript translations.
     url(r'^jsi18n/.*$', cache_page(60 * 60 * 24 * 365)(javascript_catalog),
         {'domain': 'javascript', 'packages': ['kitsune']}, name='jsi18n'),
+    # JavaScript Waffle.
+    url(r'^wafflejs$', wafflejs, name='wafflejs'),
 
     # Deprecated URLs.
     (r'^forum', include('forums.old_urls')),
