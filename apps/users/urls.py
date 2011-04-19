@@ -1,8 +1,14 @@
 from django.conf.urls.defaults import patterns, url, include
 
 from sumo.views import redirect_to
+from users import api
 from users import views
 
+
+# API patterns. All start with /users/api.
+api_patterns = patterns('',
+    url(r'^usernames', api.usernames, name='users.api.usernames'),
+)
 
 # These will all start with /user/<user_id>/
 detail_patterns = patterns('',
@@ -47,6 +53,7 @@ users_patterns = patterns('',
     url(r'^/change_email$', views.change_email, name='users.change_email'),
     url(r'^/confirm_email/(?P<activation_key>\w+)$',
         views.confirm_change_email, name='users.confirm_email'),
+    (r'^/api/', include(api_patterns)),
 )
 
 urlpatterns = patterns('',
