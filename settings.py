@@ -129,6 +129,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'sumo.context_processors.global_settings',
     'sumo.context_processors.for_data',
     'jingo_minify.helpers.build_ids',
+    'messages.context_processors.unread_message_count',
 )
 
 MIDDLEWARE_CLASSES = (

@@ -17,3 +17,8 @@ def send_message(to, text, sender=None):
 
     message_sent.send(sender=InboxMessage, to=to, text=text,
                       msg_sender=sender)
+
+
+def unread_count_for(user):
+    """Returns the number of unread messages for the specified user."""
+    return InboxMessage.objects.filter(to=user, read=False).count()
