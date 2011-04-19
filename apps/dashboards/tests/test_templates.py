@@ -138,39 +138,42 @@ class AnnouncementForumDashTests(TestCase):
 
 class GroupLocaleDashTests(TestCase):
 
+    def setUp(self):
+        super(GroupLocaleDashTests, self).setUp()
+        self.g = group(save=True, name='A group')
+        group_dashboard(save=True)  # defaults to a 'de' localization dashboard
+
     def test_anonymous_user(self):
         """Checks the locale dashboard loads for an anonymous user."""
-        response = self.client.get(reverse('dashboards.group_locale',
-                                           locale='de', args=['fr']))
+        response = self.client.get(reverse('dashboards.group',
+                                           args=[self.g.pk]), follow=True)
         eq_(200, response.status_code)
         doc = pq(response.content)
         # The locale dash tab does not show up.
-        eq_(3, len(doc('#doc-tabs li')))
+        eq_(1, len(doc('#doc-tabs li')))
         # The subtitle shows French.
-        eq_(u'Fran\xe7ais', doc('#main h2.subtitle').text())
+        eq_(u'Deutsch', doc('#main h2.subtitle').text())
 
     def test_for_user_active(self):
         """Checks the locale dashboard loads for a user associated with it."""
         # Create user/group and add user to group.
         u = user(username='test', save=True)
-        g = group(save=True)
-        u.groups.add(g)
+        u.groups.add(self.g)
         # Create site-wide and group announcements and dashboard.
         announcement().save()
         content = 'stardate 12341'
-        announcement(group=g, content=content).save()
-        group_dashboard(save=True)  # defaults to a 'de' localization dashboard
+        announcement(group=self.g, content=content).save()
 
         # Log in and check response.
         self.client.login(username='test', password='testpass')
-        response = self.client.get(reverse('dashboards.group_locale',
-                                           locale='fr', args=['de']))
+        response = self.client.get(reverse('dashboards.group',
+                                           args=[self.g.pk]), follow=True)
         eq_(200, response.status_code)
         doc = pq(response.content)
         # The locale dash tab shows up.
         eq_(4, len(doc('#doc-tabs li')))
         # The locale dash tabs shows up and is active
-        eq_(u'Deutsch', doc('#doc-tabs li.active').text())
+        eq_(u'A group', doc('#doc-tabs li.active').text())
         # The subtitle shows French.
         eq_(u'Deutsch', doc('#main h2.subtitle').text())
         # The correct announcement shows up.

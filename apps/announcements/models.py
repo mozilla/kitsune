@@ -49,25 +49,23 @@ class Announcement(ModelBase):
 
     @classmethod
     def get_site_wide(cls):
-        return cls._group_query_filter(Q(group=None))
+        return cls._group_query_filter(group=None)
 
     @classmethod
     def get_for_group_name(cls, group_name):
-        """Returns visible announcements for a given group name, or in no group
-        if none is provided."""
-        group_q = Q(group=Group.objects.get(name=group_name))
-        return cls._group_query_filter(group_q)
+        """Returns visible announcements for a given group name."""
+        return cls._group_query_filter(group__name=group_name)
 
     @classmethod
-    def get_for_groups(cls, groups=None):
-        """Returns visible announcements for a given (query)set of groups."""
-        return cls._group_query_filter(Q(group__in=groups or []))
+    def get_for_group_id(cls, group_id):
+        """Returns visible announcements for a given group id."""
+        return cls._group_query_filter(group__id=group_id)
 
     @classmethod
-    def _group_query_filter(cls, group_query):
+    def _group_query_filter(cls, **query_kwargs):
         """Return visible announcements given a group query."""
         return Announcement.objects.filter(
             # Show if interval is specified and current or show_until is None
             Q(show_after__lt=datetime.now()) &
             (Q(show_until__gt=datetime.now()) | Q(show_until__isnull=True)),
-            group_query)
+            **query_kwargs)

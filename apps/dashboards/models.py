@@ -8,18 +8,13 @@ from django.db import models
 
 from tower import ugettext_lazy as _lazy
 
-from dashboards.personal import DYNAMIC_DASHBOARDS
+from dashboards import THIS_WEEK, ALL_TIME, PERIODS
+from dashboards.personal import GROUP_DASHBOARDS
 from sumo.models import ModelBase
 from wiki.models import Document
 
 
 log = logging.getLogger('k.dashboards')
-
-# Report time period enumerations:
-THIS_WEEK = 0
-ALL_TIME = 1
-PERIODS = [(THIS_WEEK, _lazy(u'This Week')),
-           (ALL_TIME, _lazy(u'All Time'))]
 
 
 class StatsException(Exception):
@@ -154,13 +149,13 @@ class GroupDashboard(ModelBase):
     # We could have just used a permission per dashboard to do the mapping if
     # we didn't need to parametrize them.
 
-    group = models.ForeignKey(Group)
+    group = models.OneToOneField(Group, related_name='dashboard')
 
     # Slug of a Dashboard subclass
     dashboard = models.CharField(
         max_length=10,
         choices=sorted([(d.slug, d.__name__)
-                        for d in DYNAMIC_DASHBOARDS.values()],
+                        for d in GROUP_DASHBOARDS.values()],
                        key=lambda tup: tup[1]))
 
     # Might expand to a TextField if we run out of room:
@@ -170,3 +165,6 @@ class GroupDashboard(ModelBase):
         help_text=_lazy(u'Parameters which will be passed to the dashboard. '
                          'The dashboard determines the meaning and format of '
                          'these.'))
+
+    def __unicode__(self):
+        return u'%s (%s)' % (self.dashboard, self.parameters)

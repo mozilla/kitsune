@@ -49,21 +49,13 @@ class AnnouncementModelTests(TestCase):
         eq_(1, group_ann.count())
         eq_(a, group_ann[0])
 
-    def test_get_for_groups_none(self):
+    def test_get_for_group_id(self):
         """If no groups are passed, nothing is returned."""
         # Site-wide announcement
         announcement().save()
         # Announcement in a group.
-        announcement(group=self.group, save=True)
+        a = announcement(group=self.group, save=True)
 
-        group_ann = Announcement.get_for_groups()
-        eq_(0, len(group_ann))
-
-    def test_get_for_groups(self):
-        # Site-wide announcement
-        announcement().save()
-        # Announcement in a group.
-        announcement(group=self.group).save()
-
-        group_ann = Announcement.get_for_groups([self.group])
+        group_ann = Announcement.get_for_group_id(self.group.id)
         eq_(1, len(group_ann))
+        eq_(a, group_ann[0])

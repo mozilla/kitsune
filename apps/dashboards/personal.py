@@ -1,124 +1,71 @@
+from functools import partial
+
 from django.conf import settings
+from django.http import HttpResponse
 from django.utils.datastructures import SortedDict
 
-from tower import ugettext_lazy as _lazy
+import jingo
 
-from sumo.urlresolvers import reverse
-from users.helpers import profile_url
+from announcements.models import Announcement
+from dashboards.readouts import (
+    overview_rows, GROUP_CONTRIBUTOR_READOUTS, GROUP_L10N_READOUTS)
+from dashboards.utils import model_actions, render_readouts
+from questions.models import Answer
 
 
 class Dashboard(object):
     """Abstract base class for user or group ("personal") dashboards
 
-    Compares and hashes according to the value of its slug and _params fields
-    (its "signature") so that identically parametrized dashboards of the same
-    class end up de-duplicating.
+    Renders using self.render()
 
     """
-    # Value of the "active" template var when this dash is active. Wouldn't
-    # hurt to be a valid CSS class name. Class attr.
+    # Slug is stored in the DB and required to associate with classes.
     # slug = 'some-dash'
+    # render() = render your dashboard, returns straight to a view.
 
-    # If a dashboard's URL is invariant, just define a reversible view path:
-    # _view = 'some.view'
-
-    # Instance attr:
-    # title = _lazy(u'Title for tab')
-
-    def __init__(self, request, params=''):
+    def __init__(self, request, id, params):
         """
         Args:
             request: an HTTP request
-            params: string params from a GroupDashboard
+            id: a GroupDashboard's id
+            params: a GroupDashboard's parameters
 
         """
-        # self.params must be hashable or a dict. Equivalent self.params values
-        # must compare equal.
-        self._params = self._digested_params(params)
         self._request = request
+        self._params = params
+        self._id = id
 
-    @property
-    def signature(self):
-        """Return my signature."""
-        return self.slug, self._params
-
-    def _digested_params(self, params):
-        """Parse params into a canonical, comparable data structure.
-
-        For example, this might turn a big JSON blob string into a dict. If it
-        were nontrivial to convert to digested representation, you could
-        convert to params representation in the view yourself and then call
-        this.
-
-        """
-        return params
-
-    def __eq__(self, other):
-        return self.slug is other.slug and self._params == other._params
-
-    def __ne__(self, other):
-        return not self.__eq__(other)
-
-    def __hash__(self):
-        try:
-            return hash((self._params, self.slug))
-        except TypeError:
-            # If params is not hashable, it's required to be a dict.
-            items = self._params.items()
-            items.sort()
-            # Different subclasses should hash differently:
-            items.append(self.slug)
-            return hash(tuple(items))
-
-    @property
-    def url(self):
-        """Default implementation which reverses self._view"""
-        return reverse(self._view)
+    def render(self):
+        """Override this to render your dashboard."""
+        return HttpResponse('Hi, I am a group dashboard.')
 
 
 class QuestionsDashboard(Dashboard):
     slug = 'forum'
-    _view = 'dashboards.questions'
-    title = _lazy(u'Forum')
 
-
-class ReviewDashboard(Dashboard):
-    slug = 'review'
-    _view = 'dashboards.review'
-    title = _lazy(u'Review', 'dashboard')
+    def render(self):
+        return jingo.render(self._request, 'dashboards/questions.html',
+                            {'actions': model_actions(Answer, self._request),
+                             'active_tab': self._id,
+                             'announcements': Announcement.get_site_wide()})
 
 
 class LocaleDashboard(Dashboard):
     slug = 'locale'
 
-    @property
-    def title(self):
-        try:
-            return settings.LOCALES[self._params.strip()].native
-        except KeyError:
-            return u'Unkown locale'
-
-    @property
-    def url(self):
+    def render(self):
+        """Locale dashboard for a group."""
         locale = self._params.strip()
-        if locale not in settings.LOCALES:
-            locale = settings.WIKI_DEFAULT_LANGUAGE
-        return reverse('dashboards.group_locale', args=[locale])
-
-
-class ProfileDashboard(Dashboard):
-    slug = 'my-profile'
-    title = _lazy(u'My profile')
-
-    @property
-    def url(self):
-        return profile_url(self._request.user)
-
-
-class EditProfileDashboard(Dashboard):
-    slug = 'edit-profile'
-    _view = 'users.edit_profile'
-    title = _lazy(u'Edit my profile')
+        data = {}
+        if locale == settings.WIKI_DEFAULT_LANGUAGE:
+            readouts = GROUP_CONTRIBUTOR_READOUTS
+        else:
+            readouts = GROUP_L10N_READOUTS
+            data['overview_rows'] = partial(overview_rows, locale)
+        data['announcements'] = Announcement.get_for_group_id(self._id)
+        data['active_tab'] = self._id
+        return render_readouts(self._request, readouts, 'group_locale.html',
+                               extra_data=data, locale=locale)
 
 
 def personal_dashboards(request):
@@ -132,27 +79,10 @@ def personal_dashboards(request):
     # Gather dashboards the user has access to:
     # Must fall back to [] because __in=<Empty QuerySet> fails.
     user_groups = request.user.groups.all() or []
-    group_dashes = GroupDashboard.objects.filter(group__in=user_groups)
+    return GroupDashboard.objects.filter(
+        group__in=user_groups).order_by('group__name')
 
-    # Parametrize dashboard classes, and uniquify on class and params:
-    dashes = set()
-    dashes.update(DYNAMIC_DASHBOARDS[g.dashboard](request, g.parameters)
-                  for g in group_dashes
-                  if g.dashboard in DYNAMIC_DASHBOARDS)
-
-    # Sort the dynamic dashboards:
-    sorted_dashes = list(dashes)
-    # TODO: When we need a real sort order, do something about it:
-    sorted_dashes.sort(key=lambda dash: dash.slug)
-
-    # Prepend the always-shown static dashboards ones:
-    return [d(request) for d in STATIC_DASHBOARDS] + sorted_dashes
-
-
-# Dashboards always shown:
-STATIC_DASHBOARDS = [
-    ReviewDashboard, ProfileDashboard, EditProfileDashboard]
 
 # Shown only when mapped to a group:
-DYNAMIC_DASHBOARDS = SortedDict((d.slug, d) for d in
+GROUP_DASHBOARDS = SortedDict((d.slug, d) for d in
     [QuestionsDashboard, LocaleDashboard])
