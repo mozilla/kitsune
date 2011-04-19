@@ -5,7 +5,7 @@ from nose.tools import eq_
 from announcements.models import Announcement
 from announcements.tests import announcement
 from sumo.tests import TestCase
-from users.tests import user, group
+from users.tests import user, group, profile
 
 
 class AnnouncementModelTests(TestCase):
@@ -13,6 +13,7 @@ class AnnouncementModelTests(TestCase):
     def setUp(self):
         super(AnnouncementModelTests, self).setUp()
         self.creator = user(save=True)
+        profile(self.creator).save()
         self.group = group(save=True)
         self.creator.groups.add(self.group)
 

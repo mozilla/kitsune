@@ -3,6 +3,7 @@ from datetime import datetime
 from django.contrib.auth.models import User, Group
 from django.db import models
 from django.db.models import Q
+from django.db.models.signals import post_save
 
 from tower import ugettext as _
 
@@ -69,3 +70,17 @@ class Announcement(ModelBase):
             Q(show_after__lt=datetime.now()) &
             (Q(show_until__gt=datetime.now()) | Q(show_until__isnull=True)),
             **query_kwargs)
+
+
+def connector(sender, instance, created, **kw):
+    # Only email new announcements in a group. We don't want to email everyone.
+    if created and instance.group:
+        from announcements.tasks import send_group_email
+        now = datetime.now()
+        if instance.is_visible():
+            send_group_email.delay(instance.pk)
+        elif now < instance.show_after:
+            send_group_email.delay(instance.pk, eta=instance.show_after)
+
+post_save.connect(connector, sender=Announcement,
+                  dispatch_uid='email_announcement')

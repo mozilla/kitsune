@@ -1,14 +1,16 @@
+import mock
 from nose.tools import eq_
 from pyquery import PyQuery as pq
 
 from django.contrib.auth.models import User
+from django.contrib.sites.models import Site
 
 from announcements.tests import announcement
 from dashboards.tests import group_dashboard
 from forums.models import Post
 from sumo.tests import TestCase
 from sumo.urlresolvers import reverse
-from users.tests import user, group
+from users.tests import user, group, profile
 from wiki.models import MAJOR_SIGNIFICANCE, MEDIUM_SIGNIFICANCE
 from wiki.tests import revision, translated_revision
 
@@ -141,7 +143,8 @@ class GroupLocaleDashTests(TestCase):
     def setUp(self):
         super(GroupLocaleDashTests, self).setUp()
         self.g = group(save=True, name='A group')
-        group_dashboard(save=True)  # defaults to a 'de' localization dashboard
+        # defaults to a 'de' localization dashboard
+        group_dashboard(group=self.g, save=True)
 
     def test_anonymous_user(self):
         """Checks the locale dashboard loads for an anonymous user."""
@@ -154,11 +157,14 @@ class GroupLocaleDashTests(TestCase):
         # The subtitle shows French.
         eq_(u'Deutsch', doc('#main h2.subtitle').text())
 
-    def test_for_user_active(self):
+    @mock.patch.object(Site.objects, 'get_current')
+    def test_for_user_active(self, get_current):
         """Checks the locale dashboard loads for a user associated with it."""
+        get_current.return_value.domain = 'testserver'
         # Create user/group and add user to group.
         u = user(username='test', save=True)
         u.groups.add(self.g)
+        profile(u).save()
         # Create site-wide and group announcements and dashboard.
         announcement().save()
         content = 'stardate 12341'
