@@ -2,7 +2,8 @@ from nose.tools import eq_
 
 from messages import send_message
 from messages.models import InboxMessage, OutboxMessage
-from sumo.tests import TestCase, get_user
+from sumo.tests import TestCase
+from users.tests import get_user
 
 
 class SendTests(TestCase):

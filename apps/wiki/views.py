@@ -665,6 +665,28 @@ def delete_revision(request, document_slug, revision_id):
                                         args=[document.slug]))
 
 
+@login_required
+def delete_document(request, document_slug):
+    """Delete a revision."""
+    document = get_object_or_404(Document, locale=request.locale,
+                                 slug=document_slug)
+
+    # Check permission
+    if not document.allows_deleting_by(request.user):
+        raise PermissionDenied
+
+    if request.method == 'GET':
+        # Render the confirmation page
+        return jingo.render(request, 'wiki/confirm_document_delete.html',
+                            {'document': document})
+
+    # Handle confirm delete form POST
+    document.delete()
+
+    return jingo.render(request, 'wiki/confirm_document_delete.html',
+                        {'document': document, 'delete_confirmed': True})
+
+
 def _document_form_initial(document):
     """Return a dict with the document data pertinent for the form."""
     return {'title': document.title,

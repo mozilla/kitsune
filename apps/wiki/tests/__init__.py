@@ -2,7 +2,8 @@ from datetime import datetime
 
 from django.template.defaultfilters import slugify
 
-from sumo.tests import LocalizingClient, TestCase, get_user, with_save
+from sumo.tests import LocalizingClient, TestCase, with_save
+from users.tests import get_user
 from wiki.models import Document, Revision, CATEGORIES, SIGNIFICANCES
 
 

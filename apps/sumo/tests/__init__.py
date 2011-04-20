@@ -5,7 +5,6 @@ import re
 from smtplib import SMTPRecipientsRefused
 
 from django.conf import settings
-from django.contrib.auth.models import User
 from django.test.client import Client
 
 from nose.tools import eq_
@@ -29,6 +28,8 @@ def starts_with(text, substring):
     """Assert `text` starts with `substring`."""
     assert text.startswith(substring), "%r doesn't start with %r" % (text,
                                                                      substring)
+
+
 def send_mail_raise_smtp(subject, content, from_emal, recipients):
     """Patch mail.send_mail with this in your tests to check what happens when
     an email fails to send."""
@@ -64,16 +65,6 @@ class LocalizingClient(Client):
 
 class FixtureMissingError(Exception):
     """Raise this if a fixture is missing"""
-
-
-def get_user(username='jsocol'):
-    """Return a django user or raise FixtureMissingError"""
-    try:
-        return User.objects.get(username=username)
-    except User.DoesNotExist:
-        raise FixtureMissingError(
-            'Username "%s" not found. You probably forgot to import a'
-            ' users fixture.' % username)
 
 
 class MigrationTests(TestCase):
