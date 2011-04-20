@@ -58,6 +58,9 @@ document_patterns = patterns('wiki.views',
     # Delete a revision
     url(r'^/revision/(?P<revision_id>\d+)/delete$', 'delete_revision',
         name='wiki.delete_revision'),
+
+    # Delete a document
+    url(r'^/delete', 'delete_document', name='wiki.document_delete'),
 )
 
 urlpatterns = patterns('wiki.views',

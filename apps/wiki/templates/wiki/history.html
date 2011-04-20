@@ -99,6 +99,11 @@
         {{ _('This document has no revisions.') }}
       {% endif %}
     </div>
+    {% if document.allows_deleting_by(user) %}
+      <div id="delete-doc">
+        <a href="{{ url('wiki.document_delete', document.slug) }}">Delete this document</a>
+      </div>
+    {% endif %}
   </article>
 {% endblock %}
 

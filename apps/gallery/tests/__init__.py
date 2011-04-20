@@ -1,7 +1,7 @@
 from django.core.files import File
 
 from gallery.models import Image, Video
-from sumo.tests import get_user
+from users.tests import get_user
 
 
 def image(file_and_save=True, **kwargs):

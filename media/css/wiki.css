@@ -672,6 +672,12 @@ details.h2 > summary {
     padding-top: 10px;
 }
 
+#delete-doc {
+    margin: 50px 0 0;
+    padding: 0 10px 0 0;
+    text-align: right;
+}
+
 /* Revision page */
 div.revision-info li {
     list-style-position: inside;
@@ -772,15 +778,26 @@ td.diff_header {
     background-color:#ffaaaa;
 }
 
-/* Delete Revision */
+/* Delete Document/Revision */
+#delete-document h2 {
+    font-size: 20px;
+}
+
+#delete-document label,
 #delete-revision label {
     display: block;
     font-size: 16px;
     margin: 15px 0 0;
 }
 
+#delete-document form,
 #delete-revision form {
     margin: 20px 0 0;
+}
+
+#delete-document pre,
+#delete-revision pre {
+    white-space: pre-wrap;
 }
 
 /* Submit commit message modal */

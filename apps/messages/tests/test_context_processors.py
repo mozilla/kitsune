@@ -7,7 +7,8 @@ import waffle
 
 import messages
 from messages.context_processors import unread_message_count
-from sumo.tests import TestCase, get_user
+from sumo.tests import TestCase
+from users.tests import get_user
 
 
 class UnreadCountTests(TestCase):
@@ -38,7 +39,6 @@ class UnreadCountTests(TestCase):
         request.user = get_user('rrosario')
         eq_(3, unread_message_count(request)['unread_message_count'])
         assert unread_count_for.called
-    test_authenticated.xx = 1
 
     @mock.patch.object(messages, 'unread_count_for')
     @mock.patch.object(waffle, 'flag_is_active')

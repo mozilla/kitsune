@@ -1,11 +1,12 @@
 import random
 from string import letters
-from sumo.tests import LocalizingClient, TestCase
+from sumo.tests import LocalizingClient, TestCase, with_save
 
-from django.contrib.auth.models import User, Group
+from django.contrib.auth.models import User, Group, Permission
+from django.contrib.contenttypes.models import ContentType
 
+from sumo.tests import FixtureMissingError
 from users.models import Profile
-from sumo.tests import with_save
 
 
 class TestCaseBase(TestCase):
@@ -30,13 +31,24 @@ def profile(user, **kwargs):
 
 @with_save
 def user(**kwargs):
-    defaults = {'password':
-                    'sha1$d0fcb$661bd5197214051ed4de6da4ecdabe17f5549c7c'}
+    defaults = {}
     if 'username' not in kwargs:
         defaults['username'] = ''.join(random.choice(letters)
                                        for x in xrange(15))
     defaults.update(kwargs)
-    return User(**defaults)
+    user = User(**defaults)
+    user.set_password(kwargs.get('password', 'testpass'))
+    return user
+
+
+def get_user(username='jsocol'):
+    """Return a django user or raise FixtureMissingError"""
+    try:
+        return User.objects.get(username=username)
+    except User.DoesNotExist:
+        raise FixtureMissingError(
+            'Username "%s" not found. You probably forgot to import a'
+            ' users fixture.' % username)
 
 
 @with_save
@@ -46,3 +58,20 @@ def group(**kwargs):
         defaults['name'] = ''.join(random.choice(letters) for x in xrange(15))
     defaults.update(kwargs)
     return Group(**defaults)
+
+
+def add_permission(user, model, permission_codename):
+    """Add a permission to a user.
+
+    Creates the permission if it doesn't exist.
+
+    """
+    content_type = ContentType.objects.get_for_model(model)
+    try:
+        permission = Permission.objects.get(codename=permission_codename,
+                                            content_type=content_type)
+    except Permission.DoesNotExist:
+        permission = Permission.objects.create(codename=permission_codename,
+                                               name=permission_codename,
+                                               content_type=content_type)
+    user.user_permissions.add(permission)
