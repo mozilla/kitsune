@@ -38,6 +38,15 @@ class LogoutRequiredTestCase(TestCase):
         eq_(302, response.status_code)
         eq_('/bar', response['location'])
 
+    def test_no_redirect_ajax(self):
+        """Ajax requests should not redirect."""
+        request = test_utils.RequestFactory().get('/foo')
+        request.META['HTTP_X_REQUESTED_WITH'] = 'XMLHttpRequest'
+        request.user = User.objects.get(username='jsocol')
+        view = logout_required(simple_view)
+        response = view(request)
+        eq_(403, response.status_code)
+
 
 class LoginRequiredTestCase(TestCase):
     fixtures = ['users.json']
@@ -79,6 +88,15 @@ class LoginRequiredTestCase(TestCase):
         response = view(request)
         eq_(200, response.status_code)
 
+    def test_no_redirect_ajax(self):
+        """Ajax requests should not redirect."""
+        request = test_utils.RequestFactory().get('/foo')
+        request.META['HTTP_X_REQUESTED_WITH'] = 'XMLHttpRequest'
+        request.user = AnonymousUser()
+        view = login_required(simple_view)
+        response = view(request)
+        eq_(403, response.status_code)
+
 
 class PermissionRequiredTestCase(TestCase):
     fixtures = ['users.json']
@@ -114,3 +132,12 @@ class PermissionRequiredTestCase(TestCase):
         view = permission_required('perm')(simple_view)
         response = view(request)
         eq_(200, response.status_code)
+
+    def test_no_redirect_ajax(self):
+        """Ajax requests should not redirect."""
+        request = test_utils.RequestFactory().get('/foo')
+        request.META['HTTP_X_REQUESTED_WITH'] = 'XMLHttpRequest'
+        request.user = AnonymousUser()
+        view = permission_required('perm')(simple_view)
+        response = view(request)
+        eq_(403, response.status_code)

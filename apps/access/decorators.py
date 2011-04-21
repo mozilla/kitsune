@@ -27,7 +27,8 @@ def user_access_decorator(redirect_func, redirect_url_func, deny_func=None,
     """
     def decorator(view_fn):
         def _wrapped_view(request, *args, **kwargs):
-            if redirect_func(request.user):
+            redirect = redirect_func(request.user)
+            if redirect and not request.is_ajax():
                 # We must call reverse at the view level, else the threadlocal
                 # locale prefixing doesn't take effect.
                 redirect_url = redirect_url_func() or reverse('users.login')
@@ -39,8 +40,8 @@ def user_access_decorator(redirect_func, redirect_url_func, deny_func=None,
                         redirect_url, redirect_field, path)
 
                 return HttpResponseRedirect(redirect_url)
-
-            if deny_func and deny_func(request.user):
+            elif ((redirect and request.is_ajax()) or
+                  (deny_func and deny_func(request.user))):
                 return HttpResponseForbidden()
 
             return view_fn(request, *args, **kwargs)
