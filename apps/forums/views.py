@@ -180,6 +180,8 @@ def new_thread(request, forum_slug):
                             title=form.cleaned_data['title'])
             post_preview = Post(thread=thread, author=request.user,
                                 content=form.cleaned_data['content'])
+            post_preview.author_post_count = \
+                post_preview.author.post_set.count()
         else:
             thread = forum.thread_set.create(creator=request.user,
                                              title=form.cleaned_data['title'])
