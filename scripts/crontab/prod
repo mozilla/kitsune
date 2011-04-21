@@ -10,6 +10,9 @@ HOME = /tmp
 * * * * * cd /data/www/support.mozilla.com/kitsune; /usr/bin/python26 manage.py cron collect_tweets
 * * * * * cd /data/www/support.mozilla.com/kitsune; /usr/bin/python26 manage.py cron get_queue_status
 
+# Every hour.
+42 * * * * cd /data/www/support.mozilla.com/kitsune; /usr/bin/python26 manage.py cleanup
+
 # Every 2 hours.
 1 */2 * * * cd /data/www/support.mozilla.com/kitsune; /usr/bin/python26 manage.py cron calculate_related_documents
 

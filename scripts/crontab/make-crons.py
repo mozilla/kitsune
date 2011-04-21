@@ -53,6 +53,9 @@ HOME = /tmp
 * * * * * $CRON collect_tweets
 * * * * * $CRON get_queue_status
 
+# Every hour.
+42 * * * * $DJANGO cleanup
+
 # Every 2 hours.
 1 */2 * * * $CRON calculate_related_documents
 
