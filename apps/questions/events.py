@@ -29,7 +29,7 @@ class QuestionEvent(InstanceEvent):
         template_path = 'questions/email/activate_watch.ltxt'
         message = loader.render_to_string(template_path, email_kwargs)
         return EmailMessage(subject, message,
-                            settings.NOTIFICATIONS_FROM_ADDRESS, [email])
+                            settings.TIDINGS_FROM_ADDRESS, [email])
 
     @classmethod
     def _activation_url(cls, watch):
@@ -72,7 +72,7 @@ class QuestionReplyEvent(QuestionEvent):
             yield EmailMessage(asker_subject if is_asker
                                    else watcher_subject,
                                content,
-                               settings.NOTIFICATIONS_FROM_ADDRESS,
+                               settings.TIDINGS_FROM_ADDRESS,
                                [u.email])
 
     @classmethod
@@ -105,7 +105,7 @@ class QuestionSolvedEvent(QuestionEvent):
             yield EmailMessage(
                 subject,
                 content,
-                settings.NOTIFICATIONS_FROM_ADDRESS,
+                settings.TIDINGS_FROM_ADDRESS,
                 [u.email])
 
     @classmethod

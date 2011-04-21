@@ -605,12 +605,11 @@ TWITTER_CONSUMER_KEY = ''
 TWITTER_CONSUMER_SECRET = ''
 
 
-NOTIFICATIONS_FROM_ADDRESS = 'notifications@support.mozilla.com'
+TIDINGS_FROM_ADDRESS = 'notifications@support.mozilla.com'
 # Anonymous watches must be confirmed.
-CONFIRM_ANONYMOUS_WATCHES = True
-NOTIFICATIONS_MODEL_BASE = 'sumo.models.ModelBase'
-NOTIFICATIONS_REVERSE = 'sumo.urlresolvers.reverse'
-NOTIFICATIONS_TEST_CASE = 'sumo.tests.TestCase'
+TIDINGS_CONFIRM_ANONYMOUS_WATCHES = True
+TIDINGS_MODEL_BASE = 'sumo.models.ModelBase'
+TIDINGS_REVERSE = 'sumo.urlresolvers.reverse'
 
 
 # URL of the chat server.

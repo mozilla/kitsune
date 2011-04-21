@@ -25,7 +25,7 @@ def notification_mails(revision, subject, template, url, users_and_watches):
          'creator': revision.creator,
          'url': url,
          'host': Site.objects.get_current().domain}
-    mail = EmailMessage(subject, '', settings.NOTIFICATIONS_FROM_ADDRESS)
+    mail = EmailMessage(subject, '', settings.TIDINGS_FROM_ADDRESS)
 
     for u, w in users_and_watches:
         c['watch'] = w
