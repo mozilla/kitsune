@@ -14,11 +14,13 @@ from django.db.models import Q
 from django.http import (HttpResponseRedirect, HttpResponse, Http404,
                          HttpResponseBadRequest, HttpResponseForbidden)
 from django.shortcuts import get_object_or_404
+from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import (require_POST, require_GET,
                                           require_http_methods)
 
 import jingo
 from mobility.decorators import mobile_template
+from session_csrf import anonymous_csrf
 from taggit.models import Tag
 from tidings.events import ActivationRequestFailed
 from tidings.models import Watch
@@ -111,6 +113,7 @@ def questions(request):
                          'tags': tags, 'tagged': tagged})
 
 
+@anonymous_csrf  # Need this so the anon csrf gets set for watch forms. 
 def answers(request, question_id, form=None, watch_form=None,
             answer_preview=None, **extra_kwargs):
     """View the answers to a question."""
@@ -123,6 +126,7 @@ def answers(request, question_id, form=None, watch_form=None,
 
 
 @mobile_template('questions/{mobile/}new_question.html')
+@anonymous_csrf  # This view renders a login form
 def new_question(request, template=None):
     """Ask a new question."""
 
@@ -389,6 +393,7 @@ def solution(request, question_id, answer_id):
 
 
 @require_POST
+@csrf_exempt
 def question_vote(request, question_id):
     """I have this problem too."""
     question = get_object_or_404(Question, pk=question_id)
@@ -416,6 +421,7 @@ def question_vote(request, question_id):
 
 
 @require_POST
+@csrf_exempt
 def answer_vote(request, question_id, answer_id):
     """Vote for Helpful/Not Helpful answers"""
     answer = get_object_or_404(Answer, pk=answer_id, question=question_id)
@@ -627,6 +633,7 @@ def edit_answer(request, question_id, answer_id):
 
 
 @require_POST
+@anonymous_csrf
 def watch_question(request, question_id):
     """Start watching a question for replies or solution."""
 

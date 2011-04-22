@@ -15,17 +15,21 @@ from commonware.decorators import xframe_allow
 import django_qunit.views
 import jingo
 from PIL import Image
+from session_csrf import anonymous_csrf
 
 from sumo.urlresolvers import reverse
+from users.forms import AuthenticationForm
 
 
 log = logging.getLogger('k.services')
 
 
+@anonymous_csrf
 def handle403(request):
     """A 403 message that looks nicer than the normal Apache forbidden page."""
 
-    return jingo.render(request, 'handlers/403.html', status=403)
+    return jingo.render(request, 'handlers/403.html',
+                        {'form': AuthenticationForm() }, status=403)
 
 
 def handle404(request):

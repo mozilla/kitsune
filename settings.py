@@ -120,10 +120,12 @@ TEMPLATE_LOADERS = (
 )
 
 TEMPLATE_CONTEXT_PROCESSORS = (
-    'django.core.context_processors.auth',
+    'django.contrib.auth.context_processors.auth',
     'django.core.context_processors.debug',
     'django.core.context_processors.media',
     'django.core.context_processors.request',
+    'session_csrf.context_processor',
+
     'django.contrib.messages.context_processors.messages',
 
     'sumo.context_processors.global_settings',
@@ -158,10 +160,10 @@ MIDDLEWARE_CLASSES = (
     'sumo.middleware.NoCacheHttpsMiddleware',
     'commonware.middleware.NoVarySessionMiddleware',
     'commonware.middleware.FrameOptionsHeader',
-    'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'sumo.anonymous.AnonymousIdentityMiddleware',
+    'session_csrf.CsrfMiddleware',
     'twitter.middleware.SessionMiddleware',
     'sumo.middleware.PlusToSpaceMiddleware',
     'commonware.middleware.HidePasswordOnException',
@@ -538,7 +540,7 @@ def read_only_mode(env):
 
     # Add in the read-only middleware before csrf middleware.
     extra = 'sumo.middleware.ReadOnlyMiddleware'
-    before = 'django.middleware.csrf.CsrfViewMiddleware'
+    before = 'session_csrf.CsrfMiddleware'
     m = list(env['MIDDLEWARE_CLASSES'])
     m.insert(m.index(before), extra)
     env['MIDDLEWARE_CLASSES'] = tuple(m)

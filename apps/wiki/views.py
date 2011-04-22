@@ -8,6 +8,7 @@ from django.core.exceptions import PermissionDenied
 from django.http import (HttpResponse, HttpResponseRedirect,
                          Http404, HttpResponseBadRequest)
 from django.shortcuts import get_object_or_404
+from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import (require_GET, require_POST,
                                           require_http_methods)
 
@@ -592,6 +593,7 @@ def json_view(request):
 
 
 @require_POST
+@csrf_exempt
 def helpful_vote(request, document_slug):
     """Vote for Helpful/Not Helpful document"""
     document = get_object_or_404(

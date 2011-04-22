@@ -56,7 +56,6 @@
           {% if not question.is_locked and not question.has_voted(request) %}
             <div class="me-too">
               <form action="{{ url('questions.vote', question_id=question.id) }}" method="post">
-                {{ csrf() }}
                 <input class="btn btn-important" type="submit" value="{{ _('I have this problem, too!') }}">
               </form>
             </div>

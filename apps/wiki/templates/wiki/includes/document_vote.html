@@ -2,7 +2,6 @@
 {% if not document.has_voted(request) %}
   <div id="helpful-vote">
     <form class="helpful" action="{{ url('wiki.document_vote', document_slug=document.slug) }}" method="post">
-      {{ csrf() }}
       <p>
         <span>{{ _('Was this article helpful?') }}</span>
         <input type="submit" class="btn" name="helpful" value="{{ _('Yes') }}" />

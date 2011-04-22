@@ -41,6 +41,10 @@ except ImportError:
 # needs to access settings, so we'll setup the environ early.
 setup_environ(settings)
 
+# Monkey patch django's csrf
+import session_csrf
+session_csrf.monkeypatch()
+
 # Import for side-effect: configures our logging handlers.
 import log_settings
 

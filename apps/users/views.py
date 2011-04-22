@@ -12,6 +12,7 @@ from django.shortcuts import get_object_or_404
 from django.utils.http import base36_to_int
 
 import jingo
+from session_csrf import anonymous_csrf
 from tidings.tasks import claim_watches
 
 from access.decorators import logout_required, login_required
@@ -28,6 +29,7 @@ from users.utils import handle_login, handle_register, try_send_email_with_form
 
 
 @ssl_required
+@anonymous_csrf
 def login(request):
     """Try to log the user in."""
     next_url = get_next_url(request) or reverse('home')
@@ -52,6 +54,7 @@ def logout(request):
 @ssl_required
 @logout_required
 @require_http_methods(['GET', 'POST'])
+@anonymous_csrf
 def register(request):
     """Register a new user."""
     form = handle_register(request)
@@ -61,6 +64,7 @@ def register(request):
                         {'form': form})
 
 
+@anonymous_csrf  # This view renders a login form
 def activate(request, activation_key):
     """Activate a User account."""
     activation_key = activation_key.lower()
@@ -79,6 +83,7 @@ def activate(request, activation_key):
                          'form': form})
 
 
+@anonymous_csrf
 def resend_confirmation(request):
     """Resend confirmation email."""
     if request.method == 'POST':
@@ -250,6 +255,7 @@ def delete_avatar(request):
                         {'profile': user_profile})
 
 
+@anonymous_csrf
 def password_reset(request):
     """Password reset form.
 
