@@ -35,7 +35,7 @@ def send_group_email(announcement_id):
                 group=group.name)
             message = loader.render_to_string(template, email_kwargs)
             m = EmailMessage(subject, message,
-                             settings.NOTIFICATIONS_FROM_ADDRESS,
+                             settings.TIDINGS_FROM_ADDRESS,
                              [u.email])
             connection.send_messages([m])
     finally:
