@@ -10,12 +10,6 @@ RewriteRule ^tiki-register /users/register [L,R=301]
 RewriteRule ^tiki-remind_password.php /users/pwreset [L,R=301]
 RewriteRule ^tiki-user_preferences.php /users/edit [L,R=301]
 
-# Contribute shortcut
-RewriteRule ^contribute/?$ /kb/superheroes-wanted [L,QSA,R=302]
-
-# Windows 7 application link
-RewriteRule ^windows7-support(\/)?$  "/home/?as=u" [L,R,NE]
-
 # Redirect locales that point to one locale in SUMO.
 # Kitsune does this by itself, mostly.
 # Not sure about this guy: may need to special-case it in the LocaleURLMiddleware.
