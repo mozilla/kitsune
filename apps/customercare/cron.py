@@ -46,7 +46,7 @@ def collect_tweets():
             settings.CC_TWEETS_PERPAGE))
     else:
         search_options['since_id'] = latest_tweet.tweet_id
-        log.debug('Retrieving tweets with id >= %s' % latest_tweet.tweet_id)
+        log.info('Retrieving tweets with id >= %s' % latest_tweet.tweet_id)
 
     # Retrieve Tweets
     try:
@@ -57,13 +57,11 @@ def collect_tweets():
         return
 
     if not ('results' in raw_data and raw_data['results']):
-        log.info('Twitter returned 0 results.')
+        # Twitter returned 0 results.
         return
 
     # Drop tweets into DB
     for item in raw_data['results']:
-        log.debug('Handling tweet %d: %s...' % (item['id'],
-                                                smart_str(item['text'][:50])))
         # Apply filters to tweet before saving
         item = _filter_tweet(item)
         if not item:
@@ -78,9 +76,7 @@ def collect_tweets():
         try:
             tweet.save()
         except IntegrityError:
-            continue
-        else:
-            log.debug('Tweet %d saved.' % item['id'])
+            pass
 
 
 @cronjobs.register
@@ -126,23 +122,18 @@ def _filter_tweet(item):
     """
     # No replies, no mentions
     if item['to_user_id'] or MENTION_REGEX.search(item['text']):
-        log.debug('Tweet %d discarded (reply).' % item['id'])
         return None
 
     # No retweets
     if RT_REGEX.search(item['text']) or item['text'].find('(via ') > -1:
-        log.debug('Tweet %d discarded (retweet).' % item['id'])
         return None
 
     # No links
     if LINK_REGEX.search(item['text']):
-        log.debug('Tweet %d discarded (link).' % item['id'])
         return None
 
     # Exclude filtered users
     if item['from_user'] in settings.CC_IGNORE_USERS:
-        log.debug('Tweet %d discarded (user %s).' % (
-            item['id'], item['from_user']))
         return None
 
     return item
