@@ -105,7 +105,8 @@ def split_path(path):
 class Prefixer(object):
     def __init__(self, request=None, locale=None):
         """If request is omitted, fall back to a default locale."""
-        self.request = request or WSGIRequest({'REQUEST_METHOD': 'bogus'})
+        self.request = request or WSGIRequest({'REQUEST_METHOD': 'bogus',
+                                               'wsgi.input': None})
         self.locale, self.shortened_path = split_path(self.request.path_info)
         if locale:
             self.locale = locale
