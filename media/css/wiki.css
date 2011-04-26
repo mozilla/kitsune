@@ -371,11 +371,13 @@ article.form-page form li label {
     display: inline;
 }
 
-#document-form label[for="id_is_localizable"] {
+#document-form label[for="id_is_localizable"],
+#document-form label[for="id_is_archived"] {
     display: inline;
 }
 
-#document-form #id_is_localizable {
+#document-form #id_is_localizable,
+#document-form #id_is_archived {
     margin: 0 .5em;
 }
 

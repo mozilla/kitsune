@@ -176,9 +176,18 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin):
     # Cached HTML rendering of approved revision's wiki markup:
     html = models.TextField(editable=False)
 
-    # A document's category much always be that of its parent. If it has no
+    # A document's category must always be that of its parent. If it has no
     # parent, it can do what it wants. This invariant is enforced in save().
     category = models.IntegerField(choices=CATEGORIES, db_index=True)
+
+    # A document's is_archived flag must match that of its parent. If it has no
+    # parent, it can do what it wants. This invariant is enforced in save().
+    is_archived = models.BooleanField(
+        default=False, db_index=True, help_text=_lazy(
+        u'If checked, this wiki page will be hidden from basic searches and '
+         'dashboards. When viewed, the page will warn that it is no longer '
+         'maintained.'))
+
 
     # firefox_versions,
     # operating_systems:
@@ -191,6 +200,7 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin):
     class Meta(object):
         unique_together = (('parent', 'locale'), ('title', 'locale'),
                            ('slug', 'locale'))
+        permissions = [('archive_document', 'Can archive document')]
 
     def _collides(self, attr, value):
         """Return whether there exists a doc in this locale whose `attr` attr
@@ -209,6 +219,7 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin):
         """Translations can't be localizable."""
         self._clean_is_localizable()
         self._clean_category()
+        self._ensure_inherited_attr('is_archived')
 
     def _clean_is_localizable(self):
         """is_localizable == allowed to have translations. Make sure that isn't
@@ -238,20 +249,29 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin):
                                   'not localizable.' % (
                                   unicode(self), self.translations.count()))
 
+    def _ensure_inherited_attr(self, attr):
+        """Make sure my `attr` attr is the same as my parent's if I have one.
+
+        Otherwise, if I have children, make sure their `attr` attr is the same
+        as mine.
+
+        """
+        if self.parent:
+            setattr(self, attr, getattr(self.parent, attr))
+        else:  # An article cannot have both a parent and children.
+            # Make my children the same as me:
+            if self.id:
+                self.translations.all().update(**{attr: getattr(self, attr)})
+
     def _clean_category(self):
         """Make sure a doc's category is the same as its parent's."""
-        parent = self.parent
-        if parent:
-            self.category = parent.category
-        elif self.category not in (id for id, name in CATEGORIES):
+        if (not self.parent and
+            self.category not in (id for id, name in CATEGORIES)):
             # All we really need to do here is make sure category != '' (which
             # is what it is when it's missing from the DocumentForm). The extra
             # validation is just a nicety.
             raise ValidationError(_('Please choose a category.'))
-        else:  # An article cannot have both a parent and children.
-            # Make my children the same as me:
-            if self.id:
-                self.translations.all().update(category=self.category)
+        self._ensure_inherited_attr('category')
 
     def _attr_for_redirect(self, attr, template):
         """Return the slug or title for a new redirect.
@@ -292,6 +312,7 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin):
         # These are too important to leave to a (possibly omitted) is_valid
         # call:
         self._clean_is_localizable()
+        self._ensure_inherited_attr('is_archived')
         # Everything is validated before save() is called, so the only thing
         # that could cause save() to exit prematurely would be an exception,
         # which would cause a rollback, which would negate any category changes
@@ -537,6 +558,9 @@ class Revision(ModelBase):
     based_on = models.ForeignKey('self', null=True, blank=True)
     # TODO: limit_choices_to={'document__locale':
     # settings.WIKI_DEFAULT_LANGUAGE} is a start but not sufficient.
+
+    class Meta(object):
+        permissions = [('review_revision', 'Can review a revision')]
 
     def _based_on_is_clean(self):
         """Return a tuple: (the correct value of based_on, whether the old

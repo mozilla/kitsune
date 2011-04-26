@@ -673,6 +673,35 @@ class DocumentEditTests(TestCaseBase):
         doc = Document.uncached.get(pk=self.d.pk)
         eq_(new_title, doc.title)
 
+    def test_archive_permission_off(self):
+        """Shouldn't be able to change is_archive bit without permission."""
+        u = user(save=True)
+        add_permission(u, Document, 'change_document')
+        self.client.login(username=u.username, password='testpass')
+        data = new_document_data()
+        # Try to set is_archived, even though we shouldn't have permission to:
+        data.update(form='doc', is_archived='on')
+        response = post(self.client, 'wiki.edit_document', data,
+                        args=[self.d.slug])
+        eq_(200, response.status_code)
+        doc = Document.uncached.get(pk=self.d.pk)
+        assert not doc.is_archived
+
+    # TODO: Factor with test_archive_permission_off.
+    def test_archive_permission_on(self):
+        """Shouldn't be able to change is_archive bit without permission."""
+        u = user(save=True)
+        add_permission(u, Document, 'change_document')
+        add_permission(u, Document, 'archive_document')
+        self.client.login(username=u.username, password='testpass')
+        data = new_document_data()
+        data.update(form='doc', is_archived='on')
+        response = post(self.client, 'wiki.edit_document', data,
+                        args=[self.d.slug])
+        eq_(200, response.status_code)
+        doc = Document.uncached.get(pk=self.d.pk)
+        assert doc.is_archived
+
 
 class DocumentListTests(TestCaseBase):
     """Tests for the All and Category template"""

@@ -32,7 +32,8 @@ def overview_rows(locale):
     # don't shoehorn it in.
     total = Document.uncached.exclude(current_revision=None).filter(
                 locale=settings.WIKI_DEFAULT_LANGUAGE,
-                is_localizable=True).count()
+                is_localizable=True,
+                is_archived=False).count()
 
     # How many approved documents are there in German that have parents?
     translated = Document.uncached.filter(locale=locale).exclude(
@@ -57,8 +58,10 @@ def overview_rows(locale):
 
     # Template overview
     template_total = Document.uncached.exclude(current_revision=None).filter(
-                locale=settings.WIKI_DEFAULT_LANGUAGE, is_template=True,
-                is_localizable=True).count()
+                locale=settings.WIKI_DEFAULT_LANGUAGE,
+                is_template=True,
+                is_localizable=True,
+                is_archived=False).count()
 
     # How many approved templates are there in German that have parents?
     template_translated = Document.uncached.filter(locale=locale,
@@ -192,7 +195,8 @@ class MostVisitedDefaultLanguageReadout(Readout):
                     'engrev.document_id=engdoc.id '
                     'AND engrev.reviewed IS NULL '
                     'AND engrev.id>engdoc.current_revision_id '
-                'WHERE engdoc.locale=%s '
+                'WHERE engdoc.locale=%s AND '
+                    'NOT engdoc.is_archived '
                 'GROUP BY engdoc.id '
                 'ORDER BY dashboards_wikidocumentvisits.visits DESC, '
                          'engdoc.title ASC' + self._limit_clause(max),
@@ -266,8 +270,9 @@ class MostVisitedTranslationsReadout(MostVisitedDefaultLanguageReadout):
                'LEFT JOIN dashboards_wikidocumentvisits ON engdoc.id='
                    'dashboards_wikidocumentvisits.document_id '
                    'AND dashboards_wikidocumentvisits.period=%s '
-               'WHERE engdoc.locale=%s AND engdoc.is_localizable '
-                       '{extra_where} '  # extra WHERE conditions
+               'WHERE engdoc.locale=%s AND engdoc.is_localizable AND '
+                   'NOT engdoc.is_archived '
+                   '{extra_where} '  # extra WHERE conditions
                'ORDER BY dashboards_wikidocumentvisits.visits DESC, '
                         'COALESCE(transdoc.title, engdoc.title) ASC' +
                self._limit_clause(max)).format(extra_where=extra_where),
@@ -349,7 +354,7 @@ class UntranslatedReadout(Readout):
                 'dashboards_wikidocumentvisits.period=%s '
             'WHERE '
             'translated.id IS NULL AND parent.is_localizable AND '
-            'parent.locale=%s '
+            'parent.locale=%s AND NOT parent.is_archived '
             + self._order_clause() + self._limit_clause(max),
             (self.locale, THIS_WEEK, settings.WIKI_DEFAULT_LANGUAGE))
 
@@ -432,7 +437,7 @@ class OutOfDateReadout(Readout):
             'LEFT JOIN dashboards_wikidocumentvisits ON '
                 'engrev.document_id=dashboards_wikidocumentvisits.document_id '
                 'AND dashboards_wikidocumentvisits.period=%s '
-            'WHERE transdoc.locale=%s '
+            'WHERE transdoc.locale=%s AND NOT transdoc.is_archived '
             + self._order_clause() + self._limit_clause(max),
             (MEDIUM_SIGNIFICANCE, self._max_significance, THIS_WEEK,
                 self.locale))
@@ -487,7 +492,7 @@ class UnreviewedReadout(Readout):
             'WHERE wiki_revision.reviewed IS NULL '
             'AND (wiki_document.current_revision_id IS NULL OR '
                  'wiki_revision.id>wiki_document.current_revision_id) '
-            'AND wiki_document.locale=%s '
+            'AND wiki_document.locale=%s AND NOT wiki_document.is_archived '
             'GROUP BY wiki_document.id '
             + self._order_clause() + self._limit_clause(max),
             (THIS_WEEK, self.locale))

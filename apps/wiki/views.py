@@ -239,11 +239,14 @@ def edit_document(request, document_slug, revision_id=None):
     disclose_description = bool(request.GET.get('opendescription'))
     doc_form = rev_form = None
     if doc.allows_revision_by(user):
-        rev_form = RevisionForm(instance=rev, initial={'based_on': rev.id,
-                                                       'comment': ''})
+        rev_form = RevisionForm(
+            instance=rev,
+            initial={'based_on': rev.id, 'comment': ''})
     if doc.allows_editing_by(user):
-        doc_form = DocumentForm(initial=_document_form_initial(doc),
-            can_create_tags=user.has_perm('taggit.add_tag'))
+        doc_form = DocumentForm(
+            initial=_document_form_initial(doc),
+            can_create_tags=user.has_perm('taggit.add_tag'),
+            can_archive=user.has_perm('wiki.archive_document'))
 
     if request.method == 'GET':
         if not (rev_form or doc_form):
@@ -258,8 +261,11 @@ def edit_document(request, document_slug, revision_id=None):
             if doc.allows_editing_by(user):
                 post_data = request.POST.copy()
                 post_data.update({'locale': request.locale})
-                doc_form = DocumentForm(post_data, instance=doc,
-                    can_create_tags=user.has_perm('taggit.add_tag'))
+                doc_form = DocumentForm(
+                    post_data,
+                    instance=doc,
+                    can_create_tags=user.has_perm('taggit.add_tag'),
+                    can_archive=user.has_perm('wiki.archive_document'))
                 if doc_form.is_valid():
                     # Get the possibly new slug for the imminent redirection:
                     doc = doc_form.save(None)
@@ -704,6 +710,7 @@ def _document_form_initial(document):
             'slug': document.slug,
             'category': document.category,
             'is_localizable': document.is_localizable,
+            'is_archived': document.is_archived,
             'tags': [t.name for t in document.tags.all()],
             'firefox_versions': [x.item_id for x in
                                  document.firefox_versions.all()],

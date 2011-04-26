@@ -47,63 +47,76 @@ COMMENT_LONG = _lazy(u'Please keep the length of the comment to '
 class DocumentForm(forms.ModelForm):
     """Form to create/edit a document."""
     def __init__(self, *args, **kwargs):
+        # Quasi-kwargs:
         can_create_tags = kwargs.pop('can_create_tags', False)
+        can_archive = kwargs.pop('can_archive', False)
 
         super(DocumentForm, self).__init__(*args, **kwargs)
 
         # Set up tags field, which is instantiated deep within taggit:
         tags_field = self.fields['tags']
         tags_field.widget.can_create_tags = can_create_tags
+        
+        # If user hasn't permission to frob is_archived, remove the field. This
+        # causes save() to skip it as well.
+        if not can_archive:
+            del self.fields['is_archived']
 
-    title = StrippedCharField(min_length=5, max_length=255,
-                              widget=forms.TextInput(),
-                              label=_lazy(u'Title:'),
-                              help_text=_lazy(u'Title of article'),
-                              error_messages={'required': TITLE_REQUIRED,
-                                              'min_length': TITLE_SHORT,
-                                              'max_length': TITLE_LONG})
-    slug = StrippedCharField(min_length=3, max_length=255,
-                             widget=forms.TextInput(),
-                             label=_lazy(u'Slug:'),
-                             help_text=_lazy(u'Article URL'),
-                             error_messages={'required': SLUG_REQUIRED,
-                                             'min_length': SLUG_SHORT,
-                                             'max_length': SLUG_LONG})
+
+    title = StrippedCharField(
+        min_length=5, max_length=255,
+        widget=forms.TextInput(),
+        label=_lazy(u'Title:'),
+        help_text=_lazy(u'Title of article'),
+        error_messages={'required': TITLE_REQUIRED,
+                        'min_length': TITLE_SHORT,
+                        'max_length': TITLE_LONG})
+
+    slug = StrippedCharField(
+        min_length=3, max_length=255,
+        widget=forms.TextInput(),
+        label=_lazy(u'Slug:'),
+        help_text=_lazy(u'Article URL'),
+        error_messages={'required': SLUG_REQUIRED,
+                        'min_length': SLUG_SHORT,
+                        'max_length': SLUG_LONG})
 
     firefox_versions = forms.MultipleChoiceField(
-                                label=_lazy(u'Firefox version:'),
-                                choices=[(v.id, v.long) for v in
-                                         FIREFOX_VERSIONS],
-                                initial=[v.id for v in
-                                         GROUPED_FIREFOX_VERSIONS[0][1]],
-                                required=False,
-                                widget=forms.CheckboxSelectMultiple())
+        label=_lazy(u'Firefox version:'),
+        choices=[(v.id, v.long) for v in FIREFOX_VERSIONS],
+        initial=[v.id for v in GROUPED_FIREFOX_VERSIONS[0][1]],
+        required=False,
+        widget=forms.CheckboxSelectMultiple())
 
     operating_systems = forms.MultipleChoiceField(
-                                label=_lazy(u'Operating systems:'),
-                                choices=[(o.id, o.name) for o in
-                                         OPERATING_SYSTEMS],
-                                initial=[o.id for o in
-                                         GROUPED_OPERATING_SYSTEMS[0][1]],
-                                required=False,
-                                widget=forms.CheckboxSelectMultiple())
+        label=_lazy(u'Operating systems:'),
+        choices=[(o.id, o.name) for o in OPERATING_SYSTEMS],
+        initial=[o.id for o in GROUPED_OPERATING_SYSTEMS[0][1]],
+        required=False,
+        widget=forms.CheckboxSelectMultiple())
 
     is_localizable = forms.BooleanField(
-                                initial=True,
-                                label=_lazy(u'Allow translations:'),
-                                required=False)
+        initial=True,
+        label=_lazy(u'Allow translations:'),
+        required=False)
 
-    category = forms.ChoiceField(choices=CATEGORIES,
-                                 # Required for non-translations, which is
-                                 # enforced in Document.clean().
-                                 required=False,
-                                 label=_lazy(u'Category:'),
-                                 help_text=_lazy(u'Type of article'))
+    is_archived = forms.BooleanField(
+        label=_lazy(u'Obsolete:'),
+        required=False)
 
-    tags = tag_forms.TagField(required=False, label=_lazy(u'Topics:'),
-                              help_text=_lazy(
-                                u'Popular articles in each topic '
-                                'are displayed on the front page'))
+    category = forms.ChoiceField(
+        choices=CATEGORIES,
+        # Required for non-translations, which is
+        # enforced in Document.clean().
+        required=False,
+        label=_lazy(u'Category:'),
+        help_text=_lazy(u'Type of article'))
+
+    tags = tag_forms.TagField(
+        required=False,
+        label=_lazy(u'Topics:'),
+        help_text=_lazy(u'Popular articles in each topic are displayed on the '
+                         'front page'))
 
     locale = forms.CharField(widget=forms.HiddenInput())
 
@@ -123,8 +136,8 @@ class DocumentForm(forms.ModelForm):
 
     class Meta:
         model = Document
-        fields = ('title', 'slug', 'category', 'is_localizable', 'tags',
-                  'locale')
+        fields = ('title', 'slug', 'category', 'is_localizable', 'is_archived',
+                  'tags', 'locale')
 
     def save(self, parent_doc, **kwargs):
         """Persist the Document form, and return the saved Document."""
