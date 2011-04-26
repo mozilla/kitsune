@@ -13,6 +13,28 @@ RewriteRule ^tiki-user_preferences.php /users/edit [L,R=301]
 # Contribute shortcut
 RewriteRule ^contribute/?$ /kb/superheroes-wanted [L,QSA,R=302]
 
+# Redirect old KB docs to new locations
+RewriteRule ^kb/Firefox\+Help$ /home/ [L,NC,R=301]
+RewriteRule ^kb/Windows\+start\+page$ /home/ [L,NC,R=301]
+RewriteRule ^kb/Firefox\+Support\+Home\+Page$ /home/ [L,NC,R=301]
+RewriteRule ^kb/Get\+help\+with\+Firefox\+4\+Beta$ /home/ [L,NC,R=301]
+RewriteRule ^kb/Localization\+Dashboard$ /contributors [L,NC,R=301]
+RewriteRule ^kb/All\+Knowledge\+Base\+articles$ /contributors [L,NC,R=301]
+RewriteRule ^kb/Live\+Chat$ /en-US/chat/ [L,NC,R=301]  # Chat is not localized.
+RewriteRule ^kb/Mobile\+Help\+and\+Tutorials$ /mobile/ [L,NC,R=301]
+RewriteRule ^kb/Support\+Website\+Forums$ /en-US/questions/ [L,NC,R=301]  # Questions is not localized.
+RewriteRule ^kb/Article\+list$ /kb/all [L,NC,R=301]
+RewriteRule ^([\-a-z]+)/kb/Firefox\+Help$ /$1/home/ [L,NC,R=301]
+RewriteRule ^([\-a-z]+)/kb/Windows\+start\+page$ /$1/home/ [L,NC,R=301]
+RewriteRule ^([\-a-z]+)/kb/Firefox\+Support\+Home\+Page$ /$1/home/ [L,NC,R=301]
+RewriteRule ^([\-a-z]+)/kb/Get\+help\+with\+Firefox\+4\+Beta$ /$1/home/ [L,NC,R=301]
+RewriteRule ^([\-a-z]+)/kb/Localization\+Dashboard$ /$1/contributors [L,NC,R=301]
+RewriteRule ^([\-a-z]+)/kb/All\+Knowledge\+Base\+articles$ /$1/contributors [L,NC,R=301]
+RewriteRule ^([\-a-z]+)/kb/Live\+Chat$ /en-US/chat/ [L,NC,R=301]  # Chat is not localized.
+RewriteRule ^([\-a-z]+)/kb/Mobile\+Help\+and\+Tutorials$ /$1/mobile/ [L,NC,R=301]
+RewriteRule ^([\-a-z]+)/kb/Support\+Website\+Forums$ /en-US/questions/ [L,NC,R=301]  # Questions is not localized.
+RewriteRule ^([\-a-z]+)/kb/Article\+list$ /$1/kb/all [L,NC,R=301]
+
 # Windows 7 application link
 RewriteRule ^windows7-support(\/)?$  "/home/?as=u" [L,R,NE]
 
