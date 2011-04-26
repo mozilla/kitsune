@@ -38,6 +38,9 @@ pip install -r requirements/tests-compiled.txt
 # Using a vendor library for the rest.
 git submodule update --init --recursive
 
+# Fix any mistakes with private repos.
+pushd vendor > /dev/null && git submodule sync && popd > /dev/null
+
 python manage.py update_product_details
 
 cat > settings_local.py <<SETTINGS
