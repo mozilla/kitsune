@@ -47,7 +47,7 @@ class QuestionsDashboard(Dashboard):
         return jingo.render(self._request, 'dashboards/questions.html',
                             {'actions': model_actions(Answer, self._request),
                              'active_tab': self._id,
-                             'announcements': Announcement.get_site_wide()})
+                             'announcements': Announcement.get_for_group_id(self._id)})
 
 
 class LocaleDashboard(Dashboard):
