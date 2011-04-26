@@ -3,10 +3,9 @@
   <ul id="doc-content" class="announcements">
     {% for a in announcements %}
       <li>
-        {{ a.content_parsed|safe }}
+        {{ a.content|wiki_to_html }}
         {{ datetimeformat(a.show_after, format='datetime') }}
       </li>
     {% endfor %}
   </ul>
-{% else %}
 {% endif %}
