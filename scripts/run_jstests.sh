@@ -64,6 +64,6 @@ echo "Starting JS tests..." `date`
 rm $LOG
 # NOTE: the host value here needs to match the 'kitsune' suite in jstestnet
 cd scripts
-python run_jstests.py -v --with-xunit --with-django-serv --django-host sm-hudson01 --django-log $LOG --with-jstests --jstests-server http://jstestnet.farmdev.com/ --jstests-suite sumo --jstests-browsers firefox --debug nose.plugins.jstests
+python run_jstests.py -v --with-xunit --with-django-serv --django-host $HUDSON_HOST --django-port 9878 --django-log $LOG --with-jstests --jstests-server http://jstestnet.farmdev.com/ --jstests-suite sumo --jstests-token $JSTESTS_TOKEN --jstests-url http://$HUDSON_HOST:9878/en-US/qunit --jstests-browsers firefox --debug nose.plugins.jstests
 
 echo 'shazam!'
