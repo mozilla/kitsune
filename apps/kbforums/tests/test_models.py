@@ -90,7 +90,7 @@ class KBThreadModelTestCase(KBForumTestCase):
         post.save()
         eq_(1, thread.post_set.count())
         post.delete()
-        eq_(0, Thread.objects.filter(pk=thread.id).count())
+        eq_(0, Thread.uncached.filter(pk=thread.id).count())
 
 
 class KBSaveDateTestCase(KBForumTestCase):

@@ -163,11 +163,9 @@ class Thread(NotificationsMixin, ModelBase):
     def update_last_post(self, exclude_post=None):
         """Set my last post to the newest, excluding the given post."""
         last = _last_post_from(self.post_set, exclude_post=exclude_post)
-        if last:
-            self.last_post = last
-        # Otherwise, I have no posts. We leave the reference to the nonexistent
-        # or unrelated post in place, which causes Django to automatically
-        # delete me.
+        self.last_post = last
+        # If self.last_post is None, and this was called from Post.delete,
+        # then Post.delete will erase the thread, as well.
 
 
 class Post(ActionMixin, ModelBase):
@@ -222,6 +220,9 @@ class Post(ActionMixin, ModelBase):
             forum.save()
 
         super(Post, self).delete(*args, **kwargs)
+        # If I was the last post in the thread, delete the thread.
+        if thread.last_post is None:
+            thread.delete()
 
     @property
     def page(self):
