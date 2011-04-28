@@ -5,7 +5,6 @@ from sumo.tests import LocalizingClient, TestCase, with_save
 from django.contrib.auth.models import User, Group, Permission
 from django.contrib.contenttypes.models import ContentType
 
-from sumo.tests import FixtureMissingError
 from users.models import Profile
 
 
@@ -31,6 +30,11 @@ def profile(user, **kwargs):
 
 @with_save
 def user(**kwargs):
+    """Return a user with all necessary defaults filled in.
+
+    Default password is 'testpass' unless you say otherwise in a kwarg.
+
+    """
     defaults = {}
     if 'username' not in kwargs:
         defaults['username'] = ''.join(random.choice(letters)
@@ -42,13 +46,11 @@ def user(**kwargs):
 
 
 def get_user(username='jsocol'):
-    """Return a django user or raise FixtureMissingError"""
+    """Return a saved Django user, creating one first if necessary."""
     try:
         return User.objects.get(username=username)
     except User.DoesNotExist:
-        raise FixtureMissingError(
-            'Username "%s" not found. You probably forgot to import a'
-            ' users fixture.' % username)
+        return user(username=username, save=True)
 
 
 @with_save
