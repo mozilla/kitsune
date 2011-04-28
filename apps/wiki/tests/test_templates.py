@@ -286,7 +286,7 @@ class NewDocumentTests(TestCaseBase):
         self.client.login(username='admin', password='testpass')
         response = self.client.get(reverse('wiki.new_document'))
         doc = pq(response.content)
-        eq_(7, len(doc('input[checked=checked]')))
+        eq_(9, len(doc('input[checked=checked]')))
         eq_(None, doc('input[name="tags"]').attr('required'))
 
     @mock.patch.object(ReviewableRevisionInLocaleEvent, 'fire')

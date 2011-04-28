@@ -13,6 +13,7 @@ from django.http import Http404
 from pyquery import PyQuery
 from tidings.models import NotificationsMixin
 from tower import ugettext_lazy as _lazy, ugettext as _
+import waffle
 
 from sumo import ProgrammingError
 from sumo_locales import LOCALES
@@ -61,6 +62,10 @@ GROUPED_FIREFOX_VERSIONS = (
     ((_lazy(u'Desktop:'), 'desktop'), (
         # The first option is the default for {for} display. This should be the
         # newest version.
+        VersionMetadata(6, _lazy(u'Firefox 6'),
+                        _lazy(u'Firefox 6'), 'fx6', 6.9999, False),
+        VersionMetadata(5, _lazy(u'Firefox 5'),
+                        _lazy(u'Firefox 5'), 'fx5', 5.9999, False),
         VersionMetadata(1, _lazy(u'Firefox 4'),
                         _lazy(u'Firefox 4'), 'fx4', 4.9999, True),
         VersionMetadata(2, _lazy(u'Firefox 3.5-3.6'),
@@ -68,6 +73,10 @@ GROUPED_FIREFOX_VERSIONS = (
         VersionMetadata(3, _lazy(u'Firefox 3.0'),
                         _lazy(u'Firefox 3.0'), 'fx3', 3.4999, False))),
     ((_lazy(u'Mobile:'), 'mobile'), (
+        VersionMetadata(8, _lazy(u'Firefox 6'),
+                        _lazy(u'Firefox 6 for Mobile'), 'm6', 6.9999, False),
+        VersionMetadata(7, _lazy(u'Firefox 5'),
+                        _lazy(u'Firefox 5 for Mobile'), 'm5', 5.9999, False),
         VersionMetadata(4, _lazy(u'Firefox 4'),
                         _lazy(u'Firefox 4 for Mobile'), 'm4', 4.9999, True),)))
 
