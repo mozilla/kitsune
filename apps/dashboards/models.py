@@ -94,8 +94,11 @@ class WikiDocumentVisits(ModelBase):
 
         counts = {}
         for url, page_info in pages:
-            doc = Document.from_url(url,
-                required_locale=settings.LANGUAGE_CODE, id_only=True)
+            doc = Document.from_url(
+                url,
+                required_locale=settings.LANGUAGE_CODE,
+                id_only=True,
+                check_host=False)
             if not doc:
                 continue
 
