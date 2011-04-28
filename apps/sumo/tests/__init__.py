@@ -63,10 +63,6 @@ class LocalizingClient(Client):
     # prepending in a one-off case or do it outside a mock request.
 
 
-class FixtureMissingError(Exception):
-    """Raise this if a fixture is missing"""
-
-
 class MigrationTests(TestCase):
     """Sanity checks for the SQL migration scripts"""
 
