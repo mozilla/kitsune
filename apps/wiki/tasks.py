@@ -15,7 +15,8 @@ from tower import ugettext as _
 
 from sumo.urlresolvers import reverse
 from sumo.utils import chunked
-from wiki.models import Document, SlugCollision, TitleCollision
+from wiki.models import (Document, points_to_document_view, SlugCollision,
+                         TitleCollision)
 
 
 log = logging.getLogger('k.task')
@@ -76,7 +77,12 @@ def rebuild_kb():
 
 @task(rate_limit='20/m')
 def _rebuild_kb_chunk(data, **kwargs):
-    """Re-render a chunk of documents."""
+    """Re-render a chunk of documents.
+
+    Note: Don't use host components when making redirects to wiki pages; those
+    redirects won't be auto-pruned when they're 404s.
+
+    """
     log.info('Rebuilding %s documents.' % len(data))
 
     pin_this_thread()  # Stick to master.
@@ -86,9 +92,13 @@ def _rebuild_kb_chunk(data, **kwargs):
         message = None
         try:
             document = Document.objects.get(pk=pk)
-            if document.redirect_url():
-                if not document.redirect_document():
-                    document.delete()
+
+            # If we know a redirect link to be broken (i.e. if it looks like a
+            # link to a document but the document isn't there), delete it:
+            url = document.redirect_url()
+            if (url and points_to_document_view(url) and
+                not document.redirect_document()):
+                document.delete()
             else:
                 document.html = document.current_revision.content_parsed
                 document.save()

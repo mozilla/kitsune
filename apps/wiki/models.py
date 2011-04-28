@@ -114,6 +114,10 @@ class SlugCollision(Exception):
     """An attempt to create two pages of the same slug in one locale"""
 
 
+class _NotDocumentView(Exception):
+    """A URL not pointing to the document view was passed to from_url()."""
+
+
 def _inherited(parent_attr, direct_attr):
     """Return a descriptor delegating to an attr of the original document.
 
@@ -358,7 +362,7 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin):
         return reverse('wiki.document', locale=self.locale, args=[self.slug])
 
     @staticmethod
-    def from_url(url, required_locale=None, id_only=False):
+    def from_url(url, required_locale=None, id_only=False, check_host=True):
         """Return the approved Document the URL represents, None if there isn't
         one.
 
@@ -369,36 +373,34 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin):
         `required_locale`. To fetch only the ID of the returned Document, set
         `id_only` to True.
 
+        If the URL has a host component, we assume it does not point to this
+        host and thus does not point to a Document, because that would be a
+        needlessly verbose way to specify an internal link. However, if you
+        pass host_safe=True, we assume the URL's host is the one serving
+        Documents, which comes in handy for analytics whose metrics return
+        host-having URLs.
+
         """
-        # Extract locale and path from URL:
-        path = urlparse(url)[2]  # never has errors AFAICT
-        locale, path = split_path(path)
-        if required_locale and locale != required_locale:
-            return None
-        path = '/' + path
-
         try:
-            view, view_args, view_kwargs = resolve(path)
-        except Http404:
+            components = _doc_components_from_url(
+                url, required_locale=required_locale, check_host=check_host)
+        except _NotDocumentView:
             return None
-
-        import wiki.views  # Views import models; models import views.
-        if view != wiki.views.document:
+        if not components:
             return None
+        locale, path, slug = components
 
         # Map locale-slug pair to Document ID:
         doc_query = Document.objects.exclude(current_revision__isnull=True)
         if id_only:
             doc_query = doc_query.only('id')
         try:
-            return doc_query.get(
-                locale=locale,
-                slug=view_kwargs['document_slug'])
+            return doc_query.get(locale=locale, slug=slug)
         except Document.DoesNotExist:
             return None
 
     def redirect_url(self):
-        """If I am a redirect, return the absolute URL to which I redirect.
+        """If I am a redirect, return the URL to which I redirect.
 
         Otherwise, return None.
 
@@ -670,3 +672,43 @@ def get_current_or_latest_revision(document, reviewed_only=True):
             rev = revs[0]
 
     return rev
+
+
+def _doc_components_from_url(url, required_locale=None, check_host=True):
+    """Return (locale, path, slug) if URL is a Document, False otherwise.
+
+    If URL doesn't even point to the document view, raise _NotDocumentView.
+
+    """
+    # Extract locale and path from URL:
+    parsed = urlparse(url)  # Never has errors AFAICT
+    if check_host and parsed.netloc:
+        return False
+    locale, path = split_path(parsed.path)
+    if required_locale and locale != required_locale:
+        return False
+    path = '/' + path
+
+    try:
+        view, view_args, view_kwargs = resolve(path)
+    except Http404:
+        return False
+
+    import wiki.views  # Views import models; models import views.
+    if view != wiki.views.document:
+        raise _NotDocumentView
+    return locale, path, view_kwargs['document_slug']
+
+
+def points_to_document_view(url, required_locale=None):
+    """Return whether a URL reverses to the document view.
+
+    To limit the universe of discourse to a certain locale, pass in a
+    `required_locale`.
+
+    """
+    try:
+        return not not _doc_components_from_url(
+            url, required_locale=required_locale)
+    except _NotDocumentView:
+        return False

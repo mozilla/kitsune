@@ -11,6 +11,7 @@ from nose.tools import eq_
 from pyquery import PyQuery as pq
 from taggit.models import Tag
 
+from questions.tests import tags_eq
 from sumo.urlresolvers import reverse
 from sumo.helpers import urlparams
 from sumo.tests import post, get, attrs_eq
@@ -571,13 +572,13 @@ class NewRevisionTests(TestCaseBase):
         self.d.save()
         tags = ['tag1', 'tag2', 'tag3']
         self.d.tags.add(*tags)
-        eq_(tags, list(self.d.tags.values_list('name', flat=True)))
+        tags_eq(self.d, tags)
         tags = ['tag1', 'tag4']
         data = new_document_data(tags)
         data['form'] = 'doc'
         self.client.post(reverse('wiki.edit_document', args=[self.d.slug]),
                          data)
-        eq_(tags, list(self.d.tags.values_list('name', flat=True)))
+        tags_eq(self.d, tags)
 
     @mock.patch.object(Site.objects, 'get_current')
     def test_new_form_maintains_based_on_rev(self, get_current):
