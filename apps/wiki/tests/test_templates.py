@@ -591,6 +591,30 @@ class NewRevisionTests(TestCaseBase):
             {'summary': 'Windy', 'content': 'gerbils', 'form': 'rev'},
             locale=None)
 
+    def test_new_revision_warning(self):
+        """When editing based on current revision, we should show a warning if
+        there are newer unapproved revisions."""
+        # Create a new revision that is at least 1 second newer than current
+        created = datetime.now() + timedelta(seconds=1)
+        r = revision(document=self.d, created=created, save=True)
+
+        # Verify there is a warning box
+        response = self.client.get(reverse('wiki.edit_document',
+                                           args=[self.d.slug]))
+        assert len(pq(response.content)('div.warning-box'))
+
+        # Verify there is no warning box if editing the latest unreviewed
+        response = self.client.get(reverse('wiki.new_revision_based_on',
+                                           args=[self.d.slug, r.id]))
+        assert not len(pq(response.content)('div.warning-box'))
+
+        # Create a newer unreviewed revision and now warning shows
+        created =created + timedelta(seconds=1)
+        revision(document=self.d, created=created, save=True)
+        response = self.client.get(reverse('wiki.new_revision_based_on',
+                                           args=[self.d.slug, r.id]))
+        assert len(pq(response.content)('div.warning-box'))
+
 
 class DocumentEditTests(TestCaseBase):
     """Test the editing of document level fields."""
