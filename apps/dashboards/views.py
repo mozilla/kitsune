@@ -3,12 +3,12 @@ from functools import partial
 from django.conf import settings
 from django.contrib.auth.models import Group
 from django.http import Http404, HttpResponseRedirect, HttpResponse
-from django.shortcuts import get_object_or_404
 from django.views.decorators.http import require_GET
 
 import jingo
 from tower import ugettext as _
 
+from access.decorators import login_required
 from announcements.models import Announcement
 from dashboards.personal import GROUP_DASHBOARDS
 from dashboards.readouts import (overview_rows, READOUTS, L10N_READOUTS,
@@ -91,7 +91,12 @@ def review(request):
 
 
 @require_GET
+@login_required
 def group_dashboard(request, group_id):
-    group = get_object_or_404(Group, pk=group_id)
+    try:
+        group = request.user.groups.get(pk=group_id)
+    except Group.DoesNotExist:
+        raise Http404
+
     return GROUP_DASHBOARDS[group.dashboard.dashboard](
         request, group.id, group.dashboard.parameters).render()

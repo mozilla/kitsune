@@ -147,15 +147,19 @@ class GroupLocaleDashTests(TestCase):
         group_dashboard(group=self.g, save=True)
 
     def test_anonymous_user(self):
-        """Checks the locale dashboard loads for an anonymous user."""
+        """Checks the locale dashboard doesn't load for an anonymous user."""
         response = self.client.get(reverse('dashboards.group',
-                                           args=[self.g.pk]), follow=True)
-        eq_(200, response.status_code)
-        doc = pq(response.content)
-        # The locale dash tab does not show up.
-        eq_(1, len(doc('#doc-tabs li')))
-        # The subtitle shows French.
-        eq_(u'Deutsch', doc('#main h2.subtitle').text())
+                                           args=[self.g.pk], locale='en-US'))
+        eq_(302, response.status_code)
+        assert '/users/login' in response['location']
+
+    def test_for_user_not_in_group(self):
+        """Checks the locale dashboard doesn't load for user not in group."""
+        user(username='test', save=True)
+        self.client.login(username='test', password='testpass')
+        response = self.client.get(reverse('dashboards.group',
+                                           args=[self.g.pk], locale='en-US'))
+        eq_(404, response.status_code)
 
     @mock.patch.object(Site.objects, 'get_current')
     def test_for_user_active(self, get_current):
