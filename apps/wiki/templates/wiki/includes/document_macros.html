@@ -42,6 +42,16 @@
       {% endtrans %}
     </div>
   {% endif %}
+  {% if document.is_archived %}
+    <div class="warning-box">
+        <p>
+          {% trans %}
+            This article is no longer maintained, so its content might be out
+            of date.
+          {% endtrans %}
+        </p>
+    </div>
+  {% endif %}
 {%- endmacro %}
 
 {% macro document_content(document, fallback_reason, request, settings) -%}
