@@ -82,6 +82,20 @@
         }
     },
     {
+        "pk": 7,
+        "model": "wiki.document",
+        "fields": {
+            "category": 10,
+            "title": "archived article",
+            "locale": "en-US",
+            "current_revision": 23,
+            "is_template": false,
+            "html": "<p>There are impalas in them thar hills!</a>",
+            "slug": "archived-article",
+            "is_archived": true
+        }
+    },
+    {
         "pk": 14,
         "model": "wiki.revision",
         "fields": {
@@ -168,6 +182,24 @@
             "keywords": "ghosts",
             "reviewer": 118533,
             "document": 5,
+            "creator": 118533
+        }
+    },
+    {
+        "pk": 23,
+        "model": "wiki.revision",
+        "fields": {
+            "comment": "",
+            "based_on": null,
+            "is_approved": true,
+            "created": "2010-09-29 09:09:52",
+            "summary": "some archived article with impalas",
+            "reviewed": "2010-09-29 09:10:08",
+            "content": "There are impalas in them thar hills!",
+            "significance": 10,
+            "keywords": "impalas",
+            "reviewer": 118533,
+            "document": 7,
             "creator": 118533
         }
     },
@@ -273,6 +305,14 @@
         }
     },
     {
+        "pk": 999,
+        "model": "wiki.firefoxversion",
+        "fields": {
+            "item_id": 4,
+            "document": 7
+        }
+    },
+    {
         "pk": 2881,
         "model": "wiki.operatingsystem",
         "fields": {
@@ -310,6 +350,14 @@
         "fields": {
             "item_id": 5,
             "document": 5
+        }
+    },
+    {
+        "pk": 2886,
+        "model": "wiki.operatingsystem",
+        "fields": {
+            "item_id": 5,
+            "document": 7
         }
     }
 ]

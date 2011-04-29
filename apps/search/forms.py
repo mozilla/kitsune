@@ -85,6 +85,10 @@ class SearchForm(forms.Form):
         initial=[o.id for o in OPERATING_SYSTEMS],
         coerce_only=True)
 
+    is_archived = forms.TypedChoiceField(
+        required=False, coerce=int, empty_value=0, widget=forms.RadioSelect,
+        label=_lazy('Obsolete'), choices=constants.TERNARY_LIST)
+
     # Support questions and discussion forums fields
     created = forms.TypedChoiceField(
         required=False, coerce=int, empty_value=0,
