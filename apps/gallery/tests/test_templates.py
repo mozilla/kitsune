@@ -90,10 +90,10 @@ class GalleryAsyncCase(TestCase):
 
 class GalleryUploadTestCase(TestCase):
     fixtures = ['users.json']
+    client_class = LocalizingClient
 
     def setUp(self):
         super(GalleryUploadTestCase, self).setUp()
-        self.client = LocalizingClient()
         self.client.login(username='pcraciunoiu', password='testpass')
         self.u = User.objects.get(username='pcraciunoiu')
 

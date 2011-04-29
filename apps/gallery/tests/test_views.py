@@ -25,10 +25,10 @@ VIDEO_PATH = settings.MEDIA_URL + settings.GALLERY_VIDEO_PATH
 
 class DeleteEditImageTests(TestCase):
     fixtures = ['users.json']
+    client_class = LocalizingClient
 
     def setUp(self):
         super(DeleteEditImageTests, self).setUp()
-        self.client = LocalizingClient()
         self.client.login(username='jsocol', password='testpass')
 
     def tearDown(self):
@@ -95,10 +95,10 @@ class DeleteEditImageTests(TestCase):
 
 class UploadImageTests(TestCase):
     fixtures = ['users.json']
+    client_class = LocalizingClient
 
     def setUp(self):
         super(UploadImageTests, self).setUp()
-        self.client = LocalizingClient()
         self.client.login(username='pcraciunoiu', password='testpass')
 
     def tearDown(self):
@@ -274,10 +274,10 @@ class ViewHelpersTests(TestCase):
 
 class UploadVideoTests(TestCase):
     fixtures = ['users.json']
+    client_class = LocalizingClient
 
     def setUp(self):
         super(UploadVideoTests, self).setUp()
-        self.client = LocalizingClient()
         self.client.login(username='pcraciunoiu', password='testpass')
 
     def tearDown(self):
@@ -428,8 +428,8 @@ class UploadVideoTests(TestCase):
 
 
 class SearchTests(TestCase):
-    client = LocalizingClient()
     fixtures = ['users.json', 'gallery/media.json']
+    client_class = LocalizingClient
 
     def test_search_results(self):
         url = reverse('gallery.search', args=['image'])

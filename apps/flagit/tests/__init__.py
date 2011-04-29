@@ -10,11 +10,10 @@ class TestCaseBase(TestCase):
     """Base TestCase for the flagit app test cases."""
 
     fixtures = ['users.json', 'questions.json']
+    client_class = LocalizingClient
 
     def setUp(self):
         """Setup"""
-        self.client = LocalizingClient()
-
         # Change the CACHE_PREFIX to avoid conflicts
         self.orig_cache_prefix = getattr(settings, 'CACHE_PREFIX', None)
         settings.CACHE_PREFIX = self.orig_cache_prefix or '' + 'test' + \

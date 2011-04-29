@@ -87,8 +87,7 @@ class TweetListTests(TestCase):
 
 
 class FilterTestCase(TestCase):
-    def setUp(self):
-        self.client = LocalizingClient()
+    client_class = LocalizingClient
 
     def _tweet_list(self, filter):
         """Return the content of async-fetched tweet list.

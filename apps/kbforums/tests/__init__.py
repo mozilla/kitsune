@@ -10,9 +10,7 @@ from sumo.tests import get, LocalizingClient, TestCase
 
 class KBForumTestCase(TestCase):
     fixtures = ['kbusers.json', 'search/documents.json', 'kbposts.json']
-
-    def setUp(self):
-        self.client = LocalizingClient()
+    client_class = LocalizingClient
 
 
 class PostTestCase(KBForumTestCase):

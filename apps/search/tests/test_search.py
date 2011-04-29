@@ -83,10 +83,7 @@ def test_sphinx_down():
 # * Replace magic numbers with the defined constants.
 
 class SearchTest(SphinxTestCase):
-
-    def setUp(self):
-        super(SearchTest, self).setUp()
-        self.client = LocalizingClient()
+    client_class = LocalizingClient
 
     def test_indexer(self):
         wc = WikiClient()

@@ -169,9 +169,8 @@ class RegisterTests(TestCase):
 
 class ChangeEmailTestCase(TestCase):
     fixtures = ['users.json']
+    client_class = LocalizingClient
 
-    def setUp(self):
-        self.client = LocalizingClient()
 
     def test_redirect(self):
         """Test our redirect from old url to new one."""

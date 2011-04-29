@@ -9,10 +9,7 @@ from wiki.models import Document, Revision, CATEGORIES, SIGNIFICANCES
 
 class TestCaseBase(TestCase):
     """Base TestCase for the wiki app test cases."""
-
-    def setUp(self):
-        super(TestCaseBase, self).setUp()
-        self.client = LocalizingClient()
+    client_class = LocalizingClient
 
 
 # Model makers. These make it clearer and more concise to create objects in

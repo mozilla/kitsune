@@ -4,7 +4,7 @@ from nose import SkipTest
 from nose.tools import eq_
 
 from sumo.helpers import urlparams
-from sumo.tests import LocalizingClient, TestCase
+from sumo.tests import TestCase
 from sumo.urlresolvers import reverse
 
 

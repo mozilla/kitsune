@@ -13,10 +13,10 @@ from upload.models import ImageAttachment
 
 class UploadImageTestCase(TestCase):
     fixtures = ['users.json', 'questions.json']
+    client_class = LocalizingClient
 
     def setUp(self):
         super(UploadImageTestCase, self).setUp()
-        self.client = LocalizingClient()
         self.client.login(username='pcraciunoiu', password='testpass')
 
     def tearDown(self):

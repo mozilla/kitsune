@@ -12,6 +12,7 @@ from sumo.tests import MobileTestCase, LocalizingClient
 
 class MobileAAQTests(MobileTestCase):
     fixtures = ['users.json', 'questions.json']
+    client_class = LocalizingClient
     data = {'title': 'A test question',
             'content': 'I have this question that I hope...',
             'sites_affected': 'http://example.com',
@@ -21,10 +22,6 @@ class MobileAAQTests(MobileTestCase):
             'useragent': 'Mozilla/5.0 (Macintosh; U; Intel Mac OS X '
                          '10.6; en-US; rv:1.9.2.6) Gecko/20100625 '
                          'Firefox/3.6.6'}
-
-    def setUp(self):
-        self.client = LocalizingClient()
-        super(MobileAAQTests, self).setUp()
 
     def _new_question(self, post_it=False):
         """Post a new question and return the response."""

@@ -13,13 +13,12 @@ class TestCaseBase(TestCase):
     """Base TestCase for the Questions app test cases."""
 
     fixtures = ['users.json', 'questions.json']
+    client_class = LocalizingClient
 
     def setUp(self):
         q = Question.objects.get(pk=1)
         q.last_answer_id = 1
         q.save()
-
-        self.client = LocalizingClient()
 
         # create a new cache key for top contributors to avoid conflict
         # TODO: May be able to go away once we flush memcache between tests.

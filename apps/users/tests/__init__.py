@@ -11,9 +11,7 @@ from users.models import Profile
 class TestCaseBase(TestCase):
     """Base TestCase for the users app test cases."""
 
-    def setUp(self):
-        super(TestCaseBase, self).setUp()
-        self.client = LocalizingClient()
+    client_class = LocalizingClient
 
 
 def profile(user, **kwargs):

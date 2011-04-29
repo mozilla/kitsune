@@ -10,12 +10,7 @@ from sumo.tests import get, LocalizingClient, TestCase
 
 class ForumTestCase(TestCase):
     fixtures = ['users.json', 'posts.json', 'forums_permissions.json']
-
-    def setUp(self):
-        """Our fixtures have nulled foreign keys to allow them to be
-        installed. This will set them to the correct values."""
-
-        self.client = LocalizingClient()
+    client_class = LocalizingClient
 
 
 class PostTestCase(ForumTestCase):
