@@ -232,6 +232,7 @@ INSTALLED_APPS = (
     'landings',
     'announcements',
     'messages',
+    'commonware.response.cookies',
 
     # Extra apps for testing.
     'django_nose',
@@ -450,6 +451,7 @@ JAVA_BIN = '/usr/bin/java'
 #
 # Sessions
 SESSION_COOKIE_SECURE = True
+SESSION_COOKIE_HTTPONLY = True
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 SESSION_ENGINE = 'django.contrib.sessions.backends.cached_db'
 
