@@ -126,7 +126,7 @@ class SearchTest(SphinxTestCase):
     def test_category(self):
         wc = WikiClient()
         results = wc.query('', ({'filter': 'category', 'value': [10]},))
-        eq_(4, len(results))
+        eq_(5, len(results))
         results = wc.query('', ({'filter': 'category', 'value': [30]},))
         eq_(1, len(results))
 
@@ -159,7 +159,7 @@ class SearchTest(SphinxTestCase):
         wc = WikiClient()
 
         results = wc.query('')
-        eq_(5, len(results))
+        eq_(6, len(results))
 
     def test_firefox_filter(self):
         """Filtering by Firefox version."""
@@ -592,6 +592,20 @@ class SearchTest(SphinxTestCase):
                                            locale='en-US'))
         eq_(400, response.status_code)
         assert not response.content
+
+    def test_archived(self):
+        """Ensure archived articles show only when requested."""
+        qs = {'q': 'impalas', 'a': 1, 'w': 1, 'format': 'json',
+              'is_archived': 1}
+        response = self.client.get(reverse('search'), qs)
+        results = json.loads(response.content)['results']
+        eq_(1, len(results))
+        assert results[0]['url'].endswith('archived-article')
+
+        qs = {'q': 'impalas', 'a': 0, 'w': 1, 'format': 'json'}
+        response = self.client.get(reverse('search'), qs)
+        results = json.loads(response.content)['results']
+        eq_([], results)
 
 
 query = lambda *args, **kwargs: WikiClient().query(*args, **kwargs)
