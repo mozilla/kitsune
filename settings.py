@@ -249,8 +249,6 @@ INSTALLED_APPS = (
 )
 
 TEST_RUNNER = 'test_utils.runner.RadicalTestSuiteRunner'
-TEST_UTILS_NO_TRUNCATE = ('django_content_type',)
-
 
 def JINJA_CONFIG():
     import jinja2

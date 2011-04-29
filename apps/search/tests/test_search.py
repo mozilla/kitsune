@@ -15,14 +15,13 @@ import mock
 from nose import SkipTest
 from nose.tools import assert_raises, eq_
 from pyquery import PyQuery as pq
-import test_utils
 
 from forums.models import Post
 import search as constants
 from search.clients import (WikiClient, QuestionsClient,
                             DiscussionClient, SearchError)
 from search.utils import start_sphinx, stop_sphinx, reindex, crc32
-from sumo.tests import LocalizingClient
+from sumo.tests import LocalizingClient, TestCase
 from sumo.urlresolvers import reverse
 from wiki.models import Document
 
@@ -32,7 +31,7 @@ def render(s, context):
     return t.render(**context)
 
 
-class SphinxTestCase(test_utils.TransactionTestCase):
+class SphinxTestCase(TestCase):
     """
     This test case type can setUp and tearDown the sphinx daemon.  Use this
     when testing any feature that requires sphinx.
@@ -40,33 +39,30 @@ class SphinxTestCase(test_utils.TransactionTestCase):
 
     fixtures = ['users.json', 'search/documents.json',
                 'posts.json', 'questions.json']
-    sphinx = True
-    sphinx_is_running = False
-
-    def setUp(self):
-        if not SphinxTestCase.sphinx_is_running:
-            if not settings.SPHINX_SEARCHD or not settings.SPHINX_INDEXER:
-                raise SkipTest()
-
-            os.environ['DJANGO_ENVIRONMENT'] = 'test'
-
-            if os.path.exists(settings.TEST_SPHINX_PATH):
-                shutil.rmtree(settings.TEST_SPHINX_PATH)
-
-            os.makedirs(os.path.join(settings.TEST_SPHINX_PATH, 'data'))
-            os.makedirs(os.path.join(settings.TEST_SPHINX_PATH, 'log'))
-            os.makedirs(os.path.join(settings.TEST_SPHINX_PATH, 'etc'))
-
-            reindex()
-            start_sphinx()
-            time.sleep(1)
-            SphinxTestCase.sphinx_is_running = True
 
     @classmethod
-    def tearDownClass(cls):
-        if SphinxTestCase.sphinx_is_running:
-            stop_sphinx()
-            SphinxTestCase.sphinx_is_running = False
+    def setup_class(cls):
+        super(SphinxTestCase, cls).setup_class()
+        if not settings.SPHINX_SEARCHD or not settings.SPHINX_INDEXER:
+            raise SkipTest()
+
+        os.environ['DJANGO_ENVIRONMENT'] = 'test'
+
+        if os.path.exists(settings.TEST_SPHINX_PATH):
+            shutil.rmtree(settings.TEST_SPHINX_PATH)
+
+        os.makedirs(os.path.join(settings.TEST_SPHINX_PATH, 'data'))
+        os.makedirs(os.path.join(settings.TEST_SPHINX_PATH, 'log'))
+        os.makedirs(os.path.join(settings.TEST_SPHINX_PATH, 'etc'))
+
+        reindex()
+        start_sphinx()
+        time.sleep(1)
+
+    @classmethod
+    def teardown_class(cls):
+        stop_sphinx()
+        super(SphinxTestCase, cls).teardown_class()
 
 
 def test_sphinx_down():
