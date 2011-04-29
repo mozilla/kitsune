@@ -83,6 +83,7 @@ def wiki_rows(request, readout_slug):
 
 
 @require_GET
+@login_required
 def review(request):
     """Review dashboard for a user, includes activity, announcements, etc."""
     return jingo.render(request, 'dashboards/review.html',

@@ -115,6 +115,14 @@ class ContributorForumDashTests(TestCase):
         doc = pq(response.content)
         eq_(1, len(doc('ol.actions li')))
 
+    def test_anonymous_user(self):
+        """Checks the forums dashboard doesn't load for an anonymous user."""
+        self.client.logout()
+        response = self.client.get(reverse('dashboards.review',
+                                   locale='en-US'))
+        eq_(302, response.status_code)
+        assert '/users/login' in response['location']
+
 
 class AnnouncementForumDashTests(TestCase):
     fixtures = ['users.json']
