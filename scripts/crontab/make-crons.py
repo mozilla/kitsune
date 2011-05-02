@@ -61,6 +61,7 @@ HOME = /tmp
 
 # Every 6 hours.
 0 */6 * * * $DJANGO update_product_details -q > /dev/null
+10 */6 * * * $CRON rebuild_kb
 30 */6 * * * $CRON get_customercare_stats
 40 */6 * * * $CRON purge_tweets
 50 */6 * * * $CRON cache_top_contributors

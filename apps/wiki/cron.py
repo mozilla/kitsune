@@ -1,6 +1,7 @@
 from django.db import connection, transaction
 
 import cronjobs
+import waffle
 
 from wiki import tasks
 
@@ -59,4 +60,8 @@ def calculate_related_documents():
 
 @cronjobs.register
 def rebuild_kb():
+    # If rebuild on demand switch is on, do nothing.
+    if waffle.switch_is_active('wiki-rebuild-on-demand'):
+        return
+
     tasks.rebuild_kb()

@@ -567,7 +567,6 @@ CELERY_EAGER_PROPAGATES_EXCEPTIONS = True  # Explode loudly during tests.
 
 # Wiki rebuild settings
 WIKI_REBUILD_TOKEN = 'sumo:wiki:full-rebuild'
-WIKI_REBUILD_ON_DEMAND = False
 
 # Anonymous user cookie
 ANONYMOUS_COOKIE_NAME = 'SUMO_ANONID'

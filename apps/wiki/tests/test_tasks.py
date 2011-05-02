@@ -11,6 +11,7 @@ import celery.conf
 import mock
 from nose.tools import eq_
 from test_utils import RequestFactory
+import waffle
 
 from sumo.tests import TestCase
 from wiki.models import Document
@@ -43,7 +44,6 @@ class RebuildTestCase(TestCase):
 
     def setUp(self):
         self.old_settings = deepcopy(settings._wrapped.__dict__)
-        settings.WIKI_REBUILD_ON_DEMAND = True
         celery.conf.ALWAYS_EAGER = True
 
     def tearDown(self):
@@ -52,20 +52,26 @@ class RebuildTestCase(TestCase):
         celery.conf.ALWAYS_EAGER = self.ALWAYS_EAGER
 
     @mock.patch.object(rebuild_kb, 'delay')
-    def test_eager_queue(self, delay):
+    @mock.patch.object(waffle, 'switch_is_active')
+    def test_eager_queue(self, switch_is_active, delay):
+        switch_is_active.return_value = True
         schedule_rebuild_kb()
         assert not cache.get(settings.WIKI_REBUILD_TOKEN)
         assert not delay.called
 
     @mock.patch.object(rebuild_kb, 'delay')
-    def test_task_queue(self, delay):
+    @mock.patch.object(waffle, 'switch_is_active')
+    def test_task_queue(self, switch_is_active, delay):
+        switch_is_active.return_value = True
         celery.conf.ALWAYS_EAGER = False
         schedule_rebuild_kb()
         assert cache.get(settings.WIKI_REBUILD_TOKEN)
         assert delay.called
 
     @mock.patch.object(rebuild_kb, 'delay')
-    def test_already_queued(self, delay):
+    @mock.patch.object(waffle, 'switch_is_active')
+    def test_already_queued(self, switch_is_active, delay):
+        switch_is_active.return_value = True
         cache.set(settings.WIKI_REBUILD_TOKEN, True)
         schedule_rebuild_kb()
         assert cache.get(settings.WIKI_REBUILD_TOKEN)
@@ -73,8 +79,9 @@ class RebuildTestCase(TestCase):
 
     @mock.patch.object(rebuild_kb, 'delay')
     @mock.patch.object(cache, 'get')
-    def test_dont_queue(self, get, delay):
-        settings.WIKI_REBUILD_ON_DEMAND = False
+    @mock.patch.object(waffle, 'switch_is_active')
+    def test_dont_queue(self, switch_is_active, get, delay):
+        switch_is_active.return_value = False
         schedule_rebuild_kb()
         assert not get.called
         assert not delay.called

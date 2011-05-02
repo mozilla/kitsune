@@ -12,6 +12,7 @@ import celery.conf
 from celery.decorators import task
 from multidb.pinning import pin_this_thread, unpin_this_thread
 from tower import ugettext as _
+import waffle
 
 from sumo.urlresolvers import reverse
 from sumo.utils import chunked
@@ -51,7 +52,8 @@ def send_reviewed_notification(revision, document, message):
 
 def schedule_rebuild_kb():
     """Try to schedule a KB rebuild, if we're allowed to."""
-    if not settings.WIKI_REBUILD_ON_DEMAND or celery.conf.ALWAYS_EAGER:
+    if (not waffle.switch_is_active('wiki-rebuild-on-demand') or
+        celery.conf.ALWAYS_EAGER):
         return
 
     if cache.get(settings.WIKI_REBUILD_TOKEN):
