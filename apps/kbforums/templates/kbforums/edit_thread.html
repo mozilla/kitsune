@@ -1,6 +1,7 @@
 {# vim: set ts=2 et sts=2 sw=2: #}
 {% extends "kbforums/base.html" %}
 {% from "layout/errorlist.html" import errorlist %}
+{% from "kbforums/includes/macros.html" import kbforums_warning %}
 {# L10n: {t} is the title of the thread. {d} is the name of the document. #}
 {% set title = _('Edit thread {t} | {d} Discussion | Knowledge Base')|f(t=thread.title, d=document.title) %}
 {% set crumbs = [(url('wiki.category', document.category), document.get_category_display()),
@@ -11,6 +12,7 @@
 
 {% block content %}
 <article id="edit-thread" class="main">
+  {{ kbforums_warning(document, user) }}
   <h1>{{ _('Edit thread "{t}"')|f(t=thread.title) }}</h1>
 
   <form action="{{ url('wiki.discuss.edit_thread', document.slug, thread.id) }}" method="post" class="edit-thread">

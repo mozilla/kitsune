@@ -2,6 +2,7 @@
 {% extends "kbforums/base.html" %}
 {% from "layout/errorlist.html" import errorlist %}
 {% from "includes/common_macros.html" import content_editor %}
+{% from "kbforums/includes/macros.html" import kbforums_warning %}
 {# L10n: {t} is the title of the thread. {d} is the name of the document. #}
 {% set title = _('Edit a post | {t} | {d} Discussion | Knowledge Base')|f(t=thread.title, d=document.title) %}
 {% set crumbs = [(url('wiki.category', document.category), document.get_category_display()),
@@ -12,6 +13,7 @@
 
 {% block content %}
 <article id="edit-post" class="main">
+  {{ kbforums_warning(document, user) }}
   <h1>{{ _('Edit a post') }}</h1>
 
   <form action="{{ url('wiki.discuss.edit_post', document.slug, thread.id, post.id) }}" method="post" class="edit-post">

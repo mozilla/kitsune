@@ -230,7 +230,7 @@ div.support-search button.img-submit {
 /*-----------------------------------------------
     Warnings, notifications, in-content stuff
 -----------------------------------------------*/
-div.warning-box {
+.warning-box {
     border: 1px #f2d273 solid;
     background: #fffaed url(../img/wiki/bkg.warning.png) repeat-y left top;
     background: url(../img/wiki/bkg.warning.png) repeat-y left top, -moz-linear-gradient(top, #fffaed, #fff2cb);
@@ -242,7 +242,7 @@ div.warning-box {
     padding: .5em 2em .5em 2em;
 }
 
-div.warning-box p {
+.warning-box p {
     margin: .5em 0 .5em 0;
     line-height: 1.5em;
     color: #444;

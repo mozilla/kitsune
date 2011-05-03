@@ -467,3 +467,13 @@ span.post-modified {
     display: block;
     margin: 0.5em 0 0 0;
 }
+
+/* Warning box overrides */
+article.main > .warning-box {
+    font-size: 13px;
+    margin: 0 8px 20px 0;
+}
+
+article.main > .warning-box p + p {
+    font-size: 20px;
+}

@@ -1,0 +1,22 @@
+{# vim: set ts=2 et sts=2 sw=2: #}
+{% macro kbforums_warning(document, user) -%}
+  <section class="warning-box">
+    <p>
+      {% if user.is_authenticated() %}
+        {% trans title=document.title %}
+          This forum is a discussion about improving the "{{ title }}" article.
+        {% endtrans %}
+      {% else %}
+        {% trans title=document.title, register_url=url('users.register') %}
+          This forum is a discussion about improving the "{{ title }}" article. If
+          you'd like to participate, please <a href="{{ register_url }}">register</a>.
+        {% endtrans %}
+      {% endif %}
+    </p>
+    <p>
+      {% trans aaq_url=url('questions.new_question') %}
+        If you need help with Firefox, please <a href="{{ aaq_url }}">ask a question</a>.
+      {% endtrans %}
+    </p>
+  </section>
+{%- endmacro %}
