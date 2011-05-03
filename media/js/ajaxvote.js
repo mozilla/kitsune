@@ -1,32 +1,48 @@
 /*
- * Ajaxify the Helpful/NotHelpful voting form on Document page
+ * Voting form ajaxified.
  */
 
 (function($) {
 
 "use strict";
 
-var VOTE_BUTTONS_SEL = '#helpful-vote input[type="submit"]';
-
-function ArticleHelpfulVote(positionMessage) {
-    ArticleHelpfulVote.prototype.init.call(this, positionMessage);
+function AjaxVote(form, options) {
+    /* Args:
+     * form - the voting form to ajaxify. Can be a selector, DOM element,
+     *        or jQuery node
+     * options - dict of options
+     *      positionMessage - absolutely position the response message?
+     *      removeForm - remove the form after vote?
+     */
+    AjaxVote.prototype.init.call(this, form, options);
 }
 
-ArticleHelpfulVote.prototype = {
-    init: function(positionMessage) {
+AjaxVote.prototype = {
+    init: function(form, options) {
         var self = this,
-            $btns = $(VOTE_BUTTONS_SEL);
+            $form = $(form),
+            $btns = $form.find('input[type="submit"]');
 
+        options = $.extend({
+            positionMessage: false,
+            removeForm: false
+        }, options);
+        self.options = options;
         self.voted = false;
-        self.positionMessage = positionMessage;
+        self.$form = $form;
 
         $btns.click(function(e) {
             if (!self.voted) {
                 var $btn = $(this),
                     $form = $btn.closest('form'),
-                    data = {};
+                    formDataArray = $form.serializeArray(),
+                    data = {},
+                    i, l;
                 $btns.attr('disabled', 'disabled');
                 $form.addClass('busy');
+                for (i = 0, l = formDataArray.length; i < l; i++) {
+                    data[formDataArray[i].name] = formDataArray[i].value;
+                }
                 data[$btn.attr('name')] = $btn.val();
                 $.ajax({
                     url: $btn.closest('form').attr('action'),
@@ -55,12 +71,13 @@ ArticleHelpfulVote.prototype = {
         });
     },
     showMessage: function(message, $showAbove) {
+        // TODO: Tweak KBox to handle this case.
         var self = this,
-            $html = $('<div class="message-box"><p></p></div>'),
+            $html = $('<div class="ajax-vote-box"><p></p></div>'),
             offset = $showAbove.offset();
         $html.find('p').html(message);
 
-        if (self.positionMessage) {
+        if (self.options.positionMessage) {
             // on desktop browsers we use absolute positioning
             $('body').append($html);
             $html.css({
@@ -71,6 +88,7 @@ ArticleHelpfulVote.prototype = {
             $('body').one('click', fadeOut);
         } else {
             // on mobile browsers we just append to the grandfather
+            // TODO: make this more configurable with an extra option
             $showAbove.parent().parent()
                 .addClass($showAbove.val()).append($html);
         }
@@ -79,12 +97,18 @@ ArticleHelpfulVote.prototype = {
             $html.fadeOut(function(){
                 $html.remove();
             });
+            if (self.options.removeForm) {
+                self.$form.fadeOut(function(){
+                    self.$form.remove();
+                });
+            }
             $('body').unbind('click', fadeOut);
             clearTimeout(timer);
         }
     }
 };
 
-window.ArticleHelpfulVote = ArticleHelpfulVote;
+window.k = window.k || {};
+window.k.AjaxVote = AjaxVote;
 
 })(jQuery);

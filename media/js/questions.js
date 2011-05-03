@@ -3,6 +3,9 @@
  * Scripts for the questions app.
  */
 
+// TODO: Figure out how to break out the functionality here into
+// testable parts.
+
 (function($){
 
     function init() {
@@ -14,6 +17,7 @@
             initReportPost();
             initHaveThisProblemTooAjax();
             initEmailSubscribeAjax();
+            initHelpfulVote();
         }
 
         Marky.createSimpleToolbar('.editor-tools', '#reply-content, #id_content');
@@ -147,7 +151,7 @@
      */
     function initHaveThisProblemTooAjax() {
         var $container = $('#question div.me-too');
-        initAjaxForm($container, '#vote-thanks');
+        initAjaxForm($container, 'form', '#vote-thanks');
         $container.delegate('.kbox-close, .kbox-cancel', 'click', function(ev){
             ev.preventDefault();
             $container.unbind().remove();
@@ -161,13 +165,28 @@
         var $container = $('#question ul.actions li.email'),
             $link = $('#email-subscribe-link');
         if ($link.length > 0) {
-            initAjaxForm($container, '#email-subscribe');
+            initAjaxForm($container, 'form', '#email-subscribe');
         }
     }
 
+    /*
+     * Ajaxify the Helpful/Not Helpful form
+     */
+    function initHelpfulVote() {
+        var $container;
+        $('li.answer').each(function(){
+            $container = $(this).find('div.side-section');
+            new k.AjaxVote($container.find('form.helpful'), {
+                positionMessage: true,
+                removeForm: true
+            });
+        });
+    }
+
     // Helper
-    function initAjaxForm($container, boxSelector) {
-        $container.delegate('form', 'submit', function(ev){
+    function initAjaxForm($container, formSelector, boxSelector,
+                          onKboxClose) {
+        $container.delegate(formSelector, 'submit', function(ev){
             ev.preventDefault();
             var $form = $(this);
             $.ajax({
@@ -180,7 +199,8 @@
                         if($(boxSelector).length === 0) {
                             // We don't have a modal set up yet.
                             var kbox = new KBox(data.html, {
-                               container: $container
+                               container: $container,
+                               preClose: onKboxClose
                             });
                             kbox.open();
                         } else {

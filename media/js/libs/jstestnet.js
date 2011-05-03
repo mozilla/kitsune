@@ -68,7 +68,10 @@
 
         QUnit.log = function(result, message, details) {
             // Strip out html:
-            message = message.replace(/<(?:.|\s)*?>/g, '');
+            message = message.replace(/&amp;/g, '&');
+            message = message.replace(/&gt;/g, '>');
+            message = message.replace(/&lt;/g, '<');
+            message = message.replace(/<[^>]+>/g, '');
             var msg = {
                 action: 'log',
                 result: result,

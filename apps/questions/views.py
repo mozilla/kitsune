@@ -436,6 +436,9 @@ def answer_vote(request, question_id, answer_id):
 
         if 'helpful' in request.POST:
             vote.helpful = True
+            message = _('Glad to hear it!')
+        else:
+            message = _('Sorry to hear that.')
 
         if request.user.is_authenticated():
             vote.creator = request.user
@@ -443,6 +446,11 @@ def answer_vote(request, question_id, answer_id):
             vote.anonymous_id = request.anonymous.anonymous_id
 
         vote.save()
+    else:
+        message = _('You already voted on this reply.')
+
+    if request.is_ajax():
+        return HttpResponse(json.dumps({'message': message}))
 
     return HttpResponseRedirect(answer.get_absolute_url())
 

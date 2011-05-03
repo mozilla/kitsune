@@ -1,6 +1,5 @@
-
 /*
-    Functions that tests can use.
+    Utilities for testing jQuery-based JavaScript code.
 */
 tests = {};
 
@@ -9,20 +8,22 @@ tests.waitFor = function(checkCondition, config) {
         Wait for a condition before doing anything else.
 
         Good for making async tests fast on fast machines.
-        Use it like this:
+        Use it like this::
 
-        tests.waitFor(function() {
-            return (thing == 'done');
-        }).thenDo(function() {
-            equals(1,1);
-            ok(stuff());
-        });
+          tests.waitFor(function() {
+              return (thing == 'done);
+          }).thenDo(function() {
+              equals(1,1);
+              ok(stuff());
+          });
 
         You can pass in a config object as the second argument
-        with these possible attributed:
+        with these possible attributes:
 
-        config.interval = milliseconds to wait between polling condition
-        config.timeout = milliseconds to wait before giving up on condition
+        **config.interval**
+          milliseconds to wait between polling condition
+        **config.timeout**
+          milliseconds to wait before giving up on condition
     */
     if (typeof(config) === 'undefined') {
         config = {};
@@ -35,7 +36,9 @@ tests.waitFor = function(checkCondition, config) {
 
     run = function() {
         if (timeSpent > timeout) {
-            throw new Error("Spent too long waiting for condition");
+            var cond = checkCondition.toString()
+            ok(false, "Spent too long waiting for: " + cond);
+            start();
         }
         timeSpent += interval;
         var ready = checkCondition();
@@ -62,8 +65,9 @@ tests.createSandbox = function(tmpl) {
         Returns a jQuery object for a temporary, unique div filled with html
         from a template.
 
-        tmpl: an optional jQuery locator from which to copy html.  This would
-              typically be the ID of a div in qunit.html
+        **tmpl**
+          An optional jQuery locator from which to copy html.  This would
+          typically be the ID of a div in your test runner HTML (e.g. qunit.html)
 
         Example::
 
@@ -87,4 +91,40 @@ tests.createSandbox = function(tmpl) {
     }
     $('#sandbox').append(sb);
     return sb;
+};
+
+tests.StubOb = function(Orig, overrides) {
+    /*
+        Returns a class-like replacement for Orig.
+
+        **Orig**
+          object you want to replace.
+        **overrides**
+          object containing properties to override in the original.
+
+        All properties in the overrides object will replace those of Orig's
+        prototype when you create an instance of the class.  This is useful
+        for stubbing out certain methods.  For example::
+
+            z.FileData = tests.StubOb(z.FormData, {
+                send: function() {}
+            });
+
+        This allows the creation of a FormData object that behaves just like
+        the original except that send() does not actually post data during
+        a test::
+
+            var fileData = new z.FileData();
+            fileData.send(); // does nothing
+
+        Be sure to assign the original class back when you're done testing.
+    */
+    return function() {
+        var ob = {}
+        Orig.apply(ob, this.arguments);
+        for (k in overrides) {
+            ob[k] = overrides[k];
+        }
+        return ob;
+    }
 };

@@ -948,11 +948,11 @@ ol.answers div.meta span:first-child {
 }
 
 ol.answers form.helpful {
-    margin: 7px 0 20px;
+    margin: 0 0 20px;
 }
 
 ol.answers form.helpful input.btn {
-    margin: 0 10px 0 0;
+    margin: 7px 10px 0 0;
 }
 
 ol.answers form.report {

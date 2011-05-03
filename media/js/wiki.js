@@ -12,7 +12,9 @@
 
         if ($('body').is('.document') || $('body').is('.home')) {  // Document page
             ShowFor.initForTags();
-            new ArticleHelpfulVote(true);
+            new k.AjaxVote('#helpful-vote form', {
+                positionMessage: true
+            });
             initAOABanner();
         } else if ($('body').is('.review')) { // Review pages
             ShowFor.initForTags();
