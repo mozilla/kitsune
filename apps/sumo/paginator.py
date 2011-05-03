@@ -6,6 +6,8 @@ __all__ = ['Paginator', 'EmptyPage', 'InvalidPage']
 
 
 class Paginator(DjPaginator):
+    """Allows you to pass in a `count` kwarg to avoid running an
+    expensive, uncacheable `SELECT COUNT` query."""
 
     def __init__(self, object_list, per_page,
                  orphans=0, allow_empty_first_page=True, count=None):
