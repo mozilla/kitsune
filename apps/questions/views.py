@@ -192,12 +192,11 @@ def new_question(request, template=None):
                              'host': Site.objects.get_current().domain})
 
     # Handle the form post.
-    just_logged_in = False  # Used below for whether to pre-load Question form.
     if not request.user.is_authenticated():
-        if request.POST.get('login', None):
+        if request.POST.get('login'):
             login_form = handle_login(request, only_active=False)
             register_form = RegisterForm()
-        elif request.POST.get('register', None):
+        elif request.POST.get('register'):
             login_form = AuthenticationForm()
             email_template = 'questions/email/confirm_question.ltxt'
             email_subject = _('Please confirm your Firefox Help question')
@@ -213,22 +212,20 @@ def new_question(request, template=None):
             message = _lazy('Request type not recognized.')
             return jingo.render(request, 'handlers/400.html',
                             {'message': message}, status=400)
-        if not request.user.is_authenticated():
+        if request.user.is_authenticated():
+            # Redirect to GET the current URL.
+            # This is required for the csrf middleware to set the auth'd tokens
+            # appropriately.
+            return HttpResponseRedirect(request.get_full_path())
+        else:
             return jingo.render(request, login_t,
                                 {'product': product, 'category': category,
                                  'title': request.POST.get('title'),
                                  'register_form': register_form,
                                  'login_form': login_form})
-        else:
-            just_logged_in = True
 
-    if just_logged_in:
-        form = NewQuestionForm(product=product,
-                               category=category,
-                               initial={'title': request.GET.get('search')})
-    else:
-        form = NewQuestionForm(product=product, category=category,
-                               data=request.POST)
+    form = NewQuestionForm(product=product, category=category,
+                           data=request.POST)
 
     if form.is_valid():
         question = Question(creator=request.user,
