@@ -42,7 +42,7 @@ cat > settings_local.py <<SETTINGS
 from settings import *
 ROOT_URLCONF = '%s.urls' % ROOT_PACKAGE
 LOG_LEVEL = logging.ERROR
-DATABASES['default']['NAME'] = 'kitsune_$BUILD_NAME'
+DATABASES['default']['NAME'] = 'test_kitsune_$BUILD_NAME'
 DATABASES['default']['HOST'] = 'localhost'
 DATABASES['default']['USER'] = 'hudson'
 DATABASES['default']['TEST_NAME'] = 'test_kitsune_$BUILD_NAME'
