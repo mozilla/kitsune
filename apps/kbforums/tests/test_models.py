@@ -99,7 +99,7 @@ class KBSaveDateTestCase(KBForumTestCase):
     and updated dates.
     """
 
-    delta = datetime.timedelta(milliseconds=100)
+    delta = datetime.timedelta(milliseconds=300)
 
     def setUp(self):
         super(KBSaveDateTestCase, self).setUp()

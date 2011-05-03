@@ -169,7 +169,7 @@ class SaveDateTestCase(ForumTestCase):
     and updated dates.
     """
 
-    delta = datetime.timedelta(milliseconds=100)
+    delta = datetime.timedelta(milliseconds=300)
 
     def setUp(self):
         super(SaveDateTestCase, self).setUp()
