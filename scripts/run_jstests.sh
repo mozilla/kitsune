@@ -58,6 +58,7 @@ INSTALLED_APPS += (
 
 SETTINGS
 
+echo "CREATE DATABASE test_kitsune_$BUILD_NAME" | mysql
 
 # All DB tables need to exist so that runserver can start up.
 python manage.py syncdb --noinput
