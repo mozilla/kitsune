@@ -183,10 +183,11 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin):
     # A document's is_archived flag must match that of its parent. If it has no
     # parent, it can do what it wants. This invariant is enforced in save().
     is_archived = models.BooleanField(
-        default=False, db_index=True, help_text=_lazy(
-        u'If checked, this wiki page will be hidden from basic searches and '
-         'dashboards. When viewed, the page will warn that it is no longer '
-         'maintained.'))
+        default=False, db_index=True, verbose_name='is obsolete',
+        help_text=_lazy(
+            u'If checked, this wiki page will be hidden from basic searches '
+             'and dashboards. When viewed, the page will warn that it is no ',
+             'longer maintained.'))
 
 
     # firefox_versions,
@@ -257,6 +258,9 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin):
 
         """
         if self.parent:
+            # We always set the child according to the parent rather than vice
+            # versa, because we do not expose an Archived checkbox in the
+            # translation UI.
             setattr(self, attr, getattr(self.parent, attr))
         else:  # An article cannot have both a parent and children.
             # Make my children the same as me:
