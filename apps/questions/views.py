@@ -70,8 +70,12 @@ def questions(request):
         sort_ = None
         order = '-updated'
 
-    question_qs = Question.objects.filter(creator__is_active=1,
-                                          status=CONFIRMED)
+    question_qs = Question.objects.select_related(
+        'creator', 'last_answer', 'last_answer__creator')
+    question_qs = question_qs.extra(
+        {'_num_votes': 'SELECT COUNT(*) FROM questions_questionvote WHERE questions_questionvote.question_id = questions_question.id'})
+    question_qs = question_qs.filter(creator__is_active=1, status=CONFIRMED)
+
     if filter == 'no-replies':
         question_qs = question_qs.filter(num_answers=0)
     elif filter == 'replies':
@@ -103,7 +107,9 @@ def questions(request):
             question_qs = Question.objects.get_empty_query_set()
 
     question_qs = question_qs.order_by(order)
-    questions_ = paginate(request, question_qs,
+    # TODO: Cache this guy.
+    count = question_qs.count()
+    questions_ = paginate(request, question_qs, count=count,
                           per_page=constants.QUESTIONS_PER_PAGE)
 
     return jingo.render(request, 'questions/questions.html',
@@ -113,7 +119,7 @@ def questions(request):
                          'tags': tags, 'tagged': tagged})
 
 
-@anonymous_csrf  # Need this so the anon csrf gets set for watch forms. 
+@anonymous_csrf  # Need this so the anon csrf gets set for watch forms.
 def answers(request, question_id, form=None, watch_form=None,
             answer_preview=None, **extra_kwargs):
     """View the answers to a question."""

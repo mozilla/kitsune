@@ -179,7 +179,10 @@ class Question(ModelBase, BigVocabTaggableMixin):
     @property
     def num_votes(self):
         """Get the number of votes for this question."""
-        return QuestionVote.objects.filter(question=self).count()
+        if not hasattr(self, '_num_votes'):
+            n = QuestionVote.objects.filter(question=self).count()
+            self._num_votes = n
+        return self._num_votes
 
     def sync_num_votes_past_week(self):
         """Get the number of votes for this question in the past week."""
