@@ -77,7 +77,12 @@ def get_best_language(accept_lang):
     """Given an Accept-Language header, return the best-matching language."""
 
     LUM = settings.LANGUAGE_URL_MAP
+    NSL = settings.NON_SUPPORTED_LOCALES
+    LC = settings.LANGUAGE_CODE
     langs = dict(LUM)
+    # Add in non-supported first to allow overriding prefix behavior.
+    langs.update((k.lower(), v if v else LC) for k, v in NSL.items() if
+                 k.lower() not in langs)
     langs.update((k.split('-')[0], v) for k, v in LUM.items() if
                  k.split('-')[0] not in langs)
     ranked = parse_accept_lang_header(accept_lang)
@@ -88,11 +93,6 @@ def get_best_language(accept_lang):
         pre = lang.split('-')[0]
         if pre in langs:
             return langs[pre]
-    # Separate because it should never take precedence.
-    for lang, _ in ranked:
-        ns = get_non_supported(lang)
-        if ns is not None:
-            return ns
     # Couldn't find any acceptable locale.
     return False
 

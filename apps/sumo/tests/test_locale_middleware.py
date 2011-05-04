@@ -85,6 +85,10 @@ class BestLanguageTests(TestCase):
         best = get_best_language('en-gb, es;q=0.2')
         eq_('en-US', best)
 
+    def test_serbian(self):
+        """sr -> sr-CYRL, not sr-LATN."""
+        eq_('sr-CYRL', get_best_language('sr'))
+
 
 class NonSupportedTests(TestCase):
     @mock.patch.object(settings._wrapped, 'NON_SUPPORTED_LOCALES',
@@ -93,14 +97,16 @@ class NonSupportedTests(TestCase):
         eq_('no', get_non_supported('nn-NO'))
         eq_('no', get_non_supported('nn-no'))
         eq_(settings.LANGUAGE_CODE, get_non_supported('xx'))
-        eq_(None, get_non_supported('xx-YY'))
+        eq_(None, get_non_supported('yy'))
 
     @mock.patch.object(settings._wrapped, 'NON_SUPPORTED_LOCALES',
-                       {'nn-NO': 'no'})
+                       {'nn-NO': 'no', 'xx': None})
     def test_middleware(self):
         response = self.client.get('/nn-NO/home', follow=True)
         self.assertRedirects(response, '/no/home', status_code=302)
 
-        response = self.client.get('/home', follow=True,
-                                   HTTP_ACCEPT_LANGUAGE='nn-no')
+        response = self.client.get('/nn-no/home', follow=True)
         self.assertRedirects(response, '/no/home', status_code=302)
+
+        response = self.client.get('/xx/home', follow=True)
+        self.assertRedirects(response, '/en-US/home', status_code=302)

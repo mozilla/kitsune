@@ -1,9 +1,4 @@
 RewriteEngine On
 
-# Redirect locales that point to one locale in SUMO.
-# Kitsune does this by itself, mostly.
-# Just need to move sr-CYRL above sr-LATN to get this.
-RewriteRule ^sr/(.+)$           /sr-CYRL/$1 [L,R]
-
-# Everything else goes to Kitsune.
+# Everything goes to Kitsune.
 RewriteRule ^(.*) /k/$1 [QSA]

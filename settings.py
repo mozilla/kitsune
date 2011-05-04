@@ -83,6 +83,7 @@ LANGUAGE_URL_MAP = dict([(i.lower(), i) for i in SUMO_LANGUAGES])
 NON_SUPPORTED_LOCALES = {
     'nb-NO': 'no',
     'nn-NO': 'no',
+    'sr': 'sr-CYRL',  # Override the tendency to go sr->sr-LATN.
 }
 
 TEXT_DOMAIN = 'messages'
