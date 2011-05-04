@@ -210,9 +210,11 @@
 
             this.kbox = $(this.$el).data('kbox');
 
+            var csrf = $('#reply input[name=csrfmiddlewaretoken]').val();
             this.$el.find('#submit').bind('click', {reply: this}, function(e) {
                 var reply = e.data.reply,
                     data = {
+                        'csrfmiddlewaretoken': csrf,
                         'content': reply.content,
                         'reply_to': reply.tweet.id
                     },
