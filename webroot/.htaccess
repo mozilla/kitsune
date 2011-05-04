@@ -2,8 +2,6 @@ RewriteEngine On
 
 # Redirect locales that point to one locale in SUMO.
 # Kitsune does this by itself, mostly.
-# Not sure about this guy: may need to special-case it in the LocaleURLMiddleware.
-RewriteRule ^n[bn]\-NO/(.+)$           /no/$1 [L,R]
 # Just need to move sr-CYRL above sr-LATN to get this.
 RewriteRule ^sr/(.+)$           /sr-CYRL/$1 [L,R]
 

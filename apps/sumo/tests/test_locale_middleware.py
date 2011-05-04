@@ -1,7 +1,10 @@
+from django.conf import settings
+
+import mock
 from nose.tools import eq_
 
 from sumo.tests import TestCase
-from sumo.urlresolvers import get_best_language
+from sumo.urlresolvers import get_best_language, get_non_supported
 
 
 class TestLocaleMiddleware(TestCase):
@@ -81,3 +84,23 @@ class BestLanguageTests(TestCase):
         """en-US is a better match for en-gb, es;q=0.2 than es."""
         best = get_best_language('en-gb, es;q=0.2')
         eq_('en-US', best)
+
+
+class NonSupportedTests(TestCase):
+    @mock.patch.object(settings._wrapped, 'NON_SUPPORTED_LOCALES',
+                       {'nn-NO': 'no', 'xx': None})
+    def test_get_non_supported(self):
+        eq_('no', get_non_supported('nn-NO'))
+        eq_('no', get_non_supported('nn-no'))
+        eq_(settings.LANGUAGE_CODE, get_non_supported('xx'))
+        eq_(None, get_non_supported('xx-YY'))
+
+    @mock.patch.object(settings._wrapped, 'NON_SUPPORTED_LOCALES',
+                       {'nn-NO': 'no'})
+    def test_middleware(self):
+        response = self.client.get('/nn-NO/home', follow=True)
+        self.assertRedirects(response, '/no/home', status_code=302)
+
+        response = self.client.get('/home', follow=True,
+                                   HTTP_ACCEPT_LANGUAGE='nn-no')
+        self.assertRedirects(response, '/no/home', status_code=302)

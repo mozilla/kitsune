@@ -78,6 +78,13 @@ LANGUAGES = dict([(i.lower(), LOCALES[i].native) for i in SUMO_LANGUAGES])
 
 LANGUAGE_URL_MAP = dict([(i.lower(), i) for i in SUMO_LANGUAGES])
 
+# Locales that are known but unsupported. Keys are the locale, values are
+# an optional fallback locale, or None, to use the LANGUAGE_CODE.
+NON_SUPPORTED_LOCALES = {
+    'nb-NO': 'no',
+    'nn-NO': 'no',
+}
+
 TEXT_DOMAIN = 'messages'
 
 SITE_ID = 1
