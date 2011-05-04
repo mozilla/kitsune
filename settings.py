@@ -81,6 +81,7 @@ LANGUAGE_URL_MAP = dict([(i.lower(), i) for i in SUMO_LANGUAGES])
 # Locales that are known but unsupported. Keys are the locale, values are
 # an optional fallback locale, or None, to use the LANGUAGE_CODE.
 NON_SUPPORTED_LOCALES = {
+    'af': None,
     'nb-NO': 'no',
     'nn-NO': 'no',
     'sr': 'sr-CYRL',  # Override the tendency to go sr->sr-LATN.
