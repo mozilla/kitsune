@@ -14,6 +14,7 @@ from django.utils.datastructures import SortedDict
 from babel.numbers import format_number
 import bleach
 import jingo
+from session_csrf import anonymous_csrf
 from tower import ugettext as _, ugettext_lazy as _lazy
 import tweepy
 
@@ -102,6 +103,7 @@ def more_tweets(request):
 
 
 @require_GET
+@anonymous_csrf  # Need this so the anon csrf gets set for forms rendered.
 @twitter.auth_wanted
 def landing(request):
     """Customer Care Landing page."""
@@ -157,6 +159,7 @@ def landing(request):
 
 
 @require_POST
+@anonymous_csrf
 @twitter.auth_required
 def twitter_post(request):
     """Post a tweet, and return a rendering of it (and any replies)."""
@@ -217,6 +220,7 @@ def twitter_post(request):
 
 
 @require_POST
+@anonymous_csrf
 def hide_tweet(request):
     """
     Hide the tweet with a given ID. Only hides tweets that are not replies

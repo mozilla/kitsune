@@ -56,6 +56,7 @@
         <div class="container">
           <div class="character-counter">140</div>
           <form action="{{ url('customercare.twitter_post') }}" method="POST">
+            {{ csrf() }}
             <div class="inner-container">
               <img src="{{ MEDIA_URL }}img/customercare/reply-arrow.png" alt="" id="reply-arrow" />
               <textarea id="reply-message"></textarea>
