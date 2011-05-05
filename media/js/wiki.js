@@ -169,7 +169,7 @@
             $.ajax({
                 url: $(this).data('preview-url'),
                 type: 'POST',
-                data: $('#id_content').serialize(),
+                data: $btn.closest('form').serialize(),
                 dataType: 'html',
                 success: function(html) {
                     var $preview = $('#preview');
