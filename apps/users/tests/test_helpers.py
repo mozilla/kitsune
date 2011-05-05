@@ -1,5 +1,5 @@
 from django.conf import settings
-from django.contrib.auth.models import User
+from django.contrib.auth.models import AnonymousUser, User
 
 from jinja2 import Markup
 from nose.tools import eq_
@@ -22,6 +22,9 @@ class HelperTestCase(TestCase):
     def test_profile_avatar_default(self):
         Profile.objects.create(user=self.u)
         eq_(settings.DEFAULT_AVATAR, profile_avatar(self.u))
+
+    def test_profile_avatar_anonymous(self):
+        eq_(settings.DEFAULT_AVATAR, profile_avatar(AnonymousUser()))
 
     def test_profile_avatar(self):
         profile = Profile(user=self.u)
