@@ -1,0 +1,37 @@
+{% extends "messages/base.html" %}
+{% set title = _('Messages') %}
+{% set crumbs = [(None, title)] %}
+
+{% block content %}
+  <article id="inbox" class="main">
+    <h1>{{ title }}</h1>
+    {% if mymessages %}
+      <ol>
+        {% for message in mymessages %}
+          <li class="{% if message.unread %}unread{% endif %} {% if message.replied %}replied{% endif %}">
+              <span class="avatar">
+                {% if message.sender -%}
+                  <a href="{{ profile_url(message.sender) }}"><img src="{{ profile_avatar(message.sender) }}"></a>
+                {% else %}
+                  <img src="{{ profile_avatar(message.sender) }}">
+                {%- endif %}
+              </span>
+              <span class="from">
+                {% if message.sender -%}
+                  <a href="{{ profile_url(message.sender) }}">{{ display_name(message.sender) }}</a>
+                {% else %}
+                  {{ _('System') }}
+                {%- endif %}
+                {{ datetimeformat(message.created) }}
+              </span>
+            <a href="{{ url('messages.read', message.id) }}">
+              {{ message.message|truncate(length=200) }}
+            </a>
+          </li>
+        {% endfor %}
+      </ol>
+    {% else %}
+      <p>There are no messages here.</p>
+    {% endif %}
+  </article>
+{% endblock %}

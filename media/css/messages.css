@@ -1,0 +1,61 @@
+article#inbox ol {
+    list-style: none;
+}
+
+article#inbox li {
+    background-position: 1px center;
+    background-repeat: no-repeat;
+    border-top: 1px solid #eeeeee;
+    height: 48px;
+    padding: 3px 3px 3px 15px;
+}
+
+article#inbox li > a {
+    display: block;
+    height: 42px;
+    padding-top: 6px;
+}
+
+article#inbox li:first-child {
+    border-top: none;
+}
+
+article#inbox li.unread {
+    background-color: #EFF9FF;
+    background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAwAAAAMCAIAAADZF8uwAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAABSSURBVChTY3z/8z8DIcCIrGjyugdw9blBCnA2E5yFrAIoiMyFKkJTAdEJFwQpwqoCWR3COjyup64iZN+iWQqRglqHVR1cEOEmNHXIXJQQx+VBADueHcvXWTPwAAAAAElFTkSuQmCC);
+}
+
+article#inbox li.replied {
+    background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAwAAAAMCAIAAADZF8uwAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAABRSURBVChTY/z//z8DIcCEpqB5xQNMLSiKsKoA6mGEW4dLRW2EAtQkXCogVoMU4VcBVQQ0EL//oNbhV4dwONxeTA0oQYDLPBSTcLkMPcSxqgMA/5QdFJd/yTgAAAAASUVORK5CYII=);
+}
+
+article#inbox span.avatar,
+article#inbox span.from {
+    display: block;
+    float: left;
+}
+
+article#inbox span.avatar {
+    padding-right: 5px;
+    width: 48px;
+}
+
+article#inbox span.avatar img {
+    border: none;
+}
+
+article#inbox span.from {
+    color: #999;
+    padding-top: 6px;
+    text-align: center;
+    width: 100px;
+}
+
+article#inbox span.from a {
+    color: #666;
+}
+
+article#inbox span.from time {
+    display: block;
+    font-size: 80%;
+}

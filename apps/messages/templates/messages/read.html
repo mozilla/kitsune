@@ -1,0 +1,13 @@
+{% extends "messages/base.html" %}
+{% set title = _('Read Message') %}
+{% set crumbs = [(url('messages.inbox'), _('Inbox')),
+                 (None, title)] %}
+
+{% block content %}
+  <article class="main">
+    <h1>Message</h1>
+    <span class="from">{{ message.from if message.from else _('System') }}</span>
+    <span class="on">{{ message.created }}</span>
+    <div class="message">{{ message.message }}</div>
+  </article>
+{% endblock %}

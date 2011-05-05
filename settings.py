@@ -376,6 +376,9 @@ MINIFY_BUNDLES = {
             'css/mobile.css',
             'css/wiki_syntax.css',
         ),
+        'messages': (
+            'css/messages.css',
+        ),
     },
     'js': {
         'common': (

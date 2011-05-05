@@ -15,6 +15,8 @@ class InboxMessage(ModelBase):
     read = models.BooleanField(default=False, db_index=True)
     replied = models.BooleanField(default=False)
 
+    unread = property(lambda self: not self.read)
+
     def __unicode__(self):
         s = self.message[0:30]
         return u'to:%s from:%s %s' % (self.to, self.sender, s)

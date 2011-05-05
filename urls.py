@@ -23,6 +23,7 @@ urlpatterns = patterns('',
     (r'^gallery', include('gallery.urls')),
     (r'^army-of-awesome', include('customercare.urls')),
     (r'^chat', include('chat.urls')),
+    (r'^messages', include('messages.urls')),
     (r'^1', include('inproduct.urls')),
     (r'^postcrash', include('postcrash.urls')),
 
