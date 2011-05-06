@@ -14,16 +14,6 @@
 
 {% block content %}
   <article class="main">
-    {% if request.GET.get('new') %}
-      <div class="message-box">
-        {{ _('Thanks! Your question has been posted. See it below.') }}
-      </div>
-    {% endif %}
-    {% if message %}{# email message errors go here, when JS is disabled #}
-      <div class="message-box">
-        {{ message }}
-      </div>
-    {% endif %}
     <section id="question">
       <div class="user-section">
         <div class="avatar{% if user == question.creator %} self{% endif %}">

@@ -1063,6 +1063,7 @@ class AAQTemplateTestCase(TestCaseBase):
     def test_full_workflow(self):
         response = self._post_new_question()
         eq_(200, response.status_code)
+        assert 'Thanks!' in pq(response.content)('ul.user-messages li').text()
 
         # Verify question is in db now
         question = Question.objects.filter(title='A test question')[0]

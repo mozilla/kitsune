@@ -5,6 +5,7 @@ import logging
 
 from django.conf import settings
 from django.contrib import auth
+from django.contrib import messages
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.sites.models import Site
@@ -251,9 +252,11 @@ def new_question(request, template=None):
         question_vote(request, question.id)
 
         if request.user.is_active:
+            messages.add_message(request, messages.SUCCESS,
+                _('Thanks! Your question has been posted. See it below.'))
             url = reverse('questions.answers',
                           kwargs={'question_id': question.id})
-            return HttpResponseRedirect(urlparams(url, new=1))
+            return HttpResponseRedirect(url)
 
         auth.logout(request)
         confirm_t = ('questions/mobile/confirm_email.html' if request.MOBILE
@@ -682,11 +685,10 @@ def watch_question(request, question_id):
                                                       'watch_form': form})
         return HttpResponse(json.dumps({'html': html}))
 
-    # Respond to normal request
-    if form.is_valid() and not msg:
-        return HttpResponseRedirect(question.get_absolute_url())
+    if msg:
+        messages.add_message(request, messages.ERROR, msg)
 
-    return answers(request, question.id, watch_form=form, message=msg)
+    return HttpResponseRedirect(question.get_absolute_url())
 
 
 @require_POST
