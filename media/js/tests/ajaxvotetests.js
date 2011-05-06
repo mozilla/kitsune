@@ -7,6 +7,7 @@ var kboxFixture = {
             url: '/vote',
             status: 200,
             contentType: 'text/json',
+            responseTime: 0,
             response: function(settings) {
                 // set the response message to the key/values POSTed
                 var message = ''
@@ -24,7 +25,7 @@ var kboxFixture = {
 };
 
 module('ajaxvote', kboxFixture);
-/*
+
 asyncTest('helpful vote', function() {
     var $sandbox = this.sandbox,
         $messageBox;
@@ -64,5 +65,5 @@ asyncTest('not helpful vote', function() {
         start();
     });
 });
-*/
+
 });

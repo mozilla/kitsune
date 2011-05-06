@@ -82,6 +82,11 @@
                 if (typeof(details.source) !== 'undefined') {
                     msg.stacktrace = details.source;
                 }
+                if(typeof(details.actual) !== 'undefined' &&
+                   typeof(details.expected) !== 'undefined') {
+                    msg.actual = details.actual;
+                    msg.expected = details.expected;
+                }
             }
             postMsg(msg);
         };

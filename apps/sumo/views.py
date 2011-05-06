@@ -2,6 +2,7 @@ import logging
 import os
 import socket
 import StringIO
+from time import time
 
 from django.conf import settings
 from django.contrib.sites.models import Site
@@ -179,4 +180,5 @@ def monitor(request):
 def kitsune_qunit(request, path):
     """View that hosts QUnit tests."""
     ctx = django_qunit.views.get_suite_context(request, path)
+    ctx.update(timestamp=time())
     return jingo.render(request, 'tests/qunit.html', ctx)
