@@ -414,7 +414,7 @@ article p {
     top: 3px;
 }
 
-#helpful-vote .message-box {
+#helpful-vote .ajax-vote-box {
     background: #32559b;
     border-radius: 4px;
     -moz-border-radius: 4px;
@@ -428,12 +428,12 @@ article p {
     position: relative;
 }
 
-#helpful-vote .message-box p {
+#helpful-vote .ajax-vote-box p {
     position: relative;
     z-index: 2;
 }
 
-#helpful-vote .message-box:after {
+#helpful-vote .ajax-vote-box:after {
     background: #32559b;
     content: '';
     display: block;
@@ -447,7 +447,7 @@ article p {
     z-index: 1;
 }
 
-#helpful-vote .No div.message-box:after {
+#helpful-vote .No div.ajax-vote-box:after {
     left: 90px;
 }
 
