@@ -1,4 +1,4 @@
 -r compiled.txt
 
-coverage==3.2b4
+coverage
 psutil>=0.2.0
