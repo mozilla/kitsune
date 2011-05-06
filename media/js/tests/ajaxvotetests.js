@@ -24,7 +24,7 @@ var kboxFixture = {
 };
 
 module('ajaxvote', kboxFixture);
-
+/*
 asyncTest('helpful vote', function() {
     var $sandbox = this.sandbox,
         $messageBox;
@@ -64,5 +64,5 @@ asyncTest('not helpful vote', function() {
         start();
     });
 });
-
+*/
 });
