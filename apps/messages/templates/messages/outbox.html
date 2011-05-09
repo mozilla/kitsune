@@ -3,6 +3,7 @@
 {% set title = _('Sent Messages') %}
 {% set crumbs = [(url('messages.inbox'), _('Messages')),
                  (None, title)] %}
+{% set active_tab = 'outbox' %}
 
 {% block content %}
   <article id="outbox" class="main message-list">

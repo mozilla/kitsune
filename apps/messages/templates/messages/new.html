@@ -1,6 +1,7 @@
 {% extends "messages/base.html" %}
 {% set title = _('New Message') %}
 {% set crumbs = [(url('messages.inbox'), _('Messages')), (None, title)] %}
+{% set active_tab = 'new' %}
 
 {% block content %}
   <article id="new-message" class="main">

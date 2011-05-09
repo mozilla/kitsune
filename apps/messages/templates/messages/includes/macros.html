@@ -5,3 +5,19 @@
 {% macro name_link(user, name=None) -%}
   <a href="{{ profile_url(user) }}">{% if name %}{{ name }}{% else %}{{ display_name(user) }}{% endif %}</a>
 {%- endmacro %}
+
+{% macro message_tabs(active_tab) -%}
+  <nav id="doc-tabs">
+    <ul>
+      <li{% if active_tab == 'inbox' %} class="active"{% endif %}>
+        <a href="{{ url('messages.inbox') }}">{{ _('Messages') }}</a>
+      </li>
+      <li{% if active_tab == 'outbox' %} class="active"{% endif %}>
+        <a href="{{ url('messages.outbox') }}">{{ _('Sent Messages') }}</a>
+      </li>
+      <li{% if active_tab == 'new' %} class="active"{% endif %}>
+        <a href="{{ url('messages.new') }}">{{ _('New Message') }}</a>
+      </li>
+    </ul>
+  </nav>
+{%- endmacro %}
