@@ -61,7 +61,11 @@ SETTINGS
 
 echo "Starting tests..." `date`
 export FORCE_DB=1
-coverage run manage.py test --noinput --logging-clear-handlers --with-xunit
-coverage xml $(find apps lib -name '*.py')
+if [ -z $COVERAGE ]; then
+    python manage.py test --noinput --logging-clear-handlers --with-xunit
+else
+    coverage run manage.py test --noinput --logging-clear-handlers --with-xunit
+    coverage xml $(find apps lib -name '*.py')
+fi
 
 echo 'Booyahkasha!'
