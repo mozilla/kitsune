@@ -8,7 +8,7 @@
     <span class="posts">{{ ngettext('1 post', '{0} posts', count)|f(count) }}</span>
   {% endwith %}
   <div class="post-actions">
-  {% if post.id and (perms.kbforums.edit_post or (post.creator == request.user and not thread.is_locked)) %}
+  {% if post.id and (perms.kbforums.change_post or (post.creator == request.user and not thread.is_locked)) %}
     <a href="{{ url('wiki.discuss.edit_post', document.slug, thread.id, post.id) }}"><img src="{{ MEDIA_URL }}img/forums/edit.png" alt="{{ _('Edit') }}" title="{{ _('Edit') }}"/></a>
   {% endif %}
   {% if post.id and perms.kbforums.delete_post %}

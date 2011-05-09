@@ -33,7 +33,7 @@
         <input type="image" alt="{{ watch }}" title="{{ watch }}" src="{{ MEDIA_URL }}img/forums/watch.png"/>
       </form>
     {% endif %}
-    {% if perms.kbforums.edit_thread or (thread.creator == request.user and not thread.is_locked) %}
+    {% if perms.kbforums.change_thread or (thread.creator == request.user and not thread.is_locked) %}
       <a href="{{ url('wiki.discuss.edit_thread', document.slug, thread.id) }}"><img src="{{ MEDIA_URL }}img/forums/edit.png" alt="{{ _('Edit') }}" title="{{ _('Edit') }}"/></a>
     {% endif %}
     {% if perms.kbforums.delete_thread %}
