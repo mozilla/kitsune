@@ -29,5 +29,5 @@ class OutboxMessage(ModelBase):
     created = models.DateTimeField(default=datetime.now, db_index=True)
 
     def __unicode__(self):
-        to = u', '.join(self.to)
+        to = u', '.join([u.username for u in self.to.all()])
         return u'from:%s to:%s %s' % (self.sender, to, self.message[0:30])

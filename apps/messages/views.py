@@ -1,8 +1,15 @@
+from django.contrib import messages as contrib_messages
+from django.http import HttpResponseRedirect
+
 import jingo
+from tower import ugettext as _
 from waffle.decorators import waffle_flag
 
 from access.decorators import login_required
+from messages import send_message
+from messages.forms import MessageForm
 from messages.models import InboxMessage, OutboxMessage
+from sumo.urlresolvers import reverse
 from sumo.utils import paginate
 
 
@@ -37,3 +44,18 @@ def outbox(request):
             msg.recipient = msg.to.all()[0]
     return jingo.render(request, 'messages/outbox.html',
                         {'msgs': messages})
+
+
+@waffle_flag('private-messaging')
+@login_required
+def new_message(request):
+    form = MessageForm(request.POST or None)
+
+    if request.method == 'POST' and form.is_valid():
+        send_message(form.cleaned_data['to'], form.cleaned_data['message'],
+                     request.user)
+        contrib_messages.add_message(request, contrib_messages.SUCCESS,
+                                     _('Your message was sent!'))
+        return HttpResponseRedirect(reverse('messages.inbox'))
+
+    return jingo.render(request, 'messages/new.html', {'form': form})

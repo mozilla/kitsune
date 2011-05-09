@@ -4,6 +4,9 @@
 {% set crumbs = [(None, title)] %}
 
 {% block content %}
+  <section class="actions">
+    <a href="{{ url('messages.new') }}">{{ _('New Message') }}</a>
+  </section>
   <article id="inbox" class="main message-list">
     <h1>{{ title }}</h1>
     {% if msgs %}

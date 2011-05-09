@@ -58,3 +58,36 @@ article.message-list span.user time {
     display: block;
     font-size: 80%;
 }
+
+
+section.actions {
+    float: right;
+    padding: 20px 30px 0 0;
+}
+
+article#new-message ul {
+    list-style: none;
+}
+
+article#new-message li {
+    margin: 0 0 10px;
+}
+
+article#new-message label {
+    float: left;
+    padding: 7px 0 0;
+    width: 100px;
+}
+
+article#new-message input[type="text"],
+article#new-message textarea {
+    width: 600px;
+}
+
+article#new-message div.submit {
+    padding-left: 100px;
+}
+
+article#new-message ul.errorlist {
+    margin: 0 0 5px 100px;
+}
