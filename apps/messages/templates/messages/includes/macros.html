@@ -1,0 +1,7 @@
+{% macro avatar_link(user) -%}
+  <a href="{{ profile_url(user) }}"><img src="{{ profile_avatar(user) }}" height="48" width="48"></a>
+{%- endmacro %}
+
+{% macro name_link(user, name=None) -%}
+  <a href="{{ profile_url(user) }}">{% if name %}{{ name }}{% else %}{{ display_name(user) }}{% endif %}</a>
+{%- endmacro %}

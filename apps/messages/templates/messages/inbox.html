@@ -1,24 +1,25 @@
 {% extends "messages/base.html" %}
+{% from "messages/includes/macros.html" import avatar_link, name_link %}
 {% set title = _('Messages') %}
 {% set crumbs = [(None, title)] %}
 
 {% block content %}
-  <article id="inbox" class="main">
+  <article id="inbox" class="main message-list">
     <h1>{{ title }}</h1>
-    {% if mymessages %}
+    {% if msgs %}
       <ol>
-        {% for message in mymessages %}
+        {% for message in msgs %}
           <li class="{% if message.unread %}unread{% endif %} {% if message.replied %}replied{% endif %}">
               <span class="avatar">
                 {% if message.sender -%}
-                  <a href="{{ profile_url(message.sender) }}"><img src="{{ profile_avatar(message.sender) }}"></a>
+                  {{ avatar_link(message.sender) }}
                 {% else %}
                   <img src="{{ profile_avatar(message.sender) }}">
                 {%- endif %}
               </span>
-              <span class="from">
+              <span class="from user">
                 {% if message.sender -%}
-                  <a href="{{ profile_url(message.sender) }}">{{ display_name(message.sender) }}</a>
+                  {{ name_link(message.sender) }}
                 {% else %}
                   {{ _('System') }}
                 {%- endif %}
@@ -31,7 +32,7 @@
         {% endfor %}
       </ol>
     {% else %}
-      <p>There are no messages here.</p>
+      <p>{{ _('There are no messages here.') }}</p>
     {% endif %}
   </article>
 {% endblock %}

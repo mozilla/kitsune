@@ -1,0 +1,39 @@
+{% extends "messages/base.html" %}
+{% from "messages/includes/macros.html" import avatar_link, name_link %}
+{% set title = _('Sent Messages') %}
+{% set crumbs = [(url('messages.inbox'), _('Messages')),
+                 (None, title)] %}
+
+{% block content %}
+  <article id="outbox" class="main message-list">
+    <h1>{{ title }}</h1>
+    {% if msgs %}
+      <ol>
+        {% for message in msgs %}
+          <li>
+            <span class="avatar">
+              {% if message.recipients > 1 -%}
+                {{ avatar_link(request.user) }}
+              {% else %}
+                {{ avatar_link(message.recipient) }}
+              {% endif %}
+            </span>
+            <span class="to user">
+              {% if message.recipients > 1 -%}
+                {{ name_link(request.user, name=_('You')) }}
+              {% else %}
+                {{ name_link(message.recipient) }}
+              {%- endif %}
+              {{ datetimeformat(message.created) }}
+            </span>
+            <a href="{# TODO: url('messages.read_outgoing', message.id) #}">
+              {{ message.message|truncate(length=200) }}
+            </a>
+          </li>
+        {% endfor %}
+      </ol>
+    {% else %}
+      <p>{{ _('There are no messages here.') }}</p>
+    {% endif %}
+  </article>
+{% endblock %}
