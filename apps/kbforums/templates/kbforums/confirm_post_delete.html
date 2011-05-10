@@ -1,6 +1,6 @@
 {# vim: set ts=2 et sts=2 sw=2: #}
 {% extends "kbforums/base.html" %}
-{% from "kbforums/includes/macros.html" import kbforums_warning %}
+{% from "kbforums/includes/macros.html" import kbforums_warning with context %}
 {# L10n: {t} is the title of the thread. {d} is the name of the document. #}
 {% set title = _('Delete Post | {t} | {d} Discussion | Knowledge Base')|f(t=thread.title, d=document.title) %}
 {% set crumbs = [(url('wiki.category', document.category), document.get_category_display()),

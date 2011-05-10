@@ -2,7 +2,7 @@
 {% extends "kbforums/base.html" %}
 {% from "layout/errorlist.html" import errorlist %}
 {% from "includes/common_macros.html" import content_editor %}
-{% from "kbforums/includes/macros.html" import kbforums_warning %}
+{% from "kbforums/includes/macros.html" import kbforums_warning with context %}
 {# L10n: {d} is the name of the document. #}
 {% set title = _('Create a new thread | {d} | Knowledge Base')|f(d=document.title) %}
 {% set crumbs = [(url('wiki.category', document.category), document.get_category_display()),
