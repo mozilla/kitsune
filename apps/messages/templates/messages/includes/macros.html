@@ -7,11 +7,11 @@
 {%- endmacro %}
 
 {% macro name_link(user=None, name=None) -%}
-  {% if user %}
+  {% if user -%}
     <a href="{{ profile_url(user) }}">{% if name %}{{ name }}{% else %}{{ display_name(user) }}{% endif %}</a>
-  {% else %}
+  {%- else -%}
     {{ name if name else _('System') }}
-  {% endif %}
+  {%- endif %}
 {%- endmacro %}
 
 {% macro message_tabs(active_tab) -%}

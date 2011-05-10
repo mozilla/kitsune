@@ -27,7 +27,7 @@
               {%- endif %}
               {{ datetimeformat(message.created) }}
             </span>
-            <a href="{# TODO: url('messages.read_outgoing', message.id) #}">
+            <a href="{{ url('messages.read_outbox', message.id) }}">
               {{ message.message|truncate(length=200) }}
             </a>
           </li>

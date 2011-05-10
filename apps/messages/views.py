@@ -1,5 +1,6 @@
 from django.contrib import messages as contrib_messages
 from django.http import HttpResponseRedirect
+from django.shortcuts import get_object_or_404
 
 import jingo
 from tower import ugettext as _
@@ -25,7 +26,7 @@ def inbox(request):
 @waffle_flag('private-messaging')
 @login_required
 def read(request, msgid):
-    message = InboxMessage.objects.get(pk=msgid, to=request.user)
+    message = get_object_or_404(InboxMessage, pk=msgid, to=request.user)
     if message.unread:
         message.read = True
         message.save()
@@ -37,13 +38,19 @@ def read(request, msgid):
 
 @waffle_flag('private-messaging')
 @login_required
+def read_outbox(request, msgid):
+    message = get_object_or_404(OutboxMessage, pk=msgid, sender=request.user)
+    return jingo.render(request, 'messages/read-outbox.html',
+                        {'message': _add_recipients(message)})
+
+
+@waffle_flag('private-messaging')
+@login_required
 def outbox(request):
     user = request.user
     messages = OutboxMessage.objects.filter(sender=user).order_by('-created')
     for msg in messages:
-        msg.recipients = msg.to.count()
-        if msg.recipients == 1:
-            msg.recipient = msg.to.all()[0]
+        _add_recipients(msg)
     return jingo.render(request, 'messages/outbox.html',
                         {'msgs': messages})
 
@@ -68,3 +75,10 @@ def new_message(request):
         return HttpResponseRedirect(reverse('messages.inbox'))
 
     return jingo.render(request, 'messages/new.html', {'form': form})
+
+
+def _add_recipients(msg):
+    msg.recipients = msg.to.count()
+    if msg.recipients == 1:
+        msg.recipient = msg.to.all()[0]
+    return msg
