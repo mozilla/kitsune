@@ -15,18 +15,10 @@
         {% for message in msgs %}
           <li class="{% if message.unread %}unread{% endif %} {% if message.replied %}replied{% endif %}">
               <span class="avatar">
-                {% if message.sender -%}
-                  {{ avatar_link(message.sender) }}
-                {% else %}
-                  <img src="{{ profile_avatar(message.sender) }}">
-                {%- endif %}
+                {{ avatar_link(message.sender) }}
               </span>
               <span class="from user">
-                {% if message.sender -%}
-                  {{ name_link(message.sender) }}
-                {% else %}
-                  {{ _('System') }}
-                {%- endif %}
+                {{ name_link(message.sender) }}
                 {{ datetimeformat(message.created) }}
               </span>
             <a href="{{ url('messages.read', message.id) }}">

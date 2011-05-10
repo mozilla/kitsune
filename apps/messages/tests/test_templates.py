@@ -15,7 +15,7 @@ class SendMessageTestCase(TestCase):
         self.user1 = user(save=True)
         self.user2 = user(save=True)
         self.user3 = user(save=True)
-        self.client.login(username=self.user1.username, password="testpass")
+        self.client.login(username=self.user1.username, password='testpass')
 
     @mock.patch.object(waffle.decorators, 'flag_is_active')
     def test_send_message_page(self, flag_is_active):

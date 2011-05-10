@@ -31,3 +31,9 @@ class MessageForm(forms.Form):
     to = MultiUsernameField(
         widget=forms.TextInput(attrs={'placeholder': TO_PLACEHOLDER}))
     message = forms.CharField(max_length=3000, widget=forms.Textarea())
+
+
+class ReplyForm(forms.Form):
+    """Form to reply to a private message."""
+    to = forms.CharField(widget=forms.HiddenInput)
+    message = forms.CharField(max_length=3000, widget=forms.Textarea)

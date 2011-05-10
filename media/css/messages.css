@@ -91,3 +91,51 @@ article#new-message div.submit {
 article#new-message ul.errorlist {
     margin: 0 0 5px 100px;
 }
+
+article#read-message span.avatar {
+    float: left;
+    padding-right: 5px;
+}
+
+article#read-message span.from {
+    display: block;
+}
+
+article#read-message span.from a {
+    font-weight: bold;
+}
+
+article#read-message time {
+    color: #999;
+    font-size: 80%;
+    margin-left: 10px;
+}
+
+article#read-message div.message {
+    margin-left: 53px;
+    min-height: 50px;
+    padding: 10px 0;
+}
+
+article#read-message form {
+    margin-left: 53px;
+    width: 377px;
+}
+
+article#read-message form ul {
+    list-style: none;
+}
+
+article#read-message label {
+    display: none;
+}
+
+article#read-message textarea {
+    height: 50px;
+    margin-bottom: 5px;
+    width: 350px;
+}
+
+article#read-message form input[type=submit] {
+    float: right;
+}

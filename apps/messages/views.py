@@ -7,7 +7,7 @@ from waffle.decorators import waffle_flag
 
 from access.decorators import login_required
 from messages import send_message
-from messages.forms import MessageForm
+from messages.forms import MessageForm, ReplyForm
 from messages.models import InboxMessage, OutboxMessage
 from sumo.urlresolvers import reverse
 from sumo.utils import paginate
@@ -26,11 +26,12 @@ def inbox(request):
 @login_required
 def read(request, msgid):
     message = InboxMessage.objects.get(pk=msgid, to=request.user)
-    was_new = message.unread
-    message.read = True
-    message.save()
+    if message.unread:
+        message.read = True
+        message.save()
+    form = ReplyForm(initial={'to': message.sender})
     return jingo.render(request, 'messages/read.html',
-                        {'message': message, 'was_new': was_new})
+                        {'message': message, 'form': form})
 
 
 @waffle_flag('private-messaging')
