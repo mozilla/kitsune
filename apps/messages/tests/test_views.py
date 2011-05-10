@@ -20,9 +20,19 @@ class ReadMessageTests(TestCase):
         flag_is_active.return_value = True
         i = InboxMessage.objects.create(sender=self.user2, to=self.user1,
                                         message='foo')
-        i.save()
         assert not i.read
         resp = self.client.get(reverse('messages.read', args=[i.pk]),
                                follow=True)
         eq_(200, resp.status_code)
         assert InboxMessage.uncached.get(pk=i.pk).read
+
+    @mock.patch.object(waffle.decorators, 'flag_is_active')
+    def test_mark_message_replied(self, flag_is_active):
+        flag_is_active.return_value = True
+        i = InboxMessage.objects.create(sender=self.user2, to=self.user1,
+                                        message='foo')
+        assert not i.replied
+        resp = self.client.post(reverse('messages.new', locale='en-US'),
+                                {'to': self.user2.username, 'message': 'bar',
+                                 'in_reply_to': i.pk})
+        assert InboxMessage.uncached.get(pk=i.pk).replied

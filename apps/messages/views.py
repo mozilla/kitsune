@@ -29,7 +29,8 @@ def read(request, msgid):
     if message.unread:
         message.read = True
         message.save()
-    form = ReplyForm(initial={'to': message.sender})
+    initial = {'to': message.sender, 'in_reply_to': message.pk}
+    form = ReplyForm(initial=initial)
     return jingo.render(request, 'messages/read.html',
                         {'message': message, 'form': form})
 
@@ -55,6 +56,13 @@ def new_message(request):
     if request.method == 'POST' and form.is_valid():
         send_message(form.cleaned_data['to'], form.cleaned_data['message'],
                      request.user)
+        if form.cleaned_data['in_reply_to']:
+            irt = form.cleaned_data['in_reply_to']
+            try:
+                m = InboxMessage.objects.get(pk=irt, to=request.user)
+                m.update(replied=True)
+            except InboxMessage.DoesNotExist:
+                pass
         contrib_messages.add_message(request, contrib_messages.SUCCESS,
                                      _('Your message was sent!'))
         return HttpResponseRedirect(reverse('messages.inbox'))
