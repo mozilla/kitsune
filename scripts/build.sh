@@ -35,11 +35,13 @@ fi
 source $VENV/bin/activate
 pip install -r requirements/tests-compiled.txt
 
+if [ -d "$VENDOR" ]; then
+    # Fix any mistakes with private repos.
+    pushd vendor > /dev/null && git submodule sync && popd > /dev/null
+fi
+
 # Using a vendor library for the rest.
 git submodule update --init --recursive
-
-# Fix any mistakes with private repos.
-pushd vendor > /dev/null && git submodule sync && popd > /dev/null
 
 python manage.py update_product_details
 
