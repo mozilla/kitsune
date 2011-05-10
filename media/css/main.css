@@ -245,6 +245,13 @@ div.support-search button.img-submit {
     display: block;
 }
 
+#greeting span.unread-message-count {
+    background-color: #666666;
+    border-radius: 2px;
+    color: #FFFFFF;
+    font-size: 78%;
+    padding: 0 2px;
+}
 
 /*-----------------------------------------------
     Warnings, notifications, in-content stuff

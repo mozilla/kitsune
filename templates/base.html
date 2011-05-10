@@ -1,5 +1,5 @@
 {# vim: set ts=2 et sts=2 sw=2: #}
-{% from 'includes/common_macros.html' import search_box, greeting %}
+{% from 'includes/common_macros.html' import search_box, greeting with context %}
 {% from 'includes/sidebar_modules.html' import quick_links, for_contributors %}
 {% if not top_link %}
   {% set top_link = url('home') %}
@@ -68,7 +68,7 @@
       {% if not hide_header_search %}
         {{ search_box(settings, id='support-search') }}
       {% endif %}
-      {{ greeting(user, settings) }}
+      {{ greeting(user) }}
     {% endblock %}
   </div>
 

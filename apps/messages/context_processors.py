@@ -11,6 +11,6 @@ def unread_message_count(request):
     """
     count = 0
     if (hasattr(request, 'user') and request.user.is_authenticated() and
-        waffle.flag_is_active(request, 'unread_message_count')):
+        waffle.flag_is_active(request, 'private-messaging')):
         count = messages.unread_count_for(request.user)
     return {'unread_message_count': count}

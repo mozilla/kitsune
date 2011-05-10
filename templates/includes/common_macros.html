@@ -17,11 +17,18 @@
   </div>
 {% endmacro %}
 
-{% macro greeting(user, settings) %}
+{% macro greeting(user) %}
   <div id="greeting">
     {% if user.is_authenticated() %}
       {{ _('Welcome, <span class="user">{user}</span>.')|fe(user=user) }}
       <nav>
+        {% if waffle.flag('private-messaging') %}
+          <a href="{{ url('messages.inbox') }}">{{ _('Inbox') }}</a>
+          {% if unread_message_count > 0 %}
+            <span class="unread-message-count">{{ unread_message_count }}</span>
+          {% endif %}
+          |
+        {% endif %}
         <a href="{{ url('dashboards.review') }}">{{ _('Dashboard') }}</a>
         |
         <a href="{{ url('users.logout') }}">{{ _('Sign Out') }}</a>
