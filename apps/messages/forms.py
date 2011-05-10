@@ -17,12 +17,14 @@ class MultiUsernameField(forms.Field):
         users = []
         for username in value.split(','):
             username = username.strip()
-            try:
-                user = User.objects.get(username=username)
-                users.append(user)
-            except User.DoesNotExist:
-                msg = _('{username} is not a valid username.')
-                raise forms.ValidationError(msg.format(username=username))
+            if username:
+                try:
+                    user = User.objects.get(username=username)
+                    users.append(user)
+                except User.DoesNotExist:
+                    msg = _('{username} is not a valid username.')
+                    raise forms.ValidationError(msg.format(username=username))
+
         return users
 
 

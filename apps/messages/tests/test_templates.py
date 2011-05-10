@@ -28,8 +28,8 @@ class SendMessageTestCase(TestCase):
     def _test_send_message_to(self, to):
         # Post a new message and verify it was sent.
         data = {'to': to, 'message': 'hi there'}
-        response = self.client.post(reverse('messages.new', locale='en-US'), data,
-                                    follow=True)
+        response = self.client.post(reverse('messages.new', locale='en-US'),
+                                    data, follow=True)
         eq_(200, response.status_code)
         eq_('Your message was sent!',
             pq(response.content)('ul.user-messages').text())
@@ -45,3 +45,14 @@ class SendMessageTestCase(TestCase):
         flag_is_active.return_value = True
         to = ', '.join([self.user2.username, self.user3.username])
         self._test_send_message_to(to)
+
+    @mock.patch.object(waffle.decorators, 'flag_is_active')
+    def test_send_message_trailing_comma(self, flag_is_active):
+        flag_is_active.return_value = True
+        self._test_send_message_to(self.user2.username + ',')
+
+    @mock.patch.object(waffle.decorators, 'flag_is_active')
+    def test_send_message_two_commas(self, flag_is_active):
+        flag_is_active.return_value = True
+        self._test_send_message_to(self.user2.username + ',,' +
+                                   self.user3.username)
