@@ -208,7 +208,7 @@ def edit_avatar(request):
     if request.method == 'POST':
         # Upload new avatar and replace old one.
         old_avatar_path = None
-        if user_profile.avatar:
+        if user_profile.avatar and os.path.isfile(user_profile.avatar.path):
             # Need to store the path, not the file here, or else django's
             # form.is_valid() messes with it.
             old_avatar_path = user_profile.avatar.path

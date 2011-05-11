@@ -1,3 +1,5 @@
+import os
+
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
@@ -9,11 +11,11 @@ from pyquery import PyQuery as pq
 from tidings.tests import watch
 
 from questions.models import Question, CONFIRMED, UNCONFIRMED
-from sumo.tests import TestCase, LocalizingClient
+from sumo.tests import TestCase, LocalizingClient, send_mail_raise_smtp
 from sumo.urlresolvers import reverse
-from sumo.tests import send_mail_raise_smtp
-from users.models import RegistrationProfile, EmailChange
 from users import ERROR_SEND_EMAIL
+from users.models import Profile, RegistrationProfile, EmailChange
+from users.tests import profile, user
 
 
 class RegisterTests(TestCase):
@@ -255,3 +257,41 @@ class ChangeEmailTestCase(TestCase):
             doc('#main h1').text())
         u = User.objects.get(username='rrosario')
         eq_(old_email, u.email)
+
+
+class AvatarTests(TestCase):
+    def setUp(self):
+        self.u = user()
+        self.u.save()
+        self.p = profile(self.u)
+        self.client.login(username=self.u.username, password='testpass')
+
+    def tearDown(self):
+        p = Profile.uncached.get(user=self.u)
+        if os.path.exists(p.avatar.path):
+            os.unlink(p.avatar.path)
+
+    def test_upload_avatar(self):
+        assert not self.p.avatar, 'User has no avatar.'
+        with open('apps/upload/tests/media/test.jpg') as f:
+            url = reverse('users.edit_avatar', locale='en-US')
+            data = {'avatar': f}
+            r = self.client.post(url, data)
+        eq_(302, r.status_code)
+        p = Profile.uncached.get(user=self.u)
+        assert p.avatar, 'User has an avatar.'
+
+    def test_replace_missing_avatar(self):
+        """If an avatar is missing, allow replacing it."""
+        assert not self.p.avatar, 'User has no avatar.'
+        self.p.avatar = 'path/does/not/exist.jpg'
+        self.p.save()
+        assert self.p.avatar, 'User has a bad avatar.'
+        with open('apps/upload/tests/media/test.jpg') as f:
+            url = reverse('users.edit_avatar', locale='en-US')
+            data = {'avatar': f}
+            r = self.client.post(url, data)
+        eq_(302, r.status_code)
+        p = Profile.uncached.get(user=self.u)
+        assert p.avatar, 'User has an avatar.'
+        assert not p.avatar.path.endswith('exist.jpg')
