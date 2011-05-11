@@ -72,6 +72,9 @@ HOME = /tmp
 # Twice per week.
 05 01 * * 1,4 $CRON update_weekly_votes
 
+# Once per week.
+21 03 * * 3 $DJANGO purge_hashes
+
 MAILTO=root
 """
 
