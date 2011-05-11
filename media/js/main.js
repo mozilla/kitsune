@@ -149,6 +149,26 @@ k = {};
         }
     }
 
+    /**
+     * Remove messages 20 seconds after mousemove.
+     */
+    function removeMessagesList() {
+        var $msgs = $('ul.user-messages');
+        if ($msgs.length) {
+            console.log('found one!');
+            function moveListener () {
+                console.log('moved');
+                setTimeout(function() {
+                    console.log('removing');
+                    $msgs.slideUp('fast', function() {
+                        $msgs.remove();
+                    });
+                }, 20000);
+            }
+            $(document).one('mousemove', moveListener);
+        }
+    }
+    $(document).ready(removeMessagesList);
 })();
 
 
@@ -161,7 +181,7 @@ k = {};
  * be set to empty.
  *
  */
- jQuery.fn.autoPlaceholderText = function () {
+jQuery.fn.autoPlaceholderText = function () {
 
     // check for html5 placeholder support and fallback to js solution
     if (!Modernizr.input.placeholder) {
