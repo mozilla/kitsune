@@ -36,9 +36,6 @@ urlpatterns = patterns('',
     # JavaScript Waffle.
     url(r'^wafflejs$', wafflejs, name='wafflejs'),
 
-    # Deprecated URLs.
-    (r'^forum', include('forums.old_urls')),
-
     (r'^', include('dashboards.urls')),
     (r'^', include('landings.urls')),
     (r'^', include('tidings.urls')),  # Keep short for email wrapping.
