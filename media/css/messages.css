@@ -8,12 +8,30 @@ article.message-list li {
     border-bottom: 1px solid #eeeeee;
     height: 48px;
     padding: 3px 3px 3px 15px;
+    position: relative;
 }
 
-article.message-list li > a {
+article.message-list a.read {
     display: block;
     height: 42px;
+    margin: 0 100px 0 150px;
     padding-top: 6px;
+}
+
+article.message-list a.delete {
+    border-radius: 2px;
+    color: #ccc;
+    font-size: 12px;
+    padding: 0 2px;
+    position: absolute;
+    right: 10px;
+    top: 20px;
+}
+
+article.message-list a.delete:hover {
+    background: #447BC4;
+    color: #fff;
+    text-decoration: none;
 }
 
 article.message-list li:first-child {
@@ -92,50 +110,50 @@ article#new-message ul.errorlist {
     margin: 0 0 5px 100px;
 }
 
-article#read-message span.avatar {
+article.message-view span.avatar {
     float: left;
     padding-right: 5px;
 }
 
-article#read-message span.from {
+article.message-view span.from {
     display: block;
 }
 
-article#read-message span.from a {
+article.message-view span.from a {
     font-weight: bold;
 }
 
-article#read-message time {
+article.message-view time {
     color: #999;
     font-size: 80%;
     margin-left: 10px;
 }
 
-article#read-message div.message {
+article.message-view div.message {
     margin-left: 53px;
     min-height: 50px;
     padding: 10px 0;
 }
 
-article#read-message form {
+article.message-view form.reply {
     margin-left: 53px;
     width: 377px;
 }
 
-article#read-message form ul {
+article.message-view form ul {
     list-style: none;
 }
 
-article#read-message label {
+article.message-view label {
     display: none;
 }
 
-article#read-message textarea {
+article.message-view textarea {
     height: 50px;
     margin-bottom: 5px;
     width: 350px;
 }
 
-article#read-message form input[type=submit] {
+article.message-view form.reply input[type=submit] {
     float: right;
 }

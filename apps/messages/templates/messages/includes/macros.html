@@ -29,3 +29,33 @@
     </ul>
   </nav>
 {%- endmacro %}
+
+{% macro inbox_message(message) -%}
+  <span class="avatar">{{ avatar_link(message.sender) }}</span>
+  <span class="from">{{ name_link(message.sender) }} {{ datetimeformat(message.created) }}</span>
+  <div class="message">{{ message.message }}</div>
+{%- endmacro %}
+
+
+{% macro outbox_message(message) -%}
+  <span class="avatar">
+    {% if message.recipients > 1 -%}
+      {{ avatar_link(request.user) }}
+    {% else %}
+      {{ avatar_link(message.recipient) }}
+    {% endif %}
+  </span>
+  <span class="to">
+    {% if message.recipients > 1 -%}
+      {% set comma = joiner(', ') %}
+      {% for user in message.to.all() -%}
+        {{ comma() }}
+        {{ name_link(user) }}
+      {%- endfor %}
+    {% else %}{# Save a query! #}
+      {{ name_link(message.recipient) }}
+    {% endif %}
+    {{ datetimeformat(message.created) }}
+  </span>
+  <div class="message">{{ message.message }}</div>
+{%- endmacro %}

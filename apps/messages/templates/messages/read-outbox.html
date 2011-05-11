@@ -1,32 +1,13 @@
 {% extends "messages/base.html" %}
-{% from "messages/includes/macros.html" import avatar_link, name_link %}
+{% from "messages/includes/macros.html" import outbox_message with context %}
 {% set title = _('Read Sent Message') %}
 {% set crumbs = [(url('messages.inbox'), _('Messages')),
                  (url('messages.outbox'), _('Sent Messages')),
                  (None, title)] %}
 
 {% block content %}
-  <article id="read-message" class="main">
+  <article id="read-message" class="main message-view">
     <h1>{{ title }}</h1>
-    <span class="avatar">
-      {% if message.recipients > 1 -%}
-        {{ avatar_link(request.user) }}
-      {% else %}
-        {{ avatar_link(message.recipient) }}
-      {% endif %}
-    </span>
-    <span class="to">
-      {% if message.recipients > 1 -%}
-        {% set comma = joiner(', ') %}
-        {% for user in message.to.all() -%}
-          {{ comma() }}
-          {{ name_link(user) }}
-        {%- endfor %}
-      {% else %}{# Save a query! #}
-        {{ name_link(message.recipient) }}
-      {% endif %}
-      {{ datetimeformat(message.created) }}
-    </span>
-    <div class="message">{{ message.message }}</div>
+    {{ outbox_message(message) }}
   </article>
 {% endblock %}

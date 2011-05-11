@@ -1,5 +1,7 @@
+import json
+
 from django.contrib import messages as contrib_messages
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import get_object_or_404
 
 import jingo
@@ -75,6 +77,32 @@ def new_message(request):
         return HttpResponseRedirect(reverse('messages.inbox'))
 
     return jingo.render(request, 'messages/new.html', {'form': form})
+
+
+@waffle_flag('private-messaging')
+@login_required
+def delete(request, msgid, msgtype='inbox'):
+    if msgtype == 'inbox':
+        message = get_object_or_404(InboxMessage, pk=msgid, to=request.user)
+    else:
+        message = get_object_or_404(OutboxMessage, pk=msgid,
+                                    sender=request.user)
+
+    if request.method == 'POST':
+        message.delete()
+        msg = _('The message was deleted!')
+
+        if request.is_ajax():
+            return HttpResponse(json.dumps({'message': message}))
+
+        contrib_messages.add_message(request, contrib_messages.SUCCESS, msg)
+        return HttpResponseRedirect(reverse('messages.{t}'.format(t=msgtype)))
+
+    if msgtype == 'outbox':
+        _add_recipients(message)
+
+    return jingo.render(request, 'messages/delete.html',
+                        {'message': message, 'msgtype': msgtype})
 
 
 def _add_recipients(msg):
