@@ -13,6 +13,12 @@ TRUNCATE tidings_watch;
 
 TRUNCATE django_session;
 
+TRUNCATE messages_inboxmessage;
+
+TRUNCATE messages_outboxmessage_to;
+
+TRUNCATE messages_outboxmessage;
+
 UPDATE django_site SET
     domain = 'support-local.allizom.org',
     name = 'support-local.allizom.org';
