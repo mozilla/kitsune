@@ -11,6 +11,7 @@ from sumo.widgets import ImageWidget
 from upload.forms import clean_image_extension
 from upload.utils import check_file_size, FileTooLargeError
 from users.models import Profile
+from users.passwords import password_allowed
 from users.widgets import FacebookURLWidget, TwitterURLWidget
 
 
@@ -73,6 +74,8 @@ class RegisterForm(forms.ModelForm):
 
         if not password == password2:
             raise forms.ValidationError(_('Passwords must match.'))
+
+        _check_password(password)
 
         return self.cleaned_data
 
@@ -196,3 +199,24 @@ class EmailChangeForm(forms.Form):
             raise forms.ValidationError(_('A user with that email address '
                                           'already exists.'))
         return self.cleaned_data['email']
+
+
+class SetPasswordForm(auth_forms.SetPasswordForm):
+    def clean(self):
+        super(SetPasswordForm, self).clean()
+        _check_password(self.cleaned_data.get('new_password1'))
+        return self.cleaned_data
+
+
+class PasswordChangeForm(auth_forms.PasswordChangeForm):
+    def clean(self):
+        super(PasswordChangeForm, self).clean()
+        _check_password(self.cleaned_data.get('new_password1'))
+        return self.cleaned_data
+
+
+def _check_password(password):
+    if not password_allowed(password):
+        msg = _('The password entered is known to be commonly used and '
+                'is not allowed.')
+        raise forms.ValidationError(msg)

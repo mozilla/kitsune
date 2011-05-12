@@ -2,8 +2,7 @@ import os
 
 from django.conf import settings
 from django.contrib import auth
-from django.contrib.auth.forms import (PasswordResetForm, SetPasswordForm,
-                                       PasswordChangeForm)
+from django.contrib.auth.forms import PasswordResetForm
 from django.contrib.auth.models import User
 from django.contrib.auth.tokens import default_token_generator
 from django.http import HttpResponseRedirect, Http404
@@ -23,7 +22,8 @@ from sumo.utils import get_next_url
 from upload.tasks import _create_image_thumbnail
 from users.backends import Sha256Backend  # Monkey patch User.set_password.
 from users.forms import (ProfileForm, AvatarForm, EmailConfirmationForm,
-                         AuthenticationForm, EmailChangeForm)
+                         AuthenticationForm, EmailChangeForm, SetPasswordForm,
+                         PasswordChangeForm)
 from users.models import Profile, RegistrationProfile, EmailChange
 from users.utils import handle_login, handle_register, try_send_email_with_form
 

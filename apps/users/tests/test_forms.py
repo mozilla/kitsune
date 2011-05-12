@@ -6,8 +6,9 @@ from django.forms import ValidationError
 from nose.tools import eq_
 from pyquery import PyQuery as pq
 
-from users.forms import AuthenticationForm, ProfileForm
-from users.tests import TestCaseBase
+from users.forms import (AuthenticationForm, ProfileForm, RegisterForm,
+                         SetPasswordForm)
+from users.tests import TestCaseBase, user
 
 
 class AuthenticationFormTests(TestCaseBase):
@@ -16,35 +17,35 @@ class AuthenticationFormTests(TestCaseBase):
 
     def test_only_active(self):
         # Verify with active user
-        user = User.objects.get(username='rrosario')
-        assert user.is_active
+        u = User.objects.get(username='rrosario')
+        assert u.is_active
         form = AuthenticationForm(data={'username': 'rrosario',
                                         'password': 'testpass'})
         assert form.is_valid()
 
         # Verify with inactive user
-        user.is_active = False
-        user.save()
-        user = User.objects.get(username='rrosario')
-        assert not user.is_active
+        u.is_active = False
+        u.save()
+        u = User.objects.get(username='rrosario')
+        assert not u.is_active
         form = AuthenticationForm(data={'username': 'rrosario',
                                         'password': 'testpass'})
         assert not form.is_valid()
 
     def test_allow_inactive(self):
         # Verify with active user
-        user = User.objects.get(username='rrosario')
-        assert user.is_active
+        u = User.objects.get(username='rrosario')
+        assert u.is_active
         form = AuthenticationForm(only_active=False,
                                   data={'username': 'rrosario',
                                         'password': 'testpass'})
         assert form.is_valid()
 
         # Verify with inactive user
-        user.is_active = False
-        user.save()
-        user = User.objects.get(username='rrosario')
-        assert not user.is_active
+        u.is_active = False
+        u.save()
+        u = User.objects.get(username='rrosario')
+        assert not u.is_active
         form = AuthenticationForm(only_active=False,
                                   data={'username': 'rrosario',
                                         'password': 'testpass'})
@@ -112,3 +113,41 @@ class ProfileFormTestCase(TestCaseBase):
                 clean()  # Should not raise.
             else:
                 self.assertRaises(ValidationError, clean)
+
+
+class RegisterFormTests(TestCaseBase):
+    """RegisterForm tests."""
+
+    def test_common_password(self):
+        form = RegisterForm({'username': 'newuser',
+                             'password': 'password',
+                             'password2': 'password',
+                             'email': 'newuser@example.com'})
+        assert not form.is_valid()
+
+    def test_strong_password(self):
+        form = RegisterForm({'username': 'newuser',
+                             'password': 'fksjvaj',
+                             'password2': 'fksjvaj',
+                             'email': 'newuser@example.com'})
+        assert form.is_valid()
+
+
+class SetPasswordFormTests(TestCaseBase):
+    """SetPasswordForm tests."""
+
+    def test_common_password(self):
+        form = SetPasswordForm(None, data={'new_password1': 'password',
+                                           'new_password2': 'password'})
+        assert not form.is_valid()
+
+
+class PasswordChangeFormFormTests(TestCaseBase):
+    """PasswordChangeForm tests."""
+
+    def test_common_password(self):
+        u = user(save=True)
+        form = SetPasswordForm(u, data={'new_password1': 'password',
+                                        'new_password2': 'password',
+                                        'old_password': 'testpass'})
+        assert not form.is_valid()
