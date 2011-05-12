@@ -1,15 +1,18 @@
+import json
 import logging
 import os
 import socket
 import StringIO
 from time import time
 
+import django
 from django.conf import settings
 from django.contrib.sites.models import Site
 from django.core.cache import parse_backend_uri
 from django.http import (HttpResponsePermanentRedirect, HttpResponseRedirect,
                          HttpResponse)
 from django.views.decorators.cache import never_cache
+from django.views.decorators.http import require_GET
 
 from celery.messaging import establish_connection
 from commonware.decorators import xframe_allow
@@ -172,6 +175,21 @@ def monitor(request):
                          'rabbitmq_result': rabbitmq_result,
                          'status_summary': status_summary},
                          status=status)
+
+
+@require_GET
+@never_cache
+def version_check(request):
+    mime = 'application/x-json'
+    token = settings.VERSION_CHECK_TOKEN
+    if (token is None or not 'token' in request.GET or
+        token != request.GET['token']):
+        return HttpResponse(status=403, mimetype=mime)
+
+    versions = {
+        'django': '.'.join(map(str, django.VERSION)),
+    }
+    return HttpResponse(json.dumps(versions), mimetype=mime)
 
 
 # Allows another site to embed the QUnit suite

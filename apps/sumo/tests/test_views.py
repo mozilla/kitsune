@@ -1,3 +1,6 @@
+import json
+
+import django
 from django.conf import settings
 from django.contrib.sites.models import Site
 from django.http import HttpResponseRedirect, HttpResponsePermanentRedirect
@@ -7,6 +10,7 @@ from nose.tools import eq_
 from pyquery import PyQuery as pq
 from test_utils import RequestFactory
 
+from sumo.helpers import urlparams
 from sumo.middleware import LocaleURLMiddleware
 from sumo.tests import TestCase
 from sumo.urlresolvers import reverse
@@ -66,3 +70,28 @@ class RobotsTestCase(TestCase):
         response = self.client.get('/robots.txt')
         eq_('text/plain', response['content-type'])
         assert len(response.content) > len('User-agent: *\nDisallow: /')
+
+
+class VersionCheckTests(TestCase):
+    url = reverse('sumo.version')
+
+    def _is_forbidden(self, url):
+        res = self.client.get(url)
+        eq_(403, res.status_code)
+        eq_('', res.content)
+
+    @mock.patch.object(settings._wrapped, 'VERSION_CHECK_TOKEN', None)
+    def token_is_none(self):
+        self._is_forbidden(self.url)
+        self._is_forbidden(urlparams(self.url, token='foo'))
+
+    @mock.patch.object(settings._wrapped, 'VERSION_CHECK_TOKEN', 'foo')
+    def token_is_wrong(self):
+        self._is_forbidden(urlparams(self.url, token='bar'))
+
+    @mock.patch.object(settings._wrapped, 'VERSION_CHECK_TOKEN', 'foo')
+    def token_is_right(self):
+        res = self.client.get(urlparams(self.url, token='foo'))
+        eq_(200, res.status_code)
+        versions = json.loads(res.content)
+        eq_('.'.join(map(str, django.VERSION)), versions['django'])
