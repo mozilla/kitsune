@@ -8,6 +8,7 @@ from statsd import statsd
 
 from activity.models import Action
 from questions import ANSWERS_PER_PAGE
+from questions.karma_actions import AnswerAction, FirstAnswerAction
 
 
 log = logging.getLogger('k.task')
@@ -79,3 +80,8 @@ def log_answer(answer):
 
     transaction.commit_unless_managed()
     unpin_this_thread()
+
+    # Record karma actions
+    AnswerAction(answer.creator, answer.created.date()).save()
+    if answer == answer.question.answers.order_by('created')[0]:
+        FirstAnswerAction(answer.creator, answer.created.date()).save()
