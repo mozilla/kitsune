@@ -35,6 +35,7 @@ from questions.events import QuestionReplyEvent, QuestionSolvedEvent
 from questions.feeds import QuestionsFeed, AnswersFeed, TaggedQuestionsFeed
 from questions.forms import (NewQuestionForm, EditQuestionForm, AnswerForm,
                              WatchQuestionForm, FREQUENCY_CHOICES)
+from questions.karma_actions import SolutionAction, AnswerMarkedHelpfulAction
 from questions.models import Question, Answer, QuestionVote, AnswerVote
 from questions.question_config import products
 from search.clients import WikiClient, QuestionsClient, SearchError
@@ -389,7 +390,7 @@ def solve(request, question_id, answer_id):
     question.save()
     statsd.incr('questions.solution')
     QuestionSolvedEvent(answer).fire(exclude=question.creator)
-
+    SolutionAction(answer.creator).save()
     messages.add_message(request, messages.SUCCESS,
                          _('Thank you for choosing a solution!'))
 
@@ -460,6 +461,7 @@ def answer_vote(request, question_id, answer_id):
 
         if 'helpful' in request.POST:
             vote.helpful = True
+            AnswerMarkedHelpfulAction(answer.creator).save()
             message = _('Glad to hear it!')
         else:
             message = _('Sorry to hear that.')

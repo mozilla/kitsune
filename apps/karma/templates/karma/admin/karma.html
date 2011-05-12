@@ -1,0 +1,34 @@
+{% extends "kadmin/base.html" %}
+
+{% block content %}
+  <section>
+    <h1>Top Contributors - All Time</h1>
+    <ol>
+      {% for user in top_alltime %}
+        <li>
+          <a href="#">{{ user.user.username }}</a>:
+          Points: {{ user.points }} |
+          Answers: {{ user.answers }} |
+          First Answers: {{ user.first_answers }} |
+          Solutions: {{ user.solutions }} |
+          Helpful Votes: {{ user.helpful_votes }}
+        </li>
+      {% endfor %}
+    </ul>
+  </section>
+  <section>
+    <h1>Top Contributors - Last 7 Days</h1>
+    <ol>
+      {% for user in top_week %}
+        <li>
+          <a href="#">{{ user.user.username }}</a>:
+          Points: {{ user.points }} |
+          Answers: {{ user.answers }} |
+          First Answers: {{ user.first_answers }} |
+          Solutions: {{ user.solutions }} |
+          Helpful Votes: {{ user.helpful_votes }}
+        </li>
+      {% endfor %}
+    </ul>
+  </section>
+{% endblock %}
