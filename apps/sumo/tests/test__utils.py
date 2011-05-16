@@ -24,6 +24,10 @@ class SmartIntTestCase(TestCase):
         eq_(0, smart_int(None))
         eq_(10, smart_int([], 10))
 
+    def test_large_values(self):
+        """Makes sure ints that would cause an overflow result in fallback."""
+        eq_(0, smart_int('1' * 1000))
+
 
 class GetNextUrlTests(TestCase):
     def setUp(self):
