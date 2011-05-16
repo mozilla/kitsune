@@ -70,7 +70,7 @@ HOME = /tmp
 0 16 * * * $CRON reload_wiki_traffic_stats
 
 # Twice per week.
-05 01 * * 1,4 $CRON update_weekly_votes
+#05 01 * * 1,4 $CRON update_weekly_votes
 
 # Once per week.
 21 03 * * 3 $DJANGO purge_hashes
