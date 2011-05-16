@@ -596,7 +596,7 @@ class SearchTest(SphinxTestCase):
     def test_archived(self):
         """Ensure archived articles show only when requested."""
         qs = {'q': 'impalas', 'a': 1, 'w': 1, 'format': 'json',
-              'is_archived': 1}
+              'include_archived': 'on'}
         response = self.client.get(reverse('search'), qs)
         results = json.loads(response.content)['results']
         eq_(1, len(results))

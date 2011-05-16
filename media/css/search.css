@@ -198,6 +198,9 @@ a.tablink {
 #search-tabs input[type="text"]:hover {
     background: #e7f7f8;
 }
+#search-tabs label[for="id_include_archived"] {
+    width: 13em;
+}
 .submit-search {
     clear: left;
     border-top: 1px solid #e0e0e0;

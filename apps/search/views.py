@@ -85,8 +85,8 @@ def search(request, template=None):
 
     # TODO: Rewrite so SearchForm is unbound initially and we can use `initial`
     # on the form fields.
-    if 'is_archived' not in r:
-        r['is_archived'] = constants.TERNARY_NO
+    if 'include_archived' not in r:
+        r['include_archived'] = False
 
     search_form = SearchForm(r)
 
@@ -171,12 +171,14 @@ def search(request, template=None):
                 })
 
     # Archived bit
-    if a == '0' and not cleaned['is_archived']:
+    if a == '0' and not cleaned['include_archived']:
         # Default to NO for basic search:
-        cleaned['is_archived'] = constants.TERNARY_NO
-    if cleaned['is_archived']:
-        filters_w.append(_ternary_filter('is_archived',
-                                         cleaned['is_archived']))
+        cleaned['include_archived'] = False
+    if not cleaned['include_archived']:
+        filters_w.append({
+            'filter': 'is_archived',
+            'value': (False,),
+        })
     # End of wiki filters
 
     # Support questions specific filters
@@ -401,7 +403,7 @@ def suggestions(request):
 
     results = []
     filters_w = [{'filter': 'locale', 'value': (locale,)},
-                 _ternary_filter('is_archived', constants.TERNARY_NO)]
+                 {'filter': 'is_archived', 'value': (False,)}]
     filters_q = [{'filter': 'has_helpful', 'value': (True,)}]
 
     for client, filter, cls in [(wc, filters_w, Document),
