@@ -36,7 +36,8 @@ def overview_rows(locale):
                 is_archived=False).count()
 
     # How many approved documents are there in German that have parents?
-    translated = Document.uncached.filter(locale=locale).exclude(
+    translated = Document.uncached.filter(
+        locale=locale, is_archived=False).exclude(
         current_revision=None).exclude(parent=None).count()
 
     # Of the top 20 most visited English articles, how many are not translated
@@ -45,12 +46,14 @@ def overview_rows(locale):
     cursor = _cursor()
     cursor.execute(
         'SELECT count(*) FROM '
-            '(SELECT trans.id FROM dashboards_wikidocumentvisits '
+            '(SELECT trans.id FROM dashboards_wikidocumentvisits visits '
                 'LEFT JOIN wiki_document trans '
-                'ON dashboards_wikidocumentvisits.document_id=trans.parent_id '
+                'ON visits.document_id=trans.parent_id '
                 'AND trans.locale=%s '
-             'WHERE dashboards_wikidocumentvisits.period=%s '
-             'ORDER BY dashboards_wikidocumentvisits.visits DESC '
+             'INNER JOIN wiki_document eng ON eng.id=visits.document_id '
+             'WHERE visits.period=%s '
+                 'AND NOT trans.is_archived AND eng.is_localizable '
+             'ORDER BY visits.visits DESC '
              'LIMIT %s) t1 '
         'WHERE t1.id IS NOT NULL',
         (locale, THIS_WEEK, TOP_N))
@@ -64,9 +67,9 @@ def overview_rows(locale):
                 is_archived=False).count()
 
     # How many approved templates are there in German that have parents?
-    template_translated = Document.uncached.filter(locale=locale,
-        is_template=True).exclude(current_revision=None).exclude(
-        parent=None).count()
+    template_translated = Document.uncached.filter(
+        locale=locale, is_template=True, is_archived=False).exclude(
+        current_revision=None).exclude(parent=None).count()
 
     return {'most-visited': dict(title=_('Most-Visited Articles'),
                  url='#' + MostVisitedTranslationsReadout.slug,
