@@ -25,7 +25,7 @@
           {% set watch = _('Watch this forum') %}
           <input type="hidden" name="watch" value="yes" />
         {% endif %}
-        <input type="image" alt="{{ watch }}" title="{{ watch }}" src="{{ MEDIA_URL }}img/forums/watch.png"/>
+        <input type="image" alt="{{ watch }}" title="{{ watch }}" class="watchtoggle" src="{{ MEDIA_URL }}img/forums/watch.png"/>
       </form>
     {% endif %}
     <a id="new-thread" href="{{ url('wiki.discuss.new_thread', document_slug=document.slug) }}">{{ _('Post a new thread') }}</a>

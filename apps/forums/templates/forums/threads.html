@@ -25,7 +25,7 @@
           {% set watch = _('Watch this forum') %}
           <input type="hidden" name="watch" value="yes" />
         {% endif %}
-        <input type="image" alt="{{ watch }}" title="{{ watch }}" src="{{ MEDIA_URL }}img/forums/watch.png"/>
+        <input type="image" alt="{{ watch }}" title="{{ watch }}" class="watchtoggle" src="{{ MEDIA_URL }}img/forums/watch.png"/>
       </form>
     {% endif %}
     {% if not user.is_authenticated() or forum.allows_posting_by(user) %}

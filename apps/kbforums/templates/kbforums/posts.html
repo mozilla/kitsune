@@ -30,7 +30,7 @@
           {% set watch = _('Watch this thread') %}
           <input type="hidden" name="watch" value="yes" />
         {% endif %}
-        <input type="image" alt="{{ watch }}" title="{{ watch }}" src="{{ MEDIA_URL }}img/forums/watch.png"/>
+        <input type="image" alt="{{ watch }}" title="{{ watch }}" class="watchtoggle" src="{{ MEDIA_URL }}img/forums/watch.png"/>
       </form>
     {% endif %}
     {% if perms.kbforums.change_thread or (thread.creator == request.user and not thread.is_locked) %}
