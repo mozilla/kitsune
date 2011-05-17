@@ -188,11 +188,17 @@ class RevisionForm(forms.ModelForm):
                                 'min_length': CONTENT_SHORT,
                                 'max_length': CONTENT_LONG})
 
+    is_ready_for_localization = forms.BooleanField(
+        initial=True,
+        label=_lazy(u'Ready for localization:'),
+        required=False)
+
     comment = StrippedCharField(required=False, label=_lazy(u'Comment:'))
 
     class Meta(object):
         model = Revision
-        fields = ('keywords', 'summary', 'content', 'comment', 'based_on')
+        fields = ('keywords', 'summary', 'content',
+                  'is_ready_for_localization', 'comment', 'based_on')
 
     def __init__(self, *args, **kwargs):
         super(RevisionForm, self).__init__(*args, **kwargs)

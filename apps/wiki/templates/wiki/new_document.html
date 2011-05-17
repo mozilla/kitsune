@@ -28,13 +28,16 @@
           </ul>
         </div>
         <ul>
-          {% for field in revision_form.visible_fields() if field.name != 'comment' and field.name != 'content' %}
-            <li>{{ field|label_with_help }}{{ field|safe }}</li>
+          {% for field in revision_form.visible_fields() %}
+            <li>
+              {% if field.name not in ['comment', 'content'] %}
+                {{ field|label_with_help }}{{ field|safe }}
+              {% elif field.name == 'content' %}
+                {{ revision_form.content.label_tag()|safe }}
+                {{ content_editor(revision_form.content) }}
+              {% endif %}
+            </li>
           {% endfor %}
-          <li>
-            {{ revision_form.content.label_tag()|safe }}
-            {{ content_editor(revision_form.content) }}
-          </li>
         </ul>
         {{ revision_form.hidden_fields()|join|safe }}
         {% include 'wiki/includes/submit_revision_for_review.html' %}

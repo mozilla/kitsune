@@ -572,6 +572,8 @@ class Revision(ModelBase):
     # TODO: limit_choices_to={'document__locale':
     # settings.WIKI_DEFAULT_LANGUAGE} is a start but not sufficient.
 
+    is_ready_for_localization = models.BooleanField(default=True)
+
     class Meta(object):
         permissions = [('review_revision', 'Can review a revision')]
 
