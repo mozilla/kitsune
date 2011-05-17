@@ -309,7 +309,7 @@ class RevisionTests(TestCaseBase):
         eq_('Created:Jan 1, 2011 12:00:00 AM',
             doc('#wiki-doc div.revision-info li')[1].text_content().strip())
         eq_('Reviewed:Jan 2, 2011 12:00:00 AM',
-            doc('#wiki-doc div.revision-info li')[4].text_content().strip())
+            doc('#wiki-doc div.revision-info li')[5].text_content().strip())
         # is reviewed?
         eq_('Yes', doc('.revision-info li').eq(3).find('span').text())
         # is current revision?
@@ -334,7 +334,7 @@ class NewDocumentTests(TestCaseBase):
         self.client.login(username='admin', password='testpass')
         response = self.client.get(reverse('wiki.new_document'))
         doc = pq(response.content)
-        eq_(9, len(doc('input[checked=checked]')))
+        eq_(8, len(doc('.relevant-to input[checked=checked]')))
         eq_(None, doc('input[name="tags"]').attr('required'))
 
     @mock.patch.object(ReviewableRevisionInLocaleEvent, 'fire')
