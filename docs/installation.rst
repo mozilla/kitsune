@@ -152,6 +152,16 @@ user by going to ``/users/edit`` in your browser.
 See also the `important wiki documents <wikidocs.rst>`_ documentation.
 
 
+Product Details Initialization
+------------------------------
+
+One of the packages Kitsune uses, ``product_details``, needs to fetch JSON
+files containing historical Firefox version data and write them within its
+package directory. To set this up, run this command to do the initial fetch::
+
+    $ ./manage.py update_product_details
+
+
 Testing it Out
 ==============
 
@@ -181,20 +191,8 @@ Running the test suite is easy::
 For more information, see the `test documentation <tests.rst>`_.
 
 
-Last Steps
-==========
-
-Initializing Mozilla Product Details
-------------------------------------
-
-One of the packages Kitsune uses, Django Mozilla Product Details, needs to
-fetch JSON files containing historical Firefox version data and write them
-within its package directory. To set this up, just run
-``./manage.py update_product_details`` to do the initial fetch.
-
-
 Setting Up Search
------------------
+=================
 
 See the `search documentation <search.rst>`_ for steps to get Sphinx search
 working.
