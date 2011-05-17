@@ -983,6 +983,7 @@ ol.answers form.report {
     background: none;
     border: none;
     margin: 15px 0 0;
+    resize: vertical;
 }
 
 #question-reply div.submit {
@@ -1264,6 +1265,7 @@ form div.attachments-upload img {
 
 #ask-question textarea {
     height: 150px;
+    resize: vertical;
 }
 
 #ask-question textarea.troubleshooting,
