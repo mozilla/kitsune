@@ -120,7 +120,7 @@ def posts(request, forum_slug, thread_id, form=None, reply_preview=None):
                          'feeds': feed_urls,
                          'forums': Forum.objects.all()})
 
-
+@require_POST
 @login_required
 def reply(request, forum_slug, thread_id):
     """Reply to a thread."""

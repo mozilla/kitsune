@@ -34,6 +34,14 @@ class PostPermissionsTests(ForumTestCase):
                             args=['restricted-forum', 6])
         eq_(403, response.status_code)
 
+    def test_reply_thread_405(self):
+        """Replying to a thread via a GET instead of a POST request."""
+        f = Forum.objects.all()[0]
+        t = f.thread_set.all()[0]
+        self.client.login(username='jsocol', password='testpass')
+        response = get(self.client, 'forums.lock_thread',
+            args=[f.slug, t.id])
+        eq_(405, response.status_code)
 
 class ThreadAuthorityPermissionsTests(ForumTestCase):
     """Test thread views authority permissions."""
