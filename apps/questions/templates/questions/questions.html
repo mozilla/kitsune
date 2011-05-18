@@ -3,7 +3,7 @@
 {% set title = _('Firefox Support Forum') %}
 {% set classes = 'questions' %}
 {% set crumbs = [(None, _('Forum'))] %}
-{% set canonical_url = unlocalized_url('questions.questions')|urlparams(filter=filter, sort=sort, tagged=tagged) %}
+{% set canonical_url = unlocalized_url('questions.questions')|urlparams(filter=filter, sort=sort, tagged=tagged, showlocked=showlocked) %}
 {% if questions.number > 1 %}
   {% set canonical_url = canonical_url|urlparams(page=questions.number) %}
 {% endif %}
@@ -54,6 +54,18 @@
           <a href="{{ url('questions.questions')|urlparams(filter='my-contributions', sort=sort, tagged=tagged) }}">{{ _('My Contributions') }}</a>
         </li>
       {% endif %}
+      {% if showlocked == 'no' %}
+          <li>
+            <a href="{{ url('questions.questions')|urlparams(filter=filter, sort=sort, tagged=tagged, showlocked=yes) }}">{{ _('Show Locked ') }}</a>
+          </li>
+      {% endif %}
+      {% if showlocked == 'yes' %}
+          <li>
+            <a href="{{ url('questions.questions')|urlparams(filter=filter, sort=sort, tagged=tagged, showlocked=no) }}">{{ _('Don't Show Locked') }}</a>
+          </li>
+      {% endif %}
+
+
     </ul>
   </div>
   {% if questions.object_list %}
