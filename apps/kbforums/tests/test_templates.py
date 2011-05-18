@@ -8,6 +8,7 @@ from kbforums.tests import KBForumTestCase
 from sumo.urlresolvers import reverse
 from sumo.tests import get, post
 from wiki.models import Document
+from wiki.tests import document, revision
 
 
 class PostsTemplateTests(KBForumTestCase):
@@ -217,6 +218,15 @@ class ThreadsTemplateTests(KBForumTestCase):
                         {'watch': 'no', 'next': next_url})
         self.assertContains(response,
                             'Get emailed when there is new discussion')
+
+    def test_orphan_non_english(self):
+        """Discussing a non-English article with no parent shouldn't crash."""
+        # Guard against regressions of bug 658045.
+        r = revision(document=document(locale='de', save=True),
+                     is_approved=True, save=True)
+        response = self.client.get(
+            reverse('wiki.discuss.threads', args=[r.document.slug], locale='de'))
+        eq_(200, response.status_code)
 
 
 class NewThreadTemplateTests(KBForumTestCase):
