@@ -62,6 +62,7 @@ def questions(request):
 
     filter = request.GET.get('filter')
     tagged = request.GET.get('tagged')
+    showlocked = request.GET.get('showlocked')
     tags = None
     sort_ = request.GET.get('sort')
 
@@ -90,7 +91,25 @@ def questions(request):
         question_qs = question_qs.filter(criteria).distinct()
     else:
         filter = None
-
+        
+    if showlocked == 'yes':
+        # user explicitly showed locked, we don't have to do anything
+    elif showlocked == 'no':
+        # explicitly don't show locked
+        question_qs = question_qs.exclude(is_locked=1)
+    elif request.user.is_authenticated() and user.has_perm('questions.lock_question'):
+        # user is authenticated and can lock questions, default to showing locked
+        showlocked = 'yes'
+    elif request.user.is_authenticated():
+        # user is authenticated but can't lock questions, default to hiding locked
+        showlocked = 'no'
+        question_qs = question_qs.exclude(is_locked=1)
+    else:
+        # fallthrough - user is not authenticated
+        showlocked = 'no'
+        question_qs = question_qs.exclude(is_locked=1)
+        
+        
     feed_urls = ((reverse('questions.feed'),
                   QuestionsFeed().title()),)
 
