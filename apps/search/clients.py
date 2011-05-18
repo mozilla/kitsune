@@ -1,6 +1,7 @@
 import logging
-import socket
 import os
+import re
+import socket
 
 from django.conf import settings
 from django.utils.encoding import smart_unicode
@@ -61,6 +62,7 @@ class SearchClient(object):
 
     def _sanitize_query(self, query):
         """Strip control characters that cause problems."""
+        query = re.sub(r'(?<=\S)\-', '\-', query)
         return query.replace('^', '').replace('$', '')
 
     def _query_sphinx(self, query=''):

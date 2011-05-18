@@ -562,6 +562,21 @@ class SearchTest(SphinxTestCase):
         results = wc.query('video^^^$$$^')
         eq_(1, len(results))
 
+    def test_clean_hyphens(self):
+        """Hyphens in words aren't special characters."""
+        wc = WikiClient()
+        results = wc.query('marque-page')
+        eq_(1, len(results))
+
+    def test_exclude_words(self):
+        """Excluding words with -word works."""
+        wc = WikiClient()
+        results = wc.query('spanish')
+        eq_(1, len(results))
+
+        results = wc.query('spanish -content')
+        eq_(0, len(results))
+
     def test_no_redirects(self):
         """Redirect articles should never appear in search results."""
         wc = WikiClient()
