@@ -1,7 +1,7 @@
 {# vim: set ts=2 et sts=2 sw=2: #}
 {% macro kbforums_warning(document, user) -%}
   <section class="warning-box">
-    {% if document.locale == settings.WIKI_DEFAULT_LANGUAGE %}
+    {% if not document.parent %}
       <p>
         {% if user.is_authenticated() %}
           {% trans title=document.title %}
