@@ -37,10 +37,20 @@ from wiki.tasks import send_reviewed_notification, schedule_rebuild_kb
 log = logging.getLogger('k.wiki')
 
 
+def _split_browser_slug(slug):
+    """Given something like fx35, split it into an alphabetic prefix and a
+    suffix, returning a 2-tuple like ('fx', '35')."""
+    right = slug.lstrip(ascii_letters)
+    left_len = len(slug) - len(right)
+    return slug[:left_len], slug[left_len:]
+
+
 OS_ABBR_JSON = json.dumps(dict([(o.slug, True)
                                 for o in OPERATING_SYSTEMS]))
-BROWSER_ABBR_JSON = json.dumps(dict([(v.slug, v.show_in_ui)
-                                     for v in FIREFOX_VERSIONS]))
+BROWSER_ABBR_JSON = json.dumps(
+    dict([(v.slug, {'product': _split_browser_slug(v.slug)[0],
+                    'maxFloatVersion': v.max_version})
+          for v in FIREFOX_VERSIONS]))
 
 
 def _version_groups(versions):
@@ -49,16 +59,9 @@ def _version_groups(versions):
     See test_version_groups for an example.
 
     """
-    def split_slug(slug):
-        """Given something like fx35, split it into an alphabetic prefix and a
-        suffix, returning a 2-tuple like ('fx', '35')."""
-        right = slug.lstrip(ascii_letters)
-        left_len = len(slug) - len(right)
-        return slug[:left_len], slug[left_len:]
-
     slug_groups = {}
     for v in versions:
-        left, right = split_slug(v.slug)
+        left, right = _split_browser_slug(v.slug)
         slug_groups.setdefault(left, []).append((v.max_version, right))
     for g in slug_groups.itervalues():
         g.sort()
