@@ -32,7 +32,7 @@
              profile.livechat_id|lower != profile.user.username|lower) %}
         <div id="contact-box">
           <ul>
-            {% if profile.public_email %}
+            {% if profile.public_email and request.user.is_authenticated() %}
               <li>
                 <label>{{ _('Email:') }}</label>
                 {{ profile.user.email|public_email }}
