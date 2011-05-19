@@ -5,6 +5,7 @@ from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import get_object_or_404
 
 import jingo
+from multidb.pinning import mark_as_write
 from tower import ugettext as _
 from waffle.decorators import waffle_flag
 
@@ -29,13 +30,16 @@ def inbox(request):
 @login_required
 def read(request, msgid):
     message = get_object_or_404(InboxMessage, pk=msgid, to=request.user)
-    if message.unread:
-        message.read = True
-        message.save()
+    was_new = message.unread
+    if was_new:
+        message.update(read=True)
     initial = {'to': message.sender, 'in_reply_to': message.pk}
     form = ReplyForm(initial=initial)
-    return jingo.render(request, 'messages/read.html',
-                        {'message': message, 'form': form})
+    response = jingo.render(request, 'messages/read.html',
+                            {'message': message, 'form': form})
+    if was_new:
+        response = mark_as_write(response)
+    return response
 
 
 @waffle_flag('private-messaging')
