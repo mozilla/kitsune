@@ -80,8 +80,6 @@ var ShowFor = {
         function conditionFromSymbol(symbol) {
             var slug, browser, comparator;
 
-            // TODO: Put crappy special cases here.
-
             // Figure out comparator:
             if (symbol.substring(0, 1) == '=') {
                 comparator = '=';
@@ -91,6 +89,11 @@ var ShowFor = {
                 slug = symbol;
             }
             
+            // Special case: fx3 and fx35 act like =fx3 and =fx35.
+            if (slug == 'fx3' || slug == 'fx35') {
+                comparator = '=';
+            }
+
             browser = BROWSERS[slug];
             return {comparator: comparator,
                     product: browser.product,
