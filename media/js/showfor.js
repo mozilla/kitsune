@@ -60,6 +60,16 @@ var ShowFor = {
             $osMenu = $container.find(options.osSelector),
             $browserMenu = $container.find(options.browserSelector),
             $origBrowserOptions = $browserMenu.find('option').clone(),
+            defaults = {
+                mobile: {
+                    browser: $origBrowserOptions.filter('[data-dependency="mobile"]:first').val(),
+                    os: $osMenu.find('[data-dependency="mobile"]:first').val()
+                },
+                desktop: {
+                    browser: $origBrowserOptions.filter('[data-dependency="desktop"]:first').val(),
+                    os: $osMenu.find('[data-dependency="desktop"]:first').val()
+                }
+            },
             $body = $('body'),
             hash = self.hashFragment(),
             isSetManually;
@@ -135,7 +145,8 @@ var ShowFor = {
         // detected browsers and slugs chosen explicitly from the <select>.
         function showAndHideFors(os, browser) {
             $container.find('.for').each(function(index) {
-                var osAttrs = {}, browserAttrs = {},  // TODO: Eliminate browserAttrs?
+                var platform = $osMenu.find('option:selected').data('dependency'),
+                    osAttrs = {}, browserAttrs = {},  // TODO: Eliminate browserAttrs?
                     foundAnyOses = false, foundAnyBrowsers = false,
                     forData,
                     isInverted,
@@ -190,7 +201,7 @@ var ShowFor = {
 
                 // Divide {for} attrs into OSes and browsers:
                 $(forData.split(',')).each(function(index) {
-                    if (OSES[this] != undefined) {
+                    if (OSES[this] !== undefined) {
                         osAttrs[this] = true;
                         foundAnyOses = true;
                     } else if (BROWSERS[slugWithoutComparators(this)] !== undefined) {
@@ -200,16 +211,27 @@ var ShowFor = {
                     }
                 });
 
-                shouldHide = ((foundAnyOses && osAttrs[os] == undefined) ||
+                shouldHide = ((foundAnyOses && osAttrs[os] === undefined) ||
                               (foundAnyBrowsers && !meetsAnyOfConditions(browser, browserConditions))) &&
                              // Special cases:
-                             // TODO: make this easier to maintain somehow?
-                             // Show android/m4 on desktop selection
-                             !(osAttrs['android'] && os !== 'maemo' /* only one mobile browser ATM */) &&
-                             !(browserAttrs['m4'] && browser !== 'm4' && (osAttrs['android'] || !foundAnyOses)) &&
-                             // Show win/fx4 on mobile selection
-                             !(osAttrs['win'] && (os === 'android' || os == 'maemo') && (browserAttrs['fx4'] || !foundAnyBrowsers)) &&
-                             !(browserAttrs['fx4'] && browser === 'm4' && (osAttrs['win'] || !foundAnyOses));
+                             // If the current selection is desktop:
+                             // * Show the default mobile OS if no browser was specified or
+                             //   the default mobile browser was also specified.
+                             !(osAttrs[defaults.mobile.os] && platform === 'desktop' &&
+                                (browserAttrs[defaults.mobile.browser] || !foundAnyBrowsers)) &&
+                             // * Show the default mobile browser if no OS was specified or
+                             //   the default mobile OS was also specified.
+                             !(browserAttrs[defaults.mobile.browser] && platform === 'desktop' &&
+                                (osAttrs[defaults.mobile.os] || !foundAnyOses)) &&
+                             // If the current selection is mobile:
+                             // * Show the default desktop OS if no browser was specified or
+                             //   the default desktop browser was also specified.
+                             !(osAttrs[defaults.desktop.os] && platform === 'mobile' &&
+                                (browserAttrs[defaults.desktop.browser] || !foundAnyBrowsers)) &&
+                             // * Show the default desktop browser if no OS was specified or
+                             //   the default desktop OS was also specified.
+                             !(browserAttrs[defaults.desktop.browser] && platform === 'mobile' &&
+                                (osAttrs[defaults.desktop.os] || !foundAnyOses));
 
                 if (shouldHide != isInverted) {
                     $(this).hide();  // saves original visibility, which is nice but not necessary
