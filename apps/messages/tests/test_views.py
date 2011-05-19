@@ -1,4 +1,5 @@
 import mock
+from multidb.middleware import PINNING_COOKIE
 from nose.tools import eq_
 import waffle.decorators
 
@@ -25,6 +26,19 @@ class ReadMessageTests(TestCase):
                                follow=True)
         eq_(200, resp.status_code)
         assert InboxMessage.uncached.get(pk=i.pk).read
+        assert PINNING_COOKIE in resp.cookies
+
+    @mock.patch.object(waffle.decorators, 'flag_is_active')
+    def test_unread_does_not_pin(self, flag_is_active):
+        flag_is_active.return_value = True
+        i = InboxMessage.objects.create(sender=self.user2, to=self.user1,
+                                        message='foo', read=True)
+        assert i.read
+        resp = self.client.get(reverse('messages.read', args=[i.pk]),
+                               follow=True)
+        eq_(200, resp.status_code)
+        assert InboxMessage.uncached.get(pk=i.pk).read
+        assert PINNING_COOKIE not in resp.cookies
 
     @mock.patch.object(waffle.decorators, 'flag_is_active')
     def test_mark_message_replied(self, flag_is_active):

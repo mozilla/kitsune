@@ -29,13 +29,16 @@ def inbox(request):
 @login_required
 def read(request, msgid):
     message = get_object_or_404(InboxMessage, pk=msgid, to=request.user)
-    if message.unread:
+    was_new = message.unread
+    if was_new:
         message.read = True
         message.save()
     initial = {'to': message.sender, 'in_reply_to': message.pk}
     form = ReplyForm(initial=initial)
-    return jingo.render(request, 'messages/read.html',
-                        {'message': message, 'form': form})
+    response = jingo.render(request, 'messages/read.html',
+                            {'message': message, 'form': form})
+    response._db_write = was_new
+    return response
 
 
 @waffle_flag('private-messaging')
