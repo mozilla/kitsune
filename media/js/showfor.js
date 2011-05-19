@@ -98,7 +98,7 @@ var ShowFor = {
                 comparator = '>=';
                 slug = symbol;
             }
-            
+
             // Special case: fx3 and fx35 act like =fx3 and =fx35.
             if (slug == 'fx3' || slug == 'fx35') {
                 comparator = '=';
@@ -131,7 +131,7 @@ var ShowFor = {
             }
             return false;
         }
-        
+
         // Set the {for} nodes to the proper visibility for the given OS and
         // browser combination.
         //
@@ -183,7 +183,7 @@ var ShowFor = {
                         }
                     }
                 }
-                
+
                 function slugWithoutComparators(slug) {
                     return (slug.substring(0, 1) == '=') ? slug.substring(1) : slug;
                 }
@@ -402,7 +402,7 @@ var ShowFor = {
 
         // Fire off the change handler for the first time:
         updateForsAndToc(true);
-        
+
         updateShowforSelectors();
     },
 
