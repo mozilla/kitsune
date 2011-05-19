@@ -23,7 +23,7 @@ module('showfor', showforFixture);
 
 function assertNotVisible($sandbox, forVals) {
     for (var i=0,l=forVals.length; i<l; i++) {
-        equals($sandbox.find('[data-for="not ' + forVals[i] + '"]:visible').length, 0,
+        equals($sandbox.find('[data-for="' + forVals[i] + '"]:visible').length, 0,
                '[data-for=' + forVals[i] + '] is not visible');
     }
 }
@@ -47,8 +47,8 @@ test('windows fx4', function() {
     $('#_input_fx4').click();
     equals(this.$o.val(), 'win', 'Windows is now selected');
     equals(this.$b.val(), 'fx4', 'Firefox 4 is now selected');
-    assertNotHidden(this.$sandbox, ['win', 'not mac', 'android', 'fx35,fx4', 'm4']);
-    assertNotVisible(this.$sandbox, ['mac,linux', 'maemo', 'fx3']);
+    assertNotHidden(this.$sandbox, ['win', 'not mac', 'android', 'fx35,fx4', 'fx4', 'm4']);
+    assertNotVisible(this.$sandbox, ['mac,linux', 'maemo', 'fx3', 'fx5']);
 });
 
 test('linux fx35', function() {
@@ -57,7 +57,16 @@ test('linux fx35', function() {
     equals(this.$o.val(), 'linux', 'Linux is now selected');
     equals(this.$b.val(), 'fx35', 'Firefox 3.5/6 is now selected');
     assertNotHidden(this.$sandbox, ['not mac', 'mac,linux', 'android', 'fx35,fx4', 'm4']);
-    assertNotVisible(this.$sandbox, ['win', 'maemo', 'fx3']);
+    assertNotVisible(this.$sandbox, ['win', 'maemo', 'fx3', 'fx4', 'fx5']);
+});
+
+test('mac fx5', function() {
+    $('#_input_mac').click();
+    $('#_input_fx5').click();
+    equals(this.$o.val(), 'mac', 'Mac is now selected');
+    equals(this.$b.val(), 'fx5', 'Firefox 5 is now selected');
+    assertNotHidden(this.$sandbox, ['mac,linux', 'android', 'm4', 'fx35,fx4', 'fx4', 'fx5']);
+    assertNotVisible(this.$sandbox, ['not mac', 'win', 'maemo', 'fx3']);
 });
 
 test('android m4', function() {
@@ -65,8 +74,8 @@ test('android m4', function() {
     $('#_input_m4').click();
     equals(this.$o.val(), 'android', 'Android is now selected');
     equals(this.$b.val(), 'm4', 'Firefox 4 is now selected');
-    assertNotHidden(this.$sandbox, ['win', 'not mac', 'android', 'fx35,fx4', 'm4']);
-    assertNotVisible(this.$sandbox, ['mac,linux', 'maemo', 'fx3']);
+    assertNotHidden(this.$sandbox, ['win', 'not mac', 'android', 'm4', 'fx5']);
+    assertNotVisible(this.$sandbox, ['mac,linux', 'maemo', 'fx35,fx4', 'fx4', 'fx3']);
 });
 
 
@@ -75,8 +84,8 @@ test('maemo m4', function() {
     $('#_input_m4').click();
     equals(this.$o.val(), 'maemo', 'Maemo is now selected');
     equals(this.$b.val(), 'm4', 'Firefox 4 is now selected');
-    assertNotHidden(this.$sandbox, ['win', 'not mac', 'maemo', 'fx35,fx4', 'm4']);
-    assertNotVisible(this.$sandbox, ['mac,linux', 'android', 'fx3']);
+    assertNotHidden(this.$sandbox, ['win', 'not mac', 'maemo', 'm4', 'fx5']);
+    assertNotVisible(this.$sandbox, ['mac,linux', 'android', 'fx35,fx4', 'fx4', 'fx3']);
 });
 
 });

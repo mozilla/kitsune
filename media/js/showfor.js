@@ -60,17 +60,55 @@ var ShowFor = {
             $osMenu = $container.find(options.osSelector),
             $browserMenu = $container.find(options.browserSelector),
             $origBrowserOptions = $browserMenu.find('option').clone(),
+            defaults = {
+                mobile: {
+                    browser: $origBrowserOptions.filter('[data-dependency="mobile"]:first').val(),
+                    os: $osMenu.find('[data-dependency="mobile"]:first').val()
+                },
+                desktop: {
+                    browser: $origBrowserOptions.filter('[data-dependency="desktop"]:first').val(),
+                    os: $osMenu.find('[data-dependency="desktop"]:first').val()
+                }
+            },
             $body = $('body'),
             hash = self.hashFragment(),
             isSetManually;
 
         OSES = $osMenu.data('oses');  // {'mac': true, 'win': true, ...}
-        BROWSERS = $browserMenu.data('browsers');  // {'fx4': true, ...}
+        BROWSERS = $browserMenu.data('browsers');  // {'fx4': {product: 'fx', maxFloatVersion: 4.9999}, ...}
         VERSIONS = $browserMenu.data('version-groups');  // {'fx': [[3.4999, '3'], [3.9999, '35']], 'm': [[1.0999, '1'], [1.9999, '11']]}
         MISSING_MSG = gettext('[missing header]');
 
         // Make the 'Table of Contents' header localizable.
         $('#toc > h2').text(gettext('Table of Contents'));
+
+        // Given a symbol like 'm4' or '=fx4', return something like
+        // {comparator: '>', product: 'm', version: 4.9999}. Even if there's no
+        // explicit comparator in the symbol, the comparator that's assumed
+        // will be made explicit in the returned object. If it's not a known
+        // product/version combo, return undefined.
+        function conditionFromSymbol(symbol) {
+            var slug, browser, comparator;
+
+            // Figure out comparator:
+            if (symbol.substring(0, 1) == '=') {
+                comparator = '=';
+                slug = symbol.substring(1);
+            } else {  // If no leading =, assume >=.
+                comparator = '>=';
+                slug = symbol;
+            }
+
+            // Special case: fx3 and fx35 act like =fx3 and =fx35.
+            if (slug == 'fx3' || slug == 'fx35') {
+                comparator = '=';
+            }
+
+            browser = BROWSERS[slug];
+            return {comparator: comparator,
+                    product: browser.product,
+                    version: browser.maxFloatVersion};
+        }
 
         function updateForsAndToc(calledOnLoad) {
             // Hide and show document sections accordingly:
@@ -93,29 +131,70 @@ var ShowFor = {
             }
             return false;
         }
-        
+
         // Set the {for} nodes to the proper visibility for the given OS and
         // browser combination.
         //
-        // Hidden are {for}s that {list at least one OS but not the passed-in one}
-        // or that {list at least one browser but not the passed-in one}. Also, the
-        // entire condition can be inverted by prefixing it with "not ", as in {for
-        // not mac,linux}.
+        // Hidden are {for}s that {list at least one OS but not the passed-in
+        // one} or that {list at least one browser expression but none matching
+        // the passed-in one}. Also, the entire condition can be inverted by
+        // prefixing it with "not ", as in {for not mac,linux}.
+        //
+        // Takes a browser slug like "fx4" rather than a browser code and a
+        // raw floating-point version because it has to be able to take both
+        // detected browsers and slugs chosen explicitly from the <select>.
         function showAndHideFors(os, browser) {
             $container.find('.for').each(function(index) {
-                var osAttrs = {}, browserAttrs = {},
+                var platform = $osMenu.find('option:selected').data('dependency'),
+                    osAttrs = {}, browserAttrs = {},  // TODO: Eliminate browserAttrs?
                     foundAnyOses = false, foundAnyBrowsers = false,
                     forData,
                     isInverted,
-                    shouldHide;
+                    shouldHide,
+                    browserConditions = [];
 
-                // Catch the "not" operator if it's there:
+                // Return whether the given browser slug matches any of the
+                // given conditions. Passing an unknown slug results in
+                // undefined behavior.
+                // TODO: Implement with a generic any() instead--maybe underscore's.
+                function meetsAnyOfConditions(slug, conditions) {
+                    // Return whether a slug (like 'fx4' or 'fx35') meets a condition like
+                    // {comparator: '>' product: 'm', version: 4.9999}.
+                    function meets(slug, condition) {
+                        var browser = BROWSERS[slug];
+                        if (browser.product != condition.product) {
+                            return false;
+                        }
+                        switch (condition.comparator) {
+                            case '=':
+                                // =fx35 --> {comparator: '=' browser: 'fx', version: 3.9999}
+                                return browser.maxFloatVersion == condition.version;
+                            case '>=':
+                                // fx4 --> {comparator: '>=' browser: 'fx', version: 4.9999}
+                                return browser.maxFloatVersion >= condition.version;
+                            // Insert '<' here someday.
+                        }
+                        return false;
+                    }
+
+                    for (var i = 0; i < conditions.length; i++) {
+                        if (meets(slug, conditions[i])) {
+                            return true;
+                        }
+                    }
+                }
+
+                function slugWithoutComparators(slug) {
+                    return (slug.substring(0, 1) == '=') ? slug.substring(1) : slug;
+                }
+
+                // If the data-for attribute is missing, return.
                 forData = $(this).data('for');
                 if (!forData) {
-                    // If the data-for attribute is missing, move on.
                     return;
                 }
 
+                // Catch the "not" operator if it's there:
                 isInverted = forData.substring(0, 4) == 'not ';
                 if (isInverted) {
                     forData = forData.substring(4);  // strip off "not "
@@ -123,30 +202,41 @@ var ShowFor = {
 
                 // Divide {for} attrs into OSes and browsers:
                 $(forData.split(',')).each(function(index) {
-                    if (OSES[this] != undefined) {
+                    if (OSES[this] !== undefined) {
                         osAttrs[this] = true;
                         foundAnyOses = true;
-                    } else if (BROWSERS[this] != undefined) {
+                    } else if (BROWSERS[slugWithoutComparators(this)] !== undefined) {
                         browserAttrs[this] = true;
+                        browserConditions.push(conditionFromSymbol(this));
                         foundAnyBrowsers = true;
                     }
                 });
 
-                shouldHide = ((foundAnyOses && osAttrs[os] == undefined) ||
-                             (foundAnyBrowsers && browserAttrs[browser] == undefined)) &&
-                             // Special cases ):
-                             // TODO: make this easier to maintain somehow?
-                             // Show android/m4 on desktop selection
-                             !(osAttrs['android'] && os !== 'maemo' /* only one mobile browser ATM */) &&
-                             !(browserAttrs['m4'] && browser !== 'm4' && (osAttrs['android'] || !foundAnyOses)) &&
-                             // Show win/fx4 on mobile selection
-                             !(osAttrs['win'] && (os === 'android' || os == 'maemo') && (browserAttrs['fx4'] || !foundAnyBrowsers)) &&
-                             !(browserAttrs['fx4'] && browser === 'm4' && (osAttrs['win'] || !foundAnyOses));
+                shouldHide = ((foundAnyOses && osAttrs[os] === undefined) ||
+                              (foundAnyBrowsers && !meetsAnyOfConditions(browser, browserConditions))) &&
+                             // Special cases:
+                             // If the current selection is desktop:
+                             // * Show the default mobile OS if no browser was specified or
+                             //   the default mobile browser was also specified.
+                             !(osAttrs[defaults.mobile.os] && platform === 'desktop' &&
+                                (browserAttrs[defaults.mobile.browser] || !foundAnyBrowsers)) &&
+                             // * Show the default mobile browser if no OS was specified or
+                             //   the default mobile OS was also specified.
+                             !(browserAttrs[defaults.mobile.browser] && platform === 'desktop' &&
+                                (osAttrs[defaults.mobile.os] || !foundAnyOses)) &&
+                             // If the current selection is mobile:
+                             // * Show the default desktop OS if no browser was specified or
+                             //   the default desktop browser was also specified.
+                             !(osAttrs[defaults.desktop.os] && platform === 'mobile' &&
+                                (browserAttrs[defaults.desktop.browser] || !foundAnyBrowsers)) &&
+                             // * Show the default desktop browser if no OS was specified or
+                             //   the default desktop OS was also specified.
+                             !(browserAttrs[defaults.desktop.browser] && platform === 'mobile' &&
+                                (osAttrs[defaults.desktop.os] || !foundAnyOses));
 
-                if ((shouldHide && !isInverted) || (!shouldHide && isInverted)) {
+                if (shouldHide != isInverted) {
                     $(this).hide();  // saves original visibility, which is nice but not necessary
-                }
-                else {
+                } else {
                     $(this).show();  // restores original visibility
                 }
             });
@@ -312,7 +402,7 @@ var ShowFor = {
 
         // Fire off the change handler for the first time:
         updateForsAndToc(true);
-        
+
         updateShowforSelectors();
     },
 
