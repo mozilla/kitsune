@@ -145,6 +145,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
 
 MIDDLEWARE_CLASSES = (
     'multidb.middleware.PinningRouterMiddleware',
+    'users.middleware.StaySecureMiddleware',
 
     # This gives us atomic success or failure on multi-row writes. It does not
     # give us a consistent per-transaction snapshot for reads; that would need
@@ -467,6 +468,7 @@ SESSION_COOKIE_SECURE = True
 SESSION_COOKIE_HTTPONLY = True
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 SESSION_ENGINE = 'django.contrib.sessions.backends.cached_db'
+SESSION_EXISTS_COOKIE = 'sumo_session'
 
 #
 # Connection information for Sphinx search

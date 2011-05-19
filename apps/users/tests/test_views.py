@@ -1,3 +1,4 @@
+from datetime import datetime
 import os
 
 from django.conf import settings
@@ -295,3 +296,30 @@ class AvatarTests(TestCase):
         p = Profile.uncached.get(user=self.u)
         assert p.avatar, 'User has an avatar.'
         assert not p.avatar.path.endswith('exist.jpg')
+
+
+class SessionTests(TestCase):
+    def setUp(self):
+        self.u = user()
+        self.u.save()
+        self.client.logout()
+
+    # Need to set DEBUG = True for @ssl_required to not freak out.
+    @mock.patch.object(settings._wrapped, 'DEBUG', True)
+    def test_login_sets_extra_cookie(self):
+        """On login, set the SESSION_EXISTS_COOKIE."""
+        url = reverse('users.login', locale='en-US')
+        res = self.client.post(url, {'username': self.u.username,
+                                     'password': 'testpass'})
+        assert settings.SESSION_EXISTS_COOKIE in res.cookies
+        c = res.cookies[settings.SESSION_EXISTS_COOKIE]
+        assert 'secure' not in c.output().lower()
+
+    @mock.patch.object(settings._wrapped, 'DEBUG', True)
+    def test_logout_deletes_cookie(self):
+        """On logout, delete the SESSION_EXISTS_COOKIE."""
+        url = reverse('users.logout', locale='en-US')
+        res = self.client.get(url)
+        assert settings.SESSION_EXISTS_COOKIE in res.cookies
+        c = res.cookies[settings.SESSION_EXISTS_COOKIE]
+        assert '1970' in c['expires']

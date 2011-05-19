@@ -36,7 +36,9 @@ def login(request):
     form = handle_login(request)
 
     if request.user.is_authenticated():
-        return HttpResponseRedirect(next_url)
+        res = HttpResponseRedirect(next_url)
+        res.set_cookie(settings.SESSION_EXISTS_COOKIE, '1', secure=False)
+        return res
 
     return jingo.render(request, 'users/login.html',
                         {'form': form, 'next_url': next_url})
@@ -48,7 +50,9 @@ def logout(request):
     auth.logout(request)
     next_url = get_next_url(request) if 'next' in request.GET else ''
 
-    return HttpResponseRedirect(next_url or reverse('home'))
+    res = HttpResponseRedirect(next_url or reverse('home'))
+    res.delete_cookie(settings.SESSION_EXISTS_COOKIE)
+    return res
 
 
 @ssl_required
