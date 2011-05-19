@@ -158,8 +158,9 @@ var ShowFor = {
                 // undefined behavior.
                 // TODO: Implement with a generic any() instead--maybe underscore's.
                 function meetsAnyOfConditions(slug, conditions) {
-                    // Return whether a slug (like 'fx4' or 'fx35') meets a condition like {comparator: '>' product: 'm', version: 4.9999}.
-                    function meets(slug, condition) {  // 'fx4' is matched by {comparator: '=', product: 'fx', version: 3.9999}?
+                    // Return whether a slug (like 'fx4' or 'fx35') meets a condition like
+                    // {comparator: '>' product: 'm', version: 4.9999}.
+                    function meets(slug, condition) {
                         var browser = BROWSERS[slug];
                         if (browser.product != condition.product) {
                             return false;

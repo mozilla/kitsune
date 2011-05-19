@@ -50,12 +50,18 @@ CATEGORIES = (
 # FF versions used to filter article searches, power {for} tags, etc.:
 #
 # Iterables of (ID, name, abbreviation for {for} tags, max version this version
-# group encompasses) grouped into optgroups. To add the ability to sniff a new
-# version of an existing browser (assuming it doesn't change the user agent
-# string too radically), you should need only to add a line here; no JS
-# required. Just be wary of inexact floating point comparisons when setting
-# max_version, which should be read as "From the next smaller max_version up to
-# but not including version x.y".
+# group encompasses, and whether-this-version-should-show-in-the-menu) grouped
+# into optgroups by platform. To add the ability to sniff a new version of an
+# existing browser (assuming it doesn't change the user agent string too
+# radically), you should need only to add a line here; no JS required. Just be
+# wary of inexact floating point comparisons when setting max_version, which
+# should be read as "From the next smaller max_version up to but not including
+# version x.y".
+#
+# The first browser in each platform group will be considered the default one.
+# When a wiki page is being viewed in a desktop browser, the {for} sections for
+# the default mobile browser still show. The reverse is true when a page is
+# being viewed in a mobile browser.
 VersionMetadata = namedtuple('VersionMetadata',
                              'id, name, long, slug, max_version, show_in_ui')
 GROUPED_FIREFOX_VERSIONS = (
