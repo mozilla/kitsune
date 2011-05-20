@@ -575,6 +575,11 @@ details.h2 > summary {
     text-decoration: line-through;
 }
 
+#revision-list li.header * {
+    color: #666 !important;
+    font-weight: bold;
+}
+
 #revision-list div.radio {
     display: inline-block;
     text-align: center;
