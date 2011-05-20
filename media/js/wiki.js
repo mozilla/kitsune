@@ -30,6 +30,8 @@
             initPreValidation();
         }
 
+        initDiff();
+
         Marky.createFullToolbar('.editor-tools', '#id_content');
     }
 
@@ -294,6 +296,43 @@
                     return false;
                 }
                 return true;
+            }
+        });
+    }
+
+    // Add ability to switch the diff to full screen + fluid.
+    function initDiff() {
+        $('table.diff').each(function() {
+            var $table = $(this),
+                $link = $table.before('<a class="toggle-diff" href="#"></a>').prev(),
+                fullWidth = false, // Are we full width?
+                $clone, // A clone of the table.
+                $placeholder; // A placeholder that fills in height behind
+                              // overlayed table.
+            $link.text(gettext('Toggle Diff'));
+
+            $link.click(function(ev){
+                var top;
+                ev.preventDefault();
+                if (fullWidth) {
+                    $placeholder.remove();
+                    $table.show();
+                    $clone.remove();
+                    $(window).unbind('resize', syncHeight);
+                } else {
+                    top = $table.offset().top;
+                    $clone = $table.clone().addClass('full');
+                    $clone.css('top', top + 'px');
+                    $('body').append($clone);
+                    $placeholder = $table.before('<section/>').prev();
+                    syncHeight();
+                    $table.hide();
+                    $(window).resize(syncHeight);
+                }
+                fullWidth = !fullWidth;
+            });
+            function syncHeight() {
+                $placeholder.height($clone.outerHeight() + 40);
             }
         });
     }

@@ -1,16 +1,14 @@
-from difflib import HtmlDiff
-
 from jingo import register
 import jinja2
 
-from wiki import DIFF_WRAP_COLUMN
 from wiki import parser
+from wiki.diff import BetterHtmlDiff
 
 
 @register.function
 def diff_table(content_from, content_to):
     """Creates an HTML diff of the passed in content_from and content_to."""
-    html_diff = HtmlDiff(wrapcolumn=DIFF_WRAP_COLUMN)
+    html_diff = BetterHtmlDiff()
     diff = html_diff.make_table(content_from.splitlines(),
                                 content_to.splitlines(), context=True)
     return jinja2.Markup(diff)
