@@ -2,6 +2,7 @@
 {% macro search_box(settings, id=False, prefix=None, target=None,
                     placeholder=None) %}
   {% if placeholder is none %}
+    {# L10n: If your language is particularly verbose, just localize this as 'Search'. #}
     {% set placeholder = _('Search Firefox Help') %}
   {% endif %}
   <div class="support-search"{% if id %} id="{{ id }}"{% endif %} role="search">
