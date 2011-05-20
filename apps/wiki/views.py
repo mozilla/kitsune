@@ -336,6 +336,10 @@ def review_revision(request, document_slug, revision_id):
     doc = rev.document
     form = ReviewForm()
 
+    # Don't ask significance if this doc is a translation or if it has no
+    # former approved versions:
+    should_ask_significance = not doc.parent and doc.current_revision
+
     if request.method == 'POST':
         form = ReviewForm(request.POST)
         if form.is_valid() and not rev.reviewed:
@@ -343,7 +347,7 @@ def review_revision(request, document_slug, revision_id):
             rev.is_approved = 'approve' in request.POST
             rev.reviewer = request.user
             rev.reviewed = datetime.now()
-            if form.cleaned_data['significance']:
+            if should_ask_significance and form.cleaned_data['significance']:
                 rev.significance = form.cleaned_data['significance']
             rev.save()
 
@@ -369,7 +373,8 @@ def review_revision(request, document_slug, revision_id):
         template = 'wiki/review_revision.html'
 
     data = {'revision': rev, 'document': doc, 'form': form,
-            'parent_revision': parent_revision}
+            'parent_revision': parent_revision,
+            'should_ask_significance': should_ask_significance}
     data.update(SHOWFOR_DATA)
     return jingo.render(request, template, data)
 

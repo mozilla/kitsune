@@ -15,16 +15,16 @@
     <form id="approve-modal" class="kbox" action="" method="post" data-title="{% if document.parent %}{{ _('Accept this Translation') }}{% else %}{{ _('Accept this Revision') }}{% endif %}" data-modal="true" data-target="#btn-approve">
       {{ csrf() }}
       <p>
-        {% if document.parent %}
-          {% trans %}Thanks for taking the time to review these changes.
-          Please consider sending a thank you to the person who submitted them.{% endtrans %}
-        {% else %}
+        {% if should_ask_significance %}
           {% trans %}Clicking Accept will make this version of the article live!
           Please pick the appropriate revision level below and consider sending
           a thank you to the person who submitted this.{% endtrans %}
+        {% else %}
+          {% trans %}Thanks for taking the time to review these changes.
+          Please consider sending a thank you to the person who submitted them.{% endtrans %}
         {% endif %}
       </p>
-      {% if not document.parent %}
+      {% if should_ask_significance %}
         {{ form.significance|safe }}
       {% endif %}
       <div class="message">
