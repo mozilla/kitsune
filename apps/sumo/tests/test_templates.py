@@ -1,6 +1,9 @@
+from django.conf import settings
+
 from nose.tools import eq_, raises
 from pyquery import PyQuery as pq
 import jingo
+import mock
 from test_utils import RequestFactory
 
 from sumo.tests import LocalizingClient, TestCase
@@ -70,6 +73,20 @@ class BaseTemplateTests(MockRequestTests):
         html = jingo.render_to_string(self.request, self.template)
         doc = pq(html)
         eq_('false', doc('body')[0].attrib['data-readonly'])
+
+    @mock.patch.object(settings._wrapped, 'READ_ONLY', True)
+    def test_readonly_login_link_disabled(self):
+        """Ensure that login/register links are hidden in READ_ONLY."""
+        html = jingo.render_to_string(self.request, self.template)
+        doc = pq(html)
+        eq_(0, len(doc('div#greeting').text()))
+
+    @mock.patch.object(settings._wrapped, 'READ_ONLY', False)
+    def test_not_readonly_login_link_enabled(self):
+        """Ensure that login/register links are visible in not READ_ONLY."""
+        html = jingo.render_to_string(self.request, self.template)
+        doc = pq(html)
+        assert len(doc('div#greeting').text()) > 0
 
 
 class ErrorListTests(MockRequestTests):
