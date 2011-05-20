@@ -101,7 +101,7 @@ class MostVisitedTranslationsTests(TestCase):
 
     def test_untranslated(self):
         """Assert untranslated documents are labeled as such."""
-        untranslated = revision(save=True)
+        untranslated = revision(save=True, is_approved=True)
         row = self.row()
         eq_(row['title'], untranslated.document.title)
         eq_(unicode(row['status']), 'Translation Needed')
@@ -113,6 +113,11 @@ class MostVisitedTranslationsTests(TestCase):
         eq_(row['title'], translation.document.title)
         eq_(unicode(row['status']), '')
         eq_(row['status_class'], 'ok')
+
+    def test_spam(self):
+        """Don't offer unapproved (often spam) articles for translation."""
+        r = revision(is_approved=False, save=True)
+        eq_([], MostVisitedTranslationsReadout(MockRequest()).rows())
 
 
 class TemplateTranslationsReadoutTests(TestCase):

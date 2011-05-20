@@ -275,6 +275,7 @@ class MostVisitedTranslationsReadout(MostVisitedDefaultLanguageReadout):
                    'AND dashboards_wikidocumentvisits.period=%s '
                'WHERE engdoc.locale=%s AND engdoc.is_localizable AND '
                    'NOT engdoc.is_archived '
+                   'AND engdoc.current_revision_id IS NOT NULL '
                    '{extra_where} '  # extra WHERE conditions
                'ORDER BY dashboards_wikidocumentvisits.visits DESC, '
                         'COALESCE(transdoc.title, engdoc.title) ASC' +
