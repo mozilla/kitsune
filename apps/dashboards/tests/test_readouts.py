@@ -26,8 +26,6 @@ class UnreviewedChangesTests(TestCase):
     bits.
 
     """
-    fixtures = ['users.json']
-
     @staticmethod
     def titles():
         """Return the titles shown by the Unreviewed Changes readout."""
@@ -62,8 +60,6 @@ class MostVisitedTranslationsTests(TestCase):
     superset of all other readouts' status discriminators.
 
     """
-    fixtures = ['users.json']
-
     @staticmethod
     def row():
         """Return first row shown by the Most Visited Translations readout."""
@@ -121,7 +117,6 @@ class MostVisitedTranslationsTests(TestCase):
 
 class TemplateTranslationsReadoutTests(TestCase):
     """Tests for the Template Translations readout"""
-    fixtures = ['users.json']
 
     @staticmethod
     def row():
