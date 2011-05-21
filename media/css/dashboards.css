@@ -162,12 +162,23 @@ h2.subtitle {
     display: inline-block;
 }
 
+.dashboards details summary {
+    margin: 10px 0 0;
+}
+
 .dashboards summary.with-mode-selectors {
     display: inline;
 }
 
 .dashboards details table {
     display: block;  /* Makes collapse animation work */
+    margin-top: 4px;
+}
+
+.dashboards details p {
+    color: #666;
+    padding: 9px 12px 0;
+    text-align: justify;
 }
 
 

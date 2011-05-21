@@ -533,7 +533,7 @@ details.h2 > summary {
 .choice-list li {
     display: inline-block;
     list-style: none;
-    padding: 0 5px;
+    padding: 0 8px;
     font-weight: bold;
 }
 
@@ -860,14 +860,11 @@ details {
 
 /* Make sure summary remains visible, and apply a pointer cursor upon hover to indicate it's a clickable element */
 .no-details details summary {
+    background: transparent url(../img/wiki/bkg.collapsibles.png) no-repeat 5px 5px;
     border-bottom: solid 1px #cadaeb;
     cursor: pointer;
     display: block;
     margin: 10px 0 30px;
-}
-
-.no-details details summary {
-    background: transparent url(../img/wiki/bkg.collapsibles.png) no-repeat 5px 5px;
     padding: 0 0 0 30px;
 }
 

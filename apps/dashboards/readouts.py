@@ -100,6 +100,7 @@ class Readout(object):
 
     """
     # title = _lazy(u'Title of Readout')
+    # description = _lazy(u'Paragraph of explanation')
     # short_title= = _lazy(u'Short Title of Readout for In-Page Links')
     # slug = 'URL slug for detail page'
     # details_link_text = _lazy(u'All articles from this readout...')
@@ -175,7 +176,7 @@ class Readout(object):
 
 class MostVisitedDefaultLanguageReadout(Readout):
     """Most-Visited readout for the default language"""
-    title = _lazy(u'Most-Visited Articles')
+    title = _lazy(u'Most Visited')
     # No short_title; the link to this one is hard-coded in Overview readout
     details_link_text = _lazy(u'All knowledge base articles...')
     slug = 'most-visited'
@@ -237,10 +238,11 @@ class MostVisitedTranslationsReadout(MostVisitedDefaultLanguageReadout):
         MEDIUM_SIGNIFICANCE:
             (_lazy(u'Update Needed'), 'wiki.edit_document', 'update'),
         MAJOR_SIGNIFICANCE:
-            (_lazy(u'Out of Date'), 'wiki.edit_document', 'out-of-date')}
+            (_lazy(u'Immediate Update Needed'), 'wiki.edit_document',
+             'out-of-date')}
 
     def _most_visited_query_and_params(self, max, extra_where=''):
-        # Out of Date or Update Needed: link to /edit.
+        # Immediate Update Needed or Update Needed: link to /edit.
         # Review Needed: link to /history.
         # These match the behavior of the corresponding readouts.
         return (('SELECT engdoc.slug, engdoc.title, transdoc.slug, '
@@ -336,7 +338,7 @@ class TemplateTranslationsReadout(MostVisitedTranslationsReadout):
 
 
 class UntranslatedReadout(Readout):
-    title = _lazy(u'Untranslated Articles')
+    title = _lazy(u'Untranslated')
     short_title = _lazy(u'Untranslated')
     details_link_text = _lazy(u'All untranslated articles...')
     slug = 'untranslated'
@@ -380,9 +382,14 @@ class UntranslatedReadout(Readout):
 
 
 class OutOfDateReadout(Readout):
-    title = _lazy(u'Out-of-Date Translations')
-    short_title = _lazy(u'Out-of-Date')
-    details_link_text = _lazy(u'All out-of-date translations...')
+    title = _lazy(u'Immediate Updates Needed')
+    description = _lazy(
+        u'This indicates a major edit which changes the content of the article'
+         ' enough to hurt the value of the localization. Until it is updated, '
+         'the localized page will warn users that it may be outdated. You '
+         'should update these articles as soon as possible.')
+    short_title = _lazy(u'Immediate Updates Needed')
+    details_link_text = _lazy(u'All translations needing immediate updates...')
     slug = 'out-of-date'
     column4_label = _lazy(u'Out of date since')
 
@@ -459,8 +466,13 @@ class OutOfDateReadout(Readout):
 
 
 class NeedingUpdatesReadout(OutOfDateReadout):
-    title = _lazy(u'Translations Needing Updates')
-    short_title = _lazy(u'Needing Updates')
+    title = _lazy(u'Updates Needed')
+    description = _lazy(
+        u"This signifies an edit that doesn't diminish the value of the "
+         'localized article: for example, rewording a paragraph. Localizers '
+         'are notified of this edit, but no warning is shown on the localized '
+         'page. You should update these articles soon.')
+    short_title = _lazy(u'Updates Needed')
     details_link_text = _lazy(u'All translations needing updates...')
     slug = 'needing-updates'
 

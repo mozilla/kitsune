@@ -11,6 +11,11 @@
         </li>
       {% endfor %}
     </ul>
+    {% if readout.description %}
+      <p>
+        {{ readout.description }}
+      </p>
+    {% endif %}
     <table class="documents" id="{{ readout.slug }}-table">
       {{ readout.render(max_rows=max_rows)|safe }}
     </table>

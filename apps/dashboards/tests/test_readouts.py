@@ -93,7 +93,7 @@ class MostVisitedTranslationsTests(TestCase):
 
     def test_out_of_date(self):
         """Assert out-of-date translations are labeled as such."""
-        self._test_significance(MAJOR_SIGNIFICANCE, 'Out of Date')
+        self._test_significance(MAJOR_SIGNIFICANCE, 'Immediate Update Needed')
 
     def test_update_needed(self):
         """Assert update-needed translations are labeled as such."""
