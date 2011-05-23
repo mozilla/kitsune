@@ -3,10 +3,11 @@ import json
 from django.conf import settings
 from django.contrib.auth.models import User
 
+import mock
 from nose.tools import eq_
 from pyquery import PyQuery as pq
 
-from gallery import forms
+from gallery import forms, views
 from gallery.models import Image, Video
 from gallery.tests import image, video
 from gallery.views import _get_media_info
@@ -62,6 +63,16 @@ class DeleteEditImageTests(TestCase):
 
         eq_(200, r.status_code)
         eq_(0, Image.objects.count())
+
+    @mock.patch.object(views, 'schedule_rebuild_kb')
+    def test_schedule_rebuild_kb_on_delete(self, schedule_rebuild_kb):
+        """KB rebuild scheduled on delete"""
+        im = image()
+        r = post(self.client, 'gallery.delete_media', args=['image', im.id])
+
+        eq_(200, r.status_code)
+        eq_(0, Image.objects.count())
+        assert schedule_rebuild_kb.called
 
     def test_edit_own_image(self):
         """Can edit an image I created."""
@@ -247,6 +258,19 @@ class UploadImageTests(TestCase):
         doc = pq(r.content)
         msg = 'Image with this Locale and Title already exists.'
         assert doc('ul.errorlist li').text().startswith(msg)
+
+    @mock.patch.object(views, 'schedule_rebuild_kb')
+    def test_upload_image_rebuild_kb(self, schedule_rebuild_kb):
+        """Uploading an image schedules a KB rebuild."""
+        with open(TEST_IMG) as f:
+            r = post(self.client, 'gallery.upload_async', {'file': f},
+                     args=['image'])
+
+        eq_(1, Image.objects.count())
+        eq_(200, r.status_code)
+        json_r = json.loads(r.content)
+        eq_('success', json_r['status'])
+        assert schedule_rebuild_kb.called
 
 
 class ViewHelpersTests(TestCase):

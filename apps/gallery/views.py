@@ -22,6 +22,7 @@ from sumo.urlresolvers import reverse
 from sumo.utils import paginate
 from upload.tasks import generate_thumbnail
 from upload.utils import FileTooLargeError
+from wiki.tasks import schedule_rebuild_kb
 
 MSG_FAIL_UPLOAD = {'image': _lazy(u'Could not upload your image.'),
                    'video': _lazy(u'Could not upload your video.')}
@@ -71,6 +72,8 @@ def upload(request, media_type='image'):
             invalidate = Image.objects.exclude(pk=img.pk)
             if invalidate.exists():
                 Image.objects.invalidate(invalidate[0])
+            # Rebuild KB
+            schedule_rebuild_kb()
             return HttpResponseRedirect(img.get_absolute_url())
         else:
             return gallery(request, media_type='image')
@@ -87,6 +90,8 @@ def upload(request, media_type='image'):
             invalidate = Video.objects.exclude(pk=vid.pk)
             if invalidate.exists():
                 Video.objects.invalidate(invalidate[0])
+            # Rebuild KB
+            schedule_rebuild_kb()
             return HttpResponseRedirect(vid.get_absolute_url())
         else:
             return gallery(request, media_type='video')
@@ -203,6 +208,8 @@ def delete_media(request, media_id, media_type='image'):
     log.warning('User %s is deleting %s with id=%s' %
                 (request.user, media_type, media.id))
     media.delete()
+    # Rebuild KB
+    schedule_rebuild_kb()
     return HttpResponseRedirect(reverse('gallery.gallery', args=[media_type]))
 
 
@@ -258,6 +265,7 @@ def upload_async(request, media_type='image'):
             json.dumps({'status': 'error', 'message': e.args[0]}))
 
     if isinstance(file_info, dict) and 'thumbnail_url' in file_info:
+        schedule_rebuild_kb()
         return HttpResponse(
             json.dumps({'status': 'success', 'file': file_info}))
 
