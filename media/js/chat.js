@@ -9,8 +9,16 @@
             $header = $('<h1>'),
             img = new Image(),
             $infoList = $('<ul id="chat-queue-info">'),
-            $container = $('<div>');
+            $container = $('<div>'),
+            $start = $('<a>').attr('href', server+startUrl);
         img.height = img.width = 200;
+        $start.click(function(evt) {
+            window.open($start.attr('href'), 'chat-frame',
+                        'height=400,width=500,menubar=no,toolbar=no,location=no,status=no,scrollbars=no');
+            evt.preventDefault();
+            evt.returnValue = false;
+            return false;
+        });
 
         function checkQueueStatus() {
 
@@ -36,16 +44,7 @@
                             img.alt = gettext('Our volunteers are ready to help.');
                             var $online = $('<li>').text(gettext('Helpers online: ') + queueStatus['active-agents']),
                                 $inQueue = $('<li>').text(gettext('Users waiting: ') + queueStatus['requests-waiting']),
-                                $waitTime = $('<li>').text(gettext('Estimated wait: ') + getTimeDisplay(queueStatus['longest-wait'])),
-                                $start = $('<a>').attr('href', server+startUrl);
-
-                            $start.click(function(evt) {
-                                window.open($start.attr('href'), 'chat-frame',
-                                            'height=400,width=500,menubar=no,toolbar=no,location=no,status=no,scrollbars=no');
-                                evt.preventDefault();
-                                evt.returnValue = false;
-                                return false;
-                            });
+                                $waitTime = $('<li>').text(gettext('Estimated wait: ') + getTimeDisplay(queueStatus['longest-wait']));
 
                             var $startImg = $start.clone(true);
                             $startImg.append(img);
@@ -84,7 +83,8 @@
                     $infoList.html('');
                     $container.html('');
                     $header.text(gettext('There was an error checking the queue.'));
-                    $container.append($header);
+                    $start.text(gettext('You can try starting a chat session.'));
+                    $container.append($header, $start);
                     $status.append($container);
                 }
             });
