@@ -762,7 +762,7 @@ class DocumentRevisionsTests(TestCaseBase):
                                    args=[d.slug]))
         eq_(200, response.status_code)
         doc = pq(response.content)
-        eq_(3, len(doc('#revision-list li')))
+        eq_(4, len(doc('#revision-list li')))
         # Verify there is no Review link
         eq_(0, len(doc('#revision-list div.status a')))
         eq_('Unreviewed', doc('#revision-list div.status:first').text())

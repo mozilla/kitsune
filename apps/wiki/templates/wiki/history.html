@@ -38,16 +38,16 @@
             {% if loop.first %}
               <ul>
                 <li class="header">
-                  <div class="radio"></div>
-                  <div class="radio"></div>
-                  <div class="date">{{ _('Revision') }}</div>
-                  <div class="status">{{ _('Status') }}</div>
-                  <div class="significance"><abbr title="{{ _('Significance') }}">S</abbr></div>
-                  <div class="creator">{{ _('Editor') }}</div>
-                  <div class="comment">{{ _('Comment') }}</div>
-                  <div class="edit"></div>
+                  <div class="radio-head"></div>
+                  <div class="radio-head"></div>
+                  <div class="date-head">{{ _('Revision') }}</div>
+                  <div class="status-head">{{ _('Status') }}</div>
+                  <div class="significance-head"><abbr title="{{ _('Significance') }}">S</abbr></div>
+                  <div class="creator-head">{{ _('Editor') }}</div>
+                  <div class="comment-head">{{ _('Comment') }}</div>
+                  <div class="edit-head"></div>
                   {% if document.current_revision != rev and user.has_perm('wiki.delete_revision') %}
-                    <div class="delete"></div>
+                    <div class="delete-head"></div>
                   {% endif %}
                 </li>
             {% endif %}

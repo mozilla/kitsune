@@ -580,19 +580,22 @@ details.h2 > summary {
     font-weight: bold;
 }
 
-#revision-list div.radio {
+#revision-list div.radio,
+#revision-list div.radio-head {
     display: inline-block;
     text-align: center;
     width: 15px;
 }
 
-#revision-list div.date {
+#revision-list div.date,
+#revision-list div.date-head {
     display: inline-block;
     padding: 0 0 0 10px;
     width: 115px;
 }
 
-#revision-list div.status {
+#revision-list div.status,
+#revision-list div.status-head {
     display: inline-block;
     width: 80px;
 }
@@ -601,24 +604,29 @@ details.h2 > summary {
     font-weight: bold;
 }
 
-#revision-list div.significance {
+#revision-list div.significance,
+#revision-list div.significance-head {
     display: inline-block;
     width: 35px;
 }
 
-#revision-list div.creator {
+#revision-list div.creator,
+#revision-list div.creator-head {
     color: #333;
     display: inline-block;
     width: 105px;
 }
 
-#revision-list div.comment {
+#revision-list div.comment,
+#revision-list div.comment-head {
     display: inline-block;
     width: 230px;
 }
 
 #revision-list div.edit,
-#revision-list div.delete {
+#revision-list div.delete,
+#revision-list div.edit-head,
+#revision-list div.delete-head {
     display: inline-block;
     text-align: center;
     width: 50px;
