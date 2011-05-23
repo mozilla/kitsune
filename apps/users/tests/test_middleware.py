@@ -23,4 +23,13 @@ class StaySecureTests(TestCase):
         resp = self.ssm.process_request(get)
         assert resp
         eq_(302, resp.status_code)
-        eq_(u'https://testserver/foo', resp['location'])
+        assert resp['location'].startswith('https://')
+
+    @mock.patch.object(settings._wrapped, 'SESSION_COOKIE_SECURE', True)
+    def test_maintain_query_string(self):
+        get = self.rf.get('/foo?bar=baz')
+        assert not get.is_secure()
+        get.COOKIES[settings.SESSION_EXISTS_COOKIE] = u'1'
+        resp = self.ssm.process_request(get)
+        assert resp
+        assert resp['location'].endswith('bar=baz')

@@ -14,5 +14,8 @@ class StaySecureMiddleware(object):
         if need_https and not request.is_secure():
             host = request.META['SERVER_NAME']
             path = request.META['PATH_INFO']
+            qs = request.META['QUERY_STRING']
+            if qs:
+                path = u'%s?%s' % (path, qs)
             url = u'https://%s%s' % (host, path)
             return HttpResponseRedirect(url)
