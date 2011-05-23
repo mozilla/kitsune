@@ -192,7 +192,7 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin):
         default=False, db_index=True, verbose_name='is obsolete',
         help_text=_lazy(
             u'If checked, this wiki page will be hidden from basic searches '
-             'and dashboards. When viewed, the page will warn that it is no ',
+             'and dashboards. When viewed, the page will warn that it is no '
              'longer maintained.'))
 
 
