@@ -620,7 +620,7 @@ details.h2 > summary {
 #revision-list div.comment,
 #revision-list div.comment-head {
     display: inline-block;
-    width: 230px;
+    width: 280px;
 }
 
 #revision-list div.edit,
@@ -629,7 +629,23 @@ details.h2 > summary {
 #revision-list div.delete-head {
     display: inline-block;
     text-align: center;
-    width: 50px;
+    text-decoration: none;
+    width: 25px;
+}
+
+#revision-list div.edit a {
+    background: url("../img/icons.actions.png") no-repeat scroll left -25px transparent;
+    display: inline-block;
+    height: 12px;
+    text-decoration: none;
+    width: 12px;
+}
+
+#revision-list div.delete a {
+    background: url("../img/icons.actions.png") no-repeat scroll left 0px transparent;
+    display: inline-block;
+    height: 12px;
+    width: 12px;
 }
 
 #revision-list div.compare {
