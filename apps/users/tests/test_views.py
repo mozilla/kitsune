@@ -281,6 +281,7 @@ class AvatarTests(TestCase):
         eq_(302, r.status_code)
         p = Profile.uncached.get(user=self.u)
         assert p.avatar, 'User has an avatar.'
+        assert p.avatar.path.endswith('.png')
 
     def test_replace_missing_avatar(self):
         """If an avatar is missing, allow replacing it."""
@@ -296,6 +297,7 @@ class AvatarTests(TestCase):
         p = Profile.uncached.get(user=self.u)
         assert p.avatar, 'User has an avatar.'
         assert not p.avatar.path.endswith('exist.jpg')
+        assert p.avatar.path.endswith('.png')
 
 
 class SessionTests(TestCase):

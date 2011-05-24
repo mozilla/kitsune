@@ -94,6 +94,7 @@ article.main div.submit {
 #change-avatar div.val-wrap {
     margin-right: 10px;
     width: auto;
+    line-height:35px;
 }
 
 /* profile view */
