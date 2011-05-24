@@ -72,6 +72,16 @@ class CreateThumbnailTestCase(TestCase):
         eq_(expected_thumb.width, actual_thumb.width)
         eq_(expected_thumb.height, actual_thumb.height)
 
+    def test_create_image_thumbnail_avatar(self):
+        """An avatar is created from an image file."""
+        thumb_content = _create_image_thumbnail(
+            'apps/upload/tests/media/test.jpg',
+            settings.AVATAR_SIZE, pad=True)
+        actual_thumb = ImageFile(thumb_content)
+
+        eq_(settings.AVATAR_SIZE, actual_thumb.width)
+        eq_(settings.AVATAR_SIZE, actual_thumb.height)
+
 
 class GenerateThumbnail(TestCase):
     fixtures = ['users.json', 'questions.json']
