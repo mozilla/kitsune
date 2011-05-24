@@ -122,7 +122,9 @@
             function() {
                 var $remover = $(this),
                     $tag = $remover.closest(".tag"),
-                    tagName = $tag.find(".tag-name").text();
+                    tagName = $tag.find(".tag-name").text(),
+                    csrf = $remover.closest("form")
+                                   .find("input[name=csrfmiddlewaretoken]").val();
 
                 function makeTagDisappear() {
                    $tag.remove();
@@ -135,7 +137,7 @@
                     $.ajax({
                         type: "POST",
                         url: $remover.closest("form.remove-tag-form").data("action-async"),
-                        data: {name: tagName},
+                        data: {name: tagName, csrfmiddlewaretoken: csrf},
                         success: makeTagDisappear,
                         error: function makeTagReappear() {
                                $tag.removeClass("in-progress");
@@ -154,6 +156,7 @@
             tagName = $input.val(),
             vocab = $input.closest("div.tags").data("tagVocab"),
             tagIndex = inArrayCaseInsensitive(tagName, vocab),
+            csrf = $container.find("input[name=csrfmiddlewaretoken]").val(),
             $tag;
 
         // Add a (ghostly, if async) tag to the onscreen
@@ -192,7 +195,7 @@
             $.ajax({
                 type: "POST",
                 url: $container.data("action-async"),
-                data: {"tag-name": tagName},
+                data: {"tag-name": tagName, csrfmiddlewaretoken: csrf},
                 success: function solidifyTag(data) {
                              // Make an onscreen tag non-ghostly,
                              // canonicalize its name,
