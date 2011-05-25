@@ -45,21 +45,36 @@ def generate_thumbnail(for_obj, from_field, to_field,
     for_obj.update(**{to_field: to_.name})
 
 
-def _create_image_thumbnail(file_path, longest_side=settings.THUMBNAIL_SIZE):
+def _create_image_thumbnail(file_path, longest_side=settings.THUMBNAIL_SIZE,
+                            is_avatar=False):
     """
     Returns a thumbnail file with a set longest side.
     """
-    originalImage = Image.open(file_path)
-    originalImage = originalImage.convert("RGB")
-    file_width, file_height = originalImage.size
+    original_image = Image.open(file_path)
+    original_image = original_image.convert('RGBA')
+    file_width, file_height = original_image.size
 
     width, height = _scale_dimensions(file_width, file_height, longest_side)
-    resizedImage = originalImage.resize((width, height), Image.ANTIALIAS)
+    resized_image = original_image.resize((width, height), Image.ANTIALIAS)
 
     io = StringIO.StringIO()
-    resizedImage.save(io, 'JPEG')
+
+    if is_avatar:
+        padded_image = _make_image_square(resized_image, longest_side)
+        padded_image.save(io, 'PNG')
+    else:
+        resized_image.save(io, 'JPEG')
 
     return ContentFile(io.getvalue())
+
+
+def _make_image_square(source_image, side=settings.THUMBNAIL_SIZE):
+    """Pads a rectangular image with transparency to make it square."""
+    square_image = Image.new('RGBA', (side, side), (255, 255, 255, 0))
+    square_image.paste(source_image,
+                      ((side - source_image.size[0]) / 2,
+                       (side - source_image.size[1]) / 2))
+    return square_image
 
 
 def _scale_dimensions(width, height, longest_side=settings.THUMBNAIL_SIZE):

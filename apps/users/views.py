@@ -223,9 +223,10 @@ def edit_avatar(request):
             user_profile = form.save()
 
             content = _create_image_thumbnail(user_profile.avatar.path,
-                                              settings.AVATAR_SIZE)
+                                              settings.AVATAR_SIZE, is_avatar=True)
+            # We want everything as .png
+            name = user_profile.avatar.name + ".png"
             # Delete uploaded avatar and replace with thumbnail.
-            name = user_profile.avatar.name
             user_profile.avatar.delete()
             user_profile.avatar.save(name, content, save=True)
             return HttpResponseRedirect(reverse('users.edit_profile'))
