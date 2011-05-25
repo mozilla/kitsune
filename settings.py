@@ -181,6 +181,7 @@ MIDDLEWARE_CLASSES = (
     'twitter.middleware.SessionMiddleware',
     'sumo.middleware.PlusToSpaceMiddleware',
     'commonware.middleware.HidePasswordOnException',
+    'django_arecibo.middleware.AreciboMiddlewareCelery',
     'commonware.response.middleware.GraphiteRequestTimingMiddleware',
 )
 
@@ -613,6 +614,7 @@ CELERY_SEND_TASK_ERROR_EMAILS = True
 CELERYD_LOG_LEVEL = logging.INFO
 CELERYD_CONCURRENCY = 4
 CELERY_EAGER_PROPAGATES_EXCEPTIONS = True  # Explode loudly during tests.
+CELERY_IMPORTS = ['django_arecibo.tasks']
 
 # Wiki rebuild settings
 WIKI_REBUILD_TOKEN = 'sumo:wiki:full-rebuild'
@@ -694,3 +696,6 @@ REDIS_TEST_BACKENDS = {
     #'default': 'redis://localhost:6383?socket_timeout=0.5&db=0',
     #'karma': 'redis://localhost:6383?socket_timeout=0.5&db=1',
 }
+
+# Set this to enable Arecibo (http://www.areciboapp.com/) error reporting:
+ARECIBO_SERVER_URL = ''
