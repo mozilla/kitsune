@@ -16,6 +16,7 @@ from django.views.decorators.http import require_GET
 
 from celery.messaging import establish_connection
 from commonware.decorators import xframe_allow
+import django_arecibo
 import django_qunit.views
 import jingo
 from PIL import Image
@@ -30,21 +31,21 @@ log = logging.getLogger('k.services')
 
 @anonymous_csrf
 def handle403(request):
-    """A 403 message that looks nicer than the normal Apache forbidden page."""
-
+    """A 403 message that looks nicer than the normal Apache forbidden page"""
     return jingo.render(request, 'handlers/403.html',
                         {'form': AuthenticationForm() }, status=403)
 
 
 def handle404(request):
-    """A handler for 404s."""
-
+    """A handler for 404s"""
     return jingo.render(request, 'handlers/404.html', status=404)
 
 
 def handle500(request):
-    """A 500 message that looks nicer than the normal Apache error page."""
-
+    """Draw a pretty page, and send the error to Arecibo."""
+    arecibo = getattr(settings, 'ARECIBO_SERVER_URL', '')
+    if arecibo:
+        django_arecibo.tasks.post(request, 500)
     return jingo.render(request, 'handlers/500.html', status=500)
 
 

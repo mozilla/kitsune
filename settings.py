@@ -649,3 +649,6 @@ QUNIT_TEST_DIRECTORY = os.path.join(MEDIA_ROOT, 'js', 'tests')
 
 # Key to access /services/version. Set to None to disallow.
 VERSION_CHECK_TOKEN = None
+
+# Set this to enable Arecibo (http://www.areciboapp.com/) error reporting:
+# ARECIBO_SERVER_URL = ''
