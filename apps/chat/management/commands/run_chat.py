@@ -50,7 +50,7 @@ print ChatRouter.route()
 #configure the Tornado application
 application = tornado.web.Application(
     [ChatRouter.route()],
-    enabled_protocols=['websocket',
+    enabled_protocols=[# 'websocket',
                        'xhr-multipart',
                        'xhr-polling'],
     socket_io_port=3000
