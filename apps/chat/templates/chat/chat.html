@@ -1,39 +1,24 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
-  <script src="http://cdn.socket.io/stable/socket.io.js"></script>
-  <script>
-    window.onload = function() {
+{# vim: set ts=2 et sts=2 sw=2: #}
+{% extends 'base.html' %}
+{% set title = _('Live Chat') %}
+{% set scripts = ('chat',) %}
+{% set styles = ('chat',) %}
+{% set crumbs = [(None, _('Chat'))] %}
 
-        var s = new io.Socket(window.location.hostname, {port: 3000, rememberTransport: false});
-        s.connect();
-
-        s.addEvent('connect', function() {
-            s.send('New participant joined');
-        });
-
-        s.addEvent('message', function(data) {
-            $("#chat").append("<div>" + data + "</div>");
-        });
-
-        //send the message when submit is clicked
-        $('#chatform').submit(function (evt) {
-            var line = $('#chatform [type=text]').val()
-            $('#chatform [type=text]').val('')
-            s.send(line);
-            return false;
-        });
-    };
-</script>
-</head>
-<body>
-<h3>Chat!</h3>
-<div id="chat" style="width: 60em; height: 20em; overflow:auto; border: 1px solid black">
-</div>
-<form id="chatform">
-<input type="text" />
-<input type="submit" />
-</form>
-</body>
-</html>
+{% block content %}
+  <article id="chat" class="main">
+    <hgroup>
+      <h1>{{ _('Live Chat') }}</h1>
+    </hgroup>
+    {% if user.is_authenticated() %}
+      <div id="chatbox" style="height: 20em; overflow:auto; border: 1px solid black"></div>
+      <form id="chatform">
+        <input type="hidden" name="nonce" value="{{ nonce }}">
+        <input type="text" />
+        <input type="submit" value="Send" />
+      </form>
+    {% else %}
+      <p>Please sign in to use chat</p>
+    {% endif %}
+  </article>
+{% endblock %}

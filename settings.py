@@ -441,6 +441,7 @@ MINIFY_BUNDLES = {
             'js/users.js',
         ),
         'chat': (
+            'js/libs/socket.io.js',
             'js/chat.js',
         ),
         'users': (

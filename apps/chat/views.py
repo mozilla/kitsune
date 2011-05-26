@@ -1,3 +1,5 @@
+import random
+
 from django.conf import settings
 from django.core.cache import cache
 from django.http import HttpResponse
@@ -10,7 +12,11 @@ import jingo
 @require_GET
 def chat(request):
     """Display the current state of the chat queue."""
-    return jingo.render(request, 'chat/chat.html')
+    nonce = None
+    if request.user.is_authenticated():
+        nonce = make_nonce()
+        cache.set('chatnonce:{n}'.format(n=nonce), request.user, 5 * 60)
+    return jingo.render(request, 'chat/chat.html', {'nonce': nonce})
 
 
 @never_cache
@@ -28,3 +34,8 @@ def queue_status(request):
         xml = ''
         status = 503
     return HttpResponse(xml, mimetype='application/xml', status=status)
+
+
+def make_nonce():
+    return ''.join(random.choice('abcdefghijklmnopqrstuvwxyz234567')
+                   for _ in xrange(10))
