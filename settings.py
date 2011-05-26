@@ -649,3 +649,8 @@ QUNIT_TEST_DIRECTORY = os.path.join(MEDIA_ROOT, 'js', 'tests')
 
 # Key to access /services/version. Set to None to disallow.
 VERSION_CHECK_TOKEN = None
+
+REDIS_BACKENDS = {
+    #'default': 'redis://localhost:6379?socket_timeout=0.5&db=0',
+    #'karma': 'redis://localhost:6381?socket_timeout=0.5&db=0',
+}
