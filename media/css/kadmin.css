@@ -1,12 +1,17 @@
 /*
  * Styles for our admin additions via kadmin app.
  */
+.redis-info td,
 #settings td {
   font-family: monospace;
 }
+
+.redis-info th a,
 #settings th a {
   visibility: hidden;
 }
+
+.redis-info tr:hover th a,
 #settings tr:hover th a {
   visibility: visible;
 }
