@@ -651,5 +651,6 @@ QUNIT_TEST_DIRECTORY = os.path.join(MEDIA_ROOT, 'js', 'tests')
 VERSION_CHECK_TOKEN = None
 
 REDIS_BACKENDS = {
-    #'karma': 'redis://localhost:6379?socket_timeout=0.5&db=0'
+    #'default': 'redis://localhost:6379?socket_timeout=0.5&db=0',
+    #'karma': 'redis://localhost:6381?socket_timeout=0.5&db=0',
 }
