@@ -15,7 +15,7 @@ class Command(NoArgsCommand):
         monkey.patch_all()
 
         # Start up socketio stuff
-        application = WSGIHandler()  # TODO: Probably overkill. We don't want to expose all kitsune's views, just the socketio-serving one.
+        application = WSGIHandler()  # TODO: Overkill. We don't want to expose all kitsune's views, just the socketio-serving one. Use something like https://bitbucket.org/Jeffrey/gevent-socketio/src/1b7378eb1e62/examples/chat.py instead.
         print 'Listening on http://127.0.0.1:%s and on port 843 (flash policy server)' % settings.CHAT_PORT
         SocketIOServer(('', settings.CHAT_PORT), application, resource='socket.io').serve_forever()
 

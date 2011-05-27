@@ -45,19 +45,33 @@ def make_nonce():
                    for _ in xrange(10))
 
 
-
-def _sublistener(socketio, message):
-    if message:
-        redis = redis_client('chat')  # non-blocking due to gevent monkeypatch of Python socket lib
-        redis.set('horace', message)
-
-
 def socketio(request):
-    # All runs happily in a greenlet
-    socketio = request.environ['socketio']
+    io = request.environ['socketio']
+
+    # Do some setup the first time:
+    if io.on_connect():  # TODO: Always true? if it isn't, these symbols will be undefined.
+        redis_in = redis_client('chat')  # non-blocking due to gevent monkeypatch of Python socket lib
+        redis_in.subscribe('world')
+        redis_in_generator = redis_in.listen()
+        redis_out = redis_client('chat')
+        redis_out.publish('world', io.session.session_id + ' connected')
+
+    def subscriber(io, redis_in_generator):
+        while True:
+            for from_redis in redis_in_generator:
+                print 'Incoming: %s' % from_redis
+                if from_redis['type'] == 'message':  # There are also subscription notices.
+                    io.send(from_redis['data'])
+    in_greenlet = Greenlet.spawn(subscriber, io, redis_in_generator)  # TODO: Need to hang onto a ref to keep it from the GC?
+
+    # Now run forever and service this long-term request?
     while True:
-        message = socketio.recv()
-        print 'spawning redis sublistener'
-        g = Greenlet.spawn(_sublistener, socketio, message)
+        message = io.recv()
+        if message:  # Always a list of 0 or 1 strings, I deduce from the source code
+            print 'Received nonzero message. Spawning publisher.'
+            def publisher(to_redis):
+                print 'Outgoing: %s' % to_redis
+                redis_out.publish('world', to_redis)
+            g = Greenlet.spawn(publisher, message[0])
 
     return HttpResponse()
