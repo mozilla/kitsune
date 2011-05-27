@@ -6,7 +6,11 @@ from django.http import HttpResponse
 from django.views.decorators.cache import never_cache
 from django.views.decorators.http import require_GET
 
+from gevent import Greenlet
 import jingo
+from redis import Redis
+
+from sumo.utils import redis_client
 
 
 @require_GET
@@ -39,3 +43,21 @@ def queue_status(request):
 def make_nonce():
     return ''.join(random.choice('abcdefghijklmnopqrstuvwxyz234567')
                    for _ in xrange(10))
+
+
+
+def _sublistener(socketio, message):
+    if message:
+        redis = redis_client('chat')  # non-blocking due to gevent monkeypatch of Python socket lib
+        redis.set('horace', message)
+
+
+def socketio(request):
+    # All runs happily in a greenlet
+    socketio = request.environ['socketio']
+    while True:
+        message = socketio.recv()
+        print 'spawning redis sublistener'
+        g = Greenlet.spawn(_sublistener, socketio, message)
+
+    return HttpResponse()

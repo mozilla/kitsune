@@ -4,7 +4,7 @@
           port: 3000,
           rememberTransport: false,
           transports: ['xhr-multipart', 'xhr-polling'],
-          resource: 'chat/' + $('#chatform input[name="nonce"]').val()
+          resource: 'socket.io'
         });
         s.connect();
 
