@@ -3,7 +3,7 @@
         var s = new io.Socket(window.location.hostname, {
           port: 3000,
           rememberTransport: false,
-          transports: ['xhr-multipart', 'xhr-polling'],
+          transports: ['xhr-multipart'],
           resource: 'socket.io'
         });
         s.connect();
