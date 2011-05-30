@@ -45,37 +45,34 @@ def make_nonce():
                    for _ in xrange(10))
 
 
+# TODO: Kill all the middleware that's doing SQL blockets.
 def socketio(request):
     CHANNEL = 'world'
     io = request.environ['socketio']
     # Do some setup the first time:
-    if io.on_connect():  # TODO: Always true? if it isn't, these symbols will be undefined.
-        redis_in = redis_client('chat')  # non-blocking due to gevent monkeypatch of Python socket lib
-        redis_in.subscribe(CHANNEL)
-        redis_in_generator = redis_in.listen()
-        redis_out = redis_client('chat')
-        redis_out.publish(CHANNEL, io.session.__str__() + ' connected')
+    if io.on_connect():
+        print "CONNECT %s" % io.session
+    else:
+        print "SOMETHING OTHER THAN CONNECT!"
 
-    def subscriber(io, redis_in_generator):
-        while True:
-            for from_redis in redis_in_generator:
-                print 'Incoming: %s' % from_redis
-                if from_redis['type'] == 'message':  # There are also subscription notices.
-                    io.send(from_redis['data'])
-    in_greenlet = Greenlet.spawn(subscriber, io, redis_in_generator)  # TODO: Need to hang onto a ref to keep it from the GC?
+#     def subscriber(io, redis_in_generator):
+#         while True:
+#             for from_redis in redis_in_generator:
+#                 print 'Incoming: %s' % from_redis
+#                 if from_redis['type'] == 'message':  # There are also subscription notices.
+#                     io.send(from_redis['data'])
+#     in_greenlet = Greenlet.spawn(subscriber, io, redis_in_generator)  # TODO: Need to hang onto a ref to keep it from the GC?
 
     # Now run forever and service this long-term request?
     while io.connected():
         message = io.recv()
         if message:  # Always a list of 0 or 1 strings, I deduce from the source code
-            to_redis = request.user.username + ': ' + message[0]
+            to_redis = message[0]
             print 'Outgoing: %s' % to_redis
-            redis_out.publish(CHANNEL, to_redis)
+            redis_client('chat').publish(CHANNEL, to_redis)
 
-    redis_out.publish(CHANNEL, io.session.session_id + ' disconnected')
+    print "EXIT %s" % io.session
 
-    # TODO: Think about putting this in a finally:
-    redis_out.unsubscribe(CHANNEL)
-    in_greenlet.kill()
+    #in_greenlet.kill()
 
     return HttpResponse()
