@@ -46,14 +46,15 @@ def make_nonce():
 
 
 def socketio(request):
+    CHANNEL = 'world'
     io = request.environ['socketio']
     # Do some setup the first time:
     if io.on_connect():  # TODO: Always true? if it isn't, these symbols will be undefined.
         redis_in = redis_client('chat')  # non-blocking due to gevent monkeypatch of Python socket lib
-        redis_in.subscribe('world')
+        redis_in.subscribe(CHANNEL)
         redis_in_generator = redis_in.listen()
         redis_out = redis_client('chat')
-        redis_out.publish('world', io.session.__str__() + ' connected')
+        redis_out.publish(CHANNEL, io.session.__str__() + ' connected')
 
     def subscriber(io, redis_in_generator):
         while True:
@@ -67,13 +68,14 @@ def socketio(request):
     while io.connected():
         message = io.recv()
         if message:  # Always a list of 0 or 1 strings, I deduce from the source code
-            print 'Received nonzero message. Spawning publisher.'
-            #def publisher(to_redis):
             to_redis = request.user.username + ': ' + message[0]
             print 'Outgoing: %s' % to_redis
-            redis_out.publish('world', to_redis)
-            #g = Greenlet.spawn(publisher, message[0])
-    
-    redis_out.publish('world', io.session.session_id + ' disconnected')
-    in_greenlet.throw(Greenlet.GreenletExit)
+            redis_out.publish(CHANNEL, to_redis)
+
+    redis_out.publish(CHANNEL, io.session.session_id + ' disconnected')
+
+    # TODO: Think about putting this in a finally:
+    redis_out.unsubscribe(CHANNEL)
+    in_greenlet.kill()
+
     return HttpResponse()
