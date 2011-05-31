@@ -933,10 +933,12 @@ ol.answers div.meta span:first-child {
     padding-left: 0;
 }
 
+ol.answers form.solution,
 ol.answers form.helpful {
     margin: 0 0 20px;
 }
 
+ol.answers form.solution input.btn,
 ol.answers form.helpful input.btn {
     margin: 7px 10px 0 0;
 }

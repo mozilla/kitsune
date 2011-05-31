@@ -395,7 +395,10 @@ def solution(request, question_id, answer_id):
     question.save()
     QuestionSolvedEvent(answer).fire(exclude=question.creator)
 
-    return HttpResponseRedirect(answer.get_absolute_url())
+    messages.add_message(request, messages.SUCCESS,
+                         _('Thank you for choosing a solution!'))
+
+    return HttpResponseRedirect(question.get_absolute_url())
 
 
 @require_POST

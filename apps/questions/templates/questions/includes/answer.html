@@ -56,7 +56,7 @@
   {% if answer.creator != question.creator %}
     {% if not question.is_locked %}
       {% if not question.solution and user == question.creator %}
-        <form class="helpful" action="{{ url('questions.solution', question_id=question.id, answer_id=answer.id) }}" method="post">
+        <form class="solution" action="{{ url('questions.solution', question_id=question.id, answer_id=answer.id) }}" method="post">
           {{ csrf() }}
           <h4>{{ _('Did this solve your problem?') }}</h4>
           <input type="submit" class="btn" name="solution" value="{{ _('Solved It') }}" />
