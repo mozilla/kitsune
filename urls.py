@@ -45,9 +45,6 @@ urlpatterns = patterns('',
 
     # Services and sundry.
     (r'', include('sumo.urls')),
-
-    # Root-level socket.io for chat:
-    url(r'^socket.io', 'chat.views.socketio', name='chat.socketio')
 )
 
 # Handle 404 and 500 errors

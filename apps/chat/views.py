@@ -46,7 +46,7 @@ def make_nonce():
 
 
 # TODO: Kill all the middleware that's doing SQL blockets.
-def socketio(request):
+def chat_socketio(io):
     def subscriber(io):
         try:
             redis_in = redis_client('chat')
@@ -61,7 +61,6 @@ def socketio(request):
             print "EXIT SUBSCRIBER %s" % io.session
 
     CHANNEL = 'world'
-    io = request.environ['socketio']
     if io.on_connect():
         print "CONNECT %s" % io.session
     else:

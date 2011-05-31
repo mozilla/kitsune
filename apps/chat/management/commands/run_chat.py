@@ -1,21 +1,39 @@
+# Make blocking calls in socket lib non-blocking before anybody else grabs the
+# socket lib:
+from gevent import monkey
+monkey.patch_all()
+
 from django.conf import settings
 from django.core.handlers.wsgi import WSGIHandler
 from django.core.cache import cache
 from django.core.management.base import NoArgsCommand
 
-from gevent import monkey
 from socketio import SocketIOServer
+
+from chat.views import chat_socketio
+
+
+def application(environ, start_response):
+    path = environ['PATH_INFO'].strip('/')
+    print path
+
+    if path.startswith('socket.io'):
+        django_response = chat_socketio(environ['socketio'])
+        
+        # TODO: Do something rather than this stubbed-in 200:
+        start_response('200 ok', [])  # What about cookies? Need 'em?
+        return []
+    else:
+        start_response('404 Not Found', [])
+        return ['<h1>Not Found</h1>']
+
 
 class Command(NoArgsCommand):
     help = 'Start the chat server.'
 
     def handle_noargs(self, *args, **kwargs):
         """Turn this process into the chat server."""
-        # Make blocking calls in socket lib non-blocking:
-        monkey.patch_all()
-
         # Start up socketio stuff
-        application = WSGIHandler()  # TODO: Overkill. We don't want to expose all kitsune's views, just the socketio-serving one. Use something like https://bitbucket.org/Jeffrey/gevent-socketio/src/1b7378eb1e62/examples/chat.py instead.
         print 'Listening on http://127.0.0.1:%s and on port 843 (flash policy server)' % settings.CHAT_PORT
         SocketIOServer(('', settings.CHAT_PORT), application, resource='socket.io', policy_server=False).serve_forever()
 
