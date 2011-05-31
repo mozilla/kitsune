@@ -22,6 +22,7 @@ from sumo.tests import get, post, attrs_eq, emailmessage_raise_smtp
 from sumo.urlresolvers import reverse
 from upload.models import ImageAttachment
 from users.models import RegistrationProfile
+from users.tests import user, add_permission
 
 
 class AnswersTemplateTestCase(TestCaseBase):
@@ -133,9 +134,6 @@ class AnswersTemplateTestCase(TestCaseBase):
         li = doc('span.solved')[0].getparent().getparent().getparent()
         eq_('answer-%s' % answer.id, li.attrib['id'])
 
-        self.question.solution = None
-        self.question.save()
-
     def test_only_owner_can_accept_solution(self):
         """Make sure non-owner can't mark solution."""
         response = get(self.client, 'questions.answers',
@@ -154,6 +152,17 @@ class AnswersTemplateTestCase(TestCaseBase):
         response = post(self.client, 'questions.solution',
                         args=[self.question.id, answer.id])
         eq_(403, response.status_code)
+
+    def test_solution_with_perm(self):
+        """Test marking a solution with 'change_solution' permission."""
+        u = user(save=True)
+        add_permission(u, Question, 'change_solution')
+        self.client.login(username=u.username, password='testpass')
+        answer = self.question.answers.all()[0]
+        post(self.client, 'questions.solution',
+             args=[self.question.id, answer.id])
+        q = Question.uncached.get(pk=self.question.id)
+        eq_(q.solution, answer)
 
     def test_question_vote_GET(self):
         """Attempting to vote with HTTP GET returns a 405."""

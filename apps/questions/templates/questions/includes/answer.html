@@ -55,17 +55,23 @@
 <div class="side-section">
   {% if answer.creator != question.creator %}
     {% if not question.is_locked %}
-      {% if not question.solution and user == question.creator %}
-        <form class="solution" action="{{ url('questions.solution', question_id=question.id, answer_id=answer.id) }}" method="post">
-          {{ csrf() }}
-          <h4>{{ _('Did this solve your problem?') }}</h4>
-          <input type="submit" class="btn" name="solution" value="{{ _('Solved It') }}" />
-        </form>
-      {% elif not answer.has_voted(request) and user != question.creator and user != answer.creator %}
+      {% if user != question.creator and user != answer.creator and not answer.has_voted(request) %}
         <form class="helpful" action="{{ url('questions.answer_vote', question_id=question.id, answer_id=answer.id) }}" method="post">
           <h4>{{ _('Was this reply helpful?') }}</h4>
           <input type="submit" class="btn" name="helpful" value="{{ _('Helpful') }}" />
           <input type="submit" class="btn" name="not-helpful" value="{{ _('Not Helpful') }}" />
+        </form>
+      {% endif %}
+      {% if not question.solution and (user == question.creator or user.has_perm('questions.change_solution')) %}
+        <form class="solution" action="{{ url('questions.solution', question_id=question.id, answer_id=answer.id) }}" method="post">
+          {{ csrf() }}
+          {% if user == question.creator %}
+            <h4>{{ _('Did this solve your problem?') }}</h4>
+            <input type="submit" class="btn" name="solution" value="{{ _('Solved It') }}" />
+          {% else %}
+            <h4>{{ _('Does this solve the problem?') }}</h4>
+            <input type="submit" class="btn" name="solution" value="{{ _('Solves It') }}" />
+          {% endif %}
         </form>
       {% endif %}
     {% endif %}
