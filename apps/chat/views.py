@@ -31,7 +31,6 @@ def queue_status(request):
     See chat.crons.get_queue_status.
 
     """
-
     xml = cache.get(settings.CHAT_CACHE_KEY)
     status = 200
     if not xml:
@@ -45,13 +44,16 @@ def make_nonce():
                    for _ in xrange(10))
 
 
-# TODO: Kill all the middleware that's doing SQL blockets.
 def chat_socketio(io):
+    CHANNEL = 'world'
+
     def subscriber(io):
         try:
             redis_in = redis_client('chat')
-            redis_in.subscribe('world')
+            redis_in.subscribe(CHANNEL)
             redis_in_generator = redis_in.listen()
+
+            # io.connected() never becomes false for some reason.
             while io.connected():
                 for from_redis in redis_in_generator:
                     print 'Incoming: %s' % from_redis
@@ -60,15 +62,15 @@ def chat_socketio(io):
         finally:
             print "EXIT SUBSCRIBER %s" % io.session
 
-    CHANNEL = 'world'
     if io.on_connect():
         print "CONNECT %s" % io.session
     else:
         print "SOMETHING OTHER THAN CONNECT!"  # I have never seen this happen.
 
-    in_greenlet = Greenlet.spawn(subscriber, io)  # TODO: Need to hang onto a ref to keep it from the GC?
+    # Hanging onto this might keep it from the GC:
+    in_greenlet = Greenlet.spawn(subscriber, io)
 
-    # Now run forever and service this long-term request?
+    # Until the client disconnects, listen for input from the user:
     while io.connected():
         message = io.recv()
         if message:  # Always a list of 0 or 1 strings, I deduce from the source code
@@ -78,9 +80,9 @@ def chat_socketio(io):
 
     print "EXIT %s" % io.session
 
-    # Each time I close the 2nd chat window, wait for the old socketio() view to exit, and then reopen the chat page, the number of Incomings increases by one. The subscribers are never exiting. Thus...
-    in_greenlet.kill()  # Should fall out on its own once not io.connected() but doesn't.
+    # Each time I close the 2nd chat window, wait for the old socketio() view
+    # to exit, and then reopen the chat page, the number of Incomings increases
+    # by one. The subscribers are never exiting. This fixes that behavior:
+    in_greenlet.kill()
 
     return HttpResponse()
-
-# TODO: Hitting Reload on the 2nd chat window causes the first to start receiving duplicates (of messages sent from anywhere). Does this happen even logged in as different users or on different IPs? Aha, ultimately (like in longer than 5 minutes. I don't know if it's time-determined.), the superfluous listeners and subscribers exit with something like this: EXIT session_id='422908985144' client_queue[1] server_queue[1] hits=120 heartbeats=100.
