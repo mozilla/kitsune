@@ -388,7 +388,8 @@ def solution(request, question_id, answer_id):
     if question.is_locked:
         raise PermissionDenied
 
-    if question.creator != request.user:
+    if (question.creator != request.user and
+        not request.user.has_perm('questions.change_solution')):
         return HttpResponseForbidden()
 
     question.solution = answer
