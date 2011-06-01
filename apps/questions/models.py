@@ -64,7 +64,7 @@ class Question(ModelBase, BigVocabTaggableMixin):
                 ('tag_question',
                  'Can add tags to and remove tags from questions'),
                 ('change_solution',
-                 'Can change/choose/remove the solution to a question'),
+                 'Can change/remove the solution to a question'),
             )
 
     def __unicode__(self):
