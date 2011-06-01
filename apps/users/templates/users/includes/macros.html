@@ -25,13 +25,13 @@
   </form>
   <div id="login-help">
     {% if only_pwreset %}
-      <a id="reset_password" target="_blank" href="{{ url('users.pw_reset') }}">{{ _("I forgot my password.") }}</a>
+      <a id="reset_password" target="_blank" href="{{ url('users.pw_reset') }}">{{ _("My password isn't working.") }}</a>
     {% else %}
       <h3>{{ _('Login Problems?') }}</h3>
       <ul>
+        <li><a href="{{ url('users.pw_reset') }}">{{ _("My password isn't working.") }}</a></li>
         <li><a href="{{ url('users.register') }}">{{ _("I don't have an account.") }} </a></li>
-        <li><a href="{{ url('users.pw_reset') }}">{{ _('I forgot my password.') }}</a></li>
-        <li><a href="{{ url('users.resend_confirmation') }}">{{ _('My account is inactive.') }}</a></li>
+        <li><a href="{{ url('users.resend_confirmation') }}">{{ _("I didn't get a confirmation email.") }}</a></li>
       </ul>
     {% endif %}
   </div>
