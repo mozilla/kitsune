@@ -64,7 +64,8 @@ def questions(request):
     tagged = request.GET.get('tagged')
     tags = None
     sort_ = request.GET.get('sort')
-
+    showlocked = int(request.GET.get('showlocked'))
+    
     if sort_ == 'requested':
         order = '-num_votes_past_week'
     else:
@@ -90,6 +91,17 @@ def questions(request):
         question_qs = question_qs.filter(criteria).distinct()
     else:
         filter = None
+
+    if showlocked == True:
+        showlocked = True
+    elif showlocked == False:
+        showlocked = False
+        question_qs = question_qs.exclude(is_locked=1)
+    elif request.user.is_authenticated() and request.user.has_perm('questions.lock_question'):
+        showlocked = True
+    else:
+        showlocked = False
+        question_qs = question_qs.exclude(is_locked=1)
 
     feed_urls = ((reverse('questions.feed'),
                   QuestionsFeed().title()),)
@@ -117,7 +129,8 @@ def questions(request):
                         {'questions': questions_, 'feeds': feed_urls,
                          'filter': filter, 'sort': sort_,
                          'top_contributors': _get_top_contributors(),
-                         'tags': tags, 'tagged': tagged})
+                         'tags': tags, 'tagged': tagged,
+			 'showlocked':showlocked})
 
 
 @anonymous_csrf  # Need this so the anon csrf gets set for watch forms.

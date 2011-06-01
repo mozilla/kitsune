@@ -3,7 +3,7 @@
 {% set title = _('Firefox Support Forum') %}
 {% set classes = 'questions' %}
 {% set crumbs = [(None, _('Forum'))] %}
-{% set canonical_url = unlocalized_url('questions.questions')|urlparams(filter=filter, sort=sort, tagged=tagged) %}
+{% set canonical_url = unlocalized_url('questions.questions')|urlparams(filter=filter, sort=sort, tagged=tagged, showlocked=showlocked) %}
 {% if questions.number > 1 %}
   {% set canonical_url = canonical_url|urlparams(page=questions.number) %}
 {% endif %}
@@ -21,37 +21,46 @@
       {{ _('Showing questions tagged:') }}
       {% set comma = joiner(', ') %}
       {% for tag in tags %}{{ comma() }}
-        <a href="{{ url('questions.questions')|urlparams(tagged=tag.slug, filter=filter, sort=sort) }}">{{ tag.name }}</a>{% endfor %}
-      <a class="show-all" href="{{ url('questions.questions')|urlparams(filter=filter, sort=sort) }}">{{ _('Show all questions') }}</a>
+        <a href="{{ url('questions.questions')|urlparams(tagged=tag.slug, filter=filter, sort=sort, showlocked=showlocked) }}">{{ tag.name }}</a>{% endfor %}
+      <a class="show-all" href="{{ url('questions.questions')|urlparams(filter=filter, sort=sort, showlocked=showlocked) }}">{{ _('Show all questions') }}</a>
     </div>
   {% endif %}
   <div id="filter">
     {{ _('Sort:') }}
     <ul>
       <li{% if not sort %} class="active"{% endif %}>
-        <a href="{{ url('questions.questions')|urlparams(filter=filter, tagged=tagged) }}">{{ _('Most Recent') }}</a>
+        <a href="{{ url('questions.questions')|urlparams(filter=filter, tagged=tagged, showlocked=showlocked) }}">{{ _('Most Recent') }}</a>
       </li>
       <li{% if sort == 'requested' %} class="active"{% endif %}>
-        <a href="{{ url('questions.questions')|urlparams(sort='requested', filter=filter, tagged=tagged) }}">{{ _('Most Requested') }}</a>
+        <a href="{{ url('questions.questions')|urlparams(sort='requested', filter=filter, tagged=tagged, showlocked=showlocked) }}">{{ _('Most Requested') }}</a>
       </li>
     </ul>
     {{ _('Show:') }}
     <ul>
       <li{% if not filter %} class="active"{% endif %}>
-        <a href="{{ url('questions.questions')|urlparams(sort=sort, tagged=tagged) }}">{{ _('All') }}</a>
+        <a href="{{ url('questions.questions')|urlparams(sort=sort, tagged=tagged, showlocked=showlocked) }}">{{ _('All') }}</a>
       </li>
       <li{% if filter == 'unsolved' %} class="active"{% endif %}>
-        <a href="{{ url('questions.questions')|urlparams(filter='unsolved', sort=sort, tagged=tagged) }}">{{ _('Unsolved') }}</a>
+        <a href="{{ url('questions.questions')|urlparams(filter='unsolved', sort=sort, tagged=tagged, showlocked=showlocked) }}">{{ _('Unsolved') }}</a>
       </li>
       <li{% if filter == 'solved' %} class="active"{% endif %}>
-        <a href="{{ url('questions.questions')|urlparams(filter='solved', sort=sort, tagged=tagged) }}">{{ _('Solved') }}</a>
+        <a href="{{ url('questions.questions')|urlparams(filter='solved', sort=sort, tagged=tagged, showlocked=showlocked) }}">{{ _('Solved') }}</a>
       </li>
       <li{% if filter == 'no-replies' %} class="active"{% endif %}>
-        <a href="{{ url('questions.questions')|urlparams(filter='no-replies', sort=sort, tagged=tagged) }}">{{ _('No Replies') }}</a>
+        <a href="{{ url('questions.questions')|urlparams(filter='no-replies', sort=sort, tagged=tagged, showlocked=showlocked) }}">{{ _('No Replies') }}</a>
       </li>
       {% if user.is_authenticated() %}
         <li{% if filter == 'my-contributions' %} class="active"{% endif %}>
-          <a href="{{ url('questions.questions')|urlparams(filter='my-contributions', sort=sort, tagged=tagged) }}">{{ _('My Contributions') }}</a>
+          <a href="{{ url('questions.questions')|urlparams(filter='my-contributions', sort=sort, tagged=tagged, showlocked=showlocked) }}">{{ _('My Contributions') }}</a>
+        </li>
+      {% endif %}
+      {% if not showlocked %}
+        <li>
+          <a href="{{ url('questions.questions')|urlparams(filter=filter, sort=sort, tagged=tagged, showlocked=1) }}">{{ _('Show Locked') }}</a>
+        </li>
+      {% else %}
+        <li>
+          <a href="{{ url('questions.questions')|urlparams(filter=filter, sort=sort, tagged=tagged, showlocked=0) }}">{{ _('Hide Locked') }}</a>
         </li>
       {% endif %}
     </ul>
