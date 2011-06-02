@@ -290,6 +290,8 @@ def edit_document(request, document_slug, revision_id=None):
                 rev_form.instance.document = doc  # for rev_form.clean()
                 if rev_form.is_valid():
                     _save_rev_and_notify(rev_form, user, doc)
+                    if 'notify-future-changes' in request.POST:
+                        EditDocumentEvent.notify(request.user, doc)
                     return HttpResponseRedirect(
                         reverse('wiki.document_revisions',
                                 args=[document_slug]))
