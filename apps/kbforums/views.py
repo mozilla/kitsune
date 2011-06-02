@@ -7,6 +7,7 @@ from django.shortcuts import get_object_or_404
 from django.views.decorators.http import require_POST
 
 import jingo
+from statsd import statsd
 
 from access.decorators import permission_required, login_required
 import kbforums
@@ -124,6 +125,7 @@ def reply(request, document_slug, thread_id):
                 reply_preview = reply_
             else:
                 reply_.save()
+                statsd.incr('kbforums.reply')
 
                 # Send notifications to thread/forum watchers.
                 NewPostEvent(reply_).fire(exclude=reply_.creator)
@@ -155,6 +157,7 @@ def new_thread(request, document_slug):
             thread = doc.thread_set.create(creator=request.user,
                                              title=form.cleaned_data['title'])
             thread.save()
+            statsd.incr('kbforums.thread')
             post = thread.new_post(creator=request.user,
                                    content=form.cleaned_data['content'])
             post.save()
@@ -324,6 +327,7 @@ def watch_thread(request, document_slug, thread_id):
 
     if request.POST.get('watch') == 'yes':
         NewPostEvent.notify(request.user, thread)
+        statsd.incr('kbforums.watches.thread')
     else:
         NewPostEvent.stop_notifying(request.user, thread)
 
@@ -339,6 +343,7 @@ def watch_locale(request):
     if request.POST.get('watch') == 'yes':
         NewPostInLocaleEvent.notify(request.user, locale=locale)
         NewThreadInLocaleEvent.notify(request.user, locale=locale)
+        statsd.incr('kbforums.watches.locale')
     else:
         NewPostInLocaleEvent.stop_notifying(request.user, locale=locale)
         NewThreadInLocaleEvent.stop_notifying(request.user, locale=locale)
@@ -353,6 +358,7 @@ def watch_forum(request, document_slug):
     doc = get_document(document_slug, request)
     if request.POST.get('watch') == 'yes':
         NewThreadEvent.notify(request.user, doc)
+        statsd.incr('kbforums.watches.document')
     else:
         NewThreadEvent.stop_notifying(request.user, doc)
 

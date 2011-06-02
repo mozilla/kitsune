@@ -1,4 +1,5 @@
 import logging
+import time
 
 from django.conf import settings
 from django.contrib.sites.models import Site
@@ -11,6 +12,7 @@ from django.template import Context, loader
 import celery.conf
 from celery.decorators import task
 from multidb.pinning import pin_this_thread, unpin_this_thread
+from statsd import statsd
 from tower import ugettext as _
 import waffle
 
@@ -90,6 +92,7 @@ def _rebuild_kb_chunk(data, **kwargs):
     pin_this_thread()  # Stick to master.
 
     messages = []
+    start = time.time()
     for pk in data:
         message = None
         try:
@@ -116,6 +119,8 @@ def _rebuild_kb_chunk(data, **kwargs):
         if message:
             log.debug(message)
             messages.append(message)
+    d = time.time() - start
+    statsd.timing('wiki.rebuild_chunk', int(round(d * 1000)))
 
     if messages:
         subject = ('[%s] Exceptions raised in _rebuild_kb_chunk()' %

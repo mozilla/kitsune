@@ -12,6 +12,7 @@ from django.utils.http import base36_to_int
 
 import jingo
 from session_csrf import anonymous_csrf
+from statsd import statsd
 from tidings.tasks import claim_watches
 
 from access.decorators import logout_required, login_required
@@ -48,8 +49,9 @@ def login(request):
 def logout(request):
     """Log the user out."""
     auth.logout(request)
-    next_url = get_next_url(request) if 'next' in request.GET else ''
+    statsd.incr('user.logout')
 
+    next_url = get_next_url(request) if 'next' in request.GET else ''
     res = HttpResponseRedirect(next_url or reverse('home'))
     res.delete_cookie(settings.SESSION_EXISTS_COOKIE)
     return res
@@ -77,6 +79,7 @@ def activate(request, activation_key):
     form = AuthenticationForm()
     if account:
         # Claim anonymous watches belonging to this email
+        statsd.incr('user.activate')
         claim_watches.delay(account)
 
         my_questions = Question.uncached.filter(creator=account)
