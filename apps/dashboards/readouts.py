@@ -21,6 +21,23 @@ def _cursor():
     return connections[router.db_for_read(Document)].cursor()
 
 
+# FROM clause for selecting most-visited translations:
+MOST_VISITED_TRANSLATIONS_FROM = (
+    'FROM wiki_document engdoc '
+    'LEFT JOIN wiki_document transdoc ON '
+        'transdoc.parent_id=engdoc.id '
+        'AND transdoc.locale=%s '
+    'LEFT JOIN dashboards_wikidocumentvisits ON engdoc.id='
+        'dashboards_wikidocumentvisits.document_id '
+        'AND dashboards_wikidocumentvisits.period=%s '
+    'WHERE engdoc.locale=%s AND engdoc.is_localizable AND '
+        'NOT engdoc.is_archived '
+        'AND engdoc.current_revision_id IS NOT NULL '
+        '{extra_where} '  # extra WHERE conditions
+    'ORDER BY dashboards_wikidocumentvisits.visits DESC, '
+             'COALESCE(transdoc.title, engdoc.title) ASC ')
+
+
 def overview_rows(locale):
     """Return the iterable of dicts needed to draw the Overview table."""
     def percent_or_100(num, denom):
@@ -46,17 +63,11 @@ def overview_rows(locale):
     cursor = _cursor()
     cursor.execute(
         'SELECT count(*) FROM '
-            '(SELECT trans.id FROM dashboards_wikidocumentvisits visits '
-                'LEFT JOIN wiki_document trans '
-                'ON visits.document_id=trans.parent_id '
-                'AND trans.locale=%s '
-             'INNER JOIN wiki_document eng ON eng.id=visits.document_id '
-             'WHERE visits.period=%s '
-                 'AND NOT trans.is_archived AND eng.is_localizable '
-             'ORDER BY visits.visits DESC '
+            '(SELECT transdoc.id '
+              + MOST_VISITED_TRANSLATIONS_FROM.format(extra_where='') +
              'LIMIT %s) t1 '
         'WHERE t1.id IS NOT NULL',
-        (locale, THIS_WEEK, TOP_N))
+        (locale, THIS_WEEK, settings.WIKI_DEFAULT_LANGUAGE, TOP_N))
     popular_translated = cursor.fetchone()[0]
 
     # Template overview
@@ -245,43 +256,32 @@ class MostVisitedTranslationsReadout(MostVisitedDefaultLanguageReadout):
         # Immediate Update Needed or Update Needed: link to /edit.
         # Review Needed: link to /history.
         # These match the behavior of the corresponding readouts.
-        return (('SELECT engdoc.slug, engdoc.title, transdoc.slug, '
-                'transdoc.title, dashboards_wikidocumentvisits.visits, '
-                # The most significant approved change to the English article
-                # since the English revision the current translated revision is
-                # based on:
-                '(SELECT MAX(engrev.significance) '
-                 'FROM wiki_revision engrev, wiki_revision transrev '
-                 'WHERE engrev.is_approved '
-                 'AND transrev.id=transdoc.current_revision_id '
-                 'AND engrev.document_id=transdoc.parent_id '
-                 'AND engrev.id>transrev.based_on_id '
-                '), '
-                # Whether there are any unreviewed revs of the translation made
-                # since the current one:
-                '(SELECT EXISTS '
-                    '(SELECT * '
-                     'FROM wiki_revision transrev '
-                     'WHERE transrev.document_id=transdoc.id '
-                     'AND transrev.reviewed IS NULL '
-                     'AND (transrev.id>transdoc.current_revision_id OR '
-                          'transdoc.current_revision_id IS NULL)'
-                    ')'
-                ') '
-               'FROM wiki_document engdoc '
-               'LEFT JOIN wiki_document transdoc ON '
-                   'transdoc.parent_id=engdoc.id '
-                   'AND transdoc.locale=%s '
-               'LEFT JOIN dashboards_wikidocumentvisits ON engdoc.id='
-                   'dashboards_wikidocumentvisits.document_id '
-                   'AND dashboards_wikidocumentvisits.period=%s '
-               'WHERE engdoc.locale=%s AND engdoc.is_localizable AND '
-                   'NOT engdoc.is_archived '
-                   'AND engdoc.current_revision_id IS NOT NULL '
-                   '{extra_where} '  # extra WHERE conditions
-               'ORDER BY dashboards_wikidocumentvisits.visits DESC, '
-                        'COALESCE(transdoc.title, engdoc.title) ASC' +
-               self._limit_clause(max)).format(extra_where=extra_where),
+        return (
+            'SELECT engdoc.slug, engdoc.title, transdoc.slug, '
+            'transdoc.title, dashboards_wikidocumentvisits.visits, '
+            # The most significant approved change to the English article
+            # since the English revision the current translated revision is
+            # based on:
+            '(SELECT MAX(engrev.significance) '
+             'FROM wiki_revision engrev, wiki_revision transrev '
+             'WHERE engrev.is_approved '
+             'AND transrev.id=transdoc.current_revision_id '
+             'AND engrev.document_id=transdoc.parent_id '
+             'AND engrev.id>transrev.based_on_id '
+            '), '
+            # Whether there are any unreviewed revs of the translation made
+            # since the current one:
+            '(SELECT EXISTS '
+                '(SELECT * '
+                 'FROM wiki_revision transrev '
+                 'WHERE transrev.document_id=transdoc.id '
+                 'AND transrev.reviewed IS NULL '
+                 'AND (transrev.id>transdoc.current_revision_id OR '
+                      'transdoc.current_revision_id IS NULL)'
+                ')'
+            ') ' +
+            MOST_VISITED_TRANSLATIONS_FROM.format(extra_where=extra_where) +
+            self._limit_clause(max),
             (self.locale,
              ALL_TIME if self.mode == ALL_TIME else THIS_WEEK,
              settings.WIKI_DEFAULT_LANGUAGE))
