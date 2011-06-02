@@ -30,7 +30,8 @@
             initPreValidation();
         }
 
-        initDiff();
+        initDiffPicker();
+        initDiffToggle();
 
         Marky.createFullToolbar('.editor-tools', '#id_content');
     }
@@ -300,9 +301,58 @@
         });
     }
 
+    // The diff revision picker
+    function initDiffPicker() {
+        $('div.revision-diff').each(function() {
+            var $diff = $(this);
+            $diff.find('div.picker a').unbind().click(function(ev) {
+                ev.preventDefault();
+                $.ajax({
+                    url: $(this).attr('href'),
+                    type: 'GET',
+                    dataType: 'html',
+                    success: function(html) {
+                        var kbox = new KBox(html, {
+                            modal: true,
+                            id: 'diff-picker-kbox',
+                            closeOnOutClick: true,
+                            destroy: true,
+                            title: gettext('Choose revisions to compare')
+                        });
+                        kbox.open();
+                        ajaxifyDiffPicker(kbox.$kbox.find('form'), kbox, $diff);
+                    },
+                    error: function() {
+                        var message = gettext('There was an error.');
+                        alert(message);
+                    }
+                });
+            });
+        });
+    }
+
+    function ajaxifyDiffPicker($form, kbox, $diff) {
+        $form.submit(function(ev) {
+            ev.preventDefault();
+            $.ajax({
+                url: $form.attr('action'),
+                type: 'GET',
+                data: $form.serialize(),
+                dataType: 'html',
+                success: function(html) {
+                    var $container = $diff.parent();
+                    kbox.close();
+                    $diff.replaceWith(html);
+                    initDiffPicker();
+                    initDiffToggle($container);
+                }
+            });
+        });
+    }
+
     // Add ability to switch the diff to full screen + fluid.
-    function initDiff() {
-        $('table.diff').each(function() {
+    function initDiffToggle($container) {
+        $('table.diff', $container).each(function() {
             var $table = $(this),
                 $link = $table.before('<a class="toggle-diff" href="#"></a>').prev(),
                 fullWidth = false, // Are we full width?
