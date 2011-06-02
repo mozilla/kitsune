@@ -411,6 +411,7 @@ def watch_thread(request, forum_slug, thread_id):
 
     if request.POST.get('watch') == 'yes':
         NewPostEvent.notify(request.user, thread)
+        statsd.incr('forums.watches.thread')
     else:
         NewPostEvent.stop_notifying(request.user, thread)
 
@@ -428,6 +429,7 @@ def watch_forum(request, forum_slug):
 
     if request.POST.get('watch') == 'yes':
         NewThreadEvent.notify(request.user, forum)
+        statsd.incr('forums.watches.forum')
     else:
         NewThreadEvent.stop_notifying(request.user, forum)
 

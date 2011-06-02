@@ -327,6 +327,7 @@ def watch_thread(request, document_slug, thread_id):
 
     if request.POST.get('watch') == 'yes':
         NewPostEvent.notify(request.user, thread)
+        statsd.incr('kbforums.watches.thread')
     else:
         NewPostEvent.stop_notifying(request.user, thread)
 
@@ -342,6 +343,7 @@ def watch_locale(request):
     if request.POST.get('watch') == 'yes':
         NewPostInLocaleEvent.notify(request.user, locale=locale)
         NewThreadInLocaleEvent.notify(request.user, locale=locale)
+        statsd.incr('kbforums.watches.locale')
     else:
         NewPostInLocaleEvent.stop_notifying(request.user, locale=locale)
         NewThreadInLocaleEvent.stop_notifying(request.user, locale=locale)
@@ -356,6 +358,7 @@ def watch_forum(request, document_slug):
     doc = get_document(document_slug, request)
     if request.POST.get('watch') == 'yes':
         NewThreadEvent.notify(request.user, doc)
+        statsd.incr('kbforums.watches.document')
     else:
         NewThreadEvent.stop_notifying(request.user, doc)
 
