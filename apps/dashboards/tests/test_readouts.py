@@ -1,5 +1,4 @@
 from datetime import datetime
-from functools import partial
 
 from nose.tools import eq_
 
@@ -11,12 +10,8 @@ from wiki.models import MAJOR_SIGNIFICANCE, MEDIUM_SIGNIFICANCE
 from wiki.tests import revision, translated_revision, document
 
 
-NON_DEFAULT_LOCALE = 'de'
-translated_revision = partial(translated_revision, locale=NON_DEFAULT_LOCALE)
-
-
 class MockRequest(object):
-    locale = NON_DEFAULT_LOCALE
+    locale = 'de'  # Same locale as translated_revision uses by default
 
 
 class UnreviewedChangesTests(TestCase):
