@@ -4,6 +4,8 @@ from smtplib import SMTPException
 from django.contrib import auth
 from django.contrib.auth.models import User
 
+from statsd import statsd
+
 from users import ERROR_SEND_EMAIL
 from users.forms import RegisterForm, AuthenticationForm
 from users.models import RegistrationProfile
@@ -19,6 +21,7 @@ def handle_login(request, only_active=True):
         form = AuthenticationForm(data=request.POST, only_active=only_active)
         if form.is_valid():
             auth.login(request, form.get_user())
+            statsd.incr('user.login')
 
             if request.session.test_cookie_worked():
                 request.session.delete_test_cookie()
@@ -50,6 +53,8 @@ def handle_register(request, email_template=None, email_subject=None,
                 # This is in a POST request and so always pinned to master,
                 # so there is no race condition.
                 User.objects.filter(email=form.instance.email).delete()
+            else:
+                statsd.incr('user.register')
         return form
     return RegisterForm()
 
