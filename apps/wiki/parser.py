@@ -11,7 +11,7 @@ from html5lib.treebuilders import getTreeBuilder
 from html5lib.treewalkers import getTreeWalker
 import jingo
 from lxml.etree import Element
-
+from statsd import statsd
 from tower import ugettext as _, ugettext_lazy as _lazy
 
 from gallery.models import Video
@@ -32,8 +32,10 @@ TEMPLATE_ARG_REGEX = re.compile('{{{([^{]+?)}}}')
 def wiki_to_html(wiki_markup, locale=settings.WIKI_DEFAULT_LANGUAGE,
                  doc_id=None):
     """Wiki Markup -> HTML with the wiki app's enhanced parser"""
-    return WikiParser(doc_id=doc_id).parse(wiki_markup, show_toc=False,
-                                           locale=locale)
+    with statsd.timer('wiki.render'):
+        content = WikiParser(doc_id=doc_id).parse(wiki_markup, show_toc=False,
+                                                  locale=locale)
+    return content
 
 
 def _format_template_content(content, params):
