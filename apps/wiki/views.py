@@ -319,11 +319,17 @@ def preview_revision(request):
 @require_GET
 def document_revisions(request, document_slug):
     """List all the revisions of a given document."""
+    locale = request.GET.get('locale', request.locale)
     doc = get_object_or_404(
-        Document, locale=request.locale, slug=document_slug)
+        Document, locale=locale, slug=document_slug)
     revs = Revision.objects.filter(document=doc).order_by('-created', '-id')
 
-    return jingo.render(request, 'wiki/history.html',
+    if request.is_ajax():
+        template = 'wiki/includes/revision_list.html'
+    else:
+        template = 'wiki/history.html'
+
+    return jingo.render(request, template,
                         {'revisions': revs, 'document': doc})
 
 
@@ -386,8 +392,9 @@ def compare_revisions(request, document_slug):
     The ids are passed as query string parameters (to and from).
 
     """
+    locale = request.GET.get('locale', request.locale)
     doc = get_object_or_404(
-        Document, locale=request.locale, slug=document_slug)
+        Document, locale=locale, slug=document_slug)
     if 'from' not in request.GET or 'to' not in request.GET:
         raise Http404
 
@@ -396,7 +403,12 @@ def compare_revisions(request, document_slug):
     revision_from = get_object_or_404(Revision, document=doc, id=from_id)
     revision_to = get_object_or_404(Revision, document=doc, id=to_id)
 
-    return jingo.render(request, 'wiki/compare_revisions.html',
+    if request.is_ajax():
+        template = 'wiki/includes/revision_diff.html'
+    else:
+        template = 'wiki/compare_revisions.html'
+
+    return jingo.render(request, template,
                         {'document': doc, 'revision_from': revision_from,
                          'revision_to': revision_to})
 

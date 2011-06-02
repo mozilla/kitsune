@@ -3,7 +3,7 @@
 {% from "layout/errorlist.html" import errorlist %}
 {% from "wiki/includes/sidebar_modules.html" import document_tabs %}
 {% from "includes/common_macros.html" import content_editor %}
-{% from "wiki/includes/document_macros.html" import edit_messages with context %}
+{% from "wiki/includes/document_macros.html" import revision_diff, edit_messages with context %}
 {% set title = _('Translate Article | {document}')|f(document=parent.title) %}
 {% set crumbs = [(url('wiki.category', parent.category), parent.get_category_display()),
                  (parent.get_absolute_url(), parent.title),
@@ -116,10 +116,7 @@
         </ul>
         {% if document.current_revision and document.current_revision.based_on %}
           {# Diff between the English version the current translation is based on and the current English version. #}
-          {% set revision_from = document.current_revision.based_on %}
-          {% set revision_to = parent.current_revision %}
-          {% include 'wiki/includes/revision_diff.html' %}
-          {# TODO: 'change revisions' link and modal selector #}
+          {{ revision_diff(document.current_revision.based_on, parent.current_revision, show_picker=True) }}
         {% else %}
           <p>{{ _('Note: There are no approved translations for this article.') }}
         {% endif %}

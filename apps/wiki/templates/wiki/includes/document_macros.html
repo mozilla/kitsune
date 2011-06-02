@@ -106,3 +106,57 @@
     </div>
   {% endif %}
 {%- endmacro %}
+
+{% macro revision_diff(revision_from, revision_to, revision_from_header=None, revision_to_header=None, show_picker=False) -%}
+  {% if revision_from and revision_to %}
+    <div class="revision-diff">
+      <header>
+        {% if show_picker %}
+          <div class="picker">
+            <a href="{{ url('wiki.document_revisions', revision_from.document.slug)|urlparams(locale=revision_from.document.locale) }}">{{ _('Change Revisions') }}</a>
+          </div>
+        {% endif %}
+        <div>
+          <h3>
+            {% if revision_from_header %}
+              {{ revision_from_header}}
+            {% else %}
+              <a href="{{ url('wiki.revision', revision_from.document.slug, revision_from.id) }}">
+                {{ _('Revision {num}:')|f(num=revision_from.id) }}
+              </a>
+            {% endif %}
+          </h3>
+          <p>{{ _('Revision {id} by {user} on {date}')|fe(id=revision_from.id, user=revision_from.creator, date=datetimeformat(revision_from.created, format='longdatetime')) }}</p>
+        </div>
+        <div>
+          <h3>
+            {% if revision_to_header %}
+              {{ revision_to_header}}
+            {% else %}
+              <a href="{{ url('wiki.revision', revision_to.document.slug, revision_to.id) }}">
+                {{ _('Revision {num}:')|f(num=revision_to.id) }}
+              </a>
+            {% endif %}
+          </h3>
+          <p>{{ _('Revision {id} by {user} on {date}')|fe(id=revision_to.id, user=revision_to.creator, date=datetimeformat(revision_to.created, format='longdatetime')) }}</p>
+        </div>
+      </header>
+      <h4>{{ _('Keywords:') }}</h4>
+      <div>
+        <p>{{ revision_from.keywords }}</p>
+      </div>
+      <div>
+        <p>{{ revision_to.keywords }}</p>
+      </div>
+      <h4>{{ _('Search results summary:') }}</h4>
+      <div>
+        <p>{{ revision_from.summary }}</p>
+      </div>
+      <div>
+        <p>{{ revision_to.summary }}</p>
+      </div>
+      <h4>{{ _('Content:') }}</h4>
+      {{ diff_table(revision_from.content, revision_to.content) }}
+    </div>
+  {% endif %}
+{%- endmacro %}
