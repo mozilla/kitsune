@@ -312,7 +312,7 @@
                     type: 'GET',
                     dataType: 'html',
                     success: function(html) {
-                        kbox = new KBox(html, {
+                        var kbox = new KBox(html, {
                             modal: true,
                             id: 'diff-picker-kbox',
                             closeOnOutClick: true,
