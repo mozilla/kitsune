@@ -8,6 +8,7 @@ from django.views.decorators.http import require_POST
 
 import jingo
 from authority.decorators import permission_required_or_403
+from statsd import statsd
 
 from access.decorators import has_perm_or_owns_or_403, login_required
 from access import has_perm
@@ -147,6 +148,7 @@ def reply(request, forum_slug, thread_id):
                     reply_.author.post_set.count()
             else:
                 reply_.save()
+                statsd.incr('forums.reply')
 
                 # Send notifications to thread/forum watchers.
                 NewPostEvent(reply_).fire(exclude=reply_.author)
@@ -186,6 +188,7 @@ def new_thread(request, forum_slug):
             thread = forum.thread_set.create(creator=request.user,
                                              title=form.cleaned_data['title'])
             thread.save()
+            statsd.incr('forums.thread')
             post = thread.new_post(author=request.user,
                                    content=form.cleaned_data['content'])
             post.save()
