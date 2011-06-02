@@ -125,16 +125,15 @@ class TestAnswer(TestCaseBase):
         a3 = Answer.objects.filter(question=a1.question)[0]
         assert a3.page == 1, "Page was %s" % a3.page
 
-    def test_creator_num_posts(self):
-        """Test retrieval of post count for creator of a particular answer"""
+    def test_creator_num_answers(self):
         question = Question.objects.all()[0]
         answer = Answer(question=question, creator_id=47963,
                         content="Test Answer")
+        answer.save()
 
-        eq_(answer.creator_num_posts, 4)
+        eq_(answer.creator_num_answers, 2)
 
-    def test_creator_num_answers(self):
-        """Test retrieval of answer count for creator of a particular answer"""
+    def test_creator_num_solutions(self):
         question = Question.objects.all()[0]
         answer = Answer(question=question, creator_id=47963,
                         content="Test Answer")
@@ -143,7 +142,7 @@ class TestAnswer(TestCaseBase):
         question.solution = answer
         question.save()
 
-        eq_(answer.creator_num_answers, 1)
+        eq_(answer.creator_num_solutions, 1)
 
 
 class TestQuestionMetadata(TestCaseBase):
