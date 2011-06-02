@@ -331,13 +331,11 @@ class Answer(ActionMixin, ModelBase):
         return AnswerVote.objects.filter(answer=self).count()
 
     @property
-    def creator_num_posts(self):
-        criteria = models.Q(answers__creator=self.creator) |\
-                   models.Q(creator=self.creator)
-        return Question.objects.filter(criteria).count()
+    def creator_num_answers(self):
+        return Answer.objects.filter(creator=self.creator).count()
 
     @property
-    def creator_num_answers(self):
+    def creator_num_solutions(self):
         return Question.objects.filter(
                     solution__in=Answer.objects.filter(
                                     creator=self.creator)).count()
