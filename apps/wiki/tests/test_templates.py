@@ -702,6 +702,14 @@ class DocumentEditTests(TestCaseBase):
         doc = Document.uncached.get(pk=self.d.pk)
         assert doc.is_archived
 
+    @mock.patch.object(EditDocumentEvent, 'notify')
+    def test_watch_article_from_edit_page(self, edit_called):
+        """Make sure we can watch the article when submitting an edit."""
+        response = post(self.client, 'wiki.edit_document', 
+                        {'notify-future-changes': 'Yes'}, args=[self.d.slug])
+        eq_(200, response.status_code)
+        edit_called.assert_called()
+
 
 class DocumentListTests(TestCaseBase):
     """Tests for the All and Category template"""

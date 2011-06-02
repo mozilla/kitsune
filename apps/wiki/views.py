@@ -288,7 +288,9 @@ def edit_document(request, document_slug, revision_id=None):
                 rev_form = RevisionForm(request.POST)
                 rev_form.instance.document = doc  # for rev_form.clean()
                 if rev_form.is_valid():
-                    _save_rev_and_notify(rev_form, user, doc)
+                    _save_rev_and_notify(rev_form, user, doc, 
+                        add_notify=('notify-future-changes' in request.POST,
+                                    request.user))
                     return HttpResponseRedirect(
                         reverse('wiki.document_revisions',
                                 args=[document_slug]))
@@ -726,7 +728,7 @@ def _document_form_initial(document):
                                   document.operating_systems.all()]}
 
 
-def _save_rev_and_notify(rev_form, creator, document):
+def _save_rev_and_notify(rev_form, creator, document, add_notify=(False, 'no_user')):
     """Save the given RevisionForm and send notifications."""
     new_rev = rev_form.save(creator, document)
 
@@ -734,6 +736,9 @@ def _save_rev_and_notify(rev_form, creator, document):
     ReviewableRevisionInLocaleEvent(new_rev).fire(exclude=new_rev.creator)
     EditDocumentEvent(new_rev).fire(exclude=new_rev.creator)
 
+    # Add notification watch
+    if add_notify[0]:
+        EditDocumentEvent.notify(add_notify[1], document)
 
 def _maybe_schedule_rebuild(form):
     """Try to schedule a KB rebuild if a title or slug has changed."""
