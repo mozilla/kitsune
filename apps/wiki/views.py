@@ -14,6 +14,7 @@ from django.views.decorators.http import (require_GET, require_POST,
 
 import jingo
 from mobility.decorators import mobile_template
+from statsd import statsd
 from taggit.models import Tag
 from tower import ugettext_lazy as _lazy
 from tower import ugettext as _
@@ -310,6 +311,7 @@ def edit_document(request, document_slug, revision_id=None):
 def preview_revision(request):
     """Create an HTML fragment preview of the posted wiki syntax."""
     wiki_content = request.POST.get('content', '')
+    statsd.incr('wiki.preview')
     # TODO: Get doc ID from JSON.
     data = {'content': wiki_to_html(wiki_content, request.locale)}
     data.update(SHOWFOR_DATA)
@@ -366,6 +368,7 @@ def review_revision(request, document_slug, revision_id):
             ApproveRevisionInLocaleEvent(rev).fire(exclude=rev.creator)
 
             # Schedule KB rebuild?
+            statsd.incr('wiki.approve')
             schedule_rebuild_kb()
 
             return HttpResponseRedirect(reverse('wiki.document_revisions',
@@ -548,6 +551,7 @@ def watch_document(request, document_slug):
     document = get_object_or_404(
         Document, locale=request.locale, slug=document_slug)
     EditDocumentEvent.notify(request.user, document)
+    statsd.incr('wiki.watches.document')
     return HttpResponseRedirect(document.get_absolute_url())
 
 
@@ -566,6 +570,7 @@ def unwatch_document(request, document_slug):
 def watch_locale(request):
     """Start watching a locale for revisions ready for review."""
     ReviewableRevisionInLocaleEvent.notify(request.user, locale=request.locale)
+    statsd.incr('wiki.watches.locale')
     # This redirect is pretty bad, because you might also have been on the
     # Contributor Dashboard:
     return HttpResponseRedirect(_get_next_url_fallback_localization(request))
@@ -589,6 +594,7 @@ def watch_approved(request):
         raise Http404
 
     ApproveRevisionInLocaleEvent.notify(request.user, locale=locale)
+    statsd.incr('wiki.watches.approved')
     return HttpResponseRedirect(_get_next_url_fallback_localization(request))
 
 
@@ -651,6 +657,7 @@ def helpful_vote(request, document_slug):
             vote.anonymous_id = request.anonymous.anonymous_id
 
         vote.save()
+        statsd.incr('wiki.vote')
     else:
         message = _('You already voted on this Article.')
 
@@ -741,6 +748,7 @@ def _document_form_initial(document):
 def _save_rev_and_notify(rev_form, creator, document):
     """Save the given RevisionForm and send notifications."""
     new_rev = rev_form.save(creator, document)
+    statsd.incr('wiki.revision')
 
     # Enqueue notifications
     ReviewableRevisionInLocaleEvent(new_rev).fire(exclude=new_rev.creator)

@@ -146,6 +146,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
 MIDDLEWARE_CLASSES = (
     'multidb.middleware.PinningRouterMiddleware',
     'users.middleware.StaySecureMiddleware',
+    'commonware.response.middleware.GraphiteMiddleware',
 
     # This gives us atomic success or failure on multi-row writes. It does not
     # give us a consistent per-transaction snapshot for reads; that would need

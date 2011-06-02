@@ -22,6 +22,7 @@ from django.views.decorators.http import (require_POST, require_GET,
 import jingo
 from mobility.decorators import mobile_template
 from session_csrf import anonymous_csrf
+from statsd import statsd
 from taggit.models import Tag
 from tidings.events import ActivationRequestFailed
 from tidings.models import Watch
@@ -213,6 +214,7 @@ def new_question(request, template=None):
     if not request.user.is_authenticated():
         if request.POST.get('login'):
             login_form = handle_login(request, only_active=False)
+            statsd.incr('questions.user.login')
             register_form = RegisterForm()
         elif request.POST.get('register'):
             login_form = AuthenticationForm()
@@ -221,12 +223,13 @@ def new_question(request, template=None):
             email_data = request.GET.get('search')
             register_form = handle_register(request, email_template,
                                             email_subject, email_data)
-            if register_form.is_valid():  # now try to log in
+            if register_form.is_valid():  # Now try to log in.
                 user = auth.authenticate(username=request.POST.get('username'),
                                          password=request.POST.get('password'))
                 auth.login(request, user)
+                statsd.incr('questions.user.register')
         else:
-            # L10n: This shouldn't happen unless people tamper with POST data
+            # L10n: This shouldn't happen unless people tamper with POST data.
             message = _lazy('Request type not recognized.')
             return jingo.render(request, 'handlers/400.html',
                             {'message': message}, status=400)
@@ -250,6 +253,7 @@ def new_question(request, template=None):
                             title=form.cleaned_data['title'],
                             content=form.cleaned_data['content'])
         question.save()
+        statsd.incr('questions.new')
         question.add_metadata(**form.cleaned_metadata)
         if product:
             question.add_metadata(product=product['key'])
@@ -270,6 +274,7 @@ def new_question(request, template=None):
             return HttpResponseRedirect(url)
 
         auth.logout(request)
+        statsd.incr('questions.user.logout')
         confirm_t = ('questions/mobile/confirm_email.html' if request.MOBILE
                      else 'questions/confirm_email.html')
         return jingo.render(request, confirm_t,
@@ -384,6 +389,7 @@ def reply(request, question_id):
             # reply form
             up_images = question.images.filter(creator=request.user)
             up_images.update(content_type=ct, object_id=answer.id)
+            statsd.incr('questions.answer')
 
             return HttpResponseRedirect(answer.get_absolute_url())
 
@@ -405,6 +411,7 @@ def solution(request, question_id, answer_id):
 
     question.solution = answer
     question.save()
+    statsd.incr('questions.solution')
     QuestionSolvedEvent(answer).fire(exclude=question.creator)
 
     messages.add_message(request, messages.SUCCESS,
@@ -430,6 +437,7 @@ def question_vote(request, question_id):
             vote.anonymous_id = request.anonymous.anonymous_id
 
         vote.save()
+        statsd.incr('questions.votes.question')
 
         if request.is_ajax():
             tmpl = 'questions/includes/question_vote_thanks.html'
@@ -464,6 +472,7 @@ def answer_vote(request, question_id, answer_id):
             vote.anonymous_id = request.anonymous.anonymous_id
 
         vote.save()
+        statsd.incr('questions.votes.answer')
     else:
         message = _('You already voted on this reply.')
 
@@ -679,6 +688,7 @@ def watch_question(request, question_id):
                 QuestionReplyEvent.notify(user_or_email, question)
             else:
                 QuestionSolvedEvent.notify(user_or_email, question)
+            statsd.incr('questions.watches.new')
         except ActivationRequestFailed:
             msg = _('Could not send a message to that email address.')
 
@@ -739,6 +749,7 @@ def activate_watch(request, watch_id, secret):
     question = watch.content_object
     if watch.secret == secret and isinstance(question, Question):
         watch.activate().save()
+        statsd.incr('questions.watches.activate')
 
     return jingo.render(request, 'questions/activate_watch.html',
                         {'question': question,
