@@ -340,17 +340,19 @@
                 data: $form.serialize(),
                 dataType: 'html',
                 success: function(html) {
+                    var $container = $diff.parent();
                     kbox.close();
                     $diff.replaceWith(html);
                     initDiffPicker();
+                    initDiffToggle($container);
                 }
             });
         });
     }
 
     // Add ability to switch the diff to full screen + fluid.
-    function initDiffToggle() {
-        $('table.diff').each(function() {
+    function initDiffToggle($container) {
+        $('table.diff', $container).each(function() {
             var $table = $(this),
                 $link = $table.before('<a class="toggle-diff" href="#"></a>').prev(),
                 fullWidth = false, // Are we full width?
