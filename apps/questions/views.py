@@ -60,10 +60,11 @@ NO_TAG = _lazy(u'Please provide a tag.')
 def questions(request):
     """View the questions."""
 
-    filter = request.GET.get('filter')
+    filter_ = request.GET.get('filter')
     tagged = request.GET.get('tagged')
     tags = None
     sort_ = request.GET.get('sort')
+    cache_count = True  # Some counts are too esoteric to cache right now.
 
     if sort_ == 'requested':
         order = '-num_votes_past_week'
@@ -77,24 +78,26 @@ def questions(request):
         {'_num_votes': 'SELECT COUNT(*) FROM questions_questionvote WHERE questions_questionvote.question_id = questions_question.id'})
     question_qs = question_qs.filter(creator__is_active=1, status=CONFIRMED)
 
-    if filter == 'no-replies':
+    if filter_ == 'no-replies':
         question_qs = question_qs.filter(num_answers=0)
-    elif filter == 'replies':
+    elif filter_ == 'replies':
         question_qs = question_qs.filter(num_answers__gt=0)
-    elif filter == 'solved':
+    elif filter_ == 'solved':
         question_qs = question_qs.exclude(solution=None)
-    elif filter == 'unsolved':
+    elif filter_ == 'unsolved':
         question_qs = question_qs.filter(solution=None)
-    elif filter == 'my-contributions' and request.user.is_authenticated():
+    elif filter_ == 'my-contributions' and request.user.is_authenticated():
         criteria = Q(answers__creator=request.user) | Q(creator=request.user)
         question_qs = question_qs.filter(criteria).distinct()
+        cache_count = False
     else:
-        filter = None
+        filter_ = None
 
     feed_urls = ((reverse('questions.feed'),
                   QuestionsFeed().title()),)
 
     if tagged:
+        cache_count = False
         tag_slugs = tagged.split(',')
         tags = Tag.objects.filter(slug__in=tag_slugs)
         if tags:
@@ -108,14 +111,22 @@ def questions(request):
             question_qs = Question.objects.get_empty_query_set()
 
     question_qs = question_qs.order_by(order)
-    # TODO: Cache this guy.
-    count = question_qs.count()
+
+    if cache_count:
+        cache_key = u'questions:count:%s' % filter_
+        count = cache.get(cache_key)
+        if not count:
+            count = question_qs.count()
+            cache.add(cache_key, count, settings.QUESTIONS_COUNT_TTL)
+    else:
+        count = question_qs.count()
+
     questions_ = paginate(request, question_qs, count=count,
                           per_page=constants.QUESTIONS_PER_PAGE)
 
     return jingo.render(request, 'questions/questions.html',
                         {'questions': questions_, 'feeds': feed_urls,
-                         'filter': filter, 'sort': sort_,
+                         'filter': filter_, 'sort': sort_,
                          'top_contributors': _get_top_contributors(),
                          'tags': tags, 'tagged': tagged})
 

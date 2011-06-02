@@ -533,6 +533,9 @@ QUESTIONS_MAX_SUGGESTIONS = 5
 # of things that could be deleted between indexer runs.
 QUESTIONS_SUGGESTION_SLOP = 3
 
+# How long do we cache the question counts (in seconds)?
+QUESTIONS_COUNT_TTL = 900  # 15 minutes.
+
 # Email
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
