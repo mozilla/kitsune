@@ -34,8 +34,7 @@ from questions.events import QuestionReplyEvent, QuestionSolvedEvent
 from questions.feeds import QuestionsFeed, AnswersFeed, TaggedQuestionsFeed
 from questions.forms import (NewQuestionForm, EditQuestionForm, AnswerForm,
                              WatchQuestionForm, FREQUENCY_CHOICES)
-from questions.models import (Question, Answer, QuestionVote, AnswerVote,
-                              CONFIRMED, UNCONFIRMED)
+from questions.models import Question, Answer, QuestionVote, AnswerVote
 from questions.question_config import products
 from search.clients import WikiClient, QuestionsClient, SearchError
 from search.utils import locale_or_default, sphinx_locale
@@ -76,7 +75,7 @@ def questions(request):
         'creator', 'last_answer', 'last_answer__creator')
     question_qs = question_qs.extra(
         {'_num_votes': 'SELECT COUNT(*) FROM questions_questionvote WHERE questions_questionvote.question_id = questions_question.id'})
-    question_qs = question_qs.filter(creator__is_active=1, status=CONFIRMED)
+    question_qs = question_qs.filter(creator__is_active=1)
 
     if filter_ == 'no-replies':
         question_qs = question_qs.filter(num_answers=0)
@@ -324,29 +323,6 @@ def edit_question(request, question_id):
                          'form': form,
                          'current_product': question.product,
                          'current_category': question.category})
-
-
-def confirm_question_form(request, question_id, confirmation_id):
-    """Confirm a question submitted."""
-    question = get_object_or_404(Question, pk=question_id,
-                                 confirmation_id=confirmation_id)
-
-    if question.status == UNCONFIRMED:
-        if request.method == 'GET':
-            template = 'questions/confirm_question_form.html'
-            return jingo.render(request, template, {'question': question})
-        else:
-            log.info("User %s is confirming email on question with id=%s " %
-                     (question.creator, question.id))
-            if not question.creator.is_active:
-                u = question.creator
-                u.is_active = True
-                u.save()
-            question.status = CONFIRMED
-            question.save()
-
-    return HttpResponseRedirect(reverse('questions.answers',
-                                        args=[question_id]))
 
 
 @require_POST
