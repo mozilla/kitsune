@@ -219,19 +219,19 @@ var ShowFor = {
                              // * Show the default mobile OS if no browser was specified or
                              //   the default mobile browser was also specified.
                              !(osAttrs[defaults.mobile.os] && platform === 'desktop' &&
-                                (browserAttrs[defaults.mobile.browser] || !foundAnyBrowsers)) &&
+                                (meetsAnyOfConditions(defaults.mobile.browser, browserConditions) || !foundAnyBrowsers)) &&
                              // * Show the default mobile browser if no OS was specified or
                              //   the default mobile OS was also specified.
-                             !(browserAttrs[defaults.mobile.browser] && platform === 'desktop' &&
+                             !(meetsAnyOfConditions(defaults.mobile.browser, browserConditions) && platform === 'desktop' &&
                                 (osAttrs[defaults.mobile.os] || !foundAnyOses)) &&
                              // If the current selection is mobile:
                              // * Show the default desktop OS if no browser was specified or
                              //   the default desktop browser was also specified.
                              !(osAttrs[defaults.desktop.os] && platform === 'mobile' &&
-                                (browserAttrs[defaults.desktop.browser] || !foundAnyBrowsers)) &&
+                                (meetsAnyOfConditions(defaults.desktop.browser, browserConditions) || !foundAnyBrowsers)) &&
                              // * Show the default desktop browser if no OS was specified or
                              //   the default desktop OS was also specified.
-                             !(browserAttrs[defaults.desktop.browser] && platform === 'mobile' &&
+                             !(meetsAnyOfConditions(defaults.desktop.browser, browserConditions) && platform === 'mobile' &&
                                 (osAttrs[defaults.desktop.os] || !foundAnyOses));
 
                 if (shouldHide != isInverted) {
