@@ -1,0 +1,67 @@
+body {
+    color: #000;
+    font: 13px Arial, Helvetica, "Lucida Grande", serif;
+    letter-spacing: 0.2px;
+    line-height: 1.4em;
+    margin: 0;
+    padding: 0;
+    word-spacing: 1px;
+}
+
+div#header,
+div#footer-contents,
+div#sub-header,
+div#toc,
+div#helpful-vote,
+div#more-help,
+div#side,
+div#thread-reply,
+div#filter,
+section#question-reply,
+div.thread-actions,
+div.post-actions,
+ol.breadcrumbs,
+span.post-action,
+a.permalink,
+ol.pagination,
+ul.tag-list,
+li.answer div.side-section,
+button,
+input,
+video {
+    display: none;
+}
+
+div.warning {
+    color: #FF6600;
+    border-color: #E0E0E0;
+    border-radius: 3px;
+    border-style: solid;
+    border-width: 1px 1px 1px 1em;
+    font-weight: bold;
+    padding: 0.5em 1em 0.5em 2em;
+}
+
+div.note {
+    border: #E0E0E0 1px solid;
+    border-radius: 3px;
+    padding: 0.5em 1em 0.5em 2em;
+}
+
+span.key {
+    border-color: #E0E0E0;
+    border-radius: 3px;
+    border-style: solid;
+    border-width: 1px 1px 2px;
+    color: #303030;
+    font-family: monospace;
+    font-size: 0.9em;
+    padding: 1px 6px;
+    white-space: nowrap;
+}
+
+a {
+    border-bottom: 1px dotted;
+    color: #555555;
+    text-decoration: none;
+}

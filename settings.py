@@ -324,6 +324,9 @@ MINIFY_BUNDLES = {
             'css/kbox.css',
             'css/main.css',
         ),
+        'print': (
+            'css/print.css',
+        ),
         # TODO: remove dependency on jquery ui CSS and use our own
         'jqueryui/jqueryui': (
             'css/jqueryui/jqueryui.css',
