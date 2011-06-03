@@ -26,14 +26,6 @@ from tags.utils import add_existing_tag
 from upload.models import ImageAttachment
 
 
-UNCONFIRMED = 0
-CONFIRMED = 1
-QUESTION_STATUS_CHOICES = (
-    (UNCONFIRMED, 'Unconfirmed'),
-    (CONFIRMED, 'Confirmed'),
-)
-
-
 class Question(ModelBase, BigVocabTaggableMixin):
     """A support question."""
     title = models.CharField(max_length=255)
@@ -49,11 +41,8 @@ class Question(ModelBase, BigVocabTaggableMixin):
     num_answers = models.IntegerField(default=0, db_index=True)
     solution = models.ForeignKey('Answer', related_name='solution_for',
                                  null=True)
-    status = models.IntegerField(default=CONFIRMED, db_index=True,
-                                 choices=QUESTION_STATUS_CHOICES)
     is_locked = models.BooleanField(default=False)
     num_votes_past_week = models.PositiveIntegerField(default=0, db_index=True)
-    confirmation_id = models.CharField(max_length=40, db_index=True)
 
     images = generic.GenericRelation(ImageAttachment)
     flags = generic.GenericRelation(FlaggedObject)
@@ -80,11 +69,6 @@ class Question(ModelBase, BigVocabTaggableMixin):
 
         if not new and not no_update:
             self.updated = datetime.now()
-
-        # Generate a confirmation_id if necessary
-        if new and not self.confirmation_id:
-            chars = [random.choice(string.ascii_letters) for x in xrange(10)]
-            self.confirmation_id = "".join(chars)
 
         super(Question, self).save(*args, **kwargs)
 
