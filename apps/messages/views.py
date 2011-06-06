@@ -5,6 +5,7 @@ from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import get_object_or_404
 
 import jingo
+from multidb.pinning import mark_as_write
 from tower import ugettext as _
 from waffle.decorators import waffle_flag
 
@@ -31,13 +32,13 @@ def read(request, msgid):
     message = get_object_or_404(InboxMessage, pk=msgid, to=request.user)
     was_new = message.unread
     if was_new:
-        message.read = True
-        message.save()
+        message.update(read=True)
     initial = {'to': message.sender, 'in_reply_to': message.pk}
     form = ReplyForm(initial=initial)
     response = jingo.render(request, 'messages/read.html',
                             {'message': message, 'form': form})
-    response._db_write = was_new
+    if was_new:
+        response = mark_as_write(response)
     return response
 
 
