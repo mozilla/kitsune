@@ -75,6 +75,11 @@
           {{ profile.bio|wiki_to_html(nofollow=True) }}
         </div>
       {% endif %}
+      {% if user.is_staff and user.has_perm('users.change_profile') %}
+        <div id="admin-actions">
+          <a class="edit" href="{{ url('admin:users_profile_change', profile.user.id) }}">{{ _('Edit user profile in admin') }}</a>
+        </div>
+      {% endif %}
     </section>
   </article>
 {% endblock %}
