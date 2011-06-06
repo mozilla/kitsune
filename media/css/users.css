@@ -146,6 +146,11 @@ section#main-area h2 {
     width: 100%;
 }
 
+#admin-actions a.edit {
+    background: transparent url(../img/icons.actions.png) no-repeat left -25px;
+    padding: 0 0 0 18px;
+}
+
 body.register p,
 #profile p {
     margin: 1em 0;
