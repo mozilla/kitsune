@@ -146,7 +146,7 @@ var ShowFor = {
         function showAndHideFors(os, browser) {
             $container.find('.for').each(function(index) {
                 var platform = $osMenu.find('option:selected').data('dependency'),
-                    osAttrs = {}, browserAttrs = {},  // TODO: Eliminate browserAttrs?
+                    osAttrs = {},
                     foundAnyOses = false, foundAnyBrowsers = false,
                     forData,
                     isInverted,
@@ -206,7 +206,6 @@ var ShowFor = {
                         osAttrs[this] = true;
                         foundAnyOses = true;
                     } else if (BROWSERS[slugWithoutComparators(this)] !== undefined) {
-                        browserAttrs[this] = true;
                         browserConditions.push(conditionFromSymbol(this));
                         foundAnyBrowsers = true;
                     }
