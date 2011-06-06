@@ -11,6 +11,11 @@
       <img src="{{ profile_avatar(profile.user) }}" alt="">
     </section>
     <section id="main-area">
+      {% if user.is_staff and user.has_perm('users.change_profile') %}
+        <div id="admin-actions">
+          <a class="edit" href="{{ url('admin:users_profile_change', profile.user.id) }}">{{ _('Edit user profile') }}</a>
+        </div>
+      {% endif %}
       <h1>{{ display_name(profile.user) }}
           {% if profile.name %}
             <em>({{ profile.user.username }})</em>
