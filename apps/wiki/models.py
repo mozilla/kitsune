@@ -61,33 +61,34 @@ CATEGORIES = (
 # When a wiki page is being viewed in a desktop browser, the {for} sections for
 # the default mobile browser still show. The reverse is true when a page is
 # being viewed in a mobile browser.
-VersionMetadata = namedtuple('VersionMetadata',
-                             'id, name, long, slug, max_version, show_in_ui, '
-                             'is_default')
+DEFAULT_FIREFOX_VERSIONS = ['fx4', 'm4']
+class VersionMetadata(namedtuple(
+    'VersionMetadata', 'id, name, long, slug, max_version, show_in_ui')):
+    @property
+    def is_default(self):
+        return self.slug in DEFAULT_FIREFOX_VERSIONS
+
 GROUPED_FIREFOX_VERSIONS = (
     ((_lazy(u'Desktop:'), 'desktop'), (
         # The first option is the default for {for} display. This should be the
         # newest version.
         VersionMetadata(6, _lazy(u'Firefox 6'),
-                        _lazy(u'Firefox 6'), 'fx6', 6.9999, False, False),
+                        _lazy(u'Firefox 6'), 'fx6', 6.9999, False),
         VersionMetadata(5, _lazy(u'Firefox 5'),
-                        _lazy(u'Firefox 5'), 'fx5', 5.9999, True, False),
+                        _lazy(u'Firefox 5'), 'fx5', 5.9999, True),
         VersionMetadata(1, _lazy(u'Firefox 4'),
-                        _lazy(u'Firefox 4'), 'fx4', 4.9999, True, True),
+                        _lazy(u'Firefox 4'), 'fx4', 4.9999, True),
         VersionMetadata(2, _lazy(u'Firefox 3.5-3.6'),
-                        _lazy(u'Firefox 3.5-3.6'), 'fx35', 3.9999, True,
-                        False),
+                        _lazy(u'Firefox 3.5-3.6'), 'fx35', 3.9999, True),
         VersionMetadata(3, _lazy(u'Firefox 3.0'),
-                        _lazy(u'Firefox 3.0'), 'fx3', 3.4999, False, False))),
+                        _lazy(u'Firefox 3.0'), 'fx3', 3.4999, False))),
     ((_lazy(u'Mobile:'), 'mobile'), (
         VersionMetadata(8, _lazy(u'Firefox 6'),
-                        _lazy(u'Firefox 6 for Mobile'), 'm6', 6.9999, False,
-                        False),
+                        _lazy(u'Firefox 6 for Mobile'), 'm6', 6.9999, False),
         VersionMetadata(7, _lazy(u'Firefox 5'),
-                        _lazy(u'Firefox 5 for Mobile'), 'm5', 5.9999, True,
-                        False),
+                        _lazy(u'Firefox 5 for Mobile'), 'm5', 5.9999, True),
         VersionMetadata(4, _lazy(u'Firefox 4'),
-                        _lazy(u'Firefox 4 for Mobile'), 'm4', 4.9999, True,
+                        _lazy(u'Firefox 4 for Mobile'), 'm4', 4.9999,
                         True),)))
 
 # Flattened:  # TODO: perhaps use optgroups everywhere instead
