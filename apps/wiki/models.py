@@ -13,7 +13,6 @@ from django.http import Http404
 from pyquery import PyQuery
 from tidings.models import NotificationsMixin
 from tower import ugettext_lazy as _lazy, ugettext as _
-import waffle
 
 from sumo import ProgrammingError
 from sumo_locales import LOCALES
@@ -62,8 +61,13 @@ CATEGORIES = (
 # When a wiki page is being viewed in a desktop browser, the {for} sections for
 # the default mobile browser still show. The reverse is true when a page is
 # being viewed in a mobile browser.
-VersionMetadata = namedtuple('VersionMetadata',
-                             'id, name, long, slug, max_version, show_in_ui')
+DEFAULT_FIREFOX_VERSIONS = ['fx4', 'm4']
+class VersionMetadata(namedtuple(
+    'VersionMetadata', 'id, name, long, slug, max_version, show_in_ui')):
+    @property
+    def is_default(self):
+        return self.slug in DEFAULT_FIREFOX_VERSIONS
+
 GROUPED_FIREFOX_VERSIONS = (
     ((_lazy(u'Desktop:'), 'desktop'), (
         # The first option is the default for {for} display. This should be the
@@ -84,22 +88,23 @@ GROUPED_FIREFOX_VERSIONS = (
         VersionMetadata(7, _lazy(u'Firefox 5'),
                         _lazy(u'Firefox 5 for Mobile'), 'm5', 5.9999, True),
         VersionMetadata(4, _lazy(u'Firefox 4'),
-                        _lazy(u'Firefox 4 for Mobile'), 'm4', 4.9999, True),)))
+                        _lazy(u'Firefox 4 for Mobile'), 'm4', 4.9999,
+                        True),)))
 
 # Flattened:  # TODO: perhaps use optgroups everywhere instead
 FIREFOX_VERSIONS = tuple(chain(*[options for label, options in
                                  GROUPED_FIREFOX_VERSIONS]))
 
 # OSes used to filter articles and declare {for} sections:
-OsMetaData = namedtuple('OsMetaData', 'id, name, slug')
+OsMetaData = namedtuple('OsMetaData', 'id, name, slug, is_default')
 GROUPED_OPERATING_SYSTEMS = (
     ((_lazy(u'Desktop OS:'), 'desktop'), (
-        OsMetaData(1, _lazy(u'Windows'), 'win'),
-        OsMetaData(2, _lazy(u'Mac OS X'), 'mac'),
-        OsMetaData(3, _lazy(u'Linux'), 'linux'))),
+        OsMetaData(1, _lazy(u'Windows'), 'win', True),
+        OsMetaData(2, _lazy(u'Mac OS X'), 'mac', False),
+        OsMetaData(3, _lazy(u'Linux'), 'linux', False))),
     ((_lazy(u'Mobile OS:'), 'mobile'), (
-        OsMetaData(5, _lazy(u'Android'), 'android'),
-        OsMetaData(4, _lazy(u'Maemo'), 'maemo'))))
+        OsMetaData(5, _lazy(u'Android'), 'android', True),
+        OsMetaData(4, _lazy(u'Maemo'), 'maemo', False))))
 
 # Flattened
 OPERATING_SYSTEMS = tuple(chain(*[options for label, options in
@@ -194,7 +199,6 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin):
             u'If checked, this wiki page will be hidden from basic searches '
              'and dashboards. When viewed, the page will warn that it is no '
              'longer maintained.'))
-
 
     # firefox_versions,
     # operating_systems:

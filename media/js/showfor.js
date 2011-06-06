@@ -62,12 +62,12 @@ var ShowFor = {
             $origBrowserOptions = $browserMenu.find('option').clone(),
             defaults = {
                 mobile: {
-                    browser: $origBrowserOptions.filter('[data-dependency="mobile"]:first').val(),
-                    os: $osMenu.find('[data-dependency="mobile"]:first').val()
+                    browser: $origBrowserOptions.filter('[data-dependency="mobile"][data-default]').val(),
+                    os: $osMenu.find('[data-dependency="mobile"][data-default]').val()
                 },
                 desktop: {
-                    browser: $origBrowserOptions.filter('[data-dependency="desktop"]:first').val(),
-                    os: $osMenu.find('[data-dependency="desktop"]:first').val()
+                    browser: $origBrowserOptions.filter('[data-dependency="desktop"][data-default]').val(),
+                    os: $osMenu.find('[data-dependency="desktop"][data-default]').val()
                 }
             },
             $body = $('body'),
@@ -146,7 +146,7 @@ var ShowFor = {
         function showAndHideFors(os, browser) {
             $container.find('.for').each(function(index) {
                 var platform = $osMenu.find('option:selected').data('dependency'),
-                    osAttrs = {}, browserAttrs = {},  // TODO: Eliminate browserAttrs?
+                    osAttrs = {},
                     foundAnyOses = false, foundAnyBrowsers = false,
                     forData,
                     isInverted,
@@ -206,7 +206,6 @@ var ShowFor = {
                         osAttrs[this] = true;
                         foundAnyOses = true;
                     } else if (BROWSERS[slugWithoutComparators(this)] !== undefined) {
-                        browserAttrs[this] = true;
                         browserConditions.push(conditionFromSymbol(this));
                         foundAnyBrowsers = true;
                     }
@@ -219,19 +218,19 @@ var ShowFor = {
                              // * Show the default mobile OS if no browser was specified or
                              //   the default mobile browser was also specified.
                              !(osAttrs[defaults.mobile.os] && platform === 'desktop' &&
-                                (browserAttrs[defaults.mobile.browser] || !foundAnyBrowsers)) &&
+                                (meetsAnyOfConditions(defaults.mobile.browser, browserConditions) || !foundAnyBrowsers)) &&
                              // * Show the default mobile browser if no OS was specified or
                              //   the default mobile OS was also specified.
-                             !(browserAttrs[defaults.mobile.browser] && platform === 'desktop' &&
+                             !(meetsAnyOfConditions(defaults.mobile.browser, browserConditions) && platform === 'desktop' &&
                                 (osAttrs[defaults.mobile.os] || !foundAnyOses)) &&
                              // If the current selection is mobile:
                              // * Show the default desktop OS if no browser was specified or
                              //   the default desktop browser was also specified.
                              !(osAttrs[defaults.desktop.os] && platform === 'mobile' &&
-                                (browserAttrs[defaults.desktop.browser] || !foundAnyBrowsers)) &&
+                                (meetsAnyOfConditions(defaults.desktop.browser, browserConditions) || !foundAnyBrowsers)) &&
                              // * Show the default desktop browser if no OS was specified or
                              //   the default desktop OS was also specified.
-                             !(browserAttrs[defaults.desktop.browser] && platform === 'mobile' &&
+                             !(meetsAnyOfConditions(defaults.desktop.browser, browserConditions) && platform === 'mobile' &&
                                 (osAttrs[defaults.desktop.os] || !foundAnyOses));
 
                 if (shouldHide != isInverted) {
@@ -309,6 +308,9 @@ var ShowFor = {
                 '[data-dependency="' + currentDependency + '"]');
             $browserMenu.empty().append(availableBrowsers);
 
+            // Set the browser to the default version
+            $browserMenu.val($browserMenu.find('option[data-default]').val());
+
             // Set browser to same version (frex, m4->fx4), if possible.
             var version = currentBrowser.replace(/^\D+/,'');
             $browserMenu.find('option').each(function() {
@@ -346,7 +348,7 @@ var ShowFor = {
         function setSelectorDefault($select, dependency) {
             $select.val(
                 $select.find('option:not([data-dependency="' + dependency +
-                             '"]):first').attr('value'));
+                             '"])[data-default]').attr('value'));
         }
 
         // If we are on mobile or desktop home page, make sure

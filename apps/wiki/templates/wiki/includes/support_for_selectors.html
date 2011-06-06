@@ -4,8 +4,8 @@
   <div>
     <select id="os" data-oses="{{ oses_json }}" class="enable-if-js" disabled="disabled">
       {% for label, options in oses %}
-        {% for _, name, slug in options %}
-          <option value="{{ slug }}" data-dependency="{{ label[1] }}">{{ name }}</option>
+        {% for _, name, slug, default in options %}
+          <option value="{{ slug }}" data-dependency="{{ label[1] }}"{% if default %} selected="selected" data-default="true"{% endif %}>{{ name }}</option>
         {% endfor %}
       {% endfor %}
     </select>
@@ -15,7 +15,7 @@
       {% for label, options in browsers %}
         <optgroup label="{{ label[0] }}">
           {% for option in options if option.show_in_ui %}
-            <option value="{{ option.slug }}" data-dependency="{{ label[1] }}">{{ option.name }}</option>
+            <option value="{{ option.slug }}" data-dependency="{{ label[1] }}"{% if option.is_default %}{% if label[1] == 'desktop' %} selected="selected"{% endif %} data-default="true"{% endif %}>{{ option.name }}</option>
           {% endfor %}
         </optgroup>
       {% endfor %}
