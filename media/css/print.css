@@ -71,3 +71,11 @@ a {
     color: #555555;
     text-decoration: none;
 }
+
+h1 {
+    font-size: 1.5em;
+}
+
+h2 {
+    font-size: 1.25em;
+}
