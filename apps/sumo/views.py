@@ -19,9 +19,11 @@ from commonware.decorators import xframe_allow
 import django_qunit.views
 import jingo
 from PIL import Image
+from redis import ConnectionError
 from session_csrf import anonymous_csrf
 
 from sumo.urlresolvers import reverse
+from sumo.utils import redis_client
 from users.forms import AuthenticationForm
 
 
@@ -149,13 +151,13 @@ def monitor(request):
 
     # Check RabbitMQ.
     rabbitmq_status = True
-    rabbitmq_result = ''
+    rabbitmq_results = ''
     rabbit_conn = establish_connection(connect_timeout=2)
     try:
         rabbit_conn.connect()
-        rabbitmq_result = 'Successfully connected to RabbitMQ.'
+        rabbitmq_results = 'Successfully connected to RabbitMQ.'
     except socket.error:
-        rabbitmq_result = 'There was an error connecting to RabbitMQ!'
+        rabbitmq_results = 'There was an error connecting to RabbitMQ!'
         rabbitmq_status = False
     status_summary['rabbitmq'] = rabbitmq_status
 
@@ -165,6 +167,17 @@ def monitor(request):
     # rabbit_results = r = {'duration': time.time() - start}
     # status_summary['rabbit'] = pong == 'pong' and r['duration'] < 1
 
+    # Check Redis.
+    redis_results = {}
+    if hasattr(settings, 'REDIS_BACKENDS'):
+        for backend in settings.REDIS_BACKENDS:
+            try:
+                c = redis_client(backend)
+                redis_results[backend] = c.info()
+            except ConnectionError:
+                redis_results[backend] = False
+    status_summary['redis'] = all(redis_results.values())
+
     if not all(status_summary.values()):
         status = 500
 
@@ -172,7 +185,8 @@ def monitor(request):
                         {'memcache_results': memcache_results,
                          'libraries_results': libraries_results,
                          'filepath_results': filepath_results,
-                         'rabbitmq_result': rabbitmq_result,
+                         'rabbitmq_results': rabbitmq_results,
+                         'redis_results': redis_results,
                          'status_summary': status_summary},
                          status=status)
 
