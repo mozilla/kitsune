@@ -1,11 +1,25 @@
 {% extends "kadmin/base.html" %}
 
 {% block content %}
-  {% for name, info in redis_info.items %}
-    <h2>{{ name }}</h2>
+  {% for name, redis in redis_info.items %}
+    <h2>Redis Instance: {{ name }}</h2>
+    <h3>Config:</h3>
     <table class="redis-info">
       <tbody>
-        {% for item in info %}
+        {% for item in redis.config %}
+          <tr>
+            <th id="{{ name }}-{{ item.key|slugify }}">
+              {{ item.key }} <a href="#{{ name }}-{{ item.key|slugify }}">¶</a>
+            </th>
+            <td>{{ item.value|pprint }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <h3>Info:</h3>
+    <table class="redis-info">
+      <tbody>
+        {% for item in redis.info %}
           <tr>
             <th id="{{ name }}-{{ item.key|slugify }}">
               {{ item.key }} <a href="#{{ name }}-{{ item.key|slugify }}">¶</a>

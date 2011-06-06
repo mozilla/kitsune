@@ -66,11 +66,17 @@ admin.site.register_view('schema', schema_version,
 
 
 def redis_info(request):
-    """Admin view that displays redis INFO output for all defined backends."""
+    """Admin view that displays redis INFO+CONFIG output for all backends."""
     redis_info = {}
     for key in django_settings.REDIS_BACKENDS.keys():
-        info = redis_client(key).info()
-        redis_info[key] = [{'key': k, 'value': info[k]} for k in sorted(info)]
+        redis_info[key] = {}
+        client = redis_client(key)
+        cfg = client.config_get()
+        redis_info[key]['config'] = [{'key': k, 'value': cfg[k]} for k in
+                                     sorted(cfg)]
+        info = client.info()
+        redis_info[key]['info'] = [{'key': k, 'value': info[k]} for k in
+                                   sorted(info)]
 
     return render_to_response('kadmin/redis.html',
                               {'redis_info': redis_info,
