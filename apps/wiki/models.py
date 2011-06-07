@@ -170,6 +170,10 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin):
     current_revision = models.ForeignKey('Revision', null=True,
                                          related_name='current_for+')
 
+    # Latest revision which both is_approved and is_ready_for_localization
+    latest_localizable_revision = models.ForeignKey(
+        'Revision', null=True, related_name='localizable_for+')
+
     # The Document I was translated from. NULL iff this doc is in the default
     # locale or it is nonlocalizable. TODO: validate against
     # settings.WIKI_DEFAULT_LANGUAGE.
