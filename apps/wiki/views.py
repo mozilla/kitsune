@@ -688,25 +688,9 @@ def delete_revision(request, document_slug, revision_id):
     if only_revision:
         return HttpResponseBadRequest()
 
-    # Handle confirm delete form POST
-    log.warning('User %s is deleting revision with id=%s' %
-                (request.user, revision.id))
-    Revision.objects.filter(based_on=revision).update(based_on=None)
-
-    if document.current_revision == revision:
-        # If the current_revision is being deleted, lets try to update it to
-        # the previous approved revision.
-        revs = document.revisions.filter(
-            is_approved=True).order_by('-reviewed')
-        if revs.count() > 1:
-            document.current_revision = revs[1]
-        else:
-            document.current_revision = None
-        document.html = document.content_parsed or ''
-        document.save()
-
+    log.info('User %s is deleting revision with id=%s' %
+             (request.user, revision.id))
     revision.delete()
-
     return HttpResponseRedirect(reverse('wiki.document_revisions',
                                         args=[document.slug]))
 
