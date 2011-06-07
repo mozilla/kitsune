@@ -1655,7 +1655,7 @@ class RevisionDeleteTestCase(TestCaseBase):
         eq_(0, Revision.objects.filter(pk=self.r.id).count())
 
     def test_delete_current_revision(self):
-        """Deleting a the current_revision of a document, should update
+        """Deleting the current_revision of a document should update
         the current_revision to previous version."""
         self.client.login(username='admin', password='testpass')
         prev_revision = self.d.current_revision

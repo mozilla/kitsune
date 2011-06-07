@@ -8,6 +8,7 @@ from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import resolve
 from django.db import models
+from django.db.models import Q
 from django.http import Http404
 
 from pyquery import PyQuery
@@ -643,9 +644,43 @@ class Revision(ModelBase):
         if self.is_approved and (
                 not self.document.current_revision or
                 self.document.current_revision.id < self.id):
+            if self.is_ready_for_localization:
+                self.document.latest_localizable_revision = self
             self.document.html = self.content_parsed
             self.document.current_revision = self
             self.document.save()
+
+    def delete(self, *args, **kwargs):
+        """Dodge cascading delete of documents and other revisions."""
+        def latest_revision(excluded_rev, constraint):
+            """Return the largest-ID'd revision meeting the given constraint
+            and excluding the given revision, or None if there is none."""
+            revs = document.revisions.filter(constraint).exclude(
+                pk=excluded_rev.pk).order_by('-id')[:1]
+            try:
+                # Academic TODO: There's probably a way to keep the QuerySet
+                # lazy all the way through the update() call.
+                return revs[0]
+            except IndexError:
+                return None
+
+        Revision.objects.filter(based_on=self).update(based_on=None)
+        document = self.document
+
+        # If the current_revision is being deleted, try to update it to the
+        # previous approved revision:
+        if document.current_revision == self:
+            document.update(
+                current_revision=latest_revision(self, Q(is_approved=True)),
+                html=document.content_parsed or '')
+
+        # Likewise, step the latest_localizable_revision field backward if
+        # we're deleting that revision:
+        if document.latest_localizable_revision == self:
+            document.update(latest_localizable_revision=latest_revision(
+                self, Q(is_approved=True, is_ready_for_localization=True)))
+
+        super(Revision, self).delete(*args, **kwargs)
 
     def __unicode__(self):
         return u'[%s] %s #%s: %s' % (self.document.locale,

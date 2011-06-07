@@ -475,6 +475,58 @@ class RevisionTests(TestCase):
 
         eq_(en_rev.document.current_revision, de_rev.based_on)
 
+    def test_ready_for_l10n_updates_doc(self):
+        """Approving a ready-for-l10n rev should update the doc's field."""
+        # Approve a rev in a new doc:
+        approved_1 = revision(is_approved=True,
+                              is_ready_for_localization=True,
+                              save=True)
+        eq_(approved_1, approved_1.document.latest_localizable_revision)
+
+        # Add an unapproved revision that we can approve later:
+        unapproved = revision(document=approved_1.document,
+                              is_approved=True,
+                              is_ready_for_localization=False,
+                              save=True)
+
+        # Approving a rev in a doc that already has a localizable revision:
+        approved_2 = revision(document=approved_1.document,
+                              is_approved=True,
+                              is_ready_for_localization=True,
+                              save=True)
+        eq_(approved_2, approved_2.document.latest_localizable_revision)
+
+        # Approve the older rev. It should not become the latest_localizable.
+        unapproved.is_ready_for_localization=True
+        unapproved.save()
+        eq_(approved_2, approved_2.document.latest_localizable_revision)
+
+    def test_delete(self):
+        """Make sure deleting the latest localizable revision doesn't delete
+        the document but instead sets its latest localizable revision to the
+        previous one.
+
+        Making sure current_revision does the same is covered in the
+        test_delete_current_revision template test.
+
+        """
+        r1 = revision(is_approved=True,
+                      is_ready_for_localization=True,
+                      save=True)
+        d = r1.document
+        r2 = revision(document=d,
+                      is_approved=True,
+                      is_ready_for_localization=True,
+                      save=True)
+
+        # Deleting r2 should make the latest fall back to r1:
+        r2.delete()
+        eq_(r1, Document.objects.get(pk=d.pk).latest_localizable_revision)
+
+        # And deleting r1 should fall back to None:
+        r1.delete()
+        eq_(None, Document.objects.get(pk=d.pk).latest_localizable_revision)
+
 
 class RelatedDocumentTests(TestCase):
     fixtures = ['users.json', 'wiki/documents.json']
