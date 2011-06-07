@@ -33,7 +33,7 @@
 {% macro inbox_message(message) -%}
   <span class="avatar">{{ avatar_link(message.sender) }}</span>
   <span class="from">{{ name_link(message.sender) }} {{ datetimeformat(message.created) }}</span>
-  <div class="message">{{ message.message }}</div>
+  <div class="message">{{ message.content_parsed }}</div>
 {%- endmacro %}
 
 
@@ -57,5 +57,5 @@
     {% endif %}
     {{ datetimeformat(message.created) }}
   </span>
-  <div class="message">{{ message.message }}</div>
+  <div class="message">{{ message.content_parsed }}</div>
 {%- endmacro %}
