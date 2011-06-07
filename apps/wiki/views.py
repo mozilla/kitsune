@@ -367,7 +367,8 @@ def review_revision(request, document_slug, revision_id):
             send_reviewed_notification.delay(rev, doc, msg)
 
             # If approved, send approved notification
-            ApproveRevisionInLocaleEvent(rev).fire(exclude=rev.creator)
+            if rev.is_approved:
+                ApproveRevisionInLocaleEvent(rev).fire(exclude=rev.creator)
 
             # Schedule KB rebuild?
             statsd.incr('wiki.approve')
