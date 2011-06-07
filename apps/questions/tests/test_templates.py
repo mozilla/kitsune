@@ -119,23 +119,31 @@ class AnswersTemplateTestCase(TestCaseBase):
                             '10,000 characters or less. It is currently ' +
                             '10,001 characters.')
 
-    def test_solution(self):
-        """Test accepting a solution."""
+    def test_solve_unsolve(self):
+        """Test accepting a solution and undoing."""
         response = get(self.client, 'questions.answers',
                        args=[self.question.id])
         doc = pq(response.content)
         eq_(0, len(doc('div.solution')))
 
         answer = self.question.answers.all()[0]
-        response = post(self.client, 'questions.solution',
+        # Solve and verify
+        response = post(self.client, 'questions.solve',
                         args=[self.question.id, answer.id])
         doc = pq(response.content)
         eq_(1, len(doc('div.solution')))
         li = doc('span.solved')[0].getparent().getparent().getparent()
         eq_('answer-%s' % answer.id, li.attrib['id'])
+        q = Question.uncached.get(pk=self.question.id)
+        eq_(q.solution, answer)
+        # Unsolve and verify
+        response = post(self.client, 'questions.unsolve',
+                        args=[self.question.id, answer.id])
+        q = Question.uncached.get(pk=self.question.id)
+        eq_(q.solution, None)
 
-    def test_only_owner_can_accept_solution(self):
-        """Make sure non-owner can't mark solution."""
+    def test_only_owner_or_admin_can_solve_unsolve(self):
+        """Make sure non-owner/non-admin can't solve/unsolve."""
         response = get(self.client, 'questions.answers',
                        args=[self.question.id])
         doc = pq(response.content)
@@ -149,20 +157,31 @@ class AnswersTemplateTestCase(TestCaseBase):
         eq_(0, len(doc('input[name="solution"]')))
 
         answer = self.question.answers.all()[0]
-        response = post(self.client, 'questions.solution',
+        # Try to solve
+        response = post(self.client, 'questions.solve',
+                        args=[self.question.id, answer.id])
+        eq_(403, response.status_code)
+        # Try to unsolve
+        response = post(self.client, 'questions.unsolve',
                         args=[self.question.id, answer.id])
         eq_(403, response.status_code)
 
-    def test_solution_with_perm(self):
-        """Test marking a solution with 'change_solution' permission."""
+    def test_solve_unsolve_with_perm(self):
+        """Test marking solve/unsolve with 'change_solution' permission."""
         u = user(save=True)
         add_permission(u, Question, 'change_solution')
         self.client.login(username=u.username, password='testpass')
         answer = self.question.answers.all()[0]
-        post(self.client, 'questions.solution',
+        # Solve and verify
+        post(self.client, 'questions.solve',
              args=[self.question.id, answer.id])
         q = Question.uncached.get(pk=self.question.id)
         eq_(q.solution, answer)
+        # Unsolve and verify
+        post(self.client, 'questions.unsolve',
+             args=[self.question.id, answer.id])
+        q = Question.uncached.get(pk=self.question.id)
+        eq_(q.solution, None)
 
     def test_question_vote_GET(self):
         """Attempting to vote with HTTP GET returns a 405."""
