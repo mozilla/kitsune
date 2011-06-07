@@ -1,3 +1,4 @@
+import difflib
 import logging
 
 from django.conf import settings
@@ -5,11 +6,13 @@ from django.contrib.sites.models import Site
 from django.core.mail import EmailMessage
 from django.template import Context, loader
 
+from bleach import clean
 from tidings.events import InstanceEvent, Event
 from tower import ugettext as _
 
 from sumo.urlresolvers import reverse
 from wiki.models import Document
+from wikimarkup.parser import ALLOWED_TAGS, ALLOWED_ATTRIBUTES
 
 
 log = logging.getLogger('k.wiki.events')
@@ -21,10 +24,25 @@ def notification_mails(revision, subject, template, url, users_and_watches):
     subject = subject.format(title=document.title, creator=revision.creator,
                              locale=document.locale)
     t = loader.get_template(template)
+
+    fromfile = u'[%s] %s #%s' % (revision.based_on.document.locale,
+                                 revision.based_on.document.title,
+                                 revision.based_on.id)
+    tofile = u'[%s] %s #%s' % (revision.document.locale,
+                               revision.document.title,
+                               revision.id)
+    diff = clean(''.join(difflib.unified_diff(
+                    str(revision.based_on.content).splitlines(1),
+                    str(revision.content).splitlines(1),
+                    fromfile=fromfile,
+                    tofile=tofile)), ALLOWED_TAGS, ALLOWED_ATTRIBUTES)
+
     c = {'document_title': document.title,
          'creator': revision.creator,
          'url': url,
-         'host': Site.objects.get_current().domain}
+         'host': Site.objects.get_current().domain,
+         'diff': diff,
+         'fulltext': clean(revision.content, ALLOWED_TAGS, ALLOWED_ATTRIBUTES)}
     mail = EmailMessage(subject, '', settings.TIDINGS_FROM_ADDRESS)
 
     for u, w in users_and_watches:
