@@ -374,7 +374,7 @@ def reply(request, question_id):
 
 @require_POST
 @login_required
-def solution(request, question_id, answer_id):
+def solve(request, question_id, answer_id):
     """Accept an answer as the solution to the question."""
     question = get_object_or_404(Question, pk=question_id)
     answer = get_object_or_404(Answer, pk=answer_id)
@@ -392,6 +392,28 @@ def solution(request, question_id, answer_id):
 
     messages.add_message(request, messages.SUCCESS,
                          _('Thank you for choosing a solution!'))
+
+    return HttpResponseRedirect(question.get_absolute_url())
+
+
+@require_POST
+@login_required
+def unsolve(request, question_id, answer_id):
+    """Accept an answer as the solution to the question."""
+    question = get_object_or_404(Question, pk=question_id)
+    answer = get_object_or_404(Answer, pk=answer_id)
+    if question.is_locked:
+        raise PermissionDenied
+
+    if (question.creator != request.user and
+        not request.user.has_perm('questions.change_solution')):
+        return HttpResponseForbidden()
+
+    question.solution = None
+    question.save()
+
+    messages.add_message(request, messages.SUCCESS,
+                         _("The solution was undone successfully."))
 
     return HttpResponseRedirect(question.get_absolute_url())
 

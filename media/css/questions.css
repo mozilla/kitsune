@@ -912,12 +912,16 @@ ol.answers div.meta {
 }
 
 ol.answers div.meta span {
-    border-right: 1px solid #ccc;
     padding: 0 10px;
 }
 
 ol.answers div.meta span.helpful {
+    border-left: 1px solid #ccc;
     font-weight: bold;
+}
+
+ol.answers div.meta span:first-child {
+    border-left: none;
 }
 
 ol.answers div.meta span.solved {
@@ -925,8 +929,29 @@ ol.answers div.meta span.solved {
     font-weight: bold;
 }
 
+ol.answers form.unsolve {
+    display: inline;
+}
+
+ol.answers form.unsolve input[type="submit"] {
+    background: none;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    color: #ff0000;
+    font-family: inherit;
+    font-size: inherit;
+    font-weight: bold;
+    margin: 0 10px 0 0;
+    padding: 0;
+}
+
 ol.answers div.meta a.reply {
-    margin: 0 0 0 10px;
+    padding: 0 0 0 10px;
+}
+
+ol.answers div.meta * + a.reply {
+    border-left: 1px solid #ccc;
 }
 
 ol.answers div.meta span:first-child {

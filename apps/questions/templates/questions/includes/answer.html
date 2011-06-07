@@ -39,6 +39,12 @@
   <div class="meta">
     {% if question.solution == answer %}
       <span class="solved">{{ _('Solution chosen by {author}')|f(author=question.creator) }}</span>
+      {% if user == question.creator or user.has_perm('questions.change_solution') %}
+        <form class="unsolve" action="{{ url('questions.unsolve', question_id=question.id, answer_id=answer.id) }}" method="post">
+          {{ csrf() }}
+          <input type="submit" name="unsolve" value="{{ _('Undo') }}" />
+        </form>
+      {% endif %}
     {% endif %}
     {% if answer.num_votes != 0 %}
       <span class="helpful">
@@ -63,7 +69,7 @@
         </form>
       {% endif %}
       {% if not question.solution and (user == question.creator or user.has_perm('questions.change_solution')) %}
-        <form class="solution" action="{{ url('questions.solution', question_id=question.id, answer_id=answer.id) }}" method="post">
+        <form class="solution" action="{{ url('questions.solve', question_id=question.id, answer_id=answer.id) }}" method="post">
           {{ csrf() }}
           {% if user == question.creator %}
             <h4>{{ _('Did this solve your problem?') }}</h4>
