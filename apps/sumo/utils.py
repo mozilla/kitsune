@@ -146,8 +146,8 @@ def redis_client(name):
             port = int(port)
         except (ValueError, TypeError):
             port = 6379
-        else:
-            host = 'localhost'
-            port = 6379
+    else:
+        host = server
+        port = 6379
     return Redis(host=host, port=port, db=db, password=password,
                  socket_timeout=socket_timeout)
