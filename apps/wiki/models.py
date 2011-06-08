@@ -595,6 +595,9 @@ class Revision(ModelBase):
     # TODO: limit_choices_to={'document__locale':
     # settings.WIKI_DEFAULT_LANGUAGE} is a start but not sufficient.
 
+    # Is both approved and marked as ready for translation (which will result
+    # in the translation UI considering it when looking for the latest
+    # translatable version). If is_approved=False, this must be False.
     is_ready_for_localization = models.BooleanField(default=False)
 
     class Meta(object):
@@ -618,7 +621,7 @@ class Revision(ModelBase):
         return self.based_on, True
 
     def clean(self):
-        """Ensure based_on is valid."""
+        """Ensure based_on is valid & police is_ready/is_approved invariant."""
         # All of the cleaning herein should be unnecessary unless the user
         # messes with hidden form data.
         try:
@@ -638,6 +641,11 @@ class Revision(ModelBase):
                     ' %(id)s does not fit those criteria.') %
                     dict(locale=LOCALES[settings.WIKI_DEFAULT_LANGUAGE].native,
                          id=old.id))
+
+        # If not is_approved, can't be is_ready. TODO: think about using a
+        # single field with more states.
+        if not self.is_approved:
+            self.is_ready_for_localization = False
 
     def save(self, *args, **kwargs):
         _, is_clean = self._based_on_is_clean()

@@ -474,6 +474,12 @@ class RevisionTests(TestCase):
 
         eq_(en_rev.document.current_revision, de_rev.based_on)
 
+    def test_correct_ready_for_localization(self):
+        """Revision.clean() must clear is_ready_for_l10n if not is_approved."""
+        r = revision(is_approved=False, is_ready_for_localization=True)
+        r.clean()
+        assert not r.is_ready_for_localization
+
     def test_ready_for_l10n_updates_doc(self):
         """Approving a ready-for-l10n rev should update the doc's field."""
         # Approve a rev in a new doc:
