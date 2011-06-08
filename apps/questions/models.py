@@ -140,13 +140,17 @@ class Question(ModelBase, BigVocabTaggableMixin):
         to_add = self.product.get('tags', []) + self.category.get('tags', [])
 
         version = self.metadata.get('ff_version', '')
-        if version in product_details.firefox_history_development_releases or \
+        dev_releases = product_details.firefox_history_development_releases
+        if version in dev_releases or \
            version in product_details.firefox_history_stability_releases or \
            version in product_details.firefox_history_major_releases:
             to_add.append('Firefox %s' % version)
             tenths = _tenths_version(version)
             if tenths:
                 to_add.append('Firefox %s' % tenths)
+        elif _has_beta(version, dev_releases):
+            to_add.append('Firefox %s' % version)
+            to_add.append('beta')
 
         self.tags.add(*to_add)
 
@@ -394,3 +398,18 @@ def _tenths_version(full_version):
     if match:
         return match.group(1)
     return ''
+
+
+def _has_beta(version, dev_releases):
+    """Returns True if the version has a beta release.
+    
+    For example, if:
+        dev_releases={...u'4.0rc2': u'2011-03-18',
+                      u'5.0b1': u'2011-05-20',
+                      u'5.0b2': u'2011-05-20',
+                      u'5.0b3': u'2011-06-01'}
+    and you pass '5.0', it return True since there are 5.0 betas in the
+    dev_releases dict. If you pass '6.0', it returns False.
+    """
+    return version in [re.search('(\d+\.)+\d+', s).group(0)
+                       for s in dev_releases.keys()]

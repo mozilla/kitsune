@@ -8,7 +8,7 @@ from taggit.models import Tag
 from flagit.models import FlaggedObject
 from questions.events import QuestionReplyEvent
 from questions.models import (Question, QuestionMetaData, Answer,
-                              _tenths_version)
+                              _tenths_version, _has_beta)
 from questions.tasks import update_answer_pages
 from questions.tests import TestCaseBase, TaggingTestCaseBase, tags_eq
 from questions.question_config import products
@@ -229,6 +229,15 @@ class TestQuestionMetadata(TestCaseBase):
         eq_(_tenths_version('1.2.3beta3'), '1.2')
         eq_(_tenths_version('1.2rc'), '1.2')
         eq_(_tenths_version('1.w'), '')
+
+    def test_has_beta(self):
+        """Test the _has_beta helper."""
+        assert _has_beta('5.0', {'5.0b3': '2011-06-01'})
+        assert not _has_beta('6.0', {'5.0b3': '2011-06-01'})
+        assert not _has_beta('5.5', {'5.0b3': '2011-06-01'})
+        assert _has_beta('5.7', {'5.7b1': '2011-06-01'})
+        assert _has_beta('11.0', {'11.0b7': '2011-06-01'})
+        assert not _has_beta('10.0', {'11.0b7': '2011-06-01'})
 
 
 class QuestionTests(TestCaseBase):
