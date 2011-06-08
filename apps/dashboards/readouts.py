@@ -269,8 +269,7 @@ class MostVisitedTranslationsReadout(MostVisitedDefaultLanguageReadout):
             # translated revision is based on:
             '(SELECT MAX(engrev.significance) '
              'FROM wiki_revision engrev, wiki_revision transrev '
-             'WHERE engrev.is_approved '
-             'AND engrev.is_ready_for_localization '
+             'WHERE engrev.is_ready_for_localization '
              'AND transrev.id=transdoc.current_revision_id '
              'AND engrev.document_id=transdoc.parent_id '
              'AND engrev.id>transrev.based_on_id '
@@ -440,10 +439,10 @@ class OutOfDateReadout(Readout):
                   '(SELECT MAX(engsince.significance) '
                   'FROM wiki_revision engsince '
                   'WHERE engsince.document_id=transdoc.parent_id '
-                  # Assumes that any approved revision became the current
-                  # revision at some point: we don't let the user go back and
-                  # approve revisions older than the latest approved one.
-                  'AND engsince.is_approved '
+                  # Assumes that any ready (and therefor approved) revision
+                  # became the current revision at some point: we don't let the
+                  # user go back and approve revisions older than the latest
+                  # approved one.
                   'AND engsince.is_ready_for_localization '
                   'AND engsince.id>'
                   # The English revision the current translation's based on:
