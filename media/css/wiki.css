@@ -777,6 +777,11 @@ table.diff.full {
     position: absolute;
 }
 
+table.diff.full td.text {
+    display: table-cell;
+    width: auto;
+}
+
 table.diff colgroup {
     border: none;
 }
@@ -801,7 +806,9 @@ td.diff_header {
 }
 
 td.text {
+    display: inline-block;
     padding: 1px 5px;
+    width: 300px;
 }
 
 .diff_add {
