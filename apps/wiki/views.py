@@ -29,8 +29,7 @@ from wiki.events import (EditDocumentEvent, ReviewableRevisionInLocaleEvent,
 from wiki.forms import DocumentForm, RevisionForm, ReviewForm
 from wiki.models import (Document, Revision, HelpfulVote, CATEGORIES,
                          OPERATING_SYSTEMS, GROUPED_OPERATING_SYSTEMS,
-                         FIREFOX_VERSIONS, GROUPED_FIREFOX_VERSIONS,
-                         get_current_or_latest_revision)
+                         FIREFOX_VERSIONS, GROUPED_FIREFOX_VERSIONS)
 from wiki.parser import wiki_to_html
 from wiki.tasks import send_reviewed_notification, schedule_rebuild_kb
 
@@ -377,7 +376,7 @@ def review_revision(request, document_slug, revision_id):
                                                 args=[document_slug]))
 
     if doc.parent:  # A translation
-        parent_revision = get_current_or_latest_revision(doc.parent)
+        parent_revision = doc.parent.localizable_or_latest_revision()
         template = 'wiki/review_translation.html'
     else:
         parent_revision = None
@@ -452,8 +451,8 @@ def translate(request, document_slug, revision_id=None):
         return jingo.render(request, 'handlers/400.html',
                             {'message': message}, status=400)
 
-    based_on_rev = get_current_or_latest_revision(parent_doc,
-                                                  reviewed_only=False)
+    based_on_rev = parent_doc.localizable_or_latest_revision(
+        reviewed_only=False)
 
     disclose_description = bool(request.GET.get('opendescription'))
 
@@ -487,7 +486,7 @@ def translate(request, document_slug, revision_id=None):
             initial.update(content=based_on_rev.content,
                            summary=based_on_rev.summary,
                            keywords=based_on_rev.keywords)
-        instance = doc and get_current_or_latest_revision(doc)
+        instance = doc and doc.localizable_or_latest_revision()
         rev_form = RevisionForm(instance=instance, initial=initial)
         base_rev = base_rev or instance
 

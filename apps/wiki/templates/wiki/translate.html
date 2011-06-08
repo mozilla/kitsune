@@ -19,9 +19,9 @@
         {{ _('Translating article to {locale}' )|f(locale=language) }}.
         <a id="change-locale-link" class="change" href="#change-locale">{{ _('Change') }}</a>
       </p>
-      {% if not based_on.reviewed or not based_on.is_approved %}
+      {% if not based_on.is_ready_for_localization %}
         <div class="warning-box">
-          {{ _('You are translating an unreviewed or rejected English document.') }}
+          {{ _('You are translating an English document which is not yet ready for localization.') }}
         </div>
       {% endif %}
       <section id="change-locale" class="kbox" title="{{ _('Choose a locale:') }}" data-target="#change-locale-link" data-modal="true" data-close-on-out-click="true">
@@ -114,11 +114,13 @@
             </div>
           </li>
         </ul>
-        {% if document.current_revision and document.current_revision.based_on %}
-          {# Diff between the English version the current translation is based on and the current English version. #}
-          {{ revision_diff(document.current_revision.based_on, parent.current_revision, show_picker=True) }}
+        {% if document.current_revision and document.current_revision.based_on and parent.latest_localizable_revision %}
+          {# Diff between the English version the current translation is based on and the most recent ready-to-localize English version. #}
+          {{ revision_diff(document.current_revision.based_on, parent.latest_localizable_revision, show_picker=True) }}
+        {% elif not parent.latest_localizable_revision %}
+          <p>{{ _('Note: This article has no revisions ready for localization.') }}</p>
         {% else %}
-          <p>{{ _('Note: There are no approved translations for this article.') }}
+          <p>{{ _('Note: There are no approved translations for this article.') }}</p>
         {% endif %}
         <div id="content-fields">
           <ul>
