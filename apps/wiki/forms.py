@@ -223,3 +223,8 @@ class ReviewForm(forms.Form):
                     label=_lazy(u'Significance:'),
                     choices=SIGNIFICANCES, initial=SIGNIFICANCES[0][0],
                     required=False, widget=forms.RadioSelect())
+
+    is_ready_for_localization = forms.BooleanField(
+        initial=False,
+        label=_lazy(u'Ready for localization'),
+        required=False)
