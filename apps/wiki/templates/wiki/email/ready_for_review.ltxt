@@ -11,9 +11,9 @@ https://{{ host }}{{ url }}
 {% unsubscribe_instructions watch %}
 
 --
-Diff:
+{% blocktrans %}Changes:{% endblocktrans %}
 {{ diff|safe }}
 
 --
-Fulltext:
+{% blocktrans %}Text of the new revision:{% endblocktrans %}
 {{ fulltext|safe }}

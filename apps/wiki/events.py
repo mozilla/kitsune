@@ -5,14 +5,15 @@ from django.conf import settings
 from django.contrib.sites.models import Site
 from django.core.mail import EmailMessage
 from django.template import Context, loader
+from django.utils.encoding import smart_str
 
 from bleach import clean
 from tidings.events import InstanceEvent, Event
 from tower import ugettext as _
+from wikimarkup.parser import ALLOWED_TAGS, ALLOWED_ATTRIBUTES
 
 from sumo.urlresolvers import reverse
 from wiki.models import Document
-from wikimarkup.parser import ALLOWED_TAGS, ALLOWED_ATTRIBUTES
 
 
 log = logging.getLogger('k.wiki.events')
@@ -25,17 +26,20 @@ def notification_mails(revision, subject, template, url, users_and_watches):
                              locale=document.locale)
     t = loader.get_template(template)
 
-    fromfile = u'[%s] %s #%s' % (revision.based_on.document.locale,
-                                 revision.based_on.document.title,
-                                 revision.based_on.id)
-    tofile = u'[%s] %s #%s' % (revision.document.locale,
-                               revision.document.title,
-                               revision.id)
-    diff = clean(''.join(difflib.unified_diff(
-                    str(revision.based_on.content).splitlines(1),
-                    str(revision.content).splitlines(1),
-                    fromfile=fromfile,
-                    tofile=tofile)), ALLOWED_TAGS, ALLOWED_ATTRIBUTES)
+    if revision.based_on is not None:
+        fromfile = u'[%s] %s #%s' % (revision.based_on.document.locale,
+                                     revision.based_on.document.title,
+                                     revision.based_on.id)
+        tofile = u'[%s] %s #%s' % (revision.document.locale,
+                                   revision.document.title,
+                                   revision.id)
+        diff = clean(''.join(difflib.unified_diff(
+                        smart_str(revision.based_on.content).splitlines(1),
+                        smart_str(revision.content).splitlines(1),
+                        fromfile=fromfile,
+                        tofile=tofile)), ALLOWED_TAGS, ALLOWED_ATTRIBUTES)
+    else:
+        diff = ""  # No based_on, so diff wouldn't make sense.
 
     c = {'document_title': document.title,
          'creator': revision.creator,
