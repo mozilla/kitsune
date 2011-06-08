@@ -601,7 +601,9 @@ class Revision(ModelBase):
     is_ready_for_localization = models.BooleanField(default=False)
 
     class Meta(object):
-        permissions = [('review_revision', 'Can review a revision')]
+        permissions = [('review_revision', 'Can review a revision'),
+                       ('mark_ready_for_l10n',
+                        'Can mark revision as ready for localization')]
 
     def _based_on_is_clean(self):
         """Return a tuple: (the correct value of based_on, whether the old

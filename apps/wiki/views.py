@@ -358,6 +358,14 @@ def review_revision(request, document_slug, revision_id):
             rev.reviewed = datetime.now()
             if should_ask_significance and form.cleaned_data['significance']:
                 rev.significance = form.cleaned_data['significance']
+
+            # If document is localizable and revision was approved and
+            # user has permission, set the is_ready_for_localization value.
+            if (doc.is_localizable and rev.is_approved and
+                request.user.has_perm('wiki.mark_ready_for_l10n')):
+                l10n_ready = 'is_ready_for_localization'
+                rev.is_ready_for_localization = form.cleaned_data[l10n_ready]
+
             rev.save()
 
             # Send an email (not really a "notification" in the sense that
