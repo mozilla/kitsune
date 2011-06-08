@@ -514,6 +514,23 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin):
         """Return the document I was translated from or, if none, myself."""
         return self.parent or self
 
+    def localizable_or_latest_revision(self, reviewed_only=True):
+        """Return latest ready-to-localize revision if there is one, else the
+        last created revision."""
+        rev = self.latest_localizable_revision
+        if not rev:
+            if reviewed_only:
+                exclusions = Q(is_approved=False, reviewed__isnull=False)
+            else:
+                exclusions = Q()
+            revs = self.revisions.exclude(exclusions).order_by('-id')[:1]
+            try:
+                rev = revs[0]
+            except IndexError:
+                pass
+
+        return rev
+
     def has_voted(self, request):
         """Did the user already vote for this document?"""
         if request.user.is_authenticated():
@@ -570,14 +587,15 @@ class Revision(ModelBase):
     creator = models.ForeignKey(User, related_name='created_revisions')
     is_approved = models.BooleanField(default=False, db_index=True)
 
-    # The default locale's rev that was current when the Edit button was hit to
-    # create this revision. Used to determine whether localizations are out of
-    # date.
+    # The default locale's rev that was the latest ready-for-l10n one when the
+    # Edit button was hit to begin creating this revision. If there was none,
+    # this is simply the latest of the default locale's revs as of that time.
+    # Used to determine whether localizations are out of date.
     based_on = models.ForeignKey('self', null=True, blank=True)
     # TODO: limit_choices_to={'document__locale':
     # settings.WIKI_DEFAULT_LANGUAGE} is a start but not sufficient.
 
-    is_ready_for_localization = models.BooleanField(default=True)
+    is_ready_for_localization = models.BooleanField(default=False)
 
     class Meta(object):
         permissions = [('review_revision', 'Can review a revision')]
@@ -586,26 +604,17 @@ class Revision(ModelBase):
         """Return a tuple: (the correct value of based_on, whether the old
         value was correct).
 
-        based_on must be an approved revision of the English version of the
-        document if there are any such revisions, any revision if no
-        approved revision exists, and None otherwise. If based_on is not
-        already set when this is called, the return value defaults to the
-        current_revision of the English document.
+        based_on must be a revision of the English version of the document. If
+        based_on is not already set when this is called, the return value
+        defaults to something reasonable.
 
         """
-        # TODO(james): This could probably be simplified down to "if
-        # based_on is set, it must be a revision of the original document."
         original = self.document.original
-        base = get_current_or_latest_revision(original)
-        has_approved = original.revisions.filter(is_approved=True).exists()
-        if (original.current_revision or not has_approved):
-            if (self.based_on and
-                self.based_on.document != original):
-                # based_on is set and points to the wrong doc.
-                return base, False
-            # Else based_on is valid; leave it alone.
-        elif self.based_on:
-            return None, False
+        if self.based_on and self.based_on.document != original:
+            # based_on is set and points to the wrong doc. The following is
+            # then the most likely helpful value:
+            return original.localizable_or_latest_revision(), False
+        # Even None is permissible, for example in the case of a brand new doc.
         return self.based_on, True
 
     def clean(self):
@@ -735,22 +744,6 @@ class RelatedDocument(ModelBase):
 
     class Meta(object):
         ordering = ['-in_common']
-
-
-def get_current_or_latest_revision(document, reviewed_only=True):
-    """Returns current revision if there is one, else the last created
-    revision."""
-    rev = document.current_revision
-    if not rev:
-        if reviewed_only:
-            filter = models.Q(is_approved=False, reviewed__isnull=False)
-        else:
-            filter = models.Q()
-        revs = document.revisions.exclude(filter).order_by('-created')
-        if revs.exists():
-            rev = revs[0]
-
-    return rev
 
 
 def _doc_components_from_url(url, required_locale=None, check_host=True):

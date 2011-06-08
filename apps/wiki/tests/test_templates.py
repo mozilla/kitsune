@@ -25,7 +25,8 @@ from wiki.events import (EditDocumentEvent, ReviewableRevisionInLocaleEvent,
                          ApproveRevisionInLocaleEvent)
 from wiki.models import Document, Revision, HelpfulVote, SIGNIFICANCES
 from wiki.tasks import send_reviewed_notification
-from wiki.tests import TestCaseBase, document, revision, new_document_data
+from wiki.tests import (TestCaseBase, document, revision, new_document_data,
+                        translated_revision)
 
 
 READY_FOR_REVIEW_EMAIL_CONTENT = """
@@ -1375,6 +1376,48 @@ class TranslateTests(TestCaseBase):
         response = self.client.get(url)
         doc = pq(response.content)
         assert doc('.warning-box').text()
+
+    def test_skip_unready_when_first_translation(self):
+        """Never offer an unready-for-localization revision as initial
+        translation source text."""
+        # Create an English document all ready to translate:
+        en_doc = document(is_localizable=True, save=True)
+        ready = revision(document=en_doc,
+                         is_approved=True,
+                         is_ready_for_localization=True,
+                         save=True,
+                         content='I am the ready!')
+        unready = revision(document=en_doc,
+                           is_approved=True,
+                           is_ready_for_localization=False,
+                           save=True)
+
+        url = reverse('wiki.translate', locale='de', args=[en_doc.slug])
+        response = self.client.get(url)
+        self.assertContains(response, 'I am the ready!')
+
+    def test_skip_unready_when_not_first_translation(self):
+        """Never offer an unready-for-localization revision as diff text when
+        bringing an already translated article up to date."""
+        # Create an initial translated revision so the version of the template
+        # with the English-to-English diff shows up:
+        initial_rev = translated_revision(is_approved=True, save=True)
+        en_doc = initial_rev.document.parent
+        ready = revision(document=en_doc,
+                         is_approved=True,
+                         is_ready_for_localization=True,
+                         save=True)
+        unready = revision(document=en_doc,
+                           is_approved=True,
+                           is_ready_for_localization=False,
+                           save=True)
+
+        url = reverse('wiki.translate', locale='de', args=[en_doc.slug])
+        response = self.client.get(url)
+        eq_(200, response.status_code)
+        # Get the link to the rev on the right side of the diff:
+        to_link = pq(response.content)('.revision-diff h3 a')[1].attrib['href']
+        assert to_link.endswith('/%s' % ready.pk)
 
 
 def _test_form_maintains_based_on_rev(client, doc, view, post_data,
