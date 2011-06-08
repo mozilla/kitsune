@@ -533,6 +533,25 @@ class RevisionTests(TestCase):
         r1.delete()
         eq_(None, Document.objects.get(pk=d.pk).latest_localizable_revision)
 
+    def test_delete_rendering(self):
+        """Make sure the cached HTML updates when deleting the current rev."""
+        unapproved = revision(is_approved=False, save=True)
+        d = unapproved.document
+        approved = revision(document=d,
+                            is_approved=True,
+                            content='booyah',
+                            save=True)
+        assert 'booyah' in d.content_parsed
+
+        # Delete the current rev. Since there are no other approved revs, the
+        # document's HTML should fall back to "".
+        approved.delete()
+        eq_('', d.content_parsed)
+
+        # Now delete the final revision. It still shouldn't crash.
+        unapproved.delete()
+        eq_('', d.content_parsed)
+
 
 class RelatedDocumentTests(TestCase):
     fixtures = ['users.json', 'wiki/documents.json']

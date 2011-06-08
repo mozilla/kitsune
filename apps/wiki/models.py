@@ -384,8 +384,7 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin):
     @property
     def content_parsed(self):
         if not self.current_revision:
-            return None
-
+            return ''
         return self.current_revision.content_parsed
 
     @property
@@ -689,9 +688,10 @@ class Revision(ModelBase):
         # If the current_revision is being deleted, try to update it to the
         # previous approved revision:
         if document.current_revision == self:
+            new_current = latest_revision(self, Q(is_approved=True))
             document.update(
-                current_revision=latest_revision(self, Q(is_approved=True)),
-                html=document.content_parsed or '')
+                current_revision=new_current,
+                html=new_current.content_parsed if new_current else '')
 
         # Likewise, step the latest_localizable_revision field backward if
         # we're deleting that revision:
