@@ -37,23 +37,28 @@ class LocalizationDashTests(TestCase):
         """Assert the main dash and all the readouts render and don't crash."""
         # Put some stuff in the DB so at least one row renders for each
         # readout:
-        untranslated = revision(is_approved=True)
+        untranslated = revision(is_approved=True,
+                                is_ready_for_localization=True)
         untranslated.save()
 
-        unreviewed = translated_revision()
+        unreviewed = translated_revision(is_ready_for_localization=True)
         unreviewed.save()
 
-        out_of_date = translated_revision(is_approved=True)
+        out_of_date = translated_revision(is_approved=True,
+                                          is_ready_for_localization=True)
         out_of_date.save()
         major_update = revision(document=out_of_date.document.parent,
                                 significance=MAJOR_SIGNIFICANCE,
-                                is_approved=True)
+                                is_approved=True,
+                                is_ready_for_localization=True)
         major_update.save()
 
-        needing_updates = translated_revision(is_approved=True)
+        needing_updates = translated_revision(is_approved=True,
+                                              is_ready_for_localization=True)
         needing_updates.save()
         medium_update = revision(document=needing_updates.document.parent,
-                                significance=MEDIUM_SIGNIFICANCE)
+                                 significance=MEDIUM_SIGNIFICANCE,
+                                 is_ready_for_localization=True)
         medium_update.save()
 
         response = self.client.get(reverse('dashboards.localization',
@@ -65,10 +70,9 @@ class LocalizationDashTests(TestCase):
                                       untranslated.document.title)
         self._assert_readout_contains(doc, 'unreviewed',
                                       unreviewed.document.title)
-        # TODO: Why do these fail? The query doesn't return the rows set up
-        # above. Is the setup wrong, or is the query?
-        # self._assert_readout_contains(doc, 'out-of-date',
-        #                               out_of_date.document.title)
+        self._assert_readout_contains(doc, 'out-of-date',
+                                      out_of_date.document.title)
+        # TODO: Why does this fail? Is the setup wrong, or is the query?
         # self._assert_readout_contains(doc, 'needing-updates',
         #                               needing_updates.document.title)
 
@@ -81,7 +85,8 @@ class LocalizationDashTests(TestCase):
         # the main, multi-readout page.
 
         # Put something in the DB so something shows up:
-        untranslated = revision(is_approved=True)
+        untranslated = revision(is_approved=True,
+                                is_ready_for_localization=True)
         untranslated.save()
 
         response = self.client.get(reverse('dashboards.localization_detail',
