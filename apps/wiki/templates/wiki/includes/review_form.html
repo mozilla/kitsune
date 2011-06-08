@@ -31,6 +31,14 @@
         <label for="id-approve-comment">{{ _('Leave a message for the contributor: <span class="optional">(optional)</span>')|safe }}</label>
         <textarea id="id-approve-comment" name="comment">{% if form.initial %}{{ form.initial.comment }}{% else %}{{ form.comment.data }}{% endif %}</textarea>
       </div>
+      {% if document.is_localizable and user.has_perm('wiki.mark_ready_for_l10n') %}
+        <div class="ready-for-l10n">
+          <label>
+            {{ form.is_ready_for_localization|safe }}
+            {{ form.is_ready_for_localization.label|safe }}
+          </label>
+        </div>
+      {% endif %}
       <input type="submit" name="approve" value="{{ _('Accept') }}">
       <a class="kbox-cancel" href="{{ url('wiki.document_revisions', document.slug) }}">{{ _('Cancel') }}</a>
     </form>

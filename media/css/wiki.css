@@ -331,13 +331,11 @@ article.form-page form li label {
     display: inline;
 }
 
-#revision-form label[for="id_is_ready_for_localization"],
 #document-form label[for="id_is_localizable"],
 #document-form label[for="id_is_archived"] {
     display: inline;
 }
 
-#revision-form #id_is_ready_for_localization,
 #document-form #id_is_localizable,
 #document-form #id_is_archived {
     margin: 0 .5em;
@@ -715,6 +713,7 @@ body.review #content-fields textarea {
 }
 
 #approve-modal div.message,
+#approve-modal div.ready-for-l10n,
 #reject-modal div.message {
     margin: 10px 0;
 }
