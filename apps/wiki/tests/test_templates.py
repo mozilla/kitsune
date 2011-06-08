@@ -1,15 +1,19 @@
 from datetime import datetime, timedelta
+import difflib
 
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
 from django.core import mail
+from django.utils.encoding import smart_str
 
+from bleach import clean
 import mock
 from nose import SkipTest
 from nose.tools import eq_
 from pyquery import PyQuery as pq
 from taggit.models import Tag
+from wikimarkup.parser import ALLOWED_TAGS, ALLOWED_ATTRIBUTES
 
 from questions.tests import tags_eq
 from sumo.urlresolvers import reverse
@@ -37,7 +41,16 @@ https://testserver/en-US/kb/%s/review/%s
 
 --
 Unsubscribe from these emails:
-https://testserver/en-US/unsubscribe/%s?s=%s"""
+https://testserver/en-US/unsubscribe/%s?s=%s
+
+--
+Changes:
+%s
+
+--
+Text of the new revision:
+%s
+"""
 
 DOCUMENT_EDITED_EMAIL_CONTENT = """
 
@@ -66,7 +79,16 @@ https://testserver/en-US/kb/%s
 
 --
 Unsubscribe from these emails:
-https://testserver/en-US/unsubscribe/%s?s=%s"""
+https://testserver/en-US/unsubscribe/%s?s=%s
+
+--
+Changes:
+%s
+
+--
+Text of the new revision:
+%s
+"""
 
 
 class DocumentTests(TestCaseBase):
@@ -520,13 +542,29 @@ class NewRevisionTests(TestCaseBase):
         new_rev = self.d.revisions.order_by('-id')[0]
         eq_(self.d.current_revision, new_rev.based_on)
 
+        if new_rev.based_on is not None:
+            fromfile = u'[%s] %s #%s' % (new_rev.based_on.document.locale,
+                                         new_rev.based_on.document.title,
+                                         new_rev.based_on.id)
+            tofile = u'[%s] %s #%s' % (new_rev.document.locale,
+                                       new_rev.document.title,
+                                       new_rev.id)
+            diff = clean(''.join(difflib.unified_diff(
+                            smart_str(new_rev.based_on.content).splitlines(1),
+                            smart_str(new_rev.content).splitlines(1),
+                            fromfile=fromfile,
+                            tofile=tofile)), ALLOWED_TAGS, ALLOWED_ATTRIBUTES)
+        else:
+            diff = ""  # No based_on, so diff wouldn't make sense.
+
         # Assert notifications fired and have the expected content:
         attrs_eq(mail.outbox[0],
                  subject=u'%s is ready for review (%s)' % (self.d.title,
                                                            new_rev.creator),
                  body=READY_FOR_REVIEW_EMAIL_CONTENT %
                     (self.d.title, self.d.slug, new_rev.id,
-                     reviewable_watch.pk, reviewable_watch.secret),
+                     reviewable_watch.pk, reviewable_watch.secret,
+                     diff, new_rev.content),
                  to=['joe@example.com'])
         attrs_eq(mail.outbox[1],
                  subject=u'%s was edited by %s' % (self.d.title,
@@ -860,12 +898,28 @@ class ReviewRevisionTests(TestCaseBase):
         # The "reviewed" mail should be sent to the creator, and the "approved"
         # mail should be sent to any subscribers:
         reviewed_delay.assert_called_with(r, r.document, '')
+
+        if r.based_on is not None:
+            fromfile = u'[%s] %s #%s' % (r.based_on.document.locale,
+                                         r.based_on.document.title,
+                                         r.based_on.id)
+            tofile = u'[%s] %s #%s' % (r.document.locale,
+                                       r.document.title,
+                                       r.id)
+            diff = clean(''.join(difflib.unified_diff(
+                            smart_str(r.based_on.content).splitlines(1),
+                            smart_str(r.content).splitlines(1),
+                            fromfile=fromfile,
+                            tofile=tofile)), ALLOWED_TAGS, ALLOWED_ATTRIBUTES)
+        else:
+            diff = ""  # No based_on, so diff wouldn't make sense.
+
         attrs_eq(mail.outbox[0],
                  subject='%s (%s) has a new approved revision' %
                      (self.document.title, self.document.locale),
                  body=APPROVED_EMAIL_CONTENT %
                     (self.document.title, self.document.slug, watch.pk,
-                     watch.secret),
+                     watch.secret, diff, r.content),
                  to=['joe@example.com'])
 
     @mock.patch.object(send_reviewed_notification, 'delay')
