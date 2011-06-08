@@ -370,7 +370,7 @@ def review_revision(request, document_slug, revision_id):
             ApproveRevisionInLocaleEvent(rev).fire(exclude=rev.creator)
 
             # Schedule KB rebuild?
-            statsd.incr('wiki.approve')
+            statsd.incr('wiki.review')
             schedule_rebuild_kb()
 
             return HttpResponseRedirect(reverse('wiki.document_revisions',
