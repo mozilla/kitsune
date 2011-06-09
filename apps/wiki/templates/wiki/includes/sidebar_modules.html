@@ -12,7 +12,7 @@
           <a href="{{ url('wiki.document', document.slug) }}">{{ _('Article') }}</a>
         {% endif %}
       </li>
-      {% if document %}
+      {% if document and document.allow_discussion %}
         <li{% if active == 'discussion' %} class="active"{% endif %}>
           {% if active == 'discussion' %}
             <span>{{ _('Discussion') }}</span>

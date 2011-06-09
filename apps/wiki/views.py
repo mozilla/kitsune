@@ -745,7 +745,8 @@ def _document_form_initial(document):
             'firefox_versions': [x.item_id for x in
                                  document.firefox_versions.all()],
             'operating_systems': [x.item_id for x in
-                                  document.operating_systems.all()]}
+                                  document.operating_systems.all()],
+            'allow_discussion': document.allow_discussion}
 
 
 def _save_rev_and_notify(rev_form, creator, document):

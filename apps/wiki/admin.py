@@ -6,9 +6,10 @@ from wiki.models import Document
 class DocumentAdmin(admin.ModelAdmin):
     exclude = ('tags',)
     list_display = ('locale', 'title', 'category', 'is_localizable',
-                    'is_archived')
+                    'is_archived', 'allow_discussion')
     list_display_links = ('title',)
-    list_filter = ('is_template', 'is_localizable', 'category', 'locale')
+    list_filter = ('is_template', 'is_localizable', 'category', 'locale',
+                   'is_archived', 'allow_discussion')
     raw_id_fields = ('parent',)
     readonly_fields = ('id', 'current_revision')
     search_fields = ('title',)
@@ -45,7 +46,17 @@ class DocumentAdmin(admin.ModelAdmin):
         self._show_archival_message(request, queryset, 'no longer obsolete')
     unarchive.short_description = 'Mark as not obsolete'
 
-    actions = [archive, unarchive]
+    def allow_discussion(self, request, queryset):
+        """Allow discussion on several documents."""
+        queryset.update(allow_discussion=True)
+        self.message_user(request, u'Document(s) now allow discussion.')
+
+    def disallow_discussion(self, request, queryset):
+        """Disallow discussion on several documents."""
+        queryset.update(allow_discussion=False)
+        self.message_user(request, u'Document(s) no longer allow discussion.')
+
+    actions = [archive, unarchive, allow_discussion, disallow_discussion]
 
 
 admin.site.register(Document, DocumentAdmin)

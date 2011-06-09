@@ -104,6 +104,11 @@ class DocumentForm(forms.ModelForm):
         label=_lazy(u'Obsolete:'),
         required=False)
 
+    allow_discussion = forms.BooleanField(
+        label=_lazy(u'Allow discussion on this article?'),
+        initial=True,
+        required=False)
+
     category = forms.ChoiceField(
         choices=CATEGORIES,
         # Required for non-translations, which is
@@ -119,6 +124,7 @@ class DocumentForm(forms.ModelForm):
                          'front page'))
 
     locale = forms.CharField(widget=forms.HiddenInput())
+
 
     def clean_slug(self):
         slug = self.cleaned_data['slug']
@@ -137,7 +143,7 @@ class DocumentForm(forms.ModelForm):
     class Meta:
         model = Document
         fields = ('title', 'slug', 'category', 'is_localizable', 'is_archived',
-                  'tags', 'locale')
+                  'tags', 'locale', 'allow_discussion')
 
     def save(self, parent_doc, **kwargs):
         """Persist the Document form, and return the saved Document."""
