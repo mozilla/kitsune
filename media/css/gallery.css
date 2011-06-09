@@ -178,6 +178,10 @@ a.btn-upload {
     margin-right: 0;
 }
 
+#media-info li.dimensions {
+    white-space: nowrap;
+}
+
 #media-view {
     margin: 5px 0;
     text-align: center;
