@@ -242,12 +242,6 @@ class DocumentTests(TestCase):
         d1prime = Document.objects.get(pk=d1.pk)
         eq_(20, d1prime.category)
 
-
-class DocumentTestsWithFixture(TestCase):
-    """Document tests which need the users fixture"""
-
-    fixtures = ['users.json']
-
     def test_majorly_outdated(self):
         """Test the is_majorly_outdated method."""
         trans = translated_revision(is_approved=True)
@@ -326,7 +320,6 @@ class DocumentTestsWithFixture(TestCase):
 
 class RedirectCreationTests(TestCase):
     """Tests for automatic creation of redirects when slug or title changes"""
-    fixtures = ['users.json']
 
     def setUp(self):
         self.d, self.r = doc_rev()
@@ -405,7 +398,6 @@ class RedirectCreationTests(TestCase):
 
 class RevisionTests(TestCase):
     """Tests for the Revision model"""
-    fixtures = ['users.json']
 
     def test_approved_revision_updates_html(self):
         """Creating an approved revision updates document.html"""
