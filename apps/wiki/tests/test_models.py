@@ -10,8 +10,7 @@ from sumo.tests import TestCase
 from wiki.cron import calculate_related_documents
 from wiki.models import (FirefoxVersion, OperatingSystem, Document,
                          REDIRECT_CONTENT, REDIRECT_SLUG, REDIRECT_TITLE,
-                         REDIRECT_HTML, MAJOR_SIGNIFICANCE, CATEGORIES,
-                         get_current_or_latest_revision)
+                         REDIRECT_HTML, MAJOR_SIGNIFICANCE, CATEGORIES)
 from wiki.parser import wiki_to_html
 from wiki.tests import document, revision, doc_rev, translated_revision
 
@@ -475,6 +474,83 @@ class RevisionTests(TestCase):
 
         eq_(en_rev.document.current_revision, de_rev.based_on)
 
+    def test_correct_ready_for_localization(self):
+        """Revision.clean() must clear is_ready_for_l10n if not is_approved."""
+        r = revision(is_approved=False, is_ready_for_localization=True)
+        r.clean()
+        assert not r.is_ready_for_localization
+
+    def test_ready_for_l10n_updates_doc(self):
+        """Approving a ready-for-l10n rev should update the doc's field."""
+        # Approve a rev in a new doc:
+        approved_1 = revision(is_approved=True,
+                              is_ready_for_localization=True,
+                              save=True)
+        eq_(approved_1, approved_1.document.latest_localizable_revision)
+
+        # Add an unapproved revision that we can approve later:
+        unapproved = revision(document=approved_1.document,
+                              is_approved=True,
+                              is_ready_for_localization=False,
+                              save=True)
+
+        # Approving a rev in a doc that already has a localizable revision:
+        approved_2 = revision(document=approved_1.document,
+                              is_approved=True,
+                              is_ready_for_localization=True,
+                              save=True)
+        eq_(approved_2, approved_2.document.latest_localizable_revision)
+
+        # Approve the older rev. It should not become the latest_localizable.
+        unapproved.is_ready_for_localization=True
+        unapproved.save()
+        eq_(approved_2, approved_2.document.latest_localizable_revision)
+
+    def test_delete(self):
+        """Make sure deleting the latest localizable revision doesn't delete
+        the document but instead sets its latest localizable revision to the
+        previous one.
+
+        Making sure current_revision does the same is covered in the
+        test_delete_current_revision template test.
+
+        """
+        r1 = revision(is_approved=True,
+                      is_ready_for_localization=True,
+                      save=True)
+        d = r1.document
+        r2 = revision(document=d,
+                      is_approved=True,
+                      is_ready_for_localization=True,
+                      save=True)
+
+        # Deleting r2 should make the latest fall back to r1:
+        r2.delete()
+        eq_(r1, Document.objects.get(pk=d.pk).latest_localizable_revision)
+
+        # And deleting r1 should fall back to None:
+        r1.delete()
+        eq_(None, Document.objects.get(pk=d.pk).latest_localizable_revision)
+
+    def test_delete_rendering(self):
+        """Make sure the cached HTML updates when deleting the current rev."""
+        unapproved = revision(is_approved=False, save=True)
+        d = unapproved.document
+        approved = revision(document=d,
+                            is_approved=True,
+                            content='booyah',
+                            save=True)
+        assert 'booyah' in d.content_parsed
+
+        # Delete the current rev. Since there are no other approved revs, the
+        # document's HTML should fall back to "".
+        approved.delete()
+        eq_('', d.content_parsed)
+
+        # Now delete the final revision. It still shouldn't crash.
+        unapproved.delete()
+        eq_('', d.content_parsed)
+
 
 class RelatedDocumentTests(TestCase):
     fixtures = ['users.json', 'wiki/documents.json']
@@ -506,56 +582,56 @@ class RelatedDocumentTests(TestCase):
         eq_(0, d.related_documents.count())
 
 
-class GetCurrentOrLatestRevisionTests(TestCase):
-    fixtures = ['users.json']
-
-    """Tests for get_current_or_latest_revision."""
-    def test_single_approved(self):
-        """Get approved revision."""
-        rev = revision(is_approved=True, save=True)
-        eq_(rev, get_current_or_latest_revision(rev.document))
-
-    def test_single_rejected(self):
-        """No approved revisions available should return None."""
-        rev = revision(is_approved=False)
-        eq_(None, get_current_or_latest_revision(rev.document))
-
-    def test_multiple_approved(self):
-        """When multiple approved revisions exist, return the most recent."""
-        r1 = revision(is_approved=True, save=True)
-        r2 = revision(is_approved=True, save=True, document=r1.document)
-        eq_(r2, get_current_or_latest_revision(r2.document))
-
-    def test_approved_over_most_recent(self):
-        """Should return most recently approved when there is a more recent
-        unreviewed revision."""
-        r1 = revision(is_approved=True, save=True,
-                      created=datetime.now() - timedelta(days=1))
-        r2 = revision(is_approved=False, reviewed=None, save=True,
-                      document=r1.document)
-        eq_(r1, get_current_or_latest_revision(r2.document))
-
-    def test_latest(self):
-        """Return latest not-rejected revision when no current exists."""
-        r1 = revision(is_approved=False, reviewed=None, save=True,
-                      created=datetime.now() - timedelta(days=1))
-        r2 = revision(is_approved=False, reviewed=None, save=True,
-                      document=r1.document)
-        eq_(r2, get_current_or_latest_revision(r1.document))
-
-    def test_latest_rejected(self):
-        """Return latest rejected revision when no current exists."""
-        r1 = revision(is_approved=False, reviewed=None, save=True,
-                      created=datetime.now() - timedelta(days=1))
-        r2 = revision(is_approved=False, save=True, document=r1.document)
-        eq_(r2, get_current_or_latest_revision(r1.document,
-                                               reviewed_only=False))
-
-    def test_latest_unreviewed(self):
-        """Return latest unreviewed revision when no current exists."""
-        r1 = revision(is_approved=False, reviewed=None, save=True,
-                      created=datetime.now() - timedelta(days=1))
-        r2 = revision(is_approved=False, reviewed=None, save=True,
-                      document=r1.document)
-        eq_(r2, get_current_or_latest_revision(r1.document,
-                                               reviewed_only=False))
+# class GetCurrentOrLatestRevisionTests(TestCase):
+#     fixtures = ['users.json']
+# 
+#     """Tests for get_current_or_latest_revision."""
+#     def test_single_approved(self):
+#         """Get approved revision."""
+#         rev = revision(is_approved=True, save=True)
+#         eq_(rev, get_current_or_latest_revision(rev.document))
+# 
+#     def test_single_rejected(self):
+#         """No approved revisions available should return None."""
+#         rev = revision(is_approved=False)
+#         eq_(None, get_current_or_latest_revision(rev.document))
+# 
+#     def test_multiple_approved(self):
+#         """When multiple approved revisions exist, return the most recent."""
+#         r1 = revision(is_approved=True, save=True)
+#         r2 = revision(is_approved=True, save=True, document=r1.document)
+#         eq_(r2, get_current_or_latest_revision(r2.document))
+# 
+#     def test_approved_over_most_recent(self):
+#         """Should return most recently approved when there is a more recent
+#         unreviewed revision."""
+#         r1 = revision(is_approved=True, save=True,
+#                       created=datetime.now() - timedelta(days=1))
+#         r2 = revision(is_approved=False, reviewed=None, save=True,
+#                       document=r1.document)
+#         eq_(r1, get_current_or_latest_revision(r2.document))
+# 
+#     def test_latest(self):
+#         """Return latest not-rejected revision when no current exists."""
+#         r1 = revision(is_approved=False, reviewed=None, save=True,
+#                       created=datetime.now() - timedelta(days=1))
+#         r2 = revision(is_approved=False, reviewed=None, save=True,
+#                       document=r1.document)
+#         eq_(r2, get_current_or_latest_revision(r1.document))
+# 
+#     def test_latest_rejected(self):
+#         """Return latest rejected revision when no current exists."""
+#         r1 = revision(is_approved=False, reviewed=None, save=True,
+#                       created=datetime.now() - timedelta(days=1))
+#         r2 = revision(is_approved=False, save=True, document=r1.document)
+#         eq_(r2, get_current_or_latest_revision(r1.document,
+#                                                reviewed_only=False))
+# 
+#     def test_latest_unreviewed(self):
+#         """Return latest unreviewed revision when no current exists."""
+#         r1 = revision(is_approved=False, reviewed=None, save=True,
+#                       created=datetime.now() - timedelta(days=1))
+#         r2 = revision(is_approved=False, reviewed=None, save=True,
+#                       document=r1.document)
+#         eq_(r2, get_current_or_latest_revision(r1.document,
+#                                                reviewed_only=False))

@@ -29,8 +29,7 @@ from wiki.events import (EditDocumentEvent, ReviewableRevisionInLocaleEvent,
 from wiki.forms import DocumentForm, RevisionForm, ReviewForm
 from wiki.models import (Document, Revision, HelpfulVote, CATEGORIES,
                          OPERATING_SYSTEMS, GROUPED_OPERATING_SYSTEMS,
-                         FIREFOX_VERSIONS, GROUPED_FIREFOX_VERSIONS,
-                         get_current_or_latest_revision)
+                         FIREFOX_VERSIONS, GROUPED_FIREFOX_VERSIONS)
 from wiki.parser import wiki_to_html
 from wiki.tasks import send_reviewed_notification, schedule_rebuild_kb
 
@@ -359,6 +358,14 @@ def review_revision(request, document_slug, revision_id):
             rev.reviewed = datetime.now()
             if should_ask_significance and form.cleaned_data['significance']:
                 rev.significance = form.cleaned_data['significance']
+
+            # If document is localizable and revision was approved and
+            # user has permission, set the is_ready_for_localization value.
+            if (doc.is_localizable and rev.is_approved and
+                request.user.has_perm('wiki.mark_ready_for_l10n')):
+                l10n_ready = 'is_ready_for_localization'
+                rev.is_ready_for_localization = form.cleaned_data[l10n_ready]
+
             rev.save()
 
             # Send an email (not really a "notification" in the sense that
@@ -378,7 +385,7 @@ def review_revision(request, document_slug, revision_id):
                                                 args=[document_slug]))
 
     if doc.parent:  # A translation
-        parent_revision = get_current_or_latest_revision(doc.parent)
+        parent_revision = doc.parent.localizable_or_latest_revision()
         template = 'wiki/review_translation.html'
     else:
         parent_revision = None
@@ -453,8 +460,7 @@ def translate(request, document_slug, revision_id=None):
         return jingo.render(request, 'handlers/400.html',
                             {'message': message}, status=400)
 
-    based_on_rev = get_current_or_latest_revision(parent_doc,
-                                                  reviewed_only=False)
+    based_on_rev = parent_doc.localizable_or_latest_revision(reviewed_only=False)
 
     disclose_description = bool(request.GET.get('opendescription'))
 
@@ -488,7 +494,7 @@ def translate(request, document_slug, revision_id=None):
             initial.update(content=based_on_rev.content,
                            summary=based_on_rev.summary,
                            keywords=based_on_rev.keywords)
-        instance = doc and get_current_or_latest_revision(doc)
+        instance = doc and doc.localizable_or_latest_revision()
         rev_form = RevisionForm(instance=instance, initial=initial)
         base_rev = base_rev or instance
 
@@ -689,25 +695,9 @@ def delete_revision(request, document_slug, revision_id):
     if only_revision:
         return HttpResponseBadRequest()
 
-    # Handle confirm delete form POST
-    log.warning('User %s is deleting revision with id=%s' %
-                (request.user, revision.id))
-    Revision.objects.filter(based_on=revision).update(based_on=None)
-
-    if document.current_revision == revision:
-        # If the current_revision is being deleted, lets try to update it to
-        # the previous approved revision.
-        revs = document.revisions.filter(
-            is_approved=True).order_by('-reviewed')
-        if revs.count() > 1:
-            document.current_revision = revs[1]
-        else:
-            document.current_revision = None
-        document.html = document.content_parsed or ''
-        document.save()
-
+    log.info('User %s is deleting revision with id=%s' %
+             (request.user, revision.id))
     revision.delete()
-
     return HttpResponseRedirect(reverse('wiki.document_revisions',
                                         args=[document.slug]))
 
