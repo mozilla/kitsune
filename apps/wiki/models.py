@@ -199,6 +199,12 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin):
              'and dashboards. When viewed, the page will warn that it is no '
              'longer maintained.'))
 
+    # Enable discussion (kbforum) on this document.
+    allow_discussion = models.BooleanField(
+        default=True, help_text=_lazy(
+            u'If checked, this document allows discussion in an associated '
+             'forum. Uncheck to hide/disable the forum.'))
+
     # firefox_versions,
     # operating_systems:
     #    defined in the respective classes below. Use them as in

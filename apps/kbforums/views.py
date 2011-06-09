@@ -29,7 +29,8 @@ def get_document(slug, request):
     """Given a slug and a request, get the document or 404."""
     return get_object_or_404(Document,
                              slug=slug,
-                             locale=request.locale)
+                             locale=request.locale,
+                             allow_discussion=True)
 
 
 def sort_threads(threads_, sort=0, desc=0):

@@ -329,13 +329,14 @@ class NewDocumentTests(TestCaseBase):
         eq_(1, len(doc('#document-form input[name="title"]')))
 
     def test_new_document_form_defaults(self):
-        """The new document form should have all all 'Relevant to' options
-        checked by default."""
+        """Verify that new document form defaults are correct."""
         self.client.login(username='admin', password='testpass')
         response = self.client.get(reverse('wiki.new_document'))
         doc = pq(response.content)
-        eq_(9, len(doc('input[checked=checked]')))
+        eq_(8, len(doc('div.relevant-to input[checked=checked]')))
         eq_(None, doc('input[name="tags"]').attr('required'))
+        eq_('checked', doc('input#id_allow_discussion').attr('checked'))
+        eq_(None, doc('input#id_allow_discussion').attr('required'))
 
     @mock.patch.object(ReviewableRevisionInLocaleEvent, 'fire')
     @mock.patch.object(Site.objects, 'get_current')
