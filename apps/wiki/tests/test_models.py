@@ -481,30 +481,31 @@ class RevisionTests(TestCase):
         assert not r.is_ready_for_localization
 
     def test_ready_for_l10n_updates_doc(self):
-        """Approving a ready-for-l10n rev should update the doc's field."""
-        # Approve a rev in a new doc:
-        approved_1 = revision(is_approved=True,
-                              is_ready_for_localization=True,
-                              save=True)
-        eq_(approved_1, approved_1.document.latest_localizable_revision)
+        """Approving and marking ready a rev should update the doc's ref."""
+        # Ready a rev in a new doc:
+        ready_1 = revision(is_approved=True,
+                           is_ready_for_localization=True,
+                           save=True)
+        eq_(ready_1, ready_1.document.latest_localizable_revision)
 
-        # Add an unapproved revision that we can approve later:
-        unapproved = revision(document=approved_1.document,
-                              is_approved=True,
-                              is_ready_for_localization=False,
-                              save=True)
+        # Add an unready revision that we can ready later:
+        unready = revision(document=ready_1.document,
+                           is_approved=False,
+                           is_ready_for_localization=False,
+                           save=True)
 
-        # Approving a rev in a doc that already has a localizable revision:
-        approved_2 = revision(document=approved_1.document,
-                              is_approved=True,
-                              is_ready_for_localization=True,
-                              save=True)
-        eq_(approved_2, approved_2.document.latest_localizable_revision)
+        # Ready a rev in a doc that already has a ready revision:
+        ready_2 = revision(document=ready_1.document,
+                           is_approved=True,
+                           is_ready_for_localization=True,
+                           save=True)
+        eq_(ready_2, ready_2.document.latest_localizable_revision)
 
-        # Approve the older rev. It should not become the latest_localizable.
-        unapproved.is_ready_for_localization=True
-        unapproved.save()
-        eq_(approved_2, approved_2.document.latest_localizable_revision)
+        # Ready the older rev. It should not become the latest_localizable.
+        unready.is_ready_for_localization=True
+        unready.is_approved=True
+        unready.save()
+        eq_(ready_2, ready_2.document.latest_localizable_revision)
 
     def test_delete(self):
         """Make sure deleting the latest localizable revision doesn't delete
