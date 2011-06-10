@@ -21,7 +21,7 @@ from sumo.utils import paginate
 @login_required
 def inbox(request):
     user = request.user
-    messages = InboxMessage.objects.filter(to=user).order_by('-created')
+    messages = InboxMessage.uncached.filter(to=user).order_by('-created')
     return jingo.render(request, 'messages/inbox.html',
                         {'msgs': messages})
 
@@ -54,7 +54,7 @@ def read_outbox(request, msgid):
 @login_required
 def outbox(request):
     user = request.user
-    messages = OutboxMessage.objects.filter(sender=user).order_by('-created')
+    messages = OutboxMessage.uncached.filter(sender=user).order_by('-created')
     for msg in messages:
         _add_recipients(msg)
     return jingo.render(request, 'messages/outbox.html',
