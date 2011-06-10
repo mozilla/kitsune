@@ -5,7 +5,6 @@ from django.conf import settings
 from django.contrib.sites.models import Site
 from django.core.mail import EmailMessage
 from django.template import Context, loader
-from django.utils.encoding import smart_str
 
 from bleach import clean
 from tidings.events import InstanceEvent, Event
@@ -33,11 +32,12 @@ def notification_mails(revision, subject, template, url, users_and_watches):
         tofile = u'[%s] %s #%s' % (revision.document.locale,
                                    revision.document.title,
                                    revision.id)
-        diff = clean(''.join(difflib.unified_diff(
-                        smart_str(revision.based_on.content).splitlines(1),
-                        smart_str(revision.content).splitlines(1),
-                        fromfile=fromfile,
-                        tofile=tofile)), ALLOWED_TAGS, ALLOWED_ATTRIBUTES)
+
+        diff = clean(u''.join(difflib.unified_diff(
+                        revision.based_on.content.splitlines(1),
+                        revision.content.splitlines(1),
+                        fromfile=fromfile, tofile=tofile)),
+                        ALLOWED_TAGS, ALLOWED_ATTRIBUTES)
     else:
         diff = ''  # No based_on, so diff wouldn't make sense.
 
