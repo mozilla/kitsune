@@ -15,7 +15,7 @@ class GroupProfile(ModelBase):
     slug = models.SlugField(unique=True, editable=False, blank=False,
                             null=False, max_length=80)
     group = models.ForeignKey(Group, related_name='profile')
-    leaders = models.ManyToManyField(User, related_name='group_profiles')
+    leaders = models.ManyToManyField(User)
     information = models.TextField(help_text=u'Use Wiki Syntax')
     information_html = models.TextField(editable=False)
     avatar = models.ImageField(upload_to=settings.GROUP_AVATAR_PATH, null=True,

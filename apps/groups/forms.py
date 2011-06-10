@@ -8,4 +8,4 @@ class GroupProfileForm(forms.ModelForm):
 
     class Meta(object):
         model = GroupProfile
-        fields = ('information',)
+        fields = ['information']
