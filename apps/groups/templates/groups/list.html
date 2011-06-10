@@ -1,0 +1,17 @@
+{# vim: set ts=2 et sts=2 sw=2: #}
+{% extends "groups/base.html" %}
+{% set title = _('Groups') %}
+
+{% block content %}
+  <article id="group-list" class="main">
+    {% if user.is_staff and user.has_perm('groups.add_groupprofile') %}
+      <a class="add" href="{{ url('admin:groups_groupprofile_add') }}">{{ _('Add group profile') }}</a>
+    {% endif %}
+    <h1>{{ title }}</h1>
+    <ul>
+      {% for profile in groups %}
+        <li><a href="{{ profile.get_absolute_url() }}">{{ profile.group.name }}</a></li>
+      {% endfor %}
+    </ul>
+  </article>
+{% endblock %}
