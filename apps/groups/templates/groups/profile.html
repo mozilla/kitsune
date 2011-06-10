@@ -1,0 +1,56 @@
+{# vim: set ts=2 et sts=2 sw=2: #}
+{% extends "groups/base.html" %}
+{% set title = _('{group} | Groups')|f(group=profile.group.name) %}
+
+{% block content %}
+  <article id="group-profile" class="main">
+    <section id="avatar-area">
+      <img src="{{ group_avatar(profile) }}" alt="" />
+      {# TODO: leaders and admins can change avatar #}
+    </section>
+    <section id="main-area">
+      {% if user.is_staff and user.has_perm('groups.change_groupprofile') %}
+        <a class="edit" href="{{ url('admin:groups_groupprofile_change', profile.id) }}">{{ _('Edit in admin') }}</a>
+      {% endif %}
+      <h1>{{ profile.group.name }}</h1>
+
+      {% if user.has_perm('groups.change_groupprofile') or user in leaders %}
+        <a class="edit" href="{{ url('groups.edit', profile.slug) }}">{{ _('Edit group profile') }}</a>
+      {% endif %}
+      <div id="doc-content">
+        {{ profile.information_html|safe }}
+      </div>
+
+      <h2>{{ _('Group Leaders') }}</h2>
+      <ul class="users leaders">
+        {% for user in leaders %}
+          {{ user_row(user) }}
+        {% endfor %}
+      </ul>
+      {# TODO: admins can add/remove leaders #}
+
+      <h2>{{ _('Group Members') }}</h2>
+      <ul class="users members">
+        {% for user in members %}
+          {{ user_row(user) }}
+        {% endfor %}
+      </ul>
+      {# TODO: leaders and admins can add/remove members #}
+    </section>
+  </article>
+{% endblock %}
+
+{% macro user_row(user) -%}
+  <li>
+    <div class="avatar">
+      <a href="{{ profile_url(user) }}">
+        <img src="{{ profile_avatar(user) }}" alt="" />
+      </a>
+    </div>
+    <div class="info">
+      <a href="{{ profile_url(user) }}">
+        {{ display_name(user) }}
+      </a>
+    </div>
+  </li>
+{%- endmacro %}

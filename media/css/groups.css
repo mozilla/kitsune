@@ -1,0 +1,86 @@
+/*
+ * Groups app CSS
+ */
+
+article.main ul {
+    list-style-position: inside;
+    margin: 0 0 15px;
+}
+
+article.main h2 {
+    font-size: 18px;
+    margin: 20px 0 0;
+}
+
+/* list page */
+#group-list a.add {
+    float: right;
+    padding: 0 0 0 13px;
+    position: relative;
+}
+
+#group-list a.add:before {
+    content: '+';
+    font-family: Arial;
+    font-weight: bold;
+    font-size: 16px;
+    left: 0;
+    position: absolute;
+    top: -2px;
+}
+
+/* profile page */
+#main-area {
+    margin: 0 0 0 65px;
+}
+
+#avatar-area {
+    float: left;
+    margin-left: 0;
+    text-align: center;
+    width: 48px;
+}
+
+#group-profile a.edit {
+    background: transparent url(../img/icons.actions.png) no-repeat left -25px;
+    float: right;
+    padding: 0 0 0 18px;
+}
+
+ul.users {
+    list-style: none;
+}
+
+ul.users li {
+    padding: 5px 0;
+    vertical-align: top;
+}
+
+ul.users div.avatar {
+    display: inline-block;
+    margin: 0 10px 0 0;
+    height: 48px;
+    width: 48px;
+}
+
+ul.users div.avatar img {
+    height: 48px;
+    width: 48px;
+}
+
+ul.users div.info {
+    display: inline-block;
+    min-height: 45px;
+    padding: 3px 0 0;
+    vertical-align: top;
+}
+
+/* edit page */
+div.editor {
+    margin: 0 0 10px;
+    padding: 0;
+}
+
+#id_information {
+    height: 350px;
+}
