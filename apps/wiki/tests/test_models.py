@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 
+from nose.exc import SkipTest
 from nose.tools import eq_
 from taggit.models import TaggedItem
 
@@ -316,6 +317,71 @@ class DocumentTests(TestCase):
         eq_(None, revision(content='REDIRECT [[kersmoo]]',
                            is_approved=True,
                            save=True).document.redirect_document())
+
+
+class LocalizableOrLatestRevisionTests(TestCase):
+    """Tests for Document.localizable_or_latest_revision()"""
+
+    def test_none(self):
+        """If there are no revisions, return None."""
+        d = document(save=True)
+        eq_(None, d.localizable_or_latest_revision())
+
+    def test_no_reviewed(self):
+        """If there are no reviewed revisions, return None."""
+        # localizable_or_latest_revision evolved from
+        # get_current_or_latest_revision (now gone). Some tests for
+        # get_current_or_latest_revision were invalid, hiding bugs in it. TODO:
+        # fix localizable_or_latest_revision and unskip this test. This will
+        # make other tests fail, which we'll have to think about and possible
+        # fix as well.
+        raise SkipTest
+        r = revision(is_approved=False, reviewed=None, save=True)
+        eq_(None, r.document.localizable_or_latest_revision())
+
+    def test_multiple_ready(self):
+        """When multiple ready revisions exist, return the most recent."""
+        r1 = revision(is_approved=True,
+                      is_ready_for_localization=True,
+                      save=True)
+        r2 = revision(document=r1.document,
+                      is_approved=True,
+                      is_ready_for_localization=True,
+                      save=True)
+        eq_(r2, r2.document.localizable_or_latest_revision())
+
+    def test_ready_over_recent(self):
+        """Favor a ready revision over a more recent unready one."""
+        ready = revision(is_approved=True,
+                         is_ready_for_localization=True,
+                         save=True)
+        unready = revision(document=ready.document,
+                           is_approved=True,
+                           is_ready_for_localization=False,
+                           save=True)
+        eq_(ready, ready.document.localizable_or_latest_revision())
+
+    def test_latest_unreviewed_if_none_ready(self):
+        """Return the latest unreviewed revision when no ready one exists and
+        reviewed_only=False."""
+        unreviewed = revision(is_approved=False,
+                              reviewed=None,
+                              save=True)
+        eq_(unreviewed, unreviewed.document.localizable_or_latest_revision(
+                            reviewed_only=False))
+
+    def test_latest_rejected_if_none_ready(self):
+        """Return the latest revision when no ready one exists.
+
+        In this case, the latest happens to be rejected.
+
+        """
+        # TODO: As in test_no_reviewed, fix the behavior, then unskip this.
+        raise SkipTest
+        rejected = revision(is_approved=False,
+                            reviewed=datetime.now(),
+                            save=True)
+        eq_(rejected, rejected.document.localizable_or_latest_revision())
 
 
 class RedirectCreationTests(TestCase):

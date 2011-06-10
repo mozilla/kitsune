@@ -515,7 +515,11 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin):
 
     def localizable_or_latest_revision(self, reviewed_only=True):
         """Return latest ready-to-localize revision if there is one, else the
-        last created revision."""
+        last reviewed revision, or None if there are no revisions."""
+        # TODO: This came from get_current_or_latest_revision, before
+        # is_ready_for_localization existed. Perhaps we should have a multi-
+        # level fallback: first ready revisions, then approved ones, then
+        # unapproved ones.
         rev = self.latest_localizable_revision
         if not rev:
             if reviewed_only:
