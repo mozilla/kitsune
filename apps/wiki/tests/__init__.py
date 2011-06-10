@@ -50,7 +50,9 @@ def revision(**kwargs):
 
 def translated_revision(locale='de', save=False, **kwargs):
     """Return a revision that is the translation of a default-language one."""
-    parent_rev = revision(is_approved=True, save=True)
+    parent_rev = revision(is_approved=True,
+                          is_ready_for_localization=True,
+                          save=True)
     translation = document(parent=parent_rev.document, locale=locale,
                            save=True)
     new_kwargs = {'document': translation, 'based_on': parent_rev}

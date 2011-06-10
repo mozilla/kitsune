@@ -715,6 +715,7 @@ body.review #content-fields textarea {
 }
 
 #approve-modal div.message,
+#approve-modal div.ready-for-l10n,
 #reject-modal div.message {
     margin: 10px 0;
 }

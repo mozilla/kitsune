@@ -25,7 +25,8 @@ from wiki.events import (EditDocumentEvent, ReviewableRevisionInLocaleEvent,
                          ApproveRevisionInLocaleEvent)
 from wiki.models import Document, Revision, HelpfulVote, SIGNIFICANCES
 from wiki.tasks import send_reviewed_notification
-from wiki.tests import TestCaseBase, document, revision, new_document_data
+from wiki.tests import (TestCaseBase, document, revision, new_document_data,
+                        translated_revision)
 
 
 READY_FOR_REVIEW_EMAIL_CONTENT = """
@@ -309,7 +310,7 @@ class RevisionTests(TestCaseBase):
         eq_('Created:Jan 1, 2011 12:00:00 AM',
             doc('#wiki-doc div.revision-info li')[1].text_content().strip())
         eq_('Reviewed:Jan 2, 2011 12:00:00 AM',
-            doc('#wiki-doc div.revision-info li')[4].text_content().strip())
+            doc('#wiki-doc div.revision-info li')[5].text_content().strip())
         # is reviewed?
         eq_('Yes', doc('.revision-info li').eq(3).find('span').text())
         # is current revision?
@@ -333,7 +334,7 @@ class NewDocumentTests(TestCaseBase):
         self.client.login(username='admin', password='testpass')
         response = self.client.get(reverse('wiki.new_document'))
         doc = pq(response.content)
-        eq_(8, len(doc('div.relevant-to input[checked=checked]')))
+        eq_(8, len(doc('.relevant-to input[checked=checked]')))
         eq_(None, doc('input[name="tags"]').attr('required'))
         eq_('checked', doc('input#id_allow_discussion').attr('checked'))
         eq_(None, doc('input#id_allow_discussion').attr('required'))
@@ -1377,6 +1378,48 @@ class TranslateTests(TestCaseBase):
         doc = pq(response.content)
         assert doc('.warning-box').text()
 
+    def test_skip_unready_when_first_translation(self):
+        """Never offer an unready-for-localization revision as initial
+        translation source text."""
+        # Create an English document all ready to translate:
+        en_doc = document(is_localizable=True, save=True)
+        ready = revision(document=en_doc,
+                         is_approved=True,
+                         is_ready_for_localization=True,
+                         save=True,
+                         content='I am the ready!')
+        unready = revision(document=en_doc,
+                           is_approved=True,
+                           is_ready_for_localization=False,
+                           save=True)
+
+        url = reverse('wiki.translate', locale='de', args=[en_doc.slug])
+        response = self.client.get(url)
+        self.assertContains(response, 'I am the ready!')
+
+    def test_skip_unready_when_not_first_translation(self):
+        """Never offer an unready-for-localization revision as diff text when
+        bringing an already translated article up to date."""
+        # Create an initial translated revision so the version of the template
+        # with the English-to-English diff shows up:
+        initial_rev = translated_revision(is_approved=True, save=True)
+        en_doc = initial_rev.document.parent
+        ready = revision(document=en_doc,
+                         is_approved=True,
+                         is_ready_for_localization=True,
+                         save=True)
+        unready = revision(document=en_doc,
+                           is_approved=True,
+                           is_ready_for_localization=False,
+                           save=True)
+
+        url = reverse('wiki.translate', locale='de', args=[en_doc.slug])
+        response = self.client.get(url)
+        eq_(200, response.status_code)
+        # Get the link to the rev on the right side of the diff:
+        to_link = pq(response.content)('.revision-diff h3 a')[1].attrib['href']
+        assert to_link.endswith('/%s' % ready.pk)
+
 
 def _test_form_maintains_based_on_rev(client, doc, view, post_data,
                                       locale=None):
@@ -1656,7 +1699,7 @@ class RevisionDeleteTestCase(TestCaseBase):
         eq_(0, Revision.objects.filter(pk=self.r.id).count())
 
     def test_delete_current_revision(self):
-        """Deleting a the current_revision of a document, should update
+        """Deleting the current_revision of a document should update
         the current_revision to previous version."""
         self.client.login(username='admin', password='testpass')
         prev_revision = self.d.current_revision

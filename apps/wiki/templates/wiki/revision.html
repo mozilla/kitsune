@@ -29,8 +29,12 @@
             <span>{{ revision.creator }}</span>
           </li>
           <li>
-            <mark>{{ _('Is reviewed?') }}</mark>
+            <mark>{{ _('Reviewed:') }}</mark>
             <span>{{ revision.reviewed|yesno }}</span>
+          </li>
+          <li>
+            <mark>{{ _('Ready for localization:') }}</mark>
+            <span>{{ revision.is_ready_for_localization|yesno }}</span>
           </li>
           {% if revision.reviewed %}
             <li>
