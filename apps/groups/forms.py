@@ -1,6 +1,7 @@
 from django import forms
 
 from groups.models import GroupProfile
+from users.forms import AvatarForm
 
 
 class GroupProfileForm(forms.ModelForm):
@@ -9,3 +10,12 @@ class GroupProfileForm(forms.ModelForm):
     class Meta(object):
         model = GroupProfile
         fields = ['information']
+
+
+# Inherit from user's AvatarForm but override the model.
+class GroupAvatarForm(AvatarForm):
+    """The form for editing the group's avatar."""
+
+    class Meta(object):
+        model = GroupProfile
+        fields = ['avatar']

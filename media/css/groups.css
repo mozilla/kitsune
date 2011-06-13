@@ -41,6 +41,11 @@ article.main h2 {
     width: 48px;
 }
 
+#avatar-area p {
+    font-size: 12px;
+    margin: 2px 0;
+}
+
 #group-profile a.edit {
     background: transparent url(../img/icons.actions.png) no-repeat left -25px;
     float: right;
@@ -83,4 +88,41 @@ div.editor {
 
 #id_information {
     height: 350px;
+}
+
+/* avatar delete */
+#avatar-delete p {
+    margin: 10px 0;
+}
+
+/* change avatar */
+#change-avatar form {
+    margin: 25px 0;
+}
+
+#change-avatar ul {
+    list-style: none;
+}
+
+#change-avatar div.val-wrap {
+    display: inline-block;
+    line-height:35px;
+    margin-right: 10px;
+    width: auto;
+}
+
+#change-avatar label {
+    display: inline-block;
+    padding: 0 5px 0 0;
+    text-align: right;
+    vertical-align: top;
+    width: 180px;
+}
+
+#change-avatar div.val-wrap input {
+    display: block;
+}
+
+#change-avatar div.submit {
+    padding: 10px 0 0 188px;
 }
