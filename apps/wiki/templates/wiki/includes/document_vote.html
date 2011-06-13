@@ -1,5 +1,8 @@
 {# vim: set ts=2 et sts=2 sw=2: #}
-{% if not document.has_voted(request) %}
+{% if not document.has_voted(request) and
+   (not fallback_reason or
+    fallback_reason == 'translation_not_approved' or
+    fallback_reason == 'no_translation') %}
   <div id="helpful-vote">
     <form class="helpful" action="{{ url('wiki.document_vote', document_slug=document.slug) }}" method="post">
       <p>
