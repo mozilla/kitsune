@@ -188,8 +188,11 @@ AUTH_PROFILE_MODULE = 'users.Profile'
 USER_AVATAR_PATH = 'uploads/avatars/'
 DEFAULT_AVATAR = MEDIA_URL + 'img/avatar.png'
 AVATAR_SIZE = 48  # in pixels
-ACCOUNT_ACTIVATION_DAYS = 30
 MAX_AVATAR_FILE_SIZE = 131072  # 100k, in bytes
+GROUP_AVATAR_PATH = 'uploads/groupavatars/'
+
+ACCOUNT_ACTIVATION_DAYS = 30
+
 PASSWORD_BLACKLIST = path('configs/password-blacklist.txt')
 
 ROOT_URLCONF = '%s.urls' % ROOT_PACKAGE
@@ -245,6 +248,7 @@ INSTALLED_APPS = (
     'announcements',
     'messages',
     'commonware.response.cookies',
+    'groups',
 
     # Extra apps for testing.
     'django_nose',
@@ -385,6 +389,10 @@ MINIFY_BUNDLES = {
         'messages': (
             'css/messages.css',
         ),
+        'groups': (
+            'css/groups.css',
+            'css/wiki_syntax.css',
+        ),
     },
     'js': {
         'common': (
@@ -460,6 +468,10 @@ MINIFY_BUNDLES = {
             'js/ajaxvote.js',
             'js/aaq.js',
             'js/mobile.js',
+        ),
+        'groups': (
+            'js/markup.js',
+            'js/groups.js',
         ),
     },
 }
