@@ -136,6 +136,7 @@ def monitor(request):
         (settings.GALLERY_IMAGE_THUMBNAIL_PATH, os.R_OK | os.W_OK, msg),
         (settings.GALLERY_VIDEO_PATH, os.R_OK | os.W_OK, msg),
         (settings.GALLERY_VIDEO_THUMBNAIL_PATH, os.R_OK | os.W_OK, msg),
+        (settings.GROUP_AVATAR_PATH, os.R_OK | os.W_OK, msg),
     )
 
     filepath_results = []

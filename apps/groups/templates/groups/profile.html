@@ -6,7 +6,12 @@
   <article id="group-profile" class="main">
     <section id="avatar-area">
       <img src="{{ group_avatar(profile) }}" alt="" />
-      {# TODO: leaders and admins can change avatar #}
+      {% if user_can_edit %}
+        <p><a href="{{ url('groups.edit_avatar', profile.slug) }}" title="{{ _('Change avatar') }}">{{ _('Change') }}</a></p>
+        {% if profile.avatar %}
+          <p><a href="{{ url('groups.delete_avatar', profile.slug) }}" title="{{ _('Delete avatar') }}">{{ _('Delete') }}</a></p>
+        {% endif %}
+      {% endif %}
     </section>
     <section id="main-area">
       {% if user.is_staff and user.has_perm('groups.change_groupprofile') %}
@@ -14,7 +19,7 @@
       {% endif %}
       <h1>{{ profile.group.name }}</h1>
 
-      {% if user.has_perm('groups.change_groupprofile') or user in leaders %}
+      {% if user_can_edit %}
         <a class="edit" href="{{ url('groups.edit', profile.slug) }}">{{ _('Edit group profile') }}</a>
       {% endif %}
       <div id="doc-content">
