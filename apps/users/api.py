@@ -15,7 +15,7 @@ from access.decorators import login_required
 def usernames(request):
     """An API to provide auto-complete data for user names."""
     mimetype = 'application/json'
-    pre = request.GET.get('u', None)
+    pre = request.GET.get('query', None)
     if not pre:
         return HttpResponse(json.dumps([]), mimetype=mimetype)
 
@@ -26,4 +26,8 @@ def usernames(request):
         q = Q(username__istartswith=pre)
         users = User.objects.filter(q).values_list('username', flat=True)[0:5]
     # json.dumps won't serialize a QuerySet, so list comp.
-    return HttpResponse(json.dumps([u for u in users]), mimetype=mimetype)
+    return HttpResponse(
+        json.dumps({
+            'query': pre,
+            'suggestions': [u for u in users]
+        }), mimetype=mimetype)

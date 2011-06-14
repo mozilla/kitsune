@@ -26,7 +26,7 @@
                     $("body").data("usernames-api"),
                     {
                        cache: false,
-                       data: {"u": prefix},
+                       data: {"query": prefix},
                        error: function() {
                            clearInterval(ival);
                        }
