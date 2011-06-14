@@ -178,6 +178,7 @@ MIDDLEWARE_CLASSES = (
     'twitter.middleware.SessionMiddleware',
     'sumo.middleware.PlusToSpaceMiddleware',
     'commonware.middleware.HidePasswordOnException',
+    'commonware.response.middleware.GraphiteRequestTimingMiddleware',
 )
 
 # Auth
