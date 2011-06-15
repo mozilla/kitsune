@@ -19,7 +19,8 @@ def update_weekly_votes():
     recent = datetime.now() - timedelta(days=14)
 
     q = QuestionVote.objects.filter(created__gte=recent)
-    q = q.values_list('question_id', flat=True).distinct()
+    q = q.values_list('question_id', flat=True).order_by('question_id')
+    q = q.distinct()
 
     with establish_connection() as conn:
         for chunk in chunked(q, 50):
