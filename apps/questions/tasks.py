@@ -21,7 +21,7 @@ def update_question_votes(q):
     q.save(no_update=True, force_update=True)
 
 
-@task(rate_limit='15/m')
+@task(rate_limit='4/s')
 def update_question_vote_chunk(data, **kwargs):
     """Update num_votes_past_week for a number of questions."""
     log.info('Calculating past week votes for %s questions.' % len(data))

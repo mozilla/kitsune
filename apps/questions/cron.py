@@ -4,7 +4,6 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.cache import cache
 
-from celery.messaging import establish_connection
 import cronjobs
 
 from questions.models import QuestionVote
@@ -22,10 +21,8 @@ def update_weekly_votes():
     q = q.values_list('question_id', flat=True).order_by('question')
     q = q.distinct()
 
-    with establish_connection() as conn:
-        for chunk in chunked(q, 50):
-            update_question_vote_chunk.apply_async(args=[chunk],
-                                                   connection=conn)
+    for chunk in chunked(q, 50):
+        update_question_vote_chunk.apply_async(args=[chunk])
 
 
 @cronjobs.register
