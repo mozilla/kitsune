@@ -13,3 +13,5 @@ Every Time
 
 This Time
 =========
+
+* Run `./manage.py fix_weekly_votes`

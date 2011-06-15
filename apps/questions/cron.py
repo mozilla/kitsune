@@ -1,11 +1,12 @@
+from datetime import datetime, timedelta
+
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.cache import cache
 
-from celery.messaging import establish_connection
 import cronjobs
 
-from questions.models import Question
+from questions.models import QuestionVote
 from questions.tasks import update_question_vote_chunk
 from sumo.utils import chunked
 
@@ -14,12 +15,14 @@ from sumo.utils import chunked
 def update_weekly_votes():
     """Keep the num_votes_past_week value accurate."""
 
-    questions = Question.objects.all().values_list('pk', flat=True)
+    recent = datetime.now() - timedelta(days=14)
 
-    with establish_connection() as conn:
-        for chunk in chunked(questions, 200):
-            update_question_vote_chunk.apply_async(args=[chunk],
-                                                   connection=conn)
+    q = QuestionVote.objects.filter(created__gte=recent)
+    q = q.values_list('question_id', flat=True).order_by('question')
+    q = q.distinct()
+
+    for chunk in chunked(q, 50):
+        update_question_vote_chunk.apply_async(args=[chunk])
 
 
 @cronjobs.register

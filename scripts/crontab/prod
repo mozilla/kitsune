@@ -25,6 +25,7 @@ HOME = /tmp
 
 # Once per day.
 0 16 * * * cd /data/www/support.mozilla.com/kitsune; /usr/bin/python26 manage.py cron reload_wiki_traffic_stats
+40 1 * * * cd /data/www/support.mozilla.com/kitsune; /usr/bin/python26 manage.py cron update_weekly_votes
 
 # Twice per week.
 #05 01 * * 1,4 cd /data/www/support.mozilla.com/kitsune; /usr/bin/python26 manage.py cron update_weekly_votes
