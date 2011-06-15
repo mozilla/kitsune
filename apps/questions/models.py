@@ -194,7 +194,7 @@ class Question(ModelBase, BigVocabTaggableMixin):
         else:
             return False
 
-        return qs.count() > 0
+        return qs.exists()
 
     @property
     def helpful_replies(self):
