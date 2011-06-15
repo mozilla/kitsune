@@ -4,6 +4,7 @@ from django.db import transaction
 
 from celery.decorators import task
 from multidb.pinning import pin_this_thread, unpin_this_thread
+from statsd import statsd
 
 from activity.models import Action
 from questions import ANSWERS_PER_PAGE
@@ -15,6 +16,7 @@ log = logging.getLogger('k.task')
 @task(rate_limit='1/s')
 def update_question_votes(q):
     log.debug('Got a new QuestionVote.')
+    statsd.incr('questions.tasks.update')
     q.sync_num_votes_past_week()
     q.save(no_update=True, force_update=True)
 
