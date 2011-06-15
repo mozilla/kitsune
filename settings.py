@@ -393,6 +393,7 @@ MINIFY_BUNDLES = {
             'css/messages.css',
         ),
         'groups': (
+            'css/users.autocomplete.css',
             'css/groups.css',
             'css/wiki_syntax.css',
         ),
@@ -477,6 +478,8 @@ MINIFY_BUNDLES = {
             'js/users.autocomplete.js',
         ),
         'groups': (
+            'js/libs/jquery.autocomplete.js',
+            'js/users.autocomplete.js',
             'js/markup.js',
             'js/groups.js',
         ),

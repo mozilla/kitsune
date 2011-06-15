@@ -2,16 +2,17 @@ import os
 
 from django.conf import settings
 from django.contrib import messages
+from django.contrib.auth.models import User
 from django.core.exceptions import PermissionDenied
 from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404
-from django.views.decorators.http import require_http_methods
+from django.views.decorators.http import require_POST, require_http_methods
 
 import jingo
 from tower import ugettext as _
 
 from access.decorators import login_required
-from groups.forms import GroupProfileForm, GroupAvatarForm
+from groups.forms import GroupProfileForm, GroupAvatarForm, AddUserForm
 from groups.models import GroupProfile
 from upload.tasks import _create_image_thumbnail
 
@@ -21,14 +22,15 @@ def list(request):
     return jingo.render(request, 'groups/list.html', {'groups': groups})
 
 
-def profile(request, group_slug):
+def profile(request, group_slug, member_form=None):
     prof = get_object_or_404(GroupProfile, slug=group_slug)
     leaders = prof.leaders.all()
     members = prof.group.user_set.all()
     user_can_edit = _user_can_edit(request.user, prof)
     return jingo.render(request, 'groups/profile.html',
                         {'profile': prof, 'leaders': leaders,
-                         'members': members, 'user_can_edit': user_can_edit})
+                         'members': members, 'user_can_edit': user_can_edit,
+                         'member_form': member_form or AddUserForm()})
 
 
 @login_required
@@ -103,6 +105,50 @@ def delete_avatar(request, group_slug):
 
     return jingo.render(request, 'groups/confirm_avatar_delete.html',
                         {'profile': prof})
+
+
+@login_required
+@require_POST
+def add_member(request, group_slug):
+    """Add a member to the group."""
+    prof = get_object_or_404(GroupProfile, slug=group_slug)
+
+    if not _user_can_edit(request.user, prof):
+        raise PermissionDenied
+
+    form = AddUserForm(request.POST)
+    if form.is_valid():
+        for user in form.cleaned_data['users']:
+            user.groups.add(prof.group)
+        msg = _('{users} added to the group successfully!').format(
+            users=request.POST.get('users'))
+        messages.add_message(request, messages.SUCCESS, msg)
+        return HttpResponseRedirect(prof.get_absolute_url())
+
+    msg = _('There were errors adding members to the group, see below.')
+    messages.add_message(request, messages.ERROR, msg)
+    return profile(request, group_slug, member_form=form)
+
+
+@login_required
+@require_http_methods(['GET', 'POST'])
+def remove_member(request, group_slug, user_id):
+    """Add a member to the group."""
+    prof = get_object_or_404(GroupProfile, slug=group_slug)
+    user = get_object_or_404(User, id=user_id)
+
+    if not _user_can_edit(request.user, prof):
+        raise PermissionDenied
+
+    if request.method == 'POST':
+        user.groups.remove(prof.group)
+        msg = _('{user} removed from the group successfully!').format(
+                user=user.username)
+        messages.add_message(request, messages.SUCCESS, msg)
+        return HttpResponseRedirect(prof.get_absolute_url())
+
+    return jingo.render(request, 'groups/confirm_remove_member.html',
+                        {'profile': prof, 'member': user})
 
 
 def _user_can_edit(user, group_profile):

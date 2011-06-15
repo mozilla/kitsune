@@ -1,6 +1,9 @@
 from django import forms
 
+from tower import ugettext_lazy as _lazy
+
 from groups.models import GroupProfile
+from sumo.form_fields import MultiUsernameField
 from users.forms import AvatarForm
 
 
@@ -19,3 +22,13 @@ class GroupAvatarForm(AvatarForm):
     class Meta(object):
         model = GroupProfile
         fields = ['avatar']
+
+
+USERS_PLACEHOLDER = _lazy(u'username')
+
+
+class AddUserForm(forms.Form):
+    """Form to add members or leaders to group."""
+    users = MultiUsernameField(
+        widget=forms.TextInput(attrs={'placeholder': USERS_PLACEHOLDER,
+                                      'class': 'user-autocomplete'}))
