@@ -1,12 +1,13 @@
 from django import forms
 from django.conf import settings
+from django.contrib.auth.models import User
 from django.core import validators
 from django.core.exceptions import ValidationError
 from django.utils import translation
 
 from babel import Locale, localedata
 from babel.support import Format
-from tower import ugettext_lazy as _lazy
+from tower import ugettext as _, ugettext_lazy as _lazy
 
 
 class TypedMultipleChoiceField(forms.MultipleChoiceField):
@@ -84,6 +85,27 @@ class StrippedCharField(forms.CharField):
         if value is not None:
             value = value.strip()
         return super(StrippedCharField, self).clean(value)
+
+
+class MultiUsernameField(forms.Field):
+    """Form field that takes a comma-separated list of usernames as input,
+    validates that users exist for each one, and returns the list of users."""
+    def to_python(self, value):
+        if not value:
+            raise forms.ValidationError(_(u'To field is required.'))
+
+        users = []
+        for username in value.split(','):
+            username = username.strip()
+            if username:
+                try:
+                    user = User.objects.get(username=username)
+                    users.append(user)
+                except User.DoesNotExist:
+                    msg = _('{username} is not a valid username.')
+                    raise forms.ValidationError(msg.format(username=username))
+
+        return users
 
 
 class BaseValidator(validators.BaseValidator):

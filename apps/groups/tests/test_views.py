@@ -96,3 +96,32 @@ class EditAvatarTests(TestCase):
         eq_('http://testserver/en-US' + url, r['location'])
         gp = GroupProfile.uncached.get(slug=self.group_profile.slug)
         eq_('', gp.avatar.name)
+
+
+class AddRemoveMemberTests(TestCase):
+    def setUp(self):
+        super(AddRemoveMemberTests, self).setUp()
+        self.user = user(save=True)
+        self.member = user(save=True)
+        add_permission(self.user, GroupProfile, 'change_groupprofile')
+        self.group_profile = group_profile(group=group(save=True), save=True)
+        self.client.login(username=self.user.username, password='testpass')
+
+    def test_add_member(self):
+        url = reverse('groups.add_member', locale='en-US',
+                      args=[self.group_profile.slug])
+        r = self.client.get(url)
+        eq_(405, r.status_code)
+        r = self.client.post(url, {'users': self.member.username})
+        eq_(302, r.status_code)
+        assert self.member in self.group_profile.group.user_set.all()
+
+    def test_remove_member(self):
+        self.member.groups.add(self.group_profile.group)
+        url = reverse('groups.remove_member', locale='en-US',
+                      args=[self.group_profile.slug, self.member.id])
+        r = self.client.get(url)
+        eq_(200, r.status_code)
+        r = self.client.post(url)
+        eq_(302, r.status_code)
+        assert not self.member in self.group_profile.group.user_set.all()

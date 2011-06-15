@@ -88,6 +88,10 @@ ul.user-messages {
     width: 100%;
 }
 
+ul.user-messages li.error {
+    color: #ff0000;
+}
+
 /*----------------------------------
     Breadcrumbs
 ----------------------------------*/

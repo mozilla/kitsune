@@ -78,6 +78,28 @@ ul.users div.info {
     min-height: 45px;
     padding: 3px 0 0;
     vertical-align: top;
+    width: 200px;
+}
+
+ul.users div.remove {
+    display: inline-block;
+    padding: 3px 0 0;
+    vertical-align: top;
+}
+
+ul.users div.remove a {
+    border-radius: 2px;
+    color: #ccc;
+}
+
+ul.users div.remove a:hover {
+    background: #447BC4;
+    color: #fff;
+    text-decoration: none;
+}
+
+input.user-autocomplete {
+    width: 240px;
 }
 
 /* edit page */
