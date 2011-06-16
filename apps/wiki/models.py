@@ -543,20 +543,6 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin):
 
         return rev
 
-    def has_voted(self, request):
-        """Did the user already vote for this document?"""
-        if request.user.is_authenticated():
-            qs = HelpfulVote.objects.filter(document=self,
-                                            creator=request.user)
-        elif request.anonymous.has_id:
-            anon_id = request.anonymous.anonymous_id
-            qs = HelpfulVote.objects.filter(document=self,
-                                            anonymous_id=anon_id)
-        else:
-            return False
-
-        return qs.exists()
-
     def is_majorly_outdated(self):
         """Return whether a MAJOR_SIGNIFICANCE-level update has occurred to the
         parent document since this translation had an approved update.
@@ -577,6 +563,9 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin):
         """Return whether `user` is notified of edits to me."""
         from wiki.events import EditDocumentEvent
         return EditDocumentEvent.is_notifying(user, self)
+
+    def has_current_revision(self):
+        return bool(self.current_revision)
 
 
 class Revision(ModelBase):
@@ -730,6 +719,24 @@ class Revision(ModelBase):
 
         super(Revision, self).delete(*args, **kwargs)
 
+    def has_voted(self, request):
+        """Did the user already vote for this revision?"""
+        if request.user.is_authenticated():
+            qs = HelpfulVote.objects.filter(revision=self,
+                                            creator=request.user)
+            qs_old = HelpfulVoteOld.objects.filter(document=self.document,
+                                            creator=request.user)  # Lazy.
+        elif request.anonymous.has_id:
+            anon_id = request.anonymous.anonymous_id
+            qs = HelpfulVote.objects.filter(revision=self,
+                                            anonymous_id=anon_id)
+            qs_old = HelpfulVoteOld.objects.filter(document=self.document,
+                                            anonymous_id=anon_id)  # Lazy.
+        else:
+            return False
+
+        return qs.exists() or qs_old.exists()
+
     def __unicode__(self):
         return u'[%s] %s #%s: %s' % (self.document.locale,
                                       self.document.title,
@@ -766,11 +773,21 @@ class OperatingSystem(ModelBase):
 
 
 class HelpfulVote(ModelBase):
-    """Helpful or Not Helpful vote on Document."""
-    document = models.ForeignKey(Document, related_name='poll_votes')
+    """Helpful or Not Helpful vote on Revision."""
+    revision = models.ForeignKey(Revision, related_name='poll_votes')
     helpful = models.BooleanField(default=False)
     created = models.DateTimeField(default=datetime.now, db_index=True)
     creator = models.ForeignKey(User, related_name='poll_votes', null=True)
+    anonymous_id = models.CharField(max_length=40, db_index=True)
+    user_agent = models.CharField(max_length=1000)
+
+
+class HelpfulVoteOld(ModelBase):
+    """Helpful or Not Helpful vote on Revision."""
+    document = models.ForeignKey(Document, related_name='poll_votes_doc')
+    helpful = models.BooleanField(default=False)
+    created = models.DateTimeField(default=datetime.now, db_index=True)
+    creator = models.ForeignKey(User, related_name='poll_votes_doc', null=True)
     anonymous_id = models.CharField(max_length=40, db_index=True)
     user_agent = models.CharField(max_length=1000)
 

@@ -649,12 +649,12 @@ def json_view(request):
 @csrf_exempt
 def helpful_vote(request, document_slug):
     """Vote for Helpful/Not Helpful document"""
-    document = get_object_or_404(
-        Document, locale=request.locale, slug=document_slug)
+    revision = get_object_or_404(
+        Revision, id=request.POST['revision_id'])
 
-    if not document.has_voted(request):
+    if not revision.has_voted(request):
         ua = request.META.get('HTTP_USER_AGENT', '')[:1000]  # 1000 max_length
-        vote = HelpfulVote(document=document, user_agent=ua)
+        vote = HelpfulVote(revision=revision, user_agent=ua)
 
         if 'helpful' in request.POST:
             vote.helpful = True
@@ -676,7 +676,7 @@ def helpful_vote(request, document_slug):
     if request.is_ajax():
         return HttpResponse(json.dumps({'message': message}))
 
-    return HttpResponseRedirect(document.get_absolute_url())
+    return HttpResponseRedirect(revision.document.get_absolute_url())
 
 
 @login_required
@@ -687,12 +687,15 @@ def delete_revision(request, document_slug, revision_id):
                                  document__slug=document_slug)
     document = revision.document
     only_revision = document.revisions.count() == 1
+    helpful_votes = HelpfulVote.objects.filter(revision=revision.id)
+    has_votes = helpful_votes.exists()
 
     if request.method == 'GET':
         # Render the confirmation page
         return jingo.render(request, 'wiki/confirm_revision_delete.html',
                             {'revision': revision, 'document': document,
-                             'only_revision': only_revision})
+                             'only_revision': only_revision,
+                             'has_votes': has_votes})
 
     # Don't delete the only revision of a document
     if only_revision:
