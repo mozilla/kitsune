@@ -561,9 +561,6 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin):
         from wiki.events import EditDocumentEvent
         return EditDocumentEvent.is_notifying(user, self)
 
-    def has_current_revision(self):
-        return bool(self.current_revision)
-
 
 class Revision(ModelBase):
     """A revision of a localized knowledgebase document"""
