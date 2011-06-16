@@ -1565,49 +1565,49 @@ class HelpfulVoteTests(TestCaseBase):
 
     def test_vote_yes(self):
         """Test voting helpful."""
-        d = self.document
+        r = self.document.current_revision
         user_ = User.objects.get(username='rrosario')
         self.client.login(username='rrosario', password='testpass')
         response = post(self.client, 'wiki.document_vote',
-                        {'helpful': 'Yes'}, args=[self.document.slug])
+                        {'helpful': 'Yes', 'revision_id': r.id}, args=[self.document.slug])
         eq_(200, response.status_code)
-        votes = HelpfulVote.objects.filter(document=d, creator=user_)
+        votes = HelpfulVote.objects.filter(revision=r, creator=user_)
         eq_(1, votes.count())
         assert votes[0].helpful
 
     def test_vote_no(self):
         """Test voting not helpful."""
-        d = self.document
+        r = self.document.current_revision
         user_ = User.objects.get(username='rrosario')
         self.client.login(username='rrosario', password='testpass')
         response = post(self.client, 'wiki.document_vote',
-                        {'not-helpful': 'No'}, args=[d.slug])
+                        {'not-helpful': 'No', 'revision_id': r.id}, args=[self.document.slug])
         eq_(200, response.status_code)
-        votes = HelpfulVote.objects.filter(document=d, creator=user_)
+        votes = HelpfulVote.objects.filter(revision=r, creator=user_)
         eq_(1, votes.count())
         assert not votes[0].helpful
 
     def test_vote_anonymous(self):
         """Test that voting works for anonymous user."""
-        d = self.document
+        r = self.document.current_revision
         response = post(self.client, 'wiki.document_vote',
-                        {'helpful': 'Yes'}, args=[d.slug])
+                        {'helpful': 'Yes', 'revision_id': r.id}, args=[self.document.slug])
         eq_(200, response.status_code)
-        votes = HelpfulVote.objects.filter(document=d, creator=None)
+        votes = HelpfulVote.objects.filter(revision=r, creator=None)
         votes = votes.exclude(anonymous_id=None)
         eq_(1, votes.count())
         assert votes[0].helpful
 
     def test_vote_ajax(self):
         """Test voting via ajax."""
-        d = self.document
-        url = reverse('wiki.document_vote', args=[d.slug])
-        response = self.client.post(url, data={'helpful': 'Yes'},
+        r = self.document.current_revision
+        url = reverse('wiki.document_vote', args=[self.document.slug])
+        response = self.client.post(url, data={'helpful': 'Yes', 'revision_id': r.id},
                          HTTP_X_REQUESTED_WITH='XMLHttpRequest')
         eq_(200, response.status_code)
         eq_('{"message": "Glad to hear it &mdash; thanks for the feedback!"}',
             response.content)
-        votes = HelpfulVote.objects.filter(document=d, creator=None)
+        votes = HelpfulVote.objects.filter(revision=r, creator=None)
         votes = votes.exclude(anonymous_id=None)
         eq_(1, votes.count())
         assert votes[0].helpful
