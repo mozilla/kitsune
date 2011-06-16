@@ -35,7 +35,7 @@ class KarmaTests(TestCaseBase):
         answer = Answer.objects.get(pk=1)
         question = answer.question
         self.client.login(username='jsocol', password='testpass')
-        post(self.client, 'questions.solution', args=[question.id, answer.id])
+        post(self.client, 'questions.solve', args=[question.id, answer.id])
         assert save.called
 
     @mock.patch.object(AnswerMarkedHelpfulAction, 'save')
