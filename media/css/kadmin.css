@@ -22,3 +22,8 @@ h2 {
 #settings tr:hover th a {
   visibility: visible;
 }
+
+#content section {
+    border-bottom: solid 2px #f0f0f0;
+    padding: 10px 0;
+}

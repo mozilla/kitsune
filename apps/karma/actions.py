@@ -48,7 +48,7 @@ class KarmaAction(object):
         self.redis.hincrby(key, 'points:{d}'.format(
             d=self.date), self.points)
         # Increment points monthly count
-        self.redis.hincrby(key, 'points:{y}-{m}'.format(
+        self.redis.hincrby(key, 'points:{y}-{m:02d}'.format(
             y=self.date.year, m=self.date.month), self.points)
         # Increment points yearly count
         self.redis.hincrby(key, 'points:{y}'.format(
@@ -61,13 +61,14 @@ class KarmaAction(object):
         self.redis.hincrby(key, '{t}:{d}'.format(
              t=self.action_type, d=self.date), 1)
         # Increment action monthly count
-        self.redis.hincrby(key, '{t}:{y}-{m}'.format(
+        self.redis.hincrby(key, '{t}:{y}-{m:02d}'.format(
             t=self.action_type, y=self.date.year, m=self.date.month), 1)
         # Increment action yearly count
         self.redis.hincrby(key, '{t}:{y}'.format(
             t=self.action_type, y=self.date.year), 1)
 
 
+# TODO: move this to it's own file?
 class KarmaManager(object):
     """Manager for querying karma data in Redis."""
     def __init__(self):
@@ -164,7 +165,7 @@ class KarmaManager(object):
         """Returns the total count of an action for a given user and month."""
         count = self.redis.hget(
             hash_key(user),
-            '{t}:{y}-{m}'.format(t=action.action_type, y=year, m=month))
+            '{t}:{y}-{m:02d}'.format(t=action.action_type, y=year, m=month))
         return int(count) if count else 0
 
     def year_count(self, action, user, year):
@@ -172,6 +173,10 @@ class KarmaManager(object):
         count = self.redis.hget(
             hash_key(user), '{t}:{y}'.format(y=year, t=action.action_type))
         return int(count) if count else 0
+
+    def user_data(self, user):
+        """Returns all the data stored for the given user."""
+        return self.redis.hgetall(hash_key(user))
 
 
 def hash_key(user):

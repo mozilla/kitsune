@@ -1,5 +1,10 @@
 {% extends "kadmin/base.html" %}
 
+{% block extrastyle %}
+  {{ block.super }}
+  <link rel="stylesheet" media="screen,projection,tv" href="{{ MEDIA_URL }}css/users.autocomplete.css" />
+{% endblock %}
+
 {% block content %}
   <section>
     <h1>Top Contributors - All Time</h1>
@@ -31,4 +36,47 @@
       {% endfor %}
     </ul>
   </section>
+  <section>
+    <h1>User Karma{% if username %}: {{ username }}{% endif %}</h1>
+    <form action="" method="GET">
+      <input type="text" placeholder="username" class="user-autocomplete" name="username" />
+      <input type="submit" value="Show Karma Data" />
+    </form>
+    {% if user_karma %}
+      <table class="redis-info">
+        <tbody>
+          {% for row in user_karma %}
+            <tr>
+              <th>{{ row.key }}</th>
+              <td>{{ row.value }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      {% if username %}
+        <p>User or karma data not found.</p>
+      {% endif %}
+    {% endif %}
+  </section>
+  <section>
+    <h1>Initialize Karma</h1>
+    <p>Warning: This will launch a task to delete all existing karma data from redis and recalculate from the database.</p>
+    <form action="" method="POST">
+      {% csrf_token %}
+      <input type="hidden" name="init" value="1" />
+      <input type="submit" value="Init Karma" />
+    </form>
+  </section>
+{% endblock %}
+
+{% block footer %}
+  {{ block.super }}
+  <script type="text/javascript" src="{{ MEDIA_URL }}js/libs/jquery.min.js"></script>
+  <script type="text/javascript">
+    // Not happy about this... but it works!
+    $('body').data('usernames-api', '/en-US/users/api/usernames');
+  </script>
+  <script type="text/javascript" src="{{ MEDIA_URL }}js/libs/jquery.autocomplete.js"></script>
+  <script type="text/javascript" src="{{ MEDIA_URL }}js/users.autocomplete.js"></script>
 {% endblock %}
