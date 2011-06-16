@@ -1,3 +1,4 @@
+import logging
 import time
 
 from django.db import connection, transaction
@@ -9,6 +10,8 @@ import waffle
 
 from wiki import tasks
 
+
+log = logging.getLogger('k.migratehelpful')
 
 @cronjobs.register
 def calculate_related_documents():
@@ -85,7 +88,10 @@ def migrate_helpfulvotes():
     transaction.managed(True)
     try:
         cursor = connection.cursor()
-        oldqry = cursor.execute("SELECT * FROM `wiki_helpfulvoteold` ORDER BY id ASC LIMIT 3000")
+        cursor.execute("""SELECT id, document_id, helpful, created,
+                        creator_id, anonymous_id, user_agent
+                        FROM `wiki_helpfulvoteold`
+                        ORDER BY id ASC LIMIT 3000""")
         old = cursor.fetchall()
 
         for olde in old:
@@ -99,7 +105,7 @@ def migrate_helpfulvotes():
             cursor.execute("""SELECT id FROM `wiki_revision`
                               WHERE `document_id` = %s
                               AND `is_approved`=1 AND
-                              (`reviewed` < %s OR `reviewed` IS NULL)
+                              (`reviewed` <= %s OR `reviewed` IS NULL)
                               ORDER BY CASE WHEN `reviewed`
                               IS NULL THEN 1 ELSE 0 END,
                               `wiki_revision`.`created` DESC LIMIT 1""",
@@ -109,7 +115,7 @@ def migrate_helpfulvotes():
             if rev_id is None:
                 cursor.execute("""SELECT id FROM `wiki_revision`
                                   WHERE `document_id` = %s
-                                  AND (`reviewed` < %s OR `reviewed` IS NULL)
+                                  AND (`reviewed` <= %s OR `reviewed` IS NULL)
                                   ORDER BY CASE WHEN `reviewed`
                                   IS NULL THEN 1 ELSE 0 END,
                                   `wiki_revision`.`created`  DESC LIMIT 1""",
@@ -129,12 +135,11 @@ def migrate_helpfulvotes():
                      creator_id, anonymous_id, user_agent)
                     VALUES(%s, %s, %s, %s, %s, %s)""",
                     [rev_id[0], olde[2], olde[3], olde[4], anon_id, olde[6]])
-                transaction.commit_unless_managed()
             else:
                 log.debug('Error converting vote [%s]' % olde.id)
 
-        cursor.execute('DELETE FROM `wiki_helpfulvoteold` ORDER BY id ASC LIMIT 3000')
-        transaction.commit_unless_managed()
+        cursor.execute("""DELETE FROM `wiki_helpfulvoteold`
+                        ORDER BY id ASC LIMIT 3000""")
         transaction.commit()
     except:
         transaction.rollback()
