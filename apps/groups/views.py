@@ -22,15 +22,18 @@ def list(request):
     return jingo.render(request, 'groups/list.html', {'groups': groups})
 
 
-def profile(request, group_slug, member_form=None):
+def profile(request, group_slug, member_form=None, leader_form=None):
     prof = get_object_or_404(GroupProfile, slug=group_slug)
     leaders = prof.leaders.all()
     members = prof.group.user_set.all()
     user_can_edit = _user_can_edit(request.user, prof)
+    user_can_manage_leaders = _user_can_manage_leaders(request.user, prof)
     return jingo.render(request, 'groups/profile.html',
                         {'profile': prof, 'leaders': leaders,
                          'members': members, 'user_can_edit': user_can_edit,
-                         'member_form': member_form or AddUserForm()})
+                         'user_can_manage_leaders': user_can_manage_leaders,
+                         'member_form': member_form or AddUserForm(),
+                         'leader_form': leader_form or AddUserForm()})
 
 
 @login_required
@@ -133,7 +136,7 @@ def add_member(request, group_slug):
 @login_required
 @require_http_methods(['GET', 'POST'])
 def remove_member(request, group_slug, user_id):
-    """Add a member to the group."""
+    """Remove a member from the group."""
     prof = get_object_or_404(GroupProfile, slug=group_slug)
     user = get_object_or_404(User, id=user_id)
 
@@ -151,7 +154,57 @@ def remove_member(request, group_slug, user_id):
                         {'profile': prof, 'member': user})
 
 
+@login_required
+@require_POST
+def add_leader(request, group_slug):
+    """Add a leader to the group."""
+    prof = get_object_or_404(GroupProfile, slug=group_slug)
+
+    if not _user_can_manage_leaders(request.user, prof):
+        raise PermissionDenied
+
+    form = AddUserForm(request.POST)
+    if form.is_valid():
+        for user in form.cleaned_data['users']:
+            prof.leaders.add(user)
+        msg = _('{users} added to the group leaders successfully!').format(
+            users=request.POST.get('users'))
+        messages.add_message(request, messages.SUCCESS, msg)
+        return HttpResponseRedirect(prof.get_absolute_url())
+
+    msg = _('There were errors adding leaders to the group, see below.')
+    messages.add_message(request, messages.ERROR, msg)
+    return profile(request, group_slug, leader_form=form)
+
+
+@login_required
+@require_http_methods(['GET', 'POST'])
+def remove_leader(request, group_slug, user_id):
+    """Remove a leader from the group."""
+    prof = get_object_or_404(GroupProfile, slug=group_slug)
+    user = get_object_or_404(User, id=user_id)
+
+    if not _user_can_manage_leaders(request.user, prof):
+        raise PermissionDenied
+
+    if request.method == 'POST':
+        prof.leaders.remove(user)
+        msg = _('{user} removed from the group leaders successfully!').format(
+                user=user.username)
+        messages.add_message(request, messages.SUCCESS, msg)
+        return HttpResponseRedirect(prof.get_absolute_url())
+
+    return jingo.render(request, 'groups/confirm_remove_leader.html',
+                        {'profile': prof, 'leader': user})
+
+
 def _user_can_edit(user, group_profile):
     """Can the given user edit the given group profile?"""
     return (user.has_perm('groups.change_groupprofile') or
             user in group_profile.leaders.all())
+
+
+def _user_can_manage_leaders(user, group_profile):
+    """Can the given user add and remove leaders?"""
+    # Limit to staff users with the change_groupprofile permission
+    return user.is_staff and user.has_perm('groups.change_groupprofile')

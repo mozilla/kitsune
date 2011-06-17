@@ -10,6 +10,9 @@ group_patterns = patterns('groups.views',
     url(r'^/add-member$', 'add_member', name='groups.add_member'),
     url(r'^/remove-member/(?P<user_id>\d+)$', 'remove_member',
         name='groups.remove_member'),
+    url(r'^/add-leader$', 'add_leader', name='groups.add_leader'),
+    url(r'^/remove-leader/(?P<user_id>\d+)$', 'remove_leader',
+        name='groups.remove_leader'),
 )
 
 urlpatterns = patterns('groups.views',
