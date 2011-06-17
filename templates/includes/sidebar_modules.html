@@ -1,5 +1,5 @@
 {# vim: set ts=2 et sts=2 sw=2: #}
-{% macro for_contributors(user) -%}
+{% macro for_contributors(request, user, default_language) -%}
   {% if user.is_authenticated() %}
     <section id="for-contributors" class="sd-module">
       <h1>{{ _('For Contributors') }}</h1>
@@ -13,6 +13,9 @@
         <li><a href="{{ url('wiki.document', 'improve-knowledge-base') }}">{{ _('Improve the Knowledge Base') }}</a></li>
         <li><a href="{{ url('wiki.document', 'localize-firefox-help') }}">{{ _('Translate Articles') }}</a></li>
         <li><a href="{{ url('forums.forums') }}">{{ _('Contributors Forums') }}</a></li>
+        {% if request.locale == default_language %}
+          <li><a href="{{ url('questions.questions') }}">{{ _('Support Forum') }}</a></li>
+        {% endif %}
       </ul>
     </section>
   {% endif %}
