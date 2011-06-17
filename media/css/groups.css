@@ -82,9 +82,12 @@ ul.users div.info {
 }
 
 ul.users div.remove {
-    display: inline-block;
     padding: 3px 0 0;
     vertical-align: top;
+}
+
+.edit-on ul.users div.remove {
+    display: inline-block;
 }
 
 ul.users div.remove a {
@@ -100,6 +103,14 @@ ul.users div.remove a:hover {
 
 input.user-autocomplete {
     width: 240px;
+}
+
+.editable .edit-mode {
+    display: none;
+}
+
+.edit-on .edit-mode {
+    display: block;
 }
 
 /* edit page */

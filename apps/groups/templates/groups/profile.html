@@ -27,48 +27,72 @@
         {{ profile.information_html|safe }}
       </div>
 
-      <h2>{{ _('Group Leaders') }}</h2>
-      <ul class="users leaders">
-        {% for user in leaders %}
-          {{ user_row(user) }}
-        {% endfor %}
-      </ul>
-      {# TODO: admins can add/remove leaders #}
+      <div id="group-leaders" class="editable">
+        {% if user_can_manage_leaders %}
+          <a class="edit" href="#group-leaders">{{ _('Edit group leaders') }}</a>
+        {% endif %}
+        <h2>{{ _('Group Leaders') }}</h2>
+        <ul class="users leaders">
+          {% for user in leaders %}
+            <li>
+              {{ user_row(user) }}
+              {% if user_can_manage_leaders %}
+                <div class="remove edit-mode">
+                  <a href="{{ url('groups.remove_leader', profile.slug, user.id) }}" title="{{ _('Remove user from leaders') }}">&#x2716;</a>
+                </div>
+              {% endif %}
+            </li>
+          {% endfor %}
+        </ul>
+        {% if user_can_manage_leaders %}
+          <form id="add-member-form" class="edit-mode" action="{{ url('groups.add_leader', profile.slug) }}" method="POST">
+            {{ csrf() }}
+            {{ errorlist(leader_form) }}
+            {{ leader_form.users|safe }}
+            <input type="submit" value="Add Leader" />
+          </form>
+        {% endif %}
+      </div>
 
-      <h2>{{ _('Group Members') }}</h2>
-      <ul class="users members">
-        {% for user in members %}
-          {{ user_row(user, user_can_edit) }}
-        {% endfor %}
-      </ul>
-      {% if user_can_edit %}
-        <form id="add-member-form" action="{{ url('groups.add_member', profile.slug) }}" method="POST">
-          {{ csrf() }}
-          {{ errorlist(member_form) }}
-          {{ member_form.users|safe }}
-          <input type="submit" value="Add Member" />
-        </form>
-      {% endif %}
+      <div id="group-members" class="editable">
+        {% if user_can_edit %}
+          <a class="edit" href="#group-members">{{ _('Edit group members') }}</a>
+        {% endif %}
+        <h2>{{ _('Group Members') }}</h2>
+        <ul class="users members">
+          {% for user in members %}
+            <li>
+              {{ user_row(user) }}
+              {% if user_can_edit %}
+                <div class="remove edit-mode">
+                  <a href="{{ url('groups.remove_member', profile.slug, user.id) }}" title="{{ _('Remove user from group') }}">&#x2716;</a>
+                </div>
+              {% endif %}
+            </li>
+          {% endfor %}
+        </ul>
+        {% if user_can_edit %}
+          <form id="add-member-form" class="edit-mode" action="{{ url('groups.add_member', profile.slug) }}" method="POST">
+            {{ csrf() }}
+            {{ errorlist(member_form) }}
+            {{ member_form.users|safe }}
+            <input type="submit" value="Add Member" />
+          </form>
+        {% endif %}
+      </div>
     </section>
   </article>
 {% endblock %}
 
-{% macro user_row(user, can_remove=False) -%}
-  <li>
-    <div class="avatar">
-      <a href="{{ profile_url(user) }}">
-        <img src="{{ profile_avatar(user) }}" alt="" />
-      </a>
-    </div>
-    <div class="info">
-      <a href="{{ profile_url(user) }}">
-        {{ display_name(user) }}
-      </a>
-    </div>
-    {% if can_remove %}
-      <div class="remove">
-        <a href="{{ url('groups.remove_member', profile.slug, user.id) }}" title="{{ _('Remove user from group') }}">&#x2716;</a>
-      </div>
-    {% endif %}
-  </li>
+{% macro user_row(user) -%}
+  <div class="avatar">
+    <a href="{{ profile_url(user) }}">
+      <img src="{{ profile_avatar(user) }}" alt="" />
+    </a>
+  </div>
+  <div class="info">
+    <a href="{{ profile_url(user) }}">
+      {{ display_name(user) }}
+    </a>
+  </div>
 {%- endmacro %}
