@@ -11,7 +11,7 @@ class DocumentAdmin(admin.ModelAdmin):
     list_filter = ('is_template', 'is_localizable', 'category', 'locale',
                    'is_archived', 'allow_discussion')
     raw_id_fields = ('parent',)
-    readonly_fields = ('id', 'current_revision')
+    readonly_fields = ('id', 'current_revision', 'latest_localizable_revision')
     search_fields = ('title',)
 
     @staticmethod
