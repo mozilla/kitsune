@@ -132,8 +132,6 @@ class AddRemoveLeaderTests(TestCase):
         super(AddRemoveLeaderTests, self).setUp()
         self.user = user(save=True)
         add_permission(self.user, GroupProfile, 'change_groupprofile')
-        self.user.is_staff = True
-        self.user.save()
         self.leader = user(save=True)
         self.group_profile = group_profile(group=group(save=True), save=True)
         self.client.login(username=self.user.username, password='testpass')

@@ -144,6 +144,9 @@ def remove_member(request, group_slug, user_id):
         raise PermissionDenied
 
     if request.method == 'POST':
+        if user in prof.leaders.all():
+            # If user is a leader, remove from leaders
+            prof.leaders.remove(user)
         user.groups.remove(prof.group)
         msg = _('{user} removed from the group successfully!').format(
                 user=user.username)
@@ -166,6 +169,9 @@ def add_leader(request, group_slug):
     form = AddUserForm(request.POST)
     if form.is_valid():
         for user in form.cleaned_data['users']:
+            if prof.group not in user.groups.all():
+                # If user isn't a member of group, add to members
+                user.groups.add(prof.group)
             prof.leaders.add(user)
         msg = _('{users} added to the group leaders successfully!').format(
             users=request.POST.get('users'))
@@ -206,5 +212,5 @@ def _user_can_edit(user, group_profile):
 
 def _user_can_manage_leaders(user, group_profile):
     """Can the given user add and remove leaders?"""
-    # Limit to staff users with the change_groupprofile permission
-    return user.is_staff and user.has_perm('groups.change_groupprofile')
+    # Limit to users with the change_groupprofile permission
+    return user.has_perm('groups.change_groupprofile')
