@@ -96,7 +96,7 @@
       {% block side_top %}{% endblock %}
       {{ quick_links(active=active_side_link) }}
       {% block side %}{% endblock %}
-      {{ for_contributors(user) }}
+      {{ for_contributors(request, user, settings.WIKI_DEFAULT_LANGUAGE) }}
       <div class="sd-module promos">
         {% block side_promos %}
           <section id="want-to-get-involved">
