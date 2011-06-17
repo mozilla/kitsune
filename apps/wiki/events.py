@@ -25,16 +25,16 @@ def notification_mails(revision, subject, template, url, users_and_watches):
                              locale=document.locale)
     t = loader.get_template(template)
 
-    if revision.based_on is not None:
-        fromfile = u'[%s] %s #%s' % (revision.based_on.document.locale,
-                                     revision.based_on.document.title,
-                                     revision.based_on.id)
+    if revision.document.current_revision is not None:
+        fromfile = u'[%s] %s #%s' % (revision.document.locale,
+                                     revision.document.title,
+                                     revision.document.current_revision.id)
         tofile = u'[%s] %s #%s' % (revision.document.locale,
                                    revision.document.title,
                                    revision.id)
 
         diff = clean(u''.join(difflib.unified_diff(
-                        revision.based_on.content.splitlines(1),
+                        revision.document.current_revision.content.splitlines(1),
                         revision.content.splitlines(1),
                         fromfile=fromfile, tofile=tofile)),
                         ALLOWED_TAGS, ALLOWED_ATTRIBUTES)
