@@ -927,15 +927,15 @@ class ReviewRevisionTests(TestCaseBase):
         reviewed_delay.assert_called_with(r, r.document, '')
 
         if r.based_on is not None:
-            fromfile = u'[%s] %s #%s' % (r.based_on.document.locale,
-                                         r.based_on.document.title,
-                                         r.based_on.id)
+            fromfile = u'[%s] %s #%s' % (r.document.locale,
+                                         r.document.title,
+                                         r.document.current_revision.id)
             tofile = u'[%s] %s #%s' % (r.document.locale,
                                        r.document.title,
                                        r.id)
             diff = clean(''.join(difflib.unified_diff(
-                            smart_str(r.based_on.content).splitlines(1),
-                            smart_str(r.content).splitlines(1),
+                            r.document.current_revision.content.splitlines(1),
+                            r.content.splitlines(1),
                             fromfile=fromfile,
                             tofile=tofile)), ALLOWED_TAGS, ALLOWED_ATTRIBUTES)
 
