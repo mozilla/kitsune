@@ -600,7 +600,7 @@ details.h2 > summary {
 #revision-list div.status,
 #revision-list div.status-head {
     display: inline-block;
-    width: 80px;
+    width: 90px;
 }
 
 #revision-list div.status a {
@@ -623,7 +623,7 @@ details.h2 > summary {
 #revision-list div.comment,
 #revision-list div.comment-head {
     display: inline-block;
-    width: 280px;
+    width: 270px;
 }
 
 #revision-list div.edit,
