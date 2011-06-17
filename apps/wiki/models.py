@@ -72,9 +72,9 @@ GROUPED_FIREFOX_VERSIONS = (
         VersionMetadata(6, _lazy(u'Firefox 6'),
                         _lazy(u'Firefox 6'), 'fx6', 6.9999, False, False),
         VersionMetadata(5, _lazy(u'Firefox 5'),
-                        _lazy(u'Firefox 5'), 'fx5', 5.9999, True, False),
+                        _lazy(u'Firefox 5'), 'fx5', 5.9999, True, True),
         VersionMetadata(1, _lazy(u'Firefox 4'),
-                        _lazy(u'Firefox 4'), 'fx4', 4.9999, True, True),
+                        _lazy(u'Firefox 4'), 'fx4', 4.9999, True, False),
         VersionMetadata(2, _lazy(u'Firefox 3.5-3.6'),
                         _lazy(u'Firefox 3.5-3.6'), 'fx35', 3.9999, True,
                         False),
@@ -86,10 +86,10 @@ GROUPED_FIREFOX_VERSIONS = (
                         False),
         VersionMetadata(7, _lazy(u'Firefox 5'),
                         _lazy(u'Firefox 5 for Mobile'), 'm5', 5.9999, True,
-                        False),
+                        True),
         VersionMetadata(4, _lazy(u'Firefox 4'),
                         _lazy(u'Firefox 4 for Mobile'), 'm4', 4.9999, True,
-                        True),)))
+                        False),)))
 
 # Flattened:  # TODO: perhaps use optgroups everywhere instead
 FIREFOX_VERSIONS = tuple(chain(*[options for label, options in
