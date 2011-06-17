@@ -13,6 +13,7 @@ from wiki import tasks
 
 log = logging.getLogger('k.migratehelpful')
 
+
 @cronjobs.register
 def calculate_related_documents():
     """Calculates all related documents based on common tags."""
