@@ -6,7 +6,7 @@ from django.utils.encoding import smart_str
 
 from tower import ugettext_lazy as _lazy
 
-from sumo.form_fields import StrippedCharField
+from sumo.form_fields import MultiUsernameField, StrippedCharField
 from tags import forms as tag_forms
 from wiki.models import (Document, Revision, FirefoxVersion, OperatingSystem,
                      FIREFOX_VERSIONS, OPERATING_SYSTEMS, SIGNIFICANCES,
@@ -56,12 +56,11 @@ class DocumentForm(forms.ModelForm):
         # Set up tags field, which is instantiated deep within taggit:
         tags_field = self.fields['tags']
         tags_field.widget.can_create_tags = can_create_tags
-        
+
         # If user hasn't permission to frob is_archived, remove the field. This
         # causes save() to skip it as well.
         if not can_archive:
             del self.fields['is_archived']
-
 
     title = StrippedCharField(
         min_length=5, max_length=255,
@@ -124,7 +123,6 @@ class DocumentForm(forms.ModelForm):
                          'front page'))
 
     locale = forms.CharField(widget=forms.HiddenInput())
-
 
     def clean_slug(self):
         slug = self.cleaned_data['slug']
@@ -234,3 +232,10 @@ class ReviewForm(forms.Form):
         initial=False,
         label=_lazy(u'Ready for localization'),
         required=False)
+
+
+class AddContributorForm(forms.Form):
+    """Form to add contributors to a document."""
+    users = MultiUsernameField(
+        widget=forms.TextInput(attrs={'placeholder': _lazy(u'username'),
+                                      'class': 'user-autocomplete'}))

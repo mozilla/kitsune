@@ -8,6 +8,8 @@
 *  Last Review: 04/19/2010
 */
 
+// MODIFIED: added $.fn.betterautocomplete alias
+
 /*jslint onevar: true, evil: true, nomen: true, eqeqeq: true, bitwise: true, regexp: true, newcap: true, immed: true */
 /*global window: true, document: true, clearInterval: true, setInterval: true, jQuery: true */
 
@@ -53,6 +55,9 @@
   $.fn.autocomplete = function(options) {
     return new Autocomplete(this.get(0)||$('<input />'), options);
   };
+  // Added this because jquery.ui autocomplete stomps over above.
+  // TODO: Remove this when we remove jquery.ui
+  $.fn.betterautocomplete = $.fn.autocomplete;
 
 
   Autocomplete.prototype = {

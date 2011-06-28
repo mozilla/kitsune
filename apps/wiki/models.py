@@ -210,6 +210,9 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin):
             u'If checked, this document allows discussion in an associated '
              'forum. Uncheck to hide/disable the forum.'))
 
+    # List of users that have contributed to this document.
+    contributors = models.ManyToManyField(User)
+
     # firefox_versions,
     # operating_systems:
     #    defined in the respective classes below. Use them as in
@@ -669,9 +672,25 @@ class Revision(ModelBase):
         super(Revision, self).save(*args, **kwargs)
 
         # When a revision is approved, re-cache the document's html content
+        # and update document contributors
         if self.is_approved and (
                 not self.document.current_revision or
                 self.document.current_revision.id < self.id):
+            # Determine if there are new contributors and add them to the list
+            contributors = self.document.contributors.all()
+            # Exclude all explicitly rejected revisions
+            new_revs = self.document.revisions.exclude(
+                reviewed__isnull=False, is_approved=False)
+            if self.document.current_revision:
+                new_revs = new_revs.filter(
+                    id__gt=self.document.current_revision.id)
+            new_contributors = set([r.creator
+                for r in new_revs.select_related('creator')])
+            for user in new_contributors:
+                if user not in contributors:
+                    self.document.contributors.add(user)
+
+            # Update document denormalized fields
             if self.is_ready_for_localization:
                 self.document.latest_localizable_revision = self
             self.document.html = self.content_parsed
