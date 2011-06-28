@@ -49,7 +49,7 @@
             {{ csrf() }}
             {{ errorlist(leader_form) }}
             {{ leader_form.users|safe }}
-            <input type="submit" value="Add Leader" />
+            <input type="submit" value="{{ _('Add Leader') }}" />
           </form>
         {% endif %}
       </div>
@@ -76,7 +76,7 @@
             {{ csrf() }}
             {{ errorlist(member_form) }}
             {{ member_form.users|safe }}
-            <input type="submit" value="Add Member" />
+            <input type="submit" value="{{ _('Add Member') }}" />
           </form>
         {% endif %}
       </div>

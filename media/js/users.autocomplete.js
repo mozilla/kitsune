@@ -8,7 +8,7 @@
 "use strict";
 
 function init() {
-    $('input.user-autocomplete').autocomplete({
+    $('input.user-autocomplete').betterautocomplete({
         serviceUrl: $('body').data('usernames-api'),
         minChars: 2,
         delimiter: /(,)\s*/,

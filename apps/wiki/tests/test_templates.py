@@ -674,7 +674,7 @@ class NewRevisionTests(TestCaseBase):
         assert not len(pq(response.content)('div.warning-box'))
 
         # Create a newer unreviewed revision and now warning shows
-        created =created + timedelta(seconds=1)
+        created = created + timedelta(seconds=1)
         revision(document=self.d, created=created, save=True)
         response = self.client.get(reverse('wiki.new_revision_based_on',
                                            args=[self.d.slug, r.id]))
@@ -922,6 +922,9 @@ class ReviewRevisionTests(TestCaseBase):
         assert r.reviewed
         assert r.is_approved
 
+        # Verify that revision creator is now in contributors
+        assert r.creator in self.document.contributors.all()
+
         # The "reviewed" mail should be sent to the creator, and the "approved"
         # mail should be sent to any subscribers:
         reviewed_delay.assert_called_with(r, r.document, '')
@@ -969,6 +972,9 @@ class ReviewRevisionTests(TestCaseBase):
         assert r.reviewed
         assert not r.is_approved
         delay.assert_called_with(r, r.document, comment)
+
+        # Verify that revision creator is not in contributors
+        assert r.creator not in r.document.contributors.all()
 
     def test_review_without_permission(self):
         """Make sure unauthorized users can't review revisions."""

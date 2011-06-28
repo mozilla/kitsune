@@ -5,26 +5,28 @@
 
 (function ($) {
     function init() {
+        var $body = $('body');
+
         $('select.enable-if-js').removeAttr('disabled');
 
         initPrepopulatedSlugs();
         initDetailsTags();
 
-        if ($('body').is('.document') || $('body').is('.home')) {  // Document page
+        if ($body.is('.document') || $body.is('.home')) {  // Document page
             ShowFor.initForTags();
             new k.AjaxVote('#helpful-vote form', {
                 positionMessage: true
             });
             initAOABanner();
-        } else if ($('body').is('.review')) { // Review pages
+        } else if ($body.is('.review')) { // Review pages
             ShowFor.initForTags();
         }
 
-        if ($('body').is('.home')) {
+        if ($body.is('.home')) { // Home page
             initClearOddSections();
         }
 
-        if ($('body').is('.edit, .new, .translate')) {
+        if ($body.is('.edit, .new, .translate')) { // Document form page
             initArticlePreview();
             initTitleAndSlugCheck();
             initPreValidation();
