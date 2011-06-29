@@ -11,6 +11,7 @@ from django.shortcuts import get_object_or_404
 from django.utils.http import base36_to_int
 
 import jingo
+from ratelimit.decorators import ratelimit
 from session_csrf import anonymous_csrf
 from statsd import statsd
 from tidings.tasks import claim_watches
@@ -30,6 +31,7 @@ from users.utils import handle_login, handle_register, try_send_email_with_form
 
 
 @ssl_required
+@ratelimit(field='username', rate='1/h')
 @anonymous_csrf
 def login(request):
     """Try to log the user in."""

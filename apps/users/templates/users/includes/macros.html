@@ -17,6 +17,9 @@
           <label for="id_password">{{ _('Password:') }}</label>
           {{ form.password|safe }}
         </li>
+        {% if form.has_recaptcha %}
+          <li>Has Captcha!</li>
+        {% endif %}
       </ul>
     </fieldset>
     <div class="submit">
