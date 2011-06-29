@@ -31,6 +31,11 @@ ul.users div.info {
     width: 200px;
 }
 
+ul.users p.pm {
+    font-size: 11px;
+    margin: 5px 0 0;
+}
+
 ul.users div.remove {
     padding: 3px 0 0;
     vertical-align: top;
