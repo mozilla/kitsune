@@ -38,7 +38,7 @@
   {% endif %}
   <div class="meta">
     {% if question.solution == answer %}
-      <span class="solved">{{ _('Solution chosen by {author}')|f(author=question.creator) }}</span>
+      <span class="solved">{{ _('Solution chosen') }}</span>
       {% if user == question.creator or user.has_perm('questions.change_solution') %}
         <form class="unsolve" action="{{ url('questions.unsolve', question_id=question.id, answer_id=answer.id) }}" method="post">
           {{ csrf() }}
