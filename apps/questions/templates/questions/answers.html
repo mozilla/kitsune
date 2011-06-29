@@ -54,7 +54,7 @@
         </div>
         {% if question.solution %}
           <div class="solution">
-            <h2>{{ _('Solution Chosen by {user}')|f(user=question.creator) }}</h2>
+            <h2>{{ _('Solution Chosen') }}</h2>
             <div class="mini-reply">
               <div class="avatar">
                 <a href="{{ profile_url(question.solution.creator) }}">
