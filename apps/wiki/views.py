@@ -4,6 +4,8 @@ import logging
 from string import ascii_letters
 
 from django.conf import settings
+from django.contrib import messages
+from django.contrib.auth.models import User
 from django.core.exceptions import PermissionDenied
 from django.http import (HttpResponse, HttpResponseRedirect,
                          Http404, HttpResponseBadRequest)
@@ -26,7 +28,8 @@ from sumo.utils import paginate, smart_int, get_next_url
 from wiki import DOCUMENTS_PER_PAGE
 from wiki.events import (EditDocumentEvent, ReviewableRevisionInLocaleEvent,
                          ApproveRevisionInLocaleEvent)
-from wiki.forms import DocumentForm, RevisionForm, ReviewForm
+from wiki.forms import (AddContributorForm, DocumentForm, RevisionForm,
+                        ReviewForm)
 from wiki.models import (Document, Revision, HelpfulVote, CATEGORIES,
                          OPERATING_SYSTEMS, GROUPED_OPERATING_SYSTEMS,
                          FIREFOX_VERSIONS, GROUPED_FIREFOX_VERSIONS)
@@ -136,10 +139,7 @@ def document(request, document_slug, template=None):
 
     related = doc.related_documents.order_by('-related_to__in_common')[0:5]
 
-    # Get the contributors. (To avoid this query, we could render the
-    # the contributors right into the Document's html field.)
-    contributors = set([r.creator for r in doc.revisions.filter(
-                            is_approved=True).select_related('creator')])
+    contributors = doc.contributors.all()
 
     data = {'document': doc, 'redirected_from': redirected_from,
             'related': related, 'contributors': contributors,
@@ -320,7 +320,7 @@ def preview_revision(request):
 
 
 @require_GET
-def document_revisions(request, document_slug):
+def document_revisions(request, document_slug, contributor_form=None):
     """List all the revisions of a given document."""
     locale = request.GET.get('locale', request.locale)
     doc = get_object_or_404(
@@ -332,8 +332,10 @@ def document_revisions(request, document_slug):
     else:
         template = 'wiki/history.html'
 
+    form = contributor_form or AddContributorForm()
     return jingo.render(request, template,
-                        {'revisions': revs, 'document': doc})
+                        {'revisions': revs, 'document': doc,
+                         'contributor_form': form})
 
 
 @login_required
@@ -723,6 +725,51 @@ def delete_document(request, document_slug):
 
     return jingo.render(request, 'wiki/confirm_document_delete.html',
                         {'document': document, 'delete_confirmed': True})
+
+
+@login_required
+@require_POST
+@permission_required('wiki.change_document')
+def add_contributor(request, document_slug):
+    """Add a contributor to a document."""
+    document = get_object_or_404(Document, locale=request.locale,
+                                 slug=document_slug)
+
+    form = AddContributorForm(request.POST)
+    if form.is_valid():
+        for user in form.cleaned_data['users']:
+            document.contributors.add(user)
+        msg = _('{users} added to the contributors successfully!').format(
+            users=request.POST.get('users'))
+        messages.add_message(request, messages.SUCCESS, msg)
+        
+        return HttpResponseRedirect(reverse('wiki.document_revisions',
+                                            args=[document_slug]))
+
+    msg = _('There were errors adding new contributors, see below.')
+    messages.add_message(request, messages.ERROR, msg)
+    return document_revisions(request, document_slug, contributor_form=form)
+
+
+@login_required
+@require_http_methods(['GET', 'POST'])
+@permission_required('wiki.change_document')
+def remove_contributor(request, document_slug, user_id):
+    """Remove a contributor from a document."""
+    document = get_object_or_404(Document, locale=request.locale,
+                                 slug=document_slug)
+    user = get_object_or_404(User, id=user_id)
+
+    if request.method == 'POST':
+        document.contributors.remove(user)
+        msg = _('{user} removed from the contributors successfully!').format(
+                user=user.username)
+        messages.add_message(request, messages.SUCCESS, msg)
+        return HttpResponseRedirect(reverse('wiki.document_revisions',
+                                            args=[document_slug]))
+
+    return jingo.render(request, 'wiki/confirm_remove_contributor.html',
+                        {'document': document, 'contributor': user})
 
 
 def _document_form_initial(document):

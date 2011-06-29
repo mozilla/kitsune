@@ -667,6 +667,13 @@ details.h2 > summary {
     padding-top: 10px;
 }
 
+#contributors {
+    margin: 30px 0;
+}
+#contributors h1 {
+    font-size: 18px;
+}
+
 #delete-doc {
     margin: 50px 0 0;
     padding: 0 10px 0 0;

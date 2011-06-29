@@ -61,6 +61,12 @@ document_patterns = patterns('wiki.views',
 
     # Delete a document
     url(r'^/delete', 'delete_document', name='wiki.document_delete'),
+
+    # Manage contributors
+    url(r'^/add-contributor$', 'add_contributor',
+        name='wiki.add_contributor'),
+    url(r'^/remove-contributor/(?P<user_id>\d+)$', 'remove_contributor',
+        name='wiki.remove_contributor'),
 )
 
 urlpatterns = patterns('wiki.views',

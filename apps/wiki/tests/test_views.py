@@ -9,6 +9,7 @@ from pyquery import PyQuery as pq
 
 from sumo.tests import TestCase, LocalizingClient
 from sumo.urlresolvers import reverse
+from users.tests import user, add_permission
 from wiki.models import VersionMetadata, Document
 from wiki.tests import doc_rev, document, new_document_data, revision
 from wiki.views import _version_groups
@@ -177,3 +178,33 @@ class DocumentEditingTests(TestCase):
         eq_(int(input.value), en_r.pk)
         eq_(doc('#id_keywords')[0].attrib['value'], 'oui')
         eq_(doc('#id_summary').text(), 'lipsum')
+
+
+class AddRemoveContributorTests(TestCase):
+    def setUp(self):
+        super(AddRemoveContributorTests, self).setUp()
+        self.user = user(save=True)
+        self.contributor = user(save=True)
+        add_permission(self.user, Document, 'change_document')
+        self.client.login(username=self.user.username, password='testpass')
+        self.revision = revision(save=True)
+        self.document = self.revision.document
+
+    def test_add_contributor(self):
+        url = reverse('wiki.add_contributor', locale='en-US',
+                      args=[self.document.slug])
+        r = self.client.get(url)
+        eq_(405, r.status_code)
+        r = self.client.post(url, {'users': self.contributor.username})
+        eq_(302, r.status_code)
+        assert self.contributor in self.document.contributors.all()
+
+    def test_remove_contributor(self):
+        self.document.contributors.add(self.contributor)
+        url = reverse('wiki.remove_contributor', locale='en-US',
+                      args=[self.document.slug, self.contributor.id])
+        r = self.client.get(url)
+        eq_(200, r.status_code)
+        r = self.client.post(url)
+        eq_(302, r.status_code)
+        assert not self.contributor in self.document.contributors.all()
