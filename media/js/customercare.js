@@ -65,10 +65,16 @@
         });
 
         this.__defineGetter__('username', function() {
-            return this.$username_el.text();
+            return {
+                text: this.$username_el.text(),
+                href: this.$avatar_el.attr('href')
+            }
         });
         this.__defineSetter__('username', function(val) {
-            this.$username_el.text(val);
+            this.$username_el.text(val.text);
+            if (this.$username_el.is('a')) {
+                this.$username_el.attr('href', val.href);
+            }
         });
 
         this.__defineGetter__('content', function() {
