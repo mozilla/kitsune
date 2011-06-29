@@ -33,7 +33,7 @@ log = logging.getLogger('k.twitter')
 def collect_tweets():
     """Collect new tweets about Firefox."""
     search_options = {
-        'q': 'firefox',
+        'q': 'firefox OR #fxinput',
         'rpp': settings.CC_TWEETS_PERPAGE,  # Items per page.
         'result_type': 'recent',  # Retrieve tweets by date.
     }

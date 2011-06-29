@@ -2,11 +2,11 @@
 {% for tweet in tweets -%}
   <li class="tweet{% if tweet.reply_to %} reply{% endif %}{% if tweet.hidden %} hidden-reply{% endif %}" data-tweet-id="{{ tweet.id }}" id="tweet-{{ tweet.id }}">
     <div class="tweet-contents{{ loop.cycle('', ' alt') }}">
-      <a href="http://twitter.com/{{ tweet.user }}" class="avatar" target="_blank">
+      <a href="https://twitter.com/{{ tweet.user }}" class="avatar" target="_blank">
         <img src="{{ tweet.profile_img }}" />
         <span class="twittername">{{ tweet.user }}</span>
       </a>
-      <a href="http://twitter.com/{{ tweet.user }}/status/{{ tweet.id }}" class="permalink" target="_blank">
+      <a href="https://twitter.com/{{ tweet.user }}/status/{{ tweet.id }}" class="permalink" target="_blank">
         <time datetime="{{ tweet.date|isotime }}">{{ tweet.date|utctimesince }}</time>
       </a>
       {% if tweet.replies %}

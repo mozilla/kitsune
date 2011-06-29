@@ -126,7 +126,7 @@
             <div class="contributors period{{ loop.index0 }}"
                  data-period="{{ period }}">
               {% for contrib in contributor_stats.get(period, []) %}
-                <a href="http://twitter.com/{{ contrib['username'] }}" target="_blank">
+                <a href="https://twitter.com/{{ contrib['username'] }}" target="_blank">
                   <img src="{{ contrib['avatar'] }}" alt="{{ contrib['username'] }}"
                        title="{{ contrib['name']}}: {{ contrib['count'] }} replies"
                        class="avatar" />
