@@ -166,6 +166,15 @@ ol.posts li div.author span.posts {
     font-style: italic;
 }
 
+ol.posts li p.pm {
+    font-size: 11px;
+}
+
+ol.posts li p.pm a {
+    color: #447BC4;
+    font-weight: normal;
+}
+
 ol.posts li div.content {
     float: left;
     padding: 0 1% 1em 1%;

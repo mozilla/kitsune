@@ -4,6 +4,7 @@ from pyquery import PyQuery as pq
 import waffle.decorators
 
 from messages.models import OutboxMessage
+from sumo.helpers import urlparams
 from sumo.tests import TestCase
 from sumo.urlresolvers import reverse
 from users.tests import user
@@ -56,3 +57,12 @@ class SendMessageTestCase(TestCase):
         flag_is_active.return_value = True
         self._test_send_message_to(self.user2.username + ',,' +
                                    self.user3.username)
+
+    @mock.patch.object(waffle.decorators, 'flag_is_active')
+    def test_send_message_to_prefilled(self, flag_is_active):
+        flag_is_active.return_value = True
+        url = urlparams(reverse('messages.new'), to=self.user2.username)
+        response = self.client.get(url, follow=True)
+        eq_(200, response.status_code)
+        eq_(self.user2.username,
+            pq(response.content)('#id_to')[0].attrib['value'])

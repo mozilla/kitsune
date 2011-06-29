@@ -2,7 +2,9 @@ from django.conf import settings
 
 from jinja2 import escape, Markup
 from jingo import register
+from tower import ugettext as _
 
+from sumo.helpers import urlparams
 from sumo.urlresolvers import reverse
 from users.models import Profile
 
@@ -51,3 +53,12 @@ def user_list(users):
     list = u', '.join([link % (escape(profile_url(u)), escape(u.username)) for
                        u in users])
     return Markup(list)
+
+
+@register.function
+def private_message(user):
+    """Return a link to private message the user."""
+    url = urlparams(reverse('messages.new'), to=user.username)
+    msg = _('Private message')
+    return Markup('<p class="pm"><a href="{url}">{msg}</a></p>'.format(
+        url=url, msg=msg))

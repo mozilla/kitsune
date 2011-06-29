@@ -1,6 +1,7 @@
 import json
 
 from django.contrib import messages as contrib_messages
+from django.contrib.auth.models import User
 from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import get_object_or_404
 
@@ -64,7 +65,18 @@ def outbox(request):
 @waffle_flag('private-messaging')
 @login_required
 def new_message(request):
-    form = MessageForm(request.POST or None)
+    """Send a new private message."""
+    to = request.GET.get('to')
+    if to:
+        try:
+            User.objects.get(username=to)
+        except User.DoesNotExist:
+            contrib_messages.add_message(
+                request, contrib_messages.ERROR,
+                _('Invalid username provided. Enter a new username below.'))
+            return HttpResponseRedirect(reverse('messages.new'))
+
+    form = MessageForm(request.POST or None, initial={'to': to})
 
     if request.method == 'POST' and form.is_valid():
         send_message(form.cleaned_data['to'], form.cleaned_data['message'],
