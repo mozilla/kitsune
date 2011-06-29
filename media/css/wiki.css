@@ -716,6 +716,15 @@ body.review #content-fields textarea {
     margin: 5px 0 0;
 }
 
+#approve-modal p {
+    margin: 0 0 10px;
+}
+
+#approve-modal p.warning {
+    background: #FFF9DB url(../img/wiki/bkg.warning.png) repeat-y left top;
+    padding: .5em 1em .5em 2em;
+}
+
 #approve-modal li {
     list-style: none;
     padding: 2px 5px;

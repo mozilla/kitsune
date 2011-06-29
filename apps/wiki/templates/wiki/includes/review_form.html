@@ -14,23 +14,33 @@
 
     <form id="approve-modal" class="kbox" action="" method="post" data-title="{% if document.parent %}{{ _('Accept this Translation') }}{% else %}{{ _('Accept this Revision') }}{% endif %}" data-modal="true" data-target="#btn-approve">
       {{ csrf() }}
-      <p>
-        {% if should_ask_significance %}
+      {% set self_approving = (user == revision.creator and document.locale == settings.WIKI_DEFAULT_LANGUAGE) %}
+      {% if self_approving %}
+        <p class="warning">
+          {% trans url=url('groups.profile', 'reviewers') %}You are about to approve your own edit.
+          Please consider asking our <a href="{{ url }}">reviewers</a> instead.{% endtrans %}
+        </p>
+      {% endif %}
+      {% if should_ask_significance %}
+        <p>
           {% trans %}Clicking Accept will make this version of the article live!
           Please pick the appropriate revision level below and consider sending
           a thank you to the person who submitted this.{% endtrans %}
-        {% else %}
-          {% trans %}Thanks for taking the time to review these changes.
-          Please consider sending a thank you to the person who submitted them.{% endtrans %}
-        {% endif %}
-      </p>
-      {% if should_ask_significance %}
+        </p>
         {{ form.significance|safe }}
       {% endif %}
-      <div class="message">
-        <label for="id-approve-comment">{{ _('Leave a message for the contributor: <span class="optional">(optional)</span>')|safe }}</label>
-        <textarea id="id-approve-comment" name="comment">{% if form.initial %}{{ form.initial.comment }}{% else %}{{ form.comment.data }}{% endif %}</textarea>
-      </div>
+      {% if not should_ask_significance and not self_approving %}
+        <p>
+          {% trans %}Thanks for taking the time to review these changes.
+          Please consider sending a thank you to the person who submitted them.{% endtrans %}
+        </p>
+      {% endif %}
+      {% if not self_approving %}
+        <div class="message">
+          <label for="id-approve-comment">{{ _('Leave a message for the contributor: <span class="optional">(optional)</span>')|safe }}</label>
+          <textarea id="id-approve-comment" name="comment">{% if form.initial %}{{ form.initial.comment }}{% else %}{{ form.comment.data }}{% endif %}</textarea>
+        </div>
+      {% endif %}
       {% if document.is_localizable and user.has_perm('wiki.mark_ready_for_l10n') %}
         <div class="ready-for-l10n">
           <label>
