@@ -7,24 +7,21 @@ from django.core.mail import EmailMessage
 from django.template import Context, loader
 
 from bleach import clean
-from tidings.events import InstanceEvent, Event
+from tidings.events import InstanceEvent, Event, EventUnion
 from tower import ugettext as _
 from wikimarkup.parser import ALLOWED_TAGS, ALLOWED_ATTRIBUTES
 
 from sumo.urlresolvers import reverse
+from users.models import Profile
 from wiki.models import Document
 
 
 log = logging.getLogger('k.wiki.events')
 
 
-def notification_mails(revision, subject, template, url, users_and_watches):
-    """Return EmailMessages in the KB's standard notification mail format."""
+def context_dict(revision):
+    """Return a dict that fills in the blanks in KB notification templates."""
     document = revision.document
-    subject = subject.format(title=document.title, creator=revision.creator,
-                             locale=document.locale)
-    t = loader.get_template(template)
-
     if revision.based_on is not None:
         fromfile = u'[%s] %s #%s' % (revision.based_on.document.locale,
                                      revision.based_on.document.title,
@@ -41,16 +38,26 @@ def notification_mails(revision, subject, template, url, users_and_watches):
     else:
         diff = ''  # No based_on, so diff wouldn't make sense.
 
-    c = {'document_title': document.title,
-         'creator': revision.creator,
-         'url': url,
-         'host': Site.objects.get_current().domain,
-         'diff': diff,
-         'fulltext': clean(revision.content, ALLOWED_TAGS, ALLOWED_ATTRIBUTES)}
+    return {
+        'document_title': document.title,
+        'creator': revision.creator,
+        'host': Site.objects.get_current().domain,
+        'diff': diff,
+        'fulltext': clean(revision.content, ALLOWED_TAGS, ALLOWED_ATTRIBUTES)}
+
+
+def notification_mails(revision, subject, template, url, users_and_watches):
+    """Return EmailMessages in the KB's standard notification mail format."""
+    document = revision.document
+    subject = subject.format(title=document.title, creator=revision.creator,
+                             locale=document.locale)
+    t = loader.get_template(template)
+    c = context_dict(revision)
     mail = EmailMessage(subject, '', settings.TIDINGS_FROM_ADDRESS)
 
     for u, w in users_and_watches:
-        c['watch'] = w
+        c['watch'] = w[0]  # TODO: Expose all watches.
+        c['url'] = url
         mail.to = [u.email]
         mail.body = t.render(Context(c))
         yield mail
@@ -77,14 +84,17 @@ class EditDocumentEvent(InstanceEvent):
                                   users_and_watches)
 
 
-class _RevisionInLocaleEvent(Event):
+class _RevisionConstructor(object):
+    """An event that receives a revision when constructed"""
+    def __init__(self, revision):
+        super(_RevisionConstructor, self).__init__()
+        self.revision = revision
+
+
+class _LocaleFilter(object):
     """An event that receives a revision when constructed and filters according
     to that revision's document's locale"""
     filters = set(['locale'])
-
-    def __init__(self, revision):
-        super(_RevisionInLocaleEvent, self).__init__()
-        self.revision = revision
 
     # notify(), stop_notifying(), and is_notifying() take...
     # (user_or_email, locale=some_locale)
@@ -94,10 +104,12 @@ class _RevisionInLocaleEvent(Event):
             locale=self.revision.document.locale, **kwargs)
 
 
-class ReviewableRevisionInLocaleEvent(_RevisionInLocaleEvent):
+class ReviewableRevisionInLocaleEvent(_RevisionConstructor,
+                                      _LocaleFilter,
+                                      Event):
     """Event fired when any revision in a certain locale is ready for review"""
-    # No other content types have a concept of reviewability, so we don't
-    # bother setting content_type.
+    # Our event_type suffices to limit our scope, so we don't bother setting
+    # content_type.
     event_type = 'reviewable wiki in locale'
 
     def _mails(self, users_and_watches):
@@ -106,27 +118,93 @@ class ReviewableRevisionInLocaleEvent(_RevisionInLocaleEvent):
         log.debug('Sending ready for review email for revision (id=%s)' %
                   revision.id)
         subject = _(u'{title} is ready for review ({creator})')
-        url = reverse('wiki.review_revision', locale=document.locale,
-                      args=[document.slug, revision.id])
+        url = reverse('wiki.review_revision',
+                      locale=document.locale,
+                      args=[document.slug,
+                      revision.id])
         return notification_mails(revision, subject,
                                   'wiki/email/ready_for_review.ltxt', url,
                                   users_and_watches)
 
 
-class ApproveRevisionInLocaleEvent(_RevisionInLocaleEvent):
-    """Event fired when any revision in a certain locale is approved"""
+class ReadyRevisionEvent(_RevisionConstructor, Event):
+    """Event fed to a union when a new (en-US) revision becomes ready for l10n
+
+    Not intended to be fired individually
+
+    """
+    event_type = 'ready wiki'
+
+
+class ApproveRevisionInLocaleEvent(_RevisionConstructor, _LocaleFilter, Event):
+    """Event fed to a union when any revision in a certain locale is approved
+
+    Not intended to be fired individually
+
+    """
     # No other content types have a concept of approval, so we don't bother
     # setting content_type.
     event_type = 'approved wiki in locale'
 
+
+class ApprovedOrReadyUnion(EventUnion):
+    """Event union fired when a revision is approved and also possibly ready
+
+    Unioned events must have a `revision` attr.
+
+    """
+    def __init__(self, *args, **kwargs):
+        super(ApprovedOrReadyUnion, self).__init__(*args, **kwargs)
+        self._revision = self.events[0].revision
+
     def _mails(self, users_and_watches):
-        revision = self.revision
+        """Send approval or readiness mails, as appropriate.
+
+        If a given user is watching the Ready event and the revision
+        is in fact ready, say so. Otherwise, just send the Approval
+        email.
+
+        """
+        revision = self._revision
         document = revision.document
-        log.debug('Sending approved email for revision (id=%s)' %
+        is_ready = revision.is_ready_for_localization
+        log.debug('Sending approved/ready notifications for revision (id=%s)' %
                   revision.id)
-        subject = _(u'{title} ({locale}) has a new approved revision')
-        url = reverse('wiki.document', locale=document.locale,
-                      args=[document.slug])
-        return notification_mails(revision, subject,
-                                  'wiki/email/approved.ltxt', url,
-                                  users_and_watches)
+        ready_subject, approved_subject = [s.format(
+            title=document.title,
+            creator=revision.creator,
+            locale=document.locale) for s in
+                [_(u'{title} has a revision ready for localization'),
+                 _(u'{title} ({locale}) has a new approved revision')]]
+        ready_template = loader.get_template('wiki/email/ready_for_l10n.ltxt')
+        approved_template = loader.get_template('wiki/email/approved.ltxt')
+        approved_url = reverse('wiki.document',
+                               locale=document.locale,
+                               args=[document.slug])
+        c = context_dict(revision)
+        for user, watches in users_and_watches:
+            c['watch'] = watches[0]  # TODO: Expose all watches.
+            if (is_ready and
+                ReadyRevisionEvent.event_type in
+                    (w.event_type for w in watches)):
+                # We should send a "ready" mail.
+                try:
+                    profile = user.profile
+                except Profile.DoesNotExist:
+                    locale = settings.WIKI_DEFAULT_LANGUAGE
+                else:
+                    locale = profile.locale
+                c['url'] = reverse('wiki.translate',
+                                   locale=locale,
+                                   args=[document.slug])
+                yield EmailMessage(ready_subject,
+                                   ready_template.render(Context(c)),
+                                   settings.TIDINGS_FROM_ADDRESS,
+                                   [user.email])
+            else:
+                # Send an "approved" mail:
+                c['url'] = approved_url
+                yield EmailMessage(approved_subject,
+                                   approved_template.render(Context(c)),
+                                   settings.TIDINGS_FROM_ADDRESS,
+                                   [user.email])

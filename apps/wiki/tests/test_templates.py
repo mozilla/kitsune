@@ -585,6 +585,7 @@ class NewRevisionTests(TestCaseBase):
             diff = ''  # No based_on, so diff wouldn't make sense.
 
         # Assert notifications fired and have the expected content:
+        eq_(2, len(mail.outbox))
         attrs_eq(mail.outbox[0],
                  subject=u'%s is ready for review (%s)' % (self.d.title,
                                                            new_rev.creator),
@@ -947,6 +948,7 @@ class ReviewRevisionTests(TestCaseBase):
                     (self.document.title, self.document.slug, watch.pk,
                      watch.secret, r.content))
 
+        eq_(1, len(mail.outbox))
         attrs_eq(mail.outbox[0],
                  subject='%s (%s) has a new approved revision' %
                      (self.document.title, self.document.locale),
@@ -1762,14 +1764,12 @@ class ApprovedWatchTests(TestCaseBase):
         locale = 'es'
 
         # Subscribe
-        response = post(self.client, 'wiki.approved_watch',
-                        {'locale': locale})
+        response = post(self.client, 'wiki.approved_watch', locale=locale)
         eq_(200, response.status_code)
         assert ApproveRevisionInLocaleEvent.is_notifying(user_, locale=locale)
 
         # Unsubscribe
-        response = post(self.client, 'wiki.approved_unwatch',
-                        {'locale': locale})
+        response = post(self.client, 'wiki.approved_unwatch', locale=locale)
         eq_(200, response.status_code)
         assert not ApproveRevisionInLocaleEvent.is_notifying(user_,
                                                              locale=locale)

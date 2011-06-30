@@ -65,7 +65,7 @@ class QuestionReplyEvent(QuestionEvent):
 
         for u, w in users_and_watches:
             c['username'] = u.username
-            c['watch'] = w
+            c['watch'] = w[0]  # TODO: Expose all watches.
             is_asker = asker_id == u.id
             content = (asker_template if is_asker else
                        watcher_template).render(Context(c))
@@ -100,7 +100,7 @@ class QuestionSolvedEvent(QuestionEvent):
              'solution_url': question.solution.get_absolute_url()}
         for u, w in users_and_watches:
             c['username'] = u.username  # '' if anonymous
-            c['watch'] = w
+            c['watch'] = w[0]  # TODO: Expose all watches.
             content = t.render(Context(c))
             yield EmailMessage(
                 subject,
