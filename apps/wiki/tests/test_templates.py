@@ -286,6 +286,12 @@ class DocumentTests(TestCaseBase):
         doc = pq(r.content)
         eq_('tag1', doc('li.topic a').text())
 
+    def test_obsolete_hide_edit(self):
+        """Make sure Edit sidebar link is hidden for obsolete articles."""
+        d = document(is_archived=True, save=True)
+        r = self.client.get(d.get_absolute_url())
+        doc = pq(r.content)
+        assert not doc('#doc-tabs li.edit')
 
 class RevisionTests(TestCaseBase):
     """Tests for the Revision template"""
