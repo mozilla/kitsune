@@ -1,6 +1,6 @@
 {# vim: set ts=2 et sts=2 sw=2: #}
 {% extends "base.html" %}
-{% from "dashboards/includes/macros.html" import print_readout %}
+{% from "dashboards/includes/macros.html" import print_readout, print_subscription_menu with context %}
 {% set title = _('Contributor Dashboard') %}
 {% set scripts = ('wiki',) %}
 {% set styles = ('wiki',) %}
@@ -11,7 +11,7 @@
   <article id="localize" class="main dashboards">
     <h1>{{ title }}</h1>
 
-    {% if default_locale_name != current_locale_name %}
+    {% if default_locale_name != request_locale_name %}
       <div class="choice-list">
         <label>{{ _('Show information for:') }}</label>
         <ul>
@@ -19,7 +19,7 @@
             {{ default_locale_name }}
           </li>
           <li>
-            <a href="{{ url('dashboards.localization') }}">{{ current_locale_name }}</a>
+            <a href="{{ url('dashboards.localization') }}">{{ request_locale_name }}</a>
           </li>
         </ul>
       </div>
@@ -32,17 +32,7 @@
 {% endblock %}
 
 {% block side %}
-  <div id="doc-watch">
-    {% with locale=request.locale %}
-      {% include 'dashboards/includes/watch_locale.html' %}
-      {% include 'dashboards/includes/watch_approved.html' %}
-    {% endwith %}
-    {% if request.locale != settings.WIKI_DEFAULT_LANGUAGE %}
-      {% with locale=settings.WIKI_DEFAULT_LANGUAGE,
-              is_watching_approved=is_watching_approved_default %}
-        {% include 'dashboards/includes/watch_approved.html' %}
-      {% endwith %}
-    {% endif %}
-    {% include "kbforums/includes/watch_locale.html" %}
-  </div>
+  {% if not user.is_anonymous() %}
+    {{ print_subscription_menu(default_locale_name, request_locale_name, on_default_locale, is_watching_default_locale, is_watching_other_locale, is_watching_default_approved, is_watching_other_approved, settings.WIKI_DEFAULT_LANGUAGE) }}
+  {% endif %}
 {% endblock %}

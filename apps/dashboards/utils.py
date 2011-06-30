@@ -27,20 +27,30 @@ def render_readouts(request, readouts, template, locale=None, extra_data=None):
 
     """
     current_locale = locale or request.locale
+    on_default_locale = request.locale == settings.WIKI_DEFAULT_LANGUAGE
     data = {'readouts': SortedDict((slug, class_(request, locale=locale))
-                         for slug, class_ in readouts.iteritems()),
+                                   for slug, class_ in readouts.iteritems()),
             'default_locale': settings.WIKI_DEFAULT_LANGUAGE,
             'default_locale_name':
                 LOCALES[settings.WIKI_DEFAULT_LANGUAGE].native,
             'current_locale': current_locale,
             'current_locale_name': LOCALES[current_locale].native,
-            'is_watching_approved': ApproveRevisionInLocaleEvent.is_notifying(
-                request.user, locale=request.locale),
-            'is_watching_locale': ReviewableRevisionInLocaleEvent.is_notifying(
-                request.user, locale=request.locale),
-            'is_watching_approved_default':
+            'request_locale_name': LOCALES[request.locale].native,
+            'is_watching_default_approved':
                 ApproveRevisionInLocaleEvent.is_notifying(
-                    request.user, locale=settings.WIKI_DEFAULT_LANGUAGE)}
+                    request.user, locale=settings.WIKI_DEFAULT_LANGUAGE),
+            'is_watching_other_approved':
+                None if on_default_locale
+                else ApproveRevisionInLocaleEvent.is_notifying(
+                    request.user, locale=request.locale),
+            'is_watching_default_locale':
+                ReviewableRevisionInLocaleEvent.is_notifying(
+                    request.user, locale=settings.WIKI_DEFAULT_LANGUAGE),
+            'is_watching_other_locale':
+                None if on_default_locale
+                else ReviewableRevisionInLocaleEvent.is_notifying(
+                    request.user, locale=request.locale),
+             'on_default_locale': on_default_locale}
     if extra_data:
         data.update(extra_data)
     return jingo.render(request, 'dashboards/' + template, data)

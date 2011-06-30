@@ -27,7 +27,8 @@ from sumo.urlresolvers import reverse
 from sumo.utils import paginate, smart_int, get_next_url
 from wiki import DOCUMENTS_PER_PAGE
 from wiki.events import (EditDocumentEvent, ReviewableRevisionInLocaleEvent,
-                         ApproveRevisionInLocaleEvent)
+                         ApproveRevisionInLocaleEvent, ApprovedOrReadyUnion,
+                         ReadyRevisionEvent)
 from wiki.forms import (AddContributorForm, DocumentForm, RevisionForm,
                         ReviewForm)
 from wiki.models import (Document, Revision, HelpfulVote, CATEGORIES,
@@ -365,19 +366,22 @@ def review_revision(request, document_slug, revision_id):
             # user has permission, set the is_ready_for_localization value.
             if (doc.is_localizable and rev.is_approved and
                 request.user.has_perm('wiki.mark_ready_for_l10n')):
-                l10n_ready = 'is_ready_for_localization'
-                rev.is_ready_for_localization = form.cleaned_data[l10n_ready]
+                rev.is_ready_for_localization = form.cleaned_data[
+                    'is_ready_for_localization']
 
             rev.save()
+
+            # Send notifications of approvedness and readiness:
+            if rev.is_ready_for_localization or rev.is_approved:
+                events = [ApproveRevisionInLocaleEvent(rev)]
+                if rev.is_ready_for_localization:
+                    events.append(ReadyRevisionEvent(rev))
+                ApprovedOrReadyUnion(*events).fire(exclude=rev.creator)
 
             # Send an email (not really a "notification" in the sense that
             # there's a Watch table entry) to revision creator.
             msg = form.cleaned_data['comment']
             send_reviewed_notification.delay(rev, doc, msg)
-
-            # If approved, send approved notification
-            if rev.is_approved:
-                ApproveRevisionInLocaleEvent(rev).fire(exclude=rev.creator)
 
             # Schedule KB rebuild?
             statsd.incr('wiki.review')
@@ -583,9 +587,8 @@ def watch_locale(request):
     """Start watching a locale for revisions ready for review."""
     ReviewableRevisionInLocaleEvent.notify(request.user, locale=request.locale)
     statsd.incr('wiki.watches.locale')
-    # This redirect is pretty bad, because you might also have been on the
-    # Contributor Dashboard:
-    return HttpResponseRedirect(_get_next_url_fallback_localization(request))
+    # A 200 so jQuery interprets it as success
+    return HttpResponse()
 
 
 @require_POST
@@ -594,32 +597,29 @@ def unwatch_locale(request):
     """Stop watching a locale for revisions ready for review."""
     ReviewableRevisionInLocaleEvent.stop_notifying(request.user,
                                                    locale=request.locale)
-    return HttpResponseRedirect(_get_next_url_fallback_localization(request))
+    return HttpResponse()
 
 
 @require_POST
 @login_required
 def watch_approved(request):
     """Start watching approved revisions in a locale."""
-    locale = request.POST.get('locale')
-    if locale not in settings.SUMO_LANGUAGES:
+    if request.locale not in settings.SUMO_LANGUAGES:
         raise Http404
-
-    ApproveRevisionInLocaleEvent.notify(request.user, locale=locale)
+    ApproveRevisionInLocaleEvent.notify(request.user, locale=request.locale)
     statsd.incr('wiki.watches.approved')
-    return HttpResponseRedirect(_get_next_url_fallback_localization(request))
+    return HttpResponse()
 
 
 @require_POST
 @login_required
 def unwatch_approved(request):
     """Stop watching approved revisions."""
-    locale = request.POST.get('locale')
-    if locale not in settings.SUMO_LANGUAGES:
+    if request.locale not in settings.SUMO_LANGUAGES:
         raise Http404
-
-    ApproveRevisionInLocaleEvent.stop_notifying(request.user, locale=locale)
-    return HttpResponseRedirect(_get_next_url_fallback_localization(request))
+    ApproveRevisionInLocaleEvent.stop_notifying(request.user,
+                                                locale=request.locale)
+    return HttpResponse()
 
 
 @require_GET

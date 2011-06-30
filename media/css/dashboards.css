@@ -280,3 +280,70 @@ a.full-dash {
     font-size: 150%;
     text-align: center;
 }
+
+
+/* Email notifications */
+
+div#doc-watch .popup-trigger {
+    background: transparent url(../img/wiki/bkg.showfor.selector.gif) no-repeat 6px 5px;
+    color: #32559B;
+    cursor: pointer;
+    padding: 2px 0 2px 20px;
+}
+
+div#doc-watch .popup-menu {
+    display: none;
+    position: relative;
+}
+
+div#doc-watch .popup-menu table {
+    background: #32559b;
+    border: none;
+    border-radius: 10px;
+    -moz-border-radius: 10px;
+    -webkit-border-radius: 10px;
+    border-top-left-radius: 0;
+    -moz-border-radius-topleft: 0;
+    -webkit-border-top-left-radius: 0;
+    left: 0;
+    padding: 10px;
+    position: absolute;
+    top: 10px;
+    z-index: 1000;
+}
+
+div#doc-watch table:before {
+    background: #32559b;
+    content: '';
+    display: block;
+    position: relative;
+    -moz-transform:rotate(45deg);
+    -webkit-transform:rotate(45deg);
+    z-index: 1;
+
+    height: 15px;
+    width: 15px;
+    left: -9px;
+    top: -18px;
+    margin-bottom: -13px;
+}
+
+div#doc-watch th {
+    font-weight: normal;
+}
+
+div#doc-watch th,
+div#doc-watch td {
+    color: #fff;
+    padding: 0.1em 0.4em;
+    text-align: center;
+    vertical-align: baseline;
+}
+
+div#doc-watch th.state:first-child {
+    text-align: right;
+}
+
+div#doc-watch th.state:last-child {
+    text-align: left;
+}

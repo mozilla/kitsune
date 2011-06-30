@@ -80,3 +80,43 @@
     </div>
   </details>
 {% endmacro %}
+
+{% macro print_checkbox_row(label, on_default_locale, is_watching_default, is_watching_other, watch_view, unwatch_view, default_locale) %}
+  <tr>
+    <th class="state">{{ label }}</th>
+    <td>
+      <input data-action-watch="{{ url(watch_view, locale=default_locale) }}"
+             data-action-unwatch="{{ url(unwatch_view, locale=default_locale) }}"
+             type="checkbox"
+             {% if is_watching_default %}checked="checked"{% endif %} />
+    </td>
+    {% if not on_default_locale %}
+      <td>
+        <input data-action-watch="{{ url(watch_view) }}"
+               data-action-unwatch="{{ url(unwatch_view) }}"
+               type="checkbox"
+               {% if is_watching_other %}checked="checked"{% endif %} />
+      </td>
+    {% endif %}
+  </tr>
+{% endmacro %}
+
+{% macro print_subscription_menu(default_locale_name, current_locale_name, on_default_locale, is_watching_default_locale, is_watching_other_locale, is_watching_default_approved, is_watching_other_approved, default_locale) %}
+  <div id="doc-watch">
+    <div class="popup-trigger">{{ _('Email me when revisions are...') }}</div>
+    <form class="popup-menu" action="" method="POST">
+      {{ csrf() }}
+      <table>
+        <tr>
+          <th />
+          <th>{{ default_locale_name }}</th>
+          {% if not on_default_locale %}
+            <th>{{ current_locale_name }}</th>
+          {% endif %}
+        </tr>
+        {{ print_checkbox_row(_('Waiting'), on_default_locale, is_watching_default_locale, is_watching_other_locale, 'wiki.locale_watch', 'wiki.locale_unwatch', default_locale) }}
+        {{ print_checkbox_row(_('Approved'), on_default_locale, is_watching_default_approved, is_watching_other_approved, 'wiki.approved_watch', 'wiki.approved_unwatch', default_locale) }}
+      </table>
+    </form>
+  </div>
+{% endmacro %}

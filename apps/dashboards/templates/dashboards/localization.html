@@ -1,6 +1,6 @@
 {# vim: set ts=2 et sts=2 sw=2: #}
 {% extends "base.html" %}
-{% from "dashboards/includes/macros.html" import print_readout, overview_section with context %}
+{% from "dashboards/includes/macros.html" import print_readout, overview_section, print_subscription_menu with context %}
 {% set title = _('Localization Dashboard') %}
 {% set scripts = ('wiki',) %}
 {% set styles = ('wiki',) %}
@@ -35,16 +35,7 @@
 {% endblock %}
 
 {% block side %}
-  <div id="doc-watch">
-    {% with locale=request.locale %}
-      {% include 'dashboards/includes/watch_locale.html' %}
-      {% include 'dashboards/includes/watch_approved.html' %}
-    {% endwith %}
-    {% if request.locale != settings.WIKI_DEFAULT_LANGUAGE %}
-      {% with locale=settings.WIKI_DEFAULT_LANGUAGE, is_watching_approved=is_watching_approved_default %}
-        {% include 'dashboards/includes/watch_approved.html' %}
-      {% endwith %}
-    {% endif %}
-    {% include "kbforums/includes/watch_locale.html" %}
-  </div>
+  {% if not user.is_anonymous() %}
+    {{ print_subscription_menu(default_locale_name, current_locale_name, on_default_locale, is_watching_default_locale, is_watching_other_locale, is_watching_default_approved, is_watching_other_approved, settings.WIKI_DEFAULT_LANGUAGE) }}
+  {% endif %}
 {% endblock %}
