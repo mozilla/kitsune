@@ -29,7 +29,6 @@ def handle_login(request, only_active=True):
 
         return form
 
-    import pdb; pdb.set_trace()
     request.session.set_test_cookie()
     return AuthenticationForm(request=request)
 

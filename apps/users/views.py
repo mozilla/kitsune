@@ -30,8 +30,8 @@ from users.models import Profile, RegistrationProfile, EmailChange
 from users.utils import handle_login, handle_register, try_send_email_with_form
 
 
+@ratelimit(method='POST', field='username')
 @ssl_required
-@ratelimit(field='username', rate='1/h')
 @anonymous_csrf
 def login(request):
     """Try to log the user in."""

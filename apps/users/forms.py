@@ -106,14 +106,12 @@ class AuthenticationForm(auth_forms.AuthenticationForm):
         self.only_active = only_active
         self.has_recaptcha = True
 
-        super(AuthenticationForm, self).__init__(request, *args, **kwargs)
+        super(AuthenticationForm, self).__init__(None, *args, **kwargs)
 
-        #self.request = request
-
-        if (self.request is None or
+        if (request is None or
             settings.RECAPTCHA_PRIVATE_KEY is None or
-            not self.request.user.is_anonymous() or
-            not getattr(self.request, 'limited', False)):
+            not request.user.is_anonymous() or
+            not getattr(request, 'limited', False)):
             del self.fields['recaptcha']
             self.has_recaptcha = False
 
