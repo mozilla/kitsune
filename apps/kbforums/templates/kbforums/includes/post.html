@@ -2,7 +2,7 @@
   <a href="{{ profile_url(post.creator) }}">
     <img src="{{ profile_avatar(post.creator) }}" height="45" width="45" alt=""/>
   </a>
-  <a href="{{ profile_url(post.creator) }}">{{ post.creator }}</a>
+  <a class="author-name" href="{{ profile_url(post.creator) }}">{{ post.creator }}</a>
   {% if waffle.flag('private-messaging') %}
     {{ private_message(post.creator) }}
   {% endif %}
@@ -24,12 +24,13 @@
 <div class="content">
   {{ post.content_parsed }}
 </div>
+<div class="content-raw">{{ post.content }}</div>
 <div class="info">
   {{ datetimeformat(post.created, format='longdatetime') }}
   <a href="#post-{{ post.id }}" class="permalink" title="{{ _('Link to this post.') }}">#</a>
   {% if post.id and user.is_authenticated() and not thread.is_locked %}
     <span class="post-action">
-      <a href="#thread-reply">{{ _('Reply') }}</a>
+      <a class="reply" data-post="{{ post.id }}" href="#thread-reply">{{ _('Reply') }}</a>
     </span>
   {% endif %}
   {% if post.created != post.updated %}
