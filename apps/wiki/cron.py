@@ -137,7 +137,8 @@ def migrate_helpfulvotes():
                     VALUES(%s, %s, %s, %s, %s, %s)""",
                     [rev_id[0], olde[2], olde[3], olde[4], anon_id, olde[6]])
             else:
-                log.debug('Error converting vote [%s]' % olde.id)
+                log.debug('Error converting vote [%s]' % olde[0])
+                raise Exception
 
         cursor.execute("""DELETE FROM `wiki_helpfulvoteold`
                         ORDER BY id ASC LIMIT 3000""")
