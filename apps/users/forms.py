@@ -104,10 +104,11 @@ class AuthenticationForm(auth_forms.AuthenticationForm):
 
     def __init__(self, request=None, only_active=True, *args, **kwargs):
         self.only_active = only_active
-        self.request = request
         self.has_recaptcha = True
 
-        super(AuthenticationForm, self).__init__(None, *args, **kwargs)
+        super(AuthenticationForm, self).__init__(request, *args, **kwargs)
+
+        #self.request = request
 
         if (self.request is None or
             settings.RECAPTCHA_PRIVATE_KEY is None or

@@ -18,7 +18,7 @@ def handle_login(request, only_active=True):
     auth.logout(request)
 
     if request.method == 'POST':
-        form = AuthenticationForm(request, data=request.POST,
+        form = AuthenticationForm(request=request, data=request.POST,
                                   only_active=only_active)
         if form.is_valid():
             auth.login(request, form.get_user())
@@ -29,8 +29,9 @@ def handle_login(request, only_active=True):
 
         return form
 
+    import pdb; pdb.set_trace()
     request.session.set_test_cookie()
-    return AuthenticationForm(request)
+    return AuthenticationForm(request=request)
 
 
 def handle_register(request, email_template=None, email_subject=None,

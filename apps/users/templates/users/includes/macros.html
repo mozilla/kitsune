@@ -18,7 +18,7 @@
           {{ form.password|safe }}
         </li>
         {% if form.has_recaptcha %}
-          <li>Has Captcha!</li>
+          <li>{{ form.recaptcha|safe }}</li>
         {% endif %}
       </ul>
     </fieldset>
