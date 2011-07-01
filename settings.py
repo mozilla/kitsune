@@ -251,6 +251,7 @@ INSTALLED_APPS = (
     'messages',
     'commonware.response.cookies',
     'groups',
+    'karma',
 
     # Extra apps for testing.
     'django_nose',
@@ -689,4 +690,10 @@ VERSION_CHECK_TOKEN = None
 REDIS_BACKENDS = {
     #'default': 'redis://localhost:6379?socket_timeout=0.5&db=0',
     #'karma': 'redis://localhost:6381?socket_timeout=0.5&db=0',
+}
+
+# Redis backends used for testing.
+REDIS_TEST_BACKENDS = {
+    #'default': 'redis://localhost:6383?socket_timeout=0.5&db=0',
+    #'karma': 'redis://localhost:6383?socket_timeout=0.5&db=1',
 }

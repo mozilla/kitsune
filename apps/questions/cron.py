@@ -25,6 +25,7 @@ def update_weekly_votes():
         update_question_vote_chunk.apply_async(args=[chunk])
 
 
+# TODO: remove this and use the karma top list.
 @cronjobs.register
 def cache_top_contributors():
     """Compute the top contributors and store in cache."""

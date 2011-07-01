@@ -8,7 +8,7 @@ from django.conf import settings
 from django.test.client import Client
 
 from nose.tools import eq_
-from test_utils import TestCase  # So others can import it from here
+import test_utils
 
 import sumo
 from sumo.urlresolvers import reverse, split_path
@@ -63,6 +63,12 @@ class LocalizingClient(Client):
     # prepending in a one-off case or do it outside a mock request.
 
 
+class TestCase(test_utils.TestCase):
+    def setUp(self):
+        super(TestCase, self).setUp()
+        settings.REDIS_BACKENDS = settings.REDIS_TEST_BACKENDS
+
+
 class MigrationTests(TestCase):
     """Sanity checks for the SQL migration scripts"""
 
@@ -114,6 +120,7 @@ class MigrationTests(TestCase):
 class MobileTestCase(TestCase):
 
     def setUp(self):
+        super(MobileTestCase, self).setUp()
         self.client.cookies[settings.MOBILE_COOKIE] = 'on'
 
 
