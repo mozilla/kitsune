@@ -1,4 +1,5 @@
 from celery.decorators import task
+import waffle
 
 from karma.actions import redis_client
 from questions.karma_actions import (AnswerAction, AnswerMarkedHelpfulAction,
@@ -13,6 +14,9 @@ def init_karma():
 
     Goes through all questions/answers/votes and save karma actions for them.
     """
+    if not waffle.switch_is_active('karma'):
+        return
+
     redis_client('karma').flushdb()
 
     questions = Question.objects.all()

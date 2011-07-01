@@ -1,4 +1,5 @@
 {% extends "kadmin/base.html" %}
+{% load waffle_tags %}
 
 {% block extrastyle %}
   {{ block.super }}
@@ -6,6 +7,10 @@
 {% endblock %}
 
 {% block content %}
+  {% switch 'karma' %}
+  {% else %}
+    <p>Karma is currently disabled. Activate waffle switch 'karma' to enable.</p>
+  {% endswitch %}
   <section>
     <h1>Top Contributors - All Time</h1>
     <ol>
