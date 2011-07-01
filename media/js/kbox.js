@@ -22,7 +22,7 @@
  *      Mixed:
  *      [HTML]
  *      <a id="a-id" ...>Click ...</a>
- *      <div id="kbox-id" class="kbox" data-target="a-id">...content...</div>
+ *      <div id="kbox-id" class="kbox" data-target="#a-id">...content...</div>
  *      [JavaScript]
  *      var kbox = $('kbox-id').data('kbox'); // Gets the kbox instance.
  *      kbox.updateOptions({
