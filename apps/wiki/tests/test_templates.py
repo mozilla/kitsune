@@ -29,21 +29,14 @@ from wiki.tests import (TestCaseBase, document, revision, new_document_data,
                         translated_revision)
 
 
-READY_FOR_REVIEW_EMAIL_CONTENT = """
-
-
-admin submitted a new revision to the document
+READY_FOR_REVIEW_EMAIL_CONTENT = \
+"""admin submitted a new revision to the document
 %s.
 
 To review this revision, click the following
 link, or paste it into your browser's location bar:
 
 https://testserver/en-US/kb/%s/review/%s
-
---
-Unsubscribe from these emails:
-https://testserver/en-US/unsubscribe/%s?s=%s
-
 
 --
 Changes:
@@ -53,12 +46,15 @@ Changes:
 --
 Text of the new revision:
 %s
+
+
+--
+Unsubscribe from these emails:
+https://testserver/en-US/unsubscribe/%s?s=%s
 """
 
-DOCUMENT_EDITED_EMAIL_CONTENT = """
-
-
-admin created a new revision to the document
+DOCUMENT_EDITED_EMAIL_CONTENT = \
+"""admin created a new revision to the document
 %s.
 
 To view this document's history, click the following
@@ -70,19 +66,14 @@ https://testserver/en-US/kb/%s/history
 Unsubscribe from these emails:
 https://testserver/en-US/unsubscribe/%s?s=%s"""
 
-APPROVED_EMAIL_CONTENT = """
-
-A new revision has been approved for the document
+APPROVED_EMAIL_CONTENT = \
+"""A new revision has been approved for the document
 %s.
 
 To view the updated document, click the following
 link, or paste it into your browser's location bar:
 
 https://testserver/en-US/kb/%s
-
---
-Unsubscribe from these emails:
-https://testserver/en-US/unsubscribe/%s?s=%s
 
 
 --
@@ -93,11 +84,14 @@ Changes:
 --
 Text of the new revision:
 %s
+
+--
+Unsubscribe from these emails:
+https://testserver/en-US/unsubscribe/%s?s=%s
 """
 
-APPROVED_EMAIL_CONTENT_NO_DIFF = """
-
-A new revision has been approved for the document
+APPROVED_EMAIL_CONTENT_NO_DIFF = \
+"""A new revision has been approved for the document
 %s.
 
 To view the updated document, click the following
@@ -105,15 +99,14 @@ link, or paste it into your browser's location bar:
 
 https://testserver/en-US/kb/%s
 
---
-Unsubscribe from these emails:
-https://testserver/en-US/unsubscribe/%s?s=%s
-
-
 
 --
 Text of the new revision:
 %s
+
+--
+Unsubscribe from these emails:
+https://testserver/en-US/unsubscribe/%s?s=%s
 """
 
 
@@ -590,9 +583,9 @@ class NewRevisionTests(TestCaseBase):
                  subject=u'%s is ready for review (%s)' % (self.d.title,
                                                            new_rev.creator),
                  body=READY_FOR_REVIEW_EMAIL_CONTENT %
-                    (self.d.title, self.d.slug, new_rev.id,
-                     reviewable_watch.pk, reviewable_watch.secret,
-                     diff, new_rev.content),
+                    (self.d.title, self.d.slug, new_rev.id, diff,
+                     new_rev.content, reviewable_watch.pk,
+                     reviewable_watch.secret),
                  to=['joe@example.com'])
         attrs_eq(mail.outbox[1],
                  subject=u'%s was edited by %s' % (self.d.title,
@@ -945,8 +938,8 @@ class ReviewRevisionTests(TestCaseBase):
                      watch.secret, diff, r.content))
         else:
             expected_body = (APPROVED_EMAIL_CONTENT_NO_DIFF %
-                    (self.document.title, self.document.slug, watch.pk,
-                     watch.secret, r.content))
+                    (self.document.title, self.document.slug, r.content,
+                     watch.pk, watch.secret))
 
         eq_(1, len(mail.outbox))
         attrs_eq(mail.outbox[0],

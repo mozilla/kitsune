@@ -20,9 +20,7 @@ from wiki.tasks import (send_reviewed_notification, rebuild_kb,
 from wiki.tests import TestCaseBase, revision, document
 
 
-REVIEWED_EMAIL_CONTENT = """
-
-Your revision has been reviewed.
+REVIEWED_EMAIL_CONTENT = """Your revision has been reviewed.
 
 admin has approved your revision to the document
 %s.
