@@ -1,6 +1,4 @@
-{% load i18n %}
-{# L10n: This is an email. Whitespace matters! #}
-{% blocktrans %}Your revision has been reviewed.{% endblocktrans %}
+{% load i18n %}{# L10n: This is an email. Whitespace matters! #}{% blocktrans %}Your revision has been reviewed.{% endblocktrans %}
 {% if approved %}
 {% blocktrans %}{{ reviewer }} has approved your revision to the document
 {{ document_title }}.{% endblocktrans %}
