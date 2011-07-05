@@ -280,7 +280,10 @@ def _get_media_info(media_id, media_type):
     media_format = None
     if media_type == 'image':
         media = get_object_or_404(Image, pk=media_id)
-        media_format = imghdr.what(media.file.path)
+        try:
+            media_format = imghdr.what(media.file.path)
+        except UnicodeEncodeError:
+            pass
     elif media_type == 'video':
         media = get_object_or_404(Video, pk=media_id)
     else:
