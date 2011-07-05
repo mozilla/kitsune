@@ -35,7 +35,8 @@ class KarmaAction(object):
             if async:
                 self._save.delay(self)
             else:
-                self._save()
+                # Passing self below is required because the method is a @task
+                self._save(self)
 
     @task
     def _save(self):

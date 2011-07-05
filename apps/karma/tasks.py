@@ -5,7 +5,7 @@ from karma.cron import update_top_contributors as _update_top_contributors
 from questions.karma_actions import (AnswerAction, AnswerMarkedHelpfulAction,
                                      FirstAnswerAction, SolutionAction)
 from questions.models import Question, AnswerVote
-from sumo.utils import chunked
+from sumo.utils import chunked, redis_client
 
 
 @task
