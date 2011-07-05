@@ -5,6 +5,7 @@ from django.conf import settings
 from django.contrib.auth import authenticate, forms as auth_forms
 from django.contrib.auth.models import User
 
+from captcha.fields import ReCaptchaField
 from tower import ugettext as _, ugettext_lazy as _lazy
 
 from sumo.widgets import ImageWidget
@@ -99,10 +100,20 @@ class AuthenticationForm(auth_forms.AuthenticationForm):
     """
     password = forms.CharField(label=_lazy(u"Password"),
                                widget=forms.PasswordInput(render_value=False))
+    recaptcha = ReCaptchaField(label='')
 
     def __init__(self, request=None, only_active=True, *args, **kwargs):
         self.only_active = only_active
-        super(AuthenticationForm, self).__init__(request, *args, **kwargs)
+        self.has_recaptcha = True
+
+        super(AuthenticationForm, self).__init__(None, *args, **kwargs)
+
+        if (request is None or
+            settings.RECAPTCHA_PRIVATE_KEY is None or
+            not request.user.is_anonymous() or
+            not getattr(request, 'limited', False)):
+            del self.fields['recaptcha']
+            self.has_recaptcha = False
 
     def clean(self):
         username = self.cleaned_data.get('username')

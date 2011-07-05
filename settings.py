@@ -660,6 +660,9 @@ CC_IGNORE_USERS = ['fx4status']  # User names whose tweets to ignore.
 TWITTER_CONSUMER_KEY = ''
 TWITTER_CONSUMER_SECRET = ''
 
+RECAPTCHA_PRIVATE_KEY = None
+RECAPTCHA_PUBLIC_KEY = None
+
 
 TIDINGS_FROM_ADDRESS = 'notifications@support.mozilla.com'
 # Anonymous watches must be confirmed.

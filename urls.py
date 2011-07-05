@@ -52,6 +52,11 @@ urlpatterns = patterns('',
 handler404 = 'sumo.views.handle404'
 handler500 = 'sumo.views.handle500'
 
+
+# Monkeypatch the admin login.
+import kadmin.urls
+
+
 if settings.DEBUG:
     media_url = settings.MEDIA_URL.lstrip('/').rstrip('/')
     urlpatterns += patterns('',
