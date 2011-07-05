@@ -17,7 +17,7 @@ class KarmaAction(object):
     action_type = None  # For example 'first-answer'.
     points = 0  # Number of points the action is worth.
 
-    def __init__(self, user, day=date.today(), redis=None):
+    def __init__(self, user, day=date.today()):
         if not waffle.switch_is_active('karma'):
             return
         if isinstance(user, User):
@@ -28,46 +28,46 @@ class KarmaAction(object):
             self.date = day.date()
         else:
             self.date = day
-        if not redis:
-            self.redis = redis_client(name='karma')
-        else:
-            self.redis = redis
 
-    def save(self):
+    def save(self, async=True):
         """Save the action information to redis."""
         if waffle.switch_is_active('karma'):
-            self._save.delay(self)
+            if async:
+                self._save.delay(self)
+            else:
+                self._save()
 
     @task
     def _save(self):
         statsd.incr('karma.{t}'.format(t=self.action_type))
 
         key = hash_key(self.userid)
+        redis = redis_client(name='karma')
 
         # Point counters:
         # Increment total points
-        self.redis.hincrby(key, 'points:total', self.points)
+        redis.hincrby(key, 'points:total', self.points)
         # Increment points daily count
-        self.redis.hincrby(key, 'points:{d}'.format(
+        redis.hincrby(key, 'points:{d}'.format(
             d=self.date), self.points)
         # Increment points monthly count
-        self.redis.hincrby(key, 'points:{y}-{m:02d}'.format(
+        redis.hincrby(key, 'points:{y}-{m:02d}'.format(
             y=self.date.year, m=self.date.month), self.points)
         # Increment points yearly count
-        self.redis.hincrby(key, 'points:{y}'.format(
+        redis.hincrby(key, 'points:{y}'.format(
             y=self.date.year), self.points)
 
         # Action counters:
         # Increment action total count
-        self.redis.hincrby(key, '{t}:total'.format(t=self.action_type), 1)
+        redis.hincrby(key, '{t}:total'.format(t=self.action_type), 1)
         # Increment action daily count
-        self.redis.hincrby(key, '{t}:{d}'.format(
+        redis.hincrby(key, '{t}:{d}'.format(
              t=self.action_type, d=self.date), 1)
         # Increment action monthly count
-        self.redis.hincrby(key, '{t}:{y}-{m:02d}'.format(
+        redis.hincrby(key, '{t}:{y}-{m:02d}'.format(
             t=self.action_type, y=self.date.year, m=self.date.month), 1)
         # Increment action yearly count
-        self.redis.hincrby(key, '{t}:{y}'.format(
+        redis.hincrby(key, '{t}:{y}'.format(
             t=self.action_type, y=self.date.year), 1)
 
 

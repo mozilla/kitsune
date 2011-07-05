@@ -1,7 +1,6 @@
 from celery.decorators import task
 import waffle
 
-from karma.actions import redis_client
 from karma.cron import update_top_contributors as _update_top_contributors
 from questions.karma_actions import (AnswerAction, AnswerMarkedHelpfulAction,
                                      FirstAnswerAction, SolutionAction)
@@ -38,26 +37,24 @@ def update_top_contributors():
 @task
 def _process_question_chunk(data, **kwargs):
     """Save karma data for a chunk of questions."""
-    redis = redis_client('karma')
     q_qs = Question.objects.select_related('solution').defer('content')
     for question in q_qs.filter(pk__in=data):
         first = True
         a_qs = question.answers.order_by('created').select_related('creator')
         for answer in a_qs.values_list('creator', 'created'):
-            AnswerAction(answer[0], answer[1], redis).save()
+            AnswerAction(answer[0], answer[1]).save(async=False)
             if first:
-                FirstAnswerAction(answer[0], answer[1], redis).save()
+                FirstAnswerAction(answer[0], answer[1]).save(async=False)
                 first = False
         soln = question.solution
         if soln:
-            SolutionAction(soln.creator, soln.created, redis).save()
+            SolutionAction(soln.creator, soln.created).save(async=False)
 
 
 @task
 def _process_answer_vote_chunk(data, **kwargs):
     """Save karma data for a chunk of answer votes."""
-    redis = redis_client('karma')
     v_qs = AnswerVote.objects.select_related('answer')
     for vote in v_qs.filter(pk__in=data):
         AnswerMarkedHelpfulAction(
-            vote.answer.creator_id, vote.created, redis).save()
+            vote.answer.creator_id, vote.created).save(async=False)
