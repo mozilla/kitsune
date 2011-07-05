@@ -3,6 +3,7 @@ from datetime import date, datetime, timedelta
 from django.contrib.auth.models import User
 
 from celery.decorators import task
+from statsd import statsd
 import waffle
 
 from sumo.utils import redis_client
@@ -39,6 +40,8 @@ class KarmaAction(object):
 
     @task
     def _save(self):
+        statsd.incr('karma.{t}'.format(t=self.action_type))
+
         key = hash_key(self.userid)
 
         # Point counters:
