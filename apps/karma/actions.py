@@ -29,21 +29,23 @@ class KarmaAction(object):
         else:
             self.date = day
 
-    def save(self, async=True):
+    def save(self, async=True, redis=None):
         """Save the action information to redis."""
         if waffle.switch_is_active('karma'):
             if async:
                 self._save.delay(self)
             else:
                 # Passing self below is required because the method is a @task
-                self._save(self)
+                self._save(self, redis)
 
     @task
-    def _save(self):
+    def _save(self, redis=None):
         statsd.incr('karma.{t}'.format(t=self.action_type))
 
         key = hash_key(self.userid)
-        redis = redis_client(name='karma')
+
+        if not redis:
+            redis = redis_client(name='karma')
 
         # Point counters:
         # Increment total points
