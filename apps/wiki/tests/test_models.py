@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime
 
 from nose.exc import SkipTest
 from nose.tools import eq_
@@ -383,6 +383,19 @@ class LocalizableOrLatestRevisionTests(TestCase):
                             save=True)
         eq_(rejected, rejected.document.localizable_or_latest_revision())
 
+    def test_non_localizable(self):
+        """When document isn't localizable, ignore is_ready_for_l10n."""
+        r1 = revision(is_approved=True,
+                      is_ready_for_localization=True,
+                      save=True)
+        r2 = revision(document=r1.document,
+                      is_approved=True,
+                      is_ready_for_localization=False,
+                      save=True)
+        r1.document.is_localizable = False
+        r1.document.save()
+        eq_(r2, r2.document.localizable_or_latest_revision())
+
 
 class RedirectCreationTests(TestCase):
     """Tests for automatic creation of redirects when slug or title changes"""
@@ -560,8 +573,8 @@ class RevisionTests(TestCase):
         eq_(ready_2, ready_2.document.latest_localizable_revision)
 
         # Ready the older rev. It should not become the latest_localizable.
-        unready.is_ready_for_localization=True
-        unready.is_approved=True
+        unready.is_ready_for_localization = True
+        unready.is_approved = True
         unready.save()
         eq_(ready_2, ready_2.document.latest_localizable_revision)
 
