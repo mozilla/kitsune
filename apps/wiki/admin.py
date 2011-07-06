@@ -14,6 +14,9 @@ class DocumentAdmin(admin.ModelAdmin):
     readonly_fields = ('id', 'current_revision', 'latest_localizable_revision')
     search_fields = ('title',)
 
+    def has_add_permission(self, request):
+        return False
+
     @staticmethod
     def _set_archival(queryset, should_be_archived):
         """Set archival bit of documents, percolating up to parents as well."""
