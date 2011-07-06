@@ -101,3 +101,19 @@ def group_dashboard(request, group_id):
 
     return GROUP_DASHBOARDS[group.dashboard.dashboard](
         request, group.id, group.dashboard.parameters).render()
+
+
+@require_GET
+@login_required
+def default_dashboard(request):
+    if request.user.groups.filter(name='Contributors').exists():
+        return HttpResponseRedirect(reverse('dashboards.review'))
+    else:
+        return HttpResponseRedirect(reverse('dashboards.welcome'))
+
+
+@require_GET
+@login_required
+def welcome(request):
+    """Welcome dashboard for users not in the Contributors group."""
+    return jingo.render(request, 'dashboards/welcome.html', {})
