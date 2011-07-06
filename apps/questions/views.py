@@ -437,6 +437,9 @@ def question_vote(request, question_id):
             vote.anonymous_id = request.anonymous.anonymous_id
 
         vote.save()
+        ua = request.META.get('HTTP_USER_AGENT')
+        if ua:
+            vote.add_metadata('ua', ua[:1000])  # 1000 max_length
         statsd.incr('questions.votes.question')
 
         if request.is_ajax():
@@ -474,6 +477,9 @@ def answer_vote(request, question_id, answer_id):
             vote.anonymous_id = request.anonymous.anonymous_id
 
         vote.save()
+        ua = request.META.get('HTTP_USER_AGENT')
+        if ua:
+            vote.add_metadata('ua', ua[:1000])  # 1000 max_length
         statsd.incr('questions.votes.answer')
     else:
         message = _('You already voted on this reply.')

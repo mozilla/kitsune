@@ -1,10 +1,11 @@
 from datetime import datetime, timedelta
 import re
 
-from django.db import models
-from django.db.models.signals import post_save
 from django.contrib.auth.models import User
 from django.contrib.contenttypes import generic
+from django.contrib.contenttypes.models import ContentType
+from django.db import models
+from django.db.models.signals import post_save
 
 from product_details import product_details
 from redis.exceptions import ConnectionError
@@ -372,6 +373,9 @@ class QuestionVote(ModelBase):
                                 null=True)
     anonymous_id = models.CharField(max_length=40, db_index=True)
 
+    def add_metadata(self, key, value):
+        VoteMetadata.objects.create(vote=self, key=key, value=value)
+
 
 class AnswerVote(ModelBase):
     """Helpful or Not Helpful vote on Answer."""
@@ -381,6 +385,18 @@ class AnswerVote(ModelBase):
     creator = models.ForeignKey(User, related_name='answer_votes',
                                 null=True)
     anonymous_id = models.CharField(max_length=40, db_index=True)
+
+    def add_metadata(self, key, value):
+        VoteMetadata.objects.create(vote=self, key=key, value=value)
+
+
+class VoteMetadata(ModelBase):
+    """Metadata for question and answer votes."""
+    content_type = models.ForeignKey(ContentType, null=True, blank=True)
+    object_id = models.PositiveIntegerField(null=True, blank=True)
+    vote = generic.GenericForeignKey()
+    key = models.CharField(max_length=40, db_index=True)
+    value = models.CharField(max_length=1000)
 
 
 def send_vote_update_task(**kwargs):
