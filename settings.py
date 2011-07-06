@@ -85,6 +85,7 @@ NON_SUPPORTED_LOCALES = {
     'br': 'fr',
     'nb-NO': 'no',
     'nn-NO': 'no',
+    'oc': 'fr',
     'sr': 'sr-CYRL',  # Override the tendency to go sr->sr-LATN.
 }
 
