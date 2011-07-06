@@ -530,7 +530,7 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin):
         # level fallback: first ready revisions, then approved ones, then
         # unapproved ones.
         rev = self.latest_localizable_revision
-        if not rev:
+        if not rev or not self.is_localizable:
             if reviewed_only:
                 exclusions = Q(is_approved=False, reviewed__isnull=False)
             else:
