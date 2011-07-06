@@ -17,5 +17,7 @@ group_patterns = patterns('groups.views',
 
 urlpatterns = patterns('groups.views',
     url(r'^$', 'list', name='groups.list'),
+    url(r'^join-contributors$', 'join_contributors',
+        name='groups.join_contributors'),
     (r'^/(?P<group_slug>[^/]+)', include(group_patterns)),
 )
