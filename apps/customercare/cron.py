@@ -11,7 +11,6 @@ import urllib2
 from django.conf import settings
 from django.core.cache import cache
 from django.db.utils import IntegrityError
-from django.utils.encoding import smart_str
 
 import cronjobs
 from multidb.pinning import pin_this_thread
@@ -63,7 +62,8 @@ def collect_tweets():
     # Drop tweets into DB
     for item in raw_data['results']:
         # Apply filters to tweet before saving
-        item = _filter_tweet(item)
+        # Allow links in #fxinput tweets
+        item = _filter_tweet(item, allow_links='#fxinput' in item['text'])
         if not item:
             continue
 
@@ -113,7 +113,7 @@ def _get_oldest_tweet(locale, n=0):
         return None
 
 
-def _filter_tweet(item):
+def _filter_tweet(item, allow_links=False):
     """
     Apply some filters to an incoming tweet.
 
@@ -129,7 +129,7 @@ def _filter_tweet(item):
         return None
 
     # No links
-    if LINK_REGEX.search(item['text']):
+    if not allow_links and LINK_REGEX.search(item['text']):
         return None
 
     # Exclude filtered users
