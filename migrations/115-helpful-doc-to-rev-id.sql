@@ -17,3 +17,5 @@ CREATE INDEX `wiki_helpfulvote_202bdc7f` ON `wiki_helpfulvote` (`revision_id`);
 CREATE INDEX `wiki_helpfulvote_3216ff68` ON `wiki_helpfulvote` (`created`);
 CREATE INDEX `wiki_helpfulvote_685aee7` ON `wiki_helpfulvote` (`creator_id`);
 CREATE INDEX `wiki_helpfulvote_2291b592` ON `wiki_helpfulvote` (`anonymous_id`);
+
+DELETE FROM `wiki_helpfulvoteold` WHERE document_id=7435;
