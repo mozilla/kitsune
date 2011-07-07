@@ -2,13 +2,14 @@ import os
 
 from django.conf import settings
 from django.contrib import messages
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 from django.core.exceptions import PermissionDenied
 from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.views.decorators.http import require_POST, require_http_methods
 
 import jingo
+from sumo.urlresolvers import reverse
 from tower import ugettext as _
 
 from access.decorators import login_required
@@ -202,6 +203,18 @@ def remove_leader(request, group_slug, user_id):
 
     return jingo.render(request, 'groups/confirm_remove_leader.html',
                         {'profile': prof, 'leader': user})
+
+
+@login_required
+@require_POST
+def join_contributors(request):
+    """Join the Contributors group."""
+    next = request.GET.get('next', reverse('home'))
+    group = Group.objects.get(name='Contributors')
+    request.user.groups.add(group)
+    messages.add_message(request, messages.SUCCESS,
+                         _('You are now part of the Contributors group!'))
+    return HttpResponseRedirect(next)
 
 
 def _user_can_edit(user, group_profile):

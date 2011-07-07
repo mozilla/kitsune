@@ -6,6 +6,7 @@ from nose.tools import eq_
 
 from groups.models import GroupProfile
 from groups.tests import group_profile
+from sumo.helpers import urlparams
 from sumo.tests import TestCase
 from sumo.urlresolvers import reverse
 from users.tests import user, group, add_permission
@@ -154,3 +155,22 @@ class AddRemoveLeaderTests(TestCase):
         r = self.client.post(url)
         eq_(302, r.status_code)
         assert not self.leader in self.group_profile.leaders.all()
+
+
+class JoinContributorsTests(TestCase):
+    def setUp(self):
+        super(JoinContributorsTests, self).setUp()
+        self.user = user(save=True)
+        self.client.login(username=self.user.username, password='testpass')
+        group(name='Contributors', save=True)
+
+    def test_join_contributors(self):
+        next = reverse('groups.list')
+        url = reverse('groups.join_contributors', locale='en-US')
+        url = urlparams(url, next=next)
+        r = self.client.get(url)
+        eq_(405, r.status_code)
+        r = self.client.post(url)
+        eq_(302, r.status_code)
+        eq_('http://testserver%s' % next, r['location'])
+        assert self.user.groups.filter(name='Contributors').exists()
