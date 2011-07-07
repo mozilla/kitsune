@@ -257,16 +257,16 @@ div.thread-meta span:first-child {
 }
 
 div.thread-meta span.solved {
-    color: #007302;
+    color: #00cc1a;
     font-weight: bold;
 }
 
 div.thread-meta span.locked{
-    color: #ff0000;
     font-weight: bold;
 }
 
 div.thread-meta span.contributed {
+    color: #ff0000;
     font-weight: bold;
 }
 
