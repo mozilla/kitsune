@@ -1,7 +1,9 @@
 {# vim: set ts=2 et sts=2 sw=2: #}
 {% extends "base.html" %}
 {% set scripts = ('wiki',) %}
-{% set styles = ('wiki',) %}
+{% if not styles %}
+  {% set styles = ('wiki',) %}
+{% endif %}
 
 {% block content %}
   <article id="{{ dashboard_id }}" class="main dashboards">

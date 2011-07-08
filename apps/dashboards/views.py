@@ -13,10 +13,11 @@ from announcements.models import Announcement
 from dashboards.personal import GROUP_DASHBOARDS
 from dashboards.readouts import (overview_rows, READOUTS, L10N_READOUTS,
                                  CONTRIBUTOR_READOUTS)
-from dashboards.utils import model_actions, render_readouts
-from forums.models import Post
+from dashboards.utils import render_readouts
+import forums as forum_constants
+from forums.models import Thread
 from sumo.urlresolvers import reverse
-from sumo.utils import smart_int
+from sumo.utils import paginate, smart_int
 
 
 def _kb_readout(request, readout_slug, readouts, locale=None, mode=None):
@@ -85,9 +86,16 @@ def wiki_rows(request, readout_slug):
 @require_GET
 @login_required
 def review(request):
-    """Review dashboard for a user, includes activity, announcements, etc."""
+    """Review dashboard for a user, forum threads, announcements, etc."""
+    threads = Thread.objects.filter(
+        post__author=request.user).select_related('creator', 'last_post',
+                                                  'last_post__author')
+    count = threads.count()
+    threads = paginate(request, threads,
+                       per_page=forum_constants.THREADS_PER_PAGE, count=count)
+
     return jingo.render(request, 'dashboards/review.html',
-                        {'actions': model_actions(Post, request),
+                        {'threads': threads,
                          'announcements': Announcement.get_site_wide()})
 
 
