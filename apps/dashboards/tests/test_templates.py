@@ -7,7 +7,6 @@ from django.contrib.sites.models import Site
 
 from announcements.tests import announcement
 from dashboards.tests import group_dashboard
-from forums.models import Post
 from sumo.tests import TestCase
 from sumo.urlresolvers import reverse
 from users.tests import user, group, profile
@@ -98,27 +97,22 @@ class LocalizationDashTests(TestCase):
 class ContributorForumDashTests(TestCase):
     fixtures = ['users.json', 'posts.json', 'forums_permissions.json']
 
-    def setUp(self):
-        super(ContributorForumDashTests, self).setUp()
-        self.client.login(username='jsocol', password='testpass')
-
     def test_no_activity(self):
         """Test the page with no activity."""
+        self.client.login(username='rrosario', password='testpass')
         response = self.client.get(reverse('dashboards.review'), follow=True)
         eq_(200, response.status_code)
         doc = pq(response.content)
-        eq_('No recent activity.', doc('#forums-dashboard p').text())
+        eq_(1, len(doc('#forums-dashboard p')))
 
     def test_with_activity(self):
         """Test the page with some activity."""
-        # Add a reply
-        post = Post(thread_id=4, content='lorem ipsum', author_id=118577)
-        post.save()
-        # Verify activity on the page
+        self.client.login(username='pcraciunoiu', password='testpass')
+        # Verify threads appear on the page
         response = self.client.get(reverse('dashboards.review'), follow=True)
         eq_(200, response.status_code)
         doc = pq(response.content)
-        eq_(1, len(doc('ol.actions li')))
+        eq_(1, len(doc('ol.threads > li')))
 
     def test_anonymous_user(self):
         """Checks the forums dashboard doesn't load for an anonymous user."""

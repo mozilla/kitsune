@@ -5,7 +5,7 @@ ol.forums-columns,
 ol.forums,
 ol.posts-columns,
 ol.posts {
-    clear: left;
+    clear: both;
     list-style-type: none;
 }
 
