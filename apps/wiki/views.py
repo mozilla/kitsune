@@ -622,6 +622,27 @@ def unwatch_approved(request):
     return HttpResponse()
 
 
+@require_POST
+@login_required
+def watch_ready(request):
+    """Start watching ready-for-l10n revisions."""
+    if request.locale != settings.WIKI_DEFAULT_LANGUAGE:
+        raise Http404
+    ReadyRevisionEvent.notify(request.user)
+    statsd.incr('wiki.watches.ready')
+    return HttpResponse()
+
+
+@require_POST
+@login_required
+def unwatch_ready(request):
+    """Stop watching ready-for-l10n revisions."""
+    if request.locale != settings.WIKI_DEFAULT_LANGUAGE:
+        raise Http404
+    ReadyRevisionEvent.stop_notifying(request.user)
+    return HttpResponse()
+
+
 @require_GET
 def json_view(request):
     """Return some basic document info in a JSON blob."""

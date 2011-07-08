@@ -327,10 +327,7 @@ div#doc-watch .popup-menu table {
     border-radius: 10px;
     -moz-border-radius: 10px;
     -webkit-border-radius: 10px;
-    border-top-left-radius: 0;
-    -moz-border-radius-topleft: 0;
-    -webkit-border-top-left-radius: 0;
-    left: 0;
+    left: -67px;
     padding: 10px;
     position: absolute;
     top: 10px;
@@ -348,7 +345,7 @@ div#doc-watch table:before {
 
     height: 15px;
     width: 15px;
-    left: -9px;
+    left: 58px;
     top: -18px;
     margin-bottom: -13px;
 }
