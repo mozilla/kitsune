@@ -1,0 +1,12 @@
+{% load i18n %}{% load unsubscribe_instructions %}{# L10n: This is an email. Whitespace matters! #}{% blocktrans %}The document {{ document_title }} has a revision
+that is ready for localization.
+
+To localize the document, click the following link, or paste it into
+your browser's location bar:
+{% endblocktrans %}
+https://{{ host }}{{ url }}
+
+--
+{% blocktrans %}Text of this revision:{% endblocktrans %}
+{{ fulltext|safe }}
+{% unsubscribe_instructions watch %}

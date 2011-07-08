@@ -25,6 +25,8 @@
     </div>
     {% include 'wiki/includes/revision_list.html' %}
 
+    {% include 'wiki/includes/ready_for_l10n_modal.html' %}
+
     <section id="contributors" class="editable">
       {% if user.has_perm('wiki.change_document') %}
         <a class="edit" href="#contributors">{{ _('Edit contributors') }}</a>
