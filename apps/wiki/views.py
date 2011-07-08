@@ -727,6 +727,25 @@ def delete_revision(request, document_slug, revision_id):
 
 
 @login_required
+@permission_required('wiki.mark_ready_for_l10n')
+@require_POST
+def mark_ready_for_l10n_revision(request, document_slug, revision_id):
+    """Mark a revision as ready for l10n."""
+    revision = get_object_or_404(Revision, pk=revision_id,
+                                 document__slug=document_slug)
+
+    if revision.is_approved:
+        revision.is_ready_for_localization = True
+        revision.save()
+
+        ReadyRevisionEvent(revision).fire(exclude=request.user)
+    
+        return HttpResponse(json.dumps({'message': revision_id}))
+
+    return HttpResponseBadRequest()
+
+
+@login_required
 def delete_document(request, document_slug):
     """Delete a revision."""
     document = get_object_or_404(Document, locale=request.locale,

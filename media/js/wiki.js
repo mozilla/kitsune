@@ -36,6 +36,8 @@
         initDiffToggle();
 
         Marky.createFullToolbar('.editor-tools', '#id_content');
+
+        initReadyForL10N();
     }
 
     // Add `odd` CSS class to home page content sections for older browsers.
@@ -385,6 +387,38 @@
             });
             function syncHeight() {
                 $placeholder.height($clone.outerHeight() + 40);
+            }
+        });
+    }
+
+    function initReadyForL10N() {
+        var $watchDiv = $("#revision-list div.l10n"),
+            post_url, checkbox_id;
+
+        $watchDiv.find("a.markasready").click(function() {
+            var $check = $(this);
+            post_url = $check.data("url");
+            checkbox_id = $check.attr("id"); 
+            $("#ready-for-l10n-modal span.revtime").html("("+$check.data("revdate")+")");
+        });
+
+        $("#ready-for-l10n-modal input[type=submit]").click(function() {
+            var csrf = $("#ready-for-l10n-modal input[name=csrfmiddlewaretoken]").val(),
+            kbox = $("#ready-for-l10n-modal").data("kbox");
+            if(post_url != undefined && checkbox_id != undefined) {
+                $.ajax({
+                    type: "POST",
+                    url: post_url,
+                    data: {csrfmiddlewaretoken: csrf},
+                    success: function(response) {
+                        $("#" + checkbox_id).removeClass("markasready").addClass("yes");
+                        $("#" + checkbox_id).unbind("click");
+                        kbox.close();
+                    },
+                    error: function() {
+                        kbox.close();
+                    }
+                });
             }
         });
     }

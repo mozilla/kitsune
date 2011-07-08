@@ -9,6 +9,7 @@
         </div>
       {% endif %}
       {% set reached_current = False %}
+      {% set reached_ready_for_l10n = False %}
       {% for rev in revisions %}
         {% if document.current_revision == rev %}
           {% set reached_current = True %}
@@ -22,6 +23,7 @@
               <div class="status-head">{{ _('Status') }}</div>
               <div class="significance-head"><abbr title="{{ _('Significance - MT: Major Content Changes. M: Content Changes. Empty: Minor Changes.') }}"> {{ _('S', "First letter of 'Significance'") }}</abbr></div>
               <div class="creator-head">{{ _('Editor') }}</div>
+              <div class="l10n-head"><abbr title="{{ _('Ready for localization') }}">{{ _('L', "First letter of 'Localizable'") }}</abbr></div>
               <div class="comment-head">{{ _('Comment') }}</div>
               <div class="edit-head"></div>
               {% if document.current_revision != rev and user.has_perm('wiki.delete_revision') %}
@@ -67,6 +69,20 @@
           </div>
           <div class="creator">
             {{ rev.creator }}
+          </div>
+          <div class="l10n">
+            {% if rev.is_approved %}
+              {% if rev.is_ready_for_localization %}
+                {% set reached_ready_for_l10n = True %}
+                <a class="yes" title="{{ _('This revision is ready for localization.') }}"></a>
+              {% else %}
+                {% if not reached_ready_for_l10n and user.has_perm('wiki.mark_ready_for_l10n') %}
+                  <a class="markasready" id="rev-{{ rev.id }}-l10n-no" data-revdate="{{ rev.created }}" data-url="{{ url('wiki.mark_ready_for_l10n_revision', document.slug, rev.id, locale=document.locale) }}" title="{{ _('This revision is not ready for localization.') }}"></a>
+                {% else %}
+                  <a class="no" title="{{ _('This revision is not ready for localization.') }}"></a>
+                {% endif %}
+              {% endif %}
+            {% endif %}
           </div>
           <div class="comment">
             {{ rev.comment }}
