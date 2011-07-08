@@ -623,11 +623,13 @@ details.h2 > summary {
 #revision-list div.comment,
 #revision-list div.comment-head {
     display: inline-block;
-    width: 270px;
+    width: 245px;
 }
 
+#revision-list div.l10n,
 #revision-list div.edit,
 #revision-list div.delete,
+#revision-list div.l10n-head,
 #revision-list div.edit-head,
 #revision-list div.delete-head {
     display: inline-block;
@@ -646,6 +648,27 @@ details.h2 > summary {
 
 #revision-list div.delete a {
     background: url("../img/icons.actions.png") no-repeat scroll left 0px transparent;
+    display: inline-block;
+    height: 12px;
+    width: 12px;
+}
+
+#revision-list div.l10n a.yes {
+    background: url("/media/img/wiki/icon-yes.gif") no-repeat scroll left top transparent;
+    display: inline-block;
+    height: 12px;
+    width: 12px;
+}
+
+#revision-list div.l10n a.no, #revision-list div.l10n a.noperm {
+    background: url("/media/img/wiki/icon-no.gif") no-repeat scroll left top transparent;
+    display: inline-block;
+    height: 12px;
+    width: 12px;
+}
+
+#revision-list div.l10n a.noperm:hover {
+    background: url("/media/img/wiki/icon-yes.gif") no-repeat scroll left top transparent;
     display: inline-block;
     height: 12px;
     width: 12px;
