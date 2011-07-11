@@ -87,9 +87,9 @@ def wiki_rows(request, readout_slug):
 @login_required
 def review(request):
     """Review dashboard for a user, forum threads, announcements, etc."""
-    threads = Thread.objects.filter(
-        post__author=request.user).select_related('creator', 'last_post',
-                                                  'last_post__author')
+    threads = Thread.objects.filter(post__author=request.user)
+    threads = threads.select_related('creator', 'last_post',
+                                     'last_post__author').distinct()
     count = threads.count()
     threads = paginate(request, threads,
                        per_page=forum_constants.THREADS_PER_PAGE, count=count)
