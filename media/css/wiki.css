@@ -727,7 +727,8 @@ body.review #content-fields textarea {
 
 #approve-modal li {
     list-style: none;
-    padding: 2px 5px;
+    padding: 5px;
+    position: relative;
 }
 
 #approve-modal div.message,
@@ -740,6 +741,33 @@ body.review #content-fields textarea {
 #reject-modal textarea {
     height: 100px;
     width: 350px;
+}
+
+#approve-modal li div.help-text {
+    background: #fff;
+    border-radius: 0 0 10px 10px;
+    box-shadow: 0 10px 10px rgba(0,0,0,.25), inset -1px -1px 1px rgba(0,0,0,.125), inset 1px 0 1px rgba(255,255,255,.25);
+    color: #000;
+    display: none;
+    left: 23px;
+    padding: 10px 15px;
+    position: absolute;
+    top: 20px;
+    z-index: 999;
+}
+
+#approve-modal li:hover {
+    border-radius: 10px 10px 0 10px;
+    box-shadow: 0 0 10px rgba(0,0,0,.25), inset -1px -1px 1px rgba(0,0,0,.125), inset 1px 0 1px rgba(255,255,255,.25);
+}
+
+#approve-modal li:hover label {
+    position: relative;
+    z-index: 1000;
+}
+
+#approve-modal li:hover div.help-text {
+    display: block;
 }
 
 /* Revision diffs */
