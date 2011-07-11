@@ -403,7 +403,7 @@
         });
 
         $('#ready-for-l10n-modal input[type=submit]').click(function() {
-            var csrf = $('#add-contributor-form input[name=csrfmiddlewaretoken]').val(),
+            var csrf = $('#ready-for-l10n-modal input[name=csrfmiddlewaretoken]').val(),
             kbox = $('#ready-for-l10n-modal').data('kbox');
             if(post_url != undefined && checkbox_id != undefined) {			
                 $.ajax({
