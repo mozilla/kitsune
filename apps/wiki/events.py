@@ -128,9 +128,9 @@ class ReviewableRevisionInLocaleEvent(_RevisionConstructor,
 
 
 class ReadyRevisionEvent(_RevisionConstructor, Event):
-    """Event fed to a union when a new (en-US) revision becomes ready for l10n
+    """Event fed to a union when a (en-US) revision becomes ready for l10n
 
-    Can be fired individually
+    Note that no diff is sent, only a fulltext of the revision. 
 
     """
     event_type = 'ready wiki'

@@ -713,10 +713,11 @@ def mark_ready_for_l10n_revision(request, document_slug, revision_id):
     revision = get_object_or_404(Revision, pk=revision_id,
                                  document__slug=document_slug)
 
-    revision.is_ready_for_localization = True
-    revision.save()
-    
-    ReadyRevisionEvent(revision).fire(exclude=request.user)
+    if revision.is_approved:
+        revision.is_ready_for_localization = True
+        revision.save()
+
+        ReadyRevisionEvent(revision).fire(exclude=request.user)
     
     return HttpResponse(json.dumps({'message': revision_id}))
 

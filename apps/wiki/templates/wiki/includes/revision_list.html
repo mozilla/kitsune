@@ -9,6 +9,7 @@
         </div>
       {% endif %}
       {% set reached_current = False %}
+      {% set reached_latest_ready = False %}
       {% for rev in revisions %}
         {% if document.current_revision == rev %}
           {% set reached_current = True %}
@@ -72,9 +73,10 @@
           <div class="l10n">
             {% if rev.is_approved %}
               {% if rev.is_ready_for_localization %}
+                {% set reached_ready_for_l10n = True %}
                 <a class="yes" title="{{ _('This revision is ready for localization.') }}"></a>
               {% else %}
-                {% if user.has_perm('wiki.mark_ready_for_l10n') %}
+                {% if not reached_ready_for_l10n and user.has_perm('wiki.mark_ready_for_l10n') %}
                   <a class="noperm" id="rev-{{ rev.id }}-l10n-no" data-revdate="{{ rev.created }}" data-url="{{ url('wiki.mark_ready_for_l10n_revision', document.slug, rev.id, locale=document.locale) }}" title="{{ _('This revision is not ready for localization.') }}"></a>
                 {% else %}
                   <a class="no" title="{{ _('This revision is not ready for localization.') }}"></a>

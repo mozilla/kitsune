@@ -21,7 +21,8 @@ from sumo.helpers import urlparams
 from sumo.tests import post, get, attrs_eq
 from users.tests import user, add_permission
 from wiki.cron import calculate_related_documents
-from wiki.events import (EditDocumentEvent, ReviewableRevisionInLocaleEvent,
+from wiki.events import (EditDocumentEvent, ReadyRevisionEvent,
+                         ReviewableRevisionInLocaleEvent,
                          ApproveRevisionInLocaleEvent)
 from wiki.models import Document, Revision, HelpfulVote, SIGNIFICANCES
 from wiki.tasks import send_reviewed_notification
@@ -315,6 +316,101 @@ class RevisionTests(TestCaseBase):
         # is current revision?
         eq_('Yes', doc('.revision-info li').eq(7).find('span').text())
 
+    @mock.patch.object(ReadyRevisionEvent, 'fire')
+    def test_mark_as_ready_POST(self, fire):
+        """HTTP POST to mark a revision as ready for l10n."""
+
+        r = revision(is_approved=True, is_ready_for_localization=False, save=True)
+
+        self.client.login(username='admin', password='testpass')
+
+        data = {}
+
+        response = post(self.client,
+                        'wiki.mark_ready_for_l10n_revision',
+                        data,
+                        args=[r.document.slug, r.id])
+
+        r2 = Revision.uncached.get(pk=r.pk)
+
+        assert fire.called
+        assert r2.is_ready_for_localization
+
+    @mock.patch.object(ReadyRevisionEvent, 'fire')
+    def test_mark_as_ready_GET(self, fire):
+        """HTTP GET to mark a revision as ready for l10n must fail."""
+
+        r = revision(is_approved=True, is_ready_for_localization=False, save=True)
+
+        self.client.login(username='admin', password='testpass')
+
+        data = {}
+
+        response = get(self.client,
+                        'wiki.mark_ready_for_l10n_revision',
+                        args=[r.document.slug, r.id])
+
+        r2 = Revision.uncached.get(pk=r.pk)
+
+        assert not fire.called
+        assert not r2.is_ready_for_localization
+
+    @mock.patch.object(ReadyRevisionEvent, 'fire')
+    def test_mark_as_ready_no_perm(self, fire):
+        """Mark a revision as ready for l10n without perm must fail."""
+
+        r = revision(is_approved=True, is_ready_for_localization=False, save=True)
+
+        u = user(save=True)
+        self.client.login(username=u.username, password='testpass')
+
+        data = {}
+
+        response = post(self.client,
+                        'wiki.mark_ready_for_l10n_revision',
+                        data,
+                        args=[r.document.slug, r.id])
+
+        r2 = Revision.uncached.get(pk=r.pk)
+
+        assert not fire.called
+        assert not r2.is_ready_for_localization
+
+    @mock.patch.object(ReadyRevisionEvent, 'fire')
+    def test_mark_as_ready_no_login(self, fire):
+        """Mark a revision as ready for l10n without login must fail."""
+
+        r = revision(is_approved=True, is_ready_for_localization=False, save=True)
+
+        data = {}
+
+        response = post(self.client,
+                        'wiki.mark_ready_for_l10n_revision',
+                        data,
+                        args=[r.document.slug, r.id])
+
+        r2 = Revision.uncached.get(pk=r.pk)
+
+        assert not fire.called
+        assert not r2.is_ready_for_localization
+
+    @mock.patch.object(ReadyRevisionEvent, 'fire')
+    def test_mark_as_ready_no_approval(self, fire):
+        """Mark a revision as ready for l10n without login must fail."""
+
+        r = revision(is_approved=False, is_ready_for_localization=False, save=True)
+
+        data = {}
+
+        response = post(self.client,
+                        'wiki.mark_ready_for_l10n_revision',
+                        data,
+                        args=[r.document.slug, r.id])
+
+        r2 = Revision.uncached.get(pk=r.pk)
+
+        assert not fire.called
+        assert not r2.is_ready_for_localization
 
 class NewDocumentTests(TestCaseBase):
     """Tests for the New Document template"""
