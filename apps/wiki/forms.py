@@ -3,13 +3,15 @@ import re
 
 from django import forms
 from django.utils.encoding import smart_str
+from django.utils.safestring import mark_safe
 
 from tower import ugettext_lazy as _lazy
 
 from sumo.form_fields import MultiUsernameField, StrippedCharField
 from tags import forms as tag_forms
 from wiki.models import (Document, Revision, FirefoxVersion, OperatingSystem,
-                     FIREFOX_VERSIONS, OPERATING_SYSTEMS, SIGNIFICANCES,
+                     FIREFOX_VERSIONS, OPERATING_SYSTEMS,
+                     SIGNIFICANCES, SIGNIFICANCES_HELP,
                      GROUPED_FIREFOX_VERSIONS, GROUPED_OPERATING_SYSTEMS,
                      CATEGORIES)
 
@@ -218,15 +220,41 @@ class RevisionForm(forms.ModelForm):
         return new_rev
 
 
+class RadioInputWithHelpText(forms.widgets.RadioInput):
+    """Extend django's RadioInput with some <div class="help-text" />."""
+    # NOTE: I tried to have the help text be part of the choices tuple,
+    # but it caused all sorts of validation errors in django. For now,
+    # just using SIGNIFICANCES_HELP directly here.
+    def __init__(self, name, value, attrs, choice, index):
+        super(RadioInputWithHelpText, self).__init__(name, value, attrs,
+                                                     choice, index)
+        self.choice_help = SIGNIFICANCES_HELP[choice[0]]
+
+    def __unicode__(self):
+        label = super(RadioInputWithHelpText, self).__unicode__()
+        return mark_safe('%s<div class="help-text">%s</div>' %
+                         (label, self.choice_help))
+
+
+class RadioFieldRendererWithHelpText(forms.widgets.RadioFieldRenderer):
+    """Modifies django's RadioFieldRenderer to use RadioInputWithHelpText."""
+    def __iter__(self):
+        for i, choice in enumerate(self.choices):
+            yield RadioInputWithHelpText(self.name, self.value,
+                                         self.attrs.copy(), choice, i)
+
+
 class ReviewForm(forms.Form):
     comment = StrippedCharField(max_length=255, widget=forms.Textarea(),
                                 required=False, label=_lazy(u'Comment:'),
                                 error_messages={'max_length': COMMENT_LONG})
 
+    _widget = forms.RadioSelect(renderer=RadioFieldRendererWithHelpText)
     significance = forms.ChoiceField(
                     label=_lazy(u'Significance:'),
-                    choices=SIGNIFICANCES, initial=SIGNIFICANCES[0][0],
-                    required=False, widget=forms.RadioSelect())
+                    choices=SIGNIFICANCES,
+                    initial=SIGNIFICANCES[0][0],
+                    required=False, widget=_widget)
 
     is_ready_for_localization = forms.BooleanField(
         initial=False,

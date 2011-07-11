@@ -28,7 +28,8 @@ from wiki import TEMPLATE_TITLE_PREFIX
 TYPO_SIGNIFICANCE = 10
 MEDIUM_SIGNIFICANCE = 20
 MAJOR_SIGNIFICANCE = 30
-SIGNIFICANCES = (
+
+SIGNIFICANCES = [
     (TYPO_SIGNIFICANCE,
      _lazy(u'Minor details like punctuation and spelling errors')),
     (MEDIUM_SIGNIFICANCE,
@@ -36,7 +37,25 @@ SIGNIFICANCES = (
     (MAJOR_SIGNIFICANCE,
      _lazy(u'Major content changes that will make older translations '
            'inaccurate')),
-)
+]
+
+SIGNIFICANCES_HELP = {
+    TYPO_SIGNIFICANCE:
+        _lazy(u'These changes are inconsequential to localizers: they will '
+              'not be notified of the change and it will not affect '
+              'translations of the article.'),
+    MEDIUM_SIGNIFICANCE:
+        _lazy(u'This will notify localizers and translations will be marked '
+              'as "needing updates" on dashboards. Most '
+              'changes&mdash;updating an image, fixing {for} markup, adding '
+              'or removing non-critical sections&mdash;should use this.'),
+    MAJOR_SIGNIFICANCE:
+        _lazy(u'This will notify localizers and translations will be marked '
+              '"out of date" on dashboards. Translations will show a warning '
+              'to users that they are out of date and that the English '
+              'version is the most accurate. Use this when the old '
+              'instructions are completely unusable.'),
+}
 
 CATEGORIES = (
     (10, _lazy(u'Troubleshooting')),
