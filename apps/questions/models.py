@@ -1,7 +1,5 @@
 from datetime import datetime, timedelta
 import re
-import random
-import string
 
 from django.db import models
 from django.db.models.signals import post_save
@@ -9,10 +7,12 @@ from django.contrib.auth.models import User
 from django.contrib.contenttypes import generic
 
 from product_details import product_details
+from redis.exceptions import ConnectionError
 from taggit.models import Tag
 
 from activity.models import ActionMixin
 from flagit.models import FlaggedObject
+from karma.actions import KarmaManager
 import questions as constants
 from questions.question_config import products
 from questions.tasks import (update_question_votes, update_answer_pages,
@@ -329,6 +329,13 @@ class Answer(ActionMixin, ModelBase):
                                     creator=self.creator)).count()
 
     @property
+    def creator_num_points(self):
+        try:
+            return KarmaManager().total_points(self.creator)
+        except ConnectionError:
+            return None
+
+    @property
     def num_helpful_votes(self):
         """Get the number of helpful votes for this answer."""
         return AnswerVote.objects.filter(answer=self, helpful=True).count()
@@ -402,7 +409,7 @@ def _tenths_version(full_version):
 
 def _has_beta(version, dev_releases):
     """Returns True if the version has a beta release.
-    
+
     For example, if:
         dev_releases={...u'4.0rc2': u'2011-03-18',
                       u'5.0b1': u'2011-05-20',

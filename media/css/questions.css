@@ -420,6 +420,11 @@ div.user-section div.asked-by span.answers {
     font-weight: normal;
 }
 
+div.user-section div.asked-by span.points {
+    color: green;
+    font-size: 110%;
+}
+
 div.user-section div.asked-on {
     margin: 4px 0 0;
 }
