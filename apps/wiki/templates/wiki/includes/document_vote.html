@@ -1,13 +1,19 @@
 {# vim: set ts=2 et sts=2 sw=2: #}
-{% if not document.has_voted(request) and not waffle.switch('hide-voting') %}
+{% if document.current_revision and not waffle.switch('hide-voting') %}
+  {% if not document.current_revision.has_voted(request) and
+     (not fallback_reason or
+     fallback_reason == 'translation_not_approved' or
+     fallback_reason == 'no_translation') %}
   <div id="helpful-vote">
     <form class="helpful" action="{{ url('wiki.document_vote', document_slug=document.slug) }}" method="post">
       <p>
         <span>{{ _('Was this article helpful?') }}</span>
+        <input type="hidden" name="revision_id" value="{{ document.current_revision.id }}" />
         <input type="submit" class="btn" name="helpful" value="{{ _('Yes') }}" />
         <input type="submit" class="btn" name="not-helpful" value="{{ _('No') }}" />
         <img class="wait" src="{{ settings.MEDIA_URL }}img/customercare/spinner.gif" alt="{{ _('Please wait...') }}" />
       </p>
     </form>
   </div>
+  {% endif %}
 {% endif %}
