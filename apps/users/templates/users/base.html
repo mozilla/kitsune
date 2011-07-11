@@ -9,13 +9,7 @@
   {% endif %}
   {% if profile %}
     {% if request.user == profile.user %}
-      {% if form %}
-        {# If form is set, we're editing #}
-        {% set dashboard_signature = ('edit-profile', '') %}
-      {% else %}
-        {% set dashboard_signature = ('my-profile', '') %}
-      {% endif %}
-      {{ personal_dashboard_tabs(dashboard_signature) }}
+      {{ personal_dashboard_tabs(active) }}
     {% else %}
       {# If we are viewing another user's profile, don't show the dashboard tabs #}
       <nav id="doc-tabs">
