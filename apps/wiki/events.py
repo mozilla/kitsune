@@ -128,12 +128,47 @@ class ReviewableRevisionInLocaleEvent(_RevisionConstructor,
 
 
 class ReadyRevisionEvent(_RevisionConstructor, Event):
-    """Event fed to a union when a new (en-US) revision becomes ready for l10n
+    """Event fed to a union when a (en-US) revision becomes ready for l10n
 
-    Not intended to be fired individually
+    Note that no diff is sent, only a fulltext of the revision. 
 
     """
     event_type = 'ready wiki'
+    
+    def _mails(self, users_and_watches):
+        """Send readiness mails.
+
+        """
+        revision = self.revision
+        document = revision.document
+        is_ready = revision.is_ready_for_localization
+        log.debug('Sending ready notifications for revision (id=%s)' %
+                  revision.id)
+        ready_subject = _(u'{title} has a revision ready for localization').format(
+            title=document.title,
+            creator=revision.creator,
+            locale=document.locale)
+            
+        ready_template = loader.get_template('wiki/email/ready_for_l10n_existing.ltxt')
+
+        c = context_dict(revision)
+        for user, watches in users_and_watches:
+            c['watch'] = watches[0]  # TODO: Expose all watches.
+
+            try:
+                profile = user.profile
+            except Profile.DoesNotExist:
+                locale = settings.WIKI_DEFAULT_LANGUAGE
+            else:
+                locale = profile.locale
+            c['url'] = reverse('wiki.translate',
+                               locale=locale,
+                               args=[document.slug])
+            yield EmailMessage(ready_subject,
+                               ready_template.render(Context(c)),
+                               settings.TIDINGS_FROM_ADDRESS,
+                               [user.email])
+
 
 
 class ApproveRevisionInLocaleEvent(_RevisionConstructor, _LocaleFilter, Event):

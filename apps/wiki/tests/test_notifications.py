@@ -98,3 +98,38 @@ class ReviewTests(TestCaseBase):
         eq_(2, len(mail.outbox))  # 1 mail to watcher, 1 to creator
         _assert_ready_mail(mail.outbox[0])
         _assert_creator_mail(mail.outbox[1])
+
+
+class ReadyForL10nTests(TestCaseBase):
+    """Tests for notifications sent during ready for l10n"""
+    fixtures = ['users.json']
+
+    def setUp(self):
+        """Have a user watch for revision approval. Log in."""
+        self.ready_watcher = user(email='approved@example.com', save=True)
+        ReadyRevisionEvent.notify(self.ready_watcher)
+        self.client.login(username='admin', password='testpass')
+
+    def _mark_as_ready_revision(self):
+        """Make a revision, and approve or reject it through the view."""
+        r = revision(is_approved=True,
+                     is_ready_for_localization=False,
+                     save=True)
+
+        # Figure out POST data:
+        data = {}
+
+        response = post(self.client,
+                        'wiki.mark_ready_for_l10n_revision',
+                        data,
+                        args=[r.document.slug, r.id])
+        eq_(200, response.status_code)
+
+    def test_ready(self):
+        """Show that a ready(-and-approved) rev mails Ready watchers a Ready
+        notification and Approved watchers an Approved one."""
+        _set_up_ready_watcher()
+        self._mark_as_ready_revision()
+        eq_(2, len(mail.outbox))  # 1 mail to each watcher, none to marker
+        _assert_ready_mail(mail.outbox[0])
+        _assert_ready_mail(mail.outbox[1])
