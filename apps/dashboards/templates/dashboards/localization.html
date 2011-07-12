@@ -36,6 +36,13 @@
 
 {% block side %}
   {% if not user.is_anonymous() %}
-    {{ print_subscription_menu(default_locale_name, current_locale_name, on_default_locale, is_watching_default_locale, is_watching_other_locale, is_watching_default_approved, is_watching_other_approved, settings.WIKI_DEFAULT_LANGUAGE) }}
+    {{ print_subscription_menu(default_locale_name,
+                               current_locale_name,
+                               on_default_locale,
+                               is_watching_default_locale,
+                               is_watching_other_locale,
+                               is_watching_default_approved,
+                               is_watching_other_approved,
+                               settings.WIKI_DEFAULT_LANGUAGE) }}
   {% endif %}
 {% endblock %}

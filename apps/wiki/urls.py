@@ -72,17 +72,23 @@ document_patterns = patterns('wiki.views',
 urlpatterns = patterns('wiki.views',
     url(r'^$', redirect_to, {'url': 'home'}, name='wiki.home'),
 
-    # Un/Subscribe to locale 'ready for review' notifications.
+    # (Un)subscribe to locale 'ready for review' notifications.
     url(r'^/watch-ready-for-review$', 'watch_locale',
         name='wiki.locale_watch'),
     url(r'^/unwatch-ready-for-review$', 'unwatch_locale',
         name='wiki.locale_unwatch'),
 
-    # Un/Subscribe to 'approved' notifications.
+    # (Un)subscribe to 'approved' notifications.
     url(r'^/watch-approved$', 'watch_approved',
         name='wiki.approved_watch'),
     url(r'^/unwatch-approved$', 'unwatch_approved',
         name='wiki.approved_unwatch'),
+
+    # (Un)subscribe to 'ready-for-l10n' notifications.
+    url(r'^/watch-ready$', 'watch_ready',
+        name='wiki.ready_watch'),
+    url(r'^/unwatch-ready$', 'unwatch_ready',
+        name='wiki.ready_unwatch'),
 
     url(r'^/json$', 'json_view', name='wiki.json'),
 

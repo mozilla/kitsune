@@ -7,7 +7,7 @@ import jingo
 from dashboards import ACTIONS_PER_PAGE
 from sumo_locales import LOCALES
 from sumo.utils import paginate
-from wiki.events import (ApproveRevisionInLocaleEvent,
+from wiki.events import (ApproveRevisionInLocaleEvent, ReadyRevisionEvent,
                          ReviewableRevisionInLocaleEvent)
 
 
@@ -50,6 +50,8 @@ def render_readouts(request, readouts, template, locale=None, extra_data=None):
                 None if on_default_locale
                 else ReviewableRevisionInLocaleEvent.is_notifying(
                     request.user, locale=request.locale),
+            'is_watching_default_ready':
+                ReadyRevisionEvent.is_notifying(request.user),
              'on_default_locale': on_default_locale}
     if extra_data:
         data.update(extra_data)
