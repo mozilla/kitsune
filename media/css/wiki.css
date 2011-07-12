@@ -660,17 +660,19 @@ details.h2 > summary {
     width: 12px;
 }
 
-#revision-list div.l10n a.no, #revision-list div.l10n a.noperm {
+#revision-list div.l10n a.markasready,
+#revision-list div.l10n a.no {
     background: url("/media/img/wiki/icon-no.gif") no-repeat scroll left top transparent;
     display: inline-block;
     height: 12px;
     width: 12px;
 }
 
-#revision-list div.l10n a.noperm:hover {
+#revision-list div.l10n a.markasready:hover {
     background: url("/media/img/wiki/icon-yes.gif") no-repeat scroll left top transparent;
     display: inline-block;
     height: 12px;
+    cursor: pointer;
     width: 12px;
 }
 

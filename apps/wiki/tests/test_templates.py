@@ -291,6 +291,9 @@ class RevisionTests(TestCaseBase):
     """Tests for the Revision template"""
     fixtures = ['users.json']
 
+    def setUp(self):
+        self.client.logout()
+
     def test_revision_view(self):
         """Load the revision view page and verify the title and content."""
         d = _create_document()
@@ -324,12 +327,12 @@ class RevisionTests(TestCaseBase):
 
         self.client.login(username='admin', password='testpass')
 
-        data = {}
+        url = reverse('wiki.mark_ready_for_l10n_revision',
+                      args=[r.document.slug, r.id])
+        response = self.client.post(url, data={},
+                         HTTP_X_REQUESTED_WITH='XMLHttpRequest')
 
-        response = post(self.client,
-                        'wiki.mark_ready_for_l10n_revision',
-                        data,
-                        args=[r.document.slug, r.id])
+        eq_(200, response.status_code)
 
         r2 = Revision.uncached.get(pk=r.pk)
 
@@ -344,11 +347,12 @@ class RevisionTests(TestCaseBase):
 
         self.client.login(username='admin', password='testpass')
 
-        data = {}
+        url = reverse('wiki.mark_ready_for_l10n_revision',
+                      args=[r.document.slug, r.id])
+        response = self.client.get(url, data={},
+                         HTTP_X_REQUESTED_WITH='XMLHttpRequest')
 
-        response = get(self.client,
-                        'wiki.mark_ready_for_l10n_revision',
-                        args=[r.document.slug, r.id])
+        eq_(405, response.status_code)
 
         r2 = Revision.uncached.get(pk=r.pk)
 
@@ -364,12 +368,12 @@ class RevisionTests(TestCaseBase):
         u = user(save=True)
         self.client.login(username=u.username, password='testpass')
 
-        data = {}
+        url = reverse('wiki.mark_ready_for_l10n_revision',
+                      args=[r.document.slug, r.id])
+        response = self.client.post(url, data={},
+                         HTTP_X_REQUESTED_WITH='XMLHttpRequest')
 
-        response = post(self.client,
-                        'wiki.mark_ready_for_l10n_revision',
-                        data,
-                        args=[r.document.slug, r.id])
+        eq_(403, response.status_code)
 
         r2 = Revision.uncached.get(pk=r.pk)
 
@@ -382,12 +386,12 @@ class RevisionTests(TestCaseBase):
 
         r = revision(is_approved=True, is_ready_for_localization=False, save=True)
 
-        data = {}
+        url = reverse('wiki.mark_ready_for_l10n_revision',
+                      args=[r.document.slug, r.id])
+        response = self.client.post(url, data={},
+                         HTTP_X_REQUESTED_WITH='XMLHttpRequest')
 
-        response = post(self.client,
-                        'wiki.mark_ready_for_l10n_revision',
-                        data,
-                        args=[r.document.slug, r.id])
+        eq_(403, response.status_code)
 
         r2 = Revision.uncached.get(pk=r.pk)
 
@@ -396,16 +400,18 @@ class RevisionTests(TestCaseBase):
 
     @mock.patch.object(ReadyRevisionEvent, 'fire')
     def test_mark_as_ready_no_approval(self, fire):
-        """Mark a revision as ready for l10n without login must fail."""
+        """Mark an unapproved revision as ready for l10n must fail."""
 
         r = revision(is_approved=False, is_ready_for_localization=False, save=True)
 
-        data = {}
+        self.client.login(username='admin', password='testpass')
 
-        response = post(self.client,
-                        'wiki.mark_ready_for_l10n_revision',
-                        data,
-                        args=[r.document.slug, r.id])
+        url = reverse('wiki.mark_ready_for_l10n_revision',
+                      args=[r.document.slug, r.id])
+        response = self.client.post(url, data={},
+                         HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+
+        eq_(400, response.status_code)
 
         r2 = Revision.uncached.get(pk=r.pk)
 

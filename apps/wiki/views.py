@@ -719,7 +719,9 @@ def mark_ready_for_l10n_revision(request, document_slug, revision_id):
 
         ReadyRevisionEvent(revision).fire(exclude=request.user)
     
-    return HttpResponse(json.dumps({'message': revision_id}))
+        return HttpResponse(json.dumps({'message': revision_id}))
+    else:
+        return HttpResponseBadRequest()
 
 
 @login_required

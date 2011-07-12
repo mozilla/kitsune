@@ -395,7 +395,7 @@
         var $watchDiv = $("#revision-list div.l10n"),
             post_url, checkbox_id;
 
-        $watchDiv.find("a.noperm").click(function() {
+        $watchDiv.find("a.markasready").click(function() {
             var $check = $(this);
             post_url = $check.data('url');
             checkbox_id = $check.attr('id'); 
@@ -411,7 +411,7 @@
 	            url: post_url,
                     data: {csrfmiddlewaretoken: csrf},
                     success: function(response) {
-                        $('#' + checkbox_id).removeClass('noperm').addClass('yes');
+                        $('#' + checkbox_id).removeClass('markasready').addClass('yes');
                         $('#' + checkbox_id).unbind('click');
                         kbox.close();
                     },
