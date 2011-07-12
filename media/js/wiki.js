@@ -397,28 +397,28 @@
 
         $watchDiv.find("a.markasready").click(function() {
             var $check = $(this);
-            post_url = $check.data('url');
-            checkbox_id = $check.attr('id'); 
-            $('#ready-for-l10n-modal span.revtime').html('('+$check.data('revdate')+')');
+            post_url = $check.data("url");
+            checkbox_id = $check.attr("id"); 
+            $("#ready-for-l10n-modal span.revtime").html("("+$check.data("revdate")+")");
         });
 
-        $('#ready-for-l10n-modal input[type=submit]').click(function() {
-            var csrf = $('#ready-for-l10n-modal input[name=csrfmiddlewaretoken]').val(),
-            kbox = $('#ready-for-l10n-modal').data('kbox');
-            if(post_url != undefined && checkbox_id != undefined) {			
+        $("#ready-for-l10n-modal input[type=submit]").click(function() {
+            var csrf = $("#ready-for-l10n-modal input[name=csrfmiddlewaretoken]").val(),
+            kbox = $("#ready-for-l10n-modal").data("kbox");
+            if(post_url != undefined && checkbox_id != undefined) {
                 $.ajax({
                     type: "POST",
-	            url: post_url,
+                    url: post_url,
                     data: {csrfmiddlewaretoken: csrf},
                     success: function(response) {
-                        $('#' + checkbox_id).removeClass('markasready').addClass('yes');
-                        $('#' + checkbox_id).unbind('click');
+                        $("#" + checkbox_id).removeClass("markasready").addClass("yes");
+                        $("#" + checkbox_id).unbind("click");
                         kbox.close();
                     },
                     error: function() {
                         kbox.close();
                     }
-	        });
+            });
             }
         });
     }

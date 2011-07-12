@@ -330,7 +330,7 @@ class RevisionTests(TestCaseBase):
         url = reverse('wiki.mark_ready_for_l10n_revision',
                       args=[r.document.slug, r.id])
         response = self.client.post(url, data={},
-                         HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+                      HTTP_X_REQUESTED_WITH='XMLHttpRequest')
 
         eq_(200, response.status_code)
 

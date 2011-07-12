@@ -670,9 +670,9 @@ details.h2 > summary {
 
 #revision-list div.l10n a.markasready:hover {
     background: url("/media/img/wiki/icon-yes.gif") no-repeat scroll left top transparent;
+    cursor: pointer;
     display: inline-block;
     height: 12px;
-    cursor: pointer;
     width: 12px;
 }
 
