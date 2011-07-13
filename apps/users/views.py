@@ -39,7 +39,12 @@ def login(request):
 
     if request.user.is_authenticated():
         res = HttpResponseRedirect(next_url)
-        res.set_cookie(settings.SESSION_EXISTS_COOKIE, '1', secure=False)
+        max_age = (None if settings.SESSION_EXPIRE_AT_BROWSER_CLOSE
+                        else settings.SESSION_COOKIE_AGE)
+        res.set_cookie(settings.SESSION_EXISTS_COOKIE,
+                       '1',
+                       secure=False,
+                       max_age=max_age)
         return res
 
     return jingo.render(request, 'users/login.html',
