@@ -85,63 +85,37 @@ def migrate_helpfulvotes():
 
     start = time.time()
 
+
+
+
+
     transaction.enter_transaction_management()
     transaction.managed(True)
     try:
+        start_id = 822800
+        end_id = 825805
         cursor = connection.cursor()
-        cursor.execute("""SELECT id, document_id, helpful, created,
-                        creator_id, anonymous_id, user_agent
-                        FROM `wiki_helpfulvoteold`
-                        ORDER BY id ASC LIMIT 3000""")
-        old = cursor.fetchall()
-
-        for olde in old:
-            document = olde[1]
-            created = olde[3]
-            if olde[5] == 0:
-                anon_id = ''
-            else:
-                anon_id = olde[5]
-
-            cursor.execute("""SELECT id FROM `wiki_revision`
-                              WHERE `document_id` = %s
-                              AND `is_approved`=1 AND
-                              (`reviewed` <= %s OR `reviewed` IS NULL)
-                              ORDER BY CASE WHEN `reviewed`
-                              IS NULL THEN 1 ELSE 0 END,
-                              `wiki_revision`.`created` DESC LIMIT 1""",
-                            [document, created])
-            rev_id = cursor.fetchone()
-
-            if rev_id is None:
-                cursor.execute("""SELECT id FROM `wiki_revision`
-                                  WHERE `document_id` = %s
-                                  AND (`reviewed` <= %s OR `reviewed` IS NULL)
-                                  ORDER BY CASE WHEN `reviewed`
-                                  IS NULL THEN 1 ELSE 0 END,
-                                  `wiki_revision`.`created`  DESC LIMIT 1""",
-                                [document, created])
-                rev_id = cursor.fetchone()
-
-            if rev_id is None:
-                cursor.execute("""SELECT id FROM `wiki_revision`
-                                  WHERE `document_id` = %s
-                                  ORDER BY `created` ASC LIMIT 1""",
-                                [document])
-                rev_id = cursor.fetchone()
-
-            if rev_id is not None:
-                cursor.execute("""INSERT INTO `wiki_helpfulvote`
+        cursor.execute("""INSERT INTO `wiki_helpfulvote`
                     (revision_id, helpful, created,
                      creator_id, anonymous_id, user_agent)
-                    VALUES(%s, %s, %s, %s, %s, %s)""",
-                    [rev_id[0], olde[2], olde[3], olde[4], anon_id, olde[6]])
-            else:
-                log.debug('Error converting vote [%s]' % olde[0])
-                raise Exception
-
-        cursor.execute("""DELETE FROM `wiki_helpfulvoteold`
-                        ORDER BY id ASC LIMIT 3000""")
+SELECT COALESCE((SELECT id FROM `wiki_revision`
+                              WHERE `document_id` = wiki_helpfulvoteold.document_id
+                              AND `is_approved`=1 AND
+                              (`reviewed` <= wiki_helpfulvoteold.created OR `reviewed` IS NULL)
+                              ORDER BY CASE WHEN `reviewed`
+                              IS NULL THEN 1 ELSE 0 END,
+                              `wiki_revision`.`created` DESC LIMIT 1), 
+        (SELECT id FROM `wiki_revision`
+                                  WHERE `document_id` = wiki_helpfulvoteold.document_id
+                                  AND (`reviewed` <= wiki_helpfulvoteold.created OR `reviewed` IS NULL)
+                                  ORDER BY CASE WHEN `reviewed`
+                                  IS NULL THEN 1 ELSE 0 END,
+                                  `wiki_revision`.`created`  DESC LIMIT 1),
+        (SELECT id FROM `wiki_revision`
+                                  WHERE `document_id` = wiki_helpfulvoteold.document_id
+                                  ORDER BY `created` ASC LIMIT 1)), helpful, created,
+                        creator_id, anonymous_id, user_agent
+                        FROM `wiki_helpfulvoteold` WHERE id >= %s AND id < %s""", [start_id, end_id])
         transaction.commit()
     except:
         transaction.rollback()
