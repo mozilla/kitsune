@@ -16,6 +16,9 @@
       </div>
     {% else %}
       <h1 class="title">{{ _('Are you sure you want to delete this revision?') }}</h1>
+      {% if has_votes %}
+        <h3>{{ _('<strong>Warning:</strong> This revision has KB Helpfulness Votes associated with it. Deleting this revision will cause those votes to be deleted as well.') }}</h3>
+      {% endif %}
       <label>{{ _('Creator') }}</label>
       <div>{{ revision.creator }}</div>
       <label>{{ _('Date') }}</label>
