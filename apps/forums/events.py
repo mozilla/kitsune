@@ -30,9 +30,10 @@ class NewPostEvent(InstanceEvent):
              'host': Site.objects.get_current().domain,
              'thread_title': self.instance.title,
              'post_url': self.reply.get_absolute_url()}
-
+        thread = self.reply.thread
         return emails_with_users_and_watches(
-            _(u'Reply to: %s') % self.reply.thread.title,
+            _(u'Re: {forum} - {thread}').format(forum=thread.forum.name,
+                                                thread=thread.title),
             'forums/email/new_post.ltxt',
             c,
             users_and_watches)
@@ -50,15 +51,14 @@ class NewThreadEvent(InstanceEvent):
         self.post = post
 
     def _mails(self, users_and_watches):
-        subject = _(u'New thread in %s forum: %s') % (
-            self.post.thread.forum.name, self.post.thread.title)
         c = {'post': self.post.content, 'author': self.post.author.username,
              'host': Site.objects.get_current().domain,
              'thread_title': self.post.thread.title,
              'post_url': self.post.thread.get_absolute_url()}
-
+        thread = self.post.thread
         return emails_with_users_and_watches(
-            subject,
+            _(u'{forum} - {thread}').format(forum=thread.forum.name,
+                                            thread=thread.title),
             'forums/email/new_thread.ltxt',
             c,
             users_and_watches)
