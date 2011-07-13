@@ -1054,7 +1054,7 @@ class ReviewRevisionTests(TestCaseBase):
 
         eq_(1, len(mail.outbox))
         attrs_eq(mail.outbox[0],
-                 subject='%s (%s) has a new approved revision' %
+                 subject='%s (%s) has a new approved revision (admin)' %
                      (self.document.title, self.document.locale),
                  body=expected_body,
                  to=['joe@example.com'])
