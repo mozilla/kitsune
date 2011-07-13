@@ -15,9 +15,10 @@ def new_post_mails(reply, users_and_watches):
          'host': Site.objects.get_current().domain,
          'thread_title': reply.thread.title,
          'post_url': reply.get_absolute_url()}
-
+    thread = reply.thread
     return emails_with_users_and_watches(
-        _(u'Reply to: %s') % reply.thread.title,
+        _(u'Re: {forum} - {thread}').format(forum=thread.document.title,
+                                            thread=thread.title),
         'kbforums/email/new_post.ltxt',
         c,
         users_and_watches)
@@ -32,9 +33,10 @@ def new_thread_mails(post, users_and_watches):
          'host': Site.objects.get_current().domain,
          'thread_title': post.thread.title,
          'post_url': post.thread.get_absolute_url()}
-
+    thread = post.thread
     return emails_with_users_and_watches(
-        subject,
+        _(u'{forum} - {thread}').format(forum=thread.document.title,
+                                        thread=thread.title),
         'kbforums/email/new_thread.ltxt',
         c,
         users_and_watches)
