@@ -207,10 +207,11 @@ class ApprovedOrReadyUnion(EventUnion):
                   revision.id)
         ready_subject, approved_subject = [s.format(
             title=document.title,
-            creator=revision.creator,
+            reviewer=revision.reviewer.username,
             locale=document.locale) for s in
                 [_(u'{title} has a revision ready for localization'),
-                 _(u'{title} ({locale}) has a new approved revision')]]
+                 _(u'{title} ({locale}) has a new approved revision '
+                    '({reviewer})')]]
         ready_template = loader.get_template('wiki/email/ready_for_l10n.ltxt')
         approved_template = loader.get_template('wiki/email/approved.ltxt')
         approved_url = reverse('wiki.document',
