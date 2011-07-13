@@ -125,7 +125,7 @@ class NotificationsTests(KBForumTestCase):
 
         p = Post.objects.all().order_by('-id')[0]
         attrs_eq(mail.outbox[0], to=['user47963@nowhere'],
-                 subject='Reply to: Sticky Thread')
+                 subject='Re: an article title - Sticky Thread')
         starts_with(mail.outbox[0].body, REPLY_EMAIL % p.id)
 
         self._toggle_watch_thread_as('pcraciunoiu', turn_on=False)
@@ -153,7 +153,7 @@ class NotificationsTests(KBForumTestCase):
 
         t = Thread.objects.all().order_by('-id')[0]
         attrs_eq(mail.outbox[0], to=['user47963@nowhere'],
-                 subject=u'New thread in an article title: a title')
+                 subject=u'an article title - a title')
         starts_with(mail.outbox[0].body, NEW_THREAD_EMAIL % t.id)
 
         self._toggle_watch_kbforum_as('pcraciunoiu', turn_on=False)
@@ -184,7 +184,7 @@ class NotificationsTests(KBForumTestCase):
 
         p = Post.objects.all().order_by('-id')[0]
         attrs_eq(mail.outbox[0], to=['user47963@nowhere'],
-                 subject='Reply to: Sticky Thread')
+                 subject='Re: an article title - Sticky Thread')
         starts_with(mail.outbox[0].body, REPLY_EMAIL % p.id)
 
     @mock.patch.object(Site.objects, 'get_current')
@@ -216,7 +216,7 @@ class NotificationsTests(KBForumTestCase):
         eq_(1, len(mail.outbox))
         p = Post.objects.all().order_by('-id')[0]
         attrs_eq(mail.outbox[0], to=['user47963@nowhere'],
-                 subject='Reply to: Sticky Thread')
+                 subject='Re: an article title - Sticky Thread')
         starts_with(mail.outbox[0].body, REPLY_EMAIL % p.id)
 
         self._toggle_watch_kbforum_as('pcraciunoiu', turn_on=False)
@@ -242,7 +242,7 @@ class NotificationsTests(KBForumTestCase):
         eq_(1, len(mail.outbox))
         p = Post.objects.all().order_by('-id')[0]
         attrs_eq(mail.outbox[0], to=['user47963@nowhere'],
-                 subject='Reply to: Sticky Thread')
+                 subject='Re: an article title - Sticky Thread')
         starts_with(mail.outbox[0].body, REPLY_EMAIL % p.id)
 
     @mock.patch.object(Site.objects, 'get_current')
@@ -267,7 +267,7 @@ class NotificationsTests(KBForumTestCase):
         eq_(1, len(mail.outbox))
         p = Post.objects.all().order_by('-id')[0]
         attrs_eq(mail.outbox[0], to=['user47963@nowhere'],
-                 subject='Reply to: Sticky Thread')
+                 subject='Re: an article title - Sticky Thread')
         starts_with(mail.outbox[0].body, REPLY_EMAIL % p.id)
 
     @mock.patch.object(Site.objects, 'get_current')
@@ -308,5 +308,5 @@ class NotificationsTests(KBForumTestCase):
         # Email was sent as expected.
         t = Thread.objects.all().order_by('-id')[0]
         attrs_eq(mail.outbox[0], to=['user47963@nowhere'],
-                 subject=u'New thread in an article title: a title')
+                 subject=u'an article title - a title')
         starts_with(mail.outbox[0].body, NEW_THREAD_EMAIL % t.id)
