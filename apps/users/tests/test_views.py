@@ -299,6 +299,8 @@ class AvatarTests(TestCase):
 
 
 class SessionTests(TestCase):
+    client_class = LocalizingClient
+
     def setUp(self):
         self.u = user()
         self.u.save()
@@ -308,7 +310,7 @@ class SessionTests(TestCase):
     @mock.patch.object(settings._wrapped, 'DEBUG', True)
     def test_login_sets_extra_cookie(self):
         """On login, set the SESSION_EXISTS_COOKIE."""
-        url = reverse('users.login', locale='en-US')
+        url = reverse('users.login')
         res = self.client.post(url, {'username': self.u.username,
                                      'password': 'testpass'})
         assert settings.SESSION_EXISTS_COOKIE in res.cookies
@@ -318,8 +320,32 @@ class SessionTests(TestCase):
     @mock.patch.object(settings._wrapped, 'DEBUG', True)
     def test_logout_deletes_cookie(self):
         """On logout, delete the SESSION_EXISTS_COOKIE."""
-        url = reverse('users.logout', locale='en-US')
+        url = reverse('users.logout')
         res = self.client.get(url)
         assert settings.SESSION_EXISTS_COOKIE in res.cookies
         c = res.cookies[settings.SESSION_EXISTS_COOKIE]
         assert '1970' in c['expires']
+
+    @mock.patch.object(settings._wrapped, 'DEBUG', True, create=True)
+    @mock.patch.object(settings._wrapped, 'SESSION_EXPIRE_AT_BROWSER_CLOSE',
+                       True, create=True)
+    def test_expire_at_browser_close(self):
+        """If SESSION_EXPIRE_AT_BROWSER_CLOSE, do expire then."""
+        url = reverse('users.login')
+        res = self.client.post(url, {'username': self.u.username,
+                                     'password': 'testpass'})
+        c = res.cookies[settings.SESSION_EXISTS_COOKIE]
+        eq_('', c['max-age'])
+
+    @mock.patch.object(settings._wrapped, 'DEBUG', True, create=True)
+    @mock.patch.object(settings._wrapped, 'SESSION_EXPIRE_AT_BROWSER_CLOSE',
+                       False, create=True)
+    @mock.patch.object(settings._wrapped, 'SESSION_COOKIE_AGE', 123,
+                       create=True)
+    def test_expire_in_a_long_time(self):
+        """If not SESSION_EXPIRE_AT_BROWSER_CLOSE, set an expiry date."""
+        url = reverse('users.login')
+        res = self.client.post(url, {'username': self.u.username,
+                                     'password': 'testpass'})
+        c = res.cookies[settings.SESSION_EXISTS_COOKIE]
+        eq_(123, c['max-age'])
