@@ -35,7 +35,8 @@ from questions.events import QuestionReplyEvent, QuestionSolvedEvent
 from questions.feeds import QuestionsFeed, AnswersFeed, TaggedQuestionsFeed
 from questions.forms import (NewQuestionForm, EditQuestionForm, AnswerForm,
                              WatchQuestionForm, FREQUENCY_CHOICES)
-from questions.karma_actions import SolutionAction, AnswerMarkedHelpfulAction
+from questions.karma_actions import (SolutionAction, AnswerMarkedHelpfulAction,
+                                     AnswerMarkedNotHelpfulAction)
 from questions.models import Question, Answer, QuestionVote, AnswerVote
 from questions.question_config import products
 from search.clients import WikiClient, QuestionsClient, SearchError
@@ -402,7 +403,7 @@ def solve(request, question_id, answer_id):
 def unsolve(request, question_id, answer_id):
     """Accept an answer as the solution to the question."""
     question = get_object_or_404(Question, pk=question_id)
-    answer = get_object_or_404(Answer, pk=answer_id)
+    get_object_or_404(Answer, pk=answer_id)
     if question.is_locked:
         raise PermissionDenied
 
@@ -464,6 +465,7 @@ def answer_vote(request, question_id, answer_id):
             AnswerMarkedHelpfulAction(answer.creator).save()
             message = _('Glad to hear it!')
         else:
+            AnswerMarkedNotHelpfulAction(answer.creator).save()
             message = _('Sorry to hear that.')
 
         if request.user.is_authenticated():

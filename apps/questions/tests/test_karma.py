@@ -1,6 +1,7 @@
 import mock
 
 from questions.karma_actions import (AnswerAction, AnswerMarkedHelpfulAction,
+                                     AnswerMarkedNotHelpfulAction,
                                      FirstAnswerAction, SolutionAction)
 from questions.models import Question, Answer
 from questions.tests import TestCaseBase
@@ -43,5 +44,13 @@ class KarmaTests(TestCaseBase):
         answer = Answer.objects.get(pk=1)
         question = answer.question
         post(self.client, 'questions.answer_vote', {'helpful': True},
+             args=[question.id, answer.id])
+        assert save.called
+
+    @mock.patch.object(AnswerMarkedNotHelpfulAction, 'save')
+    def test_nothelpful_vote(self, save):
+        answer = Answer.objects.get(pk=1)
+        question = answer.question
+        post(self.client, 'questions.answer_vote', {'not-helpful': True},
              args=[question.id, answer.id])
         assert save.called

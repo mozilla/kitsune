@@ -19,6 +19,12 @@ class AnswerMarkedHelpfulAction(KarmaAction):
     points = 10
 
 
+class AnswerMarkedNotHelpfulAction(KarmaAction):
+    """The user's answer was voted as not helpful."""
+    action_type = 'nothelpful-answer'
+    points = -10
+
+
 class SolutionAction(KarmaAction):
     """The user's answer was marked as the solution."""
     action_type = 'solution'

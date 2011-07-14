@@ -3,6 +3,7 @@ import waffle
 
 from karma.cron import update_top_contributors as _update_top_contributors
 from questions.karma_actions import (AnswerAction, AnswerMarkedHelpfulAction,
+                                     AnswerMarkedNotHelpfulAction,
                                      FirstAnswerAction, SolutionAction)
 from questions.models import Question, AnswerVote
 from sumo.utils import chunked, redis_client
@@ -23,7 +24,7 @@ def init_karma():
     for chunk in chunked(questions.values_list('pk', flat=True), 200):
         _process_question_chunk.apply_async(args=[chunk])
 
-    votes = AnswerVote.objects.filter(helpful=True)
+    votes = AnswerVote.objects.all()
     for chunk in chunked(votes.values_list('pk', flat=True), 1000):
         _process_answer_vote_chunk.apply_async(args=[chunk])
 
@@ -60,6 +61,9 @@ def _process_answer_vote_chunk(data, **kwargs):
     redis = redis_client(name='karma')
     v_qs = AnswerVote.objects.select_related('answer')
     for vote in v_qs.filter(pk__in=data):
-        AnswerMarkedHelpfulAction(
-            vote.answer.creator_id, vote.created).save(async=False,
-                                                       redis=redis)
+        if vote.helpful:
+            action_class = AnswerMarkedHelpfulAction
+        else:
+            action_class = AnswerMarkedNotHelpfulAction
+        action_class(vote.answer.creator_id, vote.created).save(async=False,
+                                                                redis=redis)

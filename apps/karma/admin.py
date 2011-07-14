@@ -7,6 +7,7 @@ from django.template import RequestContext
 from karma.actions import KarmaManager
 from karma.tasks import init_karma, update_top_contributors
 from questions.karma_actions import (AnswerAction, AnswerMarkedHelpfulAction,
+                                     AnswerMarkedNotHelpfulAction,
                                      FirstAnswerAction, SolutionAction)
 
 
@@ -56,6 +57,8 @@ def _user_karma_alltime(user, kmgr):
         'answers': kmgr.total_count(AnswerAction, user),
         'first_answers': kmgr.total_count(FirstAnswerAction, user),
         'helpful_votes': kmgr.total_count(AnswerMarkedHelpfulAction, user),
+        'nothelpful_votes': kmgr.total_count(AnswerMarkedNotHelpfulAction,
+                                             user),
         'solutions': kmgr.total_count(SolutionAction, user),
     }
 
@@ -67,5 +70,7 @@ def _user_karma_week(user, kmgr):
         'answers': kmgr.week_count(AnswerAction, user),
         'first_answers': kmgr.week_count(FirstAnswerAction, user),
         'helpful_votes': kmgr.week_count(AnswerMarkedHelpfulAction, user),
+        'nothelpful_votes': kmgr.week_count(AnswerMarkedNotHelpfulAction,
+                                            user),
         'solutions': kmgr.week_count(SolutionAction, user),
     }
