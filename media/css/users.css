@@ -154,7 +154,7 @@ section#main-area h2 {
 
 body.register p,
 #profile p {
-    margin: 1em 0;
+    margin: 0.25em 0 1em;
 }
 
 /* delete avatar */

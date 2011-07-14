@@ -31,6 +31,9 @@
           {{ profile.country }}
         {% endif %}
       </h2>
+      {% if waffle.flag('private-messaging') %}
+        {{ private_message(profile.user) }}
+      {% endif %}
       {% if profile.public_email or profile.website or profile.twitter or
             profile.facebook or profile.irc_handle or
             (profile.livechat_id and
