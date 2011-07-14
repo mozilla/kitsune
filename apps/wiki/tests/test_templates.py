@@ -465,7 +465,7 @@ class NewDocumentTests(TestCaseBase):
         eq_(data['keywords'], r.keywords)
         eq_(data['summary'], r.summary)
         eq_(data['content'], r.content)
-        ready_fire.assert_called()
+        assert ready_fire.called
 
     @mock.patch.object(ReviewableRevisionInLocaleEvent, 'fire')
     @mock.patch.object(Site.objects, 'get_current')
@@ -485,7 +485,7 @@ class NewDocumentTests(TestCaseBase):
                                     data, follow=True)
         d = Document.objects.get(title=data['title'])
         eq_(locale, d.locale)
-        ready_fire.assert_called()
+        assert ready_fire.called
 
     def test_new_document_POST_empty_title(self):
         """Trigger required field validation for title."""
@@ -729,8 +729,8 @@ class NewRevisionTests(TestCaseBase):
         new_rev = self.d.revisions.order_by('-id')[0]
         # There are no approved revisions, so it's based_on nothing:
         eq_(None, new_rev.based_on)
-        edited_fire.assert_called()
-        ready_fire.assert_called()
+        assert edited_fire.called
+        assert ready_fire.called
 
     def test_new_revision_POST_removes_old_tags(self):
         """Changing the tags on a document removes the old tags from
@@ -1345,8 +1345,8 @@ class TranslateTests(TestCaseBase):
         eq_(data['keywords'], rev.keywords)
         eq_(data['summary'], rev.summary)
         eq_(data['content'], rev.content)
-        edited_fire.assert_called()
-        ready_fire.assert_called()
+        assert edited_fire.called
+        assert ready_fire.called
 
     def _create_and_approve_first_translation(self):
         """Returns the revision."""
@@ -1395,8 +1395,8 @@ class TranslateTests(TestCaseBase):
         eq_(data['summary'], rev.summary)
         eq_(data['content'], rev.content)
         assert not rev.is_approved
-        edited_fire.assert_called()
-        ready_fire.assert_called()
+        assert edited_fire.called
+        assert ready_fire.called
 
     @mock.patch.object(Site.objects, 'get_current')
     def test_translate_form_maintains_based_on_rev(self, get_current):
