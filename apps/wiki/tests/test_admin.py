@@ -13,8 +13,8 @@ class ArchiveTests(TestCase):
         """Make sure parent/child equality of is_archived is maintained."""
         # Set up a child and a parent and an orphan (all false) and something
         # true.
-        translated_revision(save=True).document
-        translated_revision(save=True).document.parent
+        translated_revision(save=True)
+        translated_revision(save=True)
         document(save=True)
         document(is_archived=True, save=True)
 

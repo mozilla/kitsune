@@ -1502,14 +1502,14 @@ class TranslateTests(TestCaseBase):
         # Create an English document all ready to translate:
         en_doc = document(is_localizable=True, save=True)
         revision(document=en_doc,
-                         is_approved=True,
-                         is_ready_for_localization=True,
-                         save=True,
-                         content='I am the ready!')
+                 is_approved=True,
+                 is_ready_for_localization=True,
+                 save=True,
+                 content='I am the ready!')
         revision(document=en_doc,
-                           is_approved=True,
-                           is_ready_for_localization=False,
-                           save=True)
+                 is_approved=True,
+                 is_ready_for_localization=False,
+                 save=True)
 
         url = reverse('wiki.translate', locale='de', args=[en_doc.slug])
         response = self.client.get(url)
@@ -1527,9 +1527,9 @@ class TranslateTests(TestCaseBase):
                          is_ready_for_localization=True,
                          save=True)
         revision(document=en_doc,
-                           is_approved=True,
-                           is_ready_for_localization=False,
-                           save=True)
+                 is_approved=True,
+                 is_ready_for_localization=False,
+                 save=True)
 
         url = reverse('wiki.translate', locale='de', args=[en_doc.slug])
         response = self.client.get(url)
@@ -1723,9 +1723,9 @@ class HelpfulVoteTests(TestCaseBase):
         """Test voting via ajax."""
         r = self.document.current_revision
         url = reverse('wiki.document_vote', args=[self.document.slug])
-        response = self.client.post(url,
-                        data={'helpful': 'Yes', 'revision_id': r.id},
-                        HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+        response = self.client.post(
+            url, data={'helpful': 'Yes', 'revision_id': r.id},
+            HTTP_X_REQUESTED_WITH='XMLHttpRequest')
         eq_(200, response.status_code)
         eq_('{"message": "Glad to hear it &mdash; thanks for the feedback!"}',
             response.content)

@@ -31,10 +31,11 @@ def context_dict(revision):
                                    revision.id)
 
         diff = clean(u''.join(difflib.unified_diff(
-                     revision.document.current_revision.content.splitlines(1),
-                     revision.content.splitlines(1),
-                     fromfile=fromfile, tofile=tofile)),
-                     ALLOWED_TAGS, ALLOWED_ATTRIBUTES)
+                                 revision.document.current_revision.\
+                                    content.splitlines(1),
+                                 revision.content.splitlines(1),
+                                 fromfile=fromfile, tofile=tofile)),
+                    ALLOWED_TAGS, ALLOWED_ATTRIBUTES)
     else:
         diff = ''  # No based_on, so diff wouldn't make sense.
 
@@ -146,9 +147,9 @@ class ReadyRevisionEvent(_RevisionConstructor, Event):
                   revision.id)
         ready_subject = _(
             u'{title} has a revision ready for localization').format(
-            title=document.title,
-            creator=revision.creator,
-            locale=document.locale)
+                title=document.title,
+                creator=revision.creator,
+                locale=document.locale)
 
         ready_template = loader.get_template(
                                 'wiki/email/ready_for_l10n_existing.ltxt')
