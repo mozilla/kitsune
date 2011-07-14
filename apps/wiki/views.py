@@ -742,7 +742,7 @@ def mark_ready_for_l10n_revision(request, document_slug, revision_id):
         revision.save()
 
         ReadyRevisionEvent(revision).fire(exclude=request.user)
-    
+
         return HttpResponse(json.dumps({'message': revision_id}))
 
     return HttpResponseBadRequest()
@@ -785,7 +785,7 @@ def add_contributor(request, document_slug):
         msg = _('{users} added to the contributors successfully!').format(
             users=request.POST.get('users'))
         messages.add_message(request, messages.SUCCESS, msg)
-        
+
         return HttpResponseRedirect(reverse('wiki.document_revisions',
                                             args=[document_slug]))
 

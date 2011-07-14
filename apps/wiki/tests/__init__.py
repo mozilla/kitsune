@@ -22,7 +22,8 @@ class TestCaseBase(TestCase):
 def document(**kwargs):
     """Return an empty document with enough stuff filled out that it can be
     saved."""
-    defaults = {'category': CATEGORIES[0][0], 'title': u'đ' + str(datetime.now())}
+    defaults = {'category': CATEGORIES[0][0],
+                'title': u'đ' + str(datetime.now())}
     defaults.update(kwargs)
     if 'slug' not in kwargs:
         defaults['slug'] = slugify(defaults['title'])
@@ -42,7 +43,8 @@ def revision(**kwargs):
     d = kwargs.pop('document', None) or document(save=True)
 
     defaults = {'summary': 'đSome summary', 'content': u'đSome content',
-                'significance': SIGNIFICANCES[0][0], 'comment': 'đSome comment',
+                'significance': SIGNIFICANCES[0][0],
+                'comment': 'đSome comment',
                 'creator': kwargs.get('creator', get_user()), 'document': d}
     defaults.update(kwargs)
 

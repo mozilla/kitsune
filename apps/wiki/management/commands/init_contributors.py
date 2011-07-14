@@ -21,7 +21,7 @@ def _init_contributors():
     for doc in docs:
         contributors = []
         for rev in doc.revisions.order_by('id'):
-            if (rev.is_approved or not rev.reviewed and 
+            if (rev.is_approved or not rev.reviewed and
                 not rev.creator in contributors):
                 contributors.append(rev.creator)
             if doc.current_revision == rev:
