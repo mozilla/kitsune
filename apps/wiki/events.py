@@ -31,10 +31,11 @@ def context_dict(revision):
                                    revision.id)
 
         diff = clean(u''.join(difflib.unified_diff(
-                        revision.document.current_revision.content.splitlines(1),
-                        revision.content.splitlines(1),
-                        fromfile=fromfile, tofile=tofile)),
-                        ALLOWED_TAGS, ALLOWED_ATTRIBUTES)
+                                 revision.document.current_revision.\
+                                    content.splitlines(1),
+                                 revision.content.splitlines(1),
+                                 fromfile=fromfile, tofile=tofile)),
+                    ALLOWED_TAGS, ALLOWED_ATTRIBUTES)
     else:
         diff = ''  # No based_on, so diff wouldn't make sense.
 
@@ -130,26 +131,28 @@ class ReviewableRevisionInLocaleEvent(_RevisionConstructor,
 class ReadyRevisionEvent(_RevisionConstructor, Event):
     """Event fed to a union when a (en-US) revision becomes ready for l10n
 
-    Note that no diff is sent, only a fulltext of the revision. 
+    Note that no diff is sent, only a fulltext of the revision.
 
     """
     event_type = 'ready wiki'
-    
+
     def _mails(self, users_and_watches):
         """Send readiness mails.
 
         """
         revision = self.revision
         document = revision.document
-        is_ready = revision.is_ready_for_localization
+        revision.is_ready_for_localization
         log.debug('Sending ready notifications for revision (id=%s)' %
                   revision.id)
-        ready_subject = _(u'{title} has a revision ready for localization').format(
-            title=document.title,
-            creator=revision.creator,
-            locale=document.locale)
-            
-        ready_template = loader.get_template('wiki/email/ready_for_l10n_existing.ltxt')
+        ready_subject = _(
+            u'{title} has a revision ready for localization').format(
+                title=document.title,
+                creator=revision.creator,
+                locale=document.locale)
+
+        ready_template = loader.get_template(
+                                'wiki/email/ready_for_l10n_existing.ltxt')
 
         c = context_dict(revision)
         for user, watches in users_and_watches:
@@ -168,7 +171,6 @@ class ReadyRevisionEvent(_RevisionConstructor, Event):
                                ready_template.render(Context(c)),
                                settings.TIDINGS_FROM_ADDRESS,
                                [user.email])
-
 
 
 class ApproveRevisionInLocaleEvent(_RevisionConstructor, _LocaleFilter, Event):

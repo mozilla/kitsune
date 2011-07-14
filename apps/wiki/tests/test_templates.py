@@ -287,6 +287,7 @@ class DocumentTests(TestCaseBase):
         doc = pq(r.content)
         assert not doc('#doc-tabs li.edit')
 
+
 class RevisionTests(TestCaseBase):
     """Tests for the Revision template"""
     fixtures = ['users.json']
@@ -323,7 +324,8 @@ class RevisionTests(TestCaseBase):
     def test_mark_as_ready_POST(self, fire):
         """HTTP POST to mark a revision as ready for l10n."""
 
-        r = revision(is_approved=True, is_ready_for_localization=False, save=True)
+        r = revision(is_approved=True,
+                     is_ready_for_localization=False, save=True)
 
         self.client.login(username='admin', password='testpass')
 
@@ -343,7 +345,8 @@ class RevisionTests(TestCaseBase):
     def test_mark_as_ready_GET(self, fire):
         """HTTP GET to mark a revision as ready for l10n must fail."""
 
-        r = revision(is_approved=True, is_ready_for_localization=False, save=True)
+        r = revision(is_approved=True,
+                     is_ready_for_localization=False, save=True)
 
         self.client.login(username='admin', password='testpass')
 
@@ -363,7 +366,8 @@ class RevisionTests(TestCaseBase):
     def test_mark_as_ready_no_perm(self, fire):
         """Mark a revision as ready for l10n without perm must fail."""
 
-        r = revision(is_approved=True, is_ready_for_localization=False, save=True)
+        r = revision(is_approved=True,
+                     is_ready_for_localization=False, save=True)
 
         u = user(save=True)
         self.client.login(username=u.username, password='testpass')
@@ -384,7 +388,8 @@ class RevisionTests(TestCaseBase):
     def test_mark_as_ready_no_login(self, fire):
         """Mark a revision as ready for l10n without login must fail."""
 
-        r = revision(is_approved=True, is_ready_for_localization=False, save=True)
+        r = revision(is_approved=True,
+                     is_ready_for_localization=False, save=True)
 
         url = reverse('wiki.mark_ready_for_l10n_revision',
                       args=[r.document.slug, r.id])
@@ -402,7 +407,8 @@ class RevisionTests(TestCaseBase):
     def test_mark_as_ready_no_approval(self, fire):
         """Mark an unapproved revision as ready for l10n must fail."""
 
-        r = revision(is_approved=False, is_ready_for_localization=False, save=True)
+        r = revision(is_approved=False,
+                     is_ready_for_localization=False, save=True)
 
         self.client.login(username='admin', password='testpass')
 
@@ -417,6 +423,7 @@ class RevisionTests(TestCaseBase):
 
         assert not fire.called
         assert not r2.is_ready_for_localization
+
 
 class NewDocumentTests(TestCaseBase):
     """Tests for the New Document template"""
@@ -640,7 +647,8 @@ class NewRevisionTests(TestCaseBase):
         eq_(doc('#id_content')[0].value, r.content)
 
     @mock.patch.object(Site.objects, 'get_current')
-    @mock.patch.object(settings._wrapped, 'TIDINGS_CONFIRM_ANONYMOUS_WATCHES', False)
+    @mock.patch.object(settings._wrapped, 'TIDINGS_CONFIRM_ANONYMOUS_WATCHES',
+                       False)
     def test_new_revision_POST_document_with_current(self, get_current):
         """HTTP POST to new revision URL creates the revision on a document.
 
@@ -1001,7 +1009,8 @@ class ReviewRevisionTests(TestCaseBase):
 
     @mock.patch.object(send_reviewed_notification, 'delay')
     @mock.patch.object(Site.objects, 'get_current')
-    @mock.patch.object(settings._wrapped, 'TIDINGS_CONFIRM_ANONYMOUS_WATCHES', False)
+    @mock.patch.object(settings._wrapped, 'TIDINGS_CONFIRM_ANONYMOUS_WATCHES',
+                       False)
     def test_approve_revision(self, get_current, reviewed_delay):
         """Verify revision approval with proper notifications."""
         get_current.return_value.domain = 'testserver'
@@ -1497,15 +1506,15 @@ class TranslateTests(TestCaseBase):
         translation source text."""
         # Create an English document all ready to translate:
         en_doc = document(is_localizable=True, save=True)
-        ready = revision(document=en_doc,
-                         is_approved=True,
-                         is_ready_for_localization=True,
-                         save=True,
-                         content='I am the ready!')
-        unready = revision(document=en_doc,
-                           is_approved=True,
-                           is_ready_for_localization=False,
-                           save=True)
+        revision(document=en_doc,
+                 is_approved=True,
+                 is_ready_for_localization=True,
+                 save=True,
+                 content='I am the ready!')
+        revision(document=en_doc,
+                 is_approved=True,
+                 is_ready_for_localization=False,
+                 save=True)
 
         url = reverse('wiki.translate', locale='de', args=[en_doc.slug])
         response = self.client.get(url)
@@ -1522,10 +1531,10 @@ class TranslateTests(TestCaseBase):
                          is_approved=True,
                          is_ready_for_localization=True,
                          save=True)
-        unready = revision(document=en_doc,
-                           is_approved=True,
-                           is_ready_for_localization=False,
-                           save=True)
+        revision(document=en_doc,
+                 is_approved=True,
+                 is_ready_for_localization=False,
+                 save=True)
 
         url = reverse('wiki.translate', locale='de', args=[en_doc.slug])
         response = self.client.get(url)
@@ -1683,7 +1692,8 @@ class HelpfulVoteTests(TestCaseBase):
         user_ = User.objects.get(username='rrosario')
         self.client.login(username='rrosario', password='testpass')
         response = post(self.client, 'wiki.document_vote',
-                        {'helpful': 'Yes', 'revision_id': r.id}, args=[self.document.slug])
+                        {'helpful': 'Yes', 'revision_id': r.id},
+                        args=[self.document.slug])
         eq_(200, response.status_code)
         votes = HelpfulVote.objects.filter(revision=r, creator=user_)
         eq_(1, votes.count())
@@ -1695,7 +1705,8 @@ class HelpfulVoteTests(TestCaseBase):
         user_ = User.objects.get(username='rrosario')
         self.client.login(username='rrosario', password='testpass')
         response = post(self.client, 'wiki.document_vote',
-                        {'not-helpful': 'No', 'revision_id': r.id}, args=[self.document.slug])
+                        {'not-helpful': 'No', 'revision_id': r.id},
+                        args=[self.document.slug])
         eq_(200, response.status_code)
         votes = HelpfulVote.objects.filter(revision=r, creator=user_)
         eq_(1, votes.count())
@@ -1705,7 +1716,8 @@ class HelpfulVoteTests(TestCaseBase):
         """Test that voting works for anonymous user."""
         r = self.document.current_revision
         response = post(self.client, 'wiki.document_vote',
-                        {'helpful': 'Yes', 'revision_id': r.id}, args=[self.document.slug])
+                        {'helpful': 'Yes', 'revision_id': r.id},
+                        args=[self.document.slug])
         eq_(200, response.status_code)
         votes = HelpfulVote.objects.filter(revision=r, creator=None)
         votes = votes.exclude(anonymous_id=None)
@@ -1716,8 +1728,9 @@ class HelpfulVoteTests(TestCaseBase):
         """Test voting via ajax."""
         r = self.document.current_revision
         url = reverse('wiki.document_vote', args=[self.document.slug])
-        response = self.client.post(url, data={'helpful': 'Yes', 'revision_id': r.id},
-                         HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+        response = self.client.post(
+            url, data={'helpful': 'Yes', 'revision_id': r.id},
+            HTTP_X_REQUESTED_WITH='XMLHttpRequest')
         eq_(200, response.status_code)
         eq_('{"message": "Glad to hear it &mdash; thanks for the feedback!"}',
             response.content)

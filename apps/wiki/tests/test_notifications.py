@@ -1,7 +1,5 @@
-from django.conf import settings
 from django.core import mail
 
-import mock
 from nose.tools import eq_
 
 from sumo.tests import post
@@ -14,17 +12,21 @@ from wiki.tests import revision, TestCaseBase
 def _assert_ready_mail(mail):
     assert 'ready for localization' in mail.subject
 
+
 def _assert_approved_mail(mail):
     assert 'new approved revision' in mail.subject
 
+
 def _assert_creator_mail(mail):
     assert mail.subject.startswith('Your revision has been approved')
+
 
 def _set_up_ready_watcher():
     """Make a user who watches for revision readiness."""
     ready_watcher = user(email='ready@example.com', save=True)
     ReadyRevisionEvent.notify(ready_watcher)
     return ready_watcher
+
 
 class ReviewTests(TestCaseBase):
     """Tests for notifications sent during revision review"""

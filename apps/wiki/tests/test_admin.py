@@ -13,10 +13,10 @@ class ArchiveTests(TestCase):
         """Make sure parent/child equality of is_archived is maintained."""
         # Set up a child and a parent and an orphan (all false) and something
         # true.
-        child = translated_revision(save=True).document
-        parent = translated_revision(save=True).document.parent
-        orphan = document(save=True)
-        true = document(is_archived=True, save=True)
+        translated_revision(save=True)
+        translated_revision(save=True)
+        document(save=True)
+        document(is_archived=True, save=True)
 
         # Batch-clear the archival bits:
         DocumentAdmin._set_archival(Document.objects.all(), True)
