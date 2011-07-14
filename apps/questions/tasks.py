@@ -79,9 +79,10 @@ def log_answer(answer):
         action.users.add(*users)
 
     transaction.commit_unless_managed()
-    unpin_this_thread()
 
     # Record karma actions
     AnswerAction(answer.creator, answer.created.date()).save()
     if answer == answer.question.answers.order_by('created')[0]:
         FirstAnswerAction(answer.creator, answer.created.date()).save()
+
+    unpin_this_thread()
