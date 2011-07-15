@@ -174,14 +174,14 @@ def new_question(request, template=None):
         search = request.GET.get('search', '')
         if search:
             try:
-                search_results = _search_suggestions(
-                                 search, locale_or_default(request.locale))
+                results = _search_suggestions(
+                    search, locale_or_default(request.locale))
             except SearchError:
                 # Just quietly advance the user to the next step.
-                search_results = []
+                results = []
             tried_search = True
         else:
-            search_results = []
+            results = []
             tried_search = False
 
         if request.GET.get('showform'):
@@ -201,7 +201,8 @@ def new_question(request, template=None):
             form = None
 
         return jingo.render(request, template,
-                            {'form': form, 'search_results': search_results,
+                            {'form': form,
+                             'results': results,
                              'tried_search': tried_search,
                              'products': products,
                              'current_product': product,
@@ -772,34 +773,21 @@ def _search_suggestions(query, locale):
     query -- full text to search on
     locale -- locale to limit to
 
-    Items returned are dicts:
-        { 'url': URL where the article can be viewed,
-          'title': Title of the article,
-          'excerpt_html': Excerpt of the article with search terms hilighted,
-                          formatted in HTML }
+    Items are dicts of:
+        {
+            'type':
+            'object':
+        }
 
-    Weights wiki pages infinitely higher than questions at the moment.
+    Returns up to 3 wiki pages, then up to 3 questions.
 
     TODO: ZOMFG this needs to be refactored and the search app should
           provide an internal API. Seriously.
 
     """
-    def prepare(result, model, attr, searcher, result_to_id):
-        """Turn a search result from a Sphinx client into a dict for templates.
 
-        Return {} if an object corresponding to the result cannot be found.
-
-        """
-        try:
-            obj = model.objects.get(pk=result_to_id(result))
-        except ObjectDoesNotExist:
-            return {}
-        return {'url': obj.get_absolute_url(),
-                'title': obj.title,
-                'excerpt_html': searcher.excerpt(getattr(obj, attr), query)}
-
-    max_suggestions = settings.QUESTIONS_MAX_SUGGESTIONS
-    query_limit = max_suggestions + settings.QUESTIONS_SUGGESTION_SLOP
+    # Max number of search results per type.
+    WIKI_RESULTS = QUESTIONS_RESULTS = 3
 
     # Search wiki pages:
     wiki_searcher = WikiClient()
@@ -813,28 +801,33 @@ def _search_suggestions(query, locale):
                 'value': [-x for x in settings.SEARCH_DEFAULT_CATEGORIES
                           if x < 0]}]
     raw_results = wiki_searcher.query(query, filters=filters,
-                                      limit=query_limit)
+                                      limit=WIKI_RESULTS)
     # Lazily build excerpts from results. Stop when we have enough:
-    results = islice((p for p in
-                       (prepare(r, Document, 'html', wiki_searcher,
-                                lambda x: x['id'])
-                        for r in raw_results) if p),
-                     max_suggestions)
-    results = list(results)
+    results = []
+    for r in raw_results:
+        try:
+            doc = Document.objects.select_related('current_revision').\
+                get(pk=r['id'])
+            results.append({
+                'type': 'document',
+                'object': doc,
+            })
+        except Document.DoesNotExist:
+            pass
 
-    # If we didn't find enough wiki pages to fill the page, pad it out with
-    # other questions:
-    if len(results) < max_suggestions:
-        question_searcher = QuestionsClient()
-        # questions app is en-US only.
-        raw_results = question_searcher.query(query,
-                                              limit=query_limit - len(results))
-        results.extend(islice((p for p in
-                               (prepare(r, Question, 'content',
-                                        question_searcher,
-                                        lambda x: x['attrs']['question_id'])
-                                for r in raw_results) if p),
-                              max_suggestions - len(results)))
+    question_searcher = QuestionsClient()
+    # questions app is en-US only.
+    raw_results = question_searcher.query(query,
+                                          limit=QUESTIONS_RESULTS)
+    for r in raw_results:
+        try:
+            q = Question.objects.get(pk=r['attrs']['question_id'])
+            results.append({
+                'type': 'question',
+                'object': q
+            })
+        except Question.DoesNotExist:
+            pass
 
     return results
 
