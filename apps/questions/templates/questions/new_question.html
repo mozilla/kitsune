@@ -45,7 +45,52 @@
   {% endif %}
 
   {% if tried_search and not form %}
-    {{ show_results(search_results, current_product, current_category, request) }}
+    {% if wiki_results or questions_results %}
+      {% set button_text = _('None of these solve my problem') %}
+      {% if wiki_results %}
+        <ul class="wiki-results">
+          {% for doc in wiki_results %}
+            <li><a href="{{ doc.get_absolute_url() }}">{{ doc.title }}</a>
+              {{ doc.current_revision.summary|wiki_to_html }}</li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+      {% if questions_results %}
+        <ul class="questions-results">
+          {% for question in questions_results %}
+            <li><a href="{{ question.get_absolute_url() }}">{{ question.title }}</a>
+              {{ question.content|truncate(500) }}
+              <div class="question-info">
+                {% if question.is_solved %}
+                  <span class="solved">{{ _('Solved') }}</span>
+                {% endif %}
+                <span class="replies">
+                  {% if question.num_answers > 0 %}
+                    {{ ngettext('1 reply', '{n} replies', question.num_answers)|f(n=question.num_answers) }}
+                  {% else %}
+                    {{ _('No replies') }}
+                  {% endif %}
+                </span>
+                <span class="votes">
+                  {{ ngettext('1 person has this problem', '{n} people have this problem',
+                              question.num_votes)|f(n=question.num_votes) }}
+                </span>
+              </div>
+              </li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+    {% else %}{# No search results at all. #}
+      <h2 class="no-results">{{ _('This question has not been asked before.') }}</h2>
+      {% set button_text = _('Provide more details') %}
+    {% endif %}
+    <form action="" method="get">
+      <input type="hidden" name="product" value="{{ current_product.key }}" />
+      <input type="hidden" name="category" value="{{ current_category.key }}" />
+      <input type="hidden" name="search" value="{{ request.GET.search }}" />
+      <input type="hidden" name="showform" value="1" />
+      <input type="submit" id="show-form-btn" class="btn" value="{{ button_text }}" />
+    </form>
   {% endif %}
 
 {% endblock %}

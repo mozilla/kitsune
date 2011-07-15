@@ -562,14 +562,6 @@ IMAGE_UPLOAD_PATH = 'uploads/images/'
 # String must not contain double quotes!
 IMAGE_ALLOWED_MIMETYPES = 'image/jpeg,image/png,image/gif'
 
-# Max number of wiki pages or other questions to suggest might answer the
-# question you're about to ask
-QUESTIONS_MAX_SUGGESTIONS = 5
-# Number of extra suggestion results to pull from Sphinx to make up for
-# possibly deleted wiki pages or question. To be safe, set this to the number
-# of things that could be deleted between indexer runs.
-QUESTIONS_SUGGESTION_SLOP = 3
-
 # How long do we cache the question counts (in seconds)?
 QUESTIONS_COUNT_TTL = 900  # 15 minutes.
 

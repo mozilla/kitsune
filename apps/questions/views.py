@@ -174,14 +174,14 @@ def new_question(request, template=None):
         search = request.GET.get('search', '')
         if search:
             try:
-                search_results = _search_suggestions(
+                wiki_results, questions_results = _search_suggestions(
                                  search, locale_or_default(request.locale))
             except SearchError:
                 # Just quietly advance the user to the next step.
-                search_results = []
+                wiki_results, questions_results = [], []
             tried_search = True
         else:
-            search_results = []
+            wiki_results, questions_results = [], []
             tried_search = False
 
         if request.GET.get('showform'):
@@ -201,7 +201,9 @@ def new_question(request, template=None):
             form = None
 
         return jingo.render(request, template,
-                            {'form': form, 'search_results': search_results,
+                            {'form': form,
+                             'wiki_results': wiki_results,
+                             'questions_results': questions_results,
                              'tried_search': tried_search,
                              'products': products,
                              'current_product': product,
@@ -784,10 +786,14 @@ def _search_suggestions(query, locale):
           provide an internal API. Seriously.
 
     """
-    def prepare(result, model, attr, searcher, result_to_id):
-        """Turn a search result from a Sphinx client into a dict for templates.
 
-        Return {} if an object corresponding to the result cannot be found.
+    # Max number of search results per type.
+    WIKI_RESULTS = QUESTIONS_RESULTS = 3
+
+    def prepare(result, model, attr, searcher, result_to_id):
+        """Turn a search result from a Sphinx client into an object.
+
+        Return None if an object corresponding to the result cannot be found.
 
         """
         try:
@@ -797,9 +803,6 @@ def _search_suggestions(query, locale):
         return {'url': obj.get_absolute_url(),
                 'title': obj.title,
                 'excerpt_html': searcher.excerpt(getattr(obj, attr), query)}
-
-    max_suggestions = settings.QUESTIONS_MAX_SUGGESTIONS
-    query_limit = max_suggestions + settings.QUESTIONS_SUGGESTION_SLOP
 
     # Search wiki pages:
     wiki_searcher = WikiClient()
@@ -813,30 +816,29 @@ def _search_suggestions(query, locale):
                 'value': [-x for x in settings.SEARCH_DEFAULT_CATEGORIES
                           if x < 0]}]
     raw_results = wiki_searcher.query(query, filters=filters,
-                                      limit=query_limit)
+                                      limit=WIKI_RESULTS)
     # Lazily build excerpts from results. Stop when we have enough:
-    results = islice((p for p in
-                       (prepare(r, Document, 'html', wiki_searcher,
-                                lambda x: x['id'])
-                        for r in raw_results) if p),
-                     max_suggestions)
-    results = list(results)
+    wiki_results = []
+    for r in raw_results:
+        try:
+            wiki_results.append(
+                Document.objects.select_related('current_revision').get(pk=r['id']))
+        except Document.DoesNotExist:
+            pass
 
-    # If we didn't find enough wiki pages to fill the page, pad it out with
-    # other questions:
-    if len(results) < max_suggestions:
-        question_searcher = QuestionsClient()
-        # questions app is en-US only.
-        raw_results = question_searcher.query(query,
-                                              limit=query_limit - len(results))
-        results.extend(islice((p for p in
-                               (prepare(r, Question, 'content',
-                                        question_searcher,
-                                        lambda x: x['attrs']['question_id'])
-                                for r in raw_results) if p),
-                              max_suggestions - len(results)))
+    question_searcher = QuestionsClient()
+    # questions app is en-US only.
+    raw_results = question_searcher.query(query,
+                                          limit=QUESTIONS_RESULTS)
+    questions_results = []
+    for r in raw_results:
+        try:
+            questions_results.append(
+                Question.objects.get(pk=r['attrs']['question_id']))
+        except Question.DoesNotExist:
+            pass
 
-    return results
+    return wiki_results, questions_results
 
 
 def _answers_data(request, question_id, form=None, watch_form=None,

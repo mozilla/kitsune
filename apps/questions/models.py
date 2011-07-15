@@ -220,6 +220,10 @@ class Question(ModelBase, BigVocabTaggableMixin):
 
         return False
 
+    @property
+    def is_solved(self):
+        return Answer.objects.filter(pk=self.solution_id).exists()
+
 
 class QuestionMetaData(ModelBase):
     """Metadata associated with a support question."""
