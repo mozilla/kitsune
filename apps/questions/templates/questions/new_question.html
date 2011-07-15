@@ -45,7 +45,59 @@
   {% endif %}
 
   {% if tried_search and not form %}
-    {{ show_results(search_results, current_product, current_category, request) }}
+    {% if results %}
+      <h2>{{ _("We've found some articles and previous answered questions that may solve your issue:") }}</h2>
+      {% set button_text = _('None of these solve my problem') %}
+      <div class="search-results">
+        {% for result in results %}
+          <div class="result {{ result.type }}">
+            <a class="title" href="{{ result.object.get_absolute_url() }}">
+              {{ result.object.title }}
+            </a>
+            {% if result.type == 'document' %}
+              <p><a href="{{ result.object.get_absolute_url() }}">
+                {{ result.object.current_revision.summary }}
+              </a></p>
+            {% elif result.type == 'question' %}
+              <p><a href="{{ result.object.get_absolute_url() }}">
+                {{ result.object.content|truncate(500) }}
+              </a></p>
+              <div class="thread-meta">
+                {% if result.object.is_solved %}
+                  <span class="solved">{{ _('Solved') }}</span>
+                {% endif %}
+                <span class="replies">
+                  {% if result.object.num_answers > 0 %}
+                    {{ ngettext('1 reply', '{n} replies',
+                                result.object.num_answers)|f(n=result.object.num_answers) }}
+                  {% else %}
+                    {{ _('No replies') }}
+                  {% endif %}
+                </span>
+                <span class="votes">
+                  {{ ngettext('1 person has this problem', '{n} people have this problem',
+                              result.object.num_votes)|f(n=result.object.num_votes) }}
+                </span>
+                <span class="votes this-week">
+                  {{ ngettext('1 new this week', '{n} new this week',
+                              result.object.num_votes_past_week)|f(n=result.object.num_votes_past_week) }}
+                </span>
+              </div>{# .thread-meta #}
+            {% endif %}
+          </div>{# .result #}
+        {% endfor %}
+      </div>{# .search-results #}
+    {% else %}{# No search results at all. #}
+      <h2 class="no-results">{{ _('This question has not been asked before.') }}</h2>
+      {% set button_text = _('Provide more details') %}
+    {% endif %}
+    <form action="" method="get">
+      <input type="hidden" name="product" value="{{ current_product.key }}" />
+      <input type="hidden" name="category" value="{{ current_category.key }}" />
+      <input type="hidden" name="search" value="{{ request.GET.search }}" />
+      <input type="hidden" name="showform" value="1" />
+      <input type="submit" id="show-form-btn" class="btn" value="{{ button_text }}" />
+    </form>
   {% endif %}
 
 {% endblock %}
