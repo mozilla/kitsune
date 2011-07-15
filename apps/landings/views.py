@@ -39,7 +39,9 @@ def home(request, template=None):
 @mobile_template('landings/{mobile/}mobile.html')
 def mobile(request, template=None):
     docs = MOBILE_DOCS_FOR_MOBILE if request.MOBILE else MOBILE_DOCS
-    return jingo.render(request, template, _data(docs, request.locale))
+    data = _data(docs, request.locale)
+    data.update(search_params={'q_tags': 'mobile', 'tags': 'mobile'})
+    return jingo.render(request, template, data)
 
 
 @mobile_template('landings/{mobile/}sync.html')

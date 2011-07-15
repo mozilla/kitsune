@@ -1,6 +1,6 @@
 {# vim: set ts=2 et sts=2 sw=2: #}
 {% macro search_box(settings, id=False, prefix=None, target=None,
-                    placeholder=None) %}
+                    placeholder=None, params=None) %}
   {% if placeholder is none %}
     {# L10n: If your language is particularly verbose, just localize this as 'Search'. #}
     {% set placeholder = _('Search Firefox Help') %}
@@ -10,6 +10,11 @@
       {{ prefix }}
     {% endif %}
     <form action="{{ url('search') }}" method="get" {% if target %} target="{{ target }}"{% endif %}>
+      {% if params %}
+        {% for k, v in params.items() %}
+          <input type="hidden" name="{{ k }}" value="{{ v }}" />
+        {% endfor %}
+      {% endif %}
       <input type="text" class="text" name="q" placeholder="{{ placeholder }}" required="required" />
       <button type="submit" class="img-submit" title="{{ _('Search') }}">
         <img src="{{ settings.MEDIA_URL }}img/btn.search.png" alt="{{ _('Search') }}" />
