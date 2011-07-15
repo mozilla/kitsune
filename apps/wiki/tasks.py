@@ -129,3 +129,52 @@ def _rebuild_kb_chunk(data, **kwargs):
     transaction.commit_unless_managed()
 
     unpin_this_thread()  # Not all tasks need to do use the master.
+
+
+@task(rate_limit='1/h')
+def migrate_helpfulvotes(start_id, end_id):
+    """Transfer helpfulvotes from old to new version."""
+
+    if not waffle.switch_is_active('migrate-helpfulvotes'):
+        return  # raise? Celery can email us the failed ID range then
+
+    start = time.time()
+
+    pin_this_thread()  # Pin to master
+
+    transaction.enter_transaction_management()
+    transaction.managed(True)
+    try:
+        cursor = connection.cursor()
+        cursor.execute("""INSERT INTO `wiki_helpfulvote`
+                    (revision_id, helpful, created,
+                     creator_id, anonymous_id, user_agent)
+        SELECT COALESCE((SELECT id FROM `wiki_revision`
+                              WHERE `document_id` = wiki_helpfulvoteold.document_id
+                              AND `is_approved`=1 AND
+                              (`reviewed` <= wiki_helpfulvoteold.created OR `reviewed` IS NULL)
+                              ORDER BY CASE WHEN `reviewed`
+                              IS NULL THEN 1 ELSE 0 END,
+                              `wiki_revision`.`created` DESC LIMIT 1), 
+                        (SELECT id FROM `wiki_revision`
+                                  WHERE `document_id` = wiki_helpfulvoteold.document_id
+                                  AND (`reviewed` <= wiki_helpfulvoteold.created OR `reviewed` IS NULL)
+                                  ORDER BY CASE WHEN `reviewed`
+                                  IS NULL THEN 1 ELSE 0 END,
+                                  `wiki_revision`.`created`  DESC LIMIT 1),
+                        (SELECT id FROM `wiki_revision`
+                                  WHERE `document_id` = wiki_helpfulvoteold.document_id
+                                  ORDER BY `created` ASC LIMIT 1)), helpful, created,
+                        creator_id, anonymous_id, user_agent
+                        FROM `wiki_helpfulvoteold` WHERE id >= %s AND id < %s""", [start_id, end_id])
+        transaction.commit()
+    except:
+        transaction.rollback()
+        raise
+
+    transaction.leave_transaction_management()
+
+    unpin_this_thread()
+
+    d = time.time() - start
+    statsd.timing('wiki.migrate_helpfulvotes', int(round(d * 1000)))
