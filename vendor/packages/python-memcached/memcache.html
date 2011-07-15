@@ -1,0 +1,452 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Python: module memcache</title>
+</head><body bgcolor="#f0f0f8">
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
+<tr bgcolor="#7799ee">
+<td valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong>memcache</strong></big></big> (version 1.45)</font></td
+><td align=right valign=bottom
+><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="file:/tmp/python-memcached-1.45/memcache.py">/tmp/python-memcached-1.45/memcache.py</a></font></td></tr></table>
+    <p><tt>client&nbsp;module&nbsp;for&nbsp;memcached&nbsp;(memory&nbsp;cache&nbsp;daemon)<br>
+&nbsp;<br>
+Overview<br>
+========<br>
+&nbsp;<br>
+See&nbsp;U{the&nbsp;MemCached&nbsp;homepage&lt;<a href="http://www.danga.com/memcached">http://www.danga.com/memcached</a>&gt;}&nbsp;for&nbsp;more&nbsp;about&nbsp;memcached.<br>
+&nbsp;<br>
+Usage&nbsp;summary<br>
+=============<br>
+&nbsp;<br>
+This&nbsp;should&nbsp;give&nbsp;you&nbsp;a&nbsp;feel&nbsp;for&nbsp;how&nbsp;this&nbsp;module&nbsp;operates::<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;import&nbsp;memcache<br>
+&nbsp;&nbsp;&nbsp;&nbsp;mc&nbsp;=&nbsp;memcache.<a href="#Client">Client</a>(['127.0.0.1:11211'],&nbsp;debug=0)<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;mc.set("some_key",&nbsp;"Some&nbsp;value")<br>
+&nbsp;&nbsp;&nbsp;&nbsp;value&nbsp;=&nbsp;mc.get("some_key")<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;mc.set("another_key",&nbsp;3)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;mc.delete("another_key")<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;mc.set("key",&nbsp;"1")&nbsp;&nbsp;&nbsp;#&nbsp;note&nbsp;that&nbsp;the&nbsp;key&nbsp;used&nbsp;for&nbsp;incr/decr&nbsp;must&nbsp;be&nbsp;a&nbsp;string.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;mc.incr("key")<br>
+&nbsp;&nbsp;&nbsp;&nbsp;mc.decr("key")<br>
+&nbsp;<br>
+The&nbsp;standard&nbsp;way&nbsp;to&nbsp;use&nbsp;memcache&nbsp;with&nbsp;a&nbsp;database&nbsp;is&nbsp;like&nbsp;this::<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;key&nbsp;=&nbsp;derive_key(obj)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;obj&nbsp;=&nbsp;mc.get(key)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;not&nbsp;obj:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;obj&nbsp;=&nbsp;backend_api.get(...)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mc.set(key,&nbsp;obj)<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;#&nbsp;we&nbsp;now&nbsp;have&nbsp;obj,&nbsp;and&nbsp;future&nbsp;passes&nbsp;through&nbsp;this&nbsp;code<br>
+&nbsp;&nbsp;&nbsp;&nbsp;#&nbsp;will&nbsp;use&nbsp;the&nbsp;object&nbsp;from&nbsp;the&nbsp;cache.<br>
+&nbsp;<br>
+Detailed&nbsp;Documentation<br>
+======================<br>
+&nbsp;<br>
+More&nbsp;detailed&nbsp;documentation&nbsp;is&nbsp;available&nbsp;in&nbsp;the&nbsp;L{<a href="#Client">Client</a>}&nbsp;class.</tt></p>
+<p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#aa55cc">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Modules</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="os.html">os</a><br>
+<a href="cPickle.html">cPickle</a><br>
+</td><td width="25%" valign=top><a href="re.html">re</a><br>
+<a href="socket.html">socket</a><br>
+</td><td width="25%" valign=top><a href="sys.html">sys</a><br>
+<a href="time.html">time</a><br>
+</td><td width="25%" valign=top></td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ee77aa">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Classes</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#ee77aa"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl>
+<dt><font face="helvetica, arial"><a href="thread.html#_local">thread._local</a>(<a href="__builtin__.html#object">__builtin__.object</a>)
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="memcache.html#Client">Client</a>
+</font></dt></dl>
+</dd>
+</dl>
+ <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="Client">class <strong>Client</strong></a>(<a href="thread.html#_local">thread._local</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>Object&nbsp;representing&nbsp;a&nbsp;pool&nbsp;of&nbsp;memcache&nbsp;servers.<br>
+&nbsp;<br>
+See&nbsp;L{memcache}&nbsp;for&nbsp;an&nbsp;overview.<br>
+&nbsp;<br>
+In&nbsp;all&nbsp;cases&nbsp;where&nbsp;a&nbsp;key&nbsp;is&nbsp;used,&nbsp;the&nbsp;key&nbsp;can&nbsp;be&nbsp;either:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;1.&nbsp;A&nbsp;simple&nbsp;hashable&nbsp;type&nbsp;(string,&nbsp;integer,&nbsp;etc.).<br>
+&nbsp;&nbsp;&nbsp;&nbsp;2.&nbsp;A&nbsp;tuple&nbsp;of&nbsp;C{(hashvalue,&nbsp;key)}.&nbsp;&nbsp;This&nbsp;is&nbsp;useful&nbsp;if&nbsp;you&nbsp;want&nbsp;to&nbsp;avoid<br>
+&nbsp;&nbsp;&nbsp;&nbsp;making&nbsp;this&nbsp;module&nbsp;calculate&nbsp;a&nbsp;hash&nbsp;value.&nbsp;&nbsp;You&nbsp;may&nbsp;prefer,&nbsp;for<br>
+&nbsp;&nbsp;&nbsp;&nbsp;example,&nbsp;to&nbsp;keep&nbsp;all&nbsp;of&nbsp;a&nbsp;given&nbsp;user's&nbsp;objects&nbsp;on&nbsp;the&nbsp;same&nbsp;memcache<br>
+&nbsp;&nbsp;&nbsp;&nbsp;server,&nbsp;so&nbsp;you&nbsp;could&nbsp;use&nbsp;the&nbsp;user's&nbsp;unique&nbsp;id&nbsp;as&nbsp;the&nbsp;hash&nbsp;value.<br>
+&nbsp;<br>
+@group&nbsp;Setup:&nbsp;__init__,&nbsp;set_servers,&nbsp;forget_dead_hosts,&nbsp;disconnect_all,&nbsp;debuglog<br>
+@group&nbsp;Insertion:&nbsp;set,&nbsp;add,&nbsp;replace,&nbsp;set_multi<br>
+@group&nbsp;Retrieval:&nbsp;get,&nbsp;get_multi<br>
+@group&nbsp;Integers:&nbsp;incr,&nbsp;decr<br>
+@group&nbsp;Removal:&nbsp;delete,&nbsp;delete_multi<br>
+@sort:&nbsp;__init__,&nbsp;set_servers,&nbsp;forget_dead_hosts,&nbsp;disconnect_all,&nbsp;debuglog,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;set,&nbsp;set_multi,&nbsp;add,&nbsp;replace,&nbsp;get,&nbsp;get_multi,&nbsp;incr,&nbsp;decr,&nbsp;delete,&nbsp;delete_multi<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="memcache.html#Client">Client</a></dd>
+<dd><a href="thread.html#_local">thread._local</a></dd>
+<dd><a href="__builtin__.html#object">__builtin__.object</a></dd>
+</dl>
+<hr>
+Methods defined here:<br>
+<dl><dt><a name="Client-__init__"><strong>__init__</strong></a>(self, servers, debug<font color="#909090">=0</font>, pickleProtocol<font color="#909090">=0</font>, pickler<font color="#909090">=&lt;built-in function Pickler&gt;</font>, unpickler<font color="#909090">=&lt;built-in function Unpickler&gt;</font>, pload<font color="#909090">=None</font>, pid<font color="#909090">=None</font>, server_max_key_length<font color="#909090">=250</font>, server_max_value_length<font color="#909090">=1048576</font>)</dt><dd><tt>Create&nbsp;a&nbsp;new&nbsp;<a href="#Client">Client</a>&nbsp;object&nbsp;with&nbsp;the&nbsp;given&nbsp;list&nbsp;of&nbsp;servers.<br>
+&nbsp;<br>
+@param&nbsp;servers:&nbsp;C{servers}&nbsp;is&nbsp;passed&nbsp;to&nbsp;L{set_servers}.<br>
+@param&nbsp;debug:&nbsp;whether&nbsp;to&nbsp;display&nbsp;error&nbsp;messages&nbsp;when&nbsp;a&nbsp;server&nbsp;can't&nbsp;be<br>
+contacted.<br>
+@param&nbsp;pickleProtocol:&nbsp;number&nbsp;to&nbsp;mandate&nbsp;protocol&nbsp;used&nbsp;by&nbsp;(c)Pickle.<br>
+@param&nbsp;pickler:&nbsp;optional&nbsp;override&nbsp;of&nbsp;default&nbsp;Pickler&nbsp;to&nbsp;allow&nbsp;subclassing.<br>
+@param&nbsp;unpickler:&nbsp;optional&nbsp;override&nbsp;of&nbsp;default&nbsp;Unpickler&nbsp;to&nbsp;allow&nbsp;subclassing.<br>
+@param&nbsp;pload:&nbsp;optional&nbsp;persistent_load&nbsp;function&nbsp;to&nbsp;call&nbsp;on&nbsp;pickle&nbsp;loading.<br>
+Useful&nbsp;for&nbsp;cPickle&nbsp;since&nbsp;subclassing&nbsp;isn't&nbsp;allowed.<br>
+@param&nbsp;pid:&nbsp;optional&nbsp;persistent_id&nbsp;function&nbsp;to&nbsp;call&nbsp;on&nbsp;pickle&nbsp;storing.<br>
+Useful&nbsp;for&nbsp;cPickle&nbsp;since&nbsp;subclassing&nbsp;isn't&nbsp;allowed.</tt></dd></dl>
+
+<dl><dt><a name="Client-add"><strong>add</strong></a>(self, key, val, time<font color="#909090">=0</font>, min_compress_len<font color="#909090">=0</font>)</dt><dd><tt>Add&nbsp;new&nbsp;key&nbsp;with&nbsp;value.<br>
+&nbsp;<br>
+Like&nbsp;L{set},&nbsp;but&nbsp;only&nbsp;stores&nbsp;in&nbsp;memcache&nbsp;if&nbsp;the&nbsp;key&nbsp;doesn't&nbsp;already&nbsp;exist.<br>
+&nbsp;<br>
+@return:&nbsp;Nonzero&nbsp;on&nbsp;success.<br>
+@rtype:&nbsp;int</tt></dd></dl>
+
+<dl><dt><a name="Client-append"><strong>append</strong></a>(self, key, val, time<font color="#909090">=0</font>, min_compress_len<font color="#909090">=0</font>)</dt><dd><tt>Append&nbsp;the&nbsp;value&nbsp;to&nbsp;the&nbsp;end&nbsp;of&nbsp;the&nbsp;existing&nbsp;key's&nbsp;value.<br>
+&nbsp;<br>
+Only&nbsp;stores&nbsp;in&nbsp;memcache&nbsp;if&nbsp;key&nbsp;already&nbsp;exists.<br>
+Also&nbsp;see&nbsp;L{prepend}.<br>
+&nbsp;<br>
+@return:&nbsp;Nonzero&nbsp;on&nbsp;success.<br>
+@rtype:&nbsp;int</tt></dd></dl>
+
+<dl><dt><a name="Client-cas"><strong>cas</strong></a>(self, key, val, time<font color="#909090">=0</font>, min_compress_len<font color="#909090">=0</font>)</dt><dd><tt>Sets&nbsp;a&nbsp;key&nbsp;to&nbsp;a&nbsp;given&nbsp;value&nbsp;in&nbsp;the&nbsp;memcache&nbsp;if&nbsp;it&nbsp;hasn't&nbsp;been<br>
+altered&nbsp;since&nbsp;last&nbsp;fetched.&nbsp;(See&nbsp;L{gets}).<br>
+&nbsp;<br>
+The&nbsp;C{key}&nbsp;can&nbsp;optionally&nbsp;be&nbsp;an&nbsp;tuple,&nbsp;with&nbsp;the&nbsp;first&nbsp;element<br>
+being&nbsp;the&nbsp;server&nbsp;hash&nbsp;value&nbsp;and&nbsp;the&nbsp;second&nbsp;being&nbsp;the&nbsp;key.<br>
+If&nbsp;you&nbsp;want&nbsp;to&nbsp;avoid&nbsp;making&nbsp;this&nbsp;module&nbsp;calculate&nbsp;a&nbsp;hash&nbsp;value.<br>
+You&nbsp;may&nbsp;prefer,&nbsp;for&nbsp;example,&nbsp;to&nbsp;keep&nbsp;all&nbsp;of&nbsp;a&nbsp;given&nbsp;user's&nbsp;objects<br>
+on&nbsp;the&nbsp;same&nbsp;memcache&nbsp;server,&nbsp;so&nbsp;you&nbsp;could&nbsp;use&nbsp;the&nbsp;user's&nbsp;unique<br>
+id&nbsp;as&nbsp;the&nbsp;hash&nbsp;value.<br>
+&nbsp;<br>
+@return:&nbsp;Nonzero&nbsp;on&nbsp;success.<br>
+@rtype:&nbsp;int<br>
+@param&nbsp;time:&nbsp;Tells&nbsp;memcached&nbsp;the&nbsp;time&nbsp;which&nbsp;this&nbsp;value&nbsp;should&nbsp;expire,<br>
+either&nbsp;as&nbsp;a&nbsp;delta&nbsp;number&nbsp;of&nbsp;seconds,&nbsp;or&nbsp;an&nbsp;absolute&nbsp;unix<br>
+time-since-the-epoch&nbsp;value.&nbsp;See&nbsp;the&nbsp;memcached&nbsp;protocol&nbsp;docs&nbsp;section<br>
+"Storage&nbsp;Commands"&nbsp;for&nbsp;more&nbsp;info&nbsp;on&nbsp;&lt;exptime&gt;.&nbsp;We&nbsp;default&nbsp;to<br>
+0&nbsp;==&nbsp;cache&nbsp;forever.<br>
+@param&nbsp;min_compress_len:&nbsp;The&nbsp;threshold&nbsp;length&nbsp;to&nbsp;kick&nbsp;in<br>
+auto-compression&nbsp;of&nbsp;the&nbsp;value&nbsp;using&nbsp;the&nbsp;zlib.<a href="#-compress">compress</a>()&nbsp;routine.&nbsp;If<br>
+the&nbsp;value&nbsp;being&nbsp;cached&nbsp;is&nbsp;a&nbsp;string,&nbsp;then&nbsp;the&nbsp;length&nbsp;of&nbsp;the&nbsp;string&nbsp;is<br>
+measured,&nbsp;else&nbsp;if&nbsp;the&nbsp;value&nbsp;is&nbsp;an&nbsp;object,&nbsp;then&nbsp;the&nbsp;length&nbsp;of&nbsp;the<br>
+pickle&nbsp;result&nbsp;is&nbsp;measured.&nbsp;If&nbsp;the&nbsp;resulting&nbsp;attempt&nbsp;at&nbsp;compression<br>
+yeilds&nbsp;a&nbsp;larger&nbsp;string&nbsp;than&nbsp;the&nbsp;input,&nbsp;then&nbsp;it&nbsp;is&nbsp;discarded.&nbsp;For<br>
+backwards&nbsp;compatability,&nbsp;this&nbsp;parameter&nbsp;defaults&nbsp;to&nbsp;0,&nbsp;indicating<br>
+don't&nbsp;ever&nbsp;try&nbsp;to&nbsp;compress.</tt></dd></dl>
+
+<dl><dt><a name="Client-check_key"><strong>check_key</strong></a>(self, key, key_extra_len<font color="#909090">=0</font>)</dt><dd><tt>Checks&nbsp;sanity&nbsp;of&nbsp;key.&nbsp;&nbsp;Fails&nbsp;if:<br>
+Key&nbsp;length&nbsp;is&nbsp;&gt;&nbsp;SERVER_MAX_KEY_LENGTH&nbsp;(Raises&nbsp;MemcachedKeyLength).<br>
+Contains&nbsp;control&nbsp;characters&nbsp;&nbsp;(Raises&nbsp;MemcachedKeyCharacterError).<br>
+Is&nbsp;not&nbsp;a&nbsp;string&nbsp;(Raises&nbsp;MemcachedStringEncodingError)<br>
+Is&nbsp;an&nbsp;unicode&nbsp;string&nbsp;(Raises&nbsp;MemcachedStringEncodingError)<br>
+Is&nbsp;not&nbsp;a&nbsp;string&nbsp;(Raises&nbsp;MemcachedKeyError)<br>
+Is&nbsp;None&nbsp;(Raises&nbsp;MemcachedKeyError)</tt></dd></dl>
+
+<dl><dt><a name="Client-debuglog"><strong>debuglog</strong></a>(self, str)</dt></dl>
+
+<dl><dt><a name="Client-decr"><strong>decr</strong></a>(self, key, delta<font color="#909090">=1</font>)</dt><dd><tt>Like&nbsp;L{incr},&nbsp;but&nbsp;decrements.&nbsp;&nbsp;Unlike&nbsp;L{incr},&nbsp;underflow&nbsp;is&nbsp;checked&nbsp;and<br>
+new&nbsp;values&nbsp;are&nbsp;capped&nbsp;at&nbsp;0.&nbsp;&nbsp;If&nbsp;server&nbsp;value&nbsp;is&nbsp;1,&nbsp;a&nbsp;decrement&nbsp;of&nbsp;2<br>
+returns&nbsp;0,&nbsp;not&nbsp;-1.<br>
+&nbsp;<br>
+@param&nbsp;delta:&nbsp;Integer&nbsp;amount&nbsp;to&nbsp;decrement&nbsp;by&nbsp;(should&nbsp;be&nbsp;zero&nbsp;or&nbsp;greater).<br>
+@return:&nbsp;New&nbsp;value&nbsp;after&nbsp;decrementing.<br>
+@rtype:&nbsp;int</tt></dd></dl>
+
+<dl><dt><a name="Client-delete"><strong>delete</strong></a>(self, key, time<font color="#909090">=0</font>)</dt><dd><tt>Deletes&nbsp;a&nbsp;key&nbsp;from&nbsp;the&nbsp;memcache.<br>
+&nbsp;<br>
+@return:&nbsp;Nonzero&nbsp;on&nbsp;success.<br>
+@param&nbsp;time:&nbsp;number&nbsp;of&nbsp;seconds&nbsp;any&nbsp;subsequent&nbsp;set&nbsp;/&nbsp;update&nbsp;commands<br>
+should&nbsp;fail.&nbsp;Defaults&nbsp;to&nbsp;0&nbsp;for&nbsp;no&nbsp;delay.<br>
+@rtype:&nbsp;int</tt></dd></dl>
+
+<dl><dt><a name="Client-delete_multi"><strong>delete_multi</strong></a>(self, keys, time<font color="#909090">=0</font>, key_prefix<font color="#909090">=''</font>)</dt><dd><tt>Delete&nbsp;multiple&nbsp;keys&nbsp;in&nbsp;the&nbsp;memcache&nbsp;doing&nbsp;just&nbsp;one&nbsp;query.<br>
+&nbsp;<br>
+&gt;&gt;&gt;&nbsp;notset_keys&nbsp;=&nbsp;mc.<a href="#Client-set_multi">set_multi</a>({'key1'&nbsp;:&nbsp;'val1',&nbsp;'key2'&nbsp;:&nbsp;'val2'})<br>
+&gt;&gt;&gt;&nbsp;mc.<a href="#Client-get_multi">get_multi</a>(['key1',&nbsp;'key2'])&nbsp;==&nbsp;{'key1'&nbsp;:&nbsp;'val1',&nbsp;'key2'&nbsp;:&nbsp;'val2'}<br>
+1<br>
+&gt;&gt;&gt;&nbsp;mc.<a href="#Client-delete_multi">delete_multi</a>(['key1',&nbsp;'key2'])<br>
+1<br>
+&gt;&gt;&gt;&nbsp;mc.<a href="#Client-get_multi">get_multi</a>(['key1',&nbsp;'key2'])&nbsp;==&nbsp;{}<br>
+1<br>
+&nbsp;<br>
+&nbsp;<br>
+This&nbsp;method&nbsp;is&nbsp;recommended&nbsp;over&nbsp;iterated&nbsp;regular&nbsp;L{delete}s&nbsp;as&nbsp;it&nbsp;reduces&nbsp;total&nbsp;latency,&nbsp;since<br>
+your&nbsp;app&nbsp;doesn't&nbsp;have&nbsp;to&nbsp;wait&nbsp;for&nbsp;each&nbsp;round-trip&nbsp;of&nbsp;L{delete}&nbsp;before&nbsp;sending<br>
+the&nbsp;next&nbsp;one.<br>
+&nbsp;<br>
+@param&nbsp;keys:&nbsp;An&nbsp;iterable&nbsp;of&nbsp;keys&nbsp;to&nbsp;clear<br>
+@param&nbsp;time:&nbsp;number&nbsp;of&nbsp;seconds&nbsp;any&nbsp;subsequent&nbsp;set&nbsp;/&nbsp;update&nbsp;commands&nbsp;should&nbsp;fail.&nbsp;Defaults&nbsp;to&nbsp;0&nbsp;for&nbsp;no&nbsp;delay.<br>
+@param&nbsp;key_prefix:&nbsp;&nbsp;Optional&nbsp;string&nbsp;to&nbsp;prepend&nbsp;to&nbsp;each&nbsp;key&nbsp;when&nbsp;sending&nbsp;to&nbsp;memcache.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;See&nbsp;docs&nbsp;for&nbsp;L{get_multi}&nbsp;and&nbsp;L{set_multi}.<br>
+&nbsp;<br>
+@return:&nbsp;1&nbsp;if&nbsp;no&nbsp;failure&nbsp;in&nbsp;communication&nbsp;with&nbsp;any&nbsp;memcacheds.<br>
+@rtype:&nbsp;int</tt></dd></dl>
+
+<dl><dt><a name="Client-disconnect_all"><strong>disconnect_all</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Client-flush_all"><strong>flush_all</strong></a>(self)</dt><dd><tt>Expire&nbsp;all&nbsp;data&nbsp;currently&nbsp;in&nbsp;the&nbsp;memcache&nbsp;servers.</tt></dd></dl>
+
+<dl><dt><a name="Client-forget_dead_hosts"><strong>forget_dead_hosts</strong></a>(self)</dt><dd><tt>Reset&nbsp;every&nbsp;host&nbsp;in&nbsp;the&nbsp;pool&nbsp;to&nbsp;an&nbsp;"alive"&nbsp;state.</tt></dd></dl>
+
+<dl><dt><a name="Client-get"><strong>get</strong></a>(self, key)</dt><dd><tt>Retrieves&nbsp;a&nbsp;key&nbsp;from&nbsp;the&nbsp;memcache.<br>
+&nbsp;<br>
+@return:&nbsp;The&nbsp;value&nbsp;or&nbsp;None.</tt></dd></dl>
+
+<dl><dt><a name="Client-get_multi"><strong>get_multi</strong></a>(self, keys, key_prefix<font color="#909090">=''</font>)</dt><dd><tt>Retrieves&nbsp;multiple&nbsp;keys&nbsp;from&nbsp;the&nbsp;memcache&nbsp;doing&nbsp;just&nbsp;one&nbsp;query.<br>
+&nbsp;<br>
+&gt;&gt;&gt;&nbsp;success&nbsp;=&nbsp;mc.<a href="#Client-set">set</a>("foo",&nbsp;"bar")<br>
+&gt;&gt;&gt;&nbsp;success&nbsp;=&nbsp;mc.<a href="#Client-set">set</a>("baz",&nbsp;42)<br>
+&gt;&gt;&gt;&nbsp;mc.<a href="#Client-get_multi">get_multi</a>(["foo",&nbsp;"baz",&nbsp;"foobar"])&nbsp;==&nbsp;{"foo":&nbsp;"bar",&nbsp;"baz":&nbsp;42}<br>
+1<br>
+&gt;&gt;&gt;&nbsp;mc.<a href="#Client-set_multi">set_multi</a>({'k1'&nbsp;:&nbsp;1,&nbsp;'k2'&nbsp;:&nbsp;2},&nbsp;key_prefix='pfx_')&nbsp;==&nbsp;[]<br>
+1<br>
+&nbsp;<br>
+This&nbsp;looks&nbsp;up&nbsp;keys&nbsp;'pfx_k1',&nbsp;'pfx_k2',&nbsp;...&nbsp;.&nbsp;Returned&nbsp;dict&nbsp;will&nbsp;just&nbsp;have&nbsp;unprefixed&nbsp;keys&nbsp;'k1',&nbsp;'k2'.<br>
+&gt;&gt;&gt;&nbsp;mc.<a href="#Client-get_multi">get_multi</a>(['k1',&nbsp;'k2',&nbsp;'nonexist'],&nbsp;key_prefix='pfx_')&nbsp;==&nbsp;{'k1'&nbsp;:&nbsp;1,&nbsp;'k2'&nbsp;:&nbsp;2}<br>
+1<br>
+&nbsp;<br>
+get_mult&nbsp;[&nbsp;and&nbsp;L{set_multi}&nbsp;]&nbsp;can&nbsp;take&nbsp;str()-ables&nbsp;like&nbsp;ints&nbsp;/&nbsp;longs&nbsp;as&nbsp;keys&nbsp;too.&nbsp;Such&nbsp;as&nbsp;your&nbsp;db&nbsp;pri&nbsp;key&nbsp;fields.<br>
+They're&nbsp;rotored&nbsp;through&nbsp;str()&nbsp;before&nbsp;being&nbsp;passed&nbsp;off&nbsp;to&nbsp;memcache,&nbsp;with&nbsp;or&nbsp;without&nbsp;the&nbsp;use&nbsp;of&nbsp;a&nbsp;key_prefix.<br>
+In&nbsp;this&nbsp;mode,&nbsp;the&nbsp;key_prefix&nbsp;could&nbsp;be&nbsp;a&nbsp;table&nbsp;name,&nbsp;and&nbsp;the&nbsp;key&nbsp;itself&nbsp;a&nbsp;db&nbsp;primary&nbsp;key&nbsp;number.<br>
+&nbsp;<br>
+&gt;&gt;&gt;&nbsp;mc.<a href="#Client-set_multi">set_multi</a>({42:&nbsp;'douglass&nbsp;adams',&nbsp;46&nbsp;:&nbsp;'and&nbsp;2&nbsp;just&nbsp;ahead&nbsp;of&nbsp;me'},&nbsp;key_prefix='numkeys_')&nbsp;==&nbsp;[]<br>
+1<br>
+&gt;&gt;&gt;&nbsp;mc.<a href="#Client-get_multi">get_multi</a>([46,&nbsp;42],&nbsp;key_prefix='numkeys_')&nbsp;==&nbsp;{42:&nbsp;'douglass&nbsp;adams',&nbsp;46&nbsp;:&nbsp;'and&nbsp;2&nbsp;just&nbsp;ahead&nbsp;of&nbsp;me'}<br>
+1<br>
+&nbsp;<br>
+This&nbsp;method&nbsp;is&nbsp;recommended&nbsp;over&nbsp;regular&nbsp;L{get}&nbsp;as&nbsp;it&nbsp;lowers&nbsp;the&nbsp;number&nbsp;of<br>
+total&nbsp;packets&nbsp;flying&nbsp;around&nbsp;your&nbsp;network,&nbsp;reducing&nbsp;total&nbsp;latency,&nbsp;since<br>
+your&nbsp;app&nbsp;doesn't&nbsp;have&nbsp;to&nbsp;wait&nbsp;for&nbsp;each&nbsp;round-trip&nbsp;of&nbsp;L{get}&nbsp;before&nbsp;sending<br>
+the&nbsp;next&nbsp;one.<br>
+&nbsp;<br>
+See&nbsp;also&nbsp;L{set_multi}.<br>
+&nbsp;<br>
+@param&nbsp;keys:&nbsp;An&nbsp;array&nbsp;of&nbsp;keys.<br>
+@param&nbsp;key_prefix:&nbsp;A&nbsp;string&nbsp;to&nbsp;prefix&nbsp;each&nbsp;key&nbsp;when&nbsp;we&nbsp;communicate&nbsp;with&nbsp;memcache.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Facilitates&nbsp;pseudo-namespaces&nbsp;within&nbsp;memcache.&nbsp;Returned&nbsp;dictionary&nbsp;keys&nbsp;will&nbsp;not&nbsp;have&nbsp;this&nbsp;prefix.<br>
+@return:&nbsp;&nbsp;A&nbsp;dictionary&nbsp;of&nbsp;key/value&nbsp;pairs&nbsp;that&nbsp;were&nbsp;available.&nbsp;If&nbsp;key_prefix&nbsp;was&nbsp;provided,&nbsp;the&nbsp;keys&nbsp;in&nbsp;the&nbsp;retured&nbsp;dictionary&nbsp;will&nbsp;not&nbsp;have&nbsp;it&nbsp;present.</tt></dd></dl>
+
+<dl><dt><a name="Client-get_slabs"><strong>get_slabs</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Client-get_stats"><strong>get_stats</strong></a>(self)</dt><dd><tt>Get&nbsp;statistics&nbsp;from&nbsp;each&nbsp;of&nbsp;the&nbsp;servers.<br>
+&nbsp;<br>
+@return:&nbsp;A&nbsp;list&nbsp;of&nbsp;tuples&nbsp;(&nbsp;server_identifier,&nbsp;stats_dictionary&nbsp;).<br>
+&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;dictionary&nbsp;contains&nbsp;a&nbsp;number&nbsp;of&nbsp;name/value&nbsp;pairs&nbsp;specifying<br>
+&nbsp;&nbsp;&nbsp;&nbsp;the&nbsp;name&nbsp;of&nbsp;the&nbsp;status&nbsp;field&nbsp;and&nbsp;the&nbsp;string&nbsp;value&nbsp;associated&nbsp;with<br>
+&nbsp;&nbsp;&nbsp;&nbsp;it.&nbsp;&nbsp;The&nbsp;values&nbsp;are&nbsp;not&nbsp;converted&nbsp;from&nbsp;strings.</tt></dd></dl>
+
+<dl><dt><a name="Client-gets"><strong>gets</strong></a>(self, key)</dt><dd><tt>Retrieves&nbsp;a&nbsp;key&nbsp;from&nbsp;the&nbsp;memcache.&nbsp;Used&nbsp;in&nbsp;conjunction&nbsp;with&nbsp;'cas'.<br>
+&nbsp;<br>
+@return:&nbsp;The&nbsp;value&nbsp;or&nbsp;None.</tt></dd></dl>
+
+<dl><dt><a name="Client-incr"><strong>incr</strong></a>(self, key, delta<font color="#909090">=1</font>)</dt><dd><tt>Sends&nbsp;a&nbsp;command&nbsp;to&nbsp;the&nbsp;server&nbsp;to&nbsp;atomically&nbsp;increment&nbsp;the&nbsp;value<br>
+for&nbsp;C{key}&nbsp;by&nbsp;C{delta},&nbsp;or&nbsp;by&nbsp;1&nbsp;if&nbsp;C{delta}&nbsp;is&nbsp;unspecified.<br>
+Returns&nbsp;None&nbsp;if&nbsp;C{key}&nbsp;doesn't&nbsp;exist&nbsp;on&nbsp;server,&nbsp;otherwise&nbsp;it<br>
+returns&nbsp;the&nbsp;new&nbsp;value&nbsp;after&nbsp;incrementing.<br>
+&nbsp;<br>
+Note&nbsp;that&nbsp;the&nbsp;value&nbsp;for&nbsp;C{key}&nbsp;must&nbsp;already&nbsp;exist&nbsp;in&nbsp;the&nbsp;memcache,<br>
+and&nbsp;it&nbsp;must&nbsp;be&nbsp;the&nbsp;string&nbsp;representation&nbsp;of&nbsp;an&nbsp;integer.<br>
+&nbsp;<br>
+&gt;&gt;&gt;&nbsp;mc.<a href="#Client-set">set</a>("counter",&nbsp;"20")&nbsp;&nbsp;#&nbsp;returns&nbsp;1,&nbsp;indicating&nbsp;success<br>
+1<br>
+&gt;&gt;&gt;&nbsp;mc.<a href="#Client-incr">incr</a>("counter")<br>
+21<br>
+&gt;&gt;&gt;&nbsp;mc.<a href="#Client-incr">incr</a>("counter")<br>
+22<br>
+&nbsp;<br>
+Overflow&nbsp;on&nbsp;server&nbsp;is&nbsp;not&nbsp;checked.&nbsp;&nbsp;Be&nbsp;aware&nbsp;of&nbsp;values&nbsp;approaching<br>
+2**32.&nbsp;&nbsp;See&nbsp;L{decr}.<br>
+&nbsp;<br>
+@param&nbsp;delta:&nbsp;Integer&nbsp;amount&nbsp;to&nbsp;increment&nbsp;by&nbsp;(should&nbsp;be&nbsp;zero&nbsp;or&nbsp;greater).<br>
+@return:&nbsp;New&nbsp;value&nbsp;after&nbsp;incrementing.<br>
+@rtype:&nbsp;int</tt></dd></dl>
+
+<dl><dt><a name="Client-prepend"><strong>prepend</strong></a>(self, key, val, time<font color="#909090">=0</font>, min_compress_len<font color="#909090">=0</font>)</dt><dd><tt>Prepend&nbsp;the&nbsp;value&nbsp;to&nbsp;the&nbsp;beginning&nbsp;of&nbsp;the&nbsp;existing&nbsp;key's&nbsp;value.<br>
+&nbsp;<br>
+Only&nbsp;stores&nbsp;in&nbsp;memcache&nbsp;if&nbsp;key&nbsp;already&nbsp;exists.<br>
+Also&nbsp;see&nbsp;L{append}.<br>
+&nbsp;<br>
+@return:&nbsp;Nonzero&nbsp;on&nbsp;success.<br>
+@rtype:&nbsp;int</tt></dd></dl>
+
+<dl><dt><a name="Client-replace"><strong>replace</strong></a>(self, key, val, time<font color="#909090">=0</font>, min_compress_len<font color="#909090">=0</font>)</dt><dd><tt>Replace&nbsp;existing&nbsp;key&nbsp;with&nbsp;value.<br>
+&nbsp;<br>
+Like&nbsp;L{set},&nbsp;but&nbsp;only&nbsp;stores&nbsp;in&nbsp;memcache&nbsp;if&nbsp;the&nbsp;key&nbsp;already&nbsp;exists.<br>
+The&nbsp;opposite&nbsp;of&nbsp;L{add}.<br>
+&nbsp;<br>
+@return:&nbsp;Nonzero&nbsp;on&nbsp;success.<br>
+@rtype:&nbsp;int</tt></dd></dl>
+
+<dl><dt><a name="Client-set"><strong>set</strong></a>(self, key, val, time<font color="#909090">=0</font>, min_compress_len<font color="#909090">=0</font>)</dt><dd><tt>Unconditionally&nbsp;sets&nbsp;a&nbsp;key&nbsp;to&nbsp;a&nbsp;given&nbsp;value&nbsp;in&nbsp;the&nbsp;memcache.<br>
+&nbsp;<br>
+The&nbsp;C{key}&nbsp;can&nbsp;optionally&nbsp;be&nbsp;an&nbsp;tuple,&nbsp;with&nbsp;the&nbsp;first&nbsp;element<br>
+being&nbsp;the&nbsp;server&nbsp;hash&nbsp;value&nbsp;and&nbsp;the&nbsp;second&nbsp;being&nbsp;the&nbsp;key.<br>
+If&nbsp;you&nbsp;want&nbsp;to&nbsp;avoid&nbsp;making&nbsp;this&nbsp;module&nbsp;calculate&nbsp;a&nbsp;hash&nbsp;value.<br>
+You&nbsp;may&nbsp;prefer,&nbsp;for&nbsp;example,&nbsp;to&nbsp;keep&nbsp;all&nbsp;of&nbsp;a&nbsp;given&nbsp;user's&nbsp;objects<br>
+on&nbsp;the&nbsp;same&nbsp;memcache&nbsp;server,&nbsp;so&nbsp;you&nbsp;could&nbsp;use&nbsp;the&nbsp;user's&nbsp;unique<br>
+id&nbsp;as&nbsp;the&nbsp;hash&nbsp;value.<br>
+&nbsp;<br>
+@return:&nbsp;Nonzero&nbsp;on&nbsp;success.<br>
+@rtype:&nbsp;int<br>
+@param&nbsp;time:&nbsp;Tells&nbsp;memcached&nbsp;the&nbsp;time&nbsp;which&nbsp;this&nbsp;value&nbsp;should&nbsp;expire,&nbsp;either<br>
+as&nbsp;a&nbsp;delta&nbsp;number&nbsp;of&nbsp;seconds,&nbsp;or&nbsp;an&nbsp;absolute&nbsp;unix&nbsp;time-since-the-epoch<br>
+value.&nbsp;See&nbsp;the&nbsp;memcached&nbsp;protocol&nbsp;docs&nbsp;section&nbsp;"Storage&nbsp;Commands"<br>
+for&nbsp;more&nbsp;info&nbsp;on&nbsp;&lt;exptime&gt;.&nbsp;We&nbsp;default&nbsp;to&nbsp;0&nbsp;==&nbsp;cache&nbsp;forever.<br>
+@param&nbsp;min_compress_len:&nbsp;The&nbsp;threshold&nbsp;length&nbsp;to&nbsp;kick&nbsp;in&nbsp;auto-compression<br>
+of&nbsp;the&nbsp;value&nbsp;using&nbsp;the&nbsp;zlib.<a href="#-compress">compress</a>()&nbsp;routine.&nbsp;If&nbsp;the&nbsp;value&nbsp;being&nbsp;cached&nbsp;is<br>
+a&nbsp;string,&nbsp;then&nbsp;the&nbsp;length&nbsp;of&nbsp;the&nbsp;string&nbsp;is&nbsp;measured,&nbsp;else&nbsp;if&nbsp;the&nbsp;value&nbsp;is&nbsp;an<br>
+object,&nbsp;then&nbsp;the&nbsp;length&nbsp;of&nbsp;the&nbsp;pickle&nbsp;result&nbsp;is&nbsp;measured.&nbsp;If&nbsp;the&nbsp;resulting<br>
+attempt&nbsp;at&nbsp;compression&nbsp;yeilds&nbsp;a&nbsp;larger&nbsp;string&nbsp;than&nbsp;the&nbsp;input,&nbsp;then&nbsp;it&nbsp;is<br>
+discarded.&nbsp;For&nbsp;backwards&nbsp;compatability,&nbsp;this&nbsp;parameter&nbsp;defaults&nbsp;to&nbsp;0,<br>
+indicating&nbsp;don't&nbsp;ever&nbsp;try&nbsp;to&nbsp;compress.</tt></dd></dl>
+
+<dl><dt><a name="Client-set_multi"><strong>set_multi</strong></a>(self, mapping, time<font color="#909090">=0</font>, key_prefix<font color="#909090">=''</font>, min_compress_len<font color="#909090">=0</font>)</dt><dd><tt>Sets&nbsp;multiple&nbsp;keys&nbsp;in&nbsp;the&nbsp;memcache&nbsp;doing&nbsp;just&nbsp;one&nbsp;query.<br>
+&nbsp;<br>
+&gt;&gt;&gt;&nbsp;notset_keys&nbsp;=&nbsp;mc.<a href="#Client-set_multi">set_multi</a>({'key1'&nbsp;:&nbsp;'val1',&nbsp;'key2'&nbsp;:&nbsp;'val2'})<br>
+&gt;&gt;&gt;&nbsp;mc.<a href="#Client-get_multi">get_multi</a>(['key1',&nbsp;'key2'])&nbsp;==&nbsp;{'key1'&nbsp;:&nbsp;'val1',&nbsp;'key2'&nbsp;:&nbsp;'val2'}<br>
+1<br>
+&nbsp;<br>
+&nbsp;<br>
+This&nbsp;method&nbsp;is&nbsp;recommended&nbsp;over&nbsp;regular&nbsp;L{set}&nbsp;as&nbsp;it&nbsp;lowers&nbsp;the&nbsp;number&nbsp;of<br>
+total&nbsp;packets&nbsp;flying&nbsp;around&nbsp;your&nbsp;network,&nbsp;reducing&nbsp;total&nbsp;latency,&nbsp;since<br>
+your&nbsp;app&nbsp;doesn't&nbsp;have&nbsp;to&nbsp;wait&nbsp;for&nbsp;each&nbsp;round-trip&nbsp;of&nbsp;L{set}&nbsp;before&nbsp;sending<br>
+the&nbsp;next&nbsp;one.<br>
+&nbsp;<br>
+@param&nbsp;mapping:&nbsp;A&nbsp;dict&nbsp;of&nbsp;key/value&nbsp;pairs&nbsp;to&nbsp;set.<br>
+@param&nbsp;time:&nbsp;Tells&nbsp;memcached&nbsp;the&nbsp;time&nbsp;which&nbsp;this&nbsp;value&nbsp;should&nbsp;expire,&nbsp;either<br>
+as&nbsp;a&nbsp;delta&nbsp;number&nbsp;of&nbsp;seconds,&nbsp;or&nbsp;an&nbsp;absolute&nbsp;unix&nbsp;time-since-the-epoch<br>
+value.&nbsp;See&nbsp;the&nbsp;memcached&nbsp;protocol&nbsp;docs&nbsp;section&nbsp;"Storage&nbsp;Commands"<br>
+for&nbsp;more&nbsp;info&nbsp;on&nbsp;&lt;exptime&gt;.&nbsp;We&nbsp;default&nbsp;to&nbsp;0&nbsp;==&nbsp;cache&nbsp;forever.<br>
+@param&nbsp;key_prefix:&nbsp;&nbsp;Optional&nbsp;string&nbsp;to&nbsp;prepend&nbsp;to&nbsp;each&nbsp;key&nbsp;when&nbsp;sending&nbsp;to&nbsp;memcache.&nbsp;Allows&nbsp;you&nbsp;to&nbsp;efficiently&nbsp;stuff&nbsp;these&nbsp;keys&nbsp;into&nbsp;a&nbsp;pseudo-namespace&nbsp;in&nbsp;memcache:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&gt;&gt;&gt;&nbsp;notset_keys&nbsp;=&nbsp;mc.<a href="#Client-set_multi">set_multi</a>({'key1'&nbsp;:&nbsp;'val1',&nbsp;'key2'&nbsp;:&nbsp;'val2'},&nbsp;key_prefix='subspace_')<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&gt;&gt;&gt;&nbsp;len(notset_keys)&nbsp;==&nbsp;0<br>
+&nbsp;&nbsp;&nbsp;&nbsp;True<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&gt;&gt;&gt;&nbsp;mc.<a href="#Client-get_multi">get_multi</a>(['subspace_key1',&nbsp;'subspace_key2'])&nbsp;==&nbsp;{'subspace_key1'&nbsp;:&nbsp;'val1',&nbsp;'subspace_key2'&nbsp;:&nbsp;'val2'}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;True<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Causes&nbsp;key&nbsp;'subspace_key1'&nbsp;and&nbsp;'subspace_key2'&nbsp;to&nbsp;be&nbsp;set.&nbsp;Useful&nbsp;in&nbsp;conjunction&nbsp;with&nbsp;a&nbsp;higher-level&nbsp;layer&nbsp;which&nbsp;applies&nbsp;namespaces&nbsp;to&nbsp;data&nbsp;in&nbsp;memcache.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;In&nbsp;this&nbsp;case,&nbsp;the&nbsp;return&nbsp;result&nbsp;would&nbsp;be&nbsp;the&nbsp;list&nbsp;of&nbsp;notset&nbsp;original&nbsp;keys,&nbsp;prefix&nbsp;not&nbsp;applied.<br>
+&nbsp;<br>
+@param&nbsp;min_compress_len:&nbsp;The&nbsp;threshold&nbsp;length&nbsp;to&nbsp;kick&nbsp;in&nbsp;auto-compression<br>
+of&nbsp;the&nbsp;value&nbsp;using&nbsp;the&nbsp;zlib.<a href="#-compress">compress</a>()&nbsp;routine.&nbsp;If&nbsp;the&nbsp;value&nbsp;being&nbsp;cached&nbsp;is<br>
+a&nbsp;string,&nbsp;then&nbsp;the&nbsp;length&nbsp;of&nbsp;the&nbsp;string&nbsp;is&nbsp;measured,&nbsp;else&nbsp;if&nbsp;the&nbsp;value&nbsp;is&nbsp;an<br>
+object,&nbsp;then&nbsp;the&nbsp;length&nbsp;of&nbsp;the&nbsp;pickle&nbsp;result&nbsp;is&nbsp;measured.&nbsp;If&nbsp;the&nbsp;resulting<br>
+attempt&nbsp;at&nbsp;compression&nbsp;yeilds&nbsp;a&nbsp;larger&nbsp;string&nbsp;than&nbsp;the&nbsp;input,&nbsp;then&nbsp;it&nbsp;is<br>
+discarded.&nbsp;For&nbsp;backwards&nbsp;compatability,&nbsp;this&nbsp;parameter&nbsp;defaults&nbsp;to&nbsp;0,<br>
+indicating&nbsp;don't&nbsp;ever&nbsp;try&nbsp;to&nbsp;compress.<br>
+@return:&nbsp;List&nbsp;of&nbsp;keys&nbsp;which&nbsp;failed&nbsp;to&nbsp;be&nbsp;stored&nbsp;[&nbsp;memcache&nbsp;out&nbsp;of&nbsp;memory,&nbsp;etc.&nbsp;].<br>
+@rtype:&nbsp;list</tt></dd></dl>
+
+<dl><dt><a name="Client-set_servers"><strong>set_servers</strong></a>(self, servers)</dt><dd><tt>Set&nbsp;the&nbsp;pool&nbsp;of&nbsp;servers&nbsp;used&nbsp;by&nbsp;this&nbsp;client.<br>
+&nbsp;<br>
+@param&nbsp;servers:&nbsp;an&nbsp;array&nbsp;of&nbsp;servers.<br>
+Servers&nbsp;can&nbsp;be&nbsp;passed&nbsp;in&nbsp;two&nbsp;forms:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;1.&nbsp;Strings&nbsp;of&nbsp;the&nbsp;form&nbsp;C{"host:port"},&nbsp;which&nbsp;implies&nbsp;a&nbsp;default&nbsp;weight&nbsp;of&nbsp;1.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;2.&nbsp;Tuples&nbsp;of&nbsp;the&nbsp;form&nbsp;C{("host:port",&nbsp;weight)},&nbsp;where&nbsp;C{weight}&nbsp;is<br>
+&nbsp;&nbsp;&nbsp;&nbsp;an&nbsp;integer&nbsp;weight&nbsp;value.</tt></dd></dl>
+
+<hr>
+Data descriptors defined here:<br>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<hr>
+Data and other attributes defined here:<br>
+<dl><dt><strong>MemcachedKeyCharacterError</strong> = &lt;class 'memcache.MemcachedKeyCharacterError'&gt;</dl>
+
+<dl><dt><strong>MemcachedKeyError</strong> = &lt;class 'memcache.MemcachedKeyError'&gt;</dl>
+
+<dl><dt><strong>MemcachedKeyLengthError</strong> = &lt;class 'memcache.MemcachedKeyLengthError'&gt;</dl>
+
+<dl><dt><strong>MemcachedKeyNoneError</strong> = &lt;class 'memcache.MemcachedKeyNoneError'&gt;</dl>
+
+<dl><dt><strong>MemcachedKeyTypeError</strong> = &lt;class 'memcache.MemcachedKeyTypeError'&gt;</dl>
+
+<dl><dt><strong>MemcachedStringEncodingError</strong> = &lt;class 'memcache.MemcachedStringEncodingError'&gt;</dl>
+
+<hr>
+Methods inherited from <a href="thread.html#_local">thread._local</a>:<br>
+<dl><dt><a name="Client-__delattr__"><strong>__delattr__</strong></a>(...)</dt><dd><tt>x.<a href="#Client-__delattr__">__delattr__</a>('name')&nbsp;&lt;==&gt;&nbsp;del&nbsp;x.name</tt></dd></dl>
+
+<dl><dt><a name="Client-__getattribute__"><strong>__getattribute__</strong></a>(...)</dt><dd><tt>x.<a href="#Client-__getattribute__">__getattribute__</a>('name')&nbsp;&lt;==&gt;&nbsp;x.name</tt></dd></dl>
+
+<dl><dt><a name="Client-__setattr__"><strong>__setattr__</strong></a>(...)</dt><dd><tt>x.<a href="#Client-__setattr__">__setattr__</a>('name',&nbsp;value)&nbsp;&lt;==&gt;&nbsp;x.name&nbsp;=&nbsp;value</tt></dd></dl>
+
+<hr>
+Data descriptors inherited from <a href="thread.html#_local">thread._local</a>:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>Local-data&nbsp;dictionary</tt></dd>
+</dl>
+<hr>
+Data and other attributes inherited from <a href="thread.html#_local">thread._local</a>:<br>
+<dl><dt><strong>__new__</strong> = &lt;built-in method __new__ of type object at 0x5421940&gt;<dd><tt>T.<a href="#Client-__new__">__new__</a>(S,&nbsp;...)&nbsp;-&gt;&nbsp;a&nbsp;new&nbsp;object&nbsp;with&nbsp;type&nbsp;S,&nbsp;a&nbsp;subtype&nbsp;of&nbsp;T</tt></dl>
+
+</td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#eeaa77">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Functions</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#eeaa77"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl><dt><a name="-StringIO"><strong>StringIO</strong></a>(...)</dt><dd><tt><a href="#-StringIO">StringIO</a>([s])&nbsp;--&nbsp;Return&nbsp;a&nbsp;StringIO-like&nbsp;stream&nbsp;for&nbsp;reading&nbsp;or&nbsp;writing</tt></dd></dl>
+ <dl><dt><a name="-cmemcache_hash"><strong>cmemcache_hash</strong></a>(key)</dt></dl>
+ <dl><dt><a name="-compress"><strong>compress</strong></a>(...)</dt><dd><tt><a href="#-compress">compress</a>(string[,&nbsp;level])&nbsp;--&nbsp;Returned&nbsp;compressed&nbsp;string.<br>
+&nbsp;<br>
+Optional&nbsp;arg&nbsp;level&nbsp;is&nbsp;the&nbsp;compression&nbsp;level,&nbsp;in&nbsp;1-9.</tt></dd></dl>
+ <dl><dt><a name="-crc32"><strong>crc32</strong></a>(...)</dt><dd><tt>(data,&nbsp;oldcrc&nbsp;=&nbsp;0)&nbsp;-&gt;&nbsp;newcrc.&nbsp;Compute&nbsp;CRC-32&nbsp;incrementally</tt></dd></dl>
+ <dl><dt><a name="-decompress"><strong>decompress</strong></a>(...)</dt><dd><tt><a href="#-decompress">decompress</a>(string[,&nbsp;wbits[,&nbsp;bufsize]])&nbsp;--&nbsp;Return&nbsp;decompressed&nbsp;string.<br>
+&nbsp;<br>
+Optional&nbsp;arg&nbsp;wbits&nbsp;is&nbsp;the&nbsp;window&nbsp;buffer&nbsp;size.&nbsp;&nbsp;Optional&nbsp;arg&nbsp;bufsize&nbsp;is<br>
+the&nbsp;initial&nbsp;output&nbsp;buffer&nbsp;size.</tt></dd></dl>
+ <dl><dt><a name="-serverHashFunction"><strong>serverHashFunction</strong></a> = cmemcache_hash(key)</dt></dl>
+ <dl><dt><a name="-useOldServerHashFunction"><strong>useOldServerHashFunction</strong></a>()</dt><dd><tt>Use&nbsp;the&nbsp;old&nbsp;python-memcache&nbsp;server&nbsp;hash&nbsp;function.</tt></dd></dl>
+</td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#55aa55">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Data</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#55aa55"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><strong>SERVER_MAX_KEY_LENGTH</strong> = 250<br>
+<strong>SERVER_MAX_VALUE_LENGTH</strong> = 1048576<br>
+<strong>__author__</strong> = 'Evan Martin &lt;martine@danga.com&gt;'<br>
+<strong>__copyright__</strong> = 'Copyright (C) 2003 Danga Interactive'<br>
+<strong>__license__</strong> = 'Python'<br>
+<strong>__version__</strong> = '1.45'</td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#7799ee">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Author</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#7799ee"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%">Evan&nbsp;Martin&nbsp;&lt;martine@danga.com&gt;</td></tr></table>
+</body></html>

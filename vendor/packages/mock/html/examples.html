@@ -1,0 +1,610 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Further Examples &mdash; Mock v0.7.0 documentation</title>
+    <link rel="stylesheet" href="_static/adctheme.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.7.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+  <link rel="top" title="Mock v0.7.0 documentation" href="index.html" />
+  <link rel="next" title="Mock Library Comparison" href="compare.html" />
+  <link rel="prev" title="Getting Started with Mock" href="getting-started.html" />
+  <link media="only screen and (max-device-width: 480px)" href="_static/mobile.css" type="text/css" rel="stylesheet" /> 
+  </head>
+  <body>
+<div id="docstitle">
+  <p>Mock v0.7.0 documentation</p>
+</div>
+<div id="header">
+  <div id="title"><h1>Further Examples</h1></div>
+  <ul id="headerButtons">
+    <li id="toc_button"><div class="headerButton"><a href="#">Table of Contents</a></div></li>
+    <li id="page_buttons">
+      <div class="headerButton"><a href="genindex.html" title="General Index" accesskey="I">index</a></div>
+      <div class="headerButton"><a href="compare.html" title="Mock Library Comparison" accesskey="N">next</a></div>
+      <div class="headerButton"><a href="getting-started.html" title="Getting Started with Mock" accesskey="P">previous</a></div>
+    </li>
+  </ul>
+</div>
+
+<div id="sphinxsidebar">
+  <div class="sphinxsidebarwrapper">
+    <ul><li class="toctree-l1"><a href="index.html">Main Page</a></li></ul>
+    <ul>
+<li class="toctree-l1"><a class="reference internal" href="mock.html">The Mock Class</a></li>
+<li class="toctree-l1"><a class="reference internal" href="patch.html">Patch Decorators</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sentinel.html">Sentinel</a></li>
+<li class="toctree-l1"><a class="reference internal" href="magicmock.html">Mocking Magic Methods</a></li>
+<li class="toctree-l1"><a class="reference internal" href="magicmock.html#magic-mock">Magic Mock</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mocksignature.html">mocksignature</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="getting-started.html">Getting Started with Mock</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">Further Examples</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#mocking-chained-calls">Mocking chained calls</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#partial-mocking">Partial mocking</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#mocking-open">Mocking open</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#applying-the-same-patch-to-every-test-method">Applying the same patch to every test method</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#mocking-unbound-methods">Mocking Unbound Methods</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#mocking-properties">Mocking Properties</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#checking-multiple-calls-with-mock">Checking multiple calls with mock</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#coping-with-mutable-arguments">Coping with mutable arguments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#mocking-multiple-calls">Mocking multiple calls</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="compare.html">Mock Library Comparison</a></li>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html">TODO and Limitations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html#changelog">CHANGELOG</a></li>
+</ul>
+
+      <h3>This Page</h3>
+      <ul class="this-page-menu">
+        <li><a href="_sources/examples.txt"
+          rel="nofollow">Show Source</a></li>
+      </ul>
+    <div id="searchbox" style="display: none">
+      
+        <form class="search" action="search.html" method="get">
+          <div class="search-wrapper">
+          <span class="search-left"></span>
+          <input class="prettysearch" type="text" name="q" size="18" />
+          <span class="search-right">&nbsp;</span>
+          </div>
+        <input type="submit" value="Search" class="searchbutton" />
+        <input type="hidden" name="check_keywords" value="yes" />
+        <input type="hidden" name="area" value="default" />
+        </form>
+        <p class="searchtip" style="font-size: 90%">
+        Enter search terms or a module, class or function name.
+        </p>
+    </div>
+    <script type="text/javascript">$('#searchbox').show(0);</script>
+  </div>
+</div>
+
+
+
+    <div class="document">
+  <div class="documentwrapper">
+    <div class="bodywrapper">
+    <div class="body">
+      
+  <div class="section" id="further-examples">
+<h1>Further Examples<a class="headerlink" href="#further-examples" title="Permalink to this headline">¶</a></h1>
+<p>Here are some more examples for some slightly more advanced scenarios than in
+the <a class="reference internal" href="getting-started.html#getting-started"><em>getting started</em></a> guide.</p>
+<div class="section" id="mocking-chained-calls">
+<h2>Mocking chained calls<a class="headerlink" href="#mocking-chained-calls" title="Permalink to this headline">¶</a></h2>
+<p>Mocking chained calls is actually straightforward with mock once you
+understand the <a class="reference internal" href="mock.html#mock.Mock.return_value" title="mock.Mock.return_value"><tt class="xref py py-attr docutils literal"><span class="pre">Mock.return_value</span></tt></a> attribute. When a mock is called for
+the first time, or you fetch its <cite>return_value</cite> before it has been called, a
+new <cite>Mock</cite> is created.</p>
+<p>This means that you can see how the object returned from a call to a mocked
+object has been used by interrogating the <cite>return_value</cite> mock:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">mock</span> <span class="o">=</span> <span class="n">Mock</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mock</span><span class="p">()</span><span class="o">.</span><span class="n">foo</span><span class="p">(</span><span class="n">a</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="go">&lt;mock.Mock object at 0x...&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mock</span><span class="o">.</span><span class="n">return_value</span><span class="o">.</span><span class="n">foo</span><span class="o">.</span><span class="n">assert_called_with</span><span class="p">(</span><span class="n">a</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>From here it is a simple step to configure and then make assertions about
+chained calls. Of course another alternative is writing your code in a more
+testable way in the first place...</p>
+<p>So, suppose we have some code that looks a little bit like this:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">Something</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="gp">... </span>        <span class="bp">self</span><span class="o">.</span><span class="n">backend</span> <span class="o">=</span> <span class="n">BackendProvider</span><span class="p">()</span>
+<span class="gp">... </span>    <span class="k">def</span> <span class="nf">method</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="gp">... </span>        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">get_endpoint</span><span class="p">(</span><span class="s">&#39;foobar&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">create_call</span><span class="p">(</span><span class="s">&#39;spam&#39;</span><span class="p">,</span> <span class="s">&#39;eggs&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">start_call</span><span class="p">()</span>
+<span class="gp">... </span>        <span class="c"># more code</span>
+</pre></div>
+</div>
+<p>Assuming that <cite>BackendProvider</cite> is already well tested, how do we test
+<cite>method()</cite>? Specifically, we want to test that the code section <tt class="docutils literal"><span class="pre">#</span> <span class="pre">more</span>
+<span class="pre">code</span></tt> uses the response object in the correct way.</p>
+<p>As this chain of calls is made from an instance attribute we can monkey patch
+the <cite>backend</cite> attribute on a <cite>Something</cite> instance. In this particular case
+we are only interested in the return value from the final call to
+<cite>start_call</cite> so we don&#8217;t have much configuration to do. Let&#8217;s assume the
+object it returns is &#8216;file-like&#8217;, so we&#8217;ll ensure that our response object
+uses the builtin <tt class="docutils literal"><span class="pre">file</span></tt> as its <cite>spec</cite>.</p>
+<p>To do this we create a mock instance as our mock backend and create a mock
+response object for it. To set the response as the return value for that final
+<cite>start_call</cite> we could do this:</p>
+<blockquote>
+<div><tt class="docutils literal"><span class="pre">mock_backend.get_endpoint.return_value.create_call.return_value.start_call.return_value</span> <span class="pre">=</span> <span class="pre">mock_response</span></tt>.</div></blockquote>
+<p>Here&#8217;s how we might do it in a slightly nicer way. We start by creating our
+initial mocks:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">something</span> <span class="o">=</span> <span class="n">Something</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mock_response</span> <span class="o">=</span> <span class="n">Mock</span><span class="p">(</span><span class="n">spec</span><span class="o">=</span><span class="nb">file</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mock_backend</span> <span class="o">=</span> <span class="n">Mock</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">get_endpoint</span> <span class="o">=</span> <span class="n">mock_backend</span><span class="o">.</span><span class="n">get_endpoint</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">create_call</span> <span class="o">=</span> <span class="n">get_endpoint</span><span class="o">.</span><span class="n">return_value</span><span class="o">.</span><span class="n">create_call</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">start_call</span> <span class="o">=</span> <span class="n">create_call</span><span class="o">.</span><span class="n">return_value</span><span class="o">.</span><span class="n">start_call</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">start_call</span><span class="o">.</span><span class="n">return_value</span> <span class="o">=</span> <span class="n">mock_response</span>
+</pre></div>
+</div>
+<p>With these we monkey patch the &#8220;mock backend&#8221; in place and can make the real
+call:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">something</span><span class="o">.</span><span class="n">backend</span> <span class="o">=</span> <span class="n">mock_backend</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">something</span><span class="o">.</span><span class="n">method</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Keeping references to the intermediate methods makes our assertions easier,
+and also makes the code less ugly.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">get_endpoint</span><span class="o">.</span><span class="n">assert_called_with</span><span class="p">(</span><span class="s">&#39;foobar&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">create_call</span><span class="o">.</span><span class="n">assert_called_with</span><span class="p">(</span><span class="s">&#39;spam&#39;</span><span class="p">,</span> <span class="s">&#39;eggs&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">start_call</span><span class="o">.</span><span class="n">assert_called_with</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c"># make assertions on mock_response about how it is used</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="partial-mocking">
+<h2>Partial mocking<a class="headerlink" href="#partial-mocking" title="Permalink to this headline">¶</a></h2>
+<p>In some tests I wanted to mock out a call to <a class="reference external" href="http://docs.python.org/library/datetime.html#datetime.date.today">datetime.date.today()</a> to return
+a known date, but I didn&#8217;t want to prevent the code under test from
+creating new date objects. Unfortunately <cite>datetime.date</cite> is written in C, and
+so I couldn&#8217;t just monkey-patch out the static <cite>date.today</cite> method.</p>
+<p>I found a simple way of doing this that involved effectively wrapping the date
+class with a mock, but passing through calls to the constructor to the real
+class (and returning real instances).</p>
+<p>The <a class="reference internal" href="patch.html#mock.patch" title="mock.patch"><tt class="xref py py-func docutils literal"><span class="pre">patch</span> <span class="pre">decorator</span></tt></a> is used here to
+mock out the <cite>date</cite> class in the module under test. The <tt class="xref py py-attr docutils literal"><span class="pre">side_effect</span></tt>
+attribute on the mock date class is then set to a lambda function that returns
+a real date. When the mock date class is called a real date will be
+constructed and returned by <cite>side_effect</cite>.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">date</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">patch</span><span class="p">(</span><span class="s">&#39;mymodule.date&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">mock_date</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="n">mock_date</span><span class="o">.</span><span class="n">today</span><span class="o">.</span><span class="n">return_value</span> <span class="o">=</span> <span class="n">date</span><span class="p">(</span><span class="mi">2010</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">8</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="n">mock_date</span><span class="o">.</span><span class="n">side_effect</span> <span class="o">=</span> <span class="k">lambda</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">:</span> <span class="n">date</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">)</span>
+<span class="gp">...</span>
+<span class="gp">... </span>    <span class="k">assert</span> <span class="n">mymodule</span><span class="o">.</span><span class="n">date</span><span class="o">.</span><span class="n">today</span><span class="p">()</span> <span class="o">==</span> <span class="n">date</span><span class="p">(</span><span class="mi">2010</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">8</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="k">assert</span> <span class="n">mymodule</span><span class="o">.</span><span class="n">date</span><span class="p">(</span><span class="mi">2009</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">8</span><span class="p">)</span> <span class="o">==</span> <span class="n">date</span><span class="p">(</span><span class="mi">2009</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">8</span><span class="p">)</span>
+<span class="gp">...</span>
+</pre></div>
+</div>
+<p>Note that we don&#8217;t patch <cite>datetime.date</cite> globally, we patch <cite>date</cite> in the
+module that <em>uses</em> it. See <a class="reference internal" href="patch.html#where-to-patch"><em>where to patch</em></a>.</p>
+<p>When <cite>date.today()</cite> is called a known date is returned, but calls to the
+<cite>date(...)</cite> constructor still return normal dates. Without this you can find
+yourself having to calculate an expected result using exactly the same
+algorithm as the code under test, which is a classic testing anti-pattern.</p>
+<p>Calls to the date constructor are recorded in the <cite>mock_date</cite> attributes
+(<cite>call_count</cite> and friends) which may also be useful for your tests.</p>
+</div>
+<div class="section" id="mocking-open">
+<h2>Mocking open<a class="headerlink" href="#mocking-open" title="Permalink to this headline">¶</a></h2>
+<p>Using <cite>open</cite> as a context manager is a great way to ensure your file handles are
+closed properly and is becoming common:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s">&#39;/some/path&#39;</span><span class="p">,</span> <span class="s">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;something&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The issue is that even if you mock out the call to <cite>open</cite> it is the
+<em>returned object</em> that is used as a context manager (and has <cite>__enter__</cite> and
+<cite>__exit__</cite> called).</p>
+<p>So first the topic of creating a mock object that can be called, with the
+return value able to act as a context manager. The easiest way of doing this
+is to use the new <a class="reference internal" href="magicmock.html#mock.MagicMock" title="mock.MagicMock"><tt class="xref py py-class docutils literal"><span class="pre">MagicMock</span></tt></a>, which
+is preconfigured to be able to act as a context manger. As an added bonus
+we&#8217;ll use the spec argument to ensure that the mocked object can only be used
+in the same ways a real file could be used (attempting to access a method or
+attribute not on the <cite>file</cite> will raise an <tt class="docutils literal"><span class="pre">AttributeError</span></tt>):</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">mock_open</span> <span class="o">=</span> <span class="n">Mock</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mock_open</span><span class="o">.</span><span class="n">return_value</span> <span class="o">=</span> <span class="n">MagicMock</span><span class="p">(</span><span class="n">spec</span><span class="o">=</span><span class="nb">file</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>In terms of configuring our mock this is all that needs to be done. In fact it
+could be constructed with a one liner: <tt class="docutils literal"><span class="pre">mock_open</span> <span class="pre">=</span>
+<span class="pre">Mock(return_value=MagicMock(spec=file))</span></tt>.</p>
+<p>So what is the best way of patching the builtin <tt class="docutils literal"><span class="pre">open</span></tt> function? One way
+would be to globally patch <tt class="docutils literal"><span class="pre">__builtin__.open</span></tt>. So long as you are sure that
+none of the other code being called also accesses <tt class="docutils literal"><span class="pre">open</span></tt> this is perfectly
+reasonable. It does make some people nervous however. By default we can&#8217;t
+patch the <tt class="docutils literal"><span class="pre">open</span></tt> name in the module where it is used, because <tt class="docutils literal"><span class="pre">open</span></tt>
+doesn&#8217;t exist as an attribute in that namespace. <tt class="docutils literal"><span class="pre">patch</span></tt> refuses to patch
+attributes that don&#8217;t exist because that is a great way of having tests that
+pass but code that is horribly broken (your code can access attributes that
+only exist during your tests!). <tt class="docutils literal"><span class="pre">patch</span></tt> <em>will</em> however create (and then
+remove again) non-existent attributes if you tell it that you are really sure
+you know what you&#8217;re doing.</p>
+<p>By passing <tt class="docutils literal"><span class="pre">create=True</span></tt> into <tt class="docutils literal"><span class="pre">patch</span></tt> we can just patch the <tt class="docutils literal"><span class="pre">open</span></tt>
+function in the module under test instead of patching it globally:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">open_name</span> <span class="o">=</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s">.open&#39;</span> <span class="o">%</span> <span class="n">__name__</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">patch</span><span class="p">(</span><span class="n">open_name</span><span class="p">,</span> <span class="n">create</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span> <span class="k">as</span> <span class="n">mock_open</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="n">mock_open</span><span class="o">.</span><span class="n">return_value</span> <span class="o">=</span> <span class="n">MagicMock</span><span class="p">(</span><span class="n">spec</span><span class="o">=</span><span class="nb">file</span><span class="p">)</span>
+<span class="gp">...</span>
+<span class="gp">... </span>    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s">&#39;/some/path&#39;</span><span class="p">,</span> <span class="s">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+<span class="gp">... </span>        <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;something&#39;</span><span class="p">)</span>
+<span class="gp">...</span>
+<span class="go">&lt;mock.Mock object at 0x...&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">file_handle</span> <span class="o">=</span> <span class="n">mock_open</span><span class="o">.</span><span class="n">return_value</span><span class="o">.</span><span class="n">__enter__</span><span class="o">.</span><span class="n">return_value</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">file_handle</span><span class="o">.</span><span class="n">write</span><span class="o">.</span><span class="n">assert_called_with</span><span class="p">(</span><span class="s">&#39;something&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="applying-the-same-patch-to-every-test-method">
+<h2>Applying the same patch to every test method<a class="headerlink" href="#applying-the-same-patch-to-every-test-method" title="Permalink to this headline">¶</a></h2>
+<p>If you want several patches in place for multiple test methods the obvious way
+is to apply the patch decorators to every method. This can feel like unnecessary
+repetition. For Python 2.6 or more recent you can use <cite>patch</cite> (in all its
+various forms) as a class decorator. This applies the patches to all test
+methods on the class. A test method is identified by methods whose names start
+with <cite>test</cite>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="nd">@patch</span><span class="p">(</span><span class="s">&#39;mymodule.SomeClass&#39;</span><span class="p">)</span>
+<span class="gp">... </span><span class="k">class</span> <span class="nc">MyTest</span><span class="p">(</span><span class="n">unittest</span><span class="o">.</span><span class="n">TestCase</span><span class="p">):</span>
+<span class="gp">...</span>
+<span class="gp">... </span>    <span class="k">def</span> <span class="nf">test_one</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">MockSomeClass</span><span class="p">):</span>
+<span class="gp">... </span>        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">mymodule</span><span class="o">.</span><span class="n">SomeClass</span> <span class="ow">is</span> <span class="n">MockSomeClass</span><span class="p">)</span>
+<span class="gp">...</span>
+<span class="gp">... </span>    <span class="k">def</span> <span class="nf">test_two</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">MockSomeClass</span><span class="p">):</span>
+<span class="gp">... </span>        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">mymodule</span><span class="o">.</span><span class="n">SomeClass</span> <span class="ow">is</span> <span class="n">MockSomeClass</span><span class="p">)</span>
+<span class="gp">...</span>
+<span class="gp">... </span>    <span class="k">def</span> <span class="nf">not_a_test</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="gp">... </span>        <span class="k">return</span> <span class="s">&#39;something&#39;</span>
+<span class="gp">...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">MyTest</span><span class="p">(</span><span class="s">&#39;test_one&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">MyTest</span><span class="p">(</span><span class="s">&#39;test_two&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">MyTest</span><span class="p">(</span><span class="s">&#39;test_two&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">not_a_test</span><span class="p">()</span>
+<span class="go">&#39;something&#39;</span>
+</pre></div>
+</div>
+<p>An alternative way of managing patches is to use the
+<a class="reference internal" href="patch.html#start-and-stop"><em>start and stop</em></a> methods of patch. These allow
+you to move the patching into your <cite>setUp</cite> and <cite>tearDown</cite> methods.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">MyTest</span><span class="p">(</span><span class="n">unittest</span><span class="o">.</span><span class="n">TestCase</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">def</span> <span class="nf">setUp</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="gp">... </span>        <span class="bp">self</span><span class="o">.</span><span class="n">patcher</span> <span class="o">=</span> <span class="n">patch</span><span class="p">(</span><span class="s">&#39;mymodule.foo&#39;</span><span class="p">)</span>
+<span class="gp">... </span>        <span class="bp">self</span><span class="o">.</span><span class="n">mock_foo</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">patcher</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+<span class="gp">...</span>
+<span class="gp">... </span>    <span class="k">def</span> <span class="nf">test_foo</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="gp">... </span>        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">mymodule</span><span class="o">.</span><span class="n">foo</span> <span class="ow">is</span> <span class="bp">self</span><span class="o">.</span><span class="n">mock_foo</span><span class="p">)</span>
+<span class="gp">...</span>
+<span class="gp">... </span>    <span class="k">def</span> <span class="nf">tearDown</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="gp">... </span>        <span class="bp">self</span><span class="o">.</span><span class="n">patcher</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
+<span class="gp">...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">MyTest</span><span class="p">(</span><span class="s">&#39;test_foo&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>If you use this technique you must ensure that the patching is &#8220;undone&#8221; by
+calling <cite>stop</cite>. This can be fiddlier than you might think, because if an
+exception is raised in the setUp then tearDown is not called. <a class="reference external" href="http://pypi.python.org/pypi/unittest2">unittest2</a> cleanup functions make this simpler:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">MyTest</span><span class="p">(</span><span class="n">unittest2</span><span class="o">.</span><span class="n">TestCase</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">def</span> <span class="nf">setUp</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="gp">... </span>        <span class="n">patcher</span> <span class="o">=</span> <span class="n">patch</span><span class="p">(</span><span class="s">&#39;mymodule.foo&#39;</span><span class="p">)</span>
+<span class="gp">... </span>        <span class="bp">self</span><span class="o">.</span><span class="n">addCleanup</span><span class="p">(</span><span class="n">patcher</span><span class="o">.</span><span class="n">stop</span><span class="p">)</span>
+<span class="gp">... </span>        <span class="bp">self</span><span class="o">.</span><span class="n">mock_foo</span> <span class="o">=</span> <span class="n">patcher</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+<span class="gp">...</span>
+<span class="gp">... </span>    <span class="k">def</span> <span class="nf">test_foo</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="gp">... </span>        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">mymodule</span><span class="o">.</span><span class="n">foo</span> <span class="ow">is</span> <span class="bp">self</span><span class="o">.</span><span class="n">mock_foo</span><span class="p">)</span>
+<span class="gp">...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">MyTest</span><span class="p">(</span><span class="s">&#39;test_foo&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="mocking-unbound-methods">
+<h2>Mocking Unbound Methods<a class="headerlink" href="#mocking-unbound-methods" title="Permalink to this headline">¶</a></h2>
+<p>Whilst writing tests today I needed to patch an <em>unbound method</em> (patching the
+method on the class rather than on the instance). I needed self to be passed
+in as the first argument because I want to make asserts about which objects
+were calling this particular method. The issue is that you can&#8217;t patch with a
+mock for this, because if you replace an unbound method with a mock it doesn&#8217;t
+become a bound method when fetched from the instance, and so it doesn&#8217;t get
+self passed in. The workaround is to patch the unbound method with a real
+function instead. The <a class="reference internal" href="patch.html#mock.patch" title="mock.patch"><tt class="xref py py-func docutils literal"><span class="pre">patch()</span></tt></a> decorator makes it so simple to
+patch out methods with a mock that having to create a real function becomes a
+nuisance.</p>
+<p>If you pass <tt class="docutils literal"><span class="pre">mocksignature=True</span></tt> to patch then it does the patching with a
+<em>real</em> function object. This function object has the same signature as the one
+it is replacing, but delegates to a mock under the hood. You still get your
+mock auto-created in exactly the same way as before. What it means though, is
+that if you use it to patch out an unbound method on a class the mocked
+function will be turned into a bound method if it is fetched from an instance.
+It will have <cite>self</cite> passed in as the first argument, which is exactly what I
+wanted:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">Foo</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="gp">... </span>  <span class="k">def</span> <span class="nf">foo</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">pass</span>
+<span class="gp">...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">patch</span><span class="o">.</span><span class="n">object</span><span class="p">(</span><span class="n">Foo</span><span class="p">,</span> <span class="s">&#39;foo&#39;</span><span class="p">,</span> <span class="n">mocksignature</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span> <span class="k">as</span> <span class="n">mock_foo</span><span class="p">:</span>
+<span class="gp">... </span>  <span class="n">mock_foo</span><span class="o">.</span><span class="n">return_value</span> <span class="o">=</span> <span class="s">&#39;foo&#39;</span>
+<span class="gp">... </span>  <span class="n">foo</span> <span class="o">=</span> <span class="n">Foo</span><span class="p">()</span>
+<span class="gp">... </span>  <span class="n">foo</span><span class="o">.</span><span class="n">foo</span><span class="p">()</span>
+<span class="gp">...</span>
+<span class="go">&#39;foo&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mock_foo</span><span class="o">.</span><span class="n">assert_called_once_with</span><span class="p">(</span><span class="n">foo</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>If we don&#8217;t use <cite>mocksignature=True</cite> then the unbound method is patched out
+with a Mock instance instead, and isn&#8217;t called with <cite>self</cite>.</p>
+</div>
+<div class="section" id="mocking-properties">
+<h2>Mocking Properties<a class="headerlink" href="#mocking-properties" title="Permalink to this headline">¶</a></h2>
+<p>A few people have asked about <a class="reference external" href="https://code.google.com/p/mock/issues/detail?id=38&amp;can=1">mocking properties</a>, specifically
+tracking when properties are fetched from objects or even having side effects
+when properties are fetched.</p>
+<p>You can already do this by subclassing <a class="reference internal" href="mock.html#mock.Mock" title="mock.Mock"><tt class="xref py py-class docutils literal"><span class="pre">Mock</span></tt></a> and providing your own
+property. Delegating to another mock is one way to record the property being
+accessed whilst still able to control things like return values:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">mock_foo</span> <span class="o">=</span> <span class="n">Mock</span><span class="p">(</span><span class="n">return_value</span><span class="o">=</span><span class="s">&#39;fish&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">MyMock</span><span class="p">(</span><span class="n">Mock</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="nd">@property</span>
+<span class="gp">... </span>    <span class="k">def</span> <span class="nf">foo</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="gp">... </span>        <span class="k">return</span> <span class="n">mock_foo</span><span class="p">()</span>
+<span class="gp">...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mock</span> <span class="o">=</span> <span class="n">MyMock</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mock</span><span class="o">.</span><span class="n">foo</span>
+<span class="go">&#39;fish&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mock_foo</span><span class="o">.</span><span class="n">assert_called_once_with</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="checking-multiple-calls-with-mock">
+<h2>Checking multiple calls with mock<a class="headerlink" href="#checking-multiple-calls-with-mock" title="Permalink to this headline">¶</a></h2>
+<p>mock has a nice API for making assertions about how your mock objects are used.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">mock</span> <span class="o">=</span> <span class="n">Mock</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mock</span><span class="o">.</span><span class="n">foo_bar</span><span class="o">.</span><span class="n">return_value</span> <span class="o">=</span> <span class="bp">None</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mock</span><span class="o">.</span><span class="n">foo_bar</span><span class="p">(</span><span class="s">&#39;baz&#39;</span><span class="p">,</span> <span class="n">spam</span><span class="o">=</span><span class="s">&#39;eggs&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mock</span><span class="o">.</span><span class="n">foo_bar</span><span class="o">.</span><span class="n">assert_called_with</span><span class="p">(</span><span class="s">&#39;baz&#39;</span><span class="p">,</span> <span class="n">spam</span><span class="o">=</span><span class="s">&#39;eggs&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>If your mock is only being called once you can use the
+<tt class="xref py py-meth docutils literal"><span class="pre">assert_called_once_with()</span></tt> method that also asserts that the
+<tt class="xref py py-attr docutils literal"><span class="pre">call_count</span></tt> is one.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">mock</span><span class="o">.</span><span class="n">foo_bar</span><span class="o">.</span><span class="n">assert_called_once_with</span><span class="p">(</span><span class="s">&#39;baz&#39;</span><span class="p">,</span> <span class="n">spam</span><span class="o">=</span><span class="s">&#39;eggs&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mock</span><span class="o">.</span><span class="n">foo_bar</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mock</span><span class="o">.</span><span class="n">foo_bar</span><span class="o">.</span><span class="n">assert_called_once_with</span><span class="p">(</span><span class="s">&#39;baz&#39;</span><span class="p">,</span> <span class="n">spam</span><span class="o">=</span><span class="s">&#39;eggs&#39;</span><span class="p">)</span>
+<span class="gt">Traceback (most recent call last):</span>
+    <span class="o">...</span>
+<span class="gr">AssertionError</span>: <span class="n">Expected to be called once. Called 2 times.</span>
+</pre></div>
+</div>
+<p>Both <cite>assert_called_with</cite> and <cite>assert_called_once_with</cite> make assertions about
+the <em>most recent</em> call. If your mock is going to be called several times, and
+you want to make assertions about <em>all</em> those calls, the API is not quite so
+nice.</p>
+<p>All of the calls, in order, are stored in <cite>call_args_list</cite> as tuples of
+(positional args, keyword args).</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">mock</span> <span class="o">=</span> <span class="n">Mock</span><span class="p">(</span><span class="n">return_value</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mock</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mock</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mock</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mock</span><span class="o">.</span><span class="n">call_args_list</span>
+<span class="go">[((1, 2, 3), {}), ((4, 5, 6), {}), ((), {})]</span>
+</pre></div>
+</div>
+<p>Because it stores positional args <em>and</em> keyword args, even if they are empty,
+the list is overly verbose which makes for ugly tests. It turns out that I do
+this rarely enough that I&#8217;ve never got around to improving it. One of the new
+features in 0.7.0 helps with this. The tuples of (positional, keyword)
+arguments are now custom objects that allow for &#8216;soft comparisons&#8217;
+(implemented by Konrad Delong). This allows you to omit empty positional or
+keyword arguments from tuples you compare against.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">mock</span><span class="o">.</span><span class="n">call_args_list</span>
+<span class="go">[((1, 2, 3), {}), ((4, 5, 6), {}), ((), {})]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">expected</span> <span class="o">=</span> <span class="p">[((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">),),</span> <span class="p">((</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">),),</span> <span class="p">()]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mock</span><span class="o">.</span><span class="n">call_args_list</span> <span class="o">==</span> <span class="n">expected</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<p>This is an improvement, but still not as nice as <cite>assert_called_with</cite>. Here&#8217;s
+a helper function that pops the last argument of the call args list and
+decrements the call count. This allows you to make asserts as a series of
+calls to <cite>assert_called_with</cite> followed by a <cite>pop_last_call</cite>.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">pop_last_call</span><span class="p">(</span><span class="n">mock</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">if</span> <span class="ow">not</span> <span class="n">mock</span><span class="o">.</span><span class="n">call_count</span><span class="p">:</span>
+<span class="gp">... </span>        <span class="k">raise</span> <span class="ne">AssertionError</span><span class="p">(</span><span class="s">&quot;Cannot pop last call: call_count is 0&quot;</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="n">mock</span><span class="o">.</span><span class="n">call_args_list</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+<span class="gp">... </span>    <span class="k">try</span><span class="p">:</span>
+<span class="gp">... </span>        <span class="n">mock</span><span class="o">.</span><span class="n">call_args</span> <span class="o">=</span> <span class="n">mock</span><span class="o">.</span><span class="n">call_args_list</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+<span class="gp">... </span>    <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
+<span class="gp">... </span>        <span class="n">mock</span><span class="o">.</span><span class="n">call_args</span> <span class="o">=</span> <span class="bp">None</span>
+<span class="gp">... </span>        <span class="n">mock</span><span class="o">.</span><span class="n">called</span> <span class="o">=</span> <span class="bp">False</span>
+<span class="gp">... </span>    <span class="n">mock</span><span class="o">.</span><span class="n">call_count</span> <span class="o">-=</span><span class="mi">1</span>
+<span class="gp">...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mock</span> <span class="o">=</span> <span class="n">Mock</span><span class="p">(</span><span class="n">return_value</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mock</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">foo</span><span class="o">=</span><span class="s">&#39;bar&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mock</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">foo</span><span class="o">=</span><span class="s">&#39;baz&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mock</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">foo</span><span class="o">=</span><span class="s">&#39;spam&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mock</span><span class="o">.</span><span class="n">assert_called_with</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">foo</span><span class="o">=</span><span class="s">&#39;spam&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pop_last_call</span><span class="p">(</span><span class="n">mock</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mock</span><span class="o">.</span><span class="n">assert_called_with</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">foo</span><span class="o">=</span><span class="s">&#39;baz&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pop_last_call</span><span class="p">(</span><span class="n">mock</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mock</span><span class="o">.</span><span class="n">assert_called_once_with</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">foo</span><span class="o">=</span><span class="s">&#39;bar&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The calls to <cite>assert_called_with</cite> are made in reverse order to the actual
+calls. Your final call can be a call to <cite>assert_called_once_with</cite>, that
+ensures there were no extra calls you weren&#8217;t expecting. You could, if you
+wanted, extend the function to take args and kwargs and do the assert for you.</p>
+</div>
+<div class="section" id="coping-with-mutable-arguments">
+<h2>Coping with mutable arguments<a class="headerlink" href="#coping-with-mutable-arguments" title="Permalink to this headline">¶</a></h2>
+<p>Another situation is rare, but can bite you, is when your mock is called with
+mutable arguments. <cite>call_args</cite> and <cite>call_args_list</cite> store <em>references</em> to the
+arguments. If the arguments are mutated by the code under test then you can no
+longer make assertions about what the values were when the mock was called.</p>
+<p>Here&#8217;s some example code that shows the problem. Imagine the following functions
+defined in &#8216;mymodule&#8217;:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">frob</span><span class="p">(</span><span class="n">val</span><span class="p">):</span>
+    <span class="k">pass</span>
+
+<span class="k">def</span> <span class="nf">grob</span><span class="p">(</span><span class="n">val</span><span class="p">):</span>
+    <span class="s">&quot;First frob and then clear val&quot;</span>
+    <span class="n">frob</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+    <span class="n">val</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>When we try to test that <cite>grob</cite> calls <cite>frob</cite> with the correct argument look
+what happens:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">patch</span><span class="p">(</span><span class="s">&#39;mymodule.frob&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">mock_frob</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="n">val</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([</span><span class="mi">6</span><span class="p">])</span>
+<span class="gp">... </span>    <span class="n">mymodule</span><span class="o">.</span><span class="n">grob</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+<span class="gp">...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">val</span>
+<span class="go">set([])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mock_frob</span><span class="o">.</span><span class="n">assert_called_with</span><span class="p">(</span><span class="nb">set</span><span class="p">([</span><span class="mi">6</span><span class="p">]))</span>
+<span class="gt">Traceback (most recent call last):</span>
+    <span class="o">...</span>
+<span class="gr">AssertionError: Expected</span>: <span class="n">((set([6]),), {})</span>
+<span class="go">Called with: ((set([]),), {})</span>
+</pre></div>
+</div>
+<p>One possibility would be for mock to copy the arguments you pass in. This
+could then cause problems if you do assertions that rely on object identity
+for equality.</p>
+<p>Here&#8217;s one solution that uses the <tt class="xref py py-attr docutils literal"><span class="pre">side_effect</span></tt>
+functionality. If you provide a <cite>side_effect</cite> function for a mock then
+<cite>side_effect</cite> will be called with the same args as the mock. This gives us an
+opportunity to copy the arguments and store them for later assertions. In this
+example I&#8217;m using <em>another</em> mock to store the arguments so that I can use the
+mock methods for doing the assertion. Again a helper function sets this up for
+me.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">mock</span> <span class="kn">import</span> <span class="n">Mock</span><span class="p">,</span> <span class="n">patch</span><span class="p">,</span> <span class="n">DEFAULT</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">copy_call_args</span><span class="p">(</span><span class="n">mock</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="n">new_mock</span> <span class="o">=</span> <span class="n">Mock</span><span class="p">()</span>
+<span class="gp">... </span>    <span class="k">def</span> <span class="nf">side_effect</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="gp">... </span>        <span class="n">args</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
+<span class="gp">... </span>        <span class="n">kwargs</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
+<span class="gp">... </span>        <span class="n">new_mock</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+<span class="gp">... </span>        <span class="k">return</span> <span class="n">DEFAULT</span>
+<span class="gp">... </span>    <span class="n">mock</span><span class="o">.</span><span class="n">side_effect</span> <span class="o">=</span> <span class="n">side_effect</span>
+<span class="gp">... </span>    <span class="k">return</span> <span class="n">new_mock</span>
+<span class="gp">...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">patch</span><span class="p">(</span><span class="s">&#39;mymodule.frob&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">mock_frob</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="n">new_mock</span> <span class="o">=</span> <span class="n">copy_call_args</span><span class="p">(</span><span class="n">mock_frob</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="n">val</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([</span><span class="mi">6</span><span class="p">])</span>
+<span class="gp">... </span>    <span class="n">mymodule</span><span class="o">.</span><span class="n">grob</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+<span class="gp">...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">new_mock</span><span class="o">.</span><span class="n">assert_called_with</span><span class="p">(</span><span class="nb">set</span><span class="p">([</span><span class="mi">6</span><span class="p">]))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">new_mock</span><span class="o">.</span><span class="n">call_args</span>
+<span class="go">((set([6]),), {})</span>
+</pre></div>
+</div>
+<p><cite>copy_call_args</cite> is called with the mock that will be called. It returns a new
+mock that we do the assertion on. The <cite>side_effect</cite> function makes a copy of
+the args and calls our <cite>new_mock</cite> with the copy.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>If your mock is only going to be used once there is an easier way of
+checking arguments at the point they are called. You can simply do the
+checking inside a <cite>side_effect</cite> function.</p>
+<div class="last highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">side_effect</span><span class="p">(</span><span class="n">arg</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">assert</span> <span class="n">arg</span> <span class="o">==</span> <span class="nb">set</span><span class="p">([</span><span class="mi">6</span><span class="p">])</span>
+<span class="gp">...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mock</span> <span class="o">=</span> <span class="n">Mock</span><span class="p">(</span><span class="n">side_effect</span><span class="o">=</span><span class="n">side_effect</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mock</span><span class="p">(</span><span class="nb">set</span><span class="p">([</span><span class="mi">6</span><span class="p">]))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mock</span><span class="p">(</span><span class="nb">set</span><span class="p">())</span>
+<span class="gt">Traceback (most recent call last):</span>
+ <span class="c">...</span>
+<span class="gr">AssertionError</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="mocking-multiple-calls">
+<h2>Mocking multiple calls<a class="headerlink" href="#mocking-multiple-calls" title="Permalink to this headline">¶</a></h2>
+<p>Handling code that needs to behave differently on subsequent calls during the
+test can be tricky. For example you may have a function that needs to raise
+an exception the first time it is called but returns a response on the second
+call (testing retry behaviour).</p>
+<p>One approach is to use a <tt class="xref py py-attr docutils literal"><span class="pre">side_effect</span></tt> function that replaces itself. The
+first time it is called the <cite>side_effect</cite> sets a new <cite>side_effect</cite> that will
+be used for the second call. It then raises an exception:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">side_effect</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">):</span>
+<span class="gp">... </span>  <span class="k">def</span> <span class="nf">second_call</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">return</span> <span class="s">&#39;response&#39;</span>
+<span class="gp">... </span>  <span class="n">mock</span><span class="o">.</span><span class="n">side_effect</span> <span class="o">=</span> <span class="n">second_call</span>
+<span class="gp">... </span>  <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&#39;boom&#39;</span><span class="p">)</span>
+<span class="gp">...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mock</span> <span class="o">=</span> <span class="n">Mock</span><span class="p">(</span><span class="n">side_effect</span><span class="o">=</span><span class="n">side_effect</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mock</span><span class="p">(</span><span class="s">&#39;first&#39;</span><span class="p">)</span>
+<span class="gt">Traceback (most recent call last):</span>
+  <span class="c">...</span>
+<span class="gr">Exception</span>: <span class="n">boom</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mock</span><span class="p">(</span><span class="s">&#39;second&#39;</span><span class="p">)</span>
+<span class="go">&#39;response&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mock</span><span class="o">.</span><span class="n">assert_called_with</span><span class="p">(</span><span class="s">&#39;second&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Another perfectly valid way would be to pop return values from a list. If the
+return value is an exception, raise it instead of returning it:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">returns</span> <span class="o">=</span> <span class="p">[</span><span class="ne">Exception</span><span class="p">(</span><span class="s">&#39;boom&#39;</span><span class="p">),</span> <span class="s">&#39;response&#39;</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">side_effect</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">):</span>
+<span class="gp">... </span>  <span class="n">result</span> <span class="o">=</span> <span class="n">returns</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="gp">... </span>  <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="ne">Exception</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">raise</span> <span class="n">result</span>
+<span class="gp">... </span>  <span class="k">return</span> <span class="n">result</span>
+<span class="gp">...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mock</span> <span class="o">=</span> <span class="n">Mock</span><span class="p">(</span><span class="n">side_effect</span><span class="o">=</span><span class="n">side_effect</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mock</span><span class="p">(</span><span class="s">&#39;first&#39;</span><span class="p">)</span>
+<span class="gt">Traceback (most recent call last):</span>
+  <span class="c">...</span>
+<span class="gr">Exception</span>: <span class="n">boom</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mock</span><span class="p">(</span><span class="s">&#39;second&#39;</span><span class="p">)</span>
+<span class="go">&#39;response&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mock</span><span class="o">.</span><span class="n">assert_called_with</span><span class="p">(</span><span class="s">&#39;second&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Which approach you prefer is a matter of taste. The first approach is actually
+a line shorter but maybe the second approach is more readable.</p>
+</div>
+</div>
+
+
+    </div>
+    </div>
+  </div>
+<div class="footer">
+<p>
+  &copy; Copyright 2007-2011, Michael Foord &amp; the mock team.
+  Last updated on Mar 05, 2011.
+  Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
+Theme: <a href="https://github.com/coordt/ADCtheme/">ADCtheme</a>
+</p>
+</div>
+      <div class="clearer"></div>
+    </div>
+  <div id="breadcrumbs">
+    Further Examples
+    </ul>
+  </div>
+  <script type="text/javascript" charset="utf-8" src="_static/toc.js"></script>
+  </body>
+</html>

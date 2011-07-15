@@ -1,0 +1,330 @@
+==================
+ Patch Decorators
+==================
+
+
+.. currentmodule:: mock
+
+.. testsetup::
+
+    import os, sys
+    if not os.getcwd() in sys.path:
+        sys.path.append(os.getcwd())
+
+    from mock import Mock, sentinel, patch
+    import unittest
+    import unittest2
+
+    class SomeClass(object):
+        static_method = None
+        class_method = None
+        attribute = None
+
+    sys.modules['package'] = package = Mock(name='package')
+    sys.modules['package.module'] = package.module
+
+
+The patch decorators are used for patching objects only within the scope of
+the function they decorate. They automatically handle the unpatching for you,
+even if exceptions are raise. All of these functions can also be used in with
+statements or as class decorators.
+
+
+patch
+=====
+
+.. note::
+
+    `patch` is straightforward to use. The key is to do the patching in the
+    right namespace. See the section `where to patch`_.
+
+.. autofunction:: patch
+
+.. note::
+
+    Patching a class replaces the class with a Mock *instance*. If the class
+    is instantiated in the code under test then it will be the `return_value`
+    of the mock that will be used.
+
+    If the class is instantiated multiple times you could use
+    :attr:`Mock.side_effect` to return a new mock each time. Alternatively you
+    can set the `return_value` to be anything you want.
+
+    To configure return values on methods of *instances* on the patched class
+    you must do this on the `return_value`. For example:
+
+    .. doctest::
+
+        >>> @patch('package.module.Class')
+        ... def test(MockClass):
+        ...     instance = MockClass.return_value
+        ...     instance.method.return_value = 'foo'
+        ...     from package.module import Class
+        ...     assert Class() is instance
+        ...     assert Class().method() == 'foo'
+        ...
+        >>> test()
+
+
+patch.object
+============
+
+.. function:: patch.object(target, attribute, new=DEFAULT, spec=None, create=False, mocksignature=False, spec_set=None)
+
+    patch the named member (`attribute`) on an object (`target`) with a mock
+    object.
+
+    Arguments new, spec, create, mocksignature and spec_set have the same
+    meaning as for patch.
+
+You can either call `patch.object` with three arguments or two arguments. The
+three argument form takes the object to be patched, the attribute name and the
+object to replace the attribute with.
+
+When calling with the two argument form you omit the replacement object, and a
+mock is created for you and passed in as an extra argument to the decorated
+function:
+
+.. doctest::
+
+    >>> @patch.object(SomeClass, 'class_method')
+    ... def test(mock_method):
+    ...     SomeClass.class_method(3)
+    ...     mock_method.assert_called_with(3)
+    ...
+    >>> test()
+
+``spec`` and ``create`` have the same meaning as for the patch decorator.
+
+``patch.object`` is also a context manager and can be used with ``with``
+statements in the same way as ``patch``. It can also be used as a class
+decorator with same semantics as ``patch``.
+
+patch_object
+============
+
+.. deprecated:: 0.7
+   This is the same as ``patch.object``. Use the renamed version.
+
+
+patch.dict
+==========
+
+.. function:: patch.dict(in_dict, values=(), clear=False)
+
+    Patch a dictionary and restore the dictionary to its original state after
+    the test.
+
+    `in_dict` can be a dictionary or a mapping like container. If it is a
+    mapping then it must at least support getting, setting and deleting items
+    plus iterating over keys.
+
+    `in_dict` can also be a string specifying the name of the dictionary, which
+    will then be fetched by importing it.
+
+    `values` can be a dictionary of values to set in the dictionary. `values`
+    can also be an iterable of ``(key, value)`` pairs.
+
+    If `clear` is True then the dictionary will be cleared before the new
+    values are set.
+
+Like :func:`patch` and :func:`patch.object` ``patch.dict`` can be used as a
+decorator or a context manager. It can be used to add members to a dictionary,
+or simply let a test change a dictionary, and ensure the dictionary is restored
+when the test ends.
+
+.. doctest::
+
+    >>> from mock import patch
+    >>> foo = {}
+    >>> with patch.dict(foo, {'newkey': 'newvalue'}):
+    ...     assert foo == {'newkey': 'newvalue'}
+    ...
+    >>> assert foo == {}
+
+    >>> import os
+    >>> with patch.dict('os.environ', {'newkey': 'newvalue'}):
+    ...     print os.environ['newkey']
+    ...
+    newvalue
+    >>> assert 'newkey' not in os.environ
+
+
+.. _start-and-stop:
+
+patch methods: start and stop
+=============================
+
+All three patchers have `start` and `stop` methods. These make it simpler to do
+patching in `setUp` methods or where you want to do multiple patches without
+nesting decorators or with statements.
+
+To use them call `patch`, `patch.object` or `patch.dict` as normal and keep a
+reference to the returned `patcher` object. You can then call `start` to put
+the patch in place and `stop` to undo it.
+
+If you are using `patch` to create a mock for you then it will be returned by
+the call to `patcher.start`.
+
+.. doctest::
+
+    >>> patcher = patch('package.module.ClassName')
+    >>> from package import module
+    >>> original = module.ClassName
+    >>> new_mock = patcher.start()
+    >>> assert module.ClassName is not original
+    >>> assert module.ClassName is new_mock
+    >>> patcher.stop()
+    >>> assert module.ClassName is original
+    >>> assert module.ClassName is not new_mock
+
+
+A typical use case for this might be for doing multiple patches in the `setUp`
+method of a `TestCase`:
+
+.. doctest::
+
+    >>> class MyTest(unittest.TestCase):
+    ...     def setUp(self):
+    ...         self.patcher1 = patch('package.module.Class1')
+    ...         self.patcher2 = patch('package.module.Class2')
+    ...         self.MockClass1 = self.patcher1.start()
+    ...         self.MockClass2 = self.patcher2.start()
+    ...
+    ...     def tearDown(self):
+    ...         self.patcher1.stop()
+    ...         self.patcher2.stop()
+    ...
+    ...     def test_something(self):
+    ...         assert package.module.Class1 is self.MockClass1
+    ...         assert package.module.Class2 is self.MockClass2
+    ...
+    >>> MyTest('test_something').run()
+
+.. caution::
+
+    If you use this technique you must ensure that the patching is "undone" by
+    calling `stop`. This can be fiddlier than you might think, because if an
+    exception is raised in the setUp then tearDown is not called. `unittest2
+    <http://pypi.python.org/pypi/unittest2>`_ cleanup functions make this
+    easier.
+
+    .. doctest::
+
+        >>> class MyTest(unittest2.TestCase):
+        ...     def setUp(self):
+        ...         patcher = patch('package.module.Class')
+        ...         self.MockClass = patcher.start()
+        ...         self.addCleanup(patcher.stop)
+        ...
+        ...     def test_something(self):
+        ...         assert package.module.Class is self.MockClass
+        ...
+        >>> MyTest('test_something').run()
+
+    As an added bonus you no longer need to keep a reference to the `patcher`
+    object.
+
+In fact `start` and `stop` are just aliases for the context manager
+`__enter__` and `__exit__` methods.
+
+
+Nesting Patch Decorators
+========================
+
+If you want to perform multiple patches then you can simply stack up the
+decorators.
+
+You can stack up multiple patch decorators using this pattern:
+
+.. doctest::
+
+    >>> @patch.object(SomeClass, 'class_method')
+    ... @patch.object(SomeClass, 'static_method')
+    ... def test(mock1, mock2):
+    ...     assert SomeClass.static_method is mock1
+    ...     assert SomeClass.class_method is mock2
+    ...     SomeClass.static_method('foo')
+    ...     SomeClass.class_method('bar')
+    ...     return mock1, mock2
+    ...
+    >>> mock1, mock2 = test()
+    >>> mock1.assert_called_once_with('foo')
+    >>> mock2.assert_called_once_with('bar')
+
+
+Note that the decorators are applied from the bottom upwards. This is the
+standard way that Python applies decorators. The order of the created mocks
+passed into your test function matches this order.
+
+Like all context-managers patches can be nested using contextlib's nested
+function; *every* patching will appear in the tuple after "as":
+
+.. doctest::
+
+    >>> from contextlib import nested
+    >>> with nested(
+    ...         patch('package.module.ClassName1'),
+    ...         patch('package.module.ClassName2')
+    ...     ) as (MockClass1, MockClass2):
+    ...     assert package.module.ClassName1 is MockClass1
+    ...     assert package.module.ClassName2 is MockClass2
+    ...
+
+
+.. _where-to-patch:
+
+Where to patch
+==============
+
+`patch` works by (temporarily) changing the object that a *name* points to with
+another one. There can be many names pointing to any individual object, so
+for patching to work you must ensure that you patch the name used by the system
+under test.
+
+The basic principle is that you patch where an object is *used*, which is not
+necessarily the same place as where it is defined. A couple of examples will
+help to clarify this.
+
+Imagine we have a project that we want to test with the following structure::
+
+    a.py
+        -> Defines SomeClass
+
+    b.py
+        -> from a import SomeClass
+        -> some_function instantiates SomeClass
+
+Now we want to test `some_function` but we want to mock out `SomeClass` using
+`patch`. The problem is that when we import module b, which we will have to
+do then it imports `SomeClass` from module a. If we use `patch` to mock out
+`a.SomeClass` then it will have no effect on our test; module b already has a
+reference to the *real* `SomeClass` and it looks like our patching had no
+effect.
+
+The key is to patch out `SomeClass` where it is used (or where it is looked up
+). In this case `some_function` will actually look up `SomeClass` in module b,
+where we have imported it. The patching should look like:
+
+    ``@patch('b.SomeClass')``
+
+However, consider the alternative scenario where instead of `from a import
+SomeClass` module b does `import a` and `some_function` uses `a.SomeClass`. Both
+of these import forms are common. In this case the class we want to patch is
+being looked up on the a module and so we have to patch `a.SomeClass` instead:
+
+    ``@patch('a.SomeClass')``
+
+
+
+
+Patching Descriptors and Proxy Objects
+======================================
+
+Since version 0.6.0 both patch_ and patch.object_ have been able to correctly
+patch and restore descriptors; class methods, static methods and properties.
+You should patch these on the *class* rather than an instance.
+
+Since version 0.7.0 patch_ and patch.object_ work correctly with some objects
+that proxy attribute access, like the `django setttings object
+<http://www.voidspace.org.uk/python/weblog/arch_d7_2010_12_04.shtml#e1198>`_.

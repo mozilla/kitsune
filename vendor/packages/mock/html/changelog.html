@@ -1,0 +1,430 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>TODO and Limitations &mdash; Mock v0.7.0 documentation</title>
+    <link rel="stylesheet" href="_static/adctheme.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.7.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+  <link rel="top" title="Mock v0.7.0 documentation" href="index.html" />
+  <link rel="prev" title="Mock Library Comparison" href="compare.html" />
+  <link media="only screen and (max-device-width: 480px)" href="_static/mobile.css" type="text/css" rel="stylesheet" /> 
+  </head>
+  <body>
+<div id="docstitle">
+  <p>Mock v0.7.0 documentation</p>
+</div>
+<div id="header">
+  <div id="title"><h1>TODO and Limitations</h1></div>
+  <ul id="headerButtons">
+    <li id="toc_button"><div class="headerButton"><a href="#">Table of Contents</a></div></li>
+    <li id="page_buttons">
+      <div class="headerButton"><a href="genindex.html" title="General Index" accesskey="I">index</a></div>
+      <div class="headerButton"><a href="compare.html" title="Mock Library Comparison" accesskey="P">previous</a></div>
+    </li>
+  </ul>
+</div>
+
+<div id="sphinxsidebar">
+  <div class="sphinxsidebarwrapper">
+    <ul><li class="toctree-l1"><a href="index.html">Main Page</a></li></ul>
+    <ul>
+<li class="toctree-l1"><a class="reference internal" href="mock.html">The Mock Class</a></li>
+<li class="toctree-l1"><a class="reference internal" href="patch.html">Patch Decorators</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sentinel.html">Sentinel</a></li>
+<li class="toctree-l1"><a class="reference internal" href="magicmock.html">Mocking Magic Methods</a></li>
+<li class="toctree-l1"><a class="reference internal" href="magicmock.html#magic-mock">Magic Mock</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mocksignature.html">mocksignature</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="getting-started.html">Getting Started with Mock</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Further Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="compare.html">Mock Library Comparison</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">TODO and Limitations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#changelog">CHANGELOG</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#version-0-7-0">2011/03/05 Version 0.7.0</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#version-0-7-0-rc-1">2011/02/16 Version 0.7.0 RC 1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#version-0-7-0-beta-4">2010/11/12 Version 0.7.0 beta 4</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#version-0-7-0-beta-3">2010/09/18 Version 0.7.0 beta 3</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#version-0-7-0-beta-2">2010/06/23 Version 0.7.0 beta 2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#version-0-7-0-beta-1">2010/06/22 Version 0.7.0 beta 1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#version-0-6-0">2009/08/22 Version 0.6.0</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#version-0-5-0">2009/04/17 Version 0.5.0</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#version-0-4-0">2008/10/12 Version 0.4.0</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#version-0-3-1">2007/12/03  Version 0.3.1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#version-0-3-0">2007/11/30  Version 0.3.0</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#version-0-2-1">2007/11/21  Version 0.2.1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#version-0-2-0">2007/11/20  Version 0.2.0</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#version-0-1-0">2007/11/19  Version 0.1.0</a></li>
+</ul>
+</li>
+</ul>
+
+      <h3>This Page</h3>
+      <ul class="this-page-menu">
+        <li><a href="_sources/changelog.txt"
+          rel="nofollow">Show Source</a></li>
+      </ul>
+    <div id="searchbox" style="display: none">
+      
+        <form class="search" action="search.html" method="get">
+          <div class="search-wrapper">
+          <span class="search-left"></span>
+          <input class="prettysearch" type="text" name="q" size="18" />
+          <span class="search-right">&nbsp;</span>
+          </div>
+        <input type="submit" value="Search" class="searchbutton" />
+        <input type="hidden" name="check_keywords" value="yes" />
+        <input type="hidden" name="area" value="default" />
+        </form>
+        <p class="searchtip" style="font-size: 90%">
+        Enter search terms or a module, class or function name.
+        </p>
+    </div>
+    <script type="text/javascript">$('#searchbox').show(0);</script>
+  </div>
+</div>
+
+
+
+    <div class="document">
+  <div class="documentwrapper">
+    <div class="bodywrapper">
+    <div class="body">
+      
+  <div class="section" id="todo-and-limitations">
+<h1>TODO and Limitations<a class="headerlink" href="#todo-and-limitations" title="Permalink to this headline">¶</a></h1>
+<p>Contributions, bug reports and comments welcomed!</p>
+<p>Feature requests and bug reports are handled on the issue tracker:</p>
+<blockquote>
+<div><ul class="simple">
+<li><a class="reference external" href="http://code.google.com/p/mock/issues/list">mock module issue tracker</a></li>
+</ul>
+</div></blockquote>
+<p>When mocking a class with <tt class="docutils literal"><span class="pre">patch</span></tt>, passing in <tt class="docutils literal"><span class="pre">spec=True</span></tt>, the mock class
+has an instance created from the same spec. Should this be the default
+behaviour for mocks anyway (mock return values inheriting the spec from their
+parent), or should it be controlled by an additional keyword argument
+(<tt class="docutils literal"><span class="pre">inherit</span></tt>) to the Mock constructor?</p>
+<p>Interaction of magic methods with spec, wraps. For example, should spec cause
+all methods to be wrapped with mocksignature perhaps? (or another keyword
+argument perhaps?)</p>
+<p>Should magic method calls (including <cite>__call__</cite>?) be tracked in <cite>method_calls</cite>?</p>
+<p>Could take a patch keyword argument and auto-do the patching in the
+constructor and unpatch in the destructor. This would be useful in itself, but
+violates TOOWTDI and would be unsafe for IronPython (non-deterministic calling
+of destructors). Destructors aren&#8217;t called <em>anyway</em> where there are cycles, but
+a weak reference with a callback can be used to get round this.</p>
+<p><tt class="docutils literal"><span class="pre">Mock</span></tt> has several attributes. This makes it unsuitable for mocking objects
+that use these attribute names. A way round this would be to provide <tt class="docutils literal"><span class="pre">start</span></tt>
+and <tt class="docutils literal"><span class="pre">stop</span></tt> (or similar) methods that <em>hide</em> these attributes when needed.
+(<cite>_name</cite> is a mock attribute that will be not-uncommon, but it is accessed
+externally on mocks when building <cite>method_calls</cite> names and so can&#8217;t be changed
+to a double underscore name.)</p>
+<p>If a patch is started using <cite>patch.start</cite> and then not stopped correctly, due
+to a bug in the test code, then the unpatching is not done. Using weak
+references it would be possible to detect and fix this when the patch object
+itself is garbage collected. This is tricky to get right though.</p>
+</div>
+<div class="section" id="changelog">
+<h1>CHANGELOG<a class="headerlink" href="#changelog" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="version-0-7-0">
+<h2>2011/03/05 Version 0.7.0<a class="headerlink" href="#version-0-7-0" title="Permalink to this headline">¶</a></h2>
+<p>No API changes since 0.7.0 rc1. Many documentation changes including a stylish
+new <a class="reference external" href="https://github.com/coordt/ADCtheme/">Sphinx theme</a>.</p>
+<p>The full set of changes since 0.6.0 are:</p>
+<ul class="simple">
+<li>Python 3 compatibility</li>
+<li>Ability to mock magic methods with <cite>Mock</cite> and addition of <cite>MagicMock</cite>
+with pre-created magic methods</li>
+<li>Addition of <cite>mocksignature</cite> and <cite>mocksignature</cite> argument to <cite>patch</cite> and
+<cite>patch.object</cite></li>
+<li>Addition of <cite>patch.dict</cite> for changing dictionaries during a test</li>
+<li>Ability to use <cite>patch</cite>, <cite>patch.object</cite> and <cite>patch.dict</cite> as class decorators</li>
+<li>Renamed <tt class="docutils literal"><span class="pre">patch_object</span></tt> to <cite>patch.object</cite> (<tt class="docutils literal"><span class="pre">patch_object</span></tt> is
+deprecated)</li>
+<li>Addition of soft comparisons: <cite>call_args</cite>, <cite>call_args_list</cite> and <cite>method_calls</cite>
+now return tuple-like objects which compare equal even when empty args
+or kwargs are skipped</li>
+<li>patchers (<cite>patch</cite>, <cite>patch.object</cite> and <cite>patch.dict</cite>) have start and stop
+methods</li>
+<li>Addition of <cite>assert_called_once_with</cite> method</li>
+<li>Mocks can now be named (<cite>name</cite> argument to constructor) and the name is used
+in the repr</li>
+<li>repr of a mock with a spec includes the class name of the spec</li>
+<li><cite>assert_called_with</cite> works with <cite>python -OO</cite></li>
+<li>New <cite>spec_set</cite> keyword argument to <cite>Mock</cite> and <cite>patch</cite>. If used,
+attempting to <em>set</em> an attribute on a mock not on the spec will raise an
+<cite>AttributeError</cite></li>
+<li>Mocks created with a spec can now pass <cite>isinstance</cite> tests (<cite>__class__</cite>
+returns the type of the spec)</li>
+<li>Added docstrings to all objects</li>
+<li>Improved failure message for <cite>Mock.assert_called_with</cite> when the mock
+has not been called at all</li>
+<li>Decorated functions / methods have their docstring and <cite>__module__</cite>
+preserved on Python 2.4.</li>
+<li>BUGFIX: <cite>mock.patch</cite> now works correctly with certain types of objects that
+proxy attribute access, like the django settings object</li>
+<li>BUGFIX: mocks are now copyable (thanks to Ned Batchelder for reporting and
+diagnosing this)</li>
+<li>BUGFIX: <cite>spec=True</cite> works with old style classes</li>
+<li>BUGFIX: <tt class="docutils literal"><span class="pre">help(mock)</span></tt> works now (on the module). Can no longer use <tt class="docutils literal"><span class="pre">__bases__</span></tt>
+as a valid sentinel name (thanks to Stephen Emslie for reporting and
+diagnosing this)</li>
+<li>BUGFIX: <tt class="docutils literal"><span class="pre">side_effect</span></tt> now works with <tt class="docutils literal"><span class="pre">BaseException</span></tt> exceptions like
+<tt class="docutils literal"><span class="pre">KeyboardInterrupt</span></tt></li>
+<li>BUGFIX: <cite>reset_mock</cite> caused infinite recursion when a mock is set as its own
+return value</li>
+<li>BUGFIX: patching the same object twice now restores the patches correctly</li>
+<li>with statement tests now skipped on Python 2.4</li>
+<li>Tests require unittest2 (or unittest2-py3k) to run</li>
+<li>Tested with <a class="reference external" href="http://pypi.python.org/pypi/tox">tox</a> on Python 2.4 - 3.2,
+jython and pypy (excluding 3.0)</li>
+<li>Added &#8216;build_sphinx&#8217; command to setup.py (requires setuptools or distribute)
+Thanks to Florian Bauer</li>
+<li>Switched from subversion to mercurial for source code control</li>
+<li><a class="reference external" href="http://konryd.blogspot.com/">Konrad Delong</a> added as co-maintainer</li>
+</ul>
+</div>
+<div class="section" id="version-0-7-0-rc-1">
+<h2>2011/02/16 Version 0.7.0 RC 1<a class="headerlink" href="#version-0-7-0-rc-1" title="Permalink to this headline">¶</a></h2>
+<p>Changes since beta 4:</p>
+<ul class="simple">
+<li>Tested with jython, pypy and Python 3.2 and 3.1</li>
+<li>Decorated functions / methods have their docstring and <cite>__module__</cite>
+preserved on Python 2.4</li>
+<li>BUGFIX: <cite>mock.patch</cite> now works correctly with certain types of objects that
+proxy attribute access, like the django settings object</li>
+<li>BUGFIX: <cite>reset_mock</cite> caused infinite recursion when a mock is set as its own
+return value</li>
+</ul>
+</div>
+<div class="section" id="version-0-7-0-beta-4">
+<h2>2010/11/12 Version 0.7.0 beta 4<a class="headerlink" href="#version-0-7-0-beta-4" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>patchers (<cite>patch</cite>, <cite>patch.object</cite> and <cite>patch.dict</cite>) have start and stop
+methods</li>
+<li>Addition of <cite>assert_called_once_with</cite> method</li>
+<li>repr of a mock with a spec includes the class name of the spec</li>
+<li><cite>assert_called_with</cite> works with <cite>python -OO</cite></li>
+<li>New <cite>spec_set</cite> keyword argument to <cite>Mock</cite> and <cite>patch</cite>. If used,
+attempting to <em>set</em> an attribute on a mock not on the spec will raise an
+<cite>AttributeError</cite></li>
+<li>Attributes and return value of a <cite>MagicMock</cite> are <cite>MagicMock</cite> objects</li>
+<li>Attempting to set an unsupported magic method now raises an <cite>AttributeError</cite></li>
+<li><cite>patch.dict</cite> works as a class decorator</li>
+<li>Switched from subversion to mercurial for source code control</li>
+<li>BUGFIX: mocks are now copyable (thanks to Ned Batchelder for reporting and
+diagnosing this)</li>
+<li>BUGFIX: <cite>spec=True</cite> works with old style classes</li>
+<li>BUGFIX: <cite>mocksignature=True</cite> can now patch instance methods via
+<cite>patch.object</cite></li>
+</ul>
+</div>
+<div class="section" id="version-0-7-0-beta-3">
+<h2>2010/09/18 Version 0.7.0 beta 3<a class="headerlink" href="#version-0-7-0-beta-3" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Using spec with <a class="reference internal" href="magicmock.html#mock.MagicMock" title="mock.MagicMock"><tt class="xref py py-class docutils literal"><span class="pre">MagicMock</span></tt></a> only pre-creates magic methods in the spec</li>
+<li>Setting a magic method on a mock with a <tt class="docutils literal"><span class="pre">spec</span></tt> can only be done if the
+spec has that method</li>
+<li>Mocks can now be named (<cite>name</cite> argument to constructor) and the name is used
+in the repr</li>
+<li><cite>mocksignature</cite> can now be used with classes (signature based on <cite>__init__</cite>)
+and callable objects (signature based on <cite>__call__</cite>)</li>
+<li>Mocks created with a spec can now pass <cite>isinstance</cite> tests (<cite>__class__</cite>
+returns the type of the spec)</li>
+<li>Default numeric value for MagicMock is 1 rather than zero (because the
+MagicMock bool defaults to True and 0 is False)</li>
+<li>Improved failure message for <a class="reference internal" href="mock.html#mock.Mock.assert_called_with" title="mock.Mock.assert_called_with"><tt class="xref py py-meth docutils literal"><span class="pre">Mock.assert_called_with()</span></tt></a> when the mock
+has not been called at all</li>
+<li>Adding the following to the set of supported magic methods:<ul>
+<li><tt class="docutils literal"><span class="pre">__getformat__</span></tt> and <tt class="docutils literal"><span class="pre">__setformat__</span></tt></li>
+<li>pickle methods</li>
+<li><tt class="docutils literal"><span class="pre">__trunc__</span></tt>, <tt class="docutils literal"><span class="pre">__ceil__</span></tt> and <tt class="docutils literal"><span class="pre">__floor__</span></tt></li>
+<li><tt class="docutils literal"><span class="pre">__sizeof__</span></tt></li>
+</ul>
+</li>
+<li>Added &#8216;build_sphinx&#8217; command to setup.py (requires setuptools or distribute)
+Thanks to Florian Bauer</li>
+<li>with statement tests now skipped on Python 2.4</li>
+<li>Tests require unittest2 to run on Python 2.7</li>
+<li>Improved several docstrings and documentation</li>
+</ul>
+</div>
+<div class="section" id="version-0-7-0-beta-2">
+<h2>2010/06/23 Version 0.7.0 beta 2<a class="headerlink" href="#version-0-7-0-beta-2" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><a class="reference internal" href="patch.html#mock.patch.dict" title="mock.patch.dict"><tt class="xref py py-func docutils literal"><span class="pre">patch.dict()</span></tt></a> works as a context manager as well as a decorator</li>
+<li><tt class="docutils literal"><span class="pre">patch.dict</span></tt> takes a string to specify dictionary as well as a dictionary
+object. If a string is supplied the name specified is imported</li>
+<li>BUGFIX: <tt class="docutils literal"><span class="pre">patch.dict</span></tt> restores dictionary even when an exception is raised</li>
+</ul>
+</div>
+<div class="section" id="version-0-7-0-beta-1">
+<h2>2010/06/22 Version 0.7.0 beta 1<a class="headerlink" href="#version-0-7-0-beta-1" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Addition of <a class="reference internal" href="mocksignature.html#mock.mocksignature" title="mock.mocksignature"><tt class="xref py py-func docutils literal"><span class="pre">mocksignature()</span></tt></a></li>
+<li>Ability to mock magic methods</li>
+<li>Ability to use <tt class="docutils literal"><span class="pre">patch</span></tt> and <tt class="docutils literal"><span class="pre">patch.object</span></tt> as class decorators</li>
+<li>Renamed <tt class="docutils literal"><span class="pre">patch_object</span></tt> to <a class="reference internal" href="patch.html#mock.patch.object" title="mock.patch.object"><tt class="xref py py-func docutils literal"><span class="pre">patch.object()</span></tt></a> (<tt class="docutils literal"><span class="pre">patch_object</span></tt> is
+deprecated)</li>
+<li>Addition of <a class="reference internal" href="magicmock.html#mock.MagicMock" title="mock.MagicMock"><tt class="xref py py-class docutils literal"><span class="pre">MagicMock</span></tt></a> class with all magic methods pre-created for you</li>
+<li>Python 3 compatibility (tested with 3.2 but should work with 3.0 &amp; 3.1 as
+well)</li>
+<li>Addition of <a class="reference internal" href="patch.html#mock.patch.dict" title="mock.patch.dict"><tt class="xref py py-func docutils literal"><span class="pre">patch.dict()</span></tt></a> for changing dictionaries during a test</li>
+<li>Addition of <tt class="docutils literal"><span class="pre">mocksignature</span></tt> argument to <tt class="docutils literal"><span class="pre">patch</span></tt> and <tt class="docutils literal"><span class="pre">patch.object</span></tt></li>
+<li><tt class="docutils literal"><span class="pre">help(mock)</span></tt> works now (on the module). Can no longer use <tt class="docutils literal"><span class="pre">__bases__</span></tt>
+as a valid sentinel name (thanks to Stephen Emslie for reporting and
+diagnosing this)</li>
+<li>Addition of soft comparisons: <cite>call_args</cite>, <cite>call_args_list</cite> and <cite>method_calls</cite>
+now return tuple-like objects which compare equal even when empty args
+or kwargs are skipped</li>
+<li>Added docstrings.</li>
+<li>BUGFIX: <tt class="docutils literal"><span class="pre">side_effect</span></tt> now works with <tt class="docutils literal"><span class="pre">BaseException</span></tt> exceptions like
+<tt class="docutils literal"><span class="pre">KeyboardInterrupt</span></tt></li>
+<li>BUGFIX: patching the same object twice now restores the patches correctly</li>
+<li>The tests now require <a class="reference external" href="http://pypi.python.org/pypi/unittest2">unittest2</a>
+to run</li>
+<li><a class="reference external" href="http://konryd.blogspot.com/">Konrad Delong</a> added as co-maintainer</li>
+</ul>
+</div>
+<div class="section" id="version-0-6-0">
+<h2>2009/08/22 Version 0.6.0<a class="headerlink" href="#version-0-6-0" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>New test layout compatible with test discovery</li>
+<li>Descriptors (static methods / class methods etc) can now be patched and
+restored correctly</li>
+<li>Mocks can raise exceptions when called by setting <tt class="docutils literal"><span class="pre">side_effect</span></tt> to an
+exception class or instance</li>
+<li>Mocks that wrap objects will not pass on calls to the underlying object if
+an explicit return_value is set</li>
+</ul>
+</div>
+<div class="section" id="version-0-5-0">
+<h2>2009/04/17 Version 0.5.0<a class="headerlink" href="#version-0-5-0" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Made DEFAULT part of the public api.</li>
+<li>Documentation built with Sphinx.</li>
+<li><tt class="docutils literal"><span class="pre">side_effect</span></tt> is now called with the same arguments as the mock is called with and
+if returns a non-DEFAULT value that is automatically set as the <tt class="docutils literal"><span class="pre">mock.return_value</span></tt>.</li>
+<li><tt class="docutils literal"><span class="pre">wraps</span></tt> keyword argument used for wrapping objects (and passing calls through to the wrapped object).</li>
+<li><tt class="docutils literal"><span class="pre">Mock.reset</span></tt> renamed to <tt class="docutils literal"><span class="pre">Mock.reset_mock</span></tt>, as reset is a common API name.</li>
+<li><tt class="docutils literal"><span class="pre">patch</span></tt> / <tt class="docutils literal"><span class="pre">patch_object</span></tt> are now context managers and can be used with <tt class="docutils literal"><span class="pre">with</span></tt>.</li>
+<li>A new &#8216;create&#8217; keyword argument to patch and patch_object that allows them to patch
+(and unpatch) attributes that don&#8217;t exist. (Potentially unsafe to use - it can allow
+you to have tests that pass when they are testing an API that doesn&#8217;t exist - use at
+your own risk!)</li>
+<li>The methods keyword argument to Mock has been removed and merged with spec. The spec
+argument can now be a list of methods or an object to take the spec from.</li>
+<li>Nested patches may now be applied in a different order (created mocks passed
+in the opposite order). This is actually a bugfix.</li>
+<li>patch and patch_object now take a spec keyword argument. If spec is
+passed in as &#8216;True&#8217; then the Mock created will take the object it is replacing
+as its spec object. If the object being replaced is a class, then the return
+value for the mock will also use the class as a spec.</li>
+<li>A Mock created without a spec will not attempt to mock any magic methods / attributes
+(they will raise an <tt class="docutils literal"><span class="pre">AttributeError</span></tt> instead).</li>
+</ul>
+</div>
+<div class="section" id="version-0-4-0">
+<h2>2008/10/12 Version 0.4.0<a class="headerlink" href="#version-0-4-0" title="Permalink to this headline">¶</a></h2>
+<ul>
+<li><p class="first">Default return value is now a new mock rather than None</p>
+</li>
+<li><p class="first">return_value added as a keyword argument to the constructor</p>
+</li>
+<li><p class="first">New method &#8216;assert_called_with&#8217;</p>
+</li>
+<li><p class="first">Added &#8216;side_effect&#8217; attribute / keyword argument called when mock is called</p>
+</li>
+<li><p class="first">patch decorator split into two decorators:</p>
+<blockquote>
+<div><ul class="simple">
+<li><tt class="docutils literal"><span class="pre">patch_object</span></tt> which takes an object and an attribute name to patch
+(plus optionally a value to patch with which defaults to a mock object)</li>
+<li><tt class="docutils literal"><span class="pre">patch</span></tt> which takes a string specifying a target to patch; in the form
+&#8216;package.module.Class.attribute&#8217;. (plus optionally a value to
+patch with which defaults to a mock object)</li>
+</ul>
+</div></blockquote>
+</li>
+<li><p class="first">Can now patch objects with <tt class="xref docutils literal"><span class="pre">None</span></tt></p>
+</li>
+<li><p class="first">Change to patch for nose compatibility with error reporting in wrapped functions</p>
+</li>
+<li><p class="first">Reset no longer clears children / return value etc - it just resets
+call count and call args. It also calls reset on all children (and
+the return value if it is a mock).</p>
+</li>
+</ul>
+<p>Thanks to Konrad Delong, Kevin Dangoor and others for patches and suggestions.</p>
+</div>
+<div class="section" id="version-0-3-1">
+<h2>2007/12/03  Version 0.3.1<a class="headerlink" href="#version-0-3-1" title="Permalink to this headline">¶</a></h2>
+<p><tt class="docutils literal"><span class="pre">patch</span></tt> maintains the name of decorated functions for compatibility with nose
+test autodiscovery.</p>
+<p>Tests decorated with <tt class="docutils literal"><span class="pre">patch</span></tt> that use the two argument form (implicit mock
+creation) will receive the mock(s) passed in as extra arguments.</p>
+<p>Thanks to Kevin Dangoor for these changes.</p>
+</div>
+<div class="section" id="version-0-3-0">
+<h2>2007/11/30  Version 0.3.0<a class="headerlink" href="#version-0-3-0" title="Permalink to this headline">¶</a></h2>
+<p>Removed <tt class="docutils literal"><span class="pre">patch_module</span></tt>. <tt class="docutils literal"><span class="pre">patch</span></tt> can now take a string as the first
+argument for patching modules.</p>
+<p>The third argument to <tt class="docutils literal"><span class="pre">patch</span></tt> is optional - a mock will be created by
+default if it is not passed in.</p>
+</div>
+<div class="section" id="version-0-2-1">
+<h2>2007/11/21  Version 0.2.1<a class="headerlink" href="#version-0-2-1" title="Permalink to this headline">¶</a></h2>
+<p>Bug fix, allows reuse of functions decorated with <tt class="docutils literal"><span class="pre">patch</span></tt> and <tt class="docutils literal"><span class="pre">patch_module</span></tt>.</p>
+</div>
+<div class="section" id="version-0-2-0">
+<h2>2007/11/20  Version 0.2.0<a class="headerlink" href="#version-0-2-0" title="Permalink to this headline">¶</a></h2>
+<p>Added <tt class="docutils literal"><span class="pre">spec</span></tt> keyword argument for creating <tt class="docutils literal"><span class="pre">Mock</span></tt> objects from a
+specification object.</p>
+<p>Added <tt class="docutils literal"><span class="pre">patch</span></tt> and <tt class="docutils literal"><span class="pre">patch_module</span></tt> monkey patching decorators.</p>
+<p>Added <tt class="docutils literal"><span class="pre">sentinel</span></tt> for convenient access to unique objects.</p>
+<p>Distribution includes unit tests.</p>
+</div>
+<div class="section" id="version-0-1-0">
+<h2>2007/11/19  Version 0.1.0<a class="headerlink" href="#version-0-1-0" title="Permalink to this headline">¶</a></h2>
+<p>Initial release.</p>
+</div>
+</div>
+
+
+    </div>
+    </div>
+  </div>
+<div class="footer">
+<p>
+  &copy; Copyright 2007-2011, Michael Foord &amp; the mock team.
+  Last updated on Mar 05, 2011.
+  Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
+Theme: <a href="https://github.com/coordt/ADCtheme/">ADCtheme</a>
+</p>
+</div>
+      <div class="clearer"></div>
+    </div>
+  <div id="breadcrumbs">
+    TODO and Limitations
+    </ul>
+  </div>
+  <script type="text/javascript" charset="utf-8" src="_static/toc.js"></script>
+  </body>
+</html>

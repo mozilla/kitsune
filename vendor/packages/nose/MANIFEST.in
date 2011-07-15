@@ -1,0 +1,15 @@
+include AUTHORS
+include CHANGELOG
+include NEWS
+include README.txt
+include lgpl.txt
+include nosetests.1
+include install-rpm.sh
+include bin/nosetests
+include selftest.py
+include nose/usage.txt
+graft doc
+graft examples
+graft unit_tests
+graft functional_tests
+prune doc/.build

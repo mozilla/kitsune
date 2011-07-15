@@ -1,0 +1,159 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Sentinel &mdash; Mock v0.7.0 documentation</title>
+    <link rel="stylesheet" href="_static/adctheme.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.7.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+  <link rel="top" title="Mock v0.7.0 documentation" href="index.html" />
+  <link rel="next" title="Mocking Magic Methods" href="magicmock.html" />
+  <link rel="prev" title="Patch Decorators" href="patch.html" />
+  <link media="only screen and (max-device-width: 480px)" href="_static/mobile.css" type="text/css" rel="stylesheet" /> 
+  </head>
+  <body>
+<div id="docstitle">
+  <p>Mock v0.7.0 documentation</p>
+</div>
+<div id="header">
+  <div id="title"><h1>Sentinel</h1></div>
+  <ul id="headerButtons">
+    <li id="toc_button"><div class="headerButton"><a href="#">Table of Contents</a></div></li>
+    <li id="page_buttons">
+      <div class="headerButton"><a href="genindex.html" title="General Index" accesskey="I">index</a></div>
+      <div class="headerButton"><a href="magicmock.html" title="Mocking Magic Methods" accesskey="N">next</a></div>
+      <div class="headerButton"><a href="patch.html" title="Patch Decorators" accesskey="P">previous</a></div>
+    </li>
+  </ul>
+</div>
+
+<div id="sphinxsidebar">
+  <div class="sphinxsidebarwrapper">
+    <ul><li class="toctree-l1"><a href="index.html">Main Page</a></li></ul>
+    <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="mock.html">The Mock Class</a></li>
+<li class="toctree-l1"><a class="reference internal" href="patch.html">Patch Decorators</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">Sentinel</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#sentinel-example">Sentinel Example</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="magicmock.html">Mocking Magic Methods</a></li>
+<li class="toctree-l1"><a class="reference internal" href="magicmock.html#magic-mock">Magic Mock</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mocksignature.html">mocksignature</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="getting-started.html">Getting Started with Mock</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Further Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="compare.html">Mock Library Comparison</a></li>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html">TODO and Limitations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html#changelog">CHANGELOG</a></li>
+</ul>
+
+      <h3>This Page</h3>
+      <ul class="this-page-menu">
+        <li><a href="_sources/sentinel.txt"
+          rel="nofollow">Show Source</a></li>
+      </ul>
+    <div id="searchbox" style="display: none">
+      
+        <form class="search" action="search.html" method="get">
+          <div class="search-wrapper">
+          <span class="search-left"></span>
+          <input class="prettysearch" type="text" name="q" size="18" />
+          <span class="search-right">&nbsp;</span>
+          </div>
+        <input type="submit" value="Search" class="searchbutton" />
+        <input type="hidden" name="check_keywords" value="yes" />
+        <input type="hidden" name="area" value="default" />
+        </form>
+        <p class="searchtip" style="font-size: 90%">
+        Enter search terms or a module, class or function name.
+        </p>
+    </div>
+    <script type="text/javascript">$('#searchbox').show(0);</script>
+  </div>
+</div>
+
+
+
+    <div class="document">
+  <div class="documentwrapper">
+    <div class="bodywrapper">
+    <div class="body">
+      
+  <div class="section" id="sentinel">
+<h1>Sentinel<a class="headerlink" href="#sentinel" title="Permalink to this headline">¶</a></h1>
+<dl class="data">
+<dt id="mock.sentinel">
+<tt class="descname">sentinel</tt><a class="headerlink" href="#mock.sentinel" title="Permalink to this definition">¶</a></dt>
+<dd><p>The <tt class="docutils literal"><span class="pre">sentinel</span></tt> object provides a convenient way of providing unique
+objects for your tests.</p>
+<p>Attributes are created on demand when you access them by name. Accessing
+the same attribute will always return the same object. The objects
+returned have a sensible repr so that test failure messages are readable.</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="mock.DEFAULT">
+<tt class="descname">DEFAULT</tt><a class="headerlink" href="#mock.DEFAULT" title="Permalink to this definition">¶</a></dt>
+<dd><p>The <tt class="docutils literal"><span class="pre">DEFAULT</span></tt> object is a pre-created sentinel (actually
+<tt class="docutils literal"><span class="pre">sentinel.DEFAULT</span></tt>). It can be used by <a class="reference internal" href="mock.html#mock.Mock.side_effect" title="mock.Mock.side_effect"><tt class="xref py py-attr docutils literal"><span class="pre">Mock.side_effect</span></tt></a>
+functions to indicate that the normal return value should be used.</p>
+</dd></dl>
+
+<div class="section" id="sentinel-example">
+<h2>Sentinel Example<a class="headerlink" href="#sentinel-example" title="Permalink to this headline">¶</a></h2>
+<p>Sometimes when testing you need to test that a specific object is passed as an
+argument to another method, or returned. It can be common to create named
+sentinel objects to test this. <cite>sentinel</cite> provides a convenient way of
+creating and testing the identity of objects like this.</p>
+<p>In this example we monkey patch <cite>method</cite> to return
+<cite>sentinel.some_object</cite>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">real</span> <span class="o">=</span> <span class="n">ProductionClass</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">real</span><span class="o">.</span><span class="n">method</span> <span class="o">=</span> <span class="n">Mock</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">&quot;method&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">real</span><span class="o">.</span><span class="n">method</span><span class="o">.</span><span class="n">return_value</span> <span class="o">=</span> <span class="n">sentinel</span><span class="o">.</span><span class="n">some_object</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">real</span><span class="o">.</span><span class="n">method</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="n">result</span> <span class="o">==</span> <span class="n">sentinel</span><span class="o">.</span><span class="n">some_object</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sentinel</span><span class="o">.</span><span class="n">some_object</span>
+<span class="go">&lt;SentinelObject &quot;some_object&quot;&gt;</span>
+</pre></div>
+</div>
+</div>
+</div>
+
+
+    </div>
+    </div>
+  </div>
+<div class="footer">
+<p>
+  &copy; Copyright 2007-2011, Michael Foord &amp; the mock team.
+  Last updated on Mar 05, 2011.
+  Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
+Theme: <a href="https://github.com/coordt/ADCtheme/">ADCtheme</a>
+</p>
+</div>
+      <div class="clearer"></div>
+    </div>
+  <div id="breadcrumbs">
+    Sentinel
+    </ul>
+  </div>
+  <script type="text/javascript" charset="utf-8" src="_static/toc.js"></script>
+  </body>
+</html>

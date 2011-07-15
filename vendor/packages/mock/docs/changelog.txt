@@ -1,0 +1,316 @@
+TODO and Limitations
+====================
+
+.. currentmodule:: mock
+
+
+Contributions, bug reports and comments welcomed!
+
+Feature requests and bug reports are handled on the issue tracker:
+
+ * `mock module issue tracker <http://code.google.com/p/mock/issues/list>`_
+
+When mocking a class with ``patch``, passing in ``spec=True``, the mock class
+has an instance created from the same spec. Should this be the default
+behaviour for mocks anyway (mock return values inheriting the spec from their
+parent), or should it be controlled by an additional keyword argument
+(``inherit``) to the Mock constructor?
+
+Interaction of magic methods with spec, wraps. For example, should spec cause
+all methods to be wrapped with mocksignature perhaps? (or another keyword
+argument perhaps?)
+
+Should magic method calls (including `__call__`?) be tracked in `method_calls`?
+
+Could take a patch keyword argument and auto-do the patching in the
+constructor and unpatch in the destructor. This would be useful in itself, but
+violates TOOWTDI and would be unsafe for IronPython (non-deterministic calling
+of destructors). Destructors aren't called *anyway* where there are cycles, but
+a weak reference with a callback can be used to get round this.
+
+``Mock`` has several attributes. This makes it unsuitable for mocking objects
+that use these attribute names. A way round this would be to provide ``start``
+and ``stop`` (or similar) methods that *hide* these attributes when needed.
+(`_name` is a mock attribute that will be not-uncommon, but it is accessed
+externally on mocks when building `method_calls` names and so can't be changed
+to a double underscore name.)
+
+If a patch is started using `patch.start` and then not stopped correctly, due
+to a bug in the test code, then the unpatching is not done. Using weak
+references it would be possible to detect and fix this when the patch object
+itself is garbage collected. This is tricky to get right though.
+
+
+CHANGELOG
+=========
+
+2011/03/05 Version 0.7.0
+------------------------
+
+No API changes since 0.7.0 rc1. Many documentation changes including a stylish
+new `Sphinx theme <https://github.com/coordt/ADCtheme/>`_.
+
+The full set of changes since 0.6.0 are:
+
+* Python 3 compatibility
+* Ability to mock magic methods with `Mock` and addition of `MagicMock`
+  with pre-created magic methods
+* Addition of `mocksignature` and `mocksignature` argument to `patch` and
+  `patch.object`
+* Addition of `patch.dict` for changing dictionaries during a test
+* Ability to use `patch`, `patch.object` and `patch.dict` as class decorators
+* Renamed ``patch_object`` to `patch.object` (``patch_object`` is
+  deprecated)
+* Addition of soft comparisons: `call_args`, `call_args_list` and `method_calls`
+  now return tuple-like objects which compare equal even when empty args
+  or kwargs are skipped
+* patchers (`patch`, `patch.object` and `patch.dict`) have start and stop
+  methods
+* Addition of `assert_called_once_with` method
+* Mocks can now be named (`name` argument to constructor) and the name is used
+  in the repr
+* repr of a mock with a spec includes the class name of the spec
+* `assert_called_with` works with `python -OO`
+* New `spec_set` keyword argument to `Mock` and `patch`. If used,
+  attempting to *set* an attribute on a mock not on the spec will raise an
+  `AttributeError`
+* Mocks created with a spec can now pass `isinstance` tests (`__class__`
+  returns the type of the spec)
+* Added docstrings to all objects
+* Improved failure message for `Mock.assert_called_with` when the mock
+  has not been called at all
+* Decorated functions / methods have their docstring and `__module__`
+  preserved on Python 2.4.
+* BUGFIX: `mock.patch` now works correctly with certain types of objects that
+  proxy attribute access, like the django settings object
+* BUGFIX: mocks are now copyable (thanks to Ned Batchelder for reporting and
+  diagnosing this)
+* BUGFIX: `spec=True` works with old style classes
+* BUGFIX: ``help(mock)`` works now (on the module). Can no longer use ``__bases__``
+  as a valid sentinel name (thanks to Stephen Emslie for reporting and
+  diagnosing this)
+* BUGFIX: ``side_effect`` now works with ``BaseException`` exceptions like
+  ``KeyboardInterrupt``
+* BUGFIX: `reset_mock` caused infinite recursion when a mock is set as its own
+  return value
+* BUGFIX: patching the same object twice now restores the patches correctly
+* with statement tests now skipped on Python 2.4
+* Tests require unittest2 (or unittest2-py3k) to run
+* Tested with `tox <http://pypi.python.org/pypi/tox>`_ on Python 2.4 - 3.2,
+  jython and pypy (excluding 3.0)
+* Added 'build_sphinx' command to setup.py (requires setuptools or distribute)
+  Thanks to Florian Bauer
+* Switched from subversion to mercurial for source code control
+* `Konrad Delong <http://konryd.blogspot.com/>`_ added as co-maintainer
+
+
+2011/02/16 Version 0.7.0 RC 1
+-----------------------------
+
+Changes since beta 4:
+
+* Tested with jython, pypy and Python 3.2 and 3.1
+* Decorated functions / methods have their docstring and `__module__`
+  preserved on Python 2.4
+* BUGFIX: `mock.patch` now works correctly with certain types of objects that
+  proxy attribute access, like the django settings object
+* BUGFIX: `reset_mock` caused infinite recursion when a mock is set as its own
+  return value
+
+
+2010/11/12 Version 0.7.0 beta 4
+-------------------------------
+
+* patchers (`patch`, `patch.object` and `patch.dict`) have start and stop
+  methods
+* Addition of `assert_called_once_with` method
+* repr of a mock with a spec includes the class name of the spec
+* `assert_called_with` works with `python -OO`
+* New `spec_set` keyword argument to `Mock` and `patch`. If used,
+  attempting to *set* an attribute on a mock not on the spec will raise an
+  `AttributeError`
+* Attributes and return value of a `MagicMock` are `MagicMock` objects
+* Attempting to set an unsupported magic method now raises an `AttributeError`
+* `patch.dict` works as a class decorator
+* Switched from subversion to mercurial for source code control
+* BUGFIX: mocks are now copyable (thanks to Ned Batchelder for reporting and
+  diagnosing this)
+* BUGFIX: `spec=True` works with old style classes
+* BUGFIX: `mocksignature=True` can now patch instance methods via
+  `patch.object`
+
+
+2010/09/18 Version 0.7.0 beta 3
+-------------------------------
+
+* Using spec with :class:`MagicMock` only pre-creates magic methods in the spec
+* Setting a magic method on a mock with a ``spec`` can only be done if the
+  spec has that method
+* Mocks can now be named (`name` argument to constructor) and the name is used
+  in the repr
+* `mocksignature` can now be used with classes (signature based on `__init__`)
+  and callable objects (signature based on `__call__`)
+* Mocks created with a spec can now pass `isinstance` tests (`__class__`
+  returns the type of the spec)
+* Default numeric value for MagicMock is 1 rather than zero (because the
+  MagicMock bool defaults to True and 0 is False)
+* Improved failure message for :meth:`Mock.assert_called_with` when the mock
+  has not been called at all
+* Adding the following to the set of supported magic methods:
+
+  - ``__getformat__`` and ``__setformat__``
+  - pickle methods
+  - ``__trunc__``, ``__ceil__`` and ``__floor__``
+  - ``__sizeof__``
+
+* Added 'build_sphinx' command to setup.py (requires setuptools or distribute)
+  Thanks to Florian Bauer
+* with statement tests now skipped on Python 2.4
+* Tests require unittest2 to run on Python 2.7
+* Improved several docstrings and documentation
+
+
+2010/06/23 Version 0.7.0 beta 2
+-------------------------------
+
+* :func:`patch.dict` works as a context manager as well as a decorator
+* ``patch.dict`` takes a string to specify dictionary as well as a dictionary
+  object. If a string is supplied the name specified is imported
+* BUGFIX: ``patch.dict`` restores dictionary even when an exception is raised
+
+
+2010/06/22 Version 0.7.0 beta 1
+-------------------------------
+
+* Addition of :func:`mocksignature`
+* Ability to mock magic methods
+* Ability to use ``patch`` and ``patch.object`` as class decorators
+* Renamed ``patch_object`` to :func:`patch.object` (``patch_object`` is
+  deprecated)
+* Addition of :class:`MagicMock` class with all magic methods pre-created for you
+* Python 3 compatibility (tested with 3.2 but should work with 3.0 & 3.1 as
+  well)
+* Addition of :func:`patch.dict` for changing dictionaries during a test
+* Addition of ``mocksignature`` argument to ``patch`` and ``patch.object``
+* ``help(mock)`` works now (on the module). Can no longer use ``__bases__``
+  as a valid sentinel name (thanks to Stephen Emslie for reporting and
+  diagnosing this)
+* Addition of soft comparisons: `call_args`, `call_args_list` and `method_calls`
+  now return tuple-like objects which compare equal even when empty args
+  or kwargs are skipped
+* Added docstrings.
+* BUGFIX: ``side_effect`` now works with ``BaseException`` exceptions like
+  ``KeyboardInterrupt``
+* BUGFIX: patching the same object twice now restores the patches correctly
+* The tests now require `unittest2 <http://pypi.python.org/pypi/unittest2>`_
+  to run
+* `Konrad Delong <http://konryd.blogspot.com/>`_ added as co-maintainer
+
+
+2009/08/22 Version 0.6.0
+------------------------
+
+* New test layout compatible with test discovery
+* Descriptors (static methods / class methods etc) can now be patched and
+  restored correctly
+* Mocks can raise exceptions when called by setting ``side_effect`` to an
+  exception class or instance
+* Mocks that wrap objects will not pass on calls to the underlying object if
+  an explicit return_value is set
+
+
+2009/04/17 Version 0.5.0
+------------------------
+
+* Made DEFAULT part of the public api.
+* Documentation built with Sphinx.
+* ``side_effect`` is now called with the same arguments as the mock is called with and
+  if returns a non-DEFAULT value that is automatically set as the ``mock.return_value``.
+* ``wraps`` keyword argument used for wrapping objects (and passing calls through to the wrapped object).
+* ``Mock.reset`` renamed to ``Mock.reset_mock``, as reset is a common API name.
+* ``patch`` / ``patch_object`` are now context managers and can be used with ``with``.
+* A new 'create' keyword argument to patch and patch_object that allows them to patch
+  (and unpatch) attributes that don't exist. (Potentially unsafe to use - it can allow
+  you to have tests that pass when they are testing an API that doesn't exist - use at
+  your own risk!)
+* The methods keyword argument to Mock has been removed and merged with spec. The spec
+  argument can now be a list of methods or an object to take the spec from.
+* Nested patches may now be applied in a different order (created mocks passed
+  in the opposite order). This is actually a bugfix.
+* patch and patch_object now take a spec keyword argument. If spec is
+  passed in as 'True' then the Mock created will take the object it is replacing
+  as its spec object. If the object being replaced is a class, then the return
+  value for the mock will also use the class as a spec.
+* A Mock created without a spec will not attempt to mock any magic methods / attributes
+  (they will raise an ``AttributeError`` instead).
+
+
+2008/10/12 Version 0.4.0
+------------------------
+
+* Default return value is now a new mock rather than None
+* return_value added as a keyword argument to the constructor
+* New method 'assert_called_with'
+* Added 'side_effect' attribute / keyword argument called when mock is called
+* patch decorator split into two decorators:
+
+    - ``patch_object`` which takes an object and an attribute name to patch
+      (plus optionally a value to patch with which defaults to a mock object)
+    - ``patch`` which takes a string specifying a target to patch; in the form
+      'package.module.Class.attribute'. (plus optionally a value to
+      patch with which defaults to a mock object)
+
+* Can now patch objects with ``None``
+* Change to patch for nose compatibility with error reporting in wrapped functions
+* Reset no longer clears children / return value etc - it just resets
+  call count and call args. It also calls reset on all children (and
+  the return value if it is a mock).
+
+Thanks to Konrad Delong, Kevin Dangoor and others for patches and suggestions.
+
+
+2007/12/03  Version 0.3.1
+-------------------------
+
+``patch`` maintains the name of decorated functions for compatibility with nose
+test autodiscovery.
+
+Tests decorated with ``patch`` that use the two argument form (implicit mock
+creation) will receive the mock(s) passed in as extra arguments.
+
+Thanks to Kevin Dangoor for these changes.
+
+
+2007/11/30  Version 0.3.0
+-------------------------
+
+Removed ``patch_module``. ``patch`` can now take a string as the first
+argument for patching modules.
+
+The third argument to ``patch`` is optional - a mock will be created by
+default if it is not passed in.
+
+
+2007/11/21  Version 0.2.1
+-------------------------
+
+Bug fix, allows reuse of functions decorated with ``patch`` and ``patch_module``.
+
+
+2007/11/20  Version 0.2.0
+-------------------------
+
+Added ``spec`` keyword argument for creating ``Mock`` objects from a
+specification object.
+
+Added ``patch`` and ``patch_module`` monkey patching decorators.
+
+Added ``sentinel`` for convenient access to unique objects.
+
+Distribution includes unit tests.
+
+
+2007/11/19  Version 0.1.0
+-------------------------
+
+Initial release.

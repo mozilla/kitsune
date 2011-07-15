@@ -1,0 +1,4 @@
+README
+setup.py
+httplib2/__init__.py
+httplib2/iri2uri.py

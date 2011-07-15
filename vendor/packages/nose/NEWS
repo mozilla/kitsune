@@ -1,0 +1,7 @@
+0.10.3
+------
+
+nose version 0.10.3 fixes a serious bug found in 0.10.2's nosetests
+setuptools command, and updates the coverage plugin to be more
+friendly to other plugins that trigger imports in begin(). Thanks to
+Philip Jenvey and Ned Batchelder for reporting these issues.

@@ -1,0 +1,298 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>mocksignature &mdash; Mock v0.7.0 documentation</title>
+    <link rel="stylesheet" href="_static/adctheme.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.7.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+  <link rel="top" title="Mock v0.7.0 documentation" href="index.html" />
+  <link rel="next" title="Getting Started with Mock" href="getting-started.html" />
+  <link rel="prev" title="Mocking Magic Methods" href="magicmock.html" />
+  <link media="only screen and (max-device-width: 480px)" href="_static/mobile.css" type="text/css" rel="stylesheet" /> 
+  </head>
+  <body>
+<div id="docstitle">
+  <p>Mock v0.7.0 documentation</p>
+</div>
+<div id="header">
+  <div id="title"><h1>mocksignature</h1></div>
+  <ul id="headerButtons">
+    <li id="toc_button"><div class="headerButton"><a href="#">Table of Contents</a></div></li>
+    <li id="page_buttons">
+      <div class="headerButton"><a href="genindex.html" title="General Index" accesskey="I">index</a></div>
+      <div class="headerButton"><a href="getting-started.html" title="Getting Started with Mock" accesskey="N">next</a></div>
+      <div class="headerButton"><a href="magicmock.html" title="Mocking Magic Methods" accesskey="P">previous</a></div>
+    </li>
+  </ul>
+</div>
+
+<div id="sphinxsidebar">
+  <div class="sphinxsidebarwrapper">
+    <ul><li class="toctree-l1"><a href="index.html">Main Page</a></li></ul>
+    <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="mock.html">The Mock Class</a></li>
+<li class="toctree-l1"><a class="reference internal" href="patch.html">Patch Decorators</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sentinel.html">Sentinel</a></li>
+<li class="toctree-l1"><a class="reference internal" href="magicmock.html">Mocking Magic Methods</a></li>
+<li class="toctree-l1"><a class="reference internal" href="magicmock.html#magic-mock">Magic Mock</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">mocksignature</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#example-use">Example use</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#mocksignature-argument-to-patch">mocksignature argument to patch</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="getting-started.html">Getting Started with Mock</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Further Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="compare.html">Mock Library Comparison</a></li>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html">TODO and Limitations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html#changelog">CHANGELOG</a></li>
+</ul>
+
+      <h3>This Page</h3>
+      <ul class="this-page-menu">
+        <li><a href="_sources/mocksignature.txt"
+          rel="nofollow">Show Source</a></li>
+      </ul>
+    <div id="searchbox" style="display: none">
+      
+        <form class="search" action="search.html" method="get">
+          <div class="search-wrapper">
+          <span class="search-left"></span>
+          <input class="prettysearch" type="text" name="q" size="18" />
+          <span class="search-right">&nbsp;</span>
+          </div>
+        <input type="submit" value="Search" class="searchbutton" />
+        <input type="hidden" name="check_keywords" value="yes" />
+        <input type="hidden" name="area" value="default" />
+        </form>
+        <p class="searchtip" style="font-size: 90%">
+        Enter search terms or a module, class or function name.
+        </p>
+    </div>
+    <script type="text/javascript">$('#searchbox').show(0);</script>
+  </div>
+</div>
+
+
+
+    <div class="document">
+  <div class="documentwrapper">
+    <div class="bodywrapper">
+    <div class="body">
+      
+  <div class="section" id="mocksignature">
+<h1>mocksignature<a class="headerlink" href="#mocksignature" title="Permalink to this headline">¶</a></h1>
+<p>A problem with using mock objects to replace real objects in your tests is that
+<a class="reference internal" href="mock.html#mock.Mock" title="mock.Mock"><tt class="xref py py-class docutils literal"><span class="pre">Mock</span></tt></a> can be <em>too</em> flexible. Your code can treat the mock objects in
+any way and you have to manually check that they were called correctly. If your
+code calls functions or methods with the wrong number of arguments then mocks
+don&#8217;t complain.</p>
+<p>The solution to this is <tt class="docutils literal"><span class="pre">mocksignature</span></tt>, which creates functions with the
+same signature as the original, but delegating to a mock. You can interrogate
+the mock in the usual way to check it has been called with the <em>right</em>
+arguments, but if it is called with the wrong number of arguments it will
+raise a <tt class="docutils literal"><span class="pre">TypeError</span></tt> in the same way your production code would.</p>
+<p>Another advantage is that your mocked objects are real functions, which can
+be useful when your code uses
+<a class="reference external" href="http://docs.python.org/library/inspect.html">inspect</a> or depends on functions
+being functions.</p>
+<dl class="function">
+<dt id="mock.mocksignature">
+<tt class="descname">mocksignature</tt><big>(</big><em>func</em>, <em>mock=None</em>, <em>skipfirst=False</em><big>)</big><a class="headerlink" href="#mock.mocksignature" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a new function with the same signature as <cite>func</cite> that delegates
+to <cite>mock</cite>. If <cite>skipfirst</cite> is True the first argument is skipped, useful
+for methods where <cite>self</cite> needs to be omitted from the new function.</p>
+<p>If you don&#8217;t pass in a <cite>mock</cite> then one will be created for you.</p>
+<p>The mock is set as the <cite>mock</cite> attribute of the returned function for easy
+access.</p>
+<p><cite>mocksignature</cite> can also be used with classes. It copies the signature of
+the <cite>__init__</cite> method.</p>
+<p>When used with callable objects (instances) it copies the signature of the
+<cite>__call__</cite> method.</p>
+</dd></dl>
+
+<p><tt class="docutils literal"><span class="pre">mocksignature</span></tt> will work out if it is mocking the signature of a method on
+an instance or a method on a class and do the &#8220;right thing&#8221; with the <tt class="docutils literal"><span class="pre">self</span></tt>
+argument in both cases.</p>
+<p>Because of a limitation in the way that arguments are collected by functions
+created by <tt class="docutils literal"><span class="pre">mocksignature</span></tt> they are <em>always</em> passed as positional arguments
+(including defaults) and not keyword arguments.</p>
+<div class="section" id="example-use">
+<h2>Example use<a class="headerlink" href="#example-use" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="basic-use">
+<h3>Basic use<a class="headerlink" href="#basic-use" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">mock</span> <span class="kn">import</span> <span class="n">mocksignature</span><span class="p">,</span> <span class="n">Mock</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">function</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">pass</span>
+<span class="gp">...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mock</span> <span class="o">=</span> <span class="n">Mock</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">function</span> <span class="o">=</span> <span class="n">mocksignature</span><span class="p">(</span><span class="n">function</span><span class="p">,</span> <span class="n">mock</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">function</span><span class="p">()</span>
+<span class="gt">Traceback (most recent call last):</span>
+  <span class="c">...</span>
+<span class="gr">TypeError</span>: <span class="n">&lt;lambda&gt;() takes at least 2 arguments (0 given)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mock</span><span class="o">.</span><span class="n">return_value</span> <span class="o">=</span> <span class="s">&#39;some value&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">function</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="s">&#39;foo&#39;</span><span class="p">)</span>
+<span class="go">&#39;some value&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">function</span><span class="o">.</span><span class="n">mock</span><span class="o">.</span><span class="n">assert_called_with</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="s">&#39;foo&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="keyword-arguments">
+<h3>Keyword arguments<a class="headerlink" href="#keyword-arguments" title="Permalink to this headline">¶</a></h3>
+<p>Note that arguments to functions created by <tt class="docutils literal"><span class="pre">mocksignature</span></tt> are always passed
+in to the underlying mock by position even when called with keywords:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">mock</span> <span class="kn">import</span> <span class="n">mocksignature</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">function</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">pass</span>
+<span class="gp">...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">function</span> <span class="o">=</span> <span class="n">mocksignature</span><span class="p">(</span><span class="n">function</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">function</span><span class="o">.</span><span class="n">mock</span><span class="o">.</span><span class="n">return_value</span> <span class="o">=</span> <span class="bp">None</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">function</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">function</span><span class="o">.</span><span class="n">mock</span><span class="o">.</span><span class="n">assert_called_with</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="mocking-methods-and-self">
+<h3>Mocking methods and self<a class="headerlink" href="#mocking-methods-and-self" title="Permalink to this headline">¶</a></h3>
+<p>When you use <tt class="docutils literal"><span class="pre">mocksignature</span></tt> to replace a method on a class then <tt class="docutils literal"><span class="pre">self</span></tt>
+will be included in the method signature - and you will need to include
+the instance when you do your asserts:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">mock</span> <span class="kn">import</span> <span class="n">mocksignature</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">SomeClass</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">def</span> <span class="nf">method</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+<span class="gp">... </span>        <span class="k">pass</span>
+<span class="gp">...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">SomeClass</span><span class="o">.</span><span class="n">method</span> <span class="o">=</span> <span class="n">mocksignature</span><span class="p">(</span><span class="n">SomeClass</span><span class="o">.</span><span class="n">method</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">SomeClass</span><span class="o">.</span><span class="n">method</span><span class="o">.</span><span class="n">mock</span><span class="o">.</span><span class="n">return_value</span> <span class="o">=</span> <span class="bp">None</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">instance</span> <span class="o">=</span> <span class="n">SomeClass</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">instance</span><span class="o">.</span><span class="n">method</span><span class="p">()</span>
+<span class="gt">Traceback (most recent call last):</span>
+  <span class="c">...</span>
+<span class="gr">TypeError</span>: <span class="n">&lt;lambda&gt;() takes at least 4 arguments (1 given)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">instance</span><span class="o">.</span><span class="n">method</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">instance</span><span class="o">.</span><span class="n">method</span><span class="o">.</span><span class="n">mock</span><span class="o">.</span><span class="n">assert_called_with</span><span class="p">(</span><span class="n">instance</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>When you use <tt class="docutils literal"><span class="pre">mocksignature</span></tt> on instance methods <tt class="docutils literal"><span class="pre">self</span></tt> isn&#8217;t included:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">mock</span> <span class="kn">import</span> <span class="n">mocksignature</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">SomeClass</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">def</span> <span class="nf">method</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+<span class="gp">... </span>        <span class="k">pass</span>
+<span class="gp">...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">instance</span> <span class="o">=</span> <span class="n">SomeClass</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">instance</span><span class="o">.</span><span class="n">method</span> <span class="o">=</span> <span class="n">mocksignature</span><span class="p">(</span><span class="n">instance</span><span class="o">.</span><span class="n">method</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">instance</span><span class="o">.</span><span class="n">method</span><span class="o">.</span><span class="n">mock</span><span class="o">.</span><span class="n">return_value</span> <span class="o">=</span> <span class="bp">None</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">instance</span><span class="o">.</span><span class="n">method</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">instance</span><span class="o">.</span><span class="n">method</span><span class="o">.</span><span class="n">mock</span><span class="o">.</span><span class="n">assert_called_with</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="mocksignature-with-classes">
+<h3>mocksignature with classes<a class="headerlink" href="#mocksignature-with-classes" title="Permalink to this headline">¶</a></h3>
+<p>When used with a class <cite>mocksignature</cite> copies the signature of the <cite>__init__</cite>
+method.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">mock</span> <span class="kn">import</span> <span class="n">mocksignature</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">Something</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">foo</span><span class="p">,</span> <span class="n">bar</span><span class="p">):</span>
+<span class="gp">... </span>        <span class="k">pass</span>
+<span class="gp">...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">MockSomething</span> <span class="o">=</span> <span class="n">mocksignature</span><span class="p">(</span><span class="n">Something</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">instance</span> <span class="o">=</span> <span class="n">MockSomething</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">9</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="n">instance</span> <span class="ow">is</span> <span class="n">MockSomething</span><span class="o">.</span><span class="n">mock</span><span class="o">.</span><span class="n">return_value</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">MockSomething</span><span class="o">.</span><span class="n">mock</span><span class="o">.</span><span class="n">assert_called_with</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">9</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">MockSomething</span><span class="p">()</span>
+<span class="gt">Traceback (most recent call last):</span>
+  <span class="c">...</span>
+<span class="gr">TypeError</span>: <span class="n">&lt;lambda&gt;() takes at least 2 arguments (0 given)</span>
+</pre></div>
+</div>
+<p>Because the object returned by <cite>mocksignature</cite> is a function rather than a
+<cite>Mock</cite> you lose the other capabilities of <cite>Mock</cite>, like dynamic attribute
+creation.</p>
+</div>
+<div class="section" id="mocksignature-with-callable-objects">
+<h3>mocksignature with callable objects<a class="headerlink" href="#mocksignature-with-callable-objects" title="Permalink to this headline">¶</a></h3>
+<p>When used with a callable object <cite>mocksignature</cite> copies the signature of the
+<cite>__call__</cite> method.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">mock</span> <span class="kn">import</span> <span class="n">mocksignature</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">Something</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spam</span><span class="p">,</span> <span class="n">eggs</span><span class="p">):</span>
+<span class="gp">... </span>        <span class="k">pass</span>
+<span class="gp">...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">something</span> <span class="o">=</span> <span class="n">Something</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mock_something</span> <span class="o">=</span> <span class="n">mocksignature</span><span class="p">(</span><span class="n">something</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">mock_something</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">9</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mock_something</span><span class="o">.</span><span class="n">mock</span><span class="o">.</span><span class="n">assert_called_with</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">9</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mock_something</span><span class="p">()</span>
+<span class="gt">Traceback (most recent call last):</span>
+  <span class="c">...</span>
+<span class="gr">TypeError</span>: <span class="n">&lt;lambda&gt;() takes at least 2 arguments (0 given)</span>
+</pre></div>
+</div>
+<p>Because the object returned by <cite>mocksignature</cite> is a function rather than a
+<cite>Mock</cite> you lose the other capabilities of <cite>Mock</cite>, like dynamic attribute
+creation.</p>
+</div>
+</div>
+<div class="section" id="mocksignature-argument-to-patch">
+<h2>mocksignature argument to patch<a class="headerlink" href="#mocksignature-argument-to-patch" title="Permalink to this headline">¶</a></h2>
+<p><tt class="docutils literal"><span class="pre">mocksignature</span></tt> is available as a keyword argument to <a class="reference internal" href="patch.html#mock.patch" title="mock.patch"><tt class="xref py py-func docutils literal"><span class="pre">patch()</span></tt></a> or
+<a class="reference internal" href="patch.html#mock.patch.object" title="mock.patch.object"><tt class="xref py py-func docutils literal"><span class="pre">patch.object()</span></tt></a>. It can be used with functions / methods / classes and
+callable objects.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">mock</span> <span class="kn">import</span> <span class="n">patch</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">SomeClass</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">def</span> <span class="nf">method</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+<span class="gp">... </span>        <span class="k">pass</span>
+<span class="gp">...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nd">@patch.object</span><span class="p">(</span><span class="n">SomeClass</span><span class="p">,</span> <span class="s">&#39;method&#39;</span><span class="p">,</span> <span class="n">mocksignature</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="gp">... </span><span class="k">def</span> <span class="nf">test</span><span class="p">(</span><span class="n">mock_method</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="n">instance</span> <span class="o">=</span> <span class="n">SomeClass</span><span class="p">()</span>
+<span class="gp">... </span>    <span class="n">mock_method</span><span class="o">.</span><span class="n">return_value</span> <span class="o">=</span> <span class="bp">None</span>
+<span class="gp">... </span>    <span class="n">instance</span><span class="o">.</span><span class="n">method</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="n">mock_method</span><span class="o">.</span><span class="n">assert_called_with</span><span class="p">(</span><span class="n">instance</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+<span class="gp">...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">test</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+</div>
+
+
+    </div>
+    </div>
+  </div>
+<div class="footer">
+<p>
+  &copy; Copyright 2007-2011, Michael Foord &amp; the mock team.
+  Last updated on Mar 05, 2011.
+  Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
+Theme: <a href="https://github.com/coordt/ADCtheme/">ADCtheme</a>
+</p>
+</div>
+      <div class="clearer"></div>
+    </div>
+  <div id="breadcrumbs">
+    mocksignature
+    </ul>
+  </div>
+  <script type="text/javascript" charset="utf-8" src="_static/toc.js"></script>
+  </body>
+</html>

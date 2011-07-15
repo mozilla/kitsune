@@ -1,0 +1,102 @@
+0.5.0
+
+   Added Python 3 support
+
+   Fixed the following bugs:
+
+      #12 - Cache-Control: only-if-cached incorrectly does request if item not in cache 
+      #39 - Deprecation warnings in Python 2.6
+      #54 - Http.request fails accesing Google account via http proxy
+      #56 - Block on response.read() for HEAD requests.
+      #57 - Timeout ignore for Python 2.6
+      #58 - Fixed parsing of Cache-Control: header to make it more robust
+
+  Also fixed a deprecation warning that appeared between Python 3.0 and 3.1.
+
+0.4.0
+
+   Added support for proxies if the Socksipy module is installed.
+
+   Fixed bug with some HEAD responses having content-length set to 
+   zero incorrectly.
+
+   Fixed most except's to catch a specific exception.
+
+   Added 'connection_type' parameter to Http.request().
+ 
+   The default for 'force_exception_to_status_code' was changed to False. Defaulting
+   to True was causing quite a bit of confusion.
+
+
+0.3.0
+   Calling Http.request() with a relative URI, as opposed to an absolute URI,
+   will now throw a specific exception.
+
+   Http() now has an additional optional parameter for the socket timeout.
+
+   Exceptions can now be forced into responses. That is, instead of
+   throwing an exception, a good httlib2.Response object is returned
+   that describe the error with an appropriate status code.
+
+   Many improvements to the file cache:
+
+     1.  The names in the cache are now much less 
+         opaque, which should help with debugging.
+
+     2.  The disk cache is now Apache mod_asis compatible. 
+     
+     3.  A Content-Location: header is supplied and stored in the
+         cache which points to the original requested URI.
+
+   User supplied If-* headers now override httplib2 supplied
+   versions.
+
+   IRIs are now fully supported. Note that they MUST be passed in
+   as unicode objects.
+
+   Http.add_credentials() now takes an optional domain to restrict
+   the credentials to being only used on that domain.
+
+   Added Http.add_certificate() which allows setting 
+   a key and cert for SSL connnections.
+
+   Many other bugs fixed.
+
+
+0.2.0
+   Added support for Google Auth.
+
+   Added experimental support for HMACDigest.  
+
+   Added support for a pluggable caching system. Now supports
+   the old system of using the file system and now memcached.
+
+   Added httplib2.debuglevel which turns on debugging. 
+
+   Change Response._previous to Response.previous.
+
+   Addded Http.follow_all_redirects which forces
+   httplib2 to follow all redirects, as opposed to 
+   following only the safe redirects. This makes the
+   GData protocol easier to use.
+
+   All known bugs fixed to date.
+
+0.1.1
+
+    Fixed several bugs raised by James Antill:
+    1. HEAD didn't get an Accept: header added like GET.
+    2. HEAD requests did not use the cache.
+    3. GET requests with Range: headers would erroneously return a full cached response.
+    4. Subsequent requests to resources that had timed out would raise an exception.
+    And one feature request for 'method' to default to GET.
+
+    Xavier Verges Farrero supplied what I needed to make the 
+    library work with Python 2.3.
+
+    I added distutils based setup.py.
+
+0.1 Rev 86 
+    
+    Initial Release
+
