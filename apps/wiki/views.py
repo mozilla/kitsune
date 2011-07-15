@@ -376,7 +376,8 @@ def review_revision(request, document_slug, revision_id):
                 events = [ApproveRevisionInLocaleEvent(rev)]
                 if rev.is_ready_for_localization:
                     events.append(ReadyRevisionEvent(rev))
-                ApprovedOrReadyUnion(*events).fire(exclude=rev.creator)
+                ApprovedOrReadyUnion(*events).fire(exclude=[rev.creator,
+                                                            request.user])
 
             # Send an email (not really a "notification" in the sense that
             # there's a Watch table entry) to revision creator.
