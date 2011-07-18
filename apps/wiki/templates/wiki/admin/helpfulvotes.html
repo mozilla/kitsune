@@ -1,0 +1,27 @@
+{% extends "kadmin/base.html" %}
+{% load waffle_tags %}
+
+
+{% block content %}
+  {% switch 'migrate-helpfulvotes' %}
+  {% else %}
+    <p>Migrating HelpfulVotes is currently disabled. Activate waffle switch 'migrate-helpfulvotes' to enable.</p>
+  {% endswitch %}
+  <section>
+    <h1>Migrate Specific HelpfulVotes</h1>
+    <form action="" method="POST">
+      Chunk Size: <input type="text" name="chunksize" value="{{ chunksize }}" />
+      <p>Insert a space delimited, hyphenated list of the ID ranges only for the tasks you wish to start. Both start and end must be multiples of chunk size. For example (assume 2000 chunksize), the entry "2000-10000 12000-14000" will run 2000 sized chunks starting at 2000, 4000, 6000, 8000, 12000.</p>
+      {% csrf_token %}
+      <input type="hidden" name="firetext" value="1" />
+      IDs: <input type="text" name="textlist" />
+      <br />
+      <input type="submit" value="Migrate HelpfulVotes" />
+    </form>
+  </section>
+{% endblock %}
+
+{% block footer %}
+  {{ block.super }}
+  <script type="text/javascript" src="{{ MEDIA_URL }}js/libs/jquery.min.js"></script>
+{% endblock %}
