@@ -1011,6 +1011,11 @@ class ReviewRevisionTests(TestCaseBase):
                                                     locale='en-US')
         watch.activate().save()
 
+        # Subscribe the approver to approvals so we can assert (by counting the
+        # mails) that he didn't get notified.
+        ApproveRevisionInLocaleEvent.notify(User.objects.get(username='admin'),
+                                            locale='en-US').activate().save()
+        
         # Approve something:
         significance = SIGNIFICANCES[0][0]
         response = post(self.client, 'wiki.review_revision',
@@ -1057,7 +1062,7 @@ class ReviewRevisionTests(TestCaseBase):
                  subject='%s (%s) has a new approved revision (admin)' %
                      (self.document.title, self.document.locale),
                  body=expected_body,
-                 to=['joe@example.com'])
+                 to=['joe@example.com'])        
 
     @mock.patch.object(send_reviewed_notification, 'delay')
     @mock.patch.object(Site.objects, 'get_current')
