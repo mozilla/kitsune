@@ -355,7 +355,7 @@ class LocalizableOrLatestRevisionTests(TestCase):
         ready = revision(is_approved=True,
                          is_ready_for_localization=True,
                          save=True)
-        unready = revision(document=ready.document,
+        revision(document=ready.document,
                            is_approved=True,
                            is_ready_for_localization=False,
                            save=True)
