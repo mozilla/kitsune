@@ -10,8 +10,10 @@ from users.models import Profile
 
 
 @register.function
-def profile_url(user):
+def profile_url(user, edit=False):
     """Return a URL to the user's profile."""
+    if edit:
+        return reverse('users.edit_profile', args=[])
     return reverse('users.profile', args=[user.pk])
 
 

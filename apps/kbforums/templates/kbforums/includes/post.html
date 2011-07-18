@@ -1,8 +1,8 @@
 <div class="author">
-  <a href="{{ profile_url(post.creator) }}">
+  <a href="{{ profile_url(post.creator, request.user == post.creator) }}">
     <img src="{{ profile_avatar(post.creator) }}" height="45" width="45" alt=""/>
   </a>
-  <a class="author-name" href="{{ profile_url(post.creator) }}">{{ post.creator }}</a>
+  <a class="author-name" href="{{ profile_url(post.creator, request.user == post.creator) }}">{{ post.creator }}</a>
   {% if waffle.flag('private-messaging') %}
     {{ private_message(post.creator) }}
   {% endif %}
