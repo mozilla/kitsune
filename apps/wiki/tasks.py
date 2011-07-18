@@ -131,7 +131,7 @@ def _rebuild_kb_chunk(data, **kwargs):
     unpin_this_thread()  # Not all tasks need to do use the master.
 
 
-@task(rate_limit='3/h')
+@task(rate_limit='4/h')
 def migrate_helpfulvotes(start_id, end_id):
     """Transfer helpfulvotes from old to new version."""
 
@@ -182,4 +182,3 @@ def migrate_helpfulvotes(start_id, end_id):
 
     d = time.time() - start
     statsd.timing('wiki.migrate_helpfulvotes', int(round(d * 1000)))
-    print d

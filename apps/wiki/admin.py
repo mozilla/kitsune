@@ -1,6 +1,4 @@
 from django.contrib import admin, messages
-from django.contrib.auth.models import User
-from django.http import HttpResponseRedirect
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 
@@ -69,47 +67,43 @@ class DocumentAdmin(admin.ModelAdmin):
 admin.site.register(Document, DocumentAdmin)
 
 
-
 def helpfulvotes(request):
-    total_entries = 1370000
-
     chunk_size = 2000
-
-    chunk_count = (total_entries + chunk_size - 1) / chunk_size
 
     if request.POST.get('firetext'):
         try:
             chunk_size = int(request.POST.get('chunksize'))
         except:
             messages.add_message(request, messages.ERROR,
-                            'migrate_helpfulvotes task failed! Specify a chunk size')
+               'migrate_helpfulvotes task failed! Specify a valid chunk size')
             return render_to_response('wiki/admin/helpfulvotes.html',
                                   {'title': 'HelpfulVotes',
                                    'chunksize': chunk_size},
                                   RequestContext(request, {}))
+
         chunk_list = request.POST.get('textlist').split()
 
         try:
             chunk_split = [i.split('-') for i in chunk_list]
             chunks = []
             for chunk_range in chunk_split:
-                chunks += filter(lambda x: not(x % chunk_size), [i for i in range(int(chunk_range[0]), int(chunk_range[1]))])
-            
+                chunks += filter(lambda x: not(x % chunk_size),
+                                [i for i in range(int(chunk_range[0]),
+                                    int(chunk_range[1]))])
+
             for start_id in chunks:
                 migrate_helpfulvotes.delay(start_id, start_id + chunk_size)
             
             messages.add_message(request, messages.SUCCESS,
-                                 '%s migrate_helpfulvotes task queued!' % len(chunks))
+                '%s migrate_helpfulvotes task queued!' % len(chunks))
         except:
             messages.add_message(request, messages.ERROR,
-                        'migrate_helpfulvotes task failed! Follow entry format.')
+                'migrate_helpfulvotes task failed! Follow entry format.')
 
-    
     return render_to_response('wiki/admin/helpfulvotes.html',
                               {'title': 'HelpfulVotes',
-                               'chunks': chunks,
                                'chunksize': chunk_size},
                               RequestContext(request, {}))
-                              
-                              
+
+
 admin.site.register_view('helpfulvotes', helpfulvotes, 'HelpfulVotes')
