@@ -6,7 +6,7 @@ from django.contrib.sites.models import Site
 from django.core.cache import cache
 from django.core.exceptions import ValidationError
 from django.core.mail import send_mail, mail_admins
-from django.db import transaction
+from django.db import connection, transaction
 from django.template import Context, loader
 
 import celery.conf
@@ -131,12 +131,12 @@ def _rebuild_kb_chunk(data, **kwargs):
     unpin_this_thread()  # Not all tasks need to do use the master.
 
 
-@task(rate_limit='1/h')
+@task(rate_limit='20/m')
 def migrate_helpfulvotes(start_id, end_id):
     """Transfer helpfulvotes from old to new version."""
 
     if not waffle.switch_is_active('migrate-helpfulvotes'):
-        return  # raise? Celery can email us the failed ID range then
+        raise  # Celery can email us the failed ID range then so we know to rerun.
 
     start = time.time()
 
@@ -146,10 +146,11 @@ def migrate_helpfulvotes(start_id, end_id):
     transaction.managed(True)
     try:
         cursor = connection.cursor()
-        cursor.execute("""INSERT INTO `wiki_helpfulvote`
+        print start_id, end_id
+        '''cursor.execute("""INSERT INTO `wiki_helpfulvote`
                     (revision_id, helpful, created,
                      creator_id, anonymous_id, user_agent)
-        SELECT COALESCE((SELECT id FROM `wiki_revision`
+                SELECT COALESCE((SELECT id FROM `wiki_revision`
                               WHERE `document_id` = wiki_helpfulvoteold.document_id
                               AND `is_approved`=1 AND
                               (`reviewed` <= wiki_helpfulvoteold.created OR `reviewed` IS NULL)
@@ -167,6 +168,7 @@ def migrate_helpfulvotes(start_id, end_id):
                                   ORDER BY `created` ASC LIMIT 1)), helpful, created,
                         creator_id, anonymous_id, user_agent
                         FROM `wiki_helpfulvoteold` WHERE id >= %s AND id < %s""", [start_id, end_id])
+        '''
         transaction.commit()
     except:
         transaction.rollback()
