@@ -71,36 +71,44 @@ admin.site.register(Document, DocumentAdmin)
 
 
 def helpfulvotes(request):
-    total_entries = 1500000
-    chunk_size = 3000
+    total_entries = 1370000
+
+    chunk_size = 2000
 
     chunk_count = (total_entries + chunk_size - 1) / chunk_size
 
-    chunks = [['%s - %s' % (i*chunk_size, (i+1)*chunk_size), i*chunk_size] for i in range(chunk_count)]
-
-    if request.POST.get('firetasks'):
-        chunk_list = request.POST.getlist('chunks')
-        for str_start_id in chunk_list:
-            start_id = int(str_start_id)
-            migrate_helpfulvotes.delay(start_id, start_id + chunk_size)
-        messages.add_message(request, messages.SUCCESS,
-                             '%s migrate_helpfulvotes task queued!' % len(chunk_list))
-    elif request.POST.get('firetext'):
-        chunk_list = request.POST.get('textlist').split()
-        is_valid = all(not(int(i) % 3000) for i in chunk_list)
-        if not is_valid:
+    if request.POST.get('firetext'):
+        try:
+            chunk_size = int(request.POST.get('chunksize'))
+        except:
             messages.add_message(request, messages.ERROR,
-                        'migrate_helpfulvotes task failed! An entry is not a multiple of %s.' % chunk_size)
-        else:
-            for str_start_id in chunk_list:
-                start_id = int(str_start_id)
+                            'migrate_helpfulvotes task failed! Specify a chunk size')
+            return render_to_response('wiki/admin/helpfulvotes.html',
+                                  {'title': 'HelpfulVotes',
+                                   'chunksize': chunk_size},
+                                  RequestContext(request, {}))
+        chunk_list = request.POST.get('textlist').split()
+
+        try:
+            chunk_split = [i.split('-') for i in chunk_list]
+            chunks = []
+            for chunk_range in chunk_split:
+                chunks += filter(lambda x: not(x % chunk_size), [i for i in range(int(chunk_range[0]), int(chunk_range[1]))])
+            
+            for start_id in chunks:
                 migrate_helpfulvotes.delay(start_id, start_id + chunk_size)
+            
             messages.add_message(request, messages.SUCCESS,
-                             '%s migrate_helpfulvotes task queued!' % len(chunk_list))
+                                 '%s migrate_helpfulvotes task queued!' % len(chunks))
+        except:
+            messages.add_message(request, messages.ERROR,
+                        'migrate_helpfulvotes task failed! Follow entry format.')
+
     
     return render_to_response('wiki/admin/helpfulvotes.html',
                               {'title': 'HelpfulVotes',
-                               'chunks': chunks},
+                               'chunks': chunks,
+                               'chunksize': chunk_size},
                               RequestContext(request, {}))
                               
                               
