@@ -76,14 +76,15 @@ To use ``pip``, you only need to do this::
 Python Packages
 ---------------
 
-All of the pure-Python requirements are available in a git repository, known as
-a vendor library. This allows them to be available on the Python path without
-needing to be installed in the system, allowing multiple versions for multiple
-projects simultaneously.
+All the pure-Python requirements are provided in the ``vendor`` directory, also
+known as the "vendor library". This makes the packages available to Python
+without installing them globally and keeps them pinned to known-compatible
+versions.
 
-The vendor library is a submodule in ``vendor/``. If you clone Kitsune with
-``--recursive`` above, you should have everything, but to be safe, or when the
-vendor submodule changes, you should run this::
+If you clone Kitsune with ``--recursive`` as above, all the dependencies, some
+of which are referenced via ``git submodule``, should come down automatically.
+To bring the submodules back up to date when the vendor library changes, run
+this::
 
     cd vendor
     git submodule update --init --recursive
