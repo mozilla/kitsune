@@ -1,8 +1,13 @@
 <div class="author">
-  <a href="{{ profile_url(post.creator) }}">
+  {% if request.user == post.creator %}
+    {% set profile_link = url('users.edit_profile') %}
+  {% else %}
+    {% set profile_link = profile_url(post.creator) %}
+  {% endif %}
+  <a href="{{ profile_link }}">
     <img src="{{ profile_avatar(post.creator) }}" height="45" width="45" alt=""/>
   </a>
-  <a class="author-name" href="{{ profile_url(post.creator) }}">{{ post.creator }}</a>
+  <a class="author-name" href="{{ profile_link }}">{{ post.creator }}</a>
   {% if waffle.flag('private-messaging') %}
     {{ private_message(post.creator) }}
   {% endif %}

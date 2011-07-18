@@ -17,7 +17,12 @@
     <section id="question">
       <div class="user-section">
         <div class="avatar{% if user == question.creator %} self{% endif %}">
-          <a href="{{ profile_url(question.creator) }}">
+          {% if request.user == question.creator %}
+            {% set profile_link = url('users.edit_profile') %}
+          {% else %}
+            {% set profile_link = profile_url(question.creator) %}
+          {% endif %}
+          <a href="{{ profile_link }}">
             <img src="{{ profile_avatar(question.creator) }}" height="48" width="48" alt="{{ question.creator }}"/>
             {% if user == question.creator %}
               <span>{{ _('You') }}</span>
@@ -25,7 +30,7 @@
           </a>
         </div>
         <div class="asked-by">
-          <a href="{{ profile_url(question.creator) }}">{{ question.creator }}</a>
+          <a href="{{ profile_link }}">{{ question.creator }}</a>
         </div>
         <div class="asked-on">
           {{ question.created|timesince }}
