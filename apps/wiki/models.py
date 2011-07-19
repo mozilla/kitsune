@@ -704,6 +704,13 @@ class Revision(ModelBase):
             self.document.html = self.content_parsed
             self.document.current_revision = self
             self.document.save()
+        elif (self.is_ready_for_localization and
+              (not self.document.latest_localizable_revision or
+               self.id > self.document.latest_localizable_revision.id)):
+            # We are marking a newer revision as ready for l10n.
+            # Update the denormalized field on the documnet
+            self.document.latest_localizable_revision = self
+            self.document.save()
 
     def delete(self, *args, **kwargs):
         """Dodge cascading delete of documents and other revisions."""
