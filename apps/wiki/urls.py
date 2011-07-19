@@ -55,6 +55,9 @@ document_patterns = patterns('wiki.views',
     # Vote helpful/not helpful
     url(r'^/vote', 'helpful_vote', name="wiki.document_vote"),
 
+    # Get helpful votes data
+    url(r'^/get-votes-async', 'get_helpful_votes_async', name="wiki.get_helpful_votes_async"),
+
     # KB discussion forums
     (r'^/discuss', include(doc_discuss_patterns)),
 
