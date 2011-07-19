@@ -262,6 +262,7 @@ class DocumentTests(TestCase):
 
         # Approve it:
         r.is_approved = True
+        r.is_ready_for_localization = True
         r.save()
 
         assert trans_doc.is_majorly_outdated()
@@ -295,7 +296,8 @@ class DocumentTests(TestCase):
 
         major_parent_rev = revision(document=parent_rev.document,
                                     significance=MAJOR_SIGNIFICANCE,
-                                    is_approved=True)
+                                    is_approved=True,
+                                    is_ready_for_localization=True)
         major_parent_rev.save()
 
         assert trans.is_majorly_outdated(), \
