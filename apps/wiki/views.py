@@ -2,7 +2,9 @@ from datetime import datetime
 import json
 import logging
 from string import ascii_letters
+import time
 
+from django.db import connection
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.models import User
@@ -707,6 +709,78 @@ def helpful_vote(request, document_slug):
         return HttpResponse(json.dumps({'message': message}))
 
     return HttpResponseRedirect(revision.document.get_absolute_url())
+
+
+@require_GET
+def get_helpful_votes_async(request, document_slug):
+    document = get_object_or_404(
+        Document, locale=request.locale, slug=document_slug)
+
+    yes_data = []
+    no_data = []
+    date_to_rev_id = {}
+    flag_data = []
+    revisions = set([])
+
+    start = time.time()
+    cursor = connection.cursor()
+
+    cursor.execute('''SELECT wiki_helpfulvote.revision_id,
+                             SUM(wiki_helpfulvote.helpful),
+                             SUM(NOT(wiki_helpfulvote.helpful)),
+                             wiki_helpfulvote.created
+                        FROM wiki_helpfulvote
+                        INNER JOIN wiki_revision ON
+                            wiki_helpfulvote.revision_id=wiki_revision.id
+                        WHERE wiki_revision.document_id=%s
+                        GROUP BY DATE(wiki_helpfulvote.created);
+                        ''', [document.id])
+
+    results = cursor.fetchall()
+    for res in results:
+        created = 1000 * int(time.mktime(res[3].timetuple()))
+        yes_data.append([created, int(res[1])])
+        no_data.append([created, int(res[2])])
+        date_to_rev_id[created] = res[0]
+        revisions.add(int(res[0]))
+
+    # Drop the first revision marker to make the graph cleaner
+    revisions = sorted(revisions)[1:]
+
+    for rev in revisions:
+        r = get_object_or_404(Revision, id=rev)
+        rdate = r.created
+
+        flag_data.append({
+                    'x': 1000 * int(time.mktime(rdate.timetuple())),
+                    'title': _('Revision'),
+                    'text': unicode(_('Revision %s')) % rdate
+                    #'url': 'http://www.google.com/'  # Not supported yet
+                })
+
+    end = time.time()
+
+    send = {'data': [{
+                        'name': _('Yes'),
+                        'id': 'yes_data',
+                        'data': yes_data
+                    },
+                    {
+                        'name': _('No'),
+                        'id': 'no_data',
+                        'data': no_data
+                    },
+                    {
+                        'type': 'flags',
+                        'data': flag_data,
+                        'shape': 'squarepin'
+                    }],
+            'date_to_rev_id': date_to_rev_id,
+            'query': (end - start)
+            }
+
+    return HttpResponse(json.dumps(send),
+                        mimetype='application/json')
 
 
 @login_required
