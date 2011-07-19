@@ -567,7 +567,8 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin):
 
     def is_majorly_outdated(self):
         """Return whether a MAJOR_SIGNIFICANCE-level update has occurred to the
-        parent document since this translation had an approved update.
+        parent document since this translation had an approved update and such
+        revision is ready for l10n.
 
         If this is not a translation or has never been approved, return False.
 
@@ -578,7 +579,7 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin):
         based_on_id = self.current_revision.based_on_id
         more_filters = {'id__gt': based_on_id} if based_on_id else {}
         return self.parent.revisions.filter(
-            is_approved=True,
+            is_approved=True, is_ready_for_localization=True,
             significance__gte=MAJOR_SIGNIFICANCE, **more_filters).exists()
 
     def is_watched_by(self, user):
@@ -703,6 +704,13 @@ class Revision(ModelBase):
                 self.document.latest_localizable_revision = self
             self.document.html = self.content_parsed
             self.document.current_revision = self
+            self.document.save()
+        elif (self.is_ready_for_localization and
+              (not self.document.latest_localizable_revision or
+               self.id > self.document.latest_localizable_revision.id)):
+            # We are marking a newer revision as ready for l10n.
+            # Update the denormalized field on the documnet
+            self.document.latest_localizable_revision = self
             self.document.save()
 
     def delete(self, *args, **kwargs):
