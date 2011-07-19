@@ -1,7 +1,9 @@
-from django.contrib import admin
+from django.contrib import admin, messages
+from django.shortcuts import render_to_response
+from django.template import RequestContext
 
 from wiki.models import Document
-
+from wiki.tasks import migrate_helpfulvotes
 
 class DocumentAdmin(admin.ModelAdmin):
     exclude = ('tags',)
@@ -63,3 +65,45 @@ class DocumentAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Document, DocumentAdmin)
+
+
+def helpfulvotes(request):
+    chunk_size = 2000
+
+    if request.POST.get('firetext'):
+        try:
+            chunk_size = int(request.POST.get('chunksize'))
+        except:
+            messages.add_message(request, messages.ERROR,
+               'migrate_helpfulvotes task failed! Specify a valid chunk size')
+            return render_to_response('wiki/admin/helpfulvotes.html',
+                                  {'title': 'HelpfulVotes',
+                                   'chunksize': chunk_size},
+                                  RequestContext(request, {}))
+
+        chunk_list = request.POST.get('textlist').split()
+
+        try:
+            chunk_split = [i.split('-') for i in chunk_list]
+            chunks = []
+            for chunk_range in chunk_split:
+                chunks += filter(lambda x: not(x % chunk_size),
+                                [i for i in range(int(chunk_range[0]),
+                                    int(chunk_range[1]))])
+
+            for start_id in chunks:
+                migrate_helpfulvotes.delay(start_id, start_id + chunk_size)
+            
+            messages.add_message(request, messages.SUCCESS,
+                '%s migrate_helpfulvotes task queued!' % len(chunks))
+        except:
+            messages.add_message(request, messages.ERROR,
+                'migrate_helpfulvotes task failed! Follow entry format.')
+
+    return render_to_response('wiki/admin/helpfulvotes.html',
+                              {'title': 'HelpfulVotes',
+                               'chunksize': chunk_size},
+                              RequestContext(request, {}))
+
+
+admin.site.register_view('helpfulvotes', helpfulvotes, 'HelpfulVotes')
