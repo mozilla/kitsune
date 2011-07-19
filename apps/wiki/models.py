@@ -86,10 +86,10 @@ VersionMetadata = namedtuple('VersionMetadata',
                              'is_default')
 GROUPED_FIREFOX_VERSIONS = (
     ((_lazy(u'Desktop:'), 'desktop'), (
-        # The first option is the default for {for} display. This should be the
-        # newest version.
+        VersionMetadata(9, _lazy(u'Firefox 7'),
+                        _lazy(u'Firefox 7'), 'fx7', 7.9999, False, False),
         VersionMetadata(6, _lazy(u'Firefox 6'),
-                        _lazy(u'Firefox 6'), 'fx6', 6.9999, False, False),
+                        _lazy(u'Firefox 6'), 'fx6', 6.9999, True, False),
         VersionMetadata(5, _lazy(u'Firefox 5'),
                         _lazy(u'Firefox 5'), 'fx5', 5.9999, True, True),
         VersionMetadata(1, _lazy(u'Firefox 4'),
@@ -100,8 +100,11 @@ GROUPED_FIREFOX_VERSIONS = (
         VersionMetadata(3, _lazy(u'Firefox 3.0'),
                         _lazy(u'Firefox 3.0'), 'fx3', 3.4999, False, False))),
     ((_lazy(u'Mobile:'), 'mobile'), (
+        VersionMetadata(10, _lazy(u'Firefox 7'),
+                        _lazy(u'Firefox 7 for Mobile'), 'm7', 7.9999, False,
+                        False),
         VersionMetadata(8, _lazy(u'Firefox 6'),
-                        _lazy(u'Firefox 6 for Mobile'), 'm6', 6.9999, False,
+                        _lazy(u'Firefox 6 for Mobile'), 'm6', 6.9999, True,
                         False),
         VersionMetadata(7, _lazy(u'Firefox 5'),
                         _lazy(u'Firefox 5 for Mobile'), 'm5', 5.9999, True,
