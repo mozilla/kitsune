@@ -340,6 +340,7 @@ class RevisionTests(TestCaseBase):
 
         assert fire.called
         assert r2.is_ready_for_localization
+        eq_(r2.document.latest_localizable_revision, r2)
 
     @mock.patch.object(ReadyRevisionEvent, 'fire')
     def test_mark_as_ready_GET(self, fire):
