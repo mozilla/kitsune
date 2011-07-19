@@ -13,7 +13,7 @@ from pyquery import PyQuery as pq
 from tidings.models import Watch
 
 from questions.events import QuestionReplyEvent, QuestionSolvedEvent
-from questions.models import Question, Answer, QuestionVote
+from questions.models import Question, Answer, QuestionVote, VoteMetadata
 from questions.tests import TestCaseBase, TaggingTestCaseBase, tags_eq
 from questions.views import UNAPPROVED_TAG, NO_TAG
 from questions.cron import cache_top_contributors
@@ -199,7 +199,9 @@ class AnswersTemplateTestCase(TestCaseBase):
         eq_(1, len(doc('div.me-too form')))
 
         # Vote
-        post(self.client, 'questions.vote', args=[self.question.id])
+        ua = 'Mozilla/5.0 (DjangoTestClient)'
+        self.client.post(reverse('questions.vote', args=[self.question.id]),
+                         {}, HTTP_USER_AGENT=ua)
 
         # Check that there is 1 vote and vote form doesn't render
         response = get(self.client, 'questions.answers',
@@ -207,6 +209,10 @@ class AnswersTemplateTestCase(TestCaseBase):
         doc = pq(response.content)
         eq_('1 person', doc('div.have-problem mark')[0].text)
         eq_(0, len(doc('div.me-too form')))
+        # Verify user agent
+        vote_meta = VoteMetadata.objects.all()[0]
+        eq_('ua', vote_meta.key)
+        eq_(ua, vote_meta.value)
 
         # Voting again (same user) should not increment vote count
         post(self.client, 'questions.vote', args=[self.question.id])
@@ -237,8 +243,10 @@ class AnswersTemplateTestCase(TestCaseBase):
         eq_(1, len(doc('form.helpful input[name="helpful"]')))
 
         # Vote
-        post(self.client, 'questions.answer_vote', {'helpful': 'y'},
-             args=[self.question.id, self.answer.id])
+        ua = 'Mozilla/5.0 (DjangoTestClient)'
+        self.client.post(reverse('questions.answer_vote',
+                                 args=[self.question.id, self.answer.id]),
+                         {'helpful': 'y'}, HTTP_USER_AGENT=ua)
 
         # Check that there is 1 vote and vote form doesn't render
         response = get(self.client, 'questions.answers',
@@ -248,6 +256,10 @@ class AnswersTemplateTestCase(TestCaseBase):
         eq_('1 out of 1 person found this reply helpful',
             doc('#answer-1 span.helpful')[0].text.strip())
         eq_(0, len(doc('form.helpful input[name="helpful"]')))
+        # Verify user agent
+        vote_meta = VoteMetadata.objects.all()[0]
+        eq_('ua', vote_meta.key)
+        eq_(ua, vote_meta.value)
 
         # Voting again (same user) should not increment vote count
         post(self.client, 'questions.answer_vote', {'helpful': 'y'},
