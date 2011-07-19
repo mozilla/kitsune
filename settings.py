@@ -83,6 +83,7 @@ LANGUAGE_URL_MAP = dict([(i.lower(), i) for i in SUMO_LANGUAGES])
 NON_SUPPORTED_LOCALES = {
     'af': None,
     'br': 'fr',
+    'csb': 'pl',
     'nb-NO': 'no',
     'nn-NO': 'no',
     'oc': 'fr',
