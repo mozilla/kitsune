@@ -283,6 +283,14 @@ class QuestionTests(TestCaseBase):
         q.save()
         assert not QuestionReplyEvent.is_notifying(q.creator, q)
 
+    def test_is_solved_property(self):
+        a = Answer.objects.all()[0]
+        q = a.question
+        assert not q.is_solved
+        q.solution = a
+        q.save()
+        assert q.is_solved
+
 
 class AddExistingTagTests(TaggingTestCaseBase):
     """Tests for the add_existing_tag helper function."""
