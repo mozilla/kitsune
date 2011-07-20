@@ -672,7 +672,7 @@ def json_view(request):
 def helpful_vote(request, document_slug):
     """Vote for Helpful/Not Helpful document"""
     revision = get_object_or_404(
-        Revision, id=request.POST['revision_id'])
+        Revision, id=smart_int(request.POST['revision_id']))
 
     if not revision.has_voted(request):
         ua = request.META.get('HTTP_USER_AGENT', '')[:1000]  # 1000 max_length

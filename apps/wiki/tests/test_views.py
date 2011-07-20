@@ -208,3 +208,13 @@ class AddRemoveContributorTests(TestCase):
         r = self.client.post(url)
         eq_(302, r.status_code)
         assert not self.contributor in self.document.contributors.all()
+
+
+class VoteTests(TestCase):
+    client_class = LocalizingClient
+
+    def test_helpful_vote_bad_id(self):
+        """Throw helpful_vote a bad ID, and see if it crashes."""
+        response = self.client.post(reverse('wiki.document_vote', args=['hi']),
+                                    {'revision_id': 'x'})
+        eq_(404, response.status_code)
