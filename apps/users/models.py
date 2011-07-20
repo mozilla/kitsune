@@ -10,6 +10,7 @@ from django.core import mail
 from django.db import models
 from django.template.loader import render_to_string
 
+from statsd import statsd
 from timezones.fields import TimeZoneField
 from tower import ugettext as _
 from tower import ugettext_lazy as _lazy
@@ -113,7 +114,7 @@ class ConfirmationManager(models.Manager):
 
 
 class RegistrationManager(ConfirmationManager):
-    def activate_user(self, activation_key):
+    def activate_user(self, activation_key, request=None):
         """
         Validate an activation key and activate the corresponding
         ``User`` if valid.
@@ -138,14 +139,32 @@ class RegistrationManager(ConfirmationManager):
             try:
                 profile = self.get(activation_key=activation_key)
             except self.model.DoesNotExist:
-                return False
-            if not profile.activation_key_expired():
-                user = profile.user
-                user.is_active = True
-                user.save()
-                profile.activation_key = self.model.ACTIVATED
-                profile.save()
-                return user
+                profile = None
+                statsd.incr('user.activate-error.does-not-exist')
+                msg = 'Key: {k}\nRequest:\n'.format(k=activation_key)
+                reason = 'key not found'
+            if profile:
+                if not profile.activation_key_expired():
+                    user = profile.user
+                    user.is_active = True
+                    user.save()
+                    profile.activation_key = self.model.ACTIVATED
+                    profile.save()
+                    return user
+                else:
+                    statsd.incr('user.activate-error.expired')
+                    msg = 'Username: {u}\nJoined: {d}\nRequest:\n'
+                    msg = msg.format(u=profile.user.username,
+                                     d=profile.user.date_joined)
+                    reason = 'key expired'
+        else:
+            statsd.incr('user.activate-error.invalid-key')
+            msg = 'Key: {k}\nRequest:\n'.format(k=activation_key)
+            reason = 'invalid key'
+
+        mail.mail_admins(u'User activation failure ({r})'.format(r=reason),
+                         msg + repr(request), fail_silently=True)
+
         return False
 
     def create_inactive_user(self, username, password, email,
