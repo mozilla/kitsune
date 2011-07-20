@@ -1,16 +1,8 @@
 /* Some Extra Fonts */
-/* first for IE 6/7/8 */
 @font-face {
     font-family: 'MetaBlack';
     font-weight: bold;
-    src: url('../fonts/MetaWebPro-Black.eot');
-}
-
-/* then for Mozilla browsers -> Firefox */
-@font-face {
-    font-family: 'MetaBlack';
-    font-weight: bold;
-    src: url('../fonts/MetaWebPro-Black.woff') format('woff');
+    src: url('../fonts/MetaWebPro-Black.eot?') format('eot'), url('../fonts/MetaWebPro-Black.woff') format('woff');
 }
 
 /*----------------------------------
