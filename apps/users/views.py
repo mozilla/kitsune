@@ -5,7 +5,6 @@ from django.contrib import auth
 from django.contrib.auth.forms import PasswordResetForm
 from django.contrib.auth.models import User
 from django.contrib.auth.tokens import default_token_generator
-from django.core.mail import mail_admins
 from django.http import HttpResponseRedirect, Http404
 from django.views.decorators.http import require_http_methods, require_GET
 from django.shortcuts import get_object_or_404
@@ -80,7 +79,8 @@ def register(request):
 def activate(request, activation_key):
     """Activate a User account."""
     activation_key = activation_key.lower()
-    account = RegistrationProfile.objects.activate_user(activation_key)
+    account = RegistrationProfile.objects.activate_user(activation_key,
+                                                        request)
     my_questions = None
     form = AuthenticationForm()
     if account:
@@ -89,10 +89,7 @@ def activate(request, activation_key):
         claim_watches.delay(account)
 
         my_questions = Question.uncached.filter(creator=account)
-    else:  # There was some issue activating the account.
-        statsd.incr('user.activate-error')
-        mail_admins(u'User activation failure', repr(request),
-                    fail_silently=True)
+
     return jingo.render(request, 'users/activate.html',
                         {'account': account, 'questions': my_questions,
                          'form': form})
