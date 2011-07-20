@@ -1,3 +1,5 @@
+import urls
+
 from nose.tools import eq_
 
 from sumo.tests import TestCase
