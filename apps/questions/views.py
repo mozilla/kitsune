@@ -174,14 +174,14 @@ def new_question(request, template=None):
         search = request.GET.get('search', '')
         if search:
             try:
-                wiki_results, questions_results = _search_suggestions(
-                                 search, locale_or_default(request.locale))
+                results = _search_suggestions(
+                    search, locale_or_default(request.locale))
             except SearchError:
                 # Just quietly advance the user to the next step.
-                wiki_results, questions_results = [], []
+                results = []
             tried_search = True
         else:
-            wiki_results, questions_results = [], []
+            results = []
             tried_search = False
 
         if request.GET.get('showform'):
@@ -202,8 +202,7 @@ def new_question(request, template=None):
 
         return jingo.render(request, template,
                             {'form': form,
-                             'wiki_results': wiki_results,
-                             'questions_results': questions_results,
+                             'results': results,
                              'tried_search': tried_search,
                              'products': products,
                              'current_product': product,
@@ -774,13 +773,13 @@ def _search_suggestions(query, locale):
     query -- full text to search on
     locale -- locale to limit to
 
-    Items returned are dicts:
-        { 'url': URL where the article can be viewed,
-          'title': Title of the article,
-          'excerpt_html': Excerpt of the article with search terms hilighted,
-                          formatted in HTML }
+    Items are dicts of:
+        {
+            'type':
+            'object':
+        }
 
-    Weights wiki pages infinitely higher than questions at the moment.
+    Returns up to 3 wiki pages, then up to 3 questions.
 
     TODO: ZOMFG this needs to be refactored and the search app should
           provide an internal API. Seriously.
@@ -789,20 +788,6 @@ def _search_suggestions(query, locale):
 
     # Max number of search results per type.
     WIKI_RESULTS = QUESTIONS_RESULTS = 3
-
-    def prepare(result, model, attr, searcher, result_to_id):
-        """Turn a search result from a Sphinx client into an object.
-
-        Return None if an object corresponding to the result cannot be found.
-
-        """
-        try:
-            obj = model.objects.get(pk=result_to_id(result))
-        except ObjectDoesNotExist:
-            return {}
-        return {'url': obj.get_absolute_url(),
-                'title': obj.title,
-                'excerpt_html': searcher.excerpt(getattr(obj, attr), query)}
 
     # Search wiki pages:
     wiki_searcher = WikiClient()
@@ -818,11 +803,15 @@ def _search_suggestions(query, locale):
     raw_results = wiki_searcher.query(query, filters=filters,
                                       limit=WIKI_RESULTS)
     # Lazily build excerpts from results. Stop when we have enough:
-    wiki_results = []
+    results = []
     for r in raw_results:
         try:
-            wiki_results.append(
-                Document.objects.select_related('current_revision').get(pk=r['id']))
+            doc = Document.objects.select_related('current_revision').\
+                get(pk=r['id'])
+            results.append({
+                'type': 'document',
+                'object': doc,
+            })
         except Document.DoesNotExist:
             pass
 
@@ -830,15 +819,17 @@ def _search_suggestions(query, locale):
     # questions app is en-US only.
     raw_results = question_searcher.query(query,
                                           limit=QUESTIONS_RESULTS)
-    questions_results = []
     for r in raw_results:
         try:
-            questions_results.append(
-                Question.objects.get(pk=r['attrs']['question_id']))
+            q = Question.objects.get(pk=r['attrs']['question_id'])
+            results.append({
+                'type': 'question',
+                'object': q
+            })
         except Question.DoesNotExist:
             pass
 
-    return wiki_results, questions_results
+    return results
 
 
 def _answers_data(request, question_id, form=None, watch_form=None,

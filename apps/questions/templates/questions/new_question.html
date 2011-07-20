@@ -45,41 +45,48 @@
   {% endif %}
 
   {% if tried_search and not form %}
-    {% if wiki_results or questions_results %}
+    {% if results %}
+      <h2>{{ _("We've found some articles and previous answered questions that may solve your issue:") }}</h2>
       {% set button_text = _('None of these solve my problem') %}
-      {% if wiki_results %}
-        <ul class="wiki-results">
-          {% for doc in wiki_results %}
-            <li><a href="{{ doc.get_absolute_url() }}">{{ doc.title }}</a>
-              {{ doc.current_revision.summary|wiki_to_html }}</li>
-          {% endfor %}
-        </ul>
-      {% endif %}
-      {% if questions_results %}
-        <ul class="questions-results">
-          {% for question in questions_results %}
-            <li><a href="{{ question.get_absolute_url() }}">{{ question.title }}</a>
-              {{ question.content|truncate(500) }}
-              <div class="question-info">
-                {% if question.is_solved %}
+      <div class="search-results">
+        {% for result in results %}
+          <div class="result {{ result.type }}">
+            <a class="title" href="{{ result.object.get_absolute_url() }}">
+              {{ result.object.title }}
+            </a>
+            {% if result.type == 'document' %}
+              <p><a href="{{ result.object.get_absolute_url() }}">
+                {{ result.object.current_revision.summary }}
+              </a></p>
+            {% elif result.type == 'question' %}
+              <p><a href="{{ result.object.get_absolute_url() }}">
+                {{ result.object.content|truncate(500) }}
+              </a></p>
+              <div class="thread-meta">
+                {% if result.object.is_solved %}
                   <span class="solved">{{ _('Solved') }}</span>
                 {% endif %}
                 <span class="replies">
-                  {% if question.num_answers > 0 %}
-                    {{ ngettext('1 reply', '{n} replies', question.num_answers)|f(n=question.num_answers) }}
+                  {% if result.object.num_answers > 0 %}
+                    {{ ngettext('1 reply', '{n} replies',
+                                result.object.num_answers)|f(n=result.object.num_answers) }}
                   {% else %}
                     {{ _('No replies') }}
                   {% endif %}
                 </span>
                 <span class="votes">
                   {{ ngettext('1 person has this problem', '{n} people have this problem',
-                              question.num_votes)|f(n=question.num_votes) }}
+                              result.object.num_votes)|f(n=result.object.num_votes) }}
                 </span>
-              </div>
-              </li>
-          {% endfor %}
-        </ul>
-      {% endif %}
+                <span class="votes this-week">
+                  {{ ngettext('1 new this week', '{n} new this week',
+                              result.object.num_votes_past_week)|f(n=result.object.num_votes_past_week) }}
+                </span>
+              </div>{# .thread-meta #}
+            {% endif %}
+          </div>{# .result #}
+        {% endfor %}
+      </div>{# .search-results #}
     {% else %}{# No search results at all. #}
       <h2 class="no-results">{{ _('This question has not been asked before.') }}</h2>
       {% set button_text = _('Provide more details') %}

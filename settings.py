@@ -347,9 +347,11 @@ MINIFY_BUNDLES = {
             'css/to-delete.css',
             'css/questions.css',
             'css/tags.css',
+            'css/search.css',
         ),
         'search': (
             'css/search.css',
+            'css/search-advanced.css',
         ),
         'wiki': (
             'css/users.autocomplete.css',
