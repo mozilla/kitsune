@@ -1551,3 +1551,16 @@ a#activate-watch, a#remove-watch {
     display: block;
     font-size: 120%;
 }
+
+/* AAQ search result tweaks */
+.search-results {
+    margin-top: 10px;
+}
+
+.result .thread-meta {
+    padding: 10px 15px 10px 50px;
+}
+
+.thread-meta .this-week {
+    border-right: none;
+}
