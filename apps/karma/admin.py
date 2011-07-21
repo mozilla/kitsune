@@ -4,7 +4,7 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 
-from karma.actions import KarmaManager
+from karma.actions import KarmaAction
 from karma.tasks import init_karma, update_top_contributors
 from questions.karma_actions import (AnswerAction, AnswerMarkedHelpfulAction,
                                      AnswerMarkedNotHelpfulAction,
@@ -25,7 +25,7 @@ def karma(request):
                              'update_top_contributors task queued!')
         return HttpResponseRedirect(request.path)
 
-    kmgr = KarmaManager()
+    kmgr = KarmaAction.objects
     top_alltime = [_user_karma_alltime(u, kmgr) for u in kmgr.top_alltime()]
     top_week = [_user_karma_week(u, kmgr) for u in kmgr.top_week()]
 

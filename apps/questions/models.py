@@ -13,7 +13,7 @@ from taggit.models import Tag
 
 from activity.models import ActionMixin
 from flagit.models import FlaggedObject
-from karma.actions import KarmaManager
+from karma.actions import KarmaAction
 import questions as constants
 from questions.question_config import products
 from questions.tasks import (update_question_votes, update_answer_pages,
@@ -336,7 +336,7 @@ class Answer(ActionMixin, ModelBase):
     @property
     def creator_num_points(self):
         try:
-            return KarmaManager().total_points(self.creator)
+            return KarmaAction.objects.total_points(self.creator)
         except ConnectionError:
             return None
 
