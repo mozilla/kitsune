@@ -976,6 +976,30 @@ class DocumentRevisionsTests(TestCaseBase):
         eq_('/en-US/kb/test-document/edit/{r}'.format(r=r2.id),
             doc('#revision-list div.edit a')[0].attrib['href'])
 
+    def test_revisions_ready_for_l10n(self):
+        """Verify that the ready for l10n icon is only present on en-US."""
+        d = _create_document()
+        user_ = User.objects.get(pk=118533)
+        r1 = revision(summary="a tweak", content='lorem ipsum dolor',
+                      keywords='kw1 kw2', document=d, creator=user_)
+        r1.save()
+
+        d2 = _create_document(locale='es')
+        r2 = revision(summary="a tweak", content='lorem ipsum dolor',
+                      keywords='kw1 kw2', document=d2, creator=user_)
+        r2.save()
+
+        response = self.client.get(reverse('wiki.document_revisions',
+                                   args=[r1.document.slug]))
+        eq_(200, response.status_code)
+        doc = pq(response.content)
+        eq_(1, len(doc('#revision-list div.l10n-head')))
+
+        response = self.client.get(reverse('wiki.document_revisions',
+                                   args=[d2.slug], locale='es'))
+        eq_(200, response.status_code)
+        doc = pq(response.content)
+        eq_(0, len(doc('#revision-list div.l10n-head')))
 
 class ReviewRevisionTests(TestCaseBase):
     """Tests for Review Revisions and Translations"""
