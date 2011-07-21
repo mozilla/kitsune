@@ -317,11 +317,15 @@ ol.pagination:after {
 
 /* top contributors side module */
 #top-contributors ol {
-    margin: 5px 0 0 22px;
+    margin: 5px 0 14px 35px;
 }
 
 #top-contributors li {
     margin: 0 0 2px;
+}
+
+#top-contributors li.me {
+    font-weight: bold;
 }
 
 /* answers page */
