@@ -1,12 +1,13 @@
-from django.conf import settings
 from datetime import date
 import mock
 from nose import SkipTest
 from nose.tools import eq_
 import waffle
 
-from karma.actions import KarmaAction, KarmaManager, redis_client
+from karma.actions import KarmaAction
+from karma.manager import KarmaManager
 from sumo.tests import TestCase
+from sumo.utils import redis_client
 from users.tests import user
 
 

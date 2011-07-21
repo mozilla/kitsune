@@ -1,7 +1,7 @@
 import cronjobs
 import waffle
 
-from karma.actions import KarmaManager
+from karma.actions import KarmaAction
 
 
 @cronjobs.register
@@ -10,6 +10,5 @@ def update_top_contributors():
     if not waffle.switch_is_active('karma'):
         return
 
-    kmgr = KarmaManager()
-    kmgr.update_top_alltime()
-    kmgr.update_top_week()
+    KarmaAction.objects.update_top_alltime()
+    KarmaAction.objects.update_top_week()
