@@ -48,6 +48,7 @@ class KarmaManager(object):
 
     def update_top_alltime(self):
         """Updated the top contributors alltime sorted set."""
+        # Update sorted set
         key = '{p}:points:total'.format(p=KEY_PREFIX)
         for userid in User.objects.values_list('id', flat=True):
             pts = self.total_points(userid)
@@ -56,6 +57,7 @@ class KarmaManager(object):
 
     def update_top_week(self):
         """Updated the top contributors past week sorted set."""
+        # Update sorted set
         key = '{p}:points:week'.format(p=KEY_PREFIX)
         for userid in User.objects.values_list('id', flat=True):
             pts = self.week_points(userid)
@@ -77,6 +79,20 @@ class KarmaManager(object):
         users = list(User.objects.filter(id__in=ids))
         users.sort(key=lambda user: ids.index(str(user.id)))
         return users
+
+    def ranking_alltime(self, user):
+        """The user's alltime ranking."""
+        if not self.total_points(user):
+            return None
+        return self.redis.zrevrank('{p}:points:total'.format(p=KEY_PREFIX),
+                                   userid(user)) + 1
+
+    def ranking_week(self, user):
+        """The user's ranking for last 7 days"""
+        if not self.week_points(user):
+            return None
+        return self.redis.zrevrank('{p}:points:week'.format(p=KEY_PREFIX),
+                                   userid(user)) + 1
 
     def total_points(self, user):
         """Returns the total points for a given user."""
@@ -150,8 +166,11 @@ class KarmaManager(object):
 
 def hash_key(user):
     """Returns the hash key for a given user."""
+    return "{p}:{u}".format(p=KEY_PREFIX, u=userid(user))
+
+
+def userid(user):
     if isinstance(user, User):
-        userid = user.id
+        return user.id
     else:
-        userid = user
-    return "{p}:{u}".format(p=KEY_PREFIX, u=userid)
+        return user

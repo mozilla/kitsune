@@ -1,5 +1,4 @@
 from datetime import datetime
-from itertools import islice
 import json
 import logging
 
@@ -10,7 +9,7 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.sites.models import Site
 from django.core.cache import cache
-from django.core.exceptions import PermissionDenied, ObjectDoesNotExist
+from django.core.exceptions import PermissionDenied
 from django.db.models import Q
 from django.http import (HttpResponseRedirect, HttpResponse, Http404,
                          HttpResponseBadRequest, HttpResponseForbidden)
@@ -27,9 +26,11 @@ from taggit.models import Tag
 from tidings.events import ActivationRequestFailed
 from tidings.models import Watch
 from tower import ugettext as _, ugettext_lazy as _lazy
+import waffle
 
 from access.decorators import (has_perm_or_owns_or_403, permission_required,
                                login_required)
+from karma.actions import KarmaAction
 import questions as constants
 from questions.events import QuestionReplyEvent, QuestionSolvedEvent
 from questions.feeds import QuestionsFeed, AnswersFeed, TaggedQuestionsFeed
@@ -126,11 +127,20 @@ def questions(request):
     questions_ = paginate(request, question_qs, count=count,
                           per_page=constants.QUESTIONS_PER_PAGE)
 
-    return jingo.render(request, 'questions/questions.html',
-                        {'questions': questions_, 'feeds': feed_urls,
-                         'filter': filter_, 'sort': sort_,
-                         'top_contributors': _get_top_contributors(),
-                         'tags': tags, 'tagged': tagged})
+    data = {'questions': questions_, 'feeds': feed_urls, 'filter': filter_,
+            'sort': sort_, 'tags': tags, 'tagged': tagged}
+
+    if (waffle.flag_is_active(request, 'karma') and
+        waffle.switch_is_active('karma')):
+        data.update(karma_top=KarmaAction.objects.top_alltime())
+        if request.user.is_authenticated():
+            ranking = KarmaAction.objects.ranking_alltime(request.user)
+            if ranking <= constants.HIGHEST_RANKING:
+                data.update(karma_ranking=ranking)
+    else:
+        data.update(top_contributors=_get_top_contributors())
+
+    return jingo.render(request, 'questions/questions.html', data)
 
 
 @anonymous_csrf  # Need this so the anon csrf gets set for watch forms.

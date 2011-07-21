@@ -15,7 +15,7 @@
     {% if question.creator != answer.creator %}
       <span class="solutions">{{ _('{num} solutions')|f(num=answer.creator_num_solutions) }}</span>
       <span class="answers">{{ _('{num} answers')|f(num=answer.creator_num_answers) }}</span>
-      {% if waffle.switch('karma') and waffle.flag('karma') %}
+      {% if user.is_staff and waffle.switch('karma') %} {# only show actual points to staff #}
         {% with pts = answer.creator_num_points %}
           {% if pts != None %}
             <span class="points">{{ pts }}</span>
