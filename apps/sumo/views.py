@@ -32,21 +32,18 @@ log = logging.getLogger('k.services')
 
 @anonymous_csrf
 def handle403(request):
-    """A 403 message that looks nicer than the normal Apache forbidden page."""
-
+    """A 403 message that looks nicer than the normal Apache forbidden page"""
     return jingo.render(request, 'handlers/403.html',
                         {'form': AuthenticationForm() }, status=403)
 
 
 def handle404(request):
-    """A handler for 404s."""
-
+    """A handler for 404s"""
     return jingo.render(request, 'handlers/404.html', status=404)
 
 
 def handle500(request):
-    """A 500 message that looks nicer than the normal Apache error page."""
-
+    """A 500 message that looks nicer than the normal Apache error page"""
     return jingo.render(request, 'handlers/500.html', status=500)
 
 
