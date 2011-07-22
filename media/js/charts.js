@@ -4,8 +4,8 @@
  */
 
 (function ($) {
+    var data, dateToRevID;
     function init() {
-        var data, dateToRevID;
         $('#show-chart').unbind('click');
         $('#show-chart').html(gettext('Loading...'));
         $('#show-chart').css('color', '#333333').css('cursor', 'auto').css('text-decoration', 'none');
