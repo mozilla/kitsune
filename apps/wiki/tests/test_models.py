@@ -1,6 +1,5 @@
 from datetime import datetime
 
-from nose.exc import SkipTest
 from nose.tools import eq_
 from taggit.models import TaggedItem
 
@@ -329,17 +328,12 @@ class LocalizableOrLatestRevisionTests(TestCase):
         d = document(save=True)
         eq_(None, d.localizable_or_latest_revision())
 
-    def test_no_reviewed(self):
-        """If there are no reviewed revisions, return None."""
-        # localizable_or_latest_revision evolved from
-        # get_current_or_latest_revision (now gone). Some tests for
-        # get_current_or_latest_revision were invalid, hiding bugs in it. TODO:
-        # fix localizable_or_latest_revision and unskip this test. This will
-        # make other tests fail, which we'll have to think about and possible
-        # fix as well.
-        raise SkipTest
-        r = revision(is_approved=False, reviewed=None, save=True)
-        eq_(None, r.document.localizable_or_latest_revision())
+    def test_only_rejected(self):
+        """If there are only rejected revisions, return None."""
+        rejected = revision(is_approved=False,
+                            reviewed=datetime.now(),
+                            save=True)
+        eq_(None, rejected.document.localizable_or_latest_revision())
 
     def test_multiple_ready(self):
         """When multiple ready revisions exist, return the most recent."""
@@ -358,32 +352,38 @@ class LocalizableOrLatestRevisionTests(TestCase):
                          is_ready_for_localization=True,
                          save=True)
         revision(document=ready.document,
-                           is_approved=True,
-                           is_ready_for_localization=False,
-                           save=True)
+                 is_approved=True,
+                 is_ready_for_localization=False,
+                 save=True)
         eq_(ready, ready.document.localizable_or_latest_revision())
 
+    def test_approved_over_unreviewed(self):
+        """Favor an approved revision over a more recent unreviewed one."""
+        approved = revision(is_approved=True,
+                            is_ready_for_localization=False,
+                            save=True)
+        revision(document=approved.document,
+                 is_ready_for_localization=False,
+                 is_approved=False,
+                 reviewed=None,
+                 save=True)
+        eq_(approved, approved.document.localizable_or_latest_revision())
+
     def test_latest_unreviewed_if_none_ready(self):
-        """Return the latest unreviewed revision when no ready one exists and
-        include_rejected=True."""
+        """Return the latest unreviewed revision when no ready one exists."""
         unreviewed = revision(is_approved=False,
                               reviewed=None,
                               save=True)
-        eq_(unreviewed, unreviewed.document.localizable_or_latest_revision(
-                            include_rejected=True))
+        eq_(unreviewed, unreviewed.document.localizable_or_latest_revision())
 
-    def test_latest_rejected_if_none_ready(self):
-        """Return the latest revision when no ready one exists.
-
-        In this case, the latest happens to be rejected.
-
-        """
-        # TODO: As in test_no_reviewed, fix the behavior, then unskip this.
-        raise SkipTest
+    def test_latest_rejected_if_none_unreviewed(self):
+        """Return the latest rejected revision when no ready or unreviewed ones
+        exist, if include_rejected=True."""
         rejected = revision(is_approved=False,
                             reviewed=datetime.now(),
                             save=True)
-        eq_(rejected, rejected.document.localizable_or_latest_revision())
+        eq_(rejected, rejected.document.localizable_or_latest_revision(
+                          include_rejected=True))
 
     def test_non_localizable(self):
         """When document isn't localizable, ignore is_ready_for_l10n."""

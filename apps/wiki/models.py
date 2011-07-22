@@ -545,29 +545,38 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin):
         return self.parent or self
 
     def localizable_or_latest_revision(self, include_rejected=False):
-        """Return latest ready-to-localize revision if there is one, else the
-        latest approved revision, or None if there are none.
+        """Return latest ready-to-localize revision if there is one,
+        else the latest approved revision if there is one,
+        else the latest unrejected (unreviewed) revision if there is one,
+        else None.
 
-        include_rejected -- If true, fall back to the latest [reviewed?]
-            revision rather than the latest approved one.
+        include_rejected -- If true, fall back to the latest rejected
+            revision if all else fails.
 
         """
-        # TODO: This came from get_current_or_latest_revision, before
-        # is_ready_for_localization existed. Perhaps we should have a multi-
-        # level fallback: first ready revisions, then approved ones, then
-        # unapproved ones.
+        def latest(queryset):
+            return queryset.order_by('-id')[:1]
+
         rev = self.latest_localizable_revision
         if not rev or not self.is_localizable:
-            if include_rejected:
-                exclusions = Q()
-            else:
-                exclusions = Q(is_approved=False, reviewed__isnull=False)
-            revs = self.revisions.exclude(exclusions).order_by('-id')[:1]
+            # Try latest approved revision:
+            revs = latest(self.revisions.filter(is_approved=True))
             try:
                 rev = revs[0]
             except IndexError:
-                pass
-
+                # No approved revs. Try unrejected:
+                rejected = Q(is_approved=False, reviewed__isnull=False)
+                revs = latest(self.revisions.exclude(rejected))
+                try:
+                    rev = revs[0]
+                except IndexError:
+                    # No unrejected revs. Maybe fall back to rejected:
+                    if include_rejected:
+                        revs = latest(self.revisions)
+                        try:
+                            rev = revs[0]
+                        except IndexError:
+                            pass
         return rev
 
     def is_majorly_outdated(self):
