@@ -128,6 +128,9 @@ def redis_client(name):
     Uses the name argument to lookup the connection string in the
     settings.REDIS_BACKEND dict.
     """
+    if name not in settings.REDIS_BACKENDS:
+        return None
+
     uri = settings.REDIS_BACKENDS[name]
     _, server, params = parse_backend_uri(uri)
     db = params.pop('db', 1)
