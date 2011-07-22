@@ -365,12 +365,12 @@ class LocalizableOrLatestRevisionTests(TestCase):
 
     def test_latest_unreviewed_if_none_ready(self):
         """Return the latest unreviewed revision when no ready one exists and
-        reviewed_only=False."""
+        include_rejected=True."""
         unreviewed = revision(is_approved=False,
                               reviewed=None,
                               save=True)
         eq_(unreviewed, unreviewed.document.localizable_or_latest_revision(
-                            reviewed_only=False))
+                            include_rejected=True))
 
     def test_latest_rejected_if_none_ready(self):
         """Return the latest revision when no ready one exists.

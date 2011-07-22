@@ -544,19 +544,24 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin):
         """Return the document I was translated from or, if none, myself."""
         return self.parent or self
 
-    def localizable_or_latest_revision(self, reviewed_only=True):
+    def localizable_or_latest_revision(self, include_rejected=False):
         """Return latest ready-to-localize revision if there is one, else the
-        last reviewed revision, or None if there are no revisions."""
+        latest approved revision, or None if there are none.
+
+        include_rejected -- If true, fall back to the latest [reviewed?]
+            revision rather than the latest approved one.
+
+        """
         # TODO: This came from get_current_or_latest_revision, before
         # is_ready_for_localization existed. Perhaps we should have a multi-
         # level fallback: first ready revisions, then approved ones, then
         # unapproved ones.
         rev = self.latest_localizable_revision
         if not rev or not self.is_localizable:
-            if reviewed_only:
-                exclusions = Q(is_approved=False, reviewed__isnull=False)
-            else:
+            if include_rejected:
                 exclusions = Q()
+            else:
+                exclusions = Q(is_approved=False, reviewed__isnull=False)
             revs = self.revisions.exclude(exclusions).order_by('-id')[:1]
             try:
                 rev = revs[0]
