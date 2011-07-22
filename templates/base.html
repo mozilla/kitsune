@@ -52,27 +52,60 @@
 <script src="{{ MEDIA_URL }}js/libs/html5-shiv.js"></script>
 <![endif]-->
 </head>
-<body class="moz-header-slim {{ classes }}"
+<body class="{{ classes }}"
       data-readonly="{{ settings.READ_ONLY|json }}"
       data-for-os="{{ for_os|json }}"
       data-for-version="{{ for_version|json }}"
       data-usernames-api="{{ url('users.api.usernames') }}">
 
-{% include 'layout/header.html' %}
+<header class="global">
+  <div id="global-header-tab">
+    <a href="http://mozilla.org/"><img src="{{ MEDIA_URL }}img/mozilla-tab.png" alt="mozilla.org"></a>
+  </div>
+  <div class="sumo-header">
+    <nav id="aux-nav" role="navigation" class="menu-nav">
+      <ul>
+        {{ greeting(user) }}
+        {% block aux_nav %}
+          <li>
+            <a href="#" class="controller" title="{{ _('Find help for other applications') }}">
+              {{ _('Other Applications') }}
+            </a>
+            <ul>
+              <li><a href="{{ url('home') }}">{{ _('Desktop') }}</a></li>
+              <li><a href="{{ url('home.mobile') }}">{{ _('Mobile') }}</a></li>
+              <li><a href="{{ url('home.fxhome') }}">{{ _('Firefox Home') }}</a></li>
+              <li><a href="{{ url('home.sync') }}">{{ _('Firefox Sync') }}</a></li>
+              <li><a href="http://www.mozilla.org/support/thunderbird/">{{ _('Thunderbird') }}</a></li>
+            </ul>
+          </li>
+        {% endblock aux_nav %}
+      </ul>
+    </nav>
+    {% if not hide_header_search %}
+      {{ search_box(settings, id='support-search') }}
+    {% endif %}
+    <div id="masthead">
+      <h1 class="site-title">
+        <a title="{{ _('Return to the Firefox Help homepage') }}" href="{{ url('home') }}">
+          <img src="{{ MEDIA_URL }}img/firefox-54x62.png" alt="{{ _('Firefox') }}" />
+          {{ _('Firefox Help') }}
+        </a>
+      </h1>
+      <nav class="menu-nav" id="site-nav">
+        <ul>
+          <li><a href="{{ url('home') }}">{{ _('Desktop') }}</a></li>
+          <li><a href="{{ url('home.mobile') }}">{{ _('Mobile') }}</a></li>
+          <li><a href="{{ url('home.fxhome') }}">{{ _('Firefox Home') }}</a></li>
+          <li><a href="{{ url('home.sync') }}">{{ _('Firefox Sync') }}</a></li>
+          <li><a href="http://www.mozilla.org/support/thunderbird/">{{ _('Thunderbird') }}</a></li>
+        </ul>
+      </nav>
+    </div>
+  </div>
+</header>
 
 <div id="content">
-  <div id="sub-header">
-    {% block sub_header %}
-      <div id="firefox-help">
-        <a href="{{ top_link }}">{{ top_text }}</a>
-      </div>
-      {% if not hide_header_search %}
-        {{ search_box(settings, id='support-search') }}
-      {% endif %}
-      {{ greeting(user) }}
-    {% endblock %}
-  </div>
-
   {% if messages %}
     <ul class="user-messages">
       {% for message in messages %}

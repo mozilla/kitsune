@@ -26,14 +26,14 @@
     background: #fff;
     background: -moz-linear-gradient(left center , rgba(255, 255, 255, 0), #FFFFFF 40px, #FFFFFF 920px, rgba(255, 255, 255, 0)) repeat scroll 0 0 transparent;
     background: -webkit-gradient(linear, left center, right center, from(rgba(255, 255, 255, 0)), to(rgba(255, 255, 255, 0)), color-stop(.1, #fff), color-stop(.9, #fff));
-    margin: 0 0 40px;
-    padding: 40px 9px 0;
+    margin: 0 0 20px;
+    padding: 20px 9px 0;
 }
 
 #content hgroup h1 {
     font-family: MetaBlack, Helvetica, Arial, sans-serif;
-    font-size: 36px;
-    line-height: 36px;
+    font-size: 26px;
+    line-height: 28px;
     margin: 0 0 6px;
     text-transform: uppercase;
 }

@@ -38,7 +38,7 @@ html[lang=ja] body div#featured {
 }
 
 #featured h1 {
-    font-size: 280%;
+    font-size: 220%;
     font-style: italic;
     letter-spacing: -1px;
     margin: 0 0 .5em;
@@ -57,7 +57,7 @@ html[lang=ja] body div#featured {
 }
 
 #support-search input.text {
-    width: 290px;
+    width: 288px;
 }
 
 #featured p {
