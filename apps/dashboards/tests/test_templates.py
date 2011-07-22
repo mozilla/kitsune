@@ -7,6 +7,7 @@ from django.contrib.sites.models import Site
 
 from announcements.tests import announcement
 from dashboards.tests import group_dashboard
+from forums.models import Thread, Forum
 from sumo.tests import TestCase
 from sumo.urlresolvers import reverse
 from users.tests import user, group, profile
@@ -121,6 +122,33 @@ class ContributorForumDashTests(TestCase):
                                    locale='en-US'))
         eq_(302, response.status_code)
         assert '/users/login' in response['location']
+
+    def test_activity_multiple_forums(self):
+        """Checks links are correct when there is activity from >1 forum."""
+        jsocol = User.objects.get(username='jsocol')
+        rrosario = User.objects.get(username='rrosario')
+        forum = Forum.objects.get(slug='another-forum')
+        # Create new thread in Another Forum
+        thread = Thread(creator=jsocol, title='foobartest', forum=forum)
+        thread.save()
+        post = thread.new_post(author=jsocol, content='loremipsumdolor')
+        post.save()
+        # Add a reply
+        post = thread.new_post(author=rrosario, content='replyhi')
+        post.save()
+        # Verify links
+        self.client.login(username='jsocol', password='testpass')
+        response = self.client.get(reverse('dashboards.review'), follow=True)
+        eq_(200, response.status_code)
+        doc = pq(response.content)
+        links = doc('ol.threads div.title a')
+        hrefs = [link.attrib['href'] for link in links]
+        eq_(5, len(hrefs))
+        for i in range(5):
+            if i == 2:
+                assert hrefs[i].startswith('/en-US/forums/another-forum/')
+            else:
+                assert hrefs[i].startswith('/en-US/forums/test-forum/')
 
 
 class AnnouncementForumDashTests(TestCase):
