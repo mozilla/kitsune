@@ -4,11 +4,11 @@ import logging
 from string import ascii_letters
 import time
 
-from django.db import connection
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.models import User
 from django.core.exceptions import PermissionDenied
+from django.db import connection
 from django.http import (HttpResponse, HttpResponseRedirect,
                          Http404, HttpResponseBadRequest)
 from django.shortcuts import get_object_or_404
@@ -725,16 +725,16 @@ def get_helpful_votes_async(request, document_slug):
     start = time.time()
     cursor = connection.cursor()
 
-    cursor.execute('''SELECT wiki_helpfulvote.revision_id,
-                             SUM(wiki_helpfulvote.helpful),
-                             SUM(NOT(wiki_helpfulvote.helpful)),
-                             wiki_helpfulvote.created
-                        FROM wiki_helpfulvote
-                        INNER JOIN wiki_revision ON
-                            wiki_helpfulvote.revision_id=wiki_revision.id
-                        WHERE wiki_revision.document_id=%s
-                        GROUP BY DATE(wiki_helpfulvote.created);
-                        ''', [document.id])
+    cursor.execute('SELECT wiki_helpfulvote.revision_id, '
+                             'SUM(wiki_helpfulvote.helpful), '
+                             'SUM(NOT(wiki_helpfulvote.helpful)), '
+                             'wiki_helpfulvote.created '
+                        'FROM wiki_helpfulvote '
+                        'INNER JOIN wiki_revision ON '
+                            'wiki_helpfulvote.revision_id=wiki_revision.id '
+                        'WHERE wiki_revision.document_id=%s '
+                        'GROUP BY DATE(wiki_helpfulvote.created)'
+                        , [document.id])
 
     results = cursor.fetchall()
     for res in results:
@@ -776,8 +776,16 @@ def get_helpful_votes_async(request, document_slug):
                         'shape': 'squarepin'
                     }],
             'date_to_rev_id': date_to_rev_id,
-            'query': (end - start)
+            'query': end - start
             }
+
+    if len(send['data'][2]['data']) == 0:
+        send['data'].pop(2)
+    if len(send['data'][1]['data']) == 0:
+        send['data'].pop(1)
+    if len(send['data'][0]['data']) == 0:
+        send['data'].pop(0)
+
 
     return HttpResponse(json.dumps(send),
                         mimetype='application/json')
