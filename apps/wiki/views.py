@@ -392,6 +392,8 @@ def review_revision(request, document_slug, revision_id):
                                                 args=[document_slug]))
 
     if doc.parent:  # A translation
+        # For diffing the based_on revision against, to help the user see if he
+        # translated all the recent changes:
         parent_revision = doc.parent.localizable_or_latest_revision()
         template = 'wiki/review_translation.html'
     else:
@@ -502,7 +504,13 @@ def translate(request, document_slug, revision_id=None):
             initial.update(content=based_on_rev.content,
                            summary=based_on_rev.summary,
                            keywords=based_on_rev.keywords)
+
+        # Get a revision of the translation to plonk into the page as a
+        # starting point. Since translations are never "ready for
+        # localization", this will first try to find an approved revision, then
+        # an unrejected one, then give up.
         instance = doc and doc.localizable_or_latest_revision()
+
         rev_form = RevisionForm(instance=instance, initial=initial)
         base_rev = base_rev or instance
 

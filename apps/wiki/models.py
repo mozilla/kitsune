@@ -5,7 +5,7 @@ from urlparse import urlparse
 
 from django.conf import settings
 from django.contrib.auth.models import User
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from django.core.urlresolvers import resolve
 from django.db import models
 from django.db.models import Q
@@ -545,29 +545,36 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin):
         return self.parent or self
 
     def localizable_or_latest_revision(self, include_rejected=False):
-        """Return latest ready-to-localize revision if there is one, else the
-        latest approved revision, or None if there are none.
+        """Return latest ready-to-localize revision if there is one,
+        else the latest approved revision if there is one,
+        else the latest unrejected (unreviewed) revision if there is one,
+        else None.
 
-        include_rejected -- If true, fall back to the latest [reviewed?]
-            revision rather than the latest approved one.
+        include_rejected -- If true, fall back to the latest rejected
+            revision if all else fails.
 
         """
-        # TODO: This came from get_current_or_latest_revision, before
-        # is_ready_for_localization existed. Perhaps we should have a multi-
-        # level fallback: first ready revisions, then approved ones, then
-        # unapproved ones.
+        def latest(queryset):
+            """Return the latest item from a queryset (by ID).
+
+            Return None if the queryset is empty.
+
+            """
+            try:
+                return queryset.order_by('-id')[0:1].get()
+            except ObjectDoesNotExist:  # Catching IndexError seems overbroad.
+                return None
+
         rev = self.latest_localizable_revision
         if not rev or not self.is_localizable:
-            if include_rejected:
-                exclusions = Q()
-            else:
-                exclusions = Q(is_approved=False, reviewed__isnull=False)
-            revs = self.revisions.exclude(exclusions).order_by('-id')[:1]
-            try:
-                rev = revs[0]
-            except IndexError:
-                pass
+            rejected = Q(is_approved=False, reviewed__isnull=False)
 
+            # Try latest approved revision:
+            rev = (latest(self.revisions.filter(is_approved=True)) or
+                   # No approved revs. Try unrejected:
+                   latest(self.revisions.exclude(rejected)) or
+                   # No unrejected revs. Maybe fall back to rejected:
+                   (latest(self.revisions) if include_rejected else None))
         return rev
 
     def is_majorly_outdated(self):
