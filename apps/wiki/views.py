@@ -733,8 +733,8 @@ def get_helpful_votes_async(request, document_slug):
                         'INNER JOIN wiki_revision ON '
                             'wiki_helpfulvote.revision_id=wiki_revision.id '
                         'WHERE wiki_revision.document_id=%s '
-                        'GROUP BY DATE(wiki_helpfulvote.created)'
-                        , [document.id])
+                        'GROUP BY DATE(wiki_helpfulvote.created)',
+                        [document.id])
 
     results = cursor.fetchall()
     for res in results:
