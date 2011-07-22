@@ -87,13 +87,22 @@ def threads(request, forum_slug):
                          'feeds': feed_urls})
 
 
-def posts(request, forum_slug, thread_id, form=None, reply_preview=None):
+def posts(request, forum_slug, thread_id, form=None, reply_preview=None,
+          is_reply=False):
     """View all the posts in a thread."""
-    forum = get_object_or_404(Forum, slug=forum_slug)
-    if not forum.allows_viewing_by(request.user):
+    thread = get_object_or_404(Thread, pk=thread_id)
+    forum = thread.forum
+
+    if forum.slug != forum_slug and not is_reply:
+        new_forum = get_object_or_404(Forum, slug=forum_slug)
+        if new_forum.allows_viewing_by(request.user):
+            return HttpResponseRedirect(thread.get_absolute_url())
+        raise Http404  # User has no right to view destination forum.
+    elif forum.slug != forum_slug:
         raise Http404
 
-    thread = get_object_or_404(Thread, pk=thread_id, forum=forum)
+    if not forum.allows_viewing_by(request.user):
+        raise Http404
 
     posts_ = thread.post_set.all()
     count = posts_.count()
@@ -155,7 +164,8 @@ def reply(request, forum_slug, thread_id):
 
                 return HttpResponseRedirect(reply_.get_absolute_url())
 
-    return posts(request, forum_slug, thread_id, form, reply_preview)
+    return posts(request, forum_slug, thread_id, form, reply_preview,
+                 is_reply=True)
 
 
 @login_required
