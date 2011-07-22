@@ -468,7 +468,7 @@ def translate(request, document_slug, revision_id=None):
                             {'message': message}, status=400)
 
     based_on_rev = parent_doc.localizable_or_latest_revision(
-        reviewed_only=False)
+        include_rejected=True)
 
     disclose_description = bool(request.GET.get('opendescription'))
 
