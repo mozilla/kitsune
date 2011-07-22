@@ -21,10 +21,12 @@ class BelongsTestCase(ForumTestCase):
         self.client.login(username='admin', password='testpass')
 
     def test_posts_thread_belongs_to_forum(self):
-        """Posts view - thread belongs to forum."""
+        """Posts view - redirect if thread does notbelong to forum."""
         r = get(self.client, 'forums.posts',
                 args=[self.forum_2.slug, self.thread.id])
-        eq_(404, r.status_code)
+        eq_(200, r.status_code)
+        u = r.redirect_chain[0][0]
+        assert u.endswith(self.thread.get_absolute_url())
 
     def test_reply_thread_belongs_to_forum(self):
         """Reply action - thread belongs to forum."""
