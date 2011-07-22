@@ -44,6 +44,10 @@ html[lang=ja] body div#featured {
     margin: 0 0 .5em;
 }
 
+body.new-header #featured h1 {
+    font-size: 220%;
+}
+
 #featured h1 mark {
     font-family: MetaBlack, "Trebuchet MS", sans-serif;
     font-style: normal;
@@ -57,7 +61,7 @@ html[lang=ja] body div#featured {
 }
 
 #support-search input.text {
-    width: 290px;
+    width: 288px;
 }
 
 #featured p {

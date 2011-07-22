@@ -30,12 +30,22 @@
     padding: 40px 9px 0;
 }
 
+body.new-header #content hgroup {
+    margin: 0 0 20px;
+    padding: 20px 9px 0;
+}
+
 #content hgroup h1 {
     font-family: MetaBlack, Helvetica, Arial, sans-serif;
     font-size: 36px;
     line-height: 36px;
     margin: 0 0 6px;
     text-transform: uppercase;
+}
+
+body.new-header #content hgroup h1 {
+    font-size: 26px;
+    line-height: 28px;
 }
 
 #content h1 a {

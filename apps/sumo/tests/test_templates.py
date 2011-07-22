@@ -80,6 +80,8 @@ class BaseTemplateTests(MockRequestTests):
         html = jingo.render_to_string(self.request, self.template)
         doc = pq(html)
         eq_(0, len(doc('div#greeting').text()))
+        # TODO: when launching new-header, change above for:
+        # eq_(0, len(doc('li.account')))
 
     @mock.patch.object(settings._wrapped, 'READ_ONLY', False)
     def test_not_readonly_login_link_enabled(self):
@@ -87,6 +89,8 @@ class BaseTemplateTests(MockRequestTests):
         html = jingo.render_to_string(self.request, self.template)
         doc = pq(html)
         assert len(doc('div#greeting').text()) > 0
+        # TODO: when launching new-header, change above for:
+        # assert len(doc('li.account')) > 0
 
 
 class ErrorListTests(MockRequestTests):
