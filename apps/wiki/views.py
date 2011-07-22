@@ -786,7 +786,6 @@ def get_helpful_votes_async(request, document_slug):
     if len(send['data'][0]['data']) == 0:
         send['data'].pop(0)
 
-
     return HttpResponse(json.dumps(send),
                         mimetype='application/json')
 
