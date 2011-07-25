@@ -544,25 +544,38 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin):
         """Return the document I was translated from or, if none, myself."""
         return self.parent or self
 
-    def localizable_or_latest_revision(self, reviewed_only=True):
-        """Return latest ready-to-localize revision if there is one, else the
-        last reviewed revision, or None if there are no revisions."""
-        # TODO: This came from get_current_or_latest_revision, before
-        # is_ready_for_localization existed. Perhaps we should have a multi-
-        # level fallback: first ready revisions, then approved ones, then
-        # unapproved ones.
+    def localizable_or_latest_revision(self, include_rejected=False):
+        """Return latest ready-to-localize revision if there is one,
+        else the latest approved revision if there is one,
+        else the latest unrejected (unreviewed) revision if there is one,
+        else None.
+
+        include_rejected -- If true, fall back to the latest rejected
+            revision if all else fails.
+
+        """
+        def latest(queryset):
+            """Return the latest item from a queryset (by ID).
+
+            Return None if the queryset is empty.
+
+            """
+            latest_or_nothing = queryset.order_by('-id')[:1]
+            try:
+                return latest_or_nothing[0]
+            except IndexError:
+                return None
+
         rev = self.latest_localizable_revision
         if not rev or not self.is_localizable:
-            if reviewed_only:
-                exclusions = Q(is_approved=False, reviewed__isnull=False)
-            else:
-                exclusions = Q()
-            revs = self.revisions.exclude(exclusions).order_by('-id')[:1]
-            try:
-                rev = revs[0]
-            except IndexError:
-                pass
+            rejected = Q(is_approved=False, reviewed__isnull=False)
 
+            # Try latest approved revision:
+            rev = (latest(self.revisions.filter(is_approved=True)) or
+                   # No approved revs. Try unrejected:
+                   latest(self.revisions.exclude(rejected)) or
+                   # No unrejected revs. Maybe fall back to rejected:
+                   (latest(self.revisions) if include_rejected else None))
         return rev
 
     def is_majorly_outdated(self):
