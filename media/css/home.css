@@ -38,10 +38,14 @@ html[lang=ja] body div#featured {
 }
 
 #featured h1 {
-    font-size: 220%;
+    font-size: 280%;
     font-style: italic;
     letter-spacing: -1px;
     margin: 0 0 .5em;
+}
+
+body.new-header #featured h1 {
+    font-size: 220%;
 }
 
 #featured h1 mark {

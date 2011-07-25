@@ -56,6 +56,11 @@ h2 {
 /*----------------------------------
     Header
 ----------------------------------*/
+#header { /* TODO: delete me when new-header goes live */
+    margin-top: 10px;
+    width: 980px;
+}
+
 header.global {
     margin: 0 auto;
     position: relative;
@@ -457,6 +462,10 @@ ul.user-messages li.error {
     visibility: hidden;
 }
 
+#sub-header { /* TODO: delete me when new-header goes live */
+    height: 90px;
+}
+
 #main {
     background: transparent url(../img/wiki/bkg.main.top.png) no-repeat right top;
     clear: both;
@@ -531,6 +540,31 @@ div.support-search button.img-submit {
     height: 33px;
     margin: -1px 0 0 2px;
     width: 40px;
+}
+
+#greeting { /* TODO: delete me when new-header goes live */
+    color: #666;
+    float: right;
+    font-size: 14px;
+    padding: 20px 0 0;
+    text-align: right;
+    width: 222px;
+}
+
+#greeting span.user { /* TODO: delete me when new-header goes live */
+    color: #333;
+}
+
+#greeting nav { /* TODO: delete me when new-header goes live */
+    display: block;
+}
+
+#greeting span.unread-message-count { /* TODO: delete me when new-header goes live */
+    background-color: #666666;
+    border-radius: 2px;
+    color: #FFFFFF;
+    font-size: 78%;
+    padding: 0 2px;
 }
 
 /*-----------------------------------------------
