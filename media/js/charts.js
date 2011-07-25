@@ -4,7 +4,6 @@
  */
 
 (function ($) {
-    var data, dateToRevID;
     function init() {
         $('#show-chart').unbind('click');
         $('#show-chart').html(gettext('Loading...'));
@@ -13,6 +12,7 @@
     }
 
     function initChart() {
+        var data, dateToRevID;
         $.ajax({
             type: "GET",
             url: $('#helpful-chart').data('url'),
@@ -22,7 +22,7 @@
                 dateToRevID = response['date_to_rev_id'];
                 if(data.length > 0) {
                     $('#helpful-chart').show('fast', function () {
-                        stockChart();
+                        stockChart(data, dateToRevID);
                         $('#helpful-chart').append('<div id="chart-footnote">' + gettext('Query took: ') + response['query'] + gettext(' seconds') + '</div>')
                     });
                 }
@@ -45,7 +45,7 @@
      * The graph is drawn upon creation of the StockChart object.
      * Returns: nothing
      */
-    function stockChart() {
+    function stockChart(data, dateToRevID) {
         chart = new Highcharts.StockChart({
             chart: {
                 renderTo: 'helpful-chart'
