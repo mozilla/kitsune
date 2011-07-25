@@ -555,28 +555,27 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin):
 
         """
         def latest(queryset):
-            return queryset.order_by('-id')[:1]
+            """Return the latest item from a queryset (by ID).
+
+            Return None if the queryset is empty.
+
+            """
+            latest_or_nothing = queryset.order_by('-id')[:1]
+            try:
+                return latest_or_nothing[0]
+            except IndexError:
+                return None
 
         rev = self.latest_localizable_revision
         if not rev or not self.is_localizable:
+            rejected = Q(is_approved=False, reviewed__isnull=False)
+
             # Try latest approved revision:
-            revs = latest(self.revisions.filter(is_approved=True))
-            try:
-                rev = revs[0]
-            except IndexError:
-                # No approved revs. Try unrejected:
-                rejected = Q(is_approved=False, reviewed__isnull=False)
-                revs = latest(self.revisions.exclude(rejected))
-                try:
-                    rev = revs[0]
-                except IndexError:
-                    # No unrejected revs. Maybe fall back to rejected:
-                    if include_rejected:
-                        revs = latest(self.revisions)
-                        try:
-                            rev = revs[0]
-                        except IndexError:
-                            pass
+            rev = (latest(self.revisions.filter(is_approved=True)) or
+                   # No approved revs. Try unrejected:
+                   latest(self.revisions.exclude(rejected)) or
+                   # No unrejected revs. Maybe fall back to rejected:
+                   (latest(self.revisions) if include_rejected else None))
         return rev
 
     def is_majorly_outdated(self):
