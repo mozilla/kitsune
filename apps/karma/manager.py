@@ -1,13 +1,38 @@
 from datetime import date, timedelta
+import inspect
+import logging
 
 from django.contrib.auth.models import User
+
+from redis.exceptions import ConnectionError
 
 from sumo.utils import redis_client
 
 
 KEY_PREFIX = 'karma'  # Prefix for the Redis keys used.
 
+log = logging.getLogger('k.karma')
 
+
+def for_all_methods(decorator):
+    def decorate(cls):
+        for method in inspect.getmembers(cls, inspect.ismethod):
+            setattr(cls, method[0], decorator(getattr(cls, method[0])))
+        return cls
+    return decorate
+
+
+def catch_and_log_redis_connection_errors(func):
+    def wrapper(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except ConnectionError as e:
+            log.error('Redis connection error: %s' % e)
+            return None
+    return wrapper
+
+
+@for_all_methods(catch_and_log_redis_connection_errors)
 class KarmaManager(object):
     """Manager for querying karma data in Redis."""
     def __init__(self, redis=None):
