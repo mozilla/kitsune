@@ -8,14 +8,18 @@
 {% block content %}
   <div id="featured-wrap">{# Top area, includes "Need Help With FIREFOX?" #}
     <div id="featured">
-      <h1>{{ h1_text|safe }}</h1>
-      <p>{% block intro_text %}{% trans %}
-        You've come to the right place! Start by searching for solutions,
-        or by choosing one of our support articles below. If you can't
-        find the answer you need, our community of volunteers are ready
-        to help.
-      {% endtrans %}{% endblock %}</p>
-      {{ search_box(settings, id='support-search', params=search_params) }}
+      {% if waffle.flag('new-header') %}
+        {{ search_box(settings, id='support-search', placeholder=_('What do you need help with?'), params=search_params) }}
+      {% else %}
+        <h1>{{ h1_text|safe }}</h1>
+        <p>{% block intro_text %}{% trans %}
+          You've come to the right place! Start by searching for solutions,
+          or by choosing one of our support articles below. If you can't
+          find the answer you need, our community of volunteers are ready
+          to help.
+        {% endtrans %}{% endblock %}</p>
+        {{ search_box(settings, id='support-search', params=search_params) }}
+      {% endif %}
     </div>
   </div>
   <div id="home-content">

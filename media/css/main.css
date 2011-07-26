@@ -80,7 +80,16 @@ header.global {
 
 .sumo-header {
     font-family: "Trebuchet MS",sans-serif;
-    height: 125px;
+    padding: 0 0 25px;
+    zoom: 1;
+}
+
+.sumo-header:after {
+    clear: both;
+    content: ".";
+    display: block;
+    height: 0;
+    visibility: hidden;
 }
 
 #masthead {
@@ -89,41 +98,25 @@ header.global {
 }
 
 h1.site-title {
-    font-family: MetaBlack;
-    font-size: 40px;
+    color: #333333;
+    font-family: Georgia, freeserif, serif;
+    font-size: 32px;
+    font-style: italic;
     letter-spacing: -1px;
     margin-bottom: 7px;
+}
+
+h1.site-title mark {
+    font-family: MetaBlack;
+    font-style: normal;
     text-transform: uppercase;
 }
 
 .site-title img {
     float: left;
+    height: 62px;
     margin-right: 10px;
-}
-
-.site-title a {
-    color: #333333;
-    text-decoration: none;
-}
-
-.site-title a small {
-    color: #333333;
-    display: block;
-    font-size: 0.6em;
-    line-height: 0.5em;
-}
-
-.site-title a:hover, .site-title a:focus {
-    color: #043B84;
-    text-shadow: 0 0 40px #FFFFFF, 0 0 20px #FFFFFF, 0 0 10px #FFFFFF;
-}
-
-.site-title.prominent a, .site-title strong {
-    color: #D64203;
-}
-
-.site-title.prominent a:hover, .site-title strong:hover {
-    text-shadow: 0 0 #FFFFFF;
+    width: 54px;
 }
 
 .menu-nav {
@@ -361,6 +354,7 @@ header.global #support-search {
     position: absolute;
     right: 0;
     top: 63px;
+    width: 314px;
 }
 
 #site-nav > ul > li {
@@ -376,6 +370,15 @@ header.global #support-search {
     line-height: 12px;
     padding: 4px 8px;
     text-transform: uppercase;
+}
+
+#site-nav > ul > li > a.active {
+    color: #333;
+    cursor: default;
+}
+
+#site-nav > ul > li > a.active:hover {
+    text-decoration: none;
 }
 
 /*----------------------------------
@@ -520,6 +523,12 @@ div.support-search form {
     padding: 5px 7px 7px;
 }
 
+body.new-header div.support-search form {
+    background: #fff;
+    border: solid 1px #98b2c9;
+    padding-bottom: 9px;
+}
+
 div.support-search input.text {
     background: #fff url(../img/icon.searchloupe.png) no-repeat 7px 2px;
     border: none;
@@ -533,6 +542,11 @@ div.support-search input.text {
     margin: 0 1px 0 0;
     padding: 2px 0 2px 34px;
     width: 218px;
+}
+
+body.new-header div.support-search input.text {
+    border: solid 1px #d9d9d9;
+    box-shadow: inset 0 0 3px #d9d9d9;
 }
 
 div.support-search button.img-submit {
@@ -613,6 +627,10 @@ div.support-search button.img-submit {
 #quick-links {
     font-size: 13px;
     margin: 25px 0 0 20px;
+}
+
+body.new-header #quick-links {
+    margin-top: 0;
 }
 
 #quick-links li {

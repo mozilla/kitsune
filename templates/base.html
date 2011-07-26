@@ -88,17 +88,19 @@
       {% endif %}
       <div id="masthead">
         <h1 class="site-title">
-          <a title="{{ _('Return to the Firefox Help homepage') }}" href="{{ url('home') }}">
-            <img src="{{ MEDIA_URL }}img/firefox-54x62.png" alt="{{ _('Firefox') }}" />
-            {{ _('Firefox Help') }}
-          </a>
+          <img src="{{ MEDIA_URL }}img/firefox-54x62.png" alt="{{ _('Firefox') }}" />
+          {% if h1_text %}
+            {{ h1_text }}
+          {% else %}
+            <mark>{{ _('Firefox Help') }}</mark>
+          {% endif %}
         </h1>
         <nav class="menu-nav" id="site-nav">
           <ul>
-            <li><a href="{{ url('home') }}">{{ _('Desktop') }}</a></li>
-            <li><a href="{{ url('home.mobile') }}">{{ _('Mobile') }}</a></li>
-            <li><a href="{{ url('home.fxhome') }}">{{ _('Firefox Home') }}</a></li>
-            <li><a href="{{ url('home.sync') }}">{{ _('Firefox Sync') }}</a></li>
+            <li><a href="{{ url('home') }}"{% if active_site_nav == 'desktop' %} class="active"{% endif %}>{{ _('Desktop') }}</a></li>
+            <li><a href="{{ url('home.mobile') }}"{% if active_site_nav == 'mobile' %} class="active"{% endif %}>{{ _('Mobile') }}</a></li>
+            <li><a href="{{ url('home.fxhome') }}"{% if active_site_nav == 'fxhome' %} class="active"{% endif %}>{{ _('Firefox Home') }}</a></li>
+            <li><a href="{{ url('home.sync') }}"{% if active_site_nav == 'sync' %} class="active"{% endif %}>{{ _('Firefox Sync') }}</a></li>
             <li><a href="http://www.mozilla.org/support/thunderbird/">{{ _('Thunderbird') }}</a></li>
           </ul>
         </nav>
