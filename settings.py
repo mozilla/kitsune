@@ -461,6 +461,10 @@ MINIFY_BUNDLES = {
             'js/dashboards.js',
             'js/editable.js',
         ),
+        'wiki.history': (
+            'js/charts.js',
+            'js/libs/highcharts-2.1.4/highcharts.src.js',
+        ),
         'customercare': (
             'js/libs/jquery.NobleCount.js',
             'js/libs/jquery.cookie.js',

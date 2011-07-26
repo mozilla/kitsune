@@ -6,6 +6,9 @@
       {% if revisions.count() > 1 %}
         <div class="compare top">
           <input type="submit" class="link-btn" value="{% if document.parent %}{{ _('Compare Selected Translations') }}{% else %}{{ _('Compare Selected Revisions') }}{% endif %}" />
+          {% if not waffle.switch('hide-helpful-chart') %}
+            <a id="show-chart">{{ _('Show Helpfulness Votes Chart') }}</a>
+          {% endif %}
         </div>
       {% endif %}
       {% set reached_current = False %}
@@ -33,7 +36,7 @@
               {% endif %}
             </li>
         {% endif %}
-        <li class="{% if document.current_revision == rev %}current{% endif %}{% if rev.reviewed and not rev.is_approved %}rejected{% endif %}">
+        <li id="rev-list-{{ rev.id }}" class="{% if document.current_revision == rev %}current{% endif %}{% if rev.reviewed and not rev.is_approved %}rejected{% endif %}">
           <div class="radio">
             {% if not loop.first %}<input type="radio" name="from" value="{{ rev.id }}" {% if loop.index == 2 %}checked="checked"{% endif %} />{% endif %}
           </div>
