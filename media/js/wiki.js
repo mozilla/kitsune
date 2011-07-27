@@ -12,7 +12,7 @@
         initPrepopulatedSlugs();
         initDetailsTags();
 
-        if ($body.is('.document') || $body.is('.home')) {  // Document page
+        if ($body.is('.document')) {  // Document page
             ShowFor.initForTags();
             new k.AjaxVote('#helpful-vote form', {
                 positionMessage: true
@@ -20,10 +20,6 @@
             initAOABanner();
         } else if ($body.is('.review')) { // Review pages
             ShowFor.initForTags();
-        }
-
-        if ($body.is('.home')) { // Home page
-            initClearOddSections();
         }
 
         if ($body.is('.edit, .new, .translate')) { // Document form page
@@ -38,24 +34,6 @@
         Marky.createFullToolbar('.editor-tools', '#id_content');
 
         initReadyForL10N();
-    }
-
-    // Add `odd` CSS class to home page content sections for older browsers.
-    function initClearOddSections() {
-        clearOddSections();
-        $('#os, #browser').change(clearOddSections);
-    }
-
-    function clearOddSections() {
-        var odd = true;
-        $('#home-content-explore section').removeClass('odd');
-        $('#home-content-explore section:visible').each(function(){
-            // I can't use :nth-child(odd) because of showfor
-            if (odd) {
-                $(this).addClass('odd');
-            }
-            odd = !odd;
-        });
     }
 
     // Make <summary> and <details> tags work even if the browser doesn't support them.
@@ -398,7 +376,7 @@
         $watchDiv.find("a.markasready").click(function() {
             var $check = $(this);
             post_url = $check.data("url");
-            checkbox_id = $check.attr("id"); 
+            checkbox_id = $check.attr("id");
             $("#ready-for-l10n-modal span.revtime").html("("+$check.data("revdate")+")");
         });
 
