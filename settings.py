@@ -359,6 +359,7 @@ MINIFY_BUNDLES = {
         'wiki': (
             'css/users.autocomplete.css',
             'css/users.list.css',
+            'css/showfor.css',
             'css/wiki.css',
             'css/wiki_syntax.css',
             # The dashboard app uses the wiki bundle because only the wiki app
@@ -368,6 +369,8 @@ MINIFY_BUNDLES = {
             'css/tags.css',
         ),
         'home': (
+            'css/showfor.css',
+            'css/wiki_syntax.css',
             'css/home.css',
         ),
         'gallery': (
@@ -416,6 +419,7 @@ MINIFY_BUNDLES = {
             'js/libs/modernizr-1.7.js',
             'js/libs/jquery.cookie.js',
             'js/libs/jquery.placeholder.js',
+            'js/browserdetect.js',
             'js/kbox.js',
             'global/menu.js',
             'js/main.js',
@@ -428,7 +432,6 @@ MINIFY_BUNDLES = {
         'questions': (
             'js/markup.js',
             'js/libs/jquery.ajaxupload.js',
-            'js/browserdetect.js',
             'js/ajaxvote.js',
             'js/aaq.js',
             'js/upload.js',
@@ -450,7 +453,6 @@ MINIFY_BUNDLES = {
             'js/markup.js',
             'js/libs/django/urlify.js',
             'js/libs/django/prepopulate.js',
-            'js/browserdetect.js',
             'js/libs/swfobject.js',
             'js/libs/jquery.selectbox-1.2.js',
             'js/libs/jquery.autocomplete.js',
@@ -501,6 +503,11 @@ MINIFY_BUNDLES = {
             'js/markup.js',
             'js/groups.js',
             'js/editable.js',
+        ),
+        'home': (
+            'js/libs/jquery.selectbox-1.2.js',
+            'js/showfor.js',
+            'js/home.js',
         ),
     },
 }
