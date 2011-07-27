@@ -12,6 +12,11 @@ body.new-header #side {
     margin-top: -25px;
 }
 
+
+body.new-header #quick-links {
+    margin-top: 0;
+}
+
 #featured {
     background: url("../img/nurse.png") no-repeat scroll right top transparent;
     height: 279px;

@@ -76,6 +76,8 @@ header.global {
 #global-header-tab a {
     display: block;
     float: right;
+    height: 53px;
+    width: 118px;
 }
 
 .sumo-header {
@@ -104,6 +106,7 @@ h1.site-title {
     font-style: italic;
     letter-spacing: -1px;
     margin-bottom: 7px;
+    text-align: left;
 }
 
 h1.site-title mark {
@@ -643,10 +646,6 @@ div.support-search button.img-submit {
 #quick-links {
     font-size: 13px;
     margin: 25px 0 0 20px;
-}
-
-body.new-header #quick-links {
-    margin-top: 0;
 }
 
 #quick-links li {
