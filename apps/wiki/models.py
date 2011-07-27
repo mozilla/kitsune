@@ -831,6 +831,12 @@ class HelpfulVoteOld(ModelBase):
     user_agent = models.CharField(max_length=1000)
 
 
+class ImportantDate(ModelBase):
+    """Important date that shows up globally on metrics graphs."""
+    text = models.CharField(max_length=100)
+    date = models.DateTimeField(db_index=True)
+
+
 class RelatedDocument(ModelBase):
     document = models.ForeignKey(Document, related_name='related_from')
     related = models.ForeignKey(Document, related_name='related_to')

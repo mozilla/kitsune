@@ -2,8 +2,9 @@ from django.contrib import admin, messages
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 
-from wiki.models import Document
+from wiki.models import (Document, ImportantDate)
 from wiki.tasks import migrate_helpfulvotes
+
 
 class DocumentAdmin(admin.ModelAdmin):
     exclude = ('tags',)
@@ -93,7 +94,7 @@ def helpfulvotes(request):
 
             for start_id in chunks:
                 migrate_helpfulvotes.delay(start_id, start_id + chunk_size)
-            
+
             messages.add_message(request, messages.SUCCESS,
                 '%s migrate_helpfulvotes task queued!' % len(chunks))
         except:
@@ -107,3 +108,15 @@ def helpfulvotes(request):
 
 
 admin.site.register_view('helpfulvotes', helpfulvotes, 'HelpfulVotes')
+
+
+class ImportantDateAdmin(admin.ModelAdmin):
+    list_display = ('text', 'date')
+    list_display_links = ('text', 'date')
+    list_filter = ('text', 'date')
+    raw_id_fields = ()
+    readonly_fields = ('id',)
+    search_fields = ('text', 'date')
+
+
+admin.site.register(ImportantDate, ImportantDateAdmin)
