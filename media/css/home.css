@@ -87,11 +87,15 @@ body.new-header #featured h1 {
 body.new-header #support-search {
     margin: 0;
     padding: 20px 0 0 57px;
-    width: 384px;
+    width: 425px;
 }
 
 #support-search input.text {
     width: 288px;
+}
+
+body.new-header #support-search input.text {
+    width: 329px;
 }
 
 #featured p {

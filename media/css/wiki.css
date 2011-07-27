@@ -128,6 +128,10 @@ article #toc ul li {
     width: 235px;
 }
 
+body.new-header #more-help div.support-search {
+    width: 240px;
+}
+
 #more-help div.support-search form {
     margin: 15px 0 0;
 }
