@@ -1003,6 +1003,7 @@ class DocumentRevisionsTests(TestCaseBase):
         doc = pq(response.content)
         eq_(0, len(doc('#revision-list div.l10n-head')))
 
+
 class ReviewRevisionTests(TestCaseBase):
     """Tests for Review Revisions and Translations"""
     fixtures = ['users.json']
@@ -1768,13 +1769,15 @@ class HelpfulVoteTests(TestCaseBase):
     def test_helpfulvotes_graph_async_yes(self):
         r = self.document.current_revision
         response = post(self.client, 'wiki.document_vote',
-                        {'helpful': 'Yes', 'revision_id': r.id}, args=[self.document.slug])
+                        {'helpful': 'Yes', 'revision_id': r.id},
+                        args=[self.document.slug])
         eq_(200, response.status_code)
 
-        resp = get(self.client, 'wiki.get_helpful_votes_async', args=[r.document.slug])
+        resp = get(self.client, 'wiki.get_helpful_votes_async',
+                   args=[r.document.slug])
         eq_(200, resp.status_code)
         data = json.loads(resp.content)
-        eq_(2, len(data['data']))
+        eq_(3, len(data['data']))
         eq_('Yes', data['data'][0]['name'])
         eq_(1, len(data['data'][0]['data']))
         eq_('No', data['data'][1]['name'])
@@ -1785,29 +1788,35 @@ class HelpfulVoteTests(TestCaseBase):
     def test_helpfulvotes_graph_async_no(self):
         r = self.document.current_revision
         response = post(self.client, 'wiki.document_vote',
-                        {'helpful': 'Yes', 'revision_id': r.id}, args=[self.document.slug])
+                        {'helpful': 'No', 'revision_id': r.id},
+                        args=[self.document.slug])
         eq_(200, response.status_code)
 
-        resp = get(self.client, 'wiki.get_helpful_votes_async', args=[r.document.slug])
+        resp = get(self.client, 'wiki.get_helpful_votes_async',
+                   args=[r.document.slug])
         eq_(200, resp.status_code)
         data = json.loads(resp.content)
-        eq_(2, len(data['data']))
+        eq_(3, len(data['data']))
         eq_('Yes', data['data'][0]['name'])
         eq_(1, len(data['data'][0]['data']))
         eq_('No', data['data'][1]['name'])
         eq_(1, len(data['data'][1]['data']))
+
+        eq_('flags', data['data'][2]['type'])
 
         eq_(1, len(data['date_to_rev_id']))
 
     def test_helpfulvotes_graph_async_no_votes(self):
         r = self.document.current_revision
 
-        resp = get(self.client, 'wiki.get_helpful_votes_async', args=[r.document.slug])
+        resp = get(self.client, 'wiki.get_helpful_votes_async',
+                   args=[r.document.slug])
         eq_(200, resp.status_code)
         data = json.loads(resp.content)
         eq_(0, len(data['data']))
 
         eq_(0, len(data['date_to_rev_id']))
+
 
 class SelectLocaleTests(TestCaseBase):
     """Test the locale selection page"""
@@ -2039,6 +2048,7 @@ def _create_document(title='Test Document', parent=None,
                  content='<div>Lorem Ipsum</div>', creator_id=118577,
                  significance=SIGNIFICANCES[0][0], is_approved=True,
                  comment="Good job!")
+    r.created = r.created - timedelta(days=10)
     r.save()
     return d
 
