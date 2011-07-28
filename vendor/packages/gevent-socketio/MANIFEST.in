@@ -1,0 +1,5 @@
+recursive-include examples *
+recursive-include socketio *
+include LICENSE
+include AUTHORS
+include MANIFEST.in
