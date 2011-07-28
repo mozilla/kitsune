@@ -10,20 +10,25 @@
         s.connect();
 
         s.addEvent('connect', function() {
-            //s.send('New participant joined');
+            s.send(JSON.stringify({'kind': 'join', 'room': 'world'}));
         });
 
         s.addEvent('message', function(data) {
-            var $chatbox = $("#chatbox");
-            $chatbox.append("<div>" + data + "</div>").scrollTop($chatbox[0].scrollHeight);
+            var $chatbox;
+            data = JSON.parse(data);
+            if (data['kind'] == 'say') {
+                $chatbox = $('#chatbox');
+                // TODO: Pay attention to room.
+                $chatbox.append('<div>' + data['message'] + '</div>').scrollTop($chatbox[0].scrollHeight);
+            }
         });
 
-        //send the message when submit is clicked
-        $('#chatform').submit(function (evt) {
+        // Send the message when submit is clicked:
+        $('#chatform').submit(function(evt) {
             var line = $('#chatform [type=text]').val();
             if (line !== '') {
                 $('#chatform [type=text]').val('');
-                s.send(line);
+                s.send(JSON.stringify({'kind': 'say', 'room': 'world', 'message': line}));
             }
             $(this).trigger('ajaxComplete');
             return false;
