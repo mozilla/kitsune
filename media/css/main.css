@@ -361,11 +361,12 @@ header.global #support-search {
 }
 
 #site-nav > ul > li {
-    border-left: 1px solid #9FA7AF;
+    border-right: 1px solid #9FA7AF;
     left: -9px;
+    margin: 0 0 5px;
 }
 
-#site-nav > ul > li:first-child {
+#site-nav > ul > li:last-child {
     border: 0 none;
 }
 
