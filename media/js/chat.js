@@ -3,7 +3,8 @@
         var s = new io.Socket(window.location.hostname, {
           port: 3000,
           rememberTransport: false,
-          transports: ['websocket', 'xhr-multipart', 'xhr-polling'],
+          // 'websocket' disabled because FF7 throws AttributeErrors on connect:
+          transports: ['xhr-multipart', 'xhr-polling'],
           resource: 'socket.io'
         });
         s.connect();
