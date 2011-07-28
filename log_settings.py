@@ -7,8 +7,8 @@ import celery.conf
 import celery.log
 
 
-# Loggers created under the "z" namespace, e.g. "z.caching", will inherit the
-# configuration from the base z logger.
+# Loggers created under the "k" namespace, e.g. "k.caching", will inherit the
+# configuration from the base k logger.
 log = logging.getLogger('k')
 
 fmt = ('%s: %%(asctime)s %%(name)s:%%(levelname)s %%(message)s '

@@ -10,13 +10,12 @@ from django.core.management.base import NoArgsCommand
 
 from socketio import SocketIOServer
 
+from chat import log
 from chat.views import chat_socketio
 
 
 def application(environ, start_response):
     path = environ['PATH_INFO'].strip('/')
-    print path
-
     if path.startswith('socket.io'):
         django_response = chat_socketio(environ['socketio'])
 
@@ -33,5 +32,8 @@ class Command(NoArgsCommand):
 
     def handle_noargs(self, *args, **kwargs):
         """Turn this process into the chat server."""
-        print 'Listening on http://127.0.0.1:%s and on port 843 (flash policy server)' % settings.CHAT_PORT
-        SocketIOServer(('', settings.CHAT_PORT), application, resource='socket.io', policy_server=False).serve_forever()
+        log.info('Listening on http://127.0.0.1:%s' % settings.CHAT_PORT)
+        SocketIOServer(('', settings.CHAT_PORT),
+                       application,
+                       resource='socket.io',
+                       policy_server=False).serve_forever()

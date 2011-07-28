@@ -10,6 +10,7 @@ from gevent import Greenlet
 import jingo
 from redis import Redis
 
+from chat import log
 from sumo.utils import redis_client
 
 
@@ -56,16 +57,19 @@ def chat_socketio(io):
             # io.connected() never becomes false for some reason.
             while io.connected():
                 for from_redis in redis_in_generator:
-                    print 'Incoming: %s' % from_redis
-                    if from_redis['type'] == 'message':  # There are also subscription notices.
+                    log.debug('Incoming: %s' % from_redis)
+                    if from_redis['type'] == 'message':
                         io.send(from_redis['data'])
+                    # Else it's a subscription notice.
         finally:
-            print "EXIT SUBSCRIBER %s" % io.session
+            log.debug('EXIT SUBSCRIBER %s' % io.session)
 
     if io.on_connect():
-        print "CONNECT %s" % io.session
+        log.debug('CONNECT %s' % io.session)
     else:
-        print "SOMETHING OTHER THAN CONNECT!"  # I have never seen this happen.
+        # I haven't nailed down when this happens yet. It might happen when
+        # websockets are enabled and we hit the server with FF 7.
+        log.debug('SOMETHING OTHER THAN CONNECT!')
 
     # Hanging onto this might keep it from the GC:
     in_greenlet = Greenlet.spawn(subscriber, io)
@@ -75,10 +79,10 @@ def chat_socketio(io):
         message = io.recv()
         if message:  # Always a list of 0 or 1 strings, I deduce from the source code
             to_redis = message[0]
-            print 'Outgoing: %s' % to_redis
+            log.debug('Outgoing: %s' % to_redis)
             redis_client('chat').publish(CHANNEL, to_redis)
 
-    print "EXIT %s" % io.session
+    log.debug('EXIT %s' % io.session)
 
     # Each time I close the 2nd chat window, wait for the old socketio() view
     # to exit, and then reopen the chat page, the number of Incomings increases
