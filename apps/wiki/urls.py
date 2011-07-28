@@ -43,6 +43,9 @@ document_patterns = patterns('wiki.views',
         name='wiki.review_revision'),
     url(r'^/compare$', 'compare_revisions', name='wiki.compare_revisions'),
     url(r'^/translate$', 'translate', name='wiki.translate'),
+    url(r'^/readyforl10n/(?P<revision_id>\d+)$',
+        'mark_ready_for_l10n_revision',
+        name='wiki.mark_ready_for_l10n_revision'),
     url(r'^/locales$', 'select_locale', name='wiki.select_locale'),
 
     # Un/Subscribe to document edit notifications.
@@ -51,6 +54,9 @@ document_patterns = patterns('wiki.views',
 
     # Vote helpful/not helpful
     url(r'^/vote', 'helpful_vote', name="wiki.document_vote"),
+
+    # Get helpful votes data
+    url(r'^/get-votes-async', 'get_helpful_votes_async', name="wiki.get_helpful_votes_async"),
 
     # KB discussion forums
     (r'^/discuss', include(doc_discuss_patterns)),
@@ -61,22 +67,34 @@ document_patterns = patterns('wiki.views',
 
     # Delete a document
     url(r'^/delete', 'delete_document', name='wiki.document_delete'),
+
+    # Manage contributors
+    url(r'^/add-contributor$', 'add_contributor',
+        name='wiki.add_contributor'),
+    url(r'^/remove-contributor/(?P<user_id>\d+)$', 'remove_contributor',
+        name='wiki.remove_contributor'),
 )
 
 urlpatterns = patterns('wiki.views',
     url(r'^$', redirect_to, {'url': 'home'}, name='wiki.home'),
 
-    # Un/Subscribe to locale 'ready for review' notifications.
+    # (Un)subscribe to locale 'ready for review' notifications.
     url(r'^/watch-ready-for-review$', 'watch_locale',
         name='wiki.locale_watch'),
     url(r'^/unwatch-ready-for-review$', 'unwatch_locale',
         name='wiki.locale_unwatch'),
 
-    # Un/Subscribe to 'approved' notifications.
+    # (Un)subscribe to 'approved' notifications.
     url(r'^/watch-approved$', 'watch_approved',
         name='wiki.approved_watch'),
     url(r'^/unwatch-approved$', 'unwatch_approved',
         name='wiki.approved_unwatch'),
+
+    # (Un)subscribe to 'ready-for-l10n' notifications.
+    url(r'^/watch-ready$', 'watch_ready',
+        name='wiki.ready_watch'),
+    url(r'^/unwatch-ready$', 'unwatch_ready',
+        name='wiki.ready_unwatch'),
 
     url(r'^/json$', 'json_view', name='wiki.json'),
 

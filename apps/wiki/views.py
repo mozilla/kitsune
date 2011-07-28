@@ -2,9 +2,13 @@ from datetime import datetime
 import json
 import logging
 from string import ascii_letters
+import time
 
 from django.conf import settings
+from django.contrib import messages
+from django.contrib.auth.models import User
 from django.core.exceptions import PermissionDenied
+from django.db import connection
 from django.http import (HttpResponse, HttpResponseRedirect,
                          Http404, HttpResponseBadRequest)
 from django.shortcuts import get_object_or_404
@@ -14,6 +18,7 @@ from django.views.decorators.http import (require_GET, require_POST,
 
 import jingo
 from mobility.decorators import mobile_template
+from statsd import statsd
 from taggit.models import Tag
 from tower import ugettext_lazy as _lazy
 from tower import ugettext as _
@@ -24,12 +29,13 @@ from sumo.urlresolvers import reverse
 from sumo.utils import paginate, smart_int, get_next_url
 from wiki import DOCUMENTS_PER_PAGE
 from wiki.events import (EditDocumentEvent, ReviewableRevisionInLocaleEvent,
-                         ApproveRevisionInLocaleEvent)
-from wiki.forms import DocumentForm, RevisionForm, ReviewForm
+                         ApproveRevisionInLocaleEvent, ApprovedOrReadyUnion,
+                         ReadyRevisionEvent)
+from wiki.forms import (AddContributorForm, DocumentForm, RevisionForm,
+                        ReviewForm)
 from wiki.models import (Document, Revision, HelpfulVote, CATEGORIES,
                          OPERATING_SYSTEMS, GROUPED_OPERATING_SYSTEMS,
-                         FIREFOX_VERSIONS, GROUPED_FIREFOX_VERSIONS,
-                         get_current_or_latest_revision)
+                         FIREFOX_VERSIONS, GROUPED_FIREFOX_VERSIONS)
 from wiki.parser import wiki_to_html
 from wiki.tasks import send_reviewed_notification, schedule_rebuild_kb
 
@@ -136,10 +142,7 @@ def document(request, document_slug, template=None):
 
     related = doc.related_documents.order_by('-related_to__in_common')[0:5]
 
-    # Get the contributors. (To avoid this query, we could render the
-    # the contributors right into the Document's html field.)
-    contributors = set([r.creator for r in doc.revisions.filter(
-                            is_approved=True).select_related('creator')])
+    contributors = doc.contributors.all()
 
     data = {'document': doc, 'redirected_from': redirected_from,
             'related': related, 'contributors': contributors,
@@ -289,6 +292,8 @@ def edit_document(request, document_slug, revision_id=None):
                 rev_form.instance.document = doc  # for rev_form.clean()
                 if rev_form.is_valid():
                     _save_rev_and_notify(rev_form, user, doc)
+                    if 'notify-future-changes' in request.POST:
+                        EditDocumentEvent.notify(request.user, doc)
                     return HttpResponseRedirect(
                         reverse('wiki.document_revisions',
                                 args=[document_slug]))
@@ -310,6 +315,7 @@ def edit_document(request, document_slug, revision_id=None):
 def preview_revision(request):
     """Create an HTML fragment preview of the posted wiki syntax."""
     wiki_content = request.POST.get('content', '')
+    statsd.incr('wiki.preview')
     # TODO: Get doc ID from JSON.
     data = {'content': wiki_to_html(wiki_content, request.locale)}
     data.update(SHOWFOR_DATA)
@@ -317,14 +323,22 @@ def preview_revision(request):
 
 
 @require_GET
-def document_revisions(request, document_slug):
+def document_revisions(request, document_slug, contributor_form=None):
     """List all the revisions of a given document."""
+    locale = request.GET.get('locale', request.locale)
     doc = get_object_or_404(
-        Document, locale=request.locale, slug=document_slug)
+        Document, locale=locale, slug=document_slug)
     revs = Revision.objects.filter(document=doc).order_by('-created', '-id')
 
-    return jingo.render(request, 'wiki/history.html',
-                        {'revisions': revs, 'document': doc})
+    if request.is_ajax():
+        template = 'wiki/includes/revision_list.html'
+    else:
+        template = 'wiki/history.html'
+
+    form = contributor_form or AddContributorForm()
+    return jingo.render(request, template,
+                        {'revisions': revs, 'document': doc,
+                         'contributor_form': form})
 
 
 @login_required
@@ -349,24 +363,40 @@ def review_revision(request, document_slug, revision_id):
             rev.reviewed = datetime.now()
             if should_ask_significance and form.cleaned_data['significance']:
                 rev.significance = form.cleaned_data['significance']
+
+            # If document is localizable and revision was approved and
+            # user has permission, set the is_ready_for_localization value.
+            if (doc.is_localizable and rev.is_approved and
+                request.user.has_perm('wiki.mark_ready_for_l10n')):
+                rev.is_ready_for_localization = form.cleaned_data[
+                    'is_ready_for_localization']
+
             rev.save()
+
+            # Send notifications of approvedness and readiness:
+            if rev.is_ready_for_localization or rev.is_approved:
+                events = [ApproveRevisionInLocaleEvent(rev)]
+                if rev.is_ready_for_localization:
+                    events.append(ReadyRevisionEvent(rev))
+                ApprovedOrReadyUnion(*events).fire(exclude=[rev.creator,
+                                                            request.user])
 
             # Send an email (not really a "notification" in the sense that
             # there's a Watch table entry) to revision creator.
             msg = form.cleaned_data['comment']
             send_reviewed_notification.delay(rev, doc, msg)
 
-            # If approved, send approved notification
-            ApproveRevisionInLocaleEvent(rev).fire(exclude=rev.creator)
-
             # Schedule KB rebuild?
+            statsd.incr('wiki.review')
             schedule_rebuild_kb()
 
             return HttpResponseRedirect(reverse('wiki.document_revisions',
                                                 args=[document_slug]))
 
     if doc.parent:  # A translation
-        parent_revision = get_current_or_latest_revision(doc.parent)
+        # For diffing the based_on revision against, to help the user see if he
+        # translated all the recent changes:
+        parent_revision = doc.parent.localizable_or_latest_revision()
         template = 'wiki/review_translation.html'
     else:
         parent_revision = None
@@ -386,8 +416,9 @@ def compare_revisions(request, document_slug):
     The ids are passed as query string parameters (to and from).
 
     """
+    locale = request.GET.get('locale', request.locale)
     doc = get_object_or_404(
-        Document, locale=request.locale, slug=document_slug)
+        Document, locale=locale, slug=document_slug)
     if 'from' not in request.GET or 'to' not in request.GET:
         raise Http404
 
@@ -396,7 +427,12 @@ def compare_revisions(request, document_slug):
     revision_from = get_object_or_404(Revision, document=doc, id=from_id)
     revision_to = get_object_or_404(Revision, document=doc, id=to_id)
 
-    return jingo.render(request, 'wiki/compare_revisions.html',
+    if request.is_ajax():
+        template = 'wiki/includes/revision_diff.html'
+    else:
+        template = 'wiki/compare_revisions.html'
+
+    return jingo.render(request, template,
                         {'document': doc, 'revision_from': revision_from,
                          'revision_to': revision_to})
 
@@ -435,8 +471,8 @@ def translate(request, document_slug, revision_id=None):
         return jingo.render(request, 'handlers/400.html',
                             {'message': message}, status=400)
 
-    based_on_rev = get_current_or_latest_revision(parent_doc,
-                                                  reviewed_only=False)
+    based_on_rev = parent_doc.localizable_or_latest_revision(
+        include_rejected=True)
 
     disclose_description = bool(request.GET.get('opendescription'))
 
@@ -470,7 +506,13 @@ def translate(request, document_slug, revision_id=None):
             initial.update(content=based_on_rev.content,
                            summary=based_on_rev.summary,
                            keywords=based_on_rev.keywords)
-        instance = doc and get_current_or_latest_revision(doc)
+
+        # Get a revision of the translation to plonk into the page as a
+        # starting point. Since translations are never "ready for
+        # localization", this will first try to find an approved revision, then
+        # an unrejected one, then give up.
+        instance = doc and doc.localizable_or_latest_revision()
+
         rev_form = RevisionForm(instance=instance, initial=initial)
         base_rev = base_rev or instance
 
@@ -536,6 +578,7 @@ def watch_document(request, document_slug):
     document = get_object_or_404(
         Document, locale=request.locale, slug=document_slug)
     EditDocumentEvent.notify(request.user, document)
+    statsd.incr('wiki.watches.document')
     return HttpResponseRedirect(document.get_absolute_url())
 
 
@@ -554,9 +597,9 @@ def unwatch_document(request, document_slug):
 def watch_locale(request):
     """Start watching a locale for revisions ready for review."""
     ReviewableRevisionInLocaleEvent.notify(request.user, locale=request.locale)
-    # This redirect is pretty bad, because you might also have been on the
-    # Contributor Dashboard:
-    return HttpResponseRedirect(_get_next_url_fallback_localization(request))
+    statsd.incr('wiki.watches.locale')
+    # A 200 so jQuery interprets it as success
+    return HttpResponse()
 
 
 @require_POST
@@ -565,31 +608,50 @@ def unwatch_locale(request):
     """Stop watching a locale for revisions ready for review."""
     ReviewableRevisionInLocaleEvent.stop_notifying(request.user,
                                                    locale=request.locale)
-    return HttpResponseRedirect(_get_next_url_fallback_localization(request))
+    return HttpResponse()
 
 
 @require_POST
 @login_required
 def watch_approved(request):
     """Start watching approved revisions in a locale."""
-    locale = request.POST.get('locale')
-    if locale not in settings.SUMO_LANGUAGES:
+    if request.locale not in settings.SUMO_LANGUAGES:
         raise Http404
-
-    ApproveRevisionInLocaleEvent.notify(request.user, locale=locale)
-    return HttpResponseRedirect(_get_next_url_fallback_localization(request))
+    ApproveRevisionInLocaleEvent.notify(request.user, locale=request.locale)
+    statsd.incr('wiki.watches.approved')
+    return HttpResponse()
 
 
 @require_POST
 @login_required
 def unwatch_approved(request):
     """Stop watching approved revisions."""
-    locale = request.POST.get('locale')
-    if locale not in settings.SUMO_LANGUAGES:
+    if request.locale not in settings.SUMO_LANGUAGES:
         raise Http404
+    ApproveRevisionInLocaleEvent.stop_notifying(request.user,
+                                                locale=request.locale)
+    return HttpResponse()
 
-    ApproveRevisionInLocaleEvent.stop_notifying(request.user, locale=locale)
-    return HttpResponseRedirect(_get_next_url_fallback_localization(request))
+
+@require_POST
+@login_required
+def watch_ready(request):
+    """Start watching ready-for-l10n revisions."""
+    if request.locale != settings.WIKI_DEFAULT_LANGUAGE:
+        raise Http404
+    ReadyRevisionEvent.notify(request.user)
+    statsd.incr('wiki.watches.ready')
+    return HttpResponse()
+
+
+@require_POST
+@login_required
+def unwatch_ready(request):
+    """Stop watching ready-for-l10n revisions."""
+    if request.locale != settings.WIKI_DEFAULT_LANGUAGE:
+        raise Http404
+    ReadyRevisionEvent.stop_notifying(request.user)
+    return HttpResponse()
 
 
 @require_GET
@@ -619,12 +681,12 @@ def json_view(request):
 @csrf_exempt
 def helpful_vote(request, document_slug):
     """Vote for Helpful/Not Helpful document"""
-    document = get_object_or_404(
-        Document, locale=request.locale, slug=document_slug)
+    revision = get_object_or_404(
+        Revision, id=smart_int(request.POST['revision_id']))
 
-    if not document.has_voted(request):
+    if not revision.has_voted(request):
         ua = request.META.get('HTTP_USER_AGENT', '')[:1000]  # 1000 max_length
-        vote = HelpfulVote(document=document, user_agent=ua)
+        vote = HelpfulVote(revision=revision, user_agent=ua)
 
         if 'helpful' in request.POST:
             vote.helpful = True
@@ -639,13 +701,93 @@ def helpful_vote(request, document_slug):
             vote.anonymous_id = request.anonymous.anonymous_id
 
         vote.save()
+        statsd.incr('wiki.vote')
     else:
         message = _('You already voted on this Article.')
 
     if request.is_ajax():
         return HttpResponse(json.dumps({'message': message}))
 
-    return HttpResponseRedirect(document.get_absolute_url())
+    return HttpResponseRedirect(revision.document.get_absolute_url())
+
+
+@require_GET
+def get_helpful_votes_async(request, document_slug):
+    document = get_object_or_404(
+        Document, locale=request.locale, slug=document_slug)
+
+    yes_data = []
+    no_data = []
+    date_to_rev_id = {}
+    flag_data = []
+    revisions = set([])
+
+    start = time.time()
+    cursor = connection.cursor()
+
+    cursor.execute('SELECT wiki_helpfulvote.revision_id, '
+                             'SUM(wiki_helpfulvote.helpful), '
+                             'SUM(NOT(wiki_helpfulvote.helpful)), '
+                             'wiki_helpfulvote.created '
+                        'FROM wiki_helpfulvote '
+                        'INNER JOIN wiki_revision ON '
+                            'wiki_helpfulvote.revision_id=wiki_revision.id '
+                        'WHERE wiki_revision.document_id=%s '
+                        'GROUP BY DATE(wiki_helpfulvote.created)',
+                        [document.id])
+
+    results = cursor.fetchall()
+    for res in results:
+        created = 1000 * int(time.mktime(res[3].timetuple()))
+        yes_data.append([created, int(res[1])])
+        no_data.append([created, int(res[2])])
+        date_to_rev_id[created] = res[0]
+        revisions.add(int(res[0]))
+
+    # Drop the first revision marker to make the graph cleaner
+    revisions = sorted(revisions)[1:]
+
+    for rev in revisions:
+        r = get_object_or_404(Revision, id=rev)
+        rdate = r.created
+
+        flag_data.append({
+                    'x': 1000 * int(time.mktime(rdate.timetuple())),
+                    'title': _('Revision'),
+                    'text': unicode(_('Revision %s')) % rdate
+                    #'url': 'http://www.google.com/'  # Not supported yet
+                })
+
+    end = time.time()
+
+    send = {'data': [{
+                        'name': _('Yes'),
+                        'id': 'yes_data',
+                        'data': yes_data
+                    },
+                    {
+                        'name': _('No'),
+                        'id': 'no_data',
+                        'data': no_data
+                    },
+                    {
+                        'type': 'flags',
+                        'data': flag_data,
+                        'shape': 'squarepin'
+                    }],
+            'date_to_rev_id': date_to_rev_id,
+            'query': end - start
+            }
+
+    if len(send['data'][2]['data']) == 0:
+        send['data'].pop(2)
+    if len(send['data'][1]['data']) == 0:
+        send['data'].pop(1)
+    if len(send['data'][0]['data']) == 0:
+        send['data'].pop(0)
+
+    return HttpResponse(json.dumps(send),
+                        mimetype='application/json')
 
 
 @login_required
@@ -656,38 +798,44 @@ def delete_revision(request, document_slug, revision_id):
                                  document__slug=document_slug)
     document = revision.document
     only_revision = document.revisions.count() == 1
+    helpful_votes = HelpfulVote.objects.filter(revision=revision.id)
+    has_votes = helpful_votes.exists()
 
     if request.method == 'GET':
         # Render the confirmation page
         return jingo.render(request, 'wiki/confirm_revision_delete.html',
                             {'revision': revision, 'document': document,
-                             'only_revision': only_revision})
+                             'only_revision': only_revision,
+                             'has_votes': has_votes})
 
     # Don't delete the only revision of a document
     if only_revision:
         return HttpResponseBadRequest()
 
-    # Handle confirm delete form POST
     log.warning('User %s is deleting revision with id=%s' %
                 (request.user, revision.id))
-    Revision.objects.filter(based_on=revision).update(based_on=None)
-
-    if document.current_revision == revision:
-        # If the current_revision is being deleted, lets try to update it to
-        # the previous approved revision.
-        revs = document.revisions.filter(
-            is_approved=True).order_by('-reviewed')
-        if revs.count() > 1:
-            document.current_revision = revs[1]
-        else:
-            document.current_revision = None
-        document.html = document.content_parsed or ''
-        document.save()
-
     revision.delete()
-
     return HttpResponseRedirect(reverse('wiki.document_revisions',
                                         args=[document.slug]))
+
+
+@login_required
+@permission_required('wiki.mark_ready_for_l10n')
+@require_POST
+def mark_ready_for_l10n_revision(request, document_slug, revision_id):
+    """Mark a revision as ready for l10n."""
+    revision = get_object_or_404(Revision, pk=revision_id,
+                                 document__slug=document_slug)
+
+    if revision.is_approved:
+        revision.is_ready_for_localization = True
+        revision.save()
+
+        ReadyRevisionEvent(revision).fire(exclude=request.user)
+
+        return HttpResponse(json.dumps({'message': revision_id}))
+
+    return HttpResponseBadRequest()
 
 
 @login_required
@@ -712,6 +860,51 @@ def delete_document(request, document_slug):
                         {'document': document, 'delete_confirmed': True})
 
 
+@login_required
+@require_POST
+@permission_required('wiki.change_document')
+def add_contributor(request, document_slug):
+    """Add a contributor to a document."""
+    document = get_object_or_404(Document, locale=request.locale,
+                                 slug=document_slug)
+
+    form = AddContributorForm(request.POST)
+    if form.is_valid():
+        for user in form.cleaned_data['users']:
+            document.contributors.add(user)
+        msg = _('{users} added to the contributors successfully!').format(
+            users=request.POST.get('users'))
+        messages.add_message(request, messages.SUCCESS, msg)
+
+        return HttpResponseRedirect(reverse('wiki.document_revisions',
+                                            args=[document_slug]))
+
+    msg = _('There were errors adding new contributors, see below.')
+    messages.add_message(request, messages.ERROR, msg)
+    return document_revisions(request, document_slug, contributor_form=form)
+
+
+@login_required
+@require_http_methods(['GET', 'POST'])
+@permission_required('wiki.change_document')
+def remove_contributor(request, document_slug, user_id):
+    """Remove a contributor from a document."""
+    document = get_object_or_404(Document, locale=request.locale,
+                                 slug=document_slug)
+    user = get_object_or_404(User, id=user_id)
+
+    if request.method == 'POST':
+        document.contributors.remove(user)
+        msg = _('{user} removed from the contributors successfully!').format(
+                user=user.username)
+        messages.add_message(request, messages.SUCCESS, msg)
+        return HttpResponseRedirect(reverse('wiki.document_revisions',
+                                            args=[document_slug]))
+
+    return jingo.render(request, 'wiki/confirm_remove_contributor.html',
+                        {'document': document, 'contributor': user})
+
+
 def _document_form_initial(document):
     """Return a dict with the document data pertinent for the form."""
     return {'title': document.title,
@@ -723,12 +916,14 @@ def _document_form_initial(document):
             'firefox_versions': [x.item_id for x in
                                  document.firefox_versions.all()],
             'operating_systems': [x.item_id for x in
-                                  document.operating_systems.all()]}
+                                  document.operating_systems.all()],
+            'allow_discussion': document.allow_discussion}
 
 
 def _save_rev_and_notify(rev_form, creator, document):
     """Save the given RevisionForm and send notifications."""
     new_rev = rev_form.save(creator, document)
+    statsd.incr('wiki.revision')
 
     # Enqueue notifications
     ReviewableRevisionInLocaleEvent(new_rev).fire(exclude=new_rev.creator)

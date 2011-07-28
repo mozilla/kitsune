@@ -8,6 +8,10 @@
     z-index: 2;
 }
 
+body.new-header #side {
+    margin-top: -25px;
+}
+
 #featured {
     background: url("../img/nurse.png") no-repeat scroll right top transparent;
     height: 279px;
@@ -18,9 +22,19 @@
     z-index: 1;
 }
 
+body.new-header #featured {
+    background: url("../img/nurse.small.png") no-repeat scroll 550px 0px transparent;
+    height: 125px;
+}
+
 body.mobile #featured,
 body.fxhome #featured {
     background: url("../img/nurse.mobile.png") no-repeat scroll right top transparent;
+}
+
+body.new-header.mobile #featured,
+body.new-header.fxhome #featured {
+    background: url("../img/nurse.mobile.small.png") no-repeat scroll 570px 0px transparent;
 }
 
 /* Bug 615495 - Don't send the nursecat to Japanese audiences. */
@@ -37,11 +51,20 @@ html[lang=ja] body div#featured {
     height: 279px;
 }
 
+body.new-header #featured-wrap {
+    background: none;
+    height: 125px;
+}
+
 #featured h1 {
     font-size: 280%;
     font-style: italic;
     letter-spacing: -1px;
     margin: 0 0 .5em;
+}
+
+body.new-header #featured h1 {
+    font-size: 220%;
 }
 
 #featured h1 mark {
@@ -56,8 +79,14 @@ html[lang=ja] body div#featured {
     width: 380px;
 }
 
+body.new-header #support-search {
+    margin: 0;
+    padding: 20px 0 0 57px;
+    width: 384px;
+}
+
 #support-search input.text {
-    width: 290px;
+    width: 288px;
 }
 
 #featured p {
@@ -74,9 +103,22 @@ html[lang=ja] body div#featured {
     padding-bottom: 0;
 }
 
+body.new-header #home-content {
+    background: transparent url(../img/home.divider.jpg) no-repeat left top;
+    zoom: 1;
+}
+
+body.new-header #home-content:after {
+    clear: both;
+    content: ".";
+    display: block;
+    height: 0;
+    visibility: hidden;
+}
+
 #home-content-top {
     font-size: 14px;
-    margin: 20px 10px 0;
+    padding: 20px 10px 0;
 }
 
 #home-content-quick, #home-content-explore {

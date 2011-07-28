@@ -1,7 +1,7 @@
 {% from "upload/attachments.html" import attachment %}
 <div class="user-section">
   <div class="avatar{% if user == answer.creator %} self{% endif %}{% if question.creator == answer.creator %} owner{% endif %}">
-    <a href="{{ profile_url(answer.creator) }}">
+    <a href="{{ profile_url(answer.creator, request.user == answer.creator) }}">
       <img src="{{ profile_avatar(answer.creator) }}" height="48" width="48" alt="{{ answer.creator }}"/>
       {% if user == answer.creator %}
         <span>{{ _('You') }}</span>
@@ -11,10 +11,17 @@
     </a>
   </div>
   <div class="asked-by">
-    <a href="{{ profile_url(answer.creator) }}">{{ answer.creator }}</a>
+    <a href="{{ profile_url(answer.creator, request.user == answer.creator) }}">{{ answer.creator }}</a>
     {% if question.creator != answer.creator %}
-      <span class="solutions">{{ _('{num} solutions')|f(num=answer.creator_num_answers) }}</span>
-      <span class="answers">{{ _('{num} answers')|f(num=answer.creator_num_posts) }}</span>
+      <span class="solutions">{{ _('{num} solutions')|f(num=answer.creator_num_solutions) }}</span>
+      <span class="answers">{{ _('{num} answers')|f(num=answer.creator_num_answers) }}</span>
+      {% if user.is_staff and waffle.switch('karma') %} {# only show actual points to staff #}
+        {% with pts = answer.creator_num_points %}
+          {% if pts != None %}
+            <span class="points">{{ pts }}</span>
+          {% endif %}
+        {% endwith %}
+      {% endif %}
     {% endif %}
   </div>
   <div class="asked-on">
@@ -38,7 +45,13 @@
   {% endif %}
   <div class="meta">
     {% if question.solution == answer %}
-      <span class="solved">{{ _('Solution chosen by {author}')|f(author=question.creator) }}</span>
+      <span class="solved">{{ _('Solution chosen') }}</span>
+      {% if user == question.creator or user.has_perm('questions.change_solution') %}
+        <form class="unsolve" action="{{ url('questions.unsolve', question_id=question.id, answer_id=answer.id) }}" method="post">
+          {{ csrf() }}
+          <input type="submit" name="unsolve" value="{{ _('Undo') }}" />
+        </form>
+      {% endif %}
     {% endif %}
     {% if answer.num_votes != 0 %}
       <span class="helpful">
@@ -55,17 +68,23 @@
 <div class="side-section">
   {% if answer.creator != question.creator %}
     {% if not question.is_locked %}
-      {% if not question.solution and user == question.creator %}
-        <form class="helpful" action="{{ url('questions.solution', question_id=question.id, answer_id=answer.id) }}" method="post">
-          {{ csrf() }}
-          <h4>{{ _('Did this solve your problem?') }}</h4>
-          <input type="submit" class="btn" name="solution" value="{{ _('Solved It') }}" />
-        </form>
-      {% elif not answer.has_voted(request) and user != question.creator and user != answer.creator %}
+      {% if user != question.creator and user != answer.creator and not answer.has_voted(request) %}
         <form class="helpful" action="{{ url('questions.answer_vote', question_id=question.id, answer_id=answer.id) }}" method="post">
           <h4>{{ _('Was this reply helpful?') }}</h4>
           <input type="submit" class="btn" name="helpful" value="{{ _('Helpful') }}" />
           <input type="submit" class="btn" name="not-helpful" value="{{ _('Not Helpful') }}" />
+        </form>
+      {% endif %}
+      {% if not question.solution and (user == question.creator or user.has_perm('questions.change_solution')) %}
+        <form class="solution" action="{{ url('questions.solve', question_id=question.id, answer_id=answer.id) }}" method="post">
+          {{ csrf() }}
+          {% if user == question.creator %}
+            <h4>{{ _('Did this solve your problem?') }}</h4>
+            <input type="submit" class="btn" name="solution" value="{{ _('Solved It') }}" />
+          {% else %}
+            <h4>{{ _('Does this solve the problem?') }}</h4>
+            <input type="submit" class="btn" name="solution" value="{{ _('Solves It') }}" />
+          {% endif %}
         </form>
       {% endif %}
     {% endif %}

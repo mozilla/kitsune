@@ -7,7 +7,7 @@ from django.contrib.sites.models import Site
 
 from announcements.tests import announcement
 from dashboards.tests import group_dashboard
-from forums.models import Post
+from forums.models import Thread, Forum
 from sumo.tests import TestCase
 from sumo.urlresolvers import reverse
 from users.tests import user, group, profile
@@ -37,23 +37,28 @@ class LocalizationDashTests(TestCase):
         """Assert the main dash and all the readouts render and don't crash."""
         # Put some stuff in the DB so at least one row renders for each
         # readout:
-        untranslated = revision(is_approved=True)
+        untranslated = revision(is_approved=True,
+                                is_ready_for_localization=True)
         untranslated.save()
 
-        unreviewed = translated_revision()
+        unreviewed = translated_revision(is_ready_for_localization=True)
         unreviewed.save()
 
-        out_of_date = translated_revision(is_approved=True)
+        out_of_date = translated_revision(is_approved=True,
+                                          is_ready_for_localization=True)
         out_of_date.save()
         major_update = revision(document=out_of_date.document.parent,
                                 significance=MAJOR_SIGNIFICANCE,
-                                is_approved=True)
+                                is_approved=True,
+                                is_ready_for_localization=True)
         major_update.save()
 
-        needing_updates = translated_revision(is_approved=True)
+        needing_updates = translated_revision(is_approved=True,
+                                              is_ready_for_localization=True)
         needing_updates.save()
         medium_update = revision(document=needing_updates.document.parent,
-                                significance=MEDIUM_SIGNIFICANCE)
+                                 significance=MEDIUM_SIGNIFICANCE,
+                                 is_ready_for_localization=True)
         medium_update.save()
 
         response = self.client.get(reverse('dashboards.localization',
@@ -65,10 +70,9 @@ class LocalizationDashTests(TestCase):
                                       untranslated.document.title)
         self._assert_readout_contains(doc, 'unreviewed',
                                       unreviewed.document.title)
-        # TODO: Why do these fail? The query doesn't return the rows set up
-        # above. Is the setup wrong, or is the query?
-        # self._assert_readout_contains(doc, 'out-of-date',
-        #                               out_of_date.document.title)
+        self._assert_readout_contains(doc, 'out-of-date',
+                                      out_of_date.document.title)
+        # TODO: Why does this fail? Is the setup wrong, or is the query?
         # self._assert_readout_contains(doc, 'needing-updates',
         #                               needing_updates.document.title)
 
@@ -81,7 +85,8 @@ class LocalizationDashTests(TestCase):
         # the main, multi-readout page.
 
         # Put something in the DB so something shows up:
-        untranslated = revision(is_approved=True)
+        untranslated = revision(is_approved=True,
+                                is_ready_for_localization=True)
         untranslated.save()
 
         response = self.client.get(reverse('dashboards.localization_detail',
@@ -93,27 +98,22 @@ class LocalizationDashTests(TestCase):
 class ContributorForumDashTests(TestCase):
     fixtures = ['users.json', 'posts.json', 'forums_permissions.json']
 
-    def setUp(self):
-        super(ContributorForumDashTests, self).setUp()
-        self.client.login(username='jsocol', password='testpass')
-
     def test_no_activity(self):
         """Test the page with no activity."""
+        self.client.login(username='rrosario', password='testpass')
         response = self.client.get(reverse('dashboards.review'), follow=True)
         eq_(200, response.status_code)
         doc = pq(response.content)
-        eq_('No recent activity.', doc('#forums-dashboard p').text())
+        eq_(1, len(doc('#forums-dashboard p')))
 
     def test_with_activity(self):
         """Test the page with some activity."""
-        # Add a reply
-        post = Post(thread_id=4, content='lorem ipsum', author_id=118577)
-        post.save()
-        # Verify activity on the page
+        self.client.login(username='pcraciunoiu', password='testpass')
+        # Verify threads appear on the page
         response = self.client.get(reverse('dashboards.review'), follow=True)
         eq_(200, response.status_code)
         doc = pq(response.content)
-        eq_(1, len(doc('ol.actions li')))
+        eq_(1, len(doc('ol.threads > li')))
 
     def test_anonymous_user(self):
         """Checks the forums dashboard doesn't load for an anonymous user."""
@@ -122,6 +122,33 @@ class ContributorForumDashTests(TestCase):
                                    locale='en-US'))
         eq_(302, response.status_code)
         assert '/users/login' in response['location']
+
+    def test_activity_multiple_forums(self):
+        """Checks links are correct when there is activity from >1 forum."""
+        jsocol = User.objects.get(username='jsocol')
+        rrosario = User.objects.get(username='rrosario')
+        forum = Forum.objects.get(slug='another-forum')
+        # Create new thread in Another Forum
+        thread = Thread(creator=jsocol, title='foobartest', forum=forum)
+        thread.save()
+        post = thread.new_post(author=jsocol, content='loremipsumdolor')
+        post.save()
+        # Add a reply
+        post = thread.new_post(author=rrosario, content='replyhi')
+        post.save()
+        # Verify links
+        self.client.login(username='jsocol', password='testpass')
+        response = self.client.get(reverse('dashboards.review'), follow=True)
+        eq_(200, response.status_code)
+        doc = pq(response.content)
+        links = doc('ol.threads div.title a')
+        hrefs = [link.attrib['href'] for link in links]
+        eq_(5, len(hrefs))
+        for i in range(5):
+            if i == 2:
+                assert hrefs[i].startswith('/en-US/forums/another-forum/')
+            else:
+                assert hrefs[i].startswith('/en-US/forums/test-forum/')
 
 
 class AnnouncementForumDashTests(TestCase):

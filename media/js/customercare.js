@@ -65,10 +65,16 @@
         });
 
         this.__defineGetter__('username', function() {
-            return this.$username_el.text();
+            return {
+                text: this.$username_el.text(),
+                href: this.$avatar_el.attr('href')
+            }
         });
         this.__defineSetter__('username', function(val) {
-            this.$username_el.text(val);
+            this.$username_el.text(val.text);
+            if (this.$username_el.is('a')) {
+                this.$username_el.attr('href', val.href);
+            }
         });
 
         this.__defineGetter__('content', function() {
@@ -165,7 +171,7 @@
                 return this.$textarea.val();
             });
             this.__defineSetter__('content', function(val) {
-                val = '@'+ this._tweet.username +' '+ val +' #fxhelp';
+                val = '@'+ this._tweet.username.text +' '+ val +' #fxhelp';
                 this.$textarea.val(val);
                 // trigger keydown so the character counter updates
                 this.$textarea.trigger('keydown');

@@ -3,7 +3,10 @@ from datetime import datetime
 from django.contrib.auth.models import User
 from django.db import models
 
+from jinja2 import Markup
+
 from sumo.models import ModelBase
+from sumo.parser import wiki_to_html
 
 
 class InboxMessage(ModelBase):
@@ -21,6 +24,10 @@ class InboxMessage(ModelBase):
         s = self.message[0:30]
         return u'to:%s from:%s %s' % (self.to, self.sender, s)
 
+    @property
+    def content_parsed(self):
+        return Markup(wiki_to_html(self.message))
+
 
 class OutboxMessage(ModelBase):
     sender = models.ForeignKey(User, related_name='outbox')
@@ -31,3 +38,7 @@ class OutboxMessage(ModelBase):
     def __unicode__(self):
         to = u', '.join([u.username for u in self.to.all()])
         return u'from:%s to:%s %s' % (self.sender, to, self.message[0:30])
+
+    @property
+    def content_parsed(self):
+        return Markup(wiki_to_html(self.message))

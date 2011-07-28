@@ -1,6 +1,7 @@
 {# vim: set ts=2 et sts=2 sw=2: #}
 {% extends "wiki/base.html" %}
 {% from "wiki/includes/sidebar_modules.html" import document_tabs %}
+{% from "wiki/includes/document_macros.html" import revision_diff with context %}
 {% set title = _('Review Revision {id} | {document}')|f(document=document.title, id=revision.id) %}
 {% set crumbs = [(url('wiki.category', document.category), document.get_category_display()),
                  (document.get_absolute_url(), document.title), (None, 'Review Revision')] %}
@@ -19,9 +20,7 @@
     {% elif document.current_revision %}
       <details class="h2" open="open">
         <summary>{{ _('Submitted Revision Changes') }}</summary>
-        {% with revision_from = document.current_revision, revision_to = revision, revision_from_header = _('Current public revision:'), revision_to_header = _('Submitted revision:') %}
-          {% include 'wiki/includes/revision_diff.html' %}
-        {% endwith %}
+        {{ revision_diff(document.current_revision, revision, _('Current public revision:'), _('Submitted revision:')) }}
       </details>
       <details class="h2">
         <summary>{{ _('Revision Source') }}</summary>

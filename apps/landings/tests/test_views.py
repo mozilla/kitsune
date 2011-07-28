@@ -1,4 +1,5 @@
 from nose.tools import eq_
+from pyquery import PyQuery as pq
 
 from sumo.tests import MobileTestCase, TestCase
 from sumo.urlresolvers import reverse
@@ -14,6 +15,9 @@ class MobileHomeTests(MobileTestCase):
         r = self.client.get(reverse('home.mobile'), follow=True)
         eq_(r.status_code, 200)
         self.assertTemplateUsed(r, 'landings/mobile/mobile.html')
+        doc = pq(r.content)
+        eq_('mobile', doc('#search input[name="q_tags"]')[0].attrib['value'])
+        eq_('mobile', doc('#search input[name="tags"]')[0].attrib['value'])
 
     def test_sync_home_for_mobile(self):
         r = self.client.get(reverse('home.sync'), follow=True)

@@ -71,7 +71,7 @@
             {% include 'questions/includes/have_problem.html' %}
           </div>
           <div class="thread-meta">
-            {% if question.solution %}
+            {% if question.is_solved %}
               <span class="solved">{{ _('Solved') }}</span>
             {% endif %}
             <span><a class="replies" href="{{ question.get_absolute_url()|urlparams(hash='answers') }}">

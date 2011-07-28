@@ -133,7 +133,7 @@ article #toc ul li {
 }
 
 #more-help div.support-search input.text {
-    width: 146px;
+    width: 144px;
 }
 
 #support-for {
@@ -332,12 +332,14 @@ article.form-page form li label {
 }
 
 #document-form label[for="id_is_localizable"],
-#document-form label[for="id_is_archived"] {
+#document-form label[for="id_is_archived"],
+#document-form label[for="id_allow_discussion"] {
     display: inline;
 }
 
 #document-form #id_is_localizable,
-#document-form #id_is_archived {
+#document-form #id_is_archived,
+#document-form #id_allow_discussion {
     margin: 0 .5em;
 }
 
@@ -541,12 +543,25 @@ details.h2 > summary {
     font-weight: normal;
 }
 
+#helpful-chart {
+    display: none;
+    height: 400px;
+    width: 100%;
+}
+
+#chart-footnote {
+    color: #ABABAB;
+    font-size: 10px;
+    text-align: right;
+}
+
 #revision-list form {
     margin: 10px 0;
 }
 
 #revision-list ul {
     margin: 5px 0;
+    text-align: left;
 }
 
 #revision-list li {
@@ -567,6 +582,10 @@ details.h2 > summary {
 #revision-list li.current div.status {
     color: #223d61;
     font-weight: bold;
+}
+
+#revision-list li.graph-hover {
+    background: #f6f6ad;
 }
 
 #revision-list li.rejected *,
@@ -597,7 +616,7 @@ details.h2 > summary {
 #revision-list div.status,
 #revision-list div.status-head {
     display: inline-block;
-    width: 80px;
+    width: 90px;
 }
 
 #revision-list div.status a {
@@ -620,11 +639,13 @@ details.h2 > summary {
 #revision-list div.comment,
 #revision-list div.comment-head {
     display: inline-block;
-    width: 280px;
+    width: 245px;
 }
 
+#revision-list div.l10n,
 #revision-list div.edit,
 #revision-list div.delete,
+#revision-list div.l10n-head,
 #revision-list div.edit-head,
 #revision-list div.delete-head {
     display: inline-block;
@@ -648,9 +669,33 @@ details.h2 > summary {
     width: 12px;
 }
 
+#revision-list div.l10n a.yes {
+    background: url("/media/img/wiki/icon-yes.gif") no-repeat scroll left top transparent;
+    display: inline-block;
+    height: 12px;
+    width: 12px;
+}
+
+#revision-list div.l10n a.markasready,
+#revision-list div.l10n a.no {
+    background: url("/media/img/wiki/icon-no.gif") no-repeat scroll left top transparent;
+    display: inline-block;
+    height: 12px;
+    width: 12px;
+}
+
+#revision-list div.l10n a.markasready:hover {
+    background: url("/media/img/wiki/icon-yes.gif") no-repeat scroll left top transparent;
+    cursor: pointer;
+    display: inline-block;
+    height: 12px;
+    width: 12px;
+}
+
 #revision-list div.compare {
     height: 20px;
     padding: 0 0 0 50px;
+    text-align: left;
 }
 
 #revision-list div.compare.top {
@@ -663,10 +708,26 @@ details.h2 > summary {
     padding-top: 10px;
 }
 
+#contributors {
+    margin: 30px 0;
+}
+#contributors h1 {
+    font-size: 18px;
+}
+
 #delete-doc {
     margin: 50px 0 0;
     padding: 0 10px 0 0;
     text-align: right;
+}
+
+#show-chart {
+    color: #447BC4;
+    cursor: pointer;
+    float: right;
+    font-family: Trebuchet MS, Helvetica, sans-serif;
+    font-size: 13px;
+    margin-top: 1px;
 }
 
 /* Revision page */
@@ -705,12 +766,23 @@ body.review #content-fields textarea {
     margin: 5px 0 0;
 }
 
+#approve-modal p {
+    margin: 0 0 10px;
+}
+
+#approve-modal p.warning {
+    background: #FFF9DB url(../img/wiki/bkg.warning.png) repeat-y left top;
+    padding: .5em 1em .5em 2em;
+}
+
 #approve-modal li {
     list-style: none;
-    padding: 2px 5px;
+    padding: 5px;
+    position: relative;
 }
 
 #approve-modal div.message,
+#approve-modal div.ready-for-l10n,
 #reject-modal div.message {
     margin: 10px 0;
 }
@@ -721,20 +793,62 @@ body.review #content-fields textarea {
     width: 350px;
 }
 
+#approve-modal li div.help-text {
+    background: #fff;
+    border-radius: 0 0 10px 10px;
+    box-shadow: 0 10px 10px rgba(0,0,0,.25), inset -1px -1px 1px rgba(0,0,0,.125), inset 1px 0 1px rgba(255,255,255,.25);
+    color: #000;
+    display: none;
+    left: 23px;
+    padding: 10px 15px;
+    position: absolute;
+    top: 20px;
+    z-index: 999;
+}
+
+#approve-modal li:hover {
+    border-radius: 10px 10px 0 10px;
+    box-shadow: 0 0 10px rgba(0,0,0,.25), inset -1px -1px 1px rgba(0,0,0,.125), inset 1px 0 1px rgba(255,255,255,.25);
+}
+
+#approve-modal li:hover label {
+    position: relative;
+    z-index: 1000;
+}
+
+#approve-modal li:hover div.help-text {
+    display: block;
+}
+
 /* Revision diffs */
+div.revision-diff header {
+    margin: 20px 0 0;
+}
+
 div.revision-diff div {
     display: inline-block;
+    vertical-align: top;
     width: 364px;
 }
 
 div.revision-diff h3 {
     font-weight: bold;
-    margin: 20px 0 0;
 }
 
 div.revision-diff h4 {
     font-weight: bold;
     margin: 10px 0 0;
+}
+
+div.revision-diff div.picker {
+    display: block;
+    padding: 0 10px 0 0;
+    text-align: right;
+    width: auto;
+}
+
+#diff-picker-kbox {
+    width: 770px;
 }
 
 a.toggle-diff {
@@ -758,6 +872,11 @@ table.diff.full {
     -webkit-box-shadow: 0 2px 10px rgba(0,0,0,.25), inset -1px -1px 1px rgba(0,0,0,.125), inset 1px 0 1px rgba(255,255,255,.25);
     left: 1%;
     position: absolute;
+}
+
+table.diff.full td.text {
+    display: table-cell;
+    width: auto;
 }
 
 table.diff colgroup {
@@ -784,7 +903,9 @@ td.diff_header {
 }
 
 td.text {
+    display: inline-block;
     padding: 1px 5px;
+    width: 300px;
 }
 
 .diff_add {

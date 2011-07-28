@@ -1,0 +1,421 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Patch Decorators &mdash; Mock v0.7.0 documentation</title>
+    <link rel="stylesheet" href="_static/adctheme.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.7.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+  <link rel="top" title="Mock v0.7.0 documentation" href="index.html" />
+  <link rel="next" title="Sentinel" href="sentinel.html" />
+  <link rel="prev" title="The Mock Class" href="mock.html" />
+  <link media="only screen and (max-device-width: 480px)" href="_static/mobile.css" type="text/css" rel="stylesheet" /> 
+  </head>
+  <body>
+<div id="docstitle">
+  <p>Mock v0.7.0 documentation</p>
+</div>
+<div id="header">
+  <div id="title"><h1>Patch Decorators</h1></div>
+  <ul id="headerButtons">
+    <li id="toc_button"><div class="headerButton"><a href="#">Table of Contents</a></div></li>
+    <li id="page_buttons">
+      <div class="headerButton"><a href="genindex.html" title="General Index" accesskey="I">index</a></div>
+      <div class="headerButton"><a href="sentinel.html" title="Sentinel" accesskey="N">next</a></div>
+      <div class="headerButton"><a href="mock.html" title="The Mock Class" accesskey="P">previous</a></div>
+    </li>
+  </ul>
+</div>
+
+<div id="sphinxsidebar">
+  <div class="sphinxsidebarwrapper">
+    <ul><li class="toctree-l1"><a href="index.html">Main Page</a></li></ul>
+    <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="mock.html">The Mock Class</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">Patch Decorators</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#patch">patch</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#patch-object">patch.object</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id1">patch_object</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#patch-dict">patch.dict</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#patch-methods-start-and-stop">patch methods: start and stop</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#nesting-patch-decorators">Nesting Patch Decorators</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#where-to-patch">Where to patch</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#patching-descriptors-and-proxy-objects">Patching Descriptors and Proxy Objects</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="sentinel.html">Sentinel</a></li>
+<li class="toctree-l1"><a class="reference internal" href="magicmock.html">Mocking Magic Methods</a></li>
+<li class="toctree-l1"><a class="reference internal" href="magicmock.html#magic-mock">Magic Mock</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mocksignature.html">mocksignature</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="getting-started.html">Getting Started with Mock</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Further Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="compare.html">Mock Library Comparison</a></li>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html">TODO and Limitations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html#changelog">CHANGELOG</a></li>
+</ul>
+
+      <h3>This Page</h3>
+      <ul class="this-page-menu">
+        <li><a href="_sources/patch.txt"
+          rel="nofollow">Show Source</a></li>
+      </ul>
+    <div id="searchbox" style="display: none">
+      
+        <form class="search" action="search.html" method="get">
+          <div class="search-wrapper">
+          <span class="search-left"></span>
+          <input class="prettysearch" type="text" name="q" size="18" />
+          <span class="search-right">&nbsp;</span>
+          </div>
+        <input type="submit" value="Search" class="searchbutton" />
+        <input type="hidden" name="check_keywords" value="yes" />
+        <input type="hidden" name="area" value="default" />
+        </form>
+        <p class="searchtip" style="font-size: 90%">
+        Enter search terms or a module, class or function name.
+        </p>
+    </div>
+    <script type="text/javascript">$('#searchbox').show(0);</script>
+  </div>
+</div>
+
+
+
+    <div class="document">
+  <div class="documentwrapper">
+    <div class="bodywrapper">
+    <div class="body">
+      
+  <div class="section" id="patch-decorators">
+<h1>Patch Decorators<a class="headerlink" href="#patch-decorators" title="Permalink to this headline">¶</a></h1>
+<p>The patch decorators are used for patching objects only within the scope of
+the function they decorate. They automatically handle the unpatching for you,
+even if exceptions are raise. All of these functions can also be used in with
+statements or as class decorators.</p>
+<div class="section" id="patch">
+<h2>patch<a class="headerlink" href="#patch" title="Permalink to this headline">¶</a></h2>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last"><cite>patch</cite> is straightforward to use. The key is to do the patching in the
+right namespace. See the section <a class="reference internal" href="#id2">where to patch</a>.</p>
+</div>
+<dl class="function">
+<dt id="mock.patch">
+<tt class="descname">patch</tt><big>(</big><em>target</em>, <em>new=&lt;SentinelObject &quot;DEFAULT&quot;&gt;</em>, <em>spec=None</em>, <em>create=False</em>, <em>mocksignature=False</em>, <em>spec_set=None</em><big>)</big><a class="headerlink" href="#mock.patch" title="Permalink to this definition">¶</a></dt>
+<dd><p><tt class="docutils literal"><span class="pre">patch</span></tt> acts as a function decorator, class decorator or a context
+manager. Inside the body of the function or with statement, the <tt class="docutils literal"><span class="pre">target</span></tt>
+(specified in the form <cite>&#8216;PackageName.ModuleName.ClassName&#8217;</cite>) is patched
+with a <tt class="docutils literal"><span class="pre">new</span></tt> object. When the function/with statement exits the patch is
+undone.</p>
+<p>The target is imported and the specified attribute patched with the new
+object, so it must be importable from the environment you are calling the
+decorator from.</p>
+<p>If <tt class="docutils literal"><span class="pre">new</span></tt> is omitted, then a new <tt class="docutils literal"><span class="pre">Mock</span></tt> is created and passed in as an
+extra argument to the decorated function.</p>
+<p>The <tt class="docutils literal"><span class="pre">spec</span></tt> and <tt class="docutils literal"><span class="pre">spec_set</span></tt> keyword arguments are passed to the <tt class="docutils literal"><span class="pre">Mock</span></tt>
+if patch is creating one for you.</p>
+<p>In addition you can pass <tt class="docutils literal"><span class="pre">spec=True</span></tt> or <tt class="docutils literal"><span class="pre">spec_set=True</span></tt>, which causes
+patch to pass in the object being mocked as the spec/spec_set object.</p>
+<p>If <tt class="docutils literal"><span class="pre">mocksignature</span></tt> is True then the patch will be done with a function
+created by mocking the one being replaced. If the object being replaced is
+a class then the signature of <cite>__init__</cite> will be copied. If the object
+being replaced is a callable object then the signature of <cite>__call__</cite> will
+be copied.</p>
+<p>By default <tt class="docutils literal"><span class="pre">patch</span></tt> will fail to replace attributes that don&#8217;t exist. If
+you pass in &#8216;create=True&#8217; and the attribute doesn&#8217;t exist, patch will
+create the attribute for you when the patched function is called, and
+delete it again afterwards. This is useful for writing tests against
+attributes that your production code creates at runtime. It is off by by
+default because it can be dangerous. With it switched on you can write
+passing tests against APIs that don&#8217;t actually exist!</p>
+<p>Patch can be used as a TestCase class decorator. It works by
+decorating each test method in the class. This reduces the boilerplate
+code when your test methods share a common patchings set.</p>
+<p>Patch can be used with the with statement, if this is available in your
+version of Python. Here the patching applies to the indented block after
+the with statement. If you use &#8220;as&#8221; then the patched object will be bound
+to the name after the &#8220;as&#8221;; very useful if <cite>patch</cite> is creating a mock
+object for you.</p>
+<p><cite>patch.dict(...)</cite> and <cite>patch.object(...)</cite> are available for alternate
+use-cases.</p>
+</dd></dl>
+
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>Patching a class replaces the class with a Mock <em>instance</em>. If the class
+is instantiated in the code under test then it will be the <cite>return_value</cite>
+of the mock that will be used.</p>
+<p>If the class is instantiated multiple times you could use
+<a class="reference internal" href="mock.html#mock.Mock.side_effect" title="mock.Mock.side_effect"><tt class="xref py py-attr docutils literal"><span class="pre">Mock.side_effect</span></tt></a> to return a new mock each time. Alternatively you
+can set the <cite>return_value</cite> to be anything you want.</p>
+<p>To configure return values on methods of <em>instances</em> on the patched class
+you must do this on the <cite>return_value</cite>. For example:</p>
+<div class="last highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="nd">@patch</span><span class="p">(</span><span class="s">&#39;package.module.Class&#39;</span><span class="p">)</span>
+<span class="gp">... </span><span class="k">def</span> <span class="nf">test</span><span class="p">(</span><span class="n">MockClass</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="n">instance</span> <span class="o">=</span> <span class="n">MockClass</span><span class="o">.</span><span class="n">return_value</span>
+<span class="gp">... </span>    <span class="n">instance</span><span class="o">.</span><span class="n">method</span><span class="o">.</span><span class="n">return_value</span> <span class="o">=</span> <span class="s">&#39;foo&#39;</span>
+<span class="gp">... </span>    <span class="kn">from</span> <span class="nn">package.module</span> <span class="kn">import</span> <span class="n">Class</span>
+<span class="gp">... </span>    <span class="k">assert</span> <span class="n">Class</span><span class="p">()</span> <span class="ow">is</span> <span class="n">instance</span>
+<span class="gp">... </span>    <span class="k">assert</span> <span class="n">Class</span><span class="p">()</span><span class="o">.</span><span class="n">method</span><span class="p">()</span> <span class="o">==</span> <span class="s">&#39;foo&#39;</span>
+<span class="gp">...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">test</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="patch-object">
+<h2>patch.object<a class="headerlink" href="#patch-object" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="mock.patch.object">
+<tt class="descclassname">patch.</tt><tt class="descname">object</tt><big>(</big><em>target</em>, <em>attribute</em>, <em>new=DEFAULT</em>, <em>spec=None</em>, <em>create=False</em>, <em>mocksignature=False</em>, <em>spec_set=None</em><big>)</big><a class="headerlink" href="#mock.patch.object" title="Permalink to this definition">¶</a></dt>
+<dd><p>patch the named member (<cite>attribute</cite>) on an object (<cite>target</cite>) with a mock
+object.</p>
+<p>Arguments new, spec, create, mocksignature and spec_set have the same
+meaning as for patch.</p>
+</dd></dl>
+
+<p>You can either call <cite>patch.object</cite> with three arguments or two arguments. The
+three argument form takes the object to be patched, the attribute name and the
+object to replace the attribute with.</p>
+<p>When calling with the two argument form you omit the replacement object, and a
+mock is created for you and passed in as an extra argument to the decorated
+function:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="nd">@patch.object</span><span class="p">(</span><span class="n">SomeClass</span><span class="p">,</span> <span class="s">&#39;class_method&#39;</span><span class="p">)</span>
+<span class="gp">... </span><span class="k">def</span> <span class="nf">test</span><span class="p">(</span><span class="n">mock_method</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="n">SomeClass</span><span class="o">.</span><span class="n">class_method</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="n">mock_method</span><span class="o">.</span><span class="n">assert_called_with</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+<span class="gp">...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">test</span><span class="p">()</span>
+</pre></div>
+</div>
+<p><tt class="docutils literal"><span class="pre">spec</span></tt> and <tt class="docutils literal"><span class="pre">create</span></tt> have the same meaning as for the patch decorator.</p>
+<p><tt class="docutils literal"><span class="pre">patch.object</span></tt> is also a context manager and can be used with <tt class="docutils literal"><span class="pre">with</span></tt>
+statements in the same way as <tt class="docutils literal"><span class="pre">patch</span></tt>. It can also be used as a class
+decorator with same semantics as <tt class="docutils literal"><span class="pre">patch</span></tt>.</p>
+</div>
+<div class="section" id="id1">
+<h2>patch_object<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
+<p class="deprecated">
+<span class="versionmodified">Deprecated since version 0.7: </span>This is the same as <tt class="docutils literal"><span class="pre">patch.object</span></tt>. Use the renamed version.</p>
+</div>
+<div class="section" id="patch-dict">
+<h2>patch.dict<a class="headerlink" href="#patch-dict" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="mock.patch.dict">
+<tt class="descclassname">patch.</tt><tt class="descname">dict</tt><big>(</big><em>in_dict</em>, <em>values=()</em>, <em>clear=False</em><big>)</big><a class="headerlink" href="#mock.patch.dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Patch a dictionary and restore the dictionary to its original state after
+the test.</p>
+<p><cite>in_dict</cite> can be a dictionary or a mapping like container. If it is a
+mapping then it must at least support getting, setting and deleting items
+plus iterating over keys.</p>
+<p><cite>in_dict</cite> can also be a string specifying the name of the dictionary, which
+will then be fetched by importing it.</p>
+<p><cite>values</cite> can be a dictionary of values to set in the dictionary. <cite>values</cite>
+can also be an iterable of <tt class="docutils literal"><span class="pre">(key,</span> <span class="pre">value)</span></tt> pairs.</p>
+<p>If <cite>clear</cite> is True then the dictionary will be cleared before the new
+values are set.</p>
+</dd></dl>
+
+<p>Like <a class="reference internal" href="#mock.patch" title="mock.patch"><tt class="xref py py-func docutils literal"><span class="pre">patch()</span></tt></a> and <a class="reference internal" href="#mock.patch.object" title="mock.patch.object"><tt class="xref py py-func docutils literal"><span class="pre">patch.object()</span></tt></a> <tt class="docutils literal"><span class="pre">patch.dict</span></tt> can be used as a
+decorator or a context manager. It can be used to add members to a dictionary,
+or simply let a test change a dictionary, and ensure the dictionary is restored
+when the test ends.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">mock</span> <span class="kn">import</span> <span class="n">patch</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">foo</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">patch</span><span class="o">.</span><span class="n">dict</span><span class="p">(</span><span class="n">foo</span><span class="p">,</span> <span class="p">{</span><span class="s">&#39;newkey&#39;</span><span class="p">:</span> <span class="s">&#39;newvalue&#39;</span><span class="p">}):</span>
+<span class="gp">... </span>    <span class="k">assert</span> <span class="n">foo</span> <span class="o">==</span> <span class="p">{</span><span class="s">&#39;newkey&#39;</span><span class="p">:</span> <span class="s">&#39;newvalue&#39;</span><span class="p">}</span>
+<span class="gp">...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="n">foo</span> <span class="o">==</span> <span class="p">{}</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">os</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">patch</span><span class="o">.</span><span class="n">dict</span><span class="p">(</span><span class="s">&#39;os.environ&#39;</span><span class="p">,</span> <span class="p">{</span><span class="s">&#39;newkey&#39;</span><span class="p">:</span> <span class="s">&#39;newvalue&#39;</span><span class="p">}):</span>
+<span class="gp">... </span>    <span class="k">print</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s">&#39;newkey&#39;</span><span class="p">]</span>
+<span class="gp">...</span>
+<span class="go">newvalue</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="s">&#39;newkey&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="patch-methods-start-and-stop">
+<span id="start-and-stop"></span><h2>patch methods: start and stop<a class="headerlink" href="#patch-methods-start-and-stop" title="Permalink to this headline">¶</a></h2>
+<p>All three patchers have <cite>start</cite> and <cite>stop</cite> methods. These make it simpler to do
+patching in <cite>setUp</cite> methods or where you want to do multiple patches without
+nesting decorators or with statements.</p>
+<p>To use them call <cite>patch</cite>, <cite>patch.object</cite> or <cite>patch.dict</cite> as normal and keep a
+reference to the returned <cite>patcher</cite> object. You can then call <cite>start</cite> to put
+the patch in place and <cite>stop</cite> to undo it.</p>
+<p>If you are using <cite>patch</cite> to create a mock for you then it will be returned by
+the call to <cite>patcher.start</cite>.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">patcher</span> <span class="o">=</span> <span class="n">patch</span><span class="p">(</span><span class="s">&#39;package.module.ClassName&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">package</span> <span class="kn">import</span> <span class="n">module</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">original</span> <span class="o">=</span> <span class="n">module</span><span class="o">.</span><span class="n">ClassName</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">new_mock</span> <span class="o">=</span> <span class="n">patcher</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="n">module</span><span class="o">.</span><span class="n">ClassName</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">original</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="n">module</span><span class="o">.</span><span class="n">ClassName</span> <span class="ow">is</span> <span class="n">new_mock</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">patcher</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="n">module</span><span class="o">.</span><span class="n">ClassName</span> <span class="ow">is</span> <span class="n">original</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="n">module</span><span class="o">.</span><span class="n">ClassName</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">new_mock</span>
+</pre></div>
+</div>
+<p>A typical use case for this might be for doing multiple patches in the <cite>setUp</cite>
+method of a <cite>TestCase</cite>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">MyTest</span><span class="p">(</span><span class="n">unittest</span><span class="o">.</span><span class="n">TestCase</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">def</span> <span class="nf">setUp</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="gp">... </span>        <span class="bp">self</span><span class="o">.</span><span class="n">patcher1</span> <span class="o">=</span> <span class="n">patch</span><span class="p">(</span><span class="s">&#39;package.module.Class1&#39;</span><span class="p">)</span>
+<span class="gp">... </span>        <span class="bp">self</span><span class="o">.</span><span class="n">patcher2</span> <span class="o">=</span> <span class="n">patch</span><span class="p">(</span><span class="s">&#39;package.module.Class2&#39;</span><span class="p">)</span>
+<span class="gp">... </span>        <span class="bp">self</span><span class="o">.</span><span class="n">MockClass1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">patcher1</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+<span class="gp">... </span>        <span class="bp">self</span><span class="o">.</span><span class="n">MockClass2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">patcher2</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+<span class="gp">...</span>
+<span class="gp">... </span>    <span class="k">def</span> <span class="nf">tearDown</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="gp">... </span>        <span class="bp">self</span><span class="o">.</span><span class="n">patcher1</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
+<span class="gp">... </span>        <span class="bp">self</span><span class="o">.</span><span class="n">patcher2</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
+<span class="gp">...</span>
+<span class="gp">... </span>    <span class="k">def</span> <span class="nf">test_something</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="gp">... </span>        <span class="k">assert</span> <span class="n">package</span><span class="o">.</span><span class="n">module</span><span class="o">.</span><span class="n">Class1</span> <span class="ow">is</span> <span class="bp">self</span><span class="o">.</span><span class="n">MockClass1</span>
+<span class="gp">... </span>        <span class="k">assert</span> <span class="n">package</span><span class="o">.</span><span class="n">module</span><span class="o">.</span><span class="n">Class2</span> <span class="ow">is</span> <span class="bp">self</span><span class="o">.</span><span class="n">MockClass2</span>
+<span class="gp">...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">MyTest</span><span class="p">(</span><span class="s">&#39;test_something&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+</pre></div>
+</div>
+<div class="admonition caution">
+<p class="first admonition-title">Caution</p>
+<p>If you use this technique you must ensure that the patching is &#8220;undone&#8221; by
+calling <cite>stop</cite>. This can be fiddlier than you might think, because if an
+exception is raised in the setUp then tearDown is not called. <a class="reference external" href="http://pypi.python.org/pypi/unittest2">unittest2</a> cleanup functions make this
+easier.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">MyTest</span><span class="p">(</span><span class="n">unittest2</span><span class="o">.</span><span class="n">TestCase</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">def</span> <span class="nf">setUp</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="gp">... </span>        <span class="n">patcher</span> <span class="o">=</span> <span class="n">patch</span><span class="p">(</span><span class="s">&#39;package.module.Class&#39;</span><span class="p">)</span>
+<span class="gp">... </span>        <span class="bp">self</span><span class="o">.</span><span class="n">MockClass</span> <span class="o">=</span> <span class="n">patcher</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+<span class="gp">... </span>        <span class="bp">self</span><span class="o">.</span><span class="n">addCleanup</span><span class="p">(</span><span class="n">patcher</span><span class="o">.</span><span class="n">stop</span><span class="p">)</span>
+<span class="gp">...</span>
+<span class="gp">... </span>    <span class="k">def</span> <span class="nf">test_something</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="gp">... </span>        <span class="k">assert</span> <span class="n">package</span><span class="o">.</span><span class="n">module</span><span class="o">.</span><span class="n">Class</span> <span class="ow">is</span> <span class="bp">self</span><span class="o">.</span><span class="n">MockClass</span>
+<span class="gp">...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">MyTest</span><span class="p">(</span><span class="s">&#39;test_something&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+</pre></div>
+</div>
+<p class="last">As an added bonus you no longer need to keep a reference to the <cite>patcher</cite>
+object.</p>
+</div>
+<p>In fact <cite>start</cite> and <cite>stop</cite> are just aliases for the context manager
+<cite>__enter__</cite> and <cite>__exit__</cite> methods.</p>
+</div>
+<div class="section" id="nesting-patch-decorators">
+<h2>Nesting Patch Decorators<a class="headerlink" href="#nesting-patch-decorators" title="Permalink to this headline">¶</a></h2>
+<p>If you want to perform multiple patches then you can simply stack up the
+decorators.</p>
+<p>You can stack up multiple patch decorators using this pattern:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="nd">@patch.object</span><span class="p">(</span><span class="n">SomeClass</span><span class="p">,</span> <span class="s">&#39;class_method&#39;</span><span class="p">)</span>
+<span class="gp">... </span><span class="nd">@patch.object</span><span class="p">(</span><span class="n">SomeClass</span><span class="p">,</span> <span class="s">&#39;static_method&#39;</span><span class="p">)</span>
+<span class="gp">... </span><span class="k">def</span> <span class="nf">test</span><span class="p">(</span><span class="n">mock1</span><span class="p">,</span> <span class="n">mock2</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">assert</span> <span class="n">SomeClass</span><span class="o">.</span><span class="n">static_method</span> <span class="ow">is</span> <span class="n">mock1</span>
+<span class="gp">... </span>    <span class="k">assert</span> <span class="n">SomeClass</span><span class="o">.</span><span class="n">class_method</span> <span class="ow">is</span> <span class="n">mock2</span>
+<span class="gp">... </span>    <span class="n">SomeClass</span><span class="o">.</span><span class="n">static_method</span><span class="p">(</span><span class="s">&#39;foo&#39;</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="n">SomeClass</span><span class="o">.</span><span class="n">class_method</span><span class="p">(</span><span class="s">&#39;bar&#39;</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="k">return</span> <span class="n">mock1</span><span class="p">,</span> <span class="n">mock2</span>
+<span class="gp">...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mock1</span><span class="p">,</span> <span class="n">mock2</span> <span class="o">=</span> <span class="n">test</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mock1</span><span class="o">.</span><span class="n">assert_called_once_with</span><span class="p">(</span><span class="s">&#39;foo&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mock2</span><span class="o">.</span><span class="n">assert_called_once_with</span><span class="p">(</span><span class="s">&#39;bar&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Note that the decorators are applied from the bottom upwards. This is the
+standard way that Python applies decorators. The order of the created mocks
+passed into your test function matches this order.</p>
+<p>Like all context-managers patches can be nested using contextlib&#8217;s nested
+function; <em>every</em> patching will appear in the tuple after &#8220;as&#8221;:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">contextlib</span> <span class="kn">import</span> <span class="n">nested</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">nested</span><span class="p">(</span>
+<span class="gp">... </span>        <span class="n">patch</span><span class="p">(</span><span class="s">&#39;package.module.ClassName1&#39;</span><span class="p">),</span>
+<span class="gp">... </span>        <span class="n">patch</span><span class="p">(</span><span class="s">&#39;package.module.ClassName2&#39;</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="p">)</span> <span class="k">as</span> <span class="p">(</span><span class="n">MockClass1</span><span class="p">,</span> <span class="n">MockClass2</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">assert</span> <span class="n">package</span><span class="o">.</span><span class="n">module</span><span class="o">.</span><span class="n">ClassName1</span> <span class="ow">is</span> <span class="n">MockClass1</span>
+<span class="gp">... </span>    <span class="k">assert</span> <span class="n">package</span><span class="o">.</span><span class="n">module</span><span class="o">.</span><span class="n">ClassName2</span> <span class="ow">is</span> <span class="n">MockClass2</span>
+<span class="gp">...</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="where-to-patch">
+<span id="id2"></span><h2>Where to patch<a class="headerlink" href="#where-to-patch" title="Permalink to this headline">¶</a></h2>
+<p><cite>patch</cite> works by (temporarily) changing the object that a <em>name</em> points to with
+another one. There can be many names pointing to any individual object, so
+for patching to work you must ensure that you patch the name used by the system
+under test.</p>
+<p>The basic principle is that you patch where an object is <em>used</em>, which is not
+necessarily the same place as where it is defined. A couple of examples will
+help to clarify this.</p>
+<p>Imagine we have a project that we want to test with the following structure:</p>
+<div class="highlight-python"><pre>a.py
+    -&gt; Defines SomeClass
+
+b.py
+    -&gt; from a import SomeClass
+    -&gt; some_function instantiates SomeClass</pre>
+</div>
+<p>Now we want to test <cite>some_function</cite> but we want to mock out <cite>SomeClass</cite> using
+<cite>patch</cite>. The problem is that when we import module b, which we will have to
+do then it imports <cite>SomeClass</cite> from module a. If we use <cite>patch</cite> to mock out
+<cite>a.SomeClass</cite> then it will have no effect on our test; module b already has a
+reference to the <em>real</em> <cite>SomeClass</cite> and it looks like our patching had no
+effect.</p>
+<p>The key is to patch out <cite>SomeClass</cite> where it is used (or where it is looked up
+). In this case <cite>some_function</cite> will actually look up <cite>SomeClass</cite> in module b,
+where we have imported it. The patching should look like:</p>
+<blockquote>
+<div><tt class="docutils literal"><span class="pre">&#64;patch('b.SomeClass')</span></tt></div></blockquote>
+<p>However, consider the alternative scenario where instead of <cite>from a import
+SomeClass</cite> module b does <cite>import a</cite> and <cite>some_function</cite> uses <cite>a.SomeClass</cite>. Both
+of these import forms are common. In this case the class we want to patch is
+being looked up on the a module and so we have to patch <cite>a.SomeClass</cite> instead:</p>
+<blockquote>
+<div><tt class="docutils literal"><span class="pre">&#64;patch('a.SomeClass')</span></tt></div></blockquote>
+</div>
+<div class="section" id="patching-descriptors-and-proxy-objects">
+<h2>Patching Descriptors and Proxy Objects<a class="headerlink" href="#patching-descriptors-and-proxy-objects" title="Permalink to this headline">¶</a></h2>
+<p>Since version 0.6.0 both <a class="reference internal" href="#patch">patch</a> and <a class="reference internal" href="#patch-object">patch.object</a> have been able to correctly
+patch and restore descriptors; class methods, static methods and properties.
+You should patch these on the <em>class</em> rather than an instance.</p>
+<p>Since version 0.7.0 <a class="reference internal" href="#patch">patch</a> and <a class="reference internal" href="#patch-object">patch.object</a> work correctly with some objects
+that proxy attribute access, like the <a class="reference external" href="http://www.voidspace.org.uk/python/weblog/arch_d7_2010_12_04.shtml#e1198">django setttings object</a>.</p>
+</div>
+</div>
+
+
+    </div>
+    </div>
+  </div>
+<div class="footer">
+<p>
+  &copy; Copyright 2007-2011, Michael Foord &amp; the mock team.
+  Last updated on Mar 05, 2011.
+  Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
+Theme: <a href="https://github.com/coordt/ADCtheme/">ADCtheme</a>
+</p>
+</div>
+      <div class="clearer"></div>
+    </div>
+  <div id="breadcrumbs">
+    Patch Decorators
+    </ul>
+  </div>
+  <script type="text/javascript" charset="utf-8" src="_static/toc.js"></script>
+  </body>
+</html>

@@ -115,7 +115,7 @@ class NotificationsTests(TestCaseBase):
         answer = Answer.objects.get(pk=1)
         question = answer.question
         self.client.login(username='jsocol', password='testpass')
-        post(self.client, 'questions.solution', args=[question.id, answer.id])
+        post(self.client, 'questions.solve', args=[question.id, answer.id])
 
         assert fire.called
 
@@ -161,7 +161,7 @@ class NotificationsTests(TestCaseBase):
         answer = question.answers.all()[0]
         # Post a reply
         self.client.login(username='jsocol', password='testpass')
-        post(self.client, 'questions.solution', args=[question.id, answer.id])
+        post(self.client, 'questions.solve', args=[question.id, answer.id])
 
         # Order of emails is not important.
         attrs_eq(mail.outbox[0], to=['user47963@nowhere'],

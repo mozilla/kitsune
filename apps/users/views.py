@@ -12,10 +12,11 @@ from django.utils.http import base36_to_int
 
 import jingo
 from session_csrf import anonymous_csrf
+from statsd import statsd
 from tidings.tasks import claim_watches
 
 from access.decorators import logout_required, login_required
-from questions.models import Question, CONFIRMED
+from questions.models import Question
 from sumo.decorators import ssl_required
 from sumo.urlresolvers import reverse
 from sumo.utils import get_next_url
@@ -37,7 +38,12 @@ def login(request):
 
     if request.user.is_authenticated():
         res = HttpResponseRedirect(next_url)
-        res.set_cookie(settings.SESSION_EXISTS_COOKIE, '1', secure=False)
+        max_age = (None if settings.SESSION_EXPIRE_AT_BROWSER_CLOSE
+                        else settings.SESSION_COOKIE_AGE)
+        res.set_cookie(settings.SESSION_EXISTS_COOKIE,
+                       '1',
+                       secure=False,
+                       max_age=max_age)
         return res
 
     return jingo.render(request, 'users/login.html',
@@ -48,8 +54,9 @@ def login(request):
 def logout(request):
     """Log the user out."""
     auth.logout(request)
-    next_url = get_next_url(request) if 'next' in request.GET else ''
+    statsd.incr('user.logout')
 
+    next_url = get_next_url(request) if 'next' in request.GET else ''
     res = HttpResponseRedirect(next_url or reverse('home'))
     res.delete_cookie(settings.SESSION_EXISTS_COOKIE)
     return res
@@ -72,16 +79,17 @@ def register(request):
 def activate(request, activation_key):
     """Activate a User account."""
     activation_key = activation_key.lower()
-    account = RegistrationProfile.objects.activate_user(activation_key)
+    account = RegistrationProfile.objects.activate_user(activation_key,
+                                                        request)
     my_questions = None
     form = AuthenticationForm()
     if account:
         # Claim anonymous watches belonging to this email
+        statsd.incr('user.activate')
         claim_watches.delay(account)
 
         my_questions = Question.uncached.filter(creator=account)
-        # TODO: remove this after dropping unconfirmed questions.
-        my_questions.update(status=CONFIRMED)
+
     return jingo.render(request, 'users/activate.html',
                         {'account': account, 'questions': my_questions,
                          'form': form})

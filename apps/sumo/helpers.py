@@ -59,7 +59,7 @@ def unlocalized_url(viewname, *args, **kwargs):
 @register.filter
 def urlparams(url_, hash=None, query_dict=None, **query):
     """
-    Add a fragment and/or query paramaters to a URL.
+    Add a fragment and/or query parameters to a URL.
 
     New query params will be appended to exising parameters, except duplicate
     names, which will be replaced.

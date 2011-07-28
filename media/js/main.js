@@ -155,11 +155,8 @@ k = {};
     function removeMessagesList() {
         var $msgs = $('ul.user-messages');
         if ($msgs.length) {
-            console.log('found one!');
             function moveListener () {
-                console.log('moved');
                 setTimeout(function() {
-                    console.log('removing');
                     $msgs.slideUp('fast', function() {
                         $msgs.remove();
                     });

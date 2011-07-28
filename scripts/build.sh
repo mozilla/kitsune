@@ -3,7 +3,6 @@
 
 cd $WORKSPACE
 VENV=$WORKSPACE/venv
-VENDOR=$WORKSPACE/vendor
 
 echo "Starting build..."
 
@@ -35,10 +34,8 @@ fi
 source $VENV/bin/activate
 pip install -r requirements/tests-compiled.txt
 
-if [ -d "$VENDOR" ]; then
-    # Fix any mistakes with private repos.
-    pushd vendor > /dev/null && git submodule sync && popd > /dev/null
-fi
+# Fix any mistakes with private repos.
+git submodule sync
 
 # Using a vendor library for the rest.
 git submodule update --init --recursive

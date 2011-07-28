@@ -1,0 +1,119 @@
+{# vim: set ts=2 et sts=2 sw=2: #}
+<div id="revision-list">
+  {% if revisions %}
+    <form action="{{ url('wiki.compare_revisions', document.slug)  }}" method="get">
+      <input type="hidden" name="locale" value="{{ document.locale }}">
+      {% if revisions.count() > 1 %}
+        <div class="compare top">
+          <input type="submit" class="link-btn" value="{% if document.parent %}{{ _('Compare Selected Translations') }}{% else %}{{ _('Compare Selected Revisions') }}{% endif %}" />
+          {% if not waffle.switch('hide-helpful-chart') %}
+            <a id="show-chart">{{ _('Show Helpfulness Votes Chart') }}</a>
+          {% endif %}
+        </div>
+      {% endif %}
+      {% set reached_current = False %}
+      {% set reached_ready_for_l10n = False %}
+      {% for rev in revisions %}
+        {% if document.current_revision == rev %}
+          {% set reached_current = True %}
+        {% endif %}
+        {% if loop.first %}
+          <ul>
+            <li class="header">
+              <div class="radio-head"></div>
+              <div class="radio-head"></div>
+              <div class="date-head">{{ _('Revision') }}</div>
+              <div class="status-head">{{ _('Status') }}</div>
+              <div class="significance-head"><abbr title="{{ _('Significance - MT: Major Content Changes. M: Content Changes. Empty: Minor Changes.') }}"> {{ _('S', "First letter of 'Significance'") }}</abbr></div>
+              <div class="creator-head">{{ _('Editor') }}</div>
+              {% if request.locale == settings.WIKI_DEFAULT_LANGUAGE %}
+                <div class="l10n-head"><abbr title="{{ _('Ready for localization') }}">{{ _('R', "First letter of 'Ready for localization'") }}</abbr></div>
+              {% endif %}
+              <div class="comment-head">{{ _('Comment') }}</div>
+              <div class="edit-head"></div>
+              {% if document.current_revision != rev and user.has_perm('wiki.delete_revision') %}
+                <div class="delete-head"></div>
+              {% endif %}
+            </li>
+        {% endif %}
+        <li id="rev-list-{{ rev.id }}" class="{% if document.current_revision == rev %}current{% endif %}{% if rev.reviewed and not rev.is_approved %}rejected{% endif %}">
+          <div class="radio">
+            {% if not loop.first %}<input type="radio" name="from" value="{{ rev.id }}" {% if loop.index == 2 %}checked="checked"{% endif %} />{% endif %}
+          </div>
+          <div class="radio">
+            {% if not loop.last %}<input type="radio" name="to" value="{{ rev.id }}" {% if loop.first %}checked="checked"{% endif %} />{% endif %}
+          </div>
+          <div class="date">
+            <a href="{{ url('wiki.revision', document.slug, rev.id, locale=document.locale) }}" rel="nofollow, noindex">{{ datetimeformat(rev.created, format='date') }}</a>
+          </div>
+          <div class="status">
+            {% if not rev.reviewed %}
+              {% if not reached_current and user.has_perm('wiki.review_revision') %}
+                <a href="{{ url('wiki.review_revision', document.slug, rev.id, locale=document.locale) }}">{{ _('Review') }}</a>
+              {% else %}
+                <span class="unreviewed">{{ _('Unreviewed', 'revision') }}</span>
+              {% endif %}
+            {% else %}
+              {% if document.current_revision == rev %}
+                <span class="current">{{ _('Current') }}</span>
+              {% elif rev.is_approved %}
+                <span class="approved">{{ _('Approved') }}</span>
+              {% else %}
+                <span class="rejected">{{ _('Rejected') }}</span>
+              {% endif %}
+            {% endif %}
+          </div>
+          <div class="significance">
+            {% if rev.significance == 20 %}
+              M
+            {% elif rev.significance == 30 %}
+              MT
+            {% else %}
+              &nbsp;
+            {% endif %}
+          </div>
+          <div class="creator">
+            {{ rev.creator }}
+          </div>
+          {% if request.locale == settings.WIKI_DEFAULT_LANGUAGE %}
+            <div class="l10n">
+              {% if rev.is_approved %}
+                {% if rev.is_ready_for_localization %}
+                  {% set reached_ready_for_l10n = True %}
+                  <a class="yes" title="{{ _('This revision is ready for localization.') }}"></a>
+                {% else %}
+                  {% if not reached_ready_for_l10n and user.has_perm('wiki.mark_ready_for_l10n') %}
+                    <a class="markasready" id="rev-{{ rev.id }}-l10n-no" data-revdate="{{ rev.created }}" data-url="{{ url('wiki.mark_ready_for_l10n_revision', document.slug, rev.id, locale=document.locale) }}" title="{{ _('This revision is not ready for localization.') }}"></a>
+                  {% else %}
+                    <a class="no" title="{{ _('This revision is not ready for localization.') }}"></a>
+                  {% endif %}
+                {% endif %}
+              {% endif %}
+            </div>
+          {% endif %}
+          <div class="comment">
+            {{ rev.comment }}
+          </div>
+          {% if not document.is_archived %}
+            <div class="edit">
+              <a href="{{ url('wiki.new_revision_based_on', document.slug, rev.id, locale=document.locale) }}" title="{{ _('Edit article based on this revision') }}"></a>
+            </div>
+          {% endif %}
+          {% if document.current_revision != rev and user.has_perm('wiki.delete_revision') %}
+            <div class="delete">
+              <a href="{{ url('wiki.delete_revision', document.slug, rev.id, locale=document.locale) }}" title="{{ _('Delete this revision') }}"></a>
+            </div>
+          {% endif %}
+        </li>
+        {% if loop.last %}</ul>{% endif %}
+      {% endfor %}
+      {% if revisions.count() > 1 %}
+        <div class="compare bottom">
+          <input type="submit" class="link-btn" value="{% if document.parent %}{{ _('Compare Selected Translations') }}{% else %}{{ _('Compare Selected Revisions') }}{% endif %}" />
+        </div>
+      {% endif %}
+    </form>
+  {% else %}
+    {{ _('This document has no revisions.') }}
+  {% endif %}
+</div>

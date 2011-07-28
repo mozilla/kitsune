@@ -8,6 +8,7 @@ from kbforums.events import NewThreadEvent, NewPostEvent
 from sumo.tests import get, post
 from sumo.urlresolvers import reverse
 from wiki.models import Document
+from wiki.tests import document
 
 
 class ThreadAuthorityPermissionsTests(KBForumTestCase):
@@ -116,6 +117,18 @@ class ThreadTests(KBForumTestCase):
 
         edited_t = Thread.uncached.get(pk=2)
         eq_('new title', edited_t.title)
+
+    def test_disallowed_404(self):
+        """If document.allow_discussion is false, should return 404."""
+        self.client.login(username='pcraciunoiu', password='testpass')
+        doc = document(allow_discussion=False, save=True)
+        def check(url):
+            response = get(self.client, url, args=[doc.slug])
+            st = response.status_code
+            eq_(404, st, '%s was %s, not 404' % (url, st))
+        check('wiki.discuss.threads')
+        check('wiki.discuss.new_thread')
+        check('wiki.discuss.threads.feed')
 
 
 class ThreadPermissionsTests(KBForumTestCase):

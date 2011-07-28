@@ -1,18 +1,19 @@
 from datetime import datetime, timedelta
 import re
-import random
-import string
 
-from django.db import models
-from django.db.models.signals import post_save
 from django.contrib.auth.models import User
 from django.contrib.contenttypes import generic
+from django.contrib.contenttypes.models import ContentType
+from django.db import models
+from django.db.models.signals import post_save
 
 from product_details import product_details
+from redis.exceptions import ConnectionError
 from taggit.models import Tag
 
 from activity.models import ActionMixin
 from flagit.models import FlaggedObject
+from karma.actions import KarmaAction
 import questions as constants
 from questions.question_config import products
 from questions.tasks import (update_question_votes, update_answer_pages,
@@ -24,14 +25,6 @@ from sumo.urlresolvers import reverse
 from tags.models import BigVocabTaggableMixin
 from tags.utils import add_existing_tag
 from upload.models import ImageAttachment
-
-
-UNCONFIRMED = 0
-CONFIRMED = 1
-QUESTION_STATUS_CHOICES = (
-    (UNCONFIRMED, 'Unconfirmed'),
-    (CONFIRMED, 'Confirmed'),
-)
 
 
 class Question(ModelBase, BigVocabTaggableMixin):
@@ -49,11 +42,8 @@ class Question(ModelBase, BigVocabTaggableMixin):
     num_answers = models.IntegerField(default=0, db_index=True)
     solution = models.ForeignKey('Answer', related_name='solution_for',
                                  null=True)
-    status = models.IntegerField(default=CONFIRMED, db_index=True,
-                                 choices=QUESTION_STATUS_CHOICES)
     is_locked = models.BooleanField(default=False)
     num_votes_past_week = models.PositiveIntegerField(default=0, db_index=True)
-    confirmation_id = models.CharField(max_length=40, db_index=True)
 
     images = generic.GenericRelation(ImageAttachment)
     flags = generic.GenericRelation(FlaggedObject)
@@ -63,6 +53,8 @@ class Question(ModelBase, BigVocabTaggableMixin):
         permissions = (
                 ('tag_question',
                  'Can add tags to and remove tags from questions'),
+                ('change_solution',
+                 'Can change/remove the solution to a question'),
             )
 
     def __unicode__(self):
@@ -78,11 +70,6 @@ class Question(ModelBase, BigVocabTaggableMixin):
 
         if not new and not no_update:
             self.updated = datetime.now()
-
-        # Generate a confirmation_id if necessary
-        if new and not self.confirmation_id:
-            chars = [random.choice(string.ascii_letters) for x in xrange(10)]
-            self.confirmation_id = "".join(chars)
 
         super(Question, self).save(*args, **kwargs)
 
@@ -154,13 +141,17 @@ class Question(ModelBase, BigVocabTaggableMixin):
         to_add = self.product.get('tags', []) + self.category.get('tags', [])
 
         version = self.metadata.get('ff_version', '')
-        if version in product_details.firefox_history_development_releases or \
+        dev_releases = product_details.firefox_history_development_releases
+        if version in dev_releases or \
            version in product_details.firefox_history_stability_releases or \
            version in product_details.firefox_history_major_releases:
             to_add.append('Firefox %s' % version)
             tenths = _tenths_version(version)
             if tenths:
                 to_add.append('Firefox %s' % tenths)
+        elif _has_beta(version, dev_releases):
+            to_add.append('Firefox %s' % version)
+            to_add.append('beta')
 
         self.tags.add(*to_add)
 
@@ -204,7 +195,7 @@ class Question(ModelBase, BigVocabTaggableMixin):
         else:
             return False
 
-        return qs.count() > 0
+        return qs.exists()
 
     @property
     def helpful_replies(self):
@@ -228,6 +219,10 @@ class Question(ModelBase, BigVocabTaggableMixin):
                 return True
 
         return False
+
+    @property
+    def is_solved(self):
+        return Answer.objects.filter(pk=self.solution_id).exists()
 
 
 class QuestionMetaData(ModelBase):
@@ -329,16 +324,21 @@ class Answer(ActionMixin, ModelBase):
         return AnswerVote.objects.filter(answer=self).count()
 
     @property
-    def creator_num_posts(self):
-        criteria = models.Q(answers__creator=self.creator) |\
-                   models.Q(creator=self.creator)
-        return Question.objects.filter(criteria).count()
+    def creator_num_answers(self):
+        return Answer.objects.filter(creator=self.creator).count()
 
     @property
-    def creator_num_answers(self):
+    def creator_num_solutions(self):
         return Question.objects.filter(
                     solution__in=Answer.objects.filter(
                                     creator=self.creator)).count()
+
+    @property
+    def creator_num_points(self):
+        try:
+            return KarmaAction.objects.total_points(self.creator)
+        except ConnectionError:
+            return None
 
     @property
     def num_helpful_votes(self):
@@ -377,6 +377,9 @@ class QuestionVote(ModelBase):
                                 null=True)
     anonymous_id = models.CharField(max_length=40, db_index=True)
 
+    def add_metadata(self, key, value):
+        VoteMetadata.objects.create(vote=self, key=key, value=value)
+
 
 class AnswerVote(ModelBase):
     """Helpful or Not Helpful vote on Answer."""
@@ -386,6 +389,18 @@ class AnswerVote(ModelBase):
     creator = models.ForeignKey(User, related_name='answer_votes',
                                 null=True)
     anonymous_id = models.CharField(max_length=40, db_index=True)
+
+    def add_metadata(self, key, value):
+        VoteMetadata.objects.create(vote=self, key=key, value=value)
+
+
+class VoteMetadata(ModelBase):
+    """Metadata for question and answer votes."""
+    content_type = models.ForeignKey(ContentType, null=True, blank=True)
+    object_id = models.PositiveIntegerField(null=True, blank=True)
+    vote = generic.GenericForeignKey()
+    key = models.CharField(max_length=40, db_index=True)
+    value = models.CharField(max_length=1000)
 
 
 def send_vote_update_task(**kwargs):
@@ -410,3 +425,18 @@ def _tenths_version(full_version):
     if match:
         return match.group(1)
     return ''
+
+
+def _has_beta(version, dev_releases):
+    """Returns True if the version has a beta release.
+
+    For example, if:
+        dev_releases={...u'4.0rc2': u'2011-03-18',
+                      u'5.0b1': u'2011-05-20',
+                      u'5.0b2': u'2011-05-20',
+                      u'5.0b3': u'2011-06-01'}
+    and you pass '5.0', it return True since there are 5.0 betas in the
+    dev_releases dict. If you pass '6.0', it returns False.
+    """
+    return version in [re.search('(\d+\.)+\d+', s).group(0)
+                       for s in dev_releases.keys()]

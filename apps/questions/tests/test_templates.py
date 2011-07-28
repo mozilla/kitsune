@@ -13,7 +13,7 @@ from pyquery import PyQuery as pq
 from tidings.models import Watch
 
 from questions.events import QuestionReplyEvent, QuestionSolvedEvent
-from questions.models import Question, Answer, QuestionVote
+from questions.models import Question, Answer, QuestionVote, VoteMetadata
 from questions.tests import TestCaseBase, TaggingTestCaseBase, tags_eq
 from questions.views import UNAPPROVED_TAG, NO_TAG
 from questions.cron import cache_top_contributors
@@ -22,6 +22,7 @@ from sumo.tests import get, post, attrs_eq, emailmessage_raise_smtp
 from sumo.urlresolvers import reverse
 from upload.models import ImageAttachment
 from users.models import RegistrationProfile
+from users.tests import user, add_permission
 
 
 class AnswersTemplateTestCase(TestCaseBase):
@@ -118,26 +119,31 @@ class AnswersTemplateTestCase(TestCaseBase):
                             '10,000 characters or less. It is currently ' +
                             '10,001 characters.')
 
-    def test_solution(self):
-        """Test accepting a solution."""
+    def test_solve_unsolve(self):
+        """Test accepting a solution and undoing."""
         response = get(self.client, 'questions.answers',
                        args=[self.question.id])
         doc = pq(response.content)
         eq_(0, len(doc('div.solution')))
 
         answer = self.question.answers.all()[0]
-        response = post(self.client, 'questions.solution',
+        # Solve and verify
+        response = post(self.client, 'questions.solve',
                         args=[self.question.id, answer.id])
         doc = pq(response.content)
         eq_(1, len(doc('div.solution')))
         li = doc('span.solved')[0].getparent().getparent().getparent()
         eq_('answer-%s' % answer.id, li.attrib['id'])
+        q = Question.uncached.get(pk=self.question.id)
+        eq_(q.solution, answer)
+        # Unsolve and verify
+        response = post(self.client, 'questions.unsolve',
+                        args=[self.question.id, answer.id])
+        q = Question.uncached.get(pk=self.question.id)
+        eq_(q.solution, None)
 
-        self.question.solution = None
-        self.question.save()
-
-    def test_only_owner_can_accept_solution(self):
-        """Make sure non-owner can't mark solution."""
+    def test_only_owner_or_admin_can_solve_unsolve(self):
+        """Make sure non-owner/non-admin can't solve/unsolve."""
         response = get(self.client, 'questions.answers',
                        args=[self.question.id])
         doc = pq(response.content)
@@ -151,9 +157,31 @@ class AnswersTemplateTestCase(TestCaseBase):
         eq_(0, len(doc('input[name="solution"]')))
 
         answer = self.question.answers.all()[0]
-        response = post(self.client, 'questions.solution',
+        # Try to solve
+        response = post(self.client, 'questions.solve',
                         args=[self.question.id, answer.id])
         eq_(403, response.status_code)
+        # Try to unsolve
+        response = post(self.client, 'questions.unsolve',
+                        args=[self.question.id, answer.id])
+        eq_(403, response.status_code)
+
+    def test_solve_unsolve_with_perm(self):
+        """Test marking solve/unsolve with 'change_solution' permission."""
+        u = user(save=True)
+        add_permission(u, Question, 'change_solution')
+        self.client.login(username=u.username, password='testpass')
+        answer = self.question.answers.all()[0]
+        # Solve and verify
+        post(self.client, 'questions.solve',
+             args=[self.question.id, answer.id])
+        q = Question.uncached.get(pk=self.question.id)
+        eq_(q.solution, answer)
+        # Unsolve and verify
+        post(self.client, 'questions.unsolve',
+             args=[self.question.id, answer.id])
+        q = Question.uncached.get(pk=self.question.id)
+        eq_(q.solution, None)
 
     def test_question_vote_GET(self):
         """Attempting to vote with HTTP GET returns a 405."""
@@ -171,7 +199,9 @@ class AnswersTemplateTestCase(TestCaseBase):
         eq_(1, len(doc('div.me-too form')))
 
         # Vote
-        post(self.client, 'questions.vote', args=[self.question.id])
+        ua = 'Mozilla/5.0 (DjangoTestClient)'
+        self.client.post(reverse('questions.vote', args=[self.question.id]),
+                         {}, HTTP_USER_AGENT=ua)
 
         # Check that there is 1 vote and vote form doesn't render
         response = get(self.client, 'questions.answers',
@@ -179,6 +209,10 @@ class AnswersTemplateTestCase(TestCaseBase):
         doc = pq(response.content)
         eq_('1 person', doc('div.have-problem mark')[0].text)
         eq_(0, len(doc('div.me-too form')))
+        # Verify user agent
+        vote_meta = VoteMetadata.objects.all()[0]
+        eq_('ua', vote_meta.key)
+        eq_(ua, vote_meta.value)
 
         # Voting again (same user) should not increment vote count
         post(self.client, 'questions.vote', args=[self.question.id])
@@ -209,8 +243,10 @@ class AnswersTemplateTestCase(TestCaseBase):
         eq_(1, len(doc('form.helpful input[name="helpful"]')))
 
         # Vote
-        post(self.client, 'questions.answer_vote', {'helpful': 'y'},
-             args=[self.question.id, self.answer.id])
+        ua = 'Mozilla/5.0 (DjangoTestClient)'
+        self.client.post(reverse('questions.answer_vote',
+                                 args=[self.question.id, self.answer.id]),
+                         {'helpful': 'y'}, HTTP_USER_AGENT=ua)
 
         # Check that there is 1 vote and vote form doesn't render
         response = get(self.client, 'questions.answers',
@@ -220,6 +256,10 @@ class AnswersTemplateTestCase(TestCaseBase):
         eq_('1 out of 1 person found this reply helpful',
             doc('#answer-1 span.helpful')[0].text.strip())
         eq_(0, len(doc('form.helpful input[name="helpful"]')))
+        # Verify user agent
+        vote_meta = VoteMetadata.objects.all()[0]
+        eq_('ua', vote_meta.key)
+        eq_(ua, vote_meta.value)
 
         # Voting again (same user) should not increment vote count
         post(self.client, 'questions.answer_vote', {'helpful': 'y'},

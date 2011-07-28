@@ -1,15 +1,20 @@
 from datetime import datetime, timedelta
+import difflib
+import json
 
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
 from django.core import mail
+from django.utils.encoding import smart_str
 
+from bleach import clean
 import mock
 from nose import SkipTest
 from nose.tools import eq_
 from pyquery import PyQuery as pq
 from taggit.models import Tag
+from wikimarkup.parser import ALLOWED_TAGS, ALLOWED_ATTRIBUTES
 
 from questions.tests import tags_eq
 from sumo.urlresolvers import reverse
@@ -17,17 +22,17 @@ from sumo.helpers import urlparams
 from sumo.tests import post, get, attrs_eq
 from users.tests import user, add_permission
 from wiki.cron import calculate_related_documents
-from wiki.events import (EditDocumentEvent, ReviewableRevisionInLocaleEvent,
+from wiki.events import (EditDocumentEvent, ReadyRevisionEvent,
+                         ReviewableRevisionInLocaleEvent,
                          ApproveRevisionInLocaleEvent)
 from wiki.models import Document, Revision, HelpfulVote, SIGNIFICANCES
 from wiki.tasks import send_reviewed_notification
-from wiki.tests import TestCaseBase, document, revision, new_document_data
+from wiki.tests import (TestCaseBase, document, revision, new_document_data,
+                        translated_revision)
 
 
-READY_FOR_REVIEW_EMAIL_CONTENT = """
-
-
-admin submitted a new revision to the document
+READY_FOR_REVIEW_EMAIL_CONTENT = \
+"""admin submitted a new revision to the document
 %s.
 
 To review this revision, click the following
@@ -36,13 +41,22 @@ link, or paste it into your browser's location bar:
 https://testserver/en-US/kb/%s/review/%s
 
 --
+Changes:
+%s
+
+
+--
+Text of the new revision:
+%s
+
+
+--
 Unsubscribe from these emails:
-https://testserver/en-US/unsubscribe/%s?s=%s"""
+https://testserver/en-US/unsubscribe/%s?s=%s
+"""
 
-DOCUMENT_EDITED_EMAIL_CONTENT = """
-
-
-admin created a new revision to the document
+DOCUMENT_EDITED_EMAIL_CONTENT = \
+"""admin created a new revision to the document
 %s.
 
 To view this document's history, click the following
@@ -54,9 +68,8 @@ https://testserver/en-US/kb/%s/history
 Unsubscribe from these emails:
 https://testserver/en-US/unsubscribe/%s?s=%s"""
 
-APPROVED_EMAIL_CONTENT = """
-
-A new revision has been approved for the document
+APPROVED_EMAIL_CONTENT = \
+"""A new revision has been approved for the document
 %s.
 
 To view the updated document, click the following
@@ -64,9 +77,39 @@ link, or paste it into your browser's location bar:
 
 https://testserver/en-US/kb/%s
 
+
+--
+Changes:
+%s
+
+
+--
+Text of the new revision:
+%s
+
 --
 Unsubscribe from these emails:
-https://testserver/en-US/unsubscribe/%s?s=%s"""
+https://testserver/en-US/unsubscribe/%s?s=%s
+"""
+
+APPROVED_EMAIL_CONTENT_NO_DIFF = \
+"""A new revision has been approved for the document
+%s.
+
+To view the updated document, click the following
+link, or paste it into your browser's location bar:
+
+https://testserver/en-US/kb/%s
+
+
+--
+Text of the new revision:
+%s
+
+--
+Unsubscribe from these emails:
+https://testserver/en-US/unsubscribe/%s?s=%s
+"""
 
 
 class DocumentTests(TestCaseBase):
@@ -238,10 +281,20 @@ class DocumentTests(TestCaseBase):
         doc = pq(r.content)
         eq_('tag1', doc('li.topic a').text())
 
+    def test_obsolete_hide_edit(self):
+        """Make sure Edit sidebar link is hidden for obsolete articles."""
+        d = document(is_archived=True, save=True)
+        r = self.client.get(d.get_absolute_url())
+        doc = pq(r.content)
+        assert not doc('#doc-tabs li.edit')
+
 
 class RevisionTests(TestCaseBase):
     """Tests for the Revision template"""
     fixtures = ['users.json']
+
+    def setUp(self):
+        self.client.logout()
 
     def test_revision_view(self):
         """Load the revision view page and verify the title and content."""
@@ -262,11 +315,116 @@ class RevisionTests(TestCaseBase):
         eq_('Created:Jan 1, 2011 12:00:00 AM',
             doc('#wiki-doc div.revision-info li')[1].text_content().strip())
         eq_('Reviewed:Jan 2, 2011 12:00:00 AM',
-            doc('#wiki-doc div.revision-info li')[4].text_content().strip())
+            doc('#wiki-doc div.revision-info li')[5].text_content().strip())
         # is reviewed?
         eq_('Yes', doc('.revision-info li').eq(3).find('span').text())
         # is current revision?
         eq_('Yes', doc('.revision-info li').eq(7).find('span').text())
+
+    @mock.patch.object(ReadyRevisionEvent, 'fire')
+    def test_mark_as_ready_POST(self, fire):
+        """HTTP POST to mark a revision as ready for l10n."""
+
+        r = revision(is_approved=True,
+                     is_ready_for_localization=False, save=True)
+
+        self.client.login(username='admin', password='testpass')
+
+        url = reverse('wiki.mark_ready_for_l10n_revision',
+                      args=[r.document.slug, r.id])
+        response = self.client.post(url, data={},
+                      HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+
+        eq_(200, response.status_code)
+
+        r2 = Revision.uncached.get(pk=r.pk)
+
+        assert fire.called
+        assert r2.is_ready_for_localization
+        eq_(r2.document.latest_localizable_revision, r2)
+
+    @mock.patch.object(ReadyRevisionEvent, 'fire')
+    def test_mark_as_ready_GET(self, fire):
+        """HTTP GET to mark a revision as ready for l10n must fail."""
+
+        r = revision(is_approved=True,
+                     is_ready_for_localization=False, save=True)
+
+        self.client.login(username='admin', password='testpass')
+
+        url = reverse('wiki.mark_ready_for_l10n_revision',
+                      args=[r.document.slug, r.id])
+        response = self.client.get(url, data={},
+                      HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+
+        eq_(405, response.status_code)
+
+        r2 = Revision.uncached.get(pk=r.pk)
+
+        assert not fire.called
+        assert not r2.is_ready_for_localization
+
+    @mock.patch.object(ReadyRevisionEvent, 'fire')
+    def test_mark_as_ready_no_perm(self, fire):
+        """Mark a revision as ready for l10n without perm must fail."""
+
+        r = revision(is_approved=True,
+                     is_ready_for_localization=False, save=True)
+
+        u = user(save=True)
+        self.client.login(username=u.username, password='testpass')
+
+        url = reverse('wiki.mark_ready_for_l10n_revision',
+                      args=[r.document.slug, r.id])
+        response = self.client.post(url, data={},
+                      HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+
+        eq_(403, response.status_code)
+
+        r2 = Revision.uncached.get(pk=r.pk)
+
+        assert not fire.called
+        assert not r2.is_ready_for_localization
+
+    @mock.patch.object(ReadyRevisionEvent, 'fire')
+    def test_mark_as_ready_no_login(self, fire):
+        """Mark a revision as ready for l10n without login must fail."""
+
+        r = revision(is_approved=True,
+                     is_ready_for_localization=False, save=True)
+
+        url = reverse('wiki.mark_ready_for_l10n_revision',
+                      args=[r.document.slug, r.id])
+        response = self.client.post(url, data={},
+                      HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+
+        eq_(403, response.status_code)
+
+        r2 = Revision.uncached.get(pk=r.pk)
+
+        assert not fire.called
+        assert not r2.is_ready_for_localization
+
+    @mock.patch.object(ReadyRevisionEvent, 'fire')
+    def test_mark_as_ready_no_approval(self, fire):
+        """Mark an unapproved revision as ready for l10n must fail."""
+
+        r = revision(is_approved=False,
+                     is_ready_for_localization=False, save=True)
+
+        self.client.login(username='admin', password='testpass')
+
+        url = reverse('wiki.mark_ready_for_l10n_revision',
+                      args=[r.document.slug, r.id])
+        response = self.client.post(url, data={},
+                      HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+
+        eq_(400, response.status_code)
+
+        r2 = Revision.uncached.get(pk=r.pk)
+
+        assert not fire.called
+        assert not r2.is_ready_for_localization
 
 
 class NewDocumentTests(TestCaseBase):
@@ -282,13 +440,14 @@ class NewDocumentTests(TestCaseBase):
         eq_(1, len(doc('#document-form input[name="title"]')))
 
     def test_new_document_form_defaults(self):
-        """The new document form should have all all 'Relevant to' options
-        checked by default."""
+        """Verify that new document form defaults are correct."""
         self.client.login(username='admin', password='testpass')
         response = self.client.get(reverse('wiki.new_document'))
         doc = pq(response.content)
-        eq_(9, len(doc('input[checked=checked]')))
+        eq_(9, len(doc('.relevant-to input[checked=checked]')))
         eq_(None, doc('input[name="tags"]').attr('required'))
+        eq_('checked', doc('input#id_allow_discussion').attr('checked'))
+        eq_(None, doc('input#id_allow_discussion').attr('required'))
 
     @mock.patch.object(ReviewableRevisionInLocaleEvent, 'fire')
     @mock.patch.object(Site.objects, 'get_current')
@@ -315,7 +474,7 @@ class NewDocumentTests(TestCaseBase):
         eq_(data['keywords'], r.keywords)
         eq_(data['summary'], r.summary)
         eq_(data['content'], r.content)
-        ready_fire.assert_called()
+        assert ready_fire.called
 
     @mock.patch.object(ReviewableRevisionInLocaleEvent, 'fire')
     @mock.patch.object(Site.objects, 'get_current')
@@ -335,7 +494,7 @@ class NewDocumentTests(TestCaseBase):
                                     data, follow=True)
         d = Document.objects.get(title=data['title'])
         eq_(locale, d.locale)
-        ready_fire.assert_called()
+        assert ready_fire.called
 
     def test_new_document_POST_empty_title(self):
         """Trigger required field validation for title."""
@@ -490,7 +649,8 @@ class NewRevisionTests(TestCaseBase):
         eq_(doc('#id_content')[0].value, r.content)
 
     @mock.patch.object(Site.objects, 'get_current')
-    @mock.patch.object(settings._wrapped, 'TIDINGS_CONFIRM_ANONYMOUS_WATCHES', False)
+    @mock.patch.object(settings._wrapped, 'TIDINGS_CONFIRM_ANONYMOUS_WATCHES',
+                       False)
     def test_new_revision_POST_document_with_current(self, get_current):
         """HTTP POST to new revision URL creates the revision on a document.
 
@@ -520,13 +680,30 @@ class NewRevisionTests(TestCaseBase):
         new_rev = self.d.revisions.order_by('-id')[0]
         eq_(self.d.current_revision, new_rev.based_on)
 
+        if new_rev.based_on is not None:
+            fromfile = u'[%s] %s #%s' % (new_rev.based_on.document.locale,
+                                         new_rev.based_on.document.title,
+                                         new_rev.based_on.id)
+            tofile = u'[%s] %s #%s' % (new_rev.document.locale,
+                                       new_rev.document.title,
+                                       new_rev.id)
+            diff = clean(''.join(difflib.unified_diff(
+                            smart_str(new_rev.based_on.content).splitlines(1),
+                            smart_str(new_rev.content).splitlines(1),
+                            fromfile=fromfile,
+                            tofile=tofile)), ALLOWED_TAGS, ALLOWED_ATTRIBUTES)
+        else:
+            diff = ''  # No based_on, so diff wouldn't make sense.
+
         # Assert notifications fired and have the expected content:
+        eq_(2, len(mail.outbox))
         attrs_eq(mail.outbox[0],
                  subject=u'%s is ready for review (%s)' % (self.d.title,
                                                            new_rev.creator),
                  body=READY_FOR_REVIEW_EMAIL_CONTENT %
-                    (self.d.title, self.d.slug, new_rev.id,
-                     reviewable_watch.pk, reviewable_watch.secret),
+                    (self.d.title, self.d.slug, new_rev.id, diff,
+                     new_rev.content, reviewable_watch.pk,
+                     reviewable_watch.secret),
                  to=['joe@example.com'])
         attrs_eq(mail.outbox[1],
                  subject=u'%s was edited by %s' % (self.d.title,
@@ -562,8 +739,8 @@ class NewRevisionTests(TestCaseBase):
         new_rev = self.d.revisions.order_by('-id')[0]
         # There are no approved revisions, so it's based_on nothing:
         eq_(None, new_rev.based_on)
-        edited_fire.assert_called()
-        ready_fire.assert_called()
+        assert edited_fire.called
+        assert ready_fire.called
 
     def test_new_revision_POST_removes_old_tags(self):
         """Changing the tags on a document removes the old tags from
@@ -609,7 +786,7 @@ class NewRevisionTests(TestCaseBase):
         assert not len(pq(response.content)('div.warning-box'))
 
         # Create a newer unreviewed revision and now warning shows
-        created =created + timedelta(seconds=1)
+        created = created + timedelta(seconds=1)
         revision(document=self.d, created=created, save=True)
         response = self.client.get(reverse('wiki.new_revision_based_on',
                                            args=[self.d.slug, r.id]))
@@ -702,6 +879,27 @@ class DocumentEditTests(TestCaseBase):
         doc = Document.uncached.get(pk=self.d.pk)
         assert doc.is_archived
 
+    @mock.patch.object(EditDocumentEvent, 'notify')
+    def test_watch_article_from_edit_page(self, notify_on_edit):
+        """Make sure we can watch the article when submitting an edit."""
+        data = new_document_data()
+        data['form'] = 'rev'
+        data['notify-future-changes'] = 'Yes'
+        response = post(self.client, 'wiki.edit_document',
+                        data, args=[self.d.slug])
+        eq_(200, response.status_code)
+        assert notify_on_edit.called
+
+    @mock.patch.object(EditDocumentEvent, 'notify')
+    def test_not_watch_article_from_edit_page(self, notify_on_edit):
+        """Make sure editing an article does not cause a watch."""
+        data = new_document_data()
+        data['form'] = 'rev'
+        response = post(self.client, 'wiki.edit_document',
+                        data, args=[self.d.slug])
+        eq_(200, response.status_code)
+        assert not notify_on_edit.called
+
 
 class DocumentListTests(TestCaseBase):
     """Tests for the All and Category template"""
@@ -780,6 +978,30 @@ class DocumentRevisionsTests(TestCaseBase):
         eq_('/en-US/kb/test-document/edit/{r}'.format(r=r2.id),
             doc('#revision-list div.edit a')[0].attrib['href'])
 
+    def test_revisions_ready_for_l10n(self):
+        """Verify that the ready for l10n icon is only present on en-US."""
+        d = _create_document()
+        user_ = User.objects.get(pk=118533)
+        r1 = revision(summary="a tweak", content='lorem ipsum dolor',
+                      keywords='kw1 kw2', document=d, creator=user_)
+        r1.save()
+
+        d2 = _create_document(locale='es')
+        r2 = revision(summary="a tweak", content='lorem ipsum dolor',
+                      keywords='kw1 kw2', document=d2, creator=user_)
+        r2.save()
+
+        response = self.client.get(reverse('wiki.document_revisions',
+                                   args=[r1.document.slug]))
+        eq_(200, response.status_code)
+        doc = pq(response.content)
+        eq_(1, len(doc('#revision-list div.l10n-head')))
+
+        response = self.client.get(reverse('wiki.document_revisions',
+                                   args=[d2.slug], locale='es'))
+        eq_(200, response.status_code)
+        doc = pq(response.content)
+        eq_(0, len(doc('#revision-list div.l10n-head')))
 
 class ReviewRevisionTests(TestCaseBase):
     """Tests for Review Revisions and Translations"""
@@ -813,7 +1035,8 @@ class ReviewRevisionTests(TestCaseBase):
 
     @mock.patch.object(send_reviewed_notification, 'delay')
     @mock.patch.object(Site.objects, 'get_current')
-    @mock.patch.object(settings._wrapped, 'TIDINGS_CONFIRM_ANONYMOUS_WATCHES', False)
+    @mock.patch.object(settings._wrapped, 'TIDINGS_CONFIRM_ANONYMOUS_WATCHES',
+                       False)
     def test_approve_revision(self, get_current, reviewed_delay):
         """Verify revision approval with proper notifications."""
         get_current.return_value.domain = 'testserver'
@@ -822,6 +1045,11 @@ class ReviewRevisionTests(TestCaseBase):
         watch = ApproveRevisionInLocaleEvent.notify('joe@example.com',
                                                     locale='en-US')
         watch.activate().save()
+
+        # Subscribe the approver to approvals so we can assert (by counting the
+        # mails) that he didn't get notified.
+        ApproveRevisionInLocaleEvent.notify(User.objects.get(username='admin'),
+                                            locale='en-US').activate().save()
 
         # Approve something:
         significance = SIGNIFICANCES[0][0]
@@ -836,15 +1064,39 @@ class ReviewRevisionTests(TestCaseBase):
         assert r.reviewed
         assert r.is_approved
 
+        # Verify that revision creator is now in contributors
+        assert r.creator in self.document.contributors.all()
+
         # The "reviewed" mail should be sent to the creator, and the "approved"
         # mail should be sent to any subscribers:
         reviewed_delay.assert_called_with(r, r.document, '')
-        attrs_eq(mail.outbox[0],
-                 subject='%s (%s) has a new approved revision' %
-                     (self.document.title, self.document.locale),
-                 body=APPROVED_EMAIL_CONTENT %
+
+        if r.based_on is not None:
+            fromfile = u'[%s] %s #%s' % (r.document.locale,
+                                         r.document.title,
+                                         r.document.current_revision.id)
+            tofile = u'[%s] %s #%s' % (r.document.locale,
+                                       r.document.title,
+                                       r.id)
+            diff = clean(''.join(difflib.unified_diff(
+                            r.document.current_revision.content.splitlines(1),
+                            r.content.splitlines(1),
+                            fromfile=fromfile,
+                            tofile=tofile)), ALLOWED_TAGS, ALLOWED_ATTRIBUTES)
+
+            expected_body = (APPROVED_EMAIL_CONTENT %
                     (self.document.title, self.document.slug, watch.pk,
-                     watch.secret),
+                     watch.secret, diff, r.content))
+        else:
+            expected_body = (APPROVED_EMAIL_CONTENT_NO_DIFF %
+                    (self.document.title, self.document.slug, r.content,
+                     watch.pk, watch.secret))
+
+        eq_(1, len(mail.outbox))
+        attrs_eq(mail.outbox[0],
+                 subject='%s (%s) has a new approved revision (admin)' %
+                     (self.document.title, self.document.locale),
+                 body=expected_body,
                  to=['joe@example.com'])
 
     @mock.patch.object(send_reviewed_notification, 'delay')
@@ -863,6 +1115,9 @@ class ReviewRevisionTests(TestCaseBase):
         assert r.reviewed
         assert not r.is_approved
         delay.assert_called_with(r, r.document, comment)
+
+        # Verify that revision creator is not in contributors
+        assert r.creator not in r.document.contributors.all()
 
     def test_review_without_permission(self):
         """Make sure unauthorized users can't review revisions."""
@@ -1130,8 +1385,8 @@ class TranslateTests(TestCaseBase):
         eq_(data['keywords'], rev.keywords)
         eq_(data['summary'], rev.summary)
         eq_(data['content'], rev.content)
-        edited_fire.assert_called()
-        ready_fire.assert_called()
+        assert edited_fire.called
+        assert ready_fire.called
 
     def _create_and_approve_first_translation(self):
         """Returns the revision."""
@@ -1180,8 +1435,8 @@ class TranslateTests(TestCaseBase):
         eq_(data['summary'], rev.summary)
         eq_(data['content'], rev.content)
         assert not rev.is_approved
-        edited_fire.assert_called()
-        ready_fire.assert_called()
+        assert edited_fire.called
+        assert ready_fire.called
 
     @mock.patch.object(Site.objects, 'get_current')
     def test_translate_form_maintains_based_on_rev(self, get_current):
@@ -1271,6 +1526,48 @@ class TranslateTests(TestCaseBase):
         response = self.client.get(url)
         doc = pq(response.content)
         assert doc('.warning-box').text()
+
+    def test_skip_unready_when_first_translation(self):
+        """Never offer an unready-for-localization revision as initial
+        translation source text."""
+        # Create an English document all ready to translate:
+        en_doc = document(is_localizable=True, save=True)
+        revision(document=en_doc,
+                 is_approved=True,
+                 is_ready_for_localization=True,
+                 save=True,
+                 content='I am the ready!')
+        revision(document=en_doc,
+                 is_approved=True,
+                 is_ready_for_localization=False,
+                 save=True)
+
+        url = reverse('wiki.translate', locale='de', args=[en_doc.slug])
+        response = self.client.get(url)
+        self.assertContains(response, 'I am the ready!')
+
+    def test_skip_unready_when_not_first_translation(self):
+        """Never offer an unready-for-localization revision as diff text when
+        bringing an already translated article up to date."""
+        # Create an initial translated revision so the version of the template
+        # with the English-to-English diff shows up:
+        initial_rev = translated_revision(is_approved=True, save=True)
+        en_doc = initial_rev.document.parent
+        ready = revision(document=en_doc,
+                         is_approved=True,
+                         is_ready_for_localization=True,
+                         save=True)
+        revision(document=en_doc,
+                 is_approved=True,
+                 is_ready_for_localization=False,
+                 save=True)
+
+        url = reverse('wiki.translate', locale='de', args=[en_doc.slug])
+        response = self.client.get(url)
+        eq_(200, response.status_code)
+        # Get the link to the rev on the right side of the diff:
+        to_link = pq(response.content)('.revision-diff h3 a')[1].attrib['href']
+        assert to_link.endswith('/%s' % ready.pk)
 
 
 def _test_form_maintains_based_on_rev(client, doc, view, post_data,
@@ -1417,53 +1714,100 @@ class HelpfulVoteTests(TestCaseBase):
 
     def test_vote_yes(self):
         """Test voting helpful."""
-        d = self.document
+        r = self.document.current_revision
         user_ = User.objects.get(username='rrosario')
         self.client.login(username='rrosario', password='testpass')
         response = post(self.client, 'wiki.document_vote',
-                        {'helpful': 'Yes'}, args=[self.document.slug])
+                        {'helpful': 'Yes', 'revision_id': r.id},
+                        args=[self.document.slug])
         eq_(200, response.status_code)
-        votes = HelpfulVote.objects.filter(document=d, creator=user_)
+        votes = HelpfulVote.objects.filter(revision=r, creator=user_)
         eq_(1, votes.count())
         assert votes[0].helpful
 
     def test_vote_no(self):
         """Test voting not helpful."""
-        d = self.document
+        r = self.document.current_revision
         user_ = User.objects.get(username='rrosario')
         self.client.login(username='rrosario', password='testpass')
         response = post(self.client, 'wiki.document_vote',
-                        {'not-helpful': 'No'}, args=[d.slug])
+                        {'not-helpful': 'No', 'revision_id': r.id},
+                        args=[self.document.slug])
         eq_(200, response.status_code)
-        votes = HelpfulVote.objects.filter(document=d, creator=user_)
+        votes = HelpfulVote.objects.filter(revision=r, creator=user_)
         eq_(1, votes.count())
         assert not votes[0].helpful
 
     def test_vote_anonymous(self):
         """Test that voting works for anonymous user."""
-        d = self.document
+        r = self.document.current_revision
         response = post(self.client, 'wiki.document_vote',
-                        {'helpful': 'Yes'}, args=[d.slug])
+                        {'helpful': 'Yes', 'revision_id': r.id},
+                        args=[self.document.slug])
         eq_(200, response.status_code)
-        votes = HelpfulVote.objects.filter(document=d, creator=None)
+        votes = HelpfulVote.objects.filter(revision=r, creator=None)
         votes = votes.exclude(anonymous_id=None)
         eq_(1, votes.count())
         assert votes[0].helpful
 
     def test_vote_ajax(self):
         """Test voting via ajax."""
-        d = self.document
-        url = reverse('wiki.document_vote', args=[d.slug])
-        response = self.client.post(url, data={'helpful': 'Yes'},
-                         HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+        r = self.document.current_revision
+        url = reverse('wiki.document_vote', args=[self.document.slug])
+        response = self.client.post(
+            url, data={'helpful': 'Yes', 'revision_id': r.id},
+            HTTP_X_REQUESTED_WITH='XMLHttpRequest')
         eq_(200, response.status_code)
         eq_('{"message": "Glad to hear it &mdash; thanks for the feedback!"}',
             response.content)
-        votes = HelpfulVote.objects.filter(document=d, creator=None)
+        votes = HelpfulVote.objects.filter(revision=r, creator=None)
         votes = votes.exclude(anonymous_id=None)
         eq_(1, votes.count())
         assert votes[0].helpful
 
+    def test_helpfulvotes_graph_async_yes(self):
+        r = self.document.current_revision
+        response = post(self.client, 'wiki.document_vote',
+                        {'helpful': 'Yes', 'revision_id': r.id}, args=[self.document.slug])
+        eq_(200, response.status_code)
+
+        resp = get(self.client, 'wiki.get_helpful_votes_async', args=[r.document.slug])
+        eq_(200, resp.status_code)
+        data = json.loads(resp.content)
+        eq_(2, len(data['data']))
+        eq_('Yes', data['data'][0]['name'])
+        eq_(1, len(data['data'][0]['data']))
+        eq_('No', data['data'][1]['name'])
+        eq_(1, len(data['data'][1]['data']))
+
+        eq_(1, len(data['date_to_rev_id']))
+
+    def test_helpfulvotes_graph_async_no(self):
+        r = self.document.current_revision
+        response = post(self.client, 'wiki.document_vote',
+                        {'helpful': 'Yes', 'revision_id': r.id}, args=[self.document.slug])
+        eq_(200, response.status_code)
+
+        resp = get(self.client, 'wiki.get_helpful_votes_async', args=[r.document.slug])
+        eq_(200, resp.status_code)
+        data = json.loads(resp.content)
+        eq_(2, len(data['data']))
+        eq_('Yes', data['data'][0]['name'])
+        eq_(1, len(data['data'][0]['data']))
+        eq_('No', data['data'][1]['name'])
+        eq_(1, len(data['data'][1]['data']))
+
+        eq_(1, len(data['date_to_rev_id']))
+
+    def test_helpfulvotes_graph_async_no_votes(self):
+        r = self.document.current_revision
+
+        resp = get(self.client, 'wiki.get_helpful_votes_async', args=[r.document.slug])
+        eq_(200, resp.status_code)
+        data = json.loads(resp.content)
+        eq_(0, len(data['data']))
+
+        eq_(0, len(data['date_to_rev_id']))
 
 class SelectLocaleTests(TestCaseBase):
     """Test the locale selection page"""
@@ -1551,7 +1895,7 @@ class RevisionDeleteTestCase(TestCaseBase):
         eq_(0, Revision.objects.filter(pk=self.r.id).count())
 
     def test_delete_current_revision(self):
-        """Deleting a the current_revision of a document, should update
+        """Deleting the current_revision of a document should update
         the current_revision to previous version."""
         self.client.login(username='admin', password='testpass')
         prev_revision = self.d.current_revision
@@ -1614,14 +1958,12 @@ class ApprovedWatchTests(TestCaseBase):
         locale = 'es'
 
         # Subscribe
-        response = post(self.client, 'wiki.approved_watch',
-                        {'locale': locale})
+        response = post(self.client, 'wiki.approved_watch', locale=locale)
         eq_(200, response.status_code)
         assert ApproveRevisionInLocaleEvent.is_notifying(user_, locale=locale)
 
         # Unsubscribe
-        response = post(self.client, 'wiki.approved_unwatch',
-                        {'locale': locale})
+        response = post(self.client, 'wiki.approved_unwatch', locale=locale)
         eq_(200, response.status_code)
         assert not ApproveRevisionInLocaleEvent.is_notifying(user_,
                                                              locale=locale)

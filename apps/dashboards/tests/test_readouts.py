@@ -1,5 +1,4 @@
 from datetime import datetime
-from functools import partial
 
 from nose.tools import eq_
 
@@ -11,12 +10,8 @@ from wiki.models import MAJOR_SIGNIFICANCE, MEDIUM_SIGNIFICANCE
 from wiki.tests import revision, translated_revision, document
 
 
-NON_DEFAULT_LOCALE = 'de'
-translated_revision = partial(translated_revision, locale=NON_DEFAULT_LOCALE)
-
-
 class MockRequest(object):
-    locale = NON_DEFAULT_LOCALE
+    locale = 'de'  # Same locale as translated_revision uses by default
 
 
 class UnreviewedChangesTests(TestCase):
@@ -86,7 +81,9 @@ class MostVisitedTranslationsTests(TestCase):
         translation = translated_revision(is_approved=True, save=True)
         revision(document=translation.document.parent,
                  is_approved=True,
-                 significance=significance, save=True)
+                 is_ready_for_localization=True,
+                 significance=significance,
+                 save=True)
         row = self.row()
         eq_(row['title'], translation.document.title)
         eq_(row['status'], status)
@@ -101,7 +98,9 @@ class MostVisitedTranslationsTests(TestCase):
 
     def test_untranslated(self):
         """Assert untranslated documents are labeled as such."""
-        untranslated = revision(save=True, is_approved=True)
+        untranslated = revision(is_approved=True,
+                                is_ready_for_localization=True,
+                                save=True)
         row = self.row()
         eq_(row['title'], untranslated.document.title)
         eq_(unicode(row['status']), 'Translation Needed')
@@ -120,7 +119,7 @@ class MostVisitedTranslationsTests(TestCase):
         eq_([], MostVisitedTranslationsReadout(MockRequest()).rows())
 
 
-class TemplateTranslationsReadoutTests(TestCase):
+class TemplateTranslationsTests(TestCase):
     """Tests for the Template Translations readout"""
 
     @staticmethod
@@ -136,7 +135,10 @@ class TemplateTranslationsReadoutTests(TestCase):
     def test_untranslated(self):
         """Assert untranslated templates are labeled as such."""
         d = document(title='Template:test', save=True)
-        untranslated = revision(is_approved=True, document=d, save=True)
+        untranslated = revision(is_approved=True,
+                                is_ready_for_localization=True,
+                                document=d,
+                                save=True)
         row = self.row()
         eq_(row['title'], untranslated.document.title)
         eq_(unicode(row['status']), 'Translation Needed')

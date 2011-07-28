@@ -1,9 +1,17 @@
+import logging
+import time
+
 from django.db import connection, transaction
 
 import cronjobs
+from multidb.pinning import use_master
+from statsd import statsd
 import waffle
 
 from wiki import tasks
+
+
+log = logging.getLogger('k.migratehelpful')
 
 
 @cronjobs.register
@@ -65,3 +73,5 @@ def rebuild_kb():
         return
 
     tasks.rebuild_kb()
+
+

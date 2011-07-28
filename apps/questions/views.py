@@ -1,5 +1,4 @@
 from datetime import datetime
-from itertools import islice
 import json
 import logging
 
@@ -10,7 +9,7 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.sites.models import Site
 from django.core.cache import cache
-from django.core.exceptions import PermissionDenied, ObjectDoesNotExist
+from django.core.exceptions import PermissionDenied
 from django.db.models import Q
 from django.http import (HttpResponseRedirect, HttpResponse, Http404,
                          HttpResponseBadRequest, HttpResponseForbidden)
@@ -22,20 +21,24 @@ from django.views.decorators.http import (require_POST, require_GET,
 import jingo
 from mobility.decorators import mobile_template
 from session_csrf import anonymous_csrf
+from statsd import statsd
 from taggit.models import Tag
 from tidings.events import ActivationRequestFailed
 from tidings.models import Watch
 from tower import ugettext as _, ugettext_lazy as _lazy
+import waffle
 
 from access.decorators import (has_perm_or_owns_or_403, permission_required,
                                login_required)
+from karma.actions import KarmaAction
 import questions as constants
 from questions.events import QuestionReplyEvent, QuestionSolvedEvent
 from questions.feeds import QuestionsFeed, AnswersFeed, TaggedQuestionsFeed
 from questions.forms import (NewQuestionForm, EditQuestionForm, AnswerForm,
                              WatchQuestionForm, FREQUENCY_CHOICES)
-from questions.models import (Question, Answer, QuestionVote, AnswerVote,
-                              CONFIRMED, UNCONFIRMED)
+from questions.karma_actions import (SolutionAction, AnswerMarkedHelpfulAction,
+                                     AnswerMarkedNotHelpfulAction)
+from questions.models import Question, Answer, QuestionVote, AnswerVote
 from questions.question_config import products
 from search.clients import WikiClient, QuestionsClient, SearchError
 from search.utils import locale_or_default, sphinx_locale
@@ -60,10 +63,11 @@ NO_TAG = _lazy(u'Please provide a tag.')
 def questions(request):
     """View the questions."""
 
-    filter = request.GET.get('filter')
+    filter_ = request.GET.get('filter')
     tagged = request.GET.get('tagged')
     tags = None
     sort_ = request.GET.get('sort')
+    cache_count = True  # Some counts are too esoteric to cache right now.
 
     if sort_ == 'requested':
         order = '-num_votes_past_week'
@@ -75,26 +79,28 @@ def questions(request):
         'creator', 'last_answer', 'last_answer__creator')
     question_qs = question_qs.extra(
         {'_num_votes': 'SELECT COUNT(*) FROM questions_questionvote WHERE questions_questionvote.question_id = questions_question.id'})
-    question_qs = question_qs.filter(creator__is_active=1, status=CONFIRMED)
+    question_qs = question_qs.filter(creator__is_active=1)
 
-    if filter == 'no-replies':
+    if filter_ == 'no-replies':
         question_qs = question_qs.filter(num_answers=0)
-    elif filter == 'replies':
+    elif filter_ == 'replies':
         question_qs = question_qs.filter(num_answers__gt=0)
-    elif filter == 'solved':
+    elif filter_ == 'solved':
         question_qs = question_qs.exclude(solution=None)
-    elif filter == 'unsolved':
+    elif filter_ == 'unsolved':
         question_qs = question_qs.filter(solution=None)
-    elif filter == 'my-contributions' and request.user.is_authenticated():
+    elif filter_ == 'my-contributions' and request.user.is_authenticated():
         criteria = Q(answers__creator=request.user) | Q(creator=request.user)
         question_qs = question_qs.filter(criteria).distinct()
+        cache_count = False
     else:
-        filter = None
+        filter_ = None
 
     feed_urls = ((reverse('questions.feed'),
                   QuestionsFeed().title()),)
 
     if tagged:
+        cache_count = False
         tag_slugs = tagged.split(',')
         tags = Tag.objects.filter(slug__in=tag_slugs)
         if tags:
@@ -108,16 +114,33 @@ def questions(request):
             question_qs = Question.objects.get_empty_query_set()
 
     question_qs = question_qs.order_by(order)
-    # TODO: Cache this guy.
-    count = question_qs.count()
+
+    if cache_count:
+        cache_key = u'questions:count:%s' % filter_
+        count = cache.get(cache_key)
+        if not count:
+            count = question_qs.count()
+            cache.add(cache_key, count, settings.QUESTIONS_COUNT_TTL)
+    else:
+        count = question_qs.count()
+
     questions_ = paginate(request, question_qs, count=count,
                           per_page=constants.QUESTIONS_PER_PAGE)
 
-    return jingo.render(request, 'questions/questions.html',
-                        {'questions': questions_, 'feeds': feed_urls,
-                         'filter': filter, 'sort': sort_,
-                         'top_contributors': _get_top_contributors(),
-                         'tags': tags, 'tagged': tagged})
+    data = {'questions': questions_, 'feeds': feed_urls, 'filter': filter_,
+            'sort': sort_, 'tags': tags, 'tagged': tagged}
+
+    if (waffle.flag_is_active(request, 'karma') and
+        waffle.switch_is_active('karma')):
+        data.update(karma_top=KarmaAction.objects.top_alltime())
+        if request.user.is_authenticated():
+            ranking = KarmaAction.objects.ranking_alltime(request.user)
+            if ranking <= constants.HIGHEST_RANKING:
+                data.update(karma_ranking=ranking)
+    else:
+        data.update(top_contributors=_get_top_contributors())
+
+    return jingo.render(request, 'questions/questions.html', data)
 
 
 @anonymous_csrf  # Need this so the anon csrf gets set for watch forms.
@@ -161,14 +184,14 @@ def new_question(request, template=None):
         search = request.GET.get('search', '')
         if search:
             try:
-                search_results = _search_suggestions(
-                                 search, locale_or_default(request.locale))
+                results = _search_suggestions(
+                    search, locale_or_default(request.locale))
             except SearchError:
                 # Just quietly advance the user to the next step.
-                search_results = []
+                results = []
             tried_search = True
         else:
-            search_results = []
+            results = []
             tried_search = False
 
         if request.GET.get('showform'):
@@ -188,7 +211,8 @@ def new_question(request, template=None):
             form = None
 
         return jingo.render(request, template,
-                            {'form': form, 'search_results': search_results,
+                            {'form': form,
+                             'results': results,
                              'tried_search': tried_search,
                              'products': products,
                              'current_product': product,
@@ -202,6 +226,7 @@ def new_question(request, template=None):
     if not request.user.is_authenticated():
         if request.POST.get('login'):
             login_form = handle_login(request, only_active=False)
+            statsd.incr('questions.user.login')
             register_form = RegisterForm()
         elif request.POST.get('register'):
             login_form = AuthenticationForm()
@@ -210,12 +235,13 @@ def new_question(request, template=None):
             email_data = request.GET.get('search')
             register_form = handle_register(request, email_template,
                                             email_subject, email_data)
-            if register_form.is_valid():  # now try to log in
+            if register_form.is_valid():  # Now try to log in.
                 user = auth.authenticate(username=request.POST.get('username'),
                                          password=request.POST.get('password'))
                 auth.login(request, user)
+                statsd.incr('questions.user.register')
         else:
-            # L10n: This shouldn't happen unless people tamper with POST data
+            # L10n: This shouldn't happen unless people tamper with POST data.
             message = _lazy('Request type not recognized.')
             return jingo.render(request, 'handlers/400.html',
                             {'message': message}, status=400)
@@ -239,6 +265,7 @@ def new_question(request, template=None):
                             title=form.cleaned_data['title'],
                             content=form.cleaned_data['content'])
         question.save()
+        statsd.incr('questions.new')
         question.add_metadata(**form.cleaned_metadata)
         if product:
             question.add_metadata(product=product['key'])
@@ -259,6 +286,7 @@ def new_question(request, template=None):
             return HttpResponseRedirect(url)
 
         auth.logout(request)
+        statsd.incr('questions.user.logout')
         confirm_t = ('questions/mobile/confirm_email.html' if request.MOBILE
                      else 'questions/confirm_email.html')
         return jingo.render(request, confirm_t,
@@ -315,29 +343,6 @@ def edit_question(request, question_id):
                          'current_category': question.category})
 
 
-def confirm_question_form(request, question_id, confirmation_id):
-    """Confirm a question submitted."""
-    question = get_object_or_404(Question, pk=question_id,
-                                 confirmation_id=confirmation_id)
-
-    if question.status == UNCONFIRMED:
-        if request.method == 'GET':
-            template = 'questions/confirm_question_form.html'
-            return jingo.render(request, template, {'question': question})
-        else:
-            log.info("User %s is confirming email on question with id=%s " %
-                     (question.creator, question.id))
-            if not question.creator.is_active:
-                u = question.creator
-                u.is_active = True
-                u.save()
-            question.status = CONFIRMED
-            question.save()
-
-    return HttpResponseRedirect(reverse('questions.answers',
-                                        args=[question_id]))
-
-
 @require_POST
 @login_required
 def reply(request, question_id):
@@ -373,6 +378,7 @@ def reply(request, question_id):
             # reply form
             up_images = question.images.filter(creator=request.user)
             up_images.update(content_type=ct, object_id=answer.id)
+            statsd.incr('questions.answer')
 
             return HttpResponseRedirect(answer.get_absolute_url())
 
@@ -381,21 +387,48 @@ def reply(request, question_id):
 
 @require_POST
 @login_required
-def solution(request, question_id, answer_id):
+def solve(request, question_id, answer_id):
     """Accept an answer as the solution to the question."""
     question = get_object_or_404(Question, pk=question_id)
     answer = get_object_or_404(Answer, pk=answer_id)
     if question.is_locked:
         raise PermissionDenied
 
-    if question.creator != request.user:
+    if (question.creator != request.user and
+        not request.user.has_perm('questions.change_solution')):
         return HttpResponseForbidden()
 
     question.solution = answer
     question.save()
+    statsd.incr('questions.solution')
     QuestionSolvedEvent(answer).fire(exclude=question.creator)
+    SolutionAction(answer.creator).save()
+    messages.add_message(request, messages.SUCCESS,
+                         _('Thank you for choosing a solution!'))
 
-    return HttpResponseRedirect(answer.get_absolute_url())
+    return HttpResponseRedirect(question.get_absolute_url())
+
+
+@require_POST
+@login_required
+def unsolve(request, question_id, answer_id):
+    """Accept an answer as the solution to the question."""
+    question = get_object_or_404(Question, pk=question_id)
+    get_object_or_404(Answer, pk=answer_id)
+    if question.is_locked:
+        raise PermissionDenied
+
+    if (question.creator != request.user and
+        not request.user.has_perm('questions.change_solution')):
+        return HttpResponseForbidden()
+
+    question.solution = None
+    question.save()
+
+    messages.add_message(request, messages.SUCCESS,
+                         _("The solution was undone successfully."))
+
+    return HttpResponseRedirect(question.get_absolute_url())
 
 
 @require_POST
@@ -415,6 +448,10 @@ def question_vote(request, question_id):
             vote.anonymous_id = request.anonymous.anonymous_id
 
         vote.save()
+        ua = request.META.get('HTTP_USER_AGENT')
+        if ua:
+            vote.add_metadata('ua', ua[:1000])  # 1000 max_length
+        statsd.incr('questions.votes.question')
 
         if request.is_ajax():
             tmpl = 'questions/includes/question_vote_thanks.html'
@@ -439,8 +476,10 @@ def answer_vote(request, question_id, answer_id):
 
         if 'helpful' in request.POST:
             vote.helpful = True
+            AnswerMarkedHelpfulAction(answer.creator).save()
             message = _('Glad to hear it!')
         else:
+            AnswerMarkedNotHelpfulAction(answer.creator).save()
             message = _('Sorry to hear that.')
 
         if request.user.is_authenticated():
@@ -449,6 +488,10 @@ def answer_vote(request, question_id, answer_id):
             vote.anonymous_id = request.anonymous.anonymous_id
 
         vote.save()
+        ua = request.META.get('HTTP_USER_AGENT')
+        if ua:
+            vote.add_metadata('ua', ua[:1000])  # 1000 max_length
+        statsd.incr('questions.votes.answer')
     else:
         message = _('You already voted on this reply.')
 
@@ -664,6 +707,7 @@ def watch_question(request, question_id):
                 QuestionReplyEvent.notify(user_or_email, question)
             else:
                 QuestionSolvedEvent.notify(user_or_email, question)
+            statsd.incr('questions.watches.new')
         except ActivationRequestFailed:
             msg = _('Could not send a message to that email address.')
 
@@ -724,6 +768,7 @@ def activate_watch(request, watch_id, secret):
     question = watch.content_object
     if watch.secret == secret and isinstance(question, Question):
         watch.activate().save()
+        statsd.incr('questions.watches.activate')
 
     return jingo.render(request, 'questions/activate_watch.html',
                         {'question': question,
@@ -738,34 +783,21 @@ def _search_suggestions(query, locale):
     query -- full text to search on
     locale -- locale to limit to
 
-    Items returned are dicts:
-        { 'url': URL where the article can be viewed,
-          'title': Title of the article,
-          'excerpt_html': Excerpt of the article with search terms hilighted,
-                          formatted in HTML }
+    Items are dicts of:
+        {
+            'type':
+            'object':
+        }
 
-    Weights wiki pages infinitely higher than questions at the moment.
+    Returns up to 3 wiki pages, then up to 3 questions.
 
     TODO: ZOMFG this needs to be refactored and the search app should
           provide an internal API. Seriously.
 
     """
-    def prepare(result, model, attr, searcher, result_to_id):
-        """Turn a search result from a Sphinx client into a dict for templates.
 
-        Return {} if an object corresponding to the result cannot be found.
-
-        """
-        try:
-            obj = model.objects.get(pk=result_to_id(result))
-        except ObjectDoesNotExist:
-            return {}
-        return {'url': obj.get_absolute_url(),
-                'title': obj.title,
-                'excerpt_html': searcher.excerpt(getattr(obj, attr), query)}
-
-    max_suggestions = settings.QUESTIONS_MAX_SUGGESTIONS
-    query_limit = max_suggestions + settings.QUESTIONS_SUGGESTION_SLOP
+    # Max number of search results per type.
+    WIKI_RESULTS = QUESTIONS_RESULTS = 3
 
     # Search wiki pages:
     wiki_searcher = WikiClient()
@@ -779,28 +811,33 @@ def _search_suggestions(query, locale):
                 'value': [-x for x in settings.SEARCH_DEFAULT_CATEGORIES
                           if x < 0]}]
     raw_results = wiki_searcher.query(query, filters=filters,
-                                      limit=query_limit)
+                                      limit=WIKI_RESULTS)
     # Lazily build excerpts from results. Stop when we have enough:
-    results = islice((p for p in
-                       (prepare(r, Document, 'html', wiki_searcher,
-                                lambda x: x['id'])
-                        for r in raw_results) if p),
-                     max_suggestions)
-    results = list(results)
+    results = []
+    for r in raw_results:
+        try:
+            doc = Document.objects.select_related('current_revision').\
+                get(pk=r['id'])
+            results.append({
+                'type': 'document',
+                'object': doc,
+            })
+        except Document.DoesNotExist:
+            pass
 
-    # If we didn't find enough wiki pages to fill the page, pad it out with
-    # other questions:
-    if len(results) < max_suggestions:
-        question_searcher = QuestionsClient()
-        # questions app is en-US only.
-        raw_results = question_searcher.query(query,
-                                              limit=query_limit - len(results))
-        results.extend(islice((p for p in
-                               (prepare(r, Question, 'content',
-                                        question_searcher,
-                                        lambda x: x['attrs']['question_id'])
-                                for r in raw_results) if p),
-                              max_suggestions - len(results)))
+    question_searcher = QuestionsClient()
+    # questions app is en-US only.
+    raw_results = question_searcher.query(query,
+                                          limit=QUESTIONS_RESULTS)
+    for r in raw_results:
+        try:
+            q = Question.objects.get(pk=r['attrs']['question_id'])
+            results.append({
+                'type': 'question',
+                'object': q
+            })
+        except Question.DoesNotExist:
+            pass
 
     return results
 

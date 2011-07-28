@@ -46,19 +46,21 @@
     <div id="showfor">
       <div class="help-with-selects">
         <select class="os" data-oses="{&#34;maemo&#34;: true, &#34;win&#34;: true, &#34;mac&#34;: true, &#34;android&#34;: true, &#34;linux&#34;: true}">
-          <option value="win" data-dependency="desktop">Windows</option>
+          <option value="win" data-dependency="desktop" data-default="true">Windows</option>
           <option value="mac" data-dependency="desktop">Mac OS X</option>
           <option value="linux" data-dependency="desktop">Linux</option>
-          <option value="android" data-dependency="mobile">Android</option>
+          <option value="android" data-dependency="mobile" data-default="true">Android</option>
           <option value="maemo" data-dependency="mobile">Maemo</option>
         </select>
         <select class="browser" data-browsers="{&#34;fx5&#34;: {&#34;product&#34;: &#34;fx&#34;, &#34;maxFloatVersion&#34;: 5.9999000000000002}, &#34;fx4&#34;: {&#34;product&#34;: &#34;fx&#34;, &#34;maxFloatVersion&#34;: 4.9999000000000002}, &#34;fx6&#34;: {&#34;product&#34;: &#34;fx&#34;, &#34;maxFloatVersion&#34;: 6.9999000000000002}, &#34;fx3&#34;: {&#34;product&#34;: &#34;fx&#34;, &#34;maxFloatVersion&#34;: 3.4998999999999998}, &#34;m5&#34;: {&#34;product&#34;: &#34;m&#34;, &#34;maxFloatVersion&#34;: 5.9999000000000002}, &#34;m4&#34;: {&#34;product&#34;: &#34;m&#34;, &#34;maxFloatVersion&#34;: 4.9999000000000002}, &#34;m6&#34;: {&#34;product&#34;: &#34;m&#34;, &#34;maxFloatVersion&#34;: 6.9999000000000002}, &#34;fx35&#34;: {&#34;product&#34;: &#34;fx&#34;, &#34;maxFloatVersion&#34;: 3.9998999999999998}}" data-version-groups="{&#34;fx&#34;: [[3.4998999999999998, &#34;3&#34;], [3.9998999999999998, &#34;35&#34;], [4.9999000000000002, &#34;4&#34;], [5.9999000000000002, &#34;5&#34;], [6.9999000000000002, &#34;6&#34;]], &#34;m&#34;: [[4.9999000000000002, &#34;4&#34;], [5.9999000000000002, &#34;5&#34;], [6.9999000000000002, &#34;6&#34;]]}">
           <optgroup label="Desktop:">
-            <option value="fx5" data-dependency="desktop">Firefox 5</option>
+            <option value="fx6" data-dependency="desktop">Firefox 6</option>
+            <option value="fx5" data-dependency="desktop" selected="selected" data-default="true">Firefox 5</option>
             <option value="fx4" data-dependency="desktop">Firefox 4</option>
             <option value="fx35" data-dependency="desktop">Firefox 3.5-3.6</option>
           </optgroup>
           <optgroup label="Mobile:">
+            <option value="m5" data-dependency="mobile" data-default="true">Firefox 5</option>
             <option value="m4" data-dependency="mobile">Firefox 4</option>
           </optgroup>
         </select>
@@ -74,6 +76,7 @@
         <span class="for" data-for="fx3">fx3</span>
         <span class="for" data-for="fx5">fx5</span>
         <span class="for" data-for="m4">m4</span>
+        <span class="for" data-for="m5">m5</span>
       </div>
     </div>
 

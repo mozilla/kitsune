@@ -1,16 +1,18 @@
 import logging
+import time
 
 from django.conf import settings
 from django.contrib.sites.models import Site
 from django.core.cache import cache
 from django.core.exceptions import ValidationError
 from django.core.mail import send_mail, mail_admins
-from django.db import transaction
+from django.db import connection, transaction
 from django.template import Context, loader
 
 import celery.conf
 from celery.decorators import task
 from multidb.pinning import pin_this_thread, unpin_this_thread
+from statsd import statsd
 from tower import ugettext as _
 import waffle
 
@@ -90,6 +92,7 @@ def _rebuild_kb_chunk(data, **kwargs):
     pin_this_thread()  # Stick to master.
 
     messages = []
+    start = time.time()
     for pk in data:
         message = None
         try:
@@ -116,6 +119,8 @@ def _rebuild_kb_chunk(data, **kwargs):
         if message:
             log.debug(message)
             messages.append(message)
+    d = time.time() - start
+    statsd.timing('wiki.rebuild_chunk', int(round(d * 1000)))
 
     if messages:
         subject = ('[%s] Exceptions raised in _rebuild_kb_chunk()' %
@@ -124,3 +129,56 @@ def _rebuild_kb_chunk(data, **kwargs):
     transaction.commit_unless_managed()
 
     unpin_this_thread()  # Not all tasks need to do use the master.
+
+
+@task(rate_limit='1/m')
+def migrate_helpfulvotes(start_id, end_id):
+    """Transfer helpfulvotes from old to new version."""
+
+    if not waffle.switch_is_active('migrate-helpfulvotes'):
+        raise  # Celery emails the failed IDs so we know to which to rerun.
+
+    start = time.time()
+
+    pin_this_thread()  # Pin to master
+
+    transaction.enter_transaction_management()
+    transaction.managed(True)
+    try:
+        cursor = connection.cursor()
+        cursor.execute("""INSERT INTO `wiki_helpfulvote`
+            (revision_id, helpful, created,
+            creator_id, anonymous_id, user_agent)
+            SELECT COALESCE(
+                    (SELECT id FROM `wiki_revision`
+                        WHERE `document_id` = wiki_helpfulvoteold.document_id
+                            AND `is_approved`=1 AND
+                            (`reviewed` <= wiki_helpfulvoteold.created
+                                OR `reviewed` IS NULL)
+                        ORDER BY CASE WHEN `reviewed`
+                            IS NULL THEN 1 ELSE 0 END,
+                                  `wiki_revision`.`created` DESC LIMIT 1),
+                    (SELECT id FROM `wiki_revision`
+                        WHERE `document_id` = wiki_helpfulvoteold.document_id
+                            AND (`reviewed` <= wiki_helpfulvoteold.created
+                                OR `reviewed` IS NULL)
+                        ORDER BY CASE WHEN `reviewed`
+                            IS NULL THEN 1 ELSE 0 END,
+                                `wiki_revision`.`created`  DESC LIMIT 1),
+                    (SELECT id FROM `wiki_revision`
+                        WHERE `document_id` = wiki_helpfulvoteold.document_id
+                        ORDER BY `created` ASC LIMIT 1)),
+                helpful, created, creator_id, anonymous_id, user_agent
+            FROM `wiki_helpfulvoteold` WHERE id >= %s AND id < %s""",
+            [start_id, end_id])
+        transaction.commit()
+    except:
+        transaction.rollback()
+        raise
+
+    transaction.leave_transaction_management()
+
+    unpin_this_thread()
+
+    d = time.time() - start
+    statsd.timing('wiki.migrate_helpfulvotes', int(round(d * 1000)))

@@ -26,8 +26,8 @@
 
 var Marky = {
     createSimpleToolbar: function(toolbarSel, textareaSel) {
-        var SB = Marky.SimpleButton;
-        var buttons = [
+        var SB = Marky.SimpleButton,
+            buttons = [
             new SB(gettext('Bold'), "'''", "'''", gettext('bold text'),
                    'btn-bold'),
             new SB(gettext('Italic'), "''", "''", gettext('italic text'),
@@ -43,8 +43,22 @@ var Marky = {
         Marky.createCustomToolbar(toolbarSel, textareaSel, buttons);
     },
     createFullToolbar: function(toolbarSel, textareaSel) {
+        var SB = Marky.SimpleButton,
+            buttons = Marky.allButtonsExceptShowfor();
+        buttons.push(new Marky.Separator());
+        buttons.push(new Marky.ShowForButton());
+        Marky.createCustomToolbar(toolbarSel, textareaSel, buttons);
+    },
+    createCustomToolbar: function(toolbarSel, textareaSel, partsArray) {
+        var $toolbar = $(toolbarSel || '.editor-tools'),
+            textarea = $(textareaSel || '#reply-content, #id_content')[0];
+        for (var i=0, l=partsArray.length; i<l; i++) {
+            $toolbar.append(partsArray[i].bind(textarea).node());
+        }
+    },
+    allButtonsExceptShowfor: function() {
         var SB = Marky.SimpleButton;
-        var buttons = [
+        return [
             new SB(gettext('Bold'), "'''", "'''", gettext('bold text'),
                    'btn-bold'),
             new SB(gettext('Italic'), "''", "''", gettext('italic text'),
@@ -63,18 +77,8 @@ var Marky = {
             new SB(gettext('Heading 2'), '==', '==', gettext('Heading 2'),
                    'btn-h2', true),
             new SB(gettext('Heading 3'), '===', '===', gettext('Heading 3'),
-                   'btn-h3', true),
-            new Marky.Separator(),
-            new Marky.ShowForButton()
+                   'btn-h3', true)
         ];
-        Marky.createCustomToolbar(toolbarSel, textareaSel, buttons);
-    },
-    createCustomToolbar: function(toolbarSel, textareaSel, partsArray) {
-        var $toolbar = $(toolbarSel || '.editor-tools'),
-            textarea = $(textareaSel || '#reply-content, #id_content')[0];
-        for (var i=0, l=partsArray.length; i<l; i++) {
-            $toolbar.append(partsArray[i].bind(textarea).node());
-        }
     }
 };
 

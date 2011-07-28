@@ -1,0 +1,346 @@
+================
+ The Mock Class
+================
+
+.. currentmodule:: mock
+
+.. testsetup::
+
+    import os, sys
+    if not os.getcwd() in sys.path:
+        sys.path.append(os.getcwd())
+    from mock import Mock, sentinel, DEFAULT
+
+    class SomeClass:
+        pass
+
+``Mock`` is a flexible mock object intended to replace the use of stubs and
+test doubles throughout your code. Mocks are callable and create attributes as
+new mocks when you access them [#]_. Accessing the same attribute will always
+return the same mock. Mocks record how you use them, allowing you to make
+assertions about what your code has done to them.
+
+The :func:`mock.patch` decorators makes it easy to temporarily replace classes
+in a particular module with a Mock object.
+
+.. index:: side_effect
+.. index:: return_value
+.. index:: wraps
+.. index:: name
+.. index:: spec
+
+.. autoclass:: Mock
+
+Mock objects that use a class or an instance as a `spec` or `spec_set` are able
+to pass `isintance` tests:
+
+.. doctest::
+
+    >>> mock = Mock(spec=SomeClass)
+    >>> isinstance(mock, SomeClass)
+    True
+    >>> mock = Mock(spec_set=SomeClass())
+    >>> isinstance(mock, SomeClass)
+    True
+
+
+Methods
+=======
+
+.. method:: Mock.assert_called_with(*args, **kwargs)
+
+    This method is a convenient way of asserting that calls are made in a
+    particular way:
+
+    .. doctest::
+
+        >>> mock = Mock()
+        >>> mock.method(1, 2, 3, test='wow')
+        <mock.Mock object at 0x...>
+        >>> mock.method.assert_called_with(1, 2, 3, test='wow')
+
+
+.. method:: Mock.assert_called_once_with(*args, **kwargs)
+
+   Assert that the mock was called exactly once and with the specified
+   arguments.
+
+   .. doctest::
+
+        >>> mock = Mock(return_value=None)
+        >>> mock('foo', bar='baz')
+        >>> mock.assert_called_once_with('foo', bar='baz')
+        >>> mock('foo', bar='baz')
+        >>> mock.assert_called_once_with('foo', bar='baz')
+        Traceback (most recent call last):
+          ...
+        AssertionError: Expected to be called once. Called 2 times.
+
+
+.. method:: Mock.reset_mock()
+
+    The reset_mock method resets all the call attributes on a mock object:
+
+    .. doctest::
+
+        >>> mock = Mock(return_value=None)
+        >>> mock('hello')
+        >>> mock.called
+        True
+        >>> mock.reset_mock()
+        >>> mock.called
+        False
+
+    This can be useful where you want to make a series of assertions that
+    reuse the same object. Note that ``reset`` *doesn't* clear the return
+    value, ``side_effect`` or any child attributes. Attributes you have set
+    using normal assignment are also left in place. Child mocks and the return
+    value mock (if any) are reset as well.
+
+
+.. index:: __call__
+.. index:: calling
+
+Calling
+=======
+
+Mock objects are callable. The call will return the value set as the
+:attr:`Mock.return_value` attribute. The default return value is a new Mock
+object; it is created the first time the return value is accessed (either
+explicitly or by calling the Mock) - but it is stored and the same one
+returned each time.
+
+Calls made to the object will be recorded in the attributes_.
+
+If :attr:`Mock.side_effect` is set then it will be called after the call has
+been recorded but before any value is returned.
+
+
+Attributes
+==========
+
+.. attribute:: Mock.called
+
+    A boolean representing whether or not the mock object has been called:
+
+    .. doctest::
+
+        >>> mock = Mock(return_value=None)
+        >>> mock.called
+        False
+        >>> mock()
+        >>> mock.called
+        True
+
+.. attribute:: Mock.call_count
+
+    An integer telling you how many times the mock object has been called:
+
+    .. doctest::
+
+        >>> mock = Mock(return_value=None)
+        >>> mock.call_count
+        0
+        >>> mock()
+        >>> mock()
+        >>> mock.call_count
+        2
+
+
+.. attribute:: Mock.return_value
+
+    Set this to configure the value returned by calling the mock:
+
+    .. doctest::
+
+        >>> mock = Mock()
+        >>> mock.return_value = 'fish'
+        >>> mock()
+        'fish'
+
+    The default return value is a mock object and you can configure it in the
+    normal way:
+
+    .. doctest::
+
+        >>> mock = Mock()
+        >>> mock.return_value.attribute = sentinel.Attribute
+        >>> mock.return_value()
+        <mock.Mock object at 0x...>
+        >>> mock.return_value.assert_called_with()
+
+    `return_value` can also be set in the constructor:
+
+    .. doctest::
+
+        >>> mock = Mock(return_value=3)
+        >>> mock.return_value
+        3
+        >>> mock()
+        3
+
+
+.. attribute:: Mock.side_effect
+
+
+    This can either be a function to be called when the mock is called, or an
+    exception (class or instance) to be raised.
+
+    If you pass in a function it will be called with same arguments as the
+    mock and unless the function returns the :data:`DEFAULT` singleton the
+    call to the mock will then return whatever the function returns. If the
+    function returns :data:`DEFAULT` then the mock will return its normal
+    value (from the :attr:`Mock.return_value`.
+
+    An example of a mock that raises an exception (to test exception handling of
+    an API):
+
+    .. doctest::
+
+        >>> mock = Mock()
+        >>> mock.side_effect = Exception('Boom!')
+        >>> mock()
+        Traceback (most recent call last):
+          ...
+        Exception: Boom!
+
+    Using ``side_effect`` to return a sequence of values:
+
+    .. doctest::
+
+        >>> mock = Mock()
+        >>> results = [1, 2, 3]
+        >>> def side_effect(*args, **kwargs):
+        ...     return results.pop()
+        ...
+        >>> mock.side_effect = side_effect
+        >>> mock(), mock(), mock()
+        (3, 2, 1)
+
+    The `side_effect` function is called with the same arguments as the mock (so
+    it is wise for it to take arbitrary args and keyword arguments) and
+    whatever it returns is used as the return value for the call. The
+    exception is if `side_effect` returns :data:`DEFAULT`, in which case the
+    normal :attr:`Mock.return_value` is used.
+
+    .. doctest::
+
+        >>> mock = Mock(return_value=3)
+        >>> def side_effect(*args, **kwargs):
+        ...     return DEFAULT
+        ...
+        >>> mock.side_effect = side_effect
+        >>> mock()
+        3
+
+    `side_effect` can be set in the constructor. Here's an example that adds one
+    to the value the mock is called with and returns it:
+
+    .. doctest::
+
+        >>> side_effect = lambda value: value + 1
+        >>> mock = Mock(side_effect=side_effect)
+        >>> mock(3)
+        4
+        >>> mock(-8)
+        -7
+
+.. attribute:: Mock.call_args
+
+    This is either ``None`` (if the mock hasn't been called), or the arguments
+    that the mock was last called with. This will be in the form of a tuple:
+    the first member is any ordered arguments the mock was called with (or an
+    empty tuple) and the second member is any keyword arguments (or an empty
+    dictionary).
+
+    .. doctest::
+
+        >>> mock = Mock(return_value=None)
+        >>> print mock.call_args
+        None
+        >>> mock()
+        >>> mock.call_args
+        ((), {})
+        >>> mock.call_args == ()
+        True
+        >>> mock(3, 4)
+        >>> mock.call_args
+        ((3, 4), {})
+        >>> mock.call_args == ((3, 4),)
+        True
+        >>> mock(3, 4, 5, key='fish', next='w00t!')
+        >>> mock.call_args
+        ((3, 4, 5), {'key': 'fish', 'next': 'w00t!'})
+
+    The tuple is lenient when comparing against tuples with empty
+    elements skipped. This can make tests less verbose:
+
+    .. doctest::
+
+        >>> mock = Mock(return_value=None)
+        >>> mock()
+        >>> mock.call_args == ()
+        True
+
+.. attribute:: Mock.call_args_list
+
+    This is a list of all the calls made to the mock object in sequence (so
+    the length of the list is the number of times it has been called). Before
+    any calls have been made it is an empty list. Its elements compare
+    "softly" when positional arguments or keyword arguments are skipped:
+
+    .. doctest::
+
+        >>> mock = Mock(return_value=None)
+        >>> mock()
+        >>> mock(3, 4)
+        >>> mock(key='fish', next='w00t!')
+        >>> mock.call_args_list
+        [((), {}), ((3, 4), {}), ((), {'key': 'fish', 'next': 'w00t!'})]
+        >>> expected = [(), ((3, 4),), ({'key': 'fish', 'next': 'w00t!'},)]
+        >>> mock.call_args_list == expected
+        True
+
+
+.. attribute:: Mock.method_calls
+
+    As well as tracking calls to themselves, mocks also track calls to methods
+    and attributes, and *their* methods and attributes:
+
+    .. doctest::
+
+        >>> mock = Mock()
+        >>> mock.method()
+        <mock.Mock object at 0x...>
+        >>> mock.property.method.attribute()
+        <mock.Mock object at 0x...>
+        >>> mock.method_calls
+        [('method', (), {}), ('property.method.attribute', (), {})]
+
+    The tuples in method_calls compare equal even if empty positional and
+    keyword arguments are skipped.
+
+    .. doctest::
+
+        >>> mock = Mock()
+        >>> mock.method()
+        <mock.Mock object at 0x...>
+        >>> mock.method(1, 2)
+        <mock.Mock object at 0x...>
+        >>> mock.method(a="b")
+        <mock.Mock object at 0x...>
+        >>> mock.method_calls == [('method',), ('method', (1, 2)),
+        ... ('method', {"a": "b"})]
+        True
+
+The ``Mock`` class has support for mocking magic methods. See :ref:`magic
+methods <magic-methods>` for the full details.
+
+-----
+
+.. [#] The only exceptions are magic methods and attributes (those that have
+       leading and trailing double underscores). Mock doesn't create these but
+       instead of raises an ``AttributeError``. This is because the interpreter
+       will often implicitly request these methods, and gets *very* confused to
+       get a new Mock object when it expects a magic method. If you need magic
+       method support see :ref:`magic methods <magic-methods>`.

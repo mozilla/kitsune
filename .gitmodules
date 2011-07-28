@@ -4,6 +4,123 @@
 [submodule "media/global"]
 	path = media/global
 	url = git://github.com/mozilla/django-moz-header.git
-[submodule "vendor"]
-	path = vendor
-	url = git://github.com/jsocol/kitsune-lib.git
+[submodule "vendor/src/bleach"]
+	path = vendor/src/bleach
+	url = https://github.com/jsocol/bleach.git
+[submodule "vendor/src/cache-panel"]
+	path = vendor/src/cache-panel
+	url = https://github.com/jbalogh/django-debug-cache-panel
+[submodule "vendor/src/check"]
+	path = vendor/src/check
+	url = https://github.com/jbalogh/check.git
+[submodule "vendor/src/commonware"]
+	path = vendor/src/commonware
+	url = https://github.com/jsocol/commonware.git
+[submodule "vendor/src/django-cache-machine"]
+	path = vendor/src/django-cache-machine
+	url = https://github.com/jbalogh/django-cache-machine.git
+[submodule "vendor/src/django-cronjobs"]
+	path = vendor/src/django-cronjobs
+	url = https://github.com/jsocol/django-cronjobs.git
+[submodule "vendor/src/django-debug-toolbar"]
+	path = vendor/src/django-debug-toolbar
+	url = https://github.com/robhudson/django-debug-toolbar.git
+[submodule "vendor/src/django-extensions"]
+	path = vendor/src/django-extensions
+	url = https://github.com/django-extensions/django-extensions.git
+[submodule "vendor/src/django-mozilla-product-details"]
+	path = vendor/src/django-mozilla-product-details
+	url = https://github.com/fwenzel/django-mozilla-product-details
+[submodule "vendor/src/django-multidb-router"]
+	path = vendor/src/django-multidb-router
+	url = https://github.com/jbalogh/django-multidb-router.git
+[submodule "vendor/src/django-nose"]
+	path = vendor/src/django-nose
+	url = https://github.com/jbalogh/django-nose.git
+[submodule "vendor/src/jingo"]
+	path = vendor/src/jingo
+	url = https://github.com/jbalogh/jingo.git
+[submodule "vendor/src/jingo-minify"]
+	path = vendor/src/jingo-minify
+	url = https://github.com/jsocol/jingo-minify.git
+[submodule "vendor/src/py-wikimarkup"]
+	path = vendor/src/py-wikimarkup
+	url = https://github.com/pcraciunoiu/py-wikimarkup.git
+[submodule "vendor/src/schematic"]
+	path = vendor/src/schematic
+	url = https://github.com/jbalogh/schematic.git
+[submodule "vendor/src/test-utils"]
+	path = vendor/src/test-utils
+	url = https://github.com/jbalogh/test-utils.git
+[submodule "vendor/src/tower"]
+	path = vendor/src/tower
+	url = https://github.com/clouserw/tower.git
+[submodule "vendor/src/django"]
+	path = vendor/src/django
+	url = https://github.com/django/django
+[submodule "vendor/src/django-authority"]
+	path = vendor/src/django-authority
+	url = https://github.com/jsocol/django-authority
+[submodule "vendor/src/django-csp"]
+	path = vendor/src/django-csp
+	url = https://github.com/mozilla/django-csp.git
+[submodule "vendor/src/tweepy"]
+	path = vendor/src/tweepy
+	url = https://github.com/tweepy/tweepy.git
+[submodule "vendor/src/django-timezones"]
+	path = vendor/src/django-timezones
+	url = https://github.com/brosner/django-timezones.git
+[submodule "vendor/src/sphinxapi"]
+	path = vendor/src/sphinxapi
+	url = https://github.com/jsocol/sphinxapi
+[submodule "vendor/src/django-waffle"]
+	path = vendor/src/django-waffle
+	url = https://github.com/jsocol/django-waffle.git
+[submodule "vendor/src/django-mobility"]
+	path = vendor/src/django-mobility
+	url = https://github.com/jbalogh/django-mobility
+[submodule "vendor/src/django-qunit"]
+	path = vendor/src/django-qunit
+	url = https://github.com/kumar303/django-qunit.git
+[submodule "vendor/src/django-adminplus"]
+	path = vendor/src/django-adminplus
+	url = https://github.com/jsocol/django-adminplus
+[submodule "vendor/src/celery"]
+	path = vendor/src/celery
+	url = https://github.com/ask/celery
+[submodule "vendor/src/django-celery"]
+	path = vendor/src/django-celery
+	url = https://github.com/ask/django-celery
+[submodule "vendor/src/kombu"]
+	path = vendor/src/kombu
+	url = https://github.com/ask/kombu
+[submodule "vendor/src/django-tidings"]
+	path = vendor/src/django-tidings
+	url = https://github.com/erikrose/django-tidings.git
+[submodule "vendor/src/jstestnetlib"]
+	path = vendor/src/jstestnetlib
+	url = https://github.com/kumar303/jstestnetlib.git
+[submodule "vendor/src/pystatsd"]
+	path = vendor/src/pystatsd
+	url = https://github.com/jsocol/pystatsd
+[submodule "vendor/src/django-session-csrf"]
+	path = vendor/src/django-session-csrf
+	url = https://github.com/mozilla/django-session-csrf.git
+[submodule "vendor/src/redis-py"]
+	path = vendor/src/redis-py
+	url = https://github.com/andymccurdy/redis-py.git
+[submodule "vendor/src/django-picklefield"]
+	path = vendor/src/django-picklefield
+	url = https://github.com/gintas/django-picklefield.git
+[submodule "vendor/src/django-ratelimit"]
+	path = vendor/src/django-ratelimit
+	url = https://github.com/jsocol/django-ratelimit
+[submodule "vendor/src/django-recaptcha"]
+	path = vendor/src/django-recaptcha
+	url = https://github.com/mozilla/django-recaptcha
+[submodule "vendor/src/python-recaptcha"]
+	path = vendor/src/python-recaptcha
+	url = https://github.com/bltravis/python-recaptcha.git
+[submodule "vendor/src/django-arecibo"]
+	path = vendor/src/django-arecibo
+	url = https://github.com/andymckay/django-arecibo.git

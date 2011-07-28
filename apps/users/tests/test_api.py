@@ -25,10 +25,10 @@ class UsernamesTests(TestCase):
         eq_('[]', res.content)
 
     def test_query(self):
-        res = self.client.get(urlparams(self.url, u='a'))
+        res = self.client.get(urlparams(self.url, query='a'))
         eq_(200, res.status_code)
         data = json.loads(res.content)
-        eq_(2, len(data))
+        eq_(2, len(data['suggestions']))
 
     def test_post(self):
         res = self.client.post(self.url)

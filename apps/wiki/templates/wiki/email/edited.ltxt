@@ -1,7 +1,4 @@
-{% load i18n %}{% load unsubscribe_instructions %}
-{# L10n: This is an email. Whitespace matters! #}
-{% blocktrans %}
-{{ creator }} created a new revision to the document
+{% load i18n %}{% load unsubscribe_instructions %}{# L10n: This is an email. Whitespace matters! #}{% blocktrans %}{{ creator }} created a new revision to the document
 {{ document_title }}.
 
 To view this document's history, click the following

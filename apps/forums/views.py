@@ -8,6 +8,7 @@ from django.views.decorators.http import require_POST
 
 import jingo
 from authority.decorators import permission_required_or_403
+from statsd import statsd
 
 from access.decorators import has_perm_or_owns_or_403, login_required
 from access import has_perm
@@ -86,13 +87,22 @@ def threads(request, forum_slug):
                          'feeds': feed_urls})
 
 
-def posts(request, forum_slug, thread_id, form=None, reply_preview=None):
+def posts(request, forum_slug, thread_id, form=None, reply_preview=None,
+          is_reply=False):
     """View all the posts in a thread."""
-    forum = get_object_or_404(Forum, slug=forum_slug)
-    if not forum.allows_viewing_by(request.user):
+    thread = get_object_or_404(Thread, pk=thread_id)
+    forum = thread.forum
+
+    if forum.slug != forum_slug and not is_reply:
+        new_forum = get_object_or_404(Forum, slug=forum_slug)
+        if new_forum.allows_viewing_by(request.user):
+            return HttpResponseRedirect(thread.get_absolute_url())
+        raise Http404  # User has no right to view destination forum.
+    elif forum.slug != forum_slug:
         raise Http404
 
-    thread = get_object_or_404(Thread, pk=thread_id, forum=forum)
+    if not forum.allows_viewing_by(request.user):
+        raise Http404
 
     posts_ = thread.post_set.all()
     count = posts_.count()
@@ -147,13 +157,15 @@ def reply(request, forum_slug, thread_id):
                     reply_.author.post_set.count()
             else:
                 reply_.save()
+                statsd.incr('forums.reply')
 
                 # Send notifications to thread/forum watchers.
                 NewPostEvent(reply_).fire(exclude=reply_.author)
 
                 return HttpResponseRedirect(reply_.get_absolute_url())
 
-    return posts(request, forum_slug, thread_id, form, reply_preview)
+    return posts(request, forum_slug, thread_id, form, reply_preview,
+                 is_reply=True)
 
 
 @login_required
@@ -186,6 +198,7 @@ def new_thread(request, forum_slug):
             thread = forum.thread_set.create(creator=request.user,
                                              title=form.cleaned_data['title'])
             thread.save()
+            statsd.incr('forums.thread')
             post = thread.new_post(author=request.user,
                                    content=form.cleaned_data['content'])
             post.save()
@@ -408,6 +421,7 @@ def watch_thread(request, forum_slug, thread_id):
 
     if request.POST.get('watch') == 'yes':
         NewPostEvent.notify(request.user, thread)
+        statsd.incr('forums.watches.thread')
     else:
         NewPostEvent.stop_notifying(request.user, thread)
 
@@ -425,6 +439,7 @@ def watch_forum(request, forum_slug):
 
     if request.POST.get('watch') == 'yes':
         NewThreadEvent.notify(request.user, forum)
+        statsd.incr('forums.watches.forum')
     else:
         NewThreadEvent.stop_notifying(request.user, forum)
 

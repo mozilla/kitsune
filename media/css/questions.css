@@ -30,12 +30,22 @@
     padding: 40px 9px 0;
 }
 
+body.new-header #content hgroup {
+    margin: 0 0 20px;
+    padding: 20px 9px 0;
+}
+
 #content hgroup h1 {
     font-family: MetaBlack, Helvetica, Arial, sans-serif;
     font-size: 36px;
     line-height: 36px;
     margin: 0 0 6px;
     text-transform: uppercase;
+}
+
+body.new-header #content hgroup h1 {
+    font-size: 26px;
+    line-height: 28px;
 }
 
 #content h1 a {
@@ -257,16 +267,16 @@ div.thread-meta span:first-child {
 }
 
 div.thread-meta span.solved {
-    color: #007302;
+    color: #00cc1a;
     font-weight: bold;
 }
 
 div.thread-meta span.locked{
-    color: #ff0000;
     font-weight: bold;
 }
 
 div.thread-meta span.contributed {
+    color: #ff0000;
     font-weight: bold;
 }
 
@@ -317,11 +327,15 @@ ol.pagination:after {
 
 /* top contributors side module */
 #top-contributors ol {
-    margin: 5px 0 0 22px;
+    margin: 5px 0 14px 35px;
 }
 
 #top-contributors li {
     margin: 0 0 2px;
+}
+
+#top-contributors li.me {
+    font-weight: bold;
 }
 
 /* answers page */
@@ -418,6 +432,11 @@ div.user-section div.asked-by span {
 
 div.user-section div.asked-by span.answers {
     font-weight: normal;
+}
+
+div.user-section div.asked-by span.points {
+    color: green;
+    font-size: 110%;
 }
 
 div.user-section div.asked-on {
@@ -912,12 +931,16 @@ ol.answers div.meta {
 }
 
 ol.answers div.meta span {
-    border-right: 1px solid #ccc;
     padding: 0 10px;
 }
 
 ol.answers div.meta span.helpful {
+    border-left: 1px solid #ccc;
     font-weight: bold;
+}
+
+ol.answers div.meta span:first-child {
+    border-left: none;
 }
 
 ol.answers div.meta span.solved {
@@ -925,18 +948,41 @@ ol.answers div.meta span.solved {
     font-weight: bold;
 }
 
+ol.answers form.unsolve {
+    display: inline;
+}
+
+ol.answers form.unsolve input[type="submit"] {
+    background: none;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    color: #ff0000;
+    font-family: inherit;
+    font-size: inherit;
+    font-weight: bold;
+    margin: 0 10px 0 0;
+    padding: 0;
+}
+
 ol.answers div.meta a.reply {
-    margin: 0 0 0 10px;
+    padding: 0 0 0 10px;
+}
+
+ol.answers div.meta * + a.reply {
+    border-left: 1px solid #ccc;
 }
 
 ol.answers div.meta span:first-child {
     padding-left: 0;
 }
 
+ol.answers form.solution,
 ol.answers form.helpful {
     margin: 0 0 20px;
 }
 
+ol.answers form.solution input.btn,
 ol.answers form.helpful input.btn {
     margin: 7px 10px 0 0;
 }
@@ -1518,4 +1564,17 @@ div.activate-watch ul {
 a#activate-watch, a#remove-watch {
     display: block;
     font-size: 120%;
+}
+
+/* AAQ search result tweaks */
+.search-results {
+    margin-top: 10px;
+}
+
+.result .thread-meta {
+    padding: 10px 15px 10px 50px;
+}
+
+.thread-meta .this-week {
+    border-right: none;
 }

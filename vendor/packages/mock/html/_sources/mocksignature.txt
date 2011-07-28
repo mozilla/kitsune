@@ -1,0 +1,203 @@
+mocksignature
+=============
+
+.. currentmodule:: mock
+
+A problem with using mock objects to replace real objects in your tests is that
+:class:`Mock` can be *too* flexible. Your code can treat the mock objects in
+any way and you have to manually check that they were called correctly. If your
+code calls functions or methods with the wrong number of arguments then mocks
+don't complain.
+
+The solution to this is ``mocksignature``, which creates functions with the
+same signature as the original, but delegating to a mock. You can interrogate
+the mock in the usual way to check it has been called with the *right*
+arguments, but if it is called with the wrong number of arguments it will
+raise a ``TypeError`` in the same way your production code would.
+
+Another advantage is that your mocked objects are real functions, which can
+be useful when your code uses 
+`inspect <http://docs.python.org/library/inspect.html>`_ or depends on functions
+being functions.
+
+.. function:: mocksignature(func, mock=None, skipfirst=False)
+
+    Create a new function with the same signature as `func` that delegates
+    to `mock`. If `skipfirst` is True the first argument is skipped, useful
+    for methods where `self` needs to be omitted from the new function.
+    
+    If you don't pass in a `mock` then one will be created for you.
+    
+    The mock is set as the `mock` attribute of the returned function for easy
+    access.
+
+    `mocksignature` can also be used with classes. It copies the signature of
+    the `__init__` method.
+    
+    When used with callable objects (instances) it copies the signature of the
+    `__call__` method.
+
+``mocksignature`` will work out if it is mocking the signature of a method on
+an instance or a method on a class and do the "right thing" with the ``self``
+argument in both cases.
+
+Because of a limitation in the way that arguments are collected by functions
+created by ``mocksignature`` they are *always* passed as positional arguments
+(including defaults) and not keyword arguments.
+
+Example use
+-----------
+
+Basic use
+~~~~~~~~~
+
+.. doctest::
+
+    >>> from mock import mocksignature, Mock
+    >>> def function(a, b, c=None):
+    ...     pass
+    ... 
+    >>> mock = Mock()
+    >>> function = mocksignature(function, mock)
+    >>> function()
+    Traceback (most recent call last):
+      ...
+    TypeError: <lambda>() takes at least 2 arguments (0 given)
+    >>> mock.return_value = 'some value'
+    >>> function(1, 2, 'foo')
+    'some value'
+    >>> function.mock.assert_called_with(1, 2, 'foo')
+
+
+Keyword arguments
+~~~~~~~~~~~~~~~~~
+
+Note that arguments to functions created by ``mocksignature`` are always passed
+in to the underlying mock by position even when called with keywords:
+
+.. doctest::
+
+    >>> from mock import mocksignature
+    >>> def function(a, b, c=None):
+    ...     pass
+    ... 
+    >>> function = mocksignature(function)
+    >>> function.mock.return_value = None
+    >>> function(1, 2)
+    >>> function.mock.assert_called_with(1, 2, None)
+
+
+Mocking methods and self
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+When you use ``mocksignature`` to replace a method on a class then ``self``
+will be included in the method signature - and you will need to include
+the instance when you do your asserts:
+
+.. doctest::
+
+    >>> from mock import mocksignature
+    >>> class SomeClass(object):
+    ...     def method(self, a, b, c=None):
+    ...         pass
+    ... 
+    >>> SomeClass.method = mocksignature(SomeClass.method)
+    >>> SomeClass.method.mock.return_value = None
+    >>> instance = SomeClass()
+    >>> instance.method()
+    Traceback (most recent call last):
+      ...
+    TypeError: <lambda>() takes at least 4 arguments (1 given)
+    >>> instance.method(1, 2, 3)
+    >>> instance.method.mock.assert_called_with(instance, 1, 2, 3)
+    
+When you use ``mocksignature`` on instance methods ``self`` isn't included:
+
+.. doctest::
+
+    >>> from mock import mocksignature
+    >>> class SomeClass(object):
+    ...     def method(self, a, b, c=None):
+    ...         pass
+    ... 
+    >>> instance = SomeClass()
+    >>> instance.method = mocksignature(instance.method)
+    >>> instance.method.mock.return_value = None
+    >>> instance.method(1, 2, 3)
+    >>> instance.method.mock.assert_called_with(1, 2, 3)
+
+
+mocksignature with classes
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+When used with a class `mocksignature` copies the signature of the `__init__`
+method.
+
+.. doctest::
+
+    >>> from mock import mocksignature
+    >>> class Something(object):
+    ...     def __init__(self, foo, bar):
+    ...         pass
+    ...
+    >>> MockSomething = mocksignature(Something)
+    >>> instance = MockSomething(10, 9)
+    >>> assert instance is MockSomething.mock.return_value
+    >>> MockSomething.mock.assert_called_with(10, 9)
+    >>> MockSomething()
+    Traceback (most recent call last):
+      ...
+    TypeError: <lambda>() takes at least 2 arguments (0 given)
+
+Because the object returned by `mocksignature` is a function rather than a
+`Mock` you lose the other capabilities of `Mock`, like dynamic attribute
+creation.
+
+mocksignature with callable objects
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+When used with a callable object `mocksignature` copies the signature of the
+`__call__` method.
+
+.. doctest::
+
+    >>> from mock import mocksignature
+    >>> class Something(object):
+    ...     def __call__(self, spam, eggs):
+    ...         pass
+    ...
+    >>> something = Something()
+    >>> mock_something = mocksignature(something)
+    >>> result = mock_something(10, 9)
+    >>> mock_something.mock.assert_called_with(10, 9)
+    >>> mock_something()
+    Traceback (most recent call last):
+      ...
+    TypeError: <lambda>() takes at least 2 arguments (0 given)
+
+Because the object returned by `mocksignature` is a function rather than a
+`Mock` you lose the other capabilities of `Mock`, like dynamic attribute
+creation.
+
+mocksignature argument to patch
+-------------------------------
+
+``mocksignature`` is available as a keyword argument to :func:`patch` or
+:func:`patch.object`. It can be used with functions / methods / classes and
+callable objects.
+
+.. doctest::
+
+    >>> from mock import patch
+    >>> class SomeClass(object):
+    ...     def method(self, a, b, c=None):
+    ...         pass
+    ... 
+    >>> @patch.object(SomeClass, 'method', mocksignature=True)
+    ... def test(mock_method):
+    ...     instance = SomeClass()
+    ...     mock_method.return_value = None
+    ...     instance.method(1, 2)
+    ...     mock_method.assert_called_with(instance, 1, 2, None)
+    ... 
+    >>> test()

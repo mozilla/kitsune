@@ -5,15 +5,15 @@ from urlparse import urlparse
 
 from django.conf import settings
 from django.contrib.auth.models import User
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from django.core.urlresolvers import resolve
 from django.db import models
+from django.db.models import Q
 from django.http import Http404
 
 from pyquery import PyQuery
 from tidings.models import NotificationsMixin
 from tower import ugettext_lazy as _lazy, ugettext as _
-import waffle
 
 from sumo import ProgrammingError
 from sumo_locales import LOCALES
@@ -28,7 +28,8 @@ from wiki import TEMPLATE_TITLE_PREFIX
 TYPO_SIGNIFICANCE = 10
 MEDIUM_SIGNIFICANCE = 20
 MAJOR_SIGNIFICANCE = 30
-SIGNIFICANCES = (
+
+SIGNIFICANCES = [
     (TYPO_SIGNIFICANCE,
      _lazy(u'Minor details like punctuation and spelling errors')),
     (MEDIUM_SIGNIFICANCE,
@@ -36,7 +37,25 @@ SIGNIFICANCES = (
     (MAJOR_SIGNIFICANCE,
      _lazy(u'Major content changes that will make older translations '
            'inaccurate')),
-)
+]
+
+SIGNIFICANCES_HELP = {
+    TYPO_SIGNIFICANCE:
+        _lazy(u'These changes are inconsequential to localizers: they will '
+              'not be notified of the change and it will not affect '
+              'translations of the article.'),
+    MEDIUM_SIGNIFICANCE:
+        _lazy(u'This will notify localizers and translations will be marked '
+              'as "needing updates" on dashboards. Most '
+              'changes&mdash;updating an image, fixing {for} markup, adding '
+              'or removing non-critical sections&mdash;should use this.'),
+    MAJOR_SIGNIFICANCE:
+        _lazy(u'This will notify localizers and translations will be marked '
+              '"out of date" on dashboards. Translations will show a warning '
+              'to users that they are out of date and that the English '
+              'version is the most accurate. Use this when the old '
+              'instructions are completely unusable.'),
+}
 
 CATEGORIES = (
     (10, _lazy(u'Troubleshooting')),
@@ -63,43 +82,51 @@ CATEGORIES = (
 # the default mobile browser still show. The reverse is true when a page is
 # being viewed in a mobile browser.
 VersionMetadata = namedtuple('VersionMetadata',
-                             'id, name, long, slug, max_version, show_in_ui')
+                             'id, name, long, slug, max_version, show_in_ui, '
+                             'is_default')
 GROUPED_FIREFOX_VERSIONS = (
     ((_lazy(u'Desktop:'), 'desktop'), (
-        # The first option is the default for {for} display. This should be the
-        # newest version.
+        VersionMetadata(9, _lazy(u'Firefox 7'),
+                        _lazy(u'Firefox 7'), 'fx7', 7.9999, False, False),
         VersionMetadata(6, _lazy(u'Firefox 6'),
-                        _lazy(u'Firefox 6'), 'fx6', 6.9999, False),
+                        _lazy(u'Firefox 6'), 'fx6', 6.9999, True, False),
         VersionMetadata(5, _lazy(u'Firefox 5'),
-                        _lazy(u'Firefox 5'), 'fx5', 5.9999, False),
+                        _lazy(u'Firefox 5'), 'fx5', 5.9999, True, True),
         VersionMetadata(1, _lazy(u'Firefox 4'),
-                        _lazy(u'Firefox 4'), 'fx4', 4.9999, True),
+                        _lazy(u'Firefox 4'), 'fx4', 4.9999, True, False),
         VersionMetadata(2, _lazy(u'Firefox 3.5-3.6'),
-                        _lazy(u'Firefox 3.5-3.6'), 'fx35', 3.9999, True),
+                        _lazy(u'Firefox 3.5-3.6'), 'fx35', 3.9999, True,
+                        False),
         VersionMetadata(3, _lazy(u'Firefox 3.0'),
-                        _lazy(u'Firefox 3.0'), 'fx3', 3.4999, False))),
+                        _lazy(u'Firefox 3.0'), 'fx3', 3.4999, False, False))),
     ((_lazy(u'Mobile:'), 'mobile'), (
+        VersionMetadata(10, _lazy(u'Firefox 7'),
+                        _lazy(u'Firefox 7 for Mobile'), 'm7', 7.9999, False,
+                        False),
         VersionMetadata(8, _lazy(u'Firefox 6'),
-                        _lazy(u'Firefox 6 for Mobile'), 'm6', 6.9999, False),
+                        _lazy(u'Firefox 6 for Mobile'), 'm6', 6.9999, True,
+                        False),
         VersionMetadata(7, _lazy(u'Firefox 5'),
-                        _lazy(u'Firefox 5 for Mobile'), 'm5', 5.9999, False),
+                        _lazy(u'Firefox 5 for Mobile'), 'm5', 5.9999, True,
+                        True),
         VersionMetadata(4, _lazy(u'Firefox 4'),
-                        _lazy(u'Firefox 4 for Mobile'), 'm4', 4.9999, True),)))
+                        _lazy(u'Firefox 4 for Mobile'), 'm4', 4.9999, True,
+                        False),)))
 
 # Flattened:  # TODO: perhaps use optgroups everywhere instead
 FIREFOX_VERSIONS = tuple(chain(*[options for label, options in
                                  GROUPED_FIREFOX_VERSIONS]))
 
 # OSes used to filter articles and declare {for} sections:
-OsMetaData = namedtuple('OsMetaData', 'id, name, slug')
+OsMetaData = namedtuple('OsMetaData', 'id, name, slug, is_default')
 GROUPED_OPERATING_SYSTEMS = (
     ((_lazy(u'Desktop OS:'), 'desktop'), (
-        OsMetaData(1, _lazy(u'Windows'), 'win'),
-        OsMetaData(2, _lazy(u'Mac OS X'), 'mac'),
-        OsMetaData(3, _lazy(u'Linux'), 'linux'))),
+        OsMetaData(1, _lazy(u'Windows'), 'win', True),
+        OsMetaData(2, _lazy(u'Mac OS X'), 'mac', False),
+        OsMetaData(3, _lazy(u'Linux'), 'linux', False))),
     ((_lazy(u'Mobile OS:'), 'mobile'), (
-        OsMetaData(5, _lazy(u'Android'), 'android'),
-        OsMetaData(4, _lazy(u'Maemo'), 'maemo'))))
+        OsMetaData(5, _lazy(u'Android'), 'android', True),
+        OsMetaData(4, _lazy(u'Maemo'), 'maemo', False))))
 
 # Flattened
 OPERATING_SYSTEMS = tuple(chain(*[options for label, options in
@@ -166,6 +193,10 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin):
     current_revision = models.ForeignKey('Revision', null=True,
                                          related_name='current_for+')
 
+    # Latest revision which both is_approved and is_ready_for_localization
+    latest_localizable_revision = models.ForeignKey(
+        'Revision', null=True, related_name='localizable_for+')
+
     # The Document I was translated from. NULL iff this doc is in the default
     # locale or it is nonlocalizable. TODO: validate against
     # settings.WIKI_DEFAULT_LANGUAGE.
@@ -195,6 +226,14 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin):
              'and dashboards. When viewed, the page will warn that it is no '
              'longer maintained.'))
 
+    # Enable discussion (kbforum) on this document.
+    allow_discussion = models.BooleanField(
+        default=True, help_text=_lazy(
+            u'If checked, this document allows discussion in an associated '
+             'forum. Uncheck to hide/disable the forum.'))
+
+    # List of users that have contributed to this document.
+    contributors = models.ManyToManyField(User)
 
     # firefox_versions,
     # operating_systems:
@@ -376,8 +415,7 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin):
     @property
     def content_parsed(self):
         if not self.current_revision:
-            return None
-
+            return ''
         return self.current_revision.content_parsed
 
     @property
@@ -506,23 +544,43 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin):
         """Return the document I was translated from or, if none, myself."""
         return self.parent or self
 
-    def has_voted(self, request):
-        """Did the user already vote for this document?"""
-        if request.user.is_authenticated():
-            qs = HelpfulVote.objects.filter(document=self,
-                                            creator=request.user)
-        elif request.anonymous.has_id:
-            anon_id = request.anonymous.anonymous_id
-            qs = HelpfulVote.objects.filter(document=self,
-                                            anonymous_id=anon_id)
-        else:
-            return False
+    def localizable_or_latest_revision(self, include_rejected=False):
+        """Return latest ready-to-localize revision if there is one,
+        else the latest approved revision if there is one,
+        else the latest unrejected (unreviewed) revision if there is one,
+        else None.
 
-        return qs.exists()
+        include_rejected -- If true, fall back to the latest rejected
+            revision if all else fails.
+
+        """
+        def latest(queryset):
+            """Return the latest item from a queryset (by ID).
+
+            Return None if the queryset is empty.
+
+            """
+            try:
+                return queryset.order_by('-id')[0:1].get()
+            except ObjectDoesNotExist:  # Catching IndexError seems overbroad.
+                return None
+
+        rev = self.latest_localizable_revision
+        if not rev or not self.is_localizable:
+            rejected = Q(is_approved=False, reviewed__isnull=False)
+
+            # Try latest approved revision:
+            rev = (latest(self.revisions.filter(is_approved=True)) or
+                   # No approved revs. Try unrejected:
+                   latest(self.revisions.exclude(rejected)) or
+                   # No unrejected revs. Maybe fall back to rejected:
+                   (latest(self.revisions) if include_rejected else None))
+        return rev
 
     def is_majorly_outdated(self):
         """Return whether a MAJOR_SIGNIFICANCE-level update has occurred to the
-        parent document since this translation had an approved update.
+        parent document since this translation had an approved update and such
+        revision is ready for l10n.
 
         If this is not a translation or has never been approved, return False.
 
@@ -533,7 +591,7 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin):
         based_on_id = self.current_revision.based_on_id
         more_filters = {'id__gt': based_on_id} if based_on_id else {}
         return self.parent.revisions.filter(
-            is_approved=True,
+            is_approved=True, is_ready_for_localization=True,
             significance__gte=MAJOR_SIGNIFICANCE, **more_filters).exists()
 
     def is_watched_by(self, user):
@@ -562,44 +620,43 @@ class Revision(ModelBase):
     creator = models.ForeignKey(User, related_name='created_revisions')
     is_approved = models.BooleanField(default=False, db_index=True)
 
-    # The default locale's rev that was current when the Edit button was hit to
-    # create this revision. Used to determine whether localizations are out of
-    # date.
+    # The default locale's rev that was the latest ready-for-l10n one when the
+    # Edit button was hit to begin creating this revision. If there was none,
+    # this is simply the latest of the default locale's revs as of that time.
+    # Used to determine whether localizations are out of date.
     based_on = models.ForeignKey('self', null=True, blank=True)
     # TODO: limit_choices_to={'document__locale':
     # settings.WIKI_DEFAULT_LANGUAGE} is a start but not sufficient.
 
+    # Is both approved and marked as ready for translation (which will result
+    # in the translation UI considering it when looking for the latest
+    # translatable version). If is_approved=False, this must be False.
+    is_ready_for_localization = models.BooleanField(default=False)
+
     class Meta(object):
-        permissions = [('review_revision', 'Can review a revision')]
+        permissions = [('review_revision', 'Can review a revision'),
+                       ('mark_ready_for_l10n',
+                        'Can mark revision as ready for localization')]
 
     def _based_on_is_clean(self):
         """Return a tuple: (the correct value of based_on, whether the old
         value was correct).
 
-        based_on must be an approved revision of the English version of the
-        document if there are any such revisions, any revision if no
-        approved revision exists, and None otherwise. If based_on is not
-        already set when this is called, the return value defaults to the
-        current_revision of the English document.
+        based_on must be a revision of the English version of the document. If
+        based_on is not already set when this is called, the return value
+        defaults to something reasonable.
 
         """
-        # TODO(james): This could probably be simplified down to "if
-        # based_on is set, it must be a revision of the original document."
         original = self.document.original
-        base = get_current_or_latest_revision(original)
-        has_approved = original.revisions.filter(is_approved=True).exists()
-        if (original.current_revision or not has_approved):
-            if (self.based_on and
-                self.based_on.document != original):
-                # based_on is set and points to the wrong doc.
-                return base, False
-            # Else based_on is valid; leave it alone.
-        elif self.based_on:
-            return None, False
+        if self.based_on and self.based_on.document != original:
+            # based_on is set and points to the wrong doc. The following is
+            # then the most likely helpful value:
+            return original.localizable_or_latest_revision(), False
+        # Even None is permissible, for example in the case of a brand new doc.
         return self.based_on, True
 
     def clean(self):
-        """Ensure based_on is valid."""
+        """Ensure based_on is valid & police is_ready/is_approved invariant."""
         # All of the cleaning herein should be unnecessary unless the user
         # messes with hidden form data.
         try:
@@ -620,6 +677,11 @@ class Revision(ModelBase):
                     dict(locale=LOCALES[settings.WIKI_DEFAULT_LANGUAGE].native,
                          id=old.id))
 
+        # If not is_approved, can't be is_ready. TODO: think about using a
+        # single field with more states.
+        if not self.is_approved:
+            self.is_ready_for_localization = False
+
     def save(self, *args, **kwargs):
         _, is_clean = self._based_on_is_clean()
         if not is_clean:  # No more Mister Nice Guy
@@ -631,12 +693,88 @@ class Revision(ModelBase):
         super(Revision, self).save(*args, **kwargs)
 
         # When a revision is approved, re-cache the document's html content
+        # and update document contributors
         if self.is_approved and (
                 not self.document.current_revision or
                 self.document.current_revision.id < self.id):
+            # Determine if there are new contributors and add them to the list
+            contributors = self.document.contributors.all()
+            # Exclude all explicitly rejected revisions
+            new_revs = self.document.revisions.exclude(
+                reviewed__isnull=False, is_approved=False)
+            if self.document.current_revision:
+                new_revs = new_revs.filter(
+                    id__gt=self.document.current_revision.id)
+            new_contributors = set([r.creator
+                for r in new_revs.select_related('creator')])
+            for user in new_contributors:
+                if user not in contributors:
+                    self.document.contributors.add(user)
+
+            # Update document denormalized fields
+            if self.is_ready_for_localization:
+                self.document.latest_localizable_revision = self
             self.document.html = self.content_parsed
             self.document.current_revision = self
             self.document.save()
+        elif (self.is_ready_for_localization and
+              (not self.document.latest_localizable_revision or
+               self.id > self.document.latest_localizable_revision.id)):
+            # We are marking a newer revision as ready for l10n.
+            # Update the denormalized field on the document.
+            self.document.latest_localizable_revision = self
+            self.document.save()
+
+    def delete(self, *args, **kwargs):
+        """Dodge cascading delete of documents and other revisions."""
+        def latest_revision(excluded_rev, constraint):
+            """Return the largest-ID'd revision meeting the given constraint
+            and excluding the given revision, or None if there is none."""
+            revs = document.revisions.filter(constraint).exclude(
+                pk=excluded_rev.pk).order_by('-id')[:1]
+            try:
+                # Academic TODO: There's probably a way to keep the QuerySet
+                # lazy all the way through the update() call.
+                return revs[0]
+            except IndexError:
+                return None
+
+        Revision.objects.filter(based_on=self).update(based_on=None)
+        document = self.document
+
+        # If the current_revision is being deleted, try to update it to the
+        # previous approved revision:
+        if document.current_revision == self:
+            new_current = latest_revision(self, Q(is_approved=True))
+            document.update(
+                current_revision=new_current,
+                html=new_current.content_parsed if new_current else '')
+
+        # Likewise, step the latest_localizable_revision field backward if
+        # we're deleting that revision:
+        if document.latest_localizable_revision == self:
+            document.update(latest_localizable_revision=latest_revision(
+                self, Q(is_approved=True, is_ready_for_localization=True)))
+
+        super(Revision, self).delete(*args, **kwargs)
+
+    def has_voted(self, request):
+        """Did the user already vote for this revision?"""
+        if request.user.is_authenticated():
+            qs = HelpfulVote.objects.filter(revision=self,
+                                            creator=request.user)
+            qs_old = HelpfulVoteOld.objects.filter(document=self.document,
+                                            creator=request.user)  # Lazy.
+        elif request.anonymous.has_id:
+            anon_id = request.anonymous.anonymous_id
+            qs = HelpfulVote.objects.filter(revision=self,
+                                            anonymous_id=anon_id)
+            qs_old = HelpfulVoteOld.objects.filter(document=self.document,
+                                            anonymous_id=anon_id)  # Lazy.
+        else:
+            return False
+
+        return qs.exists() or qs_old.exists()
 
     def __unicode__(self):
         return u'[%s] %s #%s: %s' % (self.document.locale,
@@ -674,11 +812,21 @@ class OperatingSystem(ModelBase):
 
 
 class HelpfulVote(ModelBase):
-    """Helpful or Not Helpful vote on Document."""
-    document = models.ForeignKey(Document, related_name='poll_votes')
+    """Helpful or Not Helpful vote on Revision."""
+    revision = models.ForeignKey(Revision, related_name='poll_votes')
     helpful = models.BooleanField(default=False)
     created = models.DateTimeField(default=datetime.now, db_index=True)
     creator = models.ForeignKey(User, related_name='poll_votes', null=True)
+    anonymous_id = models.CharField(max_length=40, db_index=True)
+    user_agent = models.CharField(max_length=1000)
+
+
+class HelpfulVoteOld(ModelBase):
+    """Helpful or Not Helpful vote on Revision."""
+    document = models.ForeignKey(Document, related_name='poll_votes_doc')
+    helpful = models.BooleanField(default=False)
+    created = models.DateTimeField(default=datetime.now, db_index=True)
+    creator = models.ForeignKey(User, related_name='poll_votes_doc', null=True)
     anonymous_id = models.CharField(max_length=40, db_index=True)
     user_agent = models.CharField(max_length=1000)
 
@@ -690,22 +838,6 @@ class RelatedDocument(ModelBase):
 
     class Meta(object):
         ordering = ['-in_common']
-
-
-def get_current_or_latest_revision(document, reviewed_only=True):
-    """Returns current revision if there is one, else the last created
-    revision."""
-    rev = document.current_revision
-    if not rev:
-        if reviewed_only:
-            filter = models.Q(is_approved=False, reviewed__isnull=False)
-        else:
-            filter = models.Q()
-        revs = document.revisions.exclude(filter).order_by('-created')
-        if revs.exists():
-            rev = revs[0]
-
-    return rev
 
 
 def _doc_components_from_url(url, required_locale=None, check_host=True):

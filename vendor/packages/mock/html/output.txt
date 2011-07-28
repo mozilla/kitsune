@@ -1,0 +1,80 @@
+Results of doctest builder run on 2011-03-05 01:36:21
+=====================================================
+
+Document: index
+---------------
+1 items passed all tests:
+  38 tests in default
+38 tests in 1 items.
+38 passed and 0 failed.
+Test passed.
+
+Document: compare
+-----------------
+1 items passed all tests:
+  39 tests in default
+39 tests in 1 items.
+39 passed and 0 failed.
+Test passed.
+
+Document: getting-started
+-------------------------
+1 items passed all tests:
+ 118 tests in default
+118 tests in 1 items.
+118 passed and 0 failed.
+Test passed.
+
+Document: magicmock
+-------------------
+1 items passed all tests:
+  35 tests in default
+35 tests in 1 items.
+35 passed and 0 failed.
+Test passed.
+
+Document: patch
+---------------
+1 items passed all tests:
+  30 tests in default
+30 tests in 1 items.
+30 passed and 0 failed.
+Test passed.
+
+Document: mocksignature
+-----------------------
+1 items passed all tests:
+  47 tests in default
+47 tests in 1 items.
+47 passed and 0 failed.
+Test passed.
+
+Document: examples
+------------------
+1 items passed all tests:
+  89 tests in default
+89 tests in 1 items.
+89 passed and 0 failed.
+Test passed.
+
+Document: sentinel
+------------------
+1 items passed all tests:
+   6 tests in default
+6 tests in 1 items.
+6 passed and 0 failed.
+Test passed.
+
+Document: mock
+--------------
+1 items passed all tests:
+  81 tests in default
+81 tests in 1 items.
+81 passed and 0 failed.
+Test passed.
+
+Doctest summary
+===============
+  483 tests
+    0 failures in tests
+    0 failures in setup code

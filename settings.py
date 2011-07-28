@@ -67,7 +67,7 @@ SUMO_LANGUAGES = (
     'de', 'el', 'en-US', 'eo', 'es', 'et', 'eu', 'fa', 'fi', 'fr', 'fur',
     'fy-NL', 'ga-IE', 'gd', 'gl', 'gu-IN', 'he', 'hi-IN', 'hr', 'hu', 'hy-AM',
     'id', 'ilo', 'is', 'it', 'ja', 'kk', 'kn', 'ko', 'lt', 'mai', 'mk', 'mn',
-    'mr', 'ms', 'my', 'nb-NO', 'nl', 'no', 'oc', 'pa-IN', 'pl', 'pt-BR',
+    'mr', 'ms', 'my', 'nb-NO', 'nl', 'no', 'pa-IN', 'pl', 'pt-BR',
     'pt-PT', 'rm', 'ro', 'ru', 'rw', 'si', 'sk', 'sl', 'sq', 'sr-CYRL',
     'sr-LATN', 'sv-SE', 'ta-LK', 'te', 'th', 'tr', 'uk', 'vi', 'zh-CN',
     'zh-TW',
@@ -82,8 +82,11 @@ LANGUAGE_URL_MAP = dict([(i.lower(), i) for i in SUMO_LANGUAGES])
 # an optional fallback locale, or None, to use the LANGUAGE_CODE.
 NON_SUPPORTED_LOCALES = {
     'af': None,
+    'br': 'fr',
+    'csb': 'pl',
     'nb-NO': 'no',
     'nn-NO': 'no',
+    'oc': 'fr',
     'sr': 'sr-CYRL',  # Override the tendency to go sr->sr-LATN.
 }
 
@@ -146,6 +149,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
 MIDDLEWARE_CLASSES = (
     'multidb.middleware.PinningRouterMiddleware',
     'users.middleware.StaySecureMiddleware',
+    'commonware.response.middleware.GraphiteMiddleware',
 
     # This gives us atomic success or failure on multi-row writes. It does not
     # give us a consistent per-transaction snapshot for reads; that would need
@@ -177,6 +181,8 @@ MIDDLEWARE_CLASSES = (
     'twitter.middleware.SessionMiddleware',
     'sumo.middleware.PlusToSpaceMiddleware',
     'commonware.middleware.HidePasswordOnException',
+    'django_arecibo.middleware.AreciboMiddlewareCelery',
+    'commonware.response.middleware.GraphiteRequestTimingMiddleware',
 )
 
 # Auth
@@ -187,8 +193,11 @@ AUTH_PROFILE_MODULE = 'users.Profile'
 USER_AVATAR_PATH = 'uploads/avatars/'
 DEFAULT_AVATAR = MEDIA_URL + 'img/avatar.png'
 AVATAR_SIZE = 48  # in pixels
-ACCOUNT_ACTIVATION_DAYS = 30
 MAX_AVATAR_FILE_SIZE = 131072  # 100k, in bytes
+GROUP_AVATAR_PATH = 'uploads/groupavatars/'
+
+ACCOUNT_ACTIVATION_DAYS = 30
+
 PASSWORD_BLACKLIST = path('configs/password-blacklist.txt')
 
 ROOT_URLCONF = '%s.urls' % ROOT_PACKAGE
@@ -244,6 +253,8 @@ INSTALLED_APPS = (
     'announcements',
     'messages',
     'commonware.response.cookies',
+    'groups',
+    'karma',
 
     # Extra apps for testing.
     'django_nose',
@@ -323,6 +334,9 @@ MINIFY_BUNDLES = {
             'css/kbox.css',
             'css/main.css',
         ),
+        'print': (
+            'css/print.css',
+        ),
         # TODO: remove dependency on jquery ui CSS and use our own
         'jqueryui/jqueryui': (
             'css/jqueryui/jqueryui.css',
@@ -334,11 +348,15 @@ MINIFY_BUNDLES = {
             'css/to-delete.css',
             'css/questions.css',
             'css/tags.css',
+            'css/search.css',
         ),
         'search': (
             'css/search.css',
+            'css/search-advanced.css',
         ),
         'wiki': (
+            'css/users.autocomplete.css',
+            'css/users.list.css',
             'css/wiki.css',
             'css/wiki_syntax.css',
             # The dashboard app uses the wiki bundle because only the wiki app
@@ -379,7 +397,14 @@ MINIFY_BUNDLES = {
             'css/wiki_syntax.css',
         ),
         'messages': (
+            'css/users.autocomplete.css',
             'css/messages.css',
+        ),
+        'groups': (
+            'css/users.autocomplete.css',
+            'css/users.list.css',
+            'css/groups.css',
+            'css/wiki_syntax.css',
         ),
     },
     'js': {
@@ -426,12 +451,19 @@ MINIFY_BUNDLES = {
             'js/browserdetect.js',
             'js/libs/swfobject.js',
             'js/libs/jquery.selectbox-1.2.js',
+            'js/libs/jquery.autocomplete.js',
+            'js/users.autocomplete.js',
             'js/screencast.js',
             'js/showfor.js',
             'js/ajaxvote.js',
             'js/wiki.js',
             'js/tags.js',
             'js/dashboards.js',
+            'js/editable.js',
+        ),
+        'wiki.history': (
+            'js/charts.js',
+            'js/libs/highcharts-2.1.4/highcharts.src.js',
         ),
         'customercare': (
             'js/libs/jquery.NobleCount.js',
@@ -458,6 +490,17 @@ MINIFY_BUNDLES = {
             'js/aaq.js',
             'js/mobile.js',
         ),
+        'messages': (
+            'js/libs/jquery.autocomplete.js',
+            'js/users.autocomplete.js',
+        ),
+        'groups': (
+            'js/libs/jquery.autocomplete.js',
+            'js/users.autocomplete.js',
+            'js/markup.js',
+            'js/groups.js',
+            'js/editable.js',
+        ),
     },
 }
 
@@ -465,9 +508,10 @@ JAVA_BIN = '/usr/bin/java'
 
 #
 # Sessions
+SESSION_COOKIE_AGE = 4 * 7 * 24 * 60 * 60  # 4 weeks
 SESSION_COOKIE_SECURE = True
 SESSION_COOKIE_HTTPONLY = True
-SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 SESSION_ENGINE = 'django.contrib.sessions.backends.cached_db'
 SESSION_EXISTS_COOKIE = 'sumo_session'
 
@@ -526,13 +570,8 @@ IMAGE_UPLOAD_PATH = 'uploads/images/'
 # String must not contain double quotes!
 IMAGE_ALLOWED_MIMETYPES = 'image/jpeg,image/png,image/gif'
 
-# Max number of wiki pages or other questions to suggest might answer the
-# question you're about to ask
-QUESTIONS_MAX_SUGGESTIONS = 5
-# Number of extra suggestion results to pull from Sphinx to make up for
-# possibly deleted wiki pages or question. To be safe, set this to the number
-# of things that could be deleted between indexer runs.
-QUESTIONS_SUGGESTION_SLOP = 3
+# How long do we cache the question counts (in seconds)?
+QUESTIONS_COUNT_TTL = 900  # 15 minutes.
 
 # Email
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
@@ -580,6 +619,7 @@ CELERY_SEND_TASK_ERROR_EMAILS = True
 CELERYD_LOG_LEVEL = logging.INFO
 CELERYD_CONCURRENCY = 4
 CELERY_EAGER_PROPAGATES_EXCEPTIONS = True  # Explode loudly during tests.
+CELERY_IMPORTS = ['django_arecibo.tasks']
 
 # Wiki rebuild settings
 WIKI_REBUILD_TOKEN = 'sumo:wiki:full-rebuild'
@@ -657,3 +697,12 @@ REDIS_BACKENDS = {
     #'default': 'redis://localhost:6379?socket_timeout=0.5&db=0',
     #'karma': 'redis://localhost:6381?socket_timeout=0.5&db=0',
 }
+
+# Redis backends used for testing.
+REDIS_TEST_BACKENDS = {
+    #'default': 'redis://localhost:6383?socket_timeout=0.5&db=0',
+    #'karma': 'redis://localhost:6383?socket_timeout=0.5&db=1',
+}
+
+# Set this to enable Arecibo (http://www.areciboapp.com/) error reporting:
+ARECIBO_SERVER_URL = ''

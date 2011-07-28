@@ -8,7 +8,7 @@ from taggit.models import Tag
 from flagit.models import FlaggedObject
 from questions.events import QuestionReplyEvent
 from questions.models import (Question, QuestionMetaData, Answer,
-                              _tenths_version)
+                              _tenths_version, _has_beta)
 from questions.tasks import update_answer_pages
 from questions.tests import TestCaseBase, TaggingTestCaseBase, tags_eq
 from questions.question_config import products
@@ -125,16 +125,15 @@ class TestAnswer(TestCaseBase):
         a3 = Answer.objects.filter(question=a1.question)[0]
         assert a3.page == 1, "Page was %s" % a3.page
 
-    def test_creator_num_posts(self):
-        """Test retrieval of post count for creator of a particular answer"""
+    def test_creator_num_answers(self):
         question = Question.objects.all()[0]
         answer = Answer(question=question, creator_id=47963,
                         content="Test Answer")
+        answer.save()
 
-        eq_(answer.creator_num_posts, 4)
+        eq_(answer.creator_num_answers, 2)
 
-    def test_creator_num_answers(self):
-        """Test retrieval of answer count for creator of a particular answer"""
+    def test_creator_num_solutions(self):
         question = Question.objects.all()[0]
         answer = Answer(question=question, creator_id=47963,
                         content="Test Answer")
@@ -143,7 +142,7 @@ class TestAnswer(TestCaseBase):
         question.solution = answer
         question.save()
 
-        eq_(answer.creator_num_answers, 1)
+        eq_(answer.creator_num_solutions, 1)
 
 
 class TestQuestionMetadata(TestCaseBase):
@@ -231,6 +230,15 @@ class TestQuestionMetadata(TestCaseBase):
         eq_(_tenths_version('1.2rc'), '1.2')
         eq_(_tenths_version('1.w'), '')
 
+    def test_has_beta(self):
+        """Test the _has_beta helper."""
+        assert _has_beta('5.0', {'5.0b3': '2011-06-01'})
+        assert not _has_beta('6.0', {'5.0b3': '2011-06-01'})
+        assert not _has_beta('5.5', {'5.0b3': '2011-06-01'})
+        assert _has_beta('5.7', {'5.7b1': '2011-06-01'})
+        assert _has_beta('11.0', {'11.0b7': '2011-06-01'})
+        assert not _has_beta('10.0', {'11.0b7': '2011-06-01'})
+
 
 class QuestionTests(TestCaseBase):
     """Tests for Question model"""
@@ -274,6 +282,14 @@ class QuestionTests(TestCaseBase):
 
         q.save()
         assert not QuestionReplyEvent.is_notifying(q.creator, q)
+
+    def test_is_solved_property(self):
+        a = Answer.objects.all()[0]
+        q = a.question
+        assert not q.is_solved
+        q.solution = a
+        q.save()
+        assert q.is_solved
 
 
 class AddExistingTagTests(TaggingTestCaseBase):

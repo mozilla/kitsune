@@ -84,6 +84,20 @@
   </div>
   #}
 
+  <div class="notification-box {{ status(status_summary.redis) }}">
+    <h2>[Redis] Redis Servers</h2>
+    {% if redis_results %}
+      <dl>
+        {% for backend in redis_results %}
+          <dt>{{ backend }}</dt>
+          <dd>{% if redis_results[backend] %}OK{% else %}<strong>Connection Failed</strong>{% endif %}</dd>
+        {% endfor %}
+      </dl>
+    {% else %}
+      <strong>Warning!</strong> No Redis connections defined!
+    {% endif %}
+  </div>
+
 </article>
 
 {% endblock content %}

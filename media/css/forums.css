@@ -5,7 +5,7 @@ ol.forums-columns,
 ol.forums,
 ol.posts-columns,
 ol.posts {
-    clear: left;
+    clear: both;
     list-style-type: none;
 }
 
@@ -164,6 +164,15 @@ ol.posts li div.author a:hover {
 
 ol.posts li div.author span.posts {
     font-style: italic;
+}
+
+ol.posts li p.pm {
+    font-size: 11px;
+}
+
+ol.posts li p.pm a {
+    color: #447BC4;
+    font-weight: normal;
 }
 
 ol.posts li div.content {

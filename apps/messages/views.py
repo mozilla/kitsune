@@ -1,10 +1,12 @@
 import json
 
 from django.contrib import messages as contrib_messages
+from django.contrib.auth.models import User
 from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import get_object_or_404
 
 import jingo
+from multidb.pinning import mark_as_write
 from tower import ugettext as _
 from waffle.decorators import waffle_flag
 
@@ -20,7 +22,7 @@ from sumo.utils import paginate
 @login_required
 def inbox(request):
     user = request.user
-    messages = InboxMessage.objects.filter(to=user).order_by('-created')
+    messages = InboxMessage.uncached.filter(to=user).order_by('-created')
     return jingo.render(request, 'messages/inbox.html',
                         {'msgs': messages})
 
@@ -29,13 +31,16 @@ def inbox(request):
 @login_required
 def read(request, msgid):
     message = get_object_or_404(InboxMessage, pk=msgid, to=request.user)
-    if message.unread:
-        message.read = True
-        message.save()
+    was_new = message.unread
+    if was_new:
+        message.update(read=True)
     initial = {'to': message.sender, 'in_reply_to': message.pk}
     form = ReplyForm(initial=initial)
-    return jingo.render(request, 'messages/read.html',
-                        {'message': message, 'form': form})
+    response = jingo.render(request, 'messages/read.html',
+                            {'message': message, 'form': form})
+    if was_new:
+        response = mark_as_write(response)
+    return response
 
 
 @waffle_flag('private-messaging')
@@ -50,7 +55,7 @@ def read_outbox(request, msgid):
 @login_required
 def outbox(request):
     user = request.user
-    messages = OutboxMessage.objects.filter(sender=user).order_by('-created')
+    messages = OutboxMessage.uncached.filter(sender=user).order_by('-created')
     for msg in messages:
         _add_recipients(msg)
     return jingo.render(request, 'messages/outbox.html',
@@ -60,7 +65,18 @@ def outbox(request):
 @waffle_flag('private-messaging')
 @login_required
 def new_message(request):
-    form = MessageForm(request.POST or None)
+    """Send a new private message."""
+    to = request.GET.get('to')
+    if to:
+        try:
+            User.objects.get(username=to)
+        except User.DoesNotExist:
+            contrib_messages.add_message(
+                request, contrib_messages.ERROR,
+                _('Invalid username provided. Enter a new username below.'))
+            return HttpResponseRedirect(reverse('messages.new'))
+
+    form = MessageForm(request.POST or None, initial={'to': to})
 
     if request.method == 'POST' and form.is_valid():
         send_message(form.cleaned_data['to'], form.cleaned_data['message'],
