@@ -126,3 +126,16 @@
     color: #303030;
     padding: 0 3px;
 }
+
+#doc-content table {
+    border-spacing: 0;
+    width: 100%;
+}
+
+#doc-content tr:nth-child(odd) {
+    background: #eee;
+}
+
+#doc-content td {
+    padding: 5px 10px;
+}
