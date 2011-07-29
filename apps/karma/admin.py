@@ -6,12 +6,20 @@ from django.shortcuts import render_to_response
 from django.template import RequestContext
 
 from karma.actions import KarmaAction
+from karma.models import Title
 from karma.tasks import init_karma, update_top_contributors
 from questions.karma_actions import (AnswerAction, AnswerMarkedHelpfulAction,
                                      AnswerMarkedNotHelpfulAction,
                                      FirstAnswerAction, SolutionAction)
 
 
+class TitleAdmin(admin.ModelAdmin):
+    raw_id_fields = ('users', 'groups')
+
+admin.site.register(Title, TitleAdmin)
+
+
+# AdminPlus view:
 def karma(request):
     """Admin view that displays karma related data."""
     if not request.user.has_perm('users.view_karma_points'):
