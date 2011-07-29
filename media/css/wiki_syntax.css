@@ -136,6 +136,11 @@
     background: #eee;
 }
 
-#doc-content td {
+#doc-content th {
+    font-weight: bold;
+    border-bottom: solid 2px #bbb;
+}
+
+#doc-content th, td {
     padding: 5px 10px;
 }
