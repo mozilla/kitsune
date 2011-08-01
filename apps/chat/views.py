@@ -53,7 +53,6 @@ from django.views.decorators.http import require_GET
 
 from gevent import Greenlet
 import jingo
-from redis import Redis
 
 from chat import log
 from sumo.utils import redis_client
@@ -110,8 +109,6 @@ def _messages_while_connected(io):
 
 
 def chat_socketio(io):
-    CHANNEL = 'world'  # TODO: This should die.
-
     def subscriber(io, channel):
         """Event loop which listens on a redis channel and sends anything
         received to the client JS."""
@@ -144,8 +141,8 @@ def chat_socketio(io):
         # websockets are enabled and we hit the server with FF 7.
         log.debug('SOMETHING OTHER THAN CONNECT!')
 
-    # Hanging onto this might keep it from the GC:
-    in_greenlet = Greenlet.spawn(subscriber, io, CHANNEL)
+    # Hanging onto these greenlets might keep them from the GC:
+    subscribers = []
 
     # Until the client disconnects, listen for input from the user:
     for from_client in _messages_while_connected(io):
@@ -160,17 +157,22 @@ def chat_socketio(io):
                 redis_client('chat').publish(room, json.dumps(
                     {'kind': 'say',
                      'message': message}))
-        # elif kind == 'join', start a new subscriber. At least as a starting
-        # point, we should probably start a new subscriber for each room you're
-        # in, because otherwise there will be a mess of de-duping to do as we
-        # fight with the race of killing the old subscriber and starting a new
-        # one that listens to all joined rooms.
+        elif kind == 'join':
+            # Start a new subscriber. At least as a starting point, we start a
+            # new subscriber for each room you're in, because otherwise there
+            # would be a mess of de-duping as we fight with the race of killing
+            # the old subscriber and starting a new one that listens to all
+            # joined rooms.
+            room = from_client.get('room')
+            if room:
+                subscribers.append(Greenlet.spawn(subscriber, io, room))
 
     log.debug('EXIT %s' % io.session)
 
     # Each time I close the 2nd chat window, wait for the old socketio() view
     # to exit, and then reopen the chat page, the number of Incomings increases
     # by one. The subscribers are never exiting. This fixes that behavior:
-    in_greenlet.kill()
+    for s in subscribers:
+        s.kill()
 
     return HttpResponse()
