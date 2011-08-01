@@ -123,4 +123,4 @@
 	url = https://github.com/bltravis/python-recaptcha.git
 [submodule "vendor/src/django-arecibo"]
 	path = vendor/src/django-arecibo
-	url = https://github.com/andymckay/django-arecibo.git
+	url = https://github.com/erikrose/django-arecibo.git
