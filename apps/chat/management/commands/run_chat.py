@@ -11,7 +11,7 @@ from django.core.management.base import NoArgsCommand
 from socketio import SocketIOServer
 
 from chat import log
-from chat.views import chat_socketio
+from chat.views import socketio as chat_socketio
 
 
 def application(environ, start_response):

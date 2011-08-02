@@ -19,8 +19,7 @@ About the protocol
 ------------------
 
 There are several kinds of message which go flitting between the clients and
-server. Each message is a JSON dict with one or more of the fields `kind` and
-`message`.
+server. Each message is a JSON dict having the keys listed below:
 
     Join. Sent from the client to the server.
         kind: join
@@ -54,8 +53,7 @@ from django.views.decorators.http import require_GET
 from gevent import Greenlet
 import jingo
 
-from chat import log
-from sumo.utils import redis_client
+from chat import log, redis
 
 
 @require_GET
@@ -63,8 +61,8 @@ def chat(request):
     """Display the current state of the chat queue."""
     nonce = None
     if request.user.is_authenticated():
-        nonce = make_nonce()
-        cache.set('chatnonce:{n}'.format(n=nonce), request.user, 5 * 60)
+        nonce = ''.join(random.choice(ascii_letters) for _ in xrange(10))
+        redis().setex('chatnonce:{n}'.format(n=nonce), request.user.id, 60)
     return jingo.render(request, 'chat/chat.html', {'nonce': nonce})
 
 
@@ -82,10 +80,6 @@ def queue_status(request):
         xml = ''
         status = 503
     return HttpResponse(xml, mimetype='application/xml', status=status)
-
-
-def make_nonce():
-    return ''.join(random.choice(ascii_letters) for _ in xrange(10))
 
 
 def _messages_while_connected(io):
@@ -108,32 +102,34 @@ def _messages_while_connected(io):
                 yield data
 
 
-def chat_socketio(io):
-    def subscriber(io, channel):
-        """Event loop which listens on a redis channel and sends anything
-        received to the client JS."""
-        try:
-            redis_in = redis_client('chat')
-            redis_in.subscribe(channel)
-            redis_in_generator = redis_in.listen()
+def _subscriber(io, channel):
+    """Event loop which listens on a redis channel and sends anything
+    received to the client JS."""
+    try:
+        redis_in = redis()
+        redis_in.subscribe(channel)
+        redis_in_generator = redis_in.listen()
 
-            # io.connected() never becomes false for some reason.
-            while io.connected():
-                for from_redis in redis_in_generator:
-                    log.debug('Incoming: %s' % from_redis)
+        # io.connected() never becomes false for some reason.
+        while io.connected():
+            for from_redis in redis_in_generator:
+                log.debug('Incoming: %s' % from_redis)
 
-                    # This check for 'message' is for redis's idea of a
-                    # message, not our chat 'message':
-                    if from_redis['type'] == 'message':
-                        # Incoming data should always be valid JSON, as it is
-                        # checked before being put into redis.
-                        out = json.loads(from_redis['data'])
-                        out['room'] = channel
-                        io.send(json.dumps(out))  # Just send it verbatim.
-                    # Else it's a subscription notice.
-        finally:
-            log.debug('EXIT SUBSCRIBER %s' % io.session)
+                # This check for 'message' is for redis's idea of a
+                # message, not our chat 'message':
+                if from_redis['type'] == 'message':
+                    # Incoming data should always be valid JSON, as it is
+                    # checked before being put into redis.
+                    out = json.loads(from_redis['data'])
+                    out['room'] = channel
+                    io.send(json.dumps(out))
+                # TODO: else join, leave
+    finally:
+        log.debug('EXIT SUBSCRIBER %s' % io.session)
 
+
+def socketio(io):
+    """View that serves the /socket.io madness used by socketio"""
     if io.on_connect():
         log.debug('CONNECT %s' % io.session)
     else:
@@ -154,9 +150,8 @@ def chat_socketio(io):
             room = from_client.get('room')
             message = from_client.get('message')
             if room and message:  # else drop it on the floor
-                redis_client('chat').publish(room, json.dumps(
-                    {'kind': 'say',
-                     'message': message}))
+                redis().publish(room, json.dumps({'kind': 'say',
+                                                  'message': message}))
         elif kind == 'join':
             # Start a new subscriber. At least as a starting point, we start a
             # new subscriber for each room you're in, because otherwise there
@@ -165,7 +160,7 @@ def chat_socketio(io):
             # joined rooms.
             room = from_client.get('room')
             if room:
-                subscribers.append(Greenlet.spawn(subscriber, io, room))
+                subscribers.append(Greenlet.spawn(_subscriber, io, room))
 
     log.debug('EXIT %s' % io.session)
 
