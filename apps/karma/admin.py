@@ -1,5 +1,6 @@
 from django.contrib import admin, messages
 from django.contrib.auth.models import User
+from django.core.exceptions import PermissionDenied
 from django.http import HttpResponseRedirect
 from django.shortcuts import render_to_response
 from django.template import RequestContext
@@ -13,6 +14,9 @@ from questions.karma_actions import (AnswerAction, AnswerMarkedHelpfulAction,
 
 def karma(request):
     """Admin view that displays karma related data."""
+    if not request.user.has_perm('users.view_karma_points'):
+        raise PermissionDenied
+
     if request.POST.get('init'):
         init_karma.delay()
         messages.add_message(request, messages.SUCCESS,

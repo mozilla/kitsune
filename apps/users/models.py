@@ -63,6 +63,9 @@ class Profile(ModelBase):
     locale = LocaleField(default=settings.LANGUAGE_CODE,
                          verbose_name=_lazy(u'Preferred language for email'))
 
+    class Meta:
+        permissions = (('view_karma_points', 'Can view karma points'),)
+
     def __unicode__(self):
         return unicode(self.user)
 
