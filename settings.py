@@ -8,6 +8,7 @@ from sumo_locales import LOCALES
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
+STAGE = False
 
 LOG_LEVEL = logging.INFO
 SYSLOG_TAG = 'http_sumo_app'

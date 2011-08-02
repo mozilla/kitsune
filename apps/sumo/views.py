@@ -10,7 +10,7 @@ from django.conf import settings
 from django.contrib.sites.models import Site
 from django.core.cache import parse_backend_uri
 from django.http import (HttpResponsePermanentRedirect, HttpResponseRedirect,
-                         HttpResponse)
+                         HttpResponse, Http404)
 from django.views.decorators.cache import never_cache
 from django.views.decorators.http import require_GET
 
@@ -187,6 +187,14 @@ def monitor(request):
                          'redis_results': redis_results,
                          'status_summary': status_summary},
                          status=status)
+
+
+@never_cache
+def error(request):
+    if not getattr(settings, 'STAGE', False):
+        raise Http404
+    # Do something stupid.
+    fu
 
 
 @require_GET
