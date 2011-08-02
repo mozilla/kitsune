@@ -95,3 +95,22 @@ class VersionCheckTests(TestCase):
         eq_(200, res.status_code)
         versions = json.loads(res.content)
         eq_('.'.join(map(str, django.VERSION)), versions['django'])
+
+
+class ForceErrorTests(TestCase):
+    url = reverse('sumo.error')
+
+    @mock.patch.object(settings._wrapped, 'STAGE', True)
+    def test_error(self):
+        """On STAGE servers, be able to force an error."""
+        try:
+            res = self.client.get(self.url)
+            self.fail()
+        except IndexError:
+            pass
+
+    @mock.patch.object(settings._wrapped, 'STAGE', False)
+    def test_hidden(self):
+        """On a non-STAGE server, no forcing errors."""
+        res = self.client.get(self.url)
+        eq_(404, res.status_code)
