@@ -359,6 +359,7 @@ MINIFY_BUNDLES = {
         'wiki': (
             'css/users.autocomplete.css',
             'css/users.list.css',
+            'css/showfor.css',
             'css/wiki.css',
             'css/wiki_syntax.css',
             # The dashboard app uses the wiki bundle because only the wiki app
@@ -368,6 +369,8 @@ MINIFY_BUNDLES = {
             'css/tags.css',
         ),
         'home': (
+            'css/showfor.css',
+            'css/wiki_syntax.css',
             'css/home.css',
         ),
         'gallery': (
@@ -501,6 +504,12 @@ MINIFY_BUNDLES = {
             'js/markup.js',
             'js/groups.js',
             'js/editable.js',
+        ),
+        'home': (
+            'js/browserdetect.js',
+            'js/libs/jquery.selectbox-1.2.js',
+            'js/showfor.js',
+            'js/home.js',
         ),
     },
 }

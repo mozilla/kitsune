@@ -12,6 +12,11 @@ body.new-header #side {
     margin-top: -25px;
 }
 
+
+body.new-header #quick-links {
+    margin-top: 0;
+}
+
 #featured {
     background: url("../img/nurse.png") no-repeat scroll right top transparent;
     height: 279px;
@@ -82,11 +87,15 @@ body.new-header #featured h1 {
 body.new-header #support-search {
     margin: 0;
     padding: 20px 0 0 57px;
-    width: 384px;
+    width: 425px;
 }
 
 #support-search input.text {
     width: 288px;
+}
+
+body.new-header #support-search input.text {
+    width: 329px;
 }
 
 #featured p {

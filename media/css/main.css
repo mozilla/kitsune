@@ -76,6 +76,8 @@ header.global {
 #global-header-tab a {
     display: block;
     float: right;
+    height: 53px;
+    width: 118px;
 }
 
 .sumo-header {
@@ -104,6 +106,7 @@ h1.site-title {
     font-style: italic;
     letter-spacing: -1px;
     margin-bottom: 7px;
+    text-align: left;
 }
 
 h1.site-title mark {
@@ -358,11 +361,12 @@ header.global #support-search {
 }
 
 #site-nav > ul > li {
-    border-left: 1px solid #9FA7AF;
+    border-right: 1px solid #9FA7AF;
     left: -9px;
+    margin: 0 0 5px;
 }
 
-#site-nav > ul > li:first-child {
+#site-nav > ul > li:last-child {
     border: 0 none;
 }
 
@@ -643,10 +647,6 @@ div.support-search button.img-submit {
 #quick-links {
     font-size: 13px;
     margin: 25px 0 0 20px;
-}
-
-body.new-header #quick-links {
-    margin-top: 0;
 }
 
 #quick-links li {

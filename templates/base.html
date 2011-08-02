@@ -73,20 +73,6 @@
       <nav id="aux-nav" role="navigation" class="menu-nav">
         <ul>
           {{ greeting(user) }}
-          {% block aux_nav %}
-            <li>
-              <a href="#" class="controller" title="{{ _('Find help for other applications') }}">
-                {{ _('Other Applications') }}
-              </a>
-              <ul>
-                <li><a href="{{ url('home') }}">{{ _('Desktop') }}</a></li>
-                <li><a href="{{ url('home.mobile') }}">{{ _('Mobile') }}</a></li>
-                <li><a href="{{ url('home.fxhome') }}">{{ _('Firefox Home') }}</a></li>
-                <li><a href="{{ url('home.sync') }}">{{ _('Firefox Sync') }}</a></li>
-                <li><a href="http://www.mozilla.org/support/thunderbird/">{{ _('Thunderbird') }}</a></li>
-              </ul>
-            </li>
-          {% endblock aux_nav %}
         </ul>
       </nav>
       {% if not hide_header_search %}
