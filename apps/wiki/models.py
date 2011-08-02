@@ -834,7 +834,7 @@ class HelpfulVoteOld(ModelBase):
 class ImportantDate(ModelBase):
     """Important date that shows up globally on metrics graphs."""
     text = models.CharField(max_length=100)
-    date = models.DateTimeField(db_index=True)
+    date = models.DateField(db_index=True)
 
 
 class RelatedDocument(ModelBase):

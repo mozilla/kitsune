@@ -2048,7 +2048,6 @@ def _create_document(title='Test Document', parent=None,
                  content='<div>Lorem Ipsum</div>', creator_id=118577,
                  significance=SIGNIFICANCES[0][0], is_approved=True,
                  comment="Good job!")
-    r.save()
     r.created = r.created - timedelta(days=10)
     r.save()
     return d

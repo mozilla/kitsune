@@ -2,7 +2,7 @@ from django.contrib import admin, messages
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 
-from wiki.models import (Document, ImportantDate)
+from wiki.models import Document, ImportantDate
 from wiki.tasks import migrate_helpfulvotes
 
 
