@@ -14,8 +14,8 @@ article.message-list li {
 article.message-list a.read {
     display: block;
     height: 42px;
-    margin: 0 100px 0 150px;
-    padding-top: 6px;
+    margin: 0 35px 0 189px;
+    padding-top: 1px;
 }
 
 article.message-list a.delete {
@@ -38,9 +38,26 @@ article.message-list li:first-child {
     border-top: 1px solid #eeeeee;
 }
 
+article.message-list li span.dot {
+    display: inline;
+    float: left;
+    height: 6px;
+    width: 6px;
+}
+
 article.message-list li.unread {
-    background-color: #EFF9FF;
-    background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAwAAAAMCAIAAADZF8uwAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAABSSURBVChTY3z/8z8DIcCIrGjyugdw9blBCnA2E5yFrAIoiMyFKkJTAdEJFwQpwqoCWR3COjyup64iZN+iWQqRglqHVR1cEOEmNHXIXJQQx+VBADueHcvXWTPwAAAAAElFTkSuQmCC);
+    background-color: #E0F0FF;
+    font-weight: bold;
+}
+
+article.message-list li.unread span.dot {
+    background: #447BC4;
+    -moz-border-radius: 6px;
+    -webkit-border-radius: 6px;
+    left: -8px;
+    padding: 0;
+    position: relative;
+    top: 20px;
 }
 
 article.message-list li.replied {
@@ -64,8 +81,8 @@ article.message-list span.avatar img {
 
 article.message-list span.user {
     color: #999;
-    padding-top: 6px;
-    width: 100px;
+    padding-top: 1px;
+    width: 130px;
 }
 
 article.message-list span.user a {
