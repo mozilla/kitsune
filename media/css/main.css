@@ -381,6 +381,22 @@ header.global #support-search {
     text-decoration: none;
 }
 
+#stage-banner {
+    background: rgba(0,0,0,0.75);
+    border-radius: 0 0 7px 0;
+    color: orange;
+    font-size: 15px;
+    left: 0;
+    padding: 8px 20px;
+    position: fixed;
+    top: 0;
+    z-index: 9999;
+}
+
+#stage-banner a {
+    color: #00ccff;
+}
+
 /*----------------------------------
     User messages
 ----------------------------------*/

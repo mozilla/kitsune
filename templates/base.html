@@ -58,6 +58,12 @@
       data-for-version="{{ for_version|json }}"
       data-usernames-api="{{ url('users.api.usernames') }}">
 
+{% if settings.STAGE %}
+  <div id="stage-banner">
+    {{ _('This is a staging site. The production site is <a href="http://support.mozilla.com">here</a>.') }}
+  </div>
+{% endif %}
+
 {% if waffle.flag('new-header') %}
   <header class="global">
     <div id="global-header-tab">
