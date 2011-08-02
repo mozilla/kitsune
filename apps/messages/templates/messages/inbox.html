@@ -14,7 +14,6 @@
       <ol>
         {% for message in msgs %}
           <li class="{% if message.unread %}unread{% endif %} {% if message.replied %}replied{% endif %}">
-            <span class="dot"></span>
             <span class="avatar">
               {{ avatar_link(message.sender) }}
             </span>

@@ -38,7 +38,8 @@ article.message-list li:first-child {
     border-top: 1px solid #eeeeee;
 }
 
-article.message-list li span.dot {
+article.message-list li:before {
+    content: '';
     display: inline;
     float: left;
     height: 6px;
@@ -50,7 +51,7 @@ article.message-list li.unread {
     font-weight: bold;
 }
 
-article.message-list li.unread span.dot {
+article.message-list li.unread:before {
     background: #447BC4;
     -moz-border-radius: 6px;
     -webkit-border-radius: 6px;
