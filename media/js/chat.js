@@ -10,7 +10,9 @@
         s.connect();
 
         s.addEvent('connect', function() {
-            s.send(JSON.stringify({'kind': 'nonce', 'nonce': $('#chatform input[name=nonce]').val()}));
+            var nonce = $('#chatform input[name=nonce]').val();
+            if (nonce.length)
+                s.send(JSON.stringify({'kind': 'nonce', 'nonce': nonce}));
             s.send(JSON.stringify({'kind': 'join', 'room': 'world'}));
         });
 
@@ -20,7 +22,7 @@
             if (data['kind'] == 'say') {
                 $chatbox = $('#chatbox');
                 // TODO: Pay attention to room.
-                $chatbox.append('<div>' + data['message'] + '</div>').scrollTop($chatbox[0].scrollHeight);
+                $chatbox.append('<div>' + data['user'] + ': ' + data['message'] + '</div>').scrollTop($chatbox[0].scrollHeight);
             }
         });
 

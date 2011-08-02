@@ -10,16 +10,12 @@
     <hgroup>
       <h1>{{ _('Live Chat') }}</h1>
     </hgroup>
-    {% if user.is_authenticated() %}
-      <div id="chatbox" style="height: 20em; overflow:auto; border: 1px solid black"></div>
-      <form id="chatform">
-        <input type="hidden" name="nonce" value="{{ nonce }}">
-        <input type="text" />
-        <input type="submit" value="Send" />
-      </form>
-    {% else %}
-      <p>Please sign in to use chat</p>
-    {% endif %}
+    <div id="chatbox" style="height: 20em; overflow:auto; border: 1px solid black"></div>
+    <form id="chatform">
+      <input type="hidden" name="nonce" value="{{ nonce }}">
+      <input type="text" />
+      <input type="submit" value="Send" />
+    </form>
   </article>
   <script type="text/javascript">
 WEB_SOCKET_SWF_LOCATION = '/media/';

@@ -24,15 +24,18 @@ server. Each message is a JSON dict having the keys listed below:
     Join. Sent from the client to the server.
         kind: join
         room: ID of the room to join
+        user: Username of user joining
 
     Leave. Sent from the client to the server to unsubscribe from a room.
         kind: leave
         room: ID of the room
+        user: Username of user leaving
 
     Say. Sent in both directions.
         kind: say
         room: ID of the room
         message: What was said
+        user: Username of user speaking
 
     Nonce. Identify the user to the server by sending a nonce value.
         kind: nonce
@@ -129,7 +132,7 @@ def _subscriber(io, channel):
                 # This check for 'message' is for redis's idea of a
                 # message, not our chat 'message':
                 if from_redis['type'] == 'message':
-                    # Incoming data should always be valid JSON, as it is
+                    # Incoming data should always be valid, as it is
                     # checked before being put into redis.
                     out = json.loads(from_redis['data'])
                     out['room'] = channel
@@ -140,7 +143,11 @@ def _subscriber(io, channel):
 
 
 def socketio(io):
-    """View that serves the /socket.io madness used by socketio"""
+    """View that serves the /socket.io madness used by socketio
+
+    Directly handles traffic from the user to the server.
+
+    """
     if io.on_connect():
         log.debug('CONNECT %s' % io.session)
     else:
@@ -163,7 +170,8 @@ def socketio(io):
             message = from_client.get('message')
             if room and message:  # else drop it on the floor
                 redis().publish(room, json.dumps({'kind': 'say',
-                                                  'message': message}))
+                                                  'message': message,
+                                                  'user': user.username}))
         elif kind == 'nonce':
             nonce = from_client.get('nonce')
             if nonce:
@@ -184,6 +192,7 @@ def socketio(io):
             room = from_client.get('room')
             if room:
                 subscribers.append(Greenlet.spawn(_subscriber, io, room))
+                # TODO: Send Join message.
 
     log.debug('EXIT %s' % io.session)
 
