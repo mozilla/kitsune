@@ -10,6 +10,7 @@
         s.connect();
 
         s.addEvent('connect', function() {
+            s.send(JSON.stringify({'kind': 'nonce', 'nonce': $('#chatform input[name=nonce]').val()}));
             s.send(JSON.stringify({'kind': 'join', 'room': 'world'}));
         });
 

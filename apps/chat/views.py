@@ -34,6 +34,10 @@ server. Each message is a JSON dict having the keys listed below:
         room: ID of the room
         message: What was said
 
+    Nonce. Identify the user to the server by sending a nonce value.
+        kind: nonce
+        nonce: the nonce
+
 There's no facility for private messages yet, but it can be added if needed. At
 the moment, the plan is to implement private help sessions by first creating a
 public room behind the scenes. That will allow additional moderators to steal
@@ -45,6 +49,7 @@ from string import ascii_letters
 import random
 
 from django.conf import settings
+from django.contrib.auth.models import User
 from django.core.cache import cache
 from django.http import HttpResponse
 from django.views.decorators.cache import never_cache
@@ -54,6 +59,12 @@ from gevent import Greenlet
 import jingo
 
 from chat import log, redis
+from chat.models import NamedAnonymousUser
+
+
+def _nonce_key(nonce):
+    """Return the redis key for storing the nonce-to-user-ID mapping."""
+    return 'chatnonce:{n}'.format(n=nonce)
 
 
 @require_GET
@@ -62,7 +73,7 @@ def chat(request):
     nonce = None
     if request.user.is_authenticated():
         nonce = ''.join(random.choice(ascii_letters) for _ in xrange(10))
-        redis().setex('chatnonce:{n}'.format(n=nonce), request.user.id, 60)
+        redis().setex(_nonce_key(nonce), request.user.id, 60)
     return jingo.render(request, 'chat/chat.html', {'nonce': nonce})
 
 
@@ -139,6 +150,7 @@ def socketio(io):
 
     # Hanging onto these greenlets might keep them from the GC:
     subscribers = []
+    user = NamedAnonymousUser()
 
     # Until the client disconnects, listen for input from the user:
     for from_client in _messages_while_connected(io):
@@ -152,6 +164,17 @@ def socketio(io):
             if room and message:  # else drop it on the floor
                 redis().publish(room, json.dumps({'kind': 'say',
                                                   'message': message}))
+        elif kind == 'nonce':
+            nonce = from_client.get('nonce')
+            if nonce:
+                user_id = redis().get(_nonce_key(nonce))
+                if user_id:
+                    try:
+                        user = User.objects.get(id=user_id)
+                    except User.DoesNotExist:
+                        pass  # Just stay anonymous.
+                    else:
+                        log.debug('Mapped nonce to %s.' % user.username)
         elif kind == 'join':
             # Start a new subscriber. At least as a starting point, we start a
             # new subscriber for each room you're in, because otherwise there
