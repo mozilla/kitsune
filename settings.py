@@ -182,7 +182,7 @@ MIDDLEWARE_CLASSES = (
     'session_csrf.CsrfMiddleware',
     'twitter.middleware.SessionMiddleware',
     'sumo.middleware.PlusToSpaceMiddleware',
-    'commonware.middleware.HidePasswordOnException',
+    'commonware.middleware.ScrubRequestOnException',
     'django_arecibo.middleware.AreciboMiddlewareCelery',
     'commonware.response.middleware.GraphiteRequestTimingMiddleware',
 )
