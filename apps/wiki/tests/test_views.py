@@ -218,3 +218,9 @@ class VoteTests(TestCase):
         response = self.client.post(reverse('wiki.document_vote', args=['hi']),
                                     {'revision_id': 'x'})
         eq_(404, response.status_code)
+
+    def test_helpful_vote_no_id(self):
+        """Throw helpful_vote a POST without an ID and see if it 400s."""
+        response = self.client.post(reverse('wiki.document_vote', args=['hi']),
+                                    {})
+        eq_(400, response.status_code)
