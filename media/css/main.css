@@ -95,8 +95,8 @@ header.global {
 }
 
 #masthead {
-    max-width: 600px;
     padding-top: 35px;
+    width: 630px;
 }
 
 h1.site-title {
@@ -105,6 +105,7 @@ h1.site-title {
     font-size: 32px;
     font-style: italic;
     letter-spacing: -1px;
+    line-height: 40px;
     margin-bottom: 7px;
     text-align: left;
 }
@@ -112,6 +113,7 @@ h1.site-title {
 h1.site-title mark {
     font-family: MetaBlack;
     font-style: normal;
+    line-height: 32px;
     text-transform: uppercase;
 }
 
