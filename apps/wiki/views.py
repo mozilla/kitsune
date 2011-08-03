@@ -33,9 +33,10 @@ from wiki.events import (EditDocumentEvent, ReviewableRevisionInLocaleEvent,
                          ReadyRevisionEvent)
 from wiki.forms import (AddContributorForm, DocumentForm, RevisionForm,
                         ReviewForm)
-from wiki.models import (Document, Revision, HelpfulVote, CATEGORIES,
-                         OPERATING_SYSTEMS, GROUPED_OPERATING_SYSTEMS,
-                         FIREFOX_VERSIONS, GROUPED_FIREFOX_VERSIONS)
+from wiki.models import (Document, Revision, HelpfulVote, ImportantDate,
+                         CATEGORIES, OPERATING_SYSTEMS,
+                         GROUPED_OPERATING_SYSTEMS, FIREFOX_VERSIONS,
+                         GROUPED_FIREFOX_VERSIONS)
 from wiki.parser import wiki_to_html
 from wiki.tasks import send_reviewed_notification, schedule_rebuild_kb
 
@@ -720,7 +721,9 @@ def get_helpful_votes_async(request, document_slug):
     no_data = []
     date_to_rev_id = {}
     flag_data = []
+    rev_data = []
     revisions = set([])
+    created_list = []
 
     start = time.time()
     cursor = connection.cursor()
@@ -743,41 +746,60 @@ def get_helpful_votes_async(request, document_slug):
         no_data.append([created, int(res[2])])
         date_to_rev_id[created] = res[0]
         revisions.add(int(res[0]))
+        created_list.append(res[3])
 
-    # Drop the first revision marker to make the graph cleaner
-    revisions = sorted(revisions)[1:]
+    if created_list == []:
+        send = {'data': [],
+                'date_to_rev_id': [],
+                'query': 0}
 
-    for rev in revisions:
-        r = get_object_or_404(Revision, id=rev)
-        rdate = r.created
+        return HttpResponse(json.dumps(send),
+                        mimetype='application/json')
 
+    min_created = min(created_list)
+    max_created = max(created_list)
+
+    for flag in ImportantDate.objects.filter(date__gte=min_created,
+                                             date__lte=max_created):
         flag_data.append({
+            'x': 1000 * int(time.mktime(flag.date.timetuple())),
+            'title': _(flag.text),
+            'text': _(flag.text)
+            #'url': 'http://www.google.com/'  # Not supported yet
+        })
+
+    for rev in Revision.objects.filter(pk__in=revisions,
+                                       created__gte=min_created,
+                                       created__lte=max_created):
+        rdate = rev.created
+        rev_data.append({
                     'x': 1000 * int(time.mktime(rdate.timetuple())),
-                    'title': _('Revision'),
+                    'title': _('R', 'First letter of "Revision"'),
                     'text': unicode(_('Revision %s')) % rdate
                     #'url': 'http://www.google.com/'  # Not supported yet
                 })
 
     end = time.time()
 
-    send = {'data': [{
-                        'name': _('Yes'),
-                        'id': 'yes_data',
-                        'data': yes_data
-                    },
-                    {
-                        'name': _('No'),
-                        'id': 'no_data',
-                        'data': no_data
-                    },
-                    {
-                        'type': 'flags',
-                        'data': flag_data,
-                        'shape': 'squarepin'
-                    }],
+    send = {'data': [{'name': _('Yes'),
+                      'id': 'yes_data',
+                      'data': yes_data},
+                     {'name': _('No'),
+                      'id': 'no_data',
+                      'data': no_data},
+                     {'type': 'flags',
+                      'data': rev_data,
+                      'shape': 'circlepin',
+                      'width': 16,
+                      'zIndex': 100},
+                     {'type': 'flags',
+                      'data': flag_data,
+                      'shape': 'squarepin',
+                      'stickyTracking': False,
+                      'y': -55,
+                      'zIndex': 50}],
             'date_to_rev_id': date_to_rev_id,
-            'query': end - start
-            }
+            'query': end - start}
 
     if len(send['data'][2]['data']) == 0:
         send['data'].pop(2)
