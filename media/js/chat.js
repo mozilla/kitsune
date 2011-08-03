@@ -29,6 +29,10 @@
                     template = gettext('<div class="join"><span class="user">%(user)s</span> joined the chat.</div>');
                     // TODO: Update the display of users in the chat.
                     break;
+                case 'leave':
+                    template = gettext('<div class="join"><span class="user">%(user)s</span> left the chat.</div>');
+                    // TODO: Update the display of users in the chat.
+                    break;
             }
             $chatbox.append(interpolate(template, data, true))
                     .scrollTop($chatbox[0].scrollHeight);

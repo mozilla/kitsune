@@ -23,18 +23,18 @@ server. Each message is a JSON dict having the keys listed below:
     Join. Sent from the client to the server.
         kind: join
         room: ID of the room to join
-        user: Username of user joining
+        user: Username of user joining (sent toward client only)
 
-    Leave. Sent from the client to the server to unsubscribe from a room.
+    Leave. Sent in both directions.
         kind: leave
         room: ID of the room
-        user: Username of user leaving
+        user: Username of user leaving (sent toward client only)
 
     Say. Sent in both directions.
         kind: say
         room: ID of the room
         message: What was said
-        user: Username of user speaking
+        user: Username of user speaking (sent toward client only)
 
     Nonce. Identify the user to the server by sending a nonce value.
         kind: nonce
@@ -64,20 +64,6 @@ from chat import log, redis
 from chat.models import NamedAnonymousUser
 
 
-def _nonce_key(nonce):
-    """Return the redis key for storing the nonce-to-user-ID mapping."""
-    return 'chatnonce:{n}'.format(n=nonce)
-
-
-def _random_nick():
-    """Return a fun random name to distinguish anonymous users memorably
-
-    This will go away once we get UI for entering a name.
-
-    """
-    syllables = ['nox', 'frot', 'gos', 'ler', 'jam', 'rip', 'kap']
-    return ''.join(random.choice(syllables) for _ in xrange(3))
-
 @require_GET
 def chat(request):
     """Display the current state of the chat queue."""
@@ -102,6 +88,21 @@ def queue_status(request):
         xml = ''
         status = 503
     return HttpResponse(xml, mimetype='application/xml', status=status)
+
+
+def _nonce_key(nonce):
+    """Return the redis key for storing the nonce-to-user-ID mapping."""
+    return 'chatnonce:{n}'.format(n=nonce)
+
+
+def _random_nick():
+    """Return a fun random name to distinguish anonymous users memorably
+
+    This will go away once we get UI for entering a name.
+
+    """
+    syllables = ['nox', 'frot', 'gos', 'ler', 'jam', 'rip', 'kap']
+    return ''.join(random.choice(syllables) for _ in xrange(3))
 
 
 def _messages_while_connected(io):
@@ -151,6 +152,21 @@ def _subscriber(io, channel):
         log.debug('EXIT SUBSCRIBER %s' % io.session)
 
 
+def _tell_room(room, **kwargs):
+    """Throw a JSON-coded message (from kwargs) at a room."""
+    redis().publish(room, json.dumps(kwargs))
+
+
+def _leave_room(room, username, subscribers):
+    """Announce a user is leaving a room, and stop subscribing to it."""
+    # Each time I close the 2nd chat window, wait for the old socketio() view
+    # to exit, and then reopen the chat page, the number of Incomings increases
+    # by one. The subscribers are never exiting. kill() fixes that behavior:
+    subscribers[room].kill()
+    del subscribers[room]
+    _tell_room(room, kind='leave', user=username)
+
+
 def socketio(io):
     """View that serves the /socket.io madness used by socketio
 
@@ -165,22 +181,25 @@ def socketio(io):
         log.debug('SOMETHING OTHER THAN CONNECT!')
 
     # Hanging onto these greenlets might keep them from the GC:
-    subscribers = []
+    subscribers = {}  # room name -> subscriber greenlet
+    # Start anonymous. JS will immediately authenticate and fix that if the
+    # user is logged in.
     user = NamedAnonymousUser(_random_nick())
 
     # Until the client disconnects, listen for input from the user:
     for from_client in _messages_while_connected(io):
-        # TODO: Think about how to dissuade people from sending messages to
-        # rooms they're not in, whether by keeping a redis hash of what rooms
-        # they're in, doing capability-based access control, or something else.
         kind = from_client.get('kind')
         if kind == 'say':
             room = from_client.get('room')
             message = from_client.get('message')
             if room and message:  # else drop it on the floor
-                redis().publish(room, json.dumps({'kind': 'say',
-                                                  'message': message,
-                                                  'user': user.username}))
+                if room in subscribers:
+                    _tell_room(room, kind='say',
+                                     message=message,
+                                     user=user.username)
+                else:
+                    log.warning("%s said something in a room he wasn't in." %
+                                user.username)
         elif kind == 'nonce':
             nonce = from_client.get('nonce')
             if nonce:
@@ -200,17 +219,18 @@ def socketio(io):
             # the old subscriber and starting a new one that listens to all
             # joined rooms.
             room = from_client.get('room')
-            if room:
-                subscribers.append(Greenlet.spawn(_subscriber, io, room))
-                redis().publish(room, json.dumps({'kind': 'join',
-                                                  'user': user.username}))
+            if room and room not in subscribers:  # No joining a room twice.
+                subscribers[room] = Greenlet.spawn(_subscriber, io, room)
+                _tell_room(room, kind='join', user=user.username)
+        elif kind == 'leave':
+            room = from_client.get('room')
+            if room and room in subscribers:  # No leaving rooms you're not in.
+                _leave_room(r, user.username, subscribers)
 
     log.debug('EXIT %s' % io.session)
 
-    # Each time I close the 2nd chat window, wait for the old socketio() view
-    # to exit, and then reopen the chat page, the number of Incomings increases
-    # by one. The subscribers are never exiting. This fixes that behavior:
-    for s in subscribers:
-        s.kill()
+    for r, s in subscribers.items():  # Can't be iteritems; _leave_rooms()
+                                      # mutates subscribers.
+        _leave_room(r, user.username, subscribers)
 
     return HttpResponse()
