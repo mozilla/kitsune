@@ -9,6 +9,7 @@ from django.views.decorators.cache import never_cache
 from django.views.decorators.http import require_GET
 
 import jingo
+import waffle
 
 from chat import log, redis, nonce_key
 from chat.models import RoomsUserIsIn
@@ -17,11 +18,14 @@ from chat.models import RoomsUserIsIn
 @require_GET
 def chat(request):
     """Display the current state of the chat queue."""
-    nonce = None
-    if request.user.is_authenticated():
-        nonce = ''.join(random.choice(ascii_letters) for _ in xrange(10))
-        redis().setex(nonce_key(nonce), request.user.id, 60)
-    return jingo.render(request, 'chat/chat.html', {'nonce': nonce})
+    if waffle.flag_is_active(request, 'new-chat'):
+        nonce = None
+        if request.user.is_authenticated():
+            nonce = ''.join(random.choice(ascii_letters) for _ in xrange(10))
+            redis().setex(nonce_key(nonce), request.user.id, 60)
+        return jingo.render(request, 'chat/chat.html', {'nonce': nonce})
+    else:
+        return jingo.render(request, 'chat/old_chat.html')
 
 
 @never_cache
