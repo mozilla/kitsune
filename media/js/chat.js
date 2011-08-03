@@ -17,13 +17,21 @@
         });
 
         s.addEvent('message', function(data) {
-            var $chatbox;
+            var $chatbox, template;
             data = JSON.parse(data);
-            if (data['kind'] == 'say') {
-                $chatbox = $('#chatbox');
-                // TODO: Pay attention to room.
-                $chatbox.append('<div>' + data['user'] + ': ' + data['message'] + '</div>').scrollTop($chatbox[0].scrollHeight);
+            // TODO: Pay attention to room when picking $chatbox.
+            $chatbox = $('#chatbox');
+            switch (data['kind']) {
+                case 'say':
+                    template = gettext('<div class="say"><span class="user">%(user)s</span>%(message)s</div>');
+                    break;
+                case 'join':
+                    template = gettext('<div class="join"><span class="user">%(user)s</span> joined the chat.</div>');
+                    // TODO: Update the display of users in the chat.
+                    break;
             }
+            $chatbox.append(interpolate(template, data, true))
+                    .scrollTop($chatbox[0].scrollHeight);
         });
 
         // Send the message when submit is clicked:

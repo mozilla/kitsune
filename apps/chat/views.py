@@ -4,15 +4,14 @@ About our little nonce dance
 
 We don't want anybody to be able to impersonate anybody else in a chat. Thus,
 we have to map a socketio SID to a user. To do that, we have to map a socketio
-SID to a session ID, which in turn can show the server that we are who we claim
-(since session ID is secret). So, when we draw the chat page, we make up a
-nonce and stick it in there, while simultaneously mapping it to the session ID
-in redis for a short time. The JS yanks the nonce out of the page and sends it
-back to the server on join, along with the socketio SID (implicitly), thus
-completing the SID-to-session-ID mapping. And, because we avoid sticking the
-session ID in the page, we avoid the possibility of session hijacking by any JS
-that gets injected by an XSS attack; cookies are protected from evil JS better
-(through HttpOnly, for example).
+SID to a user. So, when we draw the chat page, we make up a nonce and stick it
+in there, while simultaneously mapping it to the user ID in redis for a short
+time. The JS yanks the nonce out of the page and sends it back to the server on
+join, along with the socketio SID (implicitly), thus completing the SID-to-user
+mapping. And, because we avoid sticking the session ID in the page, we avoid
+the possibility of session hijacking by any JS that gets injected by an XSS
+attack; cookies are protected from evil JS better (through HttpOnly, for
+example).
 
 
 About the protocol
@@ -69,6 +68,15 @@ def _nonce_key(nonce):
     """Return the redis key for storing the nonce-to-user-ID mapping."""
     return 'chatnonce:{n}'.format(n=nonce)
 
+
+def _random_nick():
+    """Return a fun random name to distinguish anonymous users memorably
+
+    This will go away once we get UI for entering a name.
+
+    """
+    syllables = ['nox', 'frot', 'gos', 'ler', 'jam', 'rip', 'kap']
+    return ''.join(random.choice(syllables) for _ in xrange(3))
 
 @require_GET
 def chat(request):
@@ -132,12 +140,13 @@ def _subscriber(io, channel):
                 # This check for 'message' is for redis's idea of a
                 # message, not our chat 'message':
                 if from_redis['type'] == 'message':
-                    # Incoming data should always be valid, as it is
-                    # checked before being put into redis.
+                    # Incoming data should always be valid, as it is checked
+                    # before being put into redis. It also happens to be in the
+                    # same format the JS expects. Just add the room to it, and
+                    # ship it out:
                     out = json.loads(from_redis['data'])
                     out['room'] = channel
                     io.send(json.dumps(out))
-                # TODO: else join, leave
     finally:
         log.debug('EXIT SUBSCRIBER %s' % io.session)
 
@@ -157,7 +166,7 @@ def socketio(io):
 
     # Hanging onto these greenlets might keep them from the GC:
     subscribers = []
-    user = NamedAnonymousUser()
+    user = NamedAnonymousUser(_random_nick())
 
     # Until the client disconnects, listen for input from the user:
     for from_client in _messages_while_connected(io):
@@ -181,6 +190,7 @@ def socketio(io):
                         user = User.objects.get(id=user_id)
                     except User.DoesNotExist:
                         pass  # Just stay anonymous.
+                        # TODO: Think about reloading the page or prompting to.
                     else:
                         log.debug('Mapped nonce to %s.' % user.username)
         elif kind == 'join':
@@ -192,7 +202,8 @@ def socketio(io):
             room = from_client.get('room')
             if room:
                 subscribers.append(Greenlet.spawn(_subscriber, io, room))
-                # TODO: Send Join message.
+                redis().publish(room, json.dumps({'kind': 'join',
+                                                  'user': user.username}))
 
     log.debug('EXIT %s' % io.session)
 
