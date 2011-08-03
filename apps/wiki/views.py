@@ -681,6 +681,9 @@ def json_view(request):
 @csrf_exempt
 def helpful_vote(request, document_slug):
     """Vote for Helpful/Not Helpful document"""
+    if 'revision_id' not in request.POST:
+        return HttpResponseBadRequest()
+
     revision = get_object_or_404(
         Revision, id=smart_int(request.POST['revision_id']))
 
