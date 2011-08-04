@@ -141,9 +141,24 @@ section#avatar-area {
     width: 7em;
 }
 
-section#main-area h2 {
+#main-area h2 {
     height: 20px;
     width: 100%;
+}
+
+#bio {
+    float: left;
+    width: 60%;
+}
+
+#groups {
+    float: left;
+    margin-left: 5%;
+    width: 35%;
+}
+
+#groups ul {
+    list-style: none;
 }
 
 #admin-actions a.edit {
@@ -153,7 +168,8 @@ section#main-area h2 {
 }
 
 body.register p,
-#profile p {
+#profile p,
+#groups ul {
     margin: 0.25em 0 1em;
 }
 

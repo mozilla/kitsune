@@ -320,7 +320,7 @@ class ViewProfileTests(TestCaseBase):
         eq_(0, doc('#edit-profile-link').length)
         eq_('pcraciunoiu', doc('#main-area h1').text())
         # No name set and livechat_id is not different => no optional fields.
-        eq_(0, doc('#main-area ul').length)
+        eq_(0, doc('#contact-box').length)
         # Check canonical url
         eq_('/user/47963', doc('link[rel="canonical"]')[0].attrib['href'])
 
