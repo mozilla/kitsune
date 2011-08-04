@@ -175,8 +175,9 @@ def confirm_change_email(request, activation_key):
 
 def profile(request, user_id):
     user_profile = get_object_or_404(Profile, user__id=user_id)
+    groups = user_profile.user.groups.all()
     return jingo.render(request, 'users/profile.html',
-                        {'profile': user_profile})
+                        {'profile': user_profile, 'groups': groups})
 
 
 @login_required
