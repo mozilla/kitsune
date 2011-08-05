@@ -66,46 +66,48 @@
   </div>
 </div>
 <div class="side-section">
-  {% if answer.creator != question.creator %}
-    {% if not question.is_locked %}
-      {% if user != question.creator and user != answer.creator and not answer.has_voted(request) %}
-        <form class="helpful" action="{{ url('questions.answer_vote', question_id=question.id, answer_id=answer.id) }}" method="post">
-          <h4>{{ _('Was this reply helpful?') }}</h4>
-          <input type="submit" class="btn" name="helpful" value="{{ _('Helpful') }}" />
-          <input type="submit" class="btn" name="not-helpful" value="{{ _('Not Helpful') }}" />
-        </form>
+  {% if answer.id %}{# answer.id is None when previewing #}
+    {% if answer.creator != question.creator %}
+      {% if not question.is_locked %}
+        {% if user != question.creator and user != answer.creator and not answer.has_voted(request) %}
+          <form class="helpful" action="{{ url('questions.answer_vote', question_id=question.id, answer_id=answer.id) }}" method="post">
+            <h4>{{ _('Was this reply helpful?') }}</h4>
+            <input type="submit" class="btn" name="helpful" value="{{ _('Helpful') }}" />
+            <input type="submit" class="btn" name="not-helpful" value="{{ _('Not Helpful') }}" />
+          </form>
+        {% endif %}
+        {% if not question.solution and (user == question.creator or user.has_perm('questions.change_solution')) %}
+          <form class="solution" action="{{ url('questions.solve', question_id=question.id, answer_id=answer.id) }}" method="post">
+            {{ csrf() }}
+            {% if user == question.creator %}
+              <h4>{{ _('Did this solve your problem?') }}</h4>
+              <input type="submit" class="btn" name="solution" value="{{ _('Solved It') }}" />
+            {% else %}
+              <h4>{{ _('Does this solve the problem?') }}</h4>
+              <input type="submit" class="btn" name="solution" value="{{ _('Solves It') }}" />
+            {% endif %}
+          </form>
+        {% endif %}
       {% endif %}
-      {% if not question.solution and (user == question.creator or user.has_perm('questions.change_solution')) %}
-        <form class="solution" action="{{ url('questions.solve', question_id=question.id, answer_id=answer.id) }}" method="post">
-          {{ csrf() }}
-          {% if user == question.creator %}
-            <h4>{{ _('Did this solve your problem?') }}</h4>
-            <input type="submit" class="btn" name="solution" value="{{ _('Solved It') }}" />
-          {% else %}
-            <h4>{{ _('Does this solve the problem?') }}</h4>
-            <input type="submit" class="btn" name="solution" value="{{ _('Solves It') }}" />
-          {% endif %}
-        </form>
+    {% endif %}
+
+    <ul class="actions">
+      {% if answer.id and not question.is_locked and has_perm_or_owns('questions.change_answer', answer, answer) %}
+        <li class="edit">
+          <a href="{{ url('questions.edit_answer', question.id, answer.id) }}">{{ _('Edit this post') }}</a>
+        </li>
       {% endif %}
-    {% endif %}
-  {% endif %}
+      {% if answer.id and user.has_perm('questions.delete_answer') %}
+        <li class="delete">
+          <a href="{{ url('questions.delete_answer', question.id, answer.id) }}">{{ _('Delete this post') }}</a>
+        </li>
+      {% endif %}
+    </ul>
 
-  <ul class="actions">
-    {% if answer.id and not question.is_locked and has_perm_or_owns('questions.change_answer', answer, answer) %}
-      <li class="edit">
-        <a href="{{ url('questions.edit_answer', question.id, answer.id) }}">{{ _('Edit this post') }}</a>
-      </li>
+    {% if user.is_authenticated() and user != answer.creator and not question.is_locked  %}
+      <form class="report" action="{{ url('questions.answer_flag', question.id, answer.id) }}" method="post">
+        {% include 'questions/includes/flag_form.html' %}
+      </form>
     {% endif %}
-    {% if answer.id and user.has_perm('questions.delete_answer') %}
-      <li class="delete">
-        <a href="{{ url('questions.delete_answer', question.id, answer.id) }}">{{ _('Delete this post') }}</a>
-      </li>
-    {% endif %}
-  </ul>
-
-  {% if user.is_authenticated() and user != answer.creator and not question.is_locked  %}
-    <form class="report" action="{{ url('questions.answer_flag', question.id, answer.id) }}" method="post">
-      {% include 'questions/includes/flag_form.html' %}
-    </form>
   {% endif %}
 </div>
