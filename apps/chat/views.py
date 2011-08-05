@@ -11,8 +11,8 @@ from django.views.decorators.http import require_GET
 import jingo
 import waffle
 
-from chat import log, redis, nonce_key
 from chat.models import RoomsUserIsIn
+from chat.utils import log, redis, nonce_key
 
 
 @require_GET

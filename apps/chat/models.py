@@ -5,9 +5,10 @@ import random
 
 from django.contrib.auth.models import AnonymousUser, User
 
+from bleach import clean, linkify
 from gevent import Greenlet
 
-from chat import log, redis, nonce_key
+from chat.utils import Safe, log, redis, nonce_key
 
 
 class NamedAnonymousUser(AnonymousUser):
@@ -28,7 +29,7 @@ class RoomsUserIsIn(object):
         clients and server. Each message is a JSON dict having the keys listed
         below:
 
-        Join. Sent from the client to the server.
+        Join. Sent in both directions.
             kind: join
             room: ID of the room to join
             user: Username of user joining (sent toward client only)
@@ -41,7 +42,7 @@ class RoomsUserIsIn(object):
         Say. Sent in both directions.
             kind: say
             room: ID of the room
-            message: What was said
+            message: What was said. Serverward is text; clientward is HTML.
             user: Username of user speaking (sent toward client only)
 
         Nonce. Identify the user to the server by sending a nonce value.
@@ -79,8 +80,11 @@ class RoomsUserIsIn(object):
 
         ...regardless of whether you're in the room.
 
+        Escape any HTML in string kwarg values unless wrapped in Safe().
+
         """
-        redis().publish(room, json.dumps(kwargs))
+        redis().publish(room, json.dumps(
+            dict((k, Safe.escape(v)) for k, v in kwargs.iteritems())))
 
     def join(self, room, io):
         """Start listening to a room."""
@@ -141,7 +145,7 @@ class RoomsUserIsIn(object):
         """Say something in a room you're in."""
         if room in self:
             self._send(room, kind='say',
-                             message=message,
+                             message=Safe(linkify(clean(message, tags=[]))),
                              user=self._user.username)
         else:
             log.warning("%s said something in a room he wasn't in." %
