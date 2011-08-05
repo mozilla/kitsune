@@ -639,6 +639,15 @@ class AnswersTemplateTestCase(TestCaseBase):
         eq_(content, doc('#answer-preview div.content').text())
         eq_(num_answers, self.question.answers.count())
 
+    def test_preview_answer_as_admin(self):
+        """Preview an answer as admin and verify response is 200."""
+        self.client.login(username='admin', password='testpass')
+        content = 'Awesome answer.'
+        response = post(self.client, 'questions.reply',
+                        {'content': content, 'preview': 'any string'},
+                        args=[self.question.id])
+        eq_(200, response.status_code)
+
 
 class TaggedQuestionsTestCase(TaggingTestCaseBase):
     """Questions/answers template tests that require tagged questions."""
