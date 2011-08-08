@@ -264,15 +264,16 @@ class MostVisitedTranslationsReadout(MostVisitedDefaultLanguageReadout):
         return (
             'SELECT engdoc.slug, engdoc.title, transdoc.slug, '
             'transdoc.title, dashboards_wikidocumentvisits.visits, '
-            # The most significant ready-for-localization, approved change to
-            # the English article since the English revision the current
-            # translated revision is based on:
+            # The most significant approved change to the English article
+            # between {the English revision the current translated revision is
+            # based on} and {the latest ready-for-localization revision}:
             '(SELECT MAX(engrev.significance) '
              'FROM wiki_revision engrev, wiki_revision transrev '
-             'WHERE engrev.is_ready_for_localization '
+             'WHERE engrev.is_approved '
              'AND transrev.id=transdoc.current_revision_id '
              'AND engrev.document_id=transdoc.parent_id '
              'AND engrev.id>transrev.based_on_id '
+             'AND engrev.id<=engdoc.latest_localizable_revision_id'
             '), '
             # Whether there are any unreviewed revs of the translation made
             # since the current one:
@@ -412,6 +413,7 @@ class OutOfDateReadout(Readout):
         return ('SELECT transdoc.slug, transdoc.title, engrev.reviewed, '
             'dashboards_wikidocumentvisits.visits '
             'FROM wiki_document transdoc '
+            'INNER JOIN wiki_document engdoc ON transdoc.parent_id=engdoc.id '
             'INNER JOIN wiki_revision engrev ON engrev.id='
             # The oldest English rev to have an approved, ready-for-
             # localization level-30 change since the translated doc had an
@@ -430,24 +432,26 @@ class OutOfDateReadout(Readout):
                 'AND wiki_revision.significance>=%s '
                 'AND %s='
                 # Completely filter out outer selections where 30 is not the
-                # max signif of english revisions since trans was last
+                # max signif of approved English revisions since trans was last
                 # approved. Other maxes will be shown by other readouts.
                 # Optimize: try "30 IN" if MySQL's statistics gatherer is
                 # stupid/nonexistent; the inner query should be able to bail
                 # out early. [Ed: No effect on EXPLAIN on admittedly light test
                 # corpus.]
                   '(SELECT MAX(engsince.significance) '
-                  'FROM wiki_revision engsince '
-                  'WHERE engsince.document_id=transdoc.parent_id '
-                  # Assumes that any ready (and therefor approved) revision
-                  # became the current revision at some point: we don't let the
-                  # user go back and approve revisions older than the latest
-                  # approved one.
-                  'AND engsince.is_ready_for_localization '
-                  'AND engsince.id>'
-                  # The English revision the current translation's based on:
-                    '(SELECT based_on_id FROM wiki_revision basedonrev '
-                    'WHERE basedonrev.id=transdoc.current_revision_id) '
+                   'FROM wiki_revision engsince '
+                   'WHERE engsince.document_id=transdoc.parent_id '
+                   # Assumes that any approved revision became the current
+                   # revision at some point: we don't let the user go back and
+                   # approve revisions older than the latest approved one.
+                   'AND engsince.is_approved '
+                   # Consider revisions between the one the last translation
+                   # was based on and the latest ready-for-l10n one.
+                   'AND engsince.id>'
+                   # The English revision the current translation's based on:
+                     '(SELECT based_on_id FROM wiki_revision basedonrev '
+                     'WHERE basedonrev.id=transdoc.current_revision_id) '
+                   'AND engsince.id<=engdoc.latest_localizable_revision_id'
                   ')'
                 ') '
             # Join up the visits table for stats:
