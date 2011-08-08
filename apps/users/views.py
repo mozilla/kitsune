@@ -1,7 +1,7 @@
 import os
 
 from django.conf import settings
-from django.contrib import auth
+from django.contrib import auth, messages
 from django.contrib.auth.forms import PasswordResetForm
 from django.contrib.auth.models import User
 from django.contrib.auth.tokens import default_token_generator
@@ -14,6 +14,7 @@ import jingo
 from session_csrf import anonymous_csrf
 from statsd import statsd
 from tidings.tasks import claim_watches
+from tower import ugettext as _
 
 from access.decorators import logout_required, login_required
 from questions.models import Question
@@ -26,7 +27,8 @@ from users.forms import (ProfileForm, AvatarForm, EmailConfirmationForm,
                          AuthenticationForm, EmailChangeForm, SetPasswordForm,
                          PasswordChangeForm)
 from users.models import Profile, RegistrationProfile, EmailChange
-from users.utils import handle_login, handle_register, try_send_email_with_form
+from users.utils import (handle_login, handle_register,
+                         try_send_email_with_form)
 
 
 @ssl_required
@@ -76,9 +78,21 @@ def register(request):
 
 
 @anonymous_csrf  # This view renders a login form
-def activate(request, activation_key):
+def activate(request, activation_key, user_id=None):
     """Activate a User account."""
     activation_key = activation_key.lower()
+
+    if user_id:
+        user = get_object_or_404(User, id=user_id)
+    else:
+        user = RegistrationProfile.objects.get_user(activation_key)
+
+    if user and user.is_active:
+        messages.add_message(
+            request, messages.INFO,
+            _(u'Your account is already activated, log in below.'))
+        return HttpResponseRedirect(reverse('users.login'))
+
     account = RegistrationProfile.objects.activate_user(activation_key,
                                                         request)
     my_questions = None

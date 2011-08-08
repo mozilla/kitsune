@@ -1,4 +1,3 @@
-from datetime import datetime
 import os
 
 from django.conf import settings
@@ -45,7 +44,7 @@ class RegisterTests(TestCase):
         eq_(1, len(mail.outbox))
         assert mail.outbox[0].subject.find('Please confirm your') == 0
         key = RegistrationProfile.objects.all()[0].activation_key
-        assert mail.outbox[0].body.find('activate/%s' % key) > 0
+        assert mail.outbox[0].body.find('activate/%s/%s' % (u.id, key)) > 0
 
         # Now try to log in
         u.is_active = True
@@ -99,7 +98,7 @@ class RegisterTests(TestCase):
             'sumouser1234', 'testpass', 'sumouser@test.com')
         assert not user.is_active
         key = RegistrationProfile.objects.all()[0].activation_key
-        url = reverse('users.activate', args=[key])
+        url = reverse('users.activate', args=[user.id, key])
         response = self.client.get(url, follow=True)
         eq_(200, response.status_code)
         user = User.objects.get(pk=user.pk)
@@ -114,7 +113,8 @@ class RegisterTests(TestCase):
         user = RegistrationProfile.objects.create_inactive_user(
             'sumouser1234', 'testpass', 'sumouser@test.com')
         key = RegistrationProfile.objects.all()[0].activation_key
-        self.client.get(reverse('users.activate', args=[key]), follow=True)
+        self.client.get(reverse('users.activate', args=[user.id, key]),
+                        follow=True)
 
         # Watches are claimed.
         assert user.watch_set.exists()
@@ -133,7 +133,7 @@ class RegisterTests(TestCase):
 
         # Activate account.
         key = RegistrationProfile.objects.all()[0].activation_key
-        url = reverse('users.activate', args=[key])
+        url = reverse('users.activate', args=[user.id, key])
         response = self.client.get(url, follow=True)
         eq_(200, response.status_code)
 
@@ -167,11 +167,40 @@ class RegisterTests(TestCase):
                                      'password2': 'bar'}, follow=True)
         self.assertContains(response, 'must match')
 
+    @mock.patch.object(Site.objects, 'get_current')
+    def test_active_user_activation(self, get_current):
+        """If an already active user tries to activate with a valid key,
+        we take them to login page and show message."""
+        get_current.return_value.domain = 'su.mo.com'
+        user = RegistrationProfile.objects.create_inactive_user(
+            'sumouser1234', 'testpass', 'sumouser@test.com')
+        user.is_active = True
+        user.save()
+        key = RegistrationProfile.objects.all()[0].activation_key
+        url = reverse('users.activate', args=[user.id, key])
+        response = self.client.get(url, follow=True)
+        eq_(200, response.status_code)
+        doc = pq(response.content)
+        eq_('Your account is already activated, log in below.',
+            doc('ul.user-messages').text())
+
+    @mock.patch.object(Site.objects, 'get_current')
+    def test_old_activation_url(self, get_current):
+        get_current.return_value.domain = 'su.mo.com'
+        user = RegistrationProfile.objects.create_inactive_user(
+            'sumouser1234', 'testpass', 'sumouser@test.com')
+        assert not user.is_active
+        key = RegistrationProfile.objects.all()[0].activation_key
+        url = reverse('users.old_activate', args=[key])
+        response = self.client.get(url, follow=True)
+        eq_(200, response.status_code)
+        user = User.objects.get(pk=user.pk)
+        assert user.is_active
+
 
 class ChangeEmailTestCase(TestCase):
     fixtures = ['users.json']
     client_class = LocalizingClient
-
 
     def test_redirect(self):
         """Test our redirect from old url to new one."""

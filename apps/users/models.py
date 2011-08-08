@@ -117,6 +117,14 @@ class ConfirmationManager(models.Manager):
 
 
 class RegistrationManager(ConfirmationManager):
+    def get_user(self, activation_key):
+        """Get the user for the specified activation_key."""
+        try:
+            profile = self.get(activation_key=activation_key)
+            return profile.user
+        except self.model.DoesNotExist:
+            return None
+
     def activate_user(self, activation_key, request=None):
         """
         Validate an activation key and activate the corresponding
@@ -126,14 +134,6 @@ class RegistrationManager(ConfirmationManager):
         after activating.
 
         If the key is not valid or has expired, return ``False``.
-
-        If the key is valid but the ``User`` is already active,
-        return ``False``.
-
-        To prevent reactivation of an account which has been
-        deactivated by site administrators, the activation key is
-        reset to the string ``ALREADY_ACTIVATED`` after successful
-        activation.
         """
         # Make sure the key we're trying conforms to the pattern of a
         # SHA1 hash; if it doesn't, no point trying to look it up in
@@ -151,8 +151,6 @@ class RegistrationManager(ConfirmationManager):
                     user = profile.user
                     user.is_active = True
                     user.save()
-                    profile.activation_key = self.model.ACTIVATED
-                    profile.save()
                     return user
                 else:
                     statsd.incr('user.activate-error.expired')
@@ -195,10 +193,11 @@ class RegistrationManager(ConfirmationManager):
                                 email_template=None, email_subject=None,
                                 email_data=None):
         """Send the user confirmation email."""
+        user_id = registration_profile.user.id
+        key = registration_profile.activation_key
         self._send_email(
             confirmation_profile=registration_profile,
-            url=reverse('users.activate',
-                        args=[registration_profile.activation_key]),
+            url=reverse('users.activate', args=[user_id, key]),
             subject=email_subject or _('Please confirm your email address'),
             email_template=email_template or 'users/email/activate.ltxt',
             send_to=registration_profile.user.email,
@@ -249,8 +248,6 @@ class RegistrationProfile(models.Model):
     of this model; the provided manager includes methods
     for creating and activating new accounts.
     """
-    ACTIVATED = u"ALREADY_ACTIVATED"
-
     user = models.ForeignKey(User, unique=True, verbose_name=_lazy(u'user'))
     activation_key = models.CharField(verbose_name=_lazy(u'activation key'),
                                       max_length=40)
@@ -270,12 +267,8 @@ class RegistrationProfile(models.Model):
         key has expired, returning a boolean -- ``True`` if the key
         has expired.
 
-        Key expiration is determined by a two-step process:
-        1. If the user has already activated, the key will have been
-           reset to the string ``ALREADY_ACTIVATED``. Re-activating is
-           not permitted, and so this method returns ``True`` in this
-           case.
-        2. Otherwise, the date the user signed up is incremented by
+        Key expiration is determined by:
+        1. The date the user signed up is incremented by
            the number of days specified in the setting
            ``ACCOUNT_ACTIVATION_DAYS`` (which should be the number of
            days after signup during which a user is allowed to
@@ -284,8 +277,7 @@ class RegistrationProfile(models.Model):
            method returns ``True``.
         """
         exp_date = datetime.timedelta(days=settings.ACCOUNT_ACTIVATION_DAYS)
-        return (self.activation_key == self.ACTIVATED or
-               (self.user.date_joined + exp_date <= datetime.datetime.now()))
+        return self.user.date_joined + exp_date <= datetime.datetime.now()
     activation_key_expired.boolean = True
 
 
