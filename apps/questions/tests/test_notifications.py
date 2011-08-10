@@ -148,7 +148,8 @@ class NotificationsTests(TestCaseBase):
         return question
 
     @mock.patch.object(Site.objects, 'get_current')
-    @mock.patch.object(settings._wrapped, 'TIDINGS_CONFIRM_ANONYMOUS_WATCHES', False)
+    @mock.patch.object(settings._wrapped, 'TIDINGS_CONFIRM_ANONYMOUS_WATCHES',
+                       False)
     def test_solution_notification(self, get_current):
         """Assert that hitting the watch toggle toggles and that proper mails
         are sent to anonymous and registered watchers."""
@@ -176,7 +177,8 @@ class NotificationsTests(TestCaseBase):
         self._toggle_watch_question('solution', turn_on=False)
 
     @mock.patch.object(Site.objects, 'get_current')
-    @mock.patch.object(settings._wrapped, 'TIDINGS_CONFIRM_ANONYMOUS_WATCHES', False)
+    @mock.patch.object(settings._wrapped, 'TIDINGS_CONFIRM_ANONYMOUS_WATCHES',
+                       False)
     def test_answer_notification(self, get_current):
         """Assert that hitting the watch toggle toggles and that proper mails
         are sent to anonymous users, registered users, and the question
