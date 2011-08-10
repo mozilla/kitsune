@@ -19,8 +19,10 @@ products = SortedDict([
             'articles': [
                 {'title': 'Errors when loading web sites',
                  'url': '/kb/Error%20loading%20web%20sites'},
-                {'title': 'Firefox cannot load websites but other programs can',
-                 'url': '/kb/Firefox+cannot+load+websites+but+other+programs+can'},
+                {'title': 'Firefox cannot load websites but other programs '
+                          'can',
+                 'url': '/kb/Firefox%20cannot%20load%20websites%20but%20other'
+                        '%20programs$%20can'},
                 {'title': 'Web sites look wrong',
                  'url': '/kb/Websites%20look%20wrong'},
                 {'title': 'Websites say cookies are blocked',
@@ -69,7 +71,8 @@ products = SortedDict([
                  'url': '/kb/Deleting+cookies'},
                 {'title': 'Enabling and disabling cookies',
                  'url': '/kb/Enabling+and+disabling+cookies'},
-                {'title': 'The bookmarks and history system will not be functional',
+                {'title': 'The bookmarks and history system will not be '
+                          'functional',
                  'url': '/kb/The%20bookmarks%20and%20history%20system%20will'
                         '%20not%20be%20functional'},
             ],
@@ -78,8 +81,8 @@ products = SortedDict([
         ('d4', {
             'name': _lazy(u'Other Firefox features'),
             'html': 'We have lots of helpful articles to get you started <em>'
-                    'learning and using Firefox</em> and hundreds of questions '
-                    'in our database. Try one of the following:',
+                    'learning and using Firefox</em> and hundreds of questions'
+                    ' in our database. Try one of the following:',
             'articles': [
                 {'title': 'How to set the home page',
                  'url': '/kb/How%20to%20set%20the%20home%20page'},
@@ -93,9 +96,10 @@ products = SortedDict([
                  'url': '/kb/Pop-up%20blocker'},
                 {'title': 'How do I add a device to Firefox Sync?',
                  'url': '/kb/add-a-device-to-firefox-sync'},
-                {'title': 'Firefox does not ask to save tabs and windows on exit',
-                 'url': '/kb/Firefox%20does%20not%20ask%20to%20save%20tabs%20and'
-                        '%20windows%20on%20exit'},
+                {'title': 'Firefox does not ask to save tabs and windows on '
+                          'exit',
+                 'url': '/kb/Firefox%20does%20not%20ask%20to%20save%20tabs%20'
+                        'and%20windows%20on%20exit'},
             ],
             'tags': ['features'],
         }),
@@ -110,9 +114,11 @@ products = SortedDict([
                 {'title': 'Plugin crash reports',
                  'url': '/kb/Plugin%20crash%20reports'},
                 {'title': 'Using the Windows Media Player plugin with Firefox',
-                 'url': '/kb/Using%20the%20Windows%20Media%20Player%20plugin%20with%20Firefox'},
+                 'url': '/kb/Using%20the%20Windows%20Media%20Player%20plugin'
+                        '%20with%20Firefox'},
                 {'title': 'Add-ons are disabled after updating Firefox',
-                 'url': '/kb/Add-ons%20are%20disabled%20after%20updating%20Firefox'},
+                 'url': '/kb/Add-ons%20are%20disabled%20after%20updating%20'
+                        'Firefox'},
                 {'title': 'The Adobe Flash plugin has crashed',
                  'url': '/kb/The%20Adobe%20Flash%20plugin%20has%20crashed'},
                 {'title': 'Uninstalling add-ons',
@@ -134,10 +140,12 @@ products = SortedDict([
                 {'title': 'Common questions after updating Firefox',
                  'url': '/kb/common-questions-after-updating-firefox'},
                 {'title': 'Add-ons are disabled after updating Firefox',
-                 'url': '/kb/Add-ons%20are%20disabled%20after%20updating%20Firefox'},
-                {'title': 'Firefox does not ask to save tabs and windows on exit',
-                 'url': '/kb/Firefox%20does%20not%20ask%20to%20save%20tabs%20and%'
-                        '20windows%20on%20exit'},
+                 'url': '/kb/Add-ons%20are%20disabled%20after%20updating%20'
+                        'Firefox'},
+                {'title': 'Firefox does not ask to save tabs and windows on '
+                          'exit',
+                 'url': '/kb/Firefox%20does%20not%20ask%20to%20save%20tabs%20'
+                        'and%20windows%20on%20exit'},
                 {'title': 'Menu bar is missing',
                  'url': '/kb/Menu+bar+is+missing'},
             ],
@@ -161,9 +169,12 @@ products = SortedDict([
         'tags': ['mobile'],
         'categories': SortedDict([
             ('m1', {
-                'name': _lazy(u'Problems viewing certain web sites in Firefox for Mobile'),
-                'html': 'You can try using the <a href="https://addons.mozilla.org/mobile/addon/phony/">Phony extension</a> '
-                        'and setting your user agent to Android. Or try one of the following:',
+                'name': _lazy(u'Problems viewing certain web sites in Firefox '
+                              u'for Mobile'),
+                'html': 'You can try using the <a href="https://addons.mozilla'
+                        '.org/mobile/addon/phony/">Phony extension</a> '
+                        'and setting your user agent to Android. Or try one '
+                        'of the following:',
                 'articles': [
                     {'title': 'How can I use Youtube in Firefox for Mobile?',
                      'url': '/kb/firefox-mobile-doesnt-support-flash'},
@@ -223,7 +234,8 @@ products = SortedDict([
             ('m5', {
                 'name': _lazy(u'Syncing desktop Firefox with mobile'),
                 'articles': [
-                    {'title': 'How do I sync Firefox between my desktop and mobile?',
+                    {'title': 'How do I sync Firefox between my desktop and '
+                              'mobile?',
                      'url': '/kb/sync-firefox-between-desktop-and-mobile'},
                     {'title': "I've lost my phone - how do I deactivate Sync?",
                      'url': '/kb/ive-lost-my-phone-how-do-i-deactivate-sync'},
@@ -233,7 +245,8 @@ products = SortedDict([
                 'tags': ['sync'],
             }),
             ('m6', {
-                'name': _lazy(u'Another kind of problem with Firefox for mobile'),
+                'name': _lazy(u'Another kind of problem with Firefox for '
+                              u'mobile'),
                 'extra_fields': ['frequency'],
                 'html': 'We have lots of helpful articles on <em>general '
                         'issues with Firefox for mobile</em> and hundreds '
@@ -242,7 +255,8 @@ products = SortedDict([
                 'articles': [
                     {'title': 'How to find and install add-ons',
                      'url': '/kb/find-and-install-add-ons'},
-                    {'title': 'How do I sync Firefox between my desktop and mobile?',
+                    {'title': 'How do I sync Firefox between my desktop and '
+                              'mobile?',
                      'url': '/kb/sync-firefox-between-desktop-and-mobile'},
                     {'title': "Firefox for mobile doesn't support Flash",
                      'url': '/kb/firefox-mobile-doesnt-support-flash'},
@@ -252,8 +266,10 @@ products = SortedDict([
                 'tags': ['other'],
             }),
             ('m7', {
-                'name': _lazy(u'Suggestions for how to improve Firefox for mobile'),
-                'html': '<p>Please use our feedback system for suggestions for new Firefox features: '
+                'name': _lazy(u'Suggestions for how to improve Firefox for '
+                              u'mobile'),
+                'html': '<p>Please use our feedback system for suggestions '
+                        'for new Firefox features: '
                         '<a href="//m.input.mozilla.com/en-US/feedback">'
                         'Firefox Input</a></p>',
                 'deadend': True,
@@ -306,7 +322,8 @@ products = SortedDict([
                         'Firefox Sync in Firefox for mobile</em> and hundreds '
                         'of questions in our database. Try the following:',
                 'articles': [
-                    {'title': 'How do I sync Firefox between my desktop and mobile?',
+                    {'title': 'How do I sync Firefox between my desktop and '
+                              'mobile?',
                      'url': '/kb/sync-firefox-between-desktop-and-mobile'},
                     {'title': 'How do I add a device to Firefox Sync?',
                      'url': '/kb/add-a-device-to-firefox-sync'},
@@ -325,20 +342,23 @@ products = SortedDict([
                 'tags': ['iphone'],
             }),
             ('s3', {
-                'name': _lazy(u"Setting up Firefox Sync on my Desktop Firefox"),
+                'name': _lazy(u'Setting up Firefox Sync on my Desktop '
+                              u'Firefox'),
                 'html': 'We have lots of helpful articles on <em>setting up '
                         'Firefox Sync</em> and hundreds of questions in our '
                         'database. Try one of the following:',
                 'articles': [
                     {'title': 'How to sync Firefox settings between computers',
-                     'url': '/kb/How+to+sync+Firefox+settings+between+computers'},
+                     'url': '/kb/How%20to%20sync%20Firefox%20settings%20'
+                            'between%20computers'},
                     {'title': 'How do I set up Firefox Sync?',
                      'url': '/kb/how-do-i-set-up-firefox-sync'},
                 ],
                 'tags': ['desktop'],
             }),
             ('s4', {
-                'name': _lazy(u'Other problems syncing data between computers or devices'),
+                'name': _lazy(u'Other problems syncing data between computers '
+                              u'or devices'),
                 'html': 'We have lots of helpful articles on <em>Firefox sync'
                         '</em> and hundreds of questions in our database. Try '
                         'one of the following:',
@@ -359,9 +379,9 @@ products = SortedDict([
     ('other', {
         'name': _lazy(u"Thunderbird"),
         'subtitle':  _lazy(u"or other Mozilla products"),
-        'html': 'This site is for Firefox support. You can get help with Thunderbird and'
-                ' other Mozilla products at'
-                ' <a href="//www.mozilla.org/support">support.mozilla.org</a>.',
+        'html': 'This site is for Firefox support. You can get help with '
+                'Thunderbird and other Mozilla products at '
+                '<a href="//www.mozilla.org/support">support.mozilla.org</a>.',
         'categories': SortedDict([]),
         'deadend': True,
     }),
