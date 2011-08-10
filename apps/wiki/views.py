@@ -777,7 +777,8 @@ def get_helpful_votes_async(request, document_slug):
         rdate = rev.created
         rev_data.append({
                     'x': 1000 * int(time.mktime(rdate.timetuple())),
-                    'title': _('R', 'First letter of "Revision"'),
+                    # L10n: 'R' is the first letter of "Revision".
+                    'title': _('R', 'revision_heading'),
                     'text': unicode(_('Revision %s')) % rdate
                     #'url': 'http://www.google.com/'  # Not supported yet
                 })
