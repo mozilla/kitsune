@@ -10,15 +10,18 @@ from django.db import connections, router
 from django.utils.datastructures import SortedDict
 
 import jingo
+from redis.exceptions import ConnectionError
 from tower import ugettext as _, ugettext_lazy as _lazy
 
 from dashboards import THIS_WEEK, ALL_TIME, PERIODS
 from sumo.urlresolvers import reverse
+from sumo.utils import redis_client
 from wiki.models import Document, MEDIUM_SIGNIFICANCE, MAJOR_SIGNIFICANCE
 
 
 MOST_VIEWED = 1
 MOST_RECENT = 2
+MOST_CHANGED = 3
 
 
 def _cursor():
@@ -540,6 +543,60 @@ class UnreviewedReadout(Readout):
                      users=users))
 
 
+class UnhelpfulReadout(Readout):
+    title = _lazy(u'Unhelpful Documents')
+
+    short_title = _lazy(u'Unhelpful', 'document')
+    details_link_text = _lazy(u'All unhelpful articles...')
+    slug = 'unhelpful'
+    column3_label = _lazy(u'Total Votes')
+    column4_label = _lazy(u'Helpfulness')
+
+    modes = [(MOST_CHANGED, _lazy('Most Unhelpful'))]
+
+    def rows(self, max=None):
+        REDIS_KEY = settings.HELPFULVOTES_UNHELPFUL_KEY
+        output = []
+        try:
+            redis = redis_client('helpfulvotes')
+            length = redis.llen(REDIS_KEY)
+            max_get = max or length
+            output = redis.lrange(REDIS_KEY, 0, max_get)
+        except ConnectionError:
+            pass
+
+        return [self._format_row(r) for r in output]
+
+    def render(self, max_rows=None):
+        # Compute percents for bar widths:
+        rows = self.rows(max_rows)
+        max_visits = max(r['total'] for r in rows) if rows else 0
+        for r in rows:
+            r['percent'] = (0 if r['total'] is None or not max_visits
+                         else int(round(r['total'] / float(max_visits) * 100)))
+            r['custom'] = True
+            r['column4_data'] = r['helpfulness']
+            r['visits'] = r['total']
+
+        # Render:
+        return jingo.render_to_string(
+            self.request,
+            'dashboards/includes/kb_readout.html',
+            {'rows': rows, 'column3_label': self.column3_label,
+             'column4_label': self.column4_label})
+
+    def _format_row(self, strresult):
+        result = strresult.split(':')
+        doc = Document.objects.get(pk=result[0])
+        return (dict(title=doc.title,
+                     url=reverse('wiki.document_revisions', args=[doc.slug],
+                                 locale=self.locale),
+                     total=int(float(result[1])),
+                     helpfulness=('<span title="%+.1f%%">%.1f%%</span>'
+                           % (float(result[3]) * 100, float(result[2]) * 100)),
+                    ))
+
+
 # L10n Dashboard tables that have their own whole-page views:
 L10N_READOUTS = SortedDict((t.slug, t) for t in
     [MostVisitedTranslationsReadout, TemplateTranslationsReadout,
@@ -548,7 +605,7 @@ L10N_READOUTS = SortedDict((t.slug, t) for t in
 
 # Contributors ones:
 CONTRIBUTOR_READOUTS = SortedDict((t.slug, t) for t in
-    [MostVisitedDefaultLanguageReadout, UnreviewedReadout])
+    [MostVisitedDefaultLanguageReadout, UnreviewedReadout, UnhelpfulReadout])
 
 # All:
 READOUTS = L10N_READOUTS.copy()

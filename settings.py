@@ -466,7 +466,12 @@ MINIFY_BUNDLES = {
             'js/editable.js',
         ),
         'wiki.history': (
-            'js/charts.js',
+            'js/historycharts.js',
+        ),
+        'dashboard.helpful': (
+            'js/helpfuldashcharts.js',
+        ),
+        'highcharts': (
             'js/libs/highcharts-2.1.4/highcharts.src.js',
         ),
         'customercare': (
@@ -702,13 +707,17 @@ VERSION_CHECK_TOKEN = None
 REDIS_BACKENDS = {
     #'default': 'redis://localhost:6379?socket_timeout=0.5&db=0',
     #'karma': 'redis://localhost:6381?socket_timeout=0.5&db=0',
+    #'helpfulvotes': 'redis://localhost:6379?socket_timeout=0.5&db=1',
 }
 
 # Redis backends used for testing.
 REDIS_TEST_BACKENDS = {
     #'default': 'redis://localhost:6383?socket_timeout=0.5&db=0',
     #'karma': 'redis://localhost:6383?socket_timeout=0.5&db=1',
+    #'helpfulvotes': 'redis://localhost:6379?socket_timeout=0.5&db=1',
 }
 
 # Set this to enable Arecibo (http://www.areciboapp.com/) error reporting:
 ARECIBO_SERVER_URL = ''
+
+HELPFULVOTES_UNHELPFUL_KEY = 'helpfulvotes_topunhelpful'
