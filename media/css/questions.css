@@ -426,6 +426,21 @@ div.user-section div.asked-by {
     margin: 6px 0 0;
 }
 
+div.user-section ul.karma-titles {
+    border-top: 3px solid #fff;
+    font-size: 11px;
+    font-weight: normal;
+    line-height: 11px;
+    list-style: none;
+    margin: 5px 0;
+    text-transform: uppercase;
+}
+
+div.user-section ul.karma-titles li {
+    border-bottom: 3px solid #fff;
+    padding: 5px 0 3px;
+}
+
 div.user-section div.asked-by span {
     display: block;
 }
