@@ -1,6 +1,5 @@
 /*
- * charts.js
- * Scripts to support charts.
+ * Scripts to support charts on wiki article history.
  */
 
 (function ($) {
@@ -103,7 +102,6 @@
                     fontSize: '10px'
                 }
             },
-
             title: {
                 text: gettext('Helpfulness Votes')
             },
@@ -168,7 +166,5 @@
         chart.series[0].hide();
         chart.series[1].hide();
     }
-
     $('#show-chart').click(init);
-
 }(jQuery));

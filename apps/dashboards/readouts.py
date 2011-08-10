@@ -10,10 +10,13 @@ from django.db import connections, router
 from django.utils.datastructures import SortedDict
 
 import jingo
+from jinja2 import Markup
+from redis.exceptions import ConnectionError
 from tower import ugettext as _, ugettext_lazy as _lazy
 
 from dashboards import THIS_WEEK, ALL_TIME, PERIODS
 from sumo.urlresolvers import reverse
+from sumo.utils import redis_client
 from wiki.models import Document, MEDIUM_SIGNIFICANCE, MAJOR_SIGNIFICANCE
 
 
@@ -541,6 +544,51 @@ class UnreviewedReadout(Readout):
                      users=users))
 
 
+class UnhelpfulReadout(Readout):
+    title = _lazy(u'Unhelpful Documents')
+
+    short_title = _lazy(u'Unhelpful', 'document')
+    details_link_text = _lazy(u'All unhelpful articles...')
+    slug = 'unhelpful'
+    column3_label = _lazy(u'Total Votes')
+    column4_label = _lazy(u'Helpfulness')
+
+    # We don't have multiple modes, so let's just set it to 0 and forget it.
+    modes = [(0, _lazy('Most Unhelpful'))]
+
+    # This class is a namespace and doesn't get instantiated.
+    try:
+        hide_readout = redis_client('helpfulvotes').llen(settings.HELPFULVOTES_UNHELPFUL_KEY) == 0
+    except (AttributeError, ConnectionError):
+        hide_readout = True
+
+    def rows(self, max=None):
+        REDIS_KEY = settings.HELPFULVOTES_UNHELPFUL_KEY
+        try:
+            redis = redis_client('helpfulvotes')
+            if redis is None:
+                raise ConnectionError
+            length = redis.llen(REDIS_KEY)
+            max_get = max or length
+            output = redis.lrange(REDIS_KEY, 0, max_get)
+        except ConnectionError:
+            output = []
+
+        return [self._format_row(r) for r in output]
+
+    def _format_row(self, strresult):
+        result = strresult.split('::')
+        helpfulness = Markup('<span title="%+.1f%%">%.1f%%</span>' %
+                             (float(result[3]) * 100, float(result[2]) * 100))
+        return dict(title=result[6].decode('utf-8'),
+                     url=reverse('wiki.document_revisions',
+                                 args=[unicode(result[5], "utf-8")],
+                                 locale=self.locale),
+                     visits=int(float(result[1])),
+                     custom=True,
+                     column4_data=helpfulness)
+
+
 # L10n Dashboard tables that have their own whole-page views:
 L10N_READOUTS = SortedDict((t.slug, t) for t in
     [MostVisitedTranslationsReadout, TemplateTranslationsReadout,
@@ -549,7 +597,7 @@ L10N_READOUTS = SortedDict((t.slug, t) for t in
 
 # Contributors ones:
 CONTRIBUTOR_READOUTS = SortedDict((t.slug, t) for t in
-    [MostVisitedDefaultLanguageReadout, UnreviewedReadout])
+    [MostVisitedDefaultLanguageReadout, UnreviewedReadout, UnhelpfulReadout])
 
 # All:
 READOUTS = L10N_READOUTS.copy()
