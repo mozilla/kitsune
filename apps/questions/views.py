@@ -78,7 +78,9 @@ def questions(request):
     question_qs = Question.objects.select_related(
         'creator', 'last_answer', 'last_answer__creator')
     question_qs = question_qs.extra(
-        {'_num_votes': 'SELECT COUNT(*) FROM questions_questionvote WHERE questions_questionvote.question_id = questions_question.id'})
+        {'_num_votes': 'SELECT COUNT(*) FROM questions_questionvote WHERE '
+                       'questions_questionvote.question_id = '
+                       'questions_question.id'})
     question_qs = question_qs.filter(creator__is_active=1)
 
     if filter_ == 'no-replies':

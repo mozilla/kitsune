@@ -8,9 +8,19 @@ from questions.models import Answer
 # labels and help text
 SITE_AFFECTED_LABEL = _lazy(u'URL of affected site')
 CRASH_ID_LABEL = _lazy(u'Crash ID(s)')
-CRASH_ID_HELP = _lazy(u"If you submit information to Mozilla when you crash, you'll be given a crash ID which uniquely identifies your crash and lets us look at details that may help identify the cause. To find your recently submitted crash IDs, go to <strong>about:crashes</strong> in your location bar. <a href='http://support.mozilla.com/en-US/kb/Firefox+crashes#Getting_the_most_accurate_help_with_your_Firefox_crash' target='_blank'>Click for detailed instructions</a>.")
+CRASH_ID_HELP = _lazy(u"If you submit information to Mozilla when you crash, "
+                      u"you'll be given a crash ID which uniquely identifies "
+                      u"your crash and lets us look at details that may help "
+                      u"identify the cause. To find your recently submitted "
+                      u"crash IDs, go to <strong>about:crashes</strong> in "
+                      u"your location bar. <a href='http://support.mozilla."
+                      u"com/en-US/kb/Firefox+crashes#Getting_the_most_"
+                      u"accurate_help_with_your_Firefox_crash' "
+                      u"target='_blank'>Click for detailed instructions</a>.")
 TROUBLESHOOTING_LABEL = _lazy(u'Troubleshooting Information')
-TROUBLESHOOTING_HELP = _lazy(u'Copy and paste the information from <strong>Help &gt; Troubleshooting Information</strong>.')
+TROUBLESHOOTING_HELP = _lazy(u'Copy and paste the information from '
+                             u'<strong>Help &gt; Troubleshooting '
+                             u'Information</strong>.')
 FREQUENCY_LABEL = _lazy(u'This happened')
 FREQUENCY_CHOICES = [(u'', u''),
                      (u'NOT_SURE', _lazy(u'Not sure how often')),
@@ -20,9 +30,11 @@ FREQUENCY_CHOICES = [(u'', u''),
 STARTED_LABEL = _lazy(u'This started when...')
 TITLE_LABEL = _lazy(u'Question')
 CONTENT_LABEL = _lazy(u'Details')
-CONTENT_HELP = _lazy(u'The more information you can provide the better chance your question will be answered.')
+CONTENT_HELP = _lazy(u'The more information you can provide the better chance '
+                     u'your question will be answered.')
 EMAIL_LABEL = _lazy(u'Email')
-EMAIL_HELP = _lazy(u'A confirmation email will be sent to this address in order to post your question.')
+EMAIL_HELP = _lazy(u'A confirmation email will be sent to this address in '
+                   u'order to post your question.')
 FF_VERSION_LABEL = _lazy(u'Firefox version')
 OS_LABEL = _lazy(u'Operating system')
 PLUGINS_LABEL = _lazy(u'Installed plugins')
@@ -30,13 +42,22 @@ ADDON_LABEL = _lazy(u'Extension/plugin you are having trouble with')
 
 # Validation error messages
 MSG_TITLE_REQUIRED = _lazy(u'Please provide a question.')
-MSG_TITLE_SHORT = _lazy(u'Your question is too short (%(show_value)s characters). It must be at least %(limit_value)s characters.')
-MSG_TITLE_LONG = _lazy(u'Please keep the length of your question to %(limit_value)s characters or less. It is currently %(show_value)s characters.')
+MSG_TITLE_SHORT = _lazy(u'Your question is too short (%(show_value)s '
+                        u'characters). It must be at least %(limit_value)s '
+                        u'characters.')
+MSG_TITLE_LONG = _lazy(u'Please keep the length of your question to '
+                       u'%(limit_value)s characters or less. It is currently '
+                       u'%(show_value)s characters.')
 MSG_CONTENT_REQUIRED = _lazy(u'Please provide content.')
-MSG_CONTENT_SHORT = _lazy(u'Your content is too short (%(show_value)s characters). It must be at least %(limit_value)s characters.')
-MSG_CONTENT_LONG = _lazy(u'Please keep the length of your content to %(limit_value)s characters or less. It is currently %(show_value)s characters.')
+MSG_CONTENT_SHORT = _lazy(u'Your content is too short (%(show_value)s '
+                          u'characters). It must be at least %(limit_value)s '
+                          u'characters.')
+MSG_CONTENT_LONG = _lazy(u'Please keep the length of your content to '
+                         u'%(limit_value)s characters or less. It is '
+                         u'currently %(show_value)s characters.')
 
 REPLY_PLACEHOLDER = _lazy(u'Enter your reply here.')
+
 
 class EditQuestionForm(forms.Form):
     """Form to edit an existing question"""
