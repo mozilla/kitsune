@@ -288,6 +288,15 @@ class DocumentTests(TestCaseBase):
         doc = pq(r.content)
         assert not doc('#doc-tabs li.edit')
 
+    def test_obsolete_no_vote(self):
+        """No voting on is_archived documents."""
+        d = document(is_archived=True, save=True)
+        revision(document=d, is_approved=True, save=True)
+        response = self.client.get(d.get_absolute_url())
+        eq_(200, response.status_code)
+        doc = pq(response.content)
+        assert not doc('#helpful-vote')
+
 
 class RevisionTests(TestCaseBase):
     """Tests for the Revision template"""
