@@ -1,5 +1,5 @@
 {# vim: set ts=2 et sts=2 sw=2: #}
-{% if document.current_revision and not waffle.switch('hide-voting') %}
+{% if not document.is_archived and document.current_revision and not waffle.switch('hide-voting') %}
   {% if not document.current_revision.has_voted(request) and
      (not fallback_reason or
      fallback_reason == 'translation_not_approved' or
