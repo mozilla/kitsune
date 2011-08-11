@@ -3,7 +3,7 @@ from datetime import datetime
 from nose.tools import eq_
 
 from dashboards.readouts import (UnreviewedReadout, OutOfDateReadout,
-                                 TemplateTranslationsReadout,
+                                 TemplateTranslationsReadout, overview_rows,
                                  MostVisitedTranslationsReadout)
 from sumo.tests import TestCase
 from wiki.models import MAJOR_SIGNIFICANCE, MEDIUM_SIGNIFICANCE
@@ -25,6 +25,44 @@ class ReadoutTestCase(TestCase):
         """Return the titles shown by the Unreviewed Changes readout."""
         return [row['title'] for row in
                 self.readout(MockRequest()).rows()]
+
+
+class OverviewTests(TestCase):
+    """Tests for Overview readout"""
+    def test_counting_unready_templates(self):
+        """Templates without a ready-for-l10n rev shouldn't count in total."""
+        # Make a template with an approved but not-ready-for-l10n rev:
+        r = revision(document=document(title='Template:smoo',
+                                       is_localizable=True,
+                                       is_template=True,
+                                       save=True),
+                     is_ready_for_localization=False,
+                     is_approved=True,
+                     save=True)
+
+        # It shouldn't show up in the total:
+        eq_(0, overview_rows('de')['templates']['denominator'])
+
+        r.is_ready_for_localization = True
+        r.save()
+        eq_(1, overview_rows('de')['templates']['denominator'])
+
+    def test_counting_unready_docs(self):
+        """Docs without a ready-for-l10n rev shouldn't count in total."""
+        # Make a doc with an approved but not-ready-for-l10n rev:
+        r = revision(document=document(title='smoo',
+                                       is_localizable=True,
+                                       save=True),
+                     is_ready_for_localization=False,
+                     is_approved=True,
+                     save=True)
+
+        # It shouldn't show up in the total:
+        eq_(0, overview_rows('de')['all']['denominator'])
+
+        r.is_ready_for_localization = True
+        r.save()
+        eq_(1, overview_rows('de')['all']['denominator'])
 
 
 class UnreviewedChangesTests(ReadoutTestCase):
