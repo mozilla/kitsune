@@ -231,14 +231,14 @@ class MostVisitedDefaultLanguageReadout(Readout):
     def _format_row(self, (slug, title, visits, num_unreviewed)):
         needs_review = int(num_unreviewed > 0)
         status, view_name, dummy = self.review_statuses[needs_review]
-        return (dict(title=title,
-                     url=reverse('wiki.document', args=[slug],
-                                 locale=self.locale),
-                     visits=visits,
-                     status=status,
-                     status_url=reverse(view_name, args=[slug],
-                                        locale=self.locale)
-                                if view_name else ''))
+        return dict(title=title,
+                    url=reverse('wiki.document', args=[slug],
+                                locale=self.locale),
+                    visits=visits,
+                    status=status,
+                    status_url=reverse(view_name, args=[slug],
+                                       locale=self.locale)
+                               if view_name else '')
 
 
 class MostVisitedTranslationsReadout(MostVisitedDefaultLanguageReadout):
@@ -317,13 +317,13 @@ class MostVisitedTranslationsReadout(MostVisitedDefaultLanguageReadout):
                                  locale=self.locale)
             status_class = 'untranslated'
 
-        return (dict(title=title,
-                     url=reverse('wiki.document', args=[slug],
-                                 locale=locale),
-                     visits=visits,
-                     status=status,
-                     status_class=status_class,
-                     status_url=status_url))
+        return dict(title=title,
+                    url=reverse('wiki.document', args=[slug],
+                                locale=locale),
+                    visits=visits,
+                    status=status,
+                    status_class=status_class,
+                    status_url=status_url)
 
 
 class TemplateTranslationsReadout(MostVisitedTranslationsReadout):
@@ -385,10 +385,10 @@ class UntranslatedReadout(Readout):
         # take advantage of SPOTs (like for get_absolute_url()):
         d = Document(slug=slug, title=title,
                      locale=settings.WIKI_DEFAULT_LANGUAGE)
-        return (dict(title=d.title,
-                     url=d.get_absolute_url(),
-                     visits=visits,
-                     updated=reviewed))
+        return dict(title=d.title,
+                    url=d.get_absolute_url(),
+                    visits=visits,
+                    updated=reviewed)
 
 
 class OutOfDateReadout(Readout):
@@ -470,15 +470,14 @@ class OutOfDateReadout(Readout):
                 self.locale))
 
     def _order_clause(self):
-        return ('ORDER BY engrev.reviewed DESC'
-                if self.mode == MOST_RECENT
+        return ('ORDER BY engrev.reviewed DESC' if self.mode == MOST_RECENT
                 else 'ORDER BY dashboards_wikidocumentvisits.visits DESC, '
                      'transdoc.title ASC')
 
     def _format_row(self, (slug, title, reviewed, visits)):
-        return (dict(title=title,
-                     url=reverse('wiki.edit_document', args=[slug]),
-                     visits=visits, updated=reviewed))
+        return dict(title=title,
+                    url=reverse('wiki.edit_document', args=[slug]),
+                    visits=visits, updated=reviewed)
 
 
 class NeedingUpdatesReadout(OutOfDateReadout):
@@ -530,18 +529,18 @@ class UnreviewedReadout(Readout):
             (THIS_WEEK, self.locale))
 
     def _order_clause(self):
-        return ('ORDER BY maxcreated DESC'
-                if self.mode == MOST_RECENT
+        return ('ORDER BY maxcreated DESC' if self.mode == MOST_RECENT
                 else 'ORDER BY dashboards_wikidocumentvisits.visits DESC, '
                      'wiki_document.title ASC')
 
     def _format_row(self, (slug, title, changed, users, visits)):
-        return (dict(title=title,
-                     url=reverse('wiki.document_revisions', args=[slug],
-                                 locale=self.locale),
-                     visits=visits,
-                     updated=changed,
-                     users=users))
+        return dict(title=title,
+                    url=reverse('wiki.document_revisions',
+                                args=[slug],
+                                locale=self.locale),
+                    visits=visits,
+                    updated=changed,
+                    users=users)
 
 
 class UnhelpfulReadout(Readout):
