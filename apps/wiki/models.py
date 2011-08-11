@@ -523,6 +523,11 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin):
                 user.has_perm('wiki.delete_document_{locale}'.format(
                               locale=self.locale)))
 
+    def allows_vote(self, request):
+        """Return whether `user` can vote on this document."""
+        return (not self.is_archived and self.current_revision and
+                not self.current_revision.has_voted(request))
+
     def translated_to(self, locale):
         """Return the translation of me to the given locale.
 

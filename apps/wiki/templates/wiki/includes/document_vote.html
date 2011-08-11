@@ -1,9 +1,5 @@
 {# vim: set ts=2 et sts=2 sw=2: #}
-{% if document.current_revision and not waffle.switch('hide-voting') %}
-  {% if not document.current_revision.has_voted(request) and
-     (not fallback_reason or
-     fallback_reason == 'translation_not_approved' or
-     fallback_reason == 'no_translation') %}
+{% if document.allows_vote(request) and not waffle.switch('hide-voting') %}
   <div id="helpful-vote">
     <form class="helpful" action="{{ url('wiki.document_vote', document_slug=document.slug) }}" method="post">
       <p>
@@ -15,5 +11,4 @@
       </p>
     </form>
   </div>
-  {% endif %}
 {% endif %}
