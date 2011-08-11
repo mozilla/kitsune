@@ -54,19 +54,19 @@ def overview_rows(locale):
     # "max" kwarg on rows(), etc. It doesn't fit the Readout signature, so we
     # don't shoehorn it in.
 
-    demoninatable = (Document.uncached
-                             .filter(locale=settings.WIKI_DEFAULT_LANGUAGE,
-                                     current_revision__isnull=False,
-                                     is_localizable=True,
-                                     latest_localizable_revision__isnull=False,
-                                     is_archived=False))
-
-    total = demoninatable.count()
+    total = Document.uncached.filter(
+                locale=settings.WIKI_DEFAULT_LANGUAGE,
+                current_revision__isnull=False,
+                is_localizable=True,
+                latest_localizable_revision__isnull=False,
+                is_archived=False)
+    total_docs = total.count()
 
     # How many approved documents are there in German that have parents?
     translated = Document.uncached.filter(
         locale=locale, is_archived=False).exclude(
-        current_revision=None).exclude(parent=None).count()
+        current_revision=None).exclude(parent=None)
+    translated_docs = translated.count()
 
     # Of the top 20 most visited English articles, how many are not translated
     # into German?
@@ -82,30 +82,31 @@ def overview_rows(locale):
     popular_translated = cursor.fetchone()[0]
 
     # Template overview
-    template_total = demoninatable.filter(is_template=True).count()
+    total_templates = total.filter(is_template=True).count()
 
     # How many approved templates are there in German that have parents?
-    template_translated = Document.uncached.filter(
-        locale=locale, is_template=True, is_archived=False).exclude(
-        current_revision=None).exclude(parent=None).count()
+    translated_templates = translated.filter(is_template=True).count()
 
-    return {'most-visited': dict(title=_('Most-Visited Articles'),
+    return {'most-visited': dict(
+                 title=_('Most-Visited Articles'),
                  url='#' + MostVisitedTranslationsReadout.slug,
                  numerator=popular_translated, denominator=TOP_N,
                  percent=percent_or_100(popular_translated, TOP_N),
                  description=_('These are the top 20 most visited articles, '
                                'which account for over 50% of the traffic to '
                                'the Knowledge Base.')),
-            'templates': dict(title=_('Templates'),
+            'templates': dict(
+                 title=_('Templates'),
                  url='#' + TemplateTranslationsReadout.slug,
-                 numerator=template_translated, denominator=template_total,
-                 percent=percent_or_100(template_translated, template_total),
+                 numerator=translated_templates, denominator=total_templates,
+                 percent=percent_or_100(translated_templates, total_templates),
                  description=_('How many of the approved templates '
                                'which allow translations have an approved '
                                'translation into this language')),
-            'all': dict(title=_('All Knowledge Base Articles'),
-                 numerator=translated, denominator=total,
-                 percent=percent_or_100(translated, total),
+            'all': dict(
+                 title=_('All Knowledge Base Articles'),
+                 numerator=translated_docs, denominator=total_docs,
+                 percent=percent_or_100(translated_docs, total_docs),
                  description=_('How many of the approved English articles '
                                'which allow translations have an approved '
                                'translation into this language'))}
