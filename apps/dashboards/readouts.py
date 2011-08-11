@@ -54,10 +54,14 @@ def overview_rows(locale):
     # "max" kwarg on rows(), etc. It doesn't fit the Readout signature, so we
     # don't shoehorn it in.
 
-    total = Document.uncached.exclude(current_revision=None).filter(
-                locale=settings.WIKI_DEFAULT_LANGUAGE,
-                is_localizable=True,
-                is_archived=False).count()
+    demoninatable = (Document.uncached
+                             .filter(locale=settings.WIKI_DEFAULT_LANGUAGE,
+                                     current_revision__isnull=False,
+                                     is_localizable=True,
+                                     latest_localizable_revision__isnull=False,
+                                     is_archived=False))
+
+    total = demoninatable.count()
 
     # How many approved documents are there in German that have parents?
     translated = Document.uncached.filter(
@@ -78,11 +82,7 @@ def overview_rows(locale):
     popular_translated = cursor.fetchone()[0]
 
     # Template overview
-    template_total = Document.uncached.exclude(current_revision=None).filter(
-                locale=settings.WIKI_DEFAULT_LANGUAGE,
-                is_template=True,
-                is_localizable=True,
-                is_archived=False).count()
+    template_total = demoninatable.filter(is_template=True).count()
 
     # How many approved templates are there in German that have parents?
     template_translated = Document.uncached.filter(
