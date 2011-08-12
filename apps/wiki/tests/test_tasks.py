@@ -14,12 +14,10 @@ from test_utils import RequestFactory
 import waffle
 
 from sumo.tests import TestCase
-from wiki.models import (Document, HelpfulVote, HelpfulVoteOld)
-from wiki.tasks import (migrate_helpfulvotes, 
-                        send_reviewed_notification, rebuild_kb,
+from wiki.models import Document
+from wiki.tasks import (send_reviewed_notification, rebuild_kb,
                         schedule_rebuild_kb, _rebuild_kb_chunk)
 from wiki.tests import TestCaseBase, revision, document
-from users.tests import user
 
 
 REVIEWED_EMAIL_CONTENT = """Your revision has been reviewed.
@@ -178,59 +176,3 @@ class ReviewMailTestCase(TestCaseBase):
         eq_(1, len(mail.outbox))
         eq_('Your revision has been approved: %s' % doc.title,
             mail.outbox[0].subject)
-
-
-anon_id = '69beab04be927353c2f0046db2232643'
-ua = '''Mozilla/5.0 (Windows; U; Windows NT 6.1;
-    pt-BR; rv:1.9.2.12) Gecko/20101026 Firefox/3.6.12'''
-
-
-class HelpfulMigrationTestCase(TestCase):
-
-    @mock.patch.object(waffle, 'switch_is_active')
-    def test_normal_migrate_anon(self, switch_is_active):
-        switch_is_active.return_value = True
-        rev = revision()
-        rev.save()
-        old = HelpfulVoteOld()
-        old.document = rev.document
-        old.helpful = 1
-        old.anonymous_id = anon_id
-        old.user_agent = ua
-        old.save()
-        migrate_helpfulvotes(0, 1000)
-        new = HelpfulVote.objects.filter(revision=rev,
-            helpful=1,
-            anonymous_id=anon_id,
-            user_agent=ua
-            )
-        assert new.exists()
-
-        check_old = HelpfulVoteOld.objects.filter(id=old.id)
-        assert check_old.exists()
-
-    @mock.patch.object(waffle, 'switch_is_active')
-    def test_normal_migrate_user(self, switch_is_active):
-        switch_is_active.return_value = True
-        rev = revision()
-        rev.save()
-        usr = user(save=True)
-
-        old = HelpfulVoteOld()
-        old.document = rev.document
-        old.helpful = 1
-        old.creator = usr
-        old.user_agent = ua
-        old.save()
-
-        migrate_helpfulvotes(0, 1000)
-
-        new = HelpfulVote.objects.filter(revision=rev,
-            helpful=1,
-            creator=usr,
-            user_agent=ua
-            )
-        assert new.exists()
-
-        check_old = HelpfulVoteOld.objects.filter(id=old.id)
-        assert check_old.exists()
