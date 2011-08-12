@@ -115,7 +115,7 @@ def _get_current_unhelpful(old_formatted):
 
 @cronjobs.register
 def cache_most_unhelpful_kb_articles():
-    """Calculate and save the most unhelpful KB articles in the past 7 days."""
+    """Calculate and save the most unhelpful KB articles in the past month."""
 
     REDIS_KEY = settings.HELPFULVOTES_UNHELPFUL_KEY
 
@@ -136,13 +136,15 @@ def cache_most_unhelpful_kb_articles():
         # R = mean rating, m = minimum votes to list in topranked
         return (C * m + R * v) / (m + v)
 
-    mean = _mean([final[key]['currperc'] for key in final.keys()])
+    mean_perc = _mean([final[key]['currperc'] for key in final.keys()])
+    mean_total = _mean([final[key]['total'] for key in final.keys()])
 
     sorted_final = sorted([(key,
                             final[key]['total'],
                             final[key]['currperc'],
                             final[key]['diffperc'],
-                            _bayes_avg(mean, 100, final[key]['currperc'],
+                            _bayes_avg(mean_perc, mean_total,
+                                       final[key]['currperc'],
                                        final[key]['total']))
                             for key in final.keys()],
                           key=lambda entry: entry[4])  # Sort by Bayesian Avg

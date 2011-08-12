@@ -1,5 +1,5 @@
 /*
- * charts.js
+ * historycharts.js
  * Scripts to support charts.
  */
 

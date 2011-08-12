@@ -1,5 +1,5 @@
 /*
- * charts.js
+ * helpfuldashcharts.js
  * Scripts to support charts.
  */
 
