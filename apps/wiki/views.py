@@ -803,7 +803,7 @@ def get_helpful_votes_async(request, document_slug):
                       'y': -55,
                       'zIndex': 50}],
             'date_to_rev_id': date_to_rev_id,
-            'query': end - start}
+            'query': round(end - start, 2)}
 
     if len(send['data'][2]['data']) == 0:
         send['data'].pop(2)
