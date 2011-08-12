@@ -171,6 +171,11 @@ class Readout(object):
             {'rows': rows, 'column3_label': self.column3_label,
              'column4_label': self.column4_label})
 
+    @staticmethod
+    def should_show_to(user):
+        """Whether this readout should be shown to the user"""
+        return True
+
     # To override:
 
     def _query_and_params(self, max):
@@ -592,8 +597,10 @@ class UnreadyForLocalizationReadout(Readout):
                     visits=visits,
                     updated=reviewed)
 
-    # TODO: Add a should_show_to(user) method to hide this if you can't do
-    # anything about it.
+    @staticmethod
+    def should_show_to(user):
+        """Show unreadies only if the user can ready them."""
+        return user.has_perm('wiki.mark_ready_for_l10n')
 
 
 # L10n Dashboard tables that have their own whole-page views:
