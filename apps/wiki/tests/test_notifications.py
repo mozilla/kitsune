@@ -5,7 +5,7 @@ from nose.tools import eq_
 from sumo.tests import post
 from users.tests import user
 from wiki.events import ReadyRevisionEvent, ApproveRevisionInLocaleEvent
-from wiki.models import SIGNIFICANCES
+from wiki.models import SIGNIFICANCES, MEDIUM_SIGNIFICANCE
 from wiki.tests import revision, TestCaseBase
 
 
@@ -116,6 +116,7 @@ class ReadyForL10nTests(TestCaseBase):
         """Make a revision, and approve or reject it through the view."""
         r = revision(is_approved=True,
                      is_ready_for_localization=False,
+                     significance=MEDIUM_SIGNIFICANCE,
                      save=True)
 
         # Figure out POST data:

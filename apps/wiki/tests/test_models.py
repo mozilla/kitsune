@@ -10,7 +10,7 @@ from sumo.tests import TestCase
 from wiki.cron import calculate_related_documents
 from wiki.models import (Document, REDIRECT_CONTENT, REDIRECT_SLUG,
                          REDIRECT_TITLE, REDIRECT_HTML, MAJOR_SIGNIFICANCE,
-                         CATEGORIES)
+                         CATEGORIES, TYPO_SIGNIFICANCE)
 from wiki.parser import wiki_to_html
 from wiki.tests import document, revision, doc_rev, translated_revision
 
@@ -493,9 +493,18 @@ class RevisionTests(TestCase):
 
         eq_(en_rev.document.current_revision, de_rev.based_on)
 
-    def test_correct_ready_for_localization(self):
+    def test_correct_ready_for_localization_if_unapproved(self):
         """Revision.clean() must clear is_ready_for_l10n if not is_approved."""
         r = revision(is_approved=False, is_ready_for_localization=True)
+        r.clean()
+        assert not r.is_ready_for_localization
+
+    def test_correct_ready_for_localization_if_insignificant(self):
+        """Revision.clean() must clear is_ready_for_l10n if the rev is of
+        typo-level significance."""
+        r = revision(is_approved=True,
+                     is_ready_for_localization=True,
+                     significance=TYPO_SIGNIFICANCE)
         r.clean()
         assert not r.is_ready_for_localization
 

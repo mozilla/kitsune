@@ -599,7 +599,10 @@ class Revision(ModelBase):
 
     created = models.DateTimeField(default=datetime.now)
     reviewed = models.DateTimeField(null=True)
+
+    # The significance of the initial revision of a document is NULL.
     significance = models.IntegerField(choices=SIGNIFICANCES, null=True)
+
     comment = models.CharField(max_length=255)
     reviewer = models.ForeignKey(User, related_name='reviewed_revisions',
                                  null=True)
@@ -616,7 +619,8 @@ class Revision(ModelBase):
 
     # Is both approved and marked as ready for translation (which will result
     # in the translation UI considering it when looking for the latest
-    # translatable version). If is_approved=False, this must be False.
+    # translatable version). If is_approved=False or this revision belongs to a
+    # non-default-language Document, this must be False.
     is_ready_for_localization = models.BooleanField(default=False)
 
     class Meta(object):
@@ -663,9 +667,7 @@ class Revision(ModelBase):
                     dict(locale=LOCALES[settings.WIKI_DEFAULT_LANGUAGE].native,
                          id=old.id))
 
-        # If not is_approved, can't be is_ready. TODO: think about using a
-        # single field with more states.
-        if not self.is_approved:
+        if not self.can_be_readied_for_localization():
             self.is_ready_for_localization = False
 
     def save(self, *args, **kwargs):
@@ -768,6 +770,16 @@ class Revision(ModelBase):
         from wiki.parser import wiki_to_html
         return wiki_to_html(self.content, locale=self.document.locale,
                             doc_id=self.document.id)
+
+    def can_be_readied_for_localization(self):
+        """Return whether this revision has the prerequisites necessary for the
+        user to mark it as ready for localization."""
+        # If not is_approved, can't be is_ready. TODO: think about using a
+        # single field with more states.
+        # Also, if significance is trivial, it shouldn't be translated.
+        return (self.is_approved and
+                self.significance > TYPO_SIGNIFICANCE and
+                self.document.locale == settings.WIKI_DEFAULT_LANGUAGE)
 
 
 class HelpfulVote(ModelBase):

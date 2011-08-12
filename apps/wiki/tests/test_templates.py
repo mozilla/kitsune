@@ -25,7 +25,8 @@ from wiki.cron import calculate_related_documents
 from wiki.events import (EditDocumentEvent, ReadyRevisionEvent,
                          ReviewableRevisionInLocaleEvent,
                          ApproveRevisionInLocaleEvent)
-from wiki.models import Document, Revision, HelpfulVote, SIGNIFICANCES
+from wiki.models import (Document, Revision, HelpfulVote, SIGNIFICANCES,
+                         MEDIUM_SIGNIFICANCE)
 from wiki.tasks import send_reviewed_notification
 from wiki.tests import (TestCaseBase, document, revision, new_document_data,
                         translated_revision)
@@ -338,7 +339,9 @@ class RevisionTests(TestCaseBase):
         """HTTP POST to mark a revision as ready for l10n."""
 
         r = revision(is_approved=True,
-                     is_ready_for_localization=False, save=True)
+                     is_ready_for_localization=False,
+                     significance=MEDIUM_SIGNIFICANCE,
+                     save=True)
 
         self.client.login(username='admin', password='testpass')
 
