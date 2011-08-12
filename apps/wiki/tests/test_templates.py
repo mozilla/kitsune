@@ -292,8 +292,9 @@ class DocumentTests(TestCaseBase):
         """No voting on is_archived documents."""
         d = document(is_archived=True, save=True)
         revision(document=d, is_approved=True, save=True)
-        r = self.client.get(d.get_absolute_url())
-        doc = pq(r.content)
+        response = self.client.get(d.get_absolute_url())
+        eq_(200, response.status_code)
+        doc = pq(response.content)
         assert not doc('#helpful-vote')
 
 
