@@ -171,6 +171,11 @@ class Readout(object):
             {'rows': rows, 'column3_label': self.column3_label,
              'column4_label': self.column4_label})
 
+    @staticmethod
+    def should_show_to(user):
+        """Whether this readout should be shown to the user"""
+        return True
+
     # To override:
 
     def _query_and_params(self, max):
@@ -196,7 +201,7 @@ class Readout(object):
 class MostVisitedDefaultLanguageReadout(Readout):
     """Most-Visited readout for the default language"""
     title = _lazy(u'Most Visited')
-    # No short_title; the link to this one is hard-coded in Overview readout
+    # No short_title; the Contributors dash lacks an Overview readout
     details_link_text = _lazy(u'All knowledge base articles...')
     slug = 'most-visited'
     column3_label = _lazy(u'Visits')
@@ -228,14 +233,14 @@ class MostVisitedDefaultLanguageReadout(Readout):
     def _format_row(self, (slug, title, visits, num_unreviewed)):
         needs_review = int(num_unreviewed > 0)
         status, view_name, dummy = self.review_statuses[needs_review]
-        return (dict(title=title,
-                     url=reverse('wiki.document', args=[slug],
-                                 locale=self.locale),
-                     visits=visits,
-                     status=status,
-                     status_url=reverse(view_name, args=[slug],
-                                        locale=self.locale)
-                                if view_name else ''))
+        return dict(title=title,
+                    url=reverse('wiki.document', args=[slug],
+                                locale=self.locale),
+                    visits=visits,
+                    status=status,
+                    status_url=reverse(view_name, args=[slug],
+                                       locale=self.locale)
+                               if view_name else '')
 
 
 class MostVisitedTranslationsReadout(MostVisitedDefaultLanguageReadout):
@@ -248,6 +253,7 @@ class MostVisitedTranslationsReadout(MostVisitedDefaultLanguageReadout):
     we should drop everything to translate.
 
     """
+    # No short_title; the link to this one is hard-coded in Overview readout
     slug = 'most-visited-translations'
     details_link_text = _lazy(u'All translations...')
 
@@ -314,13 +320,13 @@ class MostVisitedTranslationsReadout(MostVisitedDefaultLanguageReadout):
                                  locale=self.locale)
             status_class = 'untranslated'
 
-        return (dict(title=title,
-                     url=reverse('wiki.document', args=[slug],
-                                 locale=locale),
-                     visits=visits,
-                     status=status,
-                     status_class=status_class,
-                     status_url=status_url))
+        return dict(title=title,
+                    url=reverse('wiki.document', args=[slug],
+                                locale=locale),
+                    visits=visits,
+                    status=status,
+                    status_class=status_class,
+                    status_url=status_url)
 
 
 class TemplateTranslationsReadout(MostVisitedTranslationsReadout):
@@ -382,10 +388,10 @@ class UntranslatedReadout(Readout):
         # take advantage of SPOTs (like for get_absolute_url()):
         d = Document(slug=slug, title=title,
                      locale=settings.WIKI_DEFAULT_LANGUAGE)
-        return (dict(title=d.title,
-                     url=d.get_absolute_url(),
-                     visits=visits,
-                     updated=reviewed))
+        return dict(title=d.title,
+                    url=d.get_absolute_url(),
+                    visits=visits,
+                    updated=reviewed)
 
 
 class OutOfDateReadout(Readout):
@@ -467,15 +473,14 @@ class OutOfDateReadout(Readout):
                 self.locale))
 
     def _order_clause(self):
-        return ('ORDER BY engrev.reviewed DESC'
-                if self.mode == MOST_RECENT
+        return ('ORDER BY engrev.reviewed DESC' if self.mode == MOST_RECENT
                 else 'ORDER BY dashboards_wikidocumentvisits.visits DESC, '
                      'transdoc.title ASC')
 
     def _format_row(self, (slug, title, reviewed, visits)):
-        return (dict(title=title,
-                     url=reverse('wiki.edit_document', args=[slug]),
-                     visits=visits, updated=reviewed))
+        return dict(title=title,
+                    url=reverse('wiki.edit_document', args=[slug]),
+                    visits=visits, updated=reviewed)
 
 
 class NeedingUpdatesReadout(OutOfDateReadout):
@@ -527,18 +532,75 @@ class UnreviewedReadout(Readout):
             (THIS_WEEK, self.locale))
 
     def _order_clause(self):
-        return ('ORDER BY maxcreated DESC'
-                if self.mode == MOST_RECENT
+        return ('ORDER BY maxcreated DESC' if self.mode == MOST_RECENT
                 else 'ORDER BY dashboards_wikidocumentvisits.visits DESC, '
                      'wiki_document.title ASC')
 
     def _format_row(self, (slug, title, changed, users, visits)):
-        return (dict(title=title,
-                     url=reverse('wiki.document_revisions', args=[slug],
-                                 locale=self.locale),
-                     visits=visits,
-                     updated=changed,
-                     users=users))
+        return dict(title=title,
+                    url=reverse('wiki.document_revisions',
+                                args=[slug],
+                                locale=self.locale),
+                    visits=visits,
+                    updated=changed,
+                    users=users)
+
+
+class UnreadyForLocalizationReadout(Readout):
+    """Articles which have approved but unready revisions newer than their
+    latest ready-for-l10n ones"""
+    title = _lazy(u'Changes Not Ready For Localization')
+    # No short_title; the Contributors dash lacks an Overview readout
+    details_link_text = _lazy(u'All articles with changes not ready for '
+                               'localization...')
+    slug = 'unready'
+    column4_label = _lazy(u'Approved')
+
+    def _query_and_params(self, max):
+        return ('SELECT wiki_document.slug, wiki_document.title, '
+            'MAX(wiki_revision.reviewed) maxreviewed, '
+            'visits.visits '
+            'FROM wiki_document '
+            'INNER JOIN wiki_revision ON '
+                        'wiki_document.id=wiki_revision.document_id '
+            'LEFT JOIN dashboards_wikidocumentvisits visits ON '
+                'wiki_document.id=visits.document_id AND '
+                'visits.period=%s '
+            'WHERE wiki_document.locale=%s '
+            'AND NOT wiki_document.is_archived '
+            'AND wiki_document.is_localizable '
+            'AND wiki_document.current_revision_id>'
+                'wiki_document.latest_localizable_revision_id '
+            # When picking the max(reviewed) date, consider only revisions that
+            # are ripe to be marked Ready:
+            'AND wiki_revision.is_approved '
+            'AND NOT wiki_revision.is_ready_for_localization '
+            # An optimization: minimize rows before max():
+            'AND wiki_revision.id>'
+                'wiki_document.latest_localizable_revision_id '
+            'GROUP BY wiki_document.id '
+            + self._order_clause() + self._limit_clause(max),
+            (THIS_WEEK, settings.WIKI_DEFAULT_LANGUAGE))
+
+    def _order_clause(self):
+        # Put the most recently approved articles first, as those are the most
+        # recent to have transitioned onto this dashboard or to change which
+        # revision causes them to be on this dashboard.
+        return ('ORDER BY maxreviewed DESC' if self.mode == MOST_RECENT
+                else 'ORDER BY visits.visits DESC, wiki_document.title ASC')
+
+    def _format_row(self, (slug, title, reviewed, visits)):
+        return dict(title=title,
+                    url=reverse('wiki.document_revisions',
+                                args=[slug],
+                                locale=settings.WIKI_DEFAULT_LANGUAGE),
+                    visits=visits,
+                    updated=reviewed)
+
+    @staticmethod
+    def should_show_to(user):
+        """Show unreadies only if the user can ready them."""
+        return user.has_perm('wiki.mark_ready_for_l10n')
 
 
 # L10n Dashboard tables that have their own whole-page views:
@@ -549,7 +611,8 @@ L10N_READOUTS = SortedDict((t.slug, t) for t in
 
 # Contributors ones:
 CONTRIBUTOR_READOUTS = SortedDict((t.slug, t) for t in
-    [MostVisitedDefaultLanguageReadout, UnreviewedReadout])
+    [MostVisitedDefaultLanguageReadout, UnreviewedReadout,
+     UnreadyForLocalizationReadout])
 
 # All:
 READOUTS = L10N_READOUTS.copy()
