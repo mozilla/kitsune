@@ -196,7 +196,7 @@ class Readout(object):
 class MostVisitedDefaultLanguageReadout(Readout):
     """Most-Visited readout for the default language"""
     title = _lazy(u'Most Visited')
-    # No short_title; the link to this one is hard-coded in Overview readout
+    # No short_title; the Contributors dash lacks an Overview readout
     details_link_text = _lazy(u'All knowledge base articles...')
     slug = 'most-visited'
     column3_label = _lazy(u'Visits')
@@ -248,6 +248,7 @@ class MostVisitedTranslationsReadout(MostVisitedDefaultLanguageReadout):
     we should drop everything to translate.
 
     """
+    # No short_title; the link to this one is hard-coded in Overview readout
     slug = 'most-visited-translations'
     details_link_text = _lazy(u'All translations...')
 
@@ -540,6 +541,61 @@ class UnreviewedReadout(Readout):
                     users=users)
 
 
+class UnreadyForLocalizationReadout(Readout):
+    """Articles which have approved but unready revisions newer than their
+    latest ready-for-l10n ones"""
+    title = _lazy(u'Changes Not Ready For Localization')
+    # No short_title; the Contributors dash lacks an Overview readout
+    details_link_text = _lazy(u'All articles with changes not ready for '
+                               'localization...')
+    slug = 'unready'
+    column4_label = _lazy(u'Approved')
+
+    def _query_and_params(self, max):
+        return ('SELECT wiki_document.slug, wiki_document.title, '
+            'MAX(wiki_revision.reviewed) maxreviewed, '
+            'visits.visits '
+            'FROM wiki_document '
+            'INNER JOIN wiki_revision ON '
+                        'wiki_document.id=wiki_revision.document_id '
+            'LEFT JOIN dashboards_wikidocumentvisits visits ON '
+                'wiki_document.id=visits.document_id AND '
+                'visits.period=%s '
+            'WHERE wiki_document.locale=%s '
+            'AND NOT wiki_document.is_archived '
+            'AND wiki_document.is_localizable '
+            'AND wiki_document.current_revision_id>'
+                'wiki_document.latest_localizable_revision_id '
+            # When picking the max(reviewed) date, consider only revisions that
+            # are ripe to be marked Ready:
+            'AND wiki_revision.is_approved '
+            'AND NOT wiki_revision.is_ready_for_localization '
+            # An optimization: minimize rows before max():
+            'AND wiki_revision.id>'
+                'wiki_document.latest_localizable_revision_id '
+            'GROUP BY wiki_document.id '
+            + self._order_clause() + self._limit_clause(max),
+            (THIS_WEEK, settings.WIKI_DEFAULT_LANGUAGE))
+
+    def _order_clause(self):
+        # Put the most recently approved articles first, as those are the most
+        # recent to have transitioned onto this dashboard or to change which
+        # revision causes them to be on this dashboard.
+        return ('ORDER BY maxreviewed DESC' if self.mode == MOST_RECENT
+                else 'ORDER BY visits.visits DESC, wiki_document.title ASC')
+
+    def _format_row(self, (slug, title, reviewed, visits)):
+        return dict(title=title,
+                    url=reverse('wiki.document_revisions',
+                                args=[slug],
+                                locale=settings.WIKI_DEFAULT_LANGUAGE),
+                    visits=visits,
+                    updated=reviewed)
+
+    # TODO: Add a should_show_to(user) method to hide this if you can't do
+    # anything about it.
+
+
 # L10n Dashboard tables that have their own whole-page views:
 L10N_READOUTS = SortedDict((t.slug, t) for t in
     [MostVisitedTranslationsReadout, TemplateTranslationsReadout,
@@ -548,7 +604,8 @@ L10N_READOUTS = SortedDict((t.slug, t) for t in
 
 # Contributors ones:
 CONTRIBUTOR_READOUTS = SortedDict((t.slug, t) for t in
-    [MostVisitedDefaultLanguageReadout, UnreviewedReadout])
+    [MostVisitedDefaultLanguageReadout, UnreviewedReadout,
+     UnreadyForLocalizationReadout])
 
 # All:
 READOUTS = L10N_READOUTS.copy()
