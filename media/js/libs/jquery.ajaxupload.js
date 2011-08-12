@@ -18,7 +18,6 @@
  * Optionally accepts an error message for invalid JSON and a title for
  * the error message dialog.
  *
- * Uses jQueryUI for the dialog.
  */
 jQuery.fn.wrapDeleteInput = function (options) {
     // Only works on <input/>
@@ -27,8 +26,8 @@ jQuery.fn.wrapDeleteInput = function (options) {
     }
 
     options = $.extend({
-        error_title_del: 'Error deleting',
-        error_json: 'Please check you are logged in, and try again.',
+        error_title_del: gettext('Error deleting'),
+        error_json: gettext('Please check you are logged in, and try again.'),
         onComplete: function() {}
     }, options);
 
@@ -40,13 +39,17 @@ jQuery.fn.wrapDeleteInput = function (options) {
         url: $that.attr('data-url'),
         inputEvent: 'click',
         beforeSubmit: function($input) {
-            var $overlay = $input.closest('.overlay', $attachment);
-            if ($overlay.length <= 0) {
-                $overlay = $('<div class="overlay"></div>')
-                               .appendTo($attachment);
+            if (confirm(gettext('Are you sure you want delete the image?'))) {
+                var $overlay = $input.closest('.overlay', $attachment);
+                if ($overlay.length <= 0) {
+                    $overlay = $('<div class="overlay"></div>')
+                                   .appendTo($attachment);
+                }
+                $overlay.show();
+                $image.fadeTo(500, 0.5);
+            } else {
+                return false;
             }
-            $overlay.show();
-            $image.fadeTo(500, 0.5);
         },
         onComplete: function($input, iframeContent, $options) {
             if (!iframeContent) {
