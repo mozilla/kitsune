@@ -24,7 +24,7 @@ def usernames(request):
     # That way lies horrid performance.
     with statsd.timer('users.api.usernames.search'):
         q = Q(username__istartswith=pre)
-        users = User.objects.filter(q).values_list('username', flat=True)[0:5]
+        users = User.objects.filter(q).values_list('username', flat=True)[:10]
     # json.dumps won't serialize a QuerySet, so list comp.
     return HttpResponse(
         json.dumps({
