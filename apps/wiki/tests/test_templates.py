@@ -1777,11 +1777,13 @@ class HelpfulVoteTests(TestCaseBase):
                    args=[r.document.slug])
         eq_(200, resp.status_code)
         data = json.loads(resp.content)
-        eq_(3, len(data['data']))
+        eq_(4, len(data['data']))
         eq_('Yes', data['data'][0]['name'])
         eq_(1, len(data['data'][0]['data']))
         eq_('No', data['data'][1]['name'])
         eq_(1, len(data['data'][1]['data']))
+        eq_('Helpfulness Percentage', data['data'][2]['name'])
+        eq_(1, len(data['data'][2]['data']))
 
         eq_(1, len(data['date_to_rev_id']))
 
@@ -1796,13 +1798,15 @@ class HelpfulVoteTests(TestCaseBase):
                    args=[r.document.slug])
         eq_(200, resp.status_code)
         data = json.loads(resp.content)
-        eq_(3, len(data['data']))
+        eq_(4, len(data['data']))
         eq_('Yes', data['data'][0]['name'])
         eq_(1, len(data['data'][0]['data']))
         eq_('No', data['data'][1]['name'])
         eq_(1, len(data['data'][1]['data']))
+        eq_('Helpfulness Percentage', data['data'][2]['name'])
+        eq_(1, len(data['data'][2]['data']))
 
-        eq_('flags', data['data'][2]['type'])
+        eq_('flags', data['data'][3]['type'])
 
         eq_(1, len(data['date_to_rev_id']))
 

@@ -722,7 +722,9 @@ def get_helpful_votes_async(request, document_slug):
 
     yes_data = []
     no_data = []
+    perc_data = []
     date_to_rev_id = {}
+    date_tooltip = {}
     flag_data = []
     rev_data = []
     revisions = set([])
@@ -745,15 +747,21 @@ def get_helpful_votes_async(request, document_slug):
     results = cursor.fetchall()
     for res in results:
         created = 1000 * int(time.mktime(res[3].timetuple()))
+        percent = float(res[1]) / (float(res[1]) + float(res[2]))
         yes_data.append([created, int(res[1])])
         no_data.append([created, int(res[2])])
+        perc_data.append([created, percent])
         date_to_rev_id[created] = res[0]
+        date_tooltip[created] = {'yes': int(res[1]),
+                                 'no': int(res[2]),
+                                 'percent': round(percent * 100, 2) }
         revisions.add(int(res[0]))
         created_list.append(res[3])
 
     if created_list == []:
         send = {'data': [],
                 'date_to_rev_id': [],
+                'date_tooltip': [],
                 'query': 0}
 
         return HttpResponse(json.dumps(send),
@@ -791,20 +799,28 @@ def get_helpful_votes_async(request, document_slug):
                      {'name': _('No'),
                       'id': 'no_data',
                       'data': no_data},
+                     {'name': _('Helpfulness Percentage'),
+                      'id': 'perc_data',
+                      'data': perc_data},
                      {'type': 'flags',
                       'data': rev_data,
                       'shape': 'circlepin',
                       'width': 16,
-                      'zIndex': 100},
+                      'zIndex': 100,
+                      'showInLegend': False},
                      {'type': 'flags',
                       'data': flag_data,
                       'shape': 'squarepin',
                       'stickyTracking': False,
                       'y': -55,
-                      'zIndex': 50}],
+                      'zIndex': 50,
+                      'showInLegend': False}],
             'date_to_rev_id': date_to_rev_id,
+            'date_tooltip': date_tooltip,
             'query': round(end - start, 2)}
 
+    if len(send['data'][3]['data']) == 0:
+        send['data'].pop(3)
     if len(send['data'][2]['data']) == 0:
         send['data'].pop(2)
     if len(send['data'][1]['data']) == 0:
