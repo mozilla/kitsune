@@ -762,18 +762,14 @@ class Revision(ModelBase):
         if request.user.is_authenticated():
             qs = HelpfulVote.objects.filter(revision=self,
                                             creator=request.user)
-            qs_old = HelpfulVoteOld.objects.filter(document=self.document,
-                                            creator=request.user)  # Lazy.
         elif request.anonymous.has_id:
             anon_id = request.anonymous.anonymous_id
             qs = HelpfulVote.objects.filter(revision=self,
                                             anonymous_id=anon_id)
-            qs_old = HelpfulVoteOld.objects.filter(document=self.document,
-                                            anonymous_id=anon_id)  # Lazy.
         else:
             return False
 
-        return qs.exists() or qs_old.exists()
+        return qs.exists()
 
     def __unicode__(self):
         return u'[%s] %s #%s: %s' % (self.document.locale,
@@ -816,16 +812,6 @@ class HelpfulVote(ModelBase):
     helpful = models.BooleanField(default=False)
     created = models.DateTimeField(default=datetime.now, db_index=True)
     creator = models.ForeignKey(User, related_name='poll_votes', null=True)
-    anonymous_id = models.CharField(max_length=40, db_index=True)
-    user_agent = models.CharField(max_length=1000)
-
-
-class HelpfulVoteOld(ModelBase):
-    """Helpful or Not Helpful vote on Revision."""
-    document = models.ForeignKey(Document, related_name='poll_votes_doc')
-    helpful = models.BooleanField(default=False)
-    created = models.DateTimeField(default=datetime.now, db_index=True)
-    creator = models.ForeignKey(User, related_name='poll_votes_doc', null=True)
     anonymous_id = models.CharField(max_length=40, db_index=True)
     user_agent = models.CharField(max_length=1000)
 
