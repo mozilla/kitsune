@@ -1,5 +1,5 @@
 /*
- * charts.js
+ * historycharts.js
  * Scripts to support charts.
  */
 
@@ -97,7 +97,6 @@
                     fontSize: '10px'
                 }
             },
-
             title: {
                 text: gettext('Helpfulness Votes')
             },
@@ -145,7 +144,5 @@
             $('#show-chart').hide();  // loading complete callback
         });
     }
-
     $('#show-chart').click(init);
-
 }(jQuery));

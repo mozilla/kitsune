@@ -477,6 +477,12 @@ details.h2 > summary {
     width: 100%;
 }
 
+#helpful-chart-tall {
+    display: none;
+    height: 600px;
+    width: 100%;
+}
+
 #chart-footnote {
     color: #ABABAB;
     font-size: 10px;

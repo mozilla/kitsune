@@ -1,4 +1,7 @@
+import colorsys
 from functools import partial
+import json
+import math
 
 from django.conf import settings
 from django.contrib.auth.models import Group
@@ -6,6 +9,7 @@ from django.http import Http404, HttpResponseRedirect, HttpResponse
 from django.views.decorators.http import require_GET
 
 import jingo
+from redis.exceptions import ConnectionError
 from tower import ugettext as _
 
 from access.decorators import login_required
@@ -17,7 +21,7 @@ from dashboards.utils import render_readouts
 import forums as forum_constants
 from forums.models import Thread
 from sumo.urlresolvers import reverse
-from sumo.utils import paginate, smart_int
+from sumo.utils import paginate, redis_client, smart_int
 
 
 def _kb_readout(request, readout_slug, readouts, locale=None, mode=None):
@@ -125,3 +129,61 @@ def default_dashboard(request):
 def welcome(request):
     """Welcome dashboard for users not in the Contributors group."""
     return jingo.render(request, 'dashboards/welcome.html', {})
+
+
+@require_GET
+@login_required
+def get_helpful_graph_async(request):
+    doc_data = []
+    REDIS_KEY = settings.HELPFULVOTES_UNHELPFUL_KEY
+
+    try:
+        redis = redis_client('helpfulvotes')
+        length = redis.llen(REDIS_KEY)
+        output = redis.lrange(REDIS_KEY, 0, length)
+    except ConnectionError:
+        pass
+
+    def _format_r(strresult):
+        result = strresult.split('::')
+        dic = dict(title=unicode(result[6], "utf-8"),
+                   id=result[0],
+                   url=reverse('wiki.document_revisions',
+                               args=[unicode(result[5], "utf-8")],
+                               locale=settings.WIKI_DEFAULT_LANGUAGE),
+                   total=int(float(result[1])),
+                   currperc=float(result[2]),
+                   diffperc=float(result[3]),
+                   colorsize=float(result[4])
+                   )
+
+        #  blue #418cc8 HSB 207/67/78
+        #  go from blue to light grey, grey => smaller number
+        def _rand_color_shade():
+            r, g, b = colorsys.hsv_to_rgb(0.575, 1 - dic['colorsize'], .75)
+            return '#%02x%02x%02x' % (255 * r, 255 * g, 255 * b)
+
+        size = math.pow(dic['total'], 0.33) * 1.5
+
+        return {'x': 100 * dic['currperc'],
+                'y': 100 * dic['diffperc'],
+                'total': dic['total'],
+                'title': dic['title'],
+                'url': dic['url'],
+                'currperc': '%.2f' % (100 * dic['currperc']),
+                'diffperc': '%+.2f' % (100 * dic['diffperc']),
+                'colorsize': dic['colorsize'],
+                'marker': {'radius': size,
+                           'fillColor': _rand_color_shade()}}
+
+    doc_data = [_format_r(r) for r in output]
+
+    send = {'data': [{
+                        'name': _('Document'),
+                        'id': 'doc_data',
+                        'data': doc_data
+                    }]
+            }
+
+    return HttpResponse(json.dumps(send),
+                        mimetype='application/json')
