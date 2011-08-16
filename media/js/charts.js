@@ -20,9 +20,10 @@
             success: function (response) {
                 data = response['data'];
                 dateToRevID = response['date_to_rev_id'];
+                dateTooltip = response['date_tooltip'];
                 if(data.length > 0) {
                     $('#helpful-chart').show('fast', function () {
-                        stockChart(data, dateToRevID);
+                        stockChart(data, dateToRevID, dateTooltip);
                         $('#helpful-chart').append('<div id="chart-footnote">' + gettext('Query took: ') + response['query'] + gettext(' seconds') + '</div>')
                     });
                 }
@@ -45,7 +46,7 @@
      * The graph is drawn upon creation of the StockChart object.
      * Returns: nothing
      */
-    function stockChart(data, dateToRevID) {
+    function stockChart(data, dateToRevID, dateTooltip) {
         Highcharts.setOptions({
             lang: {
                 months: [gettext('January'), gettext('February'), gettext('March'), gettext('April'), gettext('May'), gettext('June'), gettext('July'), gettext('August'), gettext('September'), gettext('October'), gettext('November'), gettext('December')],
@@ -61,7 +62,12 @@
 
         chart = new Highcharts.StockChart({
             chart: {
-                renderTo: 'helpful-chart'
+                renderTo: 'helpful-chart',
+                spacingBottom: 40,
+            },
+            legend: {
+                enabled: true,
+                y: 40,
             },
             rangeSelector: {
                 selected: 5,
@@ -116,6 +122,21 @@
             tooltip: {
                 style: {
                     width: 200
+                },
+                formatter: function(){
+                    var x = this.x,
+                        s;
+
+                    // build the header
+                    s = ['<span style="font-size: 10px">' +
+                        Highcharts.dateFormat('%A, %b %e, %Y', x) +
+                        '</span>',
+                        'Yes: <strong>' + dateTooltip[x].yes + '</strong>',
+                        'No: <strong>' + dateTooltip[x].no + '</strong>',
+                        'Percent: <strong>' + dateTooltip[x].percent + '%</strong>'
+                        ]
+
+                    return s.join('<br/>');
                 }
             },
             credits: {
@@ -144,6 +165,8 @@
         }, function () {
             $('#show-chart').hide();  // loading complete callback
         });
+        chart.series[0].hide();
+        chart.series[1].hide();
     }
 
     $('#show-chart').click(init);
