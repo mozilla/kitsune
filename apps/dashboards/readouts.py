@@ -21,7 +21,6 @@ from wiki.models import Document, MEDIUM_SIGNIFICANCE, MAJOR_SIGNIFICANCE
 
 MOST_VIEWED = 1
 MOST_RECENT = 2
-MOST_CHANGED = 3
 
 
 def _cursor():
@@ -552,49 +551,40 @@ class UnhelpfulReadout(Readout):
     column3_label = _lazy(u'Total Votes')
     column4_label = _lazy(u'Helpfulness')
 
-    modes = [(MOST_CHANGED, _lazy('Most Unhelpful'))]
+    # We don't have multiple modes, so let's just set it to 0 and forget it.
+    modes = [(0, _lazy('Most Unhelpful'))]
+
+    try:
+        hide_readout = redis_client('helpfulvotes').llen(settings.HELPFULVOTES_UNHELPFUL_KEY) == 0
+    except (AttributeError, ConnectionError):
+        hide_readout = True
 
     def rows(self, max=None):
         REDIS_KEY = settings.HELPFULVOTES_UNHELPFUL_KEY
-        output = []
         try:
             redis = redis_client('helpfulvotes')
+            if redis is None:
+                raise ConnectionError
             length = redis.llen(REDIS_KEY)
             max_get = max or length
             output = redis.lrange(REDIS_KEY, 0, max_get)
         except ConnectionError:
-            pass
+            output = []
 
         return [self._format_row(r) for r in output]
 
-    def render(self, max_rows=None):
-        # Compute percents for bar widths:
-        rows = self.rows(max_rows)
-        max_visits = max(r['total'] for r in rows) if rows else 0
-        for r in rows:
-            r['percent'] = (0 if r['total'] is None or not max_visits
-                         else int(round(r['total'] / float(max_visits) * 100)))
-            r['custom'] = True
-            r['column4_data'] = r['helpfulness']
-            r['visits'] = r['total']
-
-        # Render:
-        return jingo.render_to_string(
-            self.request,
-            'dashboards/includes/kb_readout.html',
-            {'rows': rows, 'column3_label': self.column3_label,
-             'column4_label': self.column4_label})
-
     def _format_row(self, strresult):
-        result = strresult.split(':')
-        doc = Document.objects.get(pk=result[0])
-        return (dict(title=doc.title,
-                     url=reverse('wiki.document_revisions', args=[doc.slug],
+        result = strresult.split('::')
+        helpfulness = ('<span title="%+.1f%%">%.1f%%</span>'
+                           % (float(result[3]) * 100, float(result[2]) * 100))
+        return (dict(title=unicode(result[6], "utf-8"),
+                     url=reverse('wiki.document_revisions',
+                                 args=[unicode(result[5], "utf-8")],
                                  locale=self.locale),
-                     total=int(float(result[1])),
-                     helpfulness=('<span title="%+.1f%%">%.1f%%</span>'
-                           % (float(result[3]) * 100, float(result[2]) * 100)),
-                    ))
+                     visits=int(float(result[1])),
+                     helpfulness=helpfulness,
+                     custom=True,
+                     column4_data=helpfulness))
 
 
 # L10n Dashboard tables that have their own whole-page views:

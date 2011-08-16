@@ -22,7 +22,6 @@ import forums as forum_constants
 from forums.models import Thread
 from sumo.urlresolvers import reverse
 from sumo.utils import paginate, redis_client, smart_int
-from wiki.models import Document
 
 
 def _kb_readout(request, readout_slug, readouts, locale=None, mode=None):
@@ -146,22 +145,22 @@ def get_helpful_graph_async(request):
         pass
 
     def _format_r(strresult):
-        result = strresult.split(':')
-        doc = Document.objects.get(pk=result[0])
-        dic = dict(title=doc.title,
-                     id=doc.id,
-                     url=reverse('wiki.document_revisions', args=[doc.slug],
-                                 locale=settings.WIKI_DEFAULT_LANGUAGE),
-                     total=int(float(result[1])),
-                     currperc=float(result[2]),
-                     diffperc=float(result[3]),
-                     colorsize=float(result[4])
-                    )
+        result = strresult.split('::')
+        dic = dict(title=unicode(result[6], "utf-8"),
+                   id=result[0],
+                   url=reverse('wiki.document_revisions',
+                               args=[unicode(result[5], "utf-8")],
+                               locale=settings.WIKI_DEFAULT_LANGUAGE),
+                   total=int(float(result[1])),
+                   currperc=float(result[2]),
+                   diffperc=float(result[3]),
+                   colorsize=float(result[4])
+                   )
 
         #  blue #418cc8 HSB 207/67/78
-        # go from blue to light grey, grey => smaller number
+        #  go from blue to light grey, grey => smaller number
         def _rand_color_shade():
-            (r, g, b) = colorsys.hsv_to_rgb(0.575, 1 - dic['colorsize'], .75)
+            r, g, b = colorsys.hsv_to_rgb(0.575, 1 - dic['colorsize'], .75)
             return '#%02x%02x%02x' % (255 * r, 255 * g, 255 * b)
 
         size = math.pow(dic['total'], 0.33) * 1.5

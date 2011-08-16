@@ -19,7 +19,7 @@
                 });
             },
             error: function() {
-                console.log('Chart AJAX failed.');
+                // Chart AJAX Failed
             }
         });
     }

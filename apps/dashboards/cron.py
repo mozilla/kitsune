@@ -5,6 +5,7 @@ import cronjobs
 
 from dashboards.models import PERIODS, WikiDocumentVisits
 from sumo.utils import redis_client
+from wiki.models import Document
 
 
 @cronjobs.register
@@ -27,6 +28,11 @@ def reload_wiki_traffic_stats():
 
 
 def _get_old_unhelpful():
+    """
+    Gets the data from 2 months ago and formats it as output so that we can
+    get a percent change.
+    """
+
     old_formatted = {}
     cursor = connection.cursor()
 
@@ -66,6 +72,8 @@ def _get_old_unhelpful():
 
 
 def _get_current_unhelpful(old_formatted):
+    """Gets the data for the past month and formats it as return value."""
+
     final = {}
     cursor = connection.cursor()
 
@@ -126,9 +134,10 @@ def cache_most_unhelpful_kb_articles():
         return
 
     def _mean(vals):
+        """Argument: List of floats"""
         if len(vals) == 0:
             return None
-        return sum([float(v) for v in vals]) / len(vals)
+        return sum(vals) / len(vals)
 
     def _bayes_avg(C, m, R, v):
         # Bayesian Average
@@ -136,18 +145,19 @@ def cache_most_unhelpful_kb_articles():
         # R = mean rating, m = minimum votes to list in topranked
         return (C * m + R * v) / (m + v)
 
-    mean_perc = _mean([final[key]['currperc'] for key in final.keys()])
-    mean_total = _mean([final[key]['total'] for key in final.keys()])
+    mean_perc = _mean([float(final[key]['currperc']) for key in final.keys()])
+    mean_total = _mean([float(final[key]['total']) for key in final.keys()])
 
-    sorted_final = sorted([(key,
-                            final[key]['total'],
-                            final[key]['currperc'],
-                            final[key]['diffperc'],
-                            _bayes_avg(mean_perc, mean_total,
-                                       final[key]['currperc'],
-                                       final[key]['total']))
-                            for key in final.keys()],
-                          key=lambda entry: entry[4])  # Sort by Bayesian Avg
+    #  TODO: Make this into namedtuples
+    sorted_final = [(key,
+                     final[key]['total'],
+                     final[key]['currperc'],
+                     final[key]['diffperc'],
+                     _bayes_avg(mean_perc, mean_total,
+                                final[key]['currperc'],
+                                final[key]['total']))
+                    for key in final.keys()]
+    sorted_final.sort(key=lambda entry: entry[4])  # Sort by Bayesian Avg
 
     redis = redis_client('helpfulvotes')
 
@@ -156,9 +166,12 @@ def cache_most_unhelpful_kb_articles():
     max_total = max([b[1] for b in sorted_final])
 
     for entry in sorted_final:
-        redis.rpush(REDIS_KEY, ('%s:%s:%s:%s:%s' %
+        doc = Document.objects.get(pk=entry[0])
+        redis.rpush(REDIS_KEY, (u'%s::%s::%s::%s::%s::%s::%s' %
                                   (entry[0],  # Document ID
                                    entry[1],  # Total Votes
                                    entry[2],  # Current Percentage
                                    entry[3],  # Difference in Percentage
-                                   1 - (entry[1] / max_total))))  # Graph Color
+                                   1 - (entry[1] / max_total),  # Graph Color
+                                   doc.slug,  # Document slug
+                                   doc.title)))  # Document title

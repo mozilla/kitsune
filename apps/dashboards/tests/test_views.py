@@ -61,6 +61,7 @@ class HelpfulVotesGraphTests(TestCase):
         self.user = user(save=True)
         self.client.login(username=self.user.username, password='testpass')
         self.group = group(name='Contributors', save=True)
+        # Without this, there were unrelated failures with l10n dashboard
         try:
             self.redis = redis_client('helpfulvotes')
             if self.redis is None:
