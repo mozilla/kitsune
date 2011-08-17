@@ -14,11 +14,7 @@
       </li>
       {% if document and document.allow_discussion %}
         <li{% if active == 'discussion' %} class="active"{% endif %}>
-          {% if active == 'discussion' %}
-            <span>{{ _('Discussion') }}</span>
-          {% else %}
             <a href="{{ url('wiki.discuss.threads', document.slug) }}">{{ _('Discussion') }}</a>
-          {% endif %}
         </li>
       {% endif %}
       {% if document and not document.is_archived and (document.allows_revision_by(user) or document.allows_editing_by(user)) %}
