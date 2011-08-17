@@ -36,25 +36,26 @@ def _get_old_unhelpful():
     old_formatted = {}
     cursor = connection.cursor()
 
-    cursor.execute('SELECT doc_id, yes, no '
-        'FROM '
-            '(SELECT wiki_revision.document_id as doc_id, '
-                'SUM(limitedvotes.helpful) as yes, '
-                'SUM(NOT(limitedvotes.helpful)) as no '
-            'FROM '
-                '(SELECT * FROM wiki_helpfulvote '
-                    'WHERE created <= DATE_SUB(CURDATE(), INTERVAL 1 MONTH) '
-                    'AND created >= DATE_SUB(DATE_SUB(CURDATE(), '
-                        'INTERVAL 1 MONTH), INTERVAL 1 MONTH) '
-                ') as limitedvotes '
-            'INNER JOIN wiki_revision ON '
-                'limitedvotes.revision_id=wiki_revision.id '
-            'INNER JOIN wiki_document ON '
-                'wiki_document.id=wiki_revision.document_id '
-            'WHERE wiki_document.locale="en-US" '
-            'GROUP BY doc_id '
-            'HAVING no > yes '
-            ') as calculated ')
+    cursor.execute(
+        """SELECT doc_id, yes, no
+        FROM
+            (SELECT wiki_revision.document_id as doc_id,
+                SUM(limitedvotes.helpful) as yes,
+                SUM(NOT(limitedvotes.helpful)) as no
+            FROM
+                (SELECT * FROM wiki_helpfulvote
+                    WHERE created <= DATE_SUB(CURDATE(), INTERVAL 1 MONTH)
+                    AND created >= DATE_SUB(DATE_SUB(CURDATE(),
+                        INTERVAL 1 MONTH), INTERVAL 1 MONTH)
+                ) as limitedvotes
+            INNER JOIN wiki_revision ON
+                limitedvotes.revision_id=wiki_revision.id
+            INNER JOIN wiki_document ON
+                wiki_document.id=wiki_revision.document_id
+            WHERE wiki_document.locale="en-US"
+            GROUP BY doc_id
+            HAVING no > yes
+            ) as calculated""")
 
     old_data = cursor.fetchall()
 
@@ -77,23 +78,24 @@ def _get_current_unhelpful(old_formatted):
     final = {}
     cursor = connection.cursor()
 
-    cursor.execute('SELECT doc_id, yes, no '
-        'FROM '
-            '(SELECT wiki_revision.document_id as doc_id, '
-                'SUM(limitedvotes.helpful) as yes, '
-                'SUM(NOT(limitedvotes.helpful)) as no '
-            'FROM '
-                '(SELECT * FROM wiki_helpfulvote '
-                    'WHERE created >= DATE_SUB(CURDATE(), INTERVAL 1 MONTH) '
-                ') as limitedvotes '
-            'INNER JOIN wiki_revision ON '
-                'limitedvotes.revision_id=wiki_revision.id '
-            'INNER JOIN wiki_document ON '
-                'wiki_document.id=wiki_revision.document_id '
-            'WHERE wiki_document.locale="en-US" '
-            'GROUP BY doc_id '
-            'HAVING no > yes '
-            ') as calculated ')
+    cursor.execute(
+        """SELECT doc_id, yes, no
+        FROM
+            (SELECT wiki_revision.document_id as doc_id,
+                SUM(limitedvotes.helpful) as yes,
+                SUM(NOT(limitedvotes.helpful)) as no
+            FROM
+                (SELECT * FROM wiki_helpfulvote
+                    WHERE created >= DATE_SUB(CURDATE(), INTERVAL 1 MONTH)
+                ) as limitedvotes
+            INNER JOIN wiki_revision ON
+                limitedvotes.revision_id=wiki_revision.id
+            INNER JOIN wiki_document ON
+                wiki_document.id=wiki_revision.document_id
+            WHERE wiki_document.locale="en-US"
+            GROUP BY doc_id
+            HAVING no > yes
+            ) as calculated""")
 
     current_data = cursor.fetchall()
 

@@ -1,6 +1,5 @@
 /*
- * historycharts.js
- * Scripts to support charts.
+ * Scripts to support charts on wiki article history.
  */
 
 (function ($) {

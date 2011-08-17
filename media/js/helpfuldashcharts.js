@@ -1,14 +1,9 @@
 /*
- * helpfuldashcharts.js
- * Scripts to support charts.
+ * Scripts to support charts on contributor dashboard.
  */
 
 (function($){
     function init() {
-        initChart();
-    }
-
-    function initChart() {
         $.ajax({type: "GET",
             url: $('#helpful-chart-tall').data('url'),
             data: null,
@@ -19,7 +14,7 @@
                 });
             },
             error: function() {
-                // Chart AJAX Failed
+                // Swallow AJAX errors
             }
         });
     }
@@ -52,7 +47,7 @@
             },
             tooltip: {
                 formatter: function() {
-                   return '<strong>' + this.point.title + '</strong><br /><br />Helpfulness: ' + this.point.currperc +'% (' + this.point.diffperc + '%)' + '<br />Total Votes: ' + this.point.total;
+                   return interpolate('<strong>%s</strong><br /><br />Helpfulness: %s% (%s%)<br />Total Votes: %s', [this.point.title, this.point.currperc, this.point.diffperc, this.point.total]);
                 },
                 style: {
                     width: 200
@@ -75,10 +70,9 @@
                 }
             },
             series: data
-        }, function() {
-            // loading complete callback
         });
 
+        /* This is all drawing the legend via Highcharts SVG */
         $('<div id="chart-legend" style="text-align: center;"></div>').insertAfter('#helpful-chart-tall');
         var renderer = new Highcharts.Renderer($('#chart-legend')[0], 180, 60);
         var group = renderer.g().add();
@@ -140,7 +134,7 @@
         }).add(group);
 
         /* small */
-        renderer.text('10 ' + gettext('Votes'), 40, 33).attr({
+        renderer.text(interpolate('%s ' + gettext('Votes'), [10]), 40, 33).attr({
             zIndex: 20,
         }).css({
             color: '#4572A7',
@@ -149,7 +143,7 @@
         })
         .add(group);
         /* med */
-        renderer.text('100 ' + gettext('Votes'), 80, 26).attr({
+        renderer.text(interpolate('%s ' + gettext('Votes'), [100]), 80, 26).attr({
             zIndex: 20,
         }).css({
             color: '#4572A7',
@@ -158,7 +152,7 @@
         })
         .add(group);
         /* big */
-        renderer.text('500 ' + gettext('Votes'), 120, 16).attr({
+        renderer.text(interpolate('%s ' + gettext('Votes'), [500]), 120, 16).attr({
             zIndex: 20,
         }).css({
             color: '#4572A7',

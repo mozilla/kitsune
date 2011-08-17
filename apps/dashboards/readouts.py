@@ -544,6 +544,7 @@ class UnreviewedReadout(Readout):
 
 
 class UnhelpfulReadout(Readout):
+    """This is a class that is a namespace and  doesn't get instantiated."""
     title = _lazy(u'Unhelpful Documents')
 
     short_title = _lazy(u'Unhelpful', 'document')
@@ -576,15 +577,15 @@ class UnhelpfulReadout(Readout):
 
     def _format_row(self, strresult):
         result = strresult.split('::')
-        helpfulness = Markup('<span title="%+.1f%%">%.1f%%</span>'
-                           % (float(result[3]) * 100, float(result[2]) * 100))
-        return (dict(title=unicode(result[6], "utf-8"),
+        helpfulness = Markup('<span title="%+.1f%%">%.1f%%</span>' %
+                             (float(result[3]) * 100, float(result[2]) * 100))
+        return dict(title=unicode(result[6], "utf-8"),
                      url=reverse('wiki.document_revisions',
                                  args=[unicode(result[5], "utf-8")],
                                  locale=self.locale),
                      visits=int(float(result[1])),
                      custom=True,
-                     column4_data=helpfulness))
+                     column4_data=helpfulness)
 
 
 # L10n Dashboard tables that have their own whole-page views:

@@ -64,8 +64,6 @@ class HelpfulVotesGraphTests(TestCase):
         # Without this, there were unrelated failures with l10n dashboard
         try:
             self.redis = redis_client('helpfulvotes')
-            if self.redis is None:
-                raise SkipTest
             self.redis.flushdb()
             self.REDIS_KEY = settings.HELPFULVOTES_UNHELPFUL_KEY
         except (KeyError, AttributeError):
