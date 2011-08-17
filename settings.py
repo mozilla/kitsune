@@ -514,6 +514,9 @@ MINIFY_BUNDLES = {
             'js/showfor.js',
             'js/home.js',
         ),
+        'readtracker': (
+            'js/readtracker.js',
+        ),
     },
 }
 
