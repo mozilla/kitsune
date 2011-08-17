@@ -10,6 +10,7 @@ from django.db import connections, router
 from django.utils.datastructures import SortedDict
 
 import jingo
+from jinja2 import Markup
 from redis.exceptions import ConnectionError
 from tower import ugettext as _, ugettext_lazy as _lazy
 
@@ -575,14 +576,13 @@ class UnhelpfulReadout(Readout):
 
     def _format_row(self, strresult):
         result = strresult.split('::')
-        helpfulness = ('<span title="%+.1f%%">%.1f%%</span>'
+        helpfulness = Markup('<span title="%+.1f%%">%.1f%%</span>'
                            % (float(result[3]) * 100, float(result[2]) * 100))
         return (dict(title=unicode(result[6], "utf-8"),
                      url=reverse('wiki.document_revisions',
                                  args=[unicode(result[5], "utf-8")],
                                  locale=self.locale),
                      visits=int(float(result[1])),
-                     helpfulness=helpfulness,
                      custom=True,
                      column4_data=helpfulness))
 
