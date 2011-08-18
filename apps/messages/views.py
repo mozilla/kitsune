@@ -98,13 +98,14 @@ def new_message(request):
 
 def bulk_action(request, msgtype='inbox'):
     if 'delete' in request.GET:
-        return redirect('messages.{t}'.format(t=msgtype), request.GET)
-    elif 'mark_read' in request.POST:
-        msgids = request.REQUEST.getlist("id")
-        message = get_object_or_404(InboxMessage, pk=msgid, to=request.user)
-        was_new = message.unread
-        if was_new:
-            message.update(read=True)
+        if msgtype == 'inbox':
+            return redirect('%s?%s' % (reverse('messages.bulk_delete'),
+                            urllib.urlencode({'id': request.GET.getlist('id')}, True)))
+        return redirect('messages.bulk_outbox_delete', request.GET)
+    elif 'mark_read' in request.GET and msgtype == 'inbox':
+        msgids = request.GET.getlist("id")
+        messages = InboxMessage.objects.filter(pk__in=msgids, to=request.user)
+        messages.update(read=True)
     return HttpResponseRedirect(reverse('messages.inbox'))
 
 
@@ -134,7 +135,8 @@ def delete(request, msgid=None, msgtype='inbox'):
         return HttpResponseRedirect(reverse('messages.{t}'.format(t=msgtype)))
 
     if msgtype == 'outbox':
-        _add_recipients(message)
+        for message in messages:
+            _add_recipients(message)
 
     return jingo.render(request, 'messages/delete.html',
                         {'msgs': messages, 'msgtype': msgtype})

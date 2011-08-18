@@ -11,13 +11,13 @@
   <article id="inbox" class="main message-list">
     <h1>{{ title }}</h1>
     <form action="{{ url('messages.bulk_action') }}" method="GET">
-      <input type="submit" name="delete" value="Delete Selected">
-      <input type="submit" name="mark_read" value="Mark Selected as Read">
       {% if msgs %}
+        <input type="submit" name="delete" value="Delete Selected">
+        <input type="submit" name="mark_read" value="Mark Selected as Read">
         <ol>
           {% for message in msgs %}
             <li class="{% if message.unread %}unread{% endif %} {% if message.replied %}replied{% endif %}">
-              <input type="checkbox" name="id" value="{{message.id}}">
+              <input type="checkbox" name="id" value="{{message.id}}" style="float:left; margin: 20px">
               <span class="avatar">
                 {{ avatar_link(message.sender) }}
               </span>
