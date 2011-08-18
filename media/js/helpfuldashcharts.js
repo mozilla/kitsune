@@ -47,7 +47,8 @@
             },
             tooltip: {
                 formatter: function() {
-                   return interpolate('<strong>%s</strong><br /><br />Helpfulness: %s% (%s%)<br />Total Votes: %s', [this.point.title, this.point.currperc, this.point.diffperc, this.point.total]);
+                   return interpolate('<strong>%s</strong><br /><br />Helpfulness: %s% (%s%)<br />Total Votes: %s',
+                                      [this.point.title, this.point.currperc, this.point.diffperc, this.point.total]);
                 },
                 style: {
                     width: 200
@@ -134,7 +135,7 @@
         }).add(group);
 
         /* small */
-        renderer.text(interpolate('%s ' + gettext('Votes'), [10]), 40, 33).attr({
+        renderer.text(interpolate(gettext('%s Votes'), [10]), 40, 33).attr({
             zIndex: 20,
         }).css({
             color: '#4572A7',
@@ -143,7 +144,7 @@
         })
         .add(group);
         /* med */
-        renderer.text(interpolate('%s ' + gettext('Votes'), [100]), 80, 26).attr({
+        renderer.text(interpolate(gettext('%s Votes'), [100]), 80, 26).attr({
             zIndex: 20,
         }).css({
             color: '#4572A7',
@@ -152,7 +153,7 @@
         })
         .add(group);
         /* big */
-        renderer.text(interpolate('%s ' + gettext('Votes'), [500]), 120, 16).attr({
+        renderer.text(interpolate(gettext('%s Votes'), [500]), 120, 16).attr({
             zIndex: 20,
         }).css({
             color: '#4572A7',

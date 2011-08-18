@@ -544,7 +544,6 @@ class UnreviewedReadout(Readout):
 
 
 class UnhelpfulReadout(Readout):
-    """This is a class that is a namespace and  doesn't get instantiated."""
     title = _lazy(u'Unhelpful Documents')
 
     short_title = _lazy(u'Unhelpful', 'document')
@@ -556,6 +555,7 @@ class UnhelpfulReadout(Readout):
     # We don't have multiple modes, so let's just set it to 0 and forget it.
     modes = [(0, _lazy('Most Unhelpful'))]
 
+    # This is a class that is a namespace and doesn't get instantiated.
     try:
         hide_readout = redis_client('helpfulvotes').llen(settings.HELPFULVOTES_UNHELPFUL_KEY) == 0
     except (AttributeError, ConnectionError):
@@ -579,7 +579,7 @@ class UnhelpfulReadout(Readout):
         result = strresult.split('::')
         helpfulness = Markup('<span title="%+.1f%%">%.1f%%</span>' %
                              (float(result[3]) * 100, float(result[2]) * 100))
-        return dict(title=unicode(result[6], "utf-8"),
+        return dict(title=result[6].decode('utf-8'),
                      url=reverse('wiki.document_revisions',
                                  args=[unicode(result[5], "utf-8")],
                                  locale=self.locale),
