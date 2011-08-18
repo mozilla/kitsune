@@ -97,16 +97,21 @@ def new_message(request):
 
 
 def bulk_action(request, msgtype='inbox'):
+    '''
+    Apply action to selected messages.
+    '''
     if 'delete' in request.GET:
-        if msgtype == 'inbox':
-            return redirect('%s?%s' % (reverse('messages.bulk_delete'),
+        if msgtype == 'outbox':
+            return redirect('%s?%s' % (reverse('messages.outbox_bulk_delete'),
                             urllib.urlencode({'id': request.GET.getlist('id')}, True)))
-        return redirect('messages.bulk_outbox_delete', request.GET)
+        return redirect('%s?%s' % (reverse('messages.bulk_delete'), urllib.urlencode({'id': request.GET.getlist('id')}, True)))
     elif 'mark_read' in request.GET and msgtype == 'inbox':
         msgids = request.GET.getlist("id")
         messages = InboxMessage.objects.filter(pk__in=msgids, to=request.user)
         messages.update(read=True)
-    return HttpResponseRedirect(reverse('messages.inbox'))
+
+    # no matched action, return from whence you came
+    return HttpResponseRedirect(request.META['HTTP_REFERER'])
 
 
 @waffle_flag('private-messaging')
