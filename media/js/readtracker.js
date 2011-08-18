@@ -36,7 +36,7 @@ function startTimer(startedTime) {
     }
 }
 
-function stopTimer(dontRestart) {
+function stopTimer(lateness, dontRestart) {
     console.log('stopping timer');
     var now = new Date();
     if (timer) {
@@ -76,7 +76,7 @@ function record(duration, sync) {
 
 $(window).bind('beforeunload', function() {
     // Stop timer and record total duration on the page.
-    stopTimer(true);
+    stopTimer(null, true);
     record(duration, true);
 });
 
@@ -88,7 +88,7 @@ $(window).bind('load', function() {
     });
     $(window).bind('blur', function() {
         console.log('blur');
-        stopTimer(true); 
+        stopTimer(null, true); 
     });
     // If we have focus, start the timer.
     if(document.hasFocus()) {
