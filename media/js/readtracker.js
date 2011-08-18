@@ -6,7 +6,17 @@
 
 "use strict";
 
-if (!waffle.switch('track-article-reads')) {
+var DEBUG = false,
+    console;
+
+if (DEBUG && window.console) {
+    console = window.console;
+} else {
+    console = {};
+    console.log = function(msg) {};
+}
+
+if (!waffle['switch']('track-article-reads')) {
     return;
 }
 
@@ -19,13 +29,15 @@ var duration = 0,
     trackId = $.now();
 
 function startTimer(startedTime) {
+    console.log('starting timer');
     currentLapStarted = startedTime;
     if (durationsToRecord.length > 0) {
-        timer = setTimeout(stopTimer, 10000);
+        timer = setTimeout(stopTimer, 2500);
     }
 }
 
-function stopTimer() {
+function stopTimer(dontRestart) {
+    console.log('stopping timer');
     var now = new Date();
     if (timer) {
         clearTimeout(timer);
@@ -38,11 +50,15 @@ function stopTimer() {
             record(duration);
             durationsToRecord = durationsToRecord.slice(1);
         }
-        startTimer(now);
+        if (!dontRestart) {
+            startTimer(now);
+        }
     }
 }
 
 function record(duration, sync) {
+    // Make the request to record the duration so far.
+    console.log('phoning home');
     var options = {
         url: trackUrl,
         data: {
@@ -59,19 +75,22 @@ function record(duration, sync) {
 }
 
 $(window).bind('beforeunload', function() {
-    stopTimer();
+    // Stop timer and record total duration on the page.
+    stopTimer(true);
     record(duration, true);
 });
 
 $(window).bind('load', function() {
-    $(document).bind('focus', function() {
-        startTimer(new Date());
+    // Start timer on focus and stop on blur
+    $(window).bind('focus', function() {
         console.log('focus');
+        startTimer(new Date());
     });
-    $(document).bind('blur', function() {
-        stopTimer();
+    $(window).bind('blur', function() {
         console.log('blur');
+        stopTimer(true); 
     });
+    // If we have focus, start the timer.
     if(document.hasFocus()) {
         startTimer(new Date());
     }
