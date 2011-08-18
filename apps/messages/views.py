@@ -1,9 +1,10 @@
 import json
+import urllib
 
 from django.contrib import messages as contrib_messages
 from django.contrib.auth.models import User
 from django.http import HttpResponseRedirect, HttpResponse
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, get_list_or_404, redirect
 
 import jingo
 from multidb.pinning import mark_as_write
@@ -95,21 +96,39 @@ def new_message(request):
     return jingo.render(request, 'messages/new.html', {'form': form})
 
 
+def bulk_action(request, msgtype='inbox'):
+    if 'delete' in request.GET:
+        return redirect('messages.{t}'.format(t=msgtype), request.GET)
+    elif 'mark_read' in request.POST:
+        msgids = request.REQUEST.getlist("id")
+        message = get_object_or_404(InboxMessage, pk=msgid, to=request.user)
+        was_new = message.unread
+        if was_new:
+            message.update(read=True)
+    return HttpResponseRedirect(reverse('messages.inbox'))
+
+
 @waffle_flag('private-messaging')
 @login_required
-def delete(request, msgid, msgtype='inbox'):
-    if msgtype == 'inbox':
-        message = get_object_or_404(InboxMessage, pk=msgid, to=request.user)
+def delete(request, msgid=None, msgtype='inbox'):
+    if msgid:
+        msgids = [msgid]
     else:
-        message = get_object_or_404(OutboxMessage, pk=msgid,
-                                    sender=request.user)
+        msgids = request.REQUEST.getlist("id")
 
+    if msgtype == 'inbox':
+        messages = InboxMessage.objects.filter(pk__in=msgids, to=request.user)
+    else:
+        messages = OutboxMessage.objects.filter(pk__in=msgids, sender=request.user)
     if request.method == 'POST':
-        message.delete()
-        msg = _('The message was deleted!')
+        messages.delete()
+        if len(msgids) > 1:
+            msg = _('The messages were deleted!')
+        else:
+            msg = _('The message was deleted!')
 
         if request.is_ajax():
-            return HttpResponse(json.dumps({'message': message}))
+            return HttpResponse(json.dumps({'message': message} for message in messages))
 
         contrib_messages.add_message(request, contrib_messages.SUCCESS, msg)
         return HttpResponseRedirect(reverse('messages.{t}'.format(t=msgtype)))
@@ -118,7 +137,7 @@ def delete(request, msgid, msgtype='inbox'):
         _add_recipients(message)
 
     return jingo.render(request, 'messages/delete.html',
-                        {'message': message, 'msgtype': msgtype})
+                        {'msgs': messages, 'msgtype': msgtype})
 
 
 def _add_recipients(msg):

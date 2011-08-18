@@ -12,8 +12,14 @@
 
 {% block content %}
   <article id="delete-message" class="main message-view">
-    <h1>{{ _('Are you sure you want to delete this message?') }}</h1>
-    {{ render_message(message) }}
+    {% if msgs|length > 1 %}
+      <h1>{{ _('Are you sure you want to delete these messages?') }}</h1>
+    {% else %}
+      <h1>{{ _('Are you sure you want to delete this message?') }}</h1>
+    {% endif %}
+    {% for message in msgs %}
+      {{ render_message(message) }}
+    {% endfor %}
     <form action="" method="POST">
       {{ csrf() }}
       <input type="submit" value="{{ _('Delete Message') }}" />
