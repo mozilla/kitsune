@@ -70,6 +70,7 @@ HOME = /tmp
 0 16 * * * $CRON reload_wiki_traffic_stats
 40 1 * * * $CRON update_weekly_votes
 0 42 * * * $CRON update_top_contributors
+0 21 * * * $CRON cache_most_unhelpful_kb_articles
 
 # Twice per week.
 #05 01 * * 1,4 $CRON update_weekly_votes
