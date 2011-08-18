@@ -69,7 +69,7 @@ HOME = /tmp
 # Once per day.
 0 16 * * * $CRON reload_wiki_traffic_stats
 40 1 * * * $CRON update_weekly_votes
-0 42 * * * $CRON update_top_contributors
+42 0 * * * $CRON update_top_contributors
 
 # Twice per week.
 #05 01 * * 1,4 $CRON update_weekly_votes
