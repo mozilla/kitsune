@@ -26,7 +26,7 @@ HOME = /tmp
 # Once per day.
 0 16 * * * cd /data/www/support-release.allizom.org/kitsune; /usr/bin/python26 manage.py cron reload_wiki_traffic_stats
 40 1 * * * cd /data/www/support-release.allizom.org/kitsune; /usr/bin/python26 manage.py cron update_weekly_votes
-0 42 * * * cd /data/www/support-release.allizom.org/kitsune; /usr/bin/python26 manage.py cron update_top_contributors
+42 0 * * * cd /data/www/support-release.allizom.org/kitsune; /usr/bin/python26 manage.py cron update_top_contributors
 
 # Twice per week.
 #05 01 * * 1,4 cd /data/www/support-release.allizom.org/kitsune; /usr/bin/python26 manage.py cron update_weekly_votes
