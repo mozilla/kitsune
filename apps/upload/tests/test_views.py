@@ -173,21 +173,3 @@ class UploadImageTestCase(TestCase):
         eq_('Please upload an image with one of the following extensions: '
             'jpg, jpeg, png, gif.', json_r['errors']['__all__'][0])
 
-    def test_upload_long_filename(self):
-        """Uploading an image with a filename that's too long fails."""
-        with open('apps/upload/tests/media/a_really_long_filename_worth_'
-                  'more_than_250_characters__a_really_long_filename_worth_'
-                  'more_than_250_characters__a_really_long_filename_worth_'
-                  'more_than_250_characters__a_really_long_filename_worth_'
-                  'more_than_250_characters__a_really_long_filename_yes_.jpg')\
-            as f:
-            r = post(self.client, 'upload.up_image_async', {'image': f},
-                     args=['questions.Question', 1])
-
-        eq_(400, r.status_code)
-        json_r = json.loads(r.content)
-        eq_('error', json_r['status'])
-        eq_('Invalid or no image received.', json_r['message'])
-        eq_(MSG_IMAGE_LONG % {'length': 251,
-                              'max': settings.MAX_FILENAME_LENGTH},
-            json_r['errors']['image'][0])
