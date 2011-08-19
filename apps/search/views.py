@@ -23,7 +23,7 @@ from questions.models import Question
 import search as constants
 from search.forms import SearchForm
 from sumo.utils import paginate, smart_int
-from wiki.models import Document, FIREFOX_VERSIONS, OPERATING_SYSTEMS
+from wiki.models import Document
 
 
 def jsonp_is_valid(func):
@@ -62,18 +62,6 @@ def search(request, template=None):
         category = settings.SEARCH_DEFAULT_CATEGORIES
     r.setlist('category', [x for x in category if x > 0])
     exclude_category = [abs(x) for x in category if x < 0]
-
-    try:
-        fx = map(int, r.getlist('fx')) or [v.id for v in FIREFOX_VERSIONS]
-    except ValueError:
-        fx = [v.id for v in FIREFOX_VERSIONS]
-    r.setlist('fx', fx)
-
-    try:
-        os = map(int, r.getlist('os')) or [o.id for o in OPERATING_SYSTEMS]
-    except ValueError:
-        os = [o.id for o in OPERATING_SYSTEMS]
-    r.setlist('os', os)
 
     # Basic form
     if a == '0':
@@ -128,19 +116,6 @@ def search(request, template=None):
     filters_f = []
 
     # wiki filters
-    # Version and OS filters
-    if cleaned['fx']:
-        filters_w.append({
-            'filter': 'fx',
-            'value': cleaned['fx'],
-        })
-
-    if cleaned['os']:
-        filters_w.append({
-            'filter': 'os',
-            'value': cleaned['os'],
-        })
-
     # Category filter
     if cleaned['category']:
         filters_w.append({
