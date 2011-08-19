@@ -131,6 +131,15 @@ GROUPED_OPERATING_SYSTEMS = (
 OPERATING_SYSTEMS = tuple(chain(*[options for label, options in
                                   GROUPED_OPERATING_SYSTEMS]))
 
+# Products supported
+Product = namedtuple('Product', 'slug, name')  # slug is used for tag/topic
+PRODUCTS = (
+    Product('desktop', _lazy(u'Desktop')),
+    Product('mobile', _lazy(u'Mobile')),
+    Product('sync', _lazy(u'Sync')),
+    Product('FxHome', _lazy(u'Home')))
+PRODUCT_TAGS = [p.slug for p in PRODUCTS]
+
 
 REDIRECT_HTML = '<p>REDIRECT <a '  # how a redirect looks as rendered HTML
 REDIRECT_CONTENT = 'REDIRECT [[%s]]'

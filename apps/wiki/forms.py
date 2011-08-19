@@ -9,11 +9,9 @@ from tower import ugettext_lazy as _lazy
 
 from sumo.form_fields import MultiUsernameField, StrippedCharField
 from tags import forms as tag_forms
-from wiki.models import (Document, Revision, FirefoxVersion, OperatingSystem,
-                     FIREFOX_VERSIONS, OPERATING_SYSTEMS,
-                     SIGNIFICANCES, SIGNIFICANCES_HELP,
-                     GROUPED_FIREFOX_VERSIONS, GROUPED_OPERATING_SYSTEMS,
-                     CATEGORIES)
+from wiki.models import (Document, Revision, PRODUCTS, PRODUCT_TAGS,
+                         SIGNIFICANCES_HELP, GROUPED_FIREFOX_VERSIONS,
+                         SIGNIFICANCES, GROUPED_OPERATING_SYSTEMS, CATEGORIES)
 
 
 TITLE_REQUIRED = _lazy(u'Please provide a title.')
@@ -82,17 +80,10 @@ class DocumentForm(forms.ModelForm):
                         'min_length': SLUG_SHORT,
                         'max_length': SLUG_LONG})
 
-    firefox_versions = forms.MultipleChoiceField(
-        label=_lazy(u'Firefox version:'),
-        choices=[(v.id, v.long) for v in FIREFOX_VERSIONS],
-        initial=[v.id for v in GROUPED_FIREFOX_VERSIONS[0][1]],
-        required=False,
-        widget=forms.CheckboxSelectMultiple())
-
-    operating_systems = forms.MultipleChoiceField(
-        label=_lazy(u'Operating systems:'),
-        choices=[(o.id, o.name) for o in OPERATING_SYSTEMS],
-        initial=[o.id for o in GROUPED_OPERATING_SYSTEMS[0][1]],
+    products = forms.MultipleChoiceField(
+        label=_lazy(u'Relevant to:'),
+        choices=PRODUCTS,
+        initial=[PRODUCTS[0][0]],
         required=False,
         widget=forms.CheckboxSelectMultiple())
 
@@ -132,18 +123,10 @@ class DocumentForm(forms.ModelForm):
             raise forms.ValidationError(SLUG_INVALID)
         return slug
 
-    def clean_firefox_versions(self):
-        data = self.cleaned_data['firefox_versions']
-        return [FirefoxVersion(item_id=int(x)) for x in data]
-
-    def clean_operating_systems(self):
-        data = self.cleaned_data['operating_systems']
-        return [OperatingSystem(item_id=int(x)) for x in data]
-
     class Meta:
         model = Document
-        fields = ('title', 'slug', 'category', 'is_localizable', 'is_archived',
-                  'tags', 'locale', 'allow_discussion')
+        fields = ('title', 'slug', 'category', 'is_localizable', 'products',
+                  'tags', 'locale', 'is_archived', 'allow_discussion')
 
     def save(self, parent_doc, **kwargs):
         """Persist the Document form, and return the saved Document."""
@@ -154,12 +137,11 @@ class DocumentForm(forms.ModelForm):
                          # any m2m data since we instantiated the doc
 
         if not parent_doc:
-            ffv = self.cleaned_data['firefox_versions']
-            doc.firefox_versions.all().delete()
-            doc.firefox_versions = ffv
-            os = self.cleaned_data['operating_systems']
-            doc.operating_systems.all().delete()
-            doc.operating_systems = os
+            # Set the products as tags.
+            # products are not set on the translations.
+            prods = self.cleaned_data['products']
+            doc.tags.add(*prods)
+            doc.tags.remove(*[p for p in PRODUCT_TAGS if p not in prods])
 
         return doc
 

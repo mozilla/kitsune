@@ -36,7 +36,7 @@ from wiki.forms import (AddContributorForm, DocumentForm, RevisionForm,
 from wiki.models import (Document, Revision, HelpfulVote, ImportantDate,
                          CATEGORIES, OPERATING_SYSTEMS,
                          GROUPED_OPERATING_SYSTEMS, FIREFOX_VERSIONS,
-                         GROUPED_FIREFOX_VERSIONS)
+                         GROUPED_FIREFOX_VERSIONS, PRODUCT_TAGS)
 from wiki.parser import wiki_to_html
 from wiki.tasks import send_reviewed_notification, schedule_rebuild_kb
 
@@ -754,7 +754,7 @@ def get_helpful_votes_async(request, document_slug):
         date_to_rev_id[created] = res[0]
         date_tooltip[created] = {'yes': int(res[1]),
                                  'no': int(res[2]),
-                                 'percent': round(percent * 100, 2) }
+                                 'percent': round(percent * 100, 2)}
         revisions.add(int(res[0]))
         created_list.append(res[3])
 
@@ -954,11 +954,10 @@ def _document_form_initial(document):
             'category': document.category,
             'is_localizable': document.is_localizable,
             'is_archived': document.is_archived,
-            'tags': [t.name for t in document.tags.all()],
-            'firefox_versions': [x.item_id for x in
-                                 document.firefox_versions.all()],
-            'operating_systems': [x.item_id for x in
-                                  document.operating_systems.all()],
+            'tags': [t.name for t in document.tags.all()
+                     if t.name not in PRODUCT_TAGS],
+            'products': [t.name for t in document.tags.all()
+                         if t.name in PRODUCT_TAGS],
             'allow_discussion': document.allow_discussion}
 
 
