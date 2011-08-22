@@ -56,7 +56,10 @@
       data-readonly="{{ settings.READ_ONLY|json }}"
       data-for-os="{{ for_os|json }}"
       data-for-version="{{ for_version|json }}"
-      data-usernames-api="{{ url('users.api.usernames') }}">
+      data-usernames-api="{{ url('users.api.usernames') }}"
+      {% if extra_body_attrs -%}
+        {% for attr, val in extra_body_attrs.items() %}{{ attr }}="{{ val }}" {% endfor %}
+      {%- endif %}>
 
 {% if settings.STAGE %}
   <div id="stage-banner">
