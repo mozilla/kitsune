@@ -173,6 +173,12 @@ body.register p,
     margin: 0.25em 0 1em;
 }
 
+#flag {
+    float: right;
+}
+#flag form {
+    margin: 0px;
+}
 /* delete avatar */
 #avatar-delete .form-actions {
     margin: 1em 0;

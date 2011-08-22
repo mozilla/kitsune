@@ -23,6 +23,7 @@ class FlaggedObject(ModelBase):
         ('spam', _lazy(u'Spam or other unrelated content')),
         ('language', _lazy(u'Inappropriate language/dialog')),
         ('bug_support', _lazy(u'Misplaced bug report or support request')),
+        ('abuse', _lazy(u'Abusive content')),
         ('other', _lazy(u'Other (please specify)')),
     )
 

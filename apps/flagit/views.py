@@ -4,6 +4,7 @@ from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import get_object_or_404
 from django.contrib.contenttypes.models import ContentType
 from django.views.decorators.http import require_POST
+from django.contrib import messages
 
 import jingo
 from tower import ugettext as _
@@ -27,7 +28,7 @@ def flag(request, content_type=None, object_id=None, **kwargs):
     content_type = get_object_or_404(ContentType, id=int(content_type))
     object_id = int(object_id)
     content_object = get_object_or_404(content_type.model_class(),
-                                       id=object_id)
+                                       pk=object_id)
 
     # Check that this user hasn't already flagged the object
     try:
@@ -44,6 +45,7 @@ def flag(request, content_type=None, object_id=None, **kwargs):
     if request.is_ajax():
         return HttpResponse(json.dumps({'message': msg}))
     elif next:
+        messages.add_message(request, messages.INFO, msg)
         return HttpResponseRedirect(next)
 
     return HttpResponse(msg)
