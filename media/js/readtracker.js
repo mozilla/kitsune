@@ -26,7 +26,63 @@ var duration = 0,
     durationsToRecord = [10, 30, 90],
     documentId = $('body').data('document-id'),
     trackUrl = $('body').data('track-url'),
-    trackId = $.now();
+    trackId = $.now(),
+    urlParams = getQueryParamsAsDict(window.location.search.substring(1)),
+    referrer = getReferrer(),
+    query = getSearchQuery();
+
+
+function getQueryParamsAsDict(queryString) {
+    // Parse the url query parameters into a dict. Mostly stolen from:
+    // http://stackoverflow.com/questions/901115/get-query-string-values-in-javascript/2880929#2880929
+    var urlParams = {},
+        e,
+        a = /\+/g,  // Regex for replacing addition symbol with a space
+        r = /([^&=]+)=?([^&]*)/g,
+        d = function (s) { return decodeURIComponent(s.replace(a, " ")); };
+
+    while (e = r.exec(queryString)) {
+       urlParams[d(e[1])] = d(e[2]);
+    }
+    return urlParams;
+}
+
+function getReferrer() {
+    /*
+    Get the referrer to the current page. Returns:
+    - 'search' - if current url has as=s
+    - 'inproduct' - if current url has as=u
+    - actual referrer URL - if none of the above
+    */
+    if (urlParams['as'] === 's') {
+        return 'search';
+    } else if (urlParams['as'] === 'u') {
+        return 'inproduct';
+    } else {
+        return document.referrer;
+    }
+}
+
+function getSearchQuery() {
+    // If the referrer is a search page, return the search keywords.
+    if (referrer === 'search') {
+        return urlParams['s'];
+    } else if (referrer !== 'inproduct') {
+        var splitUrl = referrer.split('?');
+        if (splitUrl.length > 1) {
+            return getQueryParamsAsDict(
+                splitUrl.splice(1).join(''))['q'] || '';
+        }
+    }
+    return '';
+}
+
+/*
+startTimer and stopTimer are needed so we can properly handle blur and focus
+events: blur stops the timer and focus restarts it. If we didn't need to take
+that into account, we could just start setTimeout for each of the
+durationsToRecord and be done.
+*/
 
 function startTimer(startedTime) {
     console.log('starting timer');
@@ -64,7 +120,9 @@ function record(duration, sync) {
         data: {
             duration: duration / 1000,
             documentid: documentId,
-            trackid: trackId
+            trackid: trackId,
+            referrer: referrer,
+            query: query
         }
     };
     if (sync) {
@@ -88,7 +146,7 @@ $(window).bind('load', function() {
     });
     $(window).bind('blur', function() {
         console.log('blur');
-        stopTimer(null, true); 
+        stopTimer(null, true);
     });
     // If we have focus, start the timer.
     if(document.hasFocus()) {
