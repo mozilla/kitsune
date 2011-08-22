@@ -9,7 +9,7 @@
   <article id="outbox" class="main message-list">
     <h1>{{ title }}</h1>
     {% if msgs %}
-      <form action="{{ url('messages.outbox_bulk_action') }}" method="GET">
+      <form action="{{ url('messages.outbox_bulk_action') }}" method="POST">
         <input type="submit" name="delete" value="Delete Selected">
         <ol>
           {% for message in msgs %}
@@ -37,6 +37,7 @@
             </li>
           {% endfor %}
         </ol>
+        {{ csrf() }}
       </form>
     {% else %}
       <p>{{ _('There are no messages here.') }}</p>

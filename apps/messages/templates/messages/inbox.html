@@ -32,10 +32,10 @@
             </li>
           {% endfor %}
         </ol>
-      {% else %}
+        {{ csrf() }}
+      </form>
+    {% else %}
         <p>{{ _('There are no messages here.') }}</p>
-      {{ csrf() }}
-    </form>
     {% endif %}
   </article>
 {% endblock %}

@@ -4,7 +4,7 @@ import urllib
 from django.contrib import messages as contrib_messages
 from django.contrib.auth.models import User
 from django.http import HttpResponseRedirect, HttpResponse
-from django.shortcuts import get_object_or_404, get_list_or_404, redirect
+from django.shortcuts import get_object_or_404, redirect
 
 import jingo
 from multidb.pinning import mark_as_write
@@ -102,18 +102,19 @@ def bulk_action(request, msgtype='inbox'):
     '''
     Apply action to selected messages.
     '''
-    if 'delete' in request.POST:
-        if msgtype == 'outbox':
-            return redirect('%s?%s' % (reverse('messages.outbox_bulk_delete'),
-                            urllib.urlencode({'id': request.POST.getlist('id')}, True)))
-        return redirect('%s?%s' % (reverse('messages.bulk_delete'), urllib.urlencode({'id': request.POST.getlist('id')}, True)))
-    elif 'mark_read' in request.POST and msgtype == 'inbox':
-        msgids = request.POST.getlist("id")
-        messages = InboxMessage.objects.filter(pk__in=msgids, to=request.user)
-        messages.update(read=True)
+    msgids = request.POST.getlist('id')
+    if msgids:
+        if 'delete' in request.POST:
+            if msgtype == 'outbox':
+                return redirect('%s?%s' % (reverse('messages.outbox_bulk_delete'),
+                                urllib.urlencode({'id': msgids}, True)))
+            return redirect('%s?%s' % (reverse('messages.bulk_delete'), urllib.urlencode({'id': msgids}, True)))
+        elif 'mark_read' in request.POST and msgtype == 'inbox':
+            messages = InboxMessage.objects.filter(pk__in=msgids, to=request.user)
+            messages.update(read=True)
 
     # no matched action, return from whence you came
-    return HttpResponseRedirect(request.META['HTTP_REFERER'])
+    return HttpResponseRedirect(reverse('messages.{t}'.format(t=msgtype)))
 
 
 @waffle_flag('private-messaging')
