@@ -96,17 +96,19 @@ def new_message(request):
     return jingo.render(request, 'messages/new.html', {'form': form})
 
 
+@waffle_flag('private-messaging')
+@login_required
 def bulk_action(request, msgtype='inbox'):
     '''
     Apply action to selected messages.
     '''
-    if 'delete' in request.GET:
+    if 'delete' in request.POST:
         if msgtype == 'outbox':
             return redirect('%s?%s' % (reverse('messages.outbox_bulk_delete'),
-                            urllib.urlencode({'id': request.GET.getlist('id')}, True)))
-        return redirect('%s?%s' % (reverse('messages.bulk_delete'), urllib.urlencode({'id': request.GET.getlist('id')}, True)))
-    elif 'mark_read' in request.GET and msgtype == 'inbox':
-        msgids = request.GET.getlist("id")
+                            urllib.urlencode({'id': request.POST.getlist('id')}, True)))
+        return redirect('%s?%s' % (reverse('messages.bulk_delete'), urllib.urlencode({'id': request.POST.getlist('id')}, True)))
+    elif 'mark_read' in request.POST and msgtype == 'inbox':
+        msgids = request.POST.getlist("id")
         messages = InboxMessage.objects.filter(pk__in=msgids, to=request.user)
         messages.update(read=True)
 

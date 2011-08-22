@@ -10,8 +10,8 @@
   </section>
   <article id="inbox" class="main message-list">
     <h1>{{ title }}</h1>
-    <form action="{{ url('messages.bulk_action') }}" method="GET">
-      {% if msgs %}
+    {% if msgs %}
+      <form action="{{ url('messages.bulk_action') }}" method="POST">
         <input type="submit" name="delete" value="Delete Selected">
         <input type="submit" name="mark_read" value="Mark Selected as Read">
         <ol>
@@ -34,7 +34,8 @@
         </ol>
       {% else %}
         <p>{{ _('There are no messages here.') }}</p>
-      {% endif %}
+      {{ csrf() }}
     </form>
+    {% endif %}
   </article>
 {% endblock %}
