@@ -27,25 +27,9 @@ var duration = 0,
     documentId = $('body').data('document-id'),
     trackUrl = $('body').data('track-url'),
     trackId = $.now(),
-    urlParams = getQueryParamsAsDict(window.location.search.substring(1)),
+    urlParams = k.getQueryParamsAsDict(),
     referrer = getReferrer(),
     query = getSearchQuery();
-
-
-function getQueryParamsAsDict(queryString) {
-    // Parse the url query parameters into a dict. Mostly stolen from:
-    // http://stackoverflow.com/questions/901115/get-query-string-values-in-javascript/2880929#2880929
-    var urlParams = {},
-        e,
-        a = /\+/g,  // Regex for replacing addition symbol with a space
-        r = /([^&=]+)=?([^&]*)/g,
-        d = function (s) { return decodeURIComponent(s.replace(a, " ")); };
-
-    while (e = r.exec(queryString)) {
-       urlParams[d(e[1])] = d(e[2]);
-    }
-    return urlParams;
-}
 
 function getReferrer() {
     /*
@@ -68,11 +52,7 @@ function getSearchQuery() {
     if (referrer === 'search') {
         return urlParams['s'];
     } else if (referrer !== 'inproduct') {
-        var splitUrl = referrer.split('?');
-        if (splitUrl.length > 1) {
-            return getQueryParamsAsDict(
-                splitUrl.splice(1).join(''))['q'] || '';
-        }
+        return k.getQueryParamsAsDict(referrer)['q'] || '';
     }
     return '';
 }

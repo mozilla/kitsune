@@ -4,6 +4,31 @@ k = {};
 (function () {
     k.LAZY_DELAY = 500;  // delay to lazy loading scripts, in ms
     k.MEDIA_URL = '/media/';
+    k.getQueryParamsAsDict = function (url) {
+        // Parse the url's query parameters into a dict. Mostly stolen from:
+        // http://stackoverflow.com/questions/901115/get-query-string-values-in-javascript/2880929#2880929
+        var queryString = '',
+            splitUrl,
+            urlParams = {},
+            e,
+            a = /\+/g,  // Regex for replacing addition symbol with a space
+            r = /([^&=]+)=?([^&]*)/g,
+            d = function (s) { return decodeURIComponent(s.replace(a, " ")); };
+        
+        if (url) {
+            splitUrl = url.split('?');
+            if (splitUrl.length > 1) {
+                queryString = splitUrl.splice(1).join('');
+            }
+        } else {
+            queryString = window.location.search.substring(1);
+        }
+
+        while (e = r.exec(queryString)) {
+           urlParams[d(e[1])] = d(e[2]);
+        }
+        return urlParams;
+    }
 
     // Pass CSRF token in XHR header
     $.ajaxSetup({
