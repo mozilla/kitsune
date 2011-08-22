@@ -4,6 +4,19 @@
 
 $(document).ready(function(){
 
+// Object.keys() shim
+if (!Object.keys) {
+    Object.keys = function keys(object) {
+        var keys = [];
+        for (var name in object) {
+            if (object.hasOwnProperty(name)) {
+                keys.push(name);
+            }
+        }
+        return keys;
+    };
+}
+
 module('k.getQueryParamsAsDict');
 
 test('no params', function() {
