@@ -201,25 +201,6 @@ class UploadImageTests(TestCase):
         eq_('Please upload an image with one of the following extensions: '
             'jpg, jpeg, png, gif.', json_r['errors']['__all__'][0])
 
-    def test_upload_image_long_filename(self):
-        """Uploading an image with a filename that's too long fails."""
-        with open('apps/upload/tests/media/a_really_long_filename_worth_'
-                  'more_than_250_characters__a_really_long_filename_worth_'
-                  'more_than_250_characters__a_really_long_filename_worth_'
-                  'more_than_250_characters__a_really_long_filename_worth_'
-                  'more_than_250_characters__a_really_long_filename_yes_.jpg')\
-            as f:
-            r = post(self.client, 'gallery.upload_async', {'file': f},
-                     args=['image'])
-
-        eq_(400, r.status_code)
-        json_r = json.loads(r.content)
-        eq_('error', json_r['status'])
-        eq_('Could not upload your image.', json_r['message'])
-        eq_(forms.MSG_IMAGE_LONG % {'length': 251,
-                                    'max': settings.MAX_FILENAME_LENGTH},
-            json_r['errors']['file'][0])
-
     def test_upload_draft_image(self):
         """Uploading draft image works, sets locale too."""
         u = User.objects.get(username='pcraciunoiu')
@@ -383,27 +364,6 @@ class UploadVideoTests(TestCase):
         eq_('The video has no files associated with it. You must upload one '
             'of the following extensions: webm, ogv, flv.',
             json_r['errors']['__all__'][0])
-
-    def test_upload_video_long_filename(self):
-        """Uploading a video with a filename that's too long fails."""
-        for k in ('flv', 'ogv', 'webm'):
-            with open('apps/upload/tests/media/a_really_long_filename_worth_'
-                      'more_than_250_characters__a_really_long_filename_worth_'
-                      'more_than_250_characters__a_really_long_filename_worth_'
-                      'more_than_250_characters__a_really_long_filename_worth_'
-                      'more_than_250_characters__a_really_long_filename_yes_'
-                      '.jpg')\
-                as f:
-                r = post(self.client, 'gallery.upload_async', {k: f},
-                         args=['video'])
-
-            eq_(400, r.status_code)
-            json_r = json.loads(r.content)
-            eq_('error', json_r['status'])
-            eq_('Could not upload your video.', json_r['message'])
-            message = getattr(forms, 'MSG_' + k.upper() + '_LONG')
-            eq_(message % {'length': 251, 'max': settings.MAX_FILENAME_LENGTH},
-                json_r['errors'][k][0])
 
     def test_invalid_video_extension(self):
         """Make sure invalid video extensions are not accepted."""
