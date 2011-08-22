@@ -16,6 +16,24 @@
           <a class="edit" href="{{ url('admin:users_profile_change', profile.user.id) }}">{{ _('Edit user profile') }}</a>
         </div>
       {% endif %}
+      {% if request.user.is_authenticated %}
+        <section class="marky" id="flag">
+          <form action="{{ url('users.flag', object_id=profile.pk) }}" method="POST">
+            <input type="hidden" name="next" value="{{ request.get_full_path() }}" />
+            <button name="reason" type="submit" value="abuse">Report Abuse</button>
+            {{ csrf() }}
+          </form>
+        </section>
+      {% endif %}
+      {% if request.user.is_authenticated %}
+        <section class="marky" id="flag">
+          <form action="{{ url('users.flag', object_id=profile.pk) }}" method="POST">
+            <input type="hidden" name="next" value="{{ request.get_full_path() }}" />
+            <button name="reason" type="submit" value="abuse">Report Abuse</button>
+            {{ csrf() }}
+          </form>
+        </section>
+      {% endif %}
       <h1>{{ display_name(profile.user) }}
           {% if profile.name %}
             <em>({{ profile.user.username }})</em>

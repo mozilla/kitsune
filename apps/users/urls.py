@@ -1,8 +1,12 @@
 from django.conf.urls.defaults import patterns, url, include
+from django.contrib.contenttypes.models import ContentType
 
 from sumo.views import redirect_to
 from users import api
 from users import views
+from users.models import Profile
+import flagit.views
+from flagit import views as flagit_views
 
 
 # API patterns. All start with /users/api.
@@ -61,5 +65,8 @@ users_patterns = patterns('',
 urlpatterns = patterns('',
     # URLs for a single user.
     (r'^user/(?P<user_id>\d+)', include(detail_patterns)),
+    url(r'^user/(?P<object_id>\d+)/flag$', flagit.views.flag,
+        {'content_type': ContentType.objects.get_for_model(Profile).id},
+        name='users.flag'),
     (r'^users', include(users_patterns)),
 )

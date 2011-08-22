@@ -1,0 +1,12 @@
+<h3>{{ _('Content:') }}</h3>
+<div class="content">
+  <h2>{{ object.content_object }}</h2>
+  {{ object.content_object.bio|wiki_to_html(nofollow=True) }}
+</div>
+<h3>{{ _('Take Action:') }}</h3>
+<div class="actions">
+  <a href="{{ object.content_object.get_absolute_url() }}">View</a>
+  {% if user.has_perm('profile.change_profile') %}
+    <a class="edit" href="{{ url('admin:users_profile_change', object.object_id) }}">{{ _('Edit') }}</a>
+  {% endif %}
+</div>
