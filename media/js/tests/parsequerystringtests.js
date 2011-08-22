@@ -12,6 +12,13 @@ test('no params', function() {
     equals(0, Object.keys(params).length);
 });
 
+test('one param', function() {
+    var queryString = 'http://example.com/?test=woot',
+        params = k.getQueryParamsAsDict(queryString);
+    equals(1, Object.keys(params).length);
+    equals('woot', params['test']);
+});
+
 test('two params', function() {
     var queryString = 'http://example.com/?x=foo&y=bar',
         params = k.getQueryParamsAsDict(queryString);
