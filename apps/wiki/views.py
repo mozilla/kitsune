@@ -853,7 +853,7 @@ def mark_ready_for_l10n_revision(request, document_slug, revision_id):
     revision = get_object_or_404(Revision, pk=revision_id,
                                  document__slug=document_slug)
 
-    if revision.is_approved:
+    if revision.can_be_readied_for_localization():
         revision.is_ready_for_localization = True
         revision.save()
 

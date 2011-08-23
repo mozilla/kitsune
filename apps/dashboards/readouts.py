@@ -14,7 +14,8 @@ from tower import ugettext as _, ugettext_lazy as _lazy
 
 from dashboards import THIS_WEEK, ALL_TIME, PERIODS
 from sumo.urlresolvers import reverse
-from wiki.models import Document, MEDIUM_SIGNIFICANCE, MAJOR_SIGNIFICANCE
+from wiki.models import (Document, MEDIUM_SIGNIFICANCE, MAJOR_SIGNIFICANCE,
+                         TYPO_SIGNIFICANCE)
 
 
 MOST_VIEWED = 1
@@ -550,6 +551,8 @@ class UnreadyForLocalizationReadout(Readout):
     """Articles which have approved but unready revisions newer than their
     latest ready-for-l10n ones"""
     title = _lazy(u'Changes Not Ready For Localization')
+    description = _lazy(u'Articles which have approved revisions newer than '
+                         'the latest ready-for-localization one')
     # No short_title; the Contributors dash lacks an Overview readout
     details_link_text = _lazy(u'All articles with changes not ready for '
                                'localization...')
@@ -566,21 +569,25 @@ class UnreadyForLocalizationReadout(Readout):
             'LEFT JOIN dashboards_wikidocumentvisits visits ON '
                 'wiki_document.id=visits.document_id AND '
                 'visits.period=%s '
-            'WHERE wiki_document.locale=%s '
+            'WHERE wiki_document.locale=%s '  # shouldn't be necessary
             'AND NOT wiki_document.is_archived '
             'AND wiki_document.is_localizable '
-            'AND wiki_document.current_revision_id>'
-                'wiki_document.latest_localizable_revision_id '
+            'AND (wiki_document.current_revision_id>'
+                 'wiki_document.latest_localizable_revision_id OR '
+                 'wiki_document.latest_localizable_revision_id IS NULL) '
             # When picking the max(reviewed) date, consider only revisions that
             # are ripe to be marked Ready:
             'AND wiki_revision.is_approved '
             'AND NOT wiki_revision.is_ready_for_localization '
+            'AND (wiki_revision.significance>%s OR '
+                 'wiki_revision.significance IS NULL) '  # initial revision
             # An optimization: minimize rows before max():
-            'AND wiki_revision.id>'
-                'wiki_document.latest_localizable_revision_id '
+            'AND (wiki_revision.id>'
+                 'wiki_document.latest_localizable_revision_id OR '
+                 'wiki_document.latest_localizable_revision_id IS NULL) '
             'GROUP BY wiki_document.id '
             + self._order_clause() + self._limit_clause(max),
-            (THIS_WEEK, settings.WIKI_DEFAULT_LANGUAGE))
+            (THIS_WEEK, settings.WIKI_DEFAULT_LANGUAGE, TYPO_SIGNIFICANCE))
 
     def _order_clause(self):
         # Put the most recently approved articles first, as those are the most

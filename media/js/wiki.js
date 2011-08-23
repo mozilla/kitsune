@@ -33,7 +33,7 @@
 
         Marky.createFullToolbar('.editor-tools', '#id_content');
 
-        initReadyForL10N();
+        initReadyForL10n();
     }
 
     // Make <summary> and <details> tags work even if the browser doesn't support them.
@@ -369,7 +369,7 @@
         });
     }
 
-    function initReadyForL10N() {
+    function initReadyForL10n() {
         var $watchDiv = $("#revision-list div.l10n"),
             post_url, checkbox_id;
 

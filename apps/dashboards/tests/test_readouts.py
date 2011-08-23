@@ -4,9 +4,11 @@ from nose.tools import eq_
 
 from dashboards.readouts import (UnreviewedReadout, OutOfDateReadout,
                                  TemplateTranslationsReadout, overview_rows,
-                                 MostVisitedTranslationsReadout)
+                                 MostVisitedTranslationsReadout,
+                                 UnreadyForLocalizationReadout)
 from sumo.tests import TestCase
-from wiki.models import MAJOR_SIGNIFICANCE, MEDIUM_SIGNIFICANCE
+from wiki.models import (MAJOR_SIGNIFICANCE, MEDIUM_SIGNIFICANCE,
+                         TYPO_SIGNIFICANCE)
 from wiki.tests import revision, translated_revision, document
 
 
@@ -245,3 +247,77 @@ class TemplateTranslationsTests(ReadoutTestCase):
         row = self.row()
         eq_(row['title'], untranslated.document.title)
         eq_(unicode(row['status']), 'Translation Needed')
+
+
+class UnreadyTests(ReadoutTestCase):
+    """Tests for UnreadyForLocalizationReadout"""
+
+    readout = UnreadyForLocalizationReadout
+
+    def test_no_approved_revs(self):
+        """Articles with no approved revisions should not appear."""
+        revision(is_approved=False,
+                 is_ready_for_localization=False,
+                 significance=MAJOR_SIGNIFICANCE,
+                 save=True)
+        eq_([], self.titles())
+
+    def test_unapproved_revs(self):
+        """Articles with only unreviewed or rejected revs after the latest
+        ready one should not appear."""
+        d = document(save=True)
+        ready = revision(document=d,
+                         is_approved=True,
+                         is_ready_for_localization=True,
+                         save=True)
+        unreviewed = revision(document=d,
+                              is_approved=False,
+                              reviewed=None,
+                              is_ready_for_localization=False,
+                              save=True)
+        rejected = revision(document=d,
+                            is_approved=False,
+                            reviewed=datetime.now(),
+                            is_ready_for_localization=False,
+                            save=True)
+        eq_([], self.titles())
+
+    def test_first_rev(self):
+        """If an article's first revision is approved, show the article.
+
+        This also conveniently tests that documents with no
+        latest_localizable_revision are not necessarily excluded.
+
+        """
+        r = revision(is_approved=True,
+                     reviewed=datetime.now(),
+                     is_ready_for_localization=False,
+                     significance=None,
+                     save=True)
+        eq_([r.document.title], self.titles())
+
+    def test_insignificant_revs(self):
+        """Articles with approved, unready, but insignificant revisions newer
+        than their latest ready-for-l10n ones should not appear."""
+        ready = revision(is_approved=True,
+                         is_ready_for_localization=True,
+                         save=True)
+        insignificant = revision(document=ready.document,
+                                 is_approved=True,
+                                 is_ready_for_localization=False,
+                                 significance=TYPO_SIGNIFICANCE,
+                                 save=True)
+        eq_([], self.titles())
+
+    def test_significant_revs(self):
+        """Articles with approved, significant, but unready revisions newer
+        than their latest ready-for-l10n ones should appear."""
+        ready = revision(is_approved=True,
+                         is_ready_for_localization=True,
+                         save=True)
+        significant = revision(document=ready.document,
+                               is_approved=True,
+                               is_ready_for_localization=False,
+                               significance=MEDIUM_SIGNIFICANCE,
+                               save=True)
+        eq_([ready.document.title], self.titles())
