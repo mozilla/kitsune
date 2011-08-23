@@ -6,14 +6,18 @@ the systems that need it.
 """
 
 import os
+import sys
+
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from commander.deploy import task, hosts, hostgroups
 
-SUMO_ROOT = "/data/sumo_python/src/prod"
+import commander_settings as settings
+
 
 @task
 def update_code(ctx, tag):
-    with ctx.lcd(SUMO_ROOT):
+    with ctx.lcd(settings.SRC_DIR):
         ctx.local("git fetch -t")
         ctx.local("git checkout -f %s" % tag)
         ctx.local("git submodule sync")
@@ -23,14 +27,14 @@ def update_code(ctx, tag):
 
 @task
 def update_locales(ctx):
-    with ctx.lcd(os.path.join(SUMO_ROOT, 'locale')):
+    with ctx.lcd(os.path.join(settings.SRC_DIR, 'locale')):
         ctx.local("svn up")
         ctx.local("./compile-mo.sh .")
 
 
 @task
 def schematic(ctx):
-    with ctx.lcd(SUMO_ROOT):
+    with ctx.lcd(settings.SRC_DIR):
         ctx.local("python2.6 ./vendor/src/schematic/schematic migrations")
 
 
