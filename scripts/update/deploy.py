@@ -39,6 +39,14 @@ def schematic(ctx):
 
 
 @task
+def install_cron(ctx):
+    with ctx.lcd(settings.SRC_DIR):
+        ctx.local("python2.6 ./scripts/crontab/gen-crons.py -k %s -u apache > /etc/cron.d/.%s" %
+                  (settings.WWW_DIR, settings.CRON_NAME))
+        ctx.local("mv /etc/cron.d/.%s /etc/cron.d/%s" % (settings.CRON_NAME, settings.CRON_NAME))
+
+
+@task
 def update_sumo(ctx, tag):
     """Do typical sumo update"""
     update_code(tag)

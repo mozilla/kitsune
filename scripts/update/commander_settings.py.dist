@@ -1,1 +1,4 @@
 SRC_DIR = '/data/sumo_python/src/prod'
+WWW_DIR = '/data/sumo/www/support.mozilla.com/kitsune'
+
+CRON_NAME = 'sumo-prod'
