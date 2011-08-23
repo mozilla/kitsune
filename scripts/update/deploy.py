@@ -49,6 +49,9 @@ def install_cron(ctx):
 @task
 def update_sumo(ctx, tag):
     """Do typical sumo update"""
+    # TODO:
+    # * Add deploy-to-webservers.
+    # * Call install_cron after deploy-to-webservers.
     update_code(tag)
     update_locales()
     schematic()
