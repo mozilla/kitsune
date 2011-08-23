@@ -2,8 +2,8 @@
 Patching Kitsune
 ================
 
-Submitting a patch to `Kitsune <support.mozilla.com>`_ is easy! (Fair warning:
-writing the patch may not be ;)
+Submitting a patch to `Kitsune <https://support.mozilla.com>`_ is easy! (Fair
+warning: writing the patch may not be ;)
 
 We use `pull requests <https://github.com/jsocol/kitsune/pulls>`_ to manage
 patches and code reviews, and `Bugzilla <https://bugzilla.mozilla.org>`_ to
@@ -23,7 +23,9 @@ You'll need a Github account and a Bugzilla account.
 The Quick and Dirty
 ===================
 
-Very quick, very little explanation.
+Very quick, very little explanation. Those with strong git fu may already see
+some shortcuts. Use them! As long as ``jsocol/master`` doesn't have merge
+commits, it's all good.
 
 Assuming your Github account is ``foobar`` and you've already forked Kitsune::
 
