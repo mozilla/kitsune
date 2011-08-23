@@ -22,13 +22,17 @@ for item in list(sys.path):
 sys.path[:0] = new_sys_path
 
 # Now we can import from third-party libraries.
+# Monkey patch for Bug 663236: Make |safe less necessary for form fields
+from lib import safe_django_forms
+safe_django_forms.monkeypatch()
+
 from django.core.management import execute_manager, setup_environ
 
 try:
     import settings_local as settings
 except ImportError:
     try:
-        import settings # Assumed to be in the same directory.
+        import settings  # Assumed to be in the same directory.
     except ImportError:
         import sys
         sys.stderr.write(
