@@ -13,6 +13,9 @@ Because of our infrastructure and how we do deployments, we've developed a
 fairly straight-forward workflow in git for submitting patches. This is
 outlined below.
 
+You should run the tests before submitting a pull request. You can find help
+for getting set up in the `installation docs <installation.rst>`_.
+
 If you ever find yourself stuck, come look for us in `#sumodev
 <ircs://irc.mozilla.org/sumodev>`_ on Mozilla's IRC network. We're happy to
 help!
@@ -184,8 +187,8 @@ haven't added any new files, you can do::
 
 If you did add new files, you will have to ``git add`` them before committing.
 
-Note that the commit message contains the bug number. This helps us and our IRC
-bots!
+Note that the commit message contains the bug number after the word "Bug".
+This helps us and our IRC bots!
 
 
 Open a Pull Request
@@ -279,4 +282,5 @@ commit*.
 Once the commit is on ``jsocol/master``, you should go to the main repo on
 Github and find and copy the URL of the commit. Then go to the bug in Bugzilla,
 paste the URL, and set the bug to ``RESOLVED FIXED``. This tells QA and others
-that the fix has landed on ``master`` and will be on the dev server soon!
+that the fix has landed on ``master`` and will be on the dev server soon! And
+close the pull request on Github.
