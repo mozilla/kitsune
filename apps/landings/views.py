@@ -33,39 +33,36 @@ FXHOME_DOCS_FOR_MOBILE = {'common':
 @mobile_template('landings/{mobile/}home.html')
 def home(request, template=None):
     docs = HOME_DOCS_FOR_MOBILE if request.MOBILE else HOME_DOCS
-    data = _data(docs, request.locale)
-    data.update(search_params={'q_tags': 'desktop', 'product': 'desktop'})
-    return jingo.render(request, template, data)
+    return jingo.render(request, template,
+                        _data(docs, request.locale, 'desktop'))
 
 
 @mobile_template('landings/{mobile/}mobile.html')
 def mobile(request, template=None):
     docs = MOBILE_DOCS_FOR_MOBILE if request.MOBILE else MOBILE_DOCS
-    data = _data(docs, request.locale)
-    data.update(search_params={'q_tags': 'mobile', 'product': 'mobile'})
-    return jingo.render(request, template, data)
+    return jingo.render(request, template,
+                        _data(docs, request.locale, 'mobile'))
 
 
 @mobile_template('landings/{mobile/}sync.html')
 def sync(request, template=None):
     docs = SYNC_DOCS_FOR_MOBILE if request.MOBILE else SYNC_DOCS
-    data = _data(docs, request.locale)
-    data.update(search_params={'q_tags': 'sync', 'product': 'sync'})
-    return jingo.render(request, template, data)
+    return jingo.render(request, template,
+                        _data(docs, request.locale, 'sync'))
 
 
 @mobile_template('landings/{mobile/}fxhome.html')
 def fxhome(request, template=None):
     docs = FXHOME_DOCS_FOR_MOBILE if request.MOBILE else FXHOME_DOCS
-    data = _data(docs, request.locale)
-    data.update(search_params={'q_tags': 'FxHome', 'product': 'FxHome'})
-    return jingo.render(request, template, data)
+    return jingo.render(request, template,
+                        _data(docs, request.locale, 'FxHome'))
 
 
-def _data(docs, locale):
+def _data(docs, locale, product):
     """Add the documents and showfor data to the context data."""
     data = {}
     for side, title in docs.iteritems():
         data[side] = get_object_fallback(Document, title, locale)
     data.update(SHOWFOR_DATA)
+    data.update(search_params={'q_tags': product, 'product': product})
     return data
