@@ -16,7 +16,7 @@
      * Initializes flash fallback for a video object.
      */
     function initVideoFallback($video) {
-        if ($video[0].tagName !== 'VIDEO') return;
+        if ($video[0].tagName.toUpperCase() !== 'VIDEO') return;
 
         var formats = {ogg: false, webm: false}, i,
             width = Number($video.data('width')),
