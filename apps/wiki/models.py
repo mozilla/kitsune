@@ -85,7 +85,7 @@ VersionMetadata = namedtuple('VersionMetadata',
                              'is_default')
 GROUPED_FIREFOX_VERSIONS = (
     ((_lazy(u'Desktop:'), 'desktop'), (
-        VersionMetadata(10, _lazy(u'Firefox 8'),
+        VersionMetadata(11, _lazy(u'Firefox 8'),
                         _lazy(u'Firefox 8'), 'fx8', 8.9999, True, False),
         VersionMetadata(9, _lazy(u'Firefox 7'),
                         _lazy(u'Firefox 7'), 'fx7', 7.9999, True, False),
@@ -101,7 +101,7 @@ GROUPED_FIREFOX_VERSIONS = (
         VersionMetadata(3, _lazy(u'Firefox 3.0'),
                         _lazy(u'Firefox 3.0'), 'fx3', 3.4999, False, False))),
     ((_lazy(u'Mobile:'), 'mobile'), (
-        VersionMetadata(11, _lazy(u'Firefox 8'),
+        VersionMetadata(12, _lazy(u'Firefox 8'),
                         _lazy(u'Firefox 8 for Mobile'), 'm8', 8.9999, False,
                         False),
         VersionMetadata(10, _lazy(u'Firefox 7'),
