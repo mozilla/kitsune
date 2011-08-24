@@ -15,6 +15,7 @@ from django.db.utils import IntegrityError
 import cronjobs
 from multidb.pinning import pin_this_thread
 import tweepy
+from statsd import statsd
 
 from customercare.models import Tweet
 
@@ -31,52 +32,55 @@ log = logging.getLogger('k.twitter')
 @cronjobs.register
 def collect_tweets():
     """Collect new tweets about Firefox."""
-    search_options = {
-        'q': 'firefox OR #fxinput',
-        'rpp': settings.CC_TWEETS_PERPAGE,  # Items per page.
-        'result_type': 'recent',  # Retrieve tweets by date.
-    }
+    with statsd.timer('customercare.tweets.time_elapsed'):
+        search_options = {
+            'q': 'firefox OR #fxinput',
+            'rpp': settings.CC_TWEETS_PERPAGE,  # Items per page.
+            'result_type': 'recent',  # Retrieve tweets by date.
+        }
 
-    # If we already have some tweets, collect nothing older than what we have.
-    try:
-        latest_tweet = Tweet.latest()
-    except Tweet.DoesNotExist:
-        log.debug('No existing tweets. Retrieving %d tweets from search.' % (
-            settings.CC_TWEETS_PERPAGE))
-    else:
-        search_options['since_id'] = latest_tweet.tweet_id
-        log.info('Retrieving tweets with id >= %s' % latest_tweet.tweet_id)
-
-    # Retrieve Tweets
-    try:
-        raw_data = json.load(urllib.urlopen('%s?%s' % (
-            SEARCH_URL, urllib.urlencode(search_options))))
-    except Exception, e:
-        log.warning('Twitter request failed: %s' % e)
-        return
-
-    if not ('results' in raw_data and raw_data['results']):
-        # Twitter returned 0 results.
-        return
-
-    # Drop tweets into DB
-    for item in raw_data['results']:
-        # Apply filters to tweet before saving
-        # Allow links in #fxinput tweets
-        item = _filter_tweet(item, allow_links='#fxinput' in item['text'])
-        if not item:
-            continue
-
-        created_date = datetime.utcfromtimestamp(calendar.timegm(
-            rfc822.parsedate(item['created_at'])))
-
-        item_lang = item.get('iso_language_code', 'en')
-        tweet = Tweet(tweet_id=item['id'], raw_json=json.dumps(item),
-                      locale=item_lang, created=created_date)
+        # If we already have some tweets, collect nothing older than what we have.
         try:
-            tweet.save()
-        except IntegrityError:
-            pass
+            latest_tweet = Tweet.latest()
+        except Tweet.DoesNotExist:
+            log.debug('No existing tweets. Retrieving %d tweets from search.' % (
+                settings.CC_TWEETS_PERPAGE))
+        else:
+            search_options['since_id'] = latest_tweet.tweet_id
+            log.info('Retrieving tweets with id >= %s' % latest_tweet.tweet_id)
+
+        # Retrieve Tweets
+        try:
+            raw_data = json.load(urllib.urlopen('%s?%s' % (
+                SEARCH_URL, urllib.urlencode(search_options))))
+        except Exception, e:
+            log.warning('Twitter request failed: %s' % e)
+            return
+
+        if not ('results' in raw_data and raw_data['results']):
+            # Twitter returned 0 results.
+            return
+
+        # Drop tweets into DB
+        for item in raw_data['results']:
+            # Apply filters to tweet before saving
+            # Allow links in #fxinput tweets
+            statsd.incr('customercare.tweet.collected')
+            item = _filter_tweet(item, allow_links='#fxinput' in item['text'])
+            if not item:
+                continue
+
+            created_date = datetime.utcfromtimestamp(calendar.timegm(
+                rfc822.parsedate(item['created_at'])))
+
+            item_lang = item.get('iso_language_code', 'en')
+            tweet = Tweet(tweet_id=item['id'], raw_json=json.dumps(item),
+                          locale=item_lang, created=created_date)
+            try:
+                tweet.save()
+                statsd.incr('customercare.tweet.saved')
+            except IntegrityError:
+                pass
 
 
 @cronjobs.register
@@ -122,18 +126,22 @@ def _filter_tweet(item, allow_links=False):
     """
     # No replies, no mentions
     if item['to_user_id'] or MENTION_REGEX.search(item['text']):
+        statsd.incr('customercare.tweet.rejected.reply_or_mention')
         return None
 
     # No retweets
     if RT_REGEX.search(item['text']) or item['text'].find('(via ') > -1:
+        statsd.incr('customercare.tweet.rejected.retweet')
         return None
 
     # No links
     if not allow_links and LINK_REGEX.search(item['text']):
+        statsd.incr('customercare.tweet.rejected.link')
         return None
 
     # Exclude filtered users
     if item['from_user'] in settings.CC_IGNORE_USERS:
+        statsd.incr('customercare.tweet.rejected.user')
         return None
 
     return item
