@@ -10,6 +10,9 @@ class MobileHomeTests(MobileTestCase):
         r = self.client.get(reverse('home'), follow=True)
         eq_(r.status_code, 200)
         self.assertTemplateUsed(r, 'landings/mobile/home.html')
+        doc = pq(r.content)
+        eq_('desktop', doc('#search input[name="q_tags"]')[0].attrib['value'])
+        eq_('desktop', doc('#search input[name="product"]')[0].attrib['value'])
 
     def test_mobile_home_for_mobile(self):
         r = self.client.get(reverse('home.mobile'), follow=True)
@@ -17,17 +20,23 @@ class MobileHomeTests(MobileTestCase):
         self.assertTemplateUsed(r, 'landings/mobile/mobile.html')
         doc = pq(r.content)
         eq_('mobile', doc('#search input[name="q_tags"]')[0].attrib['value'])
-        eq_('mobile', doc('#search input[name="tags"]')[0].attrib['value'])
+        eq_('mobile', doc('#search input[name="product"]')[0].attrib['value'])
 
     def test_sync_home_for_mobile(self):
         r = self.client.get(reverse('home.sync'), follow=True)
         eq_(r.status_code, 200)
         self.assertTemplateUsed(r, 'landings/mobile/sync.html')
+        doc = pq(r.content)
+        eq_('sync', doc('#search input[name="q_tags"]')[0].attrib['value'])
+        eq_('sync', doc('#search input[name="product"]')[0].attrib['value'])
 
     def test_fxhome_home_for_mobile(self):
         r = self.client.get(reverse('home.fxhome'), follow=True)
         eq_(r.status_code, 200)
         self.assertTemplateUsed(r, 'landings/mobile/fxhome.html')
+        doc = pq(r.content)
+        eq_('FxHome', doc('#search input[name="q_tags"]')[0].attrib['value'])
+        eq_('FxHome', doc('#search input[name="product"]')[0].attrib['value'])
 
 
 class HomeRedirects(TestCase):
