@@ -870,6 +870,8 @@ def mark_ready_for_l10n_revision(request, document_slug, revision_id):
                                  document__slug=document_slug)
 
     if revision.can_be_readied_for_localization():
+        # We don't use update(), because that wouldn't update
+        # Document.latest_localizable_revision.
         revision.is_ready_for_localization = True
         revision.save()
 
