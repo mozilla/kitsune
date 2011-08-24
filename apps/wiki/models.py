@@ -794,7 +794,9 @@ class Revision(ModelBase):
         # If not is_approved, can't be is_ready. TODO: think about using a
         # single field with more states.
         # Also, if significance is trivial, it shouldn't be translated.
-        return self.is_approved and self.significance != TYPO_SIGNIFICANCE
+        return (self.is_approved and
+                self.significance > TYPO_SIGNIFICANCE and
+                self.document.locale == settings.WIKI_DEFAULT_LANGUAGE)
 
 
 # FirefoxVersion and OperatingSystem map many ints to one Document. The
