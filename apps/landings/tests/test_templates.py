@@ -20,4 +20,4 @@ class MobileHomeTestCase(TestCase):
         eq_('mobile',
             doc('#support-search input[name="q_tags"]')[0].attrib['value'])
         eq_('mobile',
-            doc('#support-search input[name="tags"]')[0].attrib['value'])
+            doc('#support-search input[name="product"]')[0].attrib['value'])
