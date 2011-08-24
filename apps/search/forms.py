@@ -10,7 +10,7 @@ from forums.models import Forum as DiscussionForum
 import search as constants
 from sumo.form_fields import TypedMultipleChoiceField
 from sumo_locales import LOCALES
-from wiki.models import CATEGORIES
+from wiki.models import CATEGORIES, PRODUCTS
 
 
 SEARCH_LANGUAGES = [(k, LOCALES[k].native) for
@@ -70,6 +70,12 @@ class SearchForm(forms.Form):
     category = TypedMultipleChoiceField(
         required=False, coerce=int, widget=forms.CheckboxSelectMultiple,
         label=_lazy('Category'), choices=CATEGORIES, coerce_only=True)
+
+    product = forms.MultipleChoiceField(
+        required=False,
+        label=_lazy('Relevant to'),
+        choices=PRODUCTS,
+        widget=forms.CheckboxSelectMultiple())
 
     include_archived = forms.BooleanField(
         required=False, label=_lazy('Include obsolete articles?'))

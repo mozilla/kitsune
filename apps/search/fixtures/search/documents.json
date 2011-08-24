@@ -238,6 +238,30 @@
         }
     },
     {
+        "pk": 102,
+        "model": "taggit.tag",
+        "fields": {
+            "name": "desktop",
+            "slug": "desktop"
+        }
+    },
+    {
+        "pk": 103,
+        "model": "taggit.tag",
+        "fields": {
+            "name": "mobile",
+            "slug": "mobile"
+        }
+    },
+    {
+        "pk": 104,
+        "model": "taggit.tag",
+        "fields": {
+            "name": "sync",
+            "slug": "sync"
+        }
+    },
+    {
         "pk": 1000,
         "model": "taggit.taggeditem",
         "fields": {
@@ -262,6 +286,42 @@
             "tag": 101,
             "content_type": ["wiki", "document"],
             "object_id": 1
+        }
+    },
+    {
+        "pk": 1003,
+        "model": "taggit.taggeditem",
+        "fields": {
+            "tag": 102,
+            "content_type": ["wiki", "document"],
+            "object_id": 1
+        }
+    },
+    {
+        "pk": 1004,
+        "model": "taggit.taggeditem",
+        "fields": {
+            "tag": 103,
+            "content_type": ["wiki", "document"],
+            "object_id": 5
+        }
+    },
+    {
+        "pk": 1005,
+        "model": "taggit.taggeditem",
+        "fields": {
+            "tag": 104,
+            "content_type": ["wiki", "document"],
+            "object_id": 1
+        }
+    },
+    {
+        "pk": 1006,
+        "model": "taggit.taggeditem",
+        "fields": {
+            "tag": 104,
+            "content_type": ["wiki", "document"],
+            "object_id": 5
         }
     }
 ]

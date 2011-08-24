@@ -310,6 +310,21 @@ class SearchTest(SphinxTestCase):
             response = self.client.get(reverse('search'), qs)
             eq_(total, json.loads(response.content)['total'])
 
+    def test_products(self):
+        """Search for products."""
+        qs = {'a': 1, 'w': 1, 'format': 'json'}
+        prod_vals = (
+            ('mobile', 1),
+            ('desktop', 1),
+            ('sync', 2),
+            ('FxHome', 0),
+        )
+
+        for prod, total in prod_vals:
+            qs.update({'product': prod})
+            response = self.client.get(reverse('search'), qs)
+            eq_(total, json.loads(response.content)['total'])
+
     def test_unicode_excerpt(self):
         """Unicode characters in the excerpt should not be a problem."""
         wc = WikiClient()
