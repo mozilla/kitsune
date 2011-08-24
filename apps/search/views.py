@@ -136,6 +136,15 @@ def search(request, template=None):
         'value': search_locale,
     })
 
+    # Product filter
+    products = cleaned['product']
+    if products:
+        for p in products:
+            filters_w.append({
+                'filter': 'tag',
+                'value': (crc32(p),),
+                })
+
     # Tags filter
     tags = [crc32(t.strip()) for t in cleaned['tags'].split()]
     if tags:
