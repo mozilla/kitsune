@@ -10,7 +10,7 @@ from forums.models import Forum as DiscussionForum
 import search as constants
 from sumo.form_fields import TypedMultipleChoiceField
 from sumo_locales import LOCALES
-from wiki.models import CATEGORIES, FIREFOX_VERSIONS, OPERATING_SYSTEMS
+from wiki.models import CATEGORIES, PRODUCTS
 
 
 SEARCH_LANGUAGES = [(k, LOCALES[k].native) for
@@ -71,19 +71,11 @@ class SearchForm(forms.Form):
         required=False, coerce=int, widget=forms.CheckboxSelectMultiple,
         label=_lazy('Category'), choices=CATEGORIES, coerce_only=True)
 
-    fx = TypedMultipleChoiceField(
-        required=False, coerce=int, widget=forms.CheckboxSelectMultiple,
-        label=_lazy('Firefox version'),
-        choices=[(v.id, v.long) for v in FIREFOX_VERSIONS],
-        initial=[v.id for v in FIREFOX_VERSIONS],
-        coerce_only=True)
-
-    os = TypedMultipleChoiceField(
-        required=False, coerce=int, widget=forms.CheckboxSelectMultiple,
-        label=_lazy('Operating System'),
-        choices=[(o.id, o.name) for o in OPERATING_SYSTEMS],
-        initial=[o.id for o in OPERATING_SYSTEMS],
-        coerce_only=True)
+    product = forms.MultipleChoiceField(
+        required=False,
+        label=_lazy('Relevant to'),
+        choices=PRODUCTS,
+        widget=forms.CheckboxSelectMultiple())
 
     include_archived = forms.BooleanField(
         required=False, label=_lazy('Include obsolete articles?'))

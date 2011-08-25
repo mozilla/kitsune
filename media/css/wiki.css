@@ -209,15 +209,8 @@ body.new-header #more-help div.support-search {
     padding: 0 0 20px;
 }
 
-#document-form form > ul,
-#document-form div.relevant-to {
-    display: inline-block;
+#document-form form > ul {
     vertical-align: top;
-    width: 49%;
-}
-
-#document-form div.relevant-to ul {
-    width: 100%;
 }
 
 #revision-form form li,
@@ -227,31 +220,22 @@ body.new-header #more-help div.support-search {
     padding: 15px 0;
 }
 
+#document-form form li li {
+    display: inline-block;
+    padding: 0 10px 0 0;
+}
+
 #document-form div.tags li {
     /* Keep the padding between the tag widgets less than that between the fields. */
     padding: 0;
 }
 
-#document-form div.relevant-to h2,
 article.form-page form li label {
     color: #333;
     display: block;
     font-family: Verdana;
     font-size: 13px;
     margin: 0 0 5px;
-}
-
-#document-form div.relevant-to h2 {
-    font-size: 13px;
-    font-weight: bold;
-    margin: 0;
-    padding: 5px 0 0;
-}
-
-#document-form div.relevant-to li li {
-    display: inline-block;
-    padding: 2px 0;
-    width: 150px;
 }
 
 #document-form li li label {
@@ -474,6 +458,12 @@ details.h2 > summary {
 #helpful-chart {
     display: none;
     height: 400px;
+    width: 100%;
+}
+
+#helpful-chart-tall {
+    display: none;
+    height: 600px;
     width: 100%;
 }
 

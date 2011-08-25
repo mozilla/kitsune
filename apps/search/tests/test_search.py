@@ -161,54 +161,6 @@ class SearchTest(SphinxTestCase):
         results = wc.query('')
         eq_(6, len(results))
 
-    def test_firefox_filter(self):
-        """Filtering by Firefox version."""
-        qs = {'a': 1, 'w': 1, 'format': 'json'}
-
-        qs.update({'fx': [1]})
-        response = self.client.get(reverse('search'), qs)
-        eq_(1, json.loads(response.content)['total'])
-
-        qs.update({'fx': [1, 4]})
-        response = self.client.get(reverse('search'), qs)
-        eq_(2, json.loads(response.content)['total'])
-
-    def test_os_filter(self):
-        """Filtering by operating system."""
-        qs = {'a': 1, 'w': 1, 'format': 'json'}
-
-        qs.update({'os': [1]})
-        response = self.client.get(reverse('search'), qs)
-        eq_(1, json.loads(response.content)['total'])
-
-        qs.update({'os': [1, 5]})
-        response = self.client.get(reverse('search'), qs)
-        eq_(2, json.loads(response.content)['total'])
-
-    def test_translations_inherit_fx_values(self):
-        wc = WikiClient()
-        filters = [{'filter': 'locale', 'value': (crc32('fr'),)},
-                   {'filter': 'fx', 'value': (1,)}]
-        results = wc.query('', filters)
-        eq_(1, len(results))
-        eq_(4, results[0]['id'])
-
-        filters[1]['value'] = (4,)
-        results = wc.query('', filters)
-        eq_(0, len(results))
-
-    def test_translations_inherit_os_values(self):
-        wc = WikiClient()
-        filters = [{'filter': 'locale', 'value': (crc32('fr'),)},
-                   {'filter': 'os', 'value': (1,)}]
-        results = wc.query('', filters)
-        eq_(1, len(results))
-        eq_(4, results[0]['id'])
-
-        filters[1]['value'] = (4,)
-        results = wc.query('', filters)
-        eq_(0, len(results))
-
     def test_range_filter(self):
         """Test filtering on a range."""
         wc = WikiClient()
@@ -358,6 +310,21 @@ class SearchTest(SphinxTestCase):
             response = self.client.get(reverse('search'), qs)
             eq_(total, json.loads(response.content)['total'])
 
+    def test_products(self):
+        """Search for products."""
+        qs = {'a': 1, 'w': 1, 'format': 'json'}
+        prod_vals = (
+            ('mobile', 1),
+            ('desktop', 1),
+            ('sync', 2),
+            ('FxHome', 0),
+        )
+
+        for prod, total in prod_vals:
+            qs.update({'product': prod})
+            response = self.client.get(reverse('search'), qs)
+            eq_(total, json.loads(response.content)['total'])
+
     def test_unicode_excerpt(self):
         """Unicode characters in the excerpt should not be a problem."""
         wc = WikiClient()
@@ -430,7 +397,7 @@ class SearchTest(SphinxTestCase):
 
     def test_discussion_filter_forum(self):
         """Filter by forum in discussion forums."""
-        raise SkipTest  #TODO: Figure out why this randomly started failing.
+        raise SkipTest  # TODO: Figure out why this randomly started failing.
         qs = {'a': 1, 'w': 4, 'format': 'json'}
         forum_vals = (
             # (forum_id, num_results)
@@ -446,7 +413,7 @@ class SearchTest(SphinxTestCase):
 
     def test_discussion_filter_sticky(self):
         """Filter for sticky threads."""
-        raise SkipTest  #TODO: Figure out why this randomly started failing.
+        raise SkipTest  # TODO: Figure out why this randomly started failing.
         qs = {'a': 1, 'w': 4, 'format': 'json', 'thread_type': 1, 'forum': 1}
         response = self.client.get(reverse('search'), qs)
         result = json.loads(response.content)['results'][0]
@@ -454,7 +421,7 @@ class SearchTest(SphinxTestCase):
 
     def test_discussion_filter_locked(self):
         """Filter for locked threads."""
-        raise SkipTest  #TODO: Figure out why this randomly started failing.
+        raise SkipTest  # TODO: Figure out why this randomly started failing.
         qs = {'a': 1, 'w': 4, 'format': 'json', 'thread_type': 2,
               'forum': 1, 'q': 'locked'}
         response = self.client.get(reverse('search'), qs)

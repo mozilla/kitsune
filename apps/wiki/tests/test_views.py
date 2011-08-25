@@ -7,6 +7,7 @@ import mock
 from nose.tools import eq_
 from pyquery import PyQuery as pq
 
+from questions.tests import tags_eq
 from sumo.tests import TestCase, LocalizingClient
 from sumo.urlresolvers import reverse
 from users.tests import user, add_permission
@@ -125,24 +126,20 @@ class DocumentEditingTests(TestCase):
         eq_(new_title, Document.uncached.get(slug=d.slug).title)
         assert Document.uncached.get(title=old_title).redirect_url()
 
-    def test_changing_metadata(self):
-        """Changing metadata works as expected."""
+    def test_changing_products(self):
+        """Changing products works as expected."""
         client = LocalizingClient()
         client.login(username='admin', password='testpass')
         d, r = doc_rev()
         data = new_document_data()
-        data.update({'firefox_versions': [1, 2, 3],
-                     'operating_systems': [1, 3],
+        data.update({'products': ['desktop', 'sync'],
                      'form': 'doc'})
         client.post(reverse('wiki.edit_document', args=[d.slug]), data)
-        eq_(3, d.firefox_versions.count())
-        eq_(2, d.operating_systems.count())
-        data.update({'firefox_versions': [1, 2],
-                     'operating_systems': [2],
+        tags_eq(d, ['desktop', 'sync'])
+        data.update({'products': ['mobile'],
                      'form': 'doc'})
         client.post(reverse('wiki.edit_document', args=[data['slug']]), data)
-        eq_(2, d.firefox_versions.count())
-        eq_(1, d.operating_systems.count())
+        tags_eq(d, ['mobile'])
 
     @mock.patch.object(Site.objects, 'get_current')
     def test_invalid_slug(self, get_current):

@@ -25,7 +25,8 @@ from wiki.cron import calculate_related_documents
 from wiki.events import (EditDocumentEvent, ReadyRevisionEvent,
                          ReviewableRevisionInLocaleEvent,
                          ApproveRevisionInLocaleEvent)
-from wiki.models import Document, Revision, HelpfulVote, SIGNIFICANCES
+from wiki.models import (Document, Revision, HelpfulVote, SIGNIFICANCES,
+                         MEDIUM_SIGNIFICANCE)
 from wiki.tasks import send_reviewed_notification
 from wiki.tests import (TestCaseBase, document, revision, new_document_data,
                         translated_revision)
@@ -270,7 +271,10 @@ class DocumentTests(TestCaseBase):
         d.tags.add('tag1', 'tag2')
         r = self.client.get(d.get_absolute_url())
         doc = pq(r.content)
-        eq_('tag1 tag2', doc('li.topic a').text())
+        topics = doc('li.topic a').text().split(' ')
+        eq_(2, len(topics))
+        assert 'tag2' in topics
+        assert 'tag1' in topics
 
     def test_topics_es(self):
         """Make sure an es document shows the right topics (inherited)."""
@@ -287,6 +291,15 @@ class DocumentTests(TestCaseBase):
         r = self.client.get(d.get_absolute_url())
         doc = pq(r.content)
         assert not doc('#doc-tabs li.edit')
+
+    def test_obsolete_no_vote(self):
+        """No voting on is_archived documents."""
+        d = document(is_archived=True, save=True)
+        revision(document=d, is_approved=True, save=True)
+        response = self.client.get(d.get_absolute_url())
+        eq_(200, response.status_code)
+        doc = pq(response.content)
+        assert not doc('#helpful-vote')
 
 
 class RevisionTests(TestCaseBase):
@@ -326,7 +339,9 @@ class RevisionTests(TestCaseBase):
         """HTTP POST to mark a revision as ready for l10n."""
 
         r = revision(is_approved=True,
-                     is_ready_for_localization=False, save=True)
+                     is_ready_for_localization=False,
+                     significance=MEDIUM_SIGNIFICANCE,
+                     save=True)
 
         self.client.login(username='admin', password='testpass')
 
@@ -444,7 +459,7 @@ class NewDocumentTests(TestCaseBase):
         self.client.login(username='admin', password='testpass')
         response = self.client.get(reverse('wiki.new_document'))
         doc = pq(response.content)
-        eq_(9, len(doc('.relevant-to input[checked=checked]')))
+        eq_(1, len(doc('input[name="products"][checked=checked]')))
         eq_(None, doc('input[name="tags"]').attr('required'))
         eq_('checked', doc('input#id_allow_discussion').attr('checked'))
         eq_(None, doc('input#id_allow_discussion').attr('required'))
@@ -465,11 +480,7 @@ class NewDocumentTests(TestCaseBase):
             response.redirect_chain)
         eq_(settings.WIKI_DEFAULT_LANGUAGE, d.locale)
         eq_(data['category'], d.category)
-        eq_(tags, sorted(t.name for t in d.tags.all()))
-        eq_(data['firefox_versions'],
-            list(d.firefox_versions.values_list('item_id', flat=True)))
-        eq_(data['operating_systems'],
-            list(d.operating_systems.values_list('item_id', flat=True)))
+        tags_eq(d, tags + ['desktop'])
         r = d.revisions.all()[0]
         eq_(data['keywords'], r.keywords)
         eq_(data['summary'], r.summary)
@@ -548,11 +559,11 @@ class NewDocumentTests(TestCaseBase):
                                     follow=True)
         self.assertContains(response, 'Please choose a category.')
 
-    def test_new_document_POST_invalid_ff_version(self):
-        """Try to create a new document with an invalid firefox version."""
+    def test_new_document_POST_invalid_product(self):
+        """Try to create a new document with an invalid product."""
         self.client.login(username='admin', password='testpass')
         data = new_document_data(['tag1', 'tag2'])
-        data['firefox_versions'] = [1337]
+        data['products'] = [1337]
         response = self.client.post(reverse('wiki.new_document'), data,
                                     follow=True)
         doc = pq(response.content)
@@ -755,7 +766,7 @@ class NewRevisionTests(TestCaseBase):
         data['form'] = 'doc'
         self.client.post(reverse('wiki.edit_document', args=[self.d.slug]),
                          data)
-        tags_eq(self.d, tags)
+        tags_eq(self.d, tags + ['desktop'])
 
     @mock.patch.object(Site.objects, 'get_current')
     def test_new_form_maintains_based_on_rev(self, get_current):

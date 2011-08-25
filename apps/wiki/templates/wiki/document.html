@@ -6,6 +6,8 @@
 {% set title = _('{t} | {c}')|f(t=document.title, c=document.get_category_display()) %}
 {% set classes = 'document' %}
 {% set canonical_url = document.get_absolute_url() %}
+{% set scripts = ('wiki', 'readtracker') %}
+{% set extra_body_attrs = {'data-track-url': MEDIA_URL + 'img/pixel.gif', 'data-document-id': document.id} %}
 
 {% if document.parent %}
   {# If there is a parent doc, use it's URL for switching locales. #}

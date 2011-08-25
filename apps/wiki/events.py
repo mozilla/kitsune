@@ -142,7 +142,6 @@ class ReadyRevisionEvent(_RevisionConstructor, Event):
         """
         revision = self.revision
         document = revision.document
-        revision.is_ready_for_localization
         log.debug('Sending ready notifications for revision (id=%s)' %
                   revision.id)
         ready_subject = _(

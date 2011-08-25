@@ -4,6 +4,31 @@ k = {};
 (function () {
     k.LAZY_DELAY = 500;  // delay to lazy loading scripts, in ms
     k.MEDIA_URL = '/media/';
+    k.getQueryParamsAsDict = function (url) {
+        // Parse the url's query parameters into a dict. Mostly stolen from:
+        // http://stackoverflow.com/questions/901115/get-query-string-values-in-javascript/2880929#2880929
+        var queryString = '',
+            splitUrl,
+            urlParams = {},
+            e,
+            a = /\+/g,  // Regex for replacing addition symbol with a space
+            r = /([^&=]+)=?([^&]*)/g,
+            d = function (s) { return decodeURIComponent(s.replace(a, " ")); };
+
+        if (url) {
+            splitUrl = url.split('?');
+            if (splitUrl.length > 1) {
+                queryString = splitUrl.splice(1).join('');
+            }
+        } else {
+            queryString = window.location.search.substring(1);
+        }
+
+        while (e = r.exec(queryString)) {
+           urlParams[d(e[1])] = d(e[2]);
+        }
+        return urlParams;
+    }
 
     // Pass CSRF token in XHR header
     $.ajaxSetup({
@@ -29,7 +54,6 @@ k = {};
         $('input[placeholder]').placeholder();
 
         initAutoSubmitSelects();
-        initSearchAutoFilters();
         disableFormsOnSubmit();
         lazyLoadScripts();
     });
@@ -40,42 +64,6 @@ k = {};
     function initAutoSubmitSelects() {
         $('select.autosubmit').change(function() {
             $(this).closest('form').submit();
-        });
-    }
-
-    function initSearchAutoFilters() {
-        var $browser = $('#browser'),
-            $os = $('#os'),
-            $search = $('.support-search form'),
-            for_os = $('body').data('for-os'),
-            for_version = $('body').data('for-version');
-
-        /**
-         * (Possibly create, and) update a hidden input on new search forms
-         * to filter based on Help With selections.
-         */
-        function updateAndCreateFilter(name, $source, data) {
-            $search.each(function(i, el) {
-                var $input = $(el).find('input[name='+name+']');
-                if (!$input.length) {
-                    $input = $('<input type="hidden" name="'+name+'">');
-                    $(el).prepend($input);
-                }
-                $input.val(data[$source.val()]);
-            });
-        }
-
-        /**
-         * Before submitting the form, update the hidden input values for
-         * browser version and OS.
-         */
-        $search.submit(function() {
-            if ($browser.length) {
-                updateAndCreateFilter('fx', $browser, for_version);
-            }
-            if ($os.length) {
-                updateAndCreateFilter('os', $os, for_os);
-            }
         });
     }
 

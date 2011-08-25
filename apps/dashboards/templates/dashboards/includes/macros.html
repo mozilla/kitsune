@@ -1,28 +1,30 @@
 {# vim: set ts=2 et sts=2 sw=2: #}
 {% macro print_readout(readout, detail_view_name, locale=None, max_rows=10) %}
-  <details class="h2" open="open">
-    <summary class="with-mode-selectors">
-      <a id="{{ readout.slug }}">{{ readout.title }}</a>
-    </summary>
-    <ul class="readout-modes" data-slug="{{ readout.slug }}">
-      {% for key, name in readout.modes %}
-        <li class="mode{% if loop.first %} active{% endif %}" data-url="{{ url('dashboards.wiki_rows', readout.slug)|urlparams(max=max_rows, mode=key, locale=locale) }}">
-          <a href="#">{{ name }}</a>
-        </li>
-      {% endfor %}
-    </ul>
-    {% if readout.description %}
-      <p>
-        {{ readout.description }}
-      </p>
-    {% endif %}
-    <table class="documents" id="{{ readout.slug }}-table">
-      {{ readout.render(max_rows=max_rows)|safe }}
-    </table>
-    <div class="table-footer">
-      <a href="{{ url(detail_view_name, readout.slug, locale=locale) }}">{{ readout.details_link_text }}</a>
-    </div>
-  </details>
+  {% if not readout.hide_readout %}
+    <details class="h2" open="open">
+      <summary class="with-mode-selectors">
+        <a id="{{ readout.slug }}">{{ readout.title }}</a>
+      </summary>
+      <ul class="readout-modes" data-slug="{{ readout.slug }}">
+        {% for key, name in readout.modes %}
+          <li class="mode{% if loop.first %} active{% endif %}" data-url="{{ url('dashboards.wiki_rows', readout.slug)|urlparams(max=max_rows, mode=key, locale=locale) }}">
+            <a href="#">{{ name }}</a>
+          </li>
+        {% endfor %}
+      </ul>
+      {% if readout.description %}
+        <p>
+          {{ readout.description }}
+        </p>
+      {% endif %}
+      <table class="documents" id="{{ readout.slug }}-table">
+        {{ readout.render(max_rows=max_rows)|safe }}
+      </table>
+      <div class="table-footer">
+        <a href="{{ url(detail_view_name, readout.slug, locale=locale) }}">{{ readout.details_link_text }}</a>
+      </div>
+    </details>
+  {% endif %}
 {% endmacro %}
 
 {% macro overview_section(readouts, printed_rows) %}

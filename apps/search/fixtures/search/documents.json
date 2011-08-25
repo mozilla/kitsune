@@ -238,6 +238,30 @@
         }
     },
     {
+        "pk": 102,
+        "model": "taggit.tag",
+        "fields": {
+            "name": "desktop",
+            "slug": "desktop"
+        }
+    },
+    {
+        "pk": 103,
+        "model": "taggit.tag",
+        "fields": {
+            "name": "mobile",
+            "slug": "mobile"
+        }
+    },
+    {
+        "pk": 104,
+        "model": "taggit.tag",
+        "fields": {
+            "name": "sync",
+            "slug": "sync"
+        }
+    },
+    {
         "pk": 1000,
         "model": "taggit.taggeditem",
         "fields": {
@@ -265,99 +289,39 @@
         }
     },
     {
-        "pk": 994,
-        "model": "wiki.firefoxversion",
+        "pk": 1003,
+        "model": "taggit.taggeditem",
         "fields": {
-            "item_id": 1,
-            "document": 1
+            "tag": 102,
+            "content_type": ["wiki", "document"],
+            "object_id": 1
         }
     },
     {
-        "pk": 995,
-        "model": "wiki.firefoxversion",
+        "pk": 1004,
+        "model": "taggit.taggeditem",
         "fields": {
-            "item_id": 2,
-            "document": 2
+            "tag": 103,
+            "content_type": ["wiki", "document"],
+            "object_id": 5
         }
     },
     {
-        "pk": 996,
-        "model": "wiki.firefoxversion",
+        "pk": 1005,
+        "model": "taggit.taggeditem",
         "fields": {
-            "item_id": 3,
-            "document": 3
+            "tag": 104,
+            "content_type": ["wiki", "document"],
+            "object_id": 1
         }
     },
     {
-        "pk": 997,
-        "model": "wiki.firefoxversion",
+        "pk": 1006,
+        "model": "taggit.taggeditem",
         "fields": {
-            "item_id": 4,
-            "document": 4
-        }
-    },
-    {
-        "pk": 998,
-        "model": "wiki.firefoxversion",
-        "fields": {
-            "item_id": 4,
-            "document": 5
-        }
-    },
-    {
-        "pk": 999,
-        "model": "wiki.firefoxversion",
-        "fields": {
-            "item_id": 4,
-            "document": 7
-        }
-    },
-    {
-        "pk": 2881,
-        "model": "wiki.operatingsystem",
-        "fields": {
-            "item_id": 1,
-            "document": 1
-        }
-    },
-    {
-        "pk": 2882,
-        "model": "wiki.operatingsystem",
-        "fields": {
-            "item_id": 2,
-            "document": 2
-        }
-    },
-    {
-        "pk": 2883,
-        "model": "wiki.operatingsystem",
-        "fields": {
-            "item_id": 3,
-            "document": 3
-        }
-    },
-    {
-        "pk": 2884,
-        "model": "wiki.operatingsystem",
-        "fields": {
-            "item_id": 4,
-            "document": 4
-        }
-    },
-    {
-        "pk": 2885,
-        "model": "wiki.operatingsystem",
-        "fields": {
-            "item_id": 5,
-            "document": 5
-        }
-    },
-    {
-        "pk": 2886,
-        "model": "wiki.operatingsystem",
-        "fields": {
-            "item_id": 5,
-            "document": 7
+            "tag": 104,
+            "content_type": ["wiki", "document"],
+            "object_id": 5
         }
     }
 ]

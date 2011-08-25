@@ -8,9 +8,9 @@ from django.core.exceptions import ValidationError
 from sumo import ProgrammingError
 from sumo.tests import TestCase
 from wiki.cron import calculate_related_documents
-from wiki.models import (FirefoxVersion, OperatingSystem, Document,
-                         REDIRECT_CONTENT, REDIRECT_SLUG, REDIRECT_TITLE,
-                         REDIRECT_HTML, MAJOR_SIGNIFICANCE, CATEGORIES)
+from wiki.models import (Document, REDIRECT_CONTENT, REDIRECT_SLUG,
+                         REDIRECT_TITLE, REDIRECT_HTML, MAJOR_SIGNIFICANCE,
+                         CATEGORIES, TYPO_SIGNIFICANCE)
 from wiki.parser import wiki_to_html
 from wiki.tests import document, revision, doc_rev, translated_revision
 
@@ -61,37 +61,6 @@ class DocumentTests(TestCase):
         d.delete()
         eq_(0, TaggedItem.objects.count())
 
-    def _test_m2m_inheritance(self, enum_class, attr, direct_attr):
-        """Test a descriptor's handling of parent delegation."""
-        parent = document()
-        child = document(parent=parent, title='Some Other Title')
-        e1 = enum_class(item_id=1)
-        parent.save()
-
-        # Make sure child sees stuff set on parent:
-        getattr(parent, attr).add(e1)
-        _objects_eq(getattr(child, attr), [e1])
-
-        # Make sure parent sees stuff set on child:
-        child.save()
-        e2 = enum_class(item_id=2)
-        getattr(child, attr).add(e2)
-        _objects_eq(getattr(parent, attr), [e1, e2])
-
-        # Assert the data are attached to the parent, not the child:
-        _objects_eq(getattr(parent, direct_attr), [e1, e2])
-        _objects_eq(getattr(child, direct_attr), [])
-
-    def test_firefox_version_inheritance(self):
-        """Assert the parent delegation of firefox_version works."""
-        self._test_m2m_inheritance(FirefoxVersion, 'firefox_versions',
-                                   'firefox_version_set')
-
-    def test_operating_system_inheritance(self):
-        """Assert the parent delegation of operating_system works."""
-        self._test_m2m_inheritance(OperatingSystem, 'operating_systems',
-                                   'operating_system_set')
-
     def test_category_inheritance(self):
         """A document's categories must always be those of its parent."""
         some_category = CATEGORIES[1][0]
@@ -120,29 +89,6 @@ class DocumentTests(TestCase):
         parent.save()
         eq_(other_category,
             parent.translations.get(locale=child.locale).category)
-
-    def _test_int_sets_and_descriptors(self, enum_class, attr):
-        """Test our lightweight int sets & descriptors' getting and setting."""
-        d = document()
-        d.save()
-        _objects_eq(getattr(d, attr), [])
-
-        i1 = enum_class(item_id=1)
-        getattr(d, attr).add(i1)
-        _objects_eq(getattr(d, attr), [i1])
-
-        i2 = enum_class(item_id=2)
-        getattr(d, attr).add(i2)
-        _objects_eq(getattr(d, attr), [i1, i2])
-
-    def test_firefox_versions(self):
-        """Test firefox_versions attr"""
-        self._test_int_sets_and_descriptors(FirefoxVersion, 'firefox_versions')
-
-    def test_operating_systems(self):
-        """Test operating_systems attr"""
-        self._test_int_sets_and_descriptors(OperatingSystem,
-                                            'operating_systems')
 
     def _test_remembering_setter_unsaved(self, field):
         """A remembering setter shouldn't kick in until the doc is saved."""
@@ -547,9 +493,18 @@ class RevisionTests(TestCase):
 
         eq_(en_rev.document.current_revision, de_rev.based_on)
 
-    def test_correct_ready_for_localization(self):
+    def test_correct_ready_for_localization_if_unapproved(self):
         """Revision.clean() must clear is_ready_for_l10n if not is_approved."""
         r = revision(is_approved=False, is_ready_for_localization=True)
+        r.clean()
+        assert not r.is_ready_for_localization
+
+    def test_correct_ready_for_localization_if_insignificant(self):
+        """Revision.clean() must clear is_ready_for_l10n if the rev is of
+        typo-level significance."""
+        r = revision(is_approved=True,
+                     is_ready_for_localization=True,
+                     significance=TYPO_SIGNIFICANCE)
         r.clean()
         assert not r.is_ready_for_localization
 

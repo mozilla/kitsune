@@ -29,7 +29,8 @@ def render_readouts(request, readouts, template, locale=None, extra_data=None):
     current_locale = locale or request.locale
     on_default_locale = request.locale == settings.WIKI_DEFAULT_LANGUAGE
     data = {'readouts': SortedDict((slug, class_(request, locale=locale))
-                                   for slug, class_ in readouts.iteritems()),
+                                   for slug, class_ in readouts.iteritems()
+                                   if class_.should_show_to(request.user)),
             'default_locale': settings.WIKI_DEFAULT_LANGUAGE,
             'default_locale_name':
                 LOCALES[settings.WIKI_DEFAULT_LANGUAGE].native,
