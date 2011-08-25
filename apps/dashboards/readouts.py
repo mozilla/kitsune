@@ -25,11 +25,6 @@ MOST_VIEWED = 1
 MOST_RECENT = 2
 
 
-def _cursor():
-    """Return a DB cursor for reading."""
-    return connections[router.db_for_read(Document)].cursor()
-
-
 # FROM clause for selecting most-visited translations:
 most_visited_translation_from = (
     'FROM wiki_document engdoc '
@@ -46,6 +41,77 @@ most_visited_translation_from = (
         '{extra_where} '  # extra WHERE conditions
     'ORDER BY dashboards_wikidocumentvisits.visits DESC, '
              'COALESCE(transdoc.title, engdoc.title) ASC ').format
+
+
+REVIEW_STATUSES = {
+    1: (_lazy(u'Review Needed'), 'wiki.document_revisions', 'review'),
+    0: (u'', '', 'ok')}
+SIGNIFICANCE_STATUSES = {
+    MEDIUM_SIGNIFICANCE:
+        (_lazy(u'Update Needed'), 'wiki.edit_document', 'update'),
+    MAJOR_SIGNIFICANCE:
+        (_lazy(u'Immediate Update Needed'), 'wiki.edit_document',
+         'out-of-date')}
+
+# The most significant approved change to the English article between {the
+# English revision the current translated revision is based on} and {the latest
+# ready-for-localization revision}:
+MOST_SIGNIFICANT_CHANGE_READY_TO_TRANSLATE = (
+    '(SELECT MAX(engrev.significance) '
+     'FROM wiki_revision engrev, wiki_revision transrev '
+     'WHERE engrev.is_approved '
+     'AND transrev.id=transdoc.current_revision_id '
+     'AND engrev.document_id=transdoc.parent_id '
+     'AND engrev.id>transrev.based_on_id '
+     'AND engrev.id<=engdoc.latest_localizable_revision_id'
+    ')')
+
+# Whether there are any unreviewed revs of the translation made since the
+# current one:
+NEEDS_REVIEW = (
+            '(SELECT EXISTS '
+                '(SELECT * '
+                 'FROM wiki_revision transrev '
+                 'WHERE transrev.document_id=transdoc.id '
+                 'AND transrev.reviewed IS NULL '
+                 'AND (transrev.id>transdoc.current_revision_id OR '
+                      'transdoc.current_revision_id IS NULL)'
+                ')'
+            ') ')
+
+
+def _cursor():
+    """Return a DB cursor for reading."""
+    return connections[router.db_for_read(Document)].cursor()
+
+
+def _format_row_with_out_of_dateness(readout_locale, eng_slug, eng_title, slug,
+                                    title, visits, significance, needs_review):
+    """Format a row for a readout that has the traffic-light-style
+    categorization of how seriously out of date a translation is."""
+    if slug:  # A translation exists but may not be approved.
+        locale = readout_locale
+        status, view_name, status_class = SIGNIFICANCE_STATUSES.get(
+            significance, REVIEW_STATUSES[needs_review])
+        status_url = (reverse(view_name, args=[slug], locale=locale)
+                      if view_name else '')
+    else:
+        slug = eng_slug
+        title = eng_title
+        locale = settings.WIKI_DEFAULT_LANGUAGE
+        status = _(u'Translation Needed')
+        # When calling the translate view, specify locale to translate to:
+        status_url = reverse('wiki.translate', args=[slug],
+                             locale=readout_locale)
+        status_class = 'untranslated'
+
+    return dict(title=title,
+                url=reverse('wiki.document', args=[slug],
+                            locale=locale),
+                visits=visits,
+                status=status,
+                status_class=status_class,
+                status_url=status_url)
 
 
 def overview_rows(locale):
@@ -67,9 +133,15 @@ def overview_rows(locale):
     total_docs = total.count()
 
     # How many approved documents are there in German that have parents?
+    # Even though users are technically allowed to translate revisions that
+    # aren't marked as ready-for-l10n, we restrict this set to ready-to-
+    # localize documents because we restrict the denominator to those.
     translated = Document.uncached.filter(
-        locale=locale, is_archived=False).exclude(
-        current_revision=None).exclude(parent=None)
+        locale=locale,
+        is_archived=False,
+        current_revision__isnull=False,
+        parent__isnull=False,
+        parent__latest_localizable_revision__isnull=False)
     translated_docs = translated.count()
 
     # Of the top 20 most visited English articles, how many are not translated
@@ -210,9 +282,6 @@ class MostVisitedDefaultLanguageReadout(Readout):
     slug = 'most-visited'
     column3_label = _lazy(u'Visits')
     modes = PERIODS
-    review_statuses = {
-        1: (_lazy(u'Review Needed'), 'wiki.document_revisions', 'review'),
-        0: (u'', '', 'ok')}
 
     def _query_and_params(self, max):
         # Review Needed: link to /history.
@@ -236,7 +305,7 @@ class MostVisitedDefaultLanguageReadout(Readout):
 
     def _format_row(self, (slug, title, visits, num_unreviewed)):
         needs_review = int(num_unreviewed > 0)
-        status, view_name, dummy = self.review_statuses[needs_review]
+        status, view_name, dummy = REVIEW_STATUSES[needs_review]
         return dict(title=title,
                     url=reverse('wiki.document', args=[slug],
                                 locale=self.locale),
@@ -261,79 +330,26 @@ class MostVisitedTranslationsReadout(MostVisitedDefaultLanguageReadout):
     slug = 'most-visited-translations'
     details_link_text = _lazy(u'All translations...')
 
-    significance_statuses = {
-        MEDIUM_SIGNIFICANCE:
-            (_lazy(u'Update Needed'), 'wiki.edit_document', 'update'),
-        MAJOR_SIGNIFICANCE:
-            (_lazy(u'Immediate Update Needed'), 'wiki.edit_document',
-             'out-of-date')}
-
-    def _most_visited_query_and_params(self, max, extra_where=''):
+    def _query_and_params(self, max):
         # Immediate Update Needed or Update Needed: link to /edit.
         # Review Needed: link to /history.
         # These match the behavior of the corresponding readouts.
         return (
             'SELECT engdoc.slug, engdoc.title, transdoc.slug, '
-            'transdoc.title, dashboards_wikidocumentvisits.visits, '
-            # The most significant approved change to the English article
-            # between {the English revision the current translated revision is
-            # based on} and {the latest ready-for-localization revision}:
-            '(SELECT MAX(engrev.significance) '
-             'FROM wiki_revision engrev, wiki_revision transrev '
-             'WHERE engrev.is_approved '
-             'AND transrev.id=transdoc.current_revision_id '
-             'AND engrev.document_id=transdoc.parent_id '
-             'AND engrev.id>transrev.based_on_id '
-             'AND engrev.id<=engdoc.latest_localizable_revision_id'
-            '), '
-            # Whether there are any unreviewed revs of the translation made
-            # since the current one:
-            '(SELECT EXISTS '
-                '(SELECT * '
-                 'FROM wiki_revision transrev '
-                 'WHERE transrev.document_id=transdoc.id '
-                 'AND transrev.reviewed IS NULL '
-                 'AND (transrev.id>transdoc.current_revision_id OR '
-                      'transdoc.current_revision_id IS NULL)'
-                ')'
-            ') ' +
-            most_visited_translation_from(extra_where=extra_where) +
+            'transdoc.title, dashboards_wikidocumentvisits.visits, ' +
+            MOST_SIGNIFICANT_CHANGE_READY_TO_TRANSLATE + ', ' +
+            NEEDS_REVIEW +
+            most_visited_translation_from(extra_where='') +
             self._limit_clause(max),
             (self.locale,
              ALL_TIME if self.mode == ALL_TIME else THIS_WEEK,
              settings.WIKI_DEFAULT_LANGUAGE))
 
-    def _query_and_params(self, max):
-        return self._most_visited_query_and_params(max)
-
-    def _format_row(self, (eng_slug, eng_title, slug, title,
-                           visits, significance, needs_review)):
-        if slug:  # A translation exists but may not be approved.
-            locale = self.locale
-            status, view_name, status_class = self.significance_statuses.get(
-                significance, self.review_statuses[needs_review])
-            status_url = (reverse(view_name, args=[slug], locale=locale)
-                          if view_name else '')
-        else:
-            slug = eng_slug
-            title = eng_title
-            locale = settings.WIKI_DEFAULT_LANGUAGE
-            status = _(u'Translation Needed')
-            # When calling the translate view, specify locale to translate to:
-            status_url = reverse('wiki.translate', args=[slug],
-                                 locale=self.locale)
-            status_class = 'untranslated'
-
-        return dict(title=title,
-                    url=reverse('wiki.document', args=[slug],
-                                locale=locale),
-                    visits=visits,
-                    status=status,
-                    status_class=status_class,
-                    status_url=status_url)
+    def _format_row(self, columns):
+        return _format_row_with_out_of_dateness(self.locale, *columns)
 
 
-class TemplateTranslationsReadout(MostVisitedTranslationsReadout):
+class TemplateTranslationsReadout(Readout):
     """Readout for templates in non-default languages
 
     Shows the templates even if there are no translations of them yet.
@@ -344,10 +360,34 @@ class TemplateTranslationsReadout(MostVisitedTranslationsReadout):
     title = _lazy(u'Templates')
     slug = 'template-translations'
     details_link_text = _lazy(u'All templates...')
+    column3_label = ''
+    modes = []
 
     def _query_and_params(self, max):
-        return self._most_visited_query_and_params(max,
-                                                   'AND engdoc.is_template')
+        return (
+            'SELECT engdoc.slug, engdoc.title, transdoc.slug, '
+            'transdoc.title, ' +
+            MOST_SIGNIFICANT_CHANGE_READY_TO_TRANSLATE + ', ' +
+            NEEDS_REVIEW +
+
+            'FROM wiki_document engdoc '
+            'LEFT JOIN wiki_document transdoc ON '
+                'transdoc.parent_id=engdoc.id '
+                'AND transdoc.locale=%s '
+            'WHERE engdoc.locale=%s '
+                'AND engdoc.is_localizable '
+                'AND NOT engdoc.is_archived '
+                'AND engdoc.latest_localizable_revision_id IS NOT NULL '
+                'AND engdoc.is_template '
+            'ORDER BY COALESCE(transdoc.title, engdoc.title) ASC ' +
+
+            self._limit_clause(max),
+            (self.locale, settings.WIKI_DEFAULT_LANGUAGE))
+
+    def _format_row(self, (eng_slug, eng_title, slug, title, significance,
+                           needs_review)):
+        return _format_row_with_out_of_dateness(self.locale, eng_slug,
+            eng_title, slug, title, None, significance, needs_review)
 
 
 class UntranslatedReadout(Readout):

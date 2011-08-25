@@ -66,6 +66,28 @@ class OverviewTests(TestCase):
         r.save()
         eq_(1, overview_rows('de')['all']['denominator'])
 
+    def test_counting_unready_parents(self):
+        """Translations whose parents have no ready-to-localize revisions
+        should not count in the numerator.
+
+        By dint of factoring, this also tests that templates whose parents....
+
+        """
+        parent_rev = revision(document=document(is_localizable=True,
+                                                save=True),
+                              is_approved=True,
+                              is_ready_for_localization=False,
+                              save=True)
+        translation = document(parent=parent_rev.document,
+                               locale='de',
+                               is_localizable=False,
+                               save=True)
+        revision(document=translation,
+                 is_approved=True,
+                 based_on=parent_rev,
+                 save=True)
+        eq_(0, overview_rows('de')['all']['numerator'])
+
 
 class UnreviewedChangesTests(ReadoutTestCase):
     """Tests for the Unreviewed Changes readout
