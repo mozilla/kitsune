@@ -17,6 +17,7 @@ html {
 }
 
 body {
+    border-top: 2px solid #686868;
     font: 13px/1.231 Georgia, freeserif, serif;
     min-width: 998px;
     text-align: center;
@@ -25,10 +26,6 @@ body {
 
 body.html-rtl {
     text-align: right;
-}
-
-body.new-header {
-    border-top: 2px solid #686868;
 }
 
 .clear {
@@ -60,11 +57,6 @@ h2 {
 /*----------------------------------
     Header
 ----------------------------------*/
-#header { /* TODO: delete me when new-header goes live */
-    margin-top: 10px;
-    width: 980px;
-}
-
 header.global {
     margin: 0 auto;
     position: relative;
@@ -491,10 +483,6 @@ ul.user-messages li.error {
     visibility: hidden;
 }
 
-#sub-header { /* TODO: delete me when new-header goes live */
-    height: 90px;
-}
-
 #main {
     background: transparent url(../img/wiki/bkg.main.top.png) no-repeat right top;
     clear: both;
@@ -538,30 +526,23 @@ article.main > h1 {
 }
 
 div.support-search form {
-    background: #1b5898;
-    background: -moz-linear-gradient(top, #2e89ca, #1b5898);
-    background: -webkit-gradient(linear, left top, left bottom, from(#2e89ca), to(#1b5898));
+    background: #fff;
+    border: solid 1px #98b2c9;
     border-radius: 5px;
     -moz-border-radius: 5px;
     -webkit-border-radius: 5px;
     box-shadow: 0 -2px 0 rgba(0, 0, 0, 0.5) inset, 0 2px 0 rgba(0, 0, 0, 0.1);
     height: 30px;
-    padding: 5px 7px 7px;
-}
-
-body.new-header div.support-search form {
-    background: #fff;
-    border: solid 1px #98b2c9;
-    padding-bottom: 9px;
+    padding: 5px 7px 9px;
 }
 
 div.support-search input.text {
     background: #fff url(../img/icon.searchloupe.png) no-repeat 7px 2px;
-    border: none;
+    border: solid 1px #d9d9d9;
     border-radius: 5px;
     -moz-border-radius: 5px;
     -webkit-border-radius: 5px;
-    box-shadow: none;
+    box-shadow: inset 0 0 3px #d9d9d9;
     float: left;
     font-size: 16px;
     height: 26px;
@@ -570,41 +551,11 @@ div.support-search input.text {
     width: 218px;
 }
 
-body.new-header div.support-search input.text {
-    border: solid 1px #d9d9d9;
-    box-shadow: inset 0 0 3px #d9d9d9;
-}
-
 div.support-search button.img-submit {
     float: left;
     height: 33px;
     margin: -1px 0 0 2px;
     width: 40px;
-}
-
-#greeting { /* TODO: delete me when new-header goes live */
-    color: #666;
-    float: right;
-    font-size: 14px;
-    padding: 20px 0 0;
-    text-align: right;
-    width: 222px;
-}
-
-#greeting span.user { /* TODO: delete me when new-header goes live */
-    color: #333;
-}
-
-#greeting nav { /* TODO: delete me when new-header goes live */
-    display: block;
-}
-
-#greeting span.unread-message-count { /* TODO: delete me when new-header goes live */
-    background-color: #666666;
-    border-radius: 2px;
-    color: #FFFFFF;
-    font-size: 78%;
-    padding: 0 2px;
 }
 
 /*-----------------------------------------------
