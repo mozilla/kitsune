@@ -141,7 +141,7 @@ class Readout(object):
         """
         self.request = request
         self.locale = locale or request.locale
-        self.mode = mode or self.modes[0][1]
+        self.mode = mode or (self.modes[0][1] if self.modes else None)
         # self.mode is allowed to be invalid.
 
     def rows(self, max=None):
@@ -558,9 +558,7 @@ class UnhelpfulReadout(Readout):
     slug = 'unhelpful'
     column3_label = _lazy(u'Total Votes')
     column4_label = _lazy(u'Helpfulness')
-
-    # We don't have multiple modes, so let's just set it to 0 and forget it.
-    modes = [(0, _lazy('Most Unhelpful'))]
+    modes = []
 
     # This class is a namespace and doesn't get instantiated.
     try:
