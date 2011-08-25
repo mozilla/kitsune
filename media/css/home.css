@@ -8,18 +8,17 @@
     z-index: 2;
 }
 
-body.new-header #side {
+#side {
     margin-top: -25px;
 }
 
-
-body.new-header #quick-links {
+#quick-links {
     margin-top: 0;
 }
 
 #featured {
-    background: url("../img/nurse.png") no-repeat scroll right top transparent;
-    height: 279px;
+    background: url("../img/nurse.small.png") no-repeat scroll 550px 0px transparent;
+    height: 125px;
     overflow: hidden;
     padding: 75px 330px 0 0;
     position: relative;
@@ -27,18 +26,8 @@ body.new-header #quick-links {
     z-index: 1;
 }
 
-body.new-header #featured {
-    background: url("../img/nurse.small.png") no-repeat scroll 550px 0px transparent;
-    height: 125px;
-}
-
 body.mobile #featured,
 body.fxhome #featured {
-    background: url("../img/nurse.mobile.png") no-repeat scroll right top transparent;
-}
-
-body.new-header.mobile #featured,
-body.new-header.fxhome #featured {
     background: url("../img/nurse.mobile.small.png") no-repeat scroll 570px 0px transparent;
 }
 
@@ -52,24 +41,14 @@ html[lang=ja] body div#featured {
 }
 
 #featured-wrap {
-    background: url("../img/wiki/document.divider.jpg") no-repeat scroll left bottom transparent;
-    height: 279px;
-}
-
-body.new-header #featured-wrap {
-    background: none;
     height: 125px;
 }
 
 #featured h1 {
-    font-size: 280%;
+    font-size: 220%;
     font-style: italic;
     letter-spacing: -1px;
     margin: 0 0 .5em;
-}
-
-body.new-header #featured h1 {
-    font-size: 220%;
 }
 
 #featured h1 mark {
@@ -80,21 +59,12 @@ body.new-header #featured h1 {
 }
 
 #support-search {
-    margin: .5em 0 0 .5em;
-    width: 380px;
-}
-
-body.new-header #support-search {
     margin: 0;
     padding: 20px 0 0 57px;
     width: 425px;
 }
 
 #support-search input.text {
-    width: 288px;
-}
-
-body.new-header #support-search input.text {
     width: 329px;
 }
 
@@ -112,12 +82,12 @@ body.new-header #support-search input.text {
     padding-bottom: 0;
 }
 
-body.new-header #home-content {
+#home-content {
     background: transparent url(../img/home.divider.jpg) no-repeat left top;
     zoom: 1;
 }
 
-body.new-header #home-content:after {
+#home-content:after {
     clear: both;
     content: ".";
     display: block;

@@ -421,7 +421,6 @@ MINIFY_BUNDLES = {
             'js/libs/jquery.placeholder.js',
             'js/browserdetect.js',
             'js/kbox.js',
-            'global/menu.js',
             'js/main.js',
             'js/format.js',
             'js/loadtest.js',

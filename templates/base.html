@@ -1,5 +1,5 @@
 {# vim: set ts=2 et sts=2 sw=2: #}
-{% from 'includes/common_macros.html' import search_box, greeting with context %}
+{% from 'includes/common_macros.html' import search_box, aux_nav with context %}
 {% from 'includes/sidebar_modules.html' import quick_links, for_contributors %}
 {% if not top_link %}
   {% set top_link = url('home') %}
@@ -52,7 +52,7 @@
 <script src="{{ MEDIA_URL }}js/libs/html5-shiv.js"></script>
 <![endif]-->
 </head>
-<body class="{{ classes }} {% if waffle.flag('new-header') %}new-header{% else %}moz-header-slim{% endif %}"
+<body class="{{ classes }}"
       data-readonly="{{ settings.READ_ONLY|json }}"
       data-for-os="{{ for_os|json }}"
       data-for-version="{{ for_version|json }}"
@@ -67,59 +67,42 @@
   </div>
 {% endif %}
 
-{% if waffle.flag('new-header') %}
-  <header class="global">
-    <div id="global-header-tab">
-      <a href="http://mozilla.org/"><img src="{{ MEDIA_URL }}img/mozilla-tab.png" alt="mozilla.org"></a>
-    </div>
-    <div class="sumo-header">
-      <nav id="aux-nav" role="navigation" class="menu-nav">
+<header class="global">
+  <div id="global-header-tab">
+    <a href="http://mozilla.org/"><img src="{{ MEDIA_URL }}img/mozilla-tab.png" alt="mozilla.org"></a>
+  </div>
+  <div class="sumo-header">
+    <nav id="aux-nav" role="navigation" class="menu-nav">
+      <ul>
+        {{ aux_nav(user) }}
+      </ul>
+    </nav>
+    {% if not hide_header_search %}
+      {{ search_box(settings, id='support-search') }}
+    {% endif %}
+    <div id="masthead">
+      <h1 class="site-title">
+        <img src="{{ MEDIA_URL }}img/firefox-54x62.png" alt="{{ _('Firefox') }}" />
+        {% if h1_text %}
+          {{ h1_text }}
+        {% else %}
+          <mark>{{ _('Firefox Help') }}</mark>
+        {% endif %}
+      </h1>
+      <nav class="menu-nav" id="site-nav">
         <ul>
-          {{ greeting(user) }}
+          <li><a href="{{ url('home') }}"{% if active_site_nav == 'desktop' %} class="active"{% endif %}>{{ _('Desktop') }}</a></li>
+          <li><a href="{{ url('home.mobile') }}"{% if active_site_nav == 'mobile' %} class="active"{% endif %}>{{ _('Mobile') }}</a></li>
+          <li><a href="{{ url('home.fxhome') }}"{% if active_site_nav == 'fxhome' %} class="active"{% endif %}>{{ _('Firefox Home') }}</a></li>
+          <li><a href="{{ url('home.sync') }}"{% if active_site_nav == 'sync' %} class="active"{% endif %}>{{ _('Firefox Sync') }}</a></li>
+          <li><a href="http://support.mozillamessaging.com/">{{ _('Thunderbird') }}</a></li>
         </ul>
       </nav>
-      {% if not hide_header_search %}
-        {{ search_box(settings, id='support-search') }}
-      {% endif %}
-      <div id="masthead">
-        <h1 class="site-title">
-          <img src="{{ MEDIA_URL }}img/firefox-54x62.png" alt="{{ _('Firefox') }}" />
-          {% if h1_text %}
-            {{ h1_text }}
-          {% else %}
-            <mark>{{ _('Firefox Help') }}</mark>
-          {% endif %}
-        </h1>
-        <nav class="menu-nav" id="site-nav">
-          <ul>
-            <li><a href="{{ url('home') }}"{% if active_site_nav == 'desktop' %} class="active"{% endif %}>{{ _('Desktop') }}</a></li>
-            <li><a href="{{ url('home.mobile') }}"{% if active_site_nav == 'mobile' %} class="active"{% endif %}>{{ _('Mobile') }}</a></li>
-            <li><a href="{{ url('home.fxhome') }}"{% if active_site_nav == 'fxhome' %} class="active"{% endif %}>{{ _('Firefox Home') }}</a></li>
-            <li><a href="{{ url('home.sync') }}"{% if active_site_nav == 'sync' %} class="active"{% endif %}>{{ _('Firefox Sync') }}</a></li>
-            <li><a href="http://support.mozillamessaging.com/">{{ _('Thunderbird') }}</a></li>
-          </ul>
-        </nav>
-      </div>
     </div>
-  </header>
-{% else %}
-  {% include 'layout/header.html' %}
-{% endif %}
+  </div>
+</header>
 
 <div id="content">
-  {% if not waffle.flag('new-header') %}
-    <div id="sub-header">
-      {% block sub_header %}
-        <div id="firefox-help">
-          <a href="{{ top_link }}">{{ top_text }}</a>
-        </div>
-        {% if not hide_header_search %}
-          {{ search_box(settings, id='support-search') }}
-        {% endif %}
-        {{ greeting(user) }}
-      {% endblock %}
-    </div>
-  {% endif %}
   {% if messages %}
     <ul class="user-messages">
       {% for message in messages %}
