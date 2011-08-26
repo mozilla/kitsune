@@ -88,6 +88,22 @@ class OverviewTests(TestCase):
                  save=True)
         eq_(0, overview_rows('de')['all']['numerator'])
 
+    def test_templates_and_docs_disjunct(self):
+        """Make sure templates aren't included in the All Articles count."""
+        t = translated_revision(is_approved=True,
+                                save=True)
+        # It shows up in All when it's a normal doc:
+        eq_(1, overview_rows('de')['all']['numerator'])
+        eq_(1, overview_rows('de')['all']['denominator'])
+
+        t.document.parent.title = t.document.title = 'Template:thing'
+        t.document.parent.is_template = t.document.is_template = True
+        t.document.parent.save()
+        t.document.save()
+        # ...but not when it's a template:
+        eq_(0, overview_rows('de')['all']['numerator'])
+        eq_(0, overview_rows('de')['all']['denominator'])
+
 
 class UnreviewedChangesTests(ReadoutTestCase):
     """Tests for the Unreviewed Changes readout
