@@ -41,7 +41,7 @@ from questions.karma_actions import (SolutionAction, AnswerMarkedHelpfulAction,
 from questions.models import Question, Answer, QuestionVote, AnswerVote
 from questions.question_config import products
 from search.clients import WikiClient, QuestionsClient, SearchError
-from search.utils import locale_or_default, sphinx_locale
+from search.utils import crc32, locale_or_default, sphinx_locale
 from sumo.helpers import urlparams
 from sumo.urlresolvers import reverse
 from sumo.utils import paginate
@@ -187,7 +187,8 @@ def new_question(request, template=None):
         if search:
             try:
                 results = _search_suggestions(
-                    search, locale_or_default(request.locale))
+                    search, locale_or_default(request.locale),
+                    product.get('tags'))
             except SearchError:
                 # Just quietly advance the user to the next step.
                 results = []
@@ -779,7 +780,7 @@ def activate_watch(request, watch_id, secret):
                          'is_active': watch.is_active})
 
 
-def _search_suggestions(query, locale):
+def _search_suggestions(query, locale, category_tags):
     """Return an iterable of the most relevant wiki pages and questions.
 
     query -- full text to search on
@@ -801,6 +802,14 @@ def _search_suggestions(query, locale):
     # Max number of search results per type.
     WIKI_RESULTS = QUESTIONS_RESULTS = 3
 
+    # Category filters
+    cat_filters = []
+    if category_tags:
+        for tag in category_tags:
+            cat_filters.append({
+                'filter': 'tag',
+                'value': (crc32(tag),)})
+
     # Search wiki pages:
     wiki_searcher = WikiClient()
     filters = [{'filter': 'locale',
@@ -812,6 +821,9 @@ def _search_suggestions(query, locale):
                 'exclude': True,
                 'value': [-x for x in settings.SEARCH_DEFAULT_CATEGORIES
                           if x < 0]}]
+    for f in cat_filters:
+        filters.append(f)
+
     raw_results = wiki_searcher.query(query, filters=filters,
                                       limit=WIKI_RESULTS)
     # Lazily build excerpts from results. Stop when we have enough:
@@ -829,7 +841,7 @@ def _search_suggestions(query, locale):
 
     question_searcher = QuestionsClient()
     # questions app is en-US only.
-    raw_results = question_searcher.query(query,
+    raw_results = question_searcher.query(query, filters=cat_filters,
                                           limit=QUESTIONS_RESULTS)
     for r in raw_results:
         try:
