@@ -1,4 +1,5 @@
 import mock
+import urllib
 from multidb.middleware import PINNING_COOKIE
 from nose.tools import eq_
 import waffle.decorators
@@ -15,6 +16,23 @@ class ReadMessageTests(TestCase):
         self.user1 = user(save=True)
         self.user2 = user(save=True)
         self.client.login(username=self.user1.username, password='testpass')
+
+    @mock.patch.object(waffle.decorators, 'flag_is_active')
+    def test_mark_bulk_message_read(self, flag_is_active):
+        flag_is_active.return_value = True
+        i = InboxMessage.objects.create(sender=self.user2, to=self.user1,
+                                        message='foo')
+        assert not i.read
+        j = InboxMessage.objects.create(sender=self.user2, to=self.user1,
+                                        message='foo')
+        assert not j.read
+        resp = self.client.post(reverse('messages.bulk_action', locale='en-US'),
+                                {'id': [i.pk, j.pk], 'mark_read': True},
+                                follow=True)
+        eq_(200, resp.status_code)
+        print resp
+        assert InboxMessage.uncached.get(pk=i.pk).read
+        assert InboxMessage.uncached.get(pk=j.pk).read
 
     @mock.patch.object(waffle.decorators, 'flag_is_active')
     def test_mark_message_read(self, flag_is_active):
@@ -71,6 +89,20 @@ class DeleteMessageTests(TestCase):
         eq_(0, InboxMessage.uncached.count())
 
     @mock.patch.object(waffle.decorators, 'flag_is_active')
+    def test_delete_many_message(self, flag_is_active):
+        flag_is_active.return_value = True
+        i = InboxMessage.objects.create(to=self.user1, sender=self.user2,
+                                        message='foo')
+        j = InboxMessage.objects.create(to=self.user1, sender=self.user2,
+                                        message='foo')
+        eq_(2, InboxMessage.objects.count())
+        url = '%s?%s' % (reverse('messages.bulk_delete', locale='en-US'),
+                         urllib.urlencode({'id': [i.id, j.id]}, True))
+        resp = self.client.post(url, follow=True)
+        eq_(200, resp.status_code)
+        eq_(0, InboxMessage.uncached.count())
+
+    @mock.patch.object(waffle.decorators, 'flag_is_active')
     def test_delete_outbox_message(self, flag_is_active):
         flag_is_active.return_value = True
         i = OutboxMessage.objects.create(sender=self.user1, message='foo')
@@ -78,5 +110,19 @@ class DeleteMessageTests(TestCase):
         eq_(1, OutboxMessage.objects.count())
         resp = self.client.post(reverse('messages.delete_outbox', args=[i.pk],
                                         locale='en-US'), follow=True)
+        eq_(200, resp.status_code)
+        eq_(0, OutboxMessage.uncached.count())
+
+    @mock.patch.object(waffle.decorators, 'flag_is_active')
+    def test_delete_many_outbox_message(self, flag_is_active):
+        flag_is_active.return_value = True
+        i = OutboxMessage.objects.create(sender=self.user1, message='foo')
+        i.to.add(self.user2)
+        j = OutboxMessage.objects.create(sender=self.user1, message='foo')
+        j.to.add(self.user2)
+        eq_(2, OutboxMessage.objects.count())
+        url = '%s?%s' % (reverse('messages.outbox_bulk_delete', locale='en-US'),
+                         urllib.urlencode({'id': [i.id, j.id]}, True))
+        resp = self.client.post(url, follow=True)
         eq_(200, resp.status_code)
         eq_(0, OutboxMessage.uncached.count())
