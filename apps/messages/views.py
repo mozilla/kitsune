@@ -2,9 +2,10 @@ import json
 
 from django.contrib import messages as contrib_messages
 from django.contrib.auth.models import User
-from django.http import HttpResponseRedirect, HttpResponse
-from django.shortcuts import get_object_or_404
+from django.http import (HttpResponseRedirect, HttpResponse,
+                         HttpResponseBadRequest)
 from django.views.decorators.http import require_POST
+from django.shortcuts import get_object_or_404, redirect
 
 import jingo
 from multidb.pinning import mark_as_write
@@ -16,7 +17,6 @@ from messages import send_message
 from messages.forms import MessageForm, ReplyForm
 from messages.models import InboxMessage, OutboxMessage
 from sumo.urlresolvers import reverse
-from sumo.utils import paginate
 
 
 @login_required
@@ -92,28 +92,57 @@ def new_message(request):
 
 
 @login_required
-def delete(request, msgid, msgtype='inbox'):
-    if msgtype == 'inbox':
-        message = get_object_or_404(InboxMessage, pk=msgid, to=request.user)
-    else:
-        message = get_object_or_404(OutboxMessage, pk=msgid,
-                                    sender=request.user)
+def bulk_action(request, msgtype='inbox'):
+    """Apply action to selected messages."""
+    if 'delete' in request.POST:
+        return delete(request, msgtype=msgtype)
+    elif 'mark_read' in request.POST and msgtype == 'inbox':
+        msgids = request.POST.getlist('id')
+        messages = InboxMessage.objects.filter(pk__in=msgids, to=request.user)
+        messages.update(read=True)
 
-    if request.method == 'POST':
-        message.delete()
-        msg = _('The message was deleted!')
+    return redirect('messages.%s' % msgtype)
+
+
+@login_required
+def delete(request, msgid=None, msgtype='inbox'):
+    if msgid:
+        msgids = [msgid]
+    else:
+        try:
+            msgids = [int(m) for m in request.POST.getlist('id')]
+        except ValueError:
+            return HttpResponseBadRequest()
+
+    if msgtype == 'inbox':
+        messages = InboxMessage.objects.filter(pk__in=msgids, to=request.user)
+    else:
+        messages = OutboxMessage.objects.filter(pk__in=msgids,
+                                                sender=request.user)
+    if request.method == 'POST' and 'confirmed' in request.POST:
+        if messages.count() != len(msgids):
+            contrib_messages.add_message(request, contrib_messages.ERROR,
+                                         "Messages didn't add up. Try again.")
+        else:
+            messages.delete()
+            if len(msgids) > 1:
+                msg = _('The messages were deleted!')
+            else:
+                msg = _('The message was deleted!')
+            contrib_messages.add_message(request, contrib_messages.SUCCESS,
+                                         msg)
 
         if request.is_ajax():
-            return HttpResponse(json.dumps({'message': message}))
+            return HttpResponse(json.dumps({'message': m} for m in messages))
 
-        contrib_messages.add_message(request, contrib_messages.SUCCESS, msg)
         return HttpResponseRedirect(reverse('messages.{t}'.format(t=msgtype)))
 
     if msgtype == 'outbox':
-        _add_recipients(message)
+        for message in messages:
+            _add_recipients(message)
 
     return jingo.render(request, 'messages/delete.html',
-                        {'message': message, 'msgtype': msgtype})
+                        {'msgs': messages, 'msgid': msgid, 'msgtype': msgtype})
 
 
 @require_POST
