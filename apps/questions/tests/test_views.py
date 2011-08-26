@@ -6,7 +6,9 @@ from nose.tools import eq_
 
 from questions.models import Question
 from sumo.helpers import urlparams
+from search.clients import WikiClient, QuestionsClient
 from sumo.urlresolvers import reverse
+from search.utils import crc32
 from sumo.tests import MobileTestCase, LocalizingClient
 
 
@@ -73,3 +75,17 @@ class MobileAAQTests(MobileTestCase):
         eq_(200, response.status_code)
         self.assertTemplateUsed(response,
                                 'questions/mobile/confirm_email.html')
+
+    @mock.patch.object(WikiClient, 'query')
+    @mock.patch.object(QuestionsClient, 'query')
+    @mock.patch.object(Site.objects, 'get_current')
+    def test_aaq_search(self, get_current, q_query, w_query):
+        """Search results should be filtered by product."""
+        get_current.return_value.domain = 'testserver'
+        q_query.return_value = []
+        w_query.return_value = []
+        response = self._new_question()
+        eq_(200, response.status_code)
+        expected_filter = {'filter': 'tag', 'value': (crc32('desktop'),)}
+        assert expected_filter in w_query.call_args[1]['filters']
+        assert expected_filter in q_query.call_args[1]['filters']
