@@ -11,25 +11,31 @@
   <article id="inbox" class="main message-list">
     <h1>{{ title }}</h1>
     {% if msgs %}
-      <ol>
-        {% for message in msgs %}
-          <li class="{% if message.unread %}unread{% endif %} {% if message.replied %}replied{% endif %}">
-            <span class="avatar">
-              {{ avatar_link(message.sender) }}
-            </span>
-            <span class="from user">
-              {{ name_link(message.sender) }}
-              {{ datetimeformat(message.created) }}
-            </span>
-            <a class="read" href="{{ url('messages.read', message.id) }}" title="{{ _('Read message') }}">
-              {{ message.message|truncate(length=200) }}
-            </a>
-            <a class="delete" href="{{ url('messages.delete', message.id) }}" title="{{ _('Delete message') }}">&#x2716;</a>
-          </li>
-        {% endfor %}
-      </ol>
+      <form action="{{ url('messages.bulk_action') }}" method="POST">
+        <input type="submit" name="delete" value="Delete Selected">
+        <input type="submit" name="mark_read" value="Mark Selected as Read">
+        <ol>
+          {% for message in msgs %}
+            <li class="{% if message.unread %}unread{% endif %} {% if message.replied %}replied{% endif %}">
+              <input type="checkbox" name="id" value="{{message.id}}" style="float:left; margin: 20px">
+              <span class="avatar">
+                {{ avatar_link(message.sender) }}
+              </span>
+              <span class="from user">
+                {{ name_link(message.sender) }}
+                {{ datetimeformat(message.created) }}
+              </span>
+              <a class="read" href="{{ url('messages.read', message.id) }}" title="{{ _('Read message') }}">
+                {{ message.message|truncate(length=200) }}
+              </a>
+              <a class="delete" href="{{ url('messages.delete', message.id) }}" title="{{ _('Delete message') }}">&#x2716;</a>
+            </li>
+          {% endfor %}
+        </ol>
+        {{ csrf() }}
+      </form>
     {% else %}
-      <p>{{ _('There are no messages here.') }}</p>
+        <p>{{ _('There are no messages here.') }}</p>
     {% endif %}
   </article>
 {% endblock %}
