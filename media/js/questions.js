@@ -31,12 +31,6 @@
         new AAQSystemInfo($questionForm);
         initTitleEdit($questionForm);
         hideDetails($questionForm);
-
-        // Iff we're on FF 3, hide the FF 4 link and show the FF 3 one:
-        if (BrowserDetect.browser === 'fx' && BrowserDetect.version < 4) {
-            $('.for-not-fx3').hide();
-            $('.for-fx3').removeClass('for-fx3');
-        }
     }
 
     function isLoggedIn() {
