@@ -690,11 +690,6 @@ class UnreadyForLocalizationReadout(Readout):
                     visits=visits,
                     updated=reviewed)
 
-    @staticmethod
-    def should_show_to(user):
-        """Show unreadies only if the user can ready them."""
-        return user.has_perm('wiki.mark_ready_for_l10n')
-
 
 # L10n Dashboard tables that have their own whole-page views:
 L10N_READOUTS = SortedDict((t.slug, t) for t in
