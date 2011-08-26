@@ -130,7 +130,7 @@ def overview_rows(locale):
                 is_localizable=True,
                 latest_localizable_revision__isnull=False,
                 is_archived=False)
-    total_docs = total.count()
+    total_docs = total.filter(is_template=False).count()
 
     # How many approved documents are there in German that have parents?
     # Even though users are technically allowed to translate revisions that
@@ -142,7 +142,7 @@ def overview_rows(locale):
         current_revision__isnull=False,
         parent__isnull=False,
         parent__latest_localizable_revision__isnull=False)
-    translated_docs = translated.count()
+    translated_docs = translated.filter(is_template=False).count()
 
     # Of the top 20 most visited English articles, how many are not translated
     # into German?
