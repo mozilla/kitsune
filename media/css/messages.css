@@ -121,11 +121,15 @@ article.message-list span.user a {
     color: #666;
 }
 
+.message-list input[type="checkbox"] {
+    float: left;
+    margin: 20px;
+}
+
 article.message-list span.user time {
     display: block;
     font-size: 80%;
 }
-
 
 section.actions {
     float: right;
@@ -334,4 +338,7 @@ div.message a:hover {
 
 .html-rtl article.message-view form.reply input[type=submit] {
     float: left;
+}
+article.message-list input[type=submit] {
+    margin: 0 5px 15px 0;
 }
