@@ -1,5 +1,5 @@
 {# vim: set ts=2 et sts=2 sw=2: #}
-<form id="lang_form" dir="ltr" method="get" action="{{ localizable_url }}">
+<form id="lang_form" dir="ltr" method="get"{% if localizable_url %} action="{{ localizable_url }}"{% endif %}>
   <div>
     <label for="flang">{{ _('Other Languages') }}</label>
     <select id="flang" class="autosubmit" name="lang" dir="ltr">
