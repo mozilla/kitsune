@@ -16,5 +16,10 @@ ExpiresByType video/webm "access plus 1 week"
 ExpiresByType video/ogg "access plus 1 week"
 ExpiresByType video/x-flv "access plus 1 week"
 ExpiresByType application/x-shockwave-flash "access plus 1 week"
+ExpiresByType text/plain "access plus 0 seconds"
 
 FileETag MTime
+
+<FilesMatch "\.txt$">
+    FileETag None
+</FilesMatch>
