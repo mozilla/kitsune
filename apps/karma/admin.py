@@ -44,8 +44,9 @@ def karma(request):
         return HttpResponseRedirect(request.path)
 
     kmgr = KarmaAction.objects
-    top_alltime = [_user_karma_alltime(u, kmgr) for u in kmgr.top_alltime()]
-    top_week = [_user_karma_week(u, kmgr) for u in kmgr.top_week()]
+    top_alltime = [_user_karma_alltime(u, kmgr) for
+                   u in kmgr.top_alltime() or []]
+    top_week = [_user_karma_week(u, kmgr) for u in kmgr.top_week() or []]
 
     username = request.GET.get('username')
     user_karma = None
