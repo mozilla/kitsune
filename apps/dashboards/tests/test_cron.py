@@ -9,7 +9,7 @@ from nose.tools import eq_
 from dashboards.cron import (cache_most_unhelpful_kb_articles,
                              _get_old_unhelpful, _get_current_unhelpful)
 from sumo.tests import TestCase
-from sumo.utils import redis_client
+from sumo.redis_utils import redis_client
 from wiki.models import HelpfulVote
 from wiki.tests import revision
 

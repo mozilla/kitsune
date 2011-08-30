@@ -16,7 +16,7 @@ from tower import ugettext as _, ugettext_lazy as _lazy
 
 from dashboards import THIS_WEEK, ALL_TIME, PERIODS
 from sumo.urlresolvers import reverse
-from sumo.utils import redis_client
+from sumo.redis_utils import redis_client
 from wiki.models import (Document, MEDIUM_SIGNIFICANCE, MAJOR_SIGNIFICANCE,
                          TYPO_SIGNIFICANCE)
 
@@ -602,7 +602,8 @@ class UnhelpfulReadout(Readout):
 
     # This class is a namespace and doesn't get instantiated.
     try:
-        hide_readout = redis_client('helpfulvotes').llen(settings.HELPFULVOTES_UNHELPFUL_KEY) == 0
+        key = settings.HELPFULVOTES_UNHELPFUL_KEY
+        hide_readout = redis_client('helpfulvotes').llen(key) == 0
     except (AttributeError, ConnectionError):
         hide_readout = True
 

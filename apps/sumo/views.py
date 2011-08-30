@@ -22,8 +22,8 @@ from PIL import Image
 from redis import ConnectionError
 from session_csrf import anonymous_csrf
 
+from sumo.redis_utils import redis_client
 from sumo.urlresolvers import reverse
-from sumo.utils import redis_client
 from users.forms import AuthenticationForm
 
 
@@ -34,7 +34,7 @@ log = logging.getLogger('k.services')
 def handle403(request):
     """A 403 message that looks nicer than the normal Apache forbidden page"""
     return jingo.render(request, 'handlers/403.html',
-                        {'form': AuthenticationForm() }, status=403)
+                        {'form': AuthenticationForm()}, status=403)
 
 
 def handle404(request):

@@ -6,7 +6,8 @@ from questions.karma_actions import (AnswerAction, AnswerMarkedHelpfulAction,
                                      AnswerMarkedNotHelpfulAction,
                                      FirstAnswerAction, SolutionAction)
 from questions.models import Question, AnswerVote
-from sumo.utils import chunked, redis_client
+from sumo.redis_utils import redis_client
+from sumo.utils import chunked
 
 
 @task

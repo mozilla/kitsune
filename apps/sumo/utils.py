@@ -2,12 +2,9 @@ import urlparse
 
 from django.conf import settings
 from django.contrib.sites.models import Site
-from django.core.cache import parse_backend_uri
 from django.db import models
 from django.db.models.signals import pre_delete
 from django.utils.http import urlencode
-
-from redis import Redis
 
 from sumo import paginator
 
@@ -120,37 +117,3 @@ def get_next_url(request):
             url = None
 
     return url
-
-
-def redis_client(name):
-    """Get a Redis client.
-
-    Uses the name argument to lookup the connection string in the
-    settings.REDIS_BACKEND dict.
-    """
-    if name not in settings.REDIS_BACKENDS:
-        return None
-
-    uri = settings.REDIS_BACKENDS[name]
-    _, server, params = parse_backend_uri(uri)
-    db = params.pop('db', 1)
-    try:
-        db = int(db)
-    except (ValueError, TypeError):
-        db = 1
-    try:
-        socket_timeout = float(params.pop('socket_timeout'))
-    except (KeyError, ValueError):
-        socket_timeout = None
-    password = params.pop('password', None)
-    if ':' in server:
-        host, port = server.split(':')
-        try:
-            port = int(port)
-        except (ValueError, TypeError):
-            port = 6379
-    else:
-        host = server
-        port = 6379
-    return Redis(host=host, port=port, db=db, password=password,
-                 socket_timeout=socket_timeout)

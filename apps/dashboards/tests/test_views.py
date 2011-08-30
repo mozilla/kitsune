@@ -10,7 +10,7 @@ from dashboards.cron import cache_most_unhelpful_kb_articles
 from dashboards.readouts import CONTRIBUTOR_READOUTS
 from sumo.tests import TestCase
 from sumo.urlresolvers import reverse
-from sumo.utils import redis_client
+from sumo.redis_utils import redis_client
 from users.tests import user, group
 from wiki.models import HelpfulVote
 from wiki.tests import revision

@@ -6,8 +6,8 @@ import waffle
 
 from karma.actions import KarmaAction
 from karma.manager import KarmaManager
+from sumo.redis_utils import redis_client
 from sumo.tests import TestCase
-from sumo.utils import redis_client
 from users.tests import user
 
 

@@ -20,8 +20,9 @@ from dashboards.readouts import (overview_rows, READOUTS, L10N_READOUTS,
 from dashboards.utils import render_readouts
 import forums as forum_constants
 from forums.models import Thread
+from sumo.redis_utils import redis_client
 from sumo.urlresolvers import reverse
-from sumo.utils import paginate, redis_client, smart_int
+from sumo.utils import paginate, smart_int
 
 
 def _kb_readout(request, readout_slug, readouts, locale=None, mode=None):
