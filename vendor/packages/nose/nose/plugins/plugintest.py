@@ -103,9 +103,78 @@ try:
     from cStringIO import StringIO
 except ImportError:
     from StringIO import StringIO
-    
+
 __all__ = ['PluginTester', 'run']
 
+from os import getpid
+class MultiProcessFile(object):
+    """
+    helper for testing multiprocessing
+
+    multiprocessing poses a problem for doctests, since the strategy
+    of replacing sys.stdout/stderr with file-like objects then
+    inspecting the results won't work: the child processes will
+    write to the objects, but the data will not be reflected
+    in the parent doctest-ing process.
+
+    The solution is to create file-like objects which will interact with
+    multiprocessing in a more desirable way.
+
+    All processes can write to this object, but only the creator can read.
+    This allows the testing system to see a unified picture of I/O.
+    """
+    def __init__(self):
+        # per advice at:
+        #    http://docs.python.org/library/multiprocessing.html#all-platforms
+        self.__master = getpid()
+        self.__queue = Manager().Queue()
+        self.__buffer = StringIO()
+        self.softspace = 0
+
+    def buffer(self):
+        if getpid() != self.__master:
+            return
+
+        from Queue import Empty
+        from collections import defaultdict
+        cache = defaultdict(str)
+        while True:
+            try:
+                pid, data = self.__queue.get_nowait()
+            except Empty:
+                break
+            if pid == ():
+                #show parent output after children
+                #this is what users see, usually
+                pid = ( 1e100, ) # googol!
+            cache[pid] += data
+        for pid in sorted(cache):
+            #self.__buffer.write( '%s wrote: %r\n' % (pid, cache[pid]) ) #DEBUG
+            self.__buffer.write( cache[pid] )
+    def write(self, data):
+        # note that these pids are in the form of current_process()._identity
+        # rather than OS pids
+        from multiprocessing import current_process
+        pid = current_process()._identity
+        self.__queue.put((pid, data))
+    def __iter__(self):
+        "getattr doesn't work for iter()"
+        self.buffer()
+        return self.__buffer
+    def seek(self, offset, whence=0):
+        self.buffer()
+        return self.__buffer.seek(offset, whence)
+    def getvalue(self):
+        self.buffer()
+        return self.__buffer.getvalue()
+    def __getattr__(self, attr):
+        return getattr(self.__buffer, attr)
+    
+try:
+    from multiprocessing import Manager
+    Buffer = MultiProcessFile
+except ImportError:
+    Buffer = StringIO
 
 class PluginTester(object):
     """A mixin for testing nose plugins in their runtime environment.
@@ -164,7 +233,7 @@ class PluginTester(object):
             ...         raise ValueError("Now do something, plugin!")
             ... 
             >>> unittest.TestSuite([SomeTest()]) # doctest: +ELLIPSIS
-            <unittest.TestSuite tests=[<...SomeTest testMethod=runTest>]>
+            <unittest...TestSuite tests=[<...SomeTest testMethod=runTest>]>
         
         """
         raise NotImplementedError
@@ -177,7 +246,7 @@ class PluginTester(object):
         from nose.plugins.manager import PluginManager
         
         suite = None
-        stream = StringIO()
+        stream = Buffer()
         conf = Config(env=self.env,
                       stream=stream,
                       plugins=PluginManager(plugins=self.plugins))
@@ -214,16 +283,18 @@ class AccessDecorator(object):
     def __contains__(self, val):
         return val in self._buf
     def __iter__(self):
-        return self.stream
+        return iter(self.stream)
     def __str__(self):
         return self._buf
 
 
 def blankline_separated_blocks(text):
+    "a bunch of === characters is also considered a blank line"
     block = []
     for line in text.splitlines(True):
         block.append(line)
-        if not line.strip():
+        line = line.strip()
+        if not line or line.startswith('===') and not line.strip('='):
             yield "".join(block)
             block = []
     if block:
@@ -240,13 +311,15 @@ def remove_stack_traces(out):
             |   innermost\ last
             ) \) :
         )
-        \s* $                # toss trailing whitespace on the header.
-        (?P<stack> .*?)      # don't blink: absorb stuff until...
-        ^ (?P<msg> \w+ .*)   #     a line *starts* with alphanum.
+        \s* $                   # toss trailing whitespace on the header.
+        (?P<stack> .*?)         # don't blink: absorb stuff until...
+        ^(?=\w)                 #     a line *starts* with alphanum.
+        .*?(?P<exception> \w+ ) # exception name
+        (?P<msg> [:\n] .*)      # the rest
         """, re.VERBOSE | re.MULTILINE | re.DOTALL)
     blocks = []
     for block in blankline_separated_blocks(out):
-        blocks.append(traceback_re.sub(r"\g<hdr>\n...\n\g<msg>", block))
+        blocks.append(traceback_re.sub(r"\g<hdr>\n...\n\g<exception>\g<msg>", block))
     return "".join(blocks)
 
 
@@ -296,7 +369,7 @@ def run(*arg, **kw):
     from nose.config import Config
     from nose.plugins.manager import PluginManager
 
-    buffer = StringIO()
+    buffer = Buffer()
     if 'config' not in kw:
         plugins = kw.pop('plugins', [])
         if isinstance(plugins, list):

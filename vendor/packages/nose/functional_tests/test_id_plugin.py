@@ -45,7 +45,7 @@ class TestDiscoveryMode(PluginTester, unittest.TestCase):
     # test that id file is written
     def test_id_file_contains_ids_seen(self):
         assert os.path.exists(idfile)
-        fh = open(idfile, 'r')
+        fh = open(idfile, 'rb')
         ids = load(fh)['ids']
         fh.close()
         assert ids
@@ -77,7 +77,7 @@ class TestLoadNamesMode(PluginTester, unittest.TestCase):
                 assert line.startswith('#2 ') or line.startswith('#5 '), \
                        "Unexpected test line '%s'" % line
         assert os.path.exists(idfile)
-        fh = open(idfile, 'r')
+        fh = open(idfile, 'rb')
         ids = load(fh)
         fh.close()
         assert ids
@@ -139,7 +139,7 @@ class TestWithDoctest_1(PluginTester, unittest.TestCase):
                    "Expected an id on line %s" % line.strip()
             last = name
             
-        fh = open(idfile, 'r')
+        fh = open(idfile, 'rb')
         ids = load(fh)['ids']
         fh.close()
         for key, (file, mod, call) in ids.items():
@@ -206,7 +206,7 @@ class TestWithDoctestFileTests_1(PluginTester, unittest.TestCase):
                    "Expected an id on line %s" % line.strip()
             
             last = name
-        fh = open(idfile, 'r')
+        fh = open(idfile, 'rb')
         ids = load(fh)['ids']
         fh.close()
         for key, (file, mod, call) in ids.items():

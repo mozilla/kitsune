@@ -56,7 +56,7 @@ class Profile(Plugin):
     def available(cls):
         return hotshot is not None
     available = classmethod(available)
-        
+
     def begin(self):
         """Create profile stats file and load profiler.
         """
@@ -82,7 +82,7 @@ class Profile(Plugin):
         self.fileno = None
         self.sort = options.profile_sort
         self.restrict = tolist(options.profile_restrict)
-            
+
     def prepareTest(self, test):
         """Wrap entire test run in :func:`prof.runcall`.
         """
@@ -93,7 +93,7 @@ class Profile(Plugin):
             self._create_pfile()
             prof.runcall(test, result)
         return run_and_profile
-        
+
     def report(self, stream):
         """Output profiler report.
         """
@@ -105,10 +105,10 @@ class Profile(Plugin):
         # 2.5 has completely different stream handling from 2.4 and earlier.
         # Before 2.5, stats objects have no stream attribute; in 2.5 and later
         # a reference sys.stdout is stored before we can tweak it.
-        compat_25 = hasattr(stats, 'stream')
+        compat_25 = hasattr(prof_stats, 'stream')
         if compat_25:
             tmp = prof_stats.stream
-            stats.stream = stream
+            prof_stats.stream = stream
         else:
             tmp = sys.stdout
             sys.stdout = stream
@@ -120,7 +120,7 @@ class Profile(Plugin):
                 prof_stats.print_stats()
         finally:
             if compat_25:
-                stats.stream = tmp
+                prof_stats.stream = tmp
             else:
                 sys.stdout = tmp
 

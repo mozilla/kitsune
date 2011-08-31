@@ -18,15 +18,10 @@ clone the branch::
 
   hg clone http://bitbucket.org/jpellerin/nose/ nose-unstable
 
-The **python3.0** version of nose, nose3, is also hosted at bitbucket. You can
-fork that branch to work on features or bug fixes for nose3. If you just want
-to use it, clone the branch::
 
-  hg clone http://bitbucket.org/jpellerin/nose3/
-   
 Read
 ----
-   
+
 .. toctree ::
    :maxdepth: 2
 

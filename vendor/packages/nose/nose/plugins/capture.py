@@ -86,8 +86,24 @@ class Capture(Plugin):
         return self.formatError(test, err)
 
     def addCaptureToErr(self, ev, output):
-        return '\n'.join([str(ev) , ln('>> begin captured stdout <<'),
-                          output, ln('>> end captured stdout <<')])
+        if isinstance(ev, Exception):
+            if hasattr(ev, '__unicode__'):
+                # 2.6+
+                ev = unicode(ev)
+            else:
+                # 2.5-
+                if not hasattr(ev, 'message'):
+                    # 2.4
+                    msg = len(ev.args) and ev.args[0] or ''
+                else:
+                    msg = ev.message
+                if not isinstance(msg, unicode):
+                    msg = msg.decode('utf8', 'replace')
+                ev = u'%s: %s' % (ev.__class__.__name__, msg)
+        if not isinstance(output, unicode):
+            output = output.decode('utf8', 'replace')
+        return u'\n'.join([ev, ln(u'>> begin captured stdout <<'),
+                           output, ln(u'>> end captured stdout <<')])
 
     def start(self):
         self.stdout.append(sys.stdout)

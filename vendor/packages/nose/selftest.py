@@ -23,21 +23,38 @@ not supported.
 # installing the version to be tested, nor uninstalling the currently-installed
 # version.
 
+import glob
 import os
 import sys
 
 
 if __name__ == "__main__":
     this_dir = os.path.normpath(os.path.abspath(os.path.dirname(__file__)))
+    lib_dirs = [this_dir]
+    test_dir = this_dir
+    if sys.version_info >= (3,):
+        # Under Python 3.x, we need to 'build' the source (using 2to3, etc)
+        # first.  'python3 setup.py build_tests' will put everything under
+        # build/tests (including nose itself, since some tests are inside the
+        # nose source)
+        # The 'py3where' argument in setup.cfg will take care of making sure we
+        # pull our tests only from the build/tests directory.  We just need to
+        # make sure the right things are on sys.path.
+        lib_dirs = glob.glob(os.path.join(this_dir, 'build', 'lib*'))
+        test_dir = os.path.join(this_dir, 'build', 'tests')
+        if not os.path.isdir(test_dir):
+            raise AssertionError("Error: %s does not exist.  Use the setup.py 'build_tests' command to create it." % (test_dir,))
     try:
         import pkg_resources
-    except ImportError:
-        sys.path.insert(0, this_dir)
-    else:
-        env = pkg_resources.Environment(search_path=[this_dir])
+        env = pkg_resources.Environment(search_path=lib_dirs)
         distributions = env["nose"]
-        assert len(distributions) == 1
+        assert len(distributions) == 1, (
+                "Incorrect usage of selftest.py; please see DEVELOPERS.txt")
         dist = distributions[0]
         dist.activate()
+    except ImportError:
+        pass
+    # Always make sure our chosen test dir is first on the path
+    sys.path.insert(0, test_dir)
     import nose
     nose.run_exit()

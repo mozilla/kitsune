@@ -41,7 +41,7 @@ class TestPluginCalls(unittest.TestCase):
              'loadTestsFromDir', 'afterDirectory',
              'report', 'finalize'])
 
-    def test_plugin_calls_package1_versbose(self):
+    def test_plugin_calls_package1_verbose(self):
         wdir = os.path.join(support, 'package1')
         man = RecordingPluginManager()
         conf = Config(plugins=man, stream=sys.stdout)
@@ -61,9 +61,9 @@ class TestPluginCalls(unittest.TestCase):
              'makeTest', 'wantMethod', 'loadTestsFromTestClass',
              'loadTestsFromTestCase', 'loadTestsFromModule', 'startContext',
              'beforeTest', 'prepareTestCase', 'startTest', 'describeTest',
-             'addSuccess', 'stopTest', 'afterTest', 'stopContext', 'testName',
+             'testName', 'addSuccess', 'stopTest', 'afterTest', 'stopContext',
              'afterContext', 'loadTestsFromDir', 'afterDirectory',
-             'report', 'finalize'])        
+             'report', 'finalize'])
 
 
 

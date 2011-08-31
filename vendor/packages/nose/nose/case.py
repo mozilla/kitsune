@@ -5,6 +5,7 @@ to create test cases from test functions and methods in test classes.
 import logging
 import sys
 import unittest
+from inspect import isfunction
 from nose.config import Config
 from nose.failure import Failure # for backwards compatibility
 from nose.util import resolve_name, test_address, try_run
@@ -20,7 +21,7 @@ class Test(unittest.TestCase):
 
     When a plugin sees a test, it will always see an instance of this
     class. To access the actual test case that will be run, access the
-    test property of the nose.case.Test instance.    
+    test property of the nose.case.Test instance.
     """
     __test__ = False # do not collect
     def __init__(self, test, config=None, resultProxy=None):
@@ -39,7 +40,7 @@ class Test(unittest.TestCase):
         self.plugins = config.plugins
         self.passed = None
         unittest.TestCase.__init__(self)
-        
+
     def __call__(self, *arg, **kwarg):
         return self.run(*arg, **kwarg)
 
@@ -74,10 +75,10 @@ class Test(unittest.TestCase):
 
     def exc_info(self):
         """Extract exception info.
-        """        
+        """
         exc, exv, tb = sys.exc_info()
         return (exc, exv, tb)
-        
+
     def id(self):
         """Get a short(er) description of the test
         """
@@ -107,10 +108,10 @@ class Test(unittest.TestCase):
             return resolve_name(self.test.__module__)
         except AttributeError:
             pass
-        return None                
+        return None
     context = property(_context, None, None,
                       """Get the context object of this test (if any).""")
-    
+
     def run(self, result):
         """Modified run for the test wrapper.
 
@@ -137,51 +138,64 @@ class Test(unittest.TestCase):
                 result.addError(self, err)
         finally:
             self.afterTest(result)
-        
+
     def runTest(self, result):
         """Run the test. Plugins may alter the test by returning a
         value from prepareTestCase. The value must be callable and
         must accept one argument, the result instance.
-        """        
+        """
         test = self.test
         plug_test = self.config.plugins.prepareTestCase(self)
         if plug_test is not None:
             test = plug_test
         test(result)
-        
+
     def shortDescription(self):
         desc = self.plugins.describeTest(self)
         if desc is not None:
             return desc
-        doc = self.test.shortDescription()
-        if doc is not None:
-            return doc
         # work around bug in unittest.TestCase.shortDescription
         # with multiline docstrings.
         test = self.test
         try:
-            doc = test._testMethodDoc # 2.5
+            test._testMethodDoc = test._testMethodDoc.strip()# 2.5
         except AttributeError:
             try:
-                doc = test._TestCase__testMethodDoc # 2.4 and earlier
+                # 2.4 and earlier
+                test._TestCase__testMethodDoc = \
+                    test._TestCase__testMethodDoc.strip()
             except AttributeError:
                 pass
-        if doc is not None:
-            doc = doc.strip().split("\n")[0].strip()
-        return doc
+        # 2.7 compat: shortDescription() always returns something
+        # which is a change from 2.6 and below, and breaks the
+        # testName plugin call.
+        try:
+            desc = self.test.shortDescription()
+        except Exception:
+            # this is probably caused by a problem in test.__str__() and is
+            # only triggered by python 3.1's unittest!
+            pass
+        try:
+            if desc == str(self.test):
+                return
+        except Exception:
+            # If str() triggers an exception then ignore it.
+            # see issue 422
+            pass
+        return desc
 
 
 class TestBase(unittest.TestCase):
     """Common functionality for FunctionTestCase and MethodTestCase.
     """
     __test__ = False # do not collect
-    
+
     def id(self):
         return str(self)
-        
+
     def runTest(self):
         self.test(*self.arg)
-    
+
     def shortDescription(self):
         if hasattr(self.test, 'description'):
             return self.test.description
@@ -191,7 +205,7 @@ class TestBase(unittest.TestCase):
             doc = str(self)
         return doc.strip().split("\n")[0].strip()
 
-    
+
 class FunctionTestCase(TestBase):
     """TestCase wrapper for test functions.
 
@@ -199,7 +213,7 @@ class FunctionTestCase(TestBase):
     create test cases for test functions.
     """
     __test__ = False # do not collect
-    
+
     def __init__(self, test, setUp=None, tearDown=None, arg=tuple(),
                  descriptor=None):
         """Initialize the MethodTestCase.
@@ -220,13 +234,13 @@ class FunctionTestCase(TestBase):
         * descriptor -- the function, other than the test, that should be used
           to construct the test name. This is to support generator functions.
         """
-        
+
         self.test = test
         self.setUpFunc = setUp
         self.tearDownFunc = tearDown
         self.arg = arg
         self.descriptor = descriptor
-        TestBase.__init__(self)        
+        TestBase.__init__(self)
 
     def address(self):
         """Return a round-trip name for this test, a name that can be
@@ -236,13 +250,13 @@ class FunctionTestCase(TestBase):
         if self.descriptor is not None:
             return test_address(self.descriptor)
         else:
-            return test_address(self.test)    
+            return test_address(self.test)
 
     def _context(self):
         return resolve_name(self.test.__module__)
     context = property(_context, None, None,
                       """Get context (module) of this test""")
-        
+
     def setUp(self):
         """Run any setup function attached to the test function
         """
@@ -260,7 +274,7 @@ class FunctionTestCase(TestBase):
         else:
             names = ('teardown', 'tearDown', 'tearDownFunc')
             try_run(self.test, names)
-        
+
     def __str__(self):
         func, arg = self._descriptors()
         if hasattr(func, 'compat_func_name'):
@@ -273,9 +287,9 @@ class FunctionTestCase(TestBase):
         # FIXME need to include the full dir path to disambiguate
         # in cases where test module of the same name was seen in
         # another directory (old fromDirectory)
-        return name 
+        return name
     __repr__ = __str__
-    
+
     def _descriptors(self):
         """Get the descriptors of the test function: the function and
         arguments that will be used to construct the test name. In
@@ -286,7 +300,7 @@ class FunctionTestCase(TestBase):
         """
         if self.descriptor:
             return self.descriptor, self.arg
-        else:            
+        else:
             return self.test, self.arg
 
 
@@ -297,7 +311,7 @@ class MethodTestCase(TestBase):
     create test cases for test methods.
     """
     __test__ = False # do not collect
-    
+
     def __init__(self, method, test=None, arg=tuple(), descriptor=None):
         """Initialize the MethodTestCase.
 
@@ -305,7 +319,8 @@ class MethodTestCase(TestBase):
 
         * method -- the method to call, may be bound or unbound. In either
           case, a new instance of the method's class will be instantiated to
-          make the call.
+	  make the call.  Note: In Python 3.x, if using an unbound method, you
+	  must wrap it using pyversion.unbound_method.
 
         Optional arguments:
 
@@ -324,11 +339,13 @@ class MethodTestCase(TestBase):
         self.test = test
         self.arg = arg
         self.descriptor = descriptor
+        if isfunction(method):
+            raise ValueError("Unbound methods must be wrapped using pyversion.unbound_method before passing to MethodTestCase")
         self.cls = method.im_class
         self.inst = self.cls()
         if self.test is None:
             method_name = self.method.__name__
-            self.test = getattr(self.inst, method_name)            
+            self.test = getattr(self.inst, method_name)
         TestBase.__init__(self)
 
     def __str__(self):
@@ -365,7 +382,7 @@ class MethodTestCase(TestBase):
 
     def tearDown(self):
         try_run(self.inst, ('teardown', 'tearDown'))
-        
+
     def _descriptors(self):
         """Get the descriptors of the test method: the method and
         arguments that will be used to construct the test name. In

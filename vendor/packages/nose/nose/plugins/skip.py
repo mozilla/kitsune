@@ -5,13 +5,18 @@ attribute of the result, 'S' or 'SKIP' (verbose) will be output, and
 the exception will not be counted as an error or failure. This plugin
 is enabled by default but may be disabled with the ``--no-skip`` option.
 """
-    
+
 from nose.plugins.errorclass import ErrorClass, ErrorClassPlugin
 
 
-class SkipTest(Exception):
-    """Raise this exception to mark a test as skipped.
-    """
+try:
+    # 2.7
+    from unittest.case import SkipTest
+except ImportError:
+    # 2.6 and below
+    class SkipTest(Exception):
+        """Raise this exception to mark a test as skipped.
+        """
     pass
 
 
@@ -48,4 +53,4 @@ class Skip(ErrorClassPlugin):
         disable = getattr(options, 'noSkip', False)
         if disable:
             self.enabled = False
-            
+

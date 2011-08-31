@@ -1,3 +1,4 @@
+from nose.plugins.attrib import attr
 import unittest
 
 def test_one():
@@ -41,3 +42,55 @@ class Something(unittest.TestCase):
     
     def test_case_three(self):
         pass
+
+
+class Superclass:
+    def test_method(self):
+        pass
+    test_method.from_super = True
+
+class TestSubclass(Superclass):
+    pass
+
+
+class Static:
+    def test_with_static(self):
+        pass
+    test_with_static.with_static = True
+
+    def static(self):
+        pass
+    static = staticmethod(static)
+
+
+class TestClassAndMethodAttrs(unittest.TestCase):
+    def test_method(self):
+        pass
+    test_method.meth_attr = 'method'
+TestClassAndMethodAttrs.cls_attr = 'class'
+
+
+class TestAttrClass:
+    from_super = True
+
+    def ends_with_test(self):
+        pass
+
+    def test_one(self):
+        pass
+
+    def test_two(self):
+        pass
+    test_two.from_super = False
+
+TestAttrClass = attr('a')(TestAttrClass)
+
+
+class TestAttrSubClass(TestAttrClass):
+    def test_sub_three(self):
+        pass
+
+def added_later_test(self):
+    pass
+
+TestAttrSubClass.added_later_test = added_later_test

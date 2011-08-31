@@ -72,6 +72,9 @@ def stop_reactor():
     global _twisted_thread
     reactor.stop()
     reactor_thread.join()
+    for p in reactor.getDelayedCalls():
+        if p.active():
+            p.cancel()
     _twisted_thread = None
 
 
@@ -94,7 +97,7 @@ def deferred(timeout=None):
     
         @deferred(timeout=5.0)
         def test_resolve():
-            return reactor.resolve("nose.python-hosting.com")
+            return reactor.resolve("www.python.org")
 
     Attention! If you combine this decorator with other decorators (like
     "raises"), deferred() must be called *first*!

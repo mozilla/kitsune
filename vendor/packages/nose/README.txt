@@ -104,18 +104,20 @@ Configuration
 -------------
 
 In addition to passing command-line options, you may also put
-configuration options in a .noserc or nose.cfg file in your home
-directory. These are standard .ini-style config files. Put your
-nosetests configuration in a [nosetests] section. Options are the same
-as on the command line, with the -- prefix removed. For options that
-are simple switches, you must supply a value:
+configuration options in your project's *setup.cfg* file, or a .noserc
+or nose.cfg file in your home directory. In any of these standard
+.ini-style config files, you put your nosetests configuration in a
+``[nosetests]`` section. Options are the same as on the command line,
+with the -- prefix removed. For options that are simple switches, you
+must supply a value:
 
    [nosetests]
    verbosity=3
    with-doctest=1
 
 All configuration files that are found will be loaded and their
-options combined.
+options combined. You can override the standard config file loading
+with the ``-c`` option.
 
 
 Using Plugins
@@ -139,7 +141,7 @@ plugins keyword argument.
 0.9 plugins
 -----------
 
-nose 0.11 can use SOME plugins that were written for nose 0.9. The
+nose 1.0 can use SOME plugins that were written for nose 0.9. The
 default plugin manager inserts a compatibility wrapper around 0.9
 plugins that adapts the changed plugin api calls. However, plugins
 that access nose internals are likely to fail, especially if they
@@ -151,10 +153,10 @@ plugin is trying to find out if the test is an instance of a class
 that no longer exists.
 
 
-0.10 plugins
-------------
+0.10 and 0.11 plugins
+---------------------
 
-All plugins written for nose 0.10 should work with nose 0.11.
+All plugins written for nose 0.10 and 0.11 should work with nose 1.0.
 
 
 Options
@@ -193,6 +195,14 @@ Options
    in place of the current working directory, which is the default.
    Others will be added to the list of tests to execute. [NOSE_WHERE]
 
+--py3where=PY3WHERE
+
+   Look for tests in this directory under Python 3.x. Functions the
+   same as 'where', but only applies if running under Python 3.x or
+   above.  Note that, if present under 3.x, this option completely
+   replaces any directories specified with 'where', so the 'where'
+   option becomes ineffective. [NOSE_PY3WHERE]
+
 -m=REGEX, --match=REGEX, --testmatch=REGEX
 
    Files, directories, function names, and class names that match this
@@ -220,6 +230,13 @@ Options
 
    Load logging config from this file -- bypasses all other logging
    config settings.
+
+-I=REGEX, --ignore-files=REGEX
+
+   Completely ignore any file that matches this regular expression.
+   Takes precedence over any other settings or plugins. Specifying
+   this option will replace the default setting. Specify this option
+   multiple times to add more regular expressions [NOSE_IGNORE_FILES]
 
 -e=REGEX, --exclude=REGEX
 
@@ -255,7 +272,7 @@ Options
 
    Traverse through all path entries of a namespace package
 
---first-package-wins=DEFAULT, --first-pkg-wins=DEFAULT, --1st-pkg-wins=DEFAULT
+--first-package-wins, --first-pkg-wins, --1st-pkg-wins
 
    nose's importer will normally evict a package from sys.modules if
    it sees a package with the same name in a different location. Set
@@ -297,7 +314,9 @@ Options
    filter out needless output. Example: filter=foo will capture
    statements issued ONLY to  foo or foo.what.ever.sub but not foobar
    or other logger. Specify multiple loggers with comma:
-   filter=foo,bar,baz. [NOSE_LOGFILTER]
+   filter=foo,bar,baz. If any logger name is prefixed with a minus, eg
+   filter=-foo, it will be excluded rather than included. Default:
+   exclude logging messages from nose itself (-nose). [NOSE_LOGFILTER]
 
 --logging-clear-handlers
 
@@ -435,6 +454,12 @@ Options
 
    Set timeout for return of results from each test runner process.
    [NOSE_PROCESS_TIMEOUT]
+
+--process-restartworker
+
+   If set, will restart each worker process once their tests are done,
+   this helps control memory leaks from killing the system.
+   [NOSE_PROCESS_RESTARTWORKER]
 
 --with-xunit
 

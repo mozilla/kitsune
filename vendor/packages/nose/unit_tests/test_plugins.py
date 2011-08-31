@@ -8,6 +8,7 @@ import tempfile
 from warnings import warn, filterwarnings, resetwarnings
 
 from nose import SkipTest
+from nose.pyversion import unbound_method
 from nose.config import Config
 from nose.plugins.attrib import AttributeSelector
 from nose.plugins.base import Plugin
@@ -276,7 +277,7 @@ class TestAttribPlugin(unittest.TestCase):
         
         plug = AttributeSelector()
         plug.attribs = [[('foo', True)]]
-        assert plug.wantMethod(TestP.h) is not False
+        assert plug.wantMethod(unbound_method(TestP, TestP.h)) is not False
         assert plug.wantFunction(i) is False
         
     def test_eval_attr(self):

@@ -30,11 +30,11 @@ Traceback (most recent call last):
 AssertionError: bye
 <BLANKLINE>
 ----------------------------------------------------------------------
-XML: .../support/nosetests.xml
+XML: ...nosetests.xml
 ----------------------------------------------------------------------
 Ran 4 tests in ...s
 <BLANKLINE>
 FAILED (SKIP=1, errors=1, failures=1)
 
 >>> open(outfile, 'r').read() # doctest: +ELLIPSIS
-'<?xml version="1.0" encoding="UTF-8"?><testsuite name="nosetests" tests="4" errors="1" failures="1" skip="1"><testcase classname="test_skip" name="test_skip.test_ok" time="..." /><testcase classname="test_skip" name="test_skip.test_err" time="..."><error type="exceptions.Exception">.../error></testcase><testcase classname="test_skip" name="test_skip.test_fail" time="..."><failure type="exceptions.AssertionError">...</failure></testcase></testsuite>'
+'<?xml version="1.0" encoding="UTF-8"?><testsuite name="nosetests" tests="4" errors="1" failures="1" skip="1"><testcase classname="test_skip" name="test_ok" time="..." /><testcase classname="test_skip" name="test_err" time="..."><error type="...Exception" message="oh no">...</error></testcase><testcase classname="test_skip" name="test_fail" time="..."><failure type="...AssertionError" message="bye">...</failure></testcase><testcase classname="test_skip" name="test_skip" time="..."><skipped type="...SkipTest" message="not me">...</skipped></testcase></testsuite>'

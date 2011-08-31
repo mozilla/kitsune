@@ -3,8 +3,9 @@ Parallel Testing with nose
 
 .. Note ::
 
-   The multiprocess plugin requires the multiprocessing_ module, available from
-   PyPI and at http://code.google.com/p/python-multiprocessing/.
+   Use of the multiprocess plugin on python 2.5 or earlier requires
+   the multiprocessing_ module, available from PyPI and at
+   http://code.google.com/p/python-multiprocessing/.
 
 ..
 
@@ -13,10 +14,6 @@ test run across a configurable number of worker processes. While this can
 speed up CPU-bound test runs, it is mainly useful for IO-bound tests
 that spend most of their time waiting for data to arrive from someplace
 else and can benefit from parallelization.
-
-.. warning ::
-
-   The multiprocess plugin is not available on Windows.
 
 .. _multiprocessing : http://code.google.com/p/python-multiprocessing/
 
@@ -66,8 +63,8 @@ A class might look like::
       @classmethod
       def setup_class(cls):
           ...
-      
-Alternatively, If a context's fixtures may only be run once, or may not run
+
+Alternatively, if a context's fixtures may only be run once, or may not run
 concurrently, but *may* be shared by tests running in different processes
 -- for instance a package-level fixture that starts an external http server or
 initializes a shared database -- then set ``_multiprocess_shared_ = True`` in
@@ -106,11 +103,11 @@ and the third is unmarked. They all define the same fixtures:
     def setup():
         print "setup called"
         called.append('setup')
-        
+
     def teardown():
         print "teardown called"
         called.append('teardown')
-    
+
 And each has two tests that just test that ``setup()`` has been called
 once and only once.
 
@@ -135,7 +132,7 @@ all tests pass.
     >>> test_can_split = os.path.join(support, 'test_can_split.py')
 
 The module with shared fixtures passes.
-    
+
     >>> run(argv=['nosetests', '-v', test_shared]) #doctest: +REPORT_NDIFF
     setup called
     test_shared.TestMe.test_one ... ok
@@ -149,7 +146,7 @@ The module with shared fixtures passes.
     OK
 
 As does the module with no fixture annotations.
-    
+
     >>> run(argv=['nosetests', '-v', test_not_shared]) #doctest: +REPORT_NDIFF
     setup called
     test_not_shared.TestMe.test_one ... ok
@@ -163,7 +160,7 @@ As does the module with no fixture annotations.
     OK
 
 And the module that marks its fixtures as re-entrant.
-    
+
     >>> run(argv=['nosetests', '-v', test_can_split]) #doctest: +REPORT_NDIFF
     setup called
     test_can_split.TestMe.test_one ... ok
@@ -188,7 +185,6 @@ indeterminate.
 First we have to reset all of the test modules.
 
     >>> import sys
-    >>> sys.modules['test_shared'].called[:] = []
     >>> sys.modules['test_not_shared'].called[:] = []
     >>> sys.modules['test_can_split'].called[:] = []
 
@@ -218,7 +214,6 @@ runner processes as fixtures are re-executed.
 We have to reset all of the test modules again.
 
     >>> import sys
-    >>> sys.modules['test_shared'].called[:] = []
     >>> sys.modules['test_not_shared'].called[:] = []
     >>> sys.modules['test_can_split'].called[:] = []
 
@@ -226,6 +221,8 @@ Then we can run again and see the failures.
 
     >>> run(argv=['nosetests', '-v', '--processes=2', test_can_split],
     ...     plugins=[MultiProcess()]) #doctest: +ELLIPSIS
+    setup called
+    teardown called
     test_can_split....
     ...
     FAILED (failures=...)
@@ -270,4 +267,3 @@ are a few other differences that may impact your test suite:
   use subprocess to launch another copy of nose that also uses the
   multiprocess plugin. This is why this test is skipped under python 2.6 when
   run with the ``--processes`` switch.
-

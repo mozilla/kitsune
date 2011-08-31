@@ -29,6 +29,9 @@ class Plug4(Plugin):
     def loadTestsFromModule(self, module):
         raise AttributeError("I am missing my nose")
 
+class BetterPlug2(Plugin):
+    name = 'plug2'
+
 
 class TestPluginManager(unittest.TestCase):
 
@@ -60,8 +63,12 @@ class TestPluginManager(unittest.TestCase):
         self.assertEqual(len(loaded), 2)
         for test in loaded:
             assert isinstance(test, nose.failure.Failure), \
-                   "%s is not a failure" % test
-        
+            "%s is not a failure" % test
+
+    def test_plugin_override(self):
+        pm = PluginManager(plugins=[Plug2(), BetterPlug2()])
+        self.assertEqual(len(pm.plugins), 1)
+        assert isinstance(pm.plugins[0], BetterPlug2)
 
 if __name__ == '__main__':
     unittest.main()

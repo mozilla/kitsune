@@ -23,6 +23,15 @@ to bitbucket. That (with occasional merging) will be your normal practice for
 keeping your repository up to date. If you're on bitbucket and working from
 **unstable**, just **fork** http://bitbucket.org/jpellerin/nose/.
 
+Running nose's tests
+--------------------
+
+nose runs its own test suite with `tox
+<http://codespeak.net/tox/>`. You don't have to install tox to run
+nose's test suite, but you should, because tox makes it easy to run
+all tests on all supported python versions. You'll also need python
+2.4, 2.5, 2.6, 2.7, 3.1 and jython installed somewhere in your $PATH.
+
 Discuss
 -------
 
@@ -38,23 +47,6 @@ You can find a list of open issues at nose's `google code repository
 work on an issue, leave a comment on the issue detailing how you plan
 to fix it, and where to find the Mercurial repository where you will
 publish your changes.
-
-Actually, I want to work on the python 3.0 version
---------------------------------------------------
-
-The python 3.0 version of nose, nose3, is hosted at bitbucket. You can
-clone the repository from here::
-
-  hg clone http://bitbucket.org/jpellerin/nose3
-
-If you plan to contribute changes back, you should fork the repository
-on bitbucket.
-
-Issues affecting nose3 should likewise be reported at the bitbucket
-site, not at google code.
-
-nose3 hosting may move to google code at some future date, when google
-code supports bitbucket-style forking.
 
 I have a great idea for a plugin...
 -----------------------------------

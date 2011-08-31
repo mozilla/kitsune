@@ -159,6 +159,30 @@ class TestResultProxy(unittest.TestCase):
         case(proxy)
         assert proxy.shouldStop
         assert res.shouldStop
-            
+
+    def test_coercion_of_custom_exception(self):
+        from nose.case import Test
+
+        class CustomException(Exception):
+            def __init__(self, message, two, three):
+                Exception.__init__(self, message)
+
+        class TC(unittest.TestCase):
+            def runTest(self):
+                pass
+
+        test = TC()
+        case = Test(test)
+        res = unittest.TestResult()
+        try:
+            raise CustomException("the error", 2, 3)
+        except:
+            etype, val, tb = sys.exc_info()
+        val = str(val) # simulate plugin shenanigans
+        proxy = ResultProxy(res, test=case)
+        # Python 3 coercion should happen here without error
+        proxy.addError(test, (etype, val, tb))
+        proxy.addFailure(test, (etype, val, tb))
+
 if __name__ == '__main__':
     unittest.main()

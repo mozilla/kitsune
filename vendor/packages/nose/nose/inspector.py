@@ -36,7 +36,8 @@ def inspect_traceback(tb):
 
     while inspect_lines:
         try:
-            tokenize.tokenize(src.readline, exp)
+            for tok in tokenize.generate_tokens(src.readline):
+                exp(*tok)
         except tokenize.TokenError, e:
             # this can happen if our inspectable region happens to butt up
             # against the end of a construct like a docstring with the closing
@@ -166,11 +167,12 @@ class Expander:
         #      get ready to getattr(lastthing, this thing) on the
         #      next call.
         
-        if self.lpos is not None and start[1] >= self.lpos:
-            self.expanded_source += ' ' * (start[1]-self.lpos)
-        elif start[1] < self.lpos:
-            # newline, indent correctly
-            self.expanded_source += ' ' * start[1]
+        if self.lpos is not None:
+            if start[1] >= self.lpos:
+                self.expanded_source += ' ' * (start[1]-self.lpos)
+            elif start[1] < self.lpos:
+                # newline, indent correctly
+                self.expanded_source += ' ' * start[1]
         self.lpos = end[1]
       
         if ttype == tokenize.INDENT:

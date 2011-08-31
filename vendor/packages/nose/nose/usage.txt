@@ -58,18 +58,20 @@ Configuration
 -------------
 
 In addition to passing command-line options, you may also put
-configuration options in a .noserc or nose.cfg file in your home
-directory. These are standard .ini-style config files. Put your
-nosetests configuration in a [nosetests] section. Options are the
-same as on the command line, with the -- prefix removed. For
-options that are simple switches, you must supply a value:
+configuration options in your project's *setup.cfg* file, or a .noserc
+or nose.cfg file in your home directory. In any of these standard
+.ini-style config files, you put your nosetests configuration in a
+``[nosetests]`` section. Options are the same as on the command line,
+with the -- prefix removed. For options that are simple switches, you
+must supply a value:
 
   [nosetests]
   verbosity=3
   with-doctest=1
 
-All configuration files that are found will be loaded and their options
-combined.
+All configuration files that are found will be loaded and their
+options combined. You can override the standard config file loading
+with the ``-c`` option.
 
 Using Plugins
 -------------
@@ -91,7 +93,7 @@ with the plugins keyword argument.
 0.9 plugins
 -----------
 
-nose 0.11 can use SOME plugins that were written for nose 0.9. The
+nose 1.0 can use SOME plugins that were written for nose 0.9. The
 default plugin manager inserts a compatibility wrapper around 0.9
 plugins that adapts the changed plugin api calls. However, plugins
 that access nose internals are likely to fail, especially if they
@@ -102,7 +104,7 @@ longer passed to startTest and partly because it's likely that the
 plugin is trying to find out if the test is an instance of a class
 that no longer exists.
 
-0.10 plugins
-------------
+0.10 and 0.11 plugins
+---------------------
 
-All plugins written for nose 0.10 should work with nose 0.11.
+All plugins written for nose 0.10 and 0.11 should work with nose 1.0.
