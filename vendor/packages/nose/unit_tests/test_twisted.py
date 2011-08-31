@@ -30,7 +30,7 @@ test_resolve = deferred()(test_resolve)
 #@deferred()
 def test_raises_bad_return():
     print reactor
-    reactor.resolve("nose.python-hosting.com")
+    reactor.resolve("www.python.org")
 test_raises_bad_return = raises(TypeError)(deferred()(test_raises_bad_return))
 
 # Check we propagate twisted Failures as Exceptions

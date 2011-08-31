@@ -2,14 +2,18 @@
 Test Result
 -----------
 
-Provides a TextTestResult that extends unittest._TextTestResult to
+Provides a TextTestResult that extends unittest's _TextTestResult to
 provide support for error classes (such as the builtin skip and
 deprecated classes), and hooks for plugins to take over or extend
 reporting.
 """
 
 import logging
-from unittest import _TextTestResult
+try:
+    # 2.7+
+    from unittest.runner import _TextTestResult
+except ImportError:
+    from unittest import _TextTestResult
 from nose.config import Config
 from nose.util import isclass, ln as _ln # backwards compat
 
@@ -28,23 +32,30 @@ class TextTestResult(_TextTestResult):
     """Text test result that extends unittest's default test result
     support for a configurable set of errorClasses (eg, Skip,
     Deprecated, TODO) that extend the errors/failures/success triad.
-    """    
+    """
     def __init__(self, stream, descriptions, verbosity, config=None,
-                 errorClasses=None):        
+                 errorClasses=None):
         if errorClasses is None:
             errorClasses = {}
         self.errorClasses = errorClasses
         if config is None:
-            config = Config()       
+            config = Config()
         self.config = config
         _TextTestResult.__init__(self, stream, descriptions, verbosity)
-                
+
+    def addSkip(self, test, reason):
+        # 2.7 skip compat
+        from nose.plugins.skip import SkipTest
+        if SkipTest in self.errorClasses:
+            storage, label, isfail = self.errorClasses[SkipTest]
+            storage.append((test, reason))
+            self.printLabel(label, (SkipTest, reason, None))
+
     def addError(self, test, err):
         """Overrides normal addError to add support for
         errorClasses. If the exception is a registered class, the
         error will be added to the list for that class, not errors.
         """
-        stream = getattr(self, 'stream', None)
         ec, ev, tb = err
         try:
             exc_info = self._exc_info_to_string(err, test)
@@ -52,28 +63,39 @@ class TextTestResult(_TextTestResult):
             # 2.3 compat
             exc_info = self._exc_info_to_string(err)
         for cls, (storage, label, isfail) in self.errorClasses.items():
+            #if 'Skip' in cls.__name__ or 'Skip' in ec.__name__:
+            #    from nose.tools import set_trace
+            #    set_trace()
             if isclass(ec) and issubclass(ec, cls):
                 if isfail:
                     test.passed = False
                 storage.append((test, exc_info))
-                # Might get patched into a streamless result
-                if stream is not None:
-                    if self.showAll:
-                        message = [label]
-                        detail = _exception_detail(err[1])
-                        if detail:
-                            message.append(detail)
-                        stream.writeln(": ".join(message))
-                    elif self.dots:
-                        stream.write(label[:1])
+                self.printLabel(label, err)
                 return
         self.errors.append((test, exc_info))
         test.passed = False
+        self.printLabel('ERROR')
+
+    # override to bypass changes in 2.7
+    def getDescription(self, test):
+        if self.descriptions:
+            return test.shortDescription() or str(test)
+        else:
+            return str(test)
+
+    def printLabel(self, label, err=None):
+        # Might get patched into a streamless result
+        stream = getattr(self, 'stream', None)
         if stream is not None:
             if self.showAll:
-                self.stream.writeln('ERROR')
+                message = [label]
+                if err:
+                    detail = _exception_detail(err[1])
+                    if detail:
+                        message.append(detail)
+                stream.writeln(": ".join(message))
             elif self.dots:
-                stream.write('E')
+                stream.write(label[:1])
 
     def printErrors(self):
         """Overrides to print all errorClasses errors as well.
@@ -96,14 +118,13 @@ class TextTestResult(_TextTestResult):
         taken = float(stop - start)
         run = self.testsRun
         plural = run != 1 and "s" or ""
-        
+
         writeln(self.separator2)
         writeln("Ran %s test%s in %.3fs" % (run, plural, taken))
         writeln()
 
         summary = {}
         eckeys = self.errorClasses.keys()
-        eckeys.sort()
         for cls in eckeys:
             storage, label, isfail = self.errorClasses[cls]
             count = len(storage)
@@ -157,6 +178,10 @@ class TextTestResult(_TextTestResult):
             self.stream.write('E')
 
     def _exc_info_to_string(self, err, test=None):
+        # 2.7 skip compat
+        from nose.plugins.skip import SkipTest
+        if issubclass(err[0], SkipTest):
+            return str(err[1])
         # 2.3/2.4 -- 2.4 passes test, 2.3 does not
         try:
             return _TextTestResult._exc_info_to_string(self, err, test)
@@ -171,5 +196,5 @@ def ln(*arg, **kw):
          "from nose.result in a future release. Please update your imports ",
          DeprecationWarning)
     return _ln(*arg, **kw)
-    
+
 

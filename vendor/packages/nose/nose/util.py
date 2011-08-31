@@ -8,7 +8,7 @@ import re
 import sys
 import types
 import unittest
-from types import ClassType, TypeType
+from nose.pyversion import ClassType, TypeType
 
 try:
     from compiler.consts import CO_GENERATOR
@@ -145,19 +145,6 @@ def file_like(name):
             or os.path.dirname(name)
             or name.endswith('.py')
             or not ident_re.match(os.path.splitext(name)[0]))
-
-
-def cmp_lineno(a, b):
-    """Compare functions by their line numbers.
-
-    >>> cmp_lineno(isgenerator, ispackage)
-    -1
-    >>> cmp_lineno(ispackage, isgenerator)
-    1
-    >>> cmp_lineno(isgenerator, isgenerator)
-    0
-    """
-    return cmp(func_lineno(a), func_lineno(b))
 
 
 def func_lineno(func):
@@ -308,7 +295,7 @@ def ln(label):
     '---------------------------- hello there -----------------------------'
     """
     label_len = len(label) + 2
-    chunk = (70 - label_len) / 2
+    chunk = (70 - label_len) // 2
     out = '%s %s %s' % ('-' * chunk, label, '-' * chunk)
     pad = 70 - len(out)
     if pad > 0:
@@ -431,17 +418,19 @@ def test_address(test):
                 file = os.path.abspath(file)
         call = getattr(test, '__name__', None)
         return (src(file), module, call)
-    if t == types.InstanceType:
-        return test_address(test.__class__)
     if t == types.MethodType:
         cls_adr = test_address(test.im_class)
         return (src(cls_adr[0]), cls_adr[1],
                 "%s.%s" % (cls_adr[2], test.__name__))
     # handle unittest.TestCase instances
     if isinstance(test, unittest.TestCase):
-        if hasattr(test, '_FunctionTestCase__testFunc'):
+        if (hasattr(test, '_FunctionTestCase__testFunc') # pre 2.7
+            or hasattr(test, '_testFunc')):              # 2.7
             # unittest FunctionTestCase
-            return test_address(test._FunctionTestCase__testFunc)
+            try:
+                return test_address(test._FunctionTestCase__testFunc)
+            except AttributeError:
+                return test_address(test._testFunc)
         # regular unittest.TestCase
         cls_adr = test_address(test.__class__)
         # 2.5 compat: __testMethodName changed to _testMethodName
@@ -451,6 +440,8 @@ def test_address(test):
             method_name = test._testMethodName
         return (src(cls_adr[0]), cls_adr[1],
                 "%s.%s" % (cls_adr[2], method_name))
+    if hasattr(test, '__class__') and test.__class__.__module__ != 'builtins':
+        return test_address(test.__class__)
     raise TypeError("I don't know what %s is (%s)" % (test, t))
 test_address.__test__ = False # do not collect
 
@@ -502,23 +493,24 @@ def src(filename):
     return filename
 
 
-def match_last(a, b, regex):
-    """Sort compare function that puts items that match a
+def regex_last_key(regex):
+    """Sort key function factory that puts items that match a
     regular expression last.
 
     >>> from nose.config import Config
+    >>> from nose.pyversion import sort_list
     >>> c = Config()
     >>> regex = c.testMatch
     >>> entries = ['.', '..', 'a_test', 'src', 'lib', 'test', 'foo.py']
-    >>> entries.sort(lambda a, b: match_last(a, b, regex))
+    >>> sort_list(entries, regex_last_key(regex))
     >>> entries
     ['.', '..', 'foo.py', 'lib', 'src', 'a_test', 'test']
     """
-    if regex.search(a) and not regex.search(b):
-        return 1
-    elif regex.search(b) and not regex.search(a):
-        return -1
-    return cmp(a, b)
+    def k(obj):
+        if regex.search(obj):
+            return (1, obj)
+        return (0, obj)
+    return k
 
 
 def tolist(val):

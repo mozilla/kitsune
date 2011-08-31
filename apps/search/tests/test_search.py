@@ -41,8 +41,8 @@ class SphinxTestCase(TestCase):
                 'posts.json', 'questions.json']
 
     @classmethod
-    def setup_class(cls):
-        super(SphinxTestCase, cls).setup_class()
+    def setUpClass(cls):
+        super(SphinxTestCase, cls).setUpClass()
         if not settings.SPHINX_SEARCHD or not settings.SPHINX_INDEXER:
             raise SkipTest()
 
@@ -60,9 +60,9 @@ class SphinxTestCase(TestCase):
         time.sleep(1)
 
     @classmethod
-    def teardown_class(cls):
+    def tearDownClass(cls):
         stop_sphinx()
-        super(SphinxTestCase, cls).teardown_class()
+        super(SphinxTestCase, cls).tearDownClass()
 
 
 def test_sphinx_down():

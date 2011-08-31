@@ -13,6 +13,25 @@ class TestSelector(unittest.TestCase):
     def tearDown(self):
         logging.getLogger('nose.selector').setLevel(logging.WARN)
     
+    def test_ignore_files_default(self):
+        """A default configuration should always skip some 'hidden' files."""
+        s = Selector(Config())
+        
+        assert not s.wantFile('_test_underscore.py')
+        assert not s.wantFile('.test_hidden.py')
+        assert not s.wantFile('setup.py')
+        
+    def test_ignore_files_override(self):
+        """Override the configuration to skip only specified files."""
+        c = Config()
+        c.ignoreFiles = [re.compile(r'^test_favourite_colour\.py$')]
+        s = Selector(c)
+        
+        assert s.wantFile('_test_underscore.py')
+        assert s.wantFile('.test_hidden.py')
+        assert not s.wantFile('setup.py') # Actually excluded because of testMatch
+        assert not s.wantFile('test_favourite_colour.py')
+    
     def test_exclude(self):
         s = Selector(Config())
         c = Config()

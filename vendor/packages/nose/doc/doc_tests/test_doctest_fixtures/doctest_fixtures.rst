@@ -1,0 +1,1 @@
+nose-1.1.2/functional_tests/doc_tests/test_doctest_fixtures/doctest_fixtures.rst

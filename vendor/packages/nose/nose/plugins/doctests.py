@@ -63,7 +63,7 @@ try:
 except ImportError:
     from StringIO import StringIO
 import sys
-import __builtin__
+import __builtin__ as builtin_mod
 
 log = logging.getLogger(__name__)
 
@@ -186,7 +186,7 @@ class Doctest(Plugin):
         self.extension = tolist(options.doctestExtension)
         self.fixtures = options.doctestFixtures
         self.finder = doctest.DocTestFinder()
-
+        
     def prepareTestLoader(self, loader):
         """Capture loader's suiteClass.
 
@@ -257,7 +257,7 @@ class Doctest(Plugin):
                 log.debug("Fixture module %s resolved to %s",
                           fixt_mod, fixture_context)
                 if hasattr(fixture_context, 'globs'):
-                    globs = fixture_context.globs(globs)
+                    globs = fixture_context.globs(globs)                    
             parser = doctest.DocTestParser()
             test = parser.get_doctest(
                 doc, globs=globs, name=name,
@@ -385,14 +385,14 @@ class DocTestCase(doctest.DocTestCase):
     def _displayhook(self, value):
         if value is None:
             return
-        setattr(__builtin__, self._result_var,  value)
+        setattr(builtin_mod, self._result_var,  value)
         print repr(value)
 
     def tearDown(self):
         super(DocTestCase, self).tearDown()
         if self._result_var is not None:
             sys.displayhook = self._old_displayhook
-            delattr(__builtin__, self._result_var)
+            delattr(builtin_mod, self._result_var)
 
 
 class DocFileCase(doctest.DocFileCase):
@@ -418,11 +418,11 @@ class DocFileCase(doctest.DocFileCase):
     def _displayhook(self, value):
         if value is None:
             return
-        setattr(__builtin__, self._result_var, value)
+        setattr(builtin_mod, self._result_var, value)
         print repr(value)
 
     def tearDown(self):
         super(DocFileCase, self).tearDown()
         if self._result_var is not None:
             sys.displayhook = self._old_displayhook
-            delattr(__builtin__, self._result_var)
+            delattr(builtin_mod, self._result_var)

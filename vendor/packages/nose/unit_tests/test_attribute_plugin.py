@@ -1,4 +1,4 @@
-
+# There are more attribute plugin unit tests in unit_tests/test_plugins.py
 from nose.tools import eq_
 from nose.plugins.attrib import attr
 
@@ -29,4 +29,25 @@ def test_mixed():
     eq_(test.slow, 1)
     eq_(test.net, 1)
     eq_(test.role, 'integration')
-    
+
+def test_class_attrs():
+    # @attr('slow', 'net', role='integration')
+    class MyTest:
+        def setUp():
+            pass
+        def test_one(self):
+            pass
+        def test_two(self):
+            pass
+
+    class SubClass(MyTest):
+        pass
+
+    MyTest = attr('slow', 'net', role='integration')(MyTest)
+    eq_(MyTest.slow, 1)
+    eq_(MyTest.net, 1)
+    eq_(MyTest.role, 'integration')
+    eq_(SubClass.slow, 1)
+
+    assert not hasattr(MyTest.setUp, 'slow')
+    assert not hasattr(MyTest.test_two, 'slow')

@@ -30,6 +30,7 @@ produces::
      :literal:
 
 """
+import os
 try:
     from docutils import nodes
     from docutils.statemachine import ViewList
@@ -90,7 +91,8 @@ def autoplugin_directive(dirname, arguments, options, content, lineno,
     # source
     rst.append('Source', '<autodoc>')
     rst.append('------', '<autodoc>')
-    rst.append('.. include :: %s\n' % mod.__file__.replace('.pyc', '.py'),
+    rst.append('.. include :: %s\n' % os.path.relpath(
+            mod.__file__.replace('.pyc', '.py'), os.getcwd()),
                '<autodoc>')
     rst.append('   :literal:\n', '<autodoc>')
     rst.append('', '<autodoc>')

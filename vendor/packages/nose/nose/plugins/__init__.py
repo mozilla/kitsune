@@ -12,12 +12,41 @@ reporting. There are two basic rules for plugins:
   this class is for documentary purposes only; plugins may not subclass
   IPluginInterface.
 
+Hello World
+===========
+
+Here's a basic plugin.  It doesn't do much so read on for more ideas or dive
+into the :doc:`IPluginInterface <interface>` to see all available hooks.
+
+.. code-block:: python
+
+    import logging
+    import os
+
+    from nose.plugins import Plugin
+
+    log = logging.getLogger('nose.plugins.helloworld')
+
+    class HelloWorld(Plugin):
+        name = 'helloworld'
+
+        def options(self, parser, env=os.environ):
+            super(HelloWorld, self).options(parser, env=env)
+
+        def configure(self, options, conf):
+            super(HelloWorld, self).configure(options, conf)
+            if not self.enabled:
+                return
+
+        def finalize(self, result):
+            log.info('Hello pluginized world!')
+
 Registering
 ===========
 
-.. Note:: 
-  Important note: the following applies only to the default 
-  plugin manager. Other plugin managers may use different means to 
+.. Note::
+  Important note: the following applies only to the default
+  plugin manager. Other plugin managers may use different means to
   locate and load plugins.
 
 For nose to find a plugin, it must be part of a package that uses
@@ -44,14 +73,14 @@ to load the plugin.
 Registering a plugin without setuptools
 =======================================
 
-It is currently possible to register a plugin programmatically by 
+It is currently possible to register a plugin programmatically by
 creating a custom nose runner like this :
 
 .. code-block:: python
-    
+
     import nose
     from yourplugin import YourPlugin
-    
+
     if __name__ == '__main__':
         nose.main(addplugins=[YourPlugin()])
 
@@ -69,7 +98,7 @@ additional arguments that take only long arguments (--like-this). Most
 of nose's built-in arguments get their default value from an environment
 variable.
 
-A plugin's ``configure()`` method receives the parsed ``OptionParser`` options 
+A plugin's ``configure()`` method receives the parsed ``OptionParser`` options
 object, as well as the current config object. Plugins should configure their
 behavior based on the user-selected settings, and may raise exceptions
 if the configured behavior is nonsensical.
@@ -108,7 +137,7 @@ Recipes
   you return (error class, error message, traceback) will replace the
   original error tuple.
 
-  Examples: :doc:`nose.plugins.capture <capture>`, 
+  Examples: :doc:`nose.plugins.capture <capture>`,
   :doc:`nose.plugins.failuredetail <failuredetail>`
 
 * Writing a plugin that loads tests from files other than python modules
@@ -118,14 +147,14 @@ Recipes
   ``loadTestsFromFile``, for those files, return an iterable
   containing TestCases (or yield them as you find them;
   ``loadTestsFromFile`` may also be a generator).
- 
+
   Example: :doc:`nose.plugins.doctests <doctests>`
 
 * Writing a plugin that prints a report
 
   Implement ``begin`` if you need to perform setup before testing
   begins. Implement ``report`` and output your report to the provided stream.
- 
+
   Examples: :doc:`nose.plugins.cover <cover>`, :doc:`nose.plugins.prof <prof>`
 
 * Writing a plugin that selects or rejects tests
@@ -135,10 +164,10 @@ Recipes
   will pass through the rest of the system, so you must be prepared to
   load tests from it if tests can't be loaded by the core loader or
   another plugin -- and None if you don't care.
- 
-  Examples: :doc:`nose.plugins.attrib <attrib>`, 
+
+  Examples: :doc:`nose.plugins.attrib <attrib>`,
   :doc:`nose.plugins.doctests <doctests>`, :doc:`nose.plugins.testid <testid>`
-  
+
 
 More Examples
 =============
@@ -150,7 +179,7 @@ the nose source distribution. There is a list of third-party plugins
 .. _examples/html_plugin/htmlplug.py: http://python-nose.googlecode.com/svn/trunk/examples/html_plugin/htmlplug.py
 .. _examples: http://python-nose.googlecode.com/svn/trunk/examples
 .. _on jottit: http://nose-plugins.jottit.com/
-   
+
 """
 from nose.plugins.base import Plugin
 from nose.plugins.manager import *
@@ -159,4 +188,3 @@ from nose.plugins.plugintest import PluginTester
 if __name__ == '__main__':
     import doctest
     doctest.testmod()
-    

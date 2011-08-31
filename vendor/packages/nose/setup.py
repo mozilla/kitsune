@@ -1,10 +1,29 @@
-from nose import __version__ as VERSION
 import sys
+import os
 
+VERSION = '1.1.2'
 py_vers_tag = '-%s.%s' % sys.version_info[:2]
 
+test_dirs = ['functional_tests', 'unit_tests', os.path.join('doc','doc_tests'), 'nose']
+
+if sys.version_info >= (3,):
+    try:
+        import setuptools
+    except ImportError:
+        from distribute_setup import use_setuptools
+        use_setuptools()
+
+    extra = {'use_2to3': True,
+             'test_dirs': test_dirs,
+             'test_build_dir': 'build/tests',
+             'pyversion_patching': True,
+             }
+else:
+    extra = {}
+
 try:
-    from setuptools import setup, find_packages
+    from setup3lib import setup
+    from setuptools import find_packages
     addl_args = dict(
         zip_safe = False,
         packages = find_packages(),
@@ -19,10 +38,37 @@ try:
         },
         test_suite = 'nose.collector',
         )
+    addl_args.update(extra)
+
+    # This is required by multiprocess plugin; on Windows, if
+    # the launch script is not import-safe, spawned processes
+    # will re-run it, resulting in an infinite loop.
+    if sys.platform == 'win32':
+        import re
+        from setuptools.command.easy_install import easy_install
+
+        def wrap_write_script(self, script_name, contents, *arg, **kwarg):
+            bad_text = re.compile(
+                "\n"
+                "sys.exit\(\n"
+                "   load_entry_point\(([^\)]+)\)\(\)\n"
+                "\)\n")
+            good_text = (
+                "\n"
+                "if __name__ == '__main__':\n"
+                "    sys.exit(\n"
+                r"        load_entry_point(\1)()\n"
+                "    )\n"
+                )
+            contents = bad_text.sub(good_text, contents)
+            return self._write_script(script_name, contents, *arg, **kwarg)
+        easy_install._write_script = easy_install.write_script
+        easy_install.write_script = wrap_write_script
+
 except ImportError:
     from distutils.core import setup
     addl_args = dict(
-        packages = ['nose', 'nose.ext', 'nose.plugins'],
+        packages = ['nose', 'nose.ext', 'nose.plugins', 'nose.sphinx'],
         scripts = ['bin/nosetests'],
         )
 
@@ -55,10 +101,7 @@ setup(
     """,
     license = 'GNU LGPL',
     keywords = 'test unittest doctest automatic discovery',
-    url = 'http://somethingaboutorange.com/mrl/projects/nose/',
-    download_url = \
-    'http://somethingaboutorange.com/mrl/projects/nose/nose-%s.tar.gz' \
-    % VERSION,
+    url = 'http://readthedocs.org/docs/nose/',
     data_files = [('man/man1', ['nosetests.1'])],
     package_data = {'': ['*.txt',
                          'examples/*.py',
@@ -70,7 +113,9 @@ setup(
         'Natural Language :: English',
         'Operating System :: OS Independent',
         'Programming Language :: Python',
+        'Programming Language :: Python :: 3',
         'Topic :: Software Development :: Testing'
         ],
     **addl_args
     )
+

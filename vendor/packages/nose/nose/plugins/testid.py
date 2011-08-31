@@ -100,7 +100,7 @@ from nose.plugins import Plugin
 from nose.util import src, set
 
 try:
-    from cPickle import dump, load
+    from pickle import dump, load
 except ImportError:
     from pickle import dump, load
 
@@ -152,7 +152,7 @@ class TestId(Plugin):
         # used to track ids seen when tests is filled from
         # loaded ids file
         self._seen = {}
-        self._write_hashes = options.verbosity >= 2
+        self._write_hashes = conf.verbosity >= 2
 
     def finalize(self, result):
         """Save new ids file, if needed.
@@ -160,10 +160,10 @@ class TestId(Plugin):
         if result.wasSuccessful():
             self.failed = []
         if self.collecting:
-            ids = dict(zip(self.tests.values(), self.tests.keys()))
+            ids = dict(list(zip(list(self.tests.values()), list(self.tests.keys()))))
         else:
             ids = self.ids
-        fh = open(self.idfile, 'w')
+        fh = open(self.idfile, 'wb')
         dump({'ids': ids,
               'failed': self.failed,
               'source_names': self.source_names}, fh)
@@ -177,7 +177,7 @@ class TestId(Plugin):
         """
         log.debug('ltfn %s %s', names, module)
         try:
-            fh = open(self.idfile, 'r')
+            fh = open(self.idfile, 'rb')
             data = load(fh)
             if 'ids' in data:
                 self.ids = data['ids']
@@ -190,7 +190,7 @@ class TestId(Plugin):
                 self.source_names = names
             if self.ids:
                 self.id = max(self.ids) + 1
-                self.tests = dict(zip(self.ids.values(), self.ids.keys()))
+                self.tests = dict(list(zip(list(self.ids.values()), list(self.ids.keys()))))
             else:
                 self.id = 1
             log.debug(

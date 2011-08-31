@@ -2,10 +2,13 @@ import sys
 import unittest
 import warnings
 from nose.plugins.errorclass import ErrorClass, ErrorClassPlugin
+from nose.exc import SkipTest
 
 class TestErrorClassWithStringException(unittest.TestCase):
 
     def test_string_exception_not_masked(self):
+        if sys.version_info >= (3,):
+            raise SkipTest("Python 3.x does not support string exceptions")
 
         class X(Exception):
             pass

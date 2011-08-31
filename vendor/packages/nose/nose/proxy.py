@@ -72,8 +72,8 @@ class ResultProxy(object):
     the wrapped test case) as each result call is made. Finally, the
     real result method is called, also with the nose.case.Test
     instance as the test parameter.
-    
-    """    
+
+    """
     def __init__(self, result, test, config=None):
         if config is None:
             config = Config()
@@ -85,17 +85,30 @@ class ResultProxy(object):
     def __repr__(self):
         return repr(self.result)
 
+    def _prepareErr(self, err):
+        if not isinstance(err[1], Exception):
+            # Turn value back into an Exception (required in Python 3.x).
+            # Plugins do all sorts of crazy things with exception values.
+            try:
+                # The actual exception class is needed for failure detail
+                # but maybe other plugins?
+                value = err[0](err[1])
+            except:
+                value = Exception(err[1])
+            err = (err[0], value, err[2])
+        return err
+
     def assertMyTest(self, test):
         # The test I was called with must be my .test or my
         # .test's .test. or my .test.test's .case
 
         case = getattr(self.test, 'test', None)
-        assert (test is self.test 
-                or test is case 
-                or test is getattr(case, '_nose_case', None)), ( 
-                "ResultProxy for %r (%s) was called with test %r (%s)" 
+        assert (test is self.test
+                or test is case
+                or test is getattr(case, '_nose_case', None)), (
+                "ResultProxy for %r (%s) was called with test %r (%s)"
                 % (self.test, id(self.test), test, id(test)))
-    
+
     def afterTest(self, test):
         self.assertMyTest(test)
         self.plugins.afterTest(self.test)
@@ -119,7 +132,7 @@ class ResultProxy(object):
         if formatted is not None:
             err = formatted
         plugins.addError(self.test, err)
-        self.result.addError(self.test, err)
+        self.result.addError(self.test, self._prepareErr(err))
         if not self.result.wasSuccessful() and self.config.stopOnError:
             self.shouldStop = True
 
@@ -134,10 +147,21 @@ class ResultProxy(object):
         if formatted is not None:
             err = formatted
         plugins.addFailure(self.test, err)
-        self.result.addFailure(self.test, err)
+        self.result.addFailure(self.test, self._prepareErr(err))
         if self.config.stopOnError:
             self.shouldStop = True
-    
+
+    def addSkip(self, test, reason):
+        # 2.7 compat shim
+        from nose.plugins.skip import SkipTest
+        self.assertMyTest(test)
+        plugins = self.plugins
+        if not isinstance(reason, Exception):
+            # for Python 3.2+
+            reason = Exception(reason)
+        plugins.addError(self.test, (SkipTest, reason, None))
+        self.result.addSkip(self.test, reason)
+
     def addSuccess(self, test):
         self.assertMyTest(test)
         self.plugins.addSuccess(self.test)
@@ -147,10 +171,10 @@ class ResultProxy(object):
         self.assertMyTest(test)
         self.plugins.startTest(self.test)
         self.result.startTest(self.test)
-    
+
     def stop(self):
         self.result.stop()
-    
+
     def stopTest(self, test):
         self.assertMyTest(test)
         self.plugins.stopTest(self.test)
@@ -165,4 +189,3 @@ class ResultProxy(object):
                                  """Tests that failed""")
     testsRun = proxied_attribute('result', 'testsRun',
                                  """Number of tests run""")
-

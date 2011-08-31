@@ -1,9 +1,14 @@
 import unittest
 from nose.config import Config
 from nose.plugins.deprecated import Deprecated, DeprecatedTest
-from nose.result import TextTestResult
+from nose.result import TextTestResult, _TextTestResult
 from StringIO import StringIO
 from optparse import OptionParser
+try:
+    # 2.7+
+    from unittest.runner import _WritelnDecorator
+except ImportError:
+    from unittest import _WritelnDecorator
 
 
 class TestDeprecatedPlugin(unittest.TestCase):
@@ -15,8 +20,8 @@ class TestDeprecatedPlugin(unittest.TestCase):
         sk.prepareTestResult        
 
     def test_prepare_patches_result(self):
-        stream = unittest._WritelnDecorator(StringIO())
-        res = unittest._TextTestResult(stream, 0, 1)
+        stream = _WritelnDecorator(StringIO())
+        res = _TextTestResult(stream, 0, 1)
         sk = Deprecated()
         sk.prepareTestResult(res)
         res._orig_addError
@@ -69,8 +74,8 @@ class TestDeprecatedPlugin(unittest.TestCase):
             def test(self):
                 raise DeprecatedTest('deprecated me')
 
-        stream = unittest._WritelnDecorator(StringIO())
-        res = unittest._TextTestResult(stream, 0, 1)
+        stream = _WritelnDecorator(StringIO())
+        res = _TextTestResult(stream, 0, 1)
         sk = Deprecated()
         sk.prepareTestResult(res)
 
@@ -91,8 +96,8 @@ class TestDeprecatedPlugin(unittest.TestCase):
             def test(self):
                 raise DeprecatedTest('deprecated me too')
         
-        stream = unittest._WritelnDecorator(StringIO())
-        res = unittest._TextTestResult(stream, 0, verbosity=2)
+        stream = _WritelnDecorator(StringIO())
+        res = _TextTestResult(stream, 0, verbosity=2)
         sk = Deprecated()
         sk.prepareTestResult(res)
         test = TC('test')

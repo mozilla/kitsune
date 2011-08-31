@@ -155,7 +155,7 @@ class Translator(nodes.NodeVisitor):
         nodes.NodeVisitor.__init__(self, document)
         self.settings = settings = document.settings
         lcode = settings.language_code
-        self.language = languages.get_language(lcode)
+        self.language = languages.get_language(lcode, document.reporter)
         self.head = []
         self.body = []
         self.foot = []
@@ -322,14 +322,10 @@ class Translator(nodes.NodeVisitor):
         pass
 
     def visit_admonition(self, node, name):
-        raise NotImplementedError, node.astext()
-        self.body.append(self.starttag(node, 'div', CLASS=name))
-        self.body.append('<p class="admonition-title">'
-                         + self.language.labels[name] + '</p>\n')
+        self.visit_block_quote(node)
 
     def depart_admonition(self):
-        raise NotImplementedError, node.astext()
-        self.body.append('</div>\n')
+        self.depart_block_quote(None)
 
     def visit_attention(self, node):
         self.visit_admonition(node, 'attention')
@@ -994,6 +990,12 @@ class Translator(nodes.NodeVisitor):
         pass
 
     def depart_tgroup(self, node):
+        pass
+
+    def visit_compound(self, node):
+        pass
+
+    def depart_compound(self, node):
         pass
 
     def visit_thead(self, node):

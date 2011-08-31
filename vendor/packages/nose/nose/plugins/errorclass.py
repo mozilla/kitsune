@@ -29,7 +29,7 @@ into the tuples used by the error handling and reporting functions in
 the result. This is an internal format and subject to change; you
 should always use the declarative syntax for attaching ErrorClasses to
 an ErrorClass plugin.
-    
+
     >>> TodoError.errorClasses # doctest: +ELLIPSIS
     ((<class ...Todo...>, ('todo', 'TODO', True)),)
 
@@ -37,7 +37,13 @@ Let's see the plugin in action. First some boilerplate.
 
     >>> import sys
     >>> import unittest
-    >>> buf = unittest._WritelnDecorator(sys.stdout)
+    >>> try:
+    ...     # 2.7+
+    ...     from unittest.runner import _WritelnDecorator
+    ... except ImportError:
+    ...     from unittest import _WritelnDecorator
+    ...
+    >>> buf = _WritelnDecorator(sys.stdout)
 
 Now define a test case that raises a Todo.
 
@@ -53,8 +59,8 @@ through the internal process of nose so you can see what happens at
 each step.
 
     >>> plugin = TodoError()
-    >>> result = unittest._TextTestResult(stream=buf,
-    ...                                   descriptions=0, verbosity=2)
+    >>> from nose.result import _TextTestResult
+    >>> result = _TextTestResult(stream=buf, descriptions=0, verbosity=2)
     >>> plugin.prepareTestResult(result)
 
 Now run the test. TODO is printed.
@@ -77,7 +83,7 @@ Errors and failures are empty, but todo has our test:
     ----------------------------------------------------------------------
     Traceback (most recent call last):
     ...
-    Todo: I need to test something
+    ...Todo: I need to test something
     <BLANKLINE>
 
 Since we defined a Todo as a failure, the run was not successful.
@@ -86,7 +92,7 @@ Since we defined a Todo as a failure, the run was not successful.
     False
 """
 
-from new import instancemethod
+from nose.pyversion import make_instancemethod
 from nose.plugins.base import Plugin
 from nose.result import TextTestResult
 from nose.util import isclass
@@ -148,6 +154,7 @@ class ErrorClassPlugin(Plugin):
                 result.errorClasses[cls] = (storage, label, isfail)
 
     def patchResult(self, result):
+        result.printLabel = print_label_patch(result)
         result._orig_addError, result.addError = \
             result.addError, add_error_patch(result)
         result._orig_wasSuccessful, result.wasSuccessful = \
@@ -155,6 +162,9 @@ class ErrorClassPlugin(Plugin):
         if hasattr(result, 'printErrors'):
             result._orig_printErrors, result.printErrors = \
                 result.printErrors, print_errors_patch(result)
+        if hasattr(result, 'addSkip'):
+            result._orig_addSkip, result.addSkip = \
+                result.addSkip, add_skip_patch(result)
         result.errorClasses = {}
 
 
@@ -163,16 +173,21 @@ def add_error_patch(result):
     that recognizes the errorClasses attribute and deals with
     errorclasses correctly.
     """
-    return instancemethod(
-        TextTestResult.addError.im_func, result, result.__class__)
+    return make_instancemethod(TextTestResult.addError, result)
 
 
 def print_errors_patch(result):
     """Create a new printErrors method that prints errorClasses items
     as well.
     """
-    return instancemethod(
-        TextTestResult.printErrors.im_func, result, result.__class__)
+    return make_instancemethod(TextTestResult.printErrors, result)
+
+
+def print_label_patch(result):
+    """Create a new printLabel method that prints errorClasses items
+    as well.
+    """
+    return make_instancemethod(TextTestResult.printLabel, result)
 
 
 def wassuccessful_patch(result):
@@ -180,10 +195,16 @@ def wassuccessful_patch(result):
     exceptions that were put into other slots than error or failure
     but that still count as not success.
     """
-    return instancemethod(
-        TextTestResult.wasSuccessful.im_func, result, result.__class__)
+    return make_instancemethod(TextTestResult.wasSuccessful, result)
 
-    
+
+def add_skip_patch(result):
+    """Create a new addSkip method to patch into a result instance
+    that delegates to addError.
+    """
+    return make_instancemethod(TextTestResult.addSkip, result)
+
+
 if __name__ == '__main__':
     import doctest
     doctest.testmod()

@@ -52,7 +52,7 @@ section of your setup()::
 
   setup(
       # ...
-      setup_requires=['nose>=0.11']
+      setup_requires=['nose>=1.0']
       )
 
 This will direct setuptools to download and activate nose during the setup
@@ -97,7 +97,7 @@ else:
             """create the member variables, but change hyphens to
             underscores
             """
-            
+
             self.option_to_cmds = {}
             for opt in self.__parser.option_list:
                 cmd_name = opt._long_opts[0][2:]

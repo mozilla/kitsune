@@ -127,7 +127,7 @@ example from nose's selftest suite is probably the best explanation::
   def check_even(n, nn):
       assert n % 2 == 0 or nn % 2 == 0
 
-This will result in four tests. nose will iterate the generator, creating a
+This will result in five tests. nose will iterate the generator, creating a
 function test case wrapper for each tuple it yields. As in the example, test
 generators must yield tuples, the first element of which must be a callable
 and the remaining elements the arguments to be passed to the callable.

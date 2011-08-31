@@ -108,9 +108,14 @@ class TestProgram(unittest.TestProgram):
         self.config = config
         self.suite = suite
         self.exit = exit
+        extra_args = {}
+        version = sys.version_info[0:2]
+        if version >= (2,7) and version != (3,0):
+            extra_args['exit'] = exit
         unittest.TestProgram.__init__(
             self, module=module, defaultTest=defaultTest,
-            argv=argv, testRunner=testRunner, testLoader=testLoader)
+            argv=argv, testRunner=testRunner, testLoader=testLoader,
+            **extra_args)
 
     def makeConfig(self, env, plugins=None):
         """Load a Config, pre-filled with user config files if any are
@@ -216,20 +221,28 @@ class TestProgram(unittest.TestProgram):
                                               initial_indent='  ',
                                               subsequent_indent='  '))
                 if v >= 3:
-                    print
-                    print "  Options:"
                     parser = DummyParser()
                     p.addOptions(parser)
-                    for opts, help in parser.options:
-                        print '  %s' % (', '.join(opts))
-                        if help:
-                            print '\n'.join(
-                                textwrap.wrap(help.strip(),
-                                              initial_indent='    ',
-                                              subsequent_indent='    '))
+                    if len(parser.options):
+                        print
+                        print "  Options:"
+                        for opts, help in parser.options:
+                            print '  %s' % (', '.join(opts))
+                            if help:
+                                print '\n'.join(
+                                    textwrap.wrap(help.strip(),
+                                                  initial_indent='    ',
+                                                  subsequent_indent='    '))
                 print
             
     def usage(cls):
+        import nose
+        if hasattr(nose, '__loader__'):
+            ld = nose.__loader__
+            if hasattr(ld, 'zipfile'):
+                # nose was imported from a zipfile
+                return ld.get_data(
+                        os.path.join(ld.prefix, 'nose', 'usage.txt'))
         return open(os.path.join(
                 os.path.dirname(__file__), 'usage.txt'), 'r').read()
     usage = classmethod(usage)

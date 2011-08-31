@@ -3,7 +3,13 @@ from nose.config import Config
 from nose.plugins.skip import Skip, SkipTest
 from nose.result import TextTestResult
 from StringIO import StringIO
+from nose.result import _TextTestResult
 from optparse import OptionParser
+try:
+    # 2.7+
+    from unittest.runner import _WritelnDecorator
+except ImportError:
+    from unittest import _WritelnDecorator
 
 
 class TestSkipPlugin(unittest.TestCase):
@@ -12,11 +18,11 @@ class TestSkipPlugin(unittest.TestCase):
         sk = Skip()
         sk.addOptions
         sk.configure
-        sk.prepareTestResult        
+        sk.prepareTestResult
 
     def test_prepare_patches_result(self):
-        stream = unittest._WritelnDecorator(StringIO())
-        res = unittest._TextTestResult(stream, 0, 1)
+        stream = _WritelnDecorator(StringIO())
+        res = _TextTestResult(stream, 0, 1)
         sk = Skip()
         sk.prepareTestResult(res)
         res._orig_addError
@@ -54,31 +60,32 @@ class TestSkipPlugin(unittest.TestCase):
         class NoPatch(unittest.TestResult):
             def __init__(self):
                 self.errorClasses = {}
-                
+
         res = NoPatch()
         sk = Skip()
         sk.prepareTestResult(res)
         assert not hasattr(res, '_orig_addError'), \
                "Skip patched a result class it didn't need to patch"
-        
+
 
     def test_skip_output(self):
         class TC(unittest.TestCase):
             def test(self):
                 raise SkipTest('skip me')
 
-        stream = unittest._WritelnDecorator(StringIO())
-        res = unittest._TextTestResult(stream, 0, 1)
+        stream = _WritelnDecorator(StringIO())
+        res = _TextTestResult(stream, 0, 1)
         sk = Skip()
         sk.prepareTestResult(res)
 
         test = TC('test')
         test(res)
         assert not res.errors, "Skip was not caught: %s" % res.errors
-        assert res.skipped            
+        assert res.skipped
 
         res.printErrors()
         out = stream.getvalue()
+        print out
         assert out
         assert out.strip() == "S"
         assert res.wasSuccessful()
@@ -88,15 +95,15 @@ class TestSkipPlugin(unittest.TestCase):
         class TC(unittest.TestCase):
             def test(self):
                 raise SkipTest('skip me too')
-        
-        stream = unittest._WritelnDecorator(StringIO())
-        res = unittest._TextTestResult(stream, 0, verbosity=2)
+
+        stream = _WritelnDecorator(StringIO())
+        res = _TextTestResult(stream, 0, verbosity=2)
         sk = Skip()
         sk.prepareTestResult(res)
         test = TC('test')
         test(res)
         assert not res.errors, "Skip was not caught: %s" % res.errors
-        assert res.skipped            
+        assert res.skipped
 
         res.printErrors()
         out = stream.getvalue()

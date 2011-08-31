@@ -1,24 +1,43 @@
+import os
 import sys
-called = []
+
+here = os.path.dirname(__file__)
+flag = os.path.join(here, 'shared_flag')
 
 _multiprocess_shared_ = 1
 
+def _log(val):
+    ff = open(flag, 'a+')
+    ff.write(val)
+    ff.write("\n")
+    ff.close()
+
+
+def _clear():
+    if os.path.isfile(flag):
+        os.unlink(flag)
+
+        
+def logged():
+    return [line for line in open(flag, 'r')]
+
+
 def setup():
     print >> sys.stderr, "setup called"
-    called.append('setup')
+    _log('setup')
 
 
 def teardown():
     print >> sys.stderr, "teardown called"
-    called.append('teardown')
+    _clear()
 
-
+    
 def test_a():
-    assert len(called) == 1, "len(%s) !=1" % called
+    assert len(logged()) == 1, "len(%s) !=1" % called
 
 
 def test_b():
-    assert len(called) == 1, "len(%s) !=1" % called
+    assert len(logged()) == 1, "len(%s) !=1" % called
 
 
 class TestMe:
