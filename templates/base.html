@@ -184,10 +184,7 @@
 </noscript>
 {# End Webtrends #}
 
-{# Ethnio tracking - see bugs 673538 and 673544 #}
-{% if waffle.flag('ethnio') %}
-  <script type="text/javascript" language="javascript" src="//ethn.io/remotes/24561" async="true"></script>
-{% endif %}
-{# End Ethnio #}
+{% block footer_script %}
+{% endblock %}
 </body>
 </html>
