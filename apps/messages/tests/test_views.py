@@ -16,9 +16,7 @@ class ReadMessageTests(TestCase):
         self.user2 = user(save=True)
         self.client.login(username=self.user1.username, password='testpass')
 
-    @mock.patch.object(waffle.decorators, 'flag_is_active')
-    def test_mark_message_read(self, flag_is_active):
-        flag_is_active.return_value = True
+    def test_mark_message_read(self):
         i = InboxMessage.objects.create(sender=self.user2, to=self.user1,
                                         message='foo')
         assert not i.read
@@ -28,9 +26,7 @@ class ReadMessageTests(TestCase):
         assert InboxMessage.uncached.get(pk=i.pk).read
         assert PINNING_COOKIE in resp.cookies
 
-    @mock.patch.object(waffle.decorators, 'flag_is_active')
-    def test_unread_does_not_pin(self, flag_is_active):
-        flag_is_active.return_value = True
+    def test_unread_does_not_pin(self):
         i = InboxMessage.objects.create(sender=self.user2, to=self.user1,
                                         message='foo', read=True)
         assert i.read
@@ -40,9 +36,7 @@ class ReadMessageTests(TestCase):
         assert InboxMessage.uncached.get(pk=i.pk).read
         assert PINNING_COOKIE not in resp.cookies
 
-    @mock.patch.object(waffle.decorators, 'flag_is_active')
-    def test_mark_message_replied(self, flag_is_active):
-        flag_is_active.return_value = True
+    def test_mark_message_replied(self):
         i = InboxMessage.objects.create(sender=self.user2, to=self.user1,
                                         message='foo')
         assert not i.replied
@@ -59,9 +53,7 @@ class DeleteMessageTests(TestCase):
         self.user2 = user(save=True)
         self.client.login(username=self.user1.username, password='testpass')
 
-    @mock.patch.object(waffle.decorators, 'flag_is_active')
-    def test_delete_inbox_message(self, flag_is_active):
-        flag_is_active.return_value = True
+    def test_delete_inbox_message(self):
         i = InboxMessage.objects.create(sender=self.user2, to=self.user1,
                                         message='foo')
         eq_(1, InboxMessage.objects.count())
@@ -70,9 +62,7 @@ class DeleteMessageTests(TestCase):
         eq_(200, resp.status_code)
         eq_(0, InboxMessage.uncached.count())
 
-    @mock.patch.object(waffle.decorators, 'flag_is_active')
-    def test_delete_outbox_message(self, flag_is_active):
-        flag_is_active.return_value = True
+    def test_delete_outbox_message(self):
         i = OutboxMessage.objects.create(sender=self.user1, message='foo')
         i.to.add(self.user2)
         eq_(1, OutboxMessage.objects.count())

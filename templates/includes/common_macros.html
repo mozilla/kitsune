@@ -37,26 +37,22 @@
       <li class="nomenu logout">
         <a href="{{ url('users.logout') }}">{{ _('Sign Out') }}</a>
       </li>
-      {% if waffle.flag('private-messaging') %}
-        <li class="nomenu">
-          <a href="{{ url('messages.inbox') }}">
-            {{ _('Inbox') }}
-            {% if unread_message_count > 0 %}
-              <span class="unread-message-count">{{ unread_message_count }}</span>
-            {% endif %}
-          </a>
-        </li>
-      {% endif %}
-    {#
-      {{ _('Welcome, <span class="user">{user}</span>.')|fe(user=user) }}
-      <nav>
-        {% if waffle.flag('private-messaging') %}
-          <a href="{{ url('messages.inbox') }}">{{ _('Inbox') }}</a>
+      <li class="nomenu">
+        <a href="{{ url('messages.inbox') }}">
+          {{ _('Inbox') }}
           {% if unread_message_count > 0 %}
             <span class="unread-message-count">{{ unread_message_count }}</span>
           {% endif %}
-          |
+        </a>
+      </li>
+    {#
+      {{ _('Welcome, <span class="user">{user}</span>.')|fe(user=user) }}
+      <nav>
+        <a href="{{ url('messages.inbox') }}">{{ _('Inbox') }}</a>
+        {% if unread_message_count > 0 %}
+          <span class="unread-message-count">{{ unread_message_count }}</span>
         {% endif %}
+        |
         <a href="{{ url('dashboards.default') }}">{{ _('Dashboard') }}</a>
         |
        <a href="{{ url('users.logout') }}">{{ _('Sign Out') }}</a>

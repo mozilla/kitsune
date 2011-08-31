@@ -8,7 +8,6 @@ from django.shortcuts import get_object_or_404
 import jingo
 from multidb.pinning import mark_as_write
 from tower import ugettext as _
-from waffle.decorators import waffle_flag
 
 from access.decorators import login_required
 from messages import send_message
@@ -18,7 +17,6 @@ from sumo.urlresolvers import reverse
 from sumo.utils import paginate
 
 
-@waffle_flag('private-messaging')
 @login_required
 def inbox(request):
     user = request.user
@@ -27,7 +25,6 @@ def inbox(request):
                         {'msgs': messages})
 
 
-@waffle_flag('private-messaging')
 @login_required
 def read(request, msgid):
     message = get_object_or_404(InboxMessage, pk=msgid, to=request.user)
@@ -43,7 +40,6 @@ def read(request, msgid):
     return response
 
 
-@waffle_flag('private-messaging')
 @login_required
 def read_outbox(request, msgid):
     message = get_object_or_404(OutboxMessage, pk=msgid, sender=request.user)
@@ -51,7 +47,6 @@ def read_outbox(request, msgid):
                         {'message': _add_recipients(message)})
 
 
-@waffle_flag('private-messaging')
 @login_required
 def outbox(request):
     user = request.user
@@ -62,7 +57,6 @@ def outbox(request):
                         {'msgs': messages})
 
 
-@waffle_flag('private-messaging')
 @login_required
 def new_message(request):
     """Send a new private message."""
@@ -95,7 +89,6 @@ def new_message(request):
     return jingo.render(request, 'messages/new.html', {'form': form})
 
 
-@waffle_flag('private-messaging')
 @login_required
 def delete(request, msgid, msgtype='inbox'):
     if msgtype == 'inbox':
