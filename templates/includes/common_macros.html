@@ -45,19 +45,6 @@
           {% endif %}
         </a>
       </li>
-    {#
-      {{ _('Welcome, <span class="user">{user}</span>.')|fe(user=user) }}
-      <nav>
-        <a href="{{ url('messages.inbox') }}">{{ _('Inbox') }}</a>
-        {% if unread_message_count > 0 %}
-          <span class="unread-message-count">{{ unread_message_count }}</span>
-        {% endif %}
-        |
-        <a href="{{ url('dashboards.default') }}">{{ _('Dashboard') }}</a>
-        |
-       <a href="{{ url('users.logout') }}">{{ _('Sign Out') }}</a>
-      </nav>
-    #}
     {% else %}
       <li class="account anonymous nomenu logout">
         {% trans login_url=url('users.login'), register_url=url('users.register') %}
