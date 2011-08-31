@@ -92,8 +92,6 @@
   </div>
   <div class="info">
     <a href="{{ profile_url(user) }}">{{ display_name(user) }}</a>
-    {% if waffle.flag('private-messaging') %}
-      {{ private_message(user) }}
-    {% endif %}
+    {{ private_message(user) }}
   </div>
 {%- endmacro %}

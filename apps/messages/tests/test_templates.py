@@ -18,9 +18,7 @@ class SendMessageTestCase(TestCase):
         self.user3 = user(save=True)
         self.client.login(username=self.user1.username, password='testpass')
 
-    @mock.patch.object(waffle.decorators, 'flag_is_active')
-    def test_send_message_page(self, flag_is_active):
-        flag_is_active.return_value = True
+    def test_send_message_page(self):
         # Make sure page loads.
         response = self.client.get(reverse('messages.new'), follow=True)
         eq_(200, response.status_code)
@@ -36,31 +34,21 @@ class SendMessageTestCase(TestCase):
             pq(response.content)('ul.user-messages').text())
         eq_(1, OutboxMessage.objects.filter(sender=self.user1).count())
 
-    @mock.patch.object(waffle.decorators, 'flag_is_active')
-    def test_send_message_to_one(self, flag_is_active):
-        flag_is_active.return_value = True
+    def test_send_message_to_one(self):
         self._test_send_message_to(self.user2.username)
 
-    @mock.patch.object(waffle.decorators, 'flag_is_active')
-    def test_send_message_to_two(self, flag_is_active):
-        flag_is_active.return_value = True
+    def test_send_message_to_two(self):
         to = ', '.join([self.user2.username, self.user3.username])
         self._test_send_message_to(to)
 
-    @mock.patch.object(waffle.decorators, 'flag_is_active')
-    def test_send_message_trailing_comma(self, flag_is_active):
-        flag_is_active.return_value = True
+    def test_send_message_trailing_comma(self):
         self._test_send_message_to(self.user2.username + ',')
 
-    @mock.patch.object(waffle.decorators, 'flag_is_active')
-    def test_send_message_two_commas(self, flag_is_active):
-        flag_is_active.return_value = True
+    def test_send_message_two_commas(self):
         self._test_send_message_to(self.user2.username + ',,' +
                                    self.user3.username)
 
-    @mock.patch.object(waffle.decorators, 'flag_is_active')
-    def test_send_message_to_prefilled(self, flag_is_active):
-        flag_is_active.return_value = True
+    def test_send_message_to_prefilled(self):
         url = urlparams(reverse('messages.new'), to=self.user2.username)
         response = self.client.get(url, follow=True)
         eq_(200, response.status_code)
