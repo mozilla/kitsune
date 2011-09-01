@@ -9,6 +9,7 @@ import socket
 
 from django.conf import settings
 from django.contrib.sites.models import Site
+from django.http import QueryDict
 
 import jingo
 import mock
@@ -121,7 +122,11 @@ class SearchTest(SphinxTestCase):
         """Ensure that query strings are added to search results"""
         response = self.client.get(reverse('search'), {'q': 'audio', 'w': 3})
         doc = pq(response.content)
-        assert doc('a.title:first').attr('href').endswith('?s=audio&as=s')
+        _, _, qs = doc('a.title:first').attr('href').partition('?')
+        q = QueryDict(qs)
+        eq_('audio', q['s'])
+        eq_('s', q['as'])
+        eq_('0', q['r'])
 
     def test_category(self):
         wc = WikiClient()

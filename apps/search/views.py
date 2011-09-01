@@ -306,7 +306,8 @@ def search(request, template=None):
                 result = {'search_summary': summary,
                           'url': wiki_page.get_absolute_url(),
                           'title': wiki_page.title,
-                          'type': 'document', }
+                          'type': 'document',
+                          'rank': i,}
                 results.append(result)
             elif documents[i]['attrs'].get('question_creator', False) != False:
                 question = Question.objects.get(
@@ -318,7 +319,8 @@ def search(request, template=None):
                 result = {'search_summary': summary,
                           'url': question.get_absolute_url(),
                           'title': question.title,
-                          'type': 'question', }
+                          'type': 'question',
+                          'rank': i,}
                 results.append(result)
             else:
                 thread = Thread.objects.get(
@@ -331,7 +333,8 @@ def search(request, template=None):
                 result = {'search_summary': summary,
                           'url': thread.get_absolute_url(),
                           'title': thread.title,
-                          'type': 'thread', }
+                          'type': 'thread',
+                          'rank': i,}
                 results.append(result)
         except IndexError:
             break
