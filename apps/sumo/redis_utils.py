@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.core.cache import parse_backend_uri
 
-from redis import Redis
+from redis import Redis, ConnectionError
 
 
 class RedisError(Exception):
@@ -39,5 +39,11 @@ def redis_client(name):
     else:
         host = server
         port = 6379
-    return Redis(host=host, port=port, db=db, password=password,
-                 socket_timeout=socket_timeout)
+    redis = Redis(host=host, port=port, db=db, password=password,
+                  socket_timeout=socket_timeout)
+    try:
+        redis.info()
+    except ConnectionError:
+        raise RedisError(
+            'Unable to connect to redis backend: {k}'.format(k=name))
+    return redis
