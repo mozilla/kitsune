@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime, timedelta
 import hashlib
 import random
 import re
@@ -216,15 +216,14 @@ class RegistrationManager(ConfirmationManager):
         ``User`` who is both inactive and has an expired activation
         key will be deleted.
         """
-        for profile in self.all():
-            if profile.activation_key_expired():
-                profile.delete()
-                # TODO: We need to limit non-active users actions to just
-                # asking a question (no posting to forums, etc.). Then
-                # we can safely delete them here to free up the usernames.
-                #user = profile.user
-                #if not user.is_active:
-                #    user.delete()
+        days_valid = settings.ACCOUNT_ACTIVATION_DAYS
+        expired = datetime.now() - timedelta(days=days_valid)
+        qs = self.filter(user__date_joined__lt=expired).select_related('user')
+        for profile in qs:
+            user = profile.user
+            profile.delete()
+            if user and not user.is_active:
+                user.delete()
 
 
 class EmailChangeManager(ConfirmationManager):
@@ -276,8 +275,8 @@ class RegistrationProfile(models.Model):
            equal to the current date, the key has expired and this
            method returns ``True``.
         """
-        exp_date = datetime.timedelta(days=settings.ACCOUNT_ACTIVATION_DAYS)
-        return self.user.date_joined + exp_date <= datetime.datetime.now()
+        exp_date = timedelta(days=settings.ACCOUNT_ACTIVATION_DAYS)
+        return self.user.date_joined + exp_date <= datetime.now()
     activation_key_expired.boolean = True
 
 
