@@ -1,5 +1,6 @@
-import datetime
+from datetime import datetime, timedelta
 import hashlib
+import logging
 import random
 import re
 
@@ -10,6 +11,7 @@ from django.core import mail
 from django.db import models
 from django.template.loader import render_to_string
 
+from celery.decorators import task
 from statsd import statsd
 from timezones.fields import TimeZoneField
 from tower import ugettext as _
@@ -18,7 +20,10 @@ from tower import ugettext_lazy as _lazy
 from countries import COUNTRIES
 from sumo.models import ModelBase, LocaleField
 from sumo.urlresolvers import reverse
-from sumo.utils import auto_delete_files
+from sumo.utils import auto_delete_files, chunked
+
+
+log = logging.getLogger('k.users')
 
 
 SHA1_RE = re.compile('^[a-f0-9]{40}$')
@@ -216,15 +221,24 @@ class RegistrationManager(ConfirmationManager):
         ``User`` who is both inactive and has an expired activation
         key will be deleted.
         """
-        for profile in self.all():
-            if profile.activation_key_expired():
-                profile.delete()
-                # TODO: We need to limit non-active users actions to just
-                # asking a question (no posting to forums, etc.). Then
-                # we can safely delete them here to free up the usernames.
-                #user = profile.user
-                #if not user.is_active:
-                #    user.delete()
+        days_valid = settings.ACCOUNT_ACTIVATION_DAYS
+        expired = datetime.now() - timedelta(days=days_valid)
+        prof_ids = self.filter(user__date_joined__lt=expired)
+        prof_ids = prof_ids.values_list('id', flat=True)
+        for chunk in chunked(prof_ids, 1000):
+            _delete_registration_profiles_chunk.apply_async(args=[chunk])
+
+
+@task
+def _delete_registration_profiles_chunk(data, **kwargs):
+    log_msg = u'Deleting {num} expired registration profiles.'
+    log.info(log_msg.format(num=len(data)))
+    qs = RegistrationProfile.objects.filter(id__in=data)
+    for profile in qs.select_related('user'):
+        user = profile.user
+        profile.delete()
+        if user and not user.is_active:
+            user.delete()
 
 
 class EmailChangeManager(ConfirmationManager):
@@ -276,8 +290,8 @@ class RegistrationProfile(models.Model):
            equal to the current date, the key has expired and this
            method returns ``True``.
         """
-        exp_date = datetime.timedelta(days=settings.ACCOUNT_ACTIVATION_DAYS)
-        return self.user.date_joined + exp_date <= datetime.datetime.now()
+        exp_date = timedelta(days=settings.ACCOUNT_ACTIVATION_DAYS)
+        return self.user.date_joined + exp_date <= datetime.now()
     activation_key_expired.boolean = True
 
 
