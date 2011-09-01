@@ -81,6 +81,11 @@ article #toc ul li {
     padding: 25px 0 0 175px;
 }
 
+html[lang="ja"] #more-help {
+    background: none;
+    padding: 25px 0 0 25px;
+}
+
 #more-help div.wrap {
     background: #deeff8;
     background: -moz-linear-gradient(top, #deeff8, #ebf8ff);
@@ -103,6 +108,10 @@ article #toc ul li {
 #more-help ul {
     border-right: dotted 2px #6292cf;
     width: 275px;
+}
+
+html[lang="ja"] #more-help ul {
+    width: 350px;
 }
 
 #more-help ul ul {
@@ -128,12 +137,21 @@ article #toc ul li {
     width: 240px;
 }
 
+html[lang="ja"] #more-help div.support-search {
+    left: 400px;
+    width: 305px;
+}
+
 #more-help div.support-search form {
     margin: 15px 0 0;
 }
 
 #more-help div.support-search input.text {
     width: 144px;
+}
+
+html[lang="ja"] #more-help div.support-search input.text {
+    width: 209px;
 }
 
 #doc-contributors {
