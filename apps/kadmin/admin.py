@@ -12,7 +12,7 @@ import celery.conf
 import jinja2
 from redis import ConnectionError
 
-from sumo.utils import redis_client
+from sumo.redis_utils import redis_client
 
 
 def settings(request):

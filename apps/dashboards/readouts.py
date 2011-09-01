@@ -5,6 +5,8 @@ is_localizable=False or is_archived=True and Revisions with
 is_ready_for_localization=False do not exist.
 
 """
+import logging
+
 from django.conf import settings
 from django.db import connections, router
 from django.utils.datastructures import SortedDict
@@ -16,9 +18,12 @@ from tower import ugettext as _, ugettext_lazy as _lazy
 
 from dashboards import THIS_WEEK, ALL_TIME, PERIODS
 from sumo.urlresolvers import reverse
-from sumo.utils import redis_client
+from sumo.redis_utils import redis_client, RedisError
 from wiki.models import (Document, MEDIUM_SIGNIFICANCE, MAJOR_SIGNIFICANCE,
                          TYPO_SIGNIFICANCE)
+
+
+log = logging.getLogger('k.dashboards.readouts')
 
 
 MOST_VIEWED = 1
@@ -601,21 +606,22 @@ class UnhelpfulReadout(Readout):
     modes = []
 
     # This class is a namespace and doesn't get instantiated.
+    key = settings.HELPFULVOTES_UNHELPFUL_KEY
     try:
-        hide_readout = redis_client('helpfulvotes').llen(settings.HELPFULVOTES_UNHELPFUL_KEY) == 0
-    except (AttributeError, ConnectionError):
+        hide_readout = redis_client('helpfulvotes').llen(key) == 0
+    except (ConnectionError, RedisError) as e:
+        log.error('Redis error: %s' % e)
         hide_readout = True
 
     def rows(self, max=None):
         REDIS_KEY = settings.HELPFULVOTES_UNHELPFUL_KEY
         try:
             redis = redis_client('helpfulvotes')
-            if redis is None:
-                raise ConnectionError
             length = redis.llen(REDIS_KEY)
             max_get = max or length
             output = redis.lrange(REDIS_KEY, 0, max_get)
-        except ConnectionError:
+        except (ConnectionError, RedisError) as e:
+            log.error('Redis error: %s' % e)
             output = []
 
         return [self._format_row(r) for r in output]

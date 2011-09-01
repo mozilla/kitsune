@@ -4,7 +4,7 @@ from django.db import transaction, connection
 import cronjobs
 
 from dashboards.models import PERIODS, WikiDocumentVisits
-from sumo.utils import redis_client
+from sumo.redis_utils import redis_client
 from wiki.models import Document
 
 
