@@ -30,9 +30,9 @@
 
     {% for doc in results %}
       <div class="result {{ doc.type }}">
-        <a class="title" href="{{ doc.url|urlparams(s=q,as='s') }}">{{ doc.title }}</a>
+        <a class="title" href="{{ doc.url|urlparams(s=q, as='s', r=doc.rank) }}">{{ doc.title }}</a>
         <p>
-          <a href="{{ doc.url|urlparams(s=q,as='s') }}">
+          <a href="{{ doc.url|urlparams(s=q, as='s', r=doc.rank) }}">
             {{ doc.search_summary|safe }}
           </a>
         </p>
