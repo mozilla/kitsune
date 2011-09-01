@@ -7,6 +7,10 @@
     padding-right: 0;
 }
 
+#wiki-doc > h1 {
+    margin-bottom: 5px;
+}
+
 #related-articles {
     background-color: #fff;
     float: right;
@@ -17,17 +21,17 @@
 
 #toc {
     font-size: 13px;
-    margin-left: -50px;
-    padding: 0 0 25px;
+    margin: 0 0 25px -50px;
 }
 
 #related-articles h1,
-#toc h1,
-#toc h2 {
+article #toc h1,
+article #toc h2 {
     color: #333;
     font-size: 18px;
     font-style: italic;
-    padding: 0 0 10px 50px;
+    margin-bottom: 0;
+    padding: 0 0 5px 50px;
 }
 
 #related-articles li {
@@ -52,7 +56,12 @@ article #toc ol li,
 article #toc ul li {
     background: transparent url(../img/wiki/list.divider.png) no-repeat left bottom;
     list-style-position: inside;
-    padding: 10px 0 10px 50px;
+    padding: 5px 0 5px 50px;
+}
+
+article #toc ol li:first-child,
+article #toc ul li:first-child {
+    padding-top: 0;
 }
 
 article #toc ol,
@@ -62,6 +71,7 @@ article #toc ul {
 
 article #toc ul li {
     list-style: none;
+    margin: 0;
 }
 
 #toc ol ol,
@@ -152,7 +162,7 @@ article #toc ul li {
 
 /* Wiki Document content */
 #doc-content {
-    margin: 35px 0;
+    margin: 0 0 35px;
     padding: 0 20px 0 0;
 }
 

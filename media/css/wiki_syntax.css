@@ -19,13 +19,24 @@
     margin: 1em 0;
 }
 
+#doc-content p:first-child {
+    margin-top: 0;
+}
+
 /* NOTE:
 `#doc-content h1-6` -> These inherit color from `h1-6` in wiki.css
 */
 
 #doc-content h1 {
+    border-top: dotted 1px #bbb;
     font-size: 22px;
-    margin: 21px 0 8px;
+    margin: 30px 0 10px;
+    padding: 20px 0 0;
+}
+
+#doc-content #toc + h1 { /* h1 right after TOC: no border and less padding */
+    border: none;
+    padding-top: 5px;
 }
 
 #doc-content h2 {
@@ -53,7 +64,7 @@
 #doc-content ol,
 #doc-content ul,
 #doc-content dd {
-    margin: 1em 0 1em 21px;
+    margin: -0.7em 0 1em 40px;
 }
 
 #doc-content li {
