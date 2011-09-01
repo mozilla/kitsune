@@ -10,21 +10,13 @@ from dashboards.cron import cache_most_unhelpful_kb_articles
 from dashboards.readouts import CONTRIBUTOR_READOUTS
 from sumo.tests import TestCase
 from sumo.urlresolvers import reverse
-from sumo.redis_utils import redis_client
+from sumo.redis_utils import redis_client, RedisError
 from users.tests import user, group
 from wiki.models import HelpfulVote
 from wiki.tests import revision
 
 
 class LocalizationDashTests(TestCase):
-    def setUp(self):
-        super(LocalizationDashTests, self).setUp()
-        try:
-            self.redis = redis_client('helpfulvotes')
-            self.redis.flushdb()
-        except (KeyError, AttributeError):
-            pass
-
     def test_redirect_to_contributor_dash(self):
         """Should redirect to Contributor Dash if the locale is the default"""
         response = self.client.get(reverse('dashboards.localization',
@@ -62,11 +54,11 @@ class HelpfulVotesGraphTests(TestCase):
         self.client.login(username=self.user.username, password='testpass')
         self.group = group(name='Contributors', save=True)
         # Without this, there were unrelated failures with l10n dashboard
+        self.REDIS_KEY = settings.HELPFULVOTES_UNHELPFUL_KEY
         try:
             self.redis = redis_client('helpfulvotes')
             self.redis.flushdb()
-            self.REDIS_KEY = settings.HELPFULVOTES_UNHELPFUL_KEY
-        except (KeyError, AttributeError):
+        except RedisError:
             raise SkipTest
 
     def tearDown(self):

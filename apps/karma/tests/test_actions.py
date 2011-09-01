@@ -6,7 +6,7 @@ import waffle
 
 from karma.actions import KarmaAction
 from karma.manager import KarmaManager
-from sumo.redis_utils import redis_client
+from sumo.redis_utils import redis_client, RedisError
 from sumo.tests import TestCase
 from users.tests import user
 
@@ -30,7 +30,7 @@ class KarmaActionTests(TestCase):
         try:
             self.mgr = KarmaManager()
             redis_client('karma').flushdb()
-        except (KeyError, AttributeError):
+        except RedisError:
             raise SkipTest
 
     @mock.patch.object(waffle, 'switch_is_active')

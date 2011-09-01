@@ -1,6 +1,7 @@
 import colorsys
 from functools import partial
 import json
+import logging
 import math
 
 from django.conf import settings
@@ -20,9 +21,12 @@ from dashboards.readouts import (overview_rows, READOUTS, L10N_READOUTS,
 from dashboards.utils import render_readouts
 import forums as forum_constants
 from forums.models import Thread
-from sumo.redis_utils import redis_client
+from sumo.redis_utils import redis_client, RedisError
 from sumo.urlresolvers import reverse
 from sumo.utils import paginate, smart_int
+
+
+log = logging.getLogger('k.dashboards')
 
 
 def _kb_readout(request, readout_slug, readouts, locale=None, mode=None):
@@ -142,8 +146,9 @@ def get_helpful_graph_async(request):
         redis = redis_client('helpfulvotes')
         length = redis.llen(REDIS_KEY)
         output = redis.lrange(REDIS_KEY, 0, length)
-    except ConnectionError:
-        pass
+    except (RedisError, ConnectionError) as e:
+        log.error('Redis error: %s' % e)
+        output = []
 
     def _format_r(strresult):
         result = strresult.split('::')

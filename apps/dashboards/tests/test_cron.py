@@ -9,7 +9,7 @@ from nose.tools import eq_
 from dashboards.cron import (cache_most_unhelpful_kb_articles,
                              _get_old_unhelpful, _get_current_unhelpful)
 from sumo.tests import TestCase
-from sumo.redis_utils import redis_client
+from sumo.redis_utils import redis_client, RedisError
 from wiki.models import HelpfulVote
 from wiki.tests import revision
 
@@ -136,13 +136,11 @@ class TopUnhelpfulArticlesTests(TestCase):
 class TopUnhelpfulArticlesCronTests(TestCase):
     def setUp(self):
         super(TopUnhelpfulArticlesCronTests, self).setUp()
+        self.REDIS_KEY = settings.HELPFULVOTES_UNHELPFUL_KEY
         try:
             self.redis = redis_client('helpfulvotes')
-            if self.redis is None:
-                raise SkipTest
             self.redis.flushdb()
-            self.REDIS_KEY = settings.HELPFULVOTES_UNHELPFUL_KEY
-        except (KeyError, AttributeError):
+        except RedisError:
             raise SkipTest
 
     def tearDown(self):
