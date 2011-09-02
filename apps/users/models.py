@@ -10,6 +10,7 @@ from django.core import mail
 from django.db import models
 from django.template.loader import render_to_string
 
+from celery.decorators import task
 from statsd import statsd
 from timezones.fields import TimeZoneField
 from tower import ugettext as _
@@ -18,7 +19,7 @@ from tower import ugettext_lazy as _lazy
 from countries import COUNTRIES
 from sumo.models import ModelBase, LocaleField
 from sumo.urlresolvers import reverse
-from sumo.utils import auto_delete_files
+from sumo.utils import auto_delete_files, chunked
 
 
 SHA1_RE = re.compile('^[a-f0-9]{40}$')
@@ -218,12 +219,20 @@ class RegistrationManager(ConfirmationManager):
         """
         days_valid = settings.ACCOUNT_ACTIVATION_DAYS
         expired = datetime.now() - timedelta(days=days_valid)
-        qs = self.filter(user__date_joined__lt=expired).select_related('user')
-        for profile in qs:
-            user = profile.user
-            profile.delete()
-            if user and not user.is_active:
-                user.delete()
+        prof_ids = self.filter(user__date_joined__lt=expired)
+        prof_ids = prof_ids.values_list('id', flat=True)
+        for chunk in chunked(prof_ids, 1000):
+            _delete_registration_profiles_chunk.apply_async(args=[chunk])
+
+
+@task
+def _delete_registration_profiles_chunk(data, **kwargs):
+    qs = RegistrationProfile.objects.filter(id__in=data)
+    for profile in qs.select_related('user'):
+        user = profile.user
+        profile.delete()
+        if user and not user.is_active:
+            user.delete()
 
 
 class EmailChangeManager(ConfirmationManager):
