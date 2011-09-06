@@ -15,6 +15,10 @@
   {% set localizable_url = url('wiki.document', document.parent.slug, locale=settings.WIKI_DEFAULT_LANGUAGE) %}
 {% endif %}
 
+{% if document.is_template %}
+  {% set meta = (('robots', 'noindex'),) %}
+{% endif %}
+
 {% block content %}
   <article id="wiki-doc" class="main">
     {{ related_articles(related, document) }}

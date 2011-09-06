@@ -301,6 +301,24 @@ class DocumentTests(TestCaseBase):
         doc = pq(response.content)
         assert not doc('#helpful-vote')
 
+    def test_templates_noindex(self):
+        """Document templates should have a noindex meta tag."""
+        # Create a document and verify there is no robots:noindex
+        r = revision(save=True, content='Some text.', is_approved=True)
+        response = self.client.get(r.document.get_absolute_url())
+        eq_(200, response.status_code)
+        doc = pq(response.content)
+        eq_(0, len(doc('meta[name=robots]')))
+
+        # Convert the document to a template and verify robots:noindex
+        d = r.document
+        d.title = 'Template:test'
+        d.save()
+        response = self.client.get(r.document.get_absolute_url())
+        eq_(200, response.status_code)
+        doc = pq(response.content)
+        eq_('noindex', doc('meta[name=robots]')[0].attrib['content'])
+
 
 class RevisionTests(TestCaseBase):
     """Tests for the Revision template"""
