@@ -18,6 +18,14 @@
     {% for style in styles %}
       {{ css(style) }}
     {% endfor %}
+    {% if meta %}
+      {% for tag in meta %}
+        <meta name="{{ tag[0] }}" content="{{ tag[1] }}"/>
+      {% endfor %}
+    {% endif %}
+    {% if canonical_url %}
+      <link rel="canonical" href="{{ canonical_url }}" />
+    {% endif %}
   </head>
   <body class="no-js {{ classes }}"
         data-readonly="{{ settings.READ_ONLY|json }}"
