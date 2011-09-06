@@ -9,4 +9,8 @@ urlpatterns = patterns('landings.views',
     url(r'^mobile$', 'mobile', name='home.mobile'),
     url(r'^sync$', 'sync', name='home.sync'),
     url(r'^firefox-home$', 'fxhome', name='home.fxhome'),
+
+    # A static page for downloading FirefoxIntegrityCheck.exe
+    url(r'^download-firefox-integrity-check$', 'integrity_check',
+        name='download.integrity-check'),
 )

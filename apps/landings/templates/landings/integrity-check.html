@@ -1,0 +1,25 @@
+{# vim: set ts=2 et sts=2 sw=2: #}
+{% extends "base.html" %}
+{% set title = 'Download Firefox Integrity Check' %}
+{% set styles = ('wiki',) %}
+
+{% block content %}
+  <article id="wiki-doc" class="main">
+    <h1 class="title">{{ title }}</h1>
+    <section id="doc-content">
+    <p>This program will check for problems with your Firefox installation and recommend actions you can take to fix them. No personal information will be sent to Mozilla by this program.</p>
+    <a href="http://www.mozilla.org/en-US/legal/privacy/firefox.html">Privacy Policy</a> 
+    <p>
+      Security Reminder:
+      <ul>
+        <li>Mozilla will only provide diagnostic programs directly from an official mozilla.com website, such as support.mozilla.com.</li>
+        <li>Mozilla will never send email messages with attached programs or files or ask you for any sensitive information such as passwords.</li>
+      </ul>
+    </p>
+    <a href="/media/downloads/FirefoxIntegrityCheck.exe" class="btn">{{ title }}</a>
+    </section>
+  </article>
+{% endblock %}
+
+{% block breadcrumbs %}
+{% endblock %}
