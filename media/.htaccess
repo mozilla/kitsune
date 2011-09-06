@@ -1,5 +1,6 @@
 # Neither Firefox nor Safari will draw these if they're text/xml
 AddType image/svg+xml .svg
+AddType application/octet-stream .exe
 
 # Set far-future Expires headers for static media
 ExpiresActive on
@@ -17,6 +18,7 @@ ExpiresByType video/ogg "access plus 1 week"
 ExpiresByType video/x-flv "access plus 1 week"
 ExpiresByType application/x-shockwave-flash "access plus 1 week"
 ExpiresByType text/plain "access plus 0 seconds"
+ExpiresByType application/octet-stream "access plus 0 seconds"
 
 FileETag MTime
 

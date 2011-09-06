@@ -58,6 +58,10 @@ def fxhome(request, template=None):
                         _data(docs, request.locale, 'FxHome'))
 
 
+def integrity_check(request):
+    return jingo.render(request, 'landings/integrity-check.html')
+
+
 def _data(docs, locale, product):
     """Add the documents and showfor data to the context data."""
     data = {}
