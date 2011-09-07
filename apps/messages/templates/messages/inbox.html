@@ -22,7 +22,7 @@
               {{ datetimeformat(message.created) }}
             </span>
             <a class="read" href="{{ url('messages.read', message.id) }}" title="{{ _('Read message') }}">
-              {{ message.message|truncate(length=200) }}
+              {{ message.content_parsed|striptags|truncate(length=200) }}
             </a>
             <a class="delete" href="{{ url('messages.delete', message.id) }}" title="{{ _('Delete message') }}">&#x2716;</a>
           </li>
