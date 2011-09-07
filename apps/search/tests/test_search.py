@@ -310,6 +310,12 @@ class SearchTest(SphinxTestCase):
             response = self.client.get(reverse('search'), qs)
             eq_(total, json.loads(response.content)['total'])
 
+    def test_tags_inherit(self):
+        """Translations inherit tags from their parents."""
+        qs = {'a': 1, 'w': 1, 'format': 'json', 'tags': 'extant'}
+        response = self.client.get(reverse('search', locale='es'), qs)
+        eq_(1, json.loads(response.content)['total'])
+
     def test_products(self):
         """Search for products."""
         qs = {'a': 1, 'w': 1, 'format': 'json'}
@@ -324,6 +330,12 @@ class SearchTest(SphinxTestCase):
             qs.update({'product': prod})
             response = self.client.get(reverse('search'), qs)
             eq_(total, json.loads(response.content)['total'])
+
+    def test_products_inherit(self):
+        """Translations inherit products from their parents."""
+        qs = {'a': 1, 'w': 1, 'format': 'json', 'product': 'desktop'}
+        response = self.client.get(reverse('search', locale='fr'), qs)
+        eq_(1, json.loads(response.content)['total'])
 
     def test_unicode_excerpt(self):
         """Unicode characters in the excerpt should not be a problem."""
