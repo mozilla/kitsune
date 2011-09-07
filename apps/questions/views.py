@@ -311,6 +311,8 @@ def new_question(request, template=None):
                      else 'questions/confirm_email.html')
         return jingo.render(request, confirm_t,
                             {'question': question})
+    else:
+        statsd.incr('questions.aaq.details-form-error')
 
     statsd.incr('questions.aaq.details-form-error')
     return jingo.render(request, template,
