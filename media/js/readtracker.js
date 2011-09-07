@@ -28,34 +28,8 @@ var duration = 0,
     trackUrl = $('body').data('track-url'),
     trackId = $.now(),
     urlParams = k.getQueryParamsAsDict(),
-    referrer = getReferrer(),
-    query = getSearchQuery();
-
-function getReferrer() {
-    /*
-    Get the referrer to the current page. Returns:
-    - 'search' - if current url has as=s
-    - 'inproduct' - if current url has as=u
-    - actual referrer URL - if none of the above
-    */
-    if (urlParams['as'] === 's') {
-        return 'search';
-    } else if (urlParams['as'] === 'u') {
-        return 'inproduct';
-    } else {
-        return document.referrer;
-    }
-}
-
-function getSearchQuery() {
-    // If the referrer is a search page, return the search keywords.
-    if (referrer === 'search') {
-        return urlParams['s'];
-    } else if (referrer !== 'inproduct') {
-        return k.getQueryParamsAsDict(referrer)['q'] || '';
-    }
-    return '';
-}
+    referrer = k.getReferrer(urlParams),
+    query = k.getSearchQuery(urlParams, referrer);
 
 /*
 startTimer and stopTimer are needed so we can properly handle blur and focus

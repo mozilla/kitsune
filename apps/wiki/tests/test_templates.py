@@ -25,8 +25,8 @@ from wiki.cron import calculate_related_documents
 from wiki.events import (EditDocumentEvent, ReadyRevisionEvent,
                          ReviewableRevisionInLocaleEvent,
                          ApproveRevisionInLocaleEvent)
-from wiki.models import (Document, Revision, HelpfulVote, SIGNIFICANCES,
-                         MEDIUM_SIGNIFICANCE)
+from wiki.models import (Document, Revision, HelpfulVote, HelpfulVoteMetadata,
+                         SIGNIFICANCES, MEDIUM_SIGNIFICANCE)
 from wiki.tasks import send_reviewed_notification
 from wiki.tests import (TestCaseBase, document, revision, new_document_data,
                         translated_revision)
@@ -1746,46 +1746,72 @@ class HelpfulVoteTests(TestCaseBase):
         """Test voting helpful."""
         r = self.document.current_revision
         user_ = User.objects.get(username='rrosario')
+        referrer = 'http://google.com/?q=test'
+        query = 'test'
         self.client.login(username='rrosario', password='testpass')
         response = post(self.client, 'wiki.document_vote',
-                        {'helpful': 'Yes', 'revision_id': r.id},
+                        {'helpful': 'Yes', 'revision_id': r.id,
+                         'referrer': referrer, 'query': query},
                         args=[self.document.slug])
         eq_(200, response.status_code)
         votes = HelpfulVote.objects.filter(revision=r, creator=user_)
         eq_(1, votes.count())
         assert votes[0].helpful
+        metadata = HelpfulVoteMetadata.objects.values_list('key', 'value')
+        eq_(2, len(metadata))
+        metadata_dict = dict((k, v) for (k, v) in metadata)
+        eq_(referrer, metadata_dict['referrer'])
+        eq_(query, metadata_dict['query'])
 
     def test_vote_no(self):
         """Test voting not helpful."""
         r = self.document.current_revision
         user_ = User.objects.get(username='rrosario')
+        referrer = 'inproduct'
+        query = ''
         self.client.login(username='rrosario', password='testpass')
         response = post(self.client, 'wiki.document_vote',
-                        {'not-helpful': 'No', 'revision_id': r.id},
+                        {'not-helpful': 'No', 'revision_id': r.id,
+                         'referrer': referrer, 'query': query},
                         args=[self.document.slug])
         eq_(200, response.status_code)
         votes = HelpfulVote.objects.filter(revision=r, creator=user_)
         eq_(1, votes.count())
         assert not votes[0].helpful
+        metadata = HelpfulVoteMetadata.objects.values_list('key', 'value')
+        eq_(1, len(metadata))
+        metadata_dict = dict((k, v) for (k, v) in metadata)
+        eq_(referrer, metadata_dict['referrer'])
 
     def test_vote_anonymous(self):
         """Test that voting works for anonymous user."""
         r = self.document.current_revision
+        referrer = 'search'
+        query = 'cookies'
         response = post(self.client, 'wiki.document_vote',
-                        {'helpful': 'Yes', 'revision_id': r.id},
+                        {'helpful': 'Yes', 'revision_id': r.id,
+                         'referrer': referrer, 'query': query},
                         args=[self.document.slug])
         eq_(200, response.status_code)
         votes = HelpfulVote.objects.filter(revision=r, creator=None)
         votes = votes.exclude(anonymous_id=None)
         eq_(1, votes.count())
         assert votes[0].helpful
+        metadata = HelpfulVoteMetadata.objects.values_list('key', 'value')
+        eq_(2, len(metadata))
+        metadata_dict = dict((k, v) for (k, v) in metadata)
+        eq_(referrer, metadata_dict['referrer'])
+        eq_(query, metadata_dict['query'])
 
     def test_vote_ajax(self):
         """Test voting via ajax."""
         r = self.document.current_revision
+        referrer = ''
+        query = ''
         url = reverse('wiki.document_vote', args=[self.document.slug])
         response = self.client.post(
-            url, data={'helpful': 'Yes', 'revision_id': r.id},
+            url, data={'helpful': 'Yes', 'revision_id': r.id,
+                       'referrer': referrer, 'query': query},
             HTTP_X_REQUESTED_WITH='XMLHttpRequest')
         eq_(200, response.status_code)
         eq_('{"message": "Glad to hear it &mdash; thanks for the feedback!"}',
@@ -1794,6 +1820,8 @@ class HelpfulVoteTests(TestCaseBase):
         votes = votes.exclude(anonymous_id=None)
         eq_(1, votes.count())
         assert votes[0].helpful
+        metadata = HelpfulVoteMetadata.objects.values_list('key', 'value')
+        eq_(0, len(metadata))
 
     def test_helpfulvotes_graph_async_yes(self):
         r = self.document.current_revision

@@ -706,6 +706,12 @@ def helpful_vote(request, document_slug):
 
         vote.save()
         statsd.incr('wiki.vote')
+
+        # Save vote metadata: referrer and search query (if available)
+        for name in ['referrer', 'query']:
+            val = request.POST.get(name)
+            if val:
+                vote.add_metadata(name, val)
     else:
         message = _('You already voted on this Article.')
 

@@ -14,6 +14,7 @@
 
         if ($body.is('.document')) {  // Document page
             ShowFor.initForTags();
+            addReferrerAndQueryToVoteForm();
             new k.AjaxVote('#helpful-vote form', {
                 positionMessage: true
             });
@@ -399,6 +400,18 @@
                 });
             }
         });
+    }
+
+    function addReferrerAndQueryToVoteForm() {
+        // Add the source/referrer and query terms to the helpful vote form
+        var urlParams = k.getQueryParamsAsDict(),
+            referrer = k.getReferrer(urlParams),
+            query = k.getSearchQuery(urlParams, referrer);
+        $('#helpful-vote form')
+            .append($('<input type="hidden" name="referrer"/>')
+                .attr('value', referrer))
+            .append($('<input type="hidden" name="query"/>')
+                .attr('value', query));
     }
 
     $(document).ready(init);
