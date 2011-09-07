@@ -796,6 +796,16 @@ class HelpfulVote(ModelBase):
     anonymous_id = models.CharField(max_length=40, db_index=True)
     user_agent = models.CharField(max_length=1000)
 
+    def add_metadata(self, key, value):
+        HelpfulVoteMetadata.objects.create(vote=self, key=key, value=value)
+
+
+class HelpfulVoteMetadata(ModelBase):
+    """Metadata for article votes."""
+    vote = models.ForeignKey(HelpfulVote)
+    key = models.CharField(max_length=40, db_index=True)
+    value = models.CharField(max_length=1000)
+
 
 class ImportantDate(ModelBase):
     """Important date that shows up globally on metrics graphs."""

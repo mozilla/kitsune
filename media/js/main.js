@@ -30,6 +30,33 @@ k = {};
         return urlParams;
     }
 
+    k.getReferrer = function(urlParams) {
+        /*
+        Get the referrer to the current page. Returns:
+        - 'search' - if current url has as=s
+        - 'inproduct' - if current url has as=u
+        - actual referrer URL - if none of the above
+        */
+        if (urlParams['as'] === 's') {
+            return 'search';
+        } else if (urlParams['as'] === 'u') {
+            return 'inproduct';
+        } else {
+            return document.referrer;
+        }
+    }
+
+    k.getSearchQuery = function(urlParams, referrer) {
+        // If the referrer is a search page, return the search keywords.
+        if (referrer === 'search') {
+            return urlParams['s'];
+        } else if (referrer !== 'inproduct') {
+            return k.getQueryParamsAsDict(referrer)['q'] || '';
+        }
+        return '';
+    }
+
+
     // Pass CSRF token in XHR header
     $.ajaxSetup({
         beforeSend: function(xhr, settings) {
