@@ -28,7 +28,7 @@
               {{ datetimeformat(message.created) }}
             </span>
             <a class="read" href="{{ url('messages.read_outbox', message.id) }}">
-              {{ message.message|truncate(length=200) }}
+              {{ message.content_parsed|striptags|truncate(length=200) }}
             </a>
             <a class="delete" href="{{ url('messages.delete_outbox', message.id) }}" title="{{ _('Delete message') }}">&#x2716;</a>
           </li>
