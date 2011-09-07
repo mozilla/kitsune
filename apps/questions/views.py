@@ -179,6 +179,12 @@ def new_question(request, template=None):
         deadend = product.get('deadend', False) if product else False
         html = product.get('html') if product else None
         articles = None
+        if product:
+            # User is on the select category step
+            statsd.incr('questions.aaq.select-category')
+        else:
+            # User is on the select product step
+            statsd.incr('questions.aaq.select-product')
 
     login_t = ('questions/mobile/new_question_login.html' if request.MOBILE
                else 'questions/new_question_login.html')
@@ -196,10 +202,15 @@ def new_question(request, template=None):
         else:
             results = []
             tried_search = False
+            if category:
+                # User is on the "Ask This" step
+                statsd.incr('questions.aaq.search-form')
 
         if request.GET.get('showform'):
             # Before we show the form, make sure the user is auth'd:
             if not request.user.is_authenticated():
+                # User is on the login or register Step
+                statsd.incr('questions.aaq.login-or-register')
                 login_form = AuthenticationForm()
                 register_form = RegisterForm()
                 return jingo.render(request, login_t,
@@ -210,8 +221,13 @@ def new_question(request, template=None):
             form = NewQuestionForm(product=product,
                                    category=category,
                                    initial={'title': search})
+            # User is on the question details step
+            statsd.incr('questions.aaq.details-form')
         else:
             form = None
+            if search:
+                # User is on the article and questions suggestions step
+                statsd.incr('questions.aaq.suggestions')
 
         return jingo.render(request, template,
                             {'form': form,
@@ -268,6 +284,7 @@ def new_question(request, template=None):
                             title=form.cleaned_data['title'],
                             content=form.cleaned_data['content'])
         question.save()
+        # User successfully submitted a new question
         statsd.incr('questions.new')
         question.add_metadata(**form.cleaned_metadata)
         if product:
@@ -294,6 +311,8 @@ def new_question(request, template=None):
                      else 'questions/confirm_email.html')
         return jingo.render(request, confirm_t,
                             {'question': question})
+    else:
+        statsd.incr('questions.aaq.details-form-error')
 
     return jingo.render(request, template,
                         {'form': form, 'products': products,
