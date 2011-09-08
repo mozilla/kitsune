@@ -33,6 +33,7 @@ class SendMessageTestCase(TestCase):
         eq_('Your message was sent!',
             pq(response.content)('ul.user-messages').text())
         eq_(1, OutboxMessage.objects.filter(sender=self.user1).count())
+        return response
 
     def test_send_message_to_one(self):
         self._test_send_message_to(self.user2.username)
@@ -54,3 +55,8 @@ class SendMessageTestCase(TestCase):
         eq_(200, response.status_code)
         eq_(self.user2.username,
             pq(response.content)('#id_to')[0].attrib['value'])
+
+    def test_no_markup_in_message_list(self):
+        response = self._test_send_message_to(self.user2.username)
+        eq_(pq(response.content)('read').text(),
+            pq(response.content)('read').html())
