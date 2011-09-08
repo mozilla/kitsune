@@ -16,6 +16,9 @@
         {% if request.locale == default_language %}
           <li><a href="{{ url('questions.questions') }}">{{ _('Support Forum') }}</a></li>
         {% endif %}
+        {% if user.has_perm('flagit.can_moderate') %}
+          <li><a href="{{ url('flagit.queue') }}">{{ _('Moderate Flagged Content') }}</a></li>
+        {% endif %}
       </ul>
     </section>
   {% endif %}
