@@ -533,7 +533,6 @@ details.h2 > summary {
 #revision-list li.rejected *,
 #revision-list li.rejected div.creator {
     color: #999;
-    text-decoration: line-through;
 }
 
 #revision-list li.header * {

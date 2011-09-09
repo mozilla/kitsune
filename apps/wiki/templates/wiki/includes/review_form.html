@@ -7,8 +7,8 @@
     {{ errorlist(form) }}
     <form action="" method="post">
       {{ csrf() }}
-      <input id="btn-approve" type="submit" name="approve" value="{% if document.parent %}{{_('Approve Translation')  }}{% else %}{{ _('Approve Revision') }}{% endif %}">
-      <input id="btn-reject" type="submit" name="reject" value="{% if document.parent %}{{_('Reject Translation')  }}{% else %}{{ _('Reject Revision') }}{% endif %}">
+      <input id="btn-approve" class="btn-important" type="submit" name="approve" value="{% if document.parent %}{{_('Approve Translation')  }}{% else %}{{ _('Approve Revision') }}{% endif %}">
+      <input id="btn-reject" type="submit" name="reject" value="{% if document.parent %}{{_('Defer Translation')  }}{% else %}{{ _('Defer Revision') }}{% endif %}">
       <a href="{{ url('wiki.document_revisions', document.slug) }}">{{ _('Cancel Review') }}</a>
     </form>
 
@@ -53,17 +53,17 @@
       <a class="kbox-cancel" href="{{ url('wiki.document_revisions', document.slug) }}">{{ _('Cancel') }}</a>
     </form>
 
-    <form id="reject-modal" class="kbox" action="" method="post" data-title="{% if document.parent %}{{ _('Reject this Translation') }}{% else %}{{ _('Reject this Revision') }}{% endif %}" data-modal="true" data-target="#btn-reject">
+    <form id="reject-modal" class="kbox" action="" method="post" data-title="{% if document.parent %}{{ _('Defer this Translation') }}{% else %}{{ _('Defer this Revision') }}{% endif %}" data-modal="true" data-target="#btn-reject">
       {{ csrf() }}
       <p>
         {% trans %}Thanks for taking the time to review these changes. Please consider leaving a
-        message for the person who submitted them explaining why they were rejected.{% endtrans %}
+        message for the person who submitted them explaining why they were deferred.{% endtrans %}
       </p>
       <div class="message">
         <label for="id-reject-comment">{{ _('Leave a message for the contributor: <span class="optional">(optional)</span>')|safe }}</label>
         <textarea id="id-reject-comment" name="comment">{% if form.initial %}{{ form.initial.comment }}{% else %}{{ form.comment.data }}{% endif %}</textarea>
       </div>
-      <input type="submit" name="reject" value="{{ _('Reject') }}">
+      <input type="submit" name="reject" value="{{ _('Defer') }}">
       <a class="kbox-cancel" href="{{ url('wiki.document_revisions', document.slug) }}">{{ _('Cancel') }}</a>
     </form>
   </div>

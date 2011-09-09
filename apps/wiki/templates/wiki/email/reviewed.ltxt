@@ -3,7 +3,7 @@
 {% blocktrans %}{{ reviewer }} has approved your revision to the document
 {{ document_title }}.{% endblocktrans %}
 {% else %}
-{% blocktrans %}{{ reviewer }} has rejected your revision to the document
+{% blocktrans %}{{ reviewer }} has reviewed your revision to the document
 {{ document_title }}.{% endblocktrans %}
 {% endif %}
 {% blocktrans %}Message from the reviewer:
