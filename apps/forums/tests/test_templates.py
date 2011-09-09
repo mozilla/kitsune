@@ -144,6 +144,17 @@ class PostsTemplateTests(ForumTestCase):
         response = get(self.client, 'forums.posts', args=[f.slug, t.pk])
         self.assertNotContains(response, 'thread-reply')
 
+    def test_links_nofollow(self):
+        """Links posted should have rel=nofollow."""
+        f = Forum.objects.filter()[0]
+        t = f.thread_set.all()[0]
+        p = t.post_set.all()[0]
+        p.content = 'linking http://test.org'
+        p.save()
+        response = get(self.client, 'forums.posts', args=[f.slug, t.pk])
+        doc = pq(response.content)
+        eq_('nofollow', doc('ol.posts div.content a')[0].attrib['rel'])
+
 
 class ThreadsTemplateTests(ForumTestCase):
 

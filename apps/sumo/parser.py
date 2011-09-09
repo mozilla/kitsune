@@ -36,7 +36,7 @@ IMAGE_PARAM_VALUES = {
 
 
 def wiki_to_html(wiki_markup, locale=settings.WIKI_DEFAULT_LANGUAGE,
-                 nofollow=False):
+                 nofollow=True):
     """Wiki Markup -> HTML"""
     return WikiParser().parse(wiki_markup, show_toc=False, locale=locale,
                               nofollow=nofollow)

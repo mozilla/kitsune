@@ -319,6 +319,15 @@ class DocumentTests(TestCaseBase):
         doc = pq(response.content)
         eq_('noindex', doc('meta[name=robots]')[0].attrib['content'])
 
+    def test_links_follow(self):
+        """Links in kb should not have rel=nofollow"""
+        r = revision(save=True, content='Some link http://test.com',
+                     is_approved=True)
+        response = self.client.get(r.document.get_absolute_url())
+        eq_(200, response.status_code)
+        doc = pq(response.content)
+        assert 'rel' not in doc('#doc-content a')[0].attrib
+
 
 class RevisionTests(TestCaseBase):
     """Tests for the Revision template"""

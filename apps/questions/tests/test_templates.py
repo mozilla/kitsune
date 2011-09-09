@@ -648,6 +648,20 @@ class AnswersTemplateTestCase(TestCaseBase):
                         args=[self.question.id])
         eq_(200, response.status_code)
 
+    def test_links_nofollow(self):
+        """Links posted in questions and answers should have rel=nofollow."""
+        q = self.question
+        q.content = 'lorem http://ipsum.com'
+        q.save()
+        a = self.answer
+        a.content = 'testing http://example.com'
+        a.save()
+        response = get(self.client, 'questions.answers',
+                       args=[self.question.id])
+        doc = pq(response.content)
+        eq_('nofollow', doc('#question div.content a')[0].attrib['rel'])
+        eq_('nofollow', doc('li.answer div.content a')[0].attrib['rel'])
+
 
 class TaggedQuestionsTestCase(TaggingTestCaseBase):
     """Questions/answers template tests that require tagged questions."""
