@@ -121,6 +121,17 @@ class PostsTemplateTests(KBForumTestCase):
                         {'watch': 'no'}, args=[t.document.slug, t.id])
         self.assertNotContains(response, 'Watching')
 
+    def test_links_nofollow(self):
+        """Links posted should have rel=nofollow."""
+        t = Thread.objects.filter()[0]
+        p = t.post_set.all()[0]
+        p.content = 'linking http://test.org'
+        p.save()
+        response = get(self.client, 'wiki.discuss.posts',
+                       args=[t.document.slug, t.pk])
+        doc = pq(response.content)
+        eq_('nofollow', doc('ol.posts div.content a')[0].attrib['rel'])
+
 
 class ThreadsTemplateTests(KBForumTestCase):
 
@@ -225,7 +236,8 @@ class ThreadsTemplateTests(KBForumTestCase):
         r = revision(document=document(locale='de', save=True),
                      is_approved=True, save=True)
         response = self.client.get(
-            reverse('wiki.discuss.threads', args=[r.document.slug], locale='de'))
+            reverse('wiki.discuss.threads', args=[r.document.slug],
+                    locale='de'))
         eq_(200, response.status_code)
 
 

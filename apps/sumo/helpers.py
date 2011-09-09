@@ -88,7 +88,7 @@ def urlparams(url_, hash=None, query_dict=None, **query):
 
 @register.filter
 def wiki_to_html(wiki_markup, locale=settings.WIKI_DEFAULT_LANGUAGE,
-                 nofollow=False):
+                 nofollow=True):
     """Wiki Markup -> HTML jinja2.Markup object"""
     return jinja2.Markup(sumo.parser.wiki_to_html(wiki_markup, locale=locale,
                                                   nofollow=nofollow))
