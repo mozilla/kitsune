@@ -87,7 +87,7 @@ class ReviewTests(TestCaseBase):
         self._review_revision(is_approved=False)
         eq_(1, len(mail.outbox))  # 1 mail to creator
         assert mail.outbox[0].subject.startswith(
-            'Your revision has been rejected')
+            'Your revision has been reviewed')
 
     def test_user_watching_both(self):
         """If a single person is watching ready and approved revisions and a

@@ -37,7 +37,7 @@ def send_reviewed_notification(revision, document, message):
     if revision.is_approved:
         subject = _(u'Your revision has been approved: {title}')
     else:
-        subject = _(u'Your revision has been rejected: {title}')
+        subject = _(u'Your revision has been reviewed: {title}')
     subject = subject.format(title=document.title)
     t = loader.get_template('wiki/email/reviewed.ltxt')
     url = reverse('wiki.document_revisions', locale=document.locale,
