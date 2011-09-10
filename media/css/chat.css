@@ -40,3 +40,21 @@ article#chat ul {
     line-height: 170%;
     margin-top: 9px;
 }
+
+#chatbox span.user {
+    font-weight: bold;
+}
+
+#chatbox .say span.user:after {
+    content: ": ";
+}
+
+#chatbox div {
+    margin: .2em 0;
+}
+
+#chatbox .join,
+#chatbox .leave {
+    color: #666;
+    text-align: center;
+}

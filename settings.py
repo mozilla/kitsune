@@ -120,7 +120,7 @@ ADMIN_MEDIA_PREFIX = '/admin-media/'
 
 # Paths that don't require a locale prefix.
 SUPPORTED_NONLOCALES = ('media', 'admin', 'robots.txt', 'services', '1',
-                        'postcrash', 'wafflejs')
+                        'postcrash', 'wafflejs', 'socket.io')
 
 # Make this unique, and don't share it with anybody.
 SECRET_KEY = '#%tc(zja8j01!r#h_y)=hy!^k)9az74k+-ib&ij&+**s3-e^_z'
@@ -481,6 +481,7 @@ MINIFY_BUNDLES = {
             'js/users.js',
         ),
         'chat': (
+            'js/libs/socket.io.js',
             'js/chat.js',
         ),
         'users': (
@@ -690,6 +691,8 @@ TIDINGS_REVERSE = 'sumo.urlresolvers.reverse'
 # URL of the chat server.
 CHAT_SERVER = 'https://chat-support.mozilla.com:9091'
 CHAT_CACHE_KEY = 'sumo-chat-queue-status'
+# New settings for Python implementation of chat:
+CHAT_PORT = 3000
 
 WEBTRENDS_WIKI_REPORT_URL = 'https://example.com/see_production.rst'
 WEBTRENDS_USER = r'someaccount\someusername'
