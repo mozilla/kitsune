@@ -30,10 +30,22 @@ following things (in addition to Git, of course).
 
 * ``zlib`` and headers.
 
+* `Redis <http://redis.io>`_
+
 * Several Python packages. See `Installing the Packages`_.
 
 Installation for these is very system dependent. Using a package manager, like
 yum, aptitude, or brew, is encouraged.
+
+
+.. Note::
+
+   Make sure you have ``python26`` in your path.  If not, create a
+   symbollic link for it::
+
+       ln -s /usr/bin/python /usr/bin/python26
+
+   Or something along those lines depending on how your system is set up.
 
 
 Additional Requirements
@@ -94,13 +106,27 @@ this::
 Configuration
 =============
 
-Start by creating a file named ``settings_local.py``, and putting this line in
-it::
+Start by creating a file named ``settings_local.py`` in the kitsune
+directory, and putting this line in it::
 
     from settings import *
 
 Now you can copy and modify any settings from ``settings.py`` into
 ``settings_local.py`` and the value will override the default.
+
+
+Redis
+-----
+
+You need to copy the ``REDIS_BACKEND`` and ``REDIS_TEST_BACKEND``
+sections from ``settings.py`` into your ``settings_local.py``.  After
+doing that, uncomment the three lines in each section.
+
+There are three ``.conf`` files in ``config/redis/`` each
+corresponding to a different redis server configuration.  You need to
+run all three redis servers.
+
+The three conf files need to match the settings in ``settings_local.py``.
 
 
 Database
@@ -161,6 +187,45 @@ files containing historical Firefox version data and write them within its
 package directory. To set this up, run this command to do the initial fetch::
 
     $ ./manage.py update_product_details
+
+
+Running redis
+-------------
+
+You'll need to run three redis servers--one for each configuration.
+
+I (Will) put that in a script that creates the needed directories in
+``/var/redis/`` and kicks off the three redis servers::
+
+    #!/bin/bash
+
+    set -e
+
+    # Adjust these according to your setup!
+    REDISBIN=/usr/bin/redis-server
+    CONFFILE=/path/to/conf/files/
+
+    if test ! -e /var/redis/sumo/
+    then
+        echo "creating /var/redis/sumo/"
+        mkdir -p /var/redis/sumo/
+    fi
+
+    if test ! -e /var/redis/sumo-test/
+    then
+        echo "creating /var/redis/sumo-test/"
+        mkdir -p /var/redis/sumo-test/
+    fi
+
+    if test ! -e /var/redis/sumo-persistent/
+    then
+        echo "creating /var/redis/sumo-persistent/"
+        mkdir -p /var/redis/sumo-persistent/
+    fi
+
+    $REDISBIN $CONFFILE/redis-persistent.conf
+    $REDISBIN $CONFFILE/redis-test.conf
+    $REDISBIN $CONFFILE/redis-volatile.conf
 
 
 Testing it Out
