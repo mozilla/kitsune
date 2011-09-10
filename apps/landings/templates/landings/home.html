@@ -17,7 +17,7 @@
 
 {% block footer_script %}
   {# Ethnio tracking - see bugs 683643 and 673544 #}
-  {% if waffle.flag('ethnio') %}
+  {% if waffle.flag('ethnio-home') %}
     <script type="text/javascript" language="javascript" src="//ethn.io/remotes/24561" async="true"></script>
   {% endif %}
   {# End Ethnio #}
