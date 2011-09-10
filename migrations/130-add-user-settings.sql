@@ -1,3 +1,6 @@
+-- SKIP MIGRATION TESTS
+-- This was passed before noticing that utf8 was not set. The next migration fixes it.
+
 CREATE TABLE `users_setting` (
     `id` integer AUTO_INCREMENT NOT NULL PRIMARY KEY,
     `user_id` integer NOT NULL,

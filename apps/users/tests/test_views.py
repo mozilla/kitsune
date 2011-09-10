@@ -388,10 +388,8 @@ class UserSettingsTests(TestCase):
         self.p = profile(self.user)
         self.client.login(username=self.user.username, password='testpass')
 
-    @mock.patch.object(waffle, 'flag_is_active')
-    def test_create_setting(self, flag_is_active):
-        flag_is_active.return_value = True
-        """Verify that a user's Setting is being created"""
+    def test_create_setting(self):
+        waffle.models.Flag.objects.create(name='user-settings', everyone=True)
         url = reverse('users.edit_settings', locale='en-US')
         eq_(Setting.objects.filter(user=self.user).count(), 0)  # No settings
         res = self.client.get(url, follow=True)

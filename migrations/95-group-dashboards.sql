@@ -1,3 +1,5 @@
+-- SKIP MIGRATION TESTS
+
 CREATE TABLE `dashboards_groupdashboard` (
     `id` integer AUTO_INCREMENT NOT NULL PRIMARY KEY,
     `group_id` integer NOT NULL,
