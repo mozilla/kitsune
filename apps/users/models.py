@@ -78,6 +78,37 @@ class Profile(ModelBase):
         return reverse('users.profile', args=[self.user_id])
 
 
+class Setting(ModelBase):
+    """User specific value per setting"""
+    user = models.ForeignKey(User, verbose_name=_lazy(u'User'),
+                             related_name='settings')
+
+    name = models.CharField(max_length=100)
+    value = models.CharField(blank=True, max_length=60,
+                             verbose_name=_lazy(u'Value'))
+
+    class Meta(object):
+        unique_together = (('user', 'name'),)
+
+    def __unicode__(self):
+        return u'%s %s:%s' % (self.user, self.name, self.value or u'[none]')
+
+    @classmethod
+    def get_for_user(cls, user, name):
+        from users.forms import SettingsForm
+        form = SettingsForm()
+        if name not in form.fields.keys():
+            raise KeyError(("'{name}' is not a field in "
+                            "user.forms.SettingsFrom()").format(name=name))
+        try:
+            setting = Setting.objects.get(user=user, name=name)
+        except Setting.DoesNotExist:
+            value = form.fields[name].initial or ''
+            setting = Setting.objects.create(user=user, name=name, value=value)
+        # Cast to the field's Python type.
+        return form.fields[name].to_python(setting.value)
+
+
 # Activation model and manager:
 # (based on http://bitbucket.org/ubernostrum/django-registration)
 class ConfirmationManager(models.Manager):

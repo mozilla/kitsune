@@ -31,6 +31,19 @@ PASSWD_REQUIRED = _lazy(u'Password is required.')
 PASSWD2_REQUIRED = _lazy(u'Please enter your password twice.')
 
 
+class SettingsForm(forms.Form):
+    auto_notify = forms.BooleanField(required=False)
+
+    def save_for_user(self, user):
+        for field in self.fields.keys():
+            value = str(self.cleaned_data[field])
+            setting = user.settings.filter(name=field)
+            update_count = setting.update(value=value)
+            if update_count == 0:
+                # This user didn't have this setting so create it.
+                user.settings.create(name=field, value=value)
+
+
 class RegisterForm(forms.ModelForm):
     """A user registration form that requires unique email addresses.
 

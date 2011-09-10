@@ -14,7 +14,7 @@ from questions.models import Question
 from sumo.tests import TestCase, LocalizingClient, send_mail_raise_smtp
 from sumo.urlresolvers import reverse
 from users import ERROR_SEND_EMAIL
-from users.models import Profile, RegistrationProfile, EmailChange
+from users.models import Profile, RegistrationProfile, EmailChange, Setting
 from users.tests import profile, user
 
 
@@ -378,3 +378,21 @@ class SessionTests(TestCase):
                                      'password': 'testpass'})
         c = res.cookies[settings.SESSION_EXISTS_COOKIE]
         eq_(123, c['max-age'])
+
+
+class UserSettingsTests(TestCase):
+    def setUp(self):
+        self.user = user()
+        self.user.save()
+        self.p = profile(self.user)
+        self.client.login(username=self.user.username, password='testpass')
+
+    def test_create_setting(self):
+        """Verify that a user's Setting is being created"""
+        url = reverse('users.edit_settings', locale='en-US')
+        eq_(Setting.objects.filter(user=self.user).count(), 0)  # No settings
+        res = self.client.get(url, follow=True)
+        eq_(200, res.status_code)
+        res = self.client.post(url, {'auto_notify': True}, follow=True)
+        eq_(200, res.status_code)
+        eq_(Setting.get_for_user(self.user, 'auto_notify'), True)

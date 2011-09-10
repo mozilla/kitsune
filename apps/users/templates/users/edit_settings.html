@@ -1,0 +1,17 @@
+{% extends "users/base.html" %}
+{% set title = _('Edit Settings') %}
+{% set classes = 'settings' %}
+{% set active = 'edit-settings' %}
+
+{% block content %}
+  <article id="edit-settings" class="main">
+    <h1>{{ title }}</h1>
+    <form method="post" action="">
+      {{ csrf() }}
+      {{ form }}
+      <div class="submit">
+        <input type="submit" value="{{ _('Update') }}" />
+      </div>
+    </form>
+  </article>
+{% endblock %}
