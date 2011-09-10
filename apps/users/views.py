@@ -1,4 +1,5 @@
 import os
+from ast import literal_eval
 
 from django.conf import settings
 from django.contrib import auth, messages
@@ -11,6 +12,7 @@ from django.shortcuts import get_object_or_404
 from django.utils.http import base36_to_int
 
 import jingo
+import waffle.decorators
 from session_csrf import anonymous_csrf
 from statsd import statsd
 from tidings.tasks import claim_watches
@@ -25,8 +27,9 @@ from upload.tasks import _create_image_thumbnail
 from users.backends import Sha256Backend  # Monkey patch User.set_password.
 from users.forms import (ProfileForm, AvatarForm, EmailConfirmationForm,
                          AuthenticationForm, EmailChangeForm, SetPasswordForm,
-                         PasswordChangeForm)
-from users.models import Profile, RegistrationProfile, EmailChange
+                         PasswordChangeForm, SettingsForm)
+from users.models import (Profile, RegistrationProfile,
+                          EmailChange)
 from users.utils import (handle_login, handle_register,
                          try_send_email_with_form)
 
@@ -192,6 +195,39 @@ def profile(request, user_id):
     groups = user_profile.user.groups.all()
     return jingo.render(request, 'users/profile.html',
                         {'profile': user_profile, 'groups': groups})
+
+
+@login_required
+@require_http_methods(['GET', 'POST'])
+@waffle.decorators.waffle_flag('user-settings')
+def edit_settings(request):
+    """Edit user settings"""
+    if request.method == 'POST':
+        form = SettingsForm(request.POST)
+        if form.is_valid():
+            form.save_for_user(request.user)
+            messages.add_message(request, messages.INFO,
+                                 _(u'Your settings have been saved.'))
+            return HttpResponseRedirect(reverse('users.edit_settings'))
+        # Invalid form
+        return jingo.render(request, 'users/edit_settings.html',
+                        {'form': form})
+
+    # Pass the current user's settings as the initial values.
+    values = request.user.settings.values()
+    initial = dict()
+    for v in values:
+        try:
+            # Uses ast.literal_eval to convert 'False' => False etc.
+            # TODO: Make more resilient.
+            initial[v['name']] = literal_eval(v['value'])
+        except (SyntaxError, ValueError):
+            # Attempted to convert the string value to a Python value
+            # but failed so leave it a string.
+            initial[v['name']] = v['value']
+    form = SettingsForm(initial=initial)
+    return jingo.render(request, 'users/edit_settings.html',
+                        {'form': form})
 
 
 @login_required

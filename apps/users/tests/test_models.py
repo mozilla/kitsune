@@ -8,7 +8,8 @@ import mock
 from nose.tools import eq_
 
 from sumo.tests import TestCase
-from users.models import RegistrationProfile
+from users.models import RegistrationProfile, Setting
+from users.forms import SettingsForm
 from users.tests import profile
 
 
@@ -60,3 +61,15 @@ class RegistrationProfileTests(TestCase):
         assert mail_admins.called
         eq_('User activation failure (key expired)',
             mail_admins.call_args[0][0])
+
+
+class UserSettingsTests(TestCase):
+    fixtures = ['users.json']
+
+    def test_non_existant_setting(self):
+        user = User.objects.all()[0]
+        form = SettingsForm()
+        bad_setting = 'doesnt_exist'
+        assert bad_setting not in form.fields.keys()
+        with self.assertRaises(KeyError):
+            Setting.get_for_user(user, bad_setting)

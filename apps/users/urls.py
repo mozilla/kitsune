@@ -30,6 +30,7 @@ users_patterns = patterns('',
     url(r'^/activate/(?P<user_id>\d+)/(?P<activation_key>\w+)$',
         views.activate, name='users.activate'),
     url(r'^/edit$', views.edit_profile, name='users.edit_profile'),
+    url(r'^/settings$', views.edit_settings, name='users.edit_settings'),
     url(r'^/avatar$', views.edit_avatar, name='users.edit_avatar'),
     url(r'^/avatar/delete$', views.delete_avatar, name='users.delete_avatar'),
 
