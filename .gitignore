@@ -12,3 +12,4 @@ build.py
 media/uploads
 tmp
 locale
+docs/_build
