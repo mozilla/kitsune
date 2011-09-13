@@ -49,6 +49,8 @@ class Question(ModelBase, BigVocabTaggableMixin):
     images = generic.GenericRelation(ImageAttachment)
     flags = generic.GenericRelation(FlaggedObject)
 
+    html_cache_key = u'question:html:%s'
+
     class Meta:
         ordering = ['-updated']
         permissions = (
@@ -63,19 +65,24 @@ class Question(ModelBase, BigVocabTaggableMixin):
 
     @property
     def content_parsed(self):
-        cache_key = u'question:html:%s' % self.id
+        cache_key = self.html_cache_key % self.id
         html = cache.get(cache_key)
-        if not html:
+        if html is None:
             html = wiki_to_html(self.content)
             cache.add(cache_key, html)
         return html
+
+    def clear_cached_properties(self):
+        cache.delete(self.html_cache_key % self.id)
 
     def save(self, no_update=False, *args, **kwargs):
         """Override save method to take care of updated."""
         new = not self.id
 
-        if not new and not no_update:
-            self.updated = datetime.now()
+        if not new:
+            self.clear_cached_properties()
+            if not no_update:
+                self.updated = datetime.now()
 
         super(Question, self).save(*args, **kwargs)
 
@@ -259,6 +266,8 @@ class Answer(ActionMixin, ModelBase):
     images = generic.GenericRelation(ImageAttachment)
     flags = generic.GenericRelation(FlaggedObject)
 
+    html_cache_key = u'answer:html:%s'
+
     class Meta:
         ordering = ['created']
 
@@ -267,12 +276,15 @@ class Answer(ActionMixin, ModelBase):
 
     @property
     def content_parsed(self):
-        cache_key = u'answer:html:%s' % self.id
+        cache_key = self.html_cache_key % self.id
         html = cache.get(cache_key)
         if not html:
             html = wiki_to_html(self.content)
             cache.add(cache_key, html)
         return html
+
+    def clear_cached_properties(self):
+        cache.delete(self.html_cache_key % self.id)
 
     def save(self, no_update=False, no_notify=False, *args, **kwargs):
         """
@@ -287,6 +299,7 @@ class Answer(ActionMixin, ModelBase):
             self.page = page
         else:
             self.updated = datetime.now()
+            self.clear_cached_properties()
 
         super(Answer, self).save(*args, **kwargs)
 
