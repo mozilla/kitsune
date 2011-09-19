@@ -118,4 +118,6 @@ def _add_recipients(msg):
     msg.recipients = msg.to.count()
     if msg.recipients == 1:
         msg.recipient = msg.to.all()[0]
+    else:
+        msg.recipient = None
     return msg

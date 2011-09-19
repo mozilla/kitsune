@@ -1,10 +1,8 @@
-import mock
 from multidb.middleware import PINNING_COOKIE
 from nose.tools import eq_
-import waffle.decorators
 
 from messages.models import InboxMessage, OutboxMessage
-from sumo.tests import TestCase
+from sumo.tests import TestCase, LocalizingClient
 from sumo.urlresolvers import reverse
 from users.tests import user
 
@@ -40,9 +38,9 @@ class ReadMessageTests(TestCase):
         i = InboxMessage.objects.create(sender=self.user2, to=self.user1,
                                         message='foo')
         assert not i.replied
-        resp = self.client.post(reverse('messages.new', locale='en-US'),
-                                {'to': self.user2.username, 'message': 'bar',
-                                 'in_reply_to': i.pk})
+        self.client.post(reverse('messages.new', locale='en-US'),
+                         {'to': self.user2.username, 'message': 'bar',
+                          'in_reply_to': i.pk})
         assert InboxMessage.uncached.get(pk=i.pk).replied
 
 
@@ -70,3 +68,15 @@ class DeleteMessageTests(TestCase):
                                         locale='en-US'), follow=True)
         eq_(200, resp.status_code)
         eq_(0, OutboxMessage.uncached.count())
+
+
+class OutboxTests(TestCase):
+    client_class = LocalizingClient
+
+    def test_message_without_recipients(self):
+        self.user1 = user(save=True)
+        self.client.login(username=self.user1.username, password='testpass')
+        OutboxMessage.objects.create(sender=self.user1, message='foo')
+        eq_(1, OutboxMessage.objects.count())
+        resp = self.client.post(reverse('messages.outbox'), follow=True)
+        eq_(200, resp.status_code)
