@@ -101,6 +101,15 @@ SITE_ID = 1
 USE_I18N = True
 USE_L10N = True
 
+DB_LOCALIZE = {
+    'karma': {
+        'Title': {
+            'attrs': ['name'],
+            'comments': ['This is a karma title.'],
+        }
+    },
+}
+
 # Use the real robots.txt?
 ENGAGE_ROBOTS = False
 
@@ -264,6 +273,7 @@ INSTALLED_APPS = (
 )
 
 TEST_RUNNER = 'test_utils.runner.RadicalTestSuiteRunner'
+
 
 def JINJA_CONFIG():
     import jinja2
