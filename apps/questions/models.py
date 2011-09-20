@@ -10,11 +10,13 @@ from django.db.models.signals import post_save
 from product_details import product_details
 from redis.exceptions import ConnectionError
 from taggit.models import Tag
+import waffle
 
 from activity.models import ActionMixin
 from flagit.models import FlaggedObject
 from karma.actions import KarmaAction
 import questions as constants
+from questions.karma_actions import AnswerAction, SolutionAction
 from questions.question_config import products
 from questions.tasks import (update_question_votes, update_answer_pages,
                              log_answer)
@@ -325,13 +327,28 @@ class Answer(ActionMixin, ModelBase):
 
     @property
     def creator_num_answers(self):
+        # If karma is enabled, try to use the karma backend (redis) to get
+        # the number of answers. Fallback to database.
+        if waffle.switch_is_active('karma'):
+            try:
+                return KarmaAction.objects.total_count(
+                    AnswerAction, self.creator)
+            except ConnectionError:
+                pass
         return Answer.objects.filter(creator=self.creator).count()
 
     @property
     def creator_num_solutions(self):
+        # If karma is enabled, try to use the karma backend (redis) to get
+        # the number of solutions. Fallback to database.
+        if waffle.switch_is_active('karma'):
+            try:
+                return KarmaAction.objects.total_count(
+                    SolutionAction, self.creator)
+            except ConnectionError:
+                pass
         return Question.objects.filter(
-                    solution__in=Answer.objects.filter(
-                                    creator=self.creator)).count()
+            solution__in=Answer.objects.filter(creator=self.creator)).count()
 
     @property
     def creator_num_points(self):
