@@ -277,6 +277,15 @@ class Readout(object):
         """
         return ' LIMIT %i' % max if max else ''
 
+    def get_absolute_url(self, locale):
+        if self.slug in L10N_READOUTS:
+            return reverse('dashboards.localization_detail',
+                           kwargs={'readout_slug':self.slug})
+        elif self.slug in CONTRIBUTOR_READOUTS:
+            return reverse('dashboards.contributors_detail',
+                           kwargs={'readout_slug':self.slug})
+
+
 
 class MostVisitedDefaultLanguageReadout(Readout):
     """Most-Visited readout for the default language"""
