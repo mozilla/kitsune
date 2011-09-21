@@ -59,8 +59,9 @@ class Command(BaseCommand):
                             'comments': params.get('comments')}
                         strings.append(msg)
 
-        py_file = os.path.abspath(options.get('outputfile'))
-        py_file = os.path.expanduser(py_file)
+        py_file = os.path.expanduser(options.get('outputfile'))
+        py_file = os.path.abspath(py_file)
+
         print 'Outputting db strings to: {filename}'.format(filename=py_file)
         with open(py_file, 'w+') as f:
             f.write('#################################################\n')
