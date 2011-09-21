@@ -243,6 +243,40 @@ convert it to a ``unicode`` object::
         unicode(WELCOME) % request.user.username
 
 
+Strings in the database
+-----------------------
+
+There is some user generated content that needs to be localizable. For
+example, karma titles can be created in the admin site and need to be
+localized when displayed to users. A django management command is used
+for this. The first step to making a model's field localizable is adding
+it to ``DB_LOCALIZE`` in ``settings.py``::
+
+    DB_LOCALIZE = {
+        'karma': {
+            'Title': {
+                'attrs': ['name'],
+                'comments': ['This is a karma title.'],
+            }
+        },
+        'appname': {
+            'ModelName': {
+                'attrs': ['field_name'],
+                'comments': ['Optional comments for localizers.'],
+            }
+        }
+    }
+
+Then, all you need to do is run the ``extract_db`` management command::
+
+    $ python manage.py extract_db
+
+*Be sure to have a recent database from production when running the command.*
+
+By default, this will write all the strings to `apps/sumo/db_strings.py`
+and they will get picked up during the normal string extraction (see below).
+
+
 Getting the Localizations
 =========================
 

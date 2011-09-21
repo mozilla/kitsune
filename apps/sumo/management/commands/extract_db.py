@@ -29,8 +29,7 @@ class Command(BaseCommand):
 
     Database columns are expected to be CharFields or TextFields.
     """
-    help = ('Pulls strings from the database and appends them to an existing '
-            '.pot file.')
+    help = ('Pulls strings from the database and writes them to python file.')
     option_list = BaseCommand.option_list + (
         make_option('--output-file', '-o',
                     default=os.path.join(settings.ROOT, 'apps', 'sumo',
@@ -61,6 +60,7 @@ class Command(BaseCommand):
                         strings.append(msg)
 
         py_file = os.path.abspath(options.get('outputfile'))
+        py_file = os.path.expanduser(py_file)
         print 'Outputting db strings to: {filename}'.format(filename=py_file)
         with open(py_file, 'w+') as f:
             f.write('#################################################\n')
