@@ -1,0 +1,10 @@
+{# vim: set ts=2 et sts=2 sw=2: #}
+<header>
+  <h1>{{ _('Reply Preview') }}</h1>
+</header>
+<ol class="answers">
+  <li class="answer">
+    {% set answer = answer_preview %}
+    {% include "questions/includes/answer.html" %}
+  </li>
+</ol>

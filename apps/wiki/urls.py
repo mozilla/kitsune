@@ -10,6 +10,8 @@ doc_discuss_patterns = patterns('kbforums.views',
     url(r'^/feed', ThreadsFeed(), name='wiki.discuss.threads.feed'),
     url(r'^/new', 'new_thread', name='wiki.discuss.new_thread'),
     url(r'^/watch', 'watch_forum', name='wiki.discuss.watch_forum'),
+    url(r'^/post-preview-async$', 'post_preview_async',
+        name='wiki.discuss.post_preview_async'),
     url(r'^/(?P<thread_id>\d+)$', 'posts', name='wiki.discuss.posts'),
     url(r'^/(?P<thread_id>\d+)/feed$', PostsFeed(),
         name='wiki.discuss.posts.feed'),
@@ -56,7 +58,8 @@ document_patterns = patterns('wiki.views',
     url(r'^/vote', 'helpful_vote', name="wiki.document_vote"),
 
     # Get helpful votes data
-    url(r'^/get-votes-async', 'get_helpful_votes_async', name="wiki.get_helpful_votes_async"),
+    url(r'^/get-votes-async', 'get_helpful_votes_async',
+        name="wiki.get_helpful_votes_async"),
 
     # KB discussion forums
     (r'^/discuss', include(doc_discuss_patterns)),

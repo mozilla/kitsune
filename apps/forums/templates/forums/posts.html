@@ -99,15 +99,18 @@
     <div id="thread-reply">
       <h3>{{ _('Post a reply') }}</h3>
 
-      <form action="{{ url('forums.reply', forum.slug, thread.id)|urlparams(hash='thread-reply') }}" method="post">
+      <form action="{{ url('forums.reply', forum.slug, thread.id)|urlparams(hash='post-reply') }}" method="post">
         {{ csrf() }}
         {{ errorlist(form) }}
 
         {{ content_editor(form.content) }}
 
         <div class="editor-actions">
-          <input type="submit" name="preview" value="{{ _('Preview') }}" />
-          <input type="submit" value="{{ _('Reply') }}" />
+          <input type="submit" class="btn-important" value="{{ _('Reply') }}" />
+          <input type="submit" id="preview" name="preview" value="{{ _('Preview') }}"
+              data-preview-url="{{ url('forums.post_preview_async') }}"
+              data-preview-container-id="post-preview"
+              data-preview-content-id="id_content" />
         </div>
       </form>
     </div>
@@ -118,16 +121,10 @@
       <p id="thread-locked">{{ _('This thread has been locked. It is no longer possible to post new replies.') }}</p>
     </div>
   {% endif %}
-  {% if reply_preview %}
-    <div id="post-preview">
-      <h3>{{ _('Reply Preview:') }}</h3>
-      <ol class="posts">
-        <li>
-          {% set post = reply_preview %}
-          {% include "forums/includes/post.html" %}
-        </li>
-      </ol>
-    </div>
-  {% endif %}
+  <div id="post-preview">
+    {% if post_preview %}
+      {% include "forums/includes/post_preview.html" %}
+    {% endif %}
+  </div>
 </article>
 {% endblock %}

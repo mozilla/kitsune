@@ -1,5 +1,8 @@
 $(document).ready(function(){
 
+// TODO: get this working:
+//"use strict";
+
 var showforFixture = {
     setup: function() {
         var $sandbox = tests.createSandbox('#showfor');

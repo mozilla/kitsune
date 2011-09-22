@@ -1,5 +1,7 @@
 $(document).ready(function(){
 
+"use strict";
+
 var kboxFixture = {
     setup: function() {
         this.sandbox = tests.createSandbox('#kbox');
