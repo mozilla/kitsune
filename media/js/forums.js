@@ -8,6 +8,8 @@
 
     function init() {
         Marky.createSimpleToolbar('.editor-tools', '#reply-content, #id_content');
+        new k.AjaxPreview($('#preview'));
+
         $('span.post-action a.reply').click(function() {
             var post = $(this).data('post'),
                 $post = $('#post-' + post),

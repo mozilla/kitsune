@@ -1,7 +1,7 @@
 {% from "upload/attachments.html" import attachment %}
 {% from "karma/includes/karma_macros.html" import titles %}
 <div class="user-section">
-  <div class="avatar{% if user == answer.creator %} self{% endif %}{% if question.creator == answer.creator %} owner{% endif %}">
+  <div class="avatar{% if user == answer.creator %} self{% endif %}{% if answer.id and question.creator == answer.creator %} owner{% endif %}">
     <a href="{{ profile_url(answer.creator, request.user == answer.creator) }}">
       <img src="{{ profile_avatar(answer.creator) }}" height="48" width="48" alt="{{ answer.creator }}"/>
       {% if user == answer.creator %}
@@ -16,7 +16,7 @@
     {% if waffle.switch('karma') and waffle.flag('karma') %}
       {{ titles(answer.creator) }}
     {% endif %}
-    {% if question.creator != answer.creator %}
+    {% if answer.id and question.creator != answer.creator %}
       <span class="solutions">{{ _('{num} solutions')|f(num=answer.creator_num_solutions) }}</span>
       <span class="answers">{{ _('{num} answers')|f(num=answer.creator_num_answers) }}</span>
       {% if waffle.switch('karma') and user.has_perm('users.view_karma_points') %}
@@ -48,7 +48,7 @@
     </p>
   {% endif %}
   <div class="meta">
-    {% if question.solution == answer %}
+    {% if answer.id and question.solution == answer %}
       <span class="solved">{{ _('Solution chosen') }}</span>
       {% if user == question.creator or user.has_perm('questions.change_solution') %}
         <form class="unsolve" action="{{ url('questions.unsolve', question_id=question.id, answer_id=answer.id) }}" method="post">

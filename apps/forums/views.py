@@ -87,7 +87,7 @@ def threads(request, forum_slug):
                          'feeds': feed_urls})
 
 
-def posts(request, forum_slug, thread_id, form=None, reply_preview=None,
+def posts(request, forum_slug, thread_id, form=None, post_preview=None,
           is_reply=False):
     """View all the posts in a thread."""
     thread = get_object_or_404(Thread, pk=thread_id)
@@ -125,10 +125,11 @@ def posts(request, forum_slug, thread_id, form=None, reply_preview=None,
     return jingo.render(request, 'forums/posts.html',
                         {'forum': forum, 'thread': thread,
                          'posts': posts_, 'form': form,
-                         'reply_preview': reply_preview,
+                         'post_preview': post_preview,
                          'is_watching_thread': is_watching_thread,
                          'feeds': feed_urls,
                          'forums': Forum.objects.all()})
+
 
 @require_POST
 @login_required
@@ -143,7 +144,7 @@ def reply(request, forum_slug, thread_id):
             raise Http404
 
     form = ReplyForm(request.POST)
-    reply_preview = None
+    post_preview = None
     if form.is_valid():
         thread = get_object_or_404(Thread, pk=thread_id, forum=forum)
 
@@ -152,8 +153,8 @@ def reply(request, forum_slug, thread_id):
             reply_.thread = thread
             reply_.author = request.user
             if 'preview' in request.POST:
-                reply_preview = reply_
-                reply_preview.author_post_count = \
+                post_preview = reply_
+                post_preview.author_post_count = \
                     reply_.author.post_set.count()
             else:
                 reply_.save()
@@ -164,7 +165,7 @@ def reply(request, forum_slug, thread_id):
 
                 return HttpResponseRedirect(reply_.get_absolute_url())
 
-    return posts(request, forum_slug, thread_id, form, reply_preview,
+    return posts(request, forum_slug, thread_id, form, post_preview,
                  is_reply=True)
 
 
@@ -444,3 +445,13 @@ def watch_forum(request, forum_slug):
         NewThreadEvent.stop_notifying(request.user, forum)
 
     return HttpResponseRedirect(reverse('forums.threads', args=[forum_slug]))
+
+
+@require_POST
+@login_required
+def post_preview_async(request):
+    """Ajax preview of posts."""
+    statsd.incr('forums.preview')
+    post = Post(author=request.user, content=request.POST.get('content', ''))
+    return jingo.render(request, 'forums/includes/post_preview.html',
+                        {'post_preview': post})

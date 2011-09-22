@@ -18,6 +18,7 @@
             initHaveThisProblemTooAjax();
             initEmailSubscribeAjax();
             initHelpfulVote();
+            new k.AjaxPreview($('#preview'));
         }
 
         Marky.createSimpleToolbar('.editor-tools', '#reply-content, #id_content');

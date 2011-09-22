@@ -151,33 +151,18 @@
      * Initialize the article preview functionality.
      */
     function initArticlePreview() {
-        $('#btn-preview').click(function(e) {
-            var $btn = $(this);
-            $btn.attr('disabled', 'disabled');
-            $.ajax({
-                url: $(this).data('preview-url'),
-                type: 'POST',
-                data: $btn.closest('form').serialize(),
-                dataType: 'html',
-                success: function(html) {
-                    var $preview = $('#preview');
-                    $preview.html(html)
-                        .find('select.enable-if-js').removeAttr('disabled');
-                    document.location.hash = 'preview';
-                    ShowFor.initForTags();
-                    $preview.find('.kbox').kbox();
-                    k.initVideo();
-                    $btn.removeAttr('disabled');
-                },
-                error: function() {
-                    var msg = gettext('There was an error generating the preview.');
-                    $('#preview').html(msg);
-                    $btn.removeAttr('disabled');
-                }
-            });
-
-            e.preventDefault();
-            return false;
+        var $preview = $('#preview'),
+            preview = new k.AjaxPreview($('#btn-preview'), {
+            contentElement: $('#id_content'),
+            previewElement: $preview
+        });
+        $(preview).bind('done', function(e, success){
+            if (success) {
+                ShowFor.initForTags();
+                $preview.find('select.enable-if-js').removeAttr('disabled');
+                $preview.find('.kbox').kbox();
+                k.initVideo();
+            }
         });
     }
 
