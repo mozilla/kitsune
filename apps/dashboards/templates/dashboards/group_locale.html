@@ -17,7 +17,7 @@
     {% endif %}
 
     {% for readout in readouts.itervalues() %}
-      {{ print_readout(readout, 'dashboards.localization_detail',
+      {{ print_readout(readout,
                        locale=current_locale,
                        max_rows=20 if readout.slug == 'most-visited-translations' else 10) }}
     {% endfor %}

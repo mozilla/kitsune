@@ -201,7 +201,7 @@ class Readout(object):
     # title = _lazy(u'Title of Readout')
     # description = _lazy(u'Paragraph of explanation')
     # short_title= = _lazy(u'Short Title of Readout for In-Page Links')
-    # slug = 'URL slug for detail page'
+    # slug = 'Unique URL slug for detail page'
     # details_link_text = _lazy(u'All articles from this readout...')
     column3_label = _lazy(u'Visits this week')
     column4_label = _lazy(u'Status')
@@ -280,11 +280,12 @@ class Readout(object):
     def get_absolute_url(self, locale):
         if self.slug in L10N_READOUTS:
             return reverse('dashboards.localization_detail',
-                           kwargs={'readout_slug':self.slug})
+                           kwargs={'readout_slug': self.slug}, locale=locale)
         elif self.slug in CONTRIBUTOR_READOUTS:
             return reverse('dashboards.contributors_detail',
-                           kwargs={'readout_slug':self.slug})
-
+                           kwargs={'readout_slug': self.slug}, locale=locale)
+        else:
+            raise KeyError("This Readout was not found.")
 
 
 class MostVisitedDefaultLanguageReadout(Readout):

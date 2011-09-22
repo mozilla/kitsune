@@ -1,5 +1,5 @@
 {# vim: set ts=2 et sts=2 sw=2: #}
-{% macro print_readout(readout, detail_view_name, locale=None, max_rows=10) %}
+{% macro print_readout(readout, locale=None, max_rows=10) %}
   {% if not readout.hide_readout %}
     <details class="h2" open="open">
       <summary class="with-mode-selectors">

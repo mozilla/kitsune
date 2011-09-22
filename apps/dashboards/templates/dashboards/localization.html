@@ -29,7 +29,7 @@
                                    (rows['all'], False))) }}
 
     {% for readout in readouts.itervalues() %}
-      {{ print_readout(readout, 'dashboards.localization_detail', max_rows=20 if readout.slug == 'most-visited-translations' else 10) }}
+      {{ print_readout(readout, max_rows=20 if readout.slug == 'most-visited-translations' else 10) }}
     {% endfor %}
   </article>
 {% endblock %}
