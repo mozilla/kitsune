@@ -19,10 +19,9 @@ from commonware.decorators import xframe_allow
 import django_qunit.views
 import jingo
 from PIL import Image
-from redis import ConnectionError
 from session_csrf import anonymous_csrf
 
-from sumo.redis_utils import redis_client
+from sumo.redis_utils import redis_client, RedisError
 from sumo.urlresolvers import reverse
 from users.forms import AuthenticationForm
 
@@ -172,7 +171,7 @@ def monitor(request):
             try:
                 c = redis_client(backend)
                 redis_results[backend] = c.info()
-            except ConnectionError:
+            except RedisError:
                 redis_results[backend] = False
     status_summary['redis'] = all(redis_results.values())
 
