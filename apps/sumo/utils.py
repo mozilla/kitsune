@@ -63,24 +63,16 @@ def delete_files_for_obj(sender, **kwargs):
     """Signal receiver of a model class and instance. Deletes its files."""
     obj = kwargs.pop('instance')
     for field_name in sender._meta.get_all_field_names():
-        # Skip related models' attrs.
         if not hasattr(obj, field_name):
             continue
-        # Get the class and value of the field.
         field_class = sender._meta.get_field(field_name)
         field_value = getattr(obj, field_name)
-        # Check if it's a FileField instance and the field is set.
         if isinstance(field_class, models.FileField) and field_value:
             field_value.delete()
 
 
 def auto_delete_files(cls):
     """Deletes all FileFields when model instances are deleted.
-
-    Meant to be used on model classes.
-    Django disabled auto-deletion of files when deleting a model in
-    ticket #6456, to prevent dataloss.
-
     """
     pre_delete.connect(delete_files_for_obj, sender=cls)
     return cls
@@ -88,9 +80,6 @@ def auto_delete_files(cls):
 
 def get_next_url(request):
     """Given a request object, looks for the best possible next URL.
-
-    Useful for e.g. redirects back to original page after a POST request.
-
     """
     if 'next' in request.POST:
         url = request.POST.get('next')
@@ -101,8 +90,6 @@ def get_next_url(request):
 
     if url:
         parsed_url = urlparse.urlparse(url)
-        # Don't redirect outside of SUMO.
-        # Don't include protocol+domain, so if we are https we stay that way.
         if parsed_url.scheme:
             site_domain = Site.objects.get_current().domain
             url_domain = parsed_url.netloc
@@ -111,9 +98,6 @@ def get_next_url(request):
             else:
                 url = u'?'.join([getattr(parsed_url, x) for x in
                                 ('path', 'query') if getattr(parsed_url, x)])
-
-        # Don't redirect right back to login or logout page
         if parsed_url.path in [settings.LOGIN_URL, settings.LOGOUT_URL]:
-            url = None
 
     return url
