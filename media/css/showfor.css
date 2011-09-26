@@ -6,6 +6,10 @@
     margin: 30px 0 0 50px;
 }
 
+.html-rtl #support-for {
+    margin: 30px 50px 0 0;
+}
+
 .js #support-for select {
     visibility: hidden;
 }
@@ -18,6 +22,10 @@
     padding: 0 0 0 5px;
 }
 
+.html-rtl #support-for h1 {
+    padding: 0 5px 0 0;
+}
+
 #support-for input {
     background: transparent url(../img/wiki/bkg.showfor.selector.gif) no-repeat 6px 5px;
     border: none;
@@ -28,24 +36,34 @@
     padding: 2px 0 2px 20px;
 }
 
+.html-rtl #support-for input {
+    background-position: 95px 5px;
+    padding: 2px 20px 2px 0;
+}
+
 #support-for div.selectbox-wrapper {
     position: relative;
 }
 
 #support-for div.selectbox-wrapper ul {
     background: #32559b;
-    border-radius: 10px;
-    -moz-border-radius: 10px;
-    -webkit-border-radius: 10px;
-    border-top-left-radius: 0;
-    -moz-border-radius-topleft: 0;
-    -webkit-border-top-left-radius: 0;
+    border-radius: 0 10px 10px 10px;
+    -moz-border-radius: 0 10px 10px 10px;
+    -webkit-border-radius: 0 10px 10px 10px;
     left: 0;
     list-style: none;
     padding: 10px 5px;
     position: absolute;
     top: 5px;
     width: 130px;
+}
+
+.html-rtl #support-for div.selectbox-wrapper ul {
+    border-radius: 10px 0 10px 10px;
+    -moz-border-radius: 10px 0 10px 10px;
+    -webkit-border-radius: 10px 0 10px 10px;
+    left: auto;
+    right: 0;
 }
 
 #support-for div.selectbox-wrapper ul:after {
@@ -62,6 +80,11 @@
     z-index: 1;
 }
 
+.html-rtl #support-for div.selectbox-wrapper ul:after {
+    left: auto;
+    right: 3px;
+}
+
 #support-for div.selectbox-wrapper li {
     color: #6fbcff;
     cursor: pointer;
@@ -69,9 +92,17 @@
     position: relative;
 }
 
+.html-rtl #support-for div.selectbox-wrapper li {
+    padding: 2px 15px 2px 0;
+}
+
 #support-for div.selectbox-wrapper li.selected {
     background: transparent url(../img/wiki/bkg.showfor.selector.gif) no-repeat 2px -44px;
     color: #fff;
+}
+
+.html-rtl #support-for div.selectbox-wrapper li.selected {
+    background-position: 120px -44px;
 }
 
 #support-for div.selectbox-wrapper li.current {
