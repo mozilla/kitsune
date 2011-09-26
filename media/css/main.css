@@ -28,6 +28,10 @@ body.html-rtl {
     text-align: right;
 }
 
+html[lang=he] body {
+    font-family: sans-serif;
+}
+
 .clear {
     clear: both;
 }
@@ -76,6 +80,10 @@ header.global {
     width: 118px;
 }
 
+.html-rtl #global-header-tab a {
+    float: left;
+}
+
 .sumo-header {
     font-family: "Trebuchet MS",sans-serif;
     padding: 0 0 25px;
@@ -106,6 +114,10 @@ h1.site-title {
     text-align: left;
 }
 
+.html-rtl h1.site-title {
+    text-align: right;
+}
+
 h1.site-title mark {
     font-family: MetaBlack;
     font-style: normal;
@@ -120,20 +132,29 @@ h1.site-title mark {
     width: 54px;
 }
 
-.menu-nav {
-    font-size: 12px;
-    margin-left: 64px;
-    z-index: 50;
+.html-rtl .site-title img {
+    float: right;
+    margin-left: 10px;
+    margin-right: 0;
 }
 
 .menu-nav {
     font-size: 12px;
     margin-left: 64px;
     z-index: 50;
+}
+
+.html-rtl .menu-nav {
+    margin-left: 0;
+    margin-right: 64px;
 }
 
 .menu-nav.no-img {
     margin-left: 0;
+}
+
+.html-rtl .menu-nav.no-img {
+    margin-right: 0;
 }
 
 .menu-nav li {
@@ -143,6 +164,10 @@ h1.site-title mark {
 .menu-nav > ul > li {
     float: left;
     position: relative;
+}
+
+.html-rtl .menu-nav > ul > li {
+    float: right;
 }
 
 .menu-nav > ul > li > a {
@@ -174,6 +199,11 @@ h1.site-title mark {
     top: 18px;
     width: 200px;
     z-index: 62;
+}
+
+.html-rtl .menu-nav > ul > li:hover:after {
+    left: auto;
+    right: 1px;
 }
 
 .menu-nav > ul > li > ul {
@@ -231,6 +261,12 @@ h1.site-title mark {
 
 #aux-nav {
     float: right;
+    padding: 0 15px 0 0;
+}
+
+.html-rtl #aux-nav {
+    float: left;
+    padding: 0 0 0 15px;
 }
 
 #aux-nav > ul {
@@ -263,8 +299,18 @@ h1.site-title mark {
     width: 1px;
 }
 
+.html-rtl #aux-nav > ul > li:not(:first-child):before {
+    left: auto;
+    right: -1px;
+}
+
 #aux-nav > ul > li {
     margin-left: 1px;
+}
+
+.html-rtl #aux-nav > ul > li {
+    margin-left: 0;
+    margin-right: 1px;
 }
 
 #aux-nav > ul > li > a {
@@ -293,6 +339,12 @@ h1.site-title mark {
     top: 12px;
     vertical-align: middle;
     width: 0;
+}
+
+.html-rtl #aux-nav > ul > li > a:after {
+    left: auto;
+    margin: 0 4px 0 0;
+    right: 4px;
 }
 
 #aux-nav > ul > li:hover {
@@ -329,8 +381,9 @@ h1.site-title mark {
     content: none;
 }
 
-#aux-nav > ul > li.logout.anonymous a:first-child {
-    padding-right: 4px;
+#aux-nav > ul > li.logout.anonymous a {
+    display: inline;
+    padding: 0;
 }
 
 #aux-nav > ul > li.logout:before {
@@ -340,6 +393,11 @@ h1.site-title mark {
 #aux-nav > ul > li.logout a {
     font-weight: normal;
     padding-left: 4px;
+}
+
+.html-rtl #aux-nav > ul > li.logout a {
+    padding-left: 1em;
+    padding-right: 4px;
 }
 
 span.unread-message-count {
@@ -358,10 +416,22 @@ header.global #support-search {
     width: 314px;
 }
 
+.html-rtl header.global #support-search {
+    left: 0;
+    right: auto;
+}
+
 #site-nav > ul > li {
     border-right: 1px solid #9FA7AF;
     left: -9px;
     margin: 0 0 5px;
+}
+
+.html-rtl #site-nav > ul > li {
+    border-left: 1px solid #9FA7AF;
+    border-right: none;
+    left: auto;
+    right: -9px;
 }
 
 #site-nav > ul > li:last-child {
@@ -393,6 +463,12 @@ header.global #support-search {
     position: fixed;
     top: 0;
     z-index: 9999;
+}
+
+.html-rtl #stage-banner {
+    border-radius: 0 0 0 7px;
+    left: auto;
+    right: 0;
 }
 
 #stage-banner a {
@@ -475,6 +551,10 @@ ul.user-messages li.error {
     width: 978px;
 }
 
+.html-rtl #content {
+    text-align: right;
+}
+
 #content:after {
     clear: both;
     content: ".";
@@ -491,11 +571,21 @@ ul.user-messages li.error {
     width: 754px;
 }
 
+.html-rtl #main {
+    background: transparent url(../img/wiki/bkg.main.top.rtl.png) no-repeat left top;
+    float: right;
+}
+
 #main article.main {
     background: transparent url(../img/wiki/bkg.article.jpg) no-repeat right top;
     font-size: 13px;
     min-height: 450px;
     padding: 14px 20px 0 0;
+}
+
+.html-rtl #main article.main {
+    background: transparent url(../img/wiki/bkg.article.rtl.jpg) no-repeat left top;
+    padding: 14px 0 0 20px;
 }
 
 article.main > h1 {
@@ -510,6 +600,10 @@ article.main > h1 {
     width: 445px;
 }
 
+.html-rtl #firefox-help {
+    float: right;
+}
+
 #firefox-help a {
     background: transparent url(../img/ff-logo.png) no-repeat left center;
     color: #333;
@@ -519,10 +613,18 @@ article.main > h1 {
     z-index: 2;
 }
 
+.html-rtl #firefox-help a {
+    padding: 20px 60px 20px 0;
+}
+
 #support-search {
     float: left;
     padding: 15px 0 0;
     width: 310px;
+}
+
+.html-rtl #support-search {
+    float: right;
 }
 
 div.support-search form {
@@ -551,11 +653,27 @@ div.support-search input.text {
     width: 218px;
 }
 
+.html-rtl div.support-search input.text {
+    background-position: 335px 2px;
+    float: right;
+    margin: 0 0 0 1px;
+    padding: 2px 34px 2px 0;
+}
+
 div.support-search button.img-submit {
     float: left;
     height: 33px;
     margin: -1px 0 0 2px;
     width: 40px;
+}
+
+.html-rtl div.support-search button.img-submit {
+    float: right;
+    margin: -1px 2px 0 0;
+}
+
+.html-rtl div.support-search button.img-submit img {
+    -moz-transform: scaleX(-1);
 }
 
 /*-----------------------------------------------
@@ -573,8 +691,12 @@ div.support-search button.img-submit {
     padding: .5em 2em .5em 2em;
 }
 
+.html-rtl .warning-box {
+    margin: 35px 0 0 20px;
+}
+
 .warning-box p {
-    margin: .5em 0 .5em 0;
+    margin: .5em 0;
     line-height: 1.5em;
     color: #444;
 }
@@ -587,6 +709,10 @@ div.support-search button.img-submit {
 #side {
     float: left;
     width: 222px;
+}
+
+.html-rtl #side {
+    float: right;
 }
 
 #for-contributors h1 {
@@ -604,6 +730,10 @@ div.support-search button.img-submit {
 #quick-links {
     font-size: 13px;
     margin: 25px 0 0 20px;
+}
+
+.html-rtl #quick-links {
+    margin: 25px 20px 0 0;
 }
 
 #quick-links li {
@@ -636,20 +766,40 @@ div.support-search button.img-submit {
     padding: 5px 0 5px 30px;
 }
 
+.html-rtl #quick-links li a {
+    padding: 5px 30px 5px 0;
+}
+
 #quick-links li.home a {
     background: transparent url(../img/wiki/icons.quicklinks.png) no-repeat 6px 6px;
+}
+
+.html-rtl #quick-links li.home a {
+    background-position: 180px 6px;
 }
 
 #quick-links li.aaq a {
     background: transparent url(../img/wiki/icons.quicklinks.png) no-repeat 6px -44px;
 }
 
+.html-rtl #quick-links li.aaq a {
+    background-position: 180px -44px;
+}
+
 #quick-links li.home.active a {
     background: transparent url(../img/wiki/icons.quicklinks.png) no-repeat 6px -95px;
 }
 
+.html-rtl #quick-links li.home.active a {
+    background-position: 180px -95px;
+}
+
 #quick-links li.aaq.active a {
     background: transparent url(../img/wiki/icons.quicklinks.png) no-repeat 6px -144px;
+}
+
+.html-rtl #quick-links li.aaq.active a {
+    background-position: 180px -144px;
 }
 
 .sd-module {
@@ -660,6 +810,10 @@ div.support-search button.img-submit {
     font-size: 13px;
     margin: 20px 0 0 20px;
     padding: 20px;
+}
+
+.html-rtl .sd-module {
+    margin: 20px 20px 0 0;
 }
 
 .sd-module.promos {
@@ -700,6 +854,11 @@ div.support-search button.img-submit {
     margin-right: 2em;
 }
 
+.html-rtl #want-to-get-involved a {
+    margin-left: 2em;
+    margin-right: 0;
+}
+
 #check-your-plugins {
     background: -moz-radial-gradient(center -40%, circle, rgba(255,255,255,1), rgba(255,255,255,0) 50%);
     background: -webkit-gradient(radial, center -40%, 0, center -40%, 175, from(rgba(255,255,255,1)), to(rgba(255,255,255,0)));
@@ -734,6 +893,23 @@ div.support-search button.img-submit {
     margin: 7px 0 0;
 }
 
+.html-rtl #doc-tabs li {
+    border: solid 1px #9accf7;
+    border-right: none;
+    border-radius: 10px;
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+    -moz-border-radius: 10px;
+    -moz-border-radius-bottomright: 0;
+    -moz-border-radius-topright: 0;
+    -webkit-border-radius: 10px;
+    -webkit-border-top-right-radius: 0;
+    -webkit-border-bottom-right-radius: 0;
+    box-shadow: -2px 2px 3px #9dbbd0;
+    -moz-box-shadow: -2px 2px 3px #9dbbd0;
+    -webkit-box-shadow: -2px 2px 3px #9dbbd0;
+}
+
 #doc-tabs li.disabled, #doc-tabs li.disabled:hover {
     background: -moz-linear-gradient(left, #dedede, #fff);
     background: -webkit-gradient(linear, left top, right top, from(#dedede), to(#fff));
@@ -753,6 +929,11 @@ div.support-search button.img-submit {
     padding: 7px 0 8px 50px;
 }
 
+.html-rtl #doc-tabs li a,
+.html-rtl #doc-tabs li span {
+    padding: 7px 50px 8px 0;
+}
+
 #doc-tabs li:hover {
     background: -moz-linear-gradient(left, #e6f1fb, #fff);
     background: -webkit-gradient(linear, left top, right top, from(#e6f1fb), to(#fff));
@@ -766,14 +947,29 @@ div.support-search button.img-submit {
     z-index: 2;
 }
 
+.html-rtl #doc-tabs li.active {
+    left: 0;
+    right: -1px;
+}
+
 #doc-tabs li.active span,
 #doc-tabs li.active a {
     border-left: solid 2px #fff;
     color: #666;
     left: -2px;
-    padding-left : 52px;
+    padding-left: 52px;
     position: relative;
     z-index: 0;
+}
+
+.html-rtl #doc-tabs li.active span,
+.html-rtl #doc-tabs li.active a {
+    border: none;
+    border-right: solid 2px #fff;
+    left: auto;
+    padding-left: 52px;
+    padding-right: 52px;
+    right: -2px;
 }
 
 #doc-tabs li.edit {
@@ -844,6 +1040,11 @@ ol.pagination li.prev {
     padding-left: 0;
 }
 
+.html-rtl ol.pagination li.prev {
+    padding-left: 2px;
+    padding-right: 0;
+}
+
 ol.pagination li a {
     float: left;
     padding: 3px 8px 5px;
@@ -855,6 +1056,11 @@ ol.pagination li a:hover {
 
 ol.pagination li.prev a {
     padding-left: 0;
+}
+
+.html-rtl ol.pagination li.prev a {
+    padding-left: 8px;
+    padding-right: 0;
 }
 
 ol.pagination li.selected a {
@@ -917,6 +1123,10 @@ article.main div.submit {
     margin: 20px 0 0 20px;
 }
 
+.html-rtl #doc-watch {
+    margin: 20px 20px 0 0;
+}
+
 #doc-watch input {
     margin: 0 0 10px;
 }
@@ -938,6 +1148,10 @@ div.editor-notes {
     padding: 1em 0 0 1em;
 }
 
+.html-rtl div.editor-notes {
+    padding: 1em 1em 0 0;
+}
+
 div.editor-notes p {
     margin-top: .8em;
 }
@@ -947,6 +1161,10 @@ div.editor-actions {
     border-top: 2px solid #fff;
     padding: 1em 2em;
     text-align: right;
+}
+
+.html-rtl div.editor-actions {
+    text-align: left;
 }
 
 div.editor-tools {
@@ -967,6 +1185,12 @@ div.editor-tools span.separator {
     top: 4px;
 }
 
+.html-rtl div.editor-tools span.separator {
+    border: none;
+    border-right: solid 1px #ddd;
+    margin: 0 6px 0 8px;
+}
+
 div.editor-tools a.markup-toolbar-link {
     padding: 0 6px;
 }
@@ -983,6 +1207,11 @@ button.markup-toolbar-button {
 
 div.editor-tools button:first-child {
     margin-left: 0;
+}
+
+.html-rtl div.editor-tools button:first-child {
+    margin-left: 2px;
+    margin-right: 0;
 }
 
 button.btn-h2 {
@@ -1022,7 +1251,12 @@ button.btn-ul {
 #media-modal {
     text-align: left;
     width: 480px;
+}
 
+.html-rtl #showfor-modal,
+.html-rtl #link-modal,
+.html-rtl #media-modal {
+    text-align: right;
 }
 
 #showfor-modal h2,
@@ -1036,8 +1270,16 @@ button.btn-ul {
     padding: 0 15px 0 0;
 }
 
+.html-rtl #showfor-modal label {
+    padding: 0 0 0 15px;
+}
+
 #showfor-modal input[type="checkbox"] {
     margin: 0 5px 0 0;
+}
+
+.html-rtl #showfor-modal input[type="checkbox"] {
+    margin: 0 0 0 5px;
 }
 
 section.marky div.submit {
@@ -1048,6 +1290,11 @@ section.marky div.submit {
 section.marky div.submit a,
 section.marky div.submit button {
     margin: 0 15px 0 0;
+}
+
+.html-rtl section.marky div.submit a,
+.html-rtl section.marky div.submit button {
+    margin: 0 0 0 15px;
 }
 
 #link-modal {
@@ -1062,8 +1309,18 @@ section.marky div.submit button {
     width: 75px;
 }
 
+.html-rtl #link-modal label {
+    float: right;
+    padding: 5px 0 20px 15px;
+    text-align: left;
+}
+
 #link-modal ol {
     float: left;
+}
+
+.html-rtl #link-modal ol {
+    float: right;
 }
 
 #link-modal li {
@@ -1076,6 +1333,10 @@ section.marky div.submit button {
     padding: 0;
     text-align: left;
     width: auto;
+}
+
+.html-rtl #link-modal li label {
+    text-align: right;
 }
 
 #media-modal {
@@ -1097,6 +1358,11 @@ section.marky div.submit button {
     left: 15px;
     position: absolute;
     top: 100px;
+}
+
+.html-rtl #media-modal div.placeholder {
+    left: auto;
+    right: 15px;
 }
 
 #media-modal.processing div.placeholder {
@@ -1155,10 +1421,19 @@ section.marky div.submit button {
     width: 300px;
 }
 
+.html-rtl #media-modal div.filter input[type="text"] {
+    padding-left: 5px;
+    padding-right: 33px;
+}
+
 #media-modal div.type {
     color: #929292;
     float: right;
     margin-top: .5em;
+}
+
+.html-rtl #media-modal div.type {
+    float: left;
 }
 
 #media-modal div.type ol {
@@ -1166,8 +1441,16 @@ section.marky div.submit button {
     list-style-type: none;
 }
 
+.html-rtl #media-modal div.type ol {
+    float: right;
+}
+
 #media-modal div.type span {
     float: left;
+}
+
+.html-rtl #media-modal div.type span {
+    float: right;
 }
 
 #media-modal div.type ol li {
@@ -1179,13 +1462,19 @@ section.marky div.submit button {
     padding: 0 .5em;
 }
 
+.html-rtl #media-modal div.type ol li {
+    border: none;
+    border-right: 2px solid #929292;
+    float: right;
+}
+
 #media-modal div.type ol li.selected {
     color: #565656;
     cursor: default;
 }
 
 #media-modal div.type ol li:first-child {
-    border-left: 0;
+    border: none;
 }
 
 #media-modal ol.pagination {
@@ -1199,6 +1488,11 @@ section.marky div.submit button {
     position: absolute;
 }
 
+.html-rtl #media-modal div.submit {
+    left: auto;
+    right: 15px;
+}
+
 /* Submit or cancel switches */
 div.submit-or-cancel {
     padding: 1em 0;
@@ -1206,6 +1500,10 @@ div.submit-or-cancel {
 
 div.submit-or-cancel input[type="submit"] {
     margin: 0 1em 0 0;
+}
+
+.html-rtl div.submit-or-cancel input[type="submit"] {
+    margin: 0 0 0 1em;
 }
 
 /* Image markup styling */
@@ -1256,12 +1554,22 @@ a.ui-dialog-titlebar-close {
     right: 2px;
     top: 2px;
 }
+.html-rtl a.ui-dialog-titlebar-close {
+    left: 2px;
+    right: auto;
+}
 #upload-dialog {
     text-align: left;
+}
+.html-rtl #upload-dialog {
+    text-align: right;
 }
 ul.ui-autocomplete {
     /* jQuery sticks the menu right in the body, where it inherits text-align: center from the body. */
     text-align: left;
+}
+.html-rtl ul.ui-autocomplete {
+    text-align: right;
 }
 /* END jQueryUI styles */
 
@@ -1300,6 +1608,13 @@ a.btn {
     padding: 5px 12px 7px;
     text-align: center;
     width: auto;
+}
+
+.html-rtl input[type="button"],
+.html-rtl input[type="submit"]:not(.remover),  /* Exclude tag remover button. */
+.html-rtl section.marky button,
+.html-rtl a.btn {
+    margin: 0 0 0 15px;
 }
 
 input[type="button"]:hover,
@@ -1404,6 +1719,11 @@ div.ajax-vote-box {
     padding: 7px 20px;
     position: absolute;
     top: 0;
+}
+
+.html-rtl div.ajax-vote-box {
+    left: auto;
+    right: 0;
 }
 
 div.ajax-vote-box p {

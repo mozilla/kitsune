@@ -11,11 +11,19 @@ article.message-list li {
     position: relative;
 }
 
+.html-rtl article.message-list li {
+    padding: 3px 15px 3px 3px;
+}
+
 article.message-list a.read {
     display: block;
     height: 42px;
     margin: 0 35px 0 189px;
     padding-top: 1px;
+}
+
+.html-rtl article.message-list a.read {
+    margin: 0 189px 0 35px;
 }
 
 article.message-list a.delete {
@@ -26,6 +34,11 @@ article.message-list a.delete {
     position: absolute;
     right: 10px;
     top: 20px;
+}
+
+.html-rtl article.message-list a.delete {
+    left: 10px;
+    right: auto;
 }
 
 article.message-list a.delete:hover {
@@ -46,6 +59,10 @@ article.message-list li:before {
     width: 6px;
 }
 
+.html-rtl article.message-list li:before {
+    float: right;
+}
+
 article.message-list li.unread {
     background-color: #E0F0FF;
     font-weight: bold;
@@ -61,6 +78,11 @@ article.message-list li.unread:before {
     top: 20px;
 }
 
+.html-rtl article.message-list li.unread:before {
+    left: auto;
+    right: -8px;
+}
+
 article.message-list li.replied {
     background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAwAAAAMCAIAAADZF8uwAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAABRSURBVChTY/z//z8DIcCEpqB5xQNMLSiKsKoA6mGEW4dLRW2EAtQkXCogVoMU4VcBVQQ0EL//oNbhV4dwONxeTA0oQYDLPBSTcLkMPcSxqgMA/5QdFJd/yTgAAAAASUVORK5CYII=);
 }
@@ -71,9 +93,18 @@ article.message-list span.user {
     float: left;
 }
 
+.html-rtl article.message-list span.avatar,
+.html-rtl article.message-list span.user {
+    float: right;
+}
+
 article.message-list span.avatar {
-    padding-right: 5px;
+    padding: 0 5px 0 0;
     width: 48px;
+}
+
+.html-rtl article.message-list span.avatar {
+    padding: 0 0 0 5px;
 }
 
 article.message-list span.avatar img {
@@ -101,6 +132,11 @@ section.actions {
     padding: 20px 30px 0 0;
 }
 
+.html-rtl section.actions {
+    float: left;
+    padding: 20px 0 0 30px;
+}
+
 #new-message ul {
     list-style: none;
 }
@@ -115,6 +151,10 @@ section.actions {
     width: 100px;
 }
 
+.html-rtl #new-message label {
+    float: right;
+}
+
 #new-message input[type="text"],
 #new-message textarea {
     width: 600px;
@@ -124,13 +164,27 @@ section.actions {
     padding-left: 100px;
 }
 
+.html-rtl #new-message div.submit {
+    padding-left: 0;
+    padding-right: 100px;
+}
+
 #new-message ul.errorlist {
     margin: 0 0 5px 100px;
 }
 
+.html-rtl #new-message ul.errorlist {
+    margin: 0 100px 5px 0;
+}
+
 .message-view span.avatar {
     float: left;
-    padding-right: 5px;
+    padding: 0 5px 0 0;
+}
+
+.html-rtl .message-view span.avatar {
+    float: right;
+    padding: 0 0 0 5px;
 }
 
 .message-view span.from {
@@ -144,18 +198,32 @@ section.actions {
 .message-view time {
     color: #999;
     font-size: 80%;
-    margin-left: 10px;
+    margin: 0 0 0 10px;
+}
+
+.html-rtl .message-view time {
+    margin: 0 10px 0 0;
 }
 
 .message-view div.message {
     margin-left: 53px;
+    margin: 0 0 0 53px;
     min-height: 50px;
     padding: 10px 0;
 }
 
+.html-rtl .message-view div.message {
+    margin: 0 53px 0 0;
+}
+
 .message-view form.reply {
-    margin-left: 53px;
+    margin: 0 0 0 53px;
     width: 377px;
+}
+
+.html-rtl .message-view form.reply ,
+.html-rtl .message-view div.message {
+    margin: 0 53px 0 0;
 }
 
 .message-view form ul {
@@ -262,4 +330,8 @@ div.message pre {
 
 div.message a:hover {
     text-decoration: underline;
+}
+
+.html-rtl article.message-view form.reply input[type=submit] {
+    float: left;
 }

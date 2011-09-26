@@ -3,10 +3,6 @@
  */
 
 /* Document view */
-#main-content #wiki-doc {
-    padding-right: 0;
-}
-
 #wiki-doc > h1 {
     margin-bottom: 5px;
 }
@@ -19,9 +15,17 @@
     width: 249px;
 }
 
+.html-rtl #related-articles {
+    float: left;
+}
+
 #toc {
     font-size: 13px;
     margin: 0 0 25px -50px;
+}
+
+.html-rtl #toc {
+    margin: 0 -50px 25px 0;
 }
 
 #related-articles h1,
@@ -34,10 +38,21 @@ article #toc h2 {
     padding: 0 0 5px 50px;
 }
 
+.html-rtl #related-articles h1,
+.html-rtl article #toc h1,
+.html-rtl article #toc h2 {
+    padding: 0 50px 5px 0;
+}
+
 #related-articles li {
     background: transparent url(../img/wiki/list.divider.png) no-repeat left bottom;
     list-style: none;
     padding: 10px 0 10px 50px;
+}
+
+.html-rtl #related-articles li {
+    background-position: right bottom;
+    padding: 10px 50px 10px 0;
 }
 
 #related-articles li:last-child {
@@ -59,13 +74,19 @@ article #toc ul li {
     padding: 5px 0 5px 50px;
 }
 
+.html-rtl article #toc ol li,
+.html-rtl article #toc ul li {
+    background-position: right bottom;
+    padding: 5px 50px 5px 0;
+}
+
 article #toc ol li:first-child,
 article #toc ul li:first-child {
     padding-top: 0;
 }
 
-article #toc ol,
-article #toc ul {
+#wiki-doc #toc ol,
+#wiki-doc #toc ul {
     margin: 0;
 }
 
@@ -77,6 +98,11 @@ article #toc ul li {
 #toc ol ol,
 #toc ul ul {
     margin: 0 0 0 20px;
+}
+
+.html-rtl #toc ol ol,
+.html-rtl #toc ul ul {
+    margin: 0 20px 0 0;
 }
 
 #toc ol ol li,
@@ -91,9 +117,18 @@ article #toc ul li {
     padding: 25px 0 0 175px;
 }
 
+.html-rtl #more-help {
+    background-position: right top;
+    padding: 25px 175px 0 0;
+}
+
 html[lang="ja"] #more-help {
     background: none;
     padding: 25px 0 0 25px;
+}
+
+html[lang="ja"] .html-rtl #more-help {
+    padding: 25px 25px 0 0;
 }
 
 #more-help div.wrap {
@@ -120,6 +155,11 @@ html[lang="ja"] #more-help {
     width: 275px;
 }
 
+.html-rtl #more-help ul {
+    border: none;
+    border-left: dotted 2px #6292cf;
+}
+
 html[lang="ja"] #more-help ul {
     width: 350px;
 }
@@ -140,6 +180,10 @@ html[lang="ja"] #more-help ul {
     padding: 2px 0 2px 10px;
 }
 
+.html-rtl #more-help li li {
+    padding: 2px 10px 2px 0;
+}
+
 #more-help div.support-search {
     left: 325px;
     position: absolute;
@@ -147,9 +191,19 @@ html[lang="ja"] #more-help ul {
     width: 240px;
 }
 
+.html-rtl #more-help div.support-search {
+    left: auto;
+    right: 325px;
+}
+
 html[lang="ja"] #more-help div.support-search {
     left: 400px;
     width: 305px;
+}
+
+html[lang="ja"] .html-rtl #more-help div.support-search {
+    left: auto;
+    right: 400px;
 }
 
 #more-help div.support-search form {
@@ -184,6 +238,10 @@ html[lang="ja"] #more-help div.support-search input.text {
     padding: 0 20px 0 0;
 }
 
+.html-rtl #doc-content {
+    padding: 0 0 0 20px;
+}
+
 /* helpful vote form */
 #helpful-vote {
     color: #666;
@@ -204,6 +262,10 @@ html[lang="ja"] #more-help div.support-search input.text {
     font-size: 14px;
     margin: 0 0 0 10px;
     padding: 3px 10px;
+}
+
+.html-rtl #helpful-vote input {
+    margin: 0 10px 0 0;
 }
 
 #helpful-vote input[disabled] {
@@ -228,6 +290,10 @@ html[lang="ja"] #more-help div.support-search input.text {
     top: 3px;
 }
 
+.html-rtl #helpful-vote form.busy img.wait {
+    margin: 0 15px 0 0;
+}
+
 /* New / Edit / Translate Document */
 #document-form form {
     padding: 0 0 20px;
@@ -247,6 +313,10 @@ html[lang="ja"] #more-help div.support-search input.text {
 #document-form form li li {
     display: inline-block;
     padding: 0 10px 0 0;
+}
+
+.html-rtl #document-form form li li {
+    padding: 0 0 0 10px;
 }
 
 #document-form div.tags li {
@@ -305,11 +375,19 @@ article.main .editor {
     width: 711px;
 }
 
+.html-rtl article.main .editor {
+    float: right;
+}
+
 article.main div.tags input.adder {
     /* Make the Add button look subordinate to the form's larger Save button. */
     font-size: 80%;
     padding: 2px 18px 3px;
     margin: 0 0 0 5px;
+}
+
+.html-rtl article.main div.tags input.adder {
+    margin: 0 5px 0 0;
 }
 
 #preview {
@@ -333,6 +411,12 @@ article.main div.tags input.adder {
     top: 50%;
     width: 165px;
     z-index: 10;
+}
+
+.html-rtl #preview #support-for,
+.html-rtl #review-revision #support-for {
+    left: 100px;
+    right: auto;
 }
 
 #review-revision #support-for {
@@ -497,6 +581,10 @@ details.h2 > summary {
     text-align: right;
 }
 
+.html-rtl #chart-footnote {
+    text-align: left;
+}
+
 #revision-list form {
     margin: 10px 0;
 }
@@ -504,6 +592,10 @@ details.h2 > summary {
 #revision-list ul {
     margin: 5px 0;
     text-align: left;
+}
+
+.html-rtl #revision-list ul {
+    text-align: right;
 }
 
 #revision-list li {
@@ -552,6 +644,11 @@ details.h2 > summary {
     display: inline-block;
     padding: 0 0 0 10px;
     width: 115px;
+}
+
+.html-rtl #revision-list div.date,
+.html-rtl #revision-list div.date-head {
+    padding: 0 10px 0 0;
 }
 
 #revision-list div.status,
@@ -662,6 +759,11 @@ details.h2 > summary {
     text-align: right;
 }
 
+.html-rtl #delete-doc {
+    padding: 0 0 0 10px;
+    text-align: left;
+}
+
 #show-chart {
     color: #447BC4;
     cursor: pointer;
@@ -716,6 +818,10 @@ body.review #content-fields textarea {
     padding: .5em 1em .5em 2em;
 }
 
+.html-rtl #approve-modal p.warning {
+    padding: .5em 2em .5em 1em;
+}
+
 #approve-modal li {
     list-style: none;
     padding: 5px;
@@ -745,6 +851,11 @@ body.review #content-fields textarea {
     position: absolute;
     top: 20px;
     z-index: 999;
+}
+
+.html-rtl #approve-modal li div.help-text {
+    left: auto;
+    right: 23px;
 }
 
 #approve-modal li:hover {
@@ -788,6 +899,10 @@ div.revision-diff div.picker {
     width: auto;
 }
 
+.html-rtl div.revision-diff div.picker {
+    text-align: left;
+}
+
 #diff-picker-kbox {
     width: 770px;
 }
@@ -795,6 +910,11 @@ div.revision-diff div.picker {
 a.toggle-diff {
     float: right;
     margin: 0 10px 0 0;
+}
+
+.html-rtl a.toggle-diff {
+    float: left;
+    margin: 0 0 0 10px;
 }
 
 table.diff {
@@ -805,6 +925,10 @@ table.diff {
     margin: 5px 0 15px;
     text-align: left;
     width: 98%;
+}
+
+.html-rtl table.diff {
+    text-align: right;
 }
 
 table.diff.full {
@@ -840,7 +964,12 @@ td.diff_next {
 td.diff_header {
     color: #999;
     padding: 0 5px 0 1px;
-    text-align:right;
+    text-align: right;
+}
+
+.html-rtl td.diff_header {
+    padding: 0 1px 0 5px;
+    text-align: left;
 }
 
 td.text {
@@ -850,15 +979,15 @@ td.text {
 }
 
 .diff_add {
-    background:#aaffaa;
+    background: #aaffaa;
 }
 
 .diff_chg {
-    background:#ffff77;
+    background: #ffff77;
 }
 
 .diff_sub {
-    background:#ffaaaa;
+    background: #ffaaaa;
 }
 
 /* Delete Document/Revision */
@@ -946,6 +1075,10 @@ details {
     padding: 0 0 0 30px;
 }
 
+.html-rtl .no-details details summary {
+    padding: 0 30px 0 0;
+}
+
 .no-details details.open summary {
     background-position: 5px -45px;
 }
@@ -957,6 +1090,9 @@ div.video .kbox-container {
     text-align: left;
 }
 
+.html-rtl div.video .kbox-container {
+    text-align: right;
+}
 
 /************************************/
 /* Army of Awesome Referral Banner  */

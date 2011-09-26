@@ -11,6 +11,10 @@ h2.subtitle {
     width: 100%;
 }
 
+.html-rtl .dashboards table {
+    text-align: right;
+}
+
 .dashboards tr:nth-child(even) {
     background-color: #f9f9f9;
 }
@@ -90,6 +94,10 @@ h2.subtitle {
     text-align: right;
 }
 
+.html-rtl .dashboards table.overview td:nth-child(2) {
+    text-align: left;
+}
+
 .dashboards table.overview td:nth-child(4) {
     width: 50%;
 }
@@ -104,10 +112,22 @@ h2.subtitle {
     width: 110px;
 }
 
+.html-rtl .dashboards table.documents td:nth-child(2) {
+    padding-left: 6px;
+    padding-right: 12px;
+    text-align: left;
+}
+
 .dashboards table.documents td:nth-child(3),
 .dashboards table.documents th:nth-child(3) {
     padding-left: 0;
     width: 160px;
+}
+
+.html-rtl .dashboards table.documents td:nth-child(3),
+.html-rtl .dashboards table.documents th:nth-child(3) {
+    padding-left: 12px;
+    padding-right: 0;
 }
 
 .dashboards table.documents td:nth-child(4),
@@ -117,12 +137,21 @@ h2.subtitle {
     width: 203px;
 }
 
+.html-rtl .dashboards table.documents td:nth-child(4),
+.html-rtl .dashboards table.documents th:nth-child(4) {
+    text-align: left;
+}
+
 .dashboards table.busy {
     opacity: 0.5;
 }
 
 .dashboards ul.readout-modes {
     float: right;
+}
+
+.html-rtl .dashboards ul.readout-modes {
+    float: left;
 }
 
 .dashboards ul.readout-modes,
@@ -179,6 +208,11 @@ h2.subtitle {
     color: #666;
     padding: 9px 12px 0;
     text-align: justify;
+}
+
+.html-rtl .dashboards details p {
+    color: #666;
+    padding: 9px 0 0 12px;
 }
 
 
@@ -270,11 +304,22 @@ ul#doc-content.announcements > li {
     padding: 0 0 0 18px;
 }
 
+.html-rtl .announcements a.edit {
+    background-position: right -25px;
+    float: left;
+    padding: 0 18px 0 0;
+}
+
 a.add {
     float: right;
     margin: 0 0 5px;
     padding: 0 0 0 13px;
     position: relative;
+}
+
+.html-rtl a.add {
+    float: left;
+    padding: 0 13px 0 0;
 }
 
 a.add:before {
@@ -285,6 +330,11 @@ a.add:before {
     left: 0;
     position: absolute;
     top: -2px;
+}
+
+.html-rtl a.add:before {
+    left: auto;
+    right: 0;
 }
 
 ul#doc-content p {
@@ -316,6 +366,10 @@ div#doc-watch .popup-trigger {
     padding: 2px 0 2px 20px;
 }
 
+.html-rtl div#doc-watch .popup-trigger {
+    padding: 2px 20px 2px 0;
+}
+
 div#doc-watch .popup-menu {
     display: none;
     position: relative;
@@ -334,6 +388,11 @@ div#doc-watch .popup-menu table {
     z-index: 1000;
 }
 
+.html-rtl div#doc-watch .popup-menu table {
+    left: auto;
+    right: -67px;
+}
+
 div#doc-watch table:before {
     background: #32559b;
     content: '';
@@ -342,12 +401,16 @@ div#doc-watch table:before {
     -moz-transform:rotate(45deg);
     -webkit-transform:rotate(45deg);
     z-index: 1;
-
     height: 15px;
     width: 15px;
     left: 58px;
     top: -18px;
     margin-bottom: -13px;
+}
+
+.html-rtl div#doc-watch table:before {
+    left: auto;
+    right: 58px;
 }
 
 div#doc-watch th {
@@ -366,6 +429,14 @@ div#doc-watch th.state:first-child {
     text-align: right;
 }
 
+.html-rtl div#doc-watch th.state:first-child {
+    text-align: left;
+}
+
 div#doc-watch th.state:last-child {
     text-align: left;
+}
+
+.html-rtl div#doc-watch th.state:last-child {
+    text-align: right;
 }

@@ -6,7 +6,7 @@
 }
 
 #doc-pending-fallback {
-    margin: -1em 0 2em;
+    margin: 1em 0 2em;
 }
 
 /* Blocks in the content that need margins. */
@@ -68,6 +68,12 @@
     margin: 0 0 1em 40px;
 }
 
+.html-rtl #doc-content ol,
+.html-rtl #doc-content ul,
+.html-rtl #doc-content dd {
+    margin: -0.7em 40px 1em 0;
+}
+
 #doc-content li {
     margin: 0.2em 0;
 }
@@ -80,6 +86,11 @@
 #doc-content li ul,
 #doc-content li dl {
     margin: 0 0 0 21px;
+}
+
+.html-rtl #doc-content li ol,
+.html-rtl #doc-content li ul {
+    margin: 0 21px 0 0;
 }
 
 #doc-content .code {
@@ -130,8 +141,12 @@
 #doc-content .warning {
    background: #FFF9DB url(../img/wiki/bkg.warning.png) repeat-y left top;
    color: #666458;
-   padding: .5em 1em;
-   padding-left: 2em;
+   padding: .5em 1em .5em 2em;
+}
+
+.html-rtl #home-content .warning,
+.html-rtl #doc-content .warning {
+   padding: .5em 2em .5em 1em;
 }
 
 #doc-content .pref {
@@ -154,6 +169,7 @@
     border-bottom: solid 2px #bbb;
 }
 
-#doc-content th, td {
+#doc-content th,
+#doc-content td {
     padding: 5px 10px;
 }

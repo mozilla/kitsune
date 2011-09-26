@@ -1,9 +1,15 @@
 ﻿/* User autocomplete styles */
 .autocomplete-w1 {
-    left: 0px;
+    left: 0;
     margin: 8px 0 0 6px;
     position: absolute;
-    top: 0px;
+    top: 0;
+}
+
+.html-rtl .autocomplete-w1 {
+    left: auto;
+    margin: 8px 6px 0 0;
+    right: 0;
 }
 
 .autocomplete {
@@ -17,7 +23,12 @@
     margin: -6px 6px 6px -6px;
     max-height: 350px;
     overflow: auto;
-    text-align:left;
+    text-align: left;
+}
+
+.html-rtl .autocomplete {
+    margin: -6px -6px 6px 6px;
+    text-align: right;
 }
 
 .autocomplete .selected {

@@ -19,6 +19,11 @@ article.main h2 {
     position: relative;
 }
 
+.html-rtl #group-list a.add {
+    float: left;
+    padding: 0 13px 0 0;
+}
+
 #group-list a.add:before {
     content: '+';
     font-family: Arial;
@@ -29,16 +34,28 @@ article.main h2 {
     top: -2px;
 }
 
+.html-rtl #group-list a.add:before {
+    left: auto;
+    right: 0;
+}
+
 /* profile page */
 #main-area {
     margin: 0 0 0 65px;
 }
 
+.html-rtl #main-area {
+    margin: 0 65px 0 0;
+}
+
 #avatar-area {
     float: left;
-    margin-left: 0;
     text-align: center;
     width: 48px;
+}
+
+.html-rtl #avatar-area {
+    float: right;
 }
 
 #avatar-area p {
@@ -50,6 +67,11 @@ article.main h2 {
     background: transparent url(../img/icons.actions.png) no-repeat left -25px;
     float: right;
     padding: 0 0 0 18px;
+}
+
+.html-rtl #group-profile a.edit {
+    background: right -25px;
+    padding: 0 18px 0 0;
 }
 
 /* edit page */
@@ -78,9 +100,13 @@ div.editor {
 
 #change-avatar div.val-wrap {
     display: inline-block;
-    line-height:35px;
-    margin-right: 10px;
+    line-height: 35px;
+    margin: 0 10px 0 0;
     width: auto;
+}
+
+.html-rtl #change-avatar div.val-wrap {
+    margin: 0 0 0 10px;
 }
 
 #change-avatar label {
@@ -91,10 +117,19 @@ div.editor {
     width: 180px;
 }
 
+.html-rtl #change-avatar label {
+    padding: 0 0 0 5px;
+    text-align: left;
+}
+
 #change-avatar div.val-wrap input {
     display: block;
 }
 
 #change-avatar div.submit {
     padding: 10px 0 0 188px;
+}
+
+.html-rtl #change-avatar div.submit {
+    padding: 10px 188px 0 0;
 }

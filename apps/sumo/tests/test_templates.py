@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.utils import translation
 
 from nose.tools import eq_, raises
 from pyquery import PyQuery as pq
@@ -41,20 +42,18 @@ class BaseTemplateTests(MockRequestTests):
         super(BaseTemplateTests, self).setUp()
         self.template = 'base.html'
 
-    @raises(KeyError)
-    def test_no_dir_attribute(self):
-        """Make sure dir attr isn't rendered when no dir is specified."""
+    def test_dir_ltr(self):
+        """Make sure dir attr is set to 'ltr' for LTR language."""
         html = jingo.render_to_string(self.request, self.template)
-        doc = pq(html)
-        doc('html')[0].attrib['dir']
+        eq_('ltr', pq(html)('html').attr['dir'])
 
-    def test_rtl_dir_attribute(self):
-        """Make sure dir attr is set to 'rtl' when specified as so."""
-        html = jingo.render_to_string(self.request, self.template,
-                                      {'dir': 'rtl'})
-        doc = pq(html)
-        dir_attr = doc('html').attr['dir']
-        eq_('rtl', dir_attr)
+    def test_dir_rtl(self):
+        """Make sure dir attr is set to 'rtl' for RTL language."""
+        translation.activate('he')
+        self.request.locale = 'he'
+        html = jingo.render_to_string(self.request, self.template)
+        eq_('rtl', pq(html)('html').attr['dir'])
+        translation.deactivate()
 
     def test_multi_feeds(self):
         """Ensure that multiple feeds are put into the page when set."""

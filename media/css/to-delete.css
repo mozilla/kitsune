@@ -4,6 +4,10 @@ div.to-delete {
     padding: 0 0 0 9px;
 }
 
+.html-rtl div.to-delete {
+    padding: 0 9px 0 0;
+}
+
 div.to-delete label {
     display:block;
     font-weight:bold;
@@ -12,6 +16,10 @@ div.to-delete label {
 
 div.to-delete input {
     margin: 0 0 0 1em;
+}
+
+.html-rtl div.to-delete input {
+    margin: 0 1em 0 0;
 }
 
 div.to-delete form {
@@ -25,4 +33,9 @@ div.to-delete p {
 div.to-delete div.content ul,
 div.to-delete div.content ol {
     margin: 0 0 0 1.5em;
+}
+
+.html-rtl div.to-delete div.content ul,
+.html-rtl div.to-delete div.content ol {
+    margin: 0 1.5em 0 0;
 }

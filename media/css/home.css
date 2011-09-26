@@ -1,4 +1,5 @@
-#main {
+#main,
+.html-rtl #main {
     background: none;
     padding: 0;
 }
@@ -26,6 +27,11 @@
     z-index: 1;
 }
 
+.html-rtl #featured {
+    background-position: 50px 0;
+    padding: 75px 0 0 330px;
+}
+
 body.mobile #featured,
 body.fxhome #featured {
     background: url("../img/nurse.mobile.small.png") no-repeat scroll 570px 0px transparent;
@@ -33,10 +39,6 @@ body.fxhome #featured {
 
 /* Bug 615495 - Don't send the nursecat to Japanese audiences. */
 html[lang=ja] body div#featured {
-    background: none;
-}
-
-#main-content {
     background: none;
 }
 
@@ -64,6 +66,10 @@ html[lang=ja] body div#featured {
     width: 425px;
 }
 
+.html-rtl #support-search {
+    padding: 20px 57px 0 0;
+}
+
 #support-search input.text {
     width: 329px;
 }
@@ -87,6 +93,10 @@ html[lang=ja] body div#featured {
     zoom: 1;
 }
 
+.html-rtl #home-content {
+    background-position: right top;
+}
+
 #home-content:after {
     clear: both;
     content: ".";
@@ -100,14 +110,24 @@ html[lang=ja] body div#featured {
     padding: 20px 10px 0;
 }
 
-#home-content-quick, #home-content-explore {
+#home-content-quick,
+#home-content-explore {
     float: left;
     font-size: 14px;
+}
+
+.html-rtl #home-content-quick,
+.html-rtl #home-content-explore {
+    float: right;
 }
 
 #home-content-quick {
     clear: left;
     width: 260px;
+}
+
+.html-rtl #home-content-quick {
+    clear: right;
 }
 
 #home-content-quick h1 {
@@ -123,7 +143,13 @@ html[lang=ja] body div#featured {
 #home-content-quick section {
     background: url("../img/home-bar.png") no-repeat scroll left bottom transparent;
     padding: 25px 0 40px 20px;
-    margin-right: 20px;
+    margin: 0 20px 0 0;
+}
+
+.html-rtl #home-content-quick section {
+    background-position: right bottom;
+    padding: 25px 20px 40px 0;
+    margin: 0 0 0 20px;
 }
 
 #home-content-quick section:last-child {
@@ -141,8 +167,14 @@ html[lang=ja] body div#featured {
 #home-content-explore {
     border-left: 2px dotted #a8c4ef;
     margin: 20px 0 0;
-    padding-left: 20px;
+    padding: 0 0 0 20px;
     width: 460px;
+}
+
+.html-rtl #home-content-explore {
+    border: none;
+    border-right: 2px dotted #a8c4ef;
+    padding: 0 20px 0 0;
 }
 
 #home-content-explore h1 {
@@ -161,14 +193,28 @@ body.desktop #home-content-explore section {
     width: 205px;
 }
 
+body.mobile.html-rtl #home-content-explore section,
+body.desktop.html-rtl #home-content-explore section {
+    float: right;
+    padding: 0 0 0 15px;
+}
+
 #home-content-explore section.odd {
     clear: left;
 }
 
+.html-rtl #home-content-explore section.odd {
+    clear: right;
+}
+
 #home-content-explore ul {
-    margin-bottom: 1em;
-    padding-left: 1em;
+    margin: 0 0 1em;
+    padding: 0 0 0 1em;
     text-indent: -2px;
+}
+
+.html-rtl #home-content-explore ul {
+    padding: 0 1em 0 0;
 }
 
 #home-content-explore ul li {
