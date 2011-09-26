@@ -904,6 +904,8 @@ def delete_document(request, document_slug):
                             {'document': document})
 
     # Handle confirm delete form POST
+    log.warning('User %s is deleting document: %s (id=%s)' %
+                (request.user, document.title, document.id))
     document.delete()
 
     return jingo.render(request, 'wiki/confirm_document_delete.html',
