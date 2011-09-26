@@ -304,23 +304,31 @@ TOWER_KEYWORDS = {
 # handles the extraction.  The Tower library expects this.
 DOMAIN_METHODS = {
     'messages': [
-        ('vendor/**', 'ignore'),
-        ('apps/forums/**', 'ignore'),
-        ('apps/questions/**', 'ignore'),
-        ('apps/chat/**', 'ignore'),
+        ('apps/forums/**.py', 'ignore'),
+        ('apps/forums/**.html', 'ignore'),
+        ('apps/questions/**.py', 'ignore'),
+        ('apps/questions/**.html', 'ignore'),
+        ('apps/chat/**.py', 'ignore'),
+        ('apps/chat/**.html', 'ignore'),
+        ('apps/**/tests/**.py', 'ignore'),
+        ('apps/**/management/**.py', 'ignore'),
         ('apps/**.py',
             'tower.management.commands.extract.extract_tower_python'),
-        ('**/templates/**.html',
+        ('apps/**/templates/**.html',
+            'tower.management.commands.extract.extract_tower_template'),
+        ('templates/**.html',
             'tower.management.commands.extract.extract_tower_template'),
     ],
     'lhtml': [
-        ('apps/forums/**', 'ignore'),
-        ('apps/questions/**', 'ignore'),
+        ('apps/forums/**.lthml', 'ignore'),
+        ('apps/questions/**.lhtml', 'ignore'),
         ('**/templates/**.lhtml',
             'tower.management.commands.extract.extract_tower_template'),
     ],
     'javascript': [
         # We can't say **.js because that would dive into any libraries.
+        ('media/js/*-all.js', 'ignore'),
+        ('media/js/*-min.js', 'ignore'),
         ('media/js/*.js', 'javascript'),
     ],
 }
@@ -330,6 +338,7 @@ DOMAIN_METHODS = {
 # in DOMAIN_METHODS.
 # http://github.com/jbalogh/zamboni/blob/d4c64239c24aa2f1e91276909823d1d1b290f0ee/settings.py#L254
 STANDALONE_DOMAINS = [
+    TEXT_DOMAIN,
     'javascript',
     ]
 
