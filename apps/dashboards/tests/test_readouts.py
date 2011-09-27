@@ -90,8 +90,7 @@ class OverviewTests(TestCase):
 
     def test_templates_and_docs_disjunct(self):
         """Make sure templates aren't included in the All Articles count."""
-        t = translated_revision(is_approved=True,
-                                save=True)
+        t = translated_revision(is_approved=True, save=True)
         # It shows up in All when it's a normal doc:
         eq_(1, overview_rows('de')['all']['numerator'])
         eq_(1, overview_rows('de')['all']['denominator'])
@@ -103,6 +102,41 @@ class OverviewTests(TestCase):
         # ...but not when it's a template:
         eq_(0, overview_rows('de')['all']['numerator'])
         eq_(0, overview_rows('de')['all']['denominator'])
+
+    # TODO: Also test templates, or make it obvious by factoring that they work too.
+    def test_not_counting_outdated(self):
+        """Out-of-date translations shouldn't count as "done".
+
+        "Out-of-date" can mean either moderately or majorly out of date. The
+        only thing we don't care about is typo-level outdatedness.
+
+        """
+        t = translated_revision(is_approved=True, save=True)
+        overview = overview_rows('de')
+        eq_(1, overview['most-visited']['numerator'])
+        eq_(1, overview['all']['numerator'])
+
+        # Update the parent with a typo-level revision:
+        revision(document=t.document.parent,
+                 significance=TYPO_SIGNIFICANCE,
+                 is_approved=True,
+                 is_ready_for_localization=True,
+                 save=True)
+        # Assert it still shows up in the numerators:
+        overview = overview_rows('de')
+        eq_(1, overview['most-visited']['numerator'])
+        eq_(1, overview['all']['numerator'])
+
+        # Update the parent with a medium-level revision:
+        revision(document=t.document.parent,
+                 significance=MEDIUM_SIGNIFICANCE,
+                 is_approved=True,
+                 is_ready_for_localization=True,
+                 save=True)
+        # Assert it no longer shows up in the numerators:
+        overview = overview_rows('de')
+        eq_(0, overview['most-visited']['numerator'])
+        eq_(0, overview['all']['numerator'])
 
 
 class UnreviewedChangesTests(ReadoutTestCase):
