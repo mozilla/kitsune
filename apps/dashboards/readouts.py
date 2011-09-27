@@ -156,13 +156,24 @@ def overview_rows(locale):
     # Translations whose based_on revision has no >10-significance, ready-for-l10n revisions after it:
     translated_docs = single_result(
         'SELECT COUNT(*) FROM wiki_document transdoc '
-        'INNER JOIN wiki_document engdoc on transdoc.parent_id=engdoc.id '
+        'INNER JOIN wiki_document engdoc ON transdoc.parent_id=engdoc.id '
+        'INNER JOIN wiki_revision curtransrev '
+            'ON transdoc.current_revision_id=curtransrev.id '
         'WHERE transdoc.locale=%s '
             'AND NOT transdoc.is_template '
             'AND NOT transdoc.is_archived '
-            'AND transdoc.current_revision_id IS NOT NULL '  # TODO: necessary?
-            'AND engdoc.latest_localizable_revision_id IS NOT NULL ',
-        (locale,))
+            'AND engdoc.latest_localizable_revision_id IS NOT NULL '
+            'AND NOT EXISTS '
+                # Any ready-for-l10n, nontrivial-significance revision of the
+                # English doc newer than the one our current translation is
+                # based on:
+                '(SELECT id FROM wiki_revision engrev '
+                 'WHERE engrev.document_id=engdoc.id '
+                 'AND engrev.id>curtransrev.based_on_id '
+                 'AND engrev.is_ready_for_localization '
+                 'AND engrev.significance>=%s)',
+        (locale, MEDIUM_SIGNIFICANCE))
+
 #     translated_docs = translated.filter(is_template=False).extra(
 #         where=['NOT EXISTS (SELECT id FROM wiki_revision WHERE significance>10 AND is_ready_for_localization'],
 #         tables=).count()

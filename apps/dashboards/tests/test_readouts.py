@@ -135,8 +135,8 @@ class OverviewTests(TestCase):
                  save=True)
         # Assert it no longer shows up in the numerators:
         overview = overview_rows('de')
-        eq_(0, overview['most-visited']['numerator'])
         eq_(0, overview['all']['numerator'])
+        eq_(0, overview['most-visited']['numerator'])
 
 
 class UnreviewedChangesTests(ReadoutTestCase):
