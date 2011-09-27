@@ -90,8 +90,7 @@ class OverviewTests(TestCase):
 
     def test_templates_and_docs_disjunct(self):
         """Make sure templates aren't included in the All Articles count."""
-        t = translated_revision(is_approved=True,
-                                save=True)
+        t = translated_revision(is_approved=True, save=True)
         # It shows up in All when it's a normal doc:
         eq_(1, overview_rows('de')['all']['numerator'])
         eq_(1, overview_rows('de')['all']['denominator'])

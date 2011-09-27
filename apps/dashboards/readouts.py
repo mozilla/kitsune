@@ -120,25 +120,32 @@ def _format_row_with_out_of_dateness(readout_locale, eng_slug, eng_title, slug,
 
 def overview_rows(locale):
     """Return the iterable of dicts needed to draw the Overview table."""
-    def percent_or_100(num, denom):
-        return int(round(num / float(denom) * 100)) if denom else 100
-
     # The Overview table is a special case: it has only a static number of
     # rows, so it has no expanded, all-rows view, and thus needs no slug, no
     # "max" kwarg on rows(), etc. It doesn't fit the Readout signature, so we
     # don't shoehorn it in.
 
-    total = Document.uncached.filter(
-                locale=settings.WIKI_DEFAULT_LANGUAGE,
-                current_revision__isnull=False,
-                is_localizable=True,
-                latest_localizable_revision__isnull=False,
-                is_archived=False)
-    total_docs = total.filter(is_template=False).count()
+    def percent_or_100(num, denom):
+        return int(round(num / float(denom) * 100)) if denom else 100
 
-    # How many approved documents are there in German that have parents?
-    # Even though users are technically allowed to translate revisions that
-    # aren't marked as ready-for-l10n, we restrict this set to ready-to-
+    def single_result(sql, params):
+        """Return the first column of the first row returned by a query."""
+        cursor = _cursor()
+        cursor.execute(sql, params)
+        return cursor.fetchone()[0]
+
+    total = Document.uncached.filter(
+        locale=settings.WIKI_DEFAULT_LANGUAGE,
+        is_archived=False,
+        current_revision__isnull=False,
+        is_localizable=True,
+        latest_localizable_revision__isnull=False)
+    total_docs = total.filter(is_template=False).count()
+    total_templates = total.filter(is_template=True).count()
+
+    # How many approved, up-to-date documents are there in German that have
+    # parents? Even though users are technically allowed to translate revisions
+    # that aren't marked as ready-for-l10n, we restrict this set to ready-to-
     # localize documents because we restrict the denominator to those.
     translated = Document.uncached.filter(
         locale=locale,
@@ -146,26 +153,35 @@ def overview_rows(locale):
         current_revision__isnull=False,
         parent__isnull=False,
         parent__latest_localizable_revision__isnull=False)
-    translated_docs = translated.filter(is_template=False).count()
+    # Translations whose based_on revision has no >10-significance, ready-for-l10n revisions after it:
+    translated_docs = single_result(
+        'SELECT COUNT(*) FROM wiki_document transdoc '
+        'INNER JOIN wiki_document engdoc on transdoc.parent_id=engdoc.id '
+        'WHERE transdoc.locale=%s '
+            'AND NOT transdoc.is_template '
+            'AND NOT transdoc.is_archived '
+            'AND transdoc.current_revision_id IS NOT NULL '  # TODO: necessary?
+            'AND engdoc.latest_localizable_revision_id IS NOT NULL ',
+        (locale,))
+#     translated_docs = translated.filter(is_template=False).extra(
+#         where=['NOT EXISTS (SELECT id FROM wiki_revision WHERE significance>10 AND is_ready_for_localization'],
+#         tables=).count()
+    # How many approved templates are there in German that have parents?
+    translated_templates = translated.filter(is_template=True).count()
 
     # Of the top 20 most visited English articles, how many are not translated
     # into German?
+    # Basically, we want to change this to be "which translations are based_on a revision that is less than the current_revision of the English doc?" Oh god, and let's not forget to ignore current_revisions that are merely typo edits.
+    # Mixdown: Which translations are based_on a revision
+    # We could always maintain a "last >10-significance edit [revision id]" for every doc if things get slow.
     TOP_N = 20
-    cursor = _cursor()
-    cursor.execute(
+    popular_translated = single_result(
         'SELECT count(*) FROM '
             '(SELECT transdoc.id '
               + most_visited_translation_from(extra_where='') +
              'LIMIT %s) t1 '
         'WHERE t1.id IS NOT NULL',
         (locale, THIS_WEEK, settings.WIKI_DEFAULT_LANGUAGE, TOP_N))
-    popular_translated = cursor.fetchone()[0]
-
-    # Template overview
-    total_templates = total.filter(is_template=True).count()
-
-    # How many approved templates are there in German that have parents?
-    translated_templates = translated.filter(is_template=True).count()
 
     return {'most-visited': dict(
                  title=_('Most-Visited Articles'),
