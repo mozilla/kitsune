@@ -47,3 +47,24 @@ fields.DateField.widget = DateWidget
 fields.TimeField.widget = TimeWidget
 fields.URLField.widget = URLWidget
 fields.EmailField.widget = EmailWidget
+
+
+# Workaround until https://code.djangoproject.com/ticket/16920 gets fixed.
+from django.contrib.admin import util
+from django.contrib.admin.util import NestedObjects
+
+def _collect(self, objs, source_attr=None, **kwargs):
+    for obj in objs:
+        if source_attr:
+            # We just added a default of None below and that gets around
+            # the problem.
+            self.add_edge(getattr(obj, source_attr, None), obj)
+        else:
+            self.add_edge(None, obj)
+    try:
+        return super(NestedObjects, self).collect(
+            objs, source_attr=source_attr, **kwargs)
+    except models.ProtectedError, e:
+        self.protected.update(e.protected_objects)
+
+util.NestedObjects.collect = _collect

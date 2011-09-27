@@ -1,15 +1,20 @@
+from django.contrib import admin
+from django.contrib.admin.options import ModelAdmin
 from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
 from django.core import mail
 
 import mock
 from nose.tools import eq_
+import test_utils
 
 from forums.events import NewPostEvent, NewThreadEvent
 from forums.models import Thread, Forum, Post
 from forums.tests import ForumTestCase
-from sumo.tests import post, attrs_eq, starts_with
+from sumo.urlresolvers import reverse
+from sumo.tests import get, post, attrs_eq, starts_with
 from users.models import Setting
+from users.tests import user
 
 
 # Some of these contain a locale prefix on included links, while others don't.
@@ -267,3 +272,21 @@ class NotificationsTests(ForumTestCase):
         s.save()
         post(self.client, 'forums.reply', data, args=[t2.forum.slug, t2.pk])
         assert not NewPostEvent.is_notifying(user, t2)
+
+    @mock.patch.object(Site.objects, 'get_current')
+    def test_admin_delete_user_with_watched_thread(self, get_current):
+        """Test the admin delete view for a user with a watched thread."""
+        get_current.return_value.domain = 'testserver'
+        self.client.login(username='admin', password='testpass')
+
+        u = user(save=True)
+        f = Forum.objects.all()[0]
+        t = Thread(creator=u, forum=f, title='title')
+        t.save()
+        self._toggle_watch_thread_as('pcraciunoiu', thread_id=t.id, turn_on=True)
+        url = reverse('admin:auth_user_delete', args=[u.id])
+        request = test_utils.RequestFactory().get(url)
+        request.user = User.objects.get(username='admin')
+        request.session = self.client.session
+        # The following blows up without our monkeypatch.
+        ModelAdmin(User, admin.site).delete_view(request, str(u.id))
