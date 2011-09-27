@@ -61,9 +61,9 @@ SETTINGS
 echo "Starting tests..." `date`
 export FORCE_DB=1
 if [ -z $COVERAGE ]; then
-    python manage.py test --noinput --logging-clear-handlers --with-xunit
+    python manage.py test --noinput --logging-clear-handlers --with-xunit --with-fixture-bundling
 else
-    coverage run manage.py test --noinput --logging-clear-handlers --with-xunit
+    coverage run manage.py test --noinput --logging-clear-handlers --with-xunit --with-fixture-bundling
     coverage xml $(find apps lib -name '*.py')
 fi
 
