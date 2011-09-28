@@ -101,77 +101,165 @@ section.actions {
     padding: 20px 30px 0 0;
 }
 
-article#new-message ul {
+#new-message ul {
     list-style: none;
 }
 
-article#new-message li {
+#new-message li {
     margin: 0 0 10px;
 }
 
-article#new-message label {
+#new-message label {
     float: left;
     padding: 7px 0 0;
     width: 100px;
 }
 
-article#new-message input[type="text"],
-article#new-message textarea {
+#new-message input[type="text"],
+#new-message textarea {
     width: 600px;
 }
 
-article#new-message div.submit {
+#new-message div.submit {
     padding-left: 100px;
 }
 
-article#new-message ul.errorlist {
+#new-message ul.errorlist {
     margin: 0 0 5px 100px;
 }
 
-article.message-view span.avatar {
+.message-view span.avatar {
     float: left;
     padding-right: 5px;
 }
 
-article.message-view span.from {
+.message-view span.from {
     display: block;
 }
 
-article.message-view span.from a {
+.message-view span.from a {
     font-weight: bold;
 }
 
-article.message-view time {
+.message-view time {
     color: #999;
     font-size: 80%;
     margin-left: 10px;
 }
 
-article.message-view div.message {
+.message-view div.message {
     margin-left: 53px;
     min-height: 50px;
     padding: 10px 0;
 }
 
-article.message-view form.reply {
+.message-view form.reply {
     margin-left: 53px;
     width: 377px;
 }
 
-article.message-view form ul {
+.message-view form ul {
     list-style: none;
 }
 
-article.message-view label {
+.message-view label {
     display: none;
 }
 
-article.message-view textarea {
+.message-view form.reply textarea {
     height: 50px;
     margin-bottom: 5px;
     width: 350px;
 }
 
-article.message-view form.reply input[type=submit] {
-    float: right;
+#preview {
+    margin: 25px 0;
+}
+
+#preview h1 {
+    font-size: 18px;
+    margin: 10px 0;
+}
+
+div.editor {
+    float: left;
+    padding: 0;
+}
+
+/* wiki syntax in messages */
+div.message h1,
+div.message h2,
+div.message h3,
+div.message h4,
+div.message h5,
+div.message h6 {
+    margin: 0.5em 0;
+    padding: 0;
+}
+
+div.message h1 {
+    font-size: 210%;
+}
+
+div.message h2 {
+    font-size: 180%;
+}
+
+div.message h3 {
+    font-size: 145%;
+}
+
+div.message h4 {
+    font-size: 115%;
+}
+
+div.message h5 {
+    font-size: 95%;
+}
+
+div.message h6 {
+    font-size: 85%;
+}
+
+div.message p {
+    margin-bottom: 1em;
+}
+
+div.message ol,
+div.message ul {
+    margin-left: 1.5em;
+}
+
+div.message li {
+    border: none;
+    margin: 1em 0;
+    padding: 0;
+}
+
+div.message li:nth-child(even) {
+    background: none;
+}
+
+div.message dd {
+    margin-left: 3em;
+}
+
+div.message blockquote {
+    background-color: #e6eaec;
+    -moz-border-radius: 1em;
+    -webkit-border-radius: 1em;
+    border-radius: 1em;
+    margin: 1.5em;
+    padding: 1em;
+}
+
+div.message pre {
+    background-color: #e6eaec;
+    margin: 1em 0;
+    padding: 0.5em;
+    white-space: pre-wrap;
+}
+
+div.message a:hover {
+    text-decoration: underline;
 }

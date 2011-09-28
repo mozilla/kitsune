@@ -14,4 +14,6 @@ urlpatterns = patterns('',
     url(r'^/sent/(?P<msgid>\d+)/delete$', views.delete,
         {'msgtype': 'outbox'}, name='messages.delete_outbox'),
     url(r'^/new$', views.new_message, name='messages.new'),
+    url(r'^/preview-async$', views.preview_async,
+        name='messages.preview_async'),
 )
