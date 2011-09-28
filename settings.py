@@ -520,8 +520,11 @@ MINIFY_BUNDLES = {
             'js/mobile.js',
         ),
         'messages': (
+            'js/markup.js',
             'js/libs/jquery.autocomplete.js',
             'js/users.autocomplete.js',
+            'js/ajaxpreview.js',
+            'js/messages.js',
         ),
         'groups': (
             'js/libs/jquery.autocomplete.js',

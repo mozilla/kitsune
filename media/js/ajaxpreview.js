@@ -13,6 +13,8 @@ function AjaxPreview(el, options) {
      *      previewUrl - url to POST the content and get a preview
      *      contentElement - DOM element or selector that input content
      *      previewElement - DOM element or selector to insert the preview
+     *      changeHash - Change document.location.hash to the id of
+     *                   previewElemnt (default: true)
      */
     AjaxPreview.prototype.init.call(this, el, options);
 }
@@ -28,7 +30,8 @@ AjaxPreview.prototype = {
             $content = (o.contentElement && $(o.contentElement)) ||
                        $('#' + $btn.data('preview-content-id')),
             csrftoken = $btn.closest('form')
-                            .find('input[name=csrfmiddlewaretoken]').val();
+                            .find('input[name=csrfmiddlewaretoken]').val(),
+            changeHash = o.changeHash === undefined ? true : o.changeHash;
 
         $btn.click(function(e) {
             e.preventDefault();
@@ -58,7 +61,9 @@ AjaxPreview.prototype = {
 
         $(self).bind('show-preview', function(e, success, html) {
             $preview.html(html);
-            document.location.hash = $preview.attr('id');
+            if (changeHash) {
+                document.location.hash = $preview.attr('id');
+            }
             $btn.removeAttr('disabled');
             $(self).trigger('done', [success]);
         });
