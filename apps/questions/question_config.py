@@ -379,9 +379,19 @@ products = SortedDict([
     ('other', {
         'name': _lazy(u"Thunderbird"),
         'subtitle':  _lazy(u"or other Mozilla products"),
-        'html': 'This site is for Firefox support. You can get help with '
-                'Thunderbird and other Mozilla products at '
-                '<a href="//www.mozilla.org/support">support.mozilla.org</a>.',
+        'html': 'This site is only for Firefox support. Please find your '
+                'product below.'
+                '<ul class="product-support">'
+                '<li><a href="http://support.mozillamessaging.com/">'
+                'Thunderbird support</a></li>'
+                '<li><a href="http://www.seamonkey-project.org/doc/">'
+                'SeaMonkey support</a></li>'
+                '<li><a href="http://caminobrowser.org/help/">'
+                'Camino support</a></li>'
+                '<li><a '
+                'href="http://www.mozilla.org/projects/calendar/faq.html">'
+                'Lightning and Sunbird support</a></li>'
+                '</ul>',
         'categories': SortedDict([]),
         'deadend': True,
     }),
