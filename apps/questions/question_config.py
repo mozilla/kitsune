@@ -390,7 +390,7 @@ products = SortedDict([
                 'Camino support</a></li>'
                 '<li><a '
                 'href="http://www.mozilla.org/projects/calendar/faq.html">'
-                'Lightning and Sunbird support</li>'
+                'Lightning and Sunbird support</a></li>'
                 '</ul>',
         'categories': SortedDict([]),
         'deadend': True,
