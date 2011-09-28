@@ -285,7 +285,7 @@ class Readout(object):
             return reverse('dashboards.contributors_detail',
                            kwargs={'readout_slug': self.slug}, locale=locale)
         else:
-            raise KeyError("This Readout was not found.")
+            raise KeyError('This Readout was not found: %s' % self.slug)
 
 
 class MostVisitedDefaultLanguageReadout(Readout):
