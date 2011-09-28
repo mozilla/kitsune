@@ -34,6 +34,11 @@
     top: 5px;
 }
 
+.html-rtl .kbox-close {
+    left: 8px;
+    right: auto;
+}
+
 .kbox-title {
     background: #2d488d;
     border-bottom: solid 2px #22366a;

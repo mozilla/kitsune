@@ -18,6 +18,10 @@ ul.users div.avatar {
     width: 48px;
 }
 
+.html-rtl {
+    margin: 0 0 0 10px;
+}
+
 ul.users div.avatar img {
     height: 48px;
     width: 48px;
@@ -72,4 +76,9 @@ input.user-autocomplete {
     background: transparent url(../img/icons.actions.png) no-repeat left -25px;
     float: right;
     padding: 0 0 0 18px;
+}
+
+.html-rtl .editable a.edit {
+    float: left;
+    padding: 0 18px 0 0;
 }

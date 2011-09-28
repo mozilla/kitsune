@@ -572,6 +572,7 @@ ul.user-messages li.error {
 }
 
 .html-rtl #main {
+    background: none; /* TODO */
     float: right;
 }
 
@@ -583,6 +584,7 @@ ul.user-messages li.error {
 }
 
 .html-rtl #main article.main {
+    background: none; /* TODO */
     padding: 14px 0 0 20px;
 }
 

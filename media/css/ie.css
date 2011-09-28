@@ -13,7 +13,11 @@
     background-image: url(../img/crumb.gif);
     background-repeat: no-repeat;
     background-position: 0 50%;
-    padding: 0 0px 0 10px;
+    padding: 0 0 0 10px;
+}
+
+.html-rtl .breadcrumbs li {
+    padding: 0 10px 0 0;
 }
 
 .breadcrumbs li {
@@ -29,11 +33,6 @@ div.img-inner,
 ul.tag-list li {
     zoom: 1; /* force inline-block behavior on block elements in IE6 and IE7 */
     display: inline;
-}
-
-/* set widths aren't respected with long content */
-body.questions #main-content {
-    overflow: hidden;
 }
 
 form div.attachments-upload div.attachment,
@@ -88,6 +87,10 @@ body.mobile #featured {
     _margin-left: 10px;
 }
 
+.html-rtl #home-content-explore section {
+    _margin-right: 10px;
+}
+
 /* Fix z-index issue with header drop downs */
 #nav-main {
     position: relative;
@@ -97,6 +100,10 @@ body.mobile #featured {
 /* Article page - more help .gif fallback */
 #more-help {
     _background: transparent url(../img/wiki/morehelp.nurse.gif) no-repeat left top;
+}
+
+.html-rtl #more-help {
+    _background-position: right top;
 }
 
 /* Questions image thumbnails should be scaled to thumbnail size */
@@ -111,6 +118,11 @@ div.editor-tools span.separator,
 button.markup-toolbar-button {
     display: block;
     float: left;
+}
+
+.html-rtl div.editor-tools span.separator,
+.html-rtl button.markup-toolbar-button {
+    float: right;
 }
 
 /* Customer Care hidden tweets */
