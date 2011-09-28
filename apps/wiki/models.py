@@ -184,7 +184,8 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin):
     current_revision = models.ForeignKey('Revision', null=True,
                                          related_name='current_for+')
 
-    # Latest revision which both is_approved and is_ready_for_localization
+    # Latest revision which both is_approved and is_ready_for_localization,
+    # This may remain non-NULL even if is_localizable is changed to false.
     latest_localizable_revision = models.ForeignKey(
         'Revision', null=True, related_name='localizable_for+')
 

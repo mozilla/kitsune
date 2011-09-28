@@ -153,16 +153,18 @@ def overview_rows(locale):
         current_revision__isnull=False,
         parent__isnull=False,
         parent__latest_localizable_revision__isnull=False)
-    # Translations whose based_on revision has no >10-significance, ready-for-l10n revisions after it:
-    translated_docs = single_result(
+    # Translations whose based_on revision has no >10-significance, ready-for-
+    # l10n revisions after it. It *might* be possible to do this with the ORM:
+    up_to_date_translation_count = (
         'SELECT COUNT(*) FROM wiki_document transdoc '
         'INNER JOIN wiki_document engdoc ON transdoc.parent_id=engdoc.id '
         'INNER JOIN wiki_revision curtransrev '
             'ON transdoc.current_revision_id=curtransrev.id '
         'WHERE transdoc.locale=%s '
-            'AND NOT transdoc.is_template '
+            'AND transdoc.is_template=%s '
             'AND NOT transdoc.is_archived '
             'AND engdoc.latest_localizable_revision_id IS NOT NULL '
+            'AND engdoc.is_localizable
             'AND NOT EXISTS '
                 # Any ready-for-l10n, nontrivial-significance revision of the
                 # English doc newer than the one our current translation is
@@ -171,14 +173,15 @@ def overview_rows(locale):
                  'WHERE engrev.document_id=engdoc.id '
                  'AND engrev.id>curtransrev.based_on_id '
                  'AND engrev.is_ready_for_localization '
-                 'AND engrev.significance>=%s)',
-        (locale, MEDIUM_SIGNIFICANCE))
+                 'AND engrev.significance>=%s)')
+    translated_docs = single_result(up_to_date_translation_count,
+                                    (locale, False, MEDIUM_SIGNIFICANCE))
+    translated_templates = single_result(up_to_date_translation_count,
+                                         (locale, True, MEDIUM_SIGNIFICANCE))
 
 #     translated_docs = translated.filter(is_template=False).extra(
 #         where=['NOT EXISTS (SELECT id FROM wiki_revision WHERE significance>10 AND is_ready_for_localization'],
 #         tables=).count()
-    # How many approved templates are there in German that have parents?
-    translated_templates = translated.filter(is_template=True).count()
 
     # Of the top 20 most visited English articles, how many are not translated
     # into German?
