@@ -176,6 +176,8 @@ def overview_rows(locale):
             'AND engdoc.is_localizable '
             'AND NOT EXISTS ' +
                 ANY_SIGNIFICANT_UPDATES)
+    # TODO: Optimize by running the above query just once and separating the
+    # templates from the non-templates with a GROUP BY.
     translated_docs = single_result(up_to_date_translation_count,
                                     (locale, False, MEDIUM_SIGNIFICANCE))
     translated_templates = single_result(up_to_date_translation_count,
@@ -191,7 +193,10 @@ def overview_rows(locale):
     TOP_N = 20
     popular_translated = int(single_result(  # Driver returns a Decimal.
         'SELECT SUM(istranslated) FROM '
-            '(SELECT NOT EXISTS ' +
+            '(SELECT transdoc.current_revision_id IS NOT NULL '
+                # And there have been no significant updates since the current
+                # translation:
+                'AND NOT EXISTS ' +
                 ANY_SIGNIFICANT_UPDATES +
                 'AS istranslated ' +
              most_visited_translation_from(extra_joins=
