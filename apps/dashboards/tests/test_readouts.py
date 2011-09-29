@@ -103,7 +103,6 @@ class OverviewTests(TestCase):
         eq_(0, overview_rows('de')['all']['numerator'])
         eq_(0, overview_rows('de')['all']['denominator'])
 
-    # TODO: Also test templates, or make it obvious by factoring that they work too.
     def test_not_counting_outdated(self):
         """Out-of-date translations shouldn't count as "done".
 
@@ -137,6 +136,13 @@ class OverviewTests(TestCase):
         overview = overview_rows('de')
         eq_(0, overview['all']['numerator'])
         eq_(0, overview['most-visited']['numerator'])
+
+    def test_not_counting_untranslated(self):
+        """Translations with no approved revisions shouldn't count as done."""
+        t = translated_revision(is_approved=False, save=True)
+        overview = overview_rows('de')
+        eq_(0, overview['most-visited']['numerator'])
+        eq_(0, overview['all']['numerator'])
 
 
 class UnreviewedChangesTests(ReadoutTestCase):
