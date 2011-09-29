@@ -116,8 +116,8 @@ def delete(request, msgid, msgtype='inbox'):
                         {'message': message, 'msgtype': msgtype})
 
 
-@login_required
 @require_POST
+@login_required
 def preview_async(request):
     """Ajax preview of posts."""
     statsd.incr('forums.preview')

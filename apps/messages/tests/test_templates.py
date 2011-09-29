@@ -1,7 +1,5 @@
-import mock
 from nose.tools import eq_
 from pyquery import PyQuery as pq
-import waffle.decorators
 
 from messages.models import OutboxMessage
 from sumo.helpers import urlparams
@@ -60,3 +58,20 @@ class SendMessageTestCase(TestCase):
         response = self._test_send_message_to(self.user2.username)
         eq_(pq(response.content)('read').text(),
             pq(response.content)('read').html())
+
+
+class MessagePreviewTests(TestCase):
+    """Tests for preview."""
+    def setUp(self):
+        super(MessagePreviewTests, self).setUp()
+        self.user = user(save=True)
+        self.client.login(username=self.user.username, password='testpass')
+
+    def test_preview(self):
+        """Preview the wiki syntax content."""
+        response = self.client.post(
+            reverse('messages.preview_async', locale='en-US'),
+            {'content': '=Test Content='}, follow=True)
+        eq_(200, response.status_code)
+        doc = pq(response.content)
+        eq_('Test Content', doc('div.message h1').text())
