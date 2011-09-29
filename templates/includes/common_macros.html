@@ -32,7 +32,9 @@
           <li><a href="{{ profile_url(user) }}">{{ _('View Profile') }}</a></li>
           <li><a href="{{ profile_url(user, edit=True) }}">{{ _('Edit Profile') }}</a></li>
           <li><a href="{{ url('dashboards.default') }}">{{ _('Dashboard') }}</a></li>
-          <li><a href="{{ url('users.edit_settings') }}">{{ _('Settings') }}</a></li>
+          {% if waffle.flag('user-settings') %}
+            <li><a href="{{ url('users.edit_settings') }}">{{ _('Settings') }}</a></li>
+          {% endif %}
         </ul>
       </li>
       <li class="nomenu logout">

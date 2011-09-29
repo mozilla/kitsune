@@ -6,6 +6,7 @@ from django.contrib.sites.models import Site
 from django.core import mail
 
 import mock
+import waffle
 from nose.tools import eq_
 from pyquery import PyQuery as pq
 from tidings.tests import watch
@@ -387,7 +388,9 @@ class UserSettingsTests(TestCase):
         self.p = profile(self.user)
         self.client.login(username=self.user.username, password='testpass')
 
-    def test_create_setting(self):
+    @mock.patch.object(waffle, 'flag_is_active')
+    def test_create_setting(self, flag_is_active):
+        flag_is_active.return_value = True
         """Verify that a user's Setting is being created"""
         url = reverse('users.edit_settings', locale='en-US')
         eq_(Setting.objects.filter(user=self.user).count(), 0)  # No settings
