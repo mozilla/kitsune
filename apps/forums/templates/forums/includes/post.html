@@ -30,7 +30,7 @@
       <a class="reply" data-post="{{ post.id }}" href="#thread-reply">{{ _('Reply') }}</a>
     </span>
   {% endif %}
-  {% if post.created != post.updated %}
+  {% if post.id and post.created != post.updated %}
     <span class="post-modified">
       {{ _('Modified by {name} on {datetime}')|fe(name=post.updated_by.username, datetime=datetimeformat(post.updated, format='longdatetime')) }}
     </span>

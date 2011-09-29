@@ -798,6 +798,17 @@ def activate_watch(request, watch_id, secret):
                          'is_active': watch.is_active})
 
 
+@login_required
+@require_POST
+def answer_preview_async(request):
+    """Create an HTML fragment preview of the posted wiki syntax."""
+    statsd.incr('questions.preview')
+    answer = Answer(creator=request.user,
+                    content=request.POST.get('content', ''))
+    return jingo.render(request, 'questions/includes/answer_preview.html',
+                        {'answer_preview': answer})
+
+
 def _search_suggestions(query, locale, category_tags):
     """Return an iterable of the most relevant wiki pages and questions.
 

@@ -87,6 +87,18 @@
         <input type="submit" name="not-helpful" value="No" />
       </form>
     </div>
+
+    <div id="ajaxpreview">
+      <form action="" method="post">
+        <input type="hidden" name="csrfmiddlewaretoken" value="tokenvalue" />
+        <textarea id="id_content" name="content">The content to preview.</textarea>
+        <input type="submit" id="preview" name="preview" value="Preview"
+          data-preview-url="/preview"
+          data-preview-container-id="preview-container"
+          data-preview-content-id="id_content" />
+      </form>
+      <div id="preview-container"></div>
+    </div>
   </div>
 
 

@@ -4,6 +4,8 @@
 
 $(document).ready(function(){
 
+"use strict";
+
 // Object.keys() shim
 if (!Object.keys) {
     Object.keys = function keys(object) {

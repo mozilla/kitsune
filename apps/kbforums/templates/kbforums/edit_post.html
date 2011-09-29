@@ -26,22 +26,19 @@
     </div>
 
     <div class="form-widget submit">
-      <input type="submit" name="preview" value="{{ _('Preview') }}" />
-      <input type="submit" value="{{ _('Update post') }}" />
+      <input type="submit" class="btn-important" value="{{ _('Update post') }}" />
+      <input type="submit" id="preview" name="preview" value="{{ _('Preview') }}"
+          data-preview-url="{{ url('wiki.discuss.post_preview_async', document.slug) }}"
+          data-preview-container-id="post-preview"
+          data-preview-content-id="id_content" />
       <a href="{{ url('wiki.discuss.posts', document.slug, thread.id) }}">{{ _('Cancel') }}</a>
     </div>
   </form>
 
-  {% if post_preview %}
-    <div id="post-preview">
-      <h3>{{ _('Post Preview:') }}</h3>
-      <ol class="posts">
-        <li>
-          {% set post = post_preview %}
-          {% include "kbforums/includes/post.html" %}
-        </li>
-      </ol>
-    </div>
-  {% endif %}
+  <div id="post-preview">
+    {% if post_preview %}
+      {% include "kbforums/includes/post_preview.html" %}
+    {% endif %}
+  </div>
 </article>
 {% endblock %}

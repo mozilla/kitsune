@@ -80,7 +80,7 @@ def threads(request, document_slug):
                          'feeds': feed_urls})
 
 
-def posts(request, document_slug, thread_id, form=None, reply_preview=None):
+def posts(request, document_slug, thread_id, form=None, post_preview=None):
     """View all the posts in a thread."""
     doc = get_document(document_slug, request)
 
@@ -102,7 +102,7 @@ def posts(request, document_slug, thread_id, form=None, reply_preview=None):
     return jingo.render(request, 'kbforums/posts.html',
                         {'document': doc, 'thread': thread,
                          'posts': posts_, 'form': form,
-                         'reply_preview': reply_preview,
+                         'post_preview': post_preview,
                          'is_watching_thread': is_watching_thread,
                          'feeds': feed_urls})
 
@@ -114,7 +114,7 @@ def reply(request, document_slug, thread_id):
     doc = get_document(document_slug, request)
 
     form = ReplyForm(request.POST)
-    reply_preview = None
+    post_preview = None
     if form.is_valid():
         thread = get_object_or_404(Thread, pk=thread_id, document=doc)
 
@@ -123,7 +123,7 @@ def reply(request, document_slug, thread_id):
             reply_.thread = thread
             reply_.creator = request.user
             if 'preview' in request.POST:
-                reply_preview = reply_
+                post_preview = reply_
             else:
                 reply_.save()
                 statsd.incr('kbforums.reply')
@@ -133,7 +133,7 @@ def reply(request, document_slug, thread_id):
 
                 return HttpResponseRedirect(reply_.get_absolute_url())
 
-    return posts(request, document_slug, thread_id, form, reply_preview)
+    return posts(request, document_slug, thread_id, form, post_preview)
 
 
 @login_required
@@ -365,3 +365,13 @@ def watch_forum(request, document_slug):
 
     return HttpResponseRedirect(reverse('wiki.discuss.threads',
                                         args=[document_slug]))
+
+
+@require_POST
+@login_required
+def post_preview_async(request, document_slug):
+    """Ajax preview of posts."""
+    statsd.incr('forums.preview')
+    post = Post(creator=request.user, content=request.POST.get('content', ''))
+    return jingo.render(request, 'kbforums/includes/post_preview.html',
+                        {'post_preview': post})
