@@ -38,11 +38,11 @@ most_visited_translation_from = (
     'LEFT JOIN dashboards_wikidocumentvisits ON engdoc.id='
         'dashboards_wikidocumentvisits.document_id '
         'AND dashboards_wikidocumentvisits.period=%s '
+    '{extra_joins} '
     'WHERE engdoc.locale=%s '
         'AND engdoc.is_localizable '
         'AND NOT engdoc.is_archived '
         'AND engdoc.latest_localizable_revision_id IS NOT NULL '
-        '{extra_where} '  # extra WHERE conditions
     'ORDER BY dashboards_wikidocumentvisits.visits DESC, '
              'COALESCE(transdoc.title, engdoc.title) ASC ').format
 
@@ -183,11 +183,13 @@ def overview_rows(locale):
 #         where=['NOT EXISTS (SELECT id FROM wiki_revision WHERE significance>10 AND is_ready_for_localization'],
 #         tables=).count()
 
-    # Of the top 20 most visited English articles, how many are not translated
-    # into German?
-    # Basically, we want to change this to be "which translations are based_on a revision that is less than the current_revision of the English doc?" Oh god, and let's not forget to ignore current_revisions that are merely typo edits.
-    # Mixdown: Which translations are based_on a revision
-    # We could always maintain a "last >10-significance edit [revision id]" for every doc if things get slow.
+    # Of the top 20 most visited English articles, how many have up-to-date
+    # translations into German?
+    #
+    # TODO: Be very suspicious of this query. It selects from a subquery (known
+    # to MySQL's EXPLAIN as a "derived" table), and MySQL always materializes
+    # such subqueries and never builds indexes on them. However, it seems to be
+    # fast in practice.
     TOP_N = 20
     popular_translated = int(single_result(  # Driver returns a Decimal.
         'SELECT SUM(istranslated) FROM '
@@ -200,27 +202,13 @@ def overview_rows(locale):
                  'AND engrev.id>curtransrev.based_on_id '
                  'AND engrev.is_ready_for_localization '
                  'AND engrev.significance>=%s) '
-                'as istranslated '
-
-             'FROM wiki_document engdoc '
-             'LEFT JOIN wiki_document transdoc ON '
-                 'transdoc.parent_id=engdoc.id '
-                 'AND transdoc.locale=%s '
-             'LEFT JOIN wiki_revision curtransrev '  # inserted join
-                 'ON transdoc.current_revision_id=curtransrev.id '
-             'LEFT JOIN dashboards_wikidocumentvisits ON engdoc.id='
-                 'dashboards_wikidocumentvisits.document_id '
-                 'AND dashboards_wikidocumentvisits.period=%s '
-             'WHERE engdoc.locale=%s '
-                 'AND engdoc.is_localizable '
-                 'AND NOT engdoc.is_archived '
-                 'AND engdoc.latest_localizable_revision_id IS NOT NULL '
-             'ORDER BY dashboards_wikidocumentvisits.visits DESC, '
-                      'COALESCE(transdoc.title, engdoc.title) ASC '
-
+                'AS istranslated ' +
+             most_visited_translation_from(extra_joins=
+                'LEFT JOIN wiki_revision curtransrev '
+                    'ON transdoc.current_revision_id=curtransrev.id ') +
              'LIMIT %s) t1 ',
         (MEDIUM_SIGNIFICANCE, locale, THIS_WEEK,
-         settings.WIKI_DEFAULT_LANGUAGE, TOP_N)) or 0)
+         settings.WIKI_DEFAULT_LANGUAGE, TOP_N)) or 0)  # SUM can return NULL.
 
     return {'most-visited': dict(
                  title=_('Most-Visited Articles'),
@@ -398,7 +386,7 @@ class MostVisitedTranslationsReadout(MostVisitedDefaultLanguageReadout):
             'transdoc.title, dashboards_wikidocumentvisits.visits, ' +
             MOST_SIGNIFICANT_CHANGE_READY_TO_TRANSLATE + ', ' +
             NEEDS_REVIEW +
-            most_visited_translation_from(extra_where='') +
+            most_visited_translation_from(extra_joins='') +
             self._limit_clause(max),
             (self.locale,
              ALL_TIME if self.mode == ALL_TIME else THIS_WEEK,
