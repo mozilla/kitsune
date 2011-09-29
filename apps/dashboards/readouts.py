@@ -73,16 +73,24 @@ MOST_SIGNIFICANT_CHANGE_READY_TO_TRANSLATE = (
 # Whether there are any unreviewed revs of the translation made since the
 # current one:
 NEEDS_REVIEW = (
-            '(SELECT EXISTS '
-                '(SELECT * '
-                 'FROM wiki_revision transrev '
-                 'WHERE transrev.document_id=transdoc.id '
-                 'AND transrev.reviewed IS NULL '
-                 'AND (transrev.id>transdoc.current_revision_id OR '
-                      'transdoc.current_revision_id IS NULL)'
-                ')'
-            ') ')
+    '(SELECT EXISTS '
+        '(SELECT * '
+         'FROM wiki_revision transrev '
+         'WHERE transrev.document_id=transdoc.id '
+         'AND transrev.reviewed IS NULL '
+         'AND (transrev.id>transdoc.current_revision_id OR '
+              'transdoc.current_revision_id IS NULL)'
+        ')'
+    ') ')
 
+# Any ready-for-l10n, nontrivial-significance revision of the English doc newer
+# than the one our current translation is based on:
+ANY_SIGNIFICANT_UPDATES = (
+    '(SELECT id FROM wiki_revision engrev '
+     'WHERE engrev.document_id=engdoc.id '
+     'AND engrev.id>curtransrev.based_on_id '
+     'AND engrev.is_ready_for_localization '
+     'AND engrev.significance>=%s) ')
 
 def _cursor():
     """Return a DB cursor for reading."""
@@ -154,7 +162,8 @@ def overview_rows(locale):
         parent__isnull=False,
         parent__latest_localizable_revision__isnull=False)
     # Translations whose based_on revision has no >10-significance, ready-for-
-    # l10n revisions after it. It *might* be possible to do this with the ORM:
+    # l10n revisions after it. It *might* be possible to do this with the ORM
+    # by passing wheres and tables to extra():
     up_to_date_translation_count = (
         'SELECT COUNT(*) FROM wiki_document transdoc '
         'INNER JOIN wiki_document engdoc ON transdoc.parent_id=engdoc.id '
@@ -165,23 +174,12 @@ def overview_rows(locale):
             'AND NOT transdoc.is_archived '
             'AND engdoc.latest_localizable_revision_id IS NOT NULL '
             'AND engdoc.is_localizable '
-            'AND NOT EXISTS '
-                # Any ready-for-l10n, nontrivial-significance revision of the
-                # English doc newer than the one our current translation is
-                # based on:
-                '(SELECT id FROM wiki_revision engrev '
-                 'WHERE engrev.document_id=engdoc.id '
-                 'AND engrev.id>curtransrev.based_on_id '
-                 'AND engrev.is_ready_for_localization '
-                 'AND engrev.significance>=%s)')
+            'AND NOT EXISTS ' +
+                ANY_SIGNIFICANT_UPDATES)
     translated_docs = single_result(up_to_date_translation_count,
                                     (locale, False, MEDIUM_SIGNIFICANCE))
     translated_templates = single_result(up_to_date_translation_count,
                                          (locale, True, MEDIUM_SIGNIFICANCE))
-
-#     translated_docs = translated.filter(is_template=False).extra(
-#         where=['NOT EXISTS (SELECT id FROM wiki_revision WHERE significance>10 AND is_ready_for_localization'],
-#         tables=).count()
 
     # Of the top 20 most visited English articles, how many have up-to-date
     # translations into German?
@@ -193,15 +191,8 @@ def overview_rows(locale):
     TOP_N = 20
     popular_translated = int(single_result(  # Driver returns a Decimal.
         'SELECT SUM(istranslated) FROM '
-            '(SELECT NOT EXISTS '
-                # Any ready-for-l10n, nontrivial-significance revision of the
-                # English doc newer than the one our current translation is
-                # based on:
-                '(SELECT id FROM wiki_revision engrev '
-                 'WHERE engrev.document_id=engdoc.id '
-                 'AND engrev.id>curtransrev.based_on_id '
-                 'AND engrev.is_ready_for_localization '
-                 'AND engrev.significance>=%s) '
+            '(SELECT NOT EXISTS ' +
+                ANY_SIGNIFICANT_UPDATES +
                 'AS istranslated ' +
              most_visited_translation_from(extra_joins=
                 'LEFT JOIN wiki_revision curtransrev '
