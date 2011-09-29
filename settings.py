@@ -522,6 +522,7 @@ MINIFY_BUNDLES = {
         'messages': (
             'js/markup.js',
             'js/libs/jquery.autocomplete.js',
+            'js/libs/jquery.autoresize.js',
             'js/users.autocomplete.js',
             'js/ajaxpreview.js',
             'js/messages.js',
