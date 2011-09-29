@@ -164,7 +164,7 @@ def overview_rows(locale):
             'AND transdoc.is_template=%s '
             'AND NOT transdoc.is_archived '
             'AND engdoc.latest_localizable_revision_id IS NOT NULL '
-            'AND engdoc.is_localizable
+            'AND engdoc.is_localizable '
             'AND NOT EXISTS '
                 # Any ready-for-l10n, nontrivial-significance revision of the
                 # English doc newer than the one our current translation is
@@ -189,13 +189,38 @@ def overview_rows(locale):
     # Mixdown: Which translations are based_on a revision
     # We could always maintain a "last >10-significance edit [revision id]" for every doc if things get slow.
     TOP_N = 20
-    popular_translated = single_result(
-        'SELECT count(*) FROM '
-            '(SELECT transdoc.id '
-              + most_visited_translation_from(extra_where='') +
-             'LIMIT %s) t1 '
-        'WHERE t1.id IS NOT NULL',
-        (locale, THIS_WEEK, settings.WIKI_DEFAULT_LANGUAGE, TOP_N))
+    popular_translated = int(single_result(  # Driver returns a Decimal.
+        'SELECT SUM(istranslated) FROM '
+            '(SELECT NOT EXISTS '
+                # Any ready-for-l10n, nontrivial-significance revision of the
+                # English doc newer than the one our current translation is
+                # based on:
+                '(SELECT id FROM wiki_revision engrev '
+                 'WHERE engrev.document_id=engdoc.id '
+                 'AND engrev.id>curtransrev.based_on_id '
+                 'AND engrev.is_ready_for_localization '
+                 'AND engrev.significance>=%s) '
+                'as istranslated '
+
+             'FROM wiki_document engdoc '
+             'LEFT JOIN wiki_document transdoc ON '
+                 'transdoc.parent_id=engdoc.id '
+                 'AND transdoc.locale=%s '
+             'LEFT JOIN wiki_revision curtransrev '  # inserted join
+                 'ON transdoc.current_revision_id=curtransrev.id '
+             'LEFT JOIN dashboards_wikidocumentvisits ON engdoc.id='
+                 'dashboards_wikidocumentvisits.document_id '
+                 'AND dashboards_wikidocumentvisits.period=%s '
+             'WHERE engdoc.locale=%s '
+                 'AND engdoc.is_localizable '
+                 'AND NOT engdoc.is_archived '
+                 'AND engdoc.latest_localizable_revision_id IS NOT NULL '
+             'ORDER BY dashboards_wikidocumentvisits.visits DESC, '
+                      'COALESCE(transdoc.title, engdoc.title) ASC '
+
+             'LIMIT %s) t1 ',
+        (MEDIUM_SIGNIFICANCE, locale, THIS_WEEK,
+         settings.WIKI_DEFAULT_LANGUAGE, TOP_N)) or 0)
 
     return {'most-visited': dict(
                  title=_('Most-Visited Articles'),
