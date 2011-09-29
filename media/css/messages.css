@@ -167,7 +167,7 @@ section.actions {
 }
 
 .message-view form.reply textarea {
-    height: 50px;
+    height: 1.25em;
     margin-bottom: 5px;
     width: 350px;
 }
