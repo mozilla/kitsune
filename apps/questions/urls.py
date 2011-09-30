@@ -9,6 +9,10 @@ from flagit import views as flagit_views
 urlpatterns = patterns('questions.views',
     url(r'^$', 'questions', name='questions.questions'),
     url(r'^/new$', 'new_question', name='questions.new_question'),
+    url(r'^/answer-preview-async$', 'answer_preview_async',
+        name='questions.answer_preview_async'),
+
+    # TODO: Factor out `/(?P<question_id>\d+)` below
     url(r'^/(?P<question_id>\d+)$', 'answers', name='questions.answers'),
     url(r'^/(?P<question_id>\d+)/edit$',
         'edit_question', name='questions.edit_question'),

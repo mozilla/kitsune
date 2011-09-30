@@ -211,6 +211,10 @@ div#thread-reply {
     background-color: #E7F6FD;
 }
 
+div#thread-reply div.editor-actions {
+    text-align: left;
+}
+
 div#thread-reply h3,
 div#post-preview h3 {
     padding: .5em 0 0 .5em;
@@ -414,7 +418,7 @@ div.post-to-delete label {
 div.thread-to-delete input,
 div.post-to-delete input,
 div.form-widget input[type="submit"] {
-    margin: 0 0 0 1em;
+    margin: 0 1em 0 0;
 }
 
 div.thread-to-delete form,

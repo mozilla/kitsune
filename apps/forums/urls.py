@@ -3,6 +3,10 @@ from forums.feeds import ThreadsFeed, PostsFeed
 
 urlpatterns = patterns('forums.views',
     url(r'^$', 'forums', name='forums.forums'),
+    url(r'^/post-preview-async$', 'post_preview_async',
+        name='forums.post_preview_async'),
+
+    # TODO: Factor out `/(?P<forum_slug>\d+)` below
     url(r'^/(?P<forum_slug>[\w\-]+)$', 'threads', name='forums.threads'),
     url(r'^/(?P<forum_slug>[\w\-]+)/new$', 'new_thread',
         name='forums.new_thread'),

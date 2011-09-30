@@ -451,6 +451,7 @@ MINIFY_BUNDLES = {
             'js/markup.js',
             'js/libs/jquery.ajaxupload.js',
             'js/ajaxvote.js',
+            'js/ajaxpreview.js',
             'js/aaq.js',
             'js/upload.js',
             'js/questions.js',
@@ -461,6 +462,7 @@ MINIFY_BUNDLES = {
         ),
         'forums': (
             'js/markup.js',
+            'js/ajaxpreview.js',
             'js/forums.js',
         ),
         'gallery': (
@@ -478,6 +480,7 @@ MINIFY_BUNDLES = {
             'js/screencast.js',
             'js/showfor.js',
             'js/ajaxvote.js',
+            'js/ajaxpreview.js',
             'js/wiki.js',
             'js/tags.js',
             'js/dashboards.js',
@@ -517,8 +520,11 @@ MINIFY_BUNDLES = {
             'js/mobile.js',
         ),
         'messages': (
+            'js/markup.js',
             'js/libs/jquery.autocomplete.js',
             'js/users.autocomplete.js',
+            'js/ajaxpreview.js',
+            'js/messages.js',
         ),
         'groups': (
             'js/libs/jquery.autocomplete.js',

@@ -4,10 +4,12 @@ from django.contrib import messages as contrib_messages
 from django.contrib.auth.models import User
 from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import get_object_or_404
+from django.views.decorators.http import require_POST
 
 import jingo
 from multidb.pinning import mark_as_write
 from tower import ugettext as _
+from statsd import statsd
 
 from access.decorators import login_required
 from messages import send_message
@@ -112,6 +114,17 @@ def delete(request, msgid, msgtype='inbox'):
 
     return jingo.render(request, 'messages/delete.html',
                         {'message': message, 'msgtype': msgtype})
+
+
+@require_POST
+@login_required
+def preview_async(request):
+    """Ajax preview of posts."""
+    statsd.incr('forums.preview')
+    m = OutboxMessage(sender=request.user,
+                      message=request.POST.get('content', ''))
+    return jingo.render(request, 'messages/includes/message_preview.html',
+                        {'message': m})
 
 
 def _add_recipients(msg):

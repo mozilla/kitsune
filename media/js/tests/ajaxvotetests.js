@@ -1,6 +1,8 @@
 $(document).ready(function(){
 
-var kboxFixture = {
+"use strict";
+
+var ajaxVoteFixture = {
     setup: function() {
         this.sandbox = tests.createSandbox('#ajaxvote');
         $.mockjax({
@@ -24,7 +26,7 @@ var kboxFixture = {
     }
 };
 
-module('ajaxvote', kboxFixture);
+module('ajaxvote', ajaxVoteFixture);
 
 asyncTest('helpful vote', function() {
     var $sandbox = this.sandbox,

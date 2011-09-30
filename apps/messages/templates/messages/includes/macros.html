@@ -1,3 +1,5 @@
+{% from "includes/common_macros.html" import content_editor %}
+
 {% macro avatar_link(user=None) -%}
   {% if user %}
     <a href="{{ profile_url(user) }}"><img src="{{ profile_avatar(user) }}" height="48" width="48" alt="{{ display_name(user) }}"></a>
@@ -58,4 +60,21 @@
     {{ datetimeformat(message.created) }}
   </span>
   <div class="message">{{ message.content_parsed }}</div>
+{%- endmacro %}
+
+
+{% macro message_form(form) -%}
+  {{ form.hidden_fields()|join|safe }}
+  <ul>
+    {% for field in form.visible_fields() %}
+      <li {% if field.errors %}class="invalid"{% endif %}>
+        {{ field.label_tag()|safe }}
+        {% if field.name == 'message' %}
+          {{ content_editor(field) }}
+        {% else %}
+          {{ field|safe }}
+        {% endif %}
+      </li>
+    {% endfor %}
+  </ul>
 {%- endmacro %}
