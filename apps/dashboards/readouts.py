@@ -38,11 +38,11 @@ most_visited_translation_from = (
     'LEFT JOIN dashboards_wikidocumentvisits ON engdoc.id='
         'dashboards_wikidocumentvisits.document_id '
         'AND dashboards_wikidocumentvisits.period=%s '
+    '{extra_joins} '
     'WHERE engdoc.locale=%s '
         'AND engdoc.is_localizable '
         'AND NOT engdoc.is_archived '
         'AND engdoc.latest_localizable_revision_id IS NOT NULL '
-        '{extra_where} '  # extra WHERE conditions
     'ORDER BY dashboards_wikidocumentvisits.visits DESC, '
              'COALESCE(transdoc.title, engdoc.title) ASC ').format
 
@@ -73,16 +73,24 @@ MOST_SIGNIFICANT_CHANGE_READY_TO_TRANSLATE = (
 # Whether there are any unreviewed revs of the translation made since the
 # current one:
 NEEDS_REVIEW = (
-            '(SELECT EXISTS '
-                '(SELECT * '
-                 'FROM wiki_revision transrev '
-                 'WHERE transrev.document_id=transdoc.id '
-                 'AND transrev.reviewed IS NULL '
-                 'AND (transrev.id>transdoc.current_revision_id OR '
-                      'transdoc.current_revision_id IS NULL)'
-                ')'
-            ') ')
+    '(SELECT EXISTS '
+        '(SELECT * '
+         'FROM wiki_revision transrev '
+         'WHERE transrev.document_id=transdoc.id '
+         'AND transrev.reviewed IS NULL '
+         'AND (transrev.id>transdoc.current_revision_id OR '
+              'transdoc.current_revision_id IS NULL)'
+        ')'
+    ') ')
 
+# Any ready-for-l10n, nontrivial-significance revision of the English doc newer
+# than the one our current translation is based on:
+ANY_SIGNIFICANT_UPDATES = (
+    '(SELECT id FROM wiki_revision engrev '
+     'WHERE engrev.document_id=engdoc.id '
+     'AND engrev.id>curtransrev.based_on_id '
+     'AND engrev.is_ready_for_localization '
+     'AND engrev.significance>=%s) ')
 
 def _cursor():
     """Return a DB cursor for reading."""
@@ -120,25 +128,32 @@ def _format_row_with_out_of_dateness(readout_locale, eng_slug, eng_title, slug,
 
 def overview_rows(locale):
     """Return the iterable of dicts needed to draw the Overview table."""
-    def percent_or_100(num, denom):
-        return int(round(num / float(denom) * 100)) if denom else 100
-
     # The Overview table is a special case: it has only a static number of
     # rows, so it has no expanded, all-rows view, and thus needs no slug, no
     # "max" kwarg on rows(), etc. It doesn't fit the Readout signature, so we
     # don't shoehorn it in.
 
-    total = Document.uncached.filter(
-                locale=settings.WIKI_DEFAULT_LANGUAGE,
-                current_revision__isnull=False,
-                is_localizable=True,
-                latest_localizable_revision__isnull=False,
-                is_archived=False)
-    total_docs = total.filter(is_template=False).count()
+    def percent_or_100(num, denom):
+        return int(round(num / float(denom) * 100)) if denom else 100
 
-    # How many approved documents are there in German that have parents?
-    # Even though users are technically allowed to translate revisions that
-    # aren't marked as ready-for-l10n, we restrict this set to ready-to-
+    def single_result(sql, params):
+        """Return the first column of the first row returned by a query."""
+        cursor = _cursor()
+        cursor.execute(sql, params)
+        return cursor.fetchone()[0]
+
+    total = Document.uncached.filter(
+        locale=settings.WIKI_DEFAULT_LANGUAGE,
+        is_archived=False,
+        current_revision__isnull=False,
+        is_localizable=True,
+        latest_localizable_revision__isnull=False)
+    total_docs = total.filter(is_template=False).count()
+    total_templates = total.filter(is_template=True).count()
+
+    # How many approved, up-to-date documents are there in German that have
+    # parents? Even though users are technically allowed to translate revisions
+    # that aren't marked as ready-for-l10n, we restrict this set to ready-to-
     # localize documents because we restrict the denominator to those.
     translated = Document.uncached.filter(
         locale=locale,
@@ -146,26 +161,50 @@ def overview_rows(locale):
         current_revision__isnull=False,
         parent__isnull=False,
         parent__latest_localizable_revision__isnull=False)
-    translated_docs = translated.filter(is_template=False).count()
+    # Translations whose based_on revision has no >10-significance, ready-for-
+    # l10n revisions after it. It *might* be possible to do this with the ORM
+    # by passing wheres and tables to extra():
+    up_to_date_translation_count = (
+        'SELECT COUNT(*) FROM wiki_document transdoc '
+        'INNER JOIN wiki_document engdoc ON transdoc.parent_id=engdoc.id '
+        'INNER JOIN wiki_revision curtransrev '
+            'ON transdoc.current_revision_id=curtransrev.id '
+        'WHERE transdoc.locale=%s '
+            'AND transdoc.is_template=%s '
+            'AND NOT transdoc.is_archived '
+            'AND engdoc.latest_localizable_revision_id IS NOT NULL '
+            'AND engdoc.is_localizable '
+            'AND NOT EXISTS ' +
+                ANY_SIGNIFICANT_UPDATES)
+    # TODO: Optimize by running the above query just once and separating the
+    # templates from the non-templates with a GROUP BY.
+    translated_docs = single_result(up_to_date_translation_count,
+                                    (locale, False, MEDIUM_SIGNIFICANCE))
+    translated_templates = single_result(up_to_date_translation_count,
+                                         (locale, True, MEDIUM_SIGNIFICANCE))
 
-    # Of the top 20 most visited English articles, how many are not translated
-    # into German?
+    # Of the top 20 most visited English articles, how many have up-to-date
+    # translations into German?
+    #
+    # TODO: Be very suspicious of this query. It selects from a subquery (known
+    # to MySQL's EXPLAIN as a "derived" table), and MySQL always materializes
+    # such subqueries and never builds indexes on them. However, it seems to be
+    # fast in practice.
     TOP_N = 20
-    cursor = _cursor()
-    cursor.execute(
-        'SELECT count(*) FROM '
-            '(SELECT transdoc.id '
-              + most_visited_translation_from(extra_where='') +
-             'LIMIT %s) t1 '
-        'WHERE t1.id IS NOT NULL',
-        (locale, THIS_WEEK, settings.WIKI_DEFAULT_LANGUAGE, TOP_N))
-    popular_translated = cursor.fetchone()[0]
-
-    # Template overview
-    total_templates = total.filter(is_template=True).count()
-
-    # How many approved templates are there in German that have parents?
-    translated_templates = translated.filter(is_template=True).count()
+    popular_translated = int(single_result(  # Driver returns a Decimal.
+        'SELECT SUM(istranslated) FROM '
+            '(SELECT transdoc.current_revision_id IS NOT NULL '
+                # And there have been no significant updates since the current
+                # translation:
+                'AND NOT EXISTS ' +
+                ANY_SIGNIFICANT_UPDATES +
+                'AS istranslated ' +
+             most_visited_translation_from(extra_joins=
+                'LEFT JOIN wiki_revision curtransrev '
+                    'ON transdoc.current_revision_id=curtransrev.id ') +
+             'LIMIT %s) t1 ',
+        (MEDIUM_SIGNIFICANCE, locale, THIS_WEEK,
+         settings.WIKI_DEFAULT_LANGUAGE, TOP_N)) or 0)  # SUM can return NULL.
 
     return {'most-visited': dict(
                  title=_('Most-Visited Articles'),
@@ -353,7 +392,7 @@ class MostVisitedTranslationsReadout(MostVisitedDefaultLanguageReadout):
             'transdoc.title, dashboards_wikidocumentvisits.visits, ' +
             MOST_SIGNIFICANT_CHANGE_READY_TO_TRANSLATE + ', ' +
             NEEDS_REVIEW +
-            most_visited_translation_from(extra_where='') +
+            most_visited_translation_from(extra_joins='') +
             self._limit_clause(max),
             (self.locale,
              ALL_TIME if self.mode == ALL_TIME else THIS_WEEK,
