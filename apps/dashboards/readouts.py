@@ -153,21 +153,35 @@ def overview_rows(locale):
         current_revision__isnull=False,
         parent__isnull=False,
         parent__latest_localizable_revision__isnull=False)
-    # Translations whose based_on revision has no >10-significance, ready-for-l10n revisions after it:
-    translated_docs = single_result(
+    # Translations whose based_on revision has no >10-significance, ready-for-
+    # l10n revisions after it. It *might* be possible to do this with the ORM:
+    up_to_date_translation_count = (
         'SELECT COUNT(*) FROM wiki_document transdoc '
-        'INNER JOIN wiki_document engdoc on transdoc.parent_id=engdoc.id '
+        'INNER JOIN wiki_document engdoc ON transdoc.parent_id=engdoc.id '
+        'INNER JOIN wiki_revision curtransrev '
+            'ON transdoc.current_revision_id=curtransrev.id '
         'WHERE transdoc.locale=%s '
-            'AND NOT transdoc.is_template '
+            'AND transdoc.is_template=%s '
             'AND NOT transdoc.is_archived '
-            'AND transdoc.current_revision_id IS NOT NULL '  # TODO: necessary?
-            'AND engdoc.latest_localizable_revision_id IS NOT NULL ',
-        (locale,))
+            'AND engdoc.latest_localizable_revision_id IS NOT NULL '
+            'AND engdoc.is_localizable '
+            'AND NOT EXISTS '
+                # Any ready-for-l10n, nontrivial-significance revision of the
+                # English doc newer than the one our current translation is
+                # based on:
+                '(SELECT id FROM wiki_revision engrev '
+                 'WHERE engrev.document_id=engdoc.id '
+                 'AND engrev.id>curtransrev.based_on_id '
+                 'AND engrev.is_ready_for_localization '
+                 'AND engrev.significance>=%s)')
+    translated_docs = single_result(up_to_date_translation_count,
+                                    (locale, False, MEDIUM_SIGNIFICANCE))
+    translated_templates = single_result(up_to_date_translation_count,
+                                         (locale, True, MEDIUM_SIGNIFICANCE))
+
 #     translated_docs = translated.filter(is_template=False).extra(
 #         where=['NOT EXISTS (SELECT id FROM wiki_revision WHERE significance>10 AND is_ready_for_localization'],
 #         tables=).count()
-    # How many approved templates are there in German that have parents?
-    translated_templates = translated.filter(is_template=True).count()
 
     # Of the top 20 most visited English articles, how many are not translated
     # into German?
@@ -175,13 +189,38 @@ def overview_rows(locale):
     # Mixdown: Which translations are based_on a revision
     # We could always maintain a "last >10-significance edit [revision id]" for every doc if things get slow.
     TOP_N = 20
-    popular_translated = single_result(
-        'SELECT count(*) FROM '
-            '(SELECT transdoc.id '
-              + most_visited_translation_from(extra_where='') +
-             'LIMIT %s) t1 '
-        'WHERE t1.id IS NOT NULL',
-        (locale, THIS_WEEK, settings.WIKI_DEFAULT_LANGUAGE, TOP_N))
+    popular_translated = int(single_result(  # Driver returns a Decimal.
+        'SELECT SUM(istranslated) FROM '
+            '(SELECT NOT EXISTS '
+                # Any ready-for-l10n, nontrivial-significance revision of the
+                # English doc newer than the one our current translation is
+                # based on:
+                '(SELECT id FROM wiki_revision engrev '
+                 'WHERE engrev.document_id=engdoc.id '
+                 'AND engrev.id>curtransrev.based_on_id '
+                 'AND engrev.is_ready_for_localization '
+                 'AND engrev.significance>=%s) '
+                'as istranslated '
+
+             'FROM wiki_document engdoc '
+             'LEFT JOIN wiki_document transdoc ON '
+                 'transdoc.parent_id=engdoc.id '
+                 'AND transdoc.locale=%s '
+             'LEFT JOIN wiki_revision curtransrev '  # inserted join
+                 'ON transdoc.current_revision_id=curtransrev.id '
+             'LEFT JOIN dashboards_wikidocumentvisits ON engdoc.id='
+                 'dashboards_wikidocumentvisits.document_id '
+                 'AND dashboards_wikidocumentvisits.period=%s '
+             'WHERE engdoc.locale=%s '
+                 'AND engdoc.is_localizable '
+                 'AND NOT engdoc.is_archived '
+                 'AND engdoc.latest_localizable_revision_id IS NOT NULL '
+             'ORDER BY dashboards_wikidocumentvisits.visits DESC, '
+                      'COALESCE(transdoc.title, engdoc.title) ASC '
+
+             'LIMIT %s) t1 ',
+        (MEDIUM_SIGNIFICANCE, locale, THIS_WEEK,
+         settings.WIKI_DEFAULT_LANGUAGE, TOP_N)) or 0)
 
     return {'most-visited': dict(
                  title=_('Most-Visited Articles'),
