@@ -636,16 +636,8 @@ div.support-search button.img-submit {
     padding: 5px 0 5px 30px;
 }
 
-#quick-links li.home a {
-    background: transparent url(../img/wiki/icons.quicklinks.png) no-repeat 6px 6px;
-}
-
 #quick-links li.aaq a {
     background: transparent url(../img/wiki/icons.quicklinks.png) no-repeat 6px -44px;
-}
-
-#quick-links li.home.active a {
-    background: transparent url(../img/wiki/icons.quicklinks.png) no-repeat 6px -95px;
 }
 
 #quick-links li.aaq.active a {
