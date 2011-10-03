@@ -12,10 +12,6 @@
     margin-top: -25px;
 }
 
-#quick-links {
-    margin-top: 0;
-}
-
 #featured {
     background: url("../img/nurse.small.png") no-repeat scroll 550px 0px transparent;
     height: 125px;
@@ -173,13 +169,4 @@ body.desktop #home-content-explore section {
 
 #home-content-explore ul li {
     padding: 3px 0;
-}
-
-#home-content-explore ul a {
-    color: #444;
-}
-
-#home-content-explore ul a:hover {
-    color: #447bc4;
-    text-decoration: underline;
 }

@@ -24,13 +24,10 @@
   {% endif %}
 {%- endmacro %}
 
-{% macro quick_links(active=0) -%}
+{% macro quick_links() -%}
   <nav id="quick-links">
     <ul>
-      <li class="home {{ 'active' if active == 1 }}">
-        <a href="{{ url('home') }}">{{ _('Firefox Help Home') }}</a>
-      </li>
-      <li class="aaq {{ 'active' if active == 2 }}">
+      <li class="aaq">
         <a href="{{ url('wiki.document', 'ask') }}">{{ _('Ask a Question') }}</a>
       </li>
     </ul>

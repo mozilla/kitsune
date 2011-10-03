@@ -82,12 +82,14 @@
     {% endif %}
     <div id="masthead">
       <h1 class="site-title">
-        <img src="{{ MEDIA_URL }}img/firefox-54x62.png" alt="{{ _('Firefox') }}" />
-        {% if h1_text %}
-          {{ h1_text }}
-        {% else %}
-          <mark>{{ _('Firefox Help') }}</mark>
-        {% endif %}
+        <a href="{{ url('home') }}">
+          <img src="{{ MEDIA_URL }}img/firefox-54x62.png" alt="{{ _('Firefox') }}" />
+          {% if h1_text %}
+            {{ h1_text }}
+          {% else %}
+            <mark>{{ _('Firefox Help') }}</mark>
+          {% endif %}
+        </a>
       </h1>
       <nav class="menu-nav" id="site-nav">
         <ul>
@@ -124,7 +126,7 @@
   {% block outer_side %}{# TODO: temporary wrapper block until questions and AoA get updated #}
     <div id="side">
       {% block side_top %}{% endblock %}
-      {{ quick_links(active=active_side_link) }}
+      {{ quick_links() }}
       {% block side %}{% endblock %}
       {{ for_contributors(request, user, settings.WIKI_DEFAULT_LANGUAGE) }}
       <div class="sd-module promos">

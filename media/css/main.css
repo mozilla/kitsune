@@ -106,6 +106,15 @@ h1.site-title {
     text-align: left;
 }
 
+h1.site-title a {
+    color: #333333;
+}
+
+h1.site-title a:hover {
+    color: #447BC4;
+    text-decoration: none;
+}
+
 h1.site-title mark {
     font-family: MetaBlack;
     font-style: normal;
@@ -636,16 +645,8 @@ div.support-search button.img-submit {
     padding: 5px 0 5px 30px;
 }
 
-#quick-links li.home a {
-    background: transparent url(../img/wiki/icons.quicklinks.png) no-repeat 6px 6px;
-}
-
 #quick-links li.aaq a {
     background: transparent url(../img/wiki/icons.quicklinks.png) no-repeat 6px -44px;
-}
-
-#quick-links li.home.active a {
-    background: transparent url(../img/wiki/icons.quicklinks.png) no-repeat 6px -95px;
 }
 
 #quick-links li.aaq.active a {
