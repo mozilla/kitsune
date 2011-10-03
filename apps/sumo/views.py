@@ -18,6 +18,7 @@ from celery.messaging import establish_connection
 from commonware.decorators import xframe_allow
 import django_qunit.views
 import jingo
+from jinja2 import Markup
 from PIL import Image
 from session_csrf import anonymous_csrf
 
@@ -153,8 +154,9 @@ def monitor(request):
     try:
         rabbit_conn.connect()
         rabbitmq_results = 'Successfully connected to RabbitMQ.'
-    except socket.error:
-        rabbitmq_results = 'There was an error connecting to RabbitMQ!'
+    except (socket.error, IOError), e:
+        rabbitmq_results = Markup('There was an error connecting to RabbitMQ!'
+                                  '<br/>%s' % str(e))
         rabbitmq_status = False
     status_summary['rabbitmq'] = rabbitmq_status
 
