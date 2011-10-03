@@ -82,12 +82,14 @@
     {% endif %}
     <div id="masthead">
       <h1 class="site-title">
-        <img src="{{ MEDIA_URL }}img/firefox-54x62.png" alt="{{ _('Firefox') }}" />
-        {% if h1_text %}
-          {{ h1_text }}
-        {% else %}
-          <mark>{{ _('Firefox Help') }}</mark>
-        {% endif %}
+        <a href="{{ url('home') }}">
+          <img src="{{ MEDIA_URL }}img/firefox-54x62.png" alt="{{ _('Firefox') }}" />
+          {% if h1_text %}
+            {{ h1_text }}
+          {% else %}
+            <mark>{{ _('Firefox Help') }}</mark>
+          {% endif %}
+        </a>
       </h1>
       <nav class="menu-nav" id="site-nav">
         <ul>

@@ -118,6 +118,15 @@ h1.site-title {
     text-align: right;
 }
 
+h1.site-title a {
+    color: #333333;
+}
+
+h1.site-title a:hover {
+    color: #447BC4;
+    text-decoration: none;
+}
+
 h1.site-title mark {
     font-family: MetaBlack;
     font-style: normal;
