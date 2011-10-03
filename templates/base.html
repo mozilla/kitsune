@@ -124,7 +124,7 @@
   {% block outer_side %}{# TODO: temporary wrapper block until questions and AoA get updated #}
     <div id="side">
       {% block side_top %}{% endblock %}
-      {{ quick_links(active=active_side_link) }}
+      {{ quick_links() }}
       {% block side %}{% endblock %}
       {{ for_contributors(request, user, settings.WIKI_DEFAULT_LANGUAGE) }}
       <div class="sd-module promos">
