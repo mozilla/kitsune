@@ -572,7 +572,7 @@ ul.user-messages li.error {
 }
 
 .html-rtl #main {
-    background: none; /* TODO */
+    background: transparent url(../img/wiki/bkg.main.top.rtl.png) no-repeat left top;
     float: right;
 }
 
@@ -584,7 +584,7 @@ ul.user-messages li.error {
 }
 
 .html-rtl #main article.main {
-    background: none; /* TODO */
+    background: transparent url(../img/wiki/bkg.article.rtl.jpg) no-repeat left top;
     padding: 14px 0 0 20px;
 }
 
@@ -905,6 +905,9 @@ div.support-search button.img-submit {
     -webkit-border-radius: 10px;
     -webkit-border-top-right-radius: 0;
     -webkit-border-bottom-right-radius: 0;
+    box-shadow: -2px 2px 3px #9dbbd0;
+    -moz-box-shadow: -2px 2px 3px #9dbbd0;
+    -webkit-box-shadow: -2px 2px 3px #9dbbd0;
 }
 
 #doc-tabs li.disabled, #doc-tabs li.disabled:hover {

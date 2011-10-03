@@ -352,7 +352,7 @@ MINIFY_BUNDLES = {
     'css': {
         'common': (
             'css/reset.css',
-            'global/headerfooter.css',
+            'global/footer.css',
             'css/kbox.css',
             'css/main.css',
         ),
