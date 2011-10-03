@@ -220,12 +220,3 @@ body.desktop.html-rtl #home-content-explore section {
 #home-content-explore ul li {
     padding: 3px 0;
 }
-
-#home-content-explore ul a {
-    color: #444;
-}
-
-#home-content-explore ul a:hover {
-    color: #447bc4;
-    text-decoration: underline;
-}
