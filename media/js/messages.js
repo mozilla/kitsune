@@ -25,5 +25,5 @@ $(document).ready(function(){
         new k.AjaxPreview($('#preview-btn'), {
             changeHash: false
         });
-    })
+    });
 });
