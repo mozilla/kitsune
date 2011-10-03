@@ -309,7 +309,6 @@ be big merging headaches.
 Updating strings is pretty easy. Check out the localizations as above, then::
 
     $ python manage.py extract
-    $ python manage.py verbatimize --rename
     $ python manage.py merge
 
 Congratulations! You've now updated the POT and PO files.
