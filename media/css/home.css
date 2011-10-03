@@ -1,4 +1,5 @@
-#main {
+#main,
+.html-rtl #main {
     background: none;
     padding: 0;
 }
