@@ -1,3 +1,5 @@
+.. _installation-chapter:
+
 ============
 Installation
 ============
@@ -58,8 +60,8 @@ it's more like our production environment) you'll also need:
 
 * ``mod_wsgi``
 
-See the documentation on `WSGI <wsgi.rst>`_ for more information and
-instructions.
+See the documentation on :ref:`WSGI <wsgi-chapter>` for more
+information and instructions.
 
 
 Getting the Source
@@ -176,7 +178,7 @@ Finally, you'll probably want to create a superuser. Just use Django's
 And follow the prompts. After logging in, you can create a profile for the
 user by going to ``/users/edit`` in your browser.
 
-See also the `important wiki documents <wikidocs.rst>`_ documentation.
+See also the :ref:`important wiki documents <wiki-chapter>` documentation.
 
 
 Product Details Initialization
@@ -254,11 +256,11 @@ Running the test suite is easy::
 
     ./manage.py test -s --noinput --logging-clear-handlers
 
-For more information, see the `test documentation <tests.rst>`_.
+For more information, see the :ref:`test documentation <tests-chapter>`.
 
 
 Setting Up Search
 =================
 
-See the `search documentation <search.rst>`_ for steps to get Sphinx search
-working.
+See the :ref:`search documentation <search-chapter>` for steps to get
+Sphinx search working.
