@@ -169,8 +169,7 @@ products = SortedDict([
         'tags': ['mobile'],
         'categories': SortedDict([
             ('m1', {
-                'name': _lazy(u'Problems viewing certain web sites in Firefox '
-                              u'for Mobile'),
+                'name': _lazy(u"Websites don't work"),
                 'html': 'You can try using the <a href="https://addons.mozilla'
                         '.org/mobile/addon/phony/">Phony extension</a> '
                         'and setting your user agent to Android. Or try one '
@@ -189,7 +188,7 @@ products = SortedDict([
                 'tags': ['websites'],
             }),
             ('m2', {
-                'name': _lazy(u"Problems installing Firefox for Mobile"),
+                'name': _lazy(u'Installation'),
                 'articles': [
                     {'title': 'Will Firefox work on my mobile device?',
                      'url': '/kb/will-firefox-work-my-mobile-device'},
@@ -199,7 +198,7 @@ products = SortedDict([
                 'tags': ['install'],
             }),
             ('m3', {
-                'name': _lazy(u"Problems using Firefox for mobile features"),
+                'name': _lazy(u'Features'),
                 'html': 'We have lots of helpful articles to get you started '
                         '<em>learning to use Firefox for mobile</em> and '
                         'hundreds of questions in our database. Try one of the'
@@ -221,7 +220,7 @@ products = SortedDict([
                 'tags': ['features'],
             }),
             ('m4', {
-                'name': _lazy(u'Problems with an extension or plugin'),
+                'name': _lazy(u'Plugins, add-ons or extensions'),
                 'extra_fields': ['addon'],
                 'articles': [
                     {'title': "Firefox for mobile doesn't support Flash",
@@ -232,7 +231,7 @@ products = SortedDict([
                 'tags': ['addon'],
             }),
             ('m5', {
-                'name': _lazy(u'Syncing desktop Firefox with mobile'),
+                'name': _lazy(u'Syncing desktop and mobile'),
                 'articles': [
                     {'title': 'How do I sync Firefox between my desktop and '
                               'mobile?',
@@ -245,8 +244,7 @@ products = SortedDict([
                 'tags': ['sync'],
             }),
             ('m6', {
-                'name': _lazy(u'Another kind of problem with Firefox for '
-                              u'mobile'),
+                'name': _lazy(u'Other issues'),
                 'extra_fields': ['frequency'],
                 'html': 'We have lots of helpful articles on <em>general '
                         'issues with Firefox for mobile</em> and hundreds '
@@ -266,8 +264,7 @@ products = SortedDict([
                 'tags': ['other'],
             }),
             ('m7', {
-                'name': _lazy(u'Suggestions for how to improve Firefox for '
-                              u'mobile'),
+                'name': _lazy(u'Suggestions to improve Firefox'),
                 'html': '<p>Please use our feedback system for suggestions '
                         'for new Firefox features: '
                         '<a href="//m.input.mozilla.com/en-US/feedback">'
