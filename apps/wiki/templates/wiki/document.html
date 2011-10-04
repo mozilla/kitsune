@@ -28,39 +28,6 @@
     {{ contributor_list(contributors) }}
   </article>
   {% include 'wiki/includes/document_vote.html' %}
-  <div id="more-help">
-    <div class="wrap">
-      <h2>{{ _("Couldn't find what you were looking for?") }}</h2>
-      <ul>
-        {% if related %}
-          <li>
-            {{ _("Here's a list of related articles that might help:") }}
-            <ul>
-              {% for art in related %}
-                <li><a href="{{ art.get_absolute_url() }}">{{ art.title }}</a></li>
-              {% endfor %}
-            </ul>
-          </li>
-        {% endif %}
-        {% if document.parent %}
-          {% set document_tags = document.parent.tags.all() %}
-        {% else %}
-          {% set document_tags = document.tags.all() %}
-        {% endif %}
-        {% if document_tags %}
-          <li class="topic">
-            {% trans topics=topic_list(document_tags) %}
-              Browse other articles about {{ topics }}
-            {% endtrans %}
-          </li>
-        {% endif %}
-        <li>
-          <a href="{{ url('wiki.document', 'ask') }}">{{ _('Ask our awesome support community for help') }}</a>
-        </li>
-      </ul>
-      {{ search_box(settings, id=False, prefix=_('Or try searching:')) }}
-    </div>
-  </div>
 
   {% if is_aoa_referral %}
     <aside id="banner" class="top">
