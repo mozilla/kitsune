@@ -10,6 +10,7 @@ from django.http import Http404, HttpResponseRedirect, HttpResponse
 from django.views.decorators.http import require_GET
 
 import jingo
+from statsd import statsd
 from tower import ugettext as _
 
 from access.decorators import login_required
@@ -70,8 +71,9 @@ def localization(request):
     if request.locale == settings.WIKI_DEFAULT_LANGUAGE:
         return HttpResponseRedirect(reverse('dashboards.contributors'))
     data = {'overview_rows': partial(overview_rows, request.locale)}
-    return render_readouts(request, L10N_READOUTS, 'localization.html',
-                           extra_data=data)
+    with statsd.timer('dashboards.l10n'):
+        return render_readouts(request, L10N_READOUTS, 'localization.html',
+                               extra_data=data)
 
 
 @require_GET
