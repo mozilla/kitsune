@@ -63,7 +63,9 @@ def calculate_related_documents():
             d2.is_archived = 0
         GROUP BY
             t1.object_id,
-            t2.object_id""")
+            t2.object_id
+        HAVING
+            common_tags > 1""")
     transaction.commit_unless_managed()
 
 

@@ -591,7 +591,7 @@ class RelatedDocumentTests(TestCase):
         calculate_related_documents()
 
         d = Document.uncached.get(pk=1)
-        eq_(2, d.related_documents.count())
+        eq_(1, d.related_documents.count())
 
     def test_related_only_locale(self):
         calculate_related_documents()

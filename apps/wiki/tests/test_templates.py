@@ -1896,7 +1896,7 @@ class RelatedDocumentTestCase(TestCaseBase):
 
         doc = pq(response.content)
         related = doc('section#related-articles li a')
-        eq_(2, len(related))
+        eq_(1, len(related))
 
         # If 'an article title 2' is first, the other must be second.
         eq_('an article title 2', related[0].text)
