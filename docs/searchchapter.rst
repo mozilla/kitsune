@@ -1,3 +1,5 @@
+.. _search-chapter:
+
 ======
 Search
 ======

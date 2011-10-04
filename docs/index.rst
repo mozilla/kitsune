@@ -21,7 +21,7 @@ Contents:
    email
    localization
    licenses
-   search
+   searchchapter
    tests
    vendor
    wikidocs

@@ -1,3 +1,5 @@
+.. _email-chapter:
+
 ==================
 Email from Kitsune
 ==================

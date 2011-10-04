@@ -1,3 +1,5 @@
+.. _tests-chapter:
+
 ======================
 The Kitsune Test Suite
 ======================
@@ -10,8 +12,9 @@ behavior--and new code should come with tests.
 Running the Test Suite
 ======================
 
-If you followed the steps in `the installation docs <installation.rst>`_, then
-all you should need to do to run the test suite is::
+If you followed the steps in :ref:`the installation docs
+<installation-chapter>`, then all you should need to do to run the
+test suite is::
 
     ./manage.py test
 

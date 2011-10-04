@@ -1,3 +1,5 @@
+.. _wsgi-chapter:
+
 =============================
 Running Kitsune with mod_wsgi
 =============================
@@ -6,7 +8,7 @@ Running Kitsune with mod_wsgi
 Requirements
 ============
 
-* See `the installation docs <installation.rst>`_.
+* See :ref:`the installation docs <installation-chapter>`.
 * `Apache HTTP server <http://httpd.apache.org/>`_
 * mod_rewrite
 * mod_headers
@@ -20,7 +22,7 @@ Overview
 
 Setting up Kitsune to run as a WSGI application is fairly straightforward. You
 will need to install the requirements and clone the vendor repo as described in
-`installation.rst <installation.rst>`_.
+:ref:`the installation chapter <installation-chapter>`.
 
 There are 3 steps once Kitsune is installed:
 
@@ -85,10 +87,10 @@ Apache, reducing the load on Django.
 Configuration
 -------------
 
-Most of our ``settings.py`` is under version control, but can be overridden
-in a file called ``settings_local.py`` in the base of the app (the same
-place as ``settings.py``). You can see example settings in
-`docs/settings/settings_local.prod.py <settings/settings_local.prod.py>`_:
+Most of our ``settings.py`` is under version control, but can be
+overridden in a file called ``settings_local.py`` in the base of the
+app (the same place as ``settings.py``). You can see example settings
+in ``settings/settings_local.prod.py>``:
 
 .. literalinclude:: settings/settings_local.prod.py
 
@@ -146,11 +148,11 @@ to find stack traces):
 Apache Error Page
 -----------------
 
-So you've got a really bad error and you aren't even seeing the Kitsune error
-page! This is usually caused by an uncaught exception during the WSGI
-application start-up. Our `WSGI script <../wsgi/kitsune.wsgi>`_ tries to run
-all the initial validation that the dev server runs, to catch these errors
-early.
+So you've got a really bad error and you aren't even seeing the
+Kitsune error page! This is usually caused by an uncaught exception
+during the WSGI application start-up.  Our WSGI script, located in
+``wsgi/kitsune.wsgi``, tries to run all the initial validation that
+the dev server runs, to catch these errors early.
 
 So where *is* the stack trace? You'll need to look in your Apache error logs.
 Where these are is OS-dependent, but a good place to look is
@@ -176,8 +178,8 @@ Error message. You can still get stack traces, though, by setting the
         ('me', 'my@email.address'),
     )
 
-Django will email you the stack trace. Provided you've set up `email
-<email.rst>`_.
+Django will email you the stack trace. Provided you've set up
+:ref:`email <email-chapter>`.
 
 
 Reloading WSGI

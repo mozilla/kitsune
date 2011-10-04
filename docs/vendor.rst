@@ -1,3 +1,5 @@
+.. _vendor-chapter:
+
 ==============
 Vendor Library
 ==============
