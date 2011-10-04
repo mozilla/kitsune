@@ -1202,6 +1202,11 @@ form div.attachments-upload img {
     font-style: italic;
 }
 
+#ask-question h2 mark {
+    font-size: 13px;
+    font-style: normal;
+}
+
 #ask-question div.selected {
     color: #807970;
     font-size: 16px;
