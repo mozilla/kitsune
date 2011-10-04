@@ -139,7 +139,7 @@
 
 #home-content .warning,
 #doc-content .warning {
-   background: #FFF9DB url(../img/wiki/bkg.warning.png) repeat-y left top;
+   background: #fef0a7 url(../img/wiki/bkg.warning.png) repeat-y left top;
    color: #666458;
    padding: .5em 1em .5em 2em;
 }
