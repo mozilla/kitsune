@@ -101,6 +101,14 @@ html[lang=ja] body div#featured {
     visibility: hidden;
 }
 
+#home-content .for {
+    display: none; /* to prevent for-wrapped warnings from flashing in then out */
+}
+
+.no-js #home-content .for {
+    display: inherit; /* no js? you get to see everything! */
+}
+
 #home-content-top {
     font-size: 14px;
     padding: 20px 10px 0;
