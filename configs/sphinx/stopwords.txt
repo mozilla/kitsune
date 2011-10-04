@@ -38,7 +38,6 @@ down
 during
 each
 few
-firefox
 for
 from
 further
