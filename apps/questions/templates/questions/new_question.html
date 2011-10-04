@@ -31,7 +31,12 @@
     {{ current_articles_and_message(current_articles, current_category, current_html) }}
     {% if not form and not deadend %}
       {% set form_header_set = True %}
-      <h2>{{ _('or, summarize your question in a sentence:') }}</h2>
+      <h2>
+        {% trans %}
+          or, post a question in our Community Support Forum
+          <mark>(registration required)</mark>
+        {% endtrans %}
+      </h2>
     {% endif %}
   {% endif %}
 
@@ -39,7 +44,12 @@
         or not (current_articles and search_results and current_html))
         and not form and not deadend %}
     {% if not form_header_set %}
-      <h2>{{ _('Summarize your question in a sentence:') }}</h2>
+      <h2>
+        {% trans %}
+          Post a question in our Community Support Forum
+          <mark>(registration required)</mark>
+        {% endtrans %}
+      </h2>
     {% endif %}
     {{ aaq_search_form(current_product, current_category, settings, host, request) }}
   {% endif %}

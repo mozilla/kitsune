@@ -67,7 +67,7 @@
   <form id="ask-search-form" class="aaq search" action="{% if settings.SESSION_COOKIE_SECURE %}https://{{ host }}{{ request.get_full_path() }}{% endif %}" method="get">
     <input type="hidden" name="product" value="{{ product.key }}" />
     <input type="hidden" name="category" value="{{ category.key }}" />
-    <input type="text" class="question" name="search" value="{{ request.GET.search }}" required="required" />
+    <input type="text" class="question" name="search" value="{{ request.GET.search }}" required="required" placeholder="{{ _('Summarize your question in a sentence') }}" />
     <input type="submit" class="btn btn-important" value="{{ _('Ask this') }}" />
   </form>
 {%- endmacro %}
