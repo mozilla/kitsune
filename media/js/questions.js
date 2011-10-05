@@ -14,6 +14,9 @@
         }
 
         if($('body').is('.answers')) {
+            // Put last search query into search box
+            $('#support-search input[name=q]').val($.cookie('last_search'));
+
             initReportPost();
             initHaveThisProblemTooAjax();
             initEmailSubscribeAjax();

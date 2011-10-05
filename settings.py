@@ -750,3 +750,5 @@ REDIS_TEST_BACKENDS = {
 ARECIBO_SERVER_URL = ''
 
 HELPFULVOTES_UNHELPFUL_KEY = 'helpfulvotes_topunhelpful'
+
+LAST_SEARCH_COOKIE = 'last_search'
