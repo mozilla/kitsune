@@ -71,7 +71,10 @@ class DocumentForm(forms.ModelForm):
                         'min_length': TITLE_SHORT,
                         'max_length': TITLE_LONG})
 
-    slug = forms.SlugField(
+    # We don't use forms.SlugField because it is too strict in
+    # what it allows (English/Roman alpha-numeric characters and dashes).
+    # Instead, we do custom validation in `clean_slug` below.
+    slug = StrippedCharField(
         min_length=3, max_length=255,
         widget=forms.TextInput(),
         label=_lazy(u'Slug:'),
@@ -119,7 +122,8 @@ class DocumentForm(forms.ModelForm):
 
     def clean_slug(self):
         slug = self.cleaned_data['slug']
-        if not re.compile(r'^[^/]+$').match(slug):
+        # Blacklist /, ? and +
+        if not re.compile(r'^[^/^\+^\?]+$').match(slug):
             raise forms.ValidationError(SLUG_INVALID)
         return slug
 
