@@ -13,6 +13,10 @@
         initDetailsTags();
 
         if ($body.is('.document')) {  // Document page
+            // Put last search query into search box
+            $('#support-search input[name=q]')
+                .val(k.unquote($.cookie('last_search')));
+
             ShowFor.initForTags();
             addReferrerAndQueryToVoteForm();
             new k.AjaxVote('#helpful-vote form', {
