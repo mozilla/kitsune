@@ -148,9 +148,15 @@ class DocumentEditingTests(TestCase):
         client = LocalizingClient()
         client.login(username='admin', password='testpass')
         data = new_document_data()
+        error = 'Enter a valid &#39;slug&#39; consisting of letters, numbers,'
+
         data['slug'] = 'inva/lid'
         response = client.post(reverse('wiki.new_document'), data)
-        self.assertContains(response, 'The slug provided is not valid.')
+        self.assertContains(response, error)
+
+        data['slug'] = 'no-question-marks?'
+        response = client.post(reverse('wiki.new_document'), data)
+        self.assertContains(response, error)
 
         data['slug'] = 'valid'
         response = client.post(reverse('wiki.new_document'), data)

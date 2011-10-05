@@ -71,7 +71,7 @@ class DocumentForm(forms.ModelForm):
                         'min_length': TITLE_SHORT,
                         'max_length': TITLE_LONG})
 
-    slug = StrippedCharField(
+    slug = forms.SlugField(
         min_length=3, max_length=255,
         widget=forms.TextInput(),
         label=_lazy(u'Slug:'),
