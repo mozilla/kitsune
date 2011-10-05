@@ -142,15 +142,25 @@ class DocumentEditingTests(TestCase):
         tags_eq(d, ['mobile'])
 
     @mock.patch.object(Site.objects, 'get_current')
-    def test_invalid_slug(self, get_current):
+    def test_invalid_slugs(self, get_current):
         """Slugs cannot contain /."""
         get_current.return_value.domain = 'testserver'
         client = LocalizingClient()
         client.login(username='admin', password='testpass')
         data = new_document_data()
+        error = 'The slug provided is not valid.'
+
         data['slug'] = 'inva/lid'
         response = client.post(reverse('wiki.new_document'), data)
-        self.assertContains(response, 'The slug provided is not valid.')
+        self.assertContains(response, error)
+
+        data['slug'] = 'no-question-marks?'
+        response = client.post(reverse('wiki.new_document'), data)
+        self.assertContains(response, error)
+
+        data['slug'] = 'no+plus'
+        response = client.post(reverse('wiki.new_document'), data)
+        self.assertContains(response, error)
 
         data['slug'] = 'valid'
         response = client.post(reverse('wiki.new_document'), data)
