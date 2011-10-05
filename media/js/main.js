@@ -56,6 +56,14 @@ k = {};
         return '';
     }
 
+    k.unquote = function(str) {
+        // If a string is wrapped in double quotes, remove them.
+        if (str[0] === '"' && str[str.length - 1] === '"') {
+            return str.slice(1, str.length - 1);
+        }
+        return str;
+    }
+
 
     // Pass CSRF token in XHR header
     $.ajaxSetup({

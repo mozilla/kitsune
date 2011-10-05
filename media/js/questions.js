@@ -15,7 +15,8 @@
 
         if($('body').is('.answers')) {
             // Put last search query into search box
-            $('#support-search input[name=q]').val($.cookie('last_search'));
+            $('#support-search input[name=q]')
+                .val(k.unquote($.cookie('last_search')));
 
             initReportPost();
             initHaveThisProblemTooAjax();
