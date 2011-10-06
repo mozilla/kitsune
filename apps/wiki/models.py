@@ -22,6 +22,9 @@ from sumo.urlresolvers import reverse, split_path
 from tags.models import BigVocabTaggableMixin
 from wiki import TEMPLATE_TITLE_PREFIX
 
+import zlib
+crc32 = lambda x: zlib.crc32(x.encode('utf-8')) & 0xffffffff
+
 
 # Disruptiveness of edits to translated versions. Numerical magnitude indicate
 # the relative severity.
@@ -239,6 +242,18 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin):
         unique_together = (('parent', 'locale'), ('title', 'locale'),
                            ('slug', 'locale'))
         permissions = [('archive_document', 'Can archive document')]
+
+    class SphinxMeta:
+        index = 'wiki_pages'
+        weights = {'title': 6, 'content': 1, 'keywords': 4, 'summary': 2}
+        excerpt_limit = settings.SEARCH_SUMMARY_LENGTH
+        excerpt_before_match = '<b>'
+        excerpt_after_match = '</b>'
+        filter_mapping = {
+            'title': crc32,
+            'content': crc32,
+            'keywords': crc32,
+            'summary': crc32}
 
     def _collides(self, attr, value):
         """Return whether there exists a doc in this locale whose `attr` attr

@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 import re
 
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
@@ -28,6 +29,9 @@ from sumo.urlresolvers import reverse
 from tags.models import BigVocabTaggableMixin
 from tags.utils import add_existing_tag
 from upload.models import ImageAttachment
+
+import zlib
+crc32 = lambda x: zlib.crc32(x.encode('utf-8')) & 0xffffffff
 
 
 class Question(ModelBase, BigVocabTaggableMixin):
@@ -61,6 +65,18 @@ class Question(ModelBase, BigVocabTaggableMixin):
                 ('change_solution',
                  'Can change/remove the solution to a question'),
             )
+
+    class SphinxMeta:
+        index = 'questions'
+        weights = {'title': 4, 'question_content': 3, 'answer_content': 3}
+        group_by = ('question_id', '-@group')
+        excerpt_limit = settings.SEARCH_SUMMARY_LENGTH
+        excerpt_before_match = '<b>'
+        excerpt_after_match = '</b>'
+        filter_mapping = {
+            'title': crc32,
+            'question_content': crc32,
+            'answer_content': crc32}
 
     def __unicode__(self):
         return self.title

@@ -1,5 +1,6 @@
 import datetime
 
+from django.conf import settings
 from django.db import models
 from django.contrib.auth.models import User
 
@@ -11,6 +12,9 @@ import forums
 from sumo.helpers import urlparams, wiki_to_html
 from sumo.urlresolvers import reverse
 from sumo.models import ModelBase
+
+import zlib
+crc32 = lambda x: zlib.crc32(x.encode('utf-8')) & 0xffffffff
 
 
 def _last_post_from(posts, exclude_post=None):
@@ -101,6 +105,20 @@ class Thread(NotificationsMixin, ModelBase):
 
     class Meta:
         ordering = ['-is_sticky', '-last_post__created']
+
+    class SphinxMeta:
+        index = 'discussion_forums'
+        weights = {'title': 2, 'content': 1}
+        group_by = ('thread_id', '-@group')
+        excerpt_limit = settings.SEARCH_SUMMARY_LENGTH
+        excerpt_before_match = '<b>'
+        excerpt_after_match = '</b>'
+        filter_mapping = {
+            'title': crc32,
+            'content': crc32}
+
+        # TODO: set sort mode -- does this map into oedipus right?
+        # sort_mode = (sphinxapi.SPH_SORT_ATTR_ASC, 'created')
 
     def __setattr__(self, attr, val):
         """Notice when the forum field changes.
