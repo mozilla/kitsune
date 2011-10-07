@@ -29,6 +29,8 @@ from tags.models import BigVocabTaggableMixin
 from tags.utils import add_existing_tag
 from upload.models import ImageAttachment
 
+from search.utils import crc32
+
 
 class Question(ModelBase, BigVocabTaggableMixin):
     """A support question."""
@@ -61,6 +63,15 @@ class Question(ModelBase, BigVocabTaggableMixin):
                 ('change_solution',
                  'Can change/remove the solution to a question'),
             )
+
+    class SphinxMeta(object):
+        index = 'questions'
+        weights = {'title': 4, 'question_content': 3, 'answer_content': 3}
+        group_by = ('question_id', '-@group')
+        filter_mapping = {
+            'title': crc32,
+            'question_content': crc32,
+            'answer_content': crc32}
 
     def __unicode__(self):
         return self.title

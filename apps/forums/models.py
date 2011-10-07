@@ -11,6 +11,7 @@ import forums
 from sumo.helpers import urlparams, wiki_to_html
 from sumo.urlresolvers import reverse
 from sumo.models import ModelBase
+from search.utils import crc32
 
 
 def _last_post_from(posts, exclude_post=None):
@@ -101,6 +102,14 @@ class Thread(NotificationsMixin, ModelBase):
 
     class Meta:
         ordering = ['-is_sticky', '-last_post__created']
+
+    class SphinxMeta(object):
+        index = 'discussion_forums'
+        weights = {'title': 2, 'content': 1}
+        group_by = ('thread_id', '-@group')
+        filter_mapping = {
+            'title': crc32,
+            'content': crc32}
 
     def __setattr__(self, attr, val):
         """Notice when the forum field changes.
