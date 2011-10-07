@@ -1,5 +1,6 @@
 {# vim: set ts=2 et sts=2 sw=2: #}
 {% extends "search/base.html" %}
+{% from "search/includes/result.html" import search_result %}
 {% set meta = (('WT.oss', q),
                ('WT.oss_r', num_results)) %}
 
@@ -29,14 +30,7 @@
   <div class="search-results">
 
     {% for doc in results %}
-      <div class="result {{ doc.type }}">
-        <a class="title" href="{{ doc.url|urlparams(s=q, as='s', r=doc.rank) }}">{{ doc.title }}</a>
-        <p>
-          <a href="{{ doc.url|urlparams(s=q, as='s', r=doc.rank) }}">
-            {{ doc.search_summary|safe }}
-          </a>
-        </p>
-      </div>
+      {{ search_result(doc, s=q, r=doc.rank) }}
     {% endfor %}
 
     {{ pages|paginator }}

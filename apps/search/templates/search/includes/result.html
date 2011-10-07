@@ -1,0 +1,31 @@
+{% macro search_result(result, s=None, as='s', r=None) %}
+  <div class="result {{ result.type }}">
+    <a class="title" href="{{ result.url|urlparams(s=s, as=as, r=r) }}">{{ result.title }}</a>
+    <p><a href="{{ result.url|urlparams(s=s, as=as, r=r) }}">
+      {{ result.search_summary|safe }}
+    </a></p>
+    {% if result.type == 'question' %}
+      <div class="thread-meta">
+        {% if result.object.is_solved %}
+          <span class="solved">{{ _('Solved') }}</span>
+        {% endif %}
+        <span class="replies">
+          {% if result.object.num_answers > 0 %}
+            {{ ngettext('1 reply', '{n} replies',
+                        result.object.num_answers)|f(n=result.object.num_answers) }}
+          {% else %}
+            {{ _('No replies') }}
+          {% endif %}
+        </span>
+        <span class="votes">
+          {{ ngettext('1 person has this problem', '{n} people have this problem',
+                      result.object.num_votes)|f(n=result.object.num_votes) }}
+        </span>
+        <span class="votes this-week">
+          {{ ngettext('1 new this week', '{n} new this week',
+                      result.object.num_votes_past_week)|f(n=result.object.num_votes_past_week) }}
+        </span>
+      </div>{# .thread-meta #}
+    {% endif %}
+  </div>{# .result #}
+{% endmacro %}

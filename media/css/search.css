@@ -128,3 +128,8 @@ input.search-refine-submit:hover {
     background-color: #f90;
 }
 /* END Bug 527859 */
+
+/* High-specificity selector to fix question meta padding. */
+article#search-results div.thread-meta {
+    padding-left: 50px;
+}
