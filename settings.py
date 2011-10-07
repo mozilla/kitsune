@@ -48,6 +48,7 @@ SLAVE_DATABASES = []
 # Addresses email comes from
 DEFAULT_FROM_EMAIL = 'notifications@support.mozilla.com'
 SERVER_EMAIL = 'server-error@support.mozilla.com'
+EMAIL_SUBJECT_PREFIX = '[support] '
 
 PLATFORM_NAME = platform.node()
 
