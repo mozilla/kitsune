@@ -243,7 +243,7 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin):
                            ('slug', 'locale'))
         permissions = [('archive_document', 'Can archive document')]
 
-    class SphinxMeta:
+    class SphinxMeta(object):
         index = 'wiki_pages'
         weights = {'title': 6, 'content': 1, 'keywords': 4, 'summary': 2}
         excerpt_limit = settings.SEARCH_SUMMARY_LENGTH

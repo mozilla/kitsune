@@ -106,7 +106,7 @@ class Thread(NotificationsMixin, ModelBase):
     class Meta:
         ordering = ['-is_sticky', '-last_post__created']
 
-    class SphinxMeta:
+    class SphinxMeta(object):
         index = 'discussion_forums'
         weights = {'title': 2, 'content': 1}
         group_by = ('thread_id', '-@group')

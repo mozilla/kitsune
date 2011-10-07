@@ -66,7 +66,7 @@ class Question(ModelBase, BigVocabTaggableMixin):
                  'Can change/remove the solution to a question'),
             )
 
-    class SphinxMeta:
+    class SphinxMeta(object):
         index = 'questions'
         weights = {'title': 4, 'question_content': 3, 'answer_content': 3}
         group_by = ('question_id', '-@group')
