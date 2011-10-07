@@ -29,7 +29,7 @@ from tags.models import BigVocabTaggableMixin
 from tags.utils import add_existing_tag
 from upload.models import ImageAttachment
 
-from sphinx.utils import crc32
+from search.utils import crc32
 
 
 class Question(ModelBase, BigVocabTaggableMixin):
