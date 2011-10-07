@@ -303,11 +303,14 @@ def search(request, template=None):
                 wiki_page = Document.objects.get(pk=documents[i]['id'])
                 summary = wiki_page.current_revision.summary
 
-                result = {'search_summary': summary,
-                          'url': wiki_page.get_absolute_url(),
-                          'title': wiki_page.title,
-                          'type': 'document',
-                          'rank': i,}
+                result = {
+                    'search_summary': summary,
+                    'url': wiki_page.get_absolute_url(),
+                    'title': wiki_page.title,
+                    'type': 'document',
+                    'rank': i,
+                    'object': wiki_page,
+                }
                 results.append(result)
             elif documents[i]['attrs'].get('question_creator', False) != False:
                 question = Question.objects.get(
@@ -316,11 +319,14 @@ def search(request, template=None):
                 excerpt = qc.excerpt(question.content, cleaned['q'])
                 summary = jinja2.Markup(excerpt)
 
-                result = {'search_summary': summary,
-                          'url': question.get_absolute_url(),
-                          'title': question.title,
-                          'type': 'question',
-                          'rank': i,}
+                result = {
+                    'search_summary': summary,
+                    'url': question.get_absolute_url(),
+                    'title': question.title,
+                    'type': 'question',
+                    'rank': i,
+                    'object': question,
+                }
                 results.append(result)
             else:
                 thread = Thread.objects.get(
@@ -330,11 +336,14 @@ def search(request, template=None):
                 excerpt = dc.excerpt(post.content, cleaned['q'])
                 summary = jinja2.Markup(excerpt)
 
-                result = {'search_summary': summary,
-                          'url': thread.get_absolute_url(),
-                          'title': thread.title,
-                          'type': 'thread',
-                          'rank': i,}
+                result = {
+                    'search_summary': summary,
+                    'url': thread.get_absolute_url(),
+                    'title': thread.title,
+                    'type': 'thread',
+                    'rank': i,
+                    'object': thread,
+                }
                 results.append(result)
         except IndexError:
             break
@@ -348,6 +357,9 @@ def search(request, template=None):
     refine_query = u'?%s' % urlencode(items)
 
     if is_json:
+        # Models are not json serializable.
+        for r in results:
+            del r['object']
         data = {}
         data['results'] = results
         data['total'] = len(results)
