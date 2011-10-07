@@ -117,9 +117,6 @@ class Thread(NotificationsMixin, ModelBase):
             'title': crc32,
             'content': crc32}
 
-        # TODO: set sort mode -- does this map into oedipus right?
-        # sort_mode = (sphinxapi.SPH_SORT_ATTR_ASC, 'created')
-
     def __setattr__(self, attr, val):
         """Notice when the forum field changes.
 
