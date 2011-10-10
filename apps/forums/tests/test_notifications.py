@@ -257,4 +257,3 @@ class NotificationsTests(ForumTestCase):
                'NewPostEvent should be notifying.')
 
 
-
