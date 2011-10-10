@@ -173,10 +173,10 @@ def get_customercare_stats():
             json_resource = urllib2.urlopen(url)
             json_data = json.load(json_resource)
             if not json_data['resultset']:
-                raise KeyError('Result set was empty.')
+                raise KeyError('[%s] Result set was empty.' % cache_key)
         except Exception, e:
             log.error('Error updating %s: %s' % (cache_key, e))
-            continue
+            raise
 
         # Make sure the file is not outdated.
         headers = json_resource.info()
