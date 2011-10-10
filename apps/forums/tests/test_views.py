@@ -43,6 +43,7 @@ class PostPermissionsTests(ForumTestCase):
             args=[f.slug, t.id])
         eq_(405, response.status_code)
 
+
 class ThreadAuthorityPermissionsTests(ForumTestCase):
     """Test thread views authority permissions."""
 
