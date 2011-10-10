@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 import re
 
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
@@ -21,6 +22,7 @@ from questions.karma_actions import AnswerAction, SolutionAction
 from questions.question_config import products
 from questions.tasks import (update_question_votes, update_answer_pages,
                              log_answer)
+from search import S
 from sumo.helpers import urlparams
 from sumo.models import ModelBase
 from sumo.parser import wiki_to_html
@@ -490,3 +492,11 @@ def _has_beta(version, dev_releases):
     """
     return version in [re.search('(\d+\.)+\d+', s).group(0)
                        for s in dev_releases.keys()]
+
+
+question_search = (
+    S(Question).weight(title=4, question_content=3, answer_content=3)
+               .group_by('question_id', '-@group')
+               .highlight(before_match='<b>',
+                          after_match='</b>',
+                          limit=settings.SEARCH_SUMMARY_LENGTH))

@@ -124,3 +124,6 @@
 [submodule "vendor/src/django-arecibo"]
 	path = vendor/src/django-arecibo
 	url = https://github.com/erikrose/django-arecibo.git
+[submodule "vendor/src/oedipus"]
+	path = vendor/src/oedipus
+	url = https://github.com/erikrose/oedipus.git
