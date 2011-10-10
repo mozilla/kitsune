@@ -1,3 +1,8 @@
+import os
+
+from django.conf import settings
+
+import oedipus
 from tower import ugettext_lazy as _lazy
 
 from search.sphinxapi import (SPH_SORT_ATTR_DESC, SPH_SORT_ATTR_ASC,
@@ -74,3 +79,12 @@ SORTBY_QUESTIONS = (
     (2, _lazy(u'Question date')),
     (3, _lazy(u'Number of answers')),
 )
+
+
+class S(oedipus.S):
+    @property
+    def port(self):
+        """Twiddle Sphinx port at runtime based on var set in SphinxTestCase"""
+        return (settings.TEST_SPHINX_PORT
+                if os.environ.get('DJANGO_ENVIRONMENT') == 'test'
+                else settings.SPHINX_PORT)

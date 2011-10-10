@@ -1,7 +1,8 @@
-import time
-import re
-import json
 from datetime import datetime, timedelta
+from itertools import chain
+import json
+import re
+import time
 
 from django.conf import settings
 from django.contrib.sites.models import Site
@@ -19,11 +20,11 @@ from search.clients import (QuestionsClient, WikiClient,
                             DiscussionClient, SearchError)
 from search.utils import crc32, locale_or_default, sphinx_locale
 from forums.models import Thread, Post
-from questions.models import Question
+from questions.models import Question, question_search
 import search as constants
 from search.forms import SearchForm
 from sumo.utils import paginate, smart_int
-from wiki.models import Document
+from wiki.models import Document, wiki_search
 
 
 def jsonp_is_valid(func):
@@ -377,32 +378,18 @@ def search(request, template=None):
 @cache_page(60 * 15)  # 15 minutes.
 def suggestions(request):
     """A simple search view that returns OpenSearch suggestions."""
-
     mimetype = 'application/x-suggestions+json'
 
     term = request.GET.get('q')
-
     if not term:
         return HttpResponseBadRequest(mimetype=mimetype)
 
-    wc = WikiClient()
-    qc = QuestionsClient()
     site = Site.objects.get_current()
-    locale = sphinx_locale(locale_or_default(request.locale))
-
-    results = []
-    filters_w = [{'filter': 'locale', 'value': (locale,)},
-                 {'filter': 'is_archived', 'value': (False,)}]
-    filters_q = [{'filter': 'has_helpful', 'value': (True,)}]
-
-    for client, filter, cls in [(wc, filters_w, Document),
-                                (qc, filters_q, Question)]:
-        for result in client.query(term, filter, limit=5):
-            try:
-                result = cls.objects.get(pk=result['id'])
-            except cls.DoesNotExist:
-                continue
-            results.append(result)
+    locale = locale_or_default(request.locale)
+    results = list(chain(
+            wiki_search.filter(locale=locale).query(term)[:5],
+            question_search.filter(has_helpful=True).query(term)[:5]))
+    # Assumption: wiki_search sets filter(is_archived=False).
 
     urlize = lambda obj: u'https://%s%s' % (site, obj.get_absolute_url())
     data = [term, [r.title for r in results], [], [urlize(r) for r in results]]

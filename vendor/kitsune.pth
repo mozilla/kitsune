@@ -70,3 +70,4 @@ src/django-ratelimit
 src/django-recaptcha
 src/python-recaptcha
 src/django-arecibo
+src/oedipus

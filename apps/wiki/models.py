@@ -15,14 +15,14 @@ from pyquery import PyQuery
 from tidings.models import NotificationsMixin
 from tower import ugettext_lazy as _lazy, ugettext as _
 
+from search import S
+from search.utils import crc32
 from sumo import ProgrammingError
 from sumo_locales import LOCALES
 from sumo.models import ModelBase, LocaleField
 from sumo.urlresolvers import reverse, split_path
 from tags.models import BigVocabTaggableMixin
 from wiki import TEMPLATE_TITLE_PREFIX
-
-from search.utils import crc32
 
 
 # Disruptiveness of edits to translated versions. Numerical magnitude indicate
@@ -244,11 +244,7 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin):
 
     class SphinxMeta(object):
         index = 'wiki_pages'
-        filter_mapping = {
-            'title': crc32,
-            'content': crc32,
-            'keywords': crc32,
-            'summary': crc32}
+        filter_mapping = {'locale': crc32}
 
     def _collides(self, attr, value):
         """Return whether there exists a doc in this locale whose `attr` attr
@@ -871,3 +867,8 @@ def points_to_document_view(url, required_locale=None):
             url, required_locale=required_locale)
     except _NotDocumentView:
         return False
+
+
+# Default search parameters for the wiki:
+wiki_search = S(Document).filter(is_archived=False)
+# TODO: We probably have several more default filters to add.
