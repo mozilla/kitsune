@@ -12,7 +12,6 @@ from django.shortcuts import get_object_or_404
 from django.utils.http import base36_to_int
 
 import jingo
-import waffle.decorators
 from session_csrf import anonymous_csrf
 from statsd import statsd
 from tidings.tasks import claim_watches
@@ -199,7 +198,6 @@ def profile(request, user_id):
 
 @login_required
 @require_http_methods(['GET', 'POST'])
-@waffle.decorators.waffle_flag('user-settings')
 def edit_settings(request):
     """Edit user settings"""
     if request.method == 'POST':
