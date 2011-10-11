@@ -818,6 +818,9 @@ def _search_suggestions(query, locale, category_tags):
     Items are dicts of:
         {
             'type':
+            'search_summary':
+            'title':
+            'url':
             'object':
         }
 
@@ -862,6 +865,9 @@ def _search_suggestions(query, locale, category_tags):
             doc = Document.objects.select_related('current_revision').\
                 get(pk=r['id'])
             results.append({
+                'search_summary': doc.current_revision.summary,
+                'url': doc.get_absolute_url(),
+                'title': doc.title,
                 'type': 'document',
                 'object': doc,
             })
@@ -876,6 +882,9 @@ def _search_suggestions(query, locale, category_tags):
         try:
             q = Question.objects.get(pk=r['attrs']['question_id'])
             results.append({
+                'search_summary': q.content[0:500],
+                'url': q.get_absolute_url(),
+                'title': q.title,
                 'type': 'question',
                 'object': q
             })
