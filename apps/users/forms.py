@@ -32,7 +32,7 @@ PASSWD2_REQUIRED = _lazy(u'Please enter your password twice.')
 
 
 class SettingsForm(forms.Form):
-    auto_notify = forms.BooleanField(required=False)
+    forums_watch_new_thread = forms.BooleanField(required=False)
 
     def save_for_user(self, user):
         for field in self.fields.keys():

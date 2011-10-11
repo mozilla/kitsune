@@ -208,7 +208,7 @@ def new_thread(request, forum_slug):
             NewThreadEvent(post).fire(exclude=post.author)
 
             # Add notification automatically if needed.
-            if Setting.get_for_user(request.user, 'auto_notify'):
+            if Setting.get_for_user(request.user, 'forums_watch_new_thread'):
                 NewPostEvent.notify(request.user, thread)
 
             return HttpResponseRedirect(

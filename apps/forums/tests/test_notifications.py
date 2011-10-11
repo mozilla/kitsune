@@ -232,7 +232,8 @@ class NotificationsTests(ForumTestCase):
         f = Forum.objects.get(pk=1)
         self.client.login(username='jsocol', password='testpass')
         user = User.objects.get(username='jsocol')
-        Setting.objects.create(user=user, name='auto_notify', value='False')
+        Setting.objects.create(user=user, name='forums_watch_new_thread',
+                               value='False')
         post(self.client, 'forums.new_thread',
              {'title': 'a title', 'content': 'a post'}, args=[f.slug])
 
@@ -248,12 +249,12 @@ class NotificationsTests(ForumTestCase):
         f = Forum.objects.get(pk=1)
         self.client.login(username='jsocol', password='testpass')
         user = User.objects.get(username='jsocol')
-        Setting.objects.create(user=user, name='auto_notify', value='True')
+        Setting.objects.create(user=user, name='forums_watch_new_thread',
+                               value='True')
         post(self.client, 'forums.new_thread',
              {'title': 'a title', 'content': 'a post'}, args=[f.slug])
 
         thread = Thread.objects.all().order_by('-id')[0]
         assert NewPostEvent.is_notifying(user, thread), (
                'NewPostEvent should be notifying.')
-
 
