@@ -17,6 +17,7 @@
 #home-content .note,
 #doc-content .note {
     margin: 1em 0;
+    overflow: hidden;
 }
 
 #doc-content p:first-child {
