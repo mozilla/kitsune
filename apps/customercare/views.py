@@ -114,9 +114,11 @@ def landing(request):
 
     # Stats. See customercare.cron.get_customercare_stats.
     activity = cache.get(settings.CC_TWEET_ACTIVITY_CACHE_KEY)
-    if activity:
+    if activity and 'resultset' in activity:
         activity_stats = []
         for act in activity['resultset']:
+            if act is None:  # Sometimes we get bad data here.
+                continue
             activity_stats.append((act[0], {
                 'requests': format_number(act[1], locale='en_US'),
                 'replies': format_number(act[2], locale='en_US'),
@@ -126,7 +128,7 @@ def landing(request):
         activity_stats = []
 
     contributors = cache.get(settings.CC_TOP_CONTRIB_CACHE_KEY)
-    if contributors:
+    if contributors and 'resultset' in contributors:
         contributor_stats = {}
         for contrib in contributors['resultset']:
             # Create one list per time period
@@ -144,7 +146,7 @@ def landing(request):
                 'avatar': contributors['avatars'].get(contrib[3]),
             })
     else:
-        contributor_stats = []
+        contributor_stats = {}
 
     return jingo.render(request, 'customercare/landing.html', {
         'activity_stats': activity_stats,
