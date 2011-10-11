@@ -57,11 +57,13 @@ k = {};
     }
 
     k.unquote = function(str) {
-        // Replace all \" with "
-        str = str.replace(/\\\"/g, '"');
-        // If a string is wrapped in double quotes, remove them.
-        if (str[0] === '"' && str[str.length - 1] === '"') {
-            return str.slice(1, str.length - 1);
+        if (str) {
+            // Replace all \" with "
+            str = str.replace(/\\\"/g, '"');
+            // If a string is wrapped in double quotes, remove them.
+            if (str[0] === '"' && str[str.length - 1] === '"') {
+                return str.slice(1, str.length - 1);
+            }
         }
         return str;
     }
