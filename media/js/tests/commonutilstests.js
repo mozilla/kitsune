@@ -96,4 +96,31 @@ test('external search engine (google) referrer', function() {
 });
 
 
+module('k.unquote');
+
+test('null param', function() {
+   var undefinedString;
+   equals(k.unquote(undefinedString), undefinedString);
+});
+
+test('quoted string', function() {
+   var s = '"delete cookies"';
+   equals(k.unquote(s), 'delete cookies');
+});
+
+test('nested quotes', function() {
+   var s = '"\\"delete\\" cookies"';
+   equals(k.unquote(s), '"delete" cookies');
+});
+
+test('inner quotes only', function() {
+   var s = '\\"delete\\" cookies';
+   equals(k.unquote(s), '"delete" cookies');
+});
+
+test('no quotes', function() {
+   var s = 'cookies';
+   equals(k.unquote(s), s);
+});
+
 });
