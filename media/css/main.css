@@ -697,6 +697,7 @@ div.support-search button.img-submit {
     -moz-border-radius: 10px;
     -webkit-border-radius: 10px;
     margin: 35px 20px 0 0;
+    overflow: hidden;
     padding: .5em 2em .5em 2em;
 }
 
