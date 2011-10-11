@@ -80,6 +80,24 @@
         }
     },
     {
+        "pk": 600,
+        "model": "auth.user",
+        "fields": {
+            "username": "timw",
+            "first_name": "",
+            "last_name": "",
+            "is_active": 1,
+            "is_superuser": 0,
+            "is_staff": 0,
+            "last_login": "2010-06-29 10:20:21",
+            "groups": [1],
+            "user_permissions": [],
+            "password": "sha1$d0fcb$661bd5197214051ed4de6da4ecdabe17f5549c7c",
+            "email": "user1583173@nowhere",
+            "date_joined": "2010-06-29 10:20:21"
+        }
+    },
+    {
         "pk": 118577,
         "model": "auth.user",
         "fields": {
@@ -141,6 +159,13 @@
         "model": "users.profile",
         "fields": {
             "user": 118533
+        }
+    },
+    {
+        "pk": 600,
+        "model": "users.profile",
+        "fields": {
+            "user": 600
         }
     },
     {

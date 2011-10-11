@@ -19,6 +19,7 @@ from forums.forms import ReplyForm, NewThreadForm, EditThreadForm, EditPostForm
 from forums.models import Forum, Thread, Post
 from sumo.urlresolvers import reverse
 from sumo.utils import paginate
+from users.models import Setting
 
 log = logging.getLogger('k.forums')
 
@@ -205,6 +206,10 @@ def new_thread(request, forum_slug):
             post.save()
 
             NewThreadEvent(post).fire(exclude=post.author)
+
+            # Add notification automatically if needed.
+            if Setting.get_for_user(request.user, 'forums_watch_new_thread'):
+                NewPostEvent.notify(request.user, thread)
 
             return HttpResponseRedirect(
                 reverse('forums.posts', args=[forum_slug, thread.id]))

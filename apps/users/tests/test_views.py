@@ -394,6 +394,7 @@ class UserSettingsTests(TestCase):
         eq_(Setting.objects.filter(user=self.user).count(), 0)  # No settings
         res = self.client.get(url, follow=True)
         eq_(200, res.status_code)
-        res = self.client.post(url, {'auto_notify': True}, follow=True)
+        res = self.client.post(url, {'forums_watch_new_thread': True},
+                               follow=True)
         eq_(200, res.status_code)
-        eq_(Setting.get_for_user(self.user, 'auto_notify'), True)
+        eq_(Setting.get_for_user(self.user, 'forums_watch_new_thread'), True)
