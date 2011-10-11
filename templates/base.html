@@ -134,7 +134,9 @@
           <section id="want-to-get-involved">
             <h1>{{ _('Be <mark>Awesome</mark>')|safe }}</h1>
             <div class="img">
-              <img src="{{ settings.MEDIA_URL }}img/promo.sumo.png" alt="" />
+              <a href="{{ url('wiki.document', 'superheroes-wanted') }}">
+                <img src="{{ settings.MEDIA_URL }}img/promo.sumo.png" alt="" />
+              </a>
             </div>
             <p>
               {% trans %}Did you know that Firefox Help is powered by volunteer
@@ -146,7 +148,9 @@
             <section id="check-your-plugins">
               <h1>{{ _('Check your <mark>plugins</mark>')|safe }}</h1>
               <div class="img">
-                <img src="{{ settings.MEDIA_URL }}img/promo.plugins.png" alt="" />
+                <a href="http://www.mozilla.com/plugincheck/">
+                  <img src="{{ settings.MEDIA_URL }}img/promo.plugins.png" alt="" />
+                </a>
               </div>
               <p>
                 {% trans %}
