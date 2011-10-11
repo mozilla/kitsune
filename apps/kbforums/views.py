@@ -19,6 +19,7 @@ from kbforums.forms import (ReplyForm, NewThreadForm,
 from kbforums.models import Thread, Post
 from sumo.urlresolvers import reverse
 from sumo.utils import paginate, get_next_url
+from users.models import Setting
 from wiki.models import Document
 
 
@@ -128,6 +129,11 @@ def reply(request, document_slug, thread_id):
                 reply_.save()
                 statsd.incr('kbforums.reply')
 
+                # Subscribe the user to the thread.
+                if Setting.get_for_user(request.user,
+                                        'kbforums_watch_after_reply'):
+                    NewPostEvent.notify(request.user, thread)
+
                 # Send notifications to thread/forum watchers.
                 NewPostEvent(reply_).fire(exclude=reply_.creator)
 
@@ -165,6 +171,10 @@ def new_thread(request, document_slug):
 
             # Send notifications to forum watchers.
             NewThreadEvent(post).fire(exclude=post.creator)
+
+            # Add notification automatically if needed.
+            if Setting.get_for_user(request.user, 'kbforums_watch_new_thread'):
+                NewPostEvent.notify(request.user, thread)
 
             return HttpResponseRedirect(
                 reverse('wiki.discuss.posts', args=[document_slug, thread.id]))

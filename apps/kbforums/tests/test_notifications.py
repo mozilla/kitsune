@@ -9,6 +9,7 @@ from kbforums.events import NewPostEvent, NewThreadEvent
 from kbforums.models import Thread, Post
 from kbforums.tests import KBForumTestCase
 from sumo.tests import post, attrs_eq, starts_with
+from users.models import Setting
 from wiki.models import Document
 
 
@@ -310,3 +311,51 @@ class NotificationsTests(KBForumTestCase):
         attrs_eq(mail.outbox[0], to=['user47963@nowhere'],
                  subject=u'an article title - a title')
         starts_with(mail.outbox[0].body, NEW_THREAD_EMAIL % t.id)
+
+    @mock.patch.object(Site.objects, 'get_current')
+    def test_autowatch_new_thread(self, get_current):
+        """Creating a new thread should email responses"""
+        get_current.return_value.domain = 'testserver'
+
+        d = Document.objects.all()[0]
+        self.client.login(username='jsocol', password='testpass')
+        user = User.objects.get(username='jsocol')
+        s = Setting.objects.create(user=user, name='kbforums_watch_new_thread',
+                                   value='False')
+        data = {'title': 'a title', 'content': 'a post'}
+        post(self.client, 'wiki.discuss.new_thread', data, args=[d.slug])
+
+        t1 = Thread.objects.all().order_by('-id')[0]
+        assert not NewPostEvent.is_notifying(user, t1), (
+            'NewPostEvent should not be notifying.')
+
+        s.value = 'True'
+        s.save()
+        post(self.client, 'wiki.discuss.new_thread', data, args=[d.slug])
+        t2 = Thread.uncached.all().order_by('-id')[0]
+        assert NewPostEvent.is_notifying(user, t2), (
+            'NewPostEvent should be notifying')
+
+    @mock.patch.object(Site.objects, 'get_current')
+    def test_autowatch_reply(self, get_current):
+        get_current.return_value.domain = 'testserver'
+
+        user = User.objects.get(username='jsocol')
+        t1, t2 = Thread.objects.filter(is_locked=False)[0:2]
+        assert not NewPostEvent.is_notifying(user, t1)
+        assert not NewPostEvent.is_notifying(user, t2)
+
+        self.client.login(username='jsocol', password='testpass')
+        s = Setting.objects.create(user=user,
+                                   name='kbforums_watch_after_reply',
+                                   value='True')
+        data = {'content': 'some content'}
+        post(self.client, 'wiki.discuss.reply', data,
+             args=[t1.document.slug, t1.pk])
+        assert NewPostEvent.is_notifying(user, t1)
+
+        s.value = 'False'
+        s.save()
+        post(self.client, 'wiki.discuss.reply', data,
+             args=[t2.document.slug, t2.pk])
+        assert not NewPostEvent.is_notifying(user, t2)
