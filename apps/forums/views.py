@@ -161,6 +161,10 @@ def reply(request, forum_slug, thread_id):
                 reply_.save()
                 statsd.incr('forums.reply')
 
+                # Subscribe the user to the thread.
+                if Setting.get_for_user(request.user,
+                                        'forums_watch_after_reply'):
+                    NewPostEvent.notify(request.user, thread)
                 # Send notifications to thread/forum watchers.
                 NewPostEvent(reply_).fire(exclude=reply_.author)
 
