@@ -101,17 +101,18 @@ html[lang=ja] body div#featured {
     visibility: hidden;
 }
 
-#home-content .for {
-    display: none; /* to prevent for-wrapped warnings from flashing in then out */
-}
-
-.no-js #home-content .for {
-    display: inherit; /* no js? you get to see everything! */
-}
-
 #home-content-top {
     font-size: 14px;
     padding: 20px 10px 0;
+}
+
+#home-content-top .for {
+     /* Prevent for-wrapped warnings from flashing in then out.
+      * A side effect of this is for-wrapped warnings on the top of the
+      * home page will not show for users with JavaScript disabled
+      * (probably one of the smaller showfor issues they will encounter).
+      */
+    display: none;
 }
 
 #home-content-quick,
