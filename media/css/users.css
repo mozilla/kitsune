@@ -255,3 +255,24 @@ body.register p,
 #avatar-preview {
     text-align: center;
 }
+
+#edit-settings form label {
+    clear: left;
+    float: left;
+    margin-bottom: 14px;
+    width: 300px;
+}
+
+.html-rtl #edit-settings form label {
+    clear: right;
+    float: right;
+}
+
+#edit-settings form input[type=checkbox] {
+    display: block;
+    float: left;
+}
+
+.html-rtl #edit-settings form input[type=checkbox] {
+    float: right;
+}
