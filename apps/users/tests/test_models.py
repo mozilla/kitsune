@@ -73,3 +73,11 @@ class UserSettingsTests(TestCase):
         assert bad_setting not in form.fields.keys()
         with self.assertRaises(KeyError):
             Setting.get_for_user(user, bad_setting)
+
+    def test_default_values(self):
+        eq_(0, Setting.objects.count())
+        user = User.objects.get(username='timw')
+        keys = SettingsForm.base_fields.keys()
+        for setting in keys:
+            field = SettingsForm.base_fields[setting]
+            eq_(field.initial, Setting.get_for_user(user, setting))
