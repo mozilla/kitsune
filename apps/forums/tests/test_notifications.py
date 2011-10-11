@@ -224,7 +224,7 @@ class NotificationsTests(ForumTestCase):
         self._toggle_watch_thread_as('pcraciunoiu', turn_on=False)
 
     @mock.patch.object(Site.objects, 'get_current')
-    def test_autowatch_new_thread_setting_false(self, get_current):
+    def test_autowatch_new_thread(self, get_current):
         """Creating a new thread should email responses"""
         get_current.return_value.domain = 'testserver'
 
@@ -232,31 +232,20 @@ class NotificationsTests(ForumTestCase):
         f = Forum.objects.get(pk=1)
         self.client.login(username='jsocol', password='testpass')
         user = User.objects.get(username='jsocol')
-        Setting.objects.create(user=user, name='forums_watch_new_thread',
-                               value='False')
-        post(self.client, 'forums.new_thread',
-             {'title': 'a title', 'content': 'a post'}, args=[f.slug])
+        s = Setting.objects.create(user=user, name='forums_watch_new_thread',
+                                   value='False')
+        data = {'title': 'a title', 'content': 'a post'}
+        post(self.client, 'forums.new_thread', data, args=[f.slug])
+        t1 = Thread.objects.all().order_by('-id')[0]
+        assert not NewPostEvent.is_notifying(user, t1), (
+            'NewPostEvent should not be notifying.')
 
-        thread = Thread.objects.all().order_by('-id')[0]
-        assert not NewPostEvent.is_notifying(user, thread), (
-               'NewPostEvent should be notifying.')
-
-    @mock.patch.object(Site.objects, 'get_current')
-    def test_autowatch_new_thread_setting_true(self, get_current):
-        """Creating a new thread should email responses"""
-        get_current.return_value.domain = 'testserver'
-
-        f = Forum.objects.get(pk=1)
-        self.client.login(username='jsocol', password='testpass')
-        user = User.objects.get(username='jsocol')
-        Setting.objects.create(user=user, name='forums_watch_new_thread',
-                               value='True')
-        post(self.client, 'forums.new_thread',
-             {'title': 'a title', 'content': 'a post'}, args=[f.slug])
-
-        thread = Thread.objects.all().order_by('-id')[0]
-        assert NewPostEvent.is_notifying(user, thread), (
-               'NewPostEvent should be notifying.')
+        s.value = 'True'
+        s.save()
+        post(self.client, 'forums.new_thread', data, args=[f.slug])
+        t2 = Thread.uncached.all().order_by('-id')[0]
+        assert NewPostEvent.is_notifying(user, t2), (
+            'NewPostEvent should be notifying.')
 
     @mock.patch.object(Site.objects, 'get_current')
     def test_autowatch_reply(self, get_current):
