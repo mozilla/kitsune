@@ -78,7 +78,7 @@ def localization(request):
 def contributors(request):
     """Render aggregate data about the articles in the default locale."""
     return render_readouts(request, CONTRIBUTOR_READOUTS, 'contributors.html',
-                           locale=settings.WIKI_DEFAULT_LANGUAGE)
+                           locale=request.locale)
 
 
 @require_GET
