@@ -1,8 +1,4 @@
 /* Bug 501880 -- advanced search */
-.show-search-tabs {
-    padding: 0.5em;
-    display: inline-block;
-}
 input.search-empty-query {
     padding: 5px;
 }

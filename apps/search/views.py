@@ -355,8 +355,6 @@ def search(request, template=None):
              v in r.getlist(k) if v and k != 'a']
     items.append(('a', '2'))
 
-    refine_query = u'?%s' % urlencode(items)
-
     if is_json:
         # Models are not json serializable.
         for r in results:
@@ -375,7 +373,7 @@ def search(request, template=None):
 
     results_ = jingo.render(request, template,
         {'num_results': len(documents), 'results': results, 'q': cleaned['q'],
-         'pages': pages, 'w': cleaned['w'], 'refine_query': refine_query,
+         'pages': pages, 'w': cleaned['w'],
          'search_form': search_form, 'lang_name': lang_name, })
     results_['Cache-Control'] = 'max-age=%s' % \
                                 (settings.SEARCH_CACHE_PERIOD * 60)
