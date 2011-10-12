@@ -88,3 +88,6 @@ class S(oedipus.S):
         return (settings.TEST_SPHINX_PORT
                 if os.environ.get('DJANGO_ENVIRONMENT') == 'test'
                 else settings.SPHINX_PORT)
+
+
+SearchError = oedipus.SearchError

@@ -23,6 +23,7 @@ from questions.question_config import products
 from questions.tasks import (update_question_votes, update_answer_pages,
                              log_answer)
 from search import S
+from search.utils import crc32
 from sumo.helpers import urlparams
 from sumo.models import ModelBase
 from sumo.parser import wiki_to_html
@@ -30,8 +31,6 @@ from sumo.urlresolvers import reverse
 from tags.models import BigVocabTaggableMixin
 from tags.utils import add_existing_tag
 from upload.models import ImageAttachment
-
-from search.utils import crc32
 
 
 class Question(ModelBase, BigVocabTaggableMixin):
@@ -69,9 +68,8 @@ class Question(ModelBase, BigVocabTaggableMixin):
     class SphinxMeta(object):
         index = 'questions'
         filter_mapping = {
-            'title': crc32,
-            'question_content': crc32,
-            'answer_content': crc32}
+            'tag': crc32}
+        id_field = 'question_id'
 
     def __unicode__(self):
         return self.title
