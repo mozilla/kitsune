@@ -78,12 +78,7 @@ class Question(ModelBase, BigVocabTaggableMixin):
 
     @property
     def content_parsed(self):
-        cache_key = self.html_cache_key % self.id
-        html = cache.get(cache_key)
-        if html is None:
-            html = wiki_to_html(self.content)
-            cache.add(cache_key, html)
-        return html
+        return _content_parsed(self)
 
     def clear_cached_properties(self):
         cache.delete(self.html_cache_key % self.id)
@@ -289,12 +284,7 @@ class Answer(ActionMixin, ModelBase):
 
     @property
     def content_parsed(self):
-        cache_key = self.html_cache_key % self.id
-        html = cache.get(cache_key)
-        if not html:
-            html = wiki_to_html(self.content)
-            cache.add(cache_key, html)
-        return html
+        return _content_parsed(self)
 
     def clear_cached_properties(self):
         cache.delete(self.html_cache_key % self.id)
@@ -492,6 +482,19 @@ def _has_beta(version, dev_releases):
     """
     return version in [re.search('(\d+\.)+\d+', s).group(0)
                        for s in dev_releases.keys()]
+
+
+def _content_parsed(obj):
+   if not obj.id:
+       # Don't cache if we don't have an ID (previews)
+       return wiki_to_html(obj.content)
+
+   cache_key = obj.html_cache_key % obj.id
+   html = cache.get(cache_key)
+   if html is None:
+       html = wiki_to_html(obj.content)
+       cache.add(cache_key, html)
+   return html
 
 
 question_search = (
