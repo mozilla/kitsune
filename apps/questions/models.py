@@ -68,9 +68,6 @@ class Question(ModelBase, BigVocabTaggableMixin):
     class SphinxMeta(object):
         index = 'questions'
         filter_mapping = {
-            'title': crc32,
-            'question_content': crc32,
-            'answer_content': crc32,
             'tag': crc32}
 
     def __unicode__(self):
