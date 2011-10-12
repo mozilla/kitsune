@@ -4,21 +4,17 @@
     <section id="for-contributors" class="sd-module">
       <h1>{{ _('For Contributors') }}</h1>
       <ul>
-        <li><a href="{{ url('wiki.document', 'Contributor Home Page') }}">{{ _('Contributor Home Page') }}</a></li>
+        <li><a href="{{ url('wiki.document', 'superheroes-wanted') }}">{{ _('Contributor Quickstart Guide') }}</a></li>
+        <li><a href="{{ url('wiki.document', 'contributor-news-resources') }}">{{ _('Contributor News &amp; Resources') }}</a></li>
+        <li><a href="{{ url('forums.forums') }}">{{ _('Contributor Forums') }}</a></li>
         <li><a href="{{ url('dashboards.localization') }}">{{ _('Knowledge Base Dashboard') }}</a></li>
-        <li><a href="{{ url('gallery.home') }}">{{ _('Media Gallery') }}</a></li>
         <li><a href="{{ url('customercare.landing') }}">{{ _('Help on Twitter') }}</a></li>
-        <li><a href="{{ url('wiki.document', 'answering-support-questions') }}">{{ _('Answer Support Questions') }}</a></li>
-        <li><a href="{{ url('wiki.document', 'Helping with Live Chat') }}">{{ _('Help with Live Chat') }}</a></li>
-        <li><a href="{{ url('wiki.document', 'improve-knowledge-base') }}">{{ _('Improve the Knowledge Base') }}</a></li>
-        <li><a href="{{ url('wiki.document', 'localize-firefox-help') }}">{{ _('Translate Articles') }}</a></li>
-        <li><a href="{{ url('forums.forums') }}">{{ _('Contributors Forums') }}</a></li>
-        {% if request.locale == default_language %}
-          <li><a href="{{ url('questions.questions') }}">{{ _('Support Forum') }}</a></li>
-        {% endif %}
+        <li><a href="{{ url('questions.questions') }}">{{ _('Support Forum Home') }}</a></li>
         {% if user.has_perm('flagit.can_moderate') %}
-          <li><a href="{{ url('flagit.queue') }}">{{ _('Moderate Flagged Content') }}</a></li>
+          <li><a href="{{ url('flagit.queue') }}">{{ _('Moderate Forum Content') }}</a></li>
         {% endif %}
+        <li><a href="{{ url('gallery.home') }}">{{ _('Media Gallery') }}</a></li>
+        <li><a href="{{ url('search')|urlparams(a=2) }}">{{ _('Advanced Search') }}</a></li>
       </ul>
     </section>
   {% endif %}
