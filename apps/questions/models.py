@@ -251,14 +251,6 @@ class Question(ModelBase, BigVocabTaggableMixin):
         return Answer.objects.filter(pk=self.solution_id).exists()
 
 
-question_search = (
-    S(Question).weight(title=4, question_content=3, answer_content=3)
-               .group_by('question_id', '-@group')
-               .highlight(before_match='<b>',
-                          after_match='</b>',
-                          limit=settings.SEARCH_SUMMARY_LENGTH))
-
-
 class QuestionMetaData(ModelBase):
     """Metadata associated with a support question."""
     question = models.ForeignKey('Question', related_name='metadata_set')
