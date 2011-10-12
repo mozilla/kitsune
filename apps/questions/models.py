@@ -485,10 +485,6 @@ def _has_beta(version, dev_releases):
 
 
 def _content_parsed(obj):
-   if not obj.id:
-       # Don't cache if we don't have an ID (previews)
-       return wiki_to_html(obj.content)
-
    cache_key = obj.html_cache_key % obj.id
    html = cache.get(cache_key)
    if html is None:

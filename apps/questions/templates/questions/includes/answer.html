@@ -34,7 +34,12 @@
 </div>
 <div class="main-section">
   <div class="content">
-    {{ answer.content_parsed|safe }}
+    {% if is_preview %}
+      {# Don't use cached content_parsed #}
+      {{ answer.content|wiki_to_html }}
+    {% else %}
+      {{ answer.content_parsed|safe }}
+    {% endif %}
     <div class="stem"></div>{# for the speech bubble arrow #}
   </div>
   <div class="ans-attachments attachments-list">
