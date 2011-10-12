@@ -494,7 +494,7 @@ def _has_beta(version, dev_releases):
                        for s in dev_releases.keys()]
 
 
-question_search = question_search = (
+question_search = (
     S(Question).weight(title=4, question_content=3, answer_content=3)
                .group_by('question_id', '-@group')
                .highlight(before_match='<b>',
