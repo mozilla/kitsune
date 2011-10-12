@@ -843,17 +843,10 @@ def _search_suggestions(query, locale, category_tags):
         my_question_search = my_question_search.filter(tag__in=category_tags)
         my_wiki_search = my_wiki_search.filter(tag__in=category_tags)
 
-    my_wiki_search = my_wiki_search.filter(locale=locale)
-    category_include = [x for x in settings.SEARCH_DEFAULT_CATEGORIES
-                        if x >= 0]
-    if category_include:
-        my_wiki_search = my_wiki_search.filter(category__in=category_include)
-    category_exclude = [x for x in settings.SEARCH_DEFAULT_CATEGORIES
-                        if x < 0]
-    if category_exclude:
-        my_wiki_search = my_wiki_search.exclude(category__in=category_exclude)
-
-    raw_results = my_wiki_search.query(query)[:WIKI_RESULTS]
+    raw_results = (
+        my_wiki_search.filter(locale=locale,
+                              category__in=settings.SEARCH_DEFAULT_CATEGORIES)
+                      .query(query)[:WIKI_RESULTS])
 
     # Lazily build excerpts from results. Stop when we have enough:
     results = []
