@@ -67,6 +67,7 @@ html[lang=ja] body div#featured {
 }
 
 #support-search input.text {
+    background-position: 335px 2px;
     width: 329px;
 }
 
