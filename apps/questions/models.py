@@ -30,7 +30,6 @@ from sumo.urlresolvers import reverse
 from tags.models import BigVocabTaggableMixin
 from tags.utils import add_existing_tag
 from upload.models import ImageAttachment
-
 from search.utils import crc32
 
 
@@ -71,7 +70,8 @@ class Question(ModelBase, BigVocabTaggableMixin):
         filter_mapping = {
             'title': crc32,
             'question_content': crc32,
-            'answer_content': crc32}
+            'answer_content': crc32,
+            'tag': crc32}
 
     def __unicode__(self):
         return self.title
@@ -249,6 +249,14 @@ class Question(ModelBase, BigVocabTaggableMixin):
     @property
     def is_solved(self):
         return Answer.objects.filter(pk=self.solution_id).exists()
+
+
+question_search = (
+    S(Question).weight(title=4, question_content=3, answer_content=3)
+               .group_by('question_id', '-@group')
+               .highlight(before_match='<b>',
+                          after_match='</b>',
+                          limit=settings.SEARCH_SUMMARY_LENGTH))
 
 
 class QuestionMetaData(ModelBase):

@@ -38,10 +38,11 @@ from questions.forms import (NewQuestionForm, EditQuestionForm, AnswerForm,
                              WatchQuestionForm, FREQUENCY_CHOICES)
 from questions.karma_actions import (SolutionAction, AnswerMarkedHelpfulAction,
                                      AnswerMarkedNotHelpfulAction)
-from questions.models import Question, Answer, QuestionVote, AnswerVote
+from questions.models import (Question, Answer, QuestionVote, AnswerVote,
+                              question_search)
 from questions.question_config import products
-from search.clients import WikiClient, QuestionsClient, SearchError
-from search.utils import crc32, locale_or_default, sphinx_locale
+from search.utils import locale_or_default
+from search import SearchError
 from sumo.helpers import urlparams
 from sumo.urlresolvers import reverse
 from sumo.utils import paginate
@@ -50,7 +51,7 @@ from upload.models import ImageAttachment
 from upload.views import upload_imageattachment
 from users.forms import RegisterForm
 from users.utils import handle_login, handle_register
-from wiki.models import Document
+from wiki.models import Document, wiki_search
 
 
 log = logging.getLogger('k.questions')
@@ -831,39 +832,34 @@ def _search_suggestions(query, locale, category_tags):
 
     """
 
+    my_question_search = question_search
+    my_wiki_search = wiki_search
+
     # Max number of search results per type.
     WIKI_RESULTS = QUESTIONS_RESULTS = 3
 
-    # Category filters
-    cat_filters = []
+    # Apply category filters
     if category_tags:
-        for tag in category_tags:
-            cat_filters.append({
-                'filter': 'tag',
-                'value': (crc32(tag),)})
+        my_question_search = my_question_search.filter(tag__in=category_tags)
+        my_wiki_search = my_wiki_search.filter(tag__in=category_tags)
 
-    # Search wiki pages:
-    wiki_searcher = WikiClient()
-    filters = [{'filter': 'locale',
-                'value': (sphinx_locale(locale),)},
-               {'filter': 'category',
-                'value': [x for x in settings.SEARCH_DEFAULT_CATEGORIES
-                          if x >= 0]},
-               {'filter': 'category',
-                'exclude': True,
-                'value': [-x for x in settings.SEARCH_DEFAULT_CATEGORIES
-                          if x < 0]}]
-    for f in cat_filters:
-        filters.append(f)
+    category_include = [x for x in settings.SEARCH_DEFAULT_CATEGORIES
+                        if x >= 0]
+    category_exclude = [x for x in settings.SEARCH_DEFAULT_CATEGORIES
+                        if x < 0]
 
-    raw_results = wiki_searcher.query(query, filters=filters,
-                                      limit=WIKI_RESULTS)
+    raw_results = (my_wiki_search
+                   .filter(locale=locale,
+                           category__in=category_include)
+                   .exclude(category__in=category_exclude)
+                   .query(query)[:WIKI_RESULTS])
+
     # Lazily build excerpts from results. Stop when we have enough:
     results = []
     for r in raw_results:
         try:
-            doc = Document.objects.select_related('current_revision').\
-                get(pk=r['id'])
+            doc = (Document.objects.select_related('current_revision').
+                   get(pk=r['id']))
             results.append({
                 'search_summary': doc.current_revision.summary,
                 'url': doc.get_absolute_url(),
@@ -874,10 +870,9 @@ def _search_suggestions(query, locale, category_tags):
         except Document.DoesNotExist:
             pass
 
-    question_searcher = QuestionsClient()
-    # questions app is en-US only.
-    raw_results = question_searcher.query(query, filters=cat_filters,
-                                          limit=QUESTIONS_RESULTS)
+    # Questions app is en-US only.
+    raw_results = (my_question_search.query(query)[:QUESTIONS_RESULTS])
+
     for r in raw_results:
         try:
             q = Question.objects.get(pk=r['attrs']['question_id'])
