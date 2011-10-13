@@ -127,8 +127,9 @@ h1.site-title a {
 }
 
 h1.site-title a:hover {
-    color: #447BC4;
+    color: #043B84;
     text-decoration: none;
+    text-shadow: 0 0 40px #FFFFFF, 0 0 20px #FFFFFF, 0 0 10px #FFFFFF;
 }
 
 h1.site-title mark {
