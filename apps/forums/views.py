@@ -463,5 +463,6 @@ def post_preview_async(request):
     """Ajax preview of posts."""
     statsd.incr('forums.preview')
     post = Post(author=request.user, content=request.POST.get('content', ''))
+    post.author_post_count = post.author.post_set.count()
     return jingo.render(request, 'forums/includes/post_preview.html',
                         {'post_preview': post})
