@@ -95,13 +95,13 @@ article #toc ul li {
     margin: 0;
 }
 
-#toc ol ol,
-#toc ul ul {
+#wiki-doc #toc li ol,
+#wiki-doc #toc li ul {
     margin: 0 0 0 20px;
 }
 
-.html-rtl #toc ol ol,
-.html-rtl #toc ul ul {
+.html-rtl #wiki-doc #toc li ol,
+.html-rtl #wiki-doc #toc li ul {
     margin: 0 20px 0 0;
 }
 
