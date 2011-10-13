@@ -17,8 +17,9 @@ article.message-list li {
 
 article.message-list a.read {
     display: block;
-    height: 42px;
+    height: 48px;
     margin: 0 35px 0 189px;
+    overflow: hidden;
     padding-top: 1px;
 }
 
