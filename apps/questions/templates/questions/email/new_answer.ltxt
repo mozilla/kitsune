@@ -1,15 +1,13 @@
 {% load i18n %}{% load unsubscribe_instructions %}{# L10n: This is an email. Whitespace matters! #}{% autoescape off %}{% if username %}{% blocktrans %}Hi {{ username }},{% endblocktrans %}
 
-{% endif %}{% blocktrans %}{{ answerer }} has posted an answer to the question on
-{{ host }} with the title:
+{% endif %}{% blocktrans %}{{ answerer }} has posted an answer to the
+question "{{ question_title }}" on {{ host }}:
+{{ answer }}
 
-{{ question_title }}
+If this answered your question, click this link and let others
+know it was helpful: https://{{ host }}{{ helpful_url }}
 
-You can see the response by using the link below.  Please also
-let us know if this was helpful using the options on the right of
-that page. This helps other Firefox users find good answers to
-their support questions.
-
+You can see the response by using this link:
 https://{{ host }}{{ answer_url }}
 
 Did you know that {{ answerer }} is a Firefox user just

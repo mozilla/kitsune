@@ -503,7 +503,6 @@ def question_vote(request, question_id):
     return HttpResponseRedirect(question.get_absolute_url())
 
 
-@require_POST
 @csrf_exempt
 def answer_vote(request, question_id, answer_id):
     """Vote for Helpful/Not Helpful answers"""
@@ -514,7 +513,7 @@ def answer_vote(request, question_id, answer_id):
     if not answer.has_voted(request):
         vote = AnswerVote(answer=answer)
 
-        if 'helpful' in request.POST:
+        if 'helpful' in request.REQUEST:
             vote.helpful = True
             AnswerMarkedHelpfulAction(answer.creator).save()
             message = _('Glad to hear it!')
