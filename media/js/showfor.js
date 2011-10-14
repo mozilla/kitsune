@@ -1,5 +1,4 @@
 /*
- * showfor.js
  * Scripts for the showfor browser/os detection.
  *
  * Depends on: browserdetect.js
@@ -72,12 +71,23 @@ var ShowFor = {
             },
             $body = $('body'),
             hash = self.hashFragment(),
-            isSetManually;
+            isSetManually,
+            browserUsed;
 
         OSES = $osMenu.data('oses');  // {'mac': true, 'win': true, ...}
         BROWSERS = $browserMenu.data('browsers');  // {'fx4': {product: 'fx', maxFloatVersion: 4.9999}, ...}
         VERSIONS = $browserMenu.data('version-groups');  // {'fx': [[3.4999, '3'], [3.9999, '35']], 'm': [[1.0999, '1'], [1.9999, '11']]}
         MISSING_MSG = gettext('[missing header]');
+
+        browserUsed = ShowFor.detectBrowser();
+        if (browserUsed && $browserMenu.find(
+            'option[value=' + browserUsed + ']').length === 0) {
+            // If the browser used is not "officially" supported (shown in UI
+            // by default) and is a browser we support in our backend, then
+            // add it to the browser selections.
+            ShowFor.addBrowserToSelect($browserMenu, browserUsed);
+            $origBrowserOptions = $browserMenu.find('option').clone();
+        }
 
         // Make the 'Table of Contents' header localizable.
         $('#toc > h2').text(gettext('Table of Contents'));
@@ -464,6 +474,48 @@ var ShowFor = {
             $cur_ul.append($('<li />').text(text).wrapInner($('<a>').attr('href', '#' + $h.attr('id'))));
         });
         return $root;
+    },
+    addBrowserToSelect: function($select, browser) {
+        // Adds the given browser to the passed <select/>.
+        var $option = $('<option/>'),
+            version,
+            platform,
+            highestVersion,
+            lowestVersion,
+            selector,
+            sliceIndex;
+        $option.attr('value', browser);
+        if (browser.indexOf('fx') === 0) {
+            platform = 'desktop';
+            sliceIndex = 2;
+        } else {
+            platform = 'mobile';
+            sliceIndex = 1;
+        }
+        version = parseInt(browser.slice(sliceIndex));
+        $option.attr('data-dependency', platform);
+        $option.text('Firefox ' + version);
+
+        // Insert the option into the right spot to keep versions in order.
+        // A little hacky, given fx35 is Firefox 3.5/3.6 and not Firefox 35.
+        selector = 'option[data-dependency="' + platform + '"]';
+        highestVersion = $select.find(selector + ':first').val();
+        highestVersion = parseInt(highestVersion.slice(sliceIndex));
+        lowestVersion = $select.find(selector + ':last').val();
+        lowestVersion = parseInt(lowestVersion.slice(sliceIndex));
+        if (lowestVersion === 35) {
+            lowestVersion = 3.5;
+        }
+        if (version > highestVersion) {
+            $select.prepend($option);
+        } else if (version < lowestVersion) {
+            $select.append($option);
+        } else {
+            // This will only be hit while we still officially support 3.6
+            $option.insertBefore($select.find(selector + ':last'));
+        }
+
+        return $select;
     }
 };
 

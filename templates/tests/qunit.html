@@ -7,7 +7,7 @@
 </head>
 <body
   data-for-os="{&#34;maemo&#34;: 4, &#34;win&#34;: 1, &#34;mac&#34;: 2, &#34;android&#34;: 5, &#34;linux&#34;: 3}"
-  data-for-version="{&#34;fx4&#34;: 1, &#34;fx3&#34;: 3, &#34;fx35&#34;: 2, &#34;m4&#34;: 4}">
+  data-for-version="{&#34;fx9&#34;: 13, &#34;fx8&#34;: 11, &#34;fx5&#34;: 5, &#34;fx4&#34;: 1, &#34;fx7&#34;: 9, &#34;fx6&#34;: 6, &#34;fx3&#34;: 3, &#34;m5&#34;: 7, &#34;m4&#34;: 4, &#34;m7&#34;: 10, &#34;m6&#34;: 8, &#34;fx35&#34;: 2, &#34;m9&#34;: 14, &#34;m8&#34;: 12}">
 
   <h1 id="qunit-header">QUnit Test Suite ({{ suite.name }})</h1>
 	<h2 id="qunit-banner"></h2>
@@ -78,6 +78,13 @@
         <span class="for" data-for="m4">m4</span>
         <span class="for" data-for="m5">m5</span>
       </div>
+      <!-- Another browser select to test the inserting new versions. -->
+      <select class="browser-insert-test">
+        <option value="fx8" data-dependency="desktop">Firefox 8</option>
+        <option value="fx7" data-dependency="desktop" selected="selected" data-default="true">Firefox 7</option>
+        <option value="fx6" data-dependency="desktop">Firefox 6</option>
+        <option value="fx35" data-dependency="desktop">Firefox 3.5-3.6</option>
+      </select>
     </div>
 
     <div id="ajaxvote">

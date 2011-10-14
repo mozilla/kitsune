@@ -98,4 +98,39 @@ test('maemo m5', function() {
     assertNotVisible(this.$sandbox, ['mac,linux', 'android', 'fx3', 'fx6']);
 });
 
+module('ShowFor.addBrowserToSelect', showforFixture);
+// Test that browser versions get inserted in the right spot.
+
+test('fx9', function() {
+    var $select = this.$sandbox.find('select.browser-insert-test'),
+        length = $select.find('option').length;
+    ShowFor.addBrowserToSelect($select, 'fx9');
+    equals($select.find('option').length, length + 1);
+    equals($select.find('option')[0].value, 'fx9');
+});
+
+test('fx5', function() {
+    var $select = this.$sandbox.find('select.browser-insert-test'),
+        length = $select.find('option').length;
+    ShowFor.addBrowserToSelect($select, 'fx5');
+    equals($select.find('option').length, length + 1);
+    equals($select.find('option')[length - 1].value, 'fx5');
+});
+
+test('fx4', function() {
+    var $select = this.$sandbox.find('select.browser-insert-test'),
+        length = $select.find('option').length;
+    ShowFor.addBrowserToSelect($select, 'fx4');
+    equals($select.find('option').length, length + 1);
+    equals($select.find('option')[length - 1].value, 'fx4');
+});
+
+test('fx3', function() {
+    var $select = this.$sandbox.find('select.browser-insert-test'),
+        length = $select.find('option').length;
+    ShowFor.addBrowserToSelect($select, 'fx3');
+    equals($select.find('option').length, length + 1);
+    equals($select.find('option')[length].value, 'fx3');
+});
+
 });
