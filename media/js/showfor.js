@@ -1,5 +1,4 @@
 /*
- * showfor.js
  * Scripts for the showfor browser/os detection.
  *
  * Depends on: browserdetect.js
@@ -72,12 +71,23 @@ var ShowFor = {
             },
             $body = $('body'),
             hash = self.hashFragment(),
-            isSetManually;
+            isSetManually,
+            browserUsed;
 
         OSES = $osMenu.data('oses');  // {'mac': true, 'win': true, ...}
         BROWSERS = $browserMenu.data('browsers');  // {'fx4': {product: 'fx', maxFloatVersion: 4.9999}, ...}
         VERSIONS = $browserMenu.data('version-groups');  // {'fx': [[3.4999, '3'], [3.9999, '35']], 'm': [[1.0999, '1'], [1.9999, '11']]}
         MISSING_MSG = gettext('[missing header]');
+
+        browserUsed = ShowFor.detectBrowser();
+        if (browserUsed && $browserMenu.find(
+            'option[value=' + browserUsed + ']').length === 0) {
+            // If the browser used is not "officially" supported (shown in UI
+            // by default) and is a browser we support in our backend, then
+            // add it to the browser selections.
+            ShowFor.addBrowserToSelect($browserMenu, browserUsed);
+            $origBrowserOptions = $browserMenu.find('option').clone();
+        }
 
         // Make the 'Table of Contents' header localizable.
         $('#toc > h2').text(gettext('Table of Contents'));
@@ -464,6 +474,20 @@ var ShowFor = {
             $cur_ul.append($('<li />').text(text).wrapInner($('<a>').attr('href', '#' + $h.attr('id'))));
         });
         return $root;
+    },
+    addBrowserToSelect: function($select, browser) {
+        // Adds the given browser to the passed <select/>.
+        var $option = $('<option/>');
+        $option.attr('value', browser);
+        if (browser.indexOf('fx') === 0) {
+            $option.attr('data-dependency', 'desktop');
+            $option.text('Firefox ' + browser.slice(2));
+        } else {
+            $option.attr('data-dependency', 'mobile');
+            $option.text('Firefox ' + browser.slice(1));
+        }
+        $select.append($option);
+        return $select;
     }
 };
 
