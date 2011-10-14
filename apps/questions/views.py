@@ -847,7 +847,7 @@ def _search_suggestions(query, locale, category_tags):
         my_wiki_search.filter(locale=locale,
                               category__in=settings.SEARCH_DEFAULT_CATEGORIES)
                       .query(query)
-                      .values_dict("id")[:WIKI_RESULTS])
+                      .values_dict('id')[:WIKI_RESULTS])
 
     # Lazily build excerpts from results. Stop when we have enough:
     results = []
@@ -867,7 +867,7 @@ def _search_suggestions(query, locale, category_tags):
 
     # Questions app is en-US only.
     raw_results = (my_question_search.query(query)
-                                     .values_dict("id")[:QUESTIONS_RESULTS])
+                                     .values_dict('id')[:QUESTIONS_RESULTS])
 
     for r in raw_results:
         try:
