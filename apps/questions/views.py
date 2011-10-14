@@ -871,7 +871,7 @@ def _search_suggestions(query, locale, category_tags):
 
     for r in raw_results:
         try:
-            q = Question.objects.get(pk=r['attrs']['question_id'])
+            q = Question.objects.get(pk=r['id'])
             results.append({
                 'search_summary': q.content[0:500],
                 'url': q.get_absolute_url(),

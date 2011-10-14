@@ -69,6 +69,7 @@ class Question(ModelBase, BigVocabTaggableMixin):
         index = 'questions'
         filter_mapping = {
             'tag': crc32}
+        id_field = 'question_id'
 
     def __unicode__(self):
         return self.title
