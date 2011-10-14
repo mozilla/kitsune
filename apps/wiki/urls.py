@@ -1,7 +1,10 @@
 from django.conf.urls.defaults import patterns, url, include
+from django.contrib.contenttypes.models import ContentType
 
 from kbforums.feeds import ThreadsFeed, PostsFeed
 from sumo.views import redirect_to
+from flagit import views as flagit_views
+from wiki.models import Revision
 
 
 # These patterns inherit from /document/discuss
@@ -76,6 +79,7 @@ document_patterns = patterns('wiki.views',
         name='wiki.add_contributor'),
     url(r'^/remove-contributor/(?P<user_id>\d+)$', 'remove_contributor',
         name='wiki.remove_contributor'),
+
 )
 
 urlpatterns = patterns('wiki.views',
@@ -108,6 +112,11 @@ urlpatterns = patterns('wiki.views',
         name='wiki.category'),
     url(r'^/topic/(?P<tag>[^/]+)$', 'list_documents', name='wiki.tag'),
     (r'^/(?P<document_slug>[^/]+)', include(document_patterns)),
+
+    # Flag content ("Report this article revision")
+    url(r'^/(?P<object_id>\d+)/flag$', flagit_views.flag,
+        {'content_type': ContentType.objects.get_for_model(Revision).id},
+        name='revision.flag'),
 )
 
 urlpatterns += patterns('kbforums.views',
