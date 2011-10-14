@@ -494,3 +494,63 @@ article.main > .warning-box {
 article.main > .warning-box p + p {
     font-size: 20px;
 }
+
+/* report discussion post */
+
+ol.posts li div.post-actions form.report a {
+    color: #447BC4;
+}
+ol.posts li div.post-actions form.report {
+    padding: 0 10px 0 0;
+    display: block;
+}
+
+form.report select,
+form.report input.text {
+    display: none;
+}
+
+form.report input[type="submit"] {
+    color: #999;
+    font-size: 11px;
+    margin: 0;
+}
+
+form.report .kbox-container {
+    position: absolute;
+    width: 255px;
+}
+
+form.report .report-post-box ul {
+    list-style: none;
+}
+
+form.report .report-post-box li {
+    border: 0;
+    margin: 0;
+    min-height: 17px;
+    padding: 0 0 6px;
+}
+
+form.report .report-post-box input.text {
+    border: solid 1px #87C4DC;
+    border-radius: 6px;
+    -moz-border-radius: 6px;
+    -webkit-border-radius: 6px;
+    display: block;
+    padding: 3px 8px;
+    width: 92%;
+}
+
+form.report.processing .report-post-box a {
+    color: #bbb;
+    cursor: default;
+}
+
+form.report.processing .report-post-box input.text {
+    border-color: #bbb;
+}
+
+div.report-reply a.reply {
+    float: right;
+}
