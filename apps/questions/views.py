@@ -1,6 +1,7 @@
 from datetime import datetime
 import json
 import logging
+import random
 
 from django.conf import settings
 from django.contrib import auth
@@ -406,11 +407,29 @@ def reply(request, question_id):
     return answers(request, question_id, form, answer_preview=answer_preview)
 
 
-@require_POST
-@login_required
 def solve(request, question_id, answer_id):
     """Accept an answer as the solution to the question."""
+
     question = get_object_or_404(Question, pk=question_id)
+
+    # It is possible this was clicked from the email.
+    if not request.user.is_authenticated():
+        watch_secret = request.GET.get('watch', None)
+        try:
+            watch = Watch.objects.get(secret=watch_secret,
+                                      event_type='question reply',
+                                      user=question.creator)
+            # Create a new secret.
+            distinguishable_letters = \
+                'abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRTUVWXYZ'
+            new_secret = ''.join(random.choice(distinguishable_letters)
+                             for x in xrange(10))
+            watch.update(secret=new_secret)
+            request.user = question.creator
+        except Watch.DoesNotExist:
+            # This user is neither authenticated nor using the correct secret
+            return HttpResponseForbidden()
+
     answer = get_object_or_404(Answer, pk=answer_id)
     if question.is_locked:
         raise PermissionDenied

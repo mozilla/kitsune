@@ -64,6 +64,7 @@ class QuestionReplyEvent(QuestionEvent):
              'answer_url': self.answer.get_absolute_url()}
 
         for u, w in users_and_watches:
+            c['solution_url'] = self.answer.get_solution_url(watch=w[0])
             c['username'] = u.username
             c['watch'] = w[0]  # TODO: Expose all watches.
             is_asker = asker_id == u.id
