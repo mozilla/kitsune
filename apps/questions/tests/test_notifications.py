@@ -27,17 +27,15 @@ from users.tests import user
 # never prepend a locale code unless passed force_locale=True. Thus, these
 # test-emails with locale prefixes are not identical to the ones sent in
 # production.
-ANSWER_EMAIL_TO_ANONYMOUS = """rrosario has posted an answer to the question on
-testserver with the title:
+ANSWER_EMAIL_TO_ANONYMOUS = """rrosario has posted an answer to the
+question "Lorem ipsum dolor sit amet?" on testserver:
+an answer
 
-Lorem ipsum dolor sit amet?
+If this answered your question, click this link and let others
+know it was helpful: https://testserver/en-US/questions/1/vote/{answer}?helpful
 
-You can see the response by using the link below.  Please also
-let us know if this was helpful using the options on the right of
-that page. This helps other Firefox users find good answers to
-their support questions.
-
-https://testserver/en-US/questions/1#answer-%s
+You can see the response on the website by using this link:
+https://testserver/en-US/questions/1#answer-{answer}
 
 Did you know that rrosario is a Firefox user just
 like you? Get started helping other Firefox users by browsing
@@ -46,32 +44,15 @@ you might just make someone's day!
 
 --
 Unsubscribe from these emails:
-https://testserver/en-US/unsubscribe/"""
-ANSWER_EMAIL = 'Hi pcraciunoiu,\n\n' + ANSWER_EMAIL_TO_ANONYMOUS
+https://testserver/en-US/unsubscribe"""
+ANSWER_EMAIL = u'Hi pcraciunoiu,\n\n' + ANSWER_EMAIL_TO_ANONYMOUS
 ANSWER_EMAIL_TO_ASKER = """Hi jsocol,
 
-rrosario has posted an answer to your question on
-testserver with the title:
+rrosario has posted an answer to your question "Lorem ipsum dolor sit amet?"
+on testserver:
+an answer
 
-Lorem ipsum dolor sit amet?
-
-You can use the link below to access the response. While
-you're there, please let us know if this was helpful to you.
-This helps other Firefox users find good answers to their
-support questions. You can also reply to rrosario
-or add more information about your question from that page.
-
-https://testserver/en-US/questions/1#answer-%s
-
-Did you know that rrosario is a Firefox user
-just like you? Get started helping other Firefox users by
-browsing questions at
-https://testserver/questions?filter=unsolved -- you
-might just make someone's day!
-
---
-Unsubscribe from these emails:
-https://testserver/en-US/unsubscribe/"""
+If this answered your question, click this link to mark it as solved:"""
 SOLUTION_EMAIL_TO_ANONYMOUS = \
 """We just wanted to let you know that pcraciunoiu
 has found a solution to a Firefox question that you're following.
@@ -207,16 +188,18 @@ class NotificationsTests(TestCaseBase):
         attrs_eq(mail.outbox[0], to=['user47963@nowhere'],
                  subject='A new answer was posted to a Firefox question '
                          "you're watching")
-        starts_with(mail.outbox[0].body, ANSWER_EMAIL % answer.id)
+        starts_with(mail.outbox[0].body, ANSWER_EMAIL.format(answer=answer.id))
 
         attrs_eq(mail.outbox[1], to=[question.creator.email],
                  subject='A new answer was posted to your Firefox question')
-        starts_with(mail.outbox[1].body, ANSWER_EMAIL_TO_ASKER % answer.id)
+        starts_with(mail.outbox[1].body, ANSWER_EMAIL_TO_ASKER.format(
+            answer=answer.id))
 
         attrs_eq(mail.outbox[2], to=['anon@ymous.com'],
                  subject='A new answer was posted to a Firefox question '
                          "you're watching")
-        starts_with(mail.outbox[2].body, ANSWER_EMAIL_TO_ANONYMOUS % answer.id)
+        starts_with(mail.outbox[2].body, ANSWER_EMAIL_TO_ANONYMOUS.format(
+            answer=answer.id))
 
         self._toggle_watch_question('reply', turn_on=False)
 

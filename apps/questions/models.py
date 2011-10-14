@@ -334,6 +334,18 @@ class Answer(ActionMixin, ModelBase):
 
         update_answer_pages.delay(question)
 
+    def get_helpful_answer_url(self):
+        url = reverse('questions.answer_vote',
+                      kwargs={'question_id': self.question_id,
+                              'answer_id': self.id})
+        return '%s?%s' % (url, 'helpful')
+
+    def get_solution_url(self, watch):
+        url = reverse('questions.solve',
+                      kwargs={'question_id': self.question_id,
+                              'answer_id': self.id})
+        return urlparams(url, watch=watch.secret)
+
     def get_absolute_url(self):
         query = {}
         if self.page > 1:
