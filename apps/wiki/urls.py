@@ -2,9 +2,9 @@ from django.conf.urls.defaults import patterns, url, include
 from django.contrib.contenttypes.models import ContentType
 
 from kbforums.feeds import ThreadsFeed, PostsFeed
+from kbforums.models import Post
 from sumo.views import redirect_to
 from flagit import views as flagit_views
-from wiki.models import Revision
 
 
 # These patterns inherit from /document/discuss
@@ -33,6 +33,10 @@ doc_discuss_patterns = patterns('kbforums.views',
         name='wiki.discuss.edit_post'),
     url(r'^/(?P<thread_id>\d+)/(?P<post_id>\d+)/delete', 'delete_post',
         name='wiki.discuss.delete_post'),
+    # Flag discussion posts
+    url(r'^/(?P<object_id>\d+)/flag$', flagit_views.flag,
+        {'content_type': ContentType.objects.get_for_model(Post).id},
+        name='wiki.discuss.flag_post'),
 )
 
 # These patterns inherit (?P<document_slug>[^\/]).
@@ -113,10 +117,6 @@ urlpatterns = patterns('wiki.views',
     url(r'^/topic/(?P<tag>[^/]+)$', 'list_documents', name='wiki.tag'),
     (r'^/(?P<document_slug>[^/]+)', include(document_patterns)),
 
-    # Flag content ("Report this article revision")
-    url(r'^/(?P<object_id>\d+)/flag$', flagit_views.flag,
-        {'content_type': ContentType.objects.get_for_model(Revision).id},
-        name='revision.flag'),
 )
 
 urlpatterns += patterns('kbforums.views',

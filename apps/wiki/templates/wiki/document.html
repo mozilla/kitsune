@@ -69,11 +69,6 @@
   {% endif %}
   {{ document_tabs(doc, parent, user, 'article', settings) }}
   {{ document_watch(doc, user) }}
-  {% if user.is_authenticated() and doc.current_revision_id %}
-    <form class="report" action="{{ url('revision.flag', object_id=doc.current_revision_id) }}" method="post">
-      {% include 'wiki/includes/flag_form.html' %}
-    </form>
-  {% endif %}
 {% endblock %}
 
 {% block side %}
