@@ -477,16 +477,44 @@ var ShowFor = {
     },
     addBrowserToSelect: function($select, browser) {
         // Adds the given browser to the passed <select/>.
-        var $option = $('<option/>');
+        var $option = $('<option/>'),
+            version,
+            platform,
+            highestVersion,
+            lowestVersion,
+            selector,
+            sliceIndex;
         $option.attr('value', browser);
         if (browser.indexOf('fx') === 0) {
-            $option.attr('data-dependency', 'desktop');
-            $option.text('Firefox ' + browser.slice(2));
+            platform = 'desktop';
+            sliceIndex = 2;
         } else {
-            $option.attr('data-dependency', 'mobile');
-            $option.text('Firefox ' + browser.slice(1));
+            platform = 'mobile';
+            sliceIndex = 1;
         }
-        $select.append($option);
+        version = parseInt(browser.slice(sliceIndex));
+        $option.attr('data-dependency', platform);
+        $option.text('Firefox ' + version);
+
+        // Insert the option into the right spot to keep versions in order.
+        // A little hacky, given fx35 is Firefox 3.5/3.6 and not Firefox 35.
+        selector = 'option[data-dependency="' + platform + '"]';
+        highestVersion = $select.find(selector + ':first').val();
+        highestVersion = parseInt(highestVersion.slice(sliceIndex));
+        lowestVersion = $select.find(selector + ':last').val();
+        lowestVersion = parseInt(lowestVersion.slice(sliceIndex));
+        if (lowestVersion === 35) {
+            lowestVersion = 3.5;
+        }
+        if (version > highestVersion) {
+            $select.prepend($option);
+        } else if (version < lowestVersion) {
+            $select.append($option);
+        } else {
+            // This will only be hit while we still officially support 3.6
+            $option.insertBefore($select.find(selector + ':last'));
+        }
+
         return $select;
     }
 };
