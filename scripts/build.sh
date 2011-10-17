@@ -32,6 +32,16 @@ if [ ! -d "$VENV/bin" ]; then
     virtualenv --no-site-packages $VENV
 fi
 source $VENV/bin/activate
+
+# Check for the python26 executable
+# If you don't find it, create a symlink
+# Hack for the new jenkins till SUMO moves to RHEL 6
+# Bug 672218
+PYTHON26=`which python26`
+if [ -z "$PYTHON26" ]; then
+    ln -s $VENV/bin/python $VENV/bin/python26
+fi
+
 pip install -r requirements/tests-compiled.txt
 
 # Fix any mistakes with private repos.
