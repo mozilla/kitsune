@@ -7,7 +7,7 @@ question "{{ question_title }}" on {{ host }}:
 If this answered your question, click this link and let others
 know it was helpful: https://{{ host }}{{ helpful_url }}
 
-You can see the response by using this link:
+You can see the response on the website by using this link:
 https://{{ host }}{{ answer_url }}
 
 Did you know that {{ answerer }} is a Firefox user just
