@@ -497,13 +497,12 @@ article.main > .warning-box p + p {
 
 /* report discussion post */
 
-ol.posts li div.info form.report a {
-    display: inline !important;
+ol.posts li div.post-actions form.report a {
+    color: #447BC4;
 }
-ol.posts li div.info form.report {
-    font-size: 12px;
-    display: inline;
+ol.posts li div.post-actions form.report {
     padding: 0 10px 0 0;
+    display: block;
 }
 
 form.report select,
@@ -513,6 +512,7 @@ form.report input.text {
 
 form.report input[type="submit"] {
     color: #999;
+    font-size: 11px;
     margin: 0;
 }
 

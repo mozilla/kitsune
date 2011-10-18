@@ -38,7 +38,7 @@
             $('div.report-post-box').remove();
 
             var html = '<section class="report-post-box">' +
-                       '<ul class="wrap"></ul></section>';
+                       '<ul class="wrap"></ul></section>',
                 $html = $(html),
                 $ul = $html.find('ul'),
                 kbox = new KBox($html, {
