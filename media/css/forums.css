@@ -496,11 +496,11 @@ article.main > .warning-box p + p {
 }
 
 /* report discussion post */
-ol.posts li div.info form.report {
-    display: none;
-}
 
-ol.posts li:hover div.info form.report {
+ol.posts li div.info form.report a {
+    display: inline !important;
+}
+ol.posts li div.info form.report {
     font-size: 12px;
     display: inline;
     padding: 0 10px 0 0;
@@ -517,8 +517,7 @@ form.report input[type="submit"] {
 }
 
 form.report .kbox-container {
-    left: -70px;
-    top: 25px;
+    position: absolute;
     width: 255px;
 }
 
