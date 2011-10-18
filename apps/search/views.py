@@ -380,7 +380,8 @@ def search(request, template=None):
     results_['Expires'] = (datetime.utcnow() +
                            timedelta(minutes=settings.SEARCH_CACHE_PERIOD)) \
                            .strftime(expires_fmt)
-    results_.set_cookie(settings.LAST_SEARCH_COOKIE, cleaned['q'].encode('utf-8'),
+    results_.set_cookie(settings.LAST_SEARCH_COOKIE,
+                        cleaned['q'].encode('utf-8'),
                         max_age=3600, secure=False, httponly=False)
     return results_
 

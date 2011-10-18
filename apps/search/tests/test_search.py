@@ -567,6 +567,14 @@ class SearchTest(SphinxTestCase):
         results = wc.query('ghosts')
         eq_(1, len(results))
 
+    def test_search_cookie(self):
+        """Set a cookie with the latest search term."""
+        data = {'q': u'pagap\xf3 banco'}
+        cookie = settings.LAST_SEARCH_COOKIE
+        response = self.client.get(reverse('search', locale='fr'), data)
+        assert cookie in response.cookies
+        eq_(data['q'], response.cookies[cookie].value.decode('utf-8'))
+
     @mock.patch.object(Site.objects, 'get_current')
     def test_suggestions(self, get_current):
         """Suggestions API is well-formatted."""
