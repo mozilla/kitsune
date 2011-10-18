@@ -285,6 +285,16 @@ class AnswersTemplateTestCase(TestCaseBase):
         # Common vote test
         self.common_answer_vote()
 
+    def test_can_vote_on_asker_reply(self):
+        """An answer posted by the asker can be voted on."""
+        self.client.logout()
+        # Post a new answer by the asker => two votable answers
+        q = self.question
+        Answer.objects.create(question=q, creator=q.creator, content='test')
+        response = get(self.client, 'questions.answers', args=[q.id])
+        doc = pq(response.content)
+        eq_(2, len(doc('form.helpful input[name="helpful"]')))
+
     def test_delete_question_without_permissions(self):
         """Deleting a question without permissions is a 403."""
         self.client.login(username='tagger', password='testpass')
