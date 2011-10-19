@@ -10,6 +10,7 @@ import socket
 from django.conf import settings
 from django.contrib.sites.models import Site
 from django.http import QueryDict
+from django.utils.http import urlquote
 
 import jingo
 import mock
@@ -573,7 +574,7 @@ class SearchTest(SphinxTestCase):
         cookie = settings.LAST_SEARCH_COOKIE
         response = self.client.get(reverse('search', locale='fr'), data)
         assert cookie in response.cookies
-        eq_(data['q'], response.cookies[cookie].value.decode('utf-8'))
+        eq_(urlquote(data['q']), response.cookies[cookie].value)
 
     @mock.patch.object(Site.objects, 'get_current')
     def test_suggestions(self, get_current):
