@@ -8,7 +8,6 @@ from django.conf import settings
 from django.contrib.sites.models import Site
 from django.db.models import ObjectDoesNotExist
 from django.http import HttpResponse, HttpResponseBadRequest
-from django.utils.http import urlencode
 from django.utils.http import urlquote
 from django.views.decorators.cache import cache_page
 
@@ -17,10 +16,9 @@ import jinja2
 from mobility.decorators import mobile_template
 from tower import ugettext as _
 
-from search.clients import (QuestionsClient, WikiClient,
-                            DiscussionClient, SearchError)
-from search.utils import crc32, locale_or_default, sphinx_locale
-from forums.models import Thread, Post
+from search import SearchError
+from search.utils import locale_or_default, clean_excerpt
+from forums.models import Thread, discussion_search
 from questions.models import Question, question_search
 import search as constants
 from search.forms import SearchForm
@@ -100,7 +98,6 @@ def search(request, template=None):
         return search_
 
     cleaned = search_form.cleaned_data
-    search_locale = (sphinx_locale(language),)
 
     page = max(smart_int(request.GET.get('page')), 1)
     offset = (page - 1) * settings.SEARCH_RESULTS_PER_PAGE
@@ -112,59 +109,39 @@ def search(request, template=None):
     else:
         lang_name = ''
 
+    wiki_s = wiki_search
+    question_s = question_search
+    discussion_s = discussion_search
+
     documents = []
-    filters_w = []
-    filters_q = []
-    filters_f = []
 
     # wiki filters
     # Category filter
     if cleaned['category']:
-        filters_w.append({
-            'filter': 'category',
-            'value': cleaned['category'],
-        })
+        wiki_s = wiki_s.filter(category__in=cleaned['category'])
 
     if exclude_category:
-        filters_w.append({
-            'filter': 'category',
-            'value': exclude_category,
-            'exclude': True,
-        })
+        wiki_s = wiki_s.exclude(category__in=exclude_category)
 
     # Locale filter
-    filters_w.append({
-        'filter': 'locale',
-        'value': search_locale,
-    })
+    wiki_s = wiki_s.filter(locale=language)
 
     # Product filter
     products = cleaned['product']
-    if products:
-        for p in products:
-            filters_w.append({
-                'filter': 'tag',
-                'value': (crc32(p),),
-                })
+    for p in products:
+        wiki_s = wiki_s.filter(tag=p)
 
     # Tags filter
-    tags = [crc32(t.strip()) for t in cleaned['tags'].split()]
-    if tags:
-        for t in tags:
-            filters_w.append({
-                'filter': 'tag',
-                'value': (t,),
-                })
+    tags = [t.strip() for t in cleaned['tags'].split()]
+    for t in tags:
+        wiki_s = wiki_s.filter(tag=t)
 
     # Archived bit
     if a == '0' and not cleaned['include_archived']:
         # Default to NO for basic search:
         cleaned['include_archived'] = False
     if not cleaned['include_archived']:
-        filters_w.append({
-            'filter': 'is_archived',
-            'value': (False,),
-        })
+        wiki_s = wiki_s.filter(is_archived=False)
     # End of wiki filters
 
     # Support questions specific filters
@@ -176,57 +153,39 @@ def search(request, template=None):
 
         # These filters are ternary, they can be either YES, NO, or OFF
         ternary_filters = ('is_locked', 'is_solved', 'has_answers',
-                          'has_helpful')
-        filters_q.extend(_ternary_filter(filter_name, cleaned[filter_name])
-                         for filter_name in ternary_filters
-                         if cleaned[filter_name])
+                           'has_helpful')
+        d = dict((filter_name, _ternary_filter(cleaned[filter_name]))
+                 for filter_name in ternary_filters
+                 if cleaned[filter_name])
+        if d:
+            question_s = question_s.filter(**d)
 
         if cleaned['asked_by']:
-            filters_q.append({
-                'filter': 'question_creator',
-                'value': (crc32(cleaned['asked_by']),),
-            })
+            question_s = question_s.filter(
+                question_creator=cleaned['asked_by'])
 
         if cleaned['answered_by']:
-            filters_q.append({
-                'filter': 'answer_creator',
-                'value': (crc32(cleaned['answered_by']),),
-            })
+            question_s = question_s.filter(
+                answer_creator=cleaned['answered_by'])
 
-        q_tags = [crc32(t.strip()) for t in cleaned['q_tags'].split()]
-        if q_tags:
-            for t in q_tags:
-                filters_q.append({
-                    'filter': 'tag',
-                    'value': (t,),
-                    })
+        q_tags = [t.strip() for t in cleaned['q_tags'].split()]
+        for t in q_tags:
+            question_s = question_s.filter(tag=t)
 
     # Discussion forum specific filters
     if cleaned['w'] & constants.WHERE_DISCUSSION:
         if cleaned['author']:
-            filters_f.append({
-                'filter': 'author_ord',
-                'value': (crc32(cleaned['author']),),
-            })
+            discussion_s = discussion_s.filter(author_ord=cleaned['author'])
 
         if cleaned['thread_type']:
             if constants.DISCUSSION_STICKY in cleaned['thread_type']:
-                filters_f.append({
-                    'filter': 'is_sticky',
-                    'value': (1,),
-                })
+                discussion_s = discussion_s.filter(is_sticky=1)
 
             if constants.DISCUSSION_LOCKED in cleaned['thread_type']:
-                filters_f.append({
-                    'filter': 'is_locked',
-                    'value': (1,),
-                })
+                discussion_s = discussion_s.filter(is_locked=1)
 
         if cleaned['forum']:
-            filters_f.append({
-                'filter': 'forum_id',
-                'value': cleaned['forum'],
-            })
+            discussion_s = discussion_s.filter(forum_id=cleaned['forum'])
 
     # Filters common to support and discussion forums
     # Created filter
@@ -237,55 +196,70 @@ def search(request, template=None):
         ('question_votes', cleaned['num_voted'], cleaned['num_votes']))
     for filter_name, filter_option, filter_date in interval_filters:
         if filter_option == constants.INTERVAL_BEFORE:
-            before = {
-                'range': True,
-                'filter': filter_name,
-                'min': 0,
-                'max': max(filter_date, 0),
-            }
+            before = {filter_name + '__gte': 0,
+                      filter_name + '__lte': max(filter_date, 0)}
+
             if filter_name != 'question_votes':
-                filters_f.append(before)
-            filters_q.append(before)
+                discussion_s = discussion_s.filter(**before)
+            question_s = question_s.filter(**before)
         elif filter_option == constants.INTERVAL_AFTER:
-            after = {
-                'range': True,
-                'filter': filter_name,
-                'min': min(filter_date, unix_now),
-                'max': unix_now,
-            }
+            after = {filter_name + '__gte': min(filter_date, unix_now),
+                     filter_name + '__lte': unix_now}
+
             if filter_name != 'question_votes':
-                filters_f.append(after)
-            filters_q.append(after)
+                discussion_s = discussion_s.filter(**after)
+            question_s = question_s.filter(**after)
 
     sortby = smart_int(request.GET.get('sortby'))
     try:
+        max_results = settings.SEARCH_MAX_RESULTS
+        cleaned_q = cleaned['q']
+
         if cleaned['w'] & constants.WHERE_WIKI:
-            wc = WikiClient()  # Wiki SearchClient instance
+            wiki_s = (wiki_s.values_dict('id', 'category')
+                            .query(cleaned_q)[:max_results])
             # Execute the query and append to documents
-            documents += wc.query(cleaned['q'], filters_w)
+            documents += list(wiki_s)
 
         if cleaned['w'] & constants.WHERE_SUPPORT:
-            qc = QuestionsClient()  # Support question SearchClient instance
-
             # Sort results by
             try:
-                qc.set_sort_mode(constants.SORT_QUESTIONS[sortby][0],
-                                 constants.SORT_QUESTIONS[sortby][1])
+                question_s = question_s.order_by(
+                    *constants.SORT_QUESTIONS[sortby])
             except IndexError:
                 pass
 
-            documents += qc.query(cleaned['q'], filters_q)
+            question_s = question_s.highlight(
+                'content',
+                before_match='<b>',
+                after_match='</b>',
+                limit=settings.SEARCH_SUMMARY_LENGTH)
+
+            question_s = (
+                question_s.values_dict('id', 'creator', 'content')
+                          .query(cleaned_q)[:max_results])
+            documents += list(question_s)
 
         if cleaned['w'] & constants.WHERE_DISCUSSION:
-            dc = DiscussionClient()  # Discussion forums SearchClient instance
-
             # Sort results by
             try:
-                dc.groupsort = constants.GROUPSORT[sortby]
+                # Note that the first attribute needs to be the same
+                # here and in forums/models.py discussion_search.
+                discussion_s = discussion_s.group_by(
+                    'thread_id', constants.GROUPSORT[sortby])
             except IndexError:
                 pass
 
-            documents += dc.query(cleaned['q'], filters_f)
+            discussion_s = discussion_s.highlight(
+                'content',
+                before_match='<b>',
+                after_match='</b>',
+                limit=settings.SEARCH_SUMMARY_LENGTH)
+
+            discussion_s = (
+                discussion_s.values_dict('id', 'thread', 'content')
+                            .query(cleaned_q)[:max_results])
+            documents += list(discussion_s)
 
     except SearchError:
         if is_json:
@@ -301,7 +275,7 @@ def search(request, template=None):
     results = []
     for i in range(offset, offset + settings.SEARCH_RESULTS_PER_PAGE):
         try:
-            if documents[i]['attrs'].get('category', False) != False:
+            if documents[i].get('category', False) != False:
                 wiki_page = Document.objects.get(pk=documents[i]['id'])
                 summary = wiki_page.current_revision.summary
 
@@ -314,12 +288,12 @@ def search(request, template=None):
                     'object': wiki_page,
                 }
                 results.append(result)
-            elif documents[i]['attrs'].get('question_creator', False) != False:
+            elif documents[i].get('creator', False) != False:
                 question = Question.objects.get(
-                    pk=documents[i]['attrs']['question_id'])
+                    pk=documents[i]['id'])
 
-                excerpt = qc.excerpt(question.content, cleaned['q'])
-                summary = jinja2.Markup(excerpt)
+                summary = jinja2.Markup(
+                    clean_excerpt(question_s.excerpt(documents[i])[0]))
 
                 result = {
                     'search_summary': summary,
@@ -331,12 +305,10 @@ def search(request, template=None):
                 }
                 results.append(result)
             else:
-                thread = Thread.objects.get(
-                    pk=documents[i]['attrs']['thread_id'])
-                post = Post.objects.get(pk=documents[i]['id'])
+                thread = Thread.objects.get(pk=documents[i]['thread'])
 
-                excerpt = dc.excerpt(post.content, cleaned['q'])
-                summary = jinja2.Markup(excerpt)
+                summary = jinja2.Markup(
+                    clean_excerpt(discussion_s.excerpt(documents[i])[0]))
 
                 result = {
                     'search_summary': summary,
@@ -398,7 +370,9 @@ def suggestions(request):
     site = Site.objects.get_current()
     locale = locale_or_default(request.locale)
     results = list(chain(
-            wiki_search.filter(locale=locale).query(term)[:5],
+            wiki_search.filter(is_archived=False)
+                       .filter(locale=locale)
+                       .query(term)[:5],
             question_search.filter(has_helpful=True).query(term)[:5]))
     # Assumption: wiki_search sets filter(is_archived=False).
 
@@ -416,11 +390,10 @@ def plugin(request):
                         mimetype='application/opensearchdescription+xml')
 
 
-def _ternary_filter(filter_name, ternary_value):
+def _ternary_filter(ternary_value):
     """Return a search query given a TERNARY_YES or TERNARY_NO.
 
     Behavior for TERNARY_OFF is undefined.
 
     """
-    return {'filter': filter_name,
-            'value': (ternary_value == constants.TERNARY_YES,)}
+    return ternary_value == constants.TERNARY_YES
