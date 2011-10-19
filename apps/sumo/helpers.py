@@ -309,3 +309,9 @@ def label_with_help(f):
 @register.filter
 def yesno(boolean_value):
     return jinja2.Markup(_lazy(u'Yes') if boolean_value else _lazy(u'No'))
+
+
+@register.filter
+def remove(list_, item):
+    """Removes an item from a list."""
+    return [i for i in list_ if i != item]

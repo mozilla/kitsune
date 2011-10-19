@@ -268,6 +268,7 @@ INSTALLED_APPS = (
     'commonware.response.cookies',
     'groups',
     'karma',
+    'tags',
 
     # Extra apps for testing.
     'django_nose',
