@@ -9,6 +9,7 @@ from django.contrib.sites.models import Site
 from django.db.models import ObjectDoesNotExist
 from django.http import HttpResponse, HttpResponseBadRequest
 from django.utils.http import urlencode
+from django.utils.http import urlquote
 from django.views.decorators.cache import cache_page
 
 import jingo
@@ -380,7 +381,7 @@ def search(request, template=None):
     results_['Expires'] = (datetime.utcnow() +
                            timedelta(minutes=settings.SEARCH_CACHE_PERIOD)) \
                            .strftime(expires_fmt)
-    results_.set_cookie(settings.LAST_SEARCH_COOKIE, cleaned['q'].encode('utf-8'),
+    results_.set_cookie(settings.LAST_SEARCH_COOKIE, urlquote(cleaned['q']),
                         max_age=3600, secure=False, httponly=False)
     return results_
 
