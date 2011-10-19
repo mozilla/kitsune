@@ -14,7 +14,7 @@ import test_utils
 
 from sumo.helpers import (datetimeformat, DateTimeFormatError,
                           collapse_linebreaks, url, json, timesince,
-                          label_with_help, urlparams, yesno, number)
+                          label_with_help, urlparams, yesno, number, remove)
 from sumo.tests import TestCase
 from sumo.urlresolvers import reverse
 
@@ -75,6 +75,21 @@ class TestHelpers(TestCase):
         context = {'request': namedtuple('R', 'locale')('en-US')}
         eq_('5,000', number(context, 5000))
         eq_('', number(context, None))
+
+    def test_remove_in_list(self):
+        tags = ['tag1', 'tag2']
+        tag = 'tag3'
+        tags.append(tag)
+        tags = remove(tags, tag)
+        eq_(2, len(tags))
+        assert tag not in tags
+
+    def test_remove_not_in_list(self):
+        tags = ['tag1', 'tag2']
+        tag = 'tag3'
+        tags = remove(tags, tag)
+        # Nothing was removed and we didn't crash.
+        eq_(2, len(tags))
 
 
 class TestDateTimeFormat(TestCase):

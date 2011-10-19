@@ -115,8 +115,31 @@ body.notifications #main article.main {
     margin-bottom: 10px;
 }
 
+#tagged a.tag {
+    background: #fff;
+    color: #666;
+    display: inline-block;
+    margin: 0 0 0 10px;
+    padding: 4px 7px 3px;
+}
+
+#tagged a.tag:after {
+    color: #C7ABA6;
+    content: '✖';
+    margin: 0 0 0 3px;
+}
+
+#tagged a.tag:hover {
+    background: #FCEBEB;
+    text-decoration: none;
+}
+
+#tagged a.tag:hover:after {
+    color: #F45642;
+}
+
 #tagged a.show-all {
-    margin: 0 0 0 25px;
+    margin: 0 0 0 20px;
 }
 
 #ask-question-module {

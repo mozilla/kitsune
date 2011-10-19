@@ -19,9 +19,9 @@
   {% if tags %}
     <div id="tagged">
       {{ _('Showing questions tagged:') }}
-      {% set comma = joiner(', ') %}
-      {% for tag in tags %}{{ comma() }}
-        <a href="{{ url('questions.questions')|urlparams(tagged=tag.slug, filter=filter, sort=sort) }}">{{ tag.name }}</a>{% endfor %}
+      {% for tag in tags -%}
+        <a class="tag" href="{{ url('questions.questions')|urlparams(tagged=tags_to_text(tags|remove(tag)), filter=filter, sort=sort) }}">{{ tag.name }}</a>
+      {%- endfor %}
       <a class="show-all" href="{{ url('questions.questions')|urlparams(filter=filter, sort=sort) }}">{{ _('Show all questions') }}</a>
     </div>
   {% endif %}
