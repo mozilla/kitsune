@@ -20,7 +20,7 @@
     <div id="tagged">
       {{ _('Showing questions tagged:') }}
       {% for tag in tags -%}
-        <a class="tag" href="{{ url('questions.questions')|urlparams(tagged=tags_to_text(remove_tag(tags, tag)), filter=filter, sort=sort) }}">{{ tag.name }}</a>
+        <a class="tag" href="{{ url('questions.questions')|urlparams(tagged=tags_to_text(tags|remove(tag)), filter=filter, sort=sort) }}">{{ tag.name }}</a>
       {%- endfor %}
       <a class="show-all" href="{{ url('questions.questions')|urlparams(filter=filter, sort=sort) }}">{{ _('Show all questions') }}</a>
     </div>

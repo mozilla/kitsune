@@ -1,28 +1,10 @@
-from tags.helpers import remove_tag, tags_to_text
+from tags.helpers import tags_to_text
 
 from mock import Mock
 from nose.tools import eq_
 from taggit.models import Tag
 
 from sumo.tests import TestCase
-
-
-class TestRemoveTag(TestCase):
-    def setUp(self):
-        self.tags = [_tag('tag1'), _tag('tag2')]
-
-    def test_remove_tag_in_list(self):
-        tag = _tag('tag3')
-        self.tags.append(tag)
-        tags = remove_tag(self.tags, tag)
-        eq_(2, len(tags))
-        assert tag not in tags
-
-    def test_remove_tag_not_in_list(self):
-        tag = _tag('tag3')
-        tags = remove_tag(self.tags, tag)
-        # Nothing was removed and we didn't crash.
-        eq_(2, len(tags))
 
 
 class TestTagsToText(TestCase):
