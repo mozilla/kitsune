@@ -68,7 +68,9 @@ class Question(ModelBase, BigVocabTaggableMixin):
     class SphinxMeta(object):
         index = 'questions'
         filter_mapping = {
-            'tag': crc32}
+            'tag': crc32,
+            'question_creator': crc32,
+            'answer_creator': crc32}
         id_field = 'question_id'
 
     def __unicode__(self):
@@ -495,12 +497,12 @@ def _has_beta(version, dev_releases):
 
 
 def _content_parsed(obj):
-   cache_key = obj.html_cache_key % obj.id
-   html = cache.get(cache_key)
-   if html is None:
-       html = wiki_to_html(obj.content)
-       cache.add(cache_key, html)
-   return html
+    cache_key = obj.html_cache_key % obj.id
+    html = cache.get(cache_key)
+    if html is None:
+        html = wiki_to_html(obj.content)
+        cache.add(cache_key, html)
+    return html
 
 
 question_search = (

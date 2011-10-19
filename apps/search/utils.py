@@ -1,7 +1,10 @@
 import subprocess
 import zlib
 
+import bleach
+
 from django.conf import settings
+from django.utils.encoding import smart_unicode
 
 from sumo_locales import LOCALES
 
@@ -10,6 +13,10 @@ crc32 = lambda x: zlib.crc32(x.encode('utf-8')) & 0xffffffff
 
 
 call = lambda x: subprocess.Popen(x, stdout=subprocess.PIPE).communicate()
+
+
+def clean_excerpt(excerpt):
+    return bleach.clean(smart_unicode(excerpt))
 
 
 def reindex(rotate=False):

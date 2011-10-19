@@ -25,10 +25,10 @@ DATE_LIST = (
 )
 
 GROUPSORT = (
-    '@relevance DESC, age ASC',  # default
-    'updated DESC',
-    'created DESC',
-    'replies DESC',
+    ('-@relevance', 'age'), # default
+    '-updated',
+    '-created',
+    '-replies',
 )
 
 # For discussion forums
@@ -66,11 +66,10 @@ NUMBER_LIST = (
 )
 
 SORT_QUESTIONS = (
-    #: (mode, clause)
-    (SPH_SORT_EXTENDED, '@relevance DESC, age ASC'),  # default
-    (SPH_SORT_ATTR_DESC, 'updated'),
-    (SPH_SORT_ATTR_DESC, 'created'),
-    (SPH_SORT_ATTR_DESC, 'replies'),
+    ('-@relevance', 'age'),  # default
+    ('updated',),
+    ('created',),
+    ('replies',)
 )
 
 SORTBY_QUESTIONS = (
