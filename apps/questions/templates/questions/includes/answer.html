@@ -77,7 +77,7 @@
 <div class="side-section">
   {% if answer.id %}{# answer.id is None when previewing #}
     {% if not question.is_locked %}
-      {% if user != question.creator and user != answer.creator and not answer.has_voted(request) %}
+      {% if user != answer.creator and not answer.has_voted(request) %}
         <form class="helpful" action="{{ url('questions.answer_vote', question_id=question.id, answer_id=answer.id) }}" method="post">
           <h4>{{ _('Was this reply helpful?') }}</h4>
           <input type="submit" class="btn" name="helpful" value="{{ _('Helpful') }}" />

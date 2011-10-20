@@ -295,6 +295,12 @@ class AnswersTemplateTestCase(TestCaseBase):
         doc = pq(response.content)
         eq_(2, len(doc('form.helpful input[name="helpful"]')))
 
+    def test_asker_can_vote(self):
+        """The asker can vote Not/Helpful."""
+        self.client.login(username=self.question.creator.username,
+                          password='testpass')
+        self.common_answer_vote()
+
     def test_delete_question_without_permissions(self):
         """Deleting a question without permissions is a 403."""
         self.client.login(username='tagger', password='testpass')
