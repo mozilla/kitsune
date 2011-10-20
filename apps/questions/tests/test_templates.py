@@ -295,6 +295,23 @@ class AnswersTemplateTestCase(TestCaseBase):
         doc = pq(response.content)
         eq_(2, len(doc('form.helpful input[name="helpful"]')))
 
+    def test_asker_can_vote(self):
+        """The asker can vote Not/Helpful."""
+        self.client.login(username=self.question.creator.username,
+                          password='testpass')
+        self.common_answer_vote()
+
+    def test_can_solve_with_answer_by_asker(self):
+        """An answer posted by the asker can be the solution."""
+        self.client.login(username=self.question.creator.username,
+                          password='testpass')
+        # Post a new answer by the asker => two solvable answers
+        q = self.question
+        Answer.objects.create(question=q, creator=q.creator, content='test')
+        response = get(self.client, 'questions.answers', args=[q.id])
+        doc = pq(response.content)
+        eq_(2, len(doc('form.solution input[name="solution"]')))
+
     def test_delete_question_without_permissions(self):
         """Deleting a question without permissions is a 403."""
         self.client.login(username='tagger', password='testpass')
