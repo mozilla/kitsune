@@ -75,6 +75,16 @@
     <nav id="aux-nav" role="navigation" class="menu-nav">
       <ul>
         {{ aux_nav(user) }}
+        <li>
+          <a href="#" class="controller" title="{{ _('Find help for other applications') }}">
+            {{ _('Other Applications') }}
+          </a>
+          <ul class="other-apps">
+            <li class="thunderbird"><a href="http://support.mozillamessaging.com">{{ _('Thunderbird') }}</a></li>
+            <li class="seamonkey"><a href="http://www.seamonkey-project.org/community">{{ _('SeaMonkey') }}</a></li>
+            <li class="sunbird"><a href="http://www.mozilla.org/projects/calendar/">{{ _('Sunbird') }}</a></li>
+          </ul>
+        </li>
       </ul>
     </nav>
     {% if not hide_header_search %}
@@ -95,9 +105,6 @@
         <ul>
           <li><a href="{{ url('home') }}"{% if active_site_nav == 'desktop' %} class="active"{% endif %}>{{ _('Desktop') }}</a></li>
           <li><a href="{{ url('home.mobile') }}"{% if active_site_nav == 'mobile' %} class="active"{% endif %}>{{ _('Mobile') }}</a></li>
-          <li><a href="{{ url('home.fxhome') }}"{% if active_site_nav == 'fxhome' %} class="active"{% endif %}>{{ _('Firefox Home') }}</a></li>
-          <li><a href="{{ url('home.sync') }}"{% if active_site_nav == 'sync' %} class="active"{% endif %}>{{ _('Firefox Sync') }}</a></li>
-          <li><a href="http://support.mozillamessaging.com/">{{ _('Thunderbird') }}</a></li>
         </ul>
       </nav>
     </div>

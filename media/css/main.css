@@ -275,12 +275,10 @@ h1.site-title mark {
 
 #aux-nav {
     float: right;
-    padding: 0 15px 0 0;
 }
 
 .html-rtl #aux-nav {
     float: left;
-    padding: 0 0 0 15px;
 }
 
 #aux-nav > ul {
@@ -395,6 +393,10 @@ h1.site-title mark {
     content: none;
 }
 
+#aux-nav > ul > li.anonymous {
+    padding: 0 10px;
+}
+
 #aux-nav > ul > li.logout.anonymous a {
     display: inline;
     padding: 0;
@@ -412,6 +414,41 @@ h1.site-title mark {
 .html-rtl #aux-nav > ul > li.logout a {
     padding-left: 1em;
     padding-right: 4px;
+}
+
+#aux-nav .other-apps a {
+    background-image: url(../img/icons.apps.png);
+    background-repeat: no-repeat;
+    padding-left: 24px;
+}
+
+.html-rtl #aux-nav .other-apps a {
+    padding-left: 8px;
+    padding-right: 24px;
+}
+
+#aux-nav .thunderbird a {
+    background-position: left -28px;
+}
+
+.html-rtl #aux-nav .thunderbird a {
+    background-position: right -28px;
+}
+
+#aux-nav .seamonkey a {
+    background-position: left -60px;
+}
+
+.html-rtl #aux-nav .seamonkey a {
+    background-position: right -60px;
+}
+
+#aux-nav .sunbird a {
+    background-position: left -92px;
+}
+
+.html-rtl #aux-nav .sunbird a {
+    background-position: right -92px;
 }
 
 span.unread-message-count {
