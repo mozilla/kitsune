@@ -4,7 +4,7 @@
     <section id="related-articles">
       <h1>{{ _('Related Articles') }}</h1>
       <ul>
-        {% for art in document.related_documents.all()[0:5] %}
+        {% for art in related %}
           <li><a href="{{ art.get_absolute_url() }}">{{ art.title }}</a></li>
         {% endfor %}
       </ul>

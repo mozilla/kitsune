@@ -39,6 +39,7 @@ from wiki.models import (Document, Revision, HelpfulVote, ImportantDate,
                          GROUPED_FIREFOX_VERSIONS, PRODUCT_TAGS)
 from wiki.parser import wiki_to_html
 from wiki.tasks import send_reviewed_notification, schedule_rebuild_kb
+from wiki.utils import find_related_documents
 
 
 log = logging.getLogger('k.wiki')
@@ -141,7 +142,7 @@ def document(request, document_slug, template=None):
         except Document.DoesNotExist:
             pass
 
-    related = doc.related_documents.order_by('-related_to__in_common')[0:5]
+    related = find_related_documents(doc)
 
     contributors = doc.contributors.all()
 

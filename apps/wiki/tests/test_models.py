@@ -8,11 +8,12 @@ from django.core.exceptions import ValidationError
 from sumo import ProgrammingError
 from sumo.tests import TestCase
 from wiki.cron import calculate_related_documents
-from wiki.models import (Document, REDIRECT_CONTENT, REDIRECT_SLUG,
-                         REDIRECT_TITLE, REDIRECT_HTML, MAJOR_SIGNIFICANCE,
-                         CATEGORIES, TYPO_SIGNIFICANCE)
+from wiki.models import (Document, RelatedDocument, REDIRECT_CONTENT,
+                         REDIRECT_SLUG, REDIRECT_TITLE, REDIRECT_HTML,
+                         MAJOR_SIGNIFICANCE, CATEGORIES, TYPO_SIGNIFICANCE)
 from wiki.parser import wiki_to_html
 from wiki.tests import document, revision, doc_rev, translated_revision
+from wiki.utils import find_related_documents
 
 
 def _objects_eq(manager, list_):
@@ -598,6 +599,20 @@ class RelatedDocumentTests(TestCase):
         d = Document.uncached.get(pk=1)
         for rd in d.related_documents.all():
             eq_('en-US', rd.locale)
+
+    def test_find_related_documents(self):
+        trans1 = translated_revision(is_approved=True)
+        trans1.save()
+        d1 = trans1.document
+        trans2 = translated_revision(is_approved=True)
+        trans2.save()
+        d2 = trans2.document
+        RelatedDocument.objects.create(document=d1.parent,
+                                       related=d2.parent, in_common=2)
+        # Assert the English versions still match
+        assert list(find_related_documents(d1.parent)) == [d2.parent]
+        # Assert that the translation matches
+        assert list(find_related_documents(d1)) == [d2]
 
     def test_only_approved_revisions(self):
         calculate_related_documents()
