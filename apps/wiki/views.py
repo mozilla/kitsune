@@ -33,7 +33,8 @@ from wiki.events import (EditDocumentEvent, ReviewableRevisionInLocaleEvent,
                          ReadyRevisionEvent)
 from wiki.forms import (AddContributorForm, DocumentForm, RevisionForm,
                         ReviewForm)
-from wiki.models import (Document, Revision, HelpfulVote, ImportantDate,
+from wiki.models import (Document, Revision, HelpfulVote,
+                         ImportantDate, RelatedDocument,
                          CATEGORIES, OPERATING_SYSTEMS,
                          GROUPED_OPERATING_SYSTEMS, FIREFOX_VERSIONS,
                          GROUPED_FIREFOX_VERSIONS, PRODUCT_TAGS)
@@ -140,6 +141,19 @@ def document(request, document_slug, template=None):
                                                    slug=redirect_slug)
         except Document.DoesNotExist:
             pass
+
+    if doc.locale != 'en-US' and doc.parent
+                             and not doc.related_documents.exists():
+        # Not english, so may need related docs
+        for rd in RelatedDocument.objects.filter(document=doc.parent,
+                                                 document__locale='en-US'):
+            try:
+                related_trans = rd.related.translations.get(locale=doc.locale)
+                RelatedDocument.objects.create(document=doc,
+                                               related=related_trans,
+                                               in_common=rd.in_common)
+            except Document.DoesNotExist:
+                pass
 
     related = doc.related_documents.order_by('-related_to__in_common')[0:5]
 
