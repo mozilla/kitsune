@@ -1,5 +1,5 @@
 <h3>{{ _('Title:') }}</h3>
-<p class="title">{{ object.content_object.title }}</p>
+<p class="title">{{ object.content_object.thread.title }}</p>
 <h3>{{ _('Content:') }}</h3>
 <div class="content">{{ object.content_object.content_parsed }}</div>
 <h3>{{ _('Created:') }}</h3>
@@ -11,8 +11,12 @@
 <h3>{{ _('Take Action:') }}</h3>
 <div class="actions">
   <a href="{{ object.content_object.get_absolute_url() }}">View</a>
-  <a href="{{ url('questions.edit_question', object.content_object.id) }}">Edit</a>
-  {% if user.has_perm('questions.delete_question') %}
-    <a class="delete" href="{{ url('questions.delete', object.content_object.id) }}">{{ _('Delete') }}</a>
+  {% if object.content_type.name == 'KB Forum Post' %}
+    {% if user.has_perm('kbforums.change_post') %}
+      <a class="edit" href="{{ url('wiki.discuss.edit_post', object.content_object.thread.document.slug, object.content_object.thread.id, object.content_object.id) }}">{{ _('Edit') }}</a>
+    {% endif %}
+    {% if user.has_perm('kbforums.delete_post') %}
+      <a class="delete" href="{{ url('wiki.discuss.delete_post', object.content_object.thread.document.slug, object.content_object.thread.id, object.content_object.id) }}">{{ _('Delete') }}</a>
+    {% endif %}
   {% endif %}
 </div>

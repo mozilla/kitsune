@@ -3,10 +3,12 @@ from pyquery import PyQuery as pq
 
 from django.contrib.auth.models import User
 
+from flagit.models import FlaggedObject
 from kbforums.models import Thread, Post
 from kbforums.tests import KBForumTestCase
 from sumo.urlresolvers import reverse
 from sumo.tests import get, post
+from users.tests import user, add_permission
 from wiki.models import Document
 from wiki.tests import document, revision
 
@@ -256,3 +258,18 @@ class NewThreadTemplateTests(KBForumTestCase):
         doc = pq(response.content)
         eq_(content, doc('#post-preview div.content').text())
         eq_(num_threads, d.thread_set.count())
+
+
+class FlaggedPostTests(KBForumTestCase):
+    def test_flag_kbforum_post(self):
+        p = Post.objects.all()[0]
+        f = FlaggedObject(content_object=p, reason='spam', creator_id=118577)
+        f.save()
+        # Make sure flagit queue page works
+        u = user(save=True)
+        add_permission(u, FlaggedObject, 'can_moderate')
+        self.client.login(username=u.username, password='testpass')
+        response = get(self.client, 'flagit.queue')
+        eq_(200, response.status_code)
+        doc = pq(response.content)
+        eq_(1, len(doc('#flagged-queue li')))

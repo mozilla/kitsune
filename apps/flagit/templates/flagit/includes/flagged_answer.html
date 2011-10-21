@@ -1,10 +1,10 @@
 <h3>{{ _('Content:') }}</h3>
 <div class="content">{{ object.content_object.content_parsed }}</div>
 <h3>{{ _('Created:') }}</h3>
-<p class="created">{{ _('{date} by {user}')|f(user=object.content_object.creator, date=datetimeformat(object.content_object.created, format='longdatetime')) }}</p>
+<p class="created">{{ _('{date} by {user}')|fe(user=object.content_object.creator, date=datetimeformat(object.content_object.created, format='longdatetime')) }}</p>
 {% if object.content_object.updated_by %}
   <h3>{{ _('Updated:') }}</h3>
-  <p class="updated">{{ _('{date} by {user}')|f(user=object.content_object.updated_by, date=datetimeformat(object.content_object.updated, format='longdatetime')) }}</p>
+  <p class="updated">{{ _('{date} by {user}')|fe(user=object.content_object.updated_by, date=datetimeformat(object.content_object.updated, format='longdatetime')) }}</p>
 {% endif %}
 <h3>{{ _('Take Action:') }}</h3>
 <div class="actions">

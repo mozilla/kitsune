@@ -1457,6 +1457,7 @@ body.flagged #main {
 #flagged-queue li h3 {
     font-size: 13px;
     font-weight: bold;
+    margin: 10px 0 0;
 }
 
 #flagged-queue li div.wrap {
