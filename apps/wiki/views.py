@@ -142,7 +142,7 @@ def document(request, document_slug, template=None):
         except Document.DoesNotExist:
             pass
 
-    if doc.locale != 'en-US' and doc.parent
+    if doc.locale != 'en-US' and doc.parent\
                              and not doc.related_documents.exists():
         # Not english, so may need related docs
         for rd in RelatedDocument.objects.filter(document=doc.parent,
