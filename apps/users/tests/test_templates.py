@@ -16,12 +16,13 @@ import mock
 from nose.tools import eq_
 from pyquery import PyQuery as pq
 
+from flagit.models import FlaggedObject
 from sumo.urlresolvers import reverse
 from sumo.helpers import urlparams
-from sumo.tests import post
+from sumo.tests import post, get
 from users import ERROR_SEND_EMAIL
 from users.models import Profile, RegistrationProfile, RegistrationManager
-from users.tests import TestCaseBase
+from users.tests import TestCaseBase, user, add_permission
 
 
 class LoginTests(TestCaseBase):
@@ -111,17 +112,17 @@ class LoginTests(TestCaseBase):
         legacypw = 'legacypass'
 
         # Set the user's password to an md5
-        user = User.objects.get(username='rrosario')
-        user.password = hashlib.md5(legacypw).hexdigest()
-        user.save()
+        u = User.objects.get(username='rrosario')
+        u.password = hashlib.md5(legacypw).hexdigest()
+        u.save()
 
         # Log in and verify that it's updated to a SHA-256
         response = self.client.post(reverse('users.login'),
                                     {'username': 'rrosario',
                                      'password': legacypw})
         eq_(302, response.status_code)
-        user = User.objects.get(username='rrosario')
-        assert user.password.startswith('sha256$')
+        u = User.objects.get(username='rrosario')
+        assert u.password.startswith('sha256$')
 
         # Try to log in again.
         response = self.client.post(reverse('users.login'),
@@ -413,3 +414,23 @@ class ResendConfirmationTests(TestCaseBase):
         r = self.client.post(reverse('users.resend_confirmation'),
                              {'email': 'testuser@email.com'})
         self.assertContains(r, unicode(ERROR_SEND_EMAIL))
+
+
+class FlagProfileTests(TestCaseBase):
+    fixtures = ['users.json']
+
+    def test_flagged_and_deleted_profile(self):
+        # Flag a profile and delete it
+        p = User.objects.get(id=47963).get_profile()
+        f = FlaggedObject(content_object=p, reason='spam', creator_id=118577)
+        f.save()
+        p.delete()
+
+        # Verify flagit queue
+        u = user(save=True)
+        add_permission(u, FlaggedObject, 'can_moderate')
+        self.client.login(username=u.username, password='testpass')
+        response = get(self.client, 'flagit.queue')
+        eq_(200, response.status_code)
+        doc = pq(response.content)
+        eq_(1, len(doc('#flagged-queue form.update')))
