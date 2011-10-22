@@ -20,7 +20,23 @@
   <a href="{{ params['link'] }}"{% if params['page'] and not params['found'] %} class="new"{% endif %}>
 {% endif %}
 
-<img {% if not has_frame %}class="frameless"{% endif %}
+<img class="lazy{% if not has_frame %} frameless"{% endif %}
+  src="{{ MEDIA_URL }}img/placeholder.gif"
+  original-src="{{ image.file.url }}"
+  alt="{% if 'alt' in params %}{{ params['alt'] }}{% else %}{{ params['caption'] }}{% endif %}"
+  title="{{ params['caption'] }}"
+  {% if params['width'] and params['width']|int(None) %}
+    width="{{ params['width']|int('') }}"
+  {% endif %}
+  {% if params['height'] and params['height']|int(None) %}
+    height="{{ params['height']|int('') }}"
+  {% endif %}
+  {% if params['valign'] %}
+    style="vertical-align:{{ params['valign'] }}"
+  {% endif %}
+  />
+<noscript>
+<img class="{% if not has_frame %}frameless"{% endif %}
   src="{{ image.file.url }}"
   alt="{% if 'alt' in params %}{{ params['alt'] }}{% else %}{{ params['caption'] }}{% endif %}"
   title="{{ params['caption'] }}"
@@ -34,6 +50,7 @@
     style="vertical-align:{{ params['valign'] }}"
   {% endif %}
   />
+</noscript>
 
 {% if params['link'] %}
   </a>

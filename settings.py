@@ -479,6 +479,7 @@ MINIFY_BUNDLES = {
             'js/libs/django/urlify.js',
             'js/libs/django/prepopulate.js',
             'js/libs/swfobject.js',
+            'js/libs/jquery.lazyload.js',
             'js/libs/jquery.selectbox-1.2.js',
             'js/libs/jquery.autocomplete.js',
             'js/users.autocomplete.js',
