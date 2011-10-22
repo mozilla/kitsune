@@ -20,20 +20,25 @@
   <a href="{{ params['link'] }}"{% if params['page'] and not params['found'] %} class="new"{% endif %}>
 {% endif %}
 
-<img {% if not has_frame %}class="frameless"{% endif %}
-  src="{{ image.file.url }}"
-  alt="{% if 'alt' in params %}{{ params['alt'] }}{% else %}{{ params['caption'] }}{% endif %}"
-  title="{{ params['caption'] }}"
-  {% if params['width'] and params['width']|int(None) %}
-    width="{{ params['width']|int('') }}"
-  {% endif %}
-  {% if params['height'] and params['height']|int(None) %}
-    height="{{ params['height']|int('') }}"
-  {% endif %}
-  {% if params['valign'] %}
-    style="vertical-align:{{ params['valign'] }}"
-  {% endif %}
-  />
+{% for i in ['lazy', ''] %}
+  {% if i != 'lazy' %}<noscript>{% endif %}
+  <img class="{% if not has_frame %}frameless{% endif %} {{ i }}"
+    {% if i == 'lazy' %}src="{{ MEDIA_URL }}img/placeholder.gif"
+    data-original-{% endif %}src="{{ image.file.url }}"
+    alt="{% if 'alt' in params %}{{ params['alt'] }}{% else %}{{ params['caption'] }}{% endif %}"
+    title="{{ params['caption'] }}"
+    {% if params['width'] and params['width']|int(None) %}
+      width="{{ params['width']|int('') }}"
+    {% endif %}
+    {% if params['height'] and params['height']|int(None) %}
+      height="{{ params['height']|int('') }}"
+    {% endif %}
+    {% if params['valign'] %}
+      style="vertical-align:{{ params['valign'] }}"
+    {% endif %}
+    />
+  {% if i != 'lazy' %}</noscript>{% endif %}
+{% endfor %}
 
 {% if params['link'] %}
   </a>

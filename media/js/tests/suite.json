@@ -9,6 +9,7 @@
         "js/testutils.js",
         "js/ajaxvote.js",
         "js/ajaxpreview.js",
-        "js/tags.filter.js"
+        "js/tags.filter.js",
+        "js/libs/jquery.lazyload.js"
     ]
 }

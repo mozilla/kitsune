@@ -298,7 +298,7 @@ class TestWikiTemplate(TestCase):
         text = '{button {for mac}[[Image:image-file.png]]{/for} text}'
         p = WikiParser()
         doc = pq(p.parse(text))
-        eq_('frameless', doc('img').attr('class'))
+        assert 'frameless' in doc('img').attr('class')
         eq_(0, doc('div.caption').length)
         eq_(0, doc('div.img').length)
 
