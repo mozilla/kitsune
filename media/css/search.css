@@ -131,5 +131,6 @@ input.search-refine-submit:hover {
 
 /* High-specificity selector to fix question meta padding. */
 article#search-results div.thread-meta {
+    margin-right: 0;
     padding-left: 50px;
 }
