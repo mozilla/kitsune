@@ -1,8 +1,10 @@
 from datetime import datetime
+import time
 import json
 import logging
 from string import ascii_letters
 import time
+import ast
 
 from django.conf import settings
 from django.contrib import messages
@@ -25,6 +27,7 @@ from tower import ugettext as _
 
 from access.decorators import permission_required, login_required
 from sumo.helpers import urlparams
+from sumo.redis_utils import redis_client, RedisError
 from sumo.urlresolvers import reverse
 from sumo.utils import paginate, smart_int, get_next_url
 from wiki import DOCUMENTS_PER_PAGE
@@ -142,21 +145,31 @@ def document(request, document_slug, template=None):
         except Document.DoesNotExist:
             pass
 
-    if doc.locale != 'en-US' and doc.parent\
-                             and not doc.related_documents.exists():
-        # Not english, so may need related docs
-        for rd in RelatedDocument.objects.filter(document=doc.parent,
-                                                 document__locale='en-US'):
-            try:
-                related_trans = rd.related.translations.get(locale=doc.locale)
-                RelatedDocument.objects.create(document=doc,
-                                               related=related_trans,
-                                               in_common=rd.in_common)
-            except Document.DoesNotExist:
-                pass
-
-    related = doc.related_documents.order_by('-related_to__in_common')[0:5]
-
+    if doc.locale != 'en-US':
+        # Not english, so may need related docs which are
+        # stored on the English version.
+        redis = redis_client('default')
+        doc_key = 'translated_doc_id:%s' % doc.id
+        doc_keys_str = redis.get(doc_key)
+        related_ids = []
+        if doc_keys_str:
+            related_ids = ast.literal_eval(doc_keys_str)
+            # Convert "[1,2,3]" to [1, 2, 3]
+        related = Document.objects.filter(id__in=related_ids)
+        if not related_ids and doc.parent:
+            parent_related = [v['id'] for v in doc.parent.related_documents \
+                    .order_by('-related_to__in_common').values('id')[0:5]]
+            # Use a list because this version of
+            # MySql doesnt like LIMIT (the [0:5]) in a subquery
+            related = Document.objects.filter(locale=doc.locale,
+                                              parent__in=parent_related)
+            related_ids = [v['id'] for v in related.values('id')]
+            # Just need the list of ids, not a list of [{'id':1}, ...]
+            redis.set(doc_key, related_ids or None)
+            redis.expire(doc_key, 60*60)
+            # Cache expires in 1 hour
+    else:
+        related = doc.related_documents.order_by('-related_to__in_common')[0:5]
     contributors = doc.contributors.all()
 
     data = {'document': doc, 'redirected_from': redirected_from,
