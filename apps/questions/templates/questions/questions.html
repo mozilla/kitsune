@@ -111,3 +111,16 @@
     <p>There are no questions. Maybe you should ask some!</p>
   {% endif %}
 {% endblock %}
+
+{% block side %}
+  <a id="toggle-tag-filter" href="#tag-filter">{{ _('Filter Questions') }}</a>
+  <section id="tag-filter" class="sd-module">
+    <h1><mark>{{ _('Filter') }}</mark></h1>
+    <p>{{ _('Ex: Firefox 7, bookmarks') }}</p>
+    <form action="" method="get">
+      <input class="text" type="text" name="tagged" value="{{ tagged }}" data-vocabulary="{{ tag_vocab() }}" />
+      <input type="submit" value="{{ _('Go') }}" />
+    </form>
+  </section>
+  {{ super() }}
+{% endblock %}
