@@ -909,7 +909,6 @@ def _answers_data(request, question_id, form=None, watch_form=None,
     question = get_object_or_404(Question, pk=question_id)
     answers_ = paginate(request, question.answers.all(),
                         per_page=constants.ANSWERS_PER_PAGE)
-    vocab = [t.name for t in Tag.objects.all()]  # TODO: Fetch only name.
     feed_urls = ((reverse('questions.answers.feed',
                           kwargs={'question_id': question_id}),
                   AnswersFeed().title(question)),)
@@ -925,7 +924,6 @@ def _answers_data(request, question_id, form=None, watch_form=None,
             'answer_preview': answer_preview,
             'watch_form': watch_form or _init_watch_form(request, 'reply'),
             'feeds': feed_urls,
-            'tag_vocab': json.dumps(vocab),
             'frequencies': frequencies,
             'is_watching_question': is_watching_question,
             'can_tag': request.user.has_perm('questions.tag_question'),

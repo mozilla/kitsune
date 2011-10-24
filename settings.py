@@ -374,6 +374,7 @@ MINIFY_BUNDLES = {
             'css/questions-meta.css',
             'css/tags.css',
             'css/search.css',
+            'css/autocomplete.css',
         ),
         'search': (
             'css/search.css',
@@ -381,7 +382,7 @@ MINIFY_BUNDLES = {
             'css/questions-meta.css',
         ),
         'wiki': (
-            'css/users.autocomplete.css',
+            'css/autocomplete.css',
             'css/users.list.css',
             'css/showfor.css',
             'css/wiki.css',
@@ -426,11 +427,11 @@ MINIFY_BUNDLES = {
             'css/wiki_syntax.css',
         ),
         'messages': (
-            'css/users.autocomplete.css',
+            'css/autocomplete.css',
             'css/messages.css',
         ),
         'groups': (
-            'css/users.autocomplete.css',
+            'css/autocomplete.css',
             'css/users.list.css',
             'css/groups.css',
             'css/wiki_syntax.css',
@@ -439,6 +440,7 @@ MINIFY_BUNDLES = {
     'js': {
         'common': (
             'js/i18n.js',
+            'js/libs/underscore.js',
             'js/libs/jquery.min.js',
             'js/libs/modernizr-1.7.js',
             'js/libs/jquery.cookie.js',
@@ -455,11 +457,14 @@ MINIFY_BUNDLES = {
         'questions': (
             'js/markup.js',
             'js/libs/jquery.ajaxupload.js',
+            'js/libs/jquery.autocomplete.js',
             'js/ajaxvote.js',
             'js/ajaxpreview.js',
             'js/aaq.js',
             'js/upload.js',
             'js/questions.js',
+            'js/tags.autocomplete.js',
+            'js/tags.filter.js',
             'js/tags.js',
         ),
         'search': (
