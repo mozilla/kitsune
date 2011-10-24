@@ -148,9 +148,9 @@ def document(request, document_slug, template=None):
         redis = redis_client('default')
         doc_key = 'translated_doc_id:%s' % doc.id
         related_ids = redis.lrange(doc_key, 0, -1)
-        if related_ids:
+        if related_ids and related_ids != ['None']:
             related = Document.objects.filter(id__in=related_ids)
-        elif doc.parent:
+        elif doc.parent and related_ids != ['None']:
             # Use a list because this version of
             # MySql doesnt like LIMIT (the [0:5]) in a subquery
             parent_related = [v['id'] for v in doc.parent.related_documents \
@@ -159,6 +159,9 @@ def document(request, document_slug, template=None):
                                               parent__in=parent_related)
             for r in related:
                 redis.lpush(doc_key, r.id)
+            else:
+                # Add 'None' to prevent recalulation on a known empty set.
+                redis.lpush(doc_key, None)
             # Cache expires in 1 hour
             redis.expire(doc_key, 60 * 60)
     else:
