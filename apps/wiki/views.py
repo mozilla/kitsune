@@ -150,7 +150,6 @@ def document(request, document_slug, template=None):
         related_ids = redis.lrange(doc_key, 0, -1)
         if related_ids:
             related = Document.objects.filter(id__in=related_ids)
-            print related
         elif doc.parent:
             # Use a list because this version of
             # MySql doesnt like LIMIT (the [0:5]) in a subquery
