@@ -12,5 +12,6 @@ def tags_to_text(tags):
 
 @register.function
 def tag_vocab():
-    """Returns the tag vocabulary as JSON array."""
-    return json.dumps(list(Tag.objects.values_list('name', flat=True)))
+    """Returns the tag vocabulary as a JSON object."""
+    return json.dumps(dict((t[0], t[1]) for
+                      t in Tag.objects.values_list('name', 'slug')))

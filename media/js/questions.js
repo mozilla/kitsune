@@ -9,11 +9,17 @@
 (function($){
 
     function init() {
-        if($('body').is('.new-question')) {
+        var $body = $('body');
+
+        if($body.is('.new-question')) {
             initNewQuestion();
         }
 
-        if($('body').is('.answers')) {
+        if($body.is('.questions')) {
+            initTagFilterToggle();
+        }
+
+        if($body.is('.answers')) {
             // Put last search query into search box
             $('#support-search input[name=q]')
                 .val(k.unquote($.cookie('last_search')));
@@ -219,6 +225,14 @@
             });
 
             return false;
+        });
+    }
+
+    function initTagFilterToggle() {
+        $('#toggle-tag-filter').click(function(e) {
+            e.preventDefault();
+            $('#tag-filter').toggleClass('off');
+            $(this).toggleClass('off');
         });
     }
 
