@@ -38,6 +38,7 @@ build_hook_params_default = partial(build_hook_params,
 
 placeholder_image = settings.MEDIA_URL + "img/placeholder.gif"
 
+
 class GetObjectFallbackTests(TestCase):
     fixtures = ['users.json']
 

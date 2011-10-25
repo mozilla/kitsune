@@ -20,7 +20,8 @@ ALLOWED_ATTRIBUTES = {
     'h6': ['id'],
     'li': ['class'],
     'span': ['class', 'data-for'],
-    'img': ['class', 'src', 'original-src', 'alt', 'title', 'height', 'width', 'style'],
+    'img': ['class', 'src', 'original-src', 'alt', 'title', 'height', 'width',
+            'style'],
     'video': ['height', 'width', 'controls', 'data-fallback', 'poster',
               'data-width', 'data-height'],
     'source': ['src', 'type'],
@@ -239,5 +240,6 @@ class WikiParser(Parser):
             return image
 
         template = jingo.env.get_template('wikiparser/hook_image.html')
-        r_kwargs = {'image': image, 'params': params, 'MEDIA_URL': settings.MEDIA_URL}
+        r_kwargs = {'image': image, 'params': params,
+                    'MEDIA_URL': settings.MEDIA_URL}
         return template.render(**r_kwargs)
