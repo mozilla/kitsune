@@ -25,7 +25,6 @@ from tower import ugettext as _
 
 from access.decorators import permission_required, login_required
 from sumo.helpers import urlparams
-from sumo.redis_utils import redis_client, RedisError
 from sumo.urlresolvers import reverse
 from sumo.utils import paginate, smart_int, get_next_url
 from wiki import DOCUMENTS_PER_PAGE
@@ -40,6 +39,7 @@ from wiki.models import (Document, Revision, HelpfulVote, ImportantDate,
                          GROUPED_FIREFOX_VERSIONS, PRODUCT_TAGS)
 from wiki.parser import wiki_to_html
 from wiki.tasks import send_reviewed_notification, schedule_rebuild_kb
+from wiki.utils import find_related_documents
 
 
 log = logging.getLogger('k.wiki')
@@ -142,30 +142,8 @@ def document(request, document_slug, template=None):
         except Document.DoesNotExist:
             pass
 
-    # Not english, so may need related docs which are
-    # stored on the English version.
-    if doc.locale != 'en-US':
-        redis = redis_client('default')
-        doc_key = 'translated_doc_id:%s' % doc.id
-        related_ids = redis.lrange(doc_key, 0, -1)
-        if related_ids and related_ids != ['None']:
-            related = Document.objects.filter(id__in=related_ids)
-        elif doc.parent and related_ids != ['None']:
-            # Use a list because this version of
-            # MySql doesnt like LIMIT (the [0:5]) in a subquery
-            parent_related = [v['id'] for v in doc.parent.related_documents \
-                    .order_by('-related_to__in_common').values('id')[0:5]]
-            related = Document.objects.filter(locale=doc.locale,
-                                              parent__in=parent_related)
-            for r in related:
-                redis.lpush(doc_key, r.id)
-            else:
-                # Add 'None' to prevent recalulation on a known empty set.
-                redis.lpush(doc_key, None)
-            # Cache expires in 1 hour
-            redis.expire(doc_key, 60 * 60)
-    else:
-        related = doc.related_documents.order_by('-related_to__in_common')[0:5]
+    related = find_related_documents(doc)
+
     contributors = doc.contributors.all()
 
     data = {'document': doc, 'redirected_from': redirected_from,

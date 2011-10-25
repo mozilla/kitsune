@@ -1,0 +1,51 @@
+from django.conf import settings
+from sumo.redis_utils import redis_client, RedisError
+import logging
+
+from models import Document
+log = logging.getLogger('k.wiki')
+
+
+def related_translated_documents(doc):
+    if doc.parent:
+        # Use a list because this version of
+        # MySQL doesnt like LIMIT (the [0:5]) in a subquery
+        parent_related = doc.parent.related_documents
+        parent_related = parent_related.order_by('-related_to__in_common')
+        ids = list(parent_related.values_list('id', flat=True)[0:5])
+        related = Document.objects.filter(locale=doc.locale,
+                                          parent__in=ids[0:5])
+        return related
+    return Document.objects.get_empty_query_set()
+
+
+def find_related_documents(doc):
+    '''
+    Returns a QuerySet of related_docuemnts or of the
+    parent's related_documents in the case of translations
+    '''
+    if doc.locale == settings.WIKI_DEFAULT_LANGUAGE:
+        related = doc.related_documents.order_by('-related_to__in_common')[0:5]
+        return related
+
+    # Not English, so may need related docs which are
+    # stored on the English version.
+    try:
+        redis = redis_client('default')
+        doc_key = 'translated_doc_id:%s' % doc.id
+        related_ids = redis.lrange(doc_key, 0, -1)
+        if related_ids and related_ids != [0]:
+            return Document.objects.filter(id__in=related_ids)
+        related = related_translated_documents(doc)
+        for r in related:
+            redis.lpush(doc_key, r.id)
+        if not related:
+            # Add '0' to prevent recalulation on a known empty set.
+            redis.lpush(doc_key, 0)
+        # Cache expires in 2 hour
+        redis.expire(doc_key, 60 * 60 * 2)
+        return related
+    except RedisError as e:
+        # Problem with Redis. Log and return the related docs.
+        log.error('Redis error: %s' % e)
+        return related_translated_documents(doc)
