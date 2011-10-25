@@ -8,8 +8,7 @@ from django.conf import settings
 from django.contrib.sites.models import Site
 from django.db.models import ObjectDoesNotExist
 from django.http import HttpResponse, HttpResponseBadRequest
-
-from django.utils.http import urlencode, urlquote
+from django.utils.http import urlquote
 from django.views.decorators.cache import cache_page
 
 import jingo
@@ -19,7 +18,7 @@ from tower import ugettext as _
 
 from search import SearchError
 from search.utils import locale_or_default, clean_excerpt
-from forums.models import Thread, Post, discussion_search
+from forums.models import Thread, discussion_search
 from questions.models import Question, question_search
 import search as constants
 from search.forms import SearchForm
@@ -164,10 +163,12 @@ def search(request, template=None):
             question_s = question_s.filter(**d)
 
         if cleaned['asked_by']:
-            question_s = question_s.filter(question_creator=cleaned['asked_by'])
+            question_s = question_s.filter(
+                question_creator=cleaned['asked_by'])
 
         if cleaned['answered_by']:
-            question_s = question_s.filter(answer_creator=cleaned['answered_by'])
+            question_s = question_s.filter(
+                answer_creator=cleaned['answered_by'])
 
         q_tags = [t.strip() for t in cleaned['q_tags'].split()]
         if q_tags:
