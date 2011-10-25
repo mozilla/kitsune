@@ -126,6 +126,9 @@ class SearchTest(SphinxTestCase):
 
     def test_category_exclude_nothing(self):
         """Excluding no categories should return results."""
+        # Note: We keep the query('') here to force a new S and thus
+        # not inadvertently test with an S that's not in an original
+        # state.
         results = wiki_search.query('')
         self.assertNotEquals(0, len(results))
 
@@ -151,6 +154,9 @@ class SearchTest(SphinxTestCase):
 
     def test_no_filter(self):
         """Test searching with no filters."""
+        # Note: We keep the query('') here to force a new S and thus
+        # not inadvertently test with an S that's not in an original
+        # state.
         results = list(wiki_search.query(''))
         eq_(6, len(results))
 
