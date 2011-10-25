@@ -1,6 +1,7 @@
 import logging
 import os
 import StringIO
+import subprocess
 
 from django.conf import settings
 from django.core.files.base import ContentFile
@@ -63,7 +64,7 @@ def _create_image_thumbnail(file_path, longest_side=settings.THUMBNAIL_SIZE,
         padded_image = _make_image_square(resized_image, longest_side)
         padded_image.save(io, 'PNG')
     else:
-        resized_image.save(io, 'JPEG')
+        resized_image.save(io, 'PNG')
 
     return ContentFile(io.getvalue())
 
@@ -94,3 +95,26 @@ def _scale_dimensions(width, height, longest_side=settings.THUMBNAIL_SIZE):
     new_height = longest_side
     new_width = (new_height * width) / height
     return (new_width, new_height)
+
+
+@task(rate_limit='15/m')
+def compress_image(for_obj, for_field):
+    """Compress an image of given field for given object."""
+
+    for_ = getattr(for_obj, for_field)
+
+    # Bail silently if nothing to compress, image was probably deleted.
+    if not (for_ and os.path.isfile(for_.path)):
+        log_msg = 'No file to compress for: {model} {id}, {for_f}'
+        log.info(log_msg.format(model=for_obj.__class__.__name__,
+                                id=for_obj.id, for_f=for_field))
+        return
+
+    log_msg = 'Compressing {model} {id}: {for_f}'
+    log.info(log_msg.format(model=for_obj.__class__.__name__, id=for_obj.id,
+                            for_f=for_field))
+
+    file_path = for_.path
+    if settings.OPTIPNG_PATH is not None:
+        subprocess.call([settings.OPTIPNG_PATH,
+                         '-quiet', '-preserve', file_path])

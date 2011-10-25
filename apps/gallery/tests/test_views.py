@@ -140,7 +140,7 @@ class UploadImageTests(TestCase):
         json_r = json.loads(r.content)
         eq_('success', json_r['status'])
         file = json_r['file']
-        eq_('test.jpg', file['name'])
+        eq_('test.png', file['name'])
         eq_(90, file['width'])
         eq_(120, file['height'])
         assert file['url'].endswith(img.get_absolute_url())

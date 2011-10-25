@@ -65,10 +65,10 @@ class UploadImageTestCase(TestCase):
         json_r = json.loads(r.content)
         eq_('success', json_r['status'])
         file = json_r['file']
-        eq_('test.jpg', file['name'])
+        eq_('test.png', file['name'])
         eq_(90, file['width'])
         eq_(120, file['height'])
-        name = '098f6b.jpg'
+        name = '098f6b.png'
         message = 'Url "%s" does not contain "%s"' % (file['url'], name)
         assert (name in file['url']), message
 

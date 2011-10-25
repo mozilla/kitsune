@@ -1,3 +1,5 @@
+import os
+
 from django.conf import settings
 from django.core.exceptions import PermissionDenied
 from django.core.files import File
@@ -5,7 +7,7 @@ from django.core.files import File
 from gallery.forms import ImageForm, VideoForm
 from gallery.models import Image, Video
 from sumo.urlresolvers import reverse
-from upload.utils import upload_media, check_file_size
+from upload.utils import _image_to_png, upload_media, check_file_size
 from upload.tasks import _scale_dimensions
 
 
@@ -27,8 +29,11 @@ def create_image(files, user):
     image.description = u'Autosaved draft.'
     image.locale = settings.WIKI_DEFAULT_LANGUAGE
 
+    up_file = _image_to_png(up_file)
+
     # Finally save the image along with uploading the file.
-    image.file.save(up_file.name, File(up_file), save=True)
+    image.file.save(os.path.splitext(up_file.name)[0] + '.png',
+                    File(up_file), save=True)
 
     (width, height) = _scale_dimensions(image.file.width, image.file.height)
     delete_url = reverse('gallery.delete_media', args=['image', image.id])
