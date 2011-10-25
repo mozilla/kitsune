@@ -74,6 +74,8 @@
     {% if user.is_authenticated() %}
     {% endif %}
   </div>
+  
+  {{ posts|paginator }}
 
   <ol class="posts-columns">
     <li class="author">{{ _('Author') }}</li>
