@@ -20,7 +20,7 @@ from gallery.models import Image, Video
 from gallery.utils import upload_image, upload_video, check_media_permissions
 from sumo.urlresolvers import reverse
 from sumo.utils import paginate
-from upload.tasks import generate_thumbnail
+from upload.tasks import compress_image, generate_thumbnail
 from upload.utils import FileTooLargeError
 from wiki.tasks import schedule_rebuild_kb
 
@@ -68,6 +68,7 @@ def upload(request, media_type='image'):
         if image_form.is_valid():
             img = image_form.save(is_draft=None)
             generate_thumbnail.delay(img, 'file', 'thumbnail')
+            compress_image.delay(img, 'file')
             # TODO: We can drop this when we start using Redis.
             invalidate = Image.objects.exclude(pk=img.pk)
             if invalidate.exists():

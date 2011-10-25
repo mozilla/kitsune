@@ -66,7 +66,7 @@ class CreateImageTestCase(TestCase):
         delete_url = reverse('gallery.delete_media',
                              args=['image', image.id])
         check_file_info(
-            file_info, name='apps/upload/tests/media/test.jpg',
+            file_info, name='test.png',
             width=90, height=120, delete_url=delete_url,
             url=image.get_absolute_url(), thumbnail_url=image.file.url)
 

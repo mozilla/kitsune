@@ -1,11 +1,16 @@
+import os
+import StringIO
+
 from django.conf import settings
 from django.core.files import File
+from django.core.files.uploadedfile import InMemoryUploadedFile
 
+from PIL import Image
 from tower import ugettext_lazy as _lazy
 
 from upload.forms import ImageAttachmentUploadForm
 from upload.models import ImageAttachment
-from upload.tasks import generate_thumbnail, _scale_dimensions
+from upload.tasks import compress_image, generate_thumbnail, _scale_dimensions
 
 
 def check_file_size(f, max_allowed_size):
@@ -28,11 +33,27 @@ def create_imageattachment(files, user, obj):
     up_file = files.values()[0]
     check_file_size(up_file, settings.IMAGE_MAX_FILESIZE)
 
-    image = ImageAttachment(content_object=obj, creator=user)
-    image.file.save(up_file.name, File(up_file), save=True)
+    imagefile  = StringIO.StringIO(up_file.read())
+    imageImage = Image.open(imagefile)
+    convertedImage = StringIO.StringIO()
+    if 'transparency' in imageImage.info:  # For GIF transparency support
+        transparency = imageImage.info['transparency']
+        imageImage.save(convertedImage, format='PNG',
+                        transparency=transparency)
+    else:
+        imageImage.save(convertedImage, format='PNG')
 
-    # Generate thumbnail off thread
+    up_file = InMemoryUploadedFile(convertedImage, None,
+                                   os.path.splitext(up_file.name)[0] + '.png',
+                                   'image/png', convertedImage.len, None)
+
+    image = ImageAttachment(content_object=obj, creator=user)
+    image.file.save(os.path.splitext(up_file.name)[0] + '.png', File(up_file),
+                    save=True)
+
+    # Compress and generate thumbnail off thread
     generate_thumbnail.delay(image, 'file', 'thumbnail')
+    compress_image.delay(image, 'file')
 
     (width, height) = _scale_dimensions(image.file.width, image.file.height)
     return {'name': up_file.name, 'url': image.file.url,

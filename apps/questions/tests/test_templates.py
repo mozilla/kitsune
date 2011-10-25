@@ -73,7 +73,7 @@ class AnswersTemplateTestCase(TestCaseBase):
         new_answer = self.question.answers.order_by('-created')[0]
         eq_(1, new_answer.images.count())
         image = new_answer.images.all()[0]
-        name = '098f6b.jpg'
+        name = '098f6b.png'
         message = 'File name "%s" does not contain "%s"' % (
             image.file.name, name)
         assert name in image.file.name, message

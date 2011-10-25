@@ -1,17 +1,20 @@
 import os
+import subprocess
 
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.files import File
 from django.core.files.images import ImageFile
 
+import mock
 from nose.tools import eq_
 
 from questions.models import Question
 from sumo.tests import TestCase
 from upload.models import ImageAttachment
+import upload.tasks
 from upload.tasks import (_scale_dimensions, _create_image_thumbnail,
-                          generate_thumbnail)
+                          compress_image, generate_thumbnail)
 
 
 class ScaleDimensionsTestCase(TestCase):
@@ -141,3 +144,47 @@ class GenerateThumbnail(TestCase):
         # Old file is either replaced or deleted.
         if old_path != new_path:
             assert not os.path.exists(old_path)
+
+
+class CompressImageTestCase(TestCase):
+    fixtures = ['users.json', 'questions.json']
+
+    def setUp(self):
+        super(CompressImageTestCase, self).setUp()
+        self.user = User.objects.all()[0]
+        self.obj = Question.objects.all()[0]
+
+    def tearDown(self):
+        ImageAttachment.objects.all().delete()
+
+    def _uploaded_image(self):
+        image = ImageAttachment(content_object=self.obj, creator=self.user)
+        with open('apps/upload/tests/media/test.jpg') as f:
+            up_file = File(f)
+            image.file.save(up_file.name, up_file, save=True)
+        return image
+
+    @mock.patch.object(settings._wrapped, 'OPTIPNG_PATH', '')
+    @mock.patch.object(upload.tasks.subprocess, 'call')
+    def test_compressed_image_default(self, call):
+        """uploaded image is compressed."""
+        image = self._uploaded_image()
+        old_size = image.file.size
+        compress_image(image, 'file')
+        assert call.called
+
+    @mock.patch.object(settings._wrapped, 'OPTIPNG_PATH', '')
+    @mock.patch.object(upload.tasks.subprocess, 'call')
+    def test_compress_no_file(self, call):
+        """compress_image does not fail when no file is provided."""
+        image = ImageAttachment(content_object=self.obj, creator=self.user)
+        compress_image(image, 'file')
+        assert not call.called
+
+    @mock.patch.object(settings._wrapped, 'OPTIPNG_PATH', None)
+    @mock.patch.object(upload.tasks.subprocess, 'call')
+    def test_compress_no_file(self, call):
+        """compress_image does not fail when no compression software."""
+        image = ImageAttachment(content_object=self.obj, creator=self.user)
+        compress_image(image, 'file')
+        assert not call.called
