@@ -119,9 +119,9 @@ class SearchTest(SphinxTestCase):
         eq_('0', q['r'])
 
     def test_category(self):
-        results = wiki_search.filter(category__in=[10]).query('')
+        results = wiki_search.filter(category__in=[10])
         eq_(5, len(results))
-        results = wiki_search.filter(category__in=[30]).query('')
+        results = wiki_search.filter(category__in=[30])
         eq_(1, len(results))
 
     def test_category_exclude_nothing(self):
@@ -156,9 +156,8 @@ class SearchTest(SphinxTestCase):
 
     def test_range_filter(self):
         """Test filtering on a range."""
-        results = (wiki_search.filter(updated__gte=1284664176,
-                                      updated__lte=1285765791)
-                              .query(''))
+        results = wiki_search.filter(updated__gte=1284664176,
+                                     updated__lte=1285765791)
         eq_(2, len(results))
 
     def test_sort_mode(self):
@@ -169,7 +168,6 @@ class SearchTest(SphinxTestCase):
         i = 0
         for sort_mode in constants.SORT_QUESTIONS[1:]:  # Skip default sorting.
             results = list(question_search.order_by(*sort_mode)
-                                          .query('')
                                           .values_dict(test_for[i]))
             eq_(4, len(results))
 
@@ -473,8 +471,7 @@ class SearchTest(SphinxTestCase):
         # This tests -updated and -created and skips the default
         # sorting and -replies.
         for groupsort in constants.GROUPSORT[1:-1]:
-            results = list(
-                ds.group_by('thread_id', groupsort).query(''))
+            results = list(ds.group_by('thread_id', groupsort))
             eq_(5, len(results))
 
             # Compare first and last.
@@ -484,7 +481,7 @@ class SearchTest(SphinxTestCase):
 
         # We have to do -replies group sort separate because replies
         # is an attribute of Thread and not Post.
-        results = list(ds.group_by('thread_id', '-replies').query(''))
+        results = list(ds.group_by('thread_id', '-replies'))
         eq_(5, len(results))
         t0 = Thread.objects.get(pk=results[0].thread_id)
         tn1 = Thread.objects.get(pk=results[-1].thread_id)
