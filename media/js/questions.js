@@ -231,7 +231,7 @@
     function initTagFilterToggle() {
         $('#toggle-tag-filter').click(function(e) {
             e.preventDefault();
-            $('#tag-filter').toggleClass('off');
+            $('#tag-filter').slideToggle('fast');  // CSS3: Y U NO TRANSITION TO `height: auto;`?
             $(this).toggleClass('off');
         });
     }

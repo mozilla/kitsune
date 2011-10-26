@@ -29,6 +29,16 @@ test('3 tags', function() {
     checkResult(this.sandbox, 'Name 1,Name 2,Name 3', 'slug-1,slug-2,slug-3');
 });
 
+test('case insensitive', function() {
+    checkResult(this.sandbox, 'nAmE 1', 'slug-1');
+});
+
+test('existing filter', function() {
+    var $h = $('<input type="hidden" class="current-tagged" value="slug-7">');
+    this.sandbox.find('form').append($h);
+    checkResult(this.sandbox, 'Name 1', 'slug-7,slug-1');
+});
+
 function checkResult($sandbox, input, expected) {
     var $form = $sandbox.find('form');
     $form.find('input[type="text"]').val(input);

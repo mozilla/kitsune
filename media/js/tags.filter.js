@@ -11,7 +11,17 @@ function init($container) {
         $tags = $form.find('input[type="text"]'),
         $btn = $form.find('input[type="submit"]'),
         $hidden = $('<input type="hidden"/>'),
-        vocab = $tags.data('vocabulary');
+        vocab = $tags.data('vocabulary'),
+        lowerVocab = {};
+
+    if (!$form.length) {
+        return;
+    }
+
+    // Create a lower case vocab for case insensitive match.
+    _.each(_.keys(vocab), function(name) {
+        lowerVocab[name.toLowerCase()] = vocab[name];
+    });
 
     // Add a hidden field for comma-separated slugs.
     $hidden.attr('name', $tags.attr('name'))
@@ -31,18 +41,30 @@ function init($container) {
     // When form is submitted, get the slugs to send over in request.
     $form.submit(function() {
         var tagNames = $tags.val(),
-            slugNames = [];
+            slugNames = [],
+            currentSlugs = $form.find('input.current-tagged').val(),
+            slugs;
+
+        // For each tag name, find the slug.
         _.each(tagNames.split(','), function(tag) {
-            var slug = vocab[$.trim(tag)];
+            var slug = lowerVocab[$.trim(tag).toLowerCase()];
             if (slug) {
                 slugNames.push(slug);
             }
         });
+
+        // No tags? No requests!
         if (slugNames.length === 0) {
             $form.trigger('ajaxComplete');
             return false;
         }
-        $hidden.val(slugNames.join(','));
+        slugs = slugNames.join(',');
+
+        // Prepend any existing filters applied.
+        if (currentSlugs) {
+            slugs = currentSlugs + ',' + slugs;
+        }
+        $hidden.val(slugs);
     });
 }
 
