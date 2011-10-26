@@ -128,15 +128,13 @@ def search(request, template=None):
 
     # Product filter
     products = cleaned['product']
-    if products:
-        for p in products:
-            wiki_s = wiki_s.filter(tag=p)
+    for p in products:
+        wiki_s = wiki_s.filter(tag=p)
 
     # Tags filter
     tags = [t.strip() for t in cleaned['tags'].split()]
-    if tags:
-        for t in tags:
-            wiki_s = wiki_s.filter(tag=t)
+    for t in tags:
+        wiki_s = wiki_s.filter(tag=t)
 
     # Archived bit
     if a == '0' and not cleaned['include_archived']:
@@ -171,9 +169,8 @@ def search(request, template=None):
                 answer_creator=cleaned['answered_by'])
 
         q_tags = [t.strip() for t in cleaned['q_tags'].split()]
-        if q_tags:
-            for t in q_tags:
-                question_s = question_s.filter(tag=t)
+        for t in q_tags:
+            question_s = question_s.filter(tag=t)
 
     # Discussion forum specific filters
     if cleaned['w'] & constants.WHERE_DISCUSSION:
