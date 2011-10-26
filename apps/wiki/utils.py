@@ -16,17 +16,16 @@ def related_translated_documents(doc):
         parent_related = doc.parent.related_documents
         parent_related = parent_related.order_by('-related_to__in_common')
         ids = list(parent_related.values_list('id', flat=True)[0:5])
-        related = Document.objects.filter(locale=doc.locale,
-                                          parent__in=ids[0:5])
+        related = Document.objects.filter(locale=doc.locale, parent__in=ids)
         return related
     return Document.objects.get_empty_query_set()
 
 
 def find_related_documents(doc):
-    '''
+    """
     Returns a QuerySet of related_docuemnts or of the
     parent's related_documents in the case of translations
-    '''
+    """
     if doc.locale == settings.WIKI_DEFAULT_LANGUAGE:
         return doc.related_documents.order_by('-related_to__in_common')[0:5]
 
@@ -41,8 +40,11 @@ def find_related_documents(doc):
 
     doc_key = 'translated_doc_id:%s' % doc.id
     related_ids = redis.lrange(doc_key, 0, -1)
-    if related_ids and related_ids != ['0']:
+    if related_ids == ['0']:
+        return Document.objects.get_empty_query_set()
+    if related_ids:
         return Document.objects.filter(id__in=related_ids)
+
     related = related_translated_documents(doc)
     if not related:
         # Add '0' to prevent recalulation on a known empty set.
@@ -50,6 +52,6 @@ def find_related_documents(doc):
     else:
         for r in related:
             redis.lpush(doc_key, r.id)
-    # Cache expires in 2 hour
+    # Cache expires in 2 hours
     redis.expire(doc_key, 60 * 60 * 2)
     return related
