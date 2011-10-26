@@ -6,8 +6,8 @@
 
 "use strict";
 
-function init() {
-    var $form = $('#tag-filter form'),
+function init($container) {
+    var $form = $container ? $container.find('form') : $('#tag-filter form'),
         $tags = $form.find('input[type="text"]'),
         $btn = $form.find('input[type="submit"]'),
         $hidden = $('<input type="hidden"/>'),
@@ -42,10 +42,16 @@ function init() {
             $form.trigger('ajaxComplete');
             return false;
         }
-        $hidden.val(slugNames.join(''));
+        $hidden.val(slugNames.join(','));
     });
 }
 
-$(document).ready(init);
+k.TagsFilter = {
+    init: init
+};
+
+$(document).ready(function() {
+    k.TagsFilter.init();
+});
 
 }(jQuery));
