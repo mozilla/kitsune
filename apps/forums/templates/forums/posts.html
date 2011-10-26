@@ -75,9 +75,7 @@
     {% endif %}
   </div>
   
-  {% if posts %}                  //Adds a paginator to the top of every page. WRT Bug #694280 
-    {{ posts|paginator }}
-  {% endif %}
+  {{ posts|paginator }}
 
   <ol class="posts-columns">
     <li class="author">{{ _('Author') }}</li>
