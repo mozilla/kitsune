@@ -110,6 +110,17 @@ class PostsTemplateTests(KBForumTestCase):
         eq_(content, doc('#post-preview div.content').text())
         eq_(num_posts, t.post_set.count())
 
+    def test_preview_async(self):
+        """Preview a reply."""
+        self.client.login(username='rrosario', password='testpass')
+        d = Document.objects.all()[0]
+        content = 'Full of awesome.'
+        response = post(self.client, 'wiki.discuss.post_preview_async',
+                        {'content': content}, args=[d.slug])
+        eq_(200, response.status_code)
+        doc = pq(response.content)
+        eq_(content, doc('div.content').text())
+
     def test_watch_thread(self):
         """Watch and unwatch a thread."""
         self.client.login(username='rrosario', password='testpass')
