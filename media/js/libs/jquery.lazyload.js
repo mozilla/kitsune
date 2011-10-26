@@ -16,7 +16,6 @@
             didScroll = true;
         });
 
-        //make function do something like elements = elements.not(elementToBeRemoved) after returning toberemoved from loadabovethefoldimages
         loadAboveTheFoldImages(elements, opts);
 
         var intv = setInterval(function() {
@@ -47,7 +46,8 @@
     function loadAboveTheFoldImages(elements, options){
         var loaded = 0;
         elements.filter('.lazy').each(function(){
-            if ($(this).hasClass('lazy') && aboveTheFold(this, options) && ($(this).data('original-src')) && $(this).is(":visible")){
+            if ($(this).hasClass('lazy') && aboveTheFold(this, options) &&
+                $(this).data('original-src') && $(this).is(":visible")) {
                 $.fn.lazyload.loadOriginalImage(this);
                 $(this).removeClass('lazy');
                 loaded++;
