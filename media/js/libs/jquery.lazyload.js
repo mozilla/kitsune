@@ -9,12 +9,27 @@
     $.fn.lazyload = function(options){
         var opts = $.extend($.fn.lazyload.defaults, options);
         var elements = this;
+        var didScroll = false;
+        loaded = elements.length;
 
         $(window).bind('scroll', function(e){
-            loadAboveTheFoldImages(elements, opts);
+            didScroll = true;
         });
 
+        //make function do something like elements = elements.not(elementToBeRemoved) after returning toberemoved from loadabovethefoldimages
         loadAboveTheFoldImages(elements, opts);
+
+        var intv = setInterval(function() {
+            if(loaded <= 0) {
+                $(window).unbind('scroll');
+                clearInterval(intv);
+                return;
+            }
+            if(didScroll) {
+                didScroll = false;
+                loaded -= loadAboveTheFoldImages(elements, opts);
+            }
+        }, 250);
         return this;
     };
 
@@ -26,14 +41,18 @@
     };
 
     $.fn.lazyload.loadOriginalImage = function(element){
-        $(element).attr('src', $(element).attr('original-src')).removeAttr('original-src');
+        $(element).attr('src', $(element).data('original-src')).removeData('original-src');
     };
 
     function loadAboveTheFoldImages(elements, options){
-        elements.each(function(){
-            if (aboveTheFold(this, options) && ($(this).attr('original-src')) && $(this).is(":visible")){
+        var loaded = 0;
+        elements.filter('.lazy').each(function(){
+            if ($(this).hasClass('lazy') && aboveTheFold(this, options) && ($(this).data('original-src')) && $(this).is(":visible")){
                 $.fn.lazyload.loadOriginalImage(this);
+                $(this).removeClass('lazy');
+                loaded++;
             }
         });
+        return loaded;
     };
 })(jQuery);
