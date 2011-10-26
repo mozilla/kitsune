@@ -1,8 +1,11 @@
-from django.conf import settings
-from sumo.redis_utils import redis_client, RedisError
 import logging
 
-from models import Document
+from django.conf import settings
+
+from sumo.redis_utils import redis_client, RedisError
+from wiki.models import Document
+
+
 log = logging.getLogger('k.wiki')
 
 
