@@ -197,7 +197,7 @@
         {% set tags = question.tags.all() %}
         {% if tags or can_tag %}
           <h2>{{ _('Tags') }}</h2>
-          <div class="tags"{% if can_tag %} data-tag-vocab-json="{{ tag_vocab }}"{% endif %}{% if can_create_tags %} data-can-create-tags="1"{% endif %}>
+          <div class="tags"{% if can_tag %} data-tag-vocab-json="{{ tag_vocab() }}"{% endif %}{% if can_create_tags %} data-can-create-tags="1"{% endif %}>
             {% if can_tag %}
               <form action="{{ url('questions.remove_tag', question.id) }}"
                     data-action-async="{{ url('questions.remove_tag_async', question.id) }}"

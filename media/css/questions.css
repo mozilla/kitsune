@@ -142,10 +142,6 @@ body.notifications #main article.main {
     margin: 0 0 0 20px;
 }
 
-#ask-question-module {
-    margin-top: 0;
-}
-
 .no-js #email-subscribe {
     display: block;
 }
@@ -288,6 +284,26 @@ ol.pagination:after {
     display: block;
     height: 0;
     visibility: hidden;
+}
+
+/* filtering side module */
+#toggle-tag-filter {
+    background: transparent url(../img/questions/filter.sprite.png) no-repeat left 2px;
+    margin: 0 0 0 20px;
+    padding: 0 0 0 16px;
+}
+
+#toggle-tag-filter.off {
+    background-position: left -38px;
+    color: #AAAAAA;
+}
+
+#tag-filter input {
+    margin: 0;
+}
+
+#tag-filter input.text {
+    width: 100px;
 }
 
 /* ask a question side module */

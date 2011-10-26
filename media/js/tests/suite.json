@@ -8,6 +8,7 @@
         "js/libs/jstestnet.js",
         "js/testutils.js",
         "js/ajaxvote.js",
-        "js/ajaxpreview.js"
+        "js/ajaxpreview.js",
+        "js/tags.filter.js"
     ]
 }

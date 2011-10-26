@@ -849,6 +849,10 @@ div.support-search button.img-submit {
     padding: 20px;
 }
 
+.sd-module.off {
+    display: none;
+}
+
 .html-rtl .sd-module {
     margin: 20px 20px 0 0;
 }
