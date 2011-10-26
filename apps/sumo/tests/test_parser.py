@@ -36,6 +36,8 @@ build_hook_params_default = partial(build_hook_params,
                                     allowed_params=IMAGE_PARAMS,
                                     allowed_param_values=IMAGE_PARAM_VALUES)
 
+placeholder_image = settings.MEDIA_URL + "img/placeholder.gif"
+
 
 class GetObjectFallbackTests(TestCase):
     fixtures = ['users.json']
@@ -343,13 +345,15 @@ class TestWikiImageTags(TestCase):
         """Simple image tag markup."""
         img = pq_img(self.p, '[[Image:test.jpg]]', 'img')
         eq_('test.jpg', img.attr('alt'))
-        eq_(self.img.file.url, img.attr('src'))
+        eq_(self.img.file.url, img.attr('data-original-src'))
+        eq_(placeholder_image, img.attr('src'))
 
     def test_simple_fallback(self):
         """Fallback to English if current locale doesn't have the image."""
         img = pq_img(self.p, '[[Image:test.jpg]]', selector='img', locale='ja')
         eq_('test.jpg', img.attr('alt'))
-        eq_(self.img.file.url, img.attr('src'))
+        eq_(self.img.file.url, img.attr('data-original-src'))
+        eq_(placeholder_image, img.attr('src'))
 
     def test_full_fallback(self):
         """Find current locale's image, not the English one."""
@@ -358,7 +362,8 @@ class TestWikiImageTags(TestCase):
         self.img.save()
         img = pq_img(self.p, '[[Image:test.jpg]]', selector='img', locale='ja')
         eq_('test.jpg', img.attr('alt'))
-        eq_(self.img.file.url, img.attr('src'))
+        eq_(self.img.file.url, img.attr('data-original-src'))
+        eq_(placeholder_image, img.attr('src'))
 
         # then, create an English version
         en_img = image(title='test.jpg')
@@ -368,14 +373,16 @@ class TestWikiImageTags(TestCase):
         # make sure there is no fallback
         img = pq_img(self.p, '[[Image:test.jpg]]', selector='img', locale='ja')
         eq_('test.jpg', img.attr('alt'))
-        eq_(self.img.file.url, img.attr('src'))
+        eq_(self.img.file.url, img.attr('data-original-src'))
+        eq_(placeholder_image, img.attr('src'))
 
         # now delete the English version
         self.img.delete()
         self.img = en_img  # don't break tearDown
         img = pq_img(self.p, '[[Image:test.jpg]]', selector='img', locale='ja')
         eq_('test.jpg', img.attr('alt'))
-        eq_(self.img.file.url, img.attr('src'))
+        eq_(self.img.file.url, img.attr('data-original-src'))
+        eq_(placeholder_image, img.attr('src'))
 
     def test_caption(self):
         """Give the image a caption."""
@@ -386,7 +393,7 @@ class TestWikiImageTags(TestCase):
         img = img_div('img')
         caption = img_div.text()
 
-        eq_(self.img.file.url, img.attr('src'))
+        eq_(self.img.file.url, img.attr('data-original-src'))
         eq_('my caption', img.attr('alt'))
         eq_('my caption', caption)
 
@@ -397,7 +404,7 @@ class TestWikiImageTags(TestCase):
         img = img_a('img')
 
         eq_('test.jpg', img.attr('alt'))
-        eq_(self.img.file.url, img.attr('src'))
+        eq_(self.img.file.url, img.attr('data-original-src'))
         eq_('/en-US/kb/installing-firefox', img_a.attr('href'))
 
     def test_page_link_edit(self):
@@ -406,7 +413,7 @@ class TestWikiImageTags(TestCase):
         img = img_a('img')
 
         eq_('test.jpg', img.attr('alt'))
-        eq_(self.img.file.url, img.attr('src'))
+        eq_(self.img.file.url, img.attr('data-original-src'))
         assert img_a.hasClass('new')
         eq_('/en-US/kb/new?title=Article+List', img_a.attr('href'))
 
@@ -421,7 +428,7 @@ class TestWikiImageTags(TestCase):
 
         eq_('my caption', img.attr('alt'))
         eq_('my caption', caption)
-        eq_(self.img.file.url, img.attr('src'))
+        eq_(self.img.file.url, img.attr('data-original-src'))
         assert img_a.hasClass('new')
         eq_('/en-US/kb/new?title=A+page', img_a.attr('href'))
 
@@ -431,7 +438,8 @@ class TestWikiImageTags(TestCase):
         img = img_a('img')
 
         eq_('test.jpg', img.attr('alt'))
-        eq_(self.img.file.url, img.attr('src'))
+        eq_(self.img.file.url, img.attr('data-original-src'))
+        eq_(placeholder_image, img.attr('src'))
         eq_('http://test.com', img_a.attr('href'))
 
     def test_link_caption(self):
@@ -442,7 +450,7 @@ class TestWikiImageTags(TestCase):
         img = img_div('img')
         img_a = img_div('a')
 
-        eq_(self.img.file.url, img.attr('src'))
+        eq_(self.img.file.url, img.attr('data-original-src'))
         eq_('http://ab.us', img_a.attr('href'))
 
     def test_link_align(self):
@@ -456,7 +464,7 @@ class TestWikiImageTags(TestCase):
         """Link with invalid align."""
         img = pq_img(self.p,
                      '[[Image:test.jpg|link=http://example.ro|align=inv]]')
-        eq_('frameless', img.attr('class'))
+        assert 'frameless' in img.attr('class')
 
     def test_link_valign(self):
         """Link with valign."""
@@ -534,12 +542,12 @@ class TestWikiImageTags(TestCase):
         assert not img_div('img').hasClass('frameless')
         eq_('caption', img_div('img').attr('alt'))
         eq_('caption', img_div.text())
-        eq_(self.img.file.url, img_div('img').attr('src'))
+        eq_(self.img.file.url, img_div('img').attr('data-original-src'))
 
     def test_frameless_link(self):
         """Image has frameless class and link if specified."""
         img_a = pq_img(self.p,
                        '[[Image:test.jpg|page=Installing Firefox]]', 'a')
         img = img_a('img')
-        eq_('frameless', img.attr('class'))
+        assert 'frameless' in img.attr('class')
         eq_('/en-US/kb/installing-firefox', img_a.attr('href'))
