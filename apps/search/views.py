@@ -293,7 +293,7 @@ def search(request, template=None):
                     pk=documents[i]['id'])
 
                 summary = jinja2.Markup(
-                    clean_excerpt(question_s.excerpt(documents[i])))
+                    clean_excerpt(question_s.excerpt(documents[i])[0]))
 
                 result = {
                     'search_summary': summary,
@@ -308,7 +308,7 @@ def search(request, template=None):
                 thread = Thread.objects.get(pk=documents[i]['thread'])
 
                 summary = jinja2.Markup(
-                    clean_excerpt(discussion_s.excerpt(documents[i])))
+                    clean_excerpt(discussion_s.excerpt(documents[i])[0]))
 
                 result = {
                     'search_summary': summary,

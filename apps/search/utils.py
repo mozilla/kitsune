@@ -4,7 +4,6 @@ import zlib
 import bleach
 
 from django.conf import settings
-from django.utils.encoding import smart_unicode
 
 from sumo_locales import LOCALES
 
@@ -16,7 +15,7 @@ call = lambda x: subprocess.Popen(x, stdout=subprocess.PIPE).communicate()
 
 
 def clean_excerpt(excerpt):
-    return bleach.clean(smart_unicode(excerpt))
+    return bleach.clean(excerpt)
 
 
 def reindex(rotate=False):
