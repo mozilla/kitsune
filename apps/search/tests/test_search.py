@@ -376,7 +376,6 @@ class SearchTest(SphinxTestCase):
                                   .query('post').values_dict('id', 'content'))
         results = list(dis_s)
         eq_(1, len(results))
-        # post = Post.objects.get(pk=results[0]['id'])
         eq_(u'yet another <b>post</b>', dis_s.excerpt(results[0])[0])
 
     def test_discussion_filter_author(self):
