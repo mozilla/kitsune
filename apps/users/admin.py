@@ -52,4 +52,4 @@ class ProfileAdmin(admin.ModelAdmin):
         obj.save()
 
 admin.site.register(Profile, ProfileAdmin)
-monkeypatch.patch_user_admin()
+monkeypatch.patch_all()

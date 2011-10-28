@@ -1,4 +1,7 @@
 from django.contrib.auth.admin import UserAdmin
+from django.contrib.auth.models import User
+
+from sumo.urlresolvers import reverse
 
 
 def _activate_users(admin, request, qs):
@@ -22,3 +25,15 @@ def patch_user_admin():
         UserAdmin._monkeyed = True
         UserAdmin.has_delete_permission = lambda *a, **kw: False
         UserAdmin.actions = [_activate_users, _deactivate_users]
+
+
+def patch_user_model():
+    """Add a more accurate User.get_absolute_url."""
+    def get_absolute_url(self):
+        return reverse('users.profile', args=[self.pk])
+    User.get_absolute_url = get_absolute_url
+
+
+def patch_all():
+    patch_user_admin()
+    patch_user_model()
