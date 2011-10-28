@@ -7,6 +7,12 @@
 {% block content %}
   <article id="pw-reset" class="main">
     <h1>{{ title }}</h1>
+    <div class="warning">
+      {% trans %}
+        <strong>Warning:</strong> Accounts created before December 2010 may
+        have issues logging in. Please reset your password below.
+      {% endtrans %}
+    </div>
     <form method="post" action="">
       {{ csrf() }}
       <fieldset>
