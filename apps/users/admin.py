@@ -1,6 +1,7 @@
 from django import forms
 from django.contrib import admin
 
+from users import monkeypatch
 from users.models import Profile
 
 
@@ -51,3 +52,4 @@ class ProfileAdmin(admin.ModelAdmin):
         obj.save()
 
 admin.site.register(Profile, ProfileAdmin)
+monkeypatch.patch_user_admin()
