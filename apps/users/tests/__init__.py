@@ -14,6 +14,7 @@ class TestCaseBase(TestCase):
     client_class = LocalizingClient
 
 
+# TODO(Erik): Remove the positional argument. If no users is passed, make one.
 def profile(user, **kwargs):
     """Return a saved profile for a given user."""
     defaults = {'user': user, 'name': 'Test K. User', 'bio': 'Some bio.',
