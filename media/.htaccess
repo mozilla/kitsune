@@ -2,6 +2,8 @@
 AddType image/svg+xml .svg
 AddType application/octet-stream .exe
 
+AddCharset utf-8 .css .js
+
 # Set far-future Expires headers for static media
 ExpiresActive on
 
