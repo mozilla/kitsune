@@ -189,8 +189,10 @@ def confirm_change_email(request, activation_key):
                          'username': u.username, 'duplicate': duplicate})
 
 
+@require_GET
 def profile(request, user_id):
-    user_profile = get_object_or_404(Profile, user__id=user_id)
+    user_profile = get_object_or_404(Profile, user__id=user_id,
+                                     user__is_active=True)
     groups = user_profile.user.groups.all()
     return jingo.render(request, 'users/profile.html',
                         {'profile': user_profile, 'groups': groups})
