@@ -19,11 +19,11 @@ from tower import ugettext as _
 from search import SearchError
 from search.utils import locale_or_default, clean_excerpt
 from forums.models import Thread, discussion_search
-from questions.models import Question, question_search
+from questions.models import question_search
 import search as constants
 from search.forms import SearchForm
 from sumo.utils import paginate, smart_int
-from wiki.models import Document, wiki_search
+from wiki.models import wiki_search
 
 
 def jsonp_is_valid(func):
@@ -216,10 +216,10 @@ def search(request, template=None):
         cleaned_q = cleaned['q']
 
         if cleaned['w'] & constants.WHERE_WIKI:
-            wiki_s = (wiki_s.values_dict('id', 'category')
-                            .query(cleaned_q)[:max_results])
+            wiki_s = wiki_s.query(cleaned_q)[:max_results]
             # Execute the query and append to documents
-            documents += list(wiki_s)
+            documents += [('wiki', (pair[0], pair[1]))
+                          for pair in enumerate(wiki_s.object_ids())]
 
         if cleaned['w'] & constants.WHERE_SUPPORT:
             # Sort results by
@@ -235,10 +235,9 @@ def search(request, template=None):
                 after_match='</b>',
                 limit=settings.SEARCH_SUMMARY_LENGTH)
 
-            question_s = (
-                question_s.values_dict('id', 'creator', 'content')
-                          .query(cleaned_q)[:max_results])
-            documents += list(question_s)
+            question_s = question_s.query(cleaned_q)[:max_results]
+            documents += [('question', (pair[0], pair[1]))
+                          for pair in enumerate(question_s.object_ids())]
 
         if cleaned['w'] & constants.WHERE_DISCUSSION:
             # Sort results by
@@ -256,10 +255,9 @@ def search(request, template=None):
                 after_match='</b>',
                 limit=settings.SEARCH_SUMMARY_LENGTH)
 
-            discussion_s = (
-                discussion_s.values_dict('id', 'thread', 'content')
-                            .query(cleaned_q)[:max_results])
-            documents += list(discussion_s)
+            discussion_s = discussion_s.query(cleaned_q)[:max_results]
+            documents += [('discussion', (pair[0], pair[1]))
+                          for pair in enumerate(discussion_s.object_ids())]
 
     except SearchError:
         if is_json:
@@ -272,50 +270,74 @@ def search(request, template=None):
 
     pages = paginate(request, documents, settings.SEARCH_RESULTS_PER_PAGE)
 
+    # Build a dict of { type_ -> list of indexes } for the specific
+    # docs that we're going to display on this page.  This makes it
+    # easy for us to slice the appropriate search Ss so we're limiting
+    # our db hits to just the items we're showing.
+    documents_dict = {}
+    for doc in documents[offset:offset + settings.SEARCH_RESULTS_PER_PAGE]:
+        documents_dict.setdefault(doc[0], []).append(doc[1][0])
+
+    docs_for_page = []
+    for type_, search_s in [('wiki', wiki_s),
+                            ('question', question_s),
+                            ('discussion', discussion_s)]:
+        if type_ not in documents_dict:
+            continue
+
+        # documents_dict[type_] is a list of indexes--one for each
+        # object id search result for that type_.  We use the values
+        # at the beginning and end of the list for slice boundaries.
+        begin = documents_dict[type_][0]
+        end = documents_dict[type_][-1] + 1
+        docs_for_page += [(type_, doc) for doc in search_s[begin:end]]
+
     results = []
-    for i in range(offset, offset + settings.SEARCH_RESULTS_PER_PAGE):
+    for i, docinfo in enumerate(docs_for_page):
+        rank = i + offset
+        type_, doc = docinfo
         try:
-            if documents[i].get('category', False) != False:
-                wiki_page = Document.objects.get(pk=documents[i]['id'])
-                summary = wiki_page.current_revision.summary
+            if type_ == 'wiki':
+                summary = doc.current_revision.summary
 
                 result = {
                     'search_summary': summary,
-                    'url': wiki_page.get_absolute_url(),
-                    'title': wiki_page.title,
+                    'url': doc.get_absolute_url(),
+                    'title': doc.title,
                     'type': 'document',
-                    'rank': i,
-                    'object': wiki_page,
+                    'rank': rank,
+                    'object': doc,
                 }
                 results.append(result)
-            elif documents[i].get('creator', False) != False:
-                question = Question.objects.get(
-                    pk=documents[i]['id'])
 
+            elif type_ == 'question':
                 summary = jinja2.Markup(
-                    clean_excerpt(question_s.excerpt(documents[i])[0]))
+                    clean_excerpt(question_s.excerpt(doc)[0]))
 
                 result = {
                     'search_summary': summary,
-                    'url': question.get_absolute_url(),
-                    'title': question.title,
+                    'url': doc.get_absolute_url(),
+                    'title': doc.title,
                     'type': 'question',
-                    'rank': i,
-                    'object': question,
+                    'rank': rank,
+                    'object': doc,
                 }
                 results.append(result)
+
             else:
-                thread = Thread.objects.get(pk=documents[i]['thread'])
+                # discussion_s is based on Post--not Thread, so we have
+                # to get this manually.
+                thread = Thread.objects.get(pk=doc.thread_id)
 
                 summary = jinja2.Markup(
-                    clean_excerpt(discussion_s.excerpt(documents[i])[0]))
+                    clean_excerpt(discussion_s.excerpt(doc)[0]))
 
                 result = {
                     'search_summary': summary,
                     'url': thread.get_absolute_url(),
                     'title': thread.title,
                     'type': 'thread',
-                    'rank': i,
+                    'rank': rank,
                     'object': thread,
                 }
                 results.append(result)
