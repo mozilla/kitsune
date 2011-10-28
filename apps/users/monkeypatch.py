@@ -13,10 +13,24 @@ def _deactivate_users(admin, request, qs):
 _deactivate_users.short_description = u'Deactivate selected users'
 
 
-# Prevent User objects from being deleted, even by superusers.
 def patch_user_admin():
+    """Prevent User objects from being deleted, even by superusers."""
     from django.contrib.auth.admin import UserAdmin
     if not getattr(UserAdmin, '_monkeyed', False):
         UserAdmin._monkeyed = True
         UserAdmin.has_delete_permission = lambda *a, **kw: False
         UserAdmin.actions = [_activate_users, _deactivate_users]
+
+
+def patch_user_model():
+    """Add a more accurate User.get_absolute_url."""
+    from django.contrib.auth.models import User
+    from sumo.urlresolvers import reverse
+    def get_absolute_url(self):
+        return reverse('users.profile', args=[self.pk])
+    User.get_absolute_url = get_absolute_url
+
+
+def patch_all():
+    patch_user_admin()
+    patch_user_model()
