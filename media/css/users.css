@@ -276,3 +276,11 @@ body.register p,
 .html-rtl #edit-settings form input[type=checkbox] {
     float: right;
 }
+
+#pw-reset .warning {
+    background: #fef0a7 url(../img/wiki/bkg.warning.png) repeat-y left top;
+    color: #666458;
+    margin: 1em 0;
+    padding: .5em 1em .5em 2em;
+    overflow: hidden;
+}
