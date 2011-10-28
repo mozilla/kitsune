@@ -395,4 +395,28 @@ class UserSettingsTests(TestCase):
         res = self.client.post(url, {'forums_watch_new_thread': True},
                                follow=True)
         eq_(200, res.status_code)
-        eq_(Setting.get_for_user(self.user, 'forums_watch_new_thread'), True)
+        assert Setting.get_for_user(self.user, 'forums_watch_new_thread')
+
+
+class UserProfileTests(TestCase):
+    def setUp(self):
+        self.user = user()
+        self.user.save()
+        self.profile = profile(self.user)
+        self.url = reverse('users.profile', args=[self.user.pk],
+                           locale='en-US')
+
+    def test_profile(self):
+        res = self.client.get(self.url)
+        self.assertContains(res, self.user.username)
+
+    def test_profile_inactive(self):
+        """Inactive users don't have a public profile."""
+        self.user.is_active = False
+        self.user.save()
+        res = self.client.get(self.url)
+        eq_(404, res.status_code)
+
+    def test_profile_post(self):
+        res = self.client.post(self.url)
+        eq_(405, res.status_code)
