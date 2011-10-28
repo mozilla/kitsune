@@ -590,6 +590,7 @@ details.h2 > summary {
 }
 
 #revision-list ul {
+    clear: both;
     margin: 5px 0;
     text-align: left;
 }
@@ -770,7 +771,7 @@ details.h2 > summary {
     float: right;
     font-family: Trebuchet MS, Helvetica, sans-serif;
     font-size: 13px;
-    margin-top: 1px;
+    margin: 1px 0 10px;
 }
 
 /* Revision page */
