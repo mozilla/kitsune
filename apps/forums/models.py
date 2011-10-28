@@ -37,8 +37,10 @@ class Forum(NotificationsMixin, ModelBase):
     name = models.CharField(max_length=50, unique=True)
     slug = models.SlugField(unique=True)
     description = models.TextField(null=True)
-    last_post = models.ForeignKey('Post', related_name='last_post_in_forum',
-                                  null=True)
+    last_post = models.ForeignKey('Post',
+                                  related_name='last_post_in_forum',
+                                  null=True,
+                                  on_delete=models.SET_NULL)
 
     class Meta(object):
         permissions = (
@@ -94,8 +96,10 @@ class Thread(NotificationsMixin, ModelBase):
     created = models.DateTimeField(default=datetime.datetime.now,
                                    db_index=True)
     creator = models.ForeignKey(User)
-    last_post = models.ForeignKey('Post', related_name='last_post_in',
-                                  null=True)
+    last_post = models.ForeignKey('Post',
+                                  related_name='last_post_in',
+                                  null=True,
+                                  on_delete=models.SET_NULL)
     replies = models.IntegerField(default=0)
     is_locked = models.BooleanField(default=False)
     is_sticky = models.BooleanField(default=False, db_index=True)

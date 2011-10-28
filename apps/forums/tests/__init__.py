@@ -1,11 +1,56 @@
+# -*- coding: utf-8 -*-
+from datetime import datetime
+
 from django.conf import settings
 from django.contrib.auth.models import User
+from django.template.defaultfilters import slugify
 
 from nose.tools import eq_
 
-from forums.models import Thread, Post, ThreadLockedError
+from forums.models import Forum, Thread, Post, ThreadLockedError
 from forums.views import sort_threads
-from sumo.tests import get, LocalizingClient, TestCase
+from sumo.tests import get, LocalizingClient, TestCase, with_save
+from users.tests import user
+
+
+@with_save
+def forum(**kwargs):
+    """Return an empty forum with enough data to make it saveable.
+
+    We assign a random slug and name by default so you can make more than one.
+
+    """
+    if 'name' not in kwargs:
+        kwargs['name'] = u'Förum %s' % datetime.now()
+    if 'slug' not in kwargs:
+        kwargs['slug'] = slugify(kwargs['name'])
+    return Forum(**kwargs)
+
+
+@with_save
+def thread(**kwargs):
+    """Return an empty thread with enough data to make it saveable.
+
+    We assign a random title so you can make more than one in a forum.
+
+    """
+    if 'title' not in kwargs:
+        kwargs['title'] = u'Thréåd %s' % datetime.now()
+    if 'forum' not in kwargs:
+        kwargs['forum'] = forum(save=True)
+    if 'creator' not in kwargs:
+        kwargs['creator'] = user(save=True)
+    return Thread(**kwargs)
+
+
+@with_save
+def post(**kwargs):
+    """Return an empty post with enough to make it saveable."""
+    if 'thread' not in kwargs:
+        kwargs['thread'] = thread(save=True)
+    if 'author' not in kwargs:
+        kwargs['author'] = user(save=True)
+    return Post(**kwargs)
 
 
 class ForumTestCase(TestCase):
