@@ -367,6 +367,7 @@ MINIFY_BUNDLES = {
         ),
         'forums': (
             'css/forums.css',
+            'css/reportabuse.css',
         ),
         'questions': (
             'css/to-delete.css',
@@ -375,6 +376,7 @@ MINIFY_BUNDLES = {
             'css/tags.css',
             'css/search.css',
             'css/autocomplete.css',
+            'css/reportabuse.css',
         ),
         'search': (
             'css/search.css',
@@ -466,6 +468,7 @@ MINIFY_BUNDLES = {
             'js/tags.autocomplete.js',
             'js/tags.filter.js',
             'js/tags.js',
+            'js/reportabuse.js',
         ),
         'search': (
             'js/search.js',
@@ -474,6 +477,7 @@ MINIFY_BUNDLES = {
             'js/markup.js',
             'js/ajaxpreview.js',
             'js/forums.js',
+            'js/reportabuse.js',
         ),
         'gallery': (
             'js/libs/jquery.ajaxupload.js',
