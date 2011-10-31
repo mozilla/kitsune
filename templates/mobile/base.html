@@ -95,7 +95,7 @@
       {% include "includes/lang_form.html" %}
       {% block footer %}
         {# TODO: make this work without JS #}
-        <a class="desktop-link" href="{{ url('home') }}?desktop">{{ _('View full site') }}</a>
+        <a class="desktop-link" href="{{ request.path }}?desktop">{{ _('View full site') }}</a>
         <p id="footer-links">
           <a href="http://mozilla.com/privacy-policy.html">{{ _('Privacy Policy') }}</a> &nbsp;|&nbsp;
           <a href="http://mozilla.com/about/legal.html">{{ _('Legal Notices') }}</a>
