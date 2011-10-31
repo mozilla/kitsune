@@ -18,7 +18,7 @@ k.ReportAbuse = {
             var $form = $(this).closest('form');
             $('div.report-post-box').remove();
 
-            // Build up the HTML for the kbox popup 
+            // Build up the HTML for the kbox popup
             var html = '<section class="report-post-box">' +
                        '<ul class="wrap"></ul></section>',
                 $html = $(html),
@@ -36,14 +36,13 @@ k.ReportAbuse = {
                 $a.attr('data-val', $this.attr('value')).text($this.text());
                 $ul.append($li);
             });
-            $ul.append('<li><input type="text" class="text" ' +
-                       'name="modal-other"/></li>');
+            $ul.append('<li><input type="text" class="text other"/></li>');
 
             // Selection click handlers
             $html.find('ul a').click(function(ev){
                 ev.preventDefault();
                 $form.find('select').val($(this).data('val'));
-                var other = $html.find('input[name="modal-other"]').val();
+                var other = $html.find('input.other').val();
                 $form.find('input[name="other"]').val(other);
                 $.ajax({
                     url: $form.attr('action'),
@@ -64,6 +63,14 @@ k.ReportAbuse = {
                 });
 
                 return false;
+            });
+
+            // Hitting Enter key in the "Other" textbox should select other.
+            $html.find('input.other').keypress(function(e) {
+                if (e.keyCode == 13) {
+                    e.preventDefault();
+                    $html.find('a[data-val="other"]').click();
+                }
             });
 
             kbox.open();
