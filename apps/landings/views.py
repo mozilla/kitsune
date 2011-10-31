@@ -33,6 +33,7 @@ FXHOME_DOCS_FOR_MOBILE = {'common':
 @mobile_template('landings/{mobile/}home.html')
 def home(request, template=None):
     docs = HOME_DOCS_FOR_MOBILE if request.MOBILE else HOME_DOCS
+    import pdb; pdb.set_trace()
     return jingo.render(request, template,
                         _data(docs, request.locale, 'desktop'))
 
