@@ -43,19 +43,27 @@ function init($container) {
         var tagNames = $tags.val(),
             slugNames = [],
             currentSlugs = $form.find('input.current-tagged').val(),
-            slugs;
+            slugs,
+            invalid = false;
 
         // For each tag name, find the slug.
         _.each(tagNames.split(','), function(tag) {
-            var slug = lowerVocab[$.trim(tag).toLowerCase()];
+            var trimmed = $.trim(tag),
+                slug = lowerVocab[trimmed.toLowerCase()];
             if (slug) {
                 slugNames.push(slug);
+            } else if (trimmed) {
+                invalid = true;
+                alert(interpolate(gettext('Invalid tag entered: %s'), [tag]));
             }
         });
 
-        // No tags? No requests!
-        if (slugNames.length === 0) {
+        // Invalid or no tags? No requests!
+        if (invalid || slugNames.length === 0) {
             $form.trigger('ajaxComplete');
+            if (!invalid) {
+                alert(gettext('No tags entered.'));
+            }
             return false;
         }
         slugs = slugNames.join(',');
