@@ -1,0 +1,16 @@
+{% load i18n %}{# L10n: This is an email. Whitespace matters! #}{% if approved %}
+{% blocktrans %}A revision you contributed to has been approved.
+{{ reviewer }} has approved a revision to the document {{ document_title }}.{% endblocktrans %}
+{% else %}
+{% blocktrans %}A revision you contributed to has been reviewed.
+{{ reviewer }} has reviewed a revision to the document {{ document_title }}.{% endblocktrans %}
+{% endif %}
+
+{% blocktrans %}Message from the reviewer:
+
+{{ message }}
+
+To view the history of this document, click the following
+link, or paste it into your browser's location bar:
+{% endblocktrans %}
+https://{{ host }}{{ url }}
