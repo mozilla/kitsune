@@ -509,7 +509,7 @@ class NewDocumentTests(TestCaseBase):
         data = new_document_data(['tag1', 'tag2'])
         locale = 'es'
         self.client.post(reverse('wiki.new_document', locale=locale),
-                                    data, follow=True)
+                         data, follow=True)
         d = Document.objects.get(title=data['title'])
         eq_(locale, d.locale)
         assert ready_fire.called
@@ -1357,6 +1357,7 @@ class TranslateTests(TestCaseBase):
         doc = pq(response.content)
         eq_(1, len(doc('form textarea[name="content"]')))
         assert 'value' not in doc('#id_comment')[0].attrib
+        eq_('checked', doc('#id_allow_discussion')[0].attrib['checked'])
 
     def test_translate_disallow(self):
         """HTTP GET to translate URL returns 400 when not localizable."""

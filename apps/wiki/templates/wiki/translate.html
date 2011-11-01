@@ -72,10 +72,13 @@
               {{ document_form.slug|safe }}
             </div>
           </li>
+          <li>
+            {{ document_form.allow_discussion|label_with_help }}{{ document_form.allow_discussion }}
+          </li>
         </ul>
         {% if document %}
             <div class="submit">
-              <input type="submit" value="{{ _('Save title and slug') }}">
+              <input type="submit" value="{{ _('Save description') }}">
             </div>
           </form>
         {% endif %}

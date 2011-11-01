@@ -339,13 +339,14 @@ article.form-page form li label {
 
 #document-form label[for="id_is_localizable"],
 #document-form label[for="id_is_archived"],
-#document-form label[for="id_allow_discussion"] {
+#document-form label[for="id_allow_discussion"],
+#localize-document label[for="id_allow_discussion"] {
     display: inline;
 }
 
-#document-form #id_is_localizable,
-#document-form #id_is_archived,
-#document-form #id_allow_discussion {
+#id_is_localizable,
+#id_is_archived,
+#id_allow_discussion {
     margin: 0 .5em;
 }
 
