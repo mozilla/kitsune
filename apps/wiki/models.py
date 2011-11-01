@@ -250,7 +250,10 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin):
 
     class SphinxMeta(object):
         index = 'wiki_pages'
-        filter_mapping = {'locale': crc32, 'tag': crc32}
+        filter_mapping = {
+            'locale': crc32,
+            'tag': crc32,
+            }
 
     def _collides(self, attr, value):
         """Return whether there exists a doc in this locale whose `attr` attr
@@ -876,7 +879,5 @@ def points_to_document_view(url, required_locale=None):
 
 
 # Default search parameters for the wiki:
-wiki_search = (
-    S(Document).filter(is_archived=False)
-               .weight(title=6, content=1, keywords=4, summary=2))
+wiki_search = S(Document).weight(title=6, content=1, keywords=4, summary=2)
 # TODO: We probably have several more default filters to add.

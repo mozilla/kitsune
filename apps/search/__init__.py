@@ -5,9 +5,6 @@ from django.conf import settings
 import oedipus
 from tower import ugettext_lazy as _lazy
 
-from search.sphinxapi import (SPH_SORT_ATTR_DESC, SPH_SORT_ATTR_ASC,
-                              SPH_SORT_EXTENDED, SPH_GROUPBY_ATTR)
-
 
 WHERE_WIKI = 1
 WHERE_SUPPORT = 2
@@ -25,10 +22,10 @@ DATE_LIST = (
 )
 
 GROUPSORT = (
-    '@relevance DESC, age ASC',  # default
-    'updated DESC',
-    'created DESC',
-    'replies DESC',
+    ('-@relevance', 'age'),  # default
+    '-updated',
+    '-created',
+    '-replies',
 )
 
 # For discussion forums
@@ -66,11 +63,10 @@ NUMBER_LIST = (
 )
 
 SORT_QUESTIONS = (
-    #: (mode, clause)
-    (SPH_SORT_EXTENDED, '@relevance DESC, age ASC'),  # default
-    (SPH_SORT_ATTR_DESC, 'updated'),
-    (SPH_SORT_ATTR_DESC, 'created'),
-    (SPH_SORT_ATTR_DESC, 'replies'),
+    ('-@relevance', 'age'),  # default
+    ('updated',),
+    ('created',),
+    ('replies',)
 )
 
 SORTBY_QUESTIONS = (

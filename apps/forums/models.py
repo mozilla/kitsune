@@ -13,6 +13,8 @@ from sumo.urlresolvers import reverse
 from sumo.models import ModelBase
 from search.utils import crc32
 
+from search import S
+
 
 def _last_post_from(posts, exclude_post=None):
     """Return the most recent post in the given set, excluding the given post.
@@ -103,12 +105,6 @@ class Thread(NotificationsMixin, ModelBase):
     class Meta:
         ordering = ['-is_sticky', '-last_post__created']
 
-    class SphinxMeta(object):
-        index = 'discussion_forums'
-        filter_mapping = {
-            'title': crc32,
-            'content': crc32}
-
     def __setattr__(self, attr, val):
         """Notice when the forum field changes.
 
@@ -190,6 +186,10 @@ class Post(ActionMixin, ModelBase):
     class Meta:
         ordering = ['created']
 
+    class SphinxMeta(object):
+        index = 'discussion_forums'
+        filter_mapping = {'author_ord': crc32}
+
     def __unicode__(self):
         return self.content[:50]
 
@@ -251,3 +251,12 @@ class Post(ActionMixin, ModelBase):
     @property
     def content_parsed(self):
         return wiki_to_html(self.content)
+
+
+# The index is on Post, but with the Thread.title for the Thread
+# related to the Post.  We base the S off of Post because we need
+# to excerpt content.
+discussion_search = (
+    S(Post).weight(title=2, content=1)
+           .group_by('thread_id', '-@group')
+           .order_by('created'))
