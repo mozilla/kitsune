@@ -119,7 +119,7 @@
     <p>{{ _('Ex: Firefox 7, bookmarks') }}</p>
     <form action="" method="get">
       <input type="hidden" class="current-tagged" value="{{ tagged }}"/>
-      <input class="text tags-autocomplete" type="text" name="tagged" value="" data-vocabulary="{{ tag_vocab() }}" />
+      <input class="text tags-autocomplete" type="text" name="tagged" value="" data-vocabulary="{{ tag_vocab() }}" required="required"/>
       <input type="submit" value="{{ _('Go') }}" />
     </form>
   </section>
