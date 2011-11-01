@@ -37,7 +37,16 @@
       {% endif %}
       {% if not self_approving %}
         <div class="message">
-          <label for="id-approve-comment">{{ _('Leave a message for the contributor: <span class="optional">(optional)</span>')|safe }}</label>
+          <label for="id-approve-comment">
+            {% if recient_contributors|length == 1 %}
+              {{ _('Leave a message for {contributor}: <span class="optional">(optional)</span>')|fe(contributor=recient_contributors[0]) }}
+            {% elif recient_contributors|length == 2 %}
+              {{ _('Leave a message for {contributor1} and {contributor2}: <span class="optional">(optional)</span>')|fe(contributor1=recient_contributors[0], contributor2=recient_contributors[1]) }}
+            {% elif recient_contributors|length > 2 %}
+              {{ _('Leave a message for {rest}, and {last}: <span class="optional">(optional)</span>')|fe(rest=', '.join(recient_contributors[:-1]), last=recient_contributors[-1]) }}
+            {% endif %}
+
+          </label>
           <textarea id="id-approve-comment" name="comment">{% if form.initial %}{{ form.initial.comment }}{% else %}{{ form.comment.data }}{% endif %}</textarea>
         </div>
       {% endif %}

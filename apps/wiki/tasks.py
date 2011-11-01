@@ -52,6 +52,29 @@ def send_reviewed_notification(revision, document, message):
               [revision.creator.email])
 
 
+@task
+def send_contributor_notification(contributor, revision, document, message):
+    """Send notification of review to the contributors of revisions."""
+    if revision.is_approved:
+        subject = _(u'A revision you contributed to has '
+                    'been approved: {title}')
+    else:
+        subject = _(u'A revision you contributed to has '
+                    'been reviewed: {title}')
+    subject = subject.format(title=document.title)
+    t = loader.get_template('wiki/email/reviewed_contributors.ltxt')
+    url = reverse('wiki.document_revisions', locale=document.locale,
+                  args=[document.slug])
+    content = t.render(Context({'document_title': document.title,
+                                'approved': revision.is_approved,
+                                'reviewer': revision.reviewer,
+                                'message': message,
+                                'url': url,
+                                'host': Site.objects.get_current().domain}))
+    send_mail(subject, content, settings.TIDINGS_FROM_ADDRESS,
+              [contributor.email])
+
+
 def schedule_rebuild_kb():
     """Try to schedule a KB rebuild, if we're allowed to."""
     if (not waffle.switch_is_active('wiki-rebuild-on-demand') or
