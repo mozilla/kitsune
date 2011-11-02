@@ -358,14 +358,14 @@ def review_revision(request, document_slug, revision_id):
     should_ask_significance = not doc.parent and doc.current_revision
 
     based_on_revs = []
-    recient_contributors = set()
+    recent_contributors = set()
     r = rev
     # Ancestor unapproved revisions that are newer than the current revision.
     while (r and r.is_approved == False
            and r.created > getattr(doc.current_revision, 'created',
                                    datetime.fromordinal(1))):
         based_on_revs.append(r)
-        recient_contributors.add(r.creator.username)
+        recent_contributors.add(r.creator.username)
         r = r.based_on
 
     if request.method == 'POST':
@@ -419,7 +419,7 @@ def review_revision(request, document_slug, revision_id):
 
     data = {'revision': rev, 'document': doc, 'form': form,
             'parent_revision': parent_revision,
-            'recient_contributors': list(set(recient_contributors)),
+            'recent_contributors': list(recent_contributors),
             'should_ask_significance': should_ask_significance}
     data.update(SHOWFOR_DATA)
     return jingo.render(request, template, data)

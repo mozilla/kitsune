@@ -72,7 +72,8 @@ def send_contributor_notification(based_on, revision, document, message):
                                 'url': url,
                                 'host': Site.objects.get_current().domain}))
     send_mail(subject, content, settings.TIDINGS_FROM_ADDRESS,
-              [r.creator.email for r in based_on if r != revision])
+              [r.creator.email for r in based_on
+               if r.creator != revision.creator])
 
 
 def schedule_rebuild_kb():
