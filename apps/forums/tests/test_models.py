@@ -6,9 +6,11 @@ from nose.tools import eq_
 
 from forums.events import NewPostEvent, NewThreadEvent
 from forums.models import Forum, Thread, Post
-from forums.tests import ForumTestCase
+from forums.tests import ForumTestCase, forum, thread, post
 from sumo.urlresolvers import reverse
 from sumo.helpers import urlparams
+from sumo.tests import TestCase
+from users.tests import user
 
 
 class ForumModelTestCase(ForumTestCase):
@@ -124,8 +126,8 @@ class ThreadModelTestCase(ForumTestCase):
         self.fixtures = self.fixtures + ['notifications.json']
 
     def test_delete_thread_with_last_forum_post(self):
-        """Deleting the thread with a forum's last post should
-        update the last_post field on the forum
+        """Deleting the thread with a forum's last post should update the
+        last_post field on the forum.
         """
         forum = Forum.objects.get(pk=1)
         last_post = forum.last_post
@@ -152,7 +154,7 @@ class ThreadModelTestCase(ForumTestCase):
         assert not NewPostEvent.is_notifying('me@me.com', t)
 
     def test_delete_last_and_only_post_in_thread(self):
-        """Deleting the only post in a thread should delete the thread"""
+        """Deleting the only post in a thread should delete the thread."""
         forum = Forum.objects.get(pk=1)
         thread = Thread(title="test", forum=forum, creator_id=118533)
         thread.save()
@@ -161,6 +163,36 @@ class ThreadModelTestCase(ForumTestCase):
         eq_(1, thread.post_set.count())
         post.delete()
         eq_(0, Thread.uncached.filter(pk=thread.id).count())
+
+
+class FixturelessThreadTests(TestCase):
+    def test_deleting_last_post_user_spares_thread(self):
+        """Deleting the user who posted last in a thread or forum should delete
+        neither."""
+        # Make a thread with 2 posts (by different users):
+        doomed_user = user(save=True)
+        first_post = post(save=True)
+        the_thread = first_post.thread
+        thread_pk = the_thread.pk
+        last_post = post(thread=the_thread,
+                         author=doomed_user,
+                         save=True)
+
+        # Last post is recognized as such by the thread:
+        eq_(last_post.pk, Thread.objects.get(pk=thread_pk).last_post_id)
+
+        # Kill the last poster, and make sure the thread is still around:
+        doomed_user.delete()
+        assert Thread.objects.filter(pk=thread_pk).exists()
+
+        # Make sure thread's last post was updated:
+        #  eq_(first_post.pk, Thread.objects.get(pk=thread_pk).last_post_id)
+        # To get this working (rather than just nulling out), we'll need a
+        # different kind of on_delete behavior than Django includes. It may be
+        # possible to implement our own on_delete value similar to SET which
+        # pries the Forum or Thread in question out of sub_objs and finds the
+        # new last post therein, but it'll be a bit of a project to understand
+        # the ORM machinery.
 
 
 class SaveDateTestCase(ForumTestCase):
