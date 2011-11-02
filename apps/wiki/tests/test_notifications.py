@@ -39,11 +39,12 @@ class ReviewTests(TestCaseBase):
                                             locale='en-US')
         self.client.login(username='admin', password='testpass')
 
-    def _review_revision(self, is_approved=True, is_ready=False):
+    def _review_revision(self, is_approved=True, is_ready=False, r=None):
         """Make a revision, and approve or reject it through the view."""
-        r = revision(is_approved=False,
-                     is_ready_for_localization=False,
-                     save=True)
+        if not r:
+            r = revision(is_approved=False,
+                         is_ready_for_localization=False,
+                         save=True)
 
         # Figure out POST data:
         data = {'comment': ''}
@@ -79,6 +80,20 @@ class ReviewTests(TestCaseBase):
         eq_(2, len(mail.outbox))  # 1 mail to Approved watcher, 1 to creator
         assert 'new approved revision' in mail.outbox[0].subject
         assert 'Your revision has been approved' in mail.outbox[1].subject
+
+    def test_based_on_approved(self):
+        r1 = revision(is_approved=False,
+                     is_ready_for_localization=False,
+                     save=True)
+        r2 = revision(document=r1.document, based_on=r1, is_approved=False,
+                     is_ready_for_localization=False,
+                     save=True)
+        eq_(0, len(mail.outbox))
+        self._review_revision(r=r2)
+        eq_(3, len(mail.outbox))
+        assert 'new approved revision' in mail.outbox[0].subject
+        assert 'Your revision has been approved' in mail.outbox[1].subject
+        assert 'A revision you contributed to has' in mail.outbox[2].subject
 
     def test_neither(self):
         """Show that neither an Approved nor a Ready mail is sent if a rev is

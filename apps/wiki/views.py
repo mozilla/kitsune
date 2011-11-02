@@ -357,13 +357,16 @@ def review_revision(request, document_slug, revision_id):
     # former approved versions:
     should_ask_significance = not doc.parent and doc.current_revision
 
-    # `recient_revs` is the most recient revisions since the current revision.
-    revs = doc.revisions.all()
-    recient_revs = revs.filter(created__gt=doc.current_revision.created)
-
-    # The most recient revision contributors.
-    recient_contributors = recient_revs.values_list('creator__username',
-                                                      flat=True)
+    based_on_revs = []
+    recient_contributors = set()
+    r = rev
+    # Ancestor unapproved revisions that are newer than the current revision.
+    while (r and r.is_approved == False
+           and r.created > getattr(doc.current_revision, 'created',
+                                   datetime.fromordinal(1))):
+        based_on_revs.append(r)
+        recient_contributors.add(r.creator.username)
+        r = r.based_on
 
     if request.method == 'POST':
         form = ReviewForm(request.POST)
@@ -396,7 +399,7 @@ def review_revision(request, document_slug, revision_id):
             # there's a Watch table entry) to revision creator.
             msg = form.cleaned_data['comment']
             send_reviewed_notification.delay(rev, doc, msg)
-            for r in recient_revs:
+            for r in based_on_revs:
                 if r == rev:
                     continue
                 send_contributor_notification(r.creator, rev, doc, msg)
