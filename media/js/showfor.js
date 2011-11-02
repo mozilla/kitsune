@@ -277,8 +277,14 @@ var ShowFor = {
 
         // Persist the menu selection in a cookie and hash fragment.
         function persistSelection() {
-            $.cookie("for_os", $osMenu.val(), {path: '/'});
-            $.cookie("for_browser", $browserMenu.val(), {path: '/'});
+            var options = {
+                path: '/',
+                expires: new Date()
+            };
+            // 12 hour expiration
+            options.expires.setHours(options.expires.getHours() + 12);
+            $.cookie("for_os", $osMenu.val(), options);
+            $.cookie("for_browser", $browserMenu.val(), options);
             updateHashFragment();
         }
 
