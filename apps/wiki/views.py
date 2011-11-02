@@ -399,10 +399,7 @@ def review_revision(request, document_slug, revision_id):
             # there's a Watch table entry) to revision creator.
             msg = form.cleaned_data['comment']
             send_reviewed_notification.delay(rev, doc, msg)
-            for r in based_on_revs:
-                if r == rev:
-                    continue
-                send_contributor_notification(r.creator, rev, doc, msg)
+            send_contributor_notification(based_on_revs, rev, doc, msg)
 
             # Schedule KB rebuild?
             statsd.incr('wiki.review')

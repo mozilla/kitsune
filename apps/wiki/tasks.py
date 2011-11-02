@@ -53,7 +53,7 @@ def send_reviewed_notification(revision, document, message):
 
 
 @task
-def send_contributor_notification(contributor, revision, document, message):
+def send_contributor_notification(based_on, revision, document, message):
     """Send notification of review to the contributors of revisions."""
     if revision.is_approved:
         subject = _(u'A revision you contributed to has '
@@ -72,7 +72,7 @@ def send_contributor_notification(contributor, revision, document, message):
                                 'url': url,
                                 'host': Site.objects.get_current().domain}))
     send_mail(subject, content, settings.TIDINGS_FROM_ADDRESS,
-              [contributor.email])
+              [r.creator.email for r in based_on if r != revision])
 
 
 def schedule_rebuild_kb():
