@@ -1,0 +1,103 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+parallel.apps.winhpcjob
+=======================
+
+Module: :mod:`parallel.apps.winhpcjob`
+--------------------------------------
+Inheritance diagram for ``IPython.parallel.apps.winhpcjob``:
+
+.. inheritance-diagram:: IPython.parallel.apps.winhpcjob 
+   :parts: 3
+
+.. automodule:: IPython.parallel.apps.winhpcjob
+
+.. currentmodule:: IPython.parallel.apps.winhpcjob
+
+Classes
+-------
+
+:class:`IPControllerJob`
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: IPControllerJob
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`IPControllerTask`
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: IPControllerTask
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`IPEngineSetJob`
+~~~~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: IPEngineSetJob
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`IPEngineTask`
+~~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: IPEngineTask
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`WinHPCJob`
+~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: WinHPCJob
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`WinHPCTask`
+~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: WinHPCTask
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+Functions
+---------
+
+
+.. autofunction:: IPython.parallel.apps.winhpcjob.as_str
+
+
+.. autofunction:: IPython.parallel.apps.winhpcjob.find_username
+
+
+.. autofunction:: IPython.parallel.apps.winhpcjob.indent
+

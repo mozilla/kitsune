@@ -1,0 +1,496 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>parallel.engine.streamkernel &mdash; IPython 0.11 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.11',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="IPython 0.11 documentation" href="../../index.html" />
+    <link rel="up" title="The IPython API" href="../index.html" />
+    <link rel="next" title="parallel.error" href="IPython.parallel.error.html" />
+    <link rel="prev" title="parallel.engine.kernelstarter" href="IPython.parallel.engine.kernelstarter.html" /> 
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<a href="../../index.html"><img src="../../_static/logo.png" border="0" alt="IPython Documentation"/></a>
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="IPython.parallel.error.html" title="parallel.error"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="IPython.parallel.engine.kernelstarter.html" title="parallel.engine.kernelstarter"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <li><a href="../../search.html">search</a>|&nbsp;</li>
+       <li><a href="../../index.html">documentation </a> &raquo;</li>
+
+          <li><a href="../index.html" accesskey="U">The IPython API</a> &raquo;</li> 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">parallel.engine.streamkernel</a><ul>
+<li><a class="reference internal" href="#module-parallel-engine-streamkernel">Module: <tt class="docutils literal"><span class="pre">parallel.engine.streamkernel</span></tt></a></li>
+<li><a class="reference internal" href="#kernel"><tt class="docutils literal"><span class="pre">Kernel</span></tt></a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="IPython.parallel.engine.kernelstarter.html"
+                        title="previous chapter">parallel.engine.kernelstarter</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="IPython.parallel.error.html"
+                        title="next chapter">parallel.error</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/api/generated/IPython.parallel.engine.streamkernel.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="parallel-engine-streamkernel">
+<h1>parallel.engine.streamkernel<a class="headerlink" href="#parallel-engine-streamkernel" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-parallel-engine-streamkernel">
+<h2>Module: <tt class="xref py py-mod docutils literal"><span class="pre">parallel.engine.streamkernel</span></tt><a class="headerlink" href="#module-parallel-engine-streamkernel" title="Permalink to this headline">¶</a></h2>
+<p>Inheritance diagram for <tt class="docutils literal"><span class="pre">IPython.parallel.engine.streamkernel</span></tt>:</p>
+<img src="../../_images/inheritance7e1dd1d54d.png" usemap="#inheritance7e1dd1d54d" class="inheritance"/><map id="inheritance7e1dd1d54d" name="inheritance7e1dd1d54d">
+</map>
+<span class="target" id="module-IPython.parallel.engine.streamkernel"></span><p>Kernel adapted from kernel.py to use ZMQ Streams</p>
+<p>Authors:</p>
+<ul class="simple">
+<li>Min RK</li>
+<li>Brian Granger</li>
+<li>Fernando Perez</li>
+<li>Evan Patterson</li>
+</ul>
+</div>
+<div class="section" id="kernel">
+<h2><a class="reference internal" href="#IPython.parallel.engine.streamkernel.Kernel" title="IPython.parallel.engine.streamkernel.Kernel"><tt class="xref py py-class docutils literal"><span class="pre">Kernel</span></tt></a><a class="headerlink" href="#kernel" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="IPython.parallel.engine.streamkernel.Kernel">
+<em class="property">class </em><tt class="descclassname">IPython.parallel.engine.streamkernel.</tt><tt class="descname">Kernel</tt><big>(</big><em>**kwargs</em><big>)</big><a class="headerlink" href="#IPython.parallel.engine.streamkernel.Kernel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">IPython.zmq.session.SessionFactory</span></tt></p>
+<dl class="method">
+<dt id="IPython.parallel.engine.streamkernel.Kernel.__init__">
+<tt class="descname">__init__</tt><big>(</big><em>**kwargs</em><big>)</big><a class="headerlink" href="#IPython.parallel.engine.streamkernel.Kernel.__init__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.engine.streamkernel.Kernel.abort_queue">
+<tt class="descname">abort_queue</tt><big>(</big><em>stream</em><big>)</big><a class="headerlink" href="#IPython.parallel.engine.streamkernel.Kernel.abort_queue" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.engine.streamkernel.Kernel.abort_queues">
+<tt class="descname">abort_queues</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.engine.streamkernel.Kernel.abort_queues" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.engine.streamkernel.Kernel.abort_request">
+<tt class="descname">abort_request</tt><big>(</big><em>stream</em>, <em>ident</em>, <em>parent</em><big>)</big><a class="headerlink" href="#IPython.parallel.engine.streamkernel.Kernel.abort_request" title="Permalink to this definition">¶</a></dt>
+<dd><p>abort a specifig msg by id</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.engine.streamkernel.Kernel.aborted">
+<tt class="descname">aborted</tt><a class="headerlink" href="#IPython.parallel.engine.streamkernel.Kernel.aborted" title="Permalink to this definition">¶</a></dt>
+<dd><p>An instance of a Python set.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.engine.streamkernel.Kernel.apply_request">
+<tt class="descname">apply_request</tt><big>(</big><em>stream</em>, <em>ident</em>, <em>parent</em><big>)</big><a class="headerlink" href="#IPython.parallel.engine.streamkernel.Kernel.apply_request" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.engine.streamkernel.Kernel.bident">
+<tt class="descname">bident</tt><a class="headerlink" href="#IPython.parallel.engine.streamkernel.Kernel.bident" title="Permalink to this definition">¶</a></dt>
+<dd><p>A casting version of the string trait.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.engine.streamkernel.Kernel.check_aborted">
+<tt class="descname">check_aborted</tt><big>(</big><em>msg_id</em><big>)</big><a class="headerlink" href="#IPython.parallel.engine.streamkernel.Kernel.check_aborted" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.engine.streamkernel.Kernel.check_dependencies">
+<tt class="descname">check_dependencies</tt><big>(</big><em>dependencies</em><big>)</big><a class="headerlink" href="#IPython.parallel.engine.streamkernel.Kernel.check_dependencies" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.parallel.engine.streamkernel.Kernel.class_config_section">
+<em class="property">classmethod </em><tt class="descname">class_config_section</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.engine.streamkernel.Kernel.class_config_section" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the config class config section</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.parallel.engine.streamkernel.Kernel.class_get_help">
+<em class="property">classmethod </em><tt class="descname">class_get_help</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.engine.streamkernel.Kernel.class_get_help" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the help string for this class in ReST format.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.parallel.engine.streamkernel.Kernel.class_get_trait_help">
+<em class="property">classmethod </em><tt class="descname">class_get_trait_help</tt><big>(</big><em>trait</em><big>)</big><a class="headerlink" href="#IPython.parallel.engine.streamkernel.Kernel.class_get_trait_help" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the help string for a single trait.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.parallel.engine.streamkernel.Kernel.class_print_help">
+<em class="property">classmethod </em><tt class="descname">class_print_help</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.engine.streamkernel.Kernel.class_print_help" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the help string for a single trait and print it.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.parallel.engine.streamkernel.Kernel.class_trait_names">
+<em class="property">classmethod </em><tt class="descname">class_trait_names</tt><big>(</big><em>**metadata</em><big>)</big><a class="headerlink" href="#IPython.parallel.engine.streamkernel.Kernel.class_trait_names" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of all the names of this classes traits.</p>
+<p>This method is just like the <a class="reference internal" href="#IPython.parallel.engine.streamkernel.Kernel.trait_names" title="IPython.parallel.engine.streamkernel.Kernel.trait_names"><tt class="xref py py-meth docutils literal"><span class="pre">trait_names()</span></tt></a> method, but is unbound.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.parallel.engine.streamkernel.Kernel.class_traits">
+<em class="property">classmethod </em><tt class="descname">class_traits</tt><big>(</big><em>**metadata</em><big>)</big><a class="headerlink" href="#IPython.parallel.engine.streamkernel.Kernel.class_traits" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of all the traits of this class.</p>
+<p>This method is just like the <a class="reference internal" href="#IPython.parallel.engine.streamkernel.Kernel.traits" title="IPython.parallel.engine.streamkernel.Kernel.traits"><tt class="xref py py-meth docutils literal"><span class="pre">traits()</span></tt></a> method, but is unbound.</p>
+<p>The TraitTypes returned don&#8217;t know anything about the values
+that the various HasTrait&#8217;s instances are holding.</p>
+<p>This follows the same algorithm as traits does and does not allow
+for any simple way of specifying merely that a metadata name
+exists, but has any value.  This is because get_metadata returns
+None if a metadata key doesn&#8217;t exist.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.engine.streamkernel.Kernel.clear_request">
+<tt class="descname">clear_request</tt><big>(</big><em>stream</em>, <em>idents</em>, <em>parent</em><big>)</big><a class="headerlink" href="#IPython.parallel.engine.streamkernel.Kernel.clear_request" title="Permalink to this definition">¶</a></dt>
+<dd><p>Clear our namespace.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.engine.streamkernel.Kernel.client">
+<tt class="descname">client</tt><a class="headerlink" href="#IPython.parallel.engine.streamkernel.Kernel.client" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait whose value must be an instance of a specified class.</p>
+<p>The value can also be an instance of a subclass of the specified class.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.engine.streamkernel.Kernel.compiler">
+<tt class="descname">compiler</tt><a class="headerlink" href="#IPython.parallel.engine.streamkernel.Kernel.compiler" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait whose value must be an instance of a specified class.</p>
+<p>The value can also be an instance of a subclass of the specified class.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.engine.streamkernel.Kernel.complete">
+<tt class="descname">complete</tt><big>(</big><em>msg</em><big>)</big><a class="headerlink" href="#IPython.parallel.engine.streamkernel.Kernel.complete" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.engine.streamkernel.Kernel.complete_request">
+<tt class="descname">complete_request</tt><big>(</big><em>stream</em>, <em>ident</em>, <em>parent</em><big>)</big><a class="headerlink" href="#IPython.parallel.engine.streamkernel.Kernel.complete_request" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.engine.streamkernel.Kernel.completer">
+<tt class="descname">completer</tt><a class="headerlink" href="#IPython.parallel.engine.streamkernel.Kernel.completer" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait whose value must be an instance of a specified class.</p>
+<p>The value can also be an instance of a subclass of the specified class.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.engine.streamkernel.Kernel.config">
+<tt class="descname">config</tt><a class="headerlink" href="#IPython.parallel.engine.streamkernel.Kernel.config" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait whose value must be an instance of a specified class.</p>
+<p>The value can also be an instance of a subclass of the specified class.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.engine.streamkernel.Kernel.context">
+<tt class="descname">context</tt><a class="headerlink" href="#IPython.parallel.engine.streamkernel.Kernel.context" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait whose value must be an instance of a specified class.</p>
+<p>The value can also be an instance of a subclass of the specified class.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.engine.streamkernel.Kernel.control_handlers">
+<tt class="descname">control_handlers</tt><a class="headerlink" href="#IPython.parallel.engine.streamkernel.Kernel.control_handlers" title="Permalink to this definition">¶</a></dt>
+<dd><p>An instance of a Python dict.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.engine.streamkernel.Kernel.control_stream">
+<tt class="descname">control_stream</tt><a class="headerlink" href="#IPython.parallel.engine.streamkernel.Kernel.control_stream" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait whose value must be an instance of a specified class.</p>
+<p>The value can also be an instance of a subclass of the specified class.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.engine.streamkernel.Kernel.created">
+<tt class="descname">created</tt><em class="property"> = None</em><a class="headerlink" href="#IPython.parallel.engine.streamkernel.Kernel.created" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.engine.streamkernel.Kernel.dispatch_control">
+<tt class="descname">dispatch_control</tt><big>(</big><em>msg</em><big>)</big><a class="headerlink" href="#IPython.parallel.engine.streamkernel.Kernel.dispatch_control" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.engine.streamkernel.Kernel.dispatch_queue">
+<tt class="descname">dispatch_queue</tt><big>(</big><em>stream</em>, <em>msg</em><big>)</big><a class="headerlink" href="#IPython.parallel.engine.streamkernel.Kernel.dispatch_queue" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.engine.streamkernel.Kernel.exec_lines">
+<tt class="descname">exec_lines</tt><a class="headerlink" href="#IPython.parallel.engine.streamkernel.Kernel.exec_lines" title="Permalink to this definition">¶</a></dt>
+<dd><p>An instance of a Python list.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.engine.streamkernel.Kernel.execute_request">
+<tt class="descname">execute_request</tt><big>(</big><em>stream</em>, <em>ident</em>, <em>parent</em><big>)</big><a class="headerlink" href="#IPython.parallel.engine.streamkernel.Kernel.execute_request" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.engine.streamkernel.Kernel.ident">
+<tt class="descname">ident</tt><a class="headerlink" href="#IPython.parallel.engine.streamkernel.Kernel.ident" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait for unicode strings.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.engine.streamkernel.Kernel.int_id">
+<tt class="descname">int_id</tt><a class="headerlink" href="#IPython.parallel.engine.streamkernel.Kernel.int_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>A integer trait.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.engine.streamkernel.Kernel.iopub_stream">
+<tt class="descname">iopub_stream</tt><a class="headerlink" href="#IPython.parallel.engine.streamkernel.Kernel.iopub_stream" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait whose value must be an instance of a specified class.</p>
+<p>The value can also be an instance of a subclass of the specified class.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.engine.streamkernel.Kernel.log">
+<tt class="descname">log</tt><a class="headerlink" href="#IPython.parallel.engine.streamkernel.Kernel.log" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait whose value must be an instance of a specified class.</p>
+<p>The value can also be an instance of a subclass of the specified class.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.engine.streamkernel.Kernel.logname">
+<tt class="descname">logname</tt><a class="headerlink" href="#IPython.parallel.engine.streamkernel.Kernel.logname" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait for unicode strings.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.engine.streamkernel.Kernel.loop">
+<tt class="descname">loop</tt><a class="headerlink" href="#IPython.parallel.engine.streamkernel.Kernel.loop" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait whose value must be an instance of a specified class.</p>
+<p>The value can also be an instance of a subclass of the specified class.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.engine.streamkernel.Kernel.on_trait_change">
+<tt class="descname">on_trait_change</tt><big>(</big><em>handler</em>, <em>name=None</em>, <em>remove=False</em><big>)</big><a class="headerlink" href="#IPython.parallel.engine.streamkernel.Kernel.on_trait_change" title="Permalink to this definition">¶</a></dt>
+<dd><p>Setup a handler to be called when a trait changes.</p>
+<p>This is used to setup dynamic notifications of trait changes.</p>
+<p>Static handlers can be created by creating methods on a HasTraits
+subclass with the naming convention &#8216;_[traitname]_changed&#8217;.  Thus,
+to create static handler for the trait &#8216;a&#8217;, create the method
+_a_changed(self, name, old, new) (fewer arguments can be used, see
+below).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>handler</strong> : callable</p>
+<blockquote>
+<div><p>A callable that is called when a trait changes.  Its 
+signature can be handler(), handler(name), handler(name, new)
+or handler(name, old, new).</p>
+</div></blockquote>
+<p><strong>name</strong> : list, str, None</p>
+<blockquote>
+<div><p>If None, the handler will apply to all traits.  If a list
+of str, handler will apply to all names in the list.  If a
+str, the handler will apply just to that name.</p>
+</div></blockquote>
+<p><strong>remove</strong> : bool</p>
+<blockquote class="last">
+<div><p>If False (the default), then install the handler.  If True
+then unintall it.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.engine.streamkernel.Kernel.session">
+<tt class="descname">session</tt><a class="headerlink" href="#IPython.parallel.engine.streamkernel.Kernel.session" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait whose value must be an instance of a specified class.</p>
+<p>The value can also be an instance of a subclass of the specified class.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.engine.streamkernel.Kernel.shell_handlers">
+<tt class="descname">shell_handlers</tt><a class="headerlink" href="#IPython.parallel.engine.streamkernel.Kernel.shell_handlers" title="Permalink to this definition">¶</a></dt>
+<dd><p>An instance of a Python dict.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.engine.streamkernel.Kernel.shell_streams">
+<tt class="descname">shell_streams</tt><a class="headerlink" href="#IPython.parallel.engine.streamkernel.Kernel.shell_streams" title="Permalink to this definition">¶</a></dt>
+<dd><p>An instance of a Python list.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.engine.streamkernel.Kernel.shutdown_request">
+<tt class="descname">shutdown_request</tt><big>(</big><em>stream</em>, <em>ident</em>, <em>parent</em><big>)</big><a class="headerlink" href="#IPython.parallel.engine.streamkernel.Kernel.shutdown_request" title="Permalink to this definition">¶</a></dt>
+<dd><p>kill ourself.  This should really be handled in an external process</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.engine.streamkernel.Kernel.start">
+<tt class="descname">start</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.engine.streamkernel.Kernel.start" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.engine.streamkernel.Kernel.task_stream">
+<tt class="descname">task_stream</tt><a class="headerlink" href="#IPython.parallel.engine.streamkernel.Kernel.task_stream" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait whose value must be an instance of a specified class.</p>
+<p>The value can also be an instance of a subclass of the specified class.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.engine.streamkernel.Kernel.trait_metadata">
+<tt class="descname">trait_metadata</tt><big>(</big><em>traitname</em>, <em>key</em><big>)</big><a class="headerlink" href="#IPython.parallel.engine.streamkernel.Kernel.trait_metadata" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get metadata values for trait by key.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.engine.streamkernel.Kernel.trait_names">
+<tt class="descname">trait_names</tt><big>(</big><em>**metadata</em><big>)</big><a class="headerlink" href="#IPython.parallel.engine.streamkernel.Kernel.trait_names" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of all the names of this classes traits.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.engine.streamkernel.Kernel.traits">
+<tt class="descname">traits</tt><big>(</big><em>**metadata</em><big>)</big><a class="headerlink" href="#IPython.parallel.engine.streamkernel.Kernel.traits" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of all the traits of this class.</p>
+<p>The TraitTypes returned don&#8217;t know anything about the values
+that the various HasTrait&#8217;s instances are holding.</p>
+<p>This follows the same algorithm as traits does and does not allow
+for any simple way of specifying merely that a metadata name
+exists, but has any value.  This is because get_metadata returns
+None if a metadata key doesn&#8217;t exist.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.engine.streamkernel.Kernel.user_ns">
+<tt class="descname">user_ns</tt><a class="headerlink" href="#IPython.parallel.engine.streamkernel.Kernel.user_ns" title="Permalink to this definition">¶</a></dt>
+<dd><p>An instance of a Python dict.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="IPython.parallel.engine.streamkernel.printer">
+<tt class="descclassname">IPython.parallel.engine.streamkernel.</tt><tt class="descname">printer</tt><big>(</big><em>*args</em><big>)</big><a class="headerlink" href="#IPython.parallel.engine.streamkernel.printer" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="IPython.parallel.error.html" title="parallel.error"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="IPython.parallel.engine.kernelstarter.html" title="parallel.engine.kernelstarter"
+             >previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <li><a href="../../search.html">search</a>|&nbsp;</li>
+       <li><a href="../../index.html">documentation </a> &raquo;</li>
+
+          <li><a href="../index.html" >The IPython API</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2008, The IPython Development Team.
+      Last updated on Jul 31, 2011.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1pre.
+    </div>
+  </body>
+</html>

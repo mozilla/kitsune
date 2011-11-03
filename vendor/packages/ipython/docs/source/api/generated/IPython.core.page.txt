@@ -1,0 +1,32 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+core.page
+=========
+
+Module: :mod:`core.page`
+------------------------
+.. automodule:: IPython.core.page
+
+.. currentmodule:: IPython.core.page
+
+Functions
+---------
+
+
+.. autofunction:: IPython.core.page.get_pager_cmd
+
+
+.. autofunction:: IPython.core.page.get_pager_start
+
+
+.. autofunction:: IPython.core.page.page
+
+
+.. autofunction:: IPython.core.page.page_dumb
+
+
+.. autofunction:: IPython.core.page.page_file
+
+
+.. autofunction:: IPython.core.page.snip_print
+

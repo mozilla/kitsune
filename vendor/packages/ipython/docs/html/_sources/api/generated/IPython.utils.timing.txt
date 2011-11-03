@@ -1,0 +1,23 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+utils.timing
+============
+
+Module: :mod:`utils.timing`
+---------------------------
+.. automodule:: IPython.utils.timing
+
+.. currentmodule:: IPython.utils.timing
+
+Functions
+---------
+
+
+.. autofunction:: IPython.utils.timing.timing
+
+
+.. autofunction:: IPython.utils.timing.timings
+
+
+.. autofunction:: IPython.utils.timing.timings_out
+

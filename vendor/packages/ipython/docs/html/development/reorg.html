@@ -1,0 +1,195 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>IPython module organization &mdash; IPython 0.11 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.11',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="IPython 0.11 documentation" href="../index.html" />
+    <link rel="up" title="IPython developer’s guide" href="index.html" />
+    <link rel="next" title="Messaging in IPython" href="messaging.html" />
+    <link rel="prev" title="Development roadmap" href="roadmap.html" /> 
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<a href="../index.html"><img src="../_static/logo.png" border="0" alt="IPython Documentation"/></a>
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="messaging.html" title="Messaging in IPython"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="roadmap.html" title="Development roadmap"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">home</a>|&nbsp;</li>
+        <li><a href="../search.html">search</a>|&nbsp;</li>
+       <li><a href="../index.html">documentation </a> &raquo;</li>
+
+          <li><a href="index.html" accesskey="U">IPython developer&#8217;s guide</a> &raquo;</li> 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">IPython module organization</a><ul>
+<li><a class="reference internal" href="#subpackage-descriptions">Subpackage descriptions</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="roadmap.html"
+                        title="previous chapter">Development roadmap</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="messaging.html"
+                        title="next chapter">Messaging in IPython</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/development/reorg.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="ipython-module-organization">
+<span id="module-reorg"></span><h1>IPython module organization<a class="headerlink" href="#ipython-module-organization" title="Permalink to this headline">¶</a></h1>
+<p>As of the 0.11 release of IPython, the top-level packages and modules have
+been completely reorganized.  This section describes the purpose of the
+top-level IPython subpackages.</p>
+<div class="section" id="subpackage-descriptions">
+<h2>Subpackage descriptions<a class="headerlink" href="#subpackage-descriptions" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><tt class="xref py py-mod docutils literal"><span class="pre">IPython.config</span></tt>.  This package contains the configuration system of
+IPython, as well as default configuration files for the different IPython
+applications.</li>
+<li><tt class="xref py py-mod docutils literal"><span class="pre">IPython.core</span></tt>. This sub-package contains the core of the IPython
+interpreter, but none of its extended capabilities.</li>
+<li><tt class="xref py py-mod docutils literal"><span class="pre">IPython.deathrow</span></tt>. This is for code that is outdated, untested,
+rotting, or that belongs in a separate third party project. Eventually all
+this code will either i) be revived by someone willing to maintain it with
+tests and docs and re-included into IPython or 2) be removed from IPython
+proper, but put into a separate third-party Python package. No new code will
+be allowed here. If your favorite extension has been moved here please
+contact the IPython developer mailing list to help us determine the best
+course of action.</li>
+<li><tt class="xref py py-mod docutils literal"><span class="pre">IPython.extensions</span></tt>.  This package contains fully supported IPython
+extensions.  These extensions adhere to the official IPython extension API
+and can be enabled by adding them to a field in the configuration file.
+If your extension is no longer in this location, please look in
+<tt class="xref py py-mod docutils literal"><span class="pre">IPython.quarantine</span></tt> and <tt class="xref py py-mod docutils literal"><span class="pre">IPython.deathrow</span></tt> and contact the
+IPython developer mailing list.</li>
+<li><tt class="xref py py-mod docutils literal"><span class="pre">IPython.external</span></tt>. This package contains third party packages and
+modules that IPython ships internally to reduce the number of dependencies.
+Usually, these are short, single file modules.</li>
+<li><tt class="xref py py-mod docutils literal"><span class="pre">IPython.frontend</span></tt>. This package contains the various IPython
+frontends. Currently, the code in this subpackage is very experimental and
+may be broken.</li>
+<li><tt class="xref py py-mod docutils literal"><span class="pre">IPython.gui</span></tt>.  Another semi-experimental wxPython based IPython GUI.</li>
+<li><tt class="xref py py-mod docutils literal"><span class="pre">IPython.kernel</span></tt>.  This contains IPython&#8217;s parallel computing system.</li>
+<li><tt class="xref py py-mod docutils literal"><span class="pre">IPython.lib</span></tt>. IPython has many extended capabilities that are not part
+of the IPython core. These things will go here and in.  Modules in this
+package are similar to extensions, but don&#8217;t adhere to the official
+IPython extension API.</li>
+<li><tt class="xref py py-mod docutils literal"><span class="pre">IPython.quarantine</span></tt>. This is for code that doesn&#8217;t meet IPython&#8217;s
+standards, but that we plan on keeping. To be moved out of this sub-package
+a module needs to have approval of the core IPython developers, tests and
+documentation. If your favorite extension has been moved here please contact
+the IPython developer mailing list to help us determine the best course of
+action.</li>
+<li><tt class="xref py py-mod docutils literal"><span class="pre">IPython.scripts</span></tt>.  This package contains a variety of top-level
+command line scripts.  Eventually, these should be moved to the
+<tt class="file docutils literal"><span class="pre">scripts</span></tt> subdirectory of the appropriate IPython subpackage.</li>
+<li><tt class="xref py py-mod docutils literal"><span class="pre">IPython.utils</span></tt>. This sub-package will contain anything that might
+eventually be found in the Python standard library, like things in
+<tt class="xref py py-mod docutils literal"><span class="pre">genutils</span></tt>. Each sub-module in this sub-package should contain
+functions and classes that serve a single purpose and that don&#8217;t
+depend on things in the rest of IPython.</li>
+</ul>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="messaging.html" title="Messaging in IPython"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="roadmap.html" title="Development roadmap"
+             >previous</a> |</li>
+        <li><a href="../index.html">home</a>|&nbsp;</li>
+        <li><a href="../search.html">search</a>|&nbsp;</li>
+       <li><a href="../index.html">documentation </a> &raquo;</li>
+
+          <li><a href="index.html" >IPython developer&#8217;s guide</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2008, The IPython Development Team.
+      Last updated on Jul 31, 2011.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1pre.
+    </div>
+  </body>
+</html>

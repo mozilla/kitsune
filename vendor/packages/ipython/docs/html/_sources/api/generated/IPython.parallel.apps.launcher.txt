@@ -1,0 +1,373 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+parallel.apps.launcher
+======================
+
+Module: :mod:`parallel.apps.launcher`
+-------------------------------------
+Inheritance diagram for ``IPython.parallel.apps.launcher``:
+
+.. inheritance-diagram:: IPython.parallel.apps.launcher 
+   :parts: 3
+
+.. automodule:: IPython.parallel.apps.launcher
+
+.. currentmodule:: IPython.parallel.apps.launcher
+
+Classes
+-------
+
+:class:`BaseLauncher`
+~~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: BaseLauncher
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`BatchSystemLauncher`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: BatchSystemLauncher
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`IPClusterLauncher`
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: IPClusterLauncher
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`LSFControllerLauncher`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: LSFControllerLauncher
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`LSFEngineSetLauncher`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: LSFEngineSetLauncher
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`LSFLauncher`
+~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: LSFLauncher
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`LauncherError`
+~~~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: LauncherError
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`LocalControllerLauncher`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: LocalControllerLauncher
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`LocalEngineLauncher`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: LocalEngineLauncher
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`LocalEngineSetLauncher`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: LocalEngineSetLauncher
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`LocalProcessLauncher`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: LocalProcessLauncher
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`MPIExecControllerLauncher`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: MPIExecControllerLauncher
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`MPIExecEngineSetLauncher`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: MPIExecEngineSetLauncher
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`MPIExecLauncher`
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: MPIExecLauncher
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`PBSControllerLauncher`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: PBSControllerLauncher
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`PBSEngineSetLauncher`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: PBSEngineSetLauncher
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`PBSLauncher`
+~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: PBSLauncher
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`ProcessStateError`
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: ProcessStateError
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`SGEControllerLauncher`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: SGEControllerLauncher
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`SGEEngineSetLauncher`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: SGEEngineSetLauncher
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`SGELauncher`
+~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: SGELauncher
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`SSHControllerLauncher`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: SSHControllerLauncher
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`SSHEngineLauncher`
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: SSHEngineLauncher
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`SSHEngineSetLauncher`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: SSHEngineSetLauncher
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`SSHLauncher`
+~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: SSHLauncher
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`UnknownStatus`
+~~~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: UnknownStatus
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`WindowsHPCControllerLauncher`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: WindowsHPCControllerLauncher
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`WindowsHPCEngineSetLauncher`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: WindowsHPCEngineSetLauncher
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`WindowsHPCLauncher`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: WindowsHPCLauncher
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+Function
+--------
+
+
+.. autofunction:: IPython.parallel.apps.launcher.find_job_cmd
+

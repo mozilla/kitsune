@@ -1,0 +1,614 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>utils.coloransi &mdash; IPython 0.11 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.11',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="IPython 0.11 documentation" href="../../index.html" />
+    <link rel="up" title="The IPython API" href="../index.html" />
+    <link rel="next" title="utils.daemonize" href="IPython.utils.daemonize.html" />
+    <link rel="prev" title="utils.codeutil" href="IPython.utils.codeutil.html" /> 
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<a href="../../index.html"><img src="../../_static/logo.png" border="0" alt="IPython Documentation"/></a>
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="IPython.utils.daemonize.html" title="utils.daemonize"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="IPython.utils.codeutil.html" title="utils.codeutil"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <li><a href="../../search.html">search</a>|&nbsp;</li>
+       <li><a href="../../index.html">documentation </a> &raquo;</li>
+
+          <li><a href="../index.html" accesskey="U">The IPython API</a> &raquo;</li> 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">utils.coloransi</a><ul>
+<li><a class="reference internal" href="#module-utils-coloransi">Module: <tt class="docutils literal"><span class="pre">utils.coloransi</span></tt></a></li>
+<li><a class="reference internal" href="#classes">Classes</a><ul>
+<li><a class="reference internal" href="#colorscheme"><tt class="docutils literal"><span class="pre">ColorScheme</span></tt></a></li>
+<li><a class="reference internal" href="#colorschemetable"><tt class="docutils literal"><span class="pre">ColorSchemeTable</span></tt></a></li>
+<li><a class="reference internal" href="#inputtermcolors"><tt class="docutils literal"><span class="pre">InputTermColors</span></tt></a></li>
+<li><a class="reference internal" href="#termcolors"><tt class="docutils literal"><span class="pre">TermColors</span></tt></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#function">Function</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="IPython.utils.codeutil.html"
+                        title="previous chapter">utils.codeutil</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="IPython.utils.daemonize.html"
+                        title="next chapter">utils.daemonize</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/api/generated/IPython.utils.coloransi.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="utils-coloransi">
+<h1>utils.coloransi<a class="headerlink" href="#utils-coloransi" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-utils-coloransi">
+<h2>Module: <tt class="xref py py-mod docutils literal"><span class="pre">utils.coloransi</span></tt><a class="headerlink" href="#module-utils-coloransi" title="Permalink to this headline">¶</a></h2>
+<p>Inheritance diagram for <tt class="docutils literal"><span class="pre">IPython.utils.coloransi</span></tt>:</p>
+<img src="../../_images/inheritancec0c34426c4.png" usemap="#inheritancec0c34426c4" class="inheritance"/><map id="inheritancec0c34426c4" name="inheritancec0c34426c4">
+</map>
+<span class="target" id="module-IPython.utils.coloransi"></span><p>Tools for coloring text in ANSI terminals.</p>
+</div>
+<div class="section" id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="colorscheme">
+<h3><a class="reference internal" href="#IPython.utils.coloransi.ColorScheme" title="IPython.utils.coloransi.ColorScheme"><tt class="xref py py-class docutils literal"><span class="pre">ColorScheme</span></tt></a><a class="headerlink" href="#colorscheme" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="IPython.utils.coloransi.ColorScheme">
+<em class="property">class </em><tt class="descclassname">IPython.utils.coloransi.</tt><tt class="descname">ColorScheme</tt><big>(</big><em>_ColorScheme__scheme_name_</em>, <em>colordict=None</em>, <em>**colormap</em><big>)</big><a class="headerlink" href="#IPython.utils.coloransi.ColorScheme" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generic color scheme class. Just a name and a Struct.</p>
+<dl class="method">
+<dt id="IPython.utils.coloransi.ColorScheme.__init__">
+<tt class="descname">__init__</tt><big>(</big><em>_ColorScheme__scheme_name_</em>, <em>colordict=None</em>, <em>**colormap</em><big>)</big><a class="headerlink" href="#IPython.utils.coloransi.ColorScheme.__init__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IPython.utils.coloransi.ColorScheme.copy">
+<tt class="descname">copy</tt><big>(</big><em>name=None</em><big>)</big><a class="headerlink" href="#IPython.utils.coloransi.ColorScheme.copy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a full copy of the object, optionally renaming it.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="colorschemetable">
+<h3><a class="reference internal" href="#IPython.utils.coloransi.ColorSchemeTable" title="IPython.utils.coloransi.ColorSchemeTable"><tt class="xref py py-class docutils literal"><span class="pre">ColorSchemeTable</span></tt></a><a class="headerlink" href="#colorschemetable" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="IPython.utils.coloransi.ColorSchemeTable">
+<em class="property">class </em><tt class="descclassname">IPython.utils.coloransi.</tt><tt class="descname">ColorSchemeTable</tt><big>(</big><em>scheme_list=None</em>, <em>default_scheme=''</em><big>)</big><a class="headerlink" href="#IPython.utils.coloransi.ColorSchemeTable" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">dict</span></tt></p>
+<p>General class to handle tables of color schemes.</p>
+<p>It&#8217;s basically a dict of color schemes with a couple of shorthand
+attributes and some convenient methods.</p>
+<p>active_scheme_name -&gt; obvious
+active_colors -&gt; actual color table of the active scheme</p>
+<dl class="method">
+<dt id="IPython.utils.coloransi.ColorSchemeTable.__init__">
+<tt class="descname">__init__</tt><big>(</big><em>scheme_list=None</em>, <em>default_scheme=''</em><big>)</big><a class="headerlink" href="#IPython.utils.coloransi.ColorSchemeTable.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a table of color schemes.</p>
+<p>The table can be created empty and manually filled or it can be
+created with a list of valid color schemes AND the specification for
+the default active scheme.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.utils.coloransi.ColorSchemeTable.add_scheme">
+<tt class="descname">add_scheme</tt><big>(</big><em>new_scheme</em><big>)</big><a class="headerlink" href="#IPython.utils.coloransi.ColorSchemeTable.add_scheme" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a new color scheme to the table.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.utils.coloransi.ColorSchemeTable.clear">
+<tt class="descname">clear</tt><a class="headerlink" href="#IPython.utils.coloransi.ColorSchemeTable.clear" title="Permalink to this definition">¶</a></dt>
+<dd><p>D.clear() -&gt; None.  Remove all items from D.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.utils.coloransi.ColorSchemeTable.copy">
+<tt class="descname">copy</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.utils.coloransi.ColorSchemeTable.copy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return full copy of object</p>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="IPython.utils.coloransi.ColorSchemeTable.fromkeys">
+<em class="property">static </em><tt class="descname">fromkeys</tt><big>(</big><em>S</em><span class="optional">[</span>, <em>v</em><span class="optional">]</span><big>)</big> &rarr; New dict with keys from S and values equal to v.<a class="headerlink" href="#IPython.utils.coloransi.ColorSchemeTable.fromkeys" title="Permalink to this definition">¶</a></dt>
+<dd><p>v defaults to None.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.utils.coloransi.ColorSchemeTable.get">
+<tt class="descname">get</tt><a class="headerlink" href="#IPython.utils.coloransi.ColorSchemeTable.get" title="Permalink to this definition">¶</a></dt>
+<dd><p>D.get(k[,d]) -&gt; D[k] if k in D, else d.  d defaults to None.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.utils.coloransi.ColorSchemeTable.has_key">
+<tt class="descname">has_key</tt><a class="headerlink" href="#IPython.utils.coloransi.ColorSchemeTable.has_key" title="Permalink to this definition">¶</a></dt>
+<dd><p>D.has_key(k) -&gt; True if D has a key k, else False</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.utils.coloransi.ColorSchemeTable.items">
+<tt class="descname">items</tt><a class="headerlink" href="#IPython.utils.coloransi.ColorSchemeTable.items" title="Permalink to this definition">¶</a></dt>
+<dd><p>D.items() -&gt; list of D&#8217;s (key, value) pairs, as 2-tuples</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.utils.coloransi.ColorSchemeTable.iteritems">
+<tt class="descname">iteritems</tt><a class="headerlink" href="#IPython.utils.coloransi.ColorSchemeTable.iteritems" title="Permalink to this definition">¶</a></dt>
+<dd><p>D.iteritems() -&gt; an iterator over the (key, value) items of D</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.utils.coloransi.ColorSchemeTable.iterkeys">
+<tt class="descname">iterkeys</tt><a class="headerlink" href="#IPython.utils.coloransi.ColorSchemeTable.iterkeys" title="Permalink to this definition">¶</a></dt>
+<dd><p>D.iterkeys() -&gt; an iterator over the keys of D</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.utils.coloransi.ColorSchemeTable.itervalues">
+<tt class="descname">itervalues</tt><a class="headerlink" href="#IPython.utils.coloransi.ColorSchemeTable.itervalues" title="Permalink to this definition">¶</a></dt>
+<dd><p>D.itervalues() -&gt; an iterator over the values of D</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.utils.coloransi.ColorSchemeTable.keys">
+<tt class="descname">keys</tt><a class="headerlink" href="#IPython.utils.coloransi.ColorSchemeTable.keys" title="Permalink to this definition">¶</a></dt>
+<dd><p>D.keys() -&gt; list of D&#8217;s keys</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.utils.coloransi.ColorSchemeTable.pop">
+<tt class="descname">pop</tt><a class="headerlink" href="#IPython.utils.coloransi.ColorSchemeTable.pop" title="Permalink to this definition">¶</a></dt>
+<dd><p>D.pop(k[,d]) -&gt; v, remove specified key and return the corresponding value.
+If key is not found, d is returned if given, otherwise KeyError is raised</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.utils.coloransi.ColorSchemeTable.popitem">
+<tt class="descname">popitem</tt><a class="headerlink" href="#IPython.utils.coloransi.ColorSchemeTable.popitem" title="Permalink to this definition">¶</a></dt>
+<dd><p>D.popitem() -&gt; (k, v), remove and return some (key, value) pair as a
+2-tuple; but raise KeyError if D is empty.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.utils.coloransi.ColorSchemeTable.set_active_scheme">
+<tt class="descname">set_active_scheme</tt><big>(</big><em>scheme</em>, <em>case_sensitive=0</em><big>)</big><a class="headerlink" href="#IPython.utils.coloransi.ColorSchemeTable.set_active_scheme" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the currently active scheme.</p>
+<p>Names are by default compared in a case-insensitive way, but this can
+be changed by setting the parameter case_sensitive to true.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.utils.coloransi.ColorSchemeTable.setdefault">
+<tt class="descname">setdefault</tt><a class="headerlink" href="#IPython.utils.coloransi.ColorSchemeTable.setdefault" title="Permalink to this definition">¶</a></dt>
+<dd><p>D.setdefault(k[,d]) -&gt; D.get(k,d), also set D[k]=d if k not in D</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.utils.coloransi.ColorSchemeTable.update">
+<tt class="descname">update</tt><a class="headerlink" href="#IPython.utils.coloransi.ColorSchemeTable.update" title="Permalink to this definition">¶</a></dt>
+<dd><p>D.update(E, <a href="#id1"><span class="problematic" id="id2">**</span></a>F) -&gt; None.  Update D from dict/iterable E and F.
+If E has a .keys() method, does:     for k in E: D[k] = E[k]
+If E lacks .keys() method, does:     for (k, v) in E: D[k] = v
+In either case, this is followed by: for k in F: D[k] = F[k]</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.utils.coloransi.ColorSchemeTable.values">
+<tt class="descname">values</tt><a class="headerlink" href="#IPython.utils.coloransi.ColorSchemeTable.values" title="Permalink to this definition">¶</a></dt>
+<dd><p>D.values() -&gt; list of D&#8217;s values</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="inputtermcolors">
+<h3><a class="reference internal" href="#IPython.utils.coloransi.InputTermColors" title="IPython.utils.coloransi.InputTermColors"><tt class="xref py py-class docutils literal"><span class="pre">InputTermColors</span></tt></a><a class="headerlink" href="#inputtermcolors" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="IPython.utils.coloransi.InputTermColors">
+<em class="property">class </em><tt class="descclassname">IPython.utils.coloransi.</tt><tt class="descname">InputTermColors</tt><a class="headerlink" href="#IPython.utils.coloransi.InputTermColors" title="Permalink to this definition">¶</a></dt>
+<dd><p>Color escape sequences for input prompts.</p>
+<p>This class is similar to TermColors, but the escapes are wrapped in 
+and  so that readline can properly know the length of each line and
+can wrap lines accordingly.  Use this class for any colored text which
+needs to be used in input prompts, such as in calls to raw_input().</p>
+<p>This class defines the escape sequences for all the standard (ANSI?) 
+colors in terminals. Also defines a NoColor escape which is just the null
+string, suitable for defining &#8216;dummy&#8217; color schemes in terminals which get
+confused by color escapes.</p>
+<p>This class should be used as a mixin for building color schemes.</p>
+<dl class="attribute">
+<dt id="IPython.utils.coloransi.InputTermColors.Black">
+<tt class="descname">Black</tt><em class="property"> = '\x01\x1b[0;30m\x02'</em><a class="headerlink" href="#IPython.utils.coloransi.InputTermColors.Black" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.utils.coloransi.InputTermColors.BlinkBlack">
+<tt class="descname">BlinkBlack</tt><em class="property"> = '\x01\x1b[5;30m\x02'</em><a class="headerlink" href="#IPython.utils.coloransi.InputTermColors.BlinkBlack" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.utils.coloransi.InputTermColors.BlinkBlue">
+<tt class="descname">BlinkBlue</tt><em class="property"> = '\x01\x1b[5;34m\x02'</em><a class="headerlink" href="#IPython.utils.coloransi.InputTermColors.BlinkBlue" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.utils.coloransi.InputTermColors.BlinkCyan">
+<tt class="descname">BlinkCyan</tt><em class="property"> = '\x01\x1b[5;36m\x02'</em><a class="headerlink" href="#IPython.utils.coloransi.InputTermColors.BlinkCyan" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.utils.coloransi.InputTermColors.BlinkGreen">
+<tt class="descname">BlinkGreen</tt><em class="property"> = '\x01\x1b[5;32m\x02'</em><a class="headerlink" href="#IPython.utils.coloransi.InputTermColors.BlinkGreen" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.utils.coloransi.InputTermColors.BlinkLightGray">
+<tt class="descname">BlinkLightGray</tt><em class="property"> = '\x01\x1b[5;37m\x02'</em><a class="headerlink" href="#IPython.utils.coloransi.InputTermColors.BlinkLightGray" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.utils.coloransi.InputTermColors.BlinkPurple">
+<tt class="descname">BlinkPurple</tt><em class="property"> = '\x01\x1b[5;35m\x02'</em><a class="headerlink" href="#IPython.utils.coloransi.InputTermColors.BlinkPurple" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.utils.coloransi.InputTermColors.BlinkRed">
+<tt class="descname">BlinkRed</tt><em class="property"> = '\x01\x1b[5;31m\x02'</em><a class="headerlink" href="#IPython.utils.coloransi.InputTermColors.BlinkRed" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.utils.coloransi.InputTermColors.BlinkYellow">
+<tt class="descname">BlinkYellow</tt><em class="property"> = '\x01\x1b[5;33m\x02'</em><a class="headerlink" href="#IPython.utils.coloransi.InputTermColors.BlinkYellow" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.utils.coloransi.InputTermColors.Blue">
+<tt class="descname">Blue</tt><em class="property"> = '\x01\x1b[0;34m\x02'</em><a class="headerlink" href="#IPython.utils.coloransi.InputTermColors.Blue" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.utils.coloransi.InputTermColors.Brown">
+<tt class="descname">Brown</tt><em class="property"> = '\x01\x1b[0;33m\x02'</em><a class="headerlink" href="#IPython.utils.coloransi.InputTermColors.Brown" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.utils.coloransi.InputTermColors.Cyan">
+<tt class="descname">Cyan</tt><em class="property"> = '\x01\x1b[0;36m\x02'</em><a class="headerlink" href="#IPython.utils.coloransi.InputTermColors.Cyan" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.utils.coloransi.InputTermColors.DarkGray">
+<tt class="descname">DarkGray</tt><em class="property"> = '\x01\x1b[1;30m\x02'</em><a class="headerlink" href="#IPython.utils.coloransi.InputTermColors.DarkGray" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.utils.coloransi.InputTermColors.Green">
+<tt class="descname">Green</tt><em class="property"> = '\x01\x1b[0;32m\x02'</em><a class="headerlink" href="#IPython.utils.coloransi.InputTermColors.Green" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.utils.coloransi.InputTermColors.LightBlue">
+<tt class="descname">LightBlue</tt><em class="property"> = '\x01\x1b[1;34m\x02'</em><a class="headerlink" href="#IPython.utils.coloransi.InputTermColors.LightBlue" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.utils.coloransi.InputTermColors.LightCyan">
+<tt class="descname">LightCyan</tt><em class="property"> = '\x01\x1b[1;36m\x02'</em><a class="headerlink" href="#IPython.utils.coloransi.InputTermColors.LightCyan" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.utils.coloransi.InputTermColors.LightGray">
+<tt class="descname">LightGray</tt><em class="property"> = '\x01\x1b[0;37m\x02'</em><a class="headerlink" href="#IPython.utils.coloransi.InputTermColors.LightGray" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.utils.coloransi.InputTermColors.LightGreen">
+<tt class="descname">LightGreen</tt><em class="property"> = '\x01\x1b[1;32m\x02'</em><a class="headerlink" href="#IPython.utils.coloransi.InputTermColors.LightGreen" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.utils.coloransi.InputTermColors.LightPurple">
+<tt class="descname">LightPurple</tt><em class="property"> = '\x01\x1b[1;35m\x02'</em><a class="headerlink" href="#IPython.utils.coloransi.InputTermColors.LightPurple" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.utils.coloransi.InputTermColors.LightRed">
+<tt class="descname">LightRed</tt><em class="property"> = '\x01\x1b[1;31m\x02'</em><a class="headerlink" href="#IPython.utils.coloransi.InputTermColors.LightRed" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.utils.coloransi.InputTermColors.NoColor">
+<tt class="descname">NoColor</tt><em class="property"> = ''</em><a class="headerlink" href="#IPython.utils.coloransi.InputTermColors.NoColor" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.utils.coloransi.InputTermColors.Normal">
+<tt class="descname">Normal</tt><em class="property"> = '\x01\x1b[0m\x02'</em><a class="headerlink" href="#IPython.utils.coloransi.InputTermColors.Normal" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.utils.coloransi.InputTermColors.Purple">
+<tt class="descname">Purple</tt><em class="property"> = '\x01\x1b[0;35m\x02'</em><a class="headerlink" href="#IPython.utils.coloransi.InputTermColors.Purple" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.utils.coloransi.InputTermColors.Red">
+<tt class="descname">Red</tt><em class="property"> = '\x01\x1b[0;31m\x02'</em><a class="headerlink" href="#IPython.utils.coloransi.InputTermColors.Red" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.utils.coloransi.InputTermColors.White">
+<tt class="descname">White</tt><em class="property"> = '\x01\x1b[1;37m\x02'</em><a class="headerlink" href="#IPython.utils.coloransi.InputTermColors.White" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.utils.coloransi.InputTermColors.Yellow">
+<tt class="descname">Yellow</tt><em class="property"> = '\x01\x1b[1;33m\x02'</em><a class="headerlink" href="#IPython.utils.coloransi.InputTermColors.Yellow" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="termcolors">
+<h3><a class="reference internal" href="#IPython.utils.coloransi.TermColors" title="IPython.utils.coloransi.TermColors"><tt class="xref py py-class docutils literal"><span class="pre">TermColors</span></tt></a><a class="headerlink" href="#termcolors" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="IPython.utils.coloransi.TermColors">
+<em class="property">class </em><tt class="descclassname">IPython.utils.coloransi.</tt><tt class="descname">TermColors</tt><a class="headerlink" href="#IPython.utils.coloransi.TermColors" title="Permalink to this definition">¶</a></dt>
+<dd><p>Color escape sequences.</p>
+<p>This class defines the escape sequences for all the standard (ANSI?) 
+colors in terminals. Also defines a NoColor escape which is just the null
+string, suitable for defining &#8216;dummy&#8217; color schemes in terminals which get
+confused by color escapes.</p>
+<p>This class should be used as a mixin for building color schemes.</p>
+<dl class="attribute">
+<dt id="IPython.utils.coloransi.TermColors.Black">
+<tt class="descname">Black</tt><em class="property"> = '\x1b[0;30m'</em><a class="headerlink" href="#IPython.utils.coloransi.TermColors.Black" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.utils.coloransi.TermColors.BlinkBlack">
+<tt class="descname">BlinkBlack</tt><em class="property"> = '\x1b[5;30m'</em><a class="headerlink" href="#IPython.utils.coloransi.TermColors.BlinkBlack" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.utils.coloransi.TermColors.BlinkBlue">
+<tt class="descname">BlinkBlue</tt><em class="property"> = '\x1b[5;34m'</em><a class="headerlink" href="#IPython.utils.coloransi.TermColors.BlinkBlue" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.utils.coloransi.TermColors.BlinkCyan">
+<tt class="descname">BlinkCyan</tt><em class="property"> = '\x1b[5;36m'</em><a class="headerlink" href="#IPython.utils.coloransi.TermColors.BlinkCyan" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.utils.coloransi.TermColors.BlinkGreen">
+<tt class="descname">BlinkGreen</tt><em class="property"> = '\x1b[5;32m'</em><a class="headerlink" href="#IPython.utils.coloransi.TermColors.BlinkGreen" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.utils.coloransi.TermColors.BlinkLightGray">
+<tt class="descname">BlinkLightGray</tt><em class="property"> = '\x1b[5;37m'</em><a class="headerlink" href="#IPython.utils.coloransi.TermColors.BlinkLightGray" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.utils.coloransi.TermColors.BlinkPurple">
+<tt class="descname">BlinkPurple</tt><em class="property"> = '\x1b[5;35m'</em><a class="headerlink" href="#IPython.utils.coloransi.TermColors.BlinkPurple" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.utils.coloransi.TermColors.BlinkRed">
+<tt class="descname">BlinkRed</tt><em class="property"> = '\x1b[5;31m'</em><a class="headerlink" href="#IPython.utils.coloransi.TermColors.BlinkRed" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.utils.coloransi.TermColors.BlinkYellow">
+<tt class="descname">BlinkYellow</tt><em class="property"> = '\x1b[5;33m'</em><a class="headerlink" href="#IPython.utils.coloransi.TermColors.BlinkYellow" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.utils.coloransi.TermColors.Blue">
+<tt class="descname">Blue</tt><em class="property"> = '\x1b[0;34m'</em><a class="headerlink" href="#IPython.utils.coloransi.TermColors.Blue" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.utils.coloransi.TermColors.Brown">
+<tt class="descname">Brown</tt><em class="property"> = '\x1b[0;33m'</em><a class="headerlink" href="#IPython.utils.coloransi.TermColors.Brown" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.utils.coloransi.TermColors.Cyan">
+<tt class="descname">Cyan</tt><em class="property"> = '\x1b[0;36m'</em><a class="headerlink" href="#IPython.utils.coloransi.TermColors.Cyan" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.utils.coloransi.TermColors.DarkGray">
+<tt class="descname">DarkGray</tt><em class="property"> = '\x1b[1;30m'</em><a class="headerlink" href="#IPython.utils.coloransi.TermColors.DarkGray" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.utils.coloransi.TermColors.Green">
+<tt class="descname">Green</tt><em class="property"> = '\x1b[0;32m'</em><a class="headerlink" href="#IPython.utils.coloransi.TermColors.Green" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.utils.coloransi.TermColors.LightBlue">
+<tt class="descname">LightBlue</tt><em class="property"> = '\x1b[1;34m'</em><a class="headerlink" href="#IPython.utils.coloransi.TermColors.LightBlue" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.utils.coloransi.TermColors.LightCyan">
+<tt class="descname">LightCyan</tt><em class="property"> = '\x1b[1;36m'</em><a class="headerlink" href="#IPython.utils.coloransi.TermColors.LightCyan" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.utils.coloransi.TermColors.LightGray">
+<tt class="descname">LightGray</tt><em class="property"> = '\x1b[0;37m'</em><a class="headerlink" href="#IPython.utils.coloransi.TermColors.LightGray" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.utils.coloransi.TermColors.LightGreen">
+<tt class="descname">LightGreen</tt><em class="property"> = '\x1b[1;32m'</em><a class="headerlink" href="#IPython.utils.coloransi.TermColors.LightGreen" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.utils.coloransi.TermColors.LightPurple">
+<tt class="descname">LightPurple</tt><em class="property"> = '\x1b[1;35m'</em><a class="headerlink" href="#IPython.utils.coloransi.TermColors.LightPurple" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.utils.coloransi.TermColors.LightRed">
+<tt class="descname">LightRed</tt><em class="property"> = '\x1b[1;31m'</em><a class="headerlink" href="#IPython.utils.coloransi.TermColors.LightRed" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.utils.coloransi.TermColors.NoColor">
+<tt class="descname">NoColor</tt><em class="property"> = ''</em><a class="headerlink" href="#IPython.utils.coloransi.TermColors.NoColor" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.utils.coloransi.TermColors.Normal">
+<tt class="descname">Normal</tt><em class="property"> = '\x1b[0m'</em><a class="headerlink" href="#IPython.utils.coloransi.TermColors.Normal" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.utils.coloransi.TermColors.Purple">
+<tt class="descname">Purple</tt><em class="property"> = '\x1b[0;35m'</em><a class="headerlink" href="#IPython.utils.coloransi.TermColors.Purple" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.utils.coloransi.TermColors.Red">
+<tt class="descname">Red</tt><em class="property"> = '\x1b[0;31m'</em><a class="headerlink" href="#IPython.utils.coloransi.TermColors.Red" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.utils.coloransi.TermColors.White">
+<tt class="descname">White</tt><em class="property"> = '\x1b[1;37m'</em><a class="headerlink" href="#IPython.utils.coloransi.TermColors.White" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.utils.coloransi.TermColors.Yellow">
+<tt class="descname">Yellow</tt><em class="property"> = '\x1b[1;33m'</em><a class="headerlink" href="#IPython.utils.coloransi.TermColors.Yellow" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="function">
+<h2>Function<a class="headerlink" href="#function" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="IPython.utils.coloransi.make_color_table">
+<tt class="descclassname">IPython.utils.coloransi.</tt><tt class="descname">make_color_table</tt><big>(</big><em>in_class</em><big>)</big><a class="headerlink" href="#IPython.utils.coloransi.make_color_table" title="Permalink to this definition">¶</a></dt>
+<dd><p>Build a set of color attributes in a class.</p>
+<p>Helper function for building the <a href="#id3"><span class="problematic" id="id4">*</span></a>TermColors classes.</p>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="IPython.utils.daemonize.html" title="utils.daemonize"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="IPython.utils.codeutil.html" title="utils.codeutil"
+             >previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <li><a href="../../search.html">search</a>|&nbsp;</li>
+       <li><a href="../../index.html">documentation </a> &raquo;</li>
+
+          <li><a href="../index.html" >The IPython API</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2008, The IPython Development Team.
+      Last updated on Jul 31, 2011.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1pre.
+    </div>
+  </body>
+</html>

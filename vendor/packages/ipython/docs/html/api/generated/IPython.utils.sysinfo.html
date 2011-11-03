@@ -1,0 +1,232 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>utils.sysinfo &mdash; IPython 0.11 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.11',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="IPython 0.11 documentation" href="../../index.html" />
+    <link rel="up" title="The IPython API" href="../index.html" />
+    <link rel="next" title="utils.syspathcontext" href="IPython.utils.syspathcontext.html" />
+    <link rel="prev" title="utils.strdispatch" href="IPython.utils.strdispatch.html" /> 
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<a href="../../index.html"><img src="../../_static/logo.png" border="0" alt="IPython Documentation"/></a>
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="IPython.utils.syspathcontext.html" title="utils.syspathcontext"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="IPython.utils.strdispatch.html" title="utils.strdispatch"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <li><a href="../../search.html">search</a>|&nbsp;</li>
+       <li><a href="../../index.html">documentation </a> &raquo;</li>
+
+          <li><a href="../index.html" accesskey="U">The IPython API</a> &raquo;</li> 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">utils.sysinfo</a><ul>
+<li><a class="reference internal" href="#module-IPython.utils.sysinfo">Module: <tt class="docutils literal"><span class="pre">utils.sysinfo</span></tt></a></li>
+<li><a class="reference internal" href="#functions">Functions</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="IPython.utils.strdispatch.html"
+                        title="previous chapter">utils.strdispatch</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="IPython.utils.syspathcontext.html"
+                        title="next chapter">utils.syspathcontext</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/api/generated/IPython.utils.sysinfo.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="utils-sysinfo">
+<h1>utils.sysinfo<a class="headerlink" href="#utils-sysinfo" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-IPython.utils.sysinfo">
+<span id="module-utils-sysinfo"></span><h2>Module: <tt class="xref py py-mod docutils literal"><span class="pre">utils.sysinfo</span></tt><a class="headerlink" href="#module-IPython.utils.sysinfo" title="Permalink to this headline">¶</a></h2>
+<p>Utilities for getting information about IPython and the system it&#8217;s running in.</p>
+</div>
+<div class="section" id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="IPython.utils.sysinfo.num_cpus">
+<tt class="descclassname">IPython.utils.sysinfo.</tt><tt class="descname">num_cpus</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.utils.sysinfo.num_cpus" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the effective number of CPUs in the system as an integer.</p>
+<p>This cross-platform function makes an attempt at finding the total number of
+available CPUs in the system, as returned by various underlying system and
+python calls.</p>
+<p>If it can&#8217;t find a sensible answer, it returns 1 (though an error <em>may</em> make
+it return a large positive number that&#8217;s actually incorrect).</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="IPython.utils.sysinfo.pkg_commit_hash">
+<tt class="descclassname">IPython.utils.sysinfo.</tt><tt class="descname">pkg_commit_hash</tt><big>(</big><em>pkg_path</em><big>)</big><a class="headerlink" href="#IPython.utils.sysinfo.pkg_commit_hash" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get short form of commit hash given directory <cite>pkg_path</cite></p>
+<p>There should be a file called &#8216;COMMIT_INFO.txt&#8217; in <cite>pkg_path</cite>.  This is a
+file in INI file format, with at least one section: <tt class="docutils literal"><span class="pre">commit</span> <span class="pre">hash</span></tt>, and two
+variables <tt class="docutils literal"><span class="pre">archive_subst_hash</span></tt> and <tt class="docutils literal"><span class="pre">install_hash</span></tt>.  The first has a
+substitution pattern in it which may have been filled by the execution of
+<tt class="docutils literal"><span class="pre">git</span> <span class="pre">archive</span></tt> if this is an archive generated that way.  The second is
+filled in by the installation, if the installation is from a git archive.</p>
+<p>We get the commit hash from (in order of preference):</p>
+<ul class="simple">
+<li>A substituted value in <tt class="docutils literal"><span class="pre">archive_subst_hash</span></tt></li>
+<li>A written commit hash value in <a href="#id1"><span class="problematic" id="id2">``</span></a>install_hash`</li>
+<li>git output, if we are in a git repository</li>
+</ul>
+<p>If all these fail, we return a not-found placeholder tuple</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>pkg_path</strong> : str</p>
+<blockquote>
+<div><p>directory containing package</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns :</th><td class="field-body"><p class="first"><strong>hash_from</strong> : str</p>
+<blockquote>
+<div><p>Where we got the hash from - description</p>
+</div></blockquote>
+<p><strong>hash_str</strong> : str</p>
+<blockquote class="last">
+<div><p>short form of hash</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="IPython.utils.sysinfo.pkg_info">
+<tt class="descclassname">IPython.utils.sysinfo.</tt><tt class="descname">pkg_info</tt><big>(</big><em>pkg_path</em><big>)</big><a class="headerlink" href="#IPython.utils.sysinfo.pkg_info" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return dict describing the context of this package</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>pkg_path</strong> : str</p>
+<blockquote>
+<div><p>path containing __init__.py for package</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns :</th><td class="field-body"><p class="first"><strong>context</strong> : dict</p>
+<blockquote class="last">
+<div><p>with named parameters of interest</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="IPython.utils.sysinfo.sys_info">
+<tt class="descclassname">IPython.utils.sysinfo.</tt><tt class="descname">sys_info</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.utils.sysinfo.sys_info" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return useful information about IPython and the system, as a string.</p>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="IPython.utils.syspathcontext.html" title="utils.syspathcontext"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="IPython.utils.strdispatch.html" title="utils.strdispatch"
+             >previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <li><a href="../../search.html">search</a>|&nbsp;</li>
+       <li><a href="../../index.html">documentation </a> &raquo;</li>
+
+          <li><a href="../index.html" >The IPython API</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2008, The IPython Development Team.
+      Last updated on Jul 31, 2011.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1pre.
+    </div>
+  </body>
+</html>

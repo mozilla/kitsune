@@ -1,0 +1,112 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+utils.newserialized
+===================
+
+Module: :mod:`utils.newserialized`
+----------------------------------
+Inheritance diagram for ``IPython.utils.newserialized``:
+
+.. inheritance-diagram:: IPython.utils.newserialized 
+   :parts: 3
+
+.. automodule:: IPython.utils.newserialized
+
+.. currentmodule:: IPython.utils.newserialized
+
+Classes
+-------
+
+:class:`ISerialized`
+~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: ISerialized
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`IUnSerialized`
+~~~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: IUnSerialized
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`SerializationError`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: SerializationError
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`SerializeIt`
+~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: SerializeIt
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`Serialized`
+~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: Serialized
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`UnSerializeIt`
+~~~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: UnSerializeIt
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`UnSerialized`
+~~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: UnSerialized
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+Functions
+---------
+
+
+.. autofunction:: IPython.utils.newserialized.serialize
+
+
+.. autofunction:: IPython.utils.newserialized.unserialize
+

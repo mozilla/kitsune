@@ -1,0 +1,29 @@
+include ipython.py
+include setupbase.py
+include setupegg.py
+
+graft setupext
+
+graft scripts
+
+graft IPython
+prune IPython/deathrow
+
+include IPython/.git_commit_info.ini
+
+graft docs
+exclude docs/\#*
+exclude docs/man/*.1
+
+# docs subdirs we want to skip
+prune docs/attic
+prune docs/build
+prune docs/gh-pages
+
+global-exclude *~
+global-exclude *.flc
+global-exclude *.pyc
+global-exclude .dircopy.log
+global-exclude .svn
+global-exclude .bzr
+global-exclude .hgignore

@@ -1,0 +1,20 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+utils.dir2
+==========
+
+Module: :mod:`utils.dir2`
+-------------------------
+.. automodule:: IPython.utils.dir2
+
+.. currentmodule:: IPython.utils.dir2
+
+Functions
+---------
+
+
+.. autofunction:: IPython.utils.dir2.dir2
+
+
+.. autofunction:: IPython.utils.dir2.get_class_members
+

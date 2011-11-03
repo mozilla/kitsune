@@ -1,0 +1,121 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+lib.demo
+========
+
+Module: :mod:`lib.demo`
+-----------------------
+Inheritance diagram for ``IPython.lib.demo``:
+
+.. inheritance-diagram:: IPython.lib.demo 
+   :parts: 3
+
+.. automodule:: IPython.lib.demo
+
+.. currentmodule:: IPython.lib.demo
+
+Classes
+-------
+
+:class:`ClearDemo`
+~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: ClearDemo
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`ClearIPDemo`
+~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: ClearIPDemo
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`ClearMixin`
+~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: ClearMixin
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`Demo`
+~~~~~~~~~~~~~
+
+
+.. autoclass:: Demo
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`DemoError`
+~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: DemoError
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`IPythonDemo`
+~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: IPythonDemo
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`IPythonLineDemo`
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: IPythonLineDemo
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`LineDemo`
+~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: LineDemo
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+Function
+--------
+
+
+.. autofunction:: IPython.lib.demo.re_mark
+

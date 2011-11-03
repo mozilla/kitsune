@@ -1,0 +1,362 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>utils.pickleshare &mdash; IPython 0.11 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.11',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="IPython 0.11 documentation" href="../../index.html" />
+    <link rel="up" title="The IPython API" href="../index.html" />
+    <link rel="next" title="utils.pickleutil" href="IPython.utils.pickleutil.html" />
+    <link rel="prev" title="utils.path" href="IPython.utils.path.html" /> 
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<a href="../../index.html"><img src="../../_static/logo.png" border="0" alt="IPython Documentation"/></a>
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="IPython.utils.pickleutil.html" title="utils.pickleutil"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="IPython.utils.path.html" title="utils.path"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <li><a href="../../search.html">search</a>|&nbsp;</li>
+       <li><a href="../../index.html">documentation </a> &raquo;</li>
+
+          <li><a href="../index.html" accesskey="U">The IPython API</a> &raquo;</li> 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">utils.pickleshare</a><ul>
+<li><a class="reference internal" href="#module-utils-pickleshare">Module: <tt class="docutils literal"><span class="pre">utils.pickleshare</span></tt></a></li>
+<li><a class="reference internal" href="#classes">Classes</a><ul>
+<li><a class="reference internal" href="#picklesharedb"><tt class="docutils literal"><span class="pre">PickleShareDB</span></tt></a></li>
+<li><a class="reference internal" href="#picklesharelink"><tt class="docutils literal"><span class="pre">PickleShareLink</span></tt></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#functions">Functions</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="IPython.utils.path.html"
+                        title="previous chapter">utils.path</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="IPython.utils.pickleutil.html"
+                        title="next chapter">utils.pickleutil</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/api/generated/IPython.utils.pickleshare.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="utils-pickleshare">
+<h1>utils.pickleshare<a class="headerlink" href="#utils-pickleshare" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-utils-pickleshare">
+<h2>Module: <tt class="xref py py-mod docutils literal"><span class="pre">utils.pickleshare</span></tt><a class="headerlink" href="#module-utils-pickleshare" title="Permalink to this headline">¶</a></h2>
+<p>Inheritance diagram for <tt class="docutils literal"><span class="pre">IPython.utils.pickleshare</span></tt>:</p>
+<img src="../../_images/inheritancef8d0e73e1b.png" usemap="#inheritancef8d0e73e1b" class="inheritance"/><map id="inheritancef8d0e73e1b" name="inheritancef8d0e73e1b">
+</map>
+<span class="target" id="module-IPython.utils.pickleshare"></span><p>PickleShare - a small &#8216;shelve&#8217; like datastore with concurrency support</p>
+<p>Like shelve, a PickleShareDB object acts like a normal dictionary. Unlike 
+shelve, many processes can access the database simultaneously. Changing a 
+value in database is immediately visible to other processes accessing the 
+same database.</p>
+<p>Concurrency is possible because the values are stored in separate files. Hence
+the &#8220;database&#8221; is a directory where <em>all</em> files are governed by PickleShare.</p>
+<p>Example usage:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pickleshare</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="n">db</span> <span class="o">=</span> <span class="n">PickleShareDB</span><span class="p">(</span><span class="s">&#39;~/testpickleshare&#39;</span><span class="p">)</span>
+<span class="n">db</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+<span class="k">print</span> <span class="s">&quot;Should be empty:&quot;</span><span class="p">,</span><span class="n">db</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+<span class="n">db</span><span class="p">[</span><span class="s">&#39;hello&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">15</span>
+<span class="n">db</span><span class="p">[</span><span class="s">&#39;aku ankka&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">313</span><span class="p">]</span>
+<span class="n">db</span><span class="p">[</span><span class="s">&#39;paths/are/ok/key&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,(</span><span class="mi">5</span><span class="p">,</span><span class="mi">46</span><span class="p">)]</span>
+<span class="k">print</span> <span class="n">db</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+<span class="k">del</span> <span class="n">db</span><span class="p">[</span><span class="s">&#39;aku ankka&#39;</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>This module is certainly not ZODB, but can be used for low-load 
+(non-mission-critical) situations where tiny code size trumps the 
+advanced features of a &#8220;real&#8221; object database.</p>
+<p>Installation guide: easy_install pickleshare</p>
+<p>Author: Ville Vainio &lt;<a class="reference external" href="mailto:vivainio&#37;&#52;&#48;gmail&#46;com">vivainio<span>&#64;</span>gmail<span>&#46;</span>com</a>&gt;
+License: MIT open source license.</p>
+</div>
+<div class="section" id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="picklesharedb">
+<h3><a class="reference internal" href="#IPython.utils.pickleshare.PickleShareDB" title="IPython.utils.pickleshare.PickleShareDB"><tt class="xref py py-class docutils literal"><span class="pre">PickleShareDB</span></tt></a><a class="headerlink" href="#picklesharedb" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="IPython.utils.pickleshare.PickleShareDB">
+<em class="property">class </em><tt class="descclassname">IPython.utils.pickleshare.</tt><tt class="descname">PickleShareDB</tt><big>(</big><em>root</em><big>)</big><a class="headerlink" href="#IPython.utils.pickleshare.PickleShareDB" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">UserDict.DictMixin</span></tt></p>
+<p>The main &#8216;connection&#8217; object for PickleShare database</p>
+<dl class="method">
+<dt id="IPython.utils.pickleshare.PickleShareDB.__init__">
+<tt class="descname">__init__</tt><big>(</big><em>root</em><big>)</big><a class="headerlink" href="#IPython.utils.pickleshare.PickleShareDB.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a db object that will manage the specied directory</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.utils.pickleshare.PickleShareDB.clear">
+<tt class="descname">clear</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.utils.pickleshare.PickleShareDB.clear" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IPython.utils.pickleshare.PickleShareDB.get">
+<tt class="descname">get</tt><big>(</big><em>key</em>, <em>default=None</em><big>)</big><a class="headerlink" href="#IPython.utils.pickleshare.PickleShareDB.get" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IPython.utils.pickleshare.PickleShareDB.getlink">
+<tt class="descname">getlink</tt><big>(</big><em>folder</em><big>)</big><a class="headerlink" href="#IPython.utils.pickleshare.PickleShareDB.getlink" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a convenient link for accessing items</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.utils.pickleshare.PickleShareDB.has_key">
+<tt class="descname">has_key</tt><big>(</big><em>key</em><big>)</big><a class="headerlink" href="#IPython.utils.pickleshare.PickleShareDB.has_key" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IPython.utils.pickleshare.PickleShareDB.hcompress">
+<tt class="descname">hcompress</tt><big>(</big><em>hashroot</em><big>)</big><a class="headerlink" href="#IPython.utils.pickleshare.PickleShareDB.hcompress" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compress category &#8216;hashroot&#8217;, so hset is fast again</p>
+<p>hget will fail if fast_only is True for compressed items (that were
+hset before hcompress).</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.utils.pickleshare.PickleShareDB.hdict">
+<tt class="descname">hdict</tt><big>(</big><em>hashroot</em><big>)</big><a class="headerlink" href="#IPython.utils.pickleshare.PickleShareDB.hdict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get all data contained in hashed category &#8216;hashroot&#8217; as dict</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.utils.pickleshare.PickleShareDB.hget">
+<tt class="descname">hget</tt><big>(</big><em>hashroot</em>, <em>key</em>, <em>default=&lt;object object at 0x283f0f0&gt;</em>, <em>fast_only=True</em><big>)</big><a class="headerlink" href="#IPython.utils.pickleshare.PickleShareDB.hget" title="Permalink to this definition">¶</a></dt>
+<dd><p>hashed get</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.utils.pickleshare.PickleShareDB.hset">
+<tt class="descname">hset</tt><big>(</big><em>hashroot</em>, <em>key</em>, <em>value</em><big>)</big><a class="headerlink" href="#IPython.utils.pickleshare.PickleShareDB.hset" title="Permalink to this definition">¶</a></dt>
+<dd><p>hashed set</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.utils.pickleshare.PickleShareDB.items">
+<tt class="descname">items</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.utils.pickleshare.PickleShareDB.items" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IPython.utils.pickleshare.PickleShareDB.iteritems">
+<tt class="descname">iteritems</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.utils.pickleshare.PickleShareDB.iteritems" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IPython.utils.pickleshare.PickleShareDB.iterkeys">
+<tt class="descname">iterkeys</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.utils.pickleshare.PickleShareDB.iterkeys" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IPython.utils.pickleshare.PickleShareDB.itervalues">
+<tt class="descname">itervalues</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.utils.pickleshare.PickleShareDB.itervalues" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IPython.utils.pickleshare.PickleShareDB.keys">
+<tt class="descname">keys</tt><big>(</big><em>globpat=None</em><big>)</big><a class="headerlink" href="#IPython.utils.pickleshare.PickleShareDB.keys" title="Permalink to this definition">¶</a></dt>
+<dd><p>All keys in DB, or all keys matching a glob</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.utils.pickleshare.PickleShareDB.pop">
+<tt class="descname">pop</tt><big>(</big><em>key</em>, <em>*args</em><big>)</big><a class="headerlink" href="#IPython.utils.pickleshare.PickleShareDB.pop" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IPython.utils.pickleshare.PickleShareDB.popitem">
+<tt class="descname">popitem</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.utils.pickleshare.PickleShareDB.popitem" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IPython.utils.pickleshare.PickleShareDB.setdefault">
+<tt class="descname">setdefault</tt><big>(</big><em>key</em>, <em>default=None</em><big>)</big><a class="headerlink" href="#IPython.utils.pickleshare.PickleShareDB.setdefault" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IPython.utils.pickleshare.PickleShareDB.uncache">
+<tt class="descname">uncache</tt><big>(</big><em>*items</em><big>)</big><a class="headerlink" href="#IPython.utils.pickleshare.PickleShareDB.uncache" title="Permalink to this definition">¶</a></dt>
+<dd><p>Removes all, or specified items from cache</p>
+<p>Use this after reading a large amount of large objects
+to free up memory, when you won&#8217;t be needing the objects
+for a while.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.utils.pickleshare.PickleShareDB.update">
+<tt class="descname">update</tt><big>(</big><em>other=None</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#IPython.utils.pickleshare.PickleShareDB.update" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IPython.utils.pickleshare.PickleShareDB.values">
+<tt class="descname">values</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.utils.pickleshare.PickleShareDB.values" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IPython.utils.pickleshare.PickleShareDB.waitget">
+<tt class="descname">waitget</tt><big>(</big><em>key</em>, <em>maxwaittime=60</em><big>)</big><a class="headerlink" href="#IPython.utils.pickleshare.PickleShareDB.waitget" title="Permalink to this definition">¶</a></dt>
+<dd><p>Wait (poll) for a key to get a value</p>
+<p>Will wait for <cite>maxwaittime</cite> seconds before raising a KeyError.
+The call exits normally if the <cite>key</cite> field in db gets a value
+within the timeout period.</p>
+<p>Use this for synchronizing different processes or for ensuring
+that an unfortunately timed &#8220;db[&#8216;key&#8217;] = newvalue&#8221; operation 
+in another process (which causes all &#8216;get&#8217; operation to cause a 
+KeyError for the duration of pickling) won&#8217;t screw up your program 
+logic.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="picklesharelink">
+<h3><a class="reference internal" href="#IPython.utils.pickleshare.PickleShareLink" title="IPython.utils.pickleshare.PickleShareLink"><tt class="xref py py-class docutils literal"><span class="pre">PickleShareLink</span></tt></a><a class="headerlink" href="#picklesharelink" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="IPython.utils.pickleshare.PickleShareLink">
+<em class="property">class </em><tt class="descclassname">IPython.utils.pickleshare.</tt><tt class="descname">PickleShareLink</tt><big>(</big><em>db</em>, <em>keydir</em><big>)</big><a class="headerlink" href="#IPython.utils.pickleshare.PickleShareLink" title="Permalink to this definition">¶</a></dt>
+<dd><p>A shortdand for accessing nested PickleShare data conveniently.</p>
+<p>Created through PickleShareDB.getlink(), example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">lnk</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">getlink</span><span class="p">(</span><span class="s">&#39;myobjects/test&#39;</span><span class="p">)</span>
+<span class="n">lnk</span><span class="o">.</span><span class="n">foo</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="n">lnk</span><span class="o">.</span><span class="n">bar</span> <span class="o">=</span> <span class="n">lnk</span><span class="o">.</span><span class="n">foo</span> <span class="o">+</span> <span class="mi">5</span>
+</pre></div>
+</div>
+<dl class="method">
+<dt id="IPython.utils.pickleshare.PickleShareLink.__init__">
+<tt class="descname">__init__</tt><big>(</big><em>db</em>, <em>keydir</em><big>)</big><a class="headerlink" href="#IPython.utils.pickleshare.PickleShareLink.__init__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="IPython.utils.pickleshare.gethashfile">
+<tt class="descclassname">IPython.utils.pickleshare.</tt><tt class="descname">gethashfile</tt><big>(</big><em>key</em><big>)</big><a class="headerlink" href="#IPython.utils.pickleshare.gethashfile" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="IPython.utils.pickleshare.main">
+<tt class="descclassname">IPython.utils.pickleshare.</tt><tt class="descname">main</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.utils.pickleshare.main" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="IPython.utils.pickleshare.stress">
+<tt class="descclassname">IPython.utils.pickleshare.</tt><tt class="descname">stress</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.utils.pickleshare.stress" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="IPython.utils.pickleshare.test">
+<tt class="descclassname">IPython.utils.pickleshare.</tt><tt class="descname">test</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.utils.pickleshare.test" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="IPython.utils.pickleutil.html" title="utils.pickleutil"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="IPython.utils.path.html" title="utils.path"
+             >previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <li><a href="../../search.html">search</a>|&nbsp;</li>
+       <li><a href="../../index.html">documentation </a> &raquo;</li>
+
+          <li><a href="../index.html" >The IPython API</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2008, The IPython Development Team.
+      Last updated on Jul 31, 2011.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1pre.
+    </div>
+  </body>
+</html>

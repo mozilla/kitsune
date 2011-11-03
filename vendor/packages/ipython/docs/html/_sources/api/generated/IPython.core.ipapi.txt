@@ -1,0 +1,13 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+core.ipapi
+==========
+
+Module: :mod:`core.ipapi`
+-------------------------
+.. automodule:: IPython.core.ipapi
+
+.. currentmodule:: IPython.core.ipapi
+
+.. autofunction:: IPython.core.ipapi.get
+

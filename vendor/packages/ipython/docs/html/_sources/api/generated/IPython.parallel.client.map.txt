@@ -1,0 +1,49 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+parallel.client.map
+===================
+
+Module: :mod:`parallel.client.map`
+----------------------------------
+Inheritance diagram for ``IPython.parallel.client.map``:
+
+.. inheritance-diagram:: IPython.parallel.client.map 
+   :parts: 3
+
+.. automodule:: IPython.parallel.client.map
+
+.. currentmodule:: IPython.parallel.client.map
+
+Classes
+-------
+
+:class:`Map`
+~~~~~~~~~~~~
+
+
+.. autoclass:: Map
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`RoundRobinMap`
+~~~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: RoundRobinMap
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+Function
+--------
+
+
+.. autofunction:: IPython.parallel.client.map.mappable
+

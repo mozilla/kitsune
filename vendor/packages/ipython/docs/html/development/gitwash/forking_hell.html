@@ -1,0 +1,171 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Making your own copy (fork) of ipython &mdash; IPython 0.11 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.11',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="IPython 0.11 documentation" href="../../index.html" />
+    <link rel="up" title="Git for development" href="git_development.html" />
+    <link rel="next" title="Set up your fork" href="set_up_fork.html" />
+    <link rel="prev" title="Git for development" href="git_development.html" /> 
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<a href="../../index.html"><img src="../../_static/logo.png" border="0" alt="IPython Documentation"/></a>
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="set_up_fork.html" title="Set up your fork"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="git_development.html" title="Git for development"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <li><a href="../../search.html">search</a>|&nbsp;</li>
+       <li><a href="../../index.html">documentation </a> &raquo;</li>
+
+          <li><a href="../index.html" >IPython developer&#8217;s guide</a> &raquo;</li>
+          <li><a href="index.html" >Working with IPython source code</a> &raquo;</li>
+          <li><a href="git_development.html" accesskey="U">Git for development</a> &raquo;</li> 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Making your own copy (fork) of ipython</a><ul>
+<li><a class="reference internal" href="#set-up-and-configure-a-github-account">Set up and configure a github account</a></li>
+<li><a class="reference internal" href="#create-your-own-forked-copy-of-ipython">Create your own forked copy of ipython</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="git_development.html"
+                        title="previous chapter">Git for development</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="set_up_fork.html"
+                        title="next chapter">Set up your fork</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/development/gitwash/forking_hell.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="making-your-own-copy-fork-of-ipython">
+<span id="forking"></span><h1>Making your own copy (fork) of ipython<a class="headerlink" href="#making-your-own-copy-fork-of-ipython" title="Permalink to this headline">¶</a></h1>
+<p>You need to do this only once.  The instructions here are very similar
+to the instructions at <a class="reference external" href="http://help.github.com/forking/">http://help.github.com/forking/</a> - please see that
+page for more detail.  We&#8217;re repeating some of it here just to give the
+specifics for the <a class="reference external" href="http://ipython.org">ipython</a> project, and to suggest some default names.</p>
+<div class="section" id="set-up-and-configure-a-github-account">
+<h2>Set up and configure a <a class="reference external" href="http://github.com">github</a> account<a class="headerlink" href="#set-up-and-configure-a-github-account" title="Permalink to this headline">¶</a></h2>
+<p>If you don&#8217;t have a <a class="reference external" href="http://github.com">github</a> account, go to the <a class="reference external" href="http://github.com">github</a> page, and make one.</p>
+<p>You then need to configure your account to allow write access - see the
+<tt class="docutils literal"><span class="pre">Generating</span> <span class="pre">SSH</span> <span class="pre">keys</span></tt> help on <a class="reference external" href="http://help.github.com">github help</a>.</p>
+</div>
+<div class="section" id="create-your-own-forked-copy-of-ipython">
+<h2>Create your own forked copy of <a class="reference external" href="http://ipython.org">ipython</a><a class="headerlink" href="#create-your-own-forked-copy-of-ipython" title="Permalink to this headline">¶</a></h2>
+<ol class="arabic">
+<li><p class="first">Log into your <a class="reference external" href="http://github.com">github</a> account.</p>
+</li>
+<li><p class="first">Go to the <a class="reference external" href="http://ipython.org">ipython</a> github home at <a class="reference external" href="http://github.com/ipython/ipython">ipython github</a>.</p>
+</li>
+<li><p class="first">Click on the <em>fork</em> button:</p>
+<img alt="../../_images/forking_button.png" src="../../_images/forking_button.png" />
+<p>Now, after a short pause and some &#8216;Hardcore forking action&#8217;, you
+should find yourself at the home page for your own forked copy of <a class="reference external" href="http://ipython.org">ipython</a>.</p>
+</li>
+</ol>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="set_up_fork.html" title="Set up your fork"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="git_development.html" title="Git for development"
+             >previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <li><a href="../../search.html">search</a>|&nbsp;</li>
+       <li><a href="../../index.html">documentation </a> &raquo;</li>
+
+          <li><a href="../index.html" >IPython developer&#8217;s guide</a> &raquo;</li>
+          <li><a href="index.html" >Working with IPython source code</a> &raquo;</li>
+          <li><a href="git_development.html" >Git for development</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2008, The IPython Development Team.
+      Last updated on Jul 31, 2011.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1pre.
+    </div>
+  </body>
+</html>

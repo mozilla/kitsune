@@ -1,0 +1,55 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+core.debugger
+=============
+
+Module: :mod:`core.debugger`
+----------------------------
+Inheritance diagram for ``IPython.core.debugger``:
+
+.. inheritance-diagram:: IPython.core.debugger 
+   :parts: 3
+
+.. automodule:: IPython.core.debugger
+
+.. currentmodule:: IPython.core.debugger
+
+Classes
+-------
+
+:class:`Pdb`
+~~~~~~~~~~~~
+
+
+.. autoclass:: Pdb
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`Tracer`
+~~~~~~~~~~~~~~~
+
+
+.. autoclass:: Tracer
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+Functions
+---------
+
+
+.. autofunction:: IPython.core.debugger.BdbQuit_IPython_excepthook
+
+
+.. autofunction:: IPython.core.debugger.BdbQuit_excepthook
+
+
+.. autofunction:: IPython.core.debugger.decorate_fn_with_doc
+

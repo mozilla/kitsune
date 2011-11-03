@@ -1,0 +1,1935 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>parallel.apps.winhpcjob &mdash; IPython 0.11 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.11',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="IPython 0.11 documentation" href="../../index.html" />
+    <link rel="up" title="The IPython API" href="../index.html" />
+    <link rel="next" title="parallel.client.asyncresult" href="IPython.parallel.client.asyncresult.html" />
+    <link rel="prev" title="parallel.apps.win32support" href="IPython.parallel.apps.win32support.html" /> 
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<a href="../../index.html"><img src="../../_static/logo.png" border="0" alt="IPython Documentation"/></a>
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="IPython.parallel.client.asyncresult.html" title="parallel.client.asyncresult"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="IPython.parallel.apps.win32support.html" title="parallel.apps.win32support"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <li><a href="../../search.html">search</a>|&nbsp;</li>
+       <li><a href="../../index.html">documentation </a> &raquo;</li>
+
+          <li><a href="../index.html" accesskey="U">The IPython API</a> &raquo;</li> 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">parallel.apps.winhpcjob</a><ul>
+<li><a class="reference internal" href="#module-parallel-apps-winhpcjob">Module: <tt class="docutils literal"><span class="pre">parallel.apps.winhpcjob</span></tt></a></li>
+<li><a class="reference internal" href="#classes">Classes</a><ul>
+<li><a class="reference internal" href="#ipcontrollerjob"><tt class="docutils literal"><span class="pre">IPControllerJob</span></tt></a></li>
+<li><a class="reference internal" href="#ipcontrollertask"><tt class="docutils literal"><span class="pre">IPControllerTask</span></tt></a></li>
+<li><a class="reference internal" href="#ipenginesetjob"><tt class="docutils literal"><span class="pre">IPEngineSetJob</span></tt></a></li>
+<li><a class="reference internal" href="#ipenginetask"><tt class="docutils literal"><span class="pre">IPEngineTask</span></tt></a></li>
+<li><a class="reference internal" href="#winhpcjob"><tt class="docutils literal"><span class="pre">WinHPCJob</span></tt></a></li>
+<li><a class="reference internal" href="#winhpctask"><tt class="docutils literal"><span class="pre">WinHPCTask</span></tt></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#functions">Functions</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="IPython.parallel.apps.win32support.html"
+                        title="previous chapter">parallel.apps.win32support</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="IPython.parallel.client.asyncresult.html"
+                        title="next chapter">parallel.client.asyncresult</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/api/generated/IPython.parallel.apps.winhpcjob.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="parallel-apps-winhpcjob">
+<h1>parallel.apps.winhpcjob<a class="headerlink" href="#parallel-apps-winhpcjob" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-parallel-apps-winhpcjob">
+<h2>Module: <tt class="xref py py-mod docutils literal"><span class="pre">parallel.apps.winhpcjob</span></tt><a class="headerlink" href="#module-parallel-apps-winhpcjob" title="Permalink to this headline">¶</a></h2>
+<p>Inheritance diagram for <tt class="docutils literal"><span class="pre">IPython.parallel.apps.winhpcjob</span></tt>:</p>
+<img src="../../_images/inheritanced5ad3d4a65.png" usemap="#inheritanced5ad3d4a65" class="inheritance"/><map id="inheritanced5ad3d4a65" name="inheritanced5ad3d4a65">
+</map>
+<span class="target" id="module-IPython.parallel.apps.winhpcjob"></span><p>Job and task components for writing .xml files that the Windows HPC Server 
+2008 can use to start jobs.</p>
+<p>Authors:</p>
+<ul class="simple">
+<li>Brian Granger</li>
+<li>MinRK</li>
+</ul>
+</div>
+<div class="section" id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="ipcontrollerjob">
+<h3><a class="reference internal" href="#IPython.parallel.apps.winhpcjob.IPControllerJob" title="IPython.parallel.apps.winhpcjob.IPControllerJob"><tt class="xref py py-class docutils literal"><span class="pre">IPControllerJob</span></tt></a><a class="headerlink" href="#ipcontrollerjob" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="IPython.parallel.apps.winhpcjob.IPControllerJob">
+<em class="property">class </em><tt class="descclassname">IPython.parallel.apps.winhpcjob.</tt><tt class="descname">IPControllerJob</tt><big>(</big><em>**kwargs</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPControllerJob" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#IPython.parallel.apps.winhpcjob.WinHPCJob" title="IPython.parallel.apps.winhpcjob.WinHPCJob"><tt class="xref py py-class docutils literal"><span class="pre">IPython.parallel.apps.winhpcjob.WinHPCJob</span></tt></a></p>
+<dl class="method">
+<dt id="IPython.parallel.apps.winhpcjob.IPControllerJob.__init__">
+<tt class="descname">__init__</tt><big>(</big><em>**kwargs</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPControllerJob.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a configurable given a config config.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>config</strong> : Config</p>
+<blockquote class="last">
+<div><p>If this is empty, default values are used. If config is a 
+<tt class="xref py py-class docutils literal"><span class="pre">Config</span></tt> instance, it will be used to configure the
+instance.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Notes</p>
+<p>Subclasses of Configurable must call the <a class="reference internal" href="#IPython.parallel.apps.winhpcjob.IPControllerJob.__init__" title="IPython.parallel.apps.winhpcjob.IPControllerJob.__init__"><tt class="xref py py-meth docutils literal"><span class="pre">__init__()</span></tt></a> method of
+<tt class="xref py py-class docutils literal"><span class="pre">Configurable</span></tt> <em>before</em> doing anything else and using 
+<tt class="xref py py-func docutils literal"><span class="pre">super()</span></tt>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">MyConfigurable</span><span class="p">(</span><span class="n">Configurable</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">MyConfigurable</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+        <span class="c"># Then any other code you need to finish initialization.</span>
+</pre></div>
+</div>
+<p>This ensures that instances will be configured properly.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.winhpcjob.IPControllerJob.add_task">
+<tt class="descname">add_task</tt><big>(</big><em>task</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPControllerJob.add_task" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a task to the job.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>task</strong> : <a class="reference internal" href="#IPython.parallel.apps.winhpcjob.WinHPCTask" title="IPython.parallel.apps.winhpcjob.WinHPCTask"><tt class="xref py py-class docutils literal"><span class="pre">WinHPCTask</span></tt></a></p>
+<blockquote class="last">
+<div><p>The task object to add.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.winhpcjob.IPControllerJob.as_element">
+<tt class="descname">as_element</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPControllerJob.as_element" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.IPControllerJob.auto_calculate_max">
+<tt class="descname">auto_calculate_max</tt><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPControllerJob.auto_calculate_max" title="Permalink to this definition">¶</a></dt>
+<dd><p>A boolean (True, False) trait.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.IPControllerJob.auto_calculate_min">
+<tt class="descname">auto_calculate_min</tt><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPControllerJob.auto_calculate_min" title="Permalink to this definition">¶</a></dt>
+<dd><p>A boolean (True, False) trait.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.parallel.apps.winhpcjob.IPControllerJob.class_config_section">
+<em class="property">classmethod </em><tt class="descname">class_config_section</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPControllerJob.class_config_section" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the config class config section</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.parallel.apps.winhpcjob.IPControllerJob.class_get_help">
+<em class="property">classmethod </em><tt class="descname">class_get_help</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPControllerJob.class_get_help" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the help string for this class in ReST format.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.parallel.apps.winhpcjob.IPControllerJob.class_get_trait_help">
+<em class="property">classmethod </em><tt class="descname">class_get_trait_help</tt><big>(</big><em>trait</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPControllerJob.class_get_trait_help" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the help string for a single trait.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.parallel.apps.winhpcjob.IPControllerJob.class_print_help">
+<em class="property">classmethod </em><tt class="descname">class_print_help</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPControllerJob.class_print_help" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the help string for a single trait and print it.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.parallel.apps.winhpcjob.IPControllerJob.class_trait_names">
+<em class="property">classmethod </em><tt class="descname">class_trait_names</tt><big>(</big><em>**metadata</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPControllerJob.class_trait_names" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of all the names of this classes traits.</p>
+<p>This method is just like the <a class="reference internal" href="#IPython.parallel.apps.winhpcjob.IPControllerJob.trait_names" title="IPython.parallel.apps.winhpcjob.IPControllerJob.trait_names"><tt class="xref py py-meth docutils literal"><span class="pre">trait_names()</span></tt></a> method, but is unbound.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.parallel.apps.winhpcjob.IPControllerJob.class_traits">
+<em class="property">classmethod </em><tt class="descname">class_traits</tt><big>(</big><em>**metadata</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPControllerJob.class_traits" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of all the traits of this class.</p>
+<p>This method is just like the <a class="reference internal" href="#IPython.parallel.apps.winhpcjob.IPControllerJob.traits" title="IPython.parallel.apps.winhpcjob.IPControllerJob.traits"><tt class="xref py py-meth docutils literal"><span class="pre">traits()</span></tt></a> method, but is unbound.</p>
+<p>The TraitTypes returned don&#8217;t know anything about the values
+that the various HasTrait&#8217;s instances are holding.</p>
+<p>This follows the same algorithm as traits does and does not allow
+for any simple way of specifying merely that a metadata name
+exists, but has any value.  This is because get_metadata returns
+None if a metadata key doesn&#8217;t exist.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.IPControllerJob.config">
+<tt class="descname">config</tt><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPControllerJob.config" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait whose value must be an instance of a specified class.</p>
+<p>The value can also be an instance of a subclass of the specified class.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.IPControllerJob.created">
+<tt class="descname">created</tt><em class="property"> = None</em><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPControllerJob.created" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.IPControllerJob.is_exclusive">
+<tt class="descname">is_exclusive</tt><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPControllerJob.is_exclusive" title="Permalink to this definition">¶</a></dt>
+<dd><p>A boolean (True, False) trait.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.IPControllerJob.job_id">
+<tt class="descname">job_id</tt><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPControllerJob.job_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait for unicode strings.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.IPControllerJob.job_name">
+<tt class="descname">job_name</tt><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPControllerJob.job_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait for unicode strings.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.IPControllerJob.job_type">
+<tt class="descname">job_type</tt><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPControllerJob.job_type" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait for unicode strings.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.IPControllerJob.max_cores">
+<tt class="descname">max_cores</tt><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPControllerJob.max_cores" title="Permalink to this definition">¶</a></dt>
+<dd><p>A integer trait.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.IPControllerJob.max_nodes">
+<tt class="descname">max_nodes</tt><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPControllerJob.max_nodes" title="Permalink to this definition">¶</a></dt>
+<dd><p>A integer trait.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.IPControllerJob.max_sockets">
+<tt class="descname">max_sockets</tt><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPControllerJob.max_sockets" title="Permalink to this definition">¶</a></dt>
+<dd><p>A integer trait.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.IPControllerJob.min_cores">
+<tt class="descname">min_cores</tt><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPControllerJob.min_cores" title="Permalink to this definition">¶</a></dt>
+<dd><p>A integer trait.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.IPControllerJob.min_nodes">
+<tt class="descname">min_nodes</tt><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPControllerJob.min_nodes" title="Permalink to this definition">¶</a></dt>
+<dd><p>A integer trait.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.IPControllerJob.min_sockets">
+<tt class="descname">min_sockets</tt><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPControllerJob.min_sockets" title="Permalink to this definition">¶</a></dt>
+<dd><p>A integer trait.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.winhpcjob.IPControllerJob.on_trait_change">
+<tt class="descname">on_trait_change</tt><big>(</big><em>handler</em>, <em>name=None</em>, <em>remove=False</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPControllerJob.on_trait_change" title="Permalink to this definition">¶</a></dt>
+<dd><p>Setup a handler to be called when a trait changes.</p>
+<p>This is used to setup dynamic notifications of trait changes.</p>
+<p>Static handlers can be created by creating methods on a HasTraits
+subclass with the naming convention &#8216;_[traitname]_changed&#8217;.  Thus,
+to create static handler for the trait &#8216;a&#8217;, create the method
+_a_changed(self, name, old, new) (fewer arguments can be used, see
+below).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>handler</strong> : callable</p>
+<blockquote>
+<div><p>A callable that is called when a trait changes.  Its 
+signature can be handler(), handler(name), handler(name, new)
+or handler(name, old, new).</p>
+</div></blockquote>
+<p><strong>name</strong> : list, str, None</p>
+<blockquote>
+<div><p>If None, the handler will apply to all traits.  If a list
+of str, handler will apply to all names in the list.  If a
+str, the handler will apply just to that name.</p>
+</div></blockquote>
+<p><strong>remove</strong> : bool</p>
+<blockquote class="last">
+<div><p>If False (the default), then install the handler.  If True
+then unintall it.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.IPControllerJob.owner">
+<tt class="descname">owner</tt><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPControllerJob.owner" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.IPControllerJob.priority">
+<tt class="descname">priority</tt><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPControllerJob.priority" title="Permalink to this definition">¶</a></dt>
+<dd><p>An enum that whose value must be in a given sequence.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.IPControllerJob.project">
+<tt class="descname">project</tt><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPControllerJob.project" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait for unicode strings.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.IPControllerJob.requested_nodes">
+<tt class="descname">requested_nodes</tt><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPControllerJob.requested_nodes" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait for unicode strings.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.IPControllerJob.run_until_canceled">
+<tt class="descname">run_until_canceled</tt><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPControllerJob.run_until_canceled" title="Permalink to this definition">¶</a></dt>
+<dd><p>A boolean (True, False) trait.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.IPControllerJob.tasks">
+<tt class="descname">tasks</tt><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPControllerJob.tasks" title="Permalink to this definition">¶</a></dt>
+<dd><p>An instance of a Python list.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.winhpcjob.IPControllerJob.tostring">
+<tt class="descname">tostring</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPControllerJob.tostring" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the string representation of the job description XML.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.winhpcjob.IPControllerJob.trait_metadata">
+<tt class="descname">trait_metadata</tt><big>(</big><em>traitname</em>, <em>key</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPControllerJob.trait_metadata" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get metadata values for trait by key.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.winhpcjob.IPControllerJob.trait_names">
+<tt class="descname">trait_names</tt><big>(</big><em>**metadata</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPControllerJob.trait_names" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of all the names of this classes traits.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.winhpcjob.IPControllerJob.traits">
+<tt class="descname">traits</tt><big>(</big><em>**metadata</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPControllerJob.traits" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of all the traits of this class.</p>
+<p>The TraitTypes returned don&#8217;t know anything about the values
+that the various HasTrait&#8217;s instances are holding.</p>
+<p>This follows the same algorithm as traits does and does not allow
+for any simple way of specifying merely that a metadata name
+exists, but has any value.  This is because get_metadata returns
+None if a metadata key doesn&#8217;t exist.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.IPControllerJob.unit_type">
+<tt class="descname">unit_type</tt><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPControllerJob.unit_type" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait for unicode strings.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.IPControllerJob.username">
+<tt class="descname">username</tt><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPControllerJob.username" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait for unicode strings.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.IPControllerJob.version">
+<tt class="descname">version</tt><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPControllerJob.version" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait for unicode strings.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.winhpcjob.IPControllerJob.write">
+<tt class="descname">write</tt><big>(</big><em>filename</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPControllerJob.write" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write the XML job description to a file.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.IPControllerJob.xmlns">
+<tt class="descname">xmlns</tt><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPControllerJob.xmlns" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait for unicode strings.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="ipcontrollertask">
+<h3><a class="reference internal" href="#IPython.parallel.apps.winhpcjob.IPControllerTask" title="IPython.parallel.apps.winhpcjob.IPControllerTask"><tt class="xref py py-class docutils literal"><span class="pre">IPControllerTask</span></tt></a><a class="headerlink" href="#ipcontrollertask" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="IPython.parallel.apps.winhpcjob.IPControllerTask">
+<em class="property">class </em><tt class="descclassname">IPython.parallel.apps.winhpcjob.</tt><tt class="descname">IPControllerTask</tt><big>(</big><em>config=None</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPControllerTask" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#IPython.parallel.apps.winhpcjob.WinHPCTask" title="IPython.parallel.apps.winhpcjob.WinHPCTask"><tt class="xref py py-class docutils literal"><span class="pre">IPython.parallel.apps.winhpcjob.WinHPCTask</span></tt></a></p>
+<dl class="method">
+<dt id="IPython.parallel.apps.winhpcjob.IPControllerTask.__init__">
+<tt class="descname">__init__</tt><big>(</big><em>config=None</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPControllerTask.__init__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.winhpcjob.IPControllerTask.as_element">
+<tt class="descname">as_element</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPControllerTask.as_element" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.parallel.apps.winhpcjob.IPControllerTask.class_config_section">
+<em class="property">classmethod </em><tt class="descname">class_config_section</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPControllerTask.class_config_section" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the config class config section</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.parallel.apps.winhpcjob.IPControllerTask.class_get_help">
+<em class="property">classmethod </em><tt class="descname">class_get_help</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPControllerTask.class_get_help" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the help string for this class in ReST format.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.parallel.apps.winhpcjob.IPControllerTask.class_get_trait_help">
+<em class="property">classmethod </em><tt class="descname">class_get_trait_help</tt><big>(</big><em>trait</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPControllerTask.class_get_trait_help" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the help string for a single trait.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.parallel.apps.winhpcjob.IPControllerTask.class_print_help">
+<em class="property">classmethod </em><tt class="descname">class_print_help</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPControllerTask.class_print_help" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the help string for a single trait and print it.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.parallel.apps.winhpcjob.IPControllerTask.class_trait_names">
+<em class="property">classmethod </em><tt class="descname">class_trait_names</tt><big>(</big><em>**metadata</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPControllerTask.class_trait_names" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of all the names of this classes traits.</p>
+<p>This method is just like the <a class="reference internal" href="#IPython.parallel.apps.winhpcjob.IPControllerTask.trait_names" title="IPython.parallel.apps.winhpcjob.IPControllerTask.trait_names"><tt class="xref py py-meth docutils literal"><span class="pre">trait_names()</span></tt></a> method, but is unbound.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.parallel.apps.winhpcjob.IPControllerTask.class_traits">
+<em class="property">classmethod </em><tt class="descname">class_traits</tt><big>(</big><em>**metadata</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPControllerTask.class_traits" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of all the traits of this class.</p>
+<p>This method is just like the <a class="reference internal" href="#IPython.parallel.apps.winhpcjob.IPControllerTask.traits" title="IPython.parallel.apps.winhpcjob.IPControllerTask.traits"><tt class="xref py py-meth docutils literal"><span class="pre">traits()</span></tt></a> method, but is unbound.</p>
+<p>The TraitTypes returned don&#8217;t know anything about the values
+that the various HasTrait&#8217;s instances are holding.</p>
+<p>This follows the same algorithm as traits does and does not allow
+for any simple way of specifying merely that a metadata name
+exists, but has any value.  This is because get_metadata returns
+None if a metadata key doesn&#8217;t exist.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.IPControllerTask.command_line">
+<tt class="descname">command_line</tt><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPControllerTask.command_line" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.IPControllerTask.config">
+<tt class="descname">config</tt><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPControllerTask.config" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait whose value must be an instance of a specified class.</p>
+<p>The value can also be an instance of a subclass of the specified class.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.IPControllerTask.controller_args">
+<tt class="descname">controller_args</tt><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPControllerTask.controller_args" title="Permalink to this definition">¶</a></dt>
+<dd><p>An instance of a Python list.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.IPControllerTask.controller_cmd">
+<tt class="descname">controller_cmd</tt><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPControllerTask.controller_cmd" title="Permalink to this definition">¶</a></dt>
+<dd><p>An instance of a Python list.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.IPControllerTask.created">
+<tt class="descname">created</tt><em class="property"> = None</em><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPControllerTask.created" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.IPControllerTask.environment_variables">
+<tt class="descname">environment_variables</tt><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPControllerTask.environment_variables" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait whose value must be an instance of a specified class.</p>
+<p>The value can also be an instance of a subclass of the specified class.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.winhpcjob.IPControllerTask.get_env_vars">
+<tt class="descname">get_env_vars</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPControllerTask.get_env_vars" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.IPControllerTask.is_parametric">
+<tt class="descname">is_parametric</tt><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPControllerTask.is_parametric" title="Permalink to this definition">¶</a></dt>
+<dd><p>A boolean (True, False) trait.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.IPControllerTask.is_rerunnaable">
+<tt class="descname">is_rerunnaable</tt><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPControllerTask.is_rerunnaable" title="Permalink to this definition">¶</a></dt>
+<dd><p>A boolean (True, False) trait.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.IPControllerTask.max_cores">
+<tt class="descname">max_cores</tt><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPControllerTask.max_cores" title="Permalink to this definition">¶</a></dt>
+<dd><p>A integer trait.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.IPControllerTask.max_nodes">
+<tt class="descname">max_nodes</tt><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPControllerTask.max_nodes" title="Permalink to this definition">¶</a></dt>
+<dd><p>A integer trait.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.IPControllerTask.max_sockets">
+<tt class="descname">max_sockets</tt><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPControllerTask.max_sockets" title="Permalink to this definition">¶</a></dt>
+<dd><p>A integer trait.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.IPControllerTask.min_cores">
+<tt class="descname">min_cores</tt><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPControllerTask.min_cores" title="Permalink to this definition">¶</a></dt>
+<dd><p>A integer trait.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.IPControllerTask.min_nodes">
+<tt class="descname">min_nodes</tt><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPControllerTask.min_nodes" title="Permalink to this definition">¶</a></dt>
+<dd><p>A integer trait.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.IPControllerTask.min_sockets">
+<tt class="descname">min_sockets</tt><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPControllerTask.min_sockets" title="Permalink to this definition">¶</a></dt>
+<dd><p>A integer trait.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.winhpcjob.IPControllerTask.on_trait_change">
+<tt class="descname">on_trait_change</tt><big>(</big><em>handler</em>, <em>name=None</em>, <em>remove=False</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPControllerTask.on_trait_change" title="Permalink to this definition">¶</a></dt>
+<dd><p>Setup a handler to be called when a trait changes.</p>
+<p>This is used to setup dynamic notifications of trait changes.</p>
+<p>Static handlers can be created by creating methods on a HasTraits
+subclass with the naming convention &#8216;_[traitname]_changed&#8217;.  Thus,
+to create static handler for the trait &#8216;a&#8217;, create the method
+_a_changed(self, name, old, new) (fewer arguments can be used, see
+below).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>handler</strong> : callable</p>
+<blockquote>
+<div><p>A callable that is called when a trait changes.  Its 
+signature can be handler(), handler(name), handler(name, new)
+or handler(name, old, new).</p>
+</div></blockquote>
+<p><strong>name</strong> : list, str, None</p>
+<blockquote>
+<div><p>If None, the handler will apply to all traits.  If a list
+of str, handler will apply to all names in the list.  If a
+str, the handler will apply just to that name.</p>
+</div></blockquote>
+<p><strong>remove</strong> : bool</p>
+<blockquote class="last">
+<div><p>If False (the default), then install the handler.  If True
+then unintall it.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.IPControllerTask.std_err_file_path">
+<tt class="descname">std_err_file_path</tt><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPControllerTask.std_err_file_path" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait for unicode strings.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.IPControllerTask.std_out_file_path">
+<tt class="descname">std_out_file_path</tt><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPControllerTask.std_out_file_path" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait for unicode strings.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.IPControllerTask.task_id">
+<tt class="descname">task_id</tt><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPControllerTask.task_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait for unicode strings.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.IPControllerTask.task_name">
+<tt class="descname">task_name</tt><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPControllerTask.task_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait for unicode strings.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.winhpcjob.IPControllerTask.trait_metadata">
+<tt class="descname">trait_metadata</tt><big>(</big><em>traitname</em>, <em>key</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPControllerTask.trait_metadata" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get metadata values for trait by key.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.winhpcjob.IPControllerTask.trait_names">
+<tt class="descname">trait_names</tt><big>(</big><em>**metadata</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPControllerTask.trait_names" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of all the names of this classes traits.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.winhpcjob.IPControllerTask.traits">
+<tt class="descname">traits</tt><big>(</big><em>**metadata</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPControllerTask.traits" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of all the traits of this class.</p>
+<p>The TraitTypes returned don&#8217;t know anything about the values
+that the various HasTrait&#8217;s instances are holding.</p>
+<p>This follows the same algorithm as traits does and does not allow
+for any simple way of specifying merely that a metadata name
+exists, but has any value.  This is because get_metadata returns
+None if a metadata key doesn&#8217;t exist.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.IPControllerTask.unit_type">
+<tt class="descname">unit_type</tt><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPControllerTask.unit_type" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait for unicode strings.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.IPControllerTask.version">
+<tt class="descname">version</tt><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPControllerTask.version" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait for unicode strings.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.IPControllerTask.work_directory">
+<tt class="descname">work_directory</tt><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPControllerTask.work_directory" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait for unicode strings.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="ipenginesetjob">
+<h3><a class="reference internal" href="#IPython.parallel.apps.winhpcjob.IPEngineSetJob" title="IPython.parallel.apps.winhpcjob.IPEngineSetJob"><tt class="xref py py-class docutils literal"><span class="pre">IPEngineSetJob</span></tt></a><a class="headerlink" href="#ipenginesetjob" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="IPython.parallel.apps.winhpcjob.IPEngineSetJob">
+<em class="property">class </em><tt class="descclassname">IPython.parallel.apps.winhpcjob.</tt><tt class="descname">IPEngineSetJob</tt><big>(</big><em>**kwargs</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPEngineSetJob" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#IPython.parallel.apps.winhpcjob.WinHPCJob" title="IPython.parallel.apps.winhpcjob.WinHPCJob"><tt class="xref py py-class docutils literal"><span class="pre">IPython.parallel.apps.winhpcjob.WinHPCJob</span></tt></a></p>
+<dl class="method">
+<dt id="IPython.parallel.apps.winhpcjob.IPEngineSetJob.__init__">
+<tt class="descname">__init__</tt><big>(</big><em>**kwargs</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPEngineSetJob.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a configurable given a config config.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>config</strong> : Config</p>
+<blockquote class="last">
+<div><p>If this is empty, default values are used. If config is a 
+<tt class="xref py py-class docutils literal"><span class="pre">Config</span></tt> instance, it will be used to configure the
+instance.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Notes</p>
+<p>Subclasses of Configurable must call the <a class="reference internal" href="#IPython.parallel.apps.winhpcjob.IPEngineSetJob.__init__" title="IPython.parallel.apps.winhpcjob.IPEngineSetJob.__init__"><tt class="xref py py-meth docutils literal"><span class="pre">__init__()</span></tt></a> method of
+<tt class="xref py py-class docutils literal"><span class="pre">Configurable</span></tt> <em>before</em> doing anything else and using 
+<tt class="xref py py-func docutils literal"><span class="pre">super()</span></tt>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">MyConfigurable</span><span class="p">(</span><span class="n">Configurable</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">MyConfigurable</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+        <span class="c"># Then any other code you need to finish initialization.</span>
+</pre></div>
+</div>
+<p>This ensures that instances will be configured properly.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.winhpcjob.IPEngineSetJob.add_task">
+<tt class="descname">add_task</tt><big>(</big><em>task</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPEngineSetJob.add_task" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a task to the job.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>task</strong> : <a class="reference internal" href="#IPython.parallel.apps.winhpcjob.WinHPCTask" title="IPython.parallel.apps.winhpcjob.WinHPCTask"><tt class="xref py py-class docutils literal"><span class="pre">WinHPCTask</span></tt></a></p>
+<blockquote class="last">
+<div><p>The task object to add.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.winhpcjob.IPEngineSetJob.as_element">
+<tt class="descname">as_element</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPEngineSetJob.as_element" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.IPEngineSetJob.auto_calculate_max">
+<tt class="descname">auto_calculate_max</tt><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPEngineSetJob.auto_calculate_max" title="Permalink to this definition">¶</a></dt>
+<dd><p>A boolean (True, False) trait.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.IPEngineSetJob.auto_calculate_min">
+<tt class="descname">auto_calculate_min</tt><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPEngineSetJob.auto_calculate_min" title="Permalink to this definition">¶</a></dt>
+<dd><p>A boolean (True, False) trait.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.parallel.apps.winhpcjob.IPEngineSetJob.class_config_section">
+<em class="property">classmethod </em><tt class="descname">class_config_section</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPEngineSetJob.class_config_section" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the config class config section</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.parallel.apps.winhpcjob.IPEngineSetJob.class_get_help">
+<em class="property">classmethod </em><tt class="descname">class_get_help</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPEngineSetJob.class_get_help" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the help string for this class in ReST format.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.parallel.apps.winhpcjob.IPEngineSetJob.class_get_trait_help">
+<em class="property">classmethod </em><tt class="descname">class_get_trait_help</tt><big>(</big><em>trait</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPEngineSetJob.class_get_trait_help" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the help string for a single trait.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.parallel.apps.winhpcjob.IPEngineSetJob.class_print_help">
+<em class="property">classmethod </em><tt class="descname">class_print_help</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPEngineSetJob.class_print_help" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the help string for a single trait and print it.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.parallel.apps.winhpcjob.IPEngineSetJob.class_trait_names">
+<em class="property">classmethod </em><tt class="descname">class_trait_names</tt><big>(</big><em>**metadata</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPEngineSetJob.class_trait_names" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of all the names of this classes traits.</p>
+<p>This method is just like the <a class="reference internal" href="#IPython.parallel.apps.winhpcjob.IPEngineSetJob.trait_names" title="IPython.parallel.apps.winhpcjob.IPEngineSetJob.trait_names"><tt class="xref py py-meth docutils literal"><span class="pre">trait_names()</span></tt></a> method, but is unbound.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.parallel.apps.winhpcjob.IPEngineSetJob.class_traits">
+<em class="property">classmethod </em><tt class="descname">class_traits</tt><big>(</big><em>**metadata</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPEngineSetJob.class_traits" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of all the traits of this class.</p>
+<p>This method is just like the <a class="reference internal" href="#IPython.parallel.apps.winhpcjob.IPEngineSetJob.traits" title="IPython.parallel.apps.winhpcjob.IPEngineSetJob.traits"><tt class="xref py py-meth docutils literal"><span class="pre">traits()</span></tt></a> method, but is unbound.</p>
+<p>The TraitTypes returned don&#8217;t know anything about the values
+that the various HasTrait&#8217;s instances are holding.</p>
+<p>This follows the same algorithm as traits does and does not allow
+for any simple way of specifying merely that a metadata name
+exists, but has any value.  This is because get_metadata returns
+None if a metadata key doesn&#8217;t exist.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.IPEngineSetJob.config">
+<tt class="descname">config</tt><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPEngineSetJob.config" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait whose value must be an instance of a specified class.</p>
+<p>The value can also be an instance of a subclass of the specified class.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.IPEngineSetJob.created">
+<tt class="descname">created</tt><em class="property"> = None</em><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPEngineSetJob.created" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.IPEngineSetJob.is_exclusive">
+<tt class="descname">is_exclusive</tt><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPEngineSetJob.is_exclusive" title="Permalink to this definition">¶</a></dt>
+<dd><p>A boolean (True, False) trait.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.IPEngineSetJob.job_id">
+<tt class="descname">job_id</tt><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPEngineSetJob.job_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait for unicode strings.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.IPEngineSetJob.job_name">
+<tt class="descname">job_name</tt><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPEngineSetJob.job_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait for unicode strings.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.IPEngineSetJob.job_type">
+<tt class="descname">job_type</tt><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPEngineSetJob.job_type" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait for unicode strings.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.IPEngineSetJob.max_cores">
+<tt class="descname">max_cores</tt><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPEngineSetJob.max_cores" title="Permalink to this definition">¶</a></dt>
+<dd><p>A integer trait.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.IPEngineSetJob.max_nodes">
+<tt class="descname">max_nodes</tt><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPEngineSetJob.max_nodes" title="Permalink to this definition">¶</a></dt>
+<dd><p>A integer trait.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.IPEngineSetJob.max_sockets">
+<tt class="descname">max_sockets</tt><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPEngineSetJob.max_sockets" title="Permalink to this definition">¶</a></dt>
+<dd><p>A integer trait.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.IPEngineSetJob.min_cores">
+<tt class="descname">min_cores</tt><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPEngineSetJob.min_cores" title="Permalink to this definition">¶</a></dt>
+<dd><p>A integer trait.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.IPEngineSetJob.min_nodes">
+<tt class="descname">min_nodes</tt><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPEngineSetJob.min_nodes" title="Permalink to this definition">¶</a></dt>
+<dd><p>A integer trait.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.IPEngineSetJob.min_sockets">
+<tt class="descname">min_sockets</tt><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPEngineSetJob.min_sockets" title="Permalink to this definition">¶</a></dt>
+<dd><p>A integer trait.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.winhpcjob.IPEngineSetJob.on_trait_change">
+<tt class="descname">on_trait_change</tt><big>(</big><em>handler</em>, <em>name=None</em>, <em>remove=False</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPEngineSetJob.on_trait_change" title="Permalink to this definition">¶</a></dt>
+<dd><p>Setup a handler to be called when a trait changes.</p>
+<p>This is used to setup dynamic notifications of trait changes.</p>
+<p>Static handlers can be created by creating methods on a HasTraits
+subclass with the naming convention &#8216;_[traitname]_changed&#8217;.  Thus,
+to create static handler for the trait &#8216;a&#8217;, create the method
+_a_changed(self, name, old, new) (fewer arguments can be used, see
+below).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>handler</strong> : callable</p>
+<blockquote>
+<div><p>A callable that is called when a trait changes.  Its 
+signature can be handler(), handler(name), handler(name, new)
+or handler(name, old, new).</p>
+</div></blockquote>
+<p><strong>name</strong> : list, str, None</p>
+<blockquote>
+<div><p>If None, the handler will apply to all traits.  If a list
+of str, handler will apply to all names in the list.  If a
+str, the handler will apply just to that name.</p>
+</div></blockquote>
+<p><strong>remove</strong> : bool</p>
+<blockquote class="last">
+<div><p>If False (the default), then install the handler.  If True
+then unintall it.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.IPEngineSetJob.owner">
+<tt class="descname">owner</tt><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPEngineSetJob.owner" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.IPEngineSetJob.priority">
+<tt class="descname">priority</tt><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPEngineSetJob.priority" title="Permalink to this definition">¶</a></dt>
+<dd><p>An enum that whose value must be in a given sequence.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.IPEngineSetJob.project">
+<tt class="descname">project</tt><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPEngineSetJob.project" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait for unicode strings.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.IPEngineSetJob.requested_nodes">
+<tt class="descname">requested_nodes</tt><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPEngineSetJob.requested_nodes" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait for unicode strings.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.IPEngineSetJob.run_until_canceled">
+<tt class="descname">run_until_canceled</tt><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPEngineSetJob.run_until_canceled" title="Permalink to this definition">¶</a></dt>
+<dd><p>A boolean (True, False) trait.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.IPEngineSetJob.tasks">
+<tt class="descname">tasks</tt><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPEngineSetJob.tasks" title="Permalink to this definition">¶</a></dt>
+<dd><p>An instance of a Python list.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.winhpcjob.IPEngineSetJob.tostring">
+<tt class="descname">tostring</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPEngineSetJob.tostring" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the string representation of the job description XML.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.winhpcjob.IPEngineSetJob.trait_metadata">
+<tt class="descname">trait_metadata</tt><big>(</big><em>traitname</em>, <em>key</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPEngineSetJob.trait_metadata" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get metadata values for trait by key.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.winhpcjob.IPEngineSetJob.trait_names">
+<tt class="descname">trait_names</tt><big>(</big><em>**metadata</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPEngineSetJob.trait_names" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of all the names of this classes traits.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.winhpcjob.IPEngineSetJob.traits">
+<tt class="descname">traits</tt><big>(</big><em>**metadata</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPEngineSetJob.traits" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of all the traits of this class.</p>
+<p>The TraitTypes returned don&#8217;t know anything about the values
+that the various HasTrait&#8217;s instances are holding.</p>
+<p>This follows the same algorithm as traits does and does not allow
+for any simple way of specifying merely that a metadata name
+exists, but has any value.  This is because get_metadata returns
+None if a metadata key doesn&#8217;t exist.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.IPEngineSetJob.unit_type">
+<tt class="descname">unit_type</tt><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPEngineSetJob.unit_type" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait for unicode strings.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.IPEngineSetJob.username">
+<tt class="descname">username</tt><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPEngineSetJob.username" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait for unicode strings.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.IPEngineSetJob.version">
+<tt class="descname">version</tt><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPEngineSetJob.version" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait for unicode strings.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.winhpcjob.IPEngineSetJob.write">
+<tt class="descname">write</tt><big>(</big><em>filename</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPEngineSetJob.write" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write the XML job description to a file.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.IPEngineSetJob.xmlns">
+<tt class="descname">xmlns</tt><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPEngineSetJob.xmlns" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait for unicode strings.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="ipenginetask">
+<h3><a class="reference internal" href="#IPython.parallel.apps.winhpcjob.IPEngineTask" title="IPython.parallel.apps.winhpcjob.IPEngineTask"><tt class="xref py py-class docutils literal"><span class="pre">IPEngineTask</span></tt></a><a class="headerlink" href="#ipenginetask" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="IPython.parallel.apps.winhpcjob.IPEngineTask">
+<em class="property">class </em><tt class="descclassname">IPython.parallel.apps.winhpcjob.</tt><tt class="descname">IPEngineTask</tt><big>(</big><em>config=None</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPEngineTask" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#IPython.parallel.apps.winhpcjob.WinHPCTask" title="IPython.parallel.apps.winhpcjob.WinHPCTask"><tt class="xref py py-class docutils literal"><span class="pre">IPython.parallel.apps.winhpcjob.WinHPCTask</span></tt></a></p>
+<dl class="method">
+<dt id="IPython.parallel.apps.winhpcjob.IPEngineTask.__init__">
+<tt class="descname">__init__</tt><big>(</big><em>config=None</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPEngineTask.__init__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.winhpcjob.IPEngineTask.as_element">
+<tt class="descname">as_element</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPEngineTask.as_element" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.parallel.apps.winhpcjob.IPEngineTask.class_config_section">
+<em class="property">classmethod </em><tt class="descname">class_config_section</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPEngineTask.class_config_section" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the config class config section</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.parallel.apps.winhpcjob.IPEngineTask.class_get_help">
+<em class="property">classmethod </em><tt class="descname">class_get_help</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPEngineTask.class_get_help" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the help string for this class in ReST format.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.parallel.apps.winhpcjob.IPEngineTask.class_get_trait_help">
+<em class="property">classmethod </em><tt class="descname">class_get_trait_help</tt><big>(</big><em>trait</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPEngineTask.class_get_trait_help" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the help string for a single trait.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.parallel.apps.winhpcjob.IPEngineTask.class_print_help">
+<em class="property">classmethod </em><tt class="descname">class_print_help</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPEngineTask.class_print_help" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the help string for a single trait and print it.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.parallel.apps.winhpcjob.IPEngineTask.class_trait_names">
+<em class="property">classmethod </em><tt class="descname">class_trait_names</tt><big>(</big><em>**metadata</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPEngineTask.class_trait_names" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of all the names of this classes traits.</p>
+<p>This method is just like the <a class="reference internal" href="#IPython.parallel.apps.winhpcjob.IPEngineTask.trait_names" title="IPython.parallel.apps.winhpcjob.IPEngineTask.trait_names"><tt class="xref py py-meth docutils literal"><span class="pre">trait_names()</span></tt></a> method, but is unbound.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.parallel.apps.winhpcjob.IPEngineTask.class_traits">
+<em class="property">classmethod </em><tt class="descname">class_traits</tt><big>(</big><em>**metadata</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPEngineTask.class_traits" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of all the traits of this class.</p>
+<p>This method is just like the <a class="reference internal" href="#IPython.parallel.apps.winhpcjob.IPEngineTask.traits" title="IPython.parallel.apps.winhpcjob.IPEngineTask.traits"><tt class="xref py py-meth docutils literal"><span class="pre">traits()</span></tt></a> method, but is unbound.</p>
+<p>The TraitTypes returned don&#8217;t know anything about the values
+that the various HasTrait&#8217;s instances are holding.</p>
+<p>This follows the same algorithm as traits does and does not allow
+for any simple way of specifying merely that a metadata name
+exists, but has any value.  This is because get_metadata returns
+None if a metadata key doesn&#8217;t exist.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.IPEngineTask.command_line">
+<tt class="descname">command_line</tt><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPEngineTask.command_line" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.IPEngineTask.config">
+<tt class="descname">config</tt><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPEngineTask.config" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait whose value must be an instance of a specified class.</p>
+<p>The value can also be an instance of a subclass of the specified class.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.IPEngineTask.created">
+<tt class="descname">created</tt><em class="property"> = None</em><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPEngineTask.created" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.IPEngineTask.engine_args">
+<tt class="descname">engine_args</tt><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPEngineTask.engine_args" title="Permalink to this definition">¶</a></dt>
+<dd><p>An instance of a Python list.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.IPEngineTask.engine_cmd">
+<tt class="descname">engine_cmd</tt><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPEngineTask.engine_cmd" title="Permalink to this definition">¶</a></dt>
+<dd><p>An instance of a Python list.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.IPEngineTask.environment_variables">
+<tt class="descname">environment_variables</tt><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPEngineTask.environment_variables" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait whose value must be an instance of a specified class.</p>
+<p>The value can also be an instance of a subclass of the specified class.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.winhpcjob.IPEngineTask.get_env_vars">
+<tt class="descname">get_env_vars</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPEngineTask.get_env_vars" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.IPEngineTask.is_parametric">
+<tt class="descname">is_parametric</tt><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPEngineTask.is_parametric" title="Permalink to this definition">¶</a></dt>
+<dd><p>A boolean (True, False) trait.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.IPEngineTask.is_rerunnaable">
+<tt class="descname">is_rerunnaable</tt><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPEngineTask.is_rerunnaable" title="Permalink to this definition">¶</a></dt>
+<dd><p>A boolean (True, False) trait.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.IPEngineTask.max_cores">
+<tt class="descname">max_cores</tt><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPEngineTask.max_cores" title="Permalink to this definition">¶</a></dt>
+<dd><p>A integer trait.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.IPEngineTask.max_nodes">
+<tt class="descname">max_nodes</tt><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPEngineTask.max_nodes" title="Permalink to this definition">¶</a></dt>
+<dd><p>A integer trait.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.IPEngineTask.max_sockets">
+<tt class="descname">max_sockets</tt><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPEngineTask.max_sockets" title="Permalink to this definition">¶</a></dt>
+<dd><p>A integer trait.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.IPEngineTask.min_cores">
+<tt class="descname">min_cores</tt><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPEngineTask.min_cores" title="Permalink to this definition">¶</a></dt>
+<dd><p>A integer trait.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.IPEngineTask.min_nodes">
+<tt class="descname">min_nodes</tt><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPEngineTask.min_nodes" title="Permalink to this definition">¶</a></dt>
+<dd><p>A integer trait.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.IPEngineTask.min_sockets">
+<tt class="descname">min_sockets</tt><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPEngineTask.min_sockets" title="Permalink to this definition">¶</a></dt>
+<dd><p>A integer trait.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.winhpcjob.IPEngineTask.on_trait_change">
+<tt class="descname">on_trait_change</tt><big>(</big><em>handler</em>, <em>name=None</em>, <em>remove=False</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPEngineTask.on_trait_change" title="Permalink to this definition">¶</a></dt>
+<dd><p>Setup a handler to be called when a trait changes.</p>
+<p>This is used to setup dynamic notifications of trait changes.</p>
+<p>Static handlers can be created by creating methods on a HasTraits
+subclass with the naming convention &#8216;_[traitname]_changed&#8217;.  Thus,
+to create static handler for the trait &#8216;a&#8217;, create the method
+_a_changed(self, name, old, new) (fewer arguments can be used, see
+below).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>handler</strong> : callable</p>
+<blockquote>
+<div><p>A callable that is called when a trait changes.  Its 
+signature can be handler(), handler(name), handler(name, new)
+or handler(name, old, new).</p>
+</div></blockquote>
+<p><strong>name</strong> : list, str, None</p>
+<blockquote>
+<div><p>If None, the handler will apply to all traits.  If a list
+of str, handler will apply to all names in the list.  If a
+str, the handler will apply just to that name.</p>
+</div></blockquote>
+<p><strong>remove</strong> : bool</p>
+<blockquote class="last">
+<div><p>If False (the default), then install the handler.  If True
+then unintall it.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.IPEngineTask.std_err_file_path">
+<tt class="descname">std_err_file_path</tt><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPEngineTask.std_err_file_path" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait for unicode strings.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.IPEngineTask.std_out_file_path">
+<tt class="descname">std_out_file_path</tt><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPEngineTask.std_out_file_path" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait for unicode strings.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.IPEngineTask.task_id">
+<tt class="descname">task_id</tt><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPEngineTask.task_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait for unicode strings.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.IPEngineTask.task_name">
+<tt class="descname">task_name</tt><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPEngineTask.task_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait for unicode strings.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.winhpcjob.IPEngineTask.trait_metadata">
+<tt class="descname">trait_metadata</tt><big>(</big><em>traitname</em>, <em>key</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPEngineTask.trait_metadata" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get metadata values for trait by key.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.winhpcjob.IPEngineTask.trait_names">
+<tt class="descname">trait_names</tt><big>(</big><em>**metadata</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPEngineTask.trait_names" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of all the names of this classes traits.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.winhpcjob.IPEngineTask.traits">
+<tt class="descname">traits</tt><big>(</big><em>**metadata</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPEngineTask.traits" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of all the traits of this class.</p>
+<p>The TraitTypes returned don&#8217;t know anything about the values
+that the various HasTrait&#8217;s instances are holding.</p>
+<p>This follows the same algorithm as traits does and does not allow
+for any simple way of specifying merely that a metadata name
+exists, but has any value.  This is because get_metadata returns
+None if a metadata key doesn&#8217;t exist.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.IPEngineTask.unit_type">
+<tt class="descname">unit_type</tt><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPEngineTask.unit_type" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait for unicode strings.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.IPEngineTask.version">
+<tt class="descname">version</tt><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPEngineTask.version" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait for unicode strings.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.IPEngineTask.work_directory">
+<tt class="descname">work_directory</tt><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.IPEngineTask.work_directory" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait for unicode strings.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="winhpcjob">
+<h3><a class="reference internal" href="#IPython.parallel.apps.winhpcjob.WinHPCJob" title="IPython.parallel.apps.winhpcjob.WinHPCJob"><tt class="xref py py-class docutils literal"><span class="pre">WinHPCJob</span></tt></a><a class="headerlink" href="#winhpcjob" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="IPython.parallel.apps.winhpcjob.WinHPCJob">
+<em class="property">class </em><tt class="descclassname">IPython.parallel.apps.winhpcjob.</tt><tt class="descname">WinHPCJob</tt><big>(</big><em>**kwargs</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.WinHPCJob" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="IPython.config.configurable.html#IPython.config.configurable.Configurable" title="IPython.config.configurable.Configurable"><tt class="xref py py-class docutils literal"><span class="pre">IPython.config.configurable.Configurable</span></tt></a></p>
+<dl class="method">
+<dt id="IPython.parallel.apps.winhpcjob.WinHPCJob.__init__">
+<tt class="descname">__init__</tt><big>(</big><em>**kwargs</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.WinHPCJob.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a configurable given a config config.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>config</strong> : Config</p>
+<blockquote class="last">
+<div><p>If this is empty, default values are used. If config is a 
+<tt class="xref py py-class docutils literal"><span class="pre">Config</span></tt> instance, it will be used to configure the
+instance.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Notes</p>
+<p>Subclasses of Configurable must call the <a class="reference internal" href="#IPython.parallel.apps.winhpcjob.WinHPCJob.__init__" title="IPython.parallel.apps.winhpcjob.WinHPCJob.__init__"><tt class="xref py py-meth docutils literal"><span class="pre">__init__()</span></tt></a> method of
+<tt class="xref py py-class docutils literal"><span class="pre">Configurable</span></tt> <em>before</em> doing anything else and using 
+<tt class="xref py py-func docutils literal"><span class="pre">super()</span></tt>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">MyConfigurable</span><span class="p">(</span><span class="n">Configurable</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">MyConfigurable</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+        <span class="c"># Then any other code you need to finish initialization.</span>
+</pre></div>
+</div>
+<p>This ensures that instances will be configured properly.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.winhpcjob.WinHPCJob.add_task">
+<tt class="descname">add_task</tt><big>(</big><em>task</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.WinHPCJob.add_task" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a task to the job.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>task</strong> : <a class="reference internal" href="#IPython.parallel.apps.winhpcjob.WinHPCTask" title="IPython.parallel.apps.winhpcjob.WinHPCTask"><tt class="xref py py-class docutils literal"><span class="pre">WinHPCTask</span></tt></a></p>
+<blockquote class="last">
+<div><p>The task object to add.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.winhpcjob.WinHPCJob.as_element">
+<tt class="descname">as_element</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.WinHPCJob.as_element" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.WinHPCJob.auto_calculate_max">
+<tt class="descname">auto_calculate_max</tt><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.WinHPCJob.auto_calculate_max" title="Permalink to this definition">¶</a></dt>
+<dd><p>A boolean (True, False) trait.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.WinHPCJob.auto_calculate_min">
+<tt class="descname">auto_calculate_min</tt><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.WinHPCJob.auto_calculate_min" title="Permalink to this definition">¶</a></dt>
+<dd><p>A boolean (True, False) trait.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.parallel.apps.winhpcjob.WinHPCJob.class_config_section">
+<em class="property">classmethod </em><tt class="descname">class_config_section</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.WinHPCJob.class_config_section" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the config class config section</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.parallel.apps.winhpcjob.WinHPCJob.class_get_help">
+<em class="property">classmethod </em><tt class="descname">class_get_help</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.WinHPCJob.class_get_help" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the help string for this class in ReST format.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.parallel.apps.winhpcjob.WinHPCJob.class_get_trait_help">
+<em class="property">classmethod </em><tt class="descname">class_get_trait_help</tt><big>(</big><em>trait</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.WinHPCJob.class_get_trait_help" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the help string for a single trait.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.parallel.apps.winhpcjob.WinHPCJob.class_print_help">
+<em class="property">classmethod </em><tt class="descname">class_print_help</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.WinHPCJob.class_print_help" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the help string for a single trait and print it.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.parallel.apps.winhpcjob.WinHPCJob.class_trait_names">
+<em class="property">classmethod </em><tt class="descname">class_trait_names</tt><big>(</big><em>**metadata</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.WinHPCJob.class_trait_names" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of all the names of this classes traits.</p>
+<p>This method is just like the <a class="reference internal" href="#IPython.parallel.apps.winhpcjob.WinHPCJob.trait_names" title="IPython.parallel.apps.winhpcjob.WinHPCJob.trait_names"><tt class="xref py py-meth docutils literal"><span class="pre">trait_names()</span></tt></a> method, but is unbound.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.parallel.apps.winhpcjob.WinHPCJob.class_traits">
+<em class="property">classmethod </em><tt class="descname">class_traits</tt><big>(</big><em>**metadata</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.WinHPCJob.class_traits" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of all the traits of this class.</p>
+<p>This method is just like the <a class="reference internal" href="#IPython.parallel.apps.winhpcjob.WinHPCJob.traits" title="IPython.parallel.apps.winhpcjob.WinHPCJob.traits"><tt class="xref py py-meth docutils literal"><span class="pre">traits()</span></tt></a> method, but is unbound.</p>
+<p>The TraitTypes returned don&#8217;t know anything about the values
+that the various HasTrait&#8217;s instances are holding.</p>
+<p>This follows the same algorithm as traits does and does not allow
+for any simple way of specifying merely that a metadata name
+exists, but has any value.  This is because get_metadata returns
+None if a metadata key doesn&#8217;t exist.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.WinHPCJob.config">
+<tt class="descname">config</tt><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.WinHPCJob.config" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait whose value must be an instance of a specified class.</p>
+<p>The value can also be an instance of a subclass of the specified class.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.WinHPCJob.created">
+<tt class="descname">created</tt><em class="property"> = None</em><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.WinHPCJob.created" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.WinHPCJob.is_exclusive">
+<tt class="descname">is_exclusive</tt><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.WinHPCJob.is_exclusive" title="Permalink to this definition">¶</a></dt>
+<dd><p>A boolean (True, False) trait.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.WinHPCJob.job_id">
+<tt class="descname">job_id</tt><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.WinHPCJob.job_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait for unicode strings.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.WinHPCJob.job_name">
+<tt class="descname">job_name</tt><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.WinHPCJob.job_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait for unicode strings.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.WinHPCJob.job_type">
+<tt class="descname">job_type</tt><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.WinHPCJob.job_type" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait for unicode strings.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.WinHPCJob.max_cores">
+<tt class="descname">max_cores</tt><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.WinHPCJob.max_cores" title="Permalink to this definition">¶</a></dt>
+<dd><p>A integer trait.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.WinHPCJob.max_nodes">
+<tt class="descname">max_nodes</tt><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.WinHPCJob.max_nodes" title="Permalink to this definition">¶</a></dt>
+<dd><p>A integer trait.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.WinHPCJob.max_sockets">
+<tt class="descname">max_sockets</tt><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.WinHPCJob.max_sockets" title="Permalink to this definition">¶</a></dt>
+<dd><p>A integer trait.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.WinHPCJob.min_cores">
+<tt class="descname">min_cores</tt><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.WinHPCJob.min_cores" title="Permalink to this definition">¶</a></dt>
+<dd><p>A integer trait.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.WinHPCJob.min_nodes">
+<tt class="descname">min_nodes</tt><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.WinHPCJob.min_nodes" title="Permalink to this definition">¶</a></dt>
+<dd><p>A integer trait.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.WinHPCJob.min_sockets">
+<tt class="descname">min_sockets</tt><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.WinHPCJob.min_sockets" title="Permalink to this definition">¶</a></dt>
+<dd><p>A integer trait.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.winhpcjob.WinHPCJob.on_trait_change">
+<tt class="descname">on_trait_change</tt><big>(</big><em>handler</em>, <em>name=None</em>, <em>remove=False</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.WinHPCJob.on_trait_change" title="Permalink to this definition">¶</a></dt>
+<dd><p>Setup a handler to be called when a trait changes.</p>
+<p>This is used to setup dynamic notifications of trait changes.</p>
+<p>Static handlers can be created by creating methods on a HasTraits
+subclass with the naming convention &#8216;_[traitname]_changed&#8217;.  Thus,
+to create static handler for the trait &#8216;a&#8217;, create the method
+_a_changed(self, name, old, new) (fewer arguments can be used, see
+below).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>handler</strong> : callable</p>
+<blockquote>
+<div><p>A callable that is called when a trait changes.  Its 
+signature can be handler(), handler(name), handler(name, new)
+or handler(name, old, new).</p>
+</div></blockquote>
+<p><strong>name</strong> : list, str, None</p>
+<blockquote>
+<div><p>If None, the handler will apply to all traits.  If a list
+of str, handler will apply to all names in the list.  If a
+str, the handler will apply just to that name.</p>
+</div></blockquote>
+<p><strong>remove</strong> : bool</p>
+<blockquote class="last">
+<div><p>If False (the default), then install the handler.  If True
+then unintall it.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.WinHPCJob.owner">
+<tt class="descname">owner</tt><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.WinHPCJob.owner" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.WinHPCJob.priority">
+<tt class="descname">priority</tt><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.WinHPCJob.priority" title="Permalink to this definition">¶</a></dt>
+<dd><p>An enum that whose value must be in a given sequence.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.WinHPCJob.project">
+<tt class="descname">project</tt><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.WinHPCJob.project" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait for unicode strings.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.WinHPCJob.requested_nodes">
+<tt class="descname">requested_nodes</tt><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.WinHPCJob.requested_nodes" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait for unicode strings.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.WinHPCJob.run_until_canceled">
+<tt class="descname">run_until_canceled</tt><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.WinHPCJob.run_until_canceled" title="Permalink to this definition">¶</a></dt>
+<dd><p>A boolean (True, False) trait.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.WinHPCJob.tasks">
+<tt class="descname">tasks</tt><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.WinHPCJob.tasks" title="Permalink to this definition">¶</a></dt>
+<dd><p>An instance of a Python list.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.winhpcjob.WinHPCJob.tostring">
+<tt class="descname">tostring</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.WinHPCJob.tostring" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the string representation of the job description XML.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.winhpcjob.WinHPCJob.trait_metadata">
+<tt class="descname">trait_metadata</tt><big>(</big><em>traitname</em>, <em>key</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.WinHPCJob.trait_metadata" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get metadata values for trait by key.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.winhpcjob.WinHPCJob.trait_names">
+<tt class="descname">trait_names</tt><big>(</big><em>**metadata</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.WinHPCJob.trait_names" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of all the names of this classes traits.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.winhpcjob.WinHPCJob.traits">
+<tt class="descname">traits</tt><big>(</big><em>**metadata</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.WinHPCJob.traits" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of all the traits of this class.</p>
+<p>The TraitTypes returned don&#8217;t know anything about the values
+that the various HasTrait&#8217;s instances are holding.</p>
+<p>This follows the same algorithm as traits does and does not allow
+for any simple way of specifying merely that a metadata name
+exists, but has any value.  This is because get_metadata returns
+None if a metadata key doesn&#8217;t exist.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.WinHPCJob.unit_type">
+<tt class="descname">unit_type</tt><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.WinHPCJob.unit_type" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait for unicode strings.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.WinHPCJob.username">
+<tt class="descname">username</tt><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.WinHPCJob.username" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait for unicode strings.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.WinHPCJob.version">
+<tt class="descname">version</tt><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.WinHPCJob.version" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait for unicode strings.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.winhpcjob.WinHPCJob.write">
+<tt class="descname">write</tt><big>(</big><em>filename</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.WinHPCJob.write" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write the XML job description to a file.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.WinHPCJob.xmlns">
+<tt class="descname">xmlns</tt><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.WinHPCJob.xmlns" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait for unicode strings.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="winhpctask">
+<h3><a class="reference internal" href="#IPython.parallel.apps.winhpcjob.WinHPCTask" title="IPython.parallel.apps.winhpcjob.WinHPCTask"><tt class="xref py py-class docutils literal"><span class="pre">WinHPCTask</span></tt></a><a class="headerlink" href="#winhpctask" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="IPython.parallel.apps.winhpcjob.WinHPCTask">
+<em class="property">class </em><tt class="descclassname">IPython.parallel.apps.winhpcjob.</tt><tt class="descname">WinHPCTask</tt><big>(</big><em>**kwargs</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.WinHPCTask" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="IPython.config.configurable.html#IPython.config.configurable.Configurable" title="IPython.config.configurable.Configurable"><tt class="xref py py-class docutils literal"><span class="pre">IPython.config.configurable.Configurable</span></tt></a></p>
+<dl class="method">
+<dt id="IPython.parallel.apps.winhpcjob.WinHPCTask.__init__">
+<tt class="descname">__init__</tt><big>(</big><em>**kwargs</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.WinHPCTask.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a configurable given a config config.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>config</strong> : Config</p>
+<blockquote class="last">
+<div><p>If this is empty, default values are used. If config is a 
+<tt class="xref py py-class docutils literal"><span class="pre">Config</span></tt> instance, it will be used to configure the
+instance.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Notes</p>
+<p>Subclasses of Configurable must call the <a class="reference internal" href="#IPython.parallel.apps.winhpcjob.WinHPCTask.__init__" title="IPython.parallel.apps.winhpcjob.WinHPCTask.__init__"><tt class="xref py py-meth docutils literal"><span class="pre">__init__()</span></tt></a> method of
+<tt class="xref py py-class docutils literal"><span class="pre">Configurable</span></tt> <em>before</em> doing anything else and using 
+<tt class="xref py py-func docutils literal"><span class="pre">super()</span></tt>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">MyConfigurable</span><span class="p">(</span><span class="n">Configurable</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">MyConfigurable</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+        <span class="c"># Then any other code you need to finish initialization.</span>
+</pre></div>
+</div>
+<p>This ensures that instances will be configured properly.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.winhpcjob.WinHPCTask.as_element">
+<tt class="descname">as_element</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.WinHPCTask.as_element" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.parallel.apps.winhpcjob.WinHPCTask.class_config_section">
+<em class="property">classmethod </em><tt class="descname">class_config_section</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.WinHPCTask.class_config_section" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the config class config section</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.parallel.apps.winhpcjob.WinHPCTask.class_get_help">
+<em class="property">classmethod </em><tt class="descname">class_get_help</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.WinHPCTask.class_get_help" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the help string for this class in ReST format.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.parallel.apps.winhpcjob.WinHPCTask.class_get_trait_help">
+<em class="property">classmethod </em><tt class="descname">class_get_trait_help</tt><big>(</big><em>trait</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.WinHPCTask.class_get_trait_help" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the help string for a single trait.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.parallel.apps.winhpcjob.WinHPCTask.class_print_help">
+<em class="property">classmethod </em><tt class="descname">class_print_help</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.WinHPCTask.class_print_help" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the help string for a single trait and print it.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.parallel.apps.winhpcjob.WinHPCTask.class_trait_names">
+<em class="property">classmethod </em><tt class="descname">class_trait_names</tt><big>(</big><em>**metadata</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.WinHPCTask.class_trait_names" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of all the names of this classes traits.</p>
+<p>This method is just like the <a class="reference internal" href="#IPython.parallel.apps.winhpcjob.WinHPCTask.trait_names" title="IPython.parallel.apps.winhpcjob.WinHPCTask.trait_names"><tt class="xref py py-meth docutils literal"><span class="pre">trait_names()</span></tt></a> method, but is unbound.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.parallel.apps.winhpcjob.WinHPCTask.class_traits">
+<em class="property">classmethod </em><tt class="descname">class_traits</tt><big>(</big><em>**metadata</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.WinHPCTask.class_traits" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of all the traits of this class.</p>
+<p>This method is just like the <a class="reference internal" href="#IPython.parallel.apps.winhpcjob.WinHPCTask.traits" title="IPython.parallel.apps.winhpcjob.WinHPCTask.traits"><tt class="xref py py-meth docutils literal"><span class="pre">traits()</span></tt></a> method, but is unbound.</p>
+<p>The TraitTypes returned don&#8217;t know anything about the values
+that the various HasTrait&#8217;s instances are holding.</p>
+<p>This follows the same algorithm as traits does and does not allow
+for any simple way of specifying merely that a metadata name
+exists, but has any value.  This is because get_metadata returns
+None if a metadata key doesn&#8217;t exist.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.WinHPCTask.command_line">
+<tt class="descname">command_line</tt><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.WinHPCTask.command_line" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait for unicode strings.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.WinHPCTask.config">
+<tt class="descname">config</tt><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.WinHPCTask.config" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait whose value must be an instance of a specified class.</p>
+<p>The value can also be an instance of a subclass of the specified class.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.WinHPCTask.created">
+<tt class="descname">created</tt><em class="property"> = None</em><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.WinHPCTask.created" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.WinHPCTask.environment_variables">
+<tt class="descname">environment_variables</tt><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.WinHPCTask.environment_variables" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait whose value must be an instance of a specified class.</p>
+<p>The value can also be an instance of a subclass of the specified class.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.winhpcjob.WinHPCTask.get_env_vars">
+<tt class="descname">get_env_vars</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.WinHPCTask.get_env_vars" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.WinHPCTask.is_parametric">
+<tt class="descname">is_parametric</tt><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.WinHPCTask.is_parametric" title="Permalink to this definition">¶</a></dt>
+<dd><p>A boolean (True, False) trait.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.WinHPCTask.is_rerunnaable">
+<tt class="descname">is_rerunnaable</tt><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.WinHPCTask.is_rerunnaable" title="Permalink to this definition">¶</a></dt>
+<dd><p>A boolean (True, False) trait.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.WinHPCTask.max_cores">
+<tt class="descname">max_cores</tt><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.WinHPCTask.max_cores" title="Permalink to this definition">¶</a></dt>
+<dd><p>A integer trait.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.WinHPCTask.max_nodes">
+<tt class="descname">max_nodes</tt><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.WinHPCTask.max_nodes" title="Permalink to this definition">¶</a></dt>
+<dd><p>A integer trait.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.WinHPCTask.max_sockets">
+<tt class="descname">max_sockets</tt><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.WinHPCTask.max_sockets" title="Permalink to this definition">¶</a></dt>
+<dd><p>A integer trait.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.WinHPCTask.min_cores">
+<tt class="descname">min_cores</tt><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.WinHPCTask.min_cores" title="Permalink to this definition">¶</a></dt>
+<dd><p>A integer trait.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.WinHPCTask.min_nodes">
+<tt class="descname">min_nodes</tt><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.WinHPCTask.min_nodes" title="Permalink to this definition">¶</a></dt>
+<dd><p>A integer trait.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.WinHPCTask.min_sockets">
+<tt class="descname">min_sockets</tt><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.WinHPCTask.min_sockets" title="Permalink to this definition">¶</a></dt>
+<dd><p>A integer trait.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.winhpcjob.WinHPCTask.on_trait_change">
+<tt class="descname">on_trait_change</tt><big>(</big><em>handler</em>, <em>name=None</em>, <em>remove=False</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.WinHPCTask.on_trait_change" title="Permalink to this definition">¶</a></dt>
+<dd><p>Setup a handler to be called when a trait changes.</p>
+<p>This is used to setup dynamic notifications of trait changes.</p>
+<p>Static handlers can be created by creating methods on a HasTraits
+subclass with the naming convention &#8216;_[traitname]_changed&#8217;.  Thus,
+to create static handler for the trait &#8216;a&#8217;, create the method
+_a_changed(self, name, old, new) (fewer arguments can be used, see
+below).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>handler</strong> : callable</p>
+<blockquote>
+<div><p>A callable that is called when a trait changes.  Its 
+signature can be handler(), handler(name), handler(name, new)
+or handler(name, old, new).</p>
+</div></blockquote>
+<p><strong>name</strong> : list, str, None</p>
+<blockquote>
+<div><p>If None, the handler will apply to all traits.  If a list
+of str, handler will apply to all names in the list.  If a
+str, the handler will apply just to that name.</p>
+</div></blockquote>
+<p><strong>remove</strong> : bool</p>
+<blockquote class="last">
+<div><p>If False (the default), then install the handler.  If True
+then unintall it.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.WinHPCTask.std_err_file_path">
+<tt class="descname">std_err_file_path</tt><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.WinHPCTask.std_err_file_path" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait for unicode strings.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.WinHPCTask.std_out_file_path">
+<tt class="descname">std_out_file_path</tt><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.WinHPCTask.std_out_file_path" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait for unicode strings.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.WinHPCTask.task_id">
+<tt class="descname">task_id</tt><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.WinHPCTask.task_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait for unicode strings.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.WinHPCTask.task_name">
+<tt class="descname">task_name</tt><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.WinHPCTask.task_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait for unicode strings.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.winhpcjob.WinHPCTask.trait_metadata">
+<tt class="descname">trait_metadata</tt><big>(</big><em>traitname</em>, <em>key</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.WinHPCTask.trait_metadata" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get metadata values for trait by key.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.winhpcjob.WinHPCTask.trait_names">
+<tt class="descname">trait_names</tt><big>(</big><em>**metadata</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.WinHPCTask.trait_names" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of all the names of this classes traits.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.winhpcjob.WinHPCTask.traits">
+<tt class="descname">traits</tt><big>(</big><em>**metadata</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.WinHPCTask.traits" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of all the traits of this class.</p>
+<p>The TraitTypes returned don&#8217;t know anything about the values
+that the various HasTrait&#8217;s instances are holding.</p>
+<p>This follows the same algorithm as traits does and does not allow
+for any simple way of specifying merely that a metadata name
+exists, but has any value.  This is because get_metadata returns
+None if a metadata key doesn&#8217;t exist.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.WinHPCTask.unit_type">
+<tt class="descname">unit_type</tt><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.WinHPCTask.unit_type" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait for unicode strings.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.WinHPCTask.version">
+<tt class="descname">version</tt><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.WinHPCTask.version" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait for unicode strings.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.winhpcjob.WinHPCTask.work_directory">
+<tt class="descname">work_directory</tt><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.WinHPCTask.work_directory" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait for unicode strings.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="IPython.parallel.apps.winhpcjob.as_str">
+<tt class="descclassname">IPython.parallel.apps.winhpcjob.</tt><tt class="descname">as_str</tt><big>(</big><em>value</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.as_str" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="IPython.parallel.apps.winhpcjob.find_username">
+<tt class="descclassname">IPython.parallel.apps.winhpcjob.</tt><tt class="descname">find_username</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.find_username" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="IPython.parallel.apps.winhpcjob.indent">
+<tt class="descclassname">IPython.parallel.apps.winhpcjob.</tt><tt class="descname">indent</tt><big>(</big><em>elem</em>, <em>level=0</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.winhpcjob.indent" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="IPython.parallel.client.asyncresult.html" title="parallel.client.asyncresult"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="IPython.parallel.apps.win32support.html" title="parallel.apps.win32support"
+             >previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <li><a href="../../search.html">search</a>|&nbsp;</li>
+       <li><a href="../../index.html">documentation </a> &raquo;</li>
+
+          <li><a href="../index.html" >The IPython API</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2008, The IPython Development Team.
+      Last updated on Jul 31, 2011.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1pre.
+    </div>
+  </body>
+</html>

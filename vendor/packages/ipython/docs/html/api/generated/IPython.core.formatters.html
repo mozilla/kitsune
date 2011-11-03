@@ -1,0 +1,2615 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>core.formatters &mdash; IPython 0.11 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.11',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="IPython 0.11 documentation" href="../../index.html" />
+    <link rel="up" title="The IPython API" href="../index.html" />
+    <link rel="next" title="core.history" href="IPython.core.history.html" />
+    <link rel="prev" title="core.extensions" href="IPython.core.extensions.html" /> 
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<a href="../../index.html"><img src="../../_static/logo.png" border="0" alt="IPython Documentation"/></a>
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="IPython.core.history.html" title="core.history"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="IPython.core.extensions.html" title="core.extensions"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <li><a href="../../search.html">search</a>|&nbsp;</li>
+       <li><a href="../../index.html">documentation </a> &raquo;</li>
+
+          <li><a href="../index.html" accesskey="U">The IPython API</a> &raquo;</li> 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">core.formatters</a><ul>
+<li><a class="reference internal" href="#module-core-formatters">Module: <tt class="docutils literal"><span class="pre">core.formatters</span></tt></a></li>
+<li><a class="reference internal" href="#classes">Classes</a><ul>
+<li><a class="reference internal" href="#baseformatter"><tt class="docutils literal"><span class="pre">BaseFormatter</span></tt></a></li>
+<li><a class="reference internal" href="#displayformatter"><tt class="docutils literal"><span class="pre">DisplayFormatter</span></tt></a></li>
+<li><a class="reference internal" href="#formatterabc"><tt class="docutils literal"><span class="pre">FormatterABC</span></tt></a></li>
+<li><a class="reference internal" href="#htmlformatter"><tt class="docutils literal"><span class="pre">HTMLFormatter</span></tt></a></li>
+<li><a class="reference internal" href="#jsonformatter"><tt class="docutils literal"><span class="pre">JSONFormatter</span></tt></a></li>
+<li><a class="reference internal" href="#javascriptformatter"><tt class="docutils literal"><span class="pre">JavascriptFormatter</span></tt></a></li>
+<li><a class="reference internal" href="#latexformatter"><tt class="docutils literal"><span class="pre">LatexFormatter</span></tt></a></li>
+<li><a class="reference internal" href="#pngformatter"><tt class="docutils literal"><span class="pre">PNGFormatter</span></tt></a></li>
+<li><a class="reference internal" href="#plaintextformatter"><tt class="docutils literal"><span class="pre">PlainTextFormatter</span></tt></a></li>
+<li><a class="reference internal" href="#svgformatter"><tt class="docutils literal"><span class="pre">SVGFormatter</span></tt></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#function">Function</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="IPython.core.extensions.html"
+                        title="previous chapter">core.extensions</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="IPython.core.history.html"
+                        title="next chapter">core.history</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/api/generated/IPython.core.formatters.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="core-formatters">
+<h1>core.formatters<a class="headerlink" href="#core-formatters" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-core-formatters">
+<h2>Module: <tt class="xref py py-mod docutils literal"><span class="pre">core.formatters</span></tt><a class="headerlink" href="#module-core-formatters" title="Permalink to this headline">¶</a></h2>
+<p>Inheritance diagram for <tt class="docutils literal"><span class="pre">IPython.core.formatters</span></tt>:</p>
+<img src="../../_images/inheritance6491d98cf3.png" usemap="#inheritance6491d98cf3" class="inheritance"/><map id="inheritance6491d98cf3" name="inheritance6491d98cf3">
+</map>
+<span class="target" id="module-IPython.core.formatters"></span><p>Display formatters.</p>
+<p>Authors:</p>
+<ul class="simple">
+<li>Robert Kern</li>
+<li>Brian Granger</li>
+</ul>
+</div>
+<div class="section" id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="baseformatter">
+<h3><a class="reference internal" href="#IPython.core.formatters.BaseFormatter" title="IPython.core.formatters.BaseFormatter"><tt class="xref py py-class docutils literal"><span class="pre">BaseFormatter</span></tt></a><a class="headerlink" href="#baseformatter" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="IPython.core.formatters.BaseFormatter">
+<em class="property">class </em><tt class="descclassname">IPython.core.formatters.</tt><tt class="descname">BaseFormatter</tt><big>(</big><em>**kwargs</em><big>)</big><a class="headerlink" href="#IPython.core.formatters.BaseFormatter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="IPython.config.configurable.html#IPython.config.configurable.Configurable" title="IPython.config.configurable.Configurable"><tt class="xref py py-class docutils literal"><span class="pre">IPython.config.configurable.Configurable</span></tt></a></p>
+<p>A base formatter class that is configurable.</p>
+<p>This formatter should usually be used as the base class of all formatters.
+It is a traited <tt class="xref py py-class docutils literal"><span class="pre">Configurable</span></tt> class and includes an extensible
+API for users to determine how their objects are formatted. The following
+logic is used to find a function to format an given object.</p>
+<ol class="arabic simple">
+<li>The object is introspected to see if it has a method with the name
+<a class="reference internal" href="#IPython.core.formatters.BaseFormatter.print_method" title="IPython.core.formatters.BaseFormatter.print_method"><tt class="xref py py-attr docutils literal"><span class="pre">print_method</span></tt></a>. If is does, that object is passed to that method
+for formatting.</li>
+<li>If no print method is found, three internal dictionaries are consulted
+to find print method: <a class="reference internal" href="#IPython.core.formatters.BaseFormatter.singleton_printers" title="IPython.core.formatters.BaseFormatter.singleton_printers"><tt class="xref py py-attr docutils literal"><span class="pre">singleton_printers</span></tt></a>, <a class="reference internal" href="#IPython.core.formatters.BaseFormatter.type_printers" title="IPython.core.formatters.BaseFormatter.type_printers"><tt class="xref py py-attr docutils literal"><span class="pre">type_printers</span></tt></a>
+and <a class="reference internal" href="#IPython.core.formatters.BaseFormatter.deferred_printers" title="IPython.core.formatters.BaseFormatter.deferred_printers"><tt class="xref py py-attr docutils literal"><span class="pre">deferred_printers</span></tt></a>.</li>
+</ol>
+<p>Users should use these dictionaries to register functions that will be
+used to compute the format data for their objects (if those objects don&#8217;t
+have the special print methods). The easiest way of using these
+dictionaries is through the <a class="reference internal" href="#IPython.core.formatters.BaseFormatter.for_type" title="IPython.core.formatters.BaseFormatter.for_type"><tt class="xref py py-meth docutils literal"><span class="pre">for_type()</span></tt></a> and <a class="reference internal" href="#IPython.core.formatters.BaseFormatter.for_type_by_name" title="IPython.core.formatters.BaseFormatter.for_type_by_name"><tt class="xref py py-meth docutils literal"><span class="pre">for_type_by_name()</span></tt></a>
+methods.</p>
+<p>If no function/callable is found to compute the format data, <tt class="docutils literal"><span class="pre">None</span></tt> is
+returned and this format type is not used.</p>
+<dl class="method">
+<dt id="IPython.core.formatters.BaseFormatter.__init__">
+<tt class="descname">__init__</tt><big>(</big><em>**kwargs</em><big>)</big><a class="headerlink" href="#IPython.core.formatters.BaseFormatter.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a configurable given a config config.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>config</strong> : Config</p>
+<blockquote class="last">
+<div><p>If this is empty, default values are used. If config is a 
+<tt class="xref py py-class docutils literal"><span class="pre">Config</span></tt> instance, it will be used to configure the
+instance.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Notes</p>
+<p>Subclasses of Configurable must call the <a class="reference internal" href="#IPython.core.formatters.BaseFormatter.__init__" title="IPython.core.formatters.BaseFormatter.__init__"><tt class="xref py py-meth docutils literal"><span class="pre">__init__()</span></tt></a> method of
+<tt class="xref py py-class docutils literal"><span class="pre">Configurable</span></tt> <em>before</em> doing anything else and using 
+<tt class="xref py py-func docutils literal"><span class="pre">super()</span></tt>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">MyConfigurable</span><span class="p">(</span><span class="n">Configurable</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">MyConfigurable</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+        <span class="c"># Then any other code you need to finish initialization.</span>
+</pre></div>
+</div>
+<p>This ensures that instances will be configured properly.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.core.formatters.BaseFormatter.class_config_section">
+<em class="property">classmethod </em><tt class="descname">class_config_section</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.core.formatters.BaseFormatter.class_config_section" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the config class config section</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.core.formatters.BaseFormatter.class_get_help">
+<em class="property">classmethod </em><tt class="descname">class_get_help</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.core.formatters.BaseFormatter.class_get_help" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the help string for this class in ReST format.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.core.formatters.BaseFormatter.class_get_trait_help">
+<em class="property">classmethod </em><tt class="descname">class_get_trait_help</tt><big>(</big><em>trait</em><big>)</big><a class="headerlink" href="#IPython.core.formatters.BaseFormatter.class_get_trait_help" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the help string for a single trait.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.core.formatters.BaseFormatter.class_print_help">
+<em class="property">classmethod </em><tt class="descname">class_print_help</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.core.formatters.BaseFormatter.class_print_help" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the help string for a single trait and print it.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.core.formatters.BaseFormatter.class_trait_names">
+<em class="property">classmethod </em><tt class="descname">class_trait_names</tt><big>(</big><em>**metadata</em><big>)</big><a class="headerlink" href="#IPython.core.formatters.BaseFormatter.class_trait_names" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of all the names of this classes traits.</p>
+<p>This method is just like the <a class="reference internal" href="#IPython.core.formatters.BaseFormatter.trait_names" title="IPython.core.formatters.BaseFormatter.trait_names"><tt class="xref py py-meth docutils literal"><span class="pre">trait_names()</span></tt></a> method, but is unbound.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.core.formatters.BaseFormatter.class_traits">
+<em class="property">classmethod </em><tt class="descname">class_traits</tt><big>(</big><em>**metadata</em><big>)</big><a class="headerlink" href="#IPython.core.formatters.BaseFormatter.class_traits" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of all the traits of this class.</p>
+<p>This method is just like the <a class="reference internal" href="#IPython.core.formatters.BaseFormatter.traits" title="IPython.core.formatters.BaseFormatter.traits"><tt class="xref py py-meth docutils literal"><span class="pre">traits()</span></tt></a> method, but is unbound.</p>
+<p>The TraitTypes returned don&#8217;t know anything about the values
+that the various HasTrait&#8217;s instances are holding.</p>
+<p>This follows the same algorithm as traits does and does not allow
+for any simple way of specifying merely that a metadata name
+exists, but has any value.  This is because get_metadata returns
+None if a metadata key doesn&#8217;t exist.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.core.formatters.BaseFormatter.config">
+<tt class="descname">config</tt><a class="headerlink" href="#IPython.core.formatters.BaseFormatter.config" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait whose value must be an instance of a specified class.</p>
+<p>The value can also be an instance of a subclass of the specified class.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.core.formatters.BaseFormatter.created">
+<tt class="descname">created</tt><em class="property"> = None</em><a class="headerlink" href="#IPython.core.formatters.BaseFormatter.created" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.core.formatters.BaseFormatter.deferred_printers">
+<tt class="descname">deferred_printers</tt><a class="headerlink" href="#IPython.core.formatters.BaseFormatter.deferred_printers" title="Permalink to this definition">¶</a></dt>
+<dd><p>An instance of a Python dict.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.core.formatters.BaseFormatter.enabled">
+<tt class="descname">enabled</tt><a class="headerlink" href="#IPython.core.formatters.BaseFormatter.enabled" title="Permalink to this definition">¶</a></dt>
+<dd><p>A boolean (True, False) trait.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.core.formatters.BaseFormatter.for_type">
+<tt class="descname">for_type</tt><big>(</big><em>typ</em>, <em>func</em><big>)</big><a class="headerlink" href="#IPython.core.formatters.BaseFormatter.for_type" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a format function for a given type.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>typ</strong> : class</p>
+<blockquote>
+<div><p>The class of the object that will be formatted using <cite>func</cite>.</p>
+</div></blockquote>
+<p><strong>func</strong> : callable</p>
+<blockquote class="last">
+<div><p>The callable that will be called to compute the format data. The
+call signature of this function is simple, it must take the
+object to be formatted and return the raw data for the given
+format. Subclasses may use a different call signature for the
+<cite>func</cite> argument.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.core.formatters.BaseFormatter.for_type_by_name">
+<tt class="descname">for_type_by_name</tt><big>(</big><em>type_module</em>, <em>type_name</em>, <em>func</em><big>)</big><a class="headerlink" href="#IPython.core.formatters.BaseFormatter.for_type_by_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a format function for a type specified by the full dotted
+module and name of the type, rather than the type of the object.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>type_module</strong> : str</p>
+<blockquote>
+<div><p>The full dotted name of the module the type is defined in, like
+<tt class="docutils literal"><span class="pre">numpy</span></tt>.</p>
+</div></blockquote>
+<p><strong>type_name</strong> : str</p>
+<blockquote>
+<div><p>The name of the type (the class name), like <tt class="docutils literal"><span class="pre">dtype</span></tt></p>
+</div></blockquote>
+<p><strong>func</strong> : callable</p>
+<blockquote class="last">
+<div><p>The callable that will be called to compute the format data. The
+call signature of this function is simple, it must take the
+object to be formatted and return the raw data for the given
+format. Subclasses may use a different call signature for the
+<cite>func</cite> argument.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.core.formatters.BaseFormatter.format_type">
+<tt class="descname">format_type</tt><a class="headerlink" href="#IPython.core.formatters.BaseFormatter.format_type" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait for unicode strings.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.core.formatters.BaseFormatter.on_trait_change">
+<tt class="descname">on_trait_change</tt><big>(</big><em>handler</em>, <em>name=None</em>, <em>remove=False</em><big>)</big><a class="headerlink" href="#IPython.core.formatters.BaseFormatter.on_trait_change" title="Permalink to this definition">¶</a></dt>
+<dd><p>Setup a handler to be called when a trait changes.</p>
+<p>This is used to setup dynamic notifications of trait changes.</p>
+<p>Static handlers can be created by creating methods on a HasTraits
+subclass with the naming convention &#8216;_[traitname]_changed&#8217;.  Thus,
+to create static handler for the trait &#8216;a&#8217;, create the method
+_a_changed(self, name, old, new) (fewer arguments can be used, see
+below).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>handler</strong> : callable</p>
+<blockquote>
+<div><p>A callable that is called when a trait changes.  Its 
+signature can be handler(), handler(name), handler(name, new)
+or handler(name, old, new).</p>
+</div></blockquote>
+<p><strong>name</strong> : list, str, None</p>
+<blockquote>
+<div><p>If None, the handler will apply to all traits.  If a list
+of str, handler will apply to all names in the list.  If a
+str, the handler will apply just to that name.</p>
+</div></blockquote>
+<p><strong>remove</strong> : bool</p>
+<blockquote class="last">
+<div><p>If False (the default), then install the handler.  If True
+then unintall it.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.core.formatters.BaseFormatter.print_method">
+<tt class="descname">print_method</tt><a class="headerlink" href="#IPython.core.formatters.BaseFormatter.print_method" title="Permalink to this definition">¶</a></dt>
+<dd><p>A string holding a valid object name in this version of Python.</p>
+<p>This does not check that the name exists in any scope.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.core.formatters.BaseFormatter.singleton_printers">
+<tt class="descname">singleton_printers</tt><a class="headerlink" href="#IPython.core.formatters.BaseFormatter.singleton_printers" title="Permalink to this definition">¶</a></dt>
+<dd><p>An instance of a Python dict.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.core.formatters.BaseFormatter.trait_metadata">
+<tt class="descname">trait_metadata</tt><big>(</big><em>traitname</em>, <em>key</em><big>)</big><a class="headerlink" href="#IPython.core.formatters.BaseFormatter.trait_metadata" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get metadata values for trait by key.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.core.formatters.BaseFormatter.trait_names">
+<tt class="descname">trait_names</tt><big>(</big><em>**metadata</em><big>)</big><a class="headerlink" href="#IPython.core.formatters.BaseFormatter.trait_names" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of all the names of this classes traits.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.core.formatters.BaseFormatter.traits">
+<tt class="descname">traits</tt><big>(</big><em>**metadata</em><big>)</big><a class="headerlink" href="#IPython.core.formatters.BaseFormatter.traits" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of all the traits of this class.</p>
+<p>The TraitTypes returned don&#8217;t know anything about the values
+that the various HasTrait&#8217;s instances are holding.</p>
+<p>This follows the same algorithm as traits does and does not allow
+for any simple way of specifying merely that a metadata name
+exists, but has any value.  This is because get_metadata returns
+None if a metadata key doesn&#8217;t exist.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.core.formatters.BaseFormatter.type_printers">
+<tt class="descname">type_printers</tt><a class="headerlink" href="#IPython.core.formatters.BaseFormatter.type_printers" title="Permalink to this definition">¶</a></dt>
+<dd><p>An instance of a Python dict.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="displayformatter">
+<h3><a class="reference internal" href="#IPython.core.formatters.DisplayFormatter" title="IPython.core.formatters.DisplayFormatter"><tt class="xref py py-class docutils literal"><span class="pre">DisplayFormatter</span></tt></a><a class="headerlink" href="#displayformatter" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="IPython.core.formatters.DisplayFormatter">
+<em class="property">class </em><tt class="descclassname">IPython.core.formatters.</tt><tt class="descname">DisplayFormatter</tt><big>(</big><em>**kwargs</em><big>)</big><a class="headerlink" href="#IPython.core.formatters.DisplayFormatter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="IPython.config.configurable.html#IPython.config.configurable.Configurable" title="IPython.config.configurable.Configurable"><tt class="xref py py-class docutils literal"><span class="pre">IPython.config.configurable.Configurable</span></tt></a></p>
+<dl class="method">
+<dt id="IPython.core.formatters.DisplayFormatter.__init__">
+<tt class="descname">__init__</tt><big>(</big><em>**kwargs</em><big>)</big><a class="headerlink" href="#IPython.core.formatters.DisplayFormatter.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a configurable given a config config.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>config</strong> : Config</p>
+<blockquote class="last">
+<div><p>If this is empty, default values are used. If config is a 
+<tt class="xref py py-class docutils literal"><span class="pre">Config</span></tt> instance, it will be used to configure the
+instance.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Notes</p>
+<p>Subclasses of Configurable must call the <a class="reference internal" href="#IPython.core.formatters.DisplayFormatter.__init__" title="IPython.core.formatters.DisplayFormatter.__init__"><tt class="xref py py-meth docutils literal"><span class="pre">__init__()</span></tt></a> method of
+<tt class="xref py py-class docutils literal"><span class="pre">Configurable</span></tt> <em>before</em> doing anything else and using 
+<tt class="xref py py-func docutils literal"><span class="pre">super()</span></tt>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">MyConfigurable</span><span class="p">(</span><span class="n">Configurable</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">MyConfigurable</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+        <span class="c"># Then any other code you need to finish initialization.</span>
+</pre></div>
+</div>
+<p>This ensures that instances will be configured properly.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.core.formatters.DisplayFormatter.class_config_section">
+<em class="property">classmethod </em><tt class="descname">class_config_section</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.core.formatters.DisplayFormatter.class_config_section" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the config class config section</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.core.formatters.DisplayFormatter.class_get_help">
+<em class="property">classmethod </em><tt class="descname">class_get_help</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.core.formatters.DisplayFormatter.class_get_help" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the help string for this class in ReST format.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.core.formatters.DisplayFormatter.class_get_trait_help">
+<em class="property">classmethod </em><tt class="descname">class_get_trait_help</tt><big>(</big><em>trait</em><big>)</big><a class="headerlink" href="#IPython.core.formatters.DisplayFormatter.class_get_trait_help" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the help string for a single trait.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.core.formatters.DisplayFormatter.class_print_help">
+<em class="property">classmethod </em><tt class="descname">class_print_help</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.core.formatters.DisplayFormatter.class_print_help" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the help string for a single trait and print it.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.core.formatters.DisplayFormatter.class_trait_names">
+<em class="property">classmethod </em><tt class="descname">class_trait_names</tt><big>(</big><em>**metadata</em><big>)</big><a class="headerlink" href="#IPython.core.formatters.DisplayFormatter.class_trait_names" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of all the names of this classes traits.</p>
+<p>This method is just like the <a class="reference internal" href="#IPython.core.formatters.DisplayFormatter.trait_names" title="IPython.core.formatters.DisplayFormatter.trait_names"><tt class="xref py py-meth docutils literal"><span class="pre">trait_names()</span></tt></a> method, but is unbound.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.core.formatters.DisplayFormatter.class_traits">
+<em class="property">classmethod </em><tt class="descname">class_traits</tt><big>(</big><em>**metadata</em><big>)</big><a class="headerlink" href="#IPython.core.formatters.DisplayFormatter.class_traits" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of all the traits of this class.</p>
+<p>This method is just like the <a class="reference internal" href="#IPython.core.formatters.DisplayFormatter.traits" title="IPython.core.formatters.DisplayFormatter.traits"><tt class="xref py py-meth docutils literal"><span class="pre">traits()</span></tt></a> method, but is unbound.</p>
+<p>The TraitTypes returned don&#8217;t know anything about the values
+that the various HasTrait&#8217;s instances are holding.</p>
+<p>This follows the same algorithm as traits does and does not allow
+for any simple way of specifying merely that a metadata name
+exists, but has any value.  This is because get_metadata returns
+None if a metadata key doesn&#8217;t exist.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.core.formatters.DisplayFormatter.config">
+<tt class="descname">config</tt><a class="headerlink" href="#IPython.core.formatters.DisplayFormatter.config" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait whose value must be an instance of a specified class.</p>
+<p>The value can also be an instance of a subclass of the specified class.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.core.formatters.DisplayFormatter.created">
+<tt class="descname">created</tt><em class="property"> = None</em><a class="headerlink" href="#IPython.core.formatters.DisplayFormatter.created" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IPython.core.formatters.DisplayFormatter.format">
+<tt class="descname">format</tt><big>(</big><em>obj</em>, <em>include=None</em>, <em>exclude=None</em><big>)</big><a class="headerlink" href="#IPython.core.formatters.DisplayFormatter.format" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a format data dict for an object.</p>
+<p>By default all format types will be computed.</p>
+<p>The following MIME types are currently implemented:</p>
+<ul class="simple">
+<li>text/plain</li>
+<li>text/html</li>
+<li>text/latex</li>
+<li>application/json</li>
+<li>image/png</li>
+<li>immage/svg+xml</li>
+</ul>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>obj</strong> : object</p>
+<blockquote>
+<div><p>The Python object whose format data will be computed.</p>
+</div></blockquote>
+<p><strong>include</strong> : list or tuple, optional</p>
+<blockquote>
+<div><p>A list of format type strings (MIME types) to include in the
+format data dict. If this is set <em>only</em> the format types included
+in this list will be computed.</p>
+</div></blockquote>
+<p><strong>exclude</strong> : list or tuple, optional</p>
+<blockquote>
+<div><p>A list of format type string (MIME types) to exclue in the format
+data dict. If this is set all format types will be computed,
+except for those included in this argument.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns :</th><td class="field-body"><p class="first"><strong>format_dict</strong> : dict</p>
+<blockquote class="last">
+<div><p>A dictionary of key/value pairs, one or each format that was
+generated for the object. The keys are the format types, which
+will usually be MIME type strings and the values and JSON&#8217;able
+data structure containing the raw data for the representation in
+that format.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.core.formatters.DisplayFormatter.format_types">
+<tt class="descname">format_types</tt><a class="headerlink" href="#IPython.core.formatters.DisplayFormatter.format_types" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the format types (MIME types) of the active formatters.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.core.formatters.DisplayFormatter.formatters">
+<tt class="descname">formatters</tt><a class="headerlink" href="#IPython.core.formatters.DisplayFormatter.formatters" title="Permalink to this definition">¶</a></dt>
+<dd><p>An instance of a Python dict.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.core.formatters.DisplayFormatter.on_trait_change">
+<tt class="descname">on_trait_change</tt><big>(</big><em>handler</em>, <em>name=None</em>, <em>remove=False</em><big>)</big><a class="headerlink" href="#IPython.core.formatters.DisplayFormatter.on_trait_change" title="Permalink to this definition">¶</a></dt>
+<dd><p>Setup a handler to be called when a trait changes.</p>
+<p>This is used to setup dynamic notifications of trait changes.</p>
+<p>Static handlers can be created by creating methods on a HasTraits
+subclass with the naming convention &#8216;_[traitname]_changed&#8217;.  Thus,
+to create static handler for the trait &#8216;a&#8217;, create the method
+_a_changed(self, name, old, new) (fewer arguments can be used, see
+below).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>handler</strong> : callable</p>
+<blockquote>
+<div><p>A callable that is called when a trait changes.  Its 
+signature can be handler(), handler(name), handler(name, new)
+or handler(name, old, new).</p>
+</div></blockquote>
+<p><strong>name</strong> : list, str, None</p>
+<blockquote>
+<div><p>If None, the handler will apply to all traits.  If a list
+of str, handler will apply to all names in the list.  If a
+str, the handler will apply just to that name.</p>
+</div></blockquote>
+<p><strong>remove</strong> : bool</p>
+<blockquote class="last">
+<div><p>If False (the default), then install the handler.  If True
+then unintall it.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.core.formatters.DisplayFormatter.plain_text_only">
+<tt class="descname">plain_text_only</tt><a class="headerlink" href="#IPython.core.formatters.DisplayFormatter.plain_text_only" title="Permalink to this definition">¶</a></dt>
+<dd><p>A boolean (True, False) trait.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.core.formatters.DisplayFormatter.trait_metadata">
+<tt class="descname">trait_metadata</tt><big>(</big><em>traitname</em>, <em>key</em><big>)</big><a class="headerlink" href="#IPython.core.formatters.DisplayFormatter.trait_metadata" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get metadata values for trait by key.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.core.formatters.DisplayFormatter.trait_names">
+<tt class="descname">trait_names</tt><big>(</big><em>**metadata</em><big>)</big><a class="headerlink" href="#IPython.core.formatters.DisplayFormatter.trait_names" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of all the names of this classes traits.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.core.formatters.DisplayFormatter.traits">
+<tt class="descname">traits</tt><big>(</big><em>**metadata</em><big>)</big><a class="headerlink" href="#IPython.core.formatters.DisplayFormatter.traits" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of all the traits of this class.</p>
+<p>The TraitTypes returned don&#8217;t know anything about the values
+that the various HasTrait&#8217;s instances are holding.</p>
+<p>This follows the same algorithm as traits does and does not allow
+for any simple way of specifying merely that a metadata name
+exists, but has any value.  This is because get_metadata returns
+None if a metadata key doesn&#8217;t exist.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="formatterabc">
+<h3><a class="reference internal" href="#IPython.core.formatters.FormatterABC" title="IPython.core.formatters.FormatterABC"><tt class="xref py py-class docutils literal"><span class="pre">FormatterABC</span></tt></a><a class="headerlink" href="#formatterabc" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="IPython.core.formatters.FormatterABC">
+<em class="property">class </em><tt class="descclassname">IPython.core.formatters.</tt><tt class="descname">FormatterABC</tt><a class="headerlink" href="#IPython.core.formatters.FormatterABC" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></p>
+<p>Abstract base class for Formatters.</p>
+<p>A formatter is a callable class that is responsible for computing the
+raw format data for a particular format type (MIME type). For example,
+an HTML formatter would have a format type of <cite>text/html</cite> and would return
+the HTML representation of the object when called.</p>
+<dl class="method">
+<dt id="IPython.core.formatters.FormatterABC.__init__">
+<tt class="descname">__init__</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.core.formatters.FormatterABC.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>x.__init__(...) initializes x; see x.__class__.__doc__ for signature</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.core.formatters.FormatterABC.enabled">
+<tt class="descname">enabled</tt><em class="property"> = True</em><a class="headerlink" href="#IPython.core.formatters.FormatterABC.enabled" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.core.formatters.FormatterABC.format_type">
+<tt class="descname">format_type</tt><em class="property"> = 'text/plain'</em><a class="headerlink" href="#IPython.core.formatters.FormatterABC.format_type" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="htmlformatter">
+<h3><a class="reference internal" href="#IPython.core.formatters.HTMLFormatter" title="IPython.core.formatters.HTMLFormatter"><tt class="xref py py-class docutils literal"><span class="pre">HTMLFormatter</span></tt></a><a class="headerlink" href="#htmlformatter" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="IPython.core.formatters.HTMLFormatter">
+<em class="property">class </em><tt class="descclassname">IPython.core.formatters.</tt><tt class="descname">HTMLFormatter</tt><big>(</big><em>**kwargs</em><big>)</big><a class="headerlink" href="#IPython.core.formatters.HTMLFormatter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#IPython.core.formatters.BaseFormatter" title="IPython.core.formatters.BaseFormatter"><tt class="xref py py-class docutils literal"><span class="pre">IPython.core.formatters.BaseFormatter</span></tt></a></p>
+<p>An HTML formatter.</p>
+<p>To define the callables that compute the HTML representation of your
+objects, define a <tt class="xref py py-meth docutils literal"><span class="pre">_repr_html_()</span></tt> method or use the <a class="reference internal" href="#IPython.core.formatters.HTMLFormatter.for_type" title="IPython.core.formatters.HTMLFormatter.for_type"><tt class="xref py py-meth docutils literal"><span class="pre">for_type()</span></tt></a>
+or <a class="reference internal" href="#IPython.core.formatters.HTMLFormatter.for_type_by_name" title="IPython.core.formatters.HTMLFormatter.for_type_by_name"><tt class="xref py py-meth docutils literal"><span class="pre">for_type_by_name()</span></tt></a> methods to register functions that handle
+this.</p>
+<p>The return value of this formatter should be a valid HTML snippet that
+could be injected into an existing DOM. It should <em>not</em> include the 
+<tt class="docutils literal"><span class="pre">`&lt;html&gt;</span></tt> or <tt class="docutils literal"><span class="pre">`&lt;body&gt;</span></tt> tags.</p>
+<dl class="method">
+<dt id="IPython.core.formatters.HTMLFormatter.__init__">
+<tt class="descname">__init__</tt><big>(</big><em>**kwargs</em><big>)</big><a class="headerlink" href="#IPython.core.formatters.HTMLFormatter.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a configurable given a config config.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>config</strong> : Config</p>
+<blockquote class="last">
+<div><p>If this is empty, default values are used. If config is a 
+<tt class="xref py py-class docutils literal"><span class="pre">Config</span></tt> instance, it will be used to configure the
+instance.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Notes</p>
+<p>Subclasses of Configurable must call the <a class="reference internal" href="#IPython.core.formatters.HTMLFormatter.__init__" title="IPython.core.formatters.HTMLFormatter.__init__"><tt class="xref py py-meth docutils literal"><span class="pre">__init__()</span></tt></a> method of
+<tt class="xref py py-class docutils literal"><span class="pre">Configurable</span></tt> <em>before</em> doing anything else and using 
+<tt class="xref py py-func docutils literal"><span class="pre">super()</span></tt>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">MyConfigurable</span><span class="p">(</span><span class="n">Configurable</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">MyConfigurable</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+        <span class="c"># Then any other code you need to finish initialization.</span>
+</pre></div>
+</div>
+<p>This ensures that instances will be configured properly.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.core.formatters.HTMLFormatter.class_config_section">
+<em class="property">classmethod </em><tt class="descname">class_config_section</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.core.formatters.HTMLFormatter.class_config_section" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the config class config section</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.core.formatters.HTMLFormatter.class_get_help">
+<em class="property">classmethod </em><tt class="descname">class_get_help</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.core.formatters.HTMLFormatter.class_get_help" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the help string for this class in ReST format.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.core.formatters.HTMLFormatter.class_get_trait_help">
+<em class="property">classmethod </em><tt class="descname">class_get_trait_help</tt><big>(</big><em>trait</em><big>)</big><a class="headerlink" href="#IPython.core.formatters.HTMLFormatter.class_get_trait_help" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the help string for a single trait.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.core.formatters.HTMLFormatter.class_print_help">
+<em class="property">classmethod </em><tt class="descname">class_print_help</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.core.formatters.HTMLFormatter.class_print_help" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the help string for a single trait and print it.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.core.formatters.HTMLFormatter.class_trait_names">
+<em class="property">classmethod </em><tt class="descname">class_trait_names</tt><big>(</big><em>**metadata</em><big>)</big><a class="headerlink" href="#IPython.core.formatters.HTMLFormatter.class_trait_names" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of all the names of this classes traits.</p>
+<p>This method is just like the <a class="reference internal" href="#IPython.core.formatters.HTMLFormatter.trait_names" title="IPython.core.formatters.HTMLFormatter.trait_names"><tt class="xref py py-meth docutils literal"><span class="pre">trait_names()</span></tt></a> method, but is unbound.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.core.formatters.HTMLFormatter.class_traits">
+<em class="property">classmethod </em><tt class="descname">class_traits</tt><big>(</big><em>**metadata</em><big>)</big><a class="headerlink" href="#IPython.core.formatters.HTMLFormatter.class_traits" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of all the traits of this class.</p>
+<p>This method is just like the <a class="reference internal" href="#IPython.core.formatters.HTMLFormatter.traits" title="IPython.core.formatters.HTMLFormatter.traits"><tt class="xref py py-meth docutils literal"><span class="pre">traits()</span></tt></a> method, but is unbound.</p>
+<p>The TraitTypes returned don&#8217;t know anything about the values
+that the various HasTrait&#8217;s instances are holding.</p>
+<p>This follows the same algorithm as traits does and does not allow
+for any simple way of specifying merely that a metadata name
+exists, but has any value.  This is because get_metadata returns
+None if a metadata key doesn&#8217;t exist.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.core.formatters.HTMLFormatter.config">
+<tt class="descname">config</tt><a class="headerlink" href="#IPython.core.formatters.HTMLFormatter.config" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait whose value must be an instance of a specified class.</p>
+<p>The value can also be an instance of a subclass of the specified class.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.core.formatters.HTMLFormatter.created">
+<tt class="descname">created</tt><em class="property"> = None</em><a class="headerlink" href="#IPython.core.formatters.HTMLFormatter.created" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.core.formatters.HTMLFormatter.deferred_printers">
+<tt class="descname">deferred_printers</tt><a class="headerlink" href="#IPython.core.formatters.HTMLFormatter.deferred_printers" title="Permalink to this definition">¶</a></dt>
+<dd><p>An instance of a Python dict.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.core.formatters.HTMLFormatter.enabled">
+<tt class="descname">enabled</tt><a class="headerlink" href="#IPython.core.formatters.HTMLFormatter.enabled" title="Permalink to this definition">¶</a></dt>
+<dd><p>A boolean (True, False) trait.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.core.formatters.HTMLFormatter.for_type">
+<tt class="descname">for_type</tt><big>(</big><em>typ</em>, <em>func</em><big>)</big><a class="headerlink" href="#IPython.core.formatters.HTMLFormatter.for_type" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a format function for a given type.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>typ</strong> : class</p>
+<blockquote>
+<div><p>The class of the object that will be formatted using <cite>func</cite>.</p>
+</div></blockquote>
+<p><strong>func</strong> : callable</p>
+<blockquote class="last">
+<div><p>The callable that will be called to compute the format data. The
+call signature of this function is simple, it must take the
+object to be formatted and return the raw data for the given
+format. Subclasses may use a different call signature for the
+<cite>func</cite> argument.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.core.formatters.HTMLFormatter.for_type_by_name">
+<tt class="descname">for_type_by_name</tt><big>(</big><em>type_module</em>, <em>type_name</em>, <em>func</em><big>)</big><a class="headerlink" href="#IPython.core.formatters.HTMLFormatter.for_type_by_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a format function for a type specified by the full dotted
+module and name of the type, rather than the type of the object.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>type_module</strong> : str</p>
+<blockquote>
+<div><p>The full dotted name of the module the type is defined in, like
+<tt class="docutils literal"><span class="pre">numpy</span></tt>.</p>
+</div></blockquote>
+<p><strong>type_name</strong> : str</p>
+<blockquote>
+<div><p>The name of the type (the class name), like <tt class="docutils literal"><span class="pre">dtype</span></tt></p>
+</div></blockquote>
+<p><strong>func</strong> : callable</p>
+<blockquote class="last">
+<div><p>The callable that will be called to compute the format data. The
+call signature of this function is simple, it must take the
+object to be formatted and return the raw data for the given
+format. Subclasses may use a different call signature for the
+<cite>func</cite> argument.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.core.formatters.HTMLFormatter.format_type">
+<tt class="descname">format_type</tt><a class="headerlink" href="#IPython.core.formatters.HTMLFormatter.format_type" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait for unicode strings.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.core.formatters.HTMLFormatter.on_trait_change">
+<tt class="descname">on_trait_change</tt><big>(</big><em>handler</em>, <em>name=None</em>, <em>remove=False</em><big>)</big><a class="headerlink" href="#IPython.core.formatters.HTMLFormatter.on_trait_change" title="Permalink to this definition">¶</a></dt>
+<dd><p>Setup a handler to be called when a trait changes.</p>
+<p>This is used to setup dynamic notifications of trait changes.</p>
+<p>Static handlers can be created by creating methods on a HasTraits
+subclass with the naming convention &#8216;_[traitname]_changed&#8217;.  Thus,
+to create static handler for the trait &#8216;a&#8217;, create the method
+_a_changed(self, name, old, new) (fewer arguments can be used, see
+below).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>handler</strong> : callable</p>
+<blockquote>
+<div><p>A callable that is called when a trait changes.  Its 
+signature can be handler(), handler(name), handler(name, new)
+or handler(name, old, new).</p>
+</div></blockquote>
+<p><strong>name</strong> : list, str, None</p>
+<blockquote>
+<div><p>If None, the handler will apply to all traits.  If a list
+of str, handler will apply to all names in the list.  If a
+str, the handler will apply just to that name.</p>
+</div></blockquote>
+<p><strong>remove</strong> : bool</p>
+<blockquote class="last">
+<div><p>If False (the default), then install the handler.  If True
+then unintall it.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.core.formatters.HTMLFormatter.print_method">
+<tt class="descname">print_method</tt><a class="headerlink" href="#IPython.core.formatters.HTMLFormatter.print_method" title="Permalink to this definition">¶</a></dt>
+<dd><p>A string holding a valid object name in this version of Python.</p>
+<p>This does not check that the name exists in any scope.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.core.formatters.HTMLFormatter.singleton_printers">
+<tt class="descname">singleton_printers</tt><a class="headerlink" href="#IPython.core.formatters.HTMLFormatter.singleton_printers" title="Permalink to this definition">¶</a></dt>
+<dd><p>An instance of a Python dict.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.core.formatters.HTMLFormatter.trait_metadata">
+<tt class="descname">trait_metadata</tt><big>(</big><em>traitname</em>, <em>key</em><big>)</big><a class="headerlink" href="#IPython.core.formatters.HTMLFormatter.trait_metadata" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get metadata values for trait by key.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.core.formatters.HTMLFormatter.trait_names">
+<tt class="descname">trait_names</tt><big>(</big><em>**metadata</em><big>)</big><a class="headerlink" href="#IPython.core.formatters.HTMLFormatter.trait_names" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of all the names of this classes traits.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.core.formatters.HTMLFormatter.traits">
+<tt class="descname">traits</tt><big>(</big><em>**metadata</em><big>)</big><a class="headerlink" href="#IPython.core.formatters.HTMLFormatter.traits" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of all the traits of this class.</p>
+<p>The TraitTypes returned don&#8217;t know anything about the values
+that the various HasTrait&#8217;s instances are holding.</p>
+<p>This follows the same algorithm as traits does and does not allow
+for any simple way of specifying merely that a metadata name
+exists, but has any value.  This is because get_metadata returns
+None if a metadata key doesn&#8217;t exist.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.core.formatters.HTMLFormatter.type_printers">
+<tt class="descname">type_printers</tt><a class="headerlink" href="#IPython.core.formatters.HTMLFormatter.type_printers" title="Permalink to this definition">¶</a></dt>
+<dd><p>An instance of a Python dict.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="jsonformatter">
+<h3><a class="reference internal" href="#IPython.core.formatters.JSONFormatter" title="IPython.core.formatters.JSONFormatter"><tt class="xref py py-class docutils literal"><span class="pre">JSONFormatter</span></tt></a><a class="headerlink" href="#jsonformatter" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="IPython.core.formatters.JSONFormatter">
+<em class="property">class </em><tt class="descclassname">IPython.core.formatters.</tt><tt class="descname">JSONFormatter</tt><big>(</big><em>**kwargs</em><big>)</big><a class="headerlink" href="#IPython.core.formatters.JSONFormatter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#IPython.core.formatters.BaseFormatter" title="IPython.core.formatters.BaseFormatter"><tt class="xref py py-class docutils literal"><span class="pre">IPython.core.formatters.BaseFormatter</span></tt></a></p>
+<p>A JSON string formatter.</p>
+<p>To define the callables that compute the JSON string representation of
+your objects, define a <tt class="xref py py-meth docutils literal"><span class="pre">_repr_json_()</span></tt> method or use the <a class="reference internal" href="#IPython.core.formatters.JSONFormatter.for_type" title="IPython.core.formatters.JSONFormatter.for_type"><tt class="xref py py-meth docutils literal"><span class="pre">for_type()</span></tt></a>
+or <a class="reference internal" href="#IPython.core.formatters.JSONFormatter.for_type_by_name" title="IPython.core.formatters.JSONFormatter.for_type_by_name"><tt class="xref py py-meth docutils literal"><span class="pre">for_type_by_name()</span></tt></a> methods to register functions that handle
+this.</p>
+<p>The return value of this formatter should be a valid JSON string.</p>
+<dl class="method">
+<dt id="IPython.core.formatters.JSONFormatter.__init__">
+<tt class="descname">__init__</tt><big>(</big><em>**kwargs</em><big>)</big><a class="headerlink" href="#IPython.core.formatters.JSONFormatter.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a configurable given a config config.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>config</strong> : Config</p>
+<blockquote class="last">
+<div><p>If this is empty, default values are used. If config is a 
+<tt class="xref py py-class docutils literal"><span class="pre">Config</span></tt> instance, it will be used to configure the
+instance.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Notes</p>
+<p>Subclasses of Configurable must call the <a class="reference internal" href="#IPython.core.formatters.JSONFormatter.__init__" title="IPython.core.formatters.JSONFormatter.__init__"><tt class="xref py py-meth docutils literal"><span class="pre">__init__()</span></tt></a> method of
+<tt class="xref py py-class docutils literal"><span class="pre">Configurable</span></tt> <em>before</em> doing anything else and using 
+<tt class="xref py py-func docutils literal"><span class="pre">super()</span></tt>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">MyConfigurable</span><span class="p">(</span><span class="n">Configurable</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">MyConfigurable</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+        <span class="c"># Then any other code you need to finish initialization.</span>
+</pre></div>
+</div>
+<p>This ensures that instances will be configured properly.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.core.formatters.JSONFormatter.class_config_section">
+<em class="property">classmethod </em><tt class="descname">class_config_section</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.core.formatters.JSONFormatter.class_config_section" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the config class config section</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.core.formatters.JSONFormatter.class_get_help">
+<em class="property">classmethod </em><tt class="descname">class_get_help</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.core.formatters.JSONFormatter.class_get_help" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the help string for this class in ReST format.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.core.formatters.JSONFormatter.class_get_trait_help">
+<em class="property">classmethod </em><tt class="descname">class_get_trait_help</tt><big>(</big><em>trait</em><big>)</big><a class="headerlink" href="#IPython.core.formatters.JSONFormatter.class_get_trait_help" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the help string for a single trait.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.core.formatters.JSONFormatter.class_print_help">
+<em class="property">classmethod </em><tt class="descname">class_print_help</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.core.formatters.JSONFormatter.class_print_help" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the help string for a single trait and print it.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.core.formatters.JSONFormatter.class_trait_names">
+<em class="property">classmethod </em><tt class="descname">class_trait_names</tt><big>(</big><em>**metadata</em><big>)</big><a class="headerlink" href="#IPython.core.formatters.JSONFormatter.class_trait_names" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of all the names of this classes traits.</p>
+<p>This method is just like the <a class="reference internal" href="#IPython.core.formatters.JSONFormatter.trait_names" title="IPython.core.formatters.JSONFormatter.trait_names"><tt class="xref py py-meth docutils literal"><span class="pre">trait_names()</span></tt></a> method, but is unbound.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.core.formatters.JSONFormatter.class_traits">
+<em class="property">classmethod </em><tt class="descname">class_traits</tt><big>(</big><em>**metadata</em><big>)</big><a class="headerlink" href="#IPython.core.formatters.JSONFormatter.class_traits" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of all the traits of this class.</p>
+<p>This method is just like the <a class="reference internal" href="#IPython.core.formatters.JSONFormatter.traits" title="IPython.core.formatters.JSONFormatter.traits"><tt class="xref py py-meth docutils literal"><span class="pre">traits()</span></tt></a> method, but is unbound.</p>
+<p>The TraitTypes returned don&#8217;t know anything about the values
+that the various HasTrait&#8217;s instances are holding.</p>
+<p>This follows the same algorithm as traits does and does not allow
+for any simple way of specifying merely that a metadata name
+exists, but has any value.  This is because get_metadata returns
+None if a metadata key doesn&#8217;t exist.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.core.formatters.JSONFormatter.config">
+<tt class="descname">config</tt><a class="headerlink" href="#IPython.core.formatters.JSONFormatter.config" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait whose value must be an instance of a specified class.</p>
+<p>The value can also be an instance of a subclass of the specified class.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.core.formatters.JSONFormatter.created">
+<tt class="descname">created</tt><em class="property"> = None</em><a class="headerlink" href="#IPython.core.formatters.JSONFormatter.created" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.core.formatters.JSONFormatter.deferred_printers">
+<tt class="descname">deferred_printers</tt><a class="headerlink" href="#IPython.core.formatters.JSONFormatter.deferred_printers" title="Permalink to this definition">¶</a></dt>
+<dd><p>An instance of a Python dict.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.core.formatters.JSONFormatter.enabled">
+<tt class="descname">enabled</tt><a class="headerlink" href="#IPython.core.formatters.JSONFormatter.enabled" title="Permalink to this definition">¶</a></dt>
+<dd><p>A boolean (True, False) trait.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.core.formatters.JSONFormatter.for_type">
+<tt class="descname">for_type</tt><big>(</big><em>typ</em>, <em>func</em><big>)</big><a class="headerlink" href="#IPython.core.formatters.JSONFormatter.for_type" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a format function for a given type.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>typ</strong> : class</p>
+<blockquote>
+<div><p>The class of the object that will be formatted using <cite>func</cite>.</p>
+</div></blockquote>
+<p><strong>func</strong> : callable</p>
+<blockquote class="last">
+<div><p>The callable that will be called to compute the format data. The
+call signature of this function is simple, it must take the
+object to be formatted and return the raw data for the given
+format. Subclasses may use a different call signature for the
+<cite>func</cite> argument.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.core.formatters.JSONFormatter.for_type_by_name">
+<tt class="descname">for_type_by_name</tt><big>(</big><em>type_module</em>, <em>type_name</em>, <em>func</em><big>)</big><a class="headerlink" href="#IPython.core.formatters.JSONFormatter.for_type_by_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a format function for a type specified by the full dotted
+module and name of the type, rather than the type of the object.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>type_module</strong> : str</p>
+<blockquote>
+<div><p>The full dotted name of the module the type is defined in, like
+<tt class="docutils literal"><span class="pre">numpy</span></tt>.</p>
+</div></blockquote>
+<p><strong>type_name</strong> : str</p>
+<blockquote>
+<div><p>The name of the type (the class name), like <tt class="docutils literal"><span class="pre">dtype</span></tt></p>
+</div></blockquote>
+<p><strong>func</strong> : callable</p>
+<blockquote class="last">
+<div><p>The callable that will be called to compute the format data. The
+call signature of this function is simple, it must take the
+object to be formatted and return the raw data for the given
+format. Subclasses may use a different call signature for the
+<cite>func</cite> argument.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.core.formatters.JSONFormatter.format_type">
+<tt class="descname">format_type</tt><a class="headerlink" href="#IPython.core.formatters.JSONFormatter.format_type" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait for unicode strings.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.core.formatters.JSONFormatter.on_trait_change">
+<tt class="descname">on_trait_change</tt><big>(</big><em>handler</em>, <em>name=None</em>, <em>remove=False</em><big>)</big><a class="headerlink" href="#IPython.core.formatters.JSONFormatter.on_trait_change" title="Permalink to this definition">¶</a></dt>
+<dd><p>Setup a handler to be called when a trait changes.</p>
+<p>This is used to setup dynamic notifications of trait changes.</p>
+<p>Static handlers can be created by creating methods on a HasTraits
+subclass with the naming convention &#8216;_[traitname]_changed&#8217;.  Thus,
+to create static handler for the trait &#8216;a&#8217;, create the method
+_a_changed(self, name, old, new) (fewer arguments can be used, see
+below).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>handler</strong> : callable</p>
+<blockquote>
+<div><p>A callable that is called when a trait changes.  Its 
+signature can be handler(), handler(name), handler(name, new)
+or handler(name, old, new).</p>
+</div></blockquote>
+<p><strong>name</strong> : list, str, None</p>
+<blockquote>
+<div><p>If None, the handler will apply to all traits.  If a list
+of str, handler will apply to all names in the list.  If a
+str, the handler will apply just to that name.</p>
+</div></blockquote>
+<p><strong>remove</strong> : bool</p>
+<blockquote class="last">
+<div><p>If False (the default), then install the handler.  If True
+then unintall it.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.core.formatters.JSONFormatter.print_method">
+<tt class="descname">print_method</tt><a class="headerlink" href="#IPython.core.formatters.JSONFormatter.print_method" title="Permalink to this definition">¶</a></dt>
+<dd><p>A string holding a valid object name in this version of Python.</p>
+<p>This does not check that the name exists in any scope.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.core.formatters.JSONFormatter.singleton_printers">
+<tt class="descname">singleton_printers</tt><a class="headerlink" href="#IPython.core.formatters.JSONFormatter.singleton_printers" title="Permalink to this definition">¶</a></dt>
+<dd><p>An instance of a Python dict.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.core.formatters.JSONFormatter.trait_metadata">
+<tt class="descname">trait_metadata</tt><big>(</big><em>traitname</em>, <em>key</em><big>)</big><a class="headerlink" href="#IPython.core.formatters.JSONFormatter.trait_metadata" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get metadata values for trait by key.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.core.formatters.JSONFormatter.trait_names">
+<tt class="descname">trait_names</tt><big>(</big><em>**metadata</em><big>)</big><a class="headerlink" href="#IPython.core.formatters.JSONFormatter.trait_names" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of all the names of this classes traits.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.core.formatters.JSONFormatter.traits">
+<tt class="descname">traits</tt><big>(</big><em>**metadata</em><big>)</big><a class="headerlink" href="#IPython.core.formatters.JSONFormatter.traits" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of all the traits of this class.</p>
+<p>The TraitTypes returned don&#8217;t know anything about the values
+that the various HasTrait&#8217;s instances are holding.</p>
+<p>This follows the same algorithm as traits does and does not allow
+for any simple way of specifying merely that a metadata name
+exists, but has any value.  This is because get_metadata returns
+None if a metadata key doesn&#8217;t exist.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.core.formatters.JSONFormatter.type_printers">
+<tt class="descname">type_printers</tt><a class="headerlink" href="#IPython.core.formatters.JSONFormatter.type_printers" title="Permalink to this definition">¶</a></dt>
+<dd><p>An instance of a Python dict.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="javascriptformatter">
+<h3><a class="reference internal" href="#IPython.core.formatters.JavascriptFormatter" title="IPython.core.formatters.JavascriptFormatter"><tt class="xref py py-class docutils literal"><span class="pre">JavascriptFormatter</span></tt></a><a class="headerlink" href="#javascriptformatter" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="IPython.core.formatters.JavascriptFormatter">
+<em class="property">class </em><tt class="descclassname">IPython.core.formatters.</tt><tt class="descname">JavascriptFormatter</tt><big>(</big><em>**kwargs</em><big>)</big><a class="headerlink" href="#IPython.core.formatters.JavascriptFormatter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#IPython.core.formatters.BaseFormatter" title="IPython.core.formatters.BaseFormatter"><tt class="xref py py-class docutils literal"><span class="pre">IPython.core.formatters.BaseFormatter</span></tt></a></p>
+<p>A Javascript formatter.</p>
+<p>To define the callables that compute the Javascript representation of
+your objects, define a <tt class="xref py py-meth docutils literal"><span class="pre">_repr_javascript_()</span></tt> method or use the 
+<a class="reference internal" href="#IPython.core.formatters.JavascriptFormatter.for_type" title="IPython.core.formatters.JavascriptFormatter.for_type"><tt class="xref py py-meth docutils literal"><span class="pre">for_type()</span></tt></a> or <a class="reference internal" href="#IPython.core.formatters.JavascriptFormatter.for_type_by_name" title="IPython.core.formatters.JavascriptFormatter.for_type_by_name"><tt class="xref py py-meth docutils literal"><span class="pre">for_type_by_name()</span></tt></a> methods to register functions
+that handle this.</p>
+<p>The return value of this formatter should be valid Javascript code and
+should <em>not</em> be enclosed in <tt class="docutils literal"><span class="pre">`&lt;script&gt;`</span></tt> tags.</p>
+<dl class="method">
+<dt id="IPython.core.formatters.JavascriptFormatter.__init__">
+<tt class="descname">__init__</tt><big>(</big><em>**kwargs</em><big>)</big><a class="headerlink" href="#IPython.core.formatters.JavascriptFormatter.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a configurable given a config config.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>config</strong> : Config</p>
+<blockquote class="last">
+<div><p>If this is empty, default values are used. If config is a 
+<tt class="xref py py-class docutils literal"><span class="pre">Config</span></tt> instance, it will be used to configure the
+instance.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Notes</p>
+<p>Subclasses of Configurable must call the <a class="reference internal" href="#IPython.core.formatters.JavascriptFormatter.__init__" title="IPython.core.formatters.JavascriptFormatter.__init__"><tt class="xref py py-meth docutils literal"><span class="pre">__init__()</span></tt></a> method of
+<tt class="xref py py-class docutils literal"><span class="pre">Configurable</span></tt> <em>before</em> doing anything else and using 
+<tt class="xref py py-func docutils literal"><span class="pre">super()</span></tt>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">MyConfigurable</span><span class="p">(</span><span class="n">Configurable</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">MyConfigurable</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+        <span class="c"># Then any other code you need to finish initialization.</span>
+</pre></div>
+</div>
+<p>This ensures that instances will be configured properly.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.core.formatters.JavascriptFormatter.class_config_section">
+<em class="property">classmethod </em><tt class="descname">class_config_section</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.core.formatters.JavascriptFormatter.class_config_section" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the config class config section</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.core.formatters.JavascriptFormatter.class_get_help">
+<em class="property">classmethod </em><tt class="descname">class_get_help</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.core.formatters.JavascriptFormatter.class_get_help" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the help string for this class in ReST format.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.core.formatters.JavascriptFormatter.class_get_trait_help">
+<em class="property">classmethod </em><tt class="descname">class_get_trait_help</tt><big>(</big><em>trait</em><big>)</big><a class="headerlink" href="#IPython.core.formatters.JavascriptFormatter.class_get_trait_help" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the help string for a single trait.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.core.formatters.JavascriptFormatter.class_print_help">
+<em class="property">classmethod </em><tt class="descname">class_print_help</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.core.formatters.JavascriptFormatter.class_print_help" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the help string for a single trait and print it.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.core.formatters.JavascriptFormatter.class_trait_names">
+<em class="property">classmethod </em><tt class="descname">class_trait_names</tt><big>(</big><em>**metadata</em><big>)</big><a class="headerlink" href="#IPython.core.formatters.JavascriptFormatter.class_trait_names" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of all the names of this classes traits.</p>
+<p>This method is just like the <a class="reference internal" href="#IPython.core.formatters.JavascriptFormatter.trait_names" title="IPython.core.formatters.JavascriptFormatter.trait_names"><tt class="xref py py-meth docutils literal"><span class="pre">trait_names()</span></tt></a> method, but is unbound.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.core.formatters.JavascriptFormatter.class_traits">
+<em class="property">classmethod </em><tt class="descname">class_traits</tt><big>(</big><em>**metadata</em><big>)</big><a class="headerlink" href="#IPython.core.formatters.JavascriptFormatter.class_traits" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of all the traits of this class.</p>
+<p>This method is just like the <a class="reference internal" href="#IPython.core.formatters.JavascriptFormatter.traits" title="IPython.core.formatters.JavascriptFormatter.traits"><tt class="xref py py-meth docutils literal"><span class="pre">traits()</span></tt></a> method, but is unbound.</p>
+<p>The TraitTypes returned don&#8217;t know anything about the values
+that the various HasTrait&#8217;s instances are holding.</p>
+<p>This follows the same algorithm as traits does and does not allow
+for any simple way of specifying merely that a metadata name
+exists, but has any value.  This is because get_metadata returns
+None if a metadata key doesn&#8217;t exist.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.core.formatters.JavascriptFormatter.config">
+<tt class="descname">config</tt><a class="headerlink" href="#IPython.core.formatters.JavascriptFormatter.config" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait whose value must be an instance of a specified class.</p>
+<p>The value can also be an instance of a subclass of the specified class.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.core.formatters.JavascriptFormatter.created">
+<tt class="descname">created</tt><em class="property"> = None</em><a class="headerlink" href="#IPython.core.formatters.JavascriptFormatter.created" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.core.formatters.JavascriptFormatter.deferred_printers">
+<tt class="descname">deferred_printers</tt><a class="headerlink" href="#IPython.core.formatters.JavascriptFormatter.deferred_printers" title="Permalink to this definition">¶</a></dt>
+<dd><p>An instance of a Python dict.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.core.formatters.JavascriptFormatter.enabled">
+<tt class="descname">enabled</tt><a class="headerlink" href="#IPython.core.formatters.JavascriptFormatter.enabled" title="Permalink to this definition">¶</a></dt>
+<dd><p>A boolean (True, False) trait.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.core.formatters.JavascriptFormatter.for_type">
+<tt class="descname">for_type</tt><big>(</big><em>typ</em>, <em>func</em><big>)</big><a class="headerlink" href="#IPython.core.formatters.JavascriptFormatter.for_type" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a format function for a given type.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>typ</strong> : class</p>
+<blockquote>
+<div><p>The class of the object that will be formatted using <cite>func</cite>.</p>
+</div></blockquote>
+<p><strong>func</strong> : callable</p>
+<blockquote class="last">
+<div><p>The callable that will be called to compute the format data. The
+call signature of this function is simple, it must take the
+object to be formatted and return the raw data for the given
+format. Subclasses may use a different call signature for the
+<cite>func</cite> argument.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.core.formatters.JavascriptFormatter.for_type_by_name">
+<tt class="descname">for_type_by_name</tt><big>(</big><em>type_module</em>, <em>type_name</em>, <em>func</em><big>)</big><a class="headerlink" href="#IPython.core.formatters.JavascriptFormatter.for_type_by_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a format function for a type specified by the full dotted
+module and name of the type, rather than the type of the object.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>type_module</strong> : str</p>
+<blockquote>
+<div><p>The full dotted name of the module the type is defined in, like
+<tt class="docutils literal"><span class="pre">numpy</span></tt>.</p>
+</div></blockquote>
+<p><strong>type_name</strong> : str</p>
+<blockquote>
+<div><p>The name of the type (the class name), like <tt class="docutils literal"><span class="pre">dtype</span></tt></p>
+</div></blockquote>
+<p><strong>func</strong> : callable</p>
+<blockquote class="last">
+<div><p>The callable that will be called to compute the format data. The
+call signature of this function is simple, it must take the
+object to be formatted and return the raw data for the given
+format. Subclasses may use a different call signature for the
+<cite>func</cite> argument.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.core.formatters.JavascriptFormatter.format_type">
+<tt class="descname">format_type</tt><a class="headerlink" href="#IPython.core.formatters.JavascriptFormatter.format_type" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait for unicode strings.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.core.formatters.JavascriptFormatter.on_trait_change">
+<tt class="descname">on_trait_change</tt><big>(</big><em>handler</em>, <em>name=None</em>, <em>remove=False</em><big>)</big><a class="headerlink" href="#IPython.core.formatters.JavascriptFormatter.on_trait_change" title="Permalink to this definition">¶</a></dt>
+<dd><p>Setup a handler to be called when a trait changes.</p>
+<p>This is used to setup dynamic notifications of trait changes.</p>
+<p>Static handlers can be created by creating methods on a HasTraits
+subclass with the naming convention &#8216;_[traitname]_changed&#8217;.  Thus,
+to create static handler for the trait &#8216;a&#8217;, create the method
+_a_changed(self, name, old, new) (fewer arguments can be used, see
+below).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>handler</strong> : callable</p>
+<blockquote>
+<div><p>A callable that is called when a trait changes.  Its 
+signature can be handler(), handler(name), handler(name, new)
+or handler(name, old, new).</p>
+</div></blockquote>
+<p><strong>name</strong> : list, str, None</p>
+<blockquote>
+<div><p>If None, the handler will apply to all traits.  If a list
+of str, handler will apply to all names in the list.  If a
+str, the handler will apply just to that name.</p>
+</div></blockquote>
+<p><strong>remove</strong> : bool</p>
+<blockquote class="last">
+<div><p>If False (the default), then install the handler.  If True
+then unintall it.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.core.formatters.JavascriptFormatter.print_method">
+<tt class="descname">print_method</tt><a class="headerlink" href="#IPython.core.formatters.JavascriptFormatter.print_method" title="Permalink to this definition">¶</a></dt>
+<dd><p>A string holding a valid object name in this version of Python.</p>
+<p>This does not check that the name exists in any scope.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.core.formatters.JavascriptFormatter.singleton_printers">
+<tt class="descname">singleton_printers</tt><a class="headerlink" href="#IPython.core.formatters.JavascriptFormatter.singleton_printers" title="Permalink to this definition">¶</a></dt>
+<dd><p>An instance of a Python dict.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.core.formatters.JavascriptFormatter.trait_metadata">
+<tt class="descname">trait_metadata</tt><big>(</big><em>traitname</em>, <em>key</em><big>)</big><a class="headerlink" href="#IPython.core.formatters.JavascriptFormatter.trait_metadata" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get metadata values for trait by key.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.core.formatters.JavascriptFormatter.trait_names">
+<tt class="descname">trait_names</tt><big>(</big><em>**metadata</em><big>)</big><a class="headerlink" href="#IPython.core.formatters.JavascriptFormatter.trait_names" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of all the names of this classes traits.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.core.formatters.JavascriptFormatter.traits">
+<tt class="descname">traits</tt><big>(</big><em>**metadata</em><big>)</big><a class="headerlink" href="#IPython.core.formatters.JavascriptFormatter.traits" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of all the traits of this class.</p>
+<p>The TraitTypes returned don&#8217;t know anything about the values
+that the various HasTrait&#8217;s instances are holding.</p>
+<p>This follows the same algorithm as traits does and does not allow
+for any simple way of specifying merely that a metadata name
+exists, but has any value.  This is because get_metadata returns
+None if a metadata key doesn&#8217;t exist.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.core.formatters.JavascriptFormatter.type_printers">
+<tt class="descname">type_printers</tt><a class="headerlink" href="#IPython.core.formatters.JavascriptFormatter.type_printers" title="Permalink to this definition">¶</a></dt>
+<dd><p>An instance of a Python dict.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="latexformatter">
+<h3><a class="reference internal" href="#IPython.core.formatters.LatexFormatter" title="IPython.core.formatters.LatexFormatter"><tt class="xref py py-class docutils literal"><span class="pre">LatexFormatter</span></tt></a><a class="headerlink" href="#latexformatter" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="IPython.core.formatters.LatexFormatter">
+<em class="property">class </em><tt class="descclassname">IPython.core.formatters.</tt><tt class="descname">LatexFormatter</tt><big>(</big><em>**kwargs</em><big>)</big><a class="headerlink" href="#IPython.core.formatters.LatexFormatter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#IPython.core.formatters.BaseFormatter" title="IPython.core.formatters.BaseFormatter"><tt class="xref py py-class docutils literal"><span class="pre">IPython.core.formatters.BaseFormatter</span></tt></a></p>
+<p>A LaTeX formatter.</p>
+<p>To define the callables that compute the LaTeX representation of your
+objects, define a <tt class="xref py py-meth docutils literal"><span class="pre">_repr_latex_()</span></tt> method or use the <a class="reference internal" href="#IPython.core.formatters.LatexFormatter.for_type" title="IPython.core.formatters.LatexFormatter.for_type"><tt class="xref py py-meth docutils literal"><span class="pre">for_type()</span></tt></a>
+or <a class="reference internal" href="#IPython.core.formatters.LatexFormatter.for_type_by_name" title="IPython.core.formatters.LatexFormatter.for_type_by_name"><tt class="xref py py-meth docutils literal"><span class="pre">for_type_by_name()</span></tt></a> methods to register functions that handle
+this.</p>
+<p>The return value of this formatter should be a valid LaTeX equation,
+enclosed in either <tt class="docutils literal"><span class="pre">`$`</span></tt> or <tt class="docutils literal"><span class="pre">`$$`</span></tt>.</p>
+<dl class="method">
+<dt id="IPython.core.formatters.LatexFormatter.__init__">
+<tt class="descname">__init__</tt><big>(</big><em>**kwargs</em><big>)</big><a class="headerlink" href="#IPython.core.formatters.LatexFormatter.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a configurable given a config config.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>config</strong> : Config</p>
+<blockquote class="last">
+<div><p>If this is empty, default values are used. If config is a 
+<tt class="xref py py-class docutils literal"><span class="pre">Config</span></tt> instance, it will be used to configure the
+instance.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Notes</p>
+<p>Subclasses of Configurable must call the <a class="reference internal" href="#IPython.core.formatters.LatexFormatter.__init__" title="IPython.core.formatters.LatexFormatter.__init__"><tt class="xref py py-meth docutils literal"><span class="pre">__init__()</span></tt></a> method of
+<tt class="xref py py-class docutils literal"><span class="pre">Configurable</span></tt> <em>before</em> doing anything else and using 
+<tt class="xref py py-func docutils literal"><span class="pre">super()</span></tt>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">MyConfigurable</span><span class="p">(</span><span class="n">Configurable</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">MyConfigurable</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+        <span class="c"># Then any other code you need to finish initialization.</span>
+</pre></div>
+</div>
+<p>This ensures that instances will be configured properly.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.core.formatters.LatexFormatter.class_config_section">
+<em class="property">classmethod </em><tt class="descname">class_config_section</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.core.formatters.LatexFormatter.class_config_section" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the config class config section</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.core.formatters.LatexFormatter.class_get_help">
+<em class="property">classmethod </em><tt class="descname">class_get_help</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.core.formatters.LatexFormatter.class_get_help" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the help string for this class in ReST format.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.core.formatters.LatexFormatter.class_get_trait_help">
+<em class="property">classmethod </em><tt class="descname">class_get_trait_help</tt><big>(</big><em>trait</em><big>)</big><a class="headerlink" href="#IPython.core.formatters.LatexFormatter.class_get_trait_help" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the help string for a single trait.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.core.formatters.LatexFormatter.class_print_help">
+<em class="property">classmethod </em><tt class="descname">class_print_help</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.core.formatters.LatexFormatter.class_print_help" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the help string for a single trait and print it.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.core.formatters.LatexFormatter.class_trait_names">
+<em class="property">classmethod </em><tt class="descname">class_trait_names</tt><big>(</big><em>**metadata</em><big>)</big><a class="headerlink" href="#IPython.core.formatters.LatexFormatter.class_trait_names" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of all the names of this classes traits.</p>
+<p>This method is just like the <a class="reference internal" href="#IPython.core.formatters.LatexFormatter.trait_names" title="IPython.core.formatters.LatexFormatter.trait_names"><tt class="xref py py-meth docutils literal"><span class="pre">trait_names()</span></tt></a> method, but is unbound.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.core.formatters.LatexFormatter.class_traits">
+<em class="property">classmethod </em><tt class="descname">class_traits</tt><big>(</big><em>**metadata</em><big>)</big><a class="headerlink" href="#IPython.core.formatters.LatexFormatter.class_traits" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of all the traits of this class.</p>
+<p>This method is just like the <a class="reference internal" href="#IPython.core.formatters.LatexFormatter.traits" title="IPython.core.formatters.LatexFormatter.traits"><tt class="xref py py-meth docutils literal"><span class="pre">traits()</span></tt></a> method, but is unbound.</p>
+<p>The TraitTypes returned don&#8217;t know anything about the values
+that the various HasTrait&#8217;s instances are holding.</p>
+<p>This follows the same algorithm as traits does and does not allow
+for any simple way of specifying merely that a metadata name
+exists, but has any value.  This is because get_metadata returns
+None if a metadata key doesn&#8217;t exist.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.core.formatters.LatexFormatter.config">
+<tt class="descname">config</tt><a class="headerlink" href="#IPython.core.formatters.LatexFormatter.config" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait whose value must be an instance of a specified class.</p>
+<p>The value can also be an instance of a subclass of the specified class.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.core.formatters.LatexFormatter.created">
+<tt class="descname">created</tt><em class="property"> = None</em><a class="headerlink" href="#IPython.core.formatters.LatexFormatter.created" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.core.formatters.LatexFormatter.deferred_printers">
+<tt class="descname">deferred_printers</tt><a class="headerlink" href="#IPython.core.formatters.LatexFormatter.deferred_printers" title="Permalink to this definition">¶</a></dt>
+<dd><p>An instance of a Python dict.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.core.formatters.LatexFormatter.enabled">
+<tt class="descname">enabled</tt><a class="headerlink" href="#IPython.core.formatters.LatexFormatter.enabled" title="Permalink to this definition">¶</a></dt>
+<dd><p>A boolean (True, False) trait.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.core.formatters.LatexFormatter.for_type">
+<tt class="descname">for_type</tt><big>(</big><em>typ</em>, <em>func</em><big>)</big><a class="headerlink" href="#IPython.core.formatters.LatexFormatter.for_type" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a format function for a given type.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>typ</strong> : class</p>
+<blockquote>
+<div><p>The class of the object that will be formatted using <cite>func</cite>.</p>
+</div></blockquote>
+<p><strong>func</strong> : callable</p>
+<blockquote class="last">
+<div><p>The callable that will be called to compute the format data. The
+call signature of this function is simple, it must take the
+object to be formatted and return the raw data for the given
+format. Subclasses may use a different call signature for the
+<cite>func</cite> argument.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.core.formatters.LatexFormatter.for_type_by_name">
+<tt class="descname">for_type_by_name</tt><big>(</big><em>type_module</em>, <em>type_name</em>, <em>func</em><big>)</big><a class="headerlink" href="#IPython.core.formatters.LatexFormatter.for_type_by_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a format function for a type specified by the full dotted
+module and name of the type, rather than the type of the object.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>type_module</strong> : str</p>
+<blockquote>
+<div><p>The full dotted name of the module the type is defined in, like
+<tt class="docutils literal"><span class="pre">numpy</span></tt>.</p>
+</div></blockquote>
+<p><strong>type_name</strong> : str</p>
+<blockquote>
+<div><p>The name of the type (the class name), like <tt class="docutils literal"><span class="pre">dtype</span></tt></p>
+</div></blockquote>
+<p><strong>func</strong> : callable</p>
+<blockquote class="last">
+<div><p>The callable that will be called to compute the format data. The
+call signature of this function is simple, it must take the
+object to be formatted and return the raw data for the given
+format. Subclasses may use a different call signature for the
+<cite>func</cite> argument.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.core.formatters.LatexFormatter.format_type">
+<tt class="descname">format_type</tt><a class="headerlink" href="#IPython.core.formatters.LatexFormatter.format_type" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait for unicode strings.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.core.formatters.LatexFormatter.on_trait_change">
+<tt class="descname">on_trait_change</tt><big>(</big><em>handler</em>, <em>name=None</em>, <em>remove=False</em><big>)</big><a class="headerlink" href="#IPython.core.formatters.LatexFormatter.on_trait_change" title="Permalink to this definition">¶</a></dt>
+<dd><p>Setup a handler to be called when a trait changes.</p>
+<p>This is used to setup dynamic notifications of trait changes.</p>
+<p>Static handlers can be created by creating methods on a HasTraits
+subclass with the naming convention &#8216;_[traitname]_changed&#8217;.  Thus,
+to create static handler for the trait &#8216;a&#8217;, create the method
+_a_changed(self, name, old, new) (fewer arguments can be used, see
+below).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>handler</strong> : callable</p>
+<blockquote>
+<div><p>A callable that is called when a trait changes.  Its 
+signature can be handler(), handler(name), handler(name, new)
+or handler(name, old, new).</p>
+</div></blockquote>
+<p><strong>name</strong> : list, str, None</p>
+<blockquote>
+<div><p>If None, the handler will apply to all traits.  If a list
+of str, handler will apply to all names in the list.  If a
+str, the handler will apply just to that name.</p>
+</div></blockquote>
+<p><strong>remove</strong> : bool</p>
+<blockquote class="last">
+<div><p>If False (the default), then install the handler.  If True
+then unintall it.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.core.formatters.LatexFormatter.print_method">
+<tt class="descname">print_method</tt><a class="headerlink" href="#IPython.core.formatters.LatexFormatter.print_method" title="Permalink to this definition">¶</a></dt>
+<dd><p>A string holding a valid object name in this version of Python.</p>
+<p>This does not check that the name exists in any scope.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.core.formatters.LatexFormatter.singleton_printers">
+<tt class="descname">singleton_printers</tt><a class="headerlink" href="#IPython.core.formatters.LatexFormatter.singleton_printers" title="Permalink to this definition">¶</a></dt>
+<dd><p>An instance of a Python dict.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.core.formatters.LatexFormatter.trait_metadata">
+<tt class="descname">trait_metadata</tt><big>(</big><em>traitname</em>, <em>key</em><big>)</big><a class="headerlink" href="#IPython.core.formatters.LatexFormatter.trait_metadata" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get metadata values for trait by key.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.core.formatters.LatexFormatter.trait_names">
+<tt class="descname">trait_names</tt><big>(</big><em>**metadata</em><big>)</big><a class="headerlink" href="#IPython.core.formatters.LatexFormatter.trait_names" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of all the names of this classes traits.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.core.formatters.LatexFormatter.traits">
+<tt class="descname">traits</tt><big>(</big><em>**metadata</em><big>)</big><a class="headerlink" href="#IPython.core.formatters.LatexFormatter.traits" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of all the traits of this class.</p>
+<p>The TraitTypes returned don&#8217;t know anything about the values
+that the various HasTrait&#8217;s instances are holding.</p>
+<p>This follows the same algorithm as traits does and does not allow
+for any simple way of specifying merely that a metadata name
+exists, but has any value.  This is because get_metadata returns
+None if a metadata key doesn&#8217;t exist.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.core.formatters.LatexFormatter.type_printers">
+<tt class="descname">type_printers</tt><a class="headerlink" href="#IPython.core.formatters.LatexFormatter.type_printers" title="Permalink to this definition">¶</a></dt>
+<dd><p>An instance of a Python dict.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="pngformatter">
+<h3><a class="reference internal" href="#IPython.core.formatters.PNGFormatter" title="IPython.core.formatters.PNGFormatter"><tt class="xref py py-class docutils literal"><span class="pre">PNGFormatter</span></tt></a><a class="headerlink" href="#pngformatter" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="IPython.core.formatters.PNGFormatter">
+<em class="property">class </em><tt class="descclassname">IPython.core.formatters.</tt><tt class="descname">PNGFormatter</tt><big>(</big><em>**kwargs</em><big>)</big><a class="headerlink" href="#IPython.core.formatters.PNGFormatter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#IPython.core.formatters.BaseFormatter" title="IPython.core.formatters.BaseFormatter"><tt class="xref py py-class docutils literal"><span class="pre">IPython.core.formatters.BaseFormatter</span></tt></a></p>
+<p>A PNG formatter.</p>
+<p>To define the callables that compute the PNG representation of your
+objects, define a <tt class="xref py py-meth docutils literal"><span class="pre">_repr_png_()</span></tt> method or use the <a class="reference internal" href="#IPython.core.formatters.PNGFormatter.for_type" title="IPython.core.formatters.PNGFormatter.for_type"><tt class="xref py py-meth docutils literal"><span class="pre">for_type()</span></tt></a>
+or <a class="reference internal" href="#IPython.core.formatters.PNGFormatter.for_type_by_name" title="IPython.core.formatters.PNGFormatter.for_type_by_name"><tt class="xref py py-meth docutils literal"><span class="pre">for_type_by_name()</span></tt></a> methods to register functions that handle
+this.</p>
+<p>The return value of this formatter should be raw PNG data, <em>not</em>
+base64 encoded.</p>
+<dl class="method">
+<dt id="IPython.core.formatters.PNGFormatter.__init__">
+<tt class="descname">__init__</tt><big>(</big><em>**kwargs</em><big>)</big><a class="headerlink" href="#IPython.core.formatters.PNGFormatter.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a configurable given a config config.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>config</strong> : Config</p>
+<blockquote class="last">
+<div><p>If this is empty, default values are used. If config is a 
+<tt class="xref py py-class docutils literal"><span class="pre">Config</span></tt> instance, it will be used to configure the
+instance.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Notes</p>
+<p>Subclasses of Configurable must call the <a class="reference internal" href="#IPython.core.formatters.PNGFormatter.__init__" title="IPython.core.formatters.PNGFormatter.__init__"><tt class="xref py py-meth docutils literal"><span class="pre">__init__()</span></tt></a> method of
+<tt class="xref py py-class docutils literal"><span class="pre">Configurable</span></tt> <em>before</em> doing anything else and using 
+<tt class="xref py py-func docutils literal"><span class="pre">super()</span></tt>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">MyConfigurable</span><span class="p">(</span><span class="n">Configurable</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">MyConfigurable</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+        <span class="c"># Then any other code you need to finish initialization.</span>
+</pre></div>
+</div>
+<p>This ensures that instances will be configured properly.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.core.formatters.PNGFormatter.class_config_section">
+<em class="property">classmethod </em><tt class="descname">class_config_section</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.core.formatters.PNGFormatter.class_config_section" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the config class config section</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.core.formatters.PNGFormatter.class_get_help">
+<em class="property">classmethod </em><tt class="descname">class_get_help</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.core.formatters.PNGFormatter.class_get_help" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the help string for this class in ReST format.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.core.formatters.PNGFormatter.class_get_trait_help">
+<em class="property">classmethod </em><tt class="descname">class_get_trait_help</tt><big>(</big><em>trait</em><big>)</big><a class="headerlink" href="#IPython.core.formatters.PNGFormatter.class_get_trait_help" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the help string for a single trait.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.core.formatters.PNGFormatter.class_print_help">
+<em class="property">classmethod </em><tt class="descname">class_print_help</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.core.formatters.PNGFormatter.class_print_help" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the help string for a single trait and print it.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.core.formatters.PNGFormatter.class_trait_names">
+<em class="property">classmethod </em><tt class="descname">class_trait_names</tt><big>(</big><em>**metadata</em><big>)</big><a class="headerlink" href="#IPython.core.formatters.PNGFormatter.class_trait_names" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of all the names of this classes traits.</p>
+<p>This method is just like the <a class="reference internal" href="#IPython.core.formatters.PNGFormatter.trait_names" title="IPython.core.formatters.PNGFormatter.trait_names"><tt class="xref py py-meth docutils literal"><span class="pre">trait_names()</span></tt></a> method, but is unbound.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.core.formatters.PNGFormatter.class_traits">
+<em class="property">classmethod </em><tt class="descname">class_traits</tt><big>(</big><em>**metadata</em><big>)</big><a class="headerlink" href="#IPython.core.formatters.PNGFormatter.class_traits" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of all the traits of this class.</p>
+<p>This method is just like the <a class="reference internal" href="#IPython.core.formatters.PNGFormatter.traits" title="IPython.core.formatters.PNGFormatter.traits"><tt class="xref py py-meth docutils literal"><span class="pre">traits()</span></tt></a> method, but is unbound.</p>
+<p>The TraitTypes returned don&#8217;t know anything about the values
+that the various HasTrait&#8217;s instances are holding.</p>
+<p>This follows the same algorithm as traits does and does not allow
+for any simple way of specifying merely that a metadata name
+exists, but has any value.  This is because get_metadata returns
+None if a metadata key doesn&#8217;t exist.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.core.formatters.PNGFormatter.config">
+<tt class="descname">config</tt><a class="headerlink" href="#IPython.core.formatters.PNGFormatter.config" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait whose value must be an instance of a specified class.</p>
+<p>The value can also be an instance of a subclass of the specified class.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.core.formatters.PNGFormatter.created">
+<tt class="descname">created</tt><em class="property"> = None</em><a class="headerlink" href="#IPython.core.formatters.PNGFormatter.created" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.core.formatters.PNGFormatter.deferred_printers">
+<tt class="descname">deferred_printers</tt><a class="headerlink" href="#IPython.core.formatters.PNGFormatter.deferred_printers" title="Permalink to this definition">¶</a></dt>
+<dd><p>An instance of a Python dict.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.core.formatters.PNGFormatter.enabled">
+<tt class="descname">enabled</tt><a class="headerlink" href="#IPython.core.formatters.PNGFormatter.enabled" title="Permalink to this definition">¶</a></dt>
+<dd><p>A boolean (True, False) trait.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.core.formatters.PNGFormatter.for_type">
+<tt class="descname">for_type</tt><big>(</big><em>typ</em>, <em>func</em><big>)</big><a class="headerlink" href="#IPython.core.formatters.PNGFormatter.for_type" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a format function for a given type.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>typ</strong> : class</p>
+<blockquote>
+<div><p>The class of the object that will be formatted using <cite>func</cite>.</p>
+</div></blockquote>
+<p><strong>func</strong> : callable</p>
+<blockquote class="last">
+<div><p>The callable that will be called to compute the format data. The
+call signature of this function is simple, it must take the
+object to be formatted and return the raw data for the given
+format. Subclasses may use a different call signature for the
+<cite>func</cite> argument.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.core.formatters.PNGFormatter.for_type_by_name">
+<tt class="descname">for_type_by_name</tt><big>(</big><em>type_module</em>, <em>type_name</em>, <em>func</em><big>)</big><a class="headerlink" href="#IPython.core.formatters.PNGFormatter.for_type_by_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a format function for a type specified by the full dotted
+module and name of the type, rather than the type of the object.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>type_module</strong> : str</p>
+<blockquote>
+<div><p>The full dotted name of the module the type is defined in, like
+<tt class="docutils literal"><span class="pre">numpy</span></tt>.</p>
+</div></blockquote>
+<p><strong>type_name</strong> : str</p>
+<blockquote>
+<div><p>The name of the type (the class name), like <tt class="docutils literal"><span class="pre">dtype</span></tt></p>
+</div></blockquote>
+<p><strong>func</strong> : callable</p>
+<blockquote class="last">
+<div><p>The callable that will be called to compute the format data. The
+call signature of this function is simple, it must take the
+object to be formatted and return the raw data for the given
+format. Subclasses may use a different call signature for the
+<cite>func</cite> argument.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.core.formatters.PNGFormatter.format_type">
+<tt class="descname">format_type</tt><a class="headerlink" href="#IPython.core.formatters.PNGFormatter.format_type" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait for unicode strings.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.core.formatters.PNGFormatter.on_trait_change">
+<tt class="descname">on_trait_change</tt><big>(</big><em>handler</em>, <em>name=None</em>, <em>remove=False</em><big>)</big><a class="headerlink" href="#IPython.core.formatters.PNGFormatter.on_trait_change" title="Permalink to this definition">¶</a></dt>
+<dd><p>Setup a handler to be called when a trait changes.</p>
+<p>This is used to setup dynamic notifications of trait changes.</p>
+<p>Static handlers can be created by creating methods on a HasTraits
+subclass with the naming convention &#8216;_[traitname]_changed&#8217;.  Thus,
+to create static handler for the trait &#8216;a&#8217;, create the method
+_a_changed(self, name, old, new) (fewer arguments can be used, see
+below).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>handler</strong> : callable</p>
+<blockquote>
+<div><p>A callable that is called when a trait changes.  Its 
+signature can be handler(), handler(name), handler(name, new)
+or handler(name, old, new).</p>
+</div></blockquote>
+<p><strong>name</strong> : list, str, None</p>
+<blockquote>
+<div><p>If None, the handler will apply to all traits.  If a list
+of str, handler will apply to all names in the list.  If a
+str, the handler will apply just to that name.</p>
+</div></blockquote>
+<p><strong>remove</strong> : bool</p>
+<blockquote class="last">
+<div><p>If False (the default), then install the handler.  If True
+then unintall it.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.core.formatters.PNGFormatter.print_method">
+<tt class="descname">print_method</tt><a class="headerlink" href="#IPython.core.formatters.PNGFormatter.print_method" title="Permalink to this definition">¶</a></dt>
+<dd><p>A string holding a valid object name in this version of Python.</p>
+<p>This does not check that the name exists in any scope.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.core.formatters.PNGFormatter.singleton_printers">
+<tt class="descname">singleton_printers</tt><a class="headerlink" href="#IPython.core.formatters.PNGFormatter.singleton_printers" title="Permalink to this definition">¶</a></dt>
+<dd><p>An instance of a Python dict.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.core.formatters.PNGFormatter.trait_metadata">
+<tt class="descname">trait_metadata</tt><big>(</big><em>traitname</em>, <em>key</em><big>)</big><a class="headerlink" href="#IPython.core.formatters.PNGFormatter.trait_metadata" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get metadata values for trait by key.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.core.formatters.PNGFormatter.trait_names">
+<tt class="descname">trait_names</tt><big>(</big><em>**metadata</em><big>)</big><a class="headerlink" href="#IPython.core.formatters.PNGFormatter.trait_names" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of all the names of this classes traits.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.core.formatters.PNGFormatter.traits">
+<tt class="descname">traits</tt><big>(</big><em>**metadata</em><big>)</big><a class="headerlink" href="#IPython.core.formatters.PNGFormatter.traits" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of all the traits of this class.</p>
+<p>The TraitTypes returned don&#8217;t know anything about the values
+that the various HasTrait&#8217;s instances are holding.</p>
+<p>This follows the same algorithm as traits does and does not allow
+for any simple way of specifying merely that a metadata name
+exists, but has any value.  This is because get_metadata returns
+None if a metadata key doesn&#8217;t exist.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.core.formatters.PNGFormatter.type_printers">
+<tt class="descname">type_printers</tt><a class="headerlink" href="#IPython.core.formatters.PNGFormatter.type_printers" title="Permalink to this definition">¶</a></dt>
+<dd><p>An instance of a Python dict.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="plaintextformatter">
+<h3><a class="reference internal" href="#IPython.core.formatters.PlainTextFormatter" title="IPython.core.formatters.PlainTextFormatter"><tt class="xref py py-class docutils literal"><span class="pre">PlainTextFormatter</span></tt></a><a class="headerlink" href="#plaintextformatter" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="IPython.core.formatters.PlainTextFormatter">
+<em class="property">class </em><tt class="descclassname">IPython.core.formatters.</tt><tt class="descname">PlainTextFormatter</tt><big>(</big><em>**kwargs</em><big>)</big><a class="headerlink" href="#IPython.core.formatters.PlainTextFormatter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#IPython.core.formatters.BaseFormatter" title="IPython.core.formatters.BaseFormatter"><tt class="xref py py-class docutils literal"><span class="pre">IPython.core.formatters.BaseFormatter</span></tt></a></p>
+<p>The default pretty-printer.</p>
+<p>This uses <tt class="xref py py-mod docutils literal"><span class="pre">IPython.external.pretty</span></tt> to compute the format data of
+the object. If the object cannot be pretty printed, <tt class="xref py py-func docutils literal"><span class="pre">repr()</span></tt> is used.
+See the documentation of <tt class="xref py py-mod docutils literal"><span class="pre">IPython.external.pretty</span></tt> for details on
+how to write pretty printers.  Here is a simple example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">dtype_pprinter</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">cycle</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">cycle</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">p</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="s">&#39;dtype(...)&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s">&#39;fields&#39;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">obj</span><span class="o">.</span><span class="n">fields</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">p</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="nb">repr</span><span class="p">(</span><span class="n">obj</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">p</span><span class="o">.</span><span class="n">begin_group</span><span class="p">(</span><span class="mi">7</span><span class="p">,</span> <span class="s">&#39;dtype([&#39;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">field</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">descr</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">i</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">p</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="s">&#39;,&#39;</span><span class="p">)</span>
+                    <span class="n">p</span><span class="o">.</span><span class="n">breakable</span><span class="p">()</span>
+                <span class="n">p</span><span class="o">.</span><span class="n">pretty</span><span class="p">(</span><span class="n">field</span><span class="p">)</span>
+            <span class="n">p</span><span class="o">.</span><span class="n">end_group</span><span class="p">(</span><span class="mi">7</span><span class="p">,</span> <span class="s">&#39;])&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="method">
+<dt id="IPython.core.formatters.PlainTextFormatter.__init__">
+<tt class="descname">__init__</tt><big>(</big><em>**kwargs</em><big>)</big><a class="headerlink" href="#IPython.core.formatters.PlainTextFormatter.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a configurable given a config config.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>config</strong> : Config</p>
+<blockquote class="last">
+<div><p>If this is empty, default values are used. If config is a 
+<tt class="xref py py-class docutils literal"><span class="pre">Config</span></tt> instance, it will be used to configure the
+instance.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Notes</p>
+<p>Subclasses of Configurable must call the <a class="reference internal" href="#IPython.core.formatters.PlainTextFormatter.__init__" title="IPython.core.formatters.PlainTextFormatter.__init__"><tt class="xref py py-meth docutils literal"><span class="pre">__init__()</span></tt></a> method of
+<tt class="xref py py-class docutils literal"><span class="pre">Configurable</span></tt> <em>before</em> doing anything else and using 
+<tt class="xref py py-func docutils literal"><span class="pre">super()</span></tt>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">MyConfigurable</span><span class="p">(</span><span class="n">Configurable</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">MyConfigurable</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+        <span class="c"># Then any other code you need to finish initialization.</span>
+</pre></div>
+</div>
+<p>This ensures that instances will be configured properly.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.core.formatters.PlainTextFormatter.class_config_section">
+<em class="property">classmethod </em><tt class="descname">class_config_section</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.core.formatters.PlainTextFormatter.class_config_section" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the config class config section</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.core.formatters.PlainTextFormatter.class_get_help">
+<em class="property">classmethod </em><tt class="descname">class_get_help</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.core.formatters.PlainTextFormatter.class_get_help" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the help string for this class in ReST format.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.core.formatters.PlainTextFormatter.class_get_trait_help">
+<em class="property">classmethod </em><tt class="descname">class_get_trait_help</tt><big>(</big><em>trait</em><big>)</big><a class="headerlink" href="#IPython.core.formatters.PlainTextFormatter.class_get_trait_help" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the help string for a single trait.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.core.formatters.PlainTextFormatter.class_print_help">
+<em class="property">classmethod </em><tt class="descname">class_print_help</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.core.formatters.PlainTextFormatter.class_print_help" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the help string for a single trait and print it.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.core.formatters.PlainTextFormatter.class_trait_names">
+<em class="property">classmethod </em><tt class="descname">class_trait_names</tt><big>(</big><em>**metadata</em><big>)</big><a class="headerlink" href="#IPython.core.formatters.PlainTextFormatter.class_trait_names" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of all the names of this classes traits.</p>
+<p>This method is just like the <a class="reference internal" href="#IPython.core.formatters.PlainTextFormatter.trait_names" title="IPython.core.formatters.PlainTextFormatter.trait_names"><tt class="xref py py-meth docutils literal"><span class="pre">trait_names()</span></tt></a> method, but is unbound.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.core.formatters.PlainTextFormatter.class_traits">
+<em class="property">classmethod </em><tt class="descname">class_traits</tt><big>(</big><em>**metadata</em><big>)</big><a class="headerlink" href="#IPython.core.formatters.PlainTextFormatter.class_traits" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of all the traits of this class.</p>
+<p>This method is just like the <a class="reference internal" href="#IPython.core.formatters.PlainTextFormatter.traits" title="IPython.core.formatters.PlainTextFormatter.traits"><tt class="xref py py-meth docutils literal"><span class="pre">traits()</span></tt></a> method, but is unbound.</p>
+<p>The TraitTypes returned don&#8217;t know anything about the values
+that the various HasTrait&#8217;s instances are holding.</p>
+<p>This follows the same algorithm as traits does and does not allow
+for any simple way of specifying merely that a metadata name
+exists, but has any value.  This is because get_metadata returns
+None if a metadata key doesn&#8217;t exist.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.core.formatters.PlainTextFormatter.config">
+<tt class="descname">config</tt><a class="headerlink" href="#IPython.core.formatters.PlainTextFormatter.config" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait whose value must be an instance of a specified class.</p>
+<p>The value can also be an instance of a subclass of the specified class.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.core.formatters.PlainTextFormatter.created">
+<tt class="descname">created</tt><em class="property"> = None</em><a class="headerlink" href="#IPython.core.formatters.PlainTextFormatter.created" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.core.formatters.PlainTextFormatter.deferred_printers">
+<tt class="descname">deferred_printers</tt><a class="headerlink" href="#IPython.core.formatters.PlainTextFormatter.deferred_printers" title="Permalink to this definition">¶</a></dt>
+<dd><p>An instance of a Python dict.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.core.formatters.PlainTextFormatter.enabled">
+<tt class="descname">enabled</tt><a class="headerlink" href="#IPython.core.formatters.PlainTextFormatter.enabled" title="Permalink to this definition">¶</a></dt>
+<dd><p>A boolean (True, False) trait.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.core.formatters.PlainTextFormatter.float_format">
+<tt class="descname">float_format</tt><a class="headerlink" href="#IPython.core.formatters.PlainTextFormatter.float_format" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait for unicode strings.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.core.formatters.PlainTextFormatter.float_precision">
+<tt class="descname">float_precision</tt><a class="headerlink" href="#IPython.core.formatters.PlainTextFormatter.float_precision" title="Permalink to this definition">¶</a></dt>
+<dd><p>A casting version of the unicode trait.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.core.formatters.PlainTextFormatter.for_type">
+<tt class="descname">for_type</tt><big>(</big><em>typ</em>, <em>func</em><big>)</big><a class="headerlink" href="#IPython.core.formatters.PlainTextFormatter.for_type" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a format function for a given type.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>typ</strong> : class</p>
+<blockquote>
+<div><p>The class of the object that will be formatted using <cite>func</cite>.</p>
+</div></blockquote>
+<p><strong>func</strong> : callable</p>
+<blockquote class="last">
+<div><p>The callable that will be called to compute the format data. The
+call signature of this function is simple, it must take the
+object to be formatted and return the raw data for the given
+format. Subclasses may use a different call signature for the
+<cite>func</cite> argument.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.core.formatters.PlainTextFormatter.for_type_by_name">
+<tt class="descname">for_type_by_name</tt><big>(</big><em>type_module</em>, <em>type_name</em>, <em>func</em><big>)</big><a class="headerlink" href="#IPython.core.formatters.PlainTextFormatter.for_type_by_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a format function for a type specified by the full dotted
+module and name of the type, rather than the type of the object.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>type_module</strong> : str</p>
+<blockquote>
+<div><p>The full dotted name of the module the type is defined in, like
+<tt class="docutils literal"><span class="pre">numpy</span></tt>.</p>
+</div></blockquote>
+<p><strong>type_name</strong> : str</p>
+<blockquote>
+<div><p>The name of the type (the class name), like <tt class="docutils literal"><span class="pre">dtype</span></tt></p>
+</div></blockquote>
+<p><strong>func</strong> : callable</p>
+<blockquote class="last">
+<div><p>The callable that will be called to compute the format data. The
+call signature of this function is simple, it must take the
+object to be formatted and return the raw data for the given
+format. Subclasses may use a different call signature for the
+<cite>func</cite> argument.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.core.formatters.PlainTextFormatter.format_type">
+<tt class="descname">format_type</tt><a class="headerlink" href="#IPython.core.formatters.PlainTextFormatter.format_type" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait for unicode strings.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.core.formatters.PlainTextFormatter.max_width">
+<tt class="descname">max_width</tt><a class="headerlink" href="#IPython.core.formatters.PlainTextFormatter.max_width" title="Permalink to this definition">¶</a></dt>
+<dd><p>A integer trait.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.core.formatters.PlainTextFormatter.newline">
+<tt class="descname">newline</tt><a class="headerlink" href="#IPython.core.formatters.PlainTextFormatter.newline" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait for unicode strings.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.core.formatters.PlainTextFormatter.on_trait_change">
+<tt class="descname">on_trait_change</tt><big>(</big><em>handler</em>, <em>name=None</em>, <em>remove=False</em><big>)</big><a class="headerlink" href="#IPython.core.formatters.PlainTextFormatter.on_trait_change" title="Permalink to this definition">¶</a></dt>
+<dd><p>Setup a handler to be called when a trait changes.</p>
+<p>This is used to setup dynamic notifications of trait changes.</p>
+<p>Static handlers can be created by creating methods on a HasTraits
+subclass with the naming convention &#8216;_[traitname]_changed&#8217;.  Thus,
+to create static handler for the trait &#8216;a&#8217;, create the method
+_a_changed(self, name, old, new) (fewer arguments can be used, see
+below).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>handler</strong> : callable</p>
+<blockquote>
+<div><p>A callable that is called when a trait changes.  Its 
+signature can be handler(), handler(name), handler(name, new)
+or handler(name, old, new).</p>
+</div></blockquote>
+<p><strong>name</strong> : list, str, None</p>
+<blockquote>
+<div><p>If None, the handler will apply to all traits.  If a list
+of str, handler will apply to all names in the list.  If a
+str, the handler will apply just to that name.</p>
+</div></blockquote>
+<p><strong>remove</strong> : bool</p>
+<blockquote class="last">
+<div><p>If False (the default), then install the handler.  If True
+then unintall it.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.core.formatters.PlainTextFormatter.pprint">
+<tt class="descname">pprint</tt><a class="headerlink" href="#IPython.core.formatters.PlainTextFormatter.pprint" title="Permalink to this definition">¶</a></dt>
+<dd><p>A boolean (True, False) trait.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.core.formatters.PlainTextFormatter.print_method">
+<tt class="descname">print_method</tt><a class="headerlink" href="#IPython.core.formatters.PlainTextFormatter.print_method" title="Permalink to this definition">¶</a></dt>
+<dd><p>A string holding a valid object name in this version of Python.</p>
+<p>This does not check that the name exists in any scope.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.core.formatters.PlainTextFormatter.singleton_printers">
+<tt class="descname">singleton_printers</tt><a class="headerlink" href="#IPython.core.formatters.PlainTextFormatter.singleton_printers" title="Permalink to this definition">¶</a></dt>
+<dd><p>An instance of a Python dict.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.core.formatters.PlainTextFormatter.trait_metadata">
+<tt class="descname">trait_metadata</tt><big>(</big><em>traitname</em>, <em>key</em><big>)</big><a class="headerlink" href="#IPython.core.formatters.PlainTextFormatter.trait_metadata" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get metadata values for trait by key.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.core.formatters.PlainTextFormatter.trait_names">
+<tt class="descname">trait_names</tt><big>(</big><em>**metadata</em><big>)</big><a class="headerlink" href="#IPython.core.formatters.PlainTextFormatter.trait_names" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of all the names of this classes traits.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.core.formatters.PlainTextFormatter.traits">
+<tt class="descname">traits</tt><big>(</big><em>**metadata</em><big>)</big><a class="headerlink" href="#IPython.core.formatters.PlainTextFormatter.traits" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of all the traits of this class.</p>
+<p>The TraitTypes returned don&#8217;t know anything about the values
+that the various HasTrait&#8217;s instances are holding.</p>
+<p>This follows the same algorithm as traits does and does not allow
+for any simple way of specifying merely that a metadata name
+exists, but has any value.  This is because get_metadata returns
+None if a metadata key doesn&#8217;t exist.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.core.formatters.PlainTextFormatter.type_printers">
+<tt class="descname">type_printers</tt><a class="headerlink" href="#IPython.core.formatters.PlainTextFormatter.type_printers" title="Permalink to this definition">¶</a></dt>
+<dd><p>An instance of a Python dict.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.core.formatters.PlainTextFormatter.verbose">
+<tt class="descname">verbose</tt><a class="headerlink" href="#IPython.core.formatters.PlainTextFormatter.verbose" title="Permalink to this definition">¶</a></dt>
+<dd><p>A boolean (True, False) trait.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="svgformatter">
+<h3><a class="reference internal" href="#IPython.core.formatters.SVGFormatter" title="IPython.core.formatters.SVGFormatter"><tt class="xref py py-class docutils literal"><span class="pre">SVGFormatter</span></tt></a><a class="headerlink" href="#svgformatter" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="IPython.core.formatters.SVGFormatter">
+<em class="property">class </em><tt class="descclassname">IPython.core.formatters.</tt><tt class="descname">SVGFormatter</tt><big>(</big><em>**kwargs</em><big>)</big><a class="headerlink" href="#IPython.core.formatters.SVGFormatter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#IPython.core.formatters.BaseFormatter" title="IPython.core.formatters.BaseFormatter"><tt class="xref py py-class docutils literal"><span class="pre">IPython.core.formatters.BaseFormatter</span></tt></a></p>
+<p>An SVG formatter.</p>
+<p>To define the callables that compute the SVG representation of your
+objects, define a <tt class="xref py py-meth docutils literal"><span class="pre">_repr_svg_()</span></tt> method or use the <a class="reference internal" href="#IPython.core.formatters.SVGFormatter.for_type" title="IPython.core.formatters.SVGFormatter.for_type"><tt class="xref py py-meth docutils literal"><span class="pre">for_type()</span></tt></a>
+or <a class="reference internal" href="#IPython.core.formatters.SVGFormatter.for_type_by_name" title="IPython.core.formatters.SVGFormatter.for_type_by_name"><tt class="xref py py-meth docutils literal"><span class="pre">for_type_by_name()</span></tt></a> methods to register functions that handle
+this.</p>
+<p>The return value of this formatter should be valid SVG enclosed in
+<tt class="docutils literal"><span class="pre">`&lt;svg&gt;`</span></tt> tags, that could be injected into an existing DOM. It should
+<em>not</em> include the <tt class="docutils literal"><span class="pre">`&lt;html&gt;</span></tt> or <tt class="docutils literal"><span class="pre">`&lt;body&gt;</span></tt> tags.</p>
+<dl class="method">
+<dt id="IPython.core.formatters.SVGFormatter.__init__">
+<tt class="descname">__init__</tt><big>(</big><em>**kwargs</em><big>)</big><a class="headerlink" href="#IPython.core.formatters.SVGFormatter.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a configurable given a config config.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>config</strong> : Config</p>
+<blockquote class="last">
+<div><p>If this is empty, default values are used. If config is a 
+<tt class="xref py py-class docutils literal"><span class="pre">Config</span></tt> instance, it will be used to configure the
+instance.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Notes</p>
+<p>Subclasses of Configurable must call the <a class="reference internal" href="#IPython.core.formatters.SVGFormatter.__init__" title="IPython.core.formatters.SVGFormatter.__init__"><tt class="xref py py-meth docutils literal"><span class="pre">__init__()</span></tt></a> method of
+<tt class="xref py py-class docutils literal"><span class="pre">Configurable</span></tt> <em>before</em> doing anything else and using 
+<tt class="xref py py-func docutils literal"><span class="pre">super()</span></tt>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">MyConfigurable</span><span class="p">(</span><span class="n">Configurable</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">MyConfigurable</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+        <span class="c"># Then any other code you need to finish initialization.</span>
+</pre></div>
+</div>
+<p>This ensures that instances will be configured properly.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.core.formatters.SVGFormatter.class_config_section">
+<em class="property">classmethod </em><tt class="descname">class_config_section</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.core.formatters.SVGFormatter.class_config_section" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the config class config section</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.core.formatters.SVGFormatter.class_get_help">
+<em class="property">classmethod </em><tt class="descname">class_get_help</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.core.formatters.SVGFormatter.class_get_help" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the help string for this class in ReST format.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.core.formatters.SVGFormatter.class_get_trait_help">
+<em class="property">classmethod </em><tt class="descname">class_get_trait_help</tt><big>(</big><em>trait</em><big>)</big><a class="headerlink" href="#IPython.core.formatters.SVGFormatter.class_get_trait_help" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the help string for a single trait.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.core.formatters.SVGFormatter.class_print_help">
+<em class="property">classmethod </em><tt class="descname">class_print_help</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.core.formatters.SVGFormatter.class_print_help" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the help string for a single trait and print it.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.core.formatters.SVGFormatter.class_trait_names">
+<em class="property">classmethod </em><tt class="descname">class_trait_names</tt><big>(</big><em>**metadata</em><big>)</big><a class="headerlink" href="#IPython.core.formatters.SVGFormatter.class_trait_names" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of all the names of this classes traits.</p>
+<p>This method is just like the <a class="reference internal" href="#IPython.core.formatters.SVGFormatter.trait_names" title="IPython.core.formatters.SVGFormatter.trait_names"><tt class="xref py py-meth docutils literal"><span class="pre">trait_names()</span></tt></a> method, but is unbound.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.core.formatters.SVGFormatter.class_traits">
+<em class="property">classmethod </em><tt class="descname">class_traits</tt><big>(</big><em>**metadata</em><big>)</big><a class="headerlink" href="#IPython.core.formatters.SVGFormatter.class_traits" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of all the traits of this class.</p>
+<p>This method is just like the <a class="reference internal" href="#IPython.core.formatters.SVGFormatter.traits" title="IPython.core.formatters.SVGFormatter.traits"><tt class="xref py py-meth docutils literal"><span class="pre">traits()</span></tt></a> method, but is unbound.</p>
+<p>The TraitTypes returned don&#8217;t know anything about the values
+that the various HasTrait&#8217;s instances are holding.</p>
+<p>This follows the same algorithm as traits does and does not allow
+for any simple way of specifying merely that a metadata name
+exists, but has any value.  This is because get_metadata returns
+None if a metadata key doesn&#8217;t exist.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.core.formatters.SVGFormatter.config">
+<tt class="descname">config</tt><a class="headerlink" href="#IPython.core.formatters.SVGFormatter.config" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait whose value must be an instance of a specified class.</p>
+<p>The value can also be an instance of a subclass of the specified class.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.core.formatters.SVGFormatter.created">
+<tt class="descname">created</tt><em class="property"> = None</em><a class="headerlink" href="#IPython.core.formatters.SVGFormatter.created" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.core.formatters.SVGFormatter.deferred_printers">
+<tt class="descname">deferred_printers</tt><a class="headerlink" href="#IPython.core.formatters.SVGFormatter.deferred_printers" title="Permalink to this definition">¶</a></dt>
+<dd><p>An instance of a Python dict.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.core.formatters.SVGFormatter.enabled">
+<tt class="descname">enabled</tt><a class="headerlink" href="#IPython.core.formatters.SVGFormatter.enabled" title="Permalink to this definition">¶</a></dt>
+<dd><p>A boolean (True, False) trait.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.core.formatters.SVGFormatter.for_type">
+<tt class="descname">for_type</tt><big>(</big><em>typ</em>, <em>func</em><big>)</big><a class="headerlink" href="#IPython.core.formatters.SVGFormatter.for_type" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a format function for a given type.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>typ</strong> : class</p>
+<blockquote>
+<div><p>The class of the object that will be formatted using <cite>func</cite>.</p>
+</div></blockquote>
+<p><strong>func</strong> : callable</p>
+<blockquote class="last">
+<div><p>The callable that will be called to compute the format data. The
+call signature of this function is simple, it must take the
+object to be formatted and return the raw data for the given
+format. Subclasses may use a different call signature for the
+<cite>func</cite> argument.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.core.formatters.SVGFormatter.for_type_by_name">
+<tt class="descname">for_type_by_name</tt><big>(</big><em>type_module</em>, <em>type_name</em>, <em>func</em><big>)</big><a class="headerlink" href="#IPython.core.formatters.SVGFormatter.for_type_by_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a format function for a type specified by the full dotted
+module and name of the type, rather than the type of the object.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>type_module</strong> : str</p>
+<blockquote>
+<div><p>The full dotted name of the module the type is defined in, like
+<tt class="docutils literal"><span class="pre">numpy</span></tt>.</p>
+</div></blockquote>
+<p><strong>type_name</strong> : str</p>
+<blockquote>
+<div><p>The name of the type (the class name), like <tt class="docutils literal"><span class="pre">dtype</span></tt></p>
+</div></blockquote>
+<p><strong>func</strong> : callable</p>
+<blockquote class="last">
+<div><p>The callable that will be called to compute the format data. The
+call signature of this function is simple, it must take the
+object to be formatted and return the raw data for the given
+format. Subclasses may use a different call signature for the
+<cite>func</cite> argument.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.core.formatters.SVGFormatter.format_type">
+<tt class="descname">format_type</tt><a class="headerlink" href="#IPython.core.formatters.SVGFormatter.format_type" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait for unicode strings.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.core.formatters.SVGFormatter.on_trait_change">
+<tt class="descname">on_trait_change</tt><big>(</big><em>handler</em>, <em>name=None</em>, <em>remove=False</em><big>)</big><a class="headerlink" href="#IPython.core.formatters.SVGFormatter.on_trait_change" title="Permalink to this definition">¶</a></dt>
+<dd><p>Setup a handler to be called when a trait changes.</p>
+<p>This is used to setup dynamic notifications of trait changes.</p>
+<p>Static handlers can be created by creating methods on a HasTraits
+subclass with the naming convention &#8216;_[traitname]_changed&#8217;.  Thus,
+to create static handler for the trait &#8216;a&#8217;, create the method
+_a_changed(self, name, old, new) (fewer arguments can be used, see
+below).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>handler</strong> : callable</p>
+<blockquote>
+<div><p>A callable that is called when a trait changes.  Its 
+signature can be handler(), handler(name), handler(name, new)
+or handler(name, old, new).</p>
+</div></blockquote>
+<p><strong>name</strong> : list, str, None</p>
+<blockquote>
+<div><p>If None, the handler will apply to all traits.  If a list
+of str, handler will apply to all names in the list.  If a
+str, the handler will apply just to that name.</p>
+</div></blockquote>
+<p><strong>remove</strong> : bool</p>
+<blockquote class="last">
+<div><p>If False (the default), then install the handler.  If True
+then unintall it.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.core.formatters.SVGFormatter.print_method">
+<tt class="descname">print_method</tt><a class="headerlink" href="#IPython.core.formatters.SVGFormatter.print_method" title="Permalink to this definition">¶</a></dt>
+<dd><p>A string holding a valid object name in this version of Python.</p>
+<p>This does not check that the name exists in any scope.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.core.formatters.SVGFormatter.singleton_printers">
+<tt class="descname">singleton_printers</tt><a class="headerlink" href="#IPython.core.formatters.SVGFormatter.singleton_printers" title="Permalink to this definition">¶</a></dt>
+<dd><p>An instance of a Python dict.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.core.formatters.SVGFormatter.trait_metadata">
+<tt class="descname">trait_metadata</tt><big>(</big><em>traitname</em>, <em>key</em><big>)</big><a class="headerlink" href="#IPython.core.formatters.SVGFormatter.trait_metadata" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get metadata values for trait by key.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.core.formatters.SVGFormatter.trait_names">
+<tt class="descname">trait_names</tt><big>(</big><em>**metadata</em><big>)</big><a class="headerlink" href="#IPython.core.formatters.SVGFormatter.trait_names" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of all the names of this classes traits.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.core.formatters.SVGFormatter.traits">
+<tt class="descname">traits</tt><big>(</big><em>**metadata</em><big>)</big><a class="headerlink" href="#IPython.core.formatters.SVGFormatter.traits" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of all the traits of this class.</p>
+<p>The TraitTypes returned don&#8217;t know anything about the values
+that the various HasTrait&#8217;s instances are holding.</p>
+<p>This follows the same algorithm as traits does and does not allow
+for any simple way of specifying merely that a metadata name
+exists, but has any value.  This is because get_metadata returns
+None if a metadata key doesn&#8217;t exist.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.core.formatters.SVGFormatter.type_printers">
+<tt class="descname">type_printers</tt><a class="headerlink" href="#IPython.core.formatters.SVGFormatter.type_printers" title="Permalink to this definition">¶</a></dt>
+<dd><p>An instance of a Python dict.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="function">
+<h2>Function<a class="headerlink" href="#function" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="IPython.core.formatters.format_display_data">
+<tt class="descclassname">IPython.core.formatters.</tt><tt class="descname">format_display_data</tt><big>(</big><em>obj</em>, <em>include=None</em>, <em>exclude=None</em><big>)</big><a class="headerlink" href="#IPython.core.formatters.format_display_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a format data dict for an object.</p>
+<p>By default all format types will be computed.</p>
+<p>The following MIME types are currently implemented:</p>
+<ul class="simple">
+<li>text/plain</li>
+<li>text/html</li>
+<li>text/latex</li>
+<li>application/json</li>
+<li>image/png</li>
+<li>immage/svg+xml</li>
+</ul>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>obj</strong> : object</p>
+<blockquote>
+<div><p>The Python object whose format data will be computed.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns :</th><td class="field-body"><p class="first"><strong>format_dict</strong> : dict</p>
+<blockquote>
+<div><p>A dictionary of key/value pairs, one or each format that was
+generated for the object. The keys are the format types, which
+will usually be MIME type strings and the values and JSON&#8217;able
+data structure containing the raw data for the representation in
+that format.</p>
+</div></blockquote>
+<p><strong>include</strong> : list or tuple, optional</p>
+<blockquote>
+<div><p>A list of format type strings (MIME types) to include in the
+format data dict. If this is set <em>only</em> the format types included
+in this list will be computed.</p>
+</div></blockquote>
+<p><strong>exclude</strong> : list or tuple, optional</p>
+<blockquote class="last">
+<div><p>A list of format type string (MIME types) to exclue in the format
+data dict. If this is set all format types will be computed,
+except for those included in this argument.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="IPython.core.history.html" title="core.history"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="IPython.core.extensions.html" title="core.extensions"
+             >previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <li><a href="../../search.html">search</a>|&nbsp;</li>
+       <li><a href="../../index.html">documentation </a> &raquo;</li>
+
+          <li><a href="../index.html" >The IPython API</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2008, The IPython Development Team.
+      Last updated on Jul 31, 2011.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1pre.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,52 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+core.oinspect
+=============
+
+Module: :mod:`core.oinspect`
+----------------------------
+Inheritance diagram for ``IPython.core.oinspect``:
+
+.. inheritance-diagram:: IPython.core.oinspect 
+   :parts: 3
+
+.. automodule:: IPython.core.oinspect
+
+.. currentmodule:: IPython.core.oinspect
+
+Class
+-----
+
+:class:`Inspector`
+------------------
+
+
+.. autoclass:: Inspector
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+Functions
+---------
+
+
+.. autofunction:: IPython.core.oinspect.call_tip
+
+
+.. autofunction:: IPython.core.oinspect.format_argspec
+
+
+.. autofunction:: IPython.core.oinspect.getargspec
+
+
+.. autofunction:: IPython.core.oinspect.getdoc
+
+
+.. autofunction:: IPython.core.oinspect.getsource
+
+
+.. autofunction:: IPython.core.oinspect.object_info
+

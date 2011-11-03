@@ -1,0 +1,49 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+parallel.client.client
+======================
+
+Module: :mod:`parallel.client.client`
+-------------------------------------
+Inheritance diagram for ``IPython.parallel.client.client``:
+
+.. inheritance-diagram:: IPython.parallel.client.client 
+   :parts: 3
+
+.. automodule:: IPython.parallel.client.client
+
+.. currentmodule:: IPython.parallel.client.client
+
+Classes
+-------
+
+:class:`Client`
+~~~~~~~~~~~~~~~
+
+
+.. autoclass:: Client
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`Metadata`
+~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: Metadata
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+Function
+--------
+
+
+.. autofunction:: IPython.parallel.client.client.spin_first
+

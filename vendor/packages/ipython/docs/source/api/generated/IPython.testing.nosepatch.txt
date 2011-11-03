@@ -1,0 +1,13 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+testing.nosepatch
+=================
+
+Module: :mod:`testing.nosepatch`
+--------------------------------
+.. automodule:: IPython.testing.nosepatch
+
+.. currentmodule:: IPython.testing.nosepatch
+
+.. autofunction:: IPython.testing.nosepatch.getTestCaseNames
+

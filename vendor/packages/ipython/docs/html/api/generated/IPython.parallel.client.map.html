@@ -1,0 +1,235 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>parallel.client.map &mdash; IPython 0.11 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.11',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="IPython 0.11 documentation" href="../../index.html" />
+    <link rel="up" title="The IPython API" href="../index.html" />
+    <link rel="next" title="parallel.client.remotefunction" href="IPython.parallel.client.remotefunction.html" />
+    <link rel="prev" title="parallel.client.client" href="IPython.parallel.client.client.html" /> 
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<a href="../../index.html"><img src="../../_static/logo.png" border="0" alt="IPython Documentation"/></a>
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="IPython.parallel.client.remotefunction.html" title="parallel.client.remotefunction"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="IPython.parallel.client.client.html" title="parallel.client.client"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <li><a href="../../search.html">search</a>|&nbsp;</li>
+       <li><a href="../../index.html">documentation </a> &raquo;</li>
+
+          <li><a href="../index.html" accesskey="U">The IPython API</a> &raquo;</li> 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">parallel.client.map</a><ul>
+<li><a class="reference internal" href="#module-parallel-client-map">Module: <tt class="docutils literal"><span class="pre">parallel.client.map</span></tt></a></li>
+<li><a class="reference internal" href="#classes">Classes</a><ul>
+<li><a class="reference internal" href="#map"><tt class="docutils literal"><span class="pre">Map</span></tt></a></li>
+<li><a class="reference internal" href="#roundrobinmap"><tt class="docutils literal"><span class="pre">RoundRobinMap</span></tt></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#function">Function</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="IPython.parallel.client.client.html"
+                        title="previous chapter">parallel.client.client</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="IPython.parallel.client.remotefunction.html"
+                        title="next chapter">parallel.client.remotefunction</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/api/generated/IPython.parallel.client.map.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="parallel-client-map">
+<h1>parallel.client.map<a class="headerlink" href="#parallel-client-map" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-parallel-client-map">
+<h2>Module: <tt class="xref py py-mod docutils literal"><span class="pre">parallel.client.map</span></tt><a class="headerlink" href="#module-parallel-client-map" title="Permalink to this headline">¶</a></h2>
+<p>Inheritance diagram for <tt class="docutils literal"><span class="pre">IPython.parallel.client.map</span></tt>:</p>
+<img src="../../_images/inheritance89d97eb861.png" usemap="#inheritance89d97eb861" class="inheritance"/><map id="inheritance89d97eb861" name="inheritance89d97eb861">
+</map>
+<span class="target" id="module-IPython.parallel.client.map"></span><p>Classes used in scattering and gathering sequences.</p>
+<p>Scattering consists of partitioning a sequence and sending the various
+pieces to individual nodes in a cluster.</p>
+<p>Authors:</p>
+<ul class="simple">
+<li>Brian Granger</li>
+<li>MinRK</li>
+</ul>
+</div>
+<div class="section" id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="map">
+<h3><a class="reference internal" href="#IPython.parallel.client.map.Map" title="IPython.parallel.client.map.Map"><tt class="xref py py-class docutils literal"><span class="pre">Map</span></tt></a><a class="headerlink" href="#map" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="IPython.parallel.client.map.Map">
+<em class="property">class </em><tt class="descclassname">IPython.parallel.client.map.</tt><tt class="descname">Map</tt><a class="headerlink" href="#IPython.parallel.client.map.Map" title="Permalink to this definition">¶</a></dt>
+<dd><p>A class for partitioning a sequence using a map.</p>
+<dl class="method">
+<dt id="IPython.parallel.client.map.Map.concatenate">
+<tt class="descname">concatenate</tt><big>(</big><em>listOfPartitions</em><big>)</big><a class="headerlink" href="#IPython.parallel.client.map.Map.concatenate" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.client.map.Map.getPartition">
+<tt class="descname">getPartition</tt><big>(</big><em>seq</em>, <em>p</em>, <em>q</em><big>)</big><a class="headerlink" href="#IPython.parallel.client.map.Map.getPartition" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the pth partition of q partitions of seq.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.client.map.Map.joinPartitions">
+<tt class="descname">joinPartitions</tt><big>(</big><em>listOfPartitions</em><big>)</big><a class="headerlink" href="#IPython.parallel.client.map.Map.joinPartitions" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="roundrobinmap">
+<h3><a class="reference internal" href="#IPython.parallel.client.map.RoundRobinMap" title="IPython.parallel.client.map.RoundRobinMap"><tt class="xref py py-class docutils literal"><span class="pre">RoundRobinMap</span></tt></a><a class="headerlink" href="#roundrobinmap" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="IPython.parallel.client.map.RoundRobinMap">
+<em class="property">class </em><tt class="descclassname">IPython.parallel.client.map.</tt><tt class="descname">RoundRobinMap</tt><a class="headerlink" href="#IPython.parallel.client.map.RoundRobinMap" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#IPython.parallel.client.map.Map" title="IPython.parallel.client.map.Map"><tt class="xref py py-class docutils literal"><span class="pre">IPython.parallel.client.map.Map</span></tt></a></p>
+<p>Partitions a sequence in a roun robin fashion.</p>
+<p>This currently does not work!</p>
+<dl class="method">
+<dt id="IPython.parallel.client.map.RoundRobinMap.concatenate">
+<tt class="descname">concatenate</tt><big>(</big><em>listOfPartitions</em><big>)</big><a class="headerlink" href="#IPython.parallel.client.map.RoundRobinMap.concatenate" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.client.map.RoundRobinMap.flatten_array">
+<tt class="descname">flatten_array</tt><big>(</big><em>klass</em>, <em>listOfPartitions</em><big>)</big><a class="headerlink" href="#IPython.parallel.client.map.RoundRobinMap.flatten_array" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.client.map.RoundRobinMap.flatten_list">
+<tt class="descname">flatten_list</tt><big>(</big><em>listOfPartitions</em><big>)</big><a class="headerlink" href="#IPython.parallel.client.map.RoundRobinMap.flatten_list" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.client.map.RoundRobinMap.getPartition">
+<tt class="descname">getPartition</tt><big>(</big><em>seq</em>, <em>p</em>, <em>q</em><big>)</big><a class="headerlink" href="#IPython.parallel.client.map.RoundRobinMap.getPartition" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.client.map.RoundRobinMap.joinPartitions">
+<tt class="descname">joinPartitions</tt><big>(</big><em>listOfPartitions</em><big>)</big><a class="headerlink" href="#IPython.parallel.client.map.RoundRobinMap.joinPartitions" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="function">
+<h2>Function<a class="headerlink" href="#function" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="IPython.parallel.client.map.mappable">
+<tt class="descclassname">IPython.parallel.client.map.</tt><tt class="descname">mappable</tt><big>(</big><em>obj</em><big>)</big><a class="headerlink" href="#IPython.parallel.client.map.mappable" title="Permalink to this definition">¶</a></dt>
+<dd><p>return whether an object is mappable or not.</p>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="IPython.parallel.client.remotefunction.html" title="parallel.client.remotefunction"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="IPython.parallel.client.client.html" title="parallel.client.client"
+             >previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <li><a href="../../search.html">search</a>|&nbsp;</li>
+       <li><a href="../../index.html">documentation </a> &raquo;</li>
+
+          <li><a href="../index.html" >The IPython API</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2008, The IPython Development Team.
+      Last updated on Jul 31, 2011.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1pre.
+    </div>
+  </body>
+</html>

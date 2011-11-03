@@ -1,0 +1,73 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+parallel.apps.ipclusterapp
+==========================
+
+Module: :mod:`parallel.apps.ipclusterapp`
+-----------------------------------------
+Inheritance diagram for ``IPython.parallel.apps.ipclusterapp``:
+
+.. inheritance-diagram:: IPython.parallel.apps.ipclusterapp 
+   :parts: 3
+
+.. automodule:: IPython.parallel.apps.ipclusterapp
+
+.. currentmodule:: IPython.parallel.apps.ipclusterapp
+
+Classes
+-------
+
+:class:`IPClusterApp`
+~~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: IPClusterApp
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`IPClusterEngines`
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: IPClusterEngines
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`IPClusterStart`
+~~~~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: IPClusterStart
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`IPClusterStop`
+~~~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: IPClusterStop
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+Function
+--------
+
+
+.. autofunction:: IPython.parallel.apps.ipclusterapp.launch_new_instance
+

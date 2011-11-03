@@ -1,0 +1,38 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+lib.deepreload
+==============
+
+Module: :mod:`lib.deepreload`
+-----------------------------
+.. automodule:: IPython.lib.deepreload
+
+.. currentmodule:: IPython.lib.deepreload
+
+Functions
+---------
+
+
+.. autofunction:: IPython.lib.deepreload.deep_import_hook
+
+
+.. autofunction:: IPython.lib.deepreload.deep_reload_hook
+
+
+.. autofunction:: IPython.lib.deepreload.determine_parent
+
+
+.. autofunction:: IPython.lib.deepreload.ensure_fromlist
+
+
+.. autofunction:: IPython.lib.deepreload.find_head_package
+
+
+.. autofunction:: IPython.lib.deepreload.import_module
+
+
+.. autofunction:: IPython.lib.deepreload.load_tail
+
+
+.. autofunction:: IPython.lib.deepreload.reload
+

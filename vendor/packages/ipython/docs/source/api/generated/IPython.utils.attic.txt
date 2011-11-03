@@ -1,0 +1,70 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+utils.attic
+===========
+
+Module: :mod:`utils.attic`
+--------------------------
+Inheritance diagram for ``IPython.utils.attic``:
+
+.. inheritance-diagram:: IPython.utils.attic 
+   :parts: 3
+
+.. automodule:: IPython.utils.attic
+
+.. currentmodule:: IPython.utils.attic
+
+Classes
+-------
+
+:class:`EvalDict`
+~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: EvalDict
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`NotGiven`
+~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: NotGiven
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+Functions
+---------
+
+
+.. autofunction:: IPython.utils.attic.all_belong
+
+
+.. autofunction:: IPython.utils.attic.belong
+
+
+.. autofunction:: IPython.utils.attic.import_fail_info
+
+
+.. autofunction:: IPython.utils.attic.map_method
+
+
+.. autofunction:: IPython.utils.attic.mutex_opts
+
+
+.. autofunction:: IPython.utils.attic.popkey
+
+
+.. autofunction:: IPython.utils.attic.with_obj
+
+
+.. autofunction:: IPython.utils.attic.wrap_deprecated
+

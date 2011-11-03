@@ -1,5 +1,4 @@
 # encoding: utf-8
-
 """
 This module defines the things that are used in setup.py for building IPython
 
@@ -9,8 +8,7 @@ This includes:
     * Functions for finding things like packages, package data, etc.
     * A function for checking dependencies.
 """
-
-__docformat__ = "restructuredtext en"
+from __future__ import print_function
 
 #-------------------------------------------------------------------------------
 #  Copyright (C) 2008  The IPython Development Team
@@ -22,9 +20,11 @@ __docformat__ = "restructuredtext en"
 #-------------------------------------------------------------------------------
 # Imports
 #-------------------------------------------------------------------------------
+import os
+import sys
 
-import os, sys
-
+from ConfigParser import ConfigParser
+from distutils.command.build_py import build_py
 from glob import glob
 
 from setupext import install_data_ext
@@ -38,7 +38,7 @@ isfile = os.path.isfile
 pjoin = os.path.join
 
 def oscmd(s):
-    print ">", s
+    print(">", s)
     os.system(s)
 
 # A little utility we'll need below, since glob() does NOT allow you to do
@@ -57,8 +57,8 @@ def file_doesnt_endwith(test,endings):
 # Basic project information
 #---------------------------------------------------------------------------
 
-# Release.py contains version, authors, license, url, keywords, etc.
-execfile(pjoin('IPython','Release.py'))
+# release.py contains version, authors, license, url, keywords, etc.
+execfile(pjoin('IPython','core','release.py'))
 
 # Create a dict with the basic information
 # This dict is eventually passed to setup after additional keys are added.
@@ -103,22 +103,37 @@ def find_packages():
     Find all of IPython's packages.
     """
     packages = ['IPython']
-    add_package(packages, 'config', tests=True)
-    add_package(packages , 'Extensions')
+    add_package(packages, 'config', tests=True, others=['profile'])
+    add_package(packages, 'core', tests=True)
+    add_package(packages, 'extensions')
     add_package(packages, 'external')
-    add_package(packages, 'gui')
-    add_package(packages, 'gui.wx')
-    add_package(packages, 'frontend', tests=True)
-    add_package(packages, 'frontend.process')
-    add_package(packages, 'frontend.wx')
-    add_package(packages, 'frontend.cocoa', tests=True)
-    add_package(packages, 'kernel', config=True, tests=True, scripts=True)
-    add_package(packages, 'kernel.core', config=True, tests=True)
+    add_package(packages, 'external.argparse')
+    add_package(packages, 'external.decorator')
+    add_package(packages, 'external.decorators')
+    add_package(packages, 'external.guid')
+    add_package(packages, 'external.Itpl')
+    add_package(packages, 'external.mglob')
+    add_package(packages, 'external.path')
+    add_package(packages, 'external.pexpect')
+    add_package(packages, 'external.pyparsing')
+    add_package(packages, 'external.simplegeneric')
+    add_package(packages, 'external.ssh')
+    add_package(packages, 'kernel')
+    add_package(packages, 'frontend')
+    add_package(packages, 'frontend.qt')
+    add_package(packages, 'frontend.qt.console', tests=True)
+    add_package(packages, 'frontend.terminal', tests=True)    
+    add_package(packages, 'lib', tests=True)
+    add_package(packages, 'parallel', tests=True, scripts=True, 
+                                    others=['apps','engine','client','controller'])
+    add_package(packages, 'quarantine', tests=True)
+    add_package(packages, 'scripts')
     add_package(packages, 'testing', tests=True)
-    add_package(packages, 'tests')
     add_package(packages, 'testing.plugin', tests=False)
-    add_package(packages, 'tools', tests=True)
-    add_package(packages, 'UserConfig')
+    add_package(packages, 'utils', tests=True)
+    add_package(packages, 'zmq')
+    add_package(packages, 'zmq.pylab')
+    add_package(packages, 'zmq.gui')
     return packages
 
 #---------------------------------------------------------------------------
@@ -132,9 +147,8 @@ def find_package_data():
     # This is not enough for these things to appear in an sdist.
     # We need to muck with the MANIFEST to get this to work
     package_data = {
-        'IPython.UserConfig' : ['*'],
-        'IPython.tools.tests' : ['*.txt'],
-        'IPython.testing' : ['*.txt']
+        'IPython.config.profile' : ['README', '*/*.py'],
+        'IPython.testing' : ['*.txt'],
     }
     return package_data
 
@@ -173,9 +187,9 @@ def make_dir_struct(tag,base,out_base):
         # filenames, we must join back with the dirpath to get full valid file
         # paths:
         pfiles = [pjoin(dirpath,f) for f in filenames]
-        # Finally, generate the entry we need, which is a triple of (tag,output
+        # Finally, generate the entry we need, which is a pari of (output
         # path, files) for use as a data_files parameter in install_data.
-        out.append((tag,out_path,pfiles))
+        out.append((out_path, pfiles))
 
     return out
     
@@ -187,29 +201,34 @@ def find_data_files():
     Most of these are docs.
     """
     
-    docdirbase  = 'share/doc/ipython'
-    manpagebase = 'share/man/man1'
-
+    docdirbase  = pjoin('share', 'doc', 'ipython')
+    manpagebase = pjoin('share', 'man', 'man1')
+    
     # Simple file lists can be made by hand
-    manpages  = filter(isfile, glob('docs/man/*.1.gz'))
-    igridhelpfiles = filter(isfile, glob('IPython/Extensions/igrid_help.*'))
+    manpages  = filter(isfile, glob(pjoin('docs','man','*.1.gz')))
+    if not manpages:
+        # When running from a source tree, the manpages aren't gzipped
+        manpages = filter(isfile, glob(pjoin('docs','man','*.1')))
+    igridhelpfiles = filter(isfile,
+                            glob(pjoin('IPython','extensions','igrid_help.*')))
 
     # For nested structures, use the utility above
-    example_files = make_dir_struct('data','docs/examples',
-                                    pjoin(docdirbase,'examples'))
-    manual_files = make_dir_struct('data','docs/dist',pjoin(docdirbase,'manual'))
+    example_files = make_dir_struct(
+        'data',
+        pjoin('docs','examples'),
+        pjoin(docdirbase,'examples')
+    )
+    manual_files = make_dir_struct(
+        'data',
+        pjoin('docs','html'),
+        pjoin(docdirbase,'manual')
+    )
 
     # And assemble the entire output list
-    data_files = [ ('data',manpagebase, manpages),
-                   ('data',pjoin(docdirbase,'extensions'),igridhelpfiles),
+    data_files = [ (manpagebase, manpages),
+                   (pjoin(docdirbase, 'extensions'), igridhelpfiles),
                    ] + manual_files + example_files
-                 
-    ## import pprint  # dbg
-    ## print '*'*80
-    ## print 'data files'
-    ## pprint.pprint(data_files)
-    ## print '*'*80
-    
+
     return data_files
 
 
@@ -241,31 +260,42 @@ def make_man_update_target(manpage):
 # Find scripts
 #---------------------------------------------------------------------------
 
-def find_scripts():
-    """
-    Find IPython's scripts.
-    """
-    scripts = ['IPython/kernel/scripts/ipengine',
-               'IPython/kernel/scripts/ipcontroller',
-               'IPython/kernel/scripts/ipcluster',
-               'scripts/ipython',
-               'scripts/ipythonx',
-               'scripts/ipython-wx',
-               'scripts/pycolor',
-               'scripts/irunner',
-               'scripts/iptest',
-               ]
+def find_scripts(entry_points=False):
+    """Find IPython's scripts.
     
-    # Script to be run by the windows binary installer after the default setup
-    # routine, to add shortcuts and similar windows-only things.  Windows
-    # post-install scripts MUST reside in the scripts/ dir, otherwise distutils
-    # doesn't find them.
-    if 'bdist_wininst' in sys.argv:
-        if len(sys.argv) > 2 and ('sdist' in sys.argv or 'bdist_rpm' in sys.argv):
-            print >> sys.stderr,"ERROR: bdist_wininst must be run alone. Exiting."
-            sys.exit(1)
-        scripts.append('scripts/ipython_win_post_install.py')
-    
+    if entry_points is True:
+        return setuptools entry_point-style definitions
+    else:
+        return file paths of plain scripts [default]
+    """
+    if entry_points:
+        console_scripts = [
+            'ipython = IPython.frontend.terminal.ipapp:launch_new_instance',
+            'pycolor = IPython.utils.PyColorize:main',
+            'ipcontroller = IPython.parallel.apps.ipcontrollerapp:launch_new_instance',
+            'ipengine = IPython.parallel.apps.ipengineapp:launch_new_instance',
+            'iplogger = IPython.parallel.apps.iploggerapp:launch_new_instance',
+            'ipcluster = IPython.parallel.apps.ipclusterapp:launch_new_instance',
+            'iptest = IPython.testing.iptest:main',
+            'irunner = IPython.lib.irunner:main'
+        ]
+        gui_scripts = [
+            'ipython-qtconsole = IPython.frontend.qt.console.qtconsoleapp:main',
+        ]
+        scripts = dict(console_scripts=console_scripts, gui_scripts=gui_scripts)
+    else:
+        parallel_scripts = pjoin('IPython','parallel','scripts')
+        main_scripts = pjoin('IPython','scripts')
+        scripts = [
+                   pjoin(parallel_scripts, 'ipengine'),
+                   pjoin(parallel_scripts, 'ipcontroller'),
+                   pjoin(parallel_scripts, 'ipcluster'),
+                   pjoin(parallel_scripts, 'iplogger'),
+                   pjoin(main_scripts, 'ipython'),
+                   pjoin(main_scripts, 'pycolor'),
+                   pjoin(main_scripts, 'irunner'),
+                   pjoin(main_scripts, 'iptest')
+        ]
     return scripts
 
 #---------------------------------------------------------------------------
@@ -278,11 +308,10 @@ def check_for_dependencies():
     This function should NOT be called if running under setuptools!
     """
     from setupext.setupext import (
-        print_line, print_raw, print_status, print_message,
-        check_for_zopeinterface, check_for_twisted,
-        check_for_foolscap, check_for_pyopenssl,
+        print_line, print_raw, print_status,
         check_for_sphinx, check_for_pygments,
-        check_for_nose, check_for_pexpect
+        check_for_nose, check_for_pexpect,
+        check_for_pyzmq, check_for_readline
     )
     print_line()
     print_raw("BUILDING IPYTHON")
@@ -294,11 +323,66 @@ def check_for_dependencies():
     print_raw("")
     print_raw("OPTIONAL DEPENDENCIES")
 
-    check_for_zopeinterface()
-    check_for_twisted()
-    check_for_foolscap()
-    check_for_pyopenssl()
     check_for_sphinx()
     check_for_pygments()
     check_for_nose()
     check_for_pexpect()
+    check_for_pyzmq()
+    check_for_readline()
+
+def record_commit_info(pkg_dir, build_cmd=build_py):
+    """ Return extended build command class for recording commit
+
+    The extended command tries to run git to find the current commit, getting
+    the empty string if it fails.  It then writes the commit hash into a file
+    in the `pkg_dir` path, named ``.git_commit_info.ini``.
+
+    In due course this information can be used by the package after it is
+    installed, to tell you what commit it was installed from if known.
+
+    To make use of this system, you need a package with a .git_commit_info.ini
+    file - e.g. ``myproject/.git_commit_info.ini`` - that might well look like
+    this::
+
+        # This is an ini file that may contain information about the code state
+        [commit hash]
+        # The line below may contain a valid hash if it has been substituted
+        # during 'git archive'
+        archive_subst_hash=$Format:%h$
+        # This line may be modified by the install process
+        install_hash=
+
+    The .git_commit_info file above is also designed to be used with git
+    substitution - so you probably also want a ``.gitattributes`` file in the
+    root directory of your working tree that contains something like this::
+
+       myproject/.git_commit_info.ini export-subst
+
+    That will cause the ``.git_commit_info.ini`` file to get filled in by ``git
+    archive`` - useful in case someone makes such an archive - for example with
+    via the github 'download source' button.
+
+    Although all the above will work as is, you might consider having something
+    like a ``get_info()`` function in your package to display the commit
+    information at the terminal.  See the ``pkg_info.py`` module in the nipy
+    package for an example.
+    """
+    class MyBuildPy(build_cmd):
+        ''' Subclass to write commit data into installation tree '''
+        def run(self):
+            build_py.run(self)
+            import subprocess
+            proc = subprocess.Popen('git rev-parse --short HEAD',
+                                    stdout=subprocess.PIPE,
+                                    stderr=subprocess.PIPE,
+                                    shell=True)
+            repo_commit, _ = proc.communicate()
+            # We write the installation commit even if it's empty
+            cfg_parser = ConfigParser()
+            cfg_parser.read(pjoin(pkg_dir, '.git_commit_info.ini'))
+            cfg_parser.set('commit hash', 'install_hash', repo_commit)
+            out_pth = pjoin(self.build_lib, pkg_dir, '.git_commit_info.ini')
+            out_file = open(out_pth, 'wt')
+            cfg_parser.write(out_file)
+            out_file.close()
+    return MyBuildPy

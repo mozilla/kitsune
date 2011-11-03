@@ -1,0 +1,926 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>parallel.apps.ipengineapp &mdash; IPython 0.11 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.11',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="IPython 0.11 documentation" href="../../index.html" />
+    <link rel="up" title="The IPython API" href="../index.html" />
+    <link rel="next" title="parallel.apps.iploggerapp" href="IPython.parallel.apps.iploggerapp.html" />
+    <link rel="prev" title="parallel.apps.ipcontrollerapp" href="IPython.parallel.apps.ipcontrollerapp.html" /> 
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<a href="../../index.html"><img src="../../_static/logo.png" border="0" alt="IPython Documentation"/></a>
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="IPython.parallel.apps.iploggerapp.html" title="parallel.apps.iploggerapp"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="IPython.parallel.apps.ipcontrollerapp.html" title="parallel.apps.ipcontrollerapp"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <li><a href="../../search.html">search</a>|&nbsp;</li>
+       <li><a href="../../index.html">documentation </a> &raquo;</li>
+
+          <li><a href="../index.html" accesskey="U">The IPython API</a> &raquo;</li> 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">parallel.apps.ipengineapp</a><ul>
+<li><a class="reference internal" href="#module-parallel-apps-ipengineapp">Module: <tt class="docutils literal"><span class="pre">parallel.apps.ipengineapp</span></tt></a></li>
+<li><a class="reference internal" href="#classes">Classes</a><ul>
+<li><a class="reference internal" href="#ipengineapp"><tt class="docutils literal"><span class="pre">IPEngineApp</span></tt></a></li>
+<li><a class="reference internal" href="#mpi"><tt class="docutils literal"><span class="pre">MPI</span></tt></a></li>
+<li><a class="reference internal" href="#simplestruct"><tt class="docutils literal"><span class="pre">SimpleStruct</span></tt></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#function">Function</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="IPython.parallel.apps.ipcontrollerapp.html"
+                        title="previous chapter">parallel.apps.ipcontrollerapp</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="IPython.parallel.apps.iploggerapp.html"
+                        title="next chapter">parallel.apps.iploggerapp</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/api/generated/IPython.parallel.apps.ipengineapp.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="parallel-apps-ipengineapp">
+<h1>parallel.apps.ipengineapp<a class="headerlink" href="#parallel-apps-ipengineapp" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-parallel-apps-ipengineapp">
+<h2>Module: <tt class="xref py py-mod docutils literal"><span class="pre">parallel.apps.ipengineapp</span></tt><a class="headerlink" href="#module-parallel-apps-ipengineapp" title="Permalink to this headline">¶</a></h2>
+<p>Inheritance diagram for <tt class="docutils literal"><span class="pre">IPython.parallel.apps.ipengineapp</span></tt>:</p>
+<img src="../../_images/inheritance3c9c32023d.png" usemap="#inheritance3c9c32023d" class="inheritance"/><map id="inheritance3c9c32023d" name="inheritance3c9c32023d">
+</map>
+<span class="target" id="module-IPython.parallel.apps.ipengineapp"></span><p>The IPython engine application</p>
+<p>Authors:</p>
+<ul class="simple">
+<li>Brian Granger</li>
+<li>MinRK</li>
+</ul>
+</div>
+<div class="section" id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="ipengineapp">
+<h3><a class="reference internal" href="#IPython.parallel.apps.ipengineapp.IPEngineApp" title="IPython.parallel.apps.ipengineapp.IPEngineApp"><tt class="xref py py-class docutils literal"><span class="pre">IPEngineApp</span></tt></a><a class="headerlink" href="#ipengineapp" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="IPython.parallel.apps.ipengineapp.IPEngineApp">
+<em class="property">class </em><tt class="descclassname">IPython.parallel.apps.ipengineapp.</tt><tt class="descname">IPEngineApp</tt><big>(</big><em>**kwargs</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipengineapp.IPEngineApp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="IPython.parallel.apps.baseapp.html#IPython.parallel.apps.baseapp.BaseParallelApplication" title="IPython.parallel.apps.baseapp.BaseParallelApplication"><tt class="xref py py-class docutils literal"><span class="pre">IPython.parallel.apps.baseapp.BaseParallelApplication</span></tt></a></p>
+<dl class="method">
+<dt id="IPython.parallel.apps.ipengineapp.IPEngineApp.__init__">
+<tt class="descname">__init__</tt><big>(</big><em>**kwargs</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipengineapp.IPEngineApp.__init__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipengineapp.IPEngineApp.aliases">
+<tt class="descname">aliases</tt><a class="headerlink" href="#IPython.parallel.apps.ipengineapp.IPEngineApp.aliases" title="Permalink to this definition">¶</a></dt>
+<dd><p>An instance of a Python dict.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipengineapp.IPEngineApp.auto_create">
+<tt class="descname">auto_create</tt><a class="headerlink" href="#IPython.parallel.apps.ipengineapp.IPEngineApp.auto_create" title="Permalink to this definition">¶</a></dt>
+<dd><p>A boolean (True, False) trait.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipengineapp.IPEngineApp.builtin_profile_dir">
+<tt class="descname">builtin_profile_dir</tt><a class="headerlink" href="#IPython.parallel.apps.ipengineapp.IPEngineApp.builtin_profile_dir" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait for unicode strings.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipengineapp.IPEngineApp.check_pid">
+<tt class="descname">check_pid</tt><big>(</big><em>pid</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipengineapp.IPEngineApp.check_pid" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.parallel.apps.ipengineapp.IPEngineApp.class_config_section">
+<em class="property">classmethod </em><tt class="descname">class_config_section</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipengineapp.IPEngineApp.class_config_section" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the config class config section</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.parallel.apps.ipengineapp.IPEngineApp.class_get_help">
+<em class="property">classmethod </em><tt class="descname">class_get_help</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipengineapp.IPEngineApp.class_get_help" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the help string for this class in ReST format.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.parallel.apps.ipengineapp.IPEngineApp.class_get_trait_help">
+<em class="property">classmethod </em><tt class="descname">class_get_trait_help</tt><big>(</big><em>trait</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipengineapp.IPEngineApp.class_get_trait_help" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the help string for a single trait.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.parallel.apps.ipengineapp.IPEngineApp.class_print_help">
+<em class="property">classmethod </em><tt class="descname">class_print_help</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipengineapp.IPEngineApp.class_print_help" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the help string for a single trait and print it.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.parallel.apps.ipengineapp.IPEngineApp.class_trait_names">
+<em class="property">classmethod </em><tt class="descname">class_trait_names</tt><big>(</big><em>**metadata</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipengineapp.IPEngineApp.class_trait_names" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of all the names of this classes traits.</p>
+<p>This method is just like the <a class="reference internal" href="#IPython.parallel.apps.ipengineapp.IPEngineApp.trait_names" title="IPython.parallel.apps.ipengineapp.IPEngineApp.trait_names"><tt class="xref py py-meth docutils literal"><span class="pre">trait_names()</span></tt></a> method, but is unbound.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.parallel.apps.ipengineapp.IPEngineApp.class_traits">
+<em class="property">classmethod </em><tt class="descname">class_traits</tt><big>(</big><em>**metadata</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipengineapp.IPEngineApp.class_traits" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of all the traits of this class.</p>
+<p>This method is just like the <a class="reference internal" href="#IPython.parallel.apps.ipengineapp.IPEngineApp.traits" title="IPython.parallel.apps.ipengineapp.IPEngineApp.traits"><tt class="xref py py-meth docutils literal"><span class="pre">traits()</span></tt></a> method, but is unbound.</p>
+<p>The TraitTypes returned don&#8217;t know anything about the values
+that the various HasTrait&#8217;s instances are holding.</p>
+<p>This follows the same algorithm as traits does and does not allow
+for any simple way of specifying merely that a metadata name
+exists, but has any value.  This is because get_metadata returns
+None if a metadata key doesn&#8217;t exist.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipengineapp.IPEngineApp.classes">
+<tt class="descname">classes</tt><a class="headerlink" href="#IPython.parallel.apps.ipengineapp.IPEngineApp.classes" title="Permalink to this definition">¶</a></dt>
+<dd><p>An instance of a Python list.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipengineapp.IPEngineApp.clean_logs">
+<tt class="descname">clean_logs</tt><a class="headerlink" href="#IPython.parallel.apps.ipengineapp.IPEngineApp.clean_logs" title="Permalink to this definition">¶</a></dt>
+<dd><p>A boolean (True, False) trait.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.parallel.apps.ipengineapp.IPEngineApp.clear_instance">
+<em class="property">classmethod </em><tt class="descname">clear_instance</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipengineapp.IPEngineApp.clear_instance" title="Permalink to this definition">¶</a></dt>
+<dd><p>unset _instance for this class and singleton parents.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipengineapp.IPEngineApp.config">
+<tt class="descname">config</tt><a class="headerlink" href="#IPython.parallel.apps.ipengineapp.IPEngineApp.config" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait whose value must be an instance of a specified class.</p>
+<p>The value can also be an instance of a subclass of the specified class.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipengineapp.IPEngineApp.config_file_name">
+<tt class="descname">config_file_name</tt><a class="headerlink" href="#IPython.parallel.apps.ipengineapp.IPEngineApp.config_file_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait for unicode strings.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipengineapp.IPEngineApp.config_file_paths">
+<tt class="descname">config_file_paths</tt><a class="headerlink" href="#IPython.parallel.apps.ipengineapp.IPEngineApp.config_file_paths" title="Permalink to this definition">¶</a></dt>
+<dd><p>An instance of a Python list.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipengineapp.IPEngineApp.config_file_specified">
+<tt class="descname">config_file_specified</tt><a class="headerlink" href="#IPython.parallel.apps.ipengineapp.IPEngineApp.config_file_specified" title="Permalink to this definition">¶</a></dt>
+<dd><p>A boolean (True, False) trait.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipengineapp.IPEngineApp.config_files">
+<tt class="descname">config_files</tt><a class="headerlink" href="#IPython.parallel.apps.ipengineapp.IPEngineApp.config_files" title="Permalink to this definition">¶</a></dt>
+<dd><p>An instance of a Python list.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipengineapp.IPEngineApp.copy_config_files">
+<tt class="descname">copy_config_files</tt><a class="headerlink" href="#IPython.parallel.apps.ipengineapp.IPEngineApp.copy_config_files" title="Permalink to this definition">¶</a></dt>
+<dd><p>A boolean (True, False) trait.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipengineapp.IPEngineApp.crash_handler_class">
+<tt class="descname">crash_handler_class</tt><a class="headerlink" href="#IPython.parallel.apps.ipengineapp.IPEngineApp.crash_handler_class" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <tt class="xref py py-class docutils literal"><span class="pre">ParallelCrashHandler</span></tt></p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipengineapp.IPEngineApp.created">
+<tt class="descname">created</tt><em class="property"> = None</em><a class="headerlink" href="#IPython.parallel.apps.ipengineapp.IPEngineApp.created" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipengineapp.IPEngineApp.description">
+<tt class="descname">description</tt><a class="headerlink" href="#IPython.parallel.apps.ipengineapp.IPEngineApp.description" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait for unicode strings.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipengineapp.IPEngineApp.examples">
+<tt class="descname">examples</tt><em class="property"> = '\nipengine --ip=192.168.0.1 --port=1000     # connect to hub at ip and port\nipengine --log-to-file --log-level=DEBUG  # log to a file with DEBUG verbosity\n'</em><a class="headerlink" href="#IPython.parallel.apps.ipengineapp.IPEngineApp.examples" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipengineapp.IPEngineApp.exit">
+<tt class="descname">exit</tt><big>(</big><em>exit_status=0</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipengineapp.IPEngineApp.exit" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipengineapp.IPEngineApp.extra_args">
+<tt class="descname">extra_args</tt><a class="headerlink" href="#IPython.parallel.apps.ipengineapp.IPEngineApp.extra_args" title="Permalink to this definition">¶</a></dt>
+<dd><p>An instance of a Python list.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipengineapp.IPEngineApp.find_url_file">
+<tt class="descname">find_url_file</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipengineapp.IPEngineApp.find_url_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the url file.</p>
+<p>Here we don&#8217;t try to actually see if it exists for is valid as that
+is hadled by the connection logic.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipengineapp.IPEngineApp.flags">
+<tt class="descname">flags</tt><a class="headerlink" href="#IPython.parallel.apps.ipengineapp.IPEngineApp.flags" title="Permalink to this definition">¶</a></dt>
+<dd><p>An instance of a Python dict.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipengineapp.IPEngineApp.forward_logging">
+<tt class="descname">forward_logging</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipengineapp.IPEngineApp.forward_logging" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipengineapp.IPEngineApp.generate_config_file">
+<tt class="descname">generate_config_file</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipengineapp.IPEngineApp.generate_config_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>generate default config file from Configurables</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipengineapp.IPEngineApp.get_pid_from_file">
+<tt class="descname">get_pid_from_file</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipengineapp.IPEngineApp.get_pid_from_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the pid from the pid file.</p>
+<p>If the  pid file doesn&#8217;t exist a <tt class="xref py py-exc docutils literal"><span class="pre">PIDFileError</span></tt> is raised.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipengineapp.IPEngineApp.init_config_files">
+<tt class="descname">init_config_files</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipengineapp.IPEngineApp.init_config_files" title="Permalink to this definition">¶</a></dt>
+<dd><p>[optionally] copy default config files into profile dir.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipengineapp.IPEngineApp.init_crash_handler">
+<tt class="descname">init_crash_handler</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipengineapp.IPEngineApp.init_crash_handler" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a crash handler, typically setting sys.excepthook to it.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipengineapp.IPEngineApp.init_engine">
+<tt class="descname">init_engine</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipengineapp.IPEngineApp.init_engine" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipengineapp.IPEngineApp.init_logging">
+<tt class="descname">init_logging</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipengineapp.IPEngineApp.init_logging" title="Permalink to this definition">¶</a></dt>
+<dd><p>Start logging for this application.</p>
+<p>The default is to log to stdout using a StreaHandler. The log level
+starts at loggin.WARN, but this can be adjusted by setting the 
+<tt class="docutils literal"><span class="pre">log_level</span></tt> attribute.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipengineapp.IPEngineApp.init_mpi">
+<tt class="descname">init_mpi</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipengineapp.IPEngineApp.init_mpi" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipengineapp.IPEngineApp.init_profile_dir">
+<tt class="descname">init_profile_dir</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipengineapp.IPEngineApp.init_profile_dir" title="Permalink to this definition">¶</a></dt>
+<dd><p>initialize the profile dir</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipengineapp.IPEngineApp.initialize">
+<tt class="descname">initialize</tt><big>(</big><em>argv=None</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipengineapp.IPEngineApp.initialize" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipengineapp.IPEngineApp.initialize_subcommand">
+<tt class="descname">initialize_subcommand</tt><big>(</big><em>subc</em>, <em>argv=None</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipengineapp.IPEngineApp.initialize_subcommand" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize a subcommand with argv.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.parallel.apps.ipengineapp.IPEngineApp.initialized">
+<em class="property">classmethod </em><tt class="descname">initialized</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipengineapp.IPEngineApp.initialized" title="Permalink to this definition">¶</a></dt>
+<dd><p>Has an instance been created?</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.parallel.apps.ipengineapp.IPEngineApp.instance">
+<em class="property">classmethod </em><tt class="descname">instance</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipengineapp.IPEngineApp.instance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a global instance of this class.</p>
+<p>This method create a new instance if none have previously been created
+and returns a previously created instance is one already exists.</p>
+<p>The arguments and keyword arguments passed to this method are passed
+on to the <a class="reference internal" href="#IPython.parallel.apps.ipengineapp.IPEngineApp.__init__" title="IPython.parallel.apps.ipengineapp.IPEngineApp.__init__"><tt class="xref py py-meth docutils literal"><span class="pre">__init__()</span></tt></a> method of the class upon instantiation.</p>
+<p class="rubric">Examples</p>
+<p>Create a singleton class using instance, and retrieve it:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">IPython.config.configurable</span> <span class="kn">import</span> <span class="n">SingletonConfigurable</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">Foo</span><span class="p">(</span><span class="n">SingletonConfigurable</span><span class="p">):</span> <span class="k">pass</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">foo</span> <span class="o">=</span> <span class="n">Foo</span><span class="o">.</span><span class="n">instance</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">foo</span> <span class="o">==</span> <span class="n">Foo</span><span class="o">.</span><span class="n">instance</span><span class="p">()</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<p>Create a subclass that is retrived using the base class instance:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">Bar</span><span class="p">(</span><span class="n">SingletonConfigurable</span><span class="p">):</span> <span class="k">pass</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">Bam</span><span class="p">(</span><span class="n">Bar</span><span class="p">):</span> <span class="k">pass</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">bam</span> <span class="o">=</span> <span class="n">Bam</span><span class="o">.</span><span class="n">instance</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">bam</span> <span class="o">==</span> <span class="n">Bar</span><span class="o">.</span><span class="n">instance</span><span class="p">()</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipengineapp.IPEngineApp.ipython_dir">
+<tt class="descname">ipython_dir</tt><a class="headerlink" href="#IPython.parallel.apps.ipengineapp.IPEngineApp.ipython_dir" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait for unicode strings.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipengineapp.IPEngineApp.keyvalue_description">
+<tt class="descname">keyvalue_description</tt><a class="headerlink" href="#IPython.parallel.apps.ipengineapp.IPEngineApp.keyvalue_description" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait for unicode strings.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipengineapp.IPEngineApp.load_config_file">
+<tt class="descname">load_config_file</tt><big>(</big><em>suppress_errors=True</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipengineapp.IPEngineApp.load_config_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load the config file.</p>
+<p>By default, errors in loading config are handled, and a warning
+printed on screen. For testing, the suppress_errors option is set
+to False, so errors will make tests fail.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipengineapp.IPEngineApp.log_level">
+<tt class="descname">log_level</tt><a class="headerlink" href="#IPython.parallel.apps.ipengineapp.IPEngineApp.log_level" title="Permalink to this definition">¶</a></dt>
+<dd><p>An enum that whose value must be in a given sequence.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipengineapp.IPEngineApp.log_to_file">
+<tt class="descname">log_to_file</tt><a class="headerlink" href="#IPython.parallel.apps.ipengineapp.IPEngineApp.log_to_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>A boolean (True, False) trait.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipengineapp.IPEngineApp.log_url">
+<tt class="descname">log_url</tt><a class="headerlink" href="#IPython.parallel.apps.ipengineapp.IPEngineApp.log_url" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait for unicode strings.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipengineapp.IPEngineApp.loop">
+<tt class="descname">loop</tt><a class="headerlink" href="#IPython.parallel.apps.ipengineapp.IPEngineApp.loop" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait whose value must be an instance of a specified class.</p>
+<p>The value can also be an instance of a subclass of the specified class.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipengineapp.IPEngineApp.name">
+<tt class="descname">name</tt><a class="headerlink" href="#IPython.parallel.apps.ipengineapp.IPEngineApp.name" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait for unicode strings.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipengineapp.IPEngineApp.on_trait_change">
+<tt class="descname">on_trait_change</tt><big>(</big><em>handler</em>, <em>name=None</em>, <em>remove=False</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipengineapp.IPEngineApp.on_trait_change" title="Permalink to this definition">¶</a></dt>
+<dd><p>Setup a handler to be called when a trait changes.</p>
+<p>This is used to setup dynamic notifications of trait changes.</p>
+<p>Static handlers can be created by creating methods on a HasTraits
+subclass with the naming convention &#8216;_[traitname]_changed&#8217;.  Thus,
+to create static handler for the trait &#8216;a&#8217;, create the method
+_a_changed(self, name, old, new) (fewer arguments can be used, see
+below).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>handler</strong> : callable</p>
+<blockquote>
+<div><p>A callable that is called when a trait changes.  Its 
+signature can be handler(), handler(name), handler(name, new)
+or handler(name, old, new).</p>
+</div></blockquote>
+<p><strong>name</strong> : list, str, None</p>
+<blockquote>
+<div><p>If None, the handler will apply to all traits.  If a list
+of str, handler will apply to all names in the list.  If a
+str, the handler will apply just to that name.</p>
+</div></blockquote>
+<p><strong>remove</strong> : bool</p>
+<blockquote class="last">
+<div><p>If False (the default), then install the handler.  If True
+then unintall it.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipengineapp.IPEngineApp.option_description">
+<tt class="descname">option_description</tt><a class="headerlink" href="#IPython.parallel.apps.ipengineapp.IPEngineApp.option_description" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait for unicode strings.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipengineapp.IPEngineApp.overwrite">
+<tt class="descname">overwrite</tt><a class="headerlink" href="#IPython.parallel.apps.ipengineapp.IPEngineApp.overwrite" title="Permalink to this definition">¶</a></dt>
+<dd><p>A boolean (True, False) trait.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipengineapp.IPEngineApp.parse_command_line">
+<tt class="descname">parse_command_line</tt><big>(</big><em>argv=None</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipengineapp.IPEngineApp.parse_command_line" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parse the command line arguments.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipengineapp.IPEngineApp.print_alias_help">
+<tt class="descname">print_alias_help</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipengineapp.IPEngineApp.print_alias_help" title="Permalink to this definition">¶</a></dt>
+<dd><p>Print the alias part of the help.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipengineapp.IPEngineApp.print_description">
+<tt class="descname">print_description</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipengineapp.IPEngineApp.print_description" title="Permalink to this definition">¶</a></dt>
+<dd><p>Print the application description.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipengineapp.IPEngineApp.print_examples">
+<tt class="descname">print_examples</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipengineapp.IPEngineApp.print_examples" title="Permalink to this definition">¶</a></dt>
+<dd><p>Print usage and examples.</p>
+<p>This usage string goes at the end of the command line help string
+and should contain examples of the application&#8217;s usage.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipengineapp.IPEngineApp.print_flag_help">
+<tt class="descname">print_flag_help</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipengineapp.IPEngineApp.print_flag_help" title="Permalink to this definition">¶</a></dt>
+<dd><p>Print the flag part of the help.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipengineapp.IPEngineApp.print_help">
+<tt class="descname">print_help</tt><big>(</big><em>classes=False</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipengineapp.IPEngineApp.print_help" title="Permalink to this definition">¶</a></dt>
+<dd><p>Print the help for each Configurable class in self.classes.</p>
+<p>If classes=False (the default), only flags and aliases are printed.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipengineapp.IPEngineApp.print_options">
+<tt class="descname">print_options</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipengineapp.IPEngineApp.print_options" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipengineapp.IPEngineApp.print_subcommands">
+<tt class="descname">print_subcommands</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipengineapp.IPEngineApp.print_subcommands" title="Permalink to this definition">¶</a></dt>
+<dd><p>Print the subcommand part of the help.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipengineapp.IPEngineApp.print_version">
+<tt class="descname">print_version</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipengineapp.IPEngineApp.print_version" title="Permalink to this definition">¶</a></dt>
+<dd><p>Print the version string.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipengineapp.IPEngineApp.profile">
+<tt class="descname">profile</tt><a class="headerlink" href="#IPython.parallel.apps.ipengineapp.IPEngineApp.profile" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait for unicode strings.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipengineapp.IPEngineApp.reinit_logging">
+<tt class="descname">reinit_logging</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipengineapp.IPEngineApp.reinit_logging" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipengineapp.IPEngineApp.remove_pid_file">
+<tt class="descname">remove_pid_file</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipengineapp.IPEngineApp.remove_pid_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove the pid file.</p>
+<p>This should be called at shutdown by registering a callback with
+<tt class="xref py py-func docutils literal"><span class="pre">reactor.addSystemEventTrigger()</span></tt>. This needs to return
+<tt class="docutils literal"><span class="pre">None</span></tt>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipengineapp.IPEngineApp.stage_default_config_file">
+<tt class="descname">stage_default_config_file</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipengineapp.IPEngineApp.stage_default_config_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>auto generate default config file, and stage it into the profile.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipengineapp.IPEngineApp.start">
+<tt class="descname">start</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipengineapp.IPEngineApp.start" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipengineapp.IPEngineApp.startup_command">
+<tt class="descname">startup_command</tt><a class="headerlink" href="#IPython.parallel.apps.ipengineapp.IPEngineApp.startup_command" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait for unicode strings.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipengineapp.IPEngineApp.startup_script">
+<tt class="descname">startup_script</tt><a class="headerlink" href="#IPython.parallel.apps.ipengineapp.IPEngineApp.startup_script" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait for unicode strings.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipengineapp.IPEngineApp.subapp">
+<tt class="descname">subapp</tt><a class="headerlink" href="#IPython.parallel.apps.ipengineapp.IPEngineApp.subapp" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait whose value must be an instance of a specified class.</p>
+<p>The value can also be an instance of a subclass of the specified class.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipengineapp.IPEngineApp.subcommand_description">
+<tt class="descname">subcommand_description</tt><a class="headerlink" href="#IPython.parallel.apps.ipengineapp.IPEngineApp.subcommand_description" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait for unicode strings.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipengineapp.IPEngineApp.subcommands">
+<tt class="descname">subcommands</tt><a class="headerlink" href="#IPython.parallel.apps.ipengineapp.IPEngineApp.subcommands" title="Permalink to this definition">¶</a></dt>
+<dd><p>An instance of a Python dict.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipengineapp.IPEngineApp.to_work_dir">
+<tt class="descname">to_work_dir</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipengineapp.IPEngineApp.to_work_dir" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipengineapp.IPEngineApp.trait_metadata">
+<tt class="descname">trait_metadata</tt><big>(</big><em>traitname</em>, <em>key</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipengineapp.IPEngineApp.trait_metadata" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get metadata values for trait by key.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipengineapp.IPEngineApp.trait_names">
+<tt class="descname">trait_names</tt><big>(</big><em>**metadata</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipengineapp.IPEngineApp.trait_names" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of all the names of this classes traits.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipengineapp.IPEngineApp.traits">
+<tt class="descname">traits</tt><big>(</big><em>**metadata</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipengineapp.IPEngineApp.traits" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of all the traits of this class.</p>
+<p>The TraitTypes returned don&#8217;t know anything about the values
+that the various HasTrait&#8217;s instances are holding.</p>
+<p>This follows the same algorithm as traits does and does not allow
+for any simple way of specifying merely that a metadata name
+exists, but has any value.  This is because get_metadata returns
+None if a metadata key doesn&#8217;t exist.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipengineapp.IPEngineApp.update_config">
+<tt class="descname">update_config</tt><big>(</big><em>config</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipengineapp.IPEngineApp.update_config" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fire the traits events when the config is updated.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipengineapp.IPEngineApp.url_file">
+<tt class="descname">url_file</tt><a class="headerlink" href="#IPython.parallel.apps.ipengineapp.IPEngineApp.url_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait for unicode strings.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipengineapp.IPEngineApp.url_file_name">
+<tt class="descname">url_file_name</tt><a class="headerlink" href="#IPython.parallel.apps.ipengineapp.IPEngineApp.url_file_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait for unicode strings.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipengineapp.IPEngineApp.version">
+<tt class="descname">version</tt><a class="headerlink" href="#IPython.parallel.apps.ipengineapp.IPEngineApp.version" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait for unicode strings.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipengineapp.IPEngineApp.wait_for_url_file">
+<tt class="descname">wait_for_url_file</tt><a class="headerlink" href="#IPython.parallel.apps.ipengineapp.IPEngineApp.wait_for_url_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>A float trait.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipengineapp.IPEngineApp.work_dir">
+<tt class="descname">work_dir</tt><a class="headerlink" href="#IPython.parallel.apps.ipengineapp.IPEngineApp.work_dir" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait for unicode strings.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipengineapp.IPEngineApp.write_pid_file">
+<tt class="descname">write_pid_file</tt><big>(</big><em>overwrite=False</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipengineapp.IPEngineApp.write_pid_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a .pid file in the pid_dir with my pid.</p>
+<p>This must be called after pre_construct, which sets <cite>self.pid_dir</cite>.
+This raises <tt class="xref py py-exc docutils literal"><span class="pre">PIDFileError</span></tt> if the pid file exists already.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="mpi">
+<h3><a class="reference internal" href="#IPython.parallel.apps.ipengineapp.MPI" title="IPython.parallel.apps.ipengineapp.MPI"><tt class="xref py py-class docutils literal"><span class="pre">MPI</span></tt></a><a class="headerlink" href="#mpi" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="IPython.parallel.apps.ipengineapp.MPI">
+<em class="property">class </em><tt class="descclassname">IPython.parallel.apps.ipengineapp.</tt><tt class="descname">MPI</tt><big>(</big><em>**kwargs</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipengineapp.MPI" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="IPython.config.configurable.html#IPython.config.configurable.Configurable" title="IPython.config.configurable.Configurable"><tt class="xref py py-class docutils literal"><span class="pre">IPython.config.configurable.Configurable</span></tt></a></p>
+<p>Configurable for MPI initialization</p>
+<dl class="method">
+<dt id="IPython.parallel.apps.ipengineapp.MPI.__init__">
+<tt class="descname">__init__</tt><big>(</big><em>**kwargs</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipengineapp.MPI.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a configurable given a config config.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>config</strong> : Config</p>
+<blockquote class="last">
+<div><p>If this is empty, default values are used. If config is a 
+<tt class="xref py py-class docutils literal"><span class="pre">Config</span></tt> instance, it will be used to configure the
+instance.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Notes</p>
+<p>Subclasses of Configurable must call the <a class="reference internal" href="#IPython.parallel.apps.ipengineapp.MPI.__init__" title="IPython.parallel.apps.ipengineapp.MPI.__init__"><tt class="xref py py-meth docutils literal"><span class="pre">__init__()</span></tt></a> method of
+<tt class="xref py py-class docutils literal"><span class="pre">Configurable</span></tt> <em>before</em> doing anything else and using 
+<tt class="xref py py-func docutils literal"><span class="pre">super()</span></tt>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">MyConfigurable</span><span class="p">(</span><span class="n">Configurable</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">MyConfigurable</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+        <span class="c"># Then any other code you need to finish initialization.</span>
+</pre></div>
+</div>
+<p>This ensures that instances will be configured properly.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.parallel.apps.ipengineapp.MPI.class_config_section">
+<em class="property">classmethod </em><tt class="descname">class_config_section</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipengineapp.MPI.class_config_section" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the config class config section</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.parallel.apps.ipengineapp.MPI.class_get_help">
+<em class="property">classmethod </em><tt class="descname">class_get_help</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipengineapp.MPI.class_get_help" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the help string for this class in ReST format.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.parallel.apps.ipengineapp.MPI.class_get_trait_help">
+<em class="property">classmethod </em><tt class="descname">class_get_trait_help</tt><big>(</big><em>trait</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipengineapp.MPI.class_get_trait_help" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the help string for a single trait.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.parallel.apps.ipengineapp.MPI.class_print_help">
+<em class="property">classmethod </em><tt class="descname">class_print_help</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipengineapp.MPI.class_print_help" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the help string for a single trait and print it.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.parallel.apps.ipengineapp.MPI.class_trait_names">
+<em class="property">classmethod </em><tt class="descname">class_trait_names</tt><big>(</big><em>**metadata</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipengineapp.MPI.class_trait_names" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of all the names of this classes traits.</p>
+<p>This method is just like the <a class="reference internal" href="#IPython.parallel.apps.ipengineapp.MPI.trait_names" title="IPython.parallel.apps.ipengineapp.MPI.trait_names"><tt class="xref py py-meth docutils literal"><span class="pre">trait_names()</span></tt></a> method, but is unbound.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.parallel.apps.ipengineapp.MPI.class_traits">
+<em class="property">classmethod </em><tt class="descname">class_traits</tt><big>(</big><em>**metadata</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipengineapp.MPI.class_traits" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of all the traits of this class.</p>
+<p>This method is just like the <a class="reference internal" href="#IPython.parallel.apps.ipengineapp.MPI.traits" title="IPython.parallel.apps.ipengineapp.MPI.traits"><tt class="xref py py-meth docutils literal"><span class="pre">traits()</span></tt></a> method, but is unbound.</p>
+<p>The TraitTypes returned don&#8217;t know anything about the values
+that the various HasTrait&#8217;s instances are holding.</p>
+<p>This follows the same algorithm as traits does and does not allow
+for any simple way of specifying merely that a metadata name
+exists, but has any value.  This is because get_metadata returns
+None if a metadata key doesn&#8217;t exist.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipengineapp.MPI.config">
+<tt class="descname">config</tt><a class="headerlink" href="#IPython.parallel.apps.ipengineapp.MPI.config" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait whose value must be an instance of a specified class.</p>
+<p>The value can also be an instance of a subclass of the specified class.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipengineapp.MPI.created">
+<tt class="descname">created</tt><em class="property"> = None</em><a class="headerlink" href="#IPython.parallel.apps.ipengineapp.MPI.created" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipengineapp.MPI.default_inits">
+<tt class="descname">default_inits</tt><a class="headerlink" href="#IPython.parallel.apps.ipengineapp.MPI.default_inits" title="Permalink to this definition">¶</a></dt>
+<dd><p>An instance of a Python dict.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipengineapp.MPI.init_script">
+<tt class="descname">init_script</tt><a class="headerlink" href="#IPython.parallel.apps.ipengineapp.MPI.init_script" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait for unicode strings.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipengineapp.MPI.on_trait_change">
+<tt class="descname">on_trait_change</tt><big>(</big><em>handler</em>, <em>name=None</em>, <em>remove=False</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipengineapp.MPI.on_trait_change" title="Permalink to this definition">¶</a></dt>
+<dd><p>Setup a handler to be called when a trait changes.</p>
+<p>This is used to setup dynamic notifications of trait changes.</p>
+<p>Static handlers can be created by creating methods on a HasTraits
+subclass with the naming convention &#8216;_[traitname]_changed&#8217;.  Thus,
+to create static handler for the trait &#8216;a&#8217;, create the method
+_a_changed(self, name, old, new) (fewer arguments can be used, see
+below).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>handler</strong> : callable</p>
+<blockquote>
+<div><p>A callable that is called when a trait changes.  Its 
+signature can be handler(), handler(name), handler(name, new)
+or handler(name, old, new).</p>
+</div></blockquote>
+<p><strong>name</strong> : list, str, None</p>
+<blockquote>
+<div><p>If None, the handler will apply to all traits.  If a list
+of str, handler will apply to all names in the list.  If a
+str, the handler will apply just to that name.</p>
+</div></blockquote>
+<p><strong>remove</strong> : bool</p>
+<blockquote class="last">
+<div><p>If False (the default), then install the handler.  If True
+then unintall it.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipengineapp.MPI.trait_metadata">
+<tt class="descname">trait_metadata</tt><big>(</big><em>traitname</em>, <em>key</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipengineapp.MPI.trait_metadata" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get metadata values for trait by key.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipengineapp.MPI.trait_names">
+<tt class="descname">trait_names</tt><big>(</big><em>**metadata</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipengineapp.MPI.trait_names" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of all the names of this classes traits.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipengineapp.MPI.traits">
+<tt class="descname">traits</tt><big>(</big><em>**metadata</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipengineapp.MPI.traits" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of all the traits of this class.</p>
+<p>The TraitTypes returned don&#8217;t know anything about the values
+that the various HasTrait&#8217;s instances are holding.</p>
+<p>This follows the same algorithm as traits does and does not allow
+for any simple way of specifying merely that a metadata name
+exists, but has any value.  This is because get_metadata returns
+None if a metadata key doesn&#8217;t exist.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipengineapp.MPI.use">
+<tt class="descname">use</tt><a class="headerlink" href="#IPython.parallel.apps.ipengineapp.MPI.use" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait for unicode strings.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="simplestruct">
+<h3><tt class="xref py py-class docutils literal"><span class="pre">SimpleStruct</span></tt><a class="headerlink" href="#simplestruct" title="Permalink to this headline">¶</a></h3>
+</div>
+</div>
+<div class="section" id="function">
+<h2>Function<a class="headerlink" href="#function" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="IPython.parallel.apps.ipengineapp.launch_new_instance">
+<tt class="descclassname">IPython.parallel.apps.ipengineapp.</tt><tt class="descname">launch_new_instance</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipengineapp.launch_new_instance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create and run the IPython engine</p>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="IPython.parallel.apps.iploggerapp.html" title="parallel.apps.iploggerapp"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="IPython.parallel.apps.ipcontrollerapp.html" title="parallel.apps.ipcontrollerapp"
+             >previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <li><a href="../../search.html">search</a>|&nbsp;</li>
+       <li><a href="../../index.html">documentation </a> &raquo;</li>
+
+          <li><a href="../index.html" >The IPython API</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2008, The IPython Development Team.
+      Last updated on Jul 31, 2011.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1pre.
+    </div>
+  </body>
+</html>

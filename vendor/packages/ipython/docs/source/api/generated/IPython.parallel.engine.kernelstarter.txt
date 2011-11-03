@@ -1,0 +1,30 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+parallel.engine.kernelstarter
+=============================
+
+Module: :mod:`parallel.engine.kernelstarter`
+--------------------------------------------
+Inheritance diagram for ``IPython.parallel.engine.kernelstarter``:
+
+.. inheritance-diagram:: IPython.parallel.engine.kernelstarter 
+   :parts: 3
+
+.. automodule:: IPython.parallel.engine.kernelstarter
+
+.. currentmodule:: IPython.parallel.engine.kernelstarter
+
+:class:`KernelStarter`
+----------------------
+
+
+.. autoclass:: KernelStarter
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+.. autofunction:: IPython.parallel.engine.kernelstarter.make_starter
+

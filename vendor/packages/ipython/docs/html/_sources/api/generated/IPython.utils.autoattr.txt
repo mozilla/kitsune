@@ -1,0 +1,49 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+utils.autoattr
+==============
+
+Module: :mod:`utils.autoattr`
+-----------------------------
+Inheritance diagram for ``IPython.utils.autoattr``:
+
+.. inheritance-diagram:: IPython.utils.autoattr 
+   :parts: 3
+
+.. automodule:: IPython.utils.autoattr
+
+.. currentmodule:: IPython.utils.autoattr
+
+Classes
+-------
+
+:class:`OneTimeProperty`
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: OneTimeProperty
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`ResetMixin`
+~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: ResetMixin
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+Function
+--------
+
+
+.. autofunction:: IPython.utils.autoattr.auto_attr
+

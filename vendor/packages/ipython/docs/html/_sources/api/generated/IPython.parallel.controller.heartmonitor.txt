@@ -1,0 +1,42 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+parallel.controller.heartmonitor
+================================
+
+Module: :mod:`parallel.controller.heartmonitor`
+-----------------------------------------------
+Inheritance diagram for ``IPython.parallel.controller.heartmonitor``:
+
+.. inheritance-diagram:: IPython.parallel.controller.heartmonitor 
+   :parts: 3
+
+.. automodule:: IPython.parallel.controller.heartmonitor
+
+.. currentmodule:: IPython.parallel.controller.heartmonitor
+
+Classes
+-------
+
+:class:`Heart`
+~~~~~~~~~~~~~~
+
+
+.. autoclass:: Heart
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`HeartMonitor`
+~~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: HeartMonitor
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__

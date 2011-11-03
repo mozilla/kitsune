@@ -14,6 +14,8 @@ ALLSPHINXOPTS   = -d build/doctrees $(PAPEROPT_$(PAPER)) $(SPHINXOPTS) $(SRCDIR)
 
 .PHONY: help clean html web pickle htmlhelp latex changes linkcheck api
 
+default: html
+
 help:
 	@echo "Please use \`make <target>' where <target> is one of"
 	@echo "  html      to make standalone HTML files"
@@ -27,6 +29,7 @@ help:
 	@echo "pdf          latex and then runs the PDF generation"
 	@echo "all          html and pdf"
 	@echo "dist         all, and then puts the results in dist/"
+	@echo "gitwash-update update git workflow from source repo"
 
 clean:
 	-rm -rf build/* dist/* $(SRCDIR)/api/generated
@@ -36,11 +39,15 @@ pdf: latex
 
 all: html pdf
 
-dist: clean all
-	mkdir -p dist
-	ln build/latex/ipython.pdf dist/
-	cp -al build/html dist/
-	@echo "Build finished.  Final docs are in dist/"
+# For final distribution, only build HTML (our pdf is now so large as to be
+# unusable, takes forever to build and just bloats the downloads).  We leave
+# them hardlinked at the top-level so users find them easily, though the
+# original build/html dir is left in-place (useful to reload builds while
+# testing).
+dist: html
+	rm -rf html
+	cp -al build/html .
+	@echo "Build finished.  Final docs are in html/"
 
 html: api
 	mkdir -p build/html build/doctrees
@@ -48,7 +55,9 @@ html: api
 	@echo
 	@echo "Build finished. The HTML pages are in build/html."
 
-api:
+api: source/api/generated/gen.txt
+
+source/api/generated/gen.txt:
 	python autogen_api.py
 	@echo "Build API docs finished."
 
@@ -69,7 +78,7 @@ htmlhelp:
 	@echo "Build finished; now you can run HTML Help Workshop with the" \
 	      ".hhp project file in build/htmlhelp."
 
-latex:
+latex: api
 	mkdir -p build/latex build/doctrees
 	$(SPHINXBUILD) -b latex $(ALLSPHINXOPTS) build/latex
 	@echo
@@ -89,3 +98,13 @@ linkcheck:
 	@echo
 	@echo "Link check complete; look for any errors in the above output " \
 	      "or in build/linkcheck/output.txt."
+
+gitwash-update:
+	python ../tools/gitwash_dumper.py source/development ipython
+	cd source/development/gitwash && rename 's/.rst/.txt/' *.rst
+
+nightly: dist
+	rsync -avH --delete dist/ ipython:www/doc/nightly
+
+gh-pages: html pdf
+	python gh-pages.py

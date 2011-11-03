@@ -1,0 +1,350 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Outdated configuration information that might still be useful &mdash; IPython 0.11 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.11',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="IPython 0.11 documentation" href="../index.html" />
+    <link rel="up" title="Configuration and customization" href="index.html" />
+    <link rel="next" title="IPython developer’s guide" href="../development/index.html" />
+    <link rel="prev" title="Editor configuration" href="editors.html" /> 
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<a href="../index.html"><img src="../_static/logo.png" border="0" alt="IPython Documentation"/></a>
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../development/index.html" title="IPython developer’s guide"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="editors.html" title="Editor configuration"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">home</a>|&nbsp;</li>
+        <li><a href="../search.html">search</a>|&nbsp;</li>
+       <li><a href="../index.html">documentation </a> &raquo;</li>
+
+          <li><a href="index.html" accesskey="U">Configuration and customization</a> &raquo;</li> 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Outdated configuration information that might still be useful</a><ul>
+<li><a class="reference internal" href="#color">Color</a></li>
+<li><a class="reference internal" href="#input-output-prompts-and-exception-tracebacks">Input/Output prompts and exception tracebacks</a></li>
+<li><a class="reference internal" href="#object-details-types-docstrings-source-code-etc">Object details (types, docstrings, source code, etc.)</a></li>
+<li><a class="reference internal" href="#fine-tuning-your-prompt">Fine-tuning your prompt</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="editors.html"
+                        title="previous chapter">Editor configuration</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../development/index.html"
+                        title="next chapter">IPython developer&#8217;s guide</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/config/old.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="outdated-configuration-information-that-might-still-be-useful">
+<span id="initial-config"></span><h1>Outdated configuration information that might still be useful<a class="headerlink" href="#outdated-configuration-information-that-might-still-be-useful" title="Permalink to this headline">¶</a></h1>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">All of the information in this file is outdated. Until the new
+configuration system is better documented, this material is being kept.</p>
+</div>
+<p>This section will help you set various things in your environment for
+your IPython sessions to be as efficient as possible. All of IPython&#8217;s
+configuration information, along with several example files, is stored
+in a directory named by default $HOME/.config/ipython if $HOME/.config
+exists (Linux), or $HOME/.ipython as a secondary default. You can change this by
+defining the environment variable IPYTHONDIR, or at runtime with the
+command line option -ipythondir.</p>
+<p>If all goes well, the first time you run IPython it should automatically create
+a user copy of the config directory for you, based on its builtin defaults. You
+can look at the files it creates to learn more about configuring the
+system. The main file you will modify to configure IPython&#8217;s behavior is called
+ipythonrc (with a .ini extension under Windows), included for reference
+<em class="xref std std-ref">here</em>. This file is very commented and has many variables you
+can change to suit your taste, you can find more details <em class="xref std std-ref">here</em>. Here we discuss the basic things you will want to make sure
+things are working properly from the beginning.</p>
+<div class="section" id="color">
+<h2>Color<a class="headerlink" href="#color" title="Permalink to this headline">¶</a></h2>
+<p>The default IPython configuration has most bells and whistles turned on
+(they&#8217;re pretty safe). But there&#8217;s one that may cause problems on some
+systems: the use of color on screen for displaying information. This is
+very useful, since IPython can show prompts and exception tracebacks
+with various colors, display syntax-highlighted source code, and in
+general make it easier to visually parse information.</p>
+<p>The following terminals seem to handle the color sequences fine:</p>
+<blockquote>
+<div><ul class="simple">
+<li>Linux main text console, KDE Konsole, Gnome Terminal, E-term,
+rxvt, xterm.</li>
+<li>CDE terminal (tested under Solaris). This one boldfaces light colors.</li>
+<li>(X)Emacs buffers. See the <a href="#id1"><span class="problematic" id="id2">emacs_</span></a> section for more details on
+using IPython with (X)Emacs.</li>
+<li>A Windows (XP/2k) command prompt with <a class="reference external" href="https://code.launchpad.net/pyreadline">pyreadline</a>.</li>
+<li>A Windows (XP/2k) CygWin shell. Although some users have reported
+problems; it is not clear whether there is an issue for everyone
+or only under specific configurations. If you have full color
+support under cygwin, please post to the IPython mailing list so
+this issue can be resolved for all users.</li>
+</ul>
+</div></blockquote>
+<p>These have shown problems:</p>
+<blockquote>
+<div><ul class="simple">
+<li>Windows command prompt in WinXP/2k logged into a Linux machine via
+telnet or ssh.</li>
+<li>Windows native command prompt in WinXP/2k, without Gary Bishop&#8217;s
+extensions. Once Gary&#8217;s readline library is installed, the normal
+WinXP/2k command prompt works perfectly.</li>
+</ul>
+</div></blockquote>
+<p>Currently the following color schemes are available:</p>
+<blockquote>
+<div><ul class="simple">
+<li>NoColor: uses no color escapes at all (all escapes are empty &#8216;&#8217; &#8216;&#8217;
+strings). This &#8216;scheme&#8217; is thus fully safe to use in any terminal.</li>
+<li>Linux: works well in Linux console type environments: dark
+background with light fonts. It uses bright colors for
+information, so it is difficult to read if you have a light
+colored background.</li>
+<li>LightBG: the basic colors are similar to those in the Linux scheme
+but darker. It is easy to read in terminals with light backgrounds.</li>
+</ul>
+</div></blockquote>
+<p>IPython uses colors for two main groups of things: prompts and
+tracebacks which are directly printed to the terminal, and the object
+introspection system which passes large sets of data through a pager.</p>
+</div>
+<div class="section" id="input-output-prompts-and-exception-tracebacks">
+<h2>Input/Output prompts and exception tracebacks<a class="headerlink" href="#input-output-prompts-and-exception-tracebacks" title="Permalink to this headline">¶</a></h2>
+<p>You can test whether the colored prompts and tracebacks work on your
+system interactively by typing &#8216;%colors Linux&#8217; at the prompt (use
+&#8216;%colors LightBG&#8217; if your terminal has a light background). If the input
+prompt shows garbage like:</p>
+<div class="highlight-python"><pre>[0;32mIn [[1;32m1[0;32m]: [0;00m</pre>
+</div>
+<p>instead of (in color) something like:</p>
+<div class="highlight-python"><pre>In [1]:</pre>
+</div>
+<p>this means that your terminal doesn&#8217;t properly handle color escape
+sequences. You can go to a &#8216;no color&#8217; mode by typing &#8216;%colors NoColor&#8217;.</p>
+<p>You can try using a different terminal emulator program (Emacs users,
+see below). To permanently set your color preferences, edit the file
+$IPYTHON_DIR/ipythonrc and set the colors option to the desired value.</p>
+</div>
+<div class="section" id="object-details-types-docstrings-source-code-etc">
+<h2>Object details (types, docstrings, source code, etc.)<a class="headerlink" href="#object-details-types-docstrings-source-code-etc" title="Permalink to this headline">¶</a></h2>
+<p>IPython has a set of special functions for studying the objects you are working
+with, discussed in detail <a class="reference internal" href="../interactive/reference.html#dynamic-object-info"><em>here</em></a>. But this system
+relies on passing information which is longer than your screen through a data
+pager, such as the common Unix less and more programs. In order to be able to
+see this information in color, your pager needs to be properly configured. I
+strongly recommend using less instead of more, as it seems that more simply can
+not understand colored text correctly.</p>
+<p>In order to configure less as your default pager, do the following:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li>Set the environment PAGER variable to less.</li>
+<li>Set the environment LESS variable to -r (plus any other options
+you always want to pass to less by default). This tells less to
+properly interpret control sequences, which is how color
+information is given to your terminal.</li>
+</ol>
+</div></blockquote>
+<p>For the bash shell, add to your ~/.bashrc file the lines:</p>
+<div class="highlight-python"><pre>export PAGER=less
+export LESS=-r</pre>
+</div>
+<p>For the csh or tcsh shells, add to your ~/.cshrc file the lines:</p>
+<div class="highlight-python"><pre>setenv PAGER less
+setenv LESS -r</pre>
+</div>
+<p>There is similar syntax for other Unix shells, look at your system
+documentation for details.</p>
+<p>If you are on a system which lacks proper data pagers (such as Windows),
+IPython will use a very limited builtin pager.</p>
+</div>
+<div class="section" id="fine-tuning-your-prompt">
+<span id="prompts"></span><h2>Fine-tuning your prompt<a class="headerlink" href="#fine-tuning-your-prompt" title="Permalink to this headline">¶</a></h2>
+<p>IPython&#8217;s prompts can be customized using a syntax similar to that of
+the bash shell. Many of bash&#8217;s escapes are supported, as well as a few
+additional ones. We list them below:</p>
+<div class="highlight-python"><pre>\#
+    the prompt/history count number. This escape is automatically
+    wrapped in the coloring codes for the currently active color scheme.
+\N
+    the 'naked' prompt/history count number: this is just the number
+    itself, without any coloring applied to it. This lets you produce
+    numbered prompts with your own colors.
+\D
+    the prompt/history count, with the actual digits replaced by dots.
+    Used mainly in continuation prompts (prompt_in2)
+\w
+    the current working directory
+\W
+    the basename of current working directory
+\Xn
+    where $n=0\ldots5.$ The current working directory, with $HOME
+    replaced by ~, and filtered out to contain only $n$ path elements
+\Yn
+    Similar to \Xn, but with the $n+1$ element included if it is ~ (this
+    is similar to the behavior of the %cn escapes in tcsh)
+\u
+    the username of the current user
+\$
+    if the effective UID is 0, a #, otherwise a $
+\h
+    the hostname up to the first '.'
+\H
+    the hostname
+\n
+    a newline
+\r
+    a carriage return
+\v
+    IPython version string</pre>
+</div>
+<p>In addition to these, ANSI color escapes can be insterted into the
+prompts, as C_ColorName. The list of valid color names is: Black, Blue,
+Brown, Cyan, DarkGray, Green, LightBlue, LightCyan, LightGray,
+LightGreen, LightPurple, LightRed, NoColor, Normal, Purple, Red, White,
+Yellow.</p>
+<p>Finally, IPython supports the evaluation of arbitrary expressions in
+your prompt string. The prompt strings are evaluated through the syntax
+of PEP 215, but basically you can use $x.y to expand the value of x.y,
+and for more complicated expressions you can use braces: ${foo()+x} will
+call function foo and add to it the value of x, before putting the
+result into your prompt. For example, using
+prompt_in1 &#8216;${commands.getoutput(&#8220;uptime&#8221;)}nIn [#]: &#8216;
+will print the result of the uptime command on each prompt (assuming the
+commands module has been imported in your ipythonrc file).</p>
+<blockquote>
+<div>Prompt examples</div></blockquote>
+<p>The following options in an ipythonrc file will give you IPython&#8217;s
+default prompts:</p>
+<div class="highlight-python"><pre>prompt_in1 'In [\#]:'
+prompt_in2 '   .\D.:'
+prompt_out 'Out[\#]:'</pre>
+</div>
+<p>which look like this:</p>
+<div class="highlight-python"><pre>In [1]: 1+2
+Out[1]: 3
+
+In [2]: for i in (1,2,3):
+   ...:    print i,
+   ...:
+1 2 3</pre>
+</div>
+<p>These will give you a very colorful prompt with path information:</p>
+<div class="highlight-python"><pre>#prompt_in1 '\C_Red\u\C_Blue[\C_Cyan\Y1\C_Blue]\C_LightGreen\#&gt;'
+prompt_in2 ' ..\D&gt;'
+prompt_out '&lt;\#&gt;'</pre>
+</div>
+<p>which look like this:</p>
+<div class="highlight-python"><pre>fperez[~/ipython]1&gt; 1+2
+                &lt;1&gt; 3
+fperez[~/ipython]2&gt; for i in (1,2,3):
+               ...&gt;     print i,
+               ...&gt;
+1 2 3</pre>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../development/index.html" title="IPython developer’s guide"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="editors.html" title="Editor configuration"
+             >previous</a> |</li>
+        <li><a href="../index.html">home</a>|&nbsp;</li>
+        <li><a href="../search.html">search</a>|&nbsp;</li>
+       <li><a href="../index.html">documentation </a> &raquo;</li>
+
+          <li><a href="index.html" >Configuration and customization</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2008, The IPython Development Team.
+      Last updated on Jul 31, 2011.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1pre.
+    </div>
+  </body>
+</html>

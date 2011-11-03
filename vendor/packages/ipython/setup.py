@@ -6,12 +6,33 @@ Under Posix environments it works like a typical setup.py script.
 Under Windows, the command sdist is not supported, since IPython 
 requires utilities which are not available under Windows."""
 
-#-------------------------------------------------------------------------------
-#  Copyright (C) 2008  The IPython Development Team
+#-----------------------------------------------------------------------------
+#  Copyright (c) 2008-2011, IPython Development Team.
+#  Copyright (c) 2001-2007, Fernando Perez <fernando.perez@colorado.edu>
+#  Copyright (c) 2001, Janko Hauser <jhauser@zscout.de>
+#  Copyright (c) 2001, Nathaniel Gray <n8gray@caltech.edu>
 #
-#  Distributed under the terms of the BSD License.  The full license is in
-#  the file COPYING, distributed as part of this software.
-#-------------------------------------------------------------------------------
+#  Distributed under the terms of the Modified BSD License.
+#
+#  The full license is in the file COPYING.txt, distributed with this software.
+#-----------------------------------------------------------------------------
+
+#-----------------------------------------------------------------------------
+# Minimal Python version sanity check
+#-----------------------------------------------------------------------------
+
+import sys
+
+# This check is also made in IPython/__init__, don't forget to update both when
+# changing Python version requirements.
+if sys.version[0:3] < '2.6':
+    error = """\
+ERROR: 'IPython requires Python Version 2.6 or above.'
+Exiting."""
+    print >> sys.stderr, error
+    sys.exit(1)
+
+# At least we're on the python version we need, move on.
 
 #-------------------------------------------------------------------------------
 # Imports
@@ -19,7 +40,7 @@ requires utilities which are not available under Windows."""
 
 # Stdlib imports
 import os
-import sys
+import shutil
 
 from glob import glob
 
@@ -29,8 +50,8 @@ if os.path.exists('MANIFEST'): os.remove('MANIFEST')
 
 from distutils.core import setup
 
-# Local imports
-from IPython.genutils import target_update
+# Our own imports
+from IPython.utils.path import target_update
 
 from setupbase import (
     setup_args, 
@@ -38,10 +59,28 @@ from setupbase import (
     find_package_data, 
     find_scripts,
     find_data_files,
-    check_for_dependencies
+    check_for_dependencies,
+    record_commit_info,
 )
+from setupext import setupext
 
 isfile = os.path.isfile
+pjoin = os.path.join
+
+#-----------------------------------------------------------------------------
+# Function definitions
+#-----------------------------------------------------------------------------
+
+def cleanup():
+    """Clean up the junk left around by the build process"""
+    if "develop" not in sys.argv:
+        try:
+            shutil.rmtree('ipython.egg-info')
+        except:
+            try:
+                os.unlink('ipython.egg-info')
+            except:
+                pass
 
 #-------------------------------------------------------------------------------
 # Handle OS specific things
@@ -91,17 +130,13 @@ if len(sys.argv) >= 2 and sys.argv[1] in ('sdist','bdist_rpm'):
                   ['docs/man/ipengine.1'],
                   'cd docs/man && gzip -9c ipengine.1 > ipengine.1.gz'),
 
+                 ('docs/man/iplogger.1.gz',
+                  ['docs/man/iplogger.1'],
+                  'cd docs/man && gzip -9c iplogger.1 > iplogger.1.gz'),
+
                  ('docs/man/ipython.1.gz',
                   ['docs/man/ipython.1'],
                   'cd docs/man && gzip -9c ipython.1 > ipython.1.gz'),
-
-                 ('docs/man/ipython-wx.1.gz',
-                  ['docs/man/ipython-wx.1'],
-                  'cd docs/man && gzip -9c ipython-wx.1 > ipython-wx.1.gz'),
-
-                 ('docs/man/ipythonx.1.gz',
-                  ['docs/man/ipythonx.1'],
-                  'cd docs/man && gzip -9c ipythonx.1 > ipythonx.1.gz'),
 
                  ('docs/man/irunner.1.gz',
                   ['docs/man/irunner.1'],
@@ -123,7 +158,7 @@ if len(sys.argv) >= 2 and sys.argv[1] in ('sdist','bdist_rpm'):
 
         # First, compute all the dependencies that can force us to rebuild the
         # docs.  Start with the main release file that contains metadata
-        docdeps = ['IPython/Release.py']
+        docdeps = ['IPython/core/release.py']
         # Inculde all the reST sources
         pjoin = os.path.join
         for dirpath,dirnames,filenames in os.walk('docs/source'):
@@ -135,29 +170,42 @@ if len(sys.argv) >= 2 and sys.argv[1] in ('sdist','bdist_rpm'):
         for dirpath,dirnames,filenames in os.walk('docs/example'):
             docdeps += [ pjoin(dirpath,f) for f in filenames
                          if not f.endswith('~') ]
-        # then, make them all dependencies for the main PDF (the html will get
-        # auto-generated as well).
+        # then, make them all dependencies for the main html docs
         to_update.append(
-            ('docs/dist/ipython.pdf',
+            ('docs/dist/index.html',
              docdeps,
              "cd docs && make dist")
             )
         
     [ target_update(*t) for t in to_update ]
-
     
 #---------------------------------------------------------------------------
-# Find all the packages, package data, scripts and data_files
+# Find all the packages, package data, and data_files
 #---------------------------------------------------------------------------
 
 packages = find_packages()
 package_data = find_package_data()
-scripts = find_scripts()
 data_files = find_data_files()
 
 #---------------------------------------------------------------------------
-# Handle dependencies and setuptools specific things
+# Handle scripts, dependencies, and setuptools specific things
 #---------------------------------------------------------------------------
+
+# For some commands, use setuptools.  Note that we do NOT list install here!
+# If you want a setuptools-enhanced install, just run 'setupegg.py install'
+needs_setuptools = set(('develop', 'sdist', 'release', 'bdist_egg', 'bdist_rpm',
+           'bdist', 'bdist_dumb', 'bdist_wininst', 'install_egg_info',
+           'build_sphinx', 'egg_info', 'easy_install', 'upload',
+            ))
+if sys.platform == 'win32':
+    # Depend on setuptools for install on *Windows only*
+    # If we get script-installation working without setuptools,
+    # then we can back off, but until then use it.
+    # See Issue #369 on GitHub for more
+    needs_setuptools.add('install')
+
+if len(needs_setuptools.intersection(sys.argv)) > 0:
+    import setuptools
 
 # This dict is used for passing extra arguments that are setuptools 
 # specific to setup
@@ -165,49 +213,57 @@ setuptools_extra_args = {}
 
 if 'setuptools' in sys.modules:
     setuptools_extra_args['zip_safe'] = False
-    setuptools_extra_args['entry_points'] = {
-        'console_scripts': [
-            'ipython = IPython.ipapi:launch_new_instance',
-            'pycolor = IPython.PyColorize:main',
-            'ipcontroller = IPython.kernel.scripts.ipcontroller:main',
-            'ipengine = IPython.kernel.scripts.ipengine:main',
-            'ipcluster = IPython.kernel.scripts.ipcluster:main',
-            'ipythonx = IPython.frontend.wx.ipythonx:main',
-            'iptest = IPython.testing.iptest:main',
-        ]
-    }
+    setuptools_extra_args['entry_points'] = find_scripts(True)
     setup_args['extras_require'] = dict(
-        kernel = [
-            'zope.interface>=3.4.1',
-            'Twisted>=8.0.1',
-            'foolscap>=0.2.6'
-        ],
-        doc='Sphinx>=0.3',
-        test='nose>=0.10.1',
-        security='pyOpenSSL>=0.6'
+        parallel = 'pyzmq>=2.1.4',
+        zmq = 'pyzmq>=2.1.4',
+        doc = 'Sphinx>=0.3',
+        test = 'nose>=0.10.1',
     )
-    # Allow setuptools to handle the scripts
-    scripts = []
+    requires = setup_args.setdefault('install_requires', [])
+    setupext.display_status = False
+    if not setupext.check_for_readline():
+        if sys.platform == 'darwin':
+            requires.append('readline')
+        elif sys.platform.startswith('win') and sys.maxsize < 2**32:
+            # only require pyreadline on 32b Windows, due to 64b bug in pyreadline:
+            # https://bugs.launchpad.net/pyreadline/+bug/787574
+            requires.append('pyreadline')
+        else:
+            pass
+            # do we want to install readline here?
+    
+    # Script to be run by the windows binary installer after the default setup
+    # routine, to add shortcuts and similar windows-only things.  Windows
+    # post-install scripts MUST reside in the scripts/ dir, otherwise distutils
+    # doesn't find them.
+    if 'bdist_wininst' in sys.argv:
+        if len(sys.argv) > 2 and \
+               ('sdist' in sys.argv or 'bdist_rpm' in sys.argv):
+            print >> sys.stderr, "ERROR: bdist_wininst must be run alone. Exiting."
+            sys.exit(1)
+        setup_args['scripts'] = [pjoin('scripts','ipython_win_post_install.py')]
+        setup_args['options'] = {"bdist_wininst":
+                                 {"install_script":
+                                  "ipython_win_post_install.py"}}
 else:
-    # package_data of setuptools was introduced to distutils in 2.4
-    cfgfiles = filter(isfile, glob('IPython/UserConfig/*'))
-    if sys.version_info < (2,4):
-        data_files.append(('lib', 'IPython/UserConfig', cfgfiles))
     # If we are running without setuptools, call this function which will
     # check for dependencies an inform the user what is needed.  This is
     # just to make life easy for users.
     check_for_dependencies()
-
+    setup_args['scripts'] = find_scripts(False)
 
 #---------------------------------------------------------------------------
 # Do the actual setup now
 #---------------------------------------------------------------------------
 
+setup_args['cmdclass'] = {'build_py': record_commit_info('IPython')}
 setup_args['packages'] = packages
 setup_args['package_data'] = package_data
-setup_args['scripts'] = scripts
 setup_args['data_files'] = data_files
 setup_args.update(setuptools_extra_args)
 
+
 if __name__ == '__main__':
     setup(**setup_args)
+    cleanup()

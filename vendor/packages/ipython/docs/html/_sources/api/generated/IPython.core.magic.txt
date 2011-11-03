@@ -1,0 +1,67 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+core.magic
+==========
+
+Module: :mod:`core.magic`
+-------------------------
+Inheritance diagram for ``IPython.core.magic``:
+
+.. inheritance-diagram:: IPython.core.magic 
+   :parts: 3
+
+.. automodule:: IPython.core.magic
+
+.. currentmodule:: IPython.core.magic
+
+Classes
+-------
+
+:class:`Bunch`
+~~~~~~~~~~~~~~
+
+
+.. autoclass:: Bunch
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`MacroToEdit`
+~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: MacroToEdit
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`Magic`
+~~~~~~~~~~~~~~
+
+
+.. autoclass:: Magic
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+Functions
+---------
+
+
+.. autofunction:: IPython.core.magic.compress_dhist
+
+
+.. autofunction:: IPython.core.magic.needs_local_scope
+
+
+.. autofunction:: IPython.core.magic.on_off
+

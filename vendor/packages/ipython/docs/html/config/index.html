@@ -1,0 +1,171 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Configuration and customization &mdash; IPython 0.11 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.11',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="IPython 0.11 documentation" href="../index.html" />
+    <link rel="next" title="Overview of the IPython configuration system" href="overview.html" />
+    <link rel="prev" title="Transitioning from IPython.kernel to IPython.parallel" href="../parallel/parallel_transition.html" /> 
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<a href="../index.html"><img src="../_static/logo.png" border="0" alt="IPython Documentation"/></a>
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="overview.html" title="Overview of the IPython configuration system"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../parallel/parallel_transition.html" title="Transitioning from IPython.kernel to IPython.parallel"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">home</a>|&nbsp;</li>
+        <li><a href="../search.html">search</a>|&nbsp;</li>
+       <li><a href="../index.html">documentation </a> &raquo;</li>
+ 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="../parallel/parallel_transition.html"
+                        title="previous chapter">Transitioning from IPython.kernel to IPython.parallel</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="overview.html"
+                        title="next chapter">Overview of the IPython configuration system</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/config/index.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="configuration-and-customization">
+<span id="config-index"></span><h1>Configuration and customization<a class="headerlink" href="#configuration-and-customization" title="Permalink to this headline">¶</a></h1>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="overview.html">Overview of the IPython configuration system</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="overview.html#the-main-concepts">The main concepts</a></li>
+<li class="toctree-l2"><a class="reference internal" href="overview.html#configuration-objects-and-files">Configuration objects and files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="overview.html#configuration-files-inheritance">Configuration files inheritance</a></li>
+<li class="toctree-l2"><a class="reference internal" href="overview.html#class-based-configuration-inheritance">Class based configuration inheritance</a></li>
+<li class="toctree-l2"><a class="reference internal" href="overview.html#configuration-file-location">Configuration file location</a></li>
+<li class="toctree-l2"><a class="reference internal" href="overview.html#profiles">Profiles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="overview.html#command-line-arguments">Command-line arguments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="overview.html#design-requirements">Design requirements</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="extensions.html">IPython extensions</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="extensions.html#using-extensions">Using extensions</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="plugins.html">IPython plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ipython.html">Configuring the <strong class="command">ipython</strong> command line application</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="ipython.html#application-level-configuration">Application-level configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ipython.html#classes-that-can-be-configured">Classes that can be configured</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ipython.html#example">Example</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="editors.html">Editor configuration</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="editors.html#textmate">TextMate</a></li>
+<li class="toctree-l2"><a class="reference internal" href="editors.html#vim-configuration">vim configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="editors.html#x-emacs">(X)Emacs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="editors.html#editor">Editor</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="old.html">Outdated configuration information that might still be useful</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="old.html#color">Color</a></li>
+<li class="toctree-l2"><a class="reference internal" href="old.html#input-output-prompts-and-exception-tracebacks">Input/Output prompts and exception tracebacks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="old.html#object-details-types-docstrings-source-code-etc">Object details (types, docstrings, source code, etc.)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="old.html#fine-tuning-your-prompt">Fine-tuning your prompt</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="overview.html" title="Overview of the IPython configuration system"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="../parallel/parallel_transition.html" title="Transitioning from IPython.kernel to IPython.parallel"
+             >previous</a> |</li>
+        <li><a href="../index.html">home</a>|&nbsp;</li>
+        <li><a href="../search.html">search</a>|&nbsp;</li>
+       <li><a href="../index.html">documentation </a> &raquo;</li>
+ 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2008, The IPython Development Team.
+      Last updated on Jul 31, 2011.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1pre.
+    </div>
+  </body>
+</html>

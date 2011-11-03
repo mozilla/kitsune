@@ -1,72 +1,57 @@
-# -*- coding: utf-8 -*-
+# encoding: utf-8
 """
-IPython -- An enhanced Interactive Python
+IPython: tools for interactive and parallel computing in Python.
 
-One of Python's nicest features is its interactive interpreter. This allows
-very fast testing of ideas without the overhead of creating test files as is
-typical in most programming languages. However, the interpreter supplied with
-the standard Python distribution is fairly primitive (and IDLE isn't really
-much better).
-
-IPython tries to:
-
-  i - provide an efficient environment for interactive work in Python
-  programming. It tries to address what we see as shortcomings of the standard
-  Python prompt, and adds many features to make interactive work much more
-  efficient.
-
-  ii - offer a flexible framework so that it can be used as the base
-  environment for other projects and problems where Python can be the
-  underlying language. Specifically scientific environments like Mathematica,
-  IDL and Mathcad inspired its design, but similar ideas can be useful in many
-  fields. Python is a fabulous language for implementing this kind of system
-  (due to its dynamic and introspective features), and with suitable libraries
-  entire systems could be built leveraging Python's power.
-
-  iii - serve as an embeddable, ready to go interpreter for your own programs.
-
-IPython requires Python 2.4 or newer.
+http://ipython.org
 """
-
-#*****************************************************************************
-#       Copyright (C) 2008-2009 The IPython Development Team
-#       Copyright (C) 2001-2007 Fernando Perez. <fperez@colorado.edu>
+#-----------------------------------------------------------------------------
+#  Copyright (c) 2008-2011, IPython Development Team.
+#  Copyright (c) 2001-2007, Fernando Perez <fernando.perez@colorado.edu>
+#  Copyright (c) 2001, Janko Hauser <jhauser@zscout.de>
+#  Copyright (c) 2001, Nathaniel Gray <n8gray@caltech.edu>
 #
-#  Distributed under the terms of the BSD License.  The full license is in
-#  the file COPYING, distributed as part of this software.
-#*****************************************************************************
+#  Distributed under the terms of the Modified BSD License.
+#
+#  The full license is in the file COPYING.txt, distributed with this software.
+#-----------------------------------------------------------------------------
 
-# Enforce proper version requirements
+#-----------------------------------------------------------------------------
+# Imports
+#-----------------------------------------------------------------------------
+from __future__ import absolute_import
+
+import os
 import sys
 
-if sys.version[0:3] < '2.4':
-    raise ImportError('Python Version 2.4 or above is required for IPython.')
+#-----------------------------------------------------------------------------
+# Setup everything
+#-----------------------------------------------------------------------------
+
+# Don't forget to also update setup.py when this changes!
+if sys.version[0:3] < '2.6':
+    raise ImportError('Python Version 2.6 or above is required for IPython.')
 
 # Make it easy to import extensions - they are always directly on pythonpath.
-# Therefore, non-IPython modules can be added to Extensions directory
-import os
-sys.path.append(os.path.dirname(__file__) + "/Extensions")
+# Therefore, non-IPython modules can be added to extensions directory.
+# This should probably be in ipapp.py.
+sys.path.append(os.path.join(os.path.dirname(__file__), "extensions"))
 
-# Define what gets imported with a 'from IPython import *'
-__all__ = ['ipapi','generics','ipstruct','Release','Shell']
+#-----------------------------------------------------------------------------
+# Setup the top level names
+#-----------------------------------------------------------------------------
 
-# Load __all__ in IPython namespace so that a simple 'import IPython' gives
-# access to them via IPython.<name>
-glob,loc = globals(),locals()
-for name in __all__:
-    #print 'Importing: ',name # dbg
-    __import__(name,glob,loc,[])
-
-import Shell
+from .config.loader import Config
+from .core import release
+from .core.application import Application
+from .frontend.terminal.embed import embed
+from .core.error import TryNext
+from .core.interactiveshell import InteractiveShell
+from .testing import test
+from .utils.sysinfo import sys_info
 
 # Release data
-from IPython import Release # do it explicitly so pydoc can see it - pydoc bug
-__author__   = '%s <%s>\n%s <%s>\n%s <%s>' % \
-               ( Release.authors['Fernando'] + Release.authors['Janko'] + \
-                 Release.authors['Nathan'] )
-__license__  = Release.license
-__version__  = Release.version
-__revision__ = Release.revision
-
-# Namespace cleanup
-del name,glob,loc
+__author__ = ''
+for author, email in release.authors.itervalues():
+    __author__ += author + ' <' + email + '>\n'
+__license__  = release.license
+__version__  = release.version

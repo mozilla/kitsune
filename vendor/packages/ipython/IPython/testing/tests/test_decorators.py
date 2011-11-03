@@ -5,13 +5,15 @@
 # Std lib
 import inspect
 import sys
+import unittest
 
 # Third party
 import nose.tools as nt
 
 # Our own
 from IPython.testing import decorators as dec
-
+from IPython.testing.skipdoctest import skip_doctest
+from IPython.testing.ipunittest import ParametricTestCase
 
 #-----------------------------------------------------------------------------
 # Utilities
@@ -41,6 +43,30 @@ def getargspec(obj):
 #-----------------------------------------------------------------------------
 # Testing functions
 
+@dec.as_unittest
+def trivial():
+    """A trivial test"""
+    pass
+
+# Some examples of parametric tests.
+
+def is_smaller(i,j):
+    assert i<j,"%s !< %s" % (i,j)
+
+class Tester(ParametricTestCase):
+
+    def test_parametric(self):
+        yield is_smaller(3, 4)
+        x, y = 1, 2
+        yield is_smaller(x, y)
+
+@dec.parametric
+def test_par_standalone():
+    yield is_smaller(3, 4)
+    x, y = 1, 2
+    yield is_smaller(x, y)
+
+
 @dec.skip
 def test_deliberately_broken():
     """A deliberately broken test - we want to skip this one."""
@@ -54,7 +80,7 @@ def test_deliberately_broken2():
 
 # Verify that we can correctly skip the doctest for a function at will, but
 # that the docstring itself is NOT destroyed by the decorator.
-@dec.skip_doctest
+@skip_doctest
 def doctest_bad(x,y=1,**k):
     """A function whose doctest we need to skip.
 
@@ -89,11 +115,12 @@ def test_skip_dt_decorator():
     # Fetch the docstring from doctest_bad after decoration.
     val = doctest_bad.__doc__
     
-    assert check==val,"doctest_bad docstrings don't match"
+    nt.assert_equal(check,val,"doctest_bad docstrings don't match")
+
 
 # Doctest skipping should work for class methods too
-class foo(object):
-    """Foo
+class FooClass(object):
+    """FooClass
 
     Example:
 
@@ -101,24 +128,24 @@ class foo(object):
     2
     """
 
-    @dec.skip_doctest
+    @skip_doctest
     def __init__(self,x):
-        """Make a foo.
+        """Make a FooClass.
 
         Example:
 
-        >>> f = foo(3)
+        >>> f = FooClass(3)
         junk
         """
-        print 'Making a foo.'
+        print 'Making a FooClass.'
         self.x = x
         
-    @dec.skip_doctest
+    @skip_doctest
     def bar(self,y):
         """Example:
 
-        >>> f = foo(3)
-        >>> f.bar(0)
+        >>> ff = FooClass(3)
+        >>> ff.bar(0)
         boom!
         >>> 1/0
         bam!
@@ -128,13 +155,12 @@ class foo(object):
     def baz(self,y):
         """Example:
 
-        >>> f = foo(3)
-        Making a foo.
-        >>> f.baz(3)
+        >>> ff2 = FooClass(3)
+        Making a FooClass.
+        >>> ff2.baz(3)
         True
         """
         return self.x==y
-
 
 
 def test_skip_dt_decorator2():
@@ -150,7 +176,7 @@ def test_skip_dt_decorator2():
 
 @dec.skip_linux
 def test_linux():
-    nt.assert_not_equals(sys.platform,'linux2',"This test can't run under linux")
+    nt.assert_false(sys.platform.startswith('linux'),"This test can't run under linux")
 
 @dec.skip_win32
 def test_win32():
@@ -159,3 +185,4 @@ def test_win32():
 @dec.skip_osx
 def test_osx():
     nt.assert_not_equals(sys.platform,'darwin',"This test can't run under osx")
+

@@ -1,0 +1,592 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>config.application &mdash; IPython 0.11 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.11',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="IPython 0.11 documentation" href="../../index.html" />
+    <link rel="up" title="The IPython API" href="../index.html" />
+    <link rel="next" title="config.configurable" href="IPython.config.configurable.html" />
+    <link rel="prev" title="The IPython API" href="../index.html" /> 
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<a href="../../index.html"><img src="../../_static/logo.png" border="0" alt="IPython Documentation"/></a>
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="IPython.config.configurable.html" title="config.configurable"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../index.html" title="The IPython API"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <li><a href="../../search.html">search</a>|&nbsp;</li>
+       <li><a href="../../index.html">documentation </a> &raquo;</li>
+
+          <li><a href="../index.html" accesskey="U">The IPython API</a> &raquo;</li> 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">config.application</a><ul>
+<li><a class="reference internal" href="#module-config-application">Module: <tt class="docutils literal"><span class="pre">config.application</span></tt></a></li>
+<li><a class="reference internal" href="#classes">Classes</a><ul>
+<li><a class="reference internal" href="#application"><tt class="docutils literal"><span class="pre">Application</span></tt></a></li>
+<li><a class="reference internal" href="#applicationerror"><tt class="docutils literal"><span class="pre">ApplicationError</span></tt></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#function">Function</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="../index.html"
+                        title="previous chapter">The IPython API</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="IPython.config.configurable.html"
+                        title="next chapter">config.configurable</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/api/generated/IPython.config.application.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="config-application">
+<h1>config.application<a class="headerlink" href="#config-application" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-config-application">
+<h2>Module: <tt class="xref py py-mod docutils literal"><span class="pre">config.application</span></tt><a class="headerlink" href="#module-config-application" title="Permalink to this headline">¶</a></h2>
+<p>Inheritance diagram for <tt class="docutils literal"><span class="pre">IPython.config.application</span></tt>:</p>
+<img src="../../_images/inheritance4e5414fc02.png" usemap="#inheritance4e5414fc02" class="inheritance"/><map id="inheritance4e5414fc02" name="inheritance4e5414fc02">
+</map>
+<span class="target" id="module-IPython.config.application"></span><p>A base class for a configurable application.</p>
+<p>Authors:</p>
+<ul class="simple">
+<li>Brian Granger</li>
+<li>Min RK</li>
+</ul>
+</div>
+<div class="section" id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="application">
+<h3><a class="reference internal" href="#IPython.config.application.Application" title="IPython.config.application.Application"><tt class="xref py py-class docutils literal"><span class="pre">Application</span></tt></a><a class="headerlink" href="#application" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="IPython.config.application.Application">
+<em class="property">class </em><tt class="descclassname">IPython.config.application.</tt><tt class="descname">Application</tt><big>(</big><em>**kwargs</em><big>)</big><a class="headerlink" href="#IPython.config.application.Application" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="IPython.config.configurable.html#IPython.config.configurable.SingletonConfigurable" title="IPython.config.configurable.SingletonConfigurable"><tt class="xref py py-class docutils literal"><span class="pre">IPython.config.configurable.SingletonConfigurable</span></tt></a></p>
+<p>A singleton application with full configuration support.</p>
+<dl class="method">
+<dt id="IPython.config.application.Application.__init__">
+<tt class="descname">__init__</tt><big>(</big><em>**kwargs</em><big>)</big><a class="headerlink" href="#IPython.config.application.Application.__init__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.config.application.Application.aliases">
+<tt class="descname">aliases</tt><a class="headerlink" href="#IPython.config.application.Application.aliases" title="Permalink to this definition">¶</a></dt>
+<dd><p>An instance of a Python dict.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.config.application.Application.class_config_section">
+<em class="property">classmethod </em><tt class="descname">class_config_section</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.config.application.Application.class_config_section" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the config class config section</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.config.application.Application.class_get_help">
+<em class="property">classmethod </em><tt class="descname">class_get_help</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.config.application.Application.class_get_help" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the help string for this class in ReST format.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.config.application.Application.class_get_trait_help">
+<em class="property">classmethod </em><tt class="descname">class_get_trait_help</tt><big>(</big><em>trait</em><big>)</big><a class="headerlink" href="#IPython.config.application.Application.class_get_trait_help" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the help string for a single trait.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.config.application.Application.class_print_help">
+<em class="property">classmethod </em><tt class="descname">class_print_help</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.config.application.Application.class_print_help" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the help string for a single trait and print it.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.config.application.Application.class_trait_names">
+<em class="property">classmethod </em><tt class="descname">class_trait_names</tt><big>(</big><em>**metadata</em><big>)</big><a class="headerlink" href="#IPython.config.application.Application.class_trait_names" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of all the names of this classes traits.</p>
+<p>This method is just like the <a class="reference internal" href="#IPython.config.application.Application.trait_names" title="IPython.config.application.Application.trait_names"><tt class="xref py py-meth docutils literal"><span class="pre">trait_names()</span></tt></a> method, but is unbound.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.config.application.Application.class_traits">
+<em class="property">classmethod </em><tt class="descname">class_traits</tt><big>(</big><em>**metadata</em><big>)</big><a class="headerlink" href="#IPython.config.application.Application.class_traits" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of all the traits of this class.</p>
+<p>This method is just like the <a class="reference internal" href="#IPython.config.application.Application.traits" title="IPython.config.application.Application.traits"><tt class="xref py py-meth docutils literal"><span class="pre">traits()</span></tt></a> method, but is unbound.</p>
+<p>The TraitTypes returned don&#8217;t know anything about the values
+that the various HasTrait&#8217;s instances are holding.</p>
+<p>This follows the same algorithm as traits does and does not allow
+for any simple way of specifying merely that a metadata name
+exists, but has any value.  This is because get_metadata returns
+None if a metadata key doesn&#8217;t exist.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.config.application.Application.classes">
+<tt class="descname">classes</tt><a class="headerlink" href="#IPython.config.application.Application.classes" title="Permalink to this definition">¶</a></dt>
+<dd><p>An instance of a Python list.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.config.application.Application.clear_instance">
+<em class="property">classmethod </em><tt class="descname">clear_instance</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.config.application.Application.clear_instance" title="Permalink to this definition">¶</a></dt>
+<dd><p>unset _instance for this class and singleton parents.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.config.application.Application.config">
+<tt class="descname">config</tt><a class="headerlink" href="#IPython.config.application.Application.config" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait whose value must be an instance of a specified class.</p>
+<p>The value can also be an instance of a subclass of the specified class.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.config.application.Application.created">
+<tt class="descname">created</tt><em class="property"> = None</em><a class="headerlink" href="#IPython.config.application.Application.created" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.config.application.Application.description">
+<tt class="descname">description</tt><a class="headerlink" href="#IPython.config.application.Application.description" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait for unicode strings.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.config.application.Application.examples">
+<tt class="descname">examples</tt><a class="headerlink" href="#IPython.config.application.Application.examples" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait for unicode strings.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.config.application.Application.exit">
+<tt class="descname">exit</tt><big>(</big><em>exit_status=0</em><big>)</big><a class="headerlink" href="#IPython.config.application.Application.exit" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.config.application.Application.extra_args">
+<tt class="descname">extra_args</tt><a class="headerlink" href="#IPython.config.application.Application.extra_args" title="Permalink to this definition">¶</a></dt>
+<dd><p>An instance of a Python list.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.config.application.Application.flags">
+<tt class="descname">flags</tt><a class="headerlink" href="#IPython.config.application.Application.flags" title="Permalink to this definition">¶</a></dt>
+<dd><p>An instance of a Python dict.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.config.application.Application.generate_config_file">
+<tt class="descname">generate_config_file</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.config.application.Application.generate_config_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>generate default config file from Configurables</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.config.application.Application.init_logging">
+<tt class="descname">init_logging</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.config.application.Application.init_logging" title="Permalink to this definition">¶</a></dt>
+<dd><p>Start logging for this application.</p>
+<p>The default is to log to stdout using a StreaHandler. The log level
+starts at loggin.WARN, but this can be adjusted by setting the 
+<tt class="docutils literal"><span class="pre">log_level</span></tt> attribute.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.config.application.Application.initialize">
+<tt class="descname">initialize</tt><big>(</big><em>argv=None</em><big>)</big><a class="headerlink" href="#IPython.config.application.Application.initialize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Do the basic steps to configure me.</p>
+<p>Override in subclasses.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.config.application.Application.initialize_subcommand">
+<tt class="descname">initialize_subcommand</tt><big>(</big><em>subc</em>, <em>argv=None</em><big>)</big><a class="headerlink" href="#IPython.config.application.Application.initialize_subcommand" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize a subcommand with argv.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.config.application.Application.initialized">
+<em class="property">classmethod </em><tt class="descname">initialized</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.config.application.Application.initialized" title="Permalink to this definition">¶</a></dt>
+<dd><p>Has an instance been created?</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.config.application.Application.instance">
+<em class="property">classmethod </em><tt class="descname">instance</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#IPython.config.application.Application.instance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a global instance of this class.</p>
+<p>This method create a new instance if none have previously been created
+and returns a previously created instance is one already exists.</p>
+<p>The arguments and keyword arguments passed to this method are passed
+on to the <a class="reference internal" href="#IPython.config.application.Application.__init__" title="IPython.config.application.Application.__init__"><tt class="xref py py-meth docutils literal"><span class="pre">__init__()</span></tt></a> method of the class upon instantiation.</p>
+<p class="rubric">Examples</p>
+<p>Create a singleton class using instance, and retrieve it:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">IPython.config.configurable</span> <span class="kn">import</span> <span class="n">SingletonConfigurable</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">Foo</span><span class="p">(</span><span class="n">SingletonConfigurable</span><span class="p">):</span> <span class="k">pass</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">foo</span> <span class="o">=</span> <span class="n">Foo</span><span class="o">.</span><span class="n">instance</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">foo</span> <span class="o">==</span> <span class="n">Foo</span><span class="o">.</span><span class="n">instance</span><span class="p">()</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<p>Create a subclass that is retrived using the base class instance:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">Bar</span><span class="p">(</span><span class="n">SingletonConfigurable</span><span class="p">):</span> <span class="k">pass</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">Bam</span><span class="p">(</span><span class="n">Bar</span><span class="p">):</span> <span class="k">pass</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">bam</span> <span class="o">=</span> <span class="n">Bam</span><span class="o">.</span><span class="n">instance</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">bam</span> <span class="o">==</span> <span class="n">Bar</span><span class="o">.</span><span class="n">instance</span><span class="p">()</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.config.application.Application.keyvalue_description">
+<tt class="descname">keyvalue_description</tt><a class="headerlink" href="#IPython.config.application.Application.keyvalue_description" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait for unicode strings.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.config.application.Application.load_config_file">
+<tt class="descname">load_config_file</tt><big>(</big><em>filename</em>, <em>path=None</em><big>)</big><a class="headerlink" href="#IPython.config.application.Application.load_config_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load a .py based config file by filename and path.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.config.application.Application.log_level">
+<tt class="descname">log_level</tt><a class="headerlink" href="#IPython.config.application.Application.log_level" title="Permalink to this definition">¶</a></dt>
+<dd><p>An enum that whose value must be in a given sequence.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.config.application.Application.name">
+<tt class="descname">name</tt><a class="headerlink" href="#IPython.config.application.Application.name" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait for unicode strings.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.config.application.Application.on_trait_change">
+<tt class="descname">on_trait_change</tt><big>(</big><em>handler</em>, <em>name=None</em>, <em>remove=False</em><big>)</big><a class="headerlink" href="#IPython.config.application.Application.on_trait_change" title="Permalink to this definition">¶</a></dt>
+<dd><p>Setup a handler to be called when a trait changes.</p>
+<p>This is used to setup dynamic notifications of trait changes.</p>
+<p>Static handlers can be created by creating methods on a HasTraits
+subclass with the naming convention &#8216;_[traitname]_changed&#8217;.  Thus,
+to create static handler for the trait &#8216;a&#8217;, create the method
+_a_changed(self, name, old, new) (fewer arguments can be used, see
+below).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>handler</strong> : callable</p>
+<blockquote>
+<div><p>A callable that is called when a trait changes.  Its 
+signature can be handler(), handler(name), handler(name, new)
+or handler(name, old, new).</p>
+</div></blockquote>
+<p><strong>name</strong> : list, str, None</p>
+<blockquote>
+<div><p>If None, the handler will apply to all traits.  If a list
+of str, handler will apply to all names in the list.  If a
+str, the handler will apply just to that name.</p>
+</div></blockquote>
+<p><strong>remove</strong> : bool</p>
+<blockquote class="last">
+<div><p>If False (the default), then install the handler.  If True
+then unintall it.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.config.application.Application.option_description">
+<tt class="descname">option_description</tt><a class="headerlink" href="#IPython.config.application.Application.option_description" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait for unicode strings.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.config.application.Application.parse_command_line">
+<tt class="descname">parse_command_line</tt><big>(</big><em>argv=None</em><big>)</big><a class="headerlink" href="#IPython.config.application.Application.parse_command_line" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parse the command line arguments.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.config.application.Application.print_alias_help">
+<tt class="descname">print_alias_help</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.config.application.Application.print_alias_help" title="Permalink to this definition">¶</a></dt>
+<dd><p>Print the alias part of the help.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.config.application.Application.print_description">
+<tt class="descname">print_description</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.config.application.Application.print_description" title="Permalink to this definition">¶</a></dt>
+<dd><p>Print the application description.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.config.application.Application.print_examples">
+<tt class="descname">print_examples</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.config.application.Application.print_examples" title="Permalink to this definition">¶</a></dt>
+<dd><p>Print usage and examples.</p>
+<p>This usage string goes at the end of the command line help string
+and should contain examples of the application&#8217;s usage.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.config.application.Application.print_flag_help">
+<tt class="descname">print_flag_help</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.config.application.Application.print_flag_help" title="Permalink to this definition">¶</a></dt>
+<dd><p>Print the flag part of the help.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.config.application.Application.print_help">
+<tt class="descname">print_help</tt><big>(</big><em>classes=False</em><big>)</big><a class="headerlink" href="#IPython.config.application.Application.print_help" title="Permalink to this definition">¶</a></dt>
+<dd><p>Print the help for each Configurable class in self.classes.</p>
+<p>If classes=False (the default), only flags and aliases are printed.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.config.application.Application.print_options">
+<tt class="descname">print_options</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.config.application.Application.print_options" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IPython.config.application.Application.print_subcommands">
+<tt class="descname">print_subcommands</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.config.application.Application.print_subcommands" title="Permalink to this definition">¶</a></dt>
+<dd><p>Print the subcommand part of the help.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.config.application.Application.print_version">
+<tt class="descname">print_version</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.config.application.Application.print_version" title="Permalink to this definition">¶</a></dt>
+<dd><p>Print the version string.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.config.application.Application.start">
+<tt class="descname">start</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.config.application.Application.start" title="Permalink to this definition">¶</a></dt>
+<dd><p>Start the app mainloop.</p>
+<p>Override in subclasses.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.config.application.Application.subapp">
+<tt class="descname">subapp</tt><a class="headerlink" href="#IPython.config.application.Application.subapp" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait whose value must be an instance of a specified class.</p>
+<p>The value can also be an instance of a subclass of the specified class.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.config.application.Application.subcommand_description">
+<tt class="descname">subcommand_description</tt><a class="headerlink" href="#IPython.config.application.Application.subcommand_description" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait for unicode strings.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.config.application.Application.subcommands">
+<tt class="descname">subcommands</tt><a class="headerlink" href="#IPython.config.application.Application.subcommands" title="Permalink to this definition">¶</a></dt>
+<dd><p>An instance of a Python dict.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.config.application.Application.trait_metadata">
+<tt class="descname">trait_metadata</tt><big>(</big><em>traitname</em>, <em>key</em><big>)</big><a class="headerlink" href="#IPython.config.application.Application.trait_metadata" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get metadata values for trait by key.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.config.application.Application.trait_names">
+<tt class="descname">trait_names</tt><big>(</big><em>**metadata</em><big>)</big><a class="headerlink" href="#IPython.config.application.Application.trait_names" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of all the names of this classes traits.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.config.application.Application.traits">
+<tt class="descname">traits</tt><big>(</big><em>**metadata</em><big>)</big><a class="headerlink" href="#IPython.config.application.Application.traits" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of all the traits of this class.</p>
+<p>The TraitTypes returned don&#8217;t know anything about the values
+that the various HasTrait&#8217;s instances are holding.</p>
+<p>This follows the same algorithm as traits does and does not allow
+for any simple way of specifying merely that a metadata name
+exists, but has any value.  This is because get_metadata returns
+None if a metadata key doesn&#8217;t exist.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.config.application.Application.update_config">
+<tt class="descname">update_config</tt><big>(</big><em>config</em><big>)</big><a class="headerlink" href="#IPython.config.application.Application.update_config" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fire the traits events when the config is updated.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.config.application.Application.version">
+<tt class="descname">version</tt><a class="headerlink" href="#IPython.config.application.Application.version" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait for unicode strings.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="applicationerror">
+<h3><a class="reference internal" href="#IPython.config.application.ApplicationError" title="IPython.config.application.ApplicationError"><tt class="xref py py-class docutils literal"><span class="pre">ApplicationError</span></tt></a><a class="headerlink" href="#applicationerror" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="IPython.config.application.ApplicationError">
+<em class="property">class </em><tt class="descclassname">IPython.config.application.</tt><tt class="descname">ApplicationError</tt><a class="headerlink" href="#IPython.config.application.ApplicationError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">exceptions.Exception</span></tt></p>
+<dl class="method">
+<dt id="IPython.config.application.ApplicationError.__init__">
+<tt class="descname">__init__</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.config.application.ApplicationError.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>x.__init__(...) initializes x; see x.__class__.__doc__ for signature</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.config.application.ApplicationError.args">
+<tt class="descname">args</tt><a class="headerlink" href="#IPython.config.application.ApplicationError.args" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.config.application.ApplicationError.message">
+<tt class="descname">message</tt><a class="headerlink" href="#IPython.config.application.ApplicationError.message" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="function">
+<h2>Function<a class="headerlink" href="#function" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="IPython.config.application.boolean_flag">
+<tt class="descclassname">IPython.config.application.</tt><tt class="descname">boolean_flag</tt><big>(</big><em>name</em>, <em>configurable</em>, <em>set_help=''</em>, <em>unset_help=''</em><big>)</big><a class="headerlink" href="#IPython.config.application.boolean_flag" title="Permalink to this definition">¶</a></dt>
+<dd><p>Helper for building basic &#8211;trait, &#8211;no-trait flags.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>name</strong> : str</p>
+<blockquote>
+<div><p>The name of the flag.</p>
+</div></blockquote>
+<p><strong>configurable</strong> : str</p>
+<blockquote>
+<div><p>The &#8216;Class.trait&#8217; string of the trait to be set/unset with the flag</p>
+</div></blockquote>
+<p><strong>set_help</strong> : unicode</p>
+<blockquote>
+<div><p>help string for &#8211;name flag</p>
+</div></blockquote>
+<p><strong>unset_help</strong> : unicode</p>
+<blockquote>
+<div><p>help string for &#8211;no-name flag</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns :</th><td class="field-body"><p class="first"><strong>cfg</strong> : dict</p>
+<blockquote class="last">
+<div><p>A dict with two keys: &#8216;name&#8217;, and &#8216;no-name&#8217;, for setting and unsetting
+the trait, respectively.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="IPython.config.configurable.html" title="config.configurable"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="../index.html" title="The IPython API"
+             >previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <li><a href="../../search.html">search</a>|&nbsp;</li>
+       <li><a href="../../index.html">documentation </a> &raquo;</li>
+
+          <li><a href="../index.html" >The IPython API</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2008, The IPython Development Team.
+      Last updated on Jul 31, 2011.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1pre.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,267 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>testing.iptest &mdash; IPython 0.11 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.11',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="IPython 0.11 documentation" href="../../index.html" />
+    <link rel="up" title="The IPython API" href="../index.html" />
+    <link rel="next" title="testing.ipunittest" href="IPython.testing.ipunittest.html" />
+    <link rel="prev" title="testing.globalipapp" href="IPython.testing.globalipapp.html" /> 
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<a href="../../index.html"><img src="../../_static/logo.png" border="0" alt="IPython Documentation"/></a>
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="IPython.testing.ipunittest.html" title="testing.ipunittest"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="IPython.testing.globalipapp.html" title="testing.globalipapp"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <li><a href="../../search.html">search</a>|&nbsp;</li>
+       <li><a href="../../index.html">documentation </a> &raquo;</li>
+
+          <li><a href="../index.html" accesskey="U">The IPython API</a> &raquo;</li> 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">testing.iptest</a><ul>
+<li><a class="reference internal" href="#module-testing-iptest">Module: <tt class="docutils literal"><span class="pre">testing.iptest</span></tt></a></li>
+<li><a class="reference internal" href="#class">Class</a></li>
+<li><a class="reference internal" href="#iptester"><tt class="docutils literal"><span class="pre">IPTester</span></tt></a></li>
+<li><a class="reference internal" href="#functions">Functions</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="IPython.testing.globalipapp.html"
+                        title="previous chapter">testing.globalipapp</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="IPython.testing.ipunittest.html"
+                        title="next chapter">testing.ipunittest</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/api/generated/IPython.testing.iptest.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="testing-iptest">
+<h1>testing.iptest<a class="headerlink" href="#testing-iptest" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-testing-iptest">
+<h2>Module: <tt class="xref py py-mod docutils literal"><span class="pre">testing.iptest</span></tt><a class="headerlink" href="#module-testing-iptest" title="Permalink to this headline">¶</a></h2>
+<p>Inheritance diagram for <tt class="docutils literal"><span class="pre">IPython.testing.iptest</span></tt>:</p>
+<img src="../../_images/inheritancec99b0098c8.png" usemap="#inheritancec99b0098c8" class="inheritance"/><map id="inheritancec99b0098c8" name="inheritancec99b0098c8">
+</map>
+<span class="target" id="module-IPython.testing.iptest"></span><p>IPython Test Suite Runner.</p>
+<p>This module provides a main entry point to a user script to test IPython
+itself from the command line. There are two ways of running this script:</p>
+<ol class="arabic simple">
+<li>With the syntax <cite>iptest all</cite>.  This runs our entire test suite by
+calling this script (with different arguments) recursively.  This
+causes modules and package to be tested in different processes, using nose
+or trial where appropriate.</li>
+<li>With the regular nose syntax, like <cite>iptest -vvs IPython</cite>.  In this form
+the script simply calls nose, but with special command line flags and
+plugins loaded.</li>
+</ol>
+</div>
+<div class="section" id="class">
+<h2>Class<a class="headerlink" href="#class" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="iptester">
+<h2><a class="reference internal" href="#IPython.testing.iptest.IPTester" title="IPython.testing.iptest.IPTester"><tt class="xref py py-class docutils literal"><span class="pre">IPTester</span></tt></a><a class="headerlink" href="#iptester" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="IPython.testing.iptest.IPTester">
+<em class="property">class </em><tt class="descclassname">IPython.testing.iptest.</tt><tt class="descname">IPTester</tt><big>(</big><em>runner='iptest'</em>, <em>params=None</em><big>)</big><a class="headerlink" href="#IPython.testing.iptest.IPTester" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></p>
+<p>Call that calls iptest or trial in a subprocess.</p>
+<dl class="method">
+<dt id="IPython.testing.iptest.IPTester.__init__">
+<tt class="descname">__init__</tt><big>(</big><em>runner='iptest'</em>, <em>params=None</em><big>)</big><a class="headerlink" href="#IPython.testing.iptest.IPTester.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create new test runner.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.testing.iptest.IPTester.call_args">
+<tt class="descname">call_args</tt><em class="property"> = None</em><a class="headerlink" href="#IPython.testing.iptest.IPTester.call_args" title="Permalink to this definition">¶</a></dt>
+<dd><p>list, arguments of system call to be made to call test runner</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.testing.iptest.IPTester.params">
+<tt class="descname">params</tt><em class="property"> = None</em><a class="headerlink" href="#IPython.testing.iptest.IPTester.params" title="Permalink to this definition">¶</a></dt>
+<dd><p>list, parameters for test runner</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.testing.iptest.IPTester.pids">
+<tt class="descname">pids</tt><em class="property"> = None</em><a class="headerlink" href="#IPython.testing.iptest.IPTester.pids" title="Permalink to this definition">¶</a></dt>
+<dd><p>list, process ids of subprocesses we start (for cleanup)</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.testing.iptest.IPTester.run">
+<tt class="descname">run</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.testing.iptest.IPTester.run" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run the stored commands</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.testing.iptest.IPTester.runner">
+<tt class="descname">runner</tt><em class="property"> = None</em><a class="headerlink" href="#IPython.testing.iptest.IPTester.runner" title="Permalink to this definition">¶</a></dt>
+<dd><p>string, name of test runner that will be called</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="IPython.testing.iptest.main">
+<tt class="descclassname">IPython.testing.iptest.</tt><tt class="descname">main</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.testing.iptest.main" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="IPython.testing.iptest.make_exclude">
+<tt class="descclassname">IPython.testing.iptest.</tt><tt class="descname">make_exclude</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.testing.iptest.make_exclude" title="Permalink to this definition">¶</a></dt>
+<dd><p>Make patterns of modules and packages to exclude from testing.</p>
+<p>For the IPythonDoctest plugin, we need to exclude certain patterns that
+cause testing problems.  We should strive to minimize the number of
+skipped modules, since this means untested code.</p>
+<p>These modules and packages will NOT get scanned by nose at all for tests.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="IPython.testing.iptest.make_runners">
+<tt class="descclassname">IPython.testing.iptest.</tt><tt class="descname">make_runners</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.testing.iptest.make_runners" title="Permalink to this definition">¶</a></dt>
+<dd><p>Define the top-level packages that need to be tested.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="IPython.testing.iptest.report">
+<tt class="descclassname">IPython.testing.iptest.</tt><tt class="descname">report</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.testing.iptest.report" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a string with a summary report of test-related variables.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="IPython.testing.iptest.run_iptest">
+<tt class="descclassname">IPython.testing.iptest.</tt><tt class="descname">run_iptest</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.testing.iptest.run_iptest" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run the IPython test suite using nose.</p>
+<p>This function is called when this script is <strong>not</strong> called with the form
+<cite>iptest all</cite>.  It simply calls nose with appropriate command line flags
+and accepts all of the standard nose arguments.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="IPython.testing.iptest.run_iptestall">
+<tt class="descclassname">IPython.testing.iptest.</tt><tt class="descname">run_iptestall</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.testing.iptest.run_iptestall" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run the entire IPython test suite by calling nose and trial.</p>
+<p>This function constructs <a class="reference internal" href="#IPython.testing.iptest.IPTester" title="IPython.testing.iptest.IPTester"><tt class="xref py py-class docutils literal"><span class="pre">IPTester</span></tt></a> instances for all IPython
+modules and package and then runs each of them.  This causes the modules
+and packages of IPython to be tested each in their own subprocess using
+nose or twisted.trial appropriately.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="IPython.testing.iptest.test_for">
+<tt class="descclassname">IPython.testing.iptest.</tt><tt class="descname">test_for</tt><big>(</big><em>mod</em>, <em>min_version=None</em><big>)</big><a class="headerlink" href="#IPython.testing.iptest.test_for" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test to see if mod is importable.</p>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="IPython.testing.ipunittest.html" title="testing.ipunittest"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="IPython.testing.globalipapp.html" title="testing.globalipapp"
+             >previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <li><a href="../../search.html">search</a>|&nbsp;</li>
+       <li><a href="../../index.html">documentation </a> &raquo;</li>
+
+          <li><a href="../index.html" >The IPython API</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2008, The IPython Development Team.
+      Last updated on Jul 31, 2011.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1pre.
+    </div>
+  </body>
+</html>

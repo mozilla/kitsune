@@ -1,0 +1,586 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>core.completer &mdash; IPython 0.11 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.11',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="IPython 0.11 documentation" href="../../index.html" />
+    <link rel="up" title="The IPython API" href="../index.html" />
+    <link rel="next" title="core.completerlib" href="IPython.core.completerlib.html" />
+    <link rel="prev" title="core.compilerop" href="IPython.core.compilerop.html" /> 
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<a href="../../index.html"><img src="../../_static/logo.png" border="0" alt="IPython Documentation"/></a>
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="IPython.core.completerlib.html" title="core.completerlib"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="IPython.core.compilerop.html" title="core.compilerop"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <li><a href="../../search.html">search</a>|&nbsp;</li>
+       <li><a href="../../index.html">documentation </a> &raquo;</li>
+
+          <li><a href="../index.html" accesskey="U">The IPython API</a> &raquo;</li> 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">core.completer</a><ul>
+<li><a class="reference internal" href="#module-core-completer">Module: <tt class="docutils literal"><span class="pre">core.completer</span></tt></a></li>
+<li><a class="reference internal" href="#classes">Classes</a><ul>
+<li><a class="reference internal" href="#bunch"><tt class="docutils literal"><span class="pre">Bunch</span></tt></a></li>
+<li><a class="reference internal" href="#completer"><tt class="docutils literal"><span class="pre">Completer</span></tt></a></li>
+<li><a class="reference internal" href="#completionsplitter"><tt class="docutils literal"><span class="pre">CompletionSplitter</span></tt></a></li>
+<li><a class="reference internal" href="#ipcompleter"><tt class="docutils literal"><span class="pre">IPCompleter</span></tt></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#functions">Functions</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="IPython.core.compilerop.html"
+                        title="previous chapter">core.compilerop</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="IPython.core.completerlib.html"
+                        title="next chapter">core.completerlib</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/api/generated/IPython.core.completer.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="core-completer">
+<h1>core.completer<a class="headerlink" href="#core-completer" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-core-completer">
+<h2>Module: <tt class="xref py py-mod docutils literal"><span class="pre">core.completer</span></tt><a class="headerlink" href="#module-core-completer" title="Permalink to this headline">¶</a></h2>
+<p>Inheritance diagram for <tt class="docutils literal"><span class="pre">IPython.core.completer</span></tt>:</p>
+<img src="../../_images/inheritancef88400e0cb.png" usemap="#inheritancef88400e0cb" class="inheritance"/><map id="inheritancef88400e0cb" name="inheritancef88400e0cb">
+</map>
+<span class="target" id="module-IPython.core.completer"></span><p>Word completion for IPython.</p>
+<p>This module is a fork of the rlcompleter module in the Python standard
+library.  The original enhancements made to rlcompleter have been sent
+upstream and were accepted as of Python 2.3, but we need a lot more
+functionality specific to IPython, so this module will continue to live as an
+IPython-specific utility.</p>
+<p>Original rlcompleter documentation:</p>
+<p>This requires the latest extension to the readline module (the
+completes keywords, built-ins and globals in __main__; when completing
+NAME.NAME..., it evaluates (!) the expression up to the last dot and
+completes its attributes.</p>
+<p>It&#8217;s very cool to do &#8220;import string&#8221; type &#8220;string.&#8221;, hit the
+completion key (twice), and see the list of names defined by the
+string module!</p>
+<p>Tip: to use the tab key as the completion key, call</p>
+<blockquote>
+<div>readline.parse_and_bind(&#8220;tab: complete&#8221;)</div></blockquote>
+<p>Notes:</p>
+<ul class="simple">
+<li>Exceptions raised by the completer function are <em>ignored</em> (and</li>
+</ul>
+<p>generally cause the completion to fail).  This is a feature &#8211; since
+readline sets the tty device in raw (or cbreak) mode, printing a
+traceback wouldn&#8217;t work well without some complicated hoopla to save,
+reset and restore the tty state.</p>
+<ul class="simple">
+<li>The evaluation of the NAME.NAME... form may cause arbitrary</li>
+</ul>
+<p>application defined code to be executed if an object with a
+__getattr__ hook is found.  Since it is the responsibility of the
+application (or the user) to enable this feature, I consider this an
+acceptable risk.  More complicated expressions (e.g. function calls or
+indexing operations) are <em>not</em> evaluated.</p>
+<ul class="simple">
+<li>GNU readline is also used by the built-in functions input() and</li>
+</ul>
+<p>raw_input(), and thus these also benefit/suffer from the completer
+features.  Clearly an interactive application can benefit by
+specifying its own completer function and using raw_input() for all
+its input.</p>
+<ul class="simple">
+<li>When the original stdin is not a tty device, GNU readline is never</li>
+</ul>
+<p>used, and this module (and the readline module) are silently inactive.</p>
+</div>
+<div class="section" id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="bunch">
+<h3><a class="reference internal" href="#IPython.core.completer.Bunch" title="IPython.core.completer.Bunch"><tt class="xref py py-class docutils literal"><span class="pre">Bunch</span></tt></a><a class="headerlink" href="#bunch" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="IPython.core.completer.Bunch">
+<em class="property">class </em><tt class="descclassname">IPython.core.completer.</tt><tt class="descname">Bunch</tt><a class="headerlink" href="#IPython.core.completer.Bunch" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></p>
+<dl class="method">
+<dt id="IPython.core.completer.Bunch.__init__">
+<tt class="descname">__init__</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.core.completer.Bunch.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>x.__init__(...) initializes x; see x.__class__.__doc__ for signature</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="completer">
+<h3><a class="reference internal" href="#IPython.core.completer.Completer" title="IPython.core.completer.Completer"><tt class="xref py py-class docutils literal"><span class="pre">Completer</span></tt></a><a class="headerlink" href="#completer" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="IPython.core.completer.Completer">
+<em class="property">class </em><tt class="descclassname">IPython.core.completer.</tt><tt class="descname">Completer</tt><big>(</big><em>namespace=None</em>, <em>global_namespace=None</em><big>)</big><a class="headerlink" href="#IPython.core.completer.Completer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></p>
+<dl class="method">
+<dt id="IPython.core.completer.Completer.__init__">
+<tt class="descname">__init__</tt><big>(</big><em>namespace=None</em>, <em>global_namespace=None</em><big>)</big><a class="headerlink" href="#IPython.core.completer.Completer.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a new completer for the command line.</p>
+<p>Completer([namespace,global_namespace]) -&gt; completer instance.</p>
+<p>If unspecified, the default namespace where completions are performed
+is __main__ (technically, __main__.__dict__). Namespaces should be
+given as dictionaries.</p>
+<p>An optional second namespace can be given.  This allows the completer
+to handle cases where both the local and global scopes need to be
+distinguished.</p>
+<p>Completer instances should be used as the completion mechanism of
+readline via the set_completer() call:</p>
+<p>readline.set_completer(Completer(my_namespace).complete)</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.core.completer.Completer.attr_matches">
+<tt class="descname">attr_matches</tt><big>(</big><em>text</em><big>)</big><a class="headerlink" href="#IPython.core.completer.Completer.attr_matches" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute matches when text contains a dot.</p>
+<p>Assuming the text is of the form NAME.NAME....[NAME], and is
+evaluatable in self.namespace or self.global_namespace, it will be
+evaluated and its attributes (as revealed by dir()) are used as
+possible completions.  (For class instances, class members are are
+also considered.)</p>
+<p>WARNING: this can still invoke arbitrary C code, if an object
+with a __getattr__ hook is evaluated.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.core.completer.Completer.complete">
+<tt class="descname">complete</tt><big>(</big><em>text</em>, <em>state</em><big>)</big><a class="headerlink" href="#IPython.core.completer.Completer.complete" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the next possible completion for &#8216;text&#8217;.</p>
+<p>This is called successively with state == 0, 1, 2, ... until it
+returns None.  The completion should begin with &#8216;text&#8217;.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.core.completer.Completer.global_matches">
+<tt class="descname">global_matches</tt><big>(</big><em>text</em><big>)</big><a class="headerlink" href="#IPython.core.completer.Completer.global_matches" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute matches when text is a simple name.</p>
+<p>Return a list of all keywords, built-in functions and names currently
+defined in self.namespace or self.global_namespace that match.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="completionsplitter">
+<h3><a class="reference internal" href="#IPython.core.completer.CompletionSplitter" title="IPython.core.completer.CompletionSplitter"><tt class="xref py py-class docutils literal"><span class="pre">CompletionSplitter</span></tt></a><a class="headerlink" href="#completionsplitter" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="IPython.core.completer.CompletionSplitter">
+<em class="property">class </em><tt class="descclassname">IPython.core.completer.</tt><tt class="descname">CompletionSplitter</tt><big>(</big><em>delims=None</em><big>)</big><a class="headerlink" href="#IPython.core.completer.CompletionSplitter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></p>
+<p>An object to split an input line in a manner similar to readline.</p>
+<p>By having our own implementation, we can expose readline-like completion in
+a uniform manner to all frontends.  This object only needs to be given the
+line of text to be split and the cursor position on said line, and it
+returns the &#8216;word&#8217; to be completed on at the cursor after splitting the
+entire line.</p>
+<p>What characters are used as splitting delimiters can be controlled by
+setting the <cite>delims</cite> attribute (this is a property that internally
+automatically builds the necessary</p>
+<dl class="method">
+<dt id="IPython.core.completer.CompletionSplitter.__init__">
+<tt class="descname">__init__</tt><big>(</big><em>delims=None</em><big>)</big><a class="headerlink" href="#IPython.core.completer.CompletionSplitter.__init__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IPython.core.completer.CompletionSplitter.get_delims">
+<tt class="descname">get_delims</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.core.completer.CompletionSplitter.get_delims" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the string of delimiter characters.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.core.completer.CompletionSplitter.set_delims">
+<tt class="descname">set_delims</tt><big>(</big><em>delims</em><big>)</big><a class="headerlink" href="#IPython.core.completer.CompletionSplitter.set_delims" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the delimiters for line splitting.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.core.completer.CompletionSplitter.split_line">
+<tt class="descname">split_line</tt><big>(</big><em>line</em>, <em>cursor_pos=None</em><big>)</big><a class="headerlink" href="#IPython.core.completer.CompletionSplitter.split_line" title="Permalink to this definition">¶</a></dt>
+<dd><p>Split a line of text with a cursor at the given position.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="ipcompleter">
+<h3><a class="reference internal" href="#IPython.core.completer.IPCompleter" title="IPython.core.completer.IPCompleter"><tt class="xref py py-class docutils literal"><span class="pre">IPCompleter</span></tt></a><a class="headerlink" href="#ipcompleter" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="IPython.core.completer.IPCompleter">
+<em class="property">class </em><tt class="descclassname">IPython.core.completer.</tt><tt class="descname">IPCompleter</tt><big>(</big><em>shell</em>, <em>namespace=None</em>, <em>global_namespace=None</em>, <em>omit__names=True</em>, <em>alias_table=None</em>, <em>use_readline=True</em><big>)</big><a class="headerlink" href="#IPython.core.completer.IPCompleter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#IPython.core.completer.Completer" title="IPython.core.completer.Completer"><tt class="xref py py-class docutils literal"><span class="pre">IPython.core.completer.Completer</span></tt></a></p>
+<p>Extension of the completer class with IPython-specific features</p>
+<dl class="method">
+<dt id="IPython.core.completer.IPCompleter.__init__">
+<tt class="descname">__init__</tt><big>(</big><em>shell</em>, <em>namespace=None</em>, <em>global_namespace=None</em>, <em>omit__names=True</em>, <em>alias_table=None</em>, <em>use_readline=True</em><big>)</big><a class="headerlink" href="#IPython.core.completer.IPCompleter.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>IPCompleter() -&gt; completer</p>
+<p>Return a completer object suitable for use by the readline library
+via readline.set_completer().</p>
+<p>Inputs:</p>
+<ul class="simple">
+<li>shell: a pointer to the ipython shell itself.  This is needed</li>
+</ul>
+<p>because this completer knows about magic functions, and those can
+only be accessed via the ipython instance.</p>
+<ul class="simple">
+<li>namespace: an optional dict where completions are performed.</li>
+<li>global_namespace: secondary optional dict for completions, to</li>
+</ul>
+<p>handle cases (such as IPython embedded inside functions) where
+both Python scopes are visible.</p>
+<ul class="simple">
+<li>The optional omit__names parameter sets the completer to omit the</li>
+</ul>
+<p>&#8216;magic&#8217; names (__magicname__) for python objects unless the text
+to be completed explicitly starts with one or more underscores.</p>
+<ul class="simple">
+<li>If alias_table is supplied, it should be a dictionary of aliases</li>
+</ul>
+<p>to complete.</p>
+<dl class="docutils">
+<dt>use_readline <span class="classifier-delimiter">:</span> <span class="classifier">bool, optional</span></dt>
+<dd>If true, use the readline library.  This completer can still function
+without readline, though in that case callers must provide some extra
+information on each call about the current line.</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.core.completer.IPCompleter.alias_matches">
+<tt class="descname">alias_matches</tt><big>(</big><em>text</em><big>)</big><a class="headerlink" href="#IPython.core.completer.IPCompleter.alias_matches" title="Permalink to this definition">¶</a></dt>
+<dd><p>Match internal system aliases</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.core.completer.IPCompleter.all_completions">
+<tt class="descname">all_completions</tt><big>(</big><em>text</em><big>)</big><a class="headerlink" href="#IPython.core.completer.IPCompleter.all_completions" title="Permalink to this definition">¶</a></dt>
+<dd><p>Wrapper around the complete method for the benefit of emacs
+and pydb.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.core.completer.IPCompleter.attr_matches">
+<tt class="descname">attr_matches</tt><big>(</big><em>text</em><big>)</big><a class="headerlink" href="#IPython.core.completer.IPCompleter.attr_matches" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute matches when text contains a dot.</p>
+<p>Assuming the text is of the form NAME.NAME....[NAME], and is
+evaluatable in self.namespace or self.global_namespace, it will be
+evaluated and its attributes (as revealed by dir()) are used as
+possible completions.  (For class instances, class members are are
+also considered.)</p>
+<p>WARNING: this can still invoke arbitrary C code, if an object
+with a __getattr__ hook is evaluated.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.core.completer.IPCompleter.complete">
+<tt class="descname">complete</tt><big>(</big><em>text=None</em>, <em>line_buffer=None</em>, <em>cursor_pos=None</em><big>)</big><a class="headerlink" href="#IPython.core.completer.IPCompleter.complete" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find completions for the given text and line context.</p>
+<p>This is called successively with state == 0, 1, 2, ... until it
+returns None.  The completion should begin with &#8216;text&#8217;.</p>
+<p>Note that both the text and the line_buffer are optional, but at least
+one of them must be given.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>text</strong> : string, optional</p>
+<blockquote>
+<div><blockquote>
+<div><p>Text to perform the completion on.  If not given, the line buffer
+is split using the instance&#8217;s CompletionSplitter object.</p>
+</div></blockquote>
+<dl class="docutils">
+<dt>line_buffer <span class="classifier-delimiter">:</span> <span class="classifier">string, optional</span></dt>
+<dd><p class="first last">If not given, the completer attempts to obtain the current line
+buffer via readline.  This keyword allows clients which are
+requesting for text completions in non-readline contexts to inform
+the completer of the entire text.</p>
+</dd>
+<dt>cursor_pos <span class="classifier-delimiter">:</span> <span class="classifier">int, optional</span></dt>
+<dd><p class="first last">Index of the cursor in the full line buffer.  Should be provided by
+remote frontends where kernel has no access to frontend state.</p>
+</dd>
+</dl>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns :</th><td class="field-body"><p class="first"><strong>text</strong> : str</p>
+<blockquote>
+<div><p>Text that was actually used in the completion.</p>
+</div></blockquote>
+<p><strong>matches</strong> : list</p>
+<blockquote class="last">
+<div><p>A list of completion matches.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.core.completer.IPCompleter.dispatch_custom_completer">
+<tt class="descname">dispatch_custom_completer</tt><big>(</big><em>text</em><big>)</big><a class="headerlink" href="#IPython.core.completer.IPCompleter.dispatch_custom_completer" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IPython.core.completer.IPCompleter.file_matches">
+<tt class="descname">file_matches</tt><big>(</big><em>text</em><big>)</big><a class="headerlink" href="#IPython.core.completer.IPCompleter.file_matches" title="Permalink to this definition">¶</a></dt>
+<dd><p>Match filenames, expanding ~USER type strings.</p>
+<p>Most of the seemingly convoluted logic in this completer is an
+attempt to handle filenames with spaces in them.  And yet it&#8217;s not
+quite perfect, because Python&#8217;s readline doesn&#8217;t expose all of the
+GNU readline details needed for this to be done correctly.</p>
+<p>For a filename with a space in it, the printed completions will be
+only the parts after what&#8217;s already been typed (instead of the
+full completions, as is normally done).  I don&#8217;t think with the
+current (as of Python 2.3) Python readline it&#8217;s possible to do
+better.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.core.completer.IPCompleter.global_matches">
+<tt class="descname">global_matches</tt><big>(</big><em>text</em><big>)</big><a class="headerlink" href="#IPython.core.completer.IPCompleter.global_matches" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute matches when text is a simple name.</p>
+<p>Return a list of all keywords, built-in functions and names currently
+defined in self.namespace or self.global_namespace that match.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.core.completer.IPCompleter.magic_matches">
+<tt class="descname">magic_matches</tt><big>(</big><em>text</em><big>)</big><a class="headerlink" href="#IPython.core.completer.IPCompleter.magic_matches" title="Permalink to this definition">¶</a></dt>
+<dd><p>Match magics</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.core.completer.IPCompleter.python_func_kw_matches">
+<tt class="descname">python_func_kw_matches</tt><big>(</big><em>text</em><big>)</big><a class="headerlink" href="#IPython.core.completer.IPCompleter.python_func_kw_matches" title="Permalink to this definition">¶</a></dt>
+<dd><p>Match named parameters (kwargs) of the last open function</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.core.completer.IPCompleter.python_matches">
+<tt class="descname">python_matches</tt><big>(</big><em>text</em><big>)</big><a class="headerlink" href="#IPython.core.completer.IPCompleter.python_matches" title="Permalink to this definition">¶</a></dt>
+<dd><p>Match attributes or global python names</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.core.completer.IPCompleter.rlcomplete">
+<tt class="descname">rlcomplete</tt><big>(</big><em>text</em>, <em>state</em><big>)</big><a class="headerlink" href="#IPython.core.completer.IPCompleter.rlcomplete" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the state-th possible completion for &#8216;text&#8217;.</p>
+<p>This is called successively with state == 0, 1, 2, ... until it
+returns None.  The completion should begin with &#8216;text&#8217;.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>text</strong> : string</p>
+<blockquote class="last">
+<div><blockquote>
+<div><p>Text to perform the completion on.</p>
+</div></blockquote>
+<dl class="docutils">
+<dt>state <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd><p class="first last">Counter used by readline.</p>
+</dd>
+</dl>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="IPython.core.completer.compress_user">
+<tt class="descclassname">IPython.core.completer.</tt><tt class="descname">compress_user</tt><big>(</big><em>path</em>, <em>tilde_expand</em>, <em>tilde_val</em><big>)</big><a class="headerlink" href="#IPython.core.completer.compress_user" title="Permalink to this definition">¶</a></dt>
+<dd><p>Does the opposite of expand_user, with its outputs.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="IPython.core.completer.expand_user">
+<tt class="descclassname">IPython.core.completer.</tt><tt class="descname">expand_user</tt><big>(</big><em>path</em><big>)</big><a class="headerlink" href="#IPython.core.completer.expand_user" title="Permalink to this definition">¶</a></dt>
+<dd><p>Expand &#8216;~&#8217;-style usernames in strings.</p>
+<p>This is similar to <tt class="xref py py-func docutils literal"><span class="pre">os.path.expanduser()</span></tt>, but it computes and returns
+extra information that will be useful if the input was being used in
+computing completions, and you wish to return the completions with the
+original &#8216;~&#8217; instead of its expanded value.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>path</strong> : str</p>
+<blockquote>
+<div><p>String to be expanded.  If no ~ is present, the output is the same as the
+input.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns :</th><td class="field-body"><p class="first"><strong>newpath</strong> : str</p>
+<blockquote>
+<div><p>Result of ~ expansion in the input path.</p>
+</div></blockquote>
+<p><strong>tilde_expand</strong> : bool</p>
+<blockquote>
+<div><p>Whether any expansion was performed or not.</p>
+</div></blockquote>
+<p><strong>tilde_val</strong> : str</p>
+<blockquote class="last">
+<div><p>The value that ~ was replaced with.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="IPython.core.completer.has_open_quotes">
+<tt class="descclassname">IPython.core.completer.</tt><tt class="descname">has_open_quotes</tt><big>(</big><em>s</em><big>)</big><a class="headerlink" href="#IPython.core.completer.has_open_quotes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return whether a string has open quotes.</p>
+<p>This simply counts whether the number of quote characters of either type in
+the string is odd.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns :</th><td class="field-body"><p class="first"><strong>If there is an open quote, the quote character is returned.  Else, return</strong> :</p>
+<p class="last"><strong>False.</strong> :</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="IPython.core.completer.mark_dirs">
+<tt class="descclassname">IPython.core.completer.</tt><tt class="descname">mark_dirs</tt><big>(</big><em>matches</em><big>)</big><a class="headerlink" href="#IPython.core.completer.mark_dirs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Mark directories in input list by appending &#8216;/&#8217; to their names.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="IPython.core.completer.protect_filename">
+<tt class="descclassname">IPython.core.completer.</tt><tt class="descname">protect_filename</tt><big>(</big><em>s</em><big>)</big><a class="headerlink" href="#IPython.core.completer.protect_filename" title="Permalink to this definition">¶</a></dt>
+<dd><p>Escape a string to protect certain characters.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="IPython.core.completer.single_dir_expand">
+<tt class="descclassname">IPython.core.completer.</tt><tt class="descname">single_dir_expand</tt><big>(</big><em>matches</em><big>)</big><a class="headerlink" href="#IPython.core.completer.single_dir_expand" title="Permalink to this definition">¶</a></dt>
+<dd><p>Recursively expand match lists containing a single dir.</p>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="IPython.core.completerlib.html" title="core.completerlib"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="IPython.core.compilerop.html" title="core.compilerop"
+             >previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <li><a href="../../search.html">search</a>|&nbsp;</li>
+       <li><a href="../../index.html">documentation </a> &raquo;</li>
+
+          <li><a href="../index.html" >The IPython API</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2008, The IPython Development Team.
+      Last updated on Jul 31, 2011.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1pre.
+    </div>
+  </body>
+</html>

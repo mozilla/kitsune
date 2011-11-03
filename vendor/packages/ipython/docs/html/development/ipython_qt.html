@@ -1,0 +1,245 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>IPython Qt interface &mdash; IPython 0.11 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.11',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="IPython 0.11 documentation" href="../index.html" />
+    <link rel="up" title="IPython developer’s guide" href="index.html" />
+    <link rel="next" title="Porting IPython to a two process model using zeromq" href="ipythonzmq.html" />
+    <link rel="prev" title="Notes on code execution in InteractiveShell" href="ipgraph.html" /> 
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<a href="../index.html"><img src="../_static/logo.png" border="0" alt="IPython Documentation"/></a>
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="ipythonzmq.html" title="Porting IPython to a two process model using zeromq"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="ipgraph.html" title="Notes on code execution in InteractiveShell"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">home</a>|&nbsp;</li>
+        <li><a href="../search.html">search</a>|&nbsp;</li>
+       <li><a href="../index.html">documentation </a> &raquo;</li>
+
+          <li><a href="index.html" accesskey="U">IPython developer&#8217;s guide</a> &raquo;</li> 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">IPython Qt interface</a><ul>
+<li><a class="reference internal" href="#abstract">Abstract</a></li>
+<li><a class="reference internal" href="#project-details">Project details</a><ul>
+<li><a class="reference internal" href="#process-model-pyzmq-base">2-process model pyzmq base</a></li>
+<li><a class="reference internal" href="#qt-based-gui">Qt based GUI</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#possible-future-directions">POSSIBLE FUTURE DIRECTIONS</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="ipgraph.html"
+                        title="previous chapter">Notes on code execution in <tt class="docutils literal docutils literal"><span class="pre">InteractiveShell</span></tt></a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="ipythonzmq.html"
+                        title="next chapter">Porting IPython to a two process model using zeromq</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/development/ipython_qt.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="ipython-qt-interface">
+<span id="ipython-qt"></span><h1>IPython Qt interface<a class="headerlink" href="#ipython-qt-interface" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="abstract">
+<h2>Abstract<a class="headerlink" href="#abstract" title="Permalink to this headline">¶</a></h2>
+<p>This is about the implementation of a Qt-based Graphical User Interface (GUI)
+to execute Python code with an interpreter that runs in a separate process and
+the two systems (GUI frontend and interpreter kernel) communicating via the
+ZeroMQ Messaging library.  The bulk of the implementation will be done without
+dependencies on IPython (only on Zmq). Once the key features are ready,
+IPython-specific features can be added using the IPython codebase.</p>
+</div>
+<div class="section" id="project-details">
+<h2>Project details<a class="headerlink" href="#project-details" title="Permalink to this headline">¶</a></h2>
+<p>For a long time there has been demand for a graphical user interface for
+IPython, and the project already ships Wx-based prototypes thereof.  But these
+run all code in a single process, making them extremely brittle, as a crash of
+the Python interpreter kills the entire user session.  Here I propose to build
+a Qt-based GUI that will communicate with a separate process for the code
+execution, so that if the interpreter kernel dies, the frontend can continue to
+function after restarting a new kernel (and offering the user the option to
+re-execute all inputs, which the frontend can know).</p>
+<p>This GUI will allow for the easy editing of multi-line input and the convenient
+re-editing of previous blocks of input, which can be displayed in a 2-d
+workspace instead of a line-driven one like today&#8217;s IPython. This makes it much
+easier to incrementally build and tune a code, by combining the rapid feedback
+cycle of IPython with the ability to edit multiline code with good graphical
+support.</p>
+<div class="section" id="process-model-pyzmq-base">
+<h3>2-process model pyzmq base<a class="headerlink" href="#process-model-pyzmq-base" title="Permalink to this headline">¶</a></h3>
+<p>Since the necessity of a user to keep his data safe, the design is based in a
+2-process model that will be achieved with a simple client/server system with
+<a class="reference external" href="http://www.zeromq.org/bindings:python">pyzmq</a>, so the GUI session do not
+crash if the the kernel process does. This will be achieved using this test
+<a class="reference external" href="http://github.com/fperez/pyzmq/blob/completer/examples/kernel/kernel.py">code</a> and
+customizing it to the necessities of the GUI such as queue management with
+discrimination for different frontends connected to the same kernel and tab
+completion. A piece of drafted code for the kernel (server) should look like
+this:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+    <span class="n">c</span> <span class="o">=</span> <span class="n">zmq</span><span class="o">.</span><span class="n">Context</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">rep_conn</span> <span class="o">=</span> <span class="n">connection</span> <span class="o">%</span> <span class="n">port_base</span>
+    <span class="n">pub_conn</span> <span class="o">=</span> <span class="n">connection</span> <span class="o">%</span> <span class="p">(</span><span class="n">port_base</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">print</span> <span class="o">&gt;&gt;</span><span class="n">sys</span><span class="o">.</span><span class="n">__stdout__</span><span class="p">,</span> <span class="s">&quot;Starting the kernel...&quot;</span>
+    <span class="k">print</span> <span class="o">&gt;&gt;</span><span class="n">sys</span><span class="o">.</span><span class="n">__stdout__</span><span class="p">,</span> <span class="s">&quot;On:&quot;</span><span class="p">,</span><span class="n">rep_conn</span><span class="p">,</span> <span class="n">pub_conn</span>
+    <span class="n">session</span> <span class="o">=</span> <span class="n">Session</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="s">u&#39;kernel&#39;</span><span class="p">)</span>
+    <span class="n">reply_socket</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">socket</span><span class="p">(</span><span class="n">zmq</span><span class="o">.</span><span class="n">XREP</span><span class="p">)</span>
+    <span class="n">reply_socket</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span><span class="n">rep_conn</span><span class="p">)</span>
+    <span class="n">pub_socket</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">socket</span><span class="p">(</span><span class="n">zmq</span><span class="o">.</span><span class="n">PUB</span><span class="p">)</span>
+    <span class="n">pub_socket</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span><span class="n">pub_conn</span><span class="p">)</span>
+    <span class="n">stdout</span> <span class="o">=</span> <span class="n">OutStream</span><span class="p">(</span><span class="n">session</span><span class="p">,</span> <span class="n">pub_socket</span><span class="p">,</span> <span class="s">u&#39;stdout&#39;</span><span class="p">)</span>
+    <span class="n">stderr</span> <span class="o">=</span> <span class="n">OutStream</span><span class="p">(</span><span class="n">session</span><span class="p">,</span> <span class="n">pub_socket</span><span class="p">,</span> <span class="s">u&#39;stderr&#39;</span><span class="p">)</span>
+    <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span> <span class="o">=</span> <span class="n">stdout</span>
+    <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span> <span class="o">=</span> <span class="n">stderr</span>
+    <span class="n">display_hook</span> <span class="o">=</span> <span class="n">DisplayHook</span><span class="p">(</span><span class="n">session</span><span class="p">,</span> <span class="n">pub_socket</span><span class="p">)</span>
+    <span class="n">sys</span><span class="o">.</span><span class="n">displayhook</span> <span class="o">=</span> <span class="n">display_hook</span>
+    <span class="n">kernel</span> <span class="o">=</span> <span class="n">Kernel</span><span class="p">(</span><span class="n">session</span><span class="p">,</span> <span class="n">reply_socket</span><span class="p">,</span> <span class="n">pub_socket</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>This kernel will use two queues (output and input), the input queue will have
+the id of the process(frontend) making the request, type(execute, complete,
+help, etc) and id of the request itself and the string of code to be executed,
+the output queue will have basically the same information just that the string
+is the to be displayed. This model is because the kernel needs to maintain
+control of timeouts when multiple requests are sent and keep them indexed.</p>
+</div>
+<div class="section" id="qt-based-gui">
+<h3>Qt based GUI<a class="headerlink" href="#qt-based-gui" title="Permalink to this headline">¶</a></h3>
+<p>Design of the interface is going to be based in cells of code executed on the
+previous defined kernel. It will also have GUI facilities such toolboxes,
+tooltips to autocomplete code and function summary, highlighting and
+autoindentation.  It will have the cell kind of multiline edition mode so each
+block of code can be edited and executed independently, this can be achieved
+queuing QTextEdit objects (the cell) giving them format so we can discriminate
+outputs from inputs.  One of the main characteristics will be the debug support
+that will show the requested outputs as the debugger (that will be on a popup
+widget) &#8220;walks&#8221; through the code, this design is to be reviewed with the
+mentor.  <a class="reference external" href="http://gfif.udea.edu.co/IPythonQt_snapshot.png">This</a> is a
+tentative view of the main window.</p>
+<p>The GUI will check continuously the output queue from the kernel for new
+information to handle. This information have to be handled with care since any
+output will come at anytime and possibly in a different order than requested or
+maybe not appear at all, this could be possible due to a variety of reasons(for
+example tab completion request while the kernel is busy processing another
+frontend&#8217;s request). This is, if the kernel is busy it won&#8217;t be possible to
+fulfill the request for a while so the GUI will be prepared to abandon waiting
+for the reply if the user moves on or a certain timeout expires.</p>
+</div>
+</div>
+<div class="section" id="possible-future-directions">
+<h2>POSSIBLE FUTURE DIRECTIONS<a class="headerlink" href="#possible-future-directions" title="Permalink to this headline">¶</a></h2>
+<p>The near future will bring the feature of saving and loading sessions, also
+importing and exporting to different formats like rst, html, pdf and
+python/ipython code, a discussion about this is taking place in the ipython-dev
+mailing list. Also the interaction with a remote kernel and distributed
+computation which is an IPython&#8217;s project already in development.</p>
+<p>The idea of a mathematica-like help widget (i.e. there will be parts of it that
+will execute as a native session of IPythonQt) is still to be discussed in the
+development mailing list but it&#8217;s definitively a great idea.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="ipythonzmq.html" title="Porting IPython to a two process model using zeromq"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="ipgraph.html" title="Notes on code execution in InteractiveShell"
+             >previous</a> |</li>
+        <li><a href="../index.html">home</a>|&nbsp;</li>
+        <li><a href="../search.html">search</a>|&nbsp;</li>
+       <li><a href="../index.html">documentation </a> &raquo;</li>
+
+          <li><a href="index.html" >IPython developer&#8217;s guide</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2008, The IPython Development Team.
+      Last updated on Jul 31, 2011.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1pre.
+    </div>
+  </body>
+</html>

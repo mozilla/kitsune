@@ -1,0 +1,27 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+core.extensions
+===============
+
+Module: :mod:`core.extensions`
+------------------------------
+Inheritance diagram for ``IPython.core.extensions``:
+
+.. inheritance-diagram:: IPython.core.extensions 
+   :parts: 3
+
+.. automodule:: IPython.core.extensions
+
+.. currentmodule:: IPython.core.extensions
+
+:class:`ExtensionManager`
+-------------------------
+
+
+.. autoclass:: ExtensionManager
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__

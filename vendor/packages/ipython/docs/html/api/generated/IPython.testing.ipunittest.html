@@ -1,0 +1,245 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>testing.ipunittest &mdash; IPython 0.11 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.11',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="IPython 0.11 documentation" href="../../index.html" />
+    <link rel="up" title="The IPython API" href="../index.html" />
+    <link rel="next" title="testing.mkdoctests" href="IPython.testing.mkdoctests.html" />
+    <link rel="prev" title="testing.iptest" href="IPython.testing.iptest.html" /> 
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<a href="../../index.html"><img src="../../_static/logo.png" border="0" alt="IPython Documentation"/></a>
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="IPython.testing.mkdoctests.html" title="testing.mkdoctests"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="IPython.testing.iptest.html" title="testing.iptest"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <li><a href="../../search.html">search</a>|&nbsp;</li>
+       <li><a href="../../index.html">documentation </a> &raquo;</li>
+
+          <li><a href="../index.html" accesskey="U">The IPython API</a> &raquo;</li> 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">testing.ipunittest</a><ul>
+<li><a class="reference internal" href="#module-testing-ipunittest">Module: <tt class="docutils literal"><span class="pre">testing.ipunittest</span></tt></a><ul>
+<li><a class="reference internal" href="#authors">Authors</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#classes">Classes</a><ul>
+<li><a class="reference internal" href="#doc2unittester"><tt class="docutils literal"><span class="pre">Doc2UnitTester</span></tt></a></li>
+<li><a class="reference internal" href="#ipython2pythonconverter"><tt class="docutils literal"><span class="pre">IPython2PythonConverter</span></tt></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#functions">Functions</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="IPython.testing.iptest.html"
+                        title="previous chapter">testing.iptest</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="IPython.testing.mkdoctests.html"
+                        title="next chapter">testing.mkdoctests</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/api/generated/IPython.testing.ipunittest.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="testing-ipunittest">
+<h1>testing.ipunittest<a class="headerlink" href="#testing-ipunittest" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-testing-ipunittest">
+<h2>Module: <tt class="xref py py-mod docutils literal"><span class="pre">testing.ipunittest</span></tt><a class="headerlink" href="#module-testing-ipunittest" title="Permalink to this headline">¶</a></h2>
+<p>Inheritance diagram for <tt class="docutils literal"><span class="pre">IPython.testing.ipunittest</span></tt>:</p>
+<img src="../../_images/inheritance78d3ca4329.png" usemap="#inheritance78d3ca4329" class="inheritance"/><map id="inheritance78d3ca4329" name="inheritance78d3ca4329">
+</map>
+<span class="target" id="module-IPython.testing.ipunittest"></span><p>Experimental code for cleaner support of IPython syntax with unittest.</p>
+<p>In IPython up until 0.10, we&#8217;ve used very hacked up nose machinery for running
+tests with IPython special syntax, and this has proved to be extremely slow.
+This module provides decorators to try a different approach, stemming from a
+conversation Brian and I (FP) had about this problem Sept/09.</p>
+<p>The goal is to be able to easily write simple functions that can be seen by
+unittest as tests, and ultimately for these to support doctests with full
+IPython syntax.  Nose already offers this based on naming conventions and our
+hackish plugins, but we are seeking to move away from nose dependencies if
+possible.</p>
+<p>This module follows a different approach, based on decorators.</p>
+<ul class="simple">
+<li>A decorator called &#64;ipdoctest can mark any function as having a docstring
+that should be viewed as a doctest, but after syntax conversion.</li>
+</ul>
+<div class="section" id="authors">
+<h3>Authors<a class="headerlink" href="#authors" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li>Fernando Perez &lt;<a class="reference external" href="mailto:Fernando&#46;Perez&#37;&#52;&#48;berkeley&#46;edu">Fernando<span>&#46;</span>Perez<span>&#64;</span>berkeley<span>&#46;</span>edu</a>&gt;</li>
+</ul>
+</div>
+</div>
+<div class="section" id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="doc2unittester">
+<h3><a class="reference internal" href="#IPython.testing.ipunittest.Doc2UnitTester" title="IPython.testing.ipunittest.Doc2UnitTester"><tt class="xref py py-class docutils literal"><span class="pre">Doc2UnitTester</span></tt></a><a class="headerlink" href="#doc2unittester" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="IPython.testing.ipunittest.Doc2UnitTester">
+<em class="property">class </em><tt class="descclassname">IPython.testing.ipunittest.</tt><tt class="descname">Doc2UnitTester</tt><big>(</big><em>verbose=False</em><big>)</big><a class="headerlink" href="#IPython.testing.ipunittest.Doc2UnitTester" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></p>
+<p>Class whose instances act as a decorator for docstring testing.</p>
+<p>In practice we&#8217;re only likely to need one instance ever, made below (though
+no attempt is made at turning it into a singleton, there is no need for
+that).</p>
+<dl class="method">
+<dt id="IPython.testing.ipunittest.Doc2UnitTester.__init__">
+<tt class="descname">__init__</tt><big>(</big><em>verbose=False</em><big>)</big><a class="headerlink" href="#IPython.testing.ipunittest.Doc2UnitTester.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>New decorator.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>verbose</strong> : boolean, optional (False)</p>
+<blockquote class="last">
+<div><p>Passed to the doctest finder and runner to control verbosity.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="ipython2pythonconverter">
+<h3><a class="reference internal" href="#IPython.testing.ipunittest.IPython2PythonConverter" title="IPython.testing.ipunittest.IPython2PythonConverter"><tt class="xref py py-class docutils literal"><span class="pre">IPython2PythonConverter</span></tt></a><a class="headerlink" href="#ipython2pythonconverter" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="IPython.testing.ipunittest.IPython2PythonConverter">
+<em class="property">class </em><tt class="descclassname">IPython.testing.ipunittest.</tt><tt class="descname">IPython2PythonConverter</tt><a class="headerlink" href="#IPython.testing.ipunittest.IPython2PythonConverter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></p>
+<p>Convert IPython &#8216;syntax&#8217; to valid Python.</p>
+<p>Eventually this code may grow to be the full IPython syntax conversion
+implementation, but for now it only does prompt convertion.</p>
+<dl class="method">
+<dt id="IPython.testing.ipunittest.IPython2PythonConverter.__init__">
+<tt class="descname">__init__</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.testing.ipunittest.IPython2PythonConverter.__init__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="IPython.testing.ipunittest.count_failures">
+<tt class="descclassname">IPython.testing.ipunittest.</tt><tt class="descname">count_failures</tt><big>(</big><em>runner</em><big>)</big><a class="headerlink" href="#IPython.testing.ipunittest.count_failures" title="Permalink to this definition">¶</a></dt>
+<dd><p>Count number of failures in a doctest runner.</p>
+<p>Code modeled after the summarize() method in doctest.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="IPython.testing.ipunittest.ipdocstring">
+<tt class="descclassname">IPython.testing.ipunittest.</tt><tt class="descname">ipdocstring</tt><big>(</big><em>func</em><big>)</big><a class="headerlink" href="#IPython.testing.ipunittest.ipdocstring" title="Permalink to this definition">¶</a></dt>
+<dd><p>Change the function docstring via ip2py.</p>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="IPython.testing.mkdoctests.html" title="testing.mkdoctests"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="IPython.testing.iptest.html" title="testing.iptest"
+             >previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <li><a href="../../search.html">search</a>|&nbsp;</li>
+       <li><a href="../../index.html">documentation </a> &raquo;</li>
+
+          <li><a href="../index.html" >The IPython API</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2008, The IPython Development Team.
+      Last updated on Jul 31, 2011.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1pre.
+    </div>
+  </body>
+</html>

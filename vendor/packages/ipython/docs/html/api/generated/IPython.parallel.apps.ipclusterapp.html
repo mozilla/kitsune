@@ -1,0 +1,2264 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>parallel.apps.ipclusterapp &mdash; IPython 0.11 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.11',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="IPython 0.11 documentation" href="../../index.html" />
+    <link rel="up" title="The IPython API" href="../index.html" />
+    <link rel="next" title="parallel.apps.ipcontrollerapp" href="IPython.parallel.apps.ipcontrollerapp.html" />
+    <link rel="prev" title="parallel.apps.baseapp" href="IPython.parallel.apps.baseapp.html" /> 
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<a href="../../index.html"><img src="../../_static/logo.png" border="0" alt="IPython Documentation"/></a>
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="IPython.parallel.apps.ipcontrollerapp.html" title="parallel.apps.ipcontrollerapp"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="IPython.parallel.apps.baseapp.html" title="parallel.apps.baseapp"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <li><a href="../../search.html">search</a>|&nbsp;</li>
+       <li><a href="../../index.html">documentation </a> &raquo;</li>
+
+          <li><a href="../index.html" accesskey="U">The IPython API</a> &raquo;</li> 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">parallel.apps.ipclusterapp</a><ul>
+<li><a class="reference internal" href="#module-parallel-apps-ipclusterapp">Module: <tt class="docutils literal"><span class="pre">parallel.apps.ipclusterapp</span></tt></a></li>
+<li><a class="reference internal" href="#classes">Classes</a><ul>
+<li><a class="reference internal" href="#ipclusterapp"><tt class="docutils literal"><span class="pre">IPClusterApp</span></tt></a></li>
+<li><a class="reference internal" href="#ipclusterengines"><tt class="docutils literal"><span class="pre">IPClusterEngines</span></tt></a></li>
+<li><a class="reference internal" href="#ipclusterstart"><tt class="docutils literal"><span class="pre">IPClusterStart</span></tt></a></li>
+<li><a class="reference internal" href="#ipclusterstop"><tt class="docutils literal"><span class="pre">IPClusterStop</span></tt></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#function">Function</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="IPython.parallel.apps.baseapp.html"
+                        title="previous chapter">parallel.apps.baseapp</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="IPython.parallel.apps.ipcontrollerapp.html"
+                        title="next chapter">parallel.apps.ipcontrollerapp</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/api/generated/IPython.parallel.apps.ipclusterapp.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="parallel-apps-ipclusterapp">
+<h1>parallel.apps.ipclusterapp<a class="headerlink" href="#parallel-apps-ipclusterapp" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-parallel-apps-ipclusterapp">
+<h2>Module: <tt class="xref py py-mod docutils literal"><span class="pre">parallel.apps.ipclusterapp</span></tt><a class="headerlink" href="#module-parallel-apps-ipclusterapp" title="Permalink to this headline">¶</a></h2>
+<p>Inheritance diagram for <tt class="docutils literal"><span class="pre">IPython.parallel.apps.ipclusterapp</span></tt>:</p>
+<img src="../../_images/inheritance9be87877fc.png" usemap="#inheritance9be87877fc" class="inheritance"/><map id="inheritance9be87877fc" name="inheritance9be87877fc">
+</map>
+<span class="target" id="module-IPython.parallel.apps.ipclusterapp"></span><p>The ipcluster application.</p>
+<p>Authors:</p>
+<ul class="simple">
+<li>Brian Granger</li>
+<li>MinRK</li>
+</ul>
+</div>
+<div class="section" id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="ipclusterapp">
+<h3><a class="reference internal" href="#IPython.parallel.apps.ipclusterapp.IPClusterApp" title="IPython.parallel.apps.ipclusterapp.IPClusterApp"><tt class="xref py py-class docutils literal"><span class="pre">IPClusterApp</span></tt></a><a class="headerlink" href="#ipclusterapp" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterApp">
+<em class="property">class </em><tt class="descclassname">IPython.parallel.apps.ipclusterapp.</tt><tt class="descname">IPClusterApp</tt><big>(</big><em>**kwargs</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterApp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="IPython.config.application.html#IPython.config.application.Application" title="IPython.config.application.Application"><tt class="xref py py-class docutils literal"><span class="pre">IPython.config.application.Application</span></tt></a></p>
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterApp.__init__">
+<tt class="descname">__init__</tt><big>(</big><em>**kwargs</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterApp.__init__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterApp.aliases">
+<tt class="descname">aliases</tt><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterApp.aliases" title="Permalink to this definition">¶</a></dt>
+<dd><p>An instance of a Python dict.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterApp.class_config_section">
+<em class="property">classmethod </em><tt class="descname">class_config_section</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterApp.class_config_section" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the config class config section</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterApp.class_get_help">
+<em class="property">classmethod </em><tt class="descname">class_get_help</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterApp.class_get_help" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the help string for this class in ReST format.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterApp.class_get_trait_help">
+<em class="property">classmethod </em><tt class="descname">class_get_trait_help</tt><big>(</big><em>trait</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterApp.class_get_trait_help" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the help string for a single trait.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterApp.class_print_help">
+<em class="property">classmethod </em><tt class="descname">class_print_help</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterApp.class_print_help" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the help string for a single trait and print it.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterApp.class_trait_names">
+<em class="property">classmethod </em><tt class="descname">class_trait_names</tt><big>(</big><em>**metadata</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterApp.class_trait_names" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of all the names of this classes traits.</p>
+<p>This method is just like the <a class="reference internal" href="#IPython.parallel.apps.ipclusterapp.IPClusterApp.trait_names" title="IPython.parallel.apps.ipclusterapp.IPClusterApp.trait_names"><tt class="xref py py-meth docutils literal"><span class="pre">trait_names()</span></tt></a> method, but is unbound.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterApp.class_traits">
+<em class="property">classmethod </em><tt class="descname">class_traits</tt><big>(</big><em>**metadata</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterApp.class_traits" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of all the traits of this class.</p>
+<p>This method is just like the <a class="reference internal" href="#IPython.parallel.apps.ipclusterapp.IPClusterApp.traits" title="IPython.parallel.apps.ipclusterapp.IPClusterApp.traits"><tt class="xref py py-meth docutils literal"><span class="pre">traits()</span></tt></a> method, but is unbound.</p>
+<p>The TraitTypes returned don&#8217;t know anything about the values
+that the various HasTrait&#8217;s instances are holding.</p>
+<p>This follows the same algorithm as traits does and does not allow
+for any simple way of specifying merely that a metadata name
+exists, but has any value.  This is because get_metadata returns
+None if a metadata key doesn&#8217;t exist.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterApp.classes">
+<tt class="descname">classes</tt><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterApp.classes" title="Permalink to this definition">¶</a></dt>
+<dd><p>An instance of a Python list.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterApp.clear_instance">
+<em class="property">classmethod </em><tt class="descname">clear_instance</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterApp.clear_instance" title="Permalink to this definition">¶</a></dt>
+<dd><p>unset _instance for this class and singleton parents.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterApp.config">
+<tt class="descname">config</tt><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterApp.config" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait whose value must be an instance of a specified class.</p>
+<p>The value can also be an instance of a subclass of the specified class.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterApp.created">
+<tt class="descname">created</tt><em class="property"> = None</em><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterApp.created" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterApp.description">
+<tt class="descname">description</tt><em class="property"> = &quot;Start an IPython cluster for parallel computing.\n\nAn IPython cluster consists of 1 controller and 1 or more engines.\nThis command automates the startup of these processes using a wide\nrange of startup methods (SSH, local processes, PBS, mpiexec,\nWindows HPC Server 2008). To start a cluster with 4 engines on your\nlocal host simply do 'ipcluster start --n=4'. For more complex usage\nyou will typically do 'ipython profile create mycluster --parallel', then edit\nconfiguration files, followed by 'ipcluster start --profile=mycluster --n=4'.\n&quot;</em><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterApp.description" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterApp.examples">
+<tt class="descname">examples</tt><em class="property"> = '\nipcluster start --n=4 # start a 4 node cluster on localhost\nipcluster start -h    # show the help string for the start subcmd\n\nipcluster stop -h     # show the help string for the stop subcmd\nipcluster engines -h  # show the help string for the engines subcmd\n'</em><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterApp.examples" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterApp.exit">
+<tt class="descname">exit</tt><big>(</big><em>exit_status=0</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterApp.exit" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterApp.extra_args">
+<tt class="descname">extra_args</tt><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterApp.extra_args" title="Permalink to this definition">¶</a></dt>
+<dd><p>An instance of a Python list.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterApp.flags">
+<tt class="descname">flags</tt><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterApp.flags" title="Permalink to this definition">¶</a></dt>
+<dd><p>An instance of a Python dict.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterApp.generate_config_file">
+<tt class="descname">generate_config_file</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterApp.generate_config_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>generate default config file from Configurables</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterApp.init_logging">
+<tt class="descname">init_logging</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterApp.init_logging" title="Permalink to this definition">¶</a></dt>
+<dd><p>Start logging for this application.</p>
+<p>The default is to log to stdout using a StreaHandler. The log level
+starts at loggin.WARN, but this can be adjusted by setting the 
+<tt class="docutils literal"><span class="pre">log_level</span></tt> attribute.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterApp.initialize">
+<tt class="descname">initialize</tt><big>(</big><em>argv=None</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterApp.initialize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Do the basic steps to configure me.</p>
+<p>Override in subclasses.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterApp.initialize_subcommand">
+<tt class="descname">initialize_subcommand</tt><big>(</big><em>subc</em>, <em>argv=None</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterApp.initialize_subcommand" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize a subcommand with argv.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterApp.initialized">
+<em class="property">classmethod </em><tt class="descname">initialized</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterApp.initialized" title="Permalink to this definition">¶</a></dt>
+<dd><p>Has an instance been created?</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterApp.instance">
+<em class="property">classmethod </em><tt class="descname">instance</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterApp.instance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a global instance of this class.</p>
+<p>This method create a new instance if none have previously been created
+and returns a previously created instance is one already exists.</p>
+<p>The arguments and keyword arguments passed to this method are passed
+on to the <a class="reference internal" href="#IPython.parallel.apps.ipclusterapp.IPClusterApp.__init__" title="IPython.parallel.apps.ipclusterapp.IPClusterApp.__init__"><tt class="xref py py-meth docutils literal"><span class="pre">__init__()</span></tt></a> method of the class upon instantiation.</p>
+<p class="rubric">Examples</p>
+<p>Create a singleton class using instance, and retrieve it:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">IPython.config.configurable</span> <span class="kn">import</span> <span class="n">SingletonConfigurable</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">Foo</span><span class="p">(</span><span class="n">SingletonConfigurable</span><span class="p">):</span> <span class="k">pass</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">foo</span> <span class="o">=</span> <span class="n">Foo</span><span class="o">.</span><span class="n">instance</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">foo</span> <span class="o">==</span> <span class="n">Foo</span><span class="o">.</span><span class="n">instance</span><span class="p">()</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<p>Create a subclass that is retrived using the base class instance:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">Bar</span><span class="p">(</span><span class="n">SingletonConfigurable</span><span class="p">):</span> <span class="k">pass</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">Bam</span><span class="p">(</span><span class="n">Bar</span><span class="p">):</span> <span class="k">pass</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">bam</span> <span class="o">=</span> <span class="n">Bam</span><span class="o">.</span><span class="n">instance</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">bam</span> <span class="o">==</span> <span class="n">Bar</span><span class="o">.</span><span class="n">instance</span><span class="p">()</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterApp.keyvalue_description">
+<tt class="descname">keyvalue_description</tt><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterApp.keyvalue_description" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait for unicode strings.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterApp.load_config_file">
+<tt class="descname">load_config_file</tt><big>(</big><em>filename</em>, <em>path=None</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterApp.load_config_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load a .py based config file by filename and path.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterApp.log_level">
+<tt class="descname">log_level</tt><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterApp.log_level" title="Permalink to this definition">¶</a></dt>
+<dd><p>An enum that whose value must be in a given sequence.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterApp.name">
+<tt class="descname">name</tt><em class="property"> = u'ipcluster'</em><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterApp.name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterApp.on_trait_change">
+<tt class="descname">on_trait_change</tt><big>(</big><em>handler</em>, <em>name=None</em>, <em>remove=False</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterApp.on_trait_change" title="Permalink to this definition">¶</a></dt>
+<dd><p>Setup a handler to be called when a trait changes.</p>
+<p>This is used to setup dynamic notifications of trait changes.</p>
+<p>Static handlers can be created by creating methods on a HasTraits
+subclass with the naming convention &#8216;_[traitname]_changed&#8217;.  Thus,
+to create static handler for the trait &#8216;a&#8217;, create the method
+_a_changed(self, name, old, new) (fewer arguments can be used, see
+below).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>handler</strong> : callable</p>
+<blockquote>
+<div><p>A callable that is called when a trait changes.  Its 
+signature can be handler(), handler(name), handler(name, new)
+or handler(name, old, new).</p>
+</div></blockquote>
+<p><strong>name</strong> : list, str, None</p>
+<blockquote>
+<div><p>If None, the handler will apply to all traits.  If a list
+of str, handler will apply to all names in the list.  If a
+str, the handler will apply just to that name.</p>
+</div></blockquote>
+<p><strong>remove</strong> : bool</p>
+<blockquote class="last">
+<div><p>If False (the default), then install the handler.  If True
+then unintall it.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterApp.option_description">
+<tt class="descname">option_description</tt><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterApp.option_description" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait for unicode strings.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterApp.parse_command_line">
+<tt class="descname">parse_command_line</tt><big>(</big><em>argv=None</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterApp.parse_command_line" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parse the command line arguments.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterApp.print_alias_help">
+<tt class="descname">print_alias_help</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterApp.print_alias_help" title="Permalink to this definition">¶</a></dt>
+<dd><p>Print the alias part of the help.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterApp.print_description">
+<tt class="descname">print_description</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterApp.print_description" title="Permalink to this definition">¶</a></dt>
+<dd><p>Print the application description.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterApp.print_examples">
+<tt class="descname">print_examples</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterApp.print_examples" title="Permalink to this definition">¶</a></dt>
+<dd><p>Print usage and examples.</p>
+<p>This usage string goes at the end of the command line help string
+and should contain examples of the application&#8217;s usage.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterApp.print_flag_help">
+<tt class="descname">print_flag_help</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterApp.print_flag_help" title="Permalink to this definition">¶</a></dt>
+<dd><p>Print the flag part of the help.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterApp.print_help">
+<tt class="descname">print_help</tt><big>(</big><em>classes=False</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterApp.print_help" title="Permalink to this definition">¶</a></dt>
+<dd><p>Print the help for each Configurable class in self.classes.</p>
+<p>If classes=False (the default), only flags and aliases are printed.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterApp.print_options">
+<tt class="descname">print_options</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterApp.print_options" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterApp.print_subcommands">
+<tt class="descname">print_subcommands</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterApp.print_subcommands" title="Permalink to this definition">¶</a></dt>
+<dd><p>Print the subcommand part of the help.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterApp.print_version">
+<tt class="descname">print_version</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterApp.print_version" title="Permalink to this definition">¶</a></dt>
+<dd><p>Print the version string.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterApp.start">
+<tt class="descname">start</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterApp.start" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterApp.subapp">
+<tt class="descname">subapp</tt><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterApp.subapp" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait whose value must be an instance of a specified class.</p>
+<p>The value can also be an instance of a subclass of the specified class.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterApp.subcommand_description">
+<tt class="descname">subcommand_description</tt><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterApp.subcommand_description" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait for unicode strings.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterApp.subcommands">
+<tt class="descname">subcommands</tt><em class="property"> = {'start': ('IPython.parallel.apps.ipclusterapp.IPClusterStart', &quot;Start an IPython cluster for parallel computing\n\nStart an ipython cluster by its profile name or cluster\ndirectory. Cluster directories contain configuration, log and\nsecurity related files and are named using the convention\n'profile_&lt;name&gt;' and should be creating using the 'start'\nsubcommand of 'ipcluster'. If your cluster directory is in \nthe cwd or the ipython directory, you can simply refer to it\nusing its profile name, 'ipcluster start --n=4 --profile=&lt;profile&gt;`,\notherwise use the 'profile-dir' option.\n&quot;), 'stop': ('IPython.parallel.apps.ipclusterapp.IPClusterStop', &quot;Stop a running IPython cluster\n\nStop a running ipython cluster by its profile name or cluster\ndirectory. Cluster directories are named using the convention\n'profile_&lt;name&gt;'. If your cluster directory is in \nthe cwd or the ipython directory, you can simply refer to it\nusing its profile name, 'ipcluster stop --profile=&lt;profile&gt;`, otherwise\nuse the '--profile-dir' option.\n&quot;), 'engines': ('IPython.parallel.apps.ipclusterapp.IPClusterEngines', &quot;Start engines connected to an existing IPython cluster\n\nStart one or more engines to connect to an existing Cluster\nby profile name or cluster directory.\nCluster directories contain configuration, log and\nsecurity related files and are named using the convention\n'profile_&lt;name&gt;' and should be creating using the 'start'\nsubcommand of 'ipcluster'. If your cluster directory is in \nthe cwd or the ipython directory, you can simply refer to it\nusing its profile name, 'ipcluster engines --n=4 --profile=&lt;profile&gt;`,\notherwise use the 'profile-dir' option.\n&quot;)}</em><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterApp.subcommands" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterApp.trait_metadata">
+<tt class="descname">trait_metadata</tt><big>(</big><em>traitname</em>, <em>key</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterApp.trait_metadata" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get metadata values for trait by key.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterApp.trait_names">
+<tt class="descname">trait_names</tt><big>(</big><em>**metadata</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterApp.trait_names" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of all the names of this classes traits.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterApp.traits">
+<tt class="descname">traits</tt><big>(</big><em>**metadata</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterApp.traits" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of all the traits of this class.</p>
+<p>The TraitTypes returned don&#8217;t know anything about the values
+that the various HasTrait&#8217;s instances are holding.</p>
+<p>This follows the same algorithm as traits does and does not allow
+for any simple way of specifying merely that a metadata name
+exists, but has any value.  This is because get_metadata returns
+None if a metadata key doesn&#8217;t exist.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterApp.update_config">
+<tt class="descname">update_config</tt><big>(</big><em>config</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterApp.update_config" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fire the traits events when the config is updated.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterApp.version">
+<tt class="descname">version</tt><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterApp.version" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait for unicode strings.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="ipclusterengines">
+<h3><a class="reference internal" href="#IPython.parallel.apps.ipclusterapp.IPClusterEngines" title="IPython.parallel.apps.ipclusterapp.IPClusterEngines"><tt class="xref py py-class docutils literal"><span class="pre">IPClusterEngines</span></tt></a><a class="headerlink" href="#ipclusterengines" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterEngines">
+<em class="property">class </em><tt class="descclassname">IPython.parallel.apps.ipclusterapp.</tt><tt class="descname">IPClusterEngines</tt><big>(</big><em>**kwargs</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterEngines" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="IPython.parallel.apps.baseapp.html#IPython.parallel.apps.baseapp.BaseParallelApplication" title="IPython.parallel.apps.baseapp.BaseParallelApplication"><tt class="xref py py-class docutils literal"><span class="pre">IPython.parallel.apps.baseapp.BaseParallelApplication</span></tt></a></p>
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterEngines.__init__">
+<tt class="descname">__init__</tt><big>(</big><em>**kwargs</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterEngines.__init__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterEngines.aliases">
+<tt class="descname">aliases</tt><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterEngines.aliases" title="Permalink to this definition">¶</a></dt>
+<dd><p>An instance of a Python dict.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterEngines.auto_create">
+<tt class="descname">auto_create</tt><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterEngines.auto_create" title="Permalink to this definition">¶</a></dt>
+<dd><p>A boolean (True, False) trait.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterEngines.build_launcher">
+<tt class="descname">build_launcher</tt><big>(</big><em>clsname</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterEngines.build_launcher" title="Permalink to this definition">¶</a></dt>
+<dd><p>import and instantiate a Launcher based on importstring</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterEngines.builtin_profile_dir">
+<tt class="descname">builtin_profile_dir</tt><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterEngines.builtin_profile_dir" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait for unicode strings.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterEngines.check_pid">
+<tt class="descname">check_pid</tt><big>(</big><em>pid</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterEngines.check_pid" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterEngines.class_config_section">
+<em class="property">classmethod </em><tt class="descname">class_config_section</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterEngines.class_config_section" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the config class config section</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterEngines.class_get_help">
+<em class="property">classmethod </em><tt class="descname">class_get_help</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterEngines.class_get_help" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the help string for this class in ReST format.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterEngines.class_get_trait_help">
+<em class="property">classmethod </em><tt class="descname">class_get_trait_help</tt><big>(</big><em>trait</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterEngines.class_get_trait_help" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the help string for a single trait.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterEngines.class_print_help">
+<em class="property">classmethod </em><tt class="descname">class_print_help</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterEngines.class_print_help" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the help string for a single trait and print it.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterEngines.class_trait_names">
+<em class="property">classmethod </em><tt class="descname">class_trait_names</tt><big>(</big><em>**metadata</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterEngines.class_trait_names" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of all the names of this classes traits.</p>
+<p>This method is just like the <a class="reference internal" href="#IPython.parallel.apps.ipclusterapp.IPClusterEngines.trait_names" title="IPython.parallel.apps.ipclusterapp.IPClusterEngines.trait_names"><tt class="xref py py-meth docutils literal"><span class="pre">trait_names()</span></tt></a> method, but is unbound.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterEngines.class_traits">
+<em class="property">classmethod </em><tt class="descname">class_traits</tt><big>(</big><em>**metadata</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterEngines.class_traits" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of all the traits of this class.</p>
+<p>This method is just like the <a class="reference internal" href="#IPython.parallel.apps.ipclusterapp.IPClusterEngines.traits" title="IPython.parallel.apps.ipclusterapp.IPClusterEngines.traits"><tt class="xref py py-meth docutils literal"><span class="pre">traits()</span></tt></a> method, but is unbound.</p>
+<p>The TraitTypes returned don&#8217;t know anything about the values
+that the various HasTrait&#8217;s instances are holding.</p>
+<p>This follows the same algorithm as traits does and does not allow
+for any simple way of specifying merely that a metadata name
+exists, but has any value.  This is because get_metadata returns
+None if a metadata key doesn&#8217;t exist.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterEngines.classes">
+<tt class="descname">classes</tt><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterEngines.classes" title="Permalink to this definition">¶</a></dt>
+<dd><p>An instance of a Python list.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterEngines.clean_logs">
+<tt class="descname">clean_logs</tt><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterEngines.clean_logs" title="Permalink to this definition">¶</a></dt>
+<dd><p>A boolean (True, False) trait.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterEngines.clear_instance">
+<em class="property">classmethod </em><tt class="descname">clear_instance</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterEngines.clear_instance" title="Permalink to this definition">¶</a></dt>
+<dd><p>unset _instance for this class and singleton parents.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterEngines.config">
+<tt class="descname">config</tt><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterEngines.config" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait whose value must be an instance of a specified class.</p>
+<p>The value can also be an instance of a subclass of the specified class.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterEngines.config_file_name">
+<tt class="descname">config_file_name</tt><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterEngines.config_file_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait for unicode strings.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterEngines.config_file_paths">
+<tt class="descname">config_file_paths</tt><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterEngines.config_file_paths" title="Permalink to this definition">¶</a></dt>
+<dd><p>An instance of a Python list.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterEngines.config_file_specified">
+<tt class="descname">config_file_specified</tt><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterEngines.config_file_specified" title="Permalink to this definition">¶</a></dt>
+<dd><p>A boolean (True, False) trait.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterEngines.config_files">
+<tt class="descname">config_files</tt><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterEngines.config_files" title="Permalink to this definition">¶</a></dt>
+<dd><p>An instance of a Python list.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterEngines.copy_config_files">
+<tt class="descname">copy_config_files</tt><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterEngines.copy_config_files" title="Permalink to this definition">¶</a></dt>
+<dd><p>A boolean (True, False) trait.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterEngines.crash_handler_class">
+<tt class="descname">crash_handler_class</tt><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterEngines.crash_handler_class" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <tt class="xref py py-class docutils literal"><span class="pre">ParallelCrashHandler</span></tt></p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterEngines.created">
+<tt class="descname">created</tt><em class="property"> = None</em><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterEngines.created" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterEngines.daemonize">
+<tt class="descname">daemonize</tt><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterEngines.daemonize" title="Permalink to this definition">¶</a></dt>
+<dd><p>A boolean (True, False) trait.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterEngines.default_log_level">
+<tt class="descname">default_log_level</tt><em class="property"> = 20</em><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterEngines.default_log_level" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterEngines.description">
+<tt class="descname">description</tt><em class="property"> = &quot;Start engines connected to an existing IPython cluster\n\nStart one or more engines to connect to an existing Cluster\nby profile name or cluster directory.\nCluster directories contain configuration, log and\nsecurity related files and are named using the convention\n'profile_&lt;name&gt;' and should be creating using the 'start'\nsubcommand of 'ipcluster'. If your cluster directory is in \nthe cwd or the ipython directory, you can simply refer to it\nusing its profile name, 'ipcluster engines --n=4 --profile=&lt;profile&gt;`,\notherwise use the 'profile-dir' option.\n&quot;</em><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterEngines.description" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterEngines.engine_launcher_class">
+<tt class="descname">engine_launcher_class</tt><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterEngines.engine_launcher_class" title="Permalink to this definition">¶</a></dt>
+<dd><p>A string holding a valid dotted object name in Python, such as A.b3._c</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterEngines.examples">
+<tt class="descname">examples</tt><em class="property"> = '\nipcluster engines --profile=mycluster --n=4  # start 4 engines only\n'</em><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterEngines.examples" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterEngines.exit">
+<tt class="descname">exit</tt><big>(</big><em>exit_status=0</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterEngines.exit" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterEngines.extra_args">
+<tt class="descname">extra_args</tt><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterEngines.extra_args" title="Permalink to this definition">¶</a></dt>
+<dd><p>An instance of a Python list.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterEngines.flags">
+<tt class="descname">flags</tt><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterEngines.flags" title="Permalink to this definition">¶</a></dt>
+<dd><p>An instance of a Python dict.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterEngines.generate_config_file">
+<tt class="descname">generate_config_file</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterEngines.generate_config_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>generate default config file from Configurables</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterEngines.get_pid_from_file">
+<tt class="descname">get_pid_from_file</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterEngines.get_pid_from_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the pid from the pid file.</p>
+<p>If the  pid file doesn&#8217;t exist a <tt class="xref py py-exc docutils literal"><span class="pre">PIDFileError</span></tt> is raised.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterEngines.init_config_files">
+<tt class="descname">init_config_files</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterEngines.init_config_files" title="Permalink to this definition">¶</a></dt>
+<dd><p>[optionally] copy default config files into profile dir.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterEngines.init_crash_handler">
+<tt class="descname">init_crash_handler</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterEngines.init_crash_handler" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a crash handler, typically setting sys.excepthook to it.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterEngines.init_launchers">
+<tt class="descname">init_launchers</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterEngines.init_launchers" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterEngines.init_logging">
+<tt class="descname">init_logging</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterEngines.init_logging" title="Permalink to this definition">¶</a></dt>
+<dd><p>Start logging for this application.</p>
+<p>The default is to log to stdout using a StreaHandler. The log level
+starts at loggin.WARN, but this can be adjusted by setting the 
+<tt class="docutils literal"><span class="pre">log_level</span></tt> attribute.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterEngines.init_profile_dir">
+<tt class="descname">init_profile_dir</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterEngines.init_profile_dir" title="Permalink to this definition">¶</a></dt>
+<dd><p>initialize the profile dir</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterEngines.init_signal">
+<tt class="descname">init_signal</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterEngines.init_signal" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterEngines.initialize">
+<tt class="descname">initialize</tt><big>(</big><em>argv=None</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterEngines.initialize" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterEngines.initialize_subcommand">
+<tt class="descname">initialize_subcommand</tt><big>(</big><em>subc</em>, <em>argv=None</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterEngines.initialize_subcommand" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize a subcommand with argv.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterEngines.initialized">
+<em class="property">classmethod </em><tt class="descname">initialized</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterEngines.initialized" title="Permalink to this definition">¶</a></dt>
+<dd><p>Has an instance been created?</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterEngines.instance">
+<em class="property">classmethod </em><tt class="descname">instance</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterEngines.instance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a global instance of this class.</p>
+<p>This method create a new instance if none have previously been created
+and returns a previously created instance is one already exists.</p>
+<p>The arguments and keyword arguments passed to this method are passed
+on to the <a class="reference internal" href="#IPython.parallel.apps.ipclusterapp.IPClusterEngines.__init__" title="IPython.parallel.apps.ipclusterapp.IPClusterEngines.__init__"><tt class="xref py py-meth docutils literal"><span class="pre">__init__()</span></tt></a> method of the class upon instantiation.</p>
+<p class="rubric">Examples</p>
+<p>Create a singleton class using instance, and retrieve it:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">IPython.config.configurable</span> <span class="kn">import</span> <span class="n">SingletonConfigurable</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">Foo</span><span class="p">(</span><span class="n">SingletonConfigurable</span><span class="p">):</span> <span class="k">pass</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">foo</span> <span class="o">=</span> <span class="n">Foo</span><span class="o">.</span><span class="n">instance</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">foo</span> <span class="o">==</span> <span class="n">Foo</span><span class="o">.</span><span class="n">instance</span><span class="p">()</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<p>Create a subclass that is retrived using the base class instance:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">Bar</span><span class="p">(</span><span class="n">SingletonConfigurable</span><span class="p">):</span> <span class="k">pass</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">Bam</span><span class="p">(</span><span class="n">Bar</span><span class="p">):</span> <span class="k">pass</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">bam</span> <span class="o">=</span> <span class="n">Bam</span><span class="o">.</span><span class="n">instance</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">bam</span> <span class="o">==</span> <span class="n">Bar</span><span class="o">.</span><span class="n">instance</span><span class="p">()</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterEngines.ipython_dir">
+<tt class="descname">ipython_dir</tt><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterEngines.ipython_dir" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait for unicode strings.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterEngines.keyvalue_description">
+<tt class="descname">keyvalue_description</tt><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterEngines.keyvalue_description" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait for unicode strings.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterEngines.load_config_file">
+<tt class="descname">load_config_file</tt><big>(</big><em>suppress_errors=True</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterEngines.load_config_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load the config file.</p>
+<p>By default, errors in loading config are handled, and a warning
+printed on screen. For testing, the suppress_errors option is set
+to False, so errors will make tests fail.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterEngines.log_level">
+<tt class="descname">log_level</tt><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterEngines.log_level" title="Permalink to this definition">¶</a></dt>
+<dd><p>An enum that whose value must be in a given sequence.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterEngines.log_to_file">
+<tt class="descname">log_to_file</tt><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterEngines.log_to_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>A boolean (True, False) trait.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterEngines.log_url">
+<tt class="descname">log_url</tt><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterEngines.log_url" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait for unicode strings.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterEngines.loop">
+<tt class="descname">loop</tt><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterEngines.loop" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait whose value must be an instance of a specified class.</p>
+<p>The value can also be an instance of a subclass of the specified class.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterEngines.n">
+<tt class="descname">n</tt><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterEngines.n" title="Permalink to this definition">¶</a></dt>
+<dd><p>A integer trait.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterEngines.name">
+<tt class="descname">name</tt><em class="property"> = u'ipcluster'</em><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterEngines.name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterEngines.on_trait_change">
+<tt class="descname">on_trait_change</tt><big>(</big><em>handler</em>, <em>name=None</em>, <em>remove=False</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterEngines.on_trait_change" title="Permalink to this definition">¶</a></dt>
+<dd><p>Setup a handler to be called when a trait changes.</p>
+<p>This is used to setup dynamic notifications of trait changes.</p>
+<p>Static handlers can be created by creating methods on a HasTraits
+subclass with the naming convention &#8216;_[traitname]_changed&#8217;.  Thus,
+to create static handler for the trait &#8216;a&#8217;, create the method
+_a_changed(self, name, old, new) (fewer arguments can be used, see
+below).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>handler</strong> : callable</p>
+<blockquote>
+<div><p>A callable that is called when a trait changes.  Its 
+signature can be handler(), handler(name), handler(name, new)
+or handler(name, old, new).</p>
+</div></blockquote>
+<p><strong>name</strong> : list, str, None</p>
+<blockquote>
+<div><p>If None, the handler will apply to all traits.  If a list
+of str, handler will apply to all names in the list.  If a
+str, the handler will apply just to that name.</p>
+</div></blockquote>
+<p><strong>remove</strong> : bool</p>
+<blockquote class="last">
+<div><p>If False (the default), then install the handler.  If True
+then unintall it.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterEngines.option_description">
+<tt class="descname">option_description</tt><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterEngines.option_description" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait for unicode strings.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterEngines.overwrite">
+<tt class="descname">overwrite</tt><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterEngines.overwrite" title="Permalink to this definition">¶</a></dt>
+<dd><p>A boolean (True, False) trait.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterEngines.parse_command_line">
+<tt class="descname">parse_command_line</tt><big>(</big><em>argv=None</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterEngines.parse_command_line" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parse the command line arguments.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterEngines.print_alias_help">
+<tt class="descname">print_alias_help</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterEngines.print_alias_help" title="Permalink to this definition">¶</a></dt>
+<dd><p>Print the alias part of the help.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterEngines.print_description">
+<tt class="descname">print_description</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterEngines.print_description" title="Permalink to this definition">¶</a></dt>
+<dd><p>Print the application description.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterEngines.print_examples">
+<tt class="descname">print_examples</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterEngines.print_examples" title="Permalink to this definition">¶</a></dt>
+<dd><p>Print usage and examples.</p>
+<p>This usage string goes at the end of the command line help string
+and should contain examples of the application&#8217;s usage.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterEngines.print_flag_help">
+<tt class="descname">print_flag_help</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterEngines.print_flag_help" title="Permalink to this definition">¶</a></dt>
+<dd><p>Print the flag part of the help.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterEngines.print_help">
+<tt class="descname">print_help</tt><big>(</big><em>classes=False</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterEngines.print_help" title="Permalink to this definition">¶</a></dt>
+<dd><p>Print the help for each Configurable class in self.classes.</p>
+<p>If classes=False (the default), only flags and aliases are printed.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterEngines.print_options">
+<tt class="descname">print_options</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterEngines.print_options" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterEngines.print_subcommands">
+<tt class="descname">print_subcommands</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterEngines.print_subcommands" title="Permalink to this definition">¶</a></dt>
+<dd><p>Print the subcommand part of the help.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterEngines.print_version">
+<tt class="descname">print_version</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterEngines.print_version" title="Permalink to this definition">¶</a></dt>
+<dd><p>Print the version string.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterEngines.profile">
+<tt class="descname">profile</tt><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterEngines.profile" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait for unicode strings.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterEngines.reinit_logging">
+<tt class="descname">reinit_logging</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterEngines.reinit_logging" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterEngines.remove_pid_file">
+<tt class="descname">remove_pid_file</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterEngines.remove_pid_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove the pid file.</p>
+<p>This should be called at shutdown by registering a callback with
+<tt class="xref py py-func docutils literal"><span class="pre">reactor.addSystemEventTrigger()</span></tt>. This needs to return
+<tt class="docutils literal"><span class="pre">None</span></tt>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterEngines.sigint_handler">
+<tt class="descname">sigint_handler</tt><big>(</big><em>signum</em>, <em>frame</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterEngines.sigint_handler" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterEngines.stage_default_config_file">
+<tt class="descname">stage_default_config_file</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterEngines.stage_default_config_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>auto generate default config file, and stage it into the profile.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterEngines.start">
+<tt class="descname">start</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterEngines.start" title="Permalink to this definition">¶</a></dt>
+<dd><p>Start the app for the engines subcommand.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterEngines.start_engines">
+<tt class="descname">start_engines</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterEngines.start_engines" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterEngines.start_logging">
+<tt class="descname">start_logging</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterEngines.start_logging" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterEngines.stop_engines">
+<tt class="descname">stop_engines</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterEngines.stop_engines" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterEngines.stop_launchers">
+<tt class="descname">stop_launchers</tt><big>(</big><em>r=None</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterEngines.stop_launchers" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterEngines.subapp">
+<tt class="descname">subapp</tt><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterEngines.subapp" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait whose value must be an instance of a specified class.</p>
+<p>The value can also be an instance of a subclass of the specified class.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterEngines.subcommand_description">
+<tt class="descname">subcommand_description</tt><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterEngines.subcommand_description" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait for unicode strings.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterEngines.subcommands">
+<tt class="descname">subcommands</tt><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterEngines.subcommands" title="Permalink to this definition">¶</a></dt>
+<dd><p>An instance of a Python dict.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterEngines.to_work_dir">
+<tt class="descname">to_work_dir</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterEngines.to_work_dir" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterEngines.trait_metadata">
+<tt class="descname">trait_metadata</tt><big>(</big><em>traitname</em>, <em>key</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterEngines.trait_metadata" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get metadata values for trait by key.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterEngines.trait_names">
+<tt class="descname">trait_names</tt><big>(</big><em>**metadata</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterEngines.trait_names" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of all the names of this classes traits.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterEngines.traits">
+<tt class="descname">traits</tt><big>(</big><em>**metadata</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterEngines.traits" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of all the traits of this class.</p>
+<p>The TraitTypes returned don&#8217;t know anything about the values
+that the various HasTrait&#8217;s instances are holding.</p>
+<p>This follows the same algorithm as traits does and does not allow
+for any simple way of specifying merely that a metadata name
+exists, but has any value.  This is because get_metadata returns
+None if a metadata key doesn&#8217;t exist.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterEngines.update_config">
+<tt class="descname">update_config</tt><big>(</big><em>config</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterEngines.update_config" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fire the traits events when the config is updated.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterEngines.usage">
+<tt class="descname">usage</tt><em class="property"> = None</em><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterEngines.usage" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterEngines.version">
+<tt class="descname">version</tt><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterEngines.version" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait for unicode strings.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterEngines.work_dir">
+<tt class="descname">work_dir</tt><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterEngines.work_dir" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait for unicode strings.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterEngines.write_pid_file">
+<tt class="descname">write_pid_file</tt><big>(</big><em>overwrite=False</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterEngines.write_pid_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a .pid file in the pid_dir with my pid.</p>
+<p>This must be called after pre_construct, which sets <cite>self.pid_dir</cite>.
+This raises <tt class="xref py py-exc docutils literal"><span class="pre">PIDFileError</span></tt> if the pid file exists already.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="ipclusterstart">
+<h3><a class="reference internal" href="#IPython.parallel.apps.ipclusterapp.IPClusterStart" title="IPython.parallel.apps.ipclusterapp.IPClusterStart"><tt class="xref py py-class docutils literal"><span class="pre">IPClusterStart</span></tt></a><a class="headerlink" href="#ipclusterstart" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStart">
+<em class="property">class </em><tt class="descclassname">IPython.parallel.apps.ipclusterapp.</tt><tt class="descname">IPClusterStart</tt><big>(</big><em>**kwargs</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStart" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#IPython.parallel.apps.ipclusterapp.IPClusterEngines" title="IPython.parallel.apps.ipclusterapp.IPClusterEngines"><tt class="xref py py-class docutils literal"><span class="pre">IPython.parallel.apps.ipclusterapp.IPClusterEngines</span></tt></a></p>
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStart.__init__">
+<tt class="descname">__init__</tt><big>(</big><em>**kwargs</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStart.__init__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStart.aliases">
+<tt class="descname">aliases</tt><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStart.aliases" title="Permalink to this definition">¶</a></dt>
+<dd><p>An instance of a Python dict.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStart.auto_create">
+<tt class="descname">auto_create</tt><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStart.auto_create" title="Permalink to this definition">¶</a></dt>
+<dd><p>A boolean (True, False) trait.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStart.build_launcher">
+<tt class="descname">build_launcher</tt><big>(</big><em>clsname</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStart.build_launcher" title="Permalink to this definition">¶</a></dt>
+<dd><p>import and instantiate a Launcher based on importstring</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStart.builtin_profile_dir">
+<tt class="descname">builtin_profile_dir</tt><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStart.builtin_profile_dir" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait for unicode strings.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStart.check_pid">
+<tt class="descname">check_pid</tt><big>(</big><em>pid</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStart.check_pid" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStart.class_config_section">
+<em class="property">classmethod </em><tt class="descname">class_config_section</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStart.class_config_section" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the config class config section</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStart.class_get_help">
+<em class="property">classmethod </em><tt class="descname">class_get_help</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStart.class_get_help" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the help string for this class in ReST format.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStart.class_get_trait_help">
+<em class="property">classmethod </em><tt class="descname">class_get_trait_help</tt><big>(</big><em>trait</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStart.class_get_trait_help" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the help string for a single trait.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStart.class_print_help">
+<em class="property">classmethod </em><tt class="descname">class_print_help</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStart.class_print_help" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the help string for a single trait and print it.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStart.class_trait_names">
+<em class="property">classmethod </em><tt class="descname">class_trait_names</tt><big>(</big><em>**metadata</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStart.class_trait_names" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of all the names of this classes traits.</p>
+<p>This method is just like the <a class="reference internal" href="#IPython.parallel.apps.ipclusterapp.IPClusterStart.trait_names" title="IPython.parallel.apps.ipclusterapp.IPClusterStart.trait_names"><tt class="xref py py-meth docutils literal"><span class="pre">trait_names()</span></tt></a> method, but is unbound.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStart.class_traits">
+<em class="property">classmethod </em><tt class="descname">class_traits</tt><big>(</big><em>**metadata</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStart.class_traits" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of all the traits of this class.</p>
+<p>This method is just like the <a class="reference internal" href="#IPython.parallel.apps.ipclusterapp.IPClusterStart.traits" title="IPython.parallel.apps.ipclusterapp.IPClusterStart.traits"><tt class="xref py py-meth docutils literal"><span class="pre">traits()</span></tt></a> method, but is unbound.</p>
+<p>The TraitTypes returned don&#8217;t know anything about the values
+that the various HasTrait&#8217;s instances are holding.</p>
+<p>This follows the same algorithm as traits does and does not allow
+for any simple way of specifying merely that a metadata name
+exists, but has any value.  This is because get_metadata returns
+None if a metadata key doesn&#8217;t exist.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStart.classes">
+<tt class="descname">classes</tt><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStart.classes" title="Permalink to this definition">¶</a></dt>
+<dd><p>An instance of a Python list.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStart.clean_logs">
+<tt class="descname">clean_logs</tt><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStart.clean_logs" title="Permalink to this definition">¶</a></dt>
+<dd><p>A boolean (True, False) trait.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStart.clear_instance">
+<em class="property">classmethod </em><tt class="descname">clear_instance</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStart.clear_instance" title="Permalink to this definition">¶</a></dt>
+<dd><p>unset _instance for this class and singleton parents.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStart.config">
+<tt class="descname">config</tt><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStart.config" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait whose value must be an instance of a specified class.</p>
+<p>The value can also be an instance of a subclass of the specified class.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStart.config_file_name">
+<tt class="descname">config_file_name</tt><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStart.config_file_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait for unicode strings.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStart.config_file_paths">
+<tt class="descname">config_file_paths</tt><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStart.config_file_paths" title="Permalink to this definition">¶</a></dt>
+<dd><p>An instance of a Python list.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStart.config_file_specified">
+<tt class="descname">config_file_specified</tt><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStart.config_file_specified" title="Permalink to this definition">¶</a></dt>
+<dd><p>A boolean (True, False) trait.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStart.config_files">
+<tt class="descname">config_files</tt><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStart.config_files" title="Permalink to this definition">¶</a></dt>
+<dd><p>An instance of a Python list.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStart.controller_launcher_class">
+<tt class="descname">controller_launcher_class</tt><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStart.controller_launcher_class" title="Permalink to this definition">¶</a></dt>
+<dd><p>A string holding a valid dotted object name in Python, such as A.b3._c</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStart.copy_config_files">
+<tt class="descname">copy_config_files</tt><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStart.copy_config_files" title="Permalink to this definition">¶</a></dt>
+<dd><p>A boolean (True, False) trait.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStart.crash_handler_class">
+<tt class="descname">crash_handler_class</tt><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStart.crash_handler_class" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <tt class="xref py py-class docutils literal"><span class="pre">ParallelCrashHandler</span></tt></p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStart.created">
+<tt class="descname">created</tt><em class="property"> = None</em><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStart.created" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStart.daemonize">
+<tt class="descname">daemonize</tt><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStart.daemonize" title="Permalink to this definition">¶</a></dt>
+<dd><p>A boolean (True, False) trait.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStart.default_log_level">
+<tt class="descname">default_log_level</tt><em class="property"> = 20</em><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStart.default_log_level" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStart.delay">
+<tt class="descname">delay</tt><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStart.delay" title="Permalink to this definition">¶</a></dt>
+<dd><p>A casting version of the float trait.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStart.description">
+<tt class="descname">description</tt><em class="property"> = &quot;Start an IPython cluster for parallel computing\n\nStart an ipython cluster by its profile name or cluster\ndirectory. Cluster directories contain configuration, log and\nsecurity related files and are named using the convention\n'profile_&lt;name&gt;' and should be creating using the 'start'\nsubcommand of 'ipcluster'. If your cluster directory is in \nthe cwd or the ipython directory, you can simply refer to it\nusing its profile name, 'ipcluster start --n=4 --profile=&lt;profile&gt;`,\notherwise use the 'profile-dir' option.\n&quot;</em><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStart.description" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStart.engine_launcher_class">
+<tt class="descname">engine_launcher_class</tt><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStart.engine_launcher_class" title="Permalink to this definition">¶</a></dt>
+<dd><p>A string holding a valid dotted object name in Python, such as A.b3._c</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStart.examples">
+<tt class="descname">examples</tt><em class="property"> = '\nipython profile create mycluster --parallel # create mycluster profile\nipcluster start --profile=mycluster --n=4   # start mycluster with 4 nodes\n'</em><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStart.examples" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStart.exit">
+<tt class="descname">exit</tt><big>(</big><em>exit_status=0</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStart.exit" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStart.extra_args">
+<tt class="descname">extra_args</tt><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStart.extra_args" title="Permalink to this definition">¶</a></dt>
+<dd><p>An instance of a Python list.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStart.flags">
+<tt class="descname">flags</tt><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStart.flags" title="Permalink to this definition">¶</a></dt>
+<dd><p>An instance of a Python dict.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStart.generate_config_file">
+<tt class="descname">generate_config_file</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStart.generate_config_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>generate default config file from Configurables</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStart.get_pid_from_file">
+<tt class="descname">get_pid_from_file</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStart.get_pid_from_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the pid from the pid file.</p>
+<p>If the  pid file doesn&#8217;t exist a <tt class="xref py py-exc docutils literal"><span class="pre">PIDFileError</span></tt> is raised.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStart.init_config_files">
+<tt class="descname">init_config_files</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStart.init_config_files" title="Permalink to this definition">¶</a></dt>
+<dd><p>[optionally] copy default config files into profile dir.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStart.init_crash_handler">
+<tt class="descname">init_crash_handler</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStart.init_crash_handler" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a crash handler, typically setting sys.excepthook to it.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStart.init_launchers">
+<tt class="descname">init_launchers</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStart.init_launchers" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStart.init_logging">
+<tt class="descname">init_logging</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStart.init_logging" title="Permalink to this definition">¶</a></dt>
+<dd><p>Start logging for this application.</p>
+<p>The default is to log to stdout using a StreaHandler. The log level
+starts at loggin.WARN, but this can be adjusted by setting the 
+<tt class="docutils literal"><span class="pre">log_level</span></tt> attribute.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStart.init_profile_dir">
+<tt class="descname">init_profile_dir</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStart.init_profile_dir" title="Permalink to this definition">¶</a></dt>
+<dd><p>initialize the profile dir</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStart.init_signal">
+<tt class="descname">init_signal</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStart.init_signal" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStart.initialize">
+<tt class="descname">initialize</tt><big>(</big><em>argv=None</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStart.initialize" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStart.initialize_subcommand">
+<tt class="descname">initialize_subcommand</tt><big>(</big><em>subc</em>, <em>argv=None</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStart.initialize_subcommand" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize a subcommand with argv.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStart.initialized">
+<em class="property">classmethod </em><tt class="descname">initialized</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStart.initialized" title="Permalink to this definition">¶</a></dt>
+<dd><p>Has an instance been created?</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStart.instance">
+<em class="property">classmethod </em><tt class="descname">instance</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStart.instance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a global instance of this class.</p>
+<p>This method create a new instance if none have previously been created
+and returns a previously created instance is one already exists.</p>
+<p>The arguments and keyword arguments passed to this method are passed
+on to the <a class="reference internal" href="#IPython.parallel.apps.ipclusterapp.IPClusterStart.__init__" title="IPython.parallel.apps.ipclusterapp.IPClusterStart.__init__"><tt class="xref py py-meth docutils literal"><span class="pre">__init__()</span></tt></a> method of the class upon instantiation.</p>
+<p class="rubric">Examples</p>
+<p>Create a singleton class using instance, and retrieve it:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">IPython.config.configurable</span> <span class="kn">import</span> <span class="n">SingletonConfigurable</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">Foo</span><span class="p">(</span><span class="n">SingletonConfigurable</span><span class="p">):</span> <span class="k">pass</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">foo</span> <span class="o">=</span> <span class="n">Foo</span><span class="o">.</span><span class="n">instance</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">foo</span> <span class="o">==</span> <span class="n">Foo</span><span class="o">.</span><span class="n">instance</span><span class="p">()</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<p>Create a subclass that is retrived using the base class instance:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">Bar</span><span class="p">(</span><span class="n">SingletonConfigurable</span><span class="p">):</span> <span class="k">pass</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">Bam</span><span class="p">(</span><span class="n">Bar</span><span class="p">):</span> <span class="k">pass</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">bam</span> <span class="o">=</span> <span class="n">Bam</span><span class="o">.</span><span class="n">instance</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">bam</span> <span class="o">==</span> <span class="n">Bar</span><span class="o">.</span><span class="n">instance</span><span class="p">()</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStart.ipython_dir">
+<tt class="descname">ipython_dir</tt><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStart.ipython_dir" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait for unicode strings.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStart.keyvalue_description">
+<tt class="descname">keyvalue_description</tt><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStart.keyvalue_description" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait for unicode strings.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStart.load_config_file">
+<tt class="descname">load_config_file</tt><big>(</big><em>suppress_errors=True</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStart.load_config_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load the config file.</p>
+<p>By default, errors in loading config are handled, and a warning
+printed on screen. For testing, the suppress_errors option is set
+to False, so errors will make tests fail.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStart.log_level">
+<tt class="descname">log_level</tt><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStart.log_level" title="Permalink to this definition">¶</a></dt>
+<dd><p>An enum that whose value must be in a given sequence.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStart.log_to_file">
+<tt class="descname">log_to_file</tt><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStart.log_to_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>A boolean (True, False) trait.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStart.log_url">
+<tt class="descname">log_url</tt><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStart.log_url" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait for unicode strings.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStart.loop">
+<tt class="descname">loop</tt><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStart.loop" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait whose value must be an instance of a specified class.</p>
+<p>The value can also be an instance of a subclass of the specified class.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStart.n">
+<tt class="descname">n</tt><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStart.n" title="Permalink to this definition">¶</a></dt>
+<dd><p>A integer trait.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStart.name">
+<tt class="descname">name</tt><em class="property"> = u'ipcluster'</em><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStart.name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStart.on_trait_change">
+<tt class="descname">on_trait_change</tt><big>(</big><em>handler</em>, <em>name=None</em>, <em>remove=False</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStart.on_trait_change" title="Permalink to this definition">¶</a></dt>
+<dd><p>Setup a handler to be called when a trait changes.</p>
+<p>This is used to setup dynamic notifications of trait changes.</p>
+<p>Static handlers can be created by creating methods on a HasTraits
+subclass with the naming convention &#8216;_[traitname]_changed&#8217;.  Thus,
+to create static handler for the trait &#8216;a&#8217;, create the method
+_a_changed(self, name, old, new) (fewer arguments can be used, see
+below).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>handler</strong> : callable</p>
+<blockquote>
+<div><p>A callable that is called when a trait changes.  Its 
+signature can be handler(), handler(name), handler(name, new)
+or handler(name, old, new).</p>
+</div></blockquote>
+<p><strong>name</strong> : list, str, None</p>
+<blockquote>
+<div><p>If None, the handler will apply to all traits.  If a list
+of str, handler will apply to all names in the list.  If a
+str, the handler will apply just to that name.</p>
+</div></blockquote>
+<p><strong>remove</strong> : bool</p>
+<blockquote class="last">
+<div><p>If False (the default), then install the handler.  If True
+then unintall it.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStart.option_description">
+<tt class="descname">option_description</tt><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStart.option_description" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait for unicode strings.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStart.overwrite">
+<tt class="descname">overwrite</tt><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStart.overwrite" title="Permalink to this definition">¶</a></dt>
+<dd><p>A boolean (True, False) trait.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStart.parse_command_line">
+<tt class="descname">parse_command_line</tt><big>(</big><em>argv=None</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStart.parse_command_line" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parse the command line arguments.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStart.print_alias_help">
+<tt class="descname">print_alias_help</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStart.print_alias_help" title="Permalink to this definition">¶</a></dt>
+<dd><p>Print the alias part of the help.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStart.print_description">
+<tt class="descname">print_description</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStart.print_description" title="Permalink to this definition">¶</a></dt>
+<dd><p>Print the application description.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStart.print_examples">
+<tt class="descname">print_examples</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStart.print_examples" title="Permalink to this definition">¶</a></dt>
+<dd><p>Print usage and examples.</p>
+<p>This usage string goes at the end of the command line help string
+and should contain examples of the application&#8217;s usage.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStart.print_flag_help">
+<tt class="descname">print_flag_help</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStart.print_flag_help" title="Permalink to this definition">¶</a></dt>
+<dd><p>Print the flag part of the help.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStart.print_help">
+<tt class="descname">print_help</tt><big>(</big><em>classes=False</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStart.print_help" title="Permalink to this definition">¶</a></dt>
+<dd><p>Print the help for each Configurable class in self.classes.</p>
+<p>If classes=False (the default), only flags and aliases are printed.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStart.print_options">
+<tt class="descname">print_options</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStart.print_options" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStart.print_subcommands">
+<tt class="descname">print_subcommands</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStart.print_subcommands" title="Permalink to this definition">¶</a></dt>
+<dd><p>Print the subcommand part of the help.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStart.print_version">
+<tt class="descname">print_version</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStart.print_version" title="Permalink to this definition">¶</a></dt>
+<dd><p>Print the version string.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStart.profile">
+<tt class="descname">profile</tt><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStart.profile" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait for unicode strings.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStart.reinit_logging">
+<tt class="descname">reinit_logging</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStart.reinit_logging" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStart.remove_pid_file">
+<tt class="descname">remove_pid_file</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStart.remove_pid_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove the pid file.</p>
+<p>This should be called at shutdown by registering a callback with
+<tt class="xref py py-func docutils literal"><span class="pre">reactor.addSystemEventTrigger()</span></tt>. This needs to return
+<tt class="docutils literal"><span class="pre">None</span></tt>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStart.reset">
+<tt class="descname">reset</tt><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStart.reset" title="Permalink to this definition">¶</a></dt>
+<dd><p>A boolean (True, False) trait.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStart.sigint_handler">
+<tt class="descname">sigint_handler</tt><big>(</big><em>signum</em>, <em>frame</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStart.sigint_handler" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStart.stage_default_config_file">
+<tt class="descname">stage_default_config_file</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStart.stage_default_config_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>auto generate default config file, and stage it into the profile.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStart.start">
+<tt class="descname">start</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStart.start" title="Permalink to this definition">¶</a></dt>
+<dd><p>Start the app for the start subcommand.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStart.start_controller">
+<tt class="descname">start_controller</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStart.start_controller" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStart.start_engines">
+<tt class="descname">start_engines</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStart.start_engines" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStart.start_logging">
+<tt class="descname">start_logging</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStart.start_logging" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStart.stop_controller">
+<tt class="descname">stop_controller</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStart.stop_controller" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStart.stop_engines">
+<tt class="descname">stop_engines</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStart.stop_engines" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStart.stop_launchers">
+<tt class="descname">stop_launchers</tt><big>(</big><em>r=None</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStart.stop_launchers" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStart.subapp">
+<tt class="descname">subapp</tt><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStart.subapp" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait whose value must be an instance of a specified class.</p>
+<p>The value can also be an instance of a subclass of the specified class.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStart.subcommand_description">
+<tt class="descname">subcommand_description</tt><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStart.subcommand_description" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait for unicode strings.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStart.subcommands">
+<tt class="descname">subcommands</tt><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStart.subcommands" title="Permalink to this definition">¶</a></dt>
+<dd><p>An instance of a Python dict.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStart.to_work_dir">
+<tt class="descname">to_work_dir</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStart.to_work_dir" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStart.trait_metadata">
+<tt class="descname">trait_metadata</tt><big>(</big><em>traitname</em>, <em>key</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStart.trait_metadata" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get metadata values for trait by key.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStart.trait_names">
+<tt class="descname">trait_names</tt><big>(</big><em>**metadata</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStart.trait_names" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of all the names of this classes traits.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStart.traits">
+<tt class="descname">traits</tt><big>(</big><em>**metadata</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStart.traits" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of all the traits of this class.</p>
+<p>The TraitTypes returned don&#8217;t know anything about the values
+that the various HasTrait&#8217;s instances are holding.</p>
+<p>This follows the same algorithm as traits does and does not allow
+for any simple way of specifying merely that a metadata name
+exists, but has any value.  This is because get_metadata returns
+None if a metadata key doesn&#8217;t exist.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStart.update_config">
+<tt class="descname">update_config</tt><big>(</big><em>config</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStart.update_config" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fire the traits events when the config is updated.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStart.usage">
+<tt class="descname">usage</tt><em class="property"> = None</em><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStart.usage" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStart.version">
+<tt class="descname">version</tt><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStart.version" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait for unicode strings.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStart.work_dir">
+<tt class="descname">work_dir</tt><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStart.work_dir" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait for unicode strings.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStart.write_pid_file">
+<tt class="descname">write_pid_file</tt><big>(</big><em>overwrite=False</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStart.write_pid_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a .pid file in the pid_dir with my pid.</p>
+<p>This must be called after pre_construct, which sets <cite>self.pid_dir</cite>.
+This raises <tt class="xref py py-exc docutils literal"><span class="pre">PIDFileError</span></tt> if the pid file exists already.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="ipclusterstop">
+<h3><a class="reference internal" href="#IPython.parallel.apps.ipclusterapp.IPClusterStop" title="IPython.parallel.apps.ipclusterapp.IPClusterStop"><tt class="xref py py-class docutils literal"><span class="pre">IPClusterStop</span></tt></a><a class="headerlink" href="#ipclusterstop" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStop">
+<em class="property">class </em><tt class="descclassname">IPython.parallel.apps.ipclusterapp.</tt><tt class="descname">IPClusterStop</tt><big>(</big><em>**kwargs</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStop" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="IPython.parallel.apps.baseapp.html#IPython.parallel.apps.baseapp.BaseParallelApplication" title="IPython.parallel.apps.baseapp.BaseParallelApplication"><tt class="xref py py-class docutils literal"><span class="pre">IPython.parallel.apps.baseapp.BaseParallelApplication</span></tt></a></p>
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStop.__init__">
+<tt class="descname">__init__</tt><big>(</big><em>**kwargs</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStop.__init__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStop.aliases">
+<tt class="descname">aliases</tt><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStop.aliases" title="Permalink to this definition">¶</a></dt>
+<dd><p>An instance of a Python dict.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStop.auto_create">
+<tt class="descname">auto_create</tt><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStop.auto_create" title="Permalink to this definition">¶</a></dt>
+<dd><p>A boolean (True, False) trait.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStop.builtin_profile_dir">
+<tt class="descname">builtin_profile_dir</tt><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStop.builtin_profile_dir" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait for unicode strings.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStop.check_pid">
+<tt class="descname">check_pid</tt><big>(</big><em>pid</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStop.check_pid" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStop.class_config_section">
+<em class="property">classmethod </em><tt class="descname">class_config_section</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStop.class_config_section" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the config class config section</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStop.class_get_help">
+<em class="property">classmethod </em><tt class="descname">class_get_help</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStop.class_get_help" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the help string for this class in ReST format.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStop.class_get_trait_help">
+<em class="property">classmethod </em><tt class="descname">class_get_trait_help</tt><big>(</big><em>trait</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStop.class_get_trait_help" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the help string for a single trait.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStop.class_print_help">
+<em class="property">classmethod </em><tt class="descname">class_print_help</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStop.class_print_help" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the help string for a single trait and print it.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStop.class_trait_names">
+<em class="property">classmethod </em><tt class="descname">class_trait_names</tt><big>(</big><em>**metadata</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStop.class_trait_names" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of all the names of this classes traits.</p>
+<p>This method is just like the <a class="reference internal" href="#IPython.parallel.apps.ipclusterapp.IPClusterStop.trait_names" title="IPython.parallel.apps.ipclusterapp.IPClusterStop.trait_names"><tt class="xref py py-meth docutils literal"><span class="pre">trait_names()</span></tt></a> method, but is unbound.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStop.class_traits">
+<em class="property">classmethod </em><tt class="descname">class_traits</tt><big>(</big><em>**metadata</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStop.class_traits" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of all the traits of this class.</p>
+<p>This method is just like the <a class="reference internal" href="#IPython.parallel.apps.ipclusterapp.IPClusterStop.traits" title="IPython.parallel.apps.ipclusterapp.IPClusterStop.traits"><tt class="xref py py-meth docutils literal"><span class="pre">traits()</span></tt></a> method, but is unbound.</p>
+<p>The TraitTypes returned don&#8217;t know anything about the values
+that the various HasTrait&#8217;s instances are holding.</p>
+<p>This follows the same algorithm as traits does and does not allow
+for any simple way of specifying merely that a metadata name
+exists, but has any value.  This is because get_metadata returns
+None if a metadata key doesn&#8217;t exist.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStop.classes">
+<tt class="descname">classes</tt><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStop.classes" title="Permalink to this definition">¶</a></dt>
+<dd><p>An instance of a Python list.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStop.clean_logs">
+<tt class="descname">clean_logs</tt><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStop.clean_logs" title="Permalink to this definition">¶</a></dt>
+<dd><p>A boolean (True, False) trait.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStop.clear_instance">
+<em class="property">classmethod </em><tt class="descname">clear_instance</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStop.clear_instance" title="Permalink to this definition">¶</a></dt>
+<dd><p>unset _instance for this class and singleton parents.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStop.config">
+<tt class="descname">config</tt><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStop.config" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait whose value must be an instance of a specified class.</p>
+<p>The value can also be an instance of a subclass of the specified class.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStop.config_file_name">
+<tt class="descname">config_file_name</tt><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStop.config_file_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait for unicode strings.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStop.config_file_paths">
+<tt class="descname">config_file_paths</tt><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStop.config_file_paths" title="Permalink to this definition">¶</a></dt>
+<dd><p>An instance of a Python list.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStop.config_file_specified">
+<tt class="descname">config_file_specified</tt><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStop.config_file_specified" title="Permalink to this definition">¶</a></dt>
+<dd><p>A boolean (True, False) trait.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStop.config_files">
+<tt class="descname">config_files</tt><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStop.config_files" title="Permalink to this definition">¶</a></dt>
+<dd><p>An instance of a Python list.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStop.copy_config_files">
+<tt class="descname">copy_config_files</tt><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStop.copy_config_files" title="Permalink to this definition">¶</a></dt>
+<dd><p>A boolean (True, False) trait.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStop.crash_handler_class">
+<tt class="descname">crash_handler_class</tt><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStop.crash_handler_class" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <tt class="xref py py-class docutils literal"><span class="pre">ParallelCrashHandler</span></tt></p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStop.created">
+<tt class="descname">created</tt><em class="property"> = None</em><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStop.created" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStop.description">
+<tt class="descname">description</tt><em class="property"> = &quot;Stop a running IPython cluster\n\nStop a running ipython cluster by its profile name or cluster\ndirectory. Cluster directories are named using the convention\n'profile_&lt;name&gt;'. If your cluster directory is in \nthe cwd or the ipython directory, you can simply refer to it\nusing its profile name, 'ipcluster stop --profile=&lt;profile&gt;`, otherwise\nuse the '--profile-dir' option.\n&quot;</em><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStop.description" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStop.examples">
+<tt class="descname">examples</tt><em class="property"> = '\nipcluster stop --profile=mycluster  # stop a running cluster by profile name\n'</em><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStop.examples" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStop.exit">
+<tt class="descname">exit</tt><big>(</big><em>exit_status=0</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStop.exit" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStop.extra_args">
+<tt class="descname">extra_args</tt><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStop.extra_args" title="Permalink to this definition">¶</a></dt>
+<dd><p>An instance of a Python list.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStop.flags">
+<tt class="descname">flags</tt><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStop.flags" title="Permalink to this definition">¶</a></dt>
+<dd><p>An instance of a Python dict.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStop.generate_config_file">
+<tt class="descname">generate_config_file</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStop.generate_config_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>generate default config file from Configurables</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStop.get_pid_from_file">
+<tt class="descname">get_pid_from_file</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStop.get_pid_from_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the pid from the pid file.</p>
+<p>If the  pid file doesn&#8217;t exist a <tt class="xref py py-exc docutils literal"><span class="pre">PIDFileError</span></tt> is raised.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStop.init_config_files">
+<tt class="descname">init_config_files</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStop.init_config_files" title="Permalink to this definition">¶</a></dt>
+<dd><p>[optionally] copy default config files into profile dir.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStop.init_crash_handler">
+<tt class="descname">init_crash_handler</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStop.init_crash_handler" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a crash handler, typically setting sys.excepthook to it.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStop.init_logging">
+<tt class="descname">init_logging</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStop.init_logging" title="Permalink to this definition">¶</a></dt>
+<dd><p>Start logging for this application.</p>
+<p>The default is to log to stdout using a StreaHandler. The log level
+starts at loggin.WARN, but this can be adjusted by setting the 
+<tt class="docutils literal"><span class="pre">log_level</span></tt> attribute.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStop.init_profile_dir">
+<tt class="descname">init_profile_dir</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStop.init_profile_dir" title="Permalink to this definition">¶</a></dt>
+<dd><p>initialize the profile dir</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStop.initialize">
+<tt class="descname">initialize</tt><big>(</big><em>argv=None</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStop.initialize" title="Permalink to this definition">¶</a></dt>
+<dd><p>initialize the app</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStop.initialize_subcommand">
+<tt class="descname">initialize_subcommand</tt><big>(</big><em>subc</em>, <em>argv=None</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStop.initialize_subcommand" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize a subcommand with argv.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStop.initialized">
+<em class="property">classmethod </em><tt class="descname">initialized</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStop.initialized" title="Permalink to this definition">¶</a></dt>
+<dd><p>Has an instance been created?</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStop.instance">
+<em class="property">classmethod </em><tt class="descname">instance</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStop.instance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a global instance of this class.</p>
+<p>This method create a new instance if none have previously been created
+and returns a previously created instance is one already exists.</p>
+<p>The arguments and keyword arguments passed to this method are passed
+on to the <a class="reference internal" href="#IPython.parallel.apps.ipclusterapp.IPClusterStop.__init__" title="IPython.parallel.apps.ipclusterapp.IPClusterStop.__init__"><tt class="xref py py-meth docutils literal"><span class="pre">__init__()</span></tt></a> method of the class upon instantiation.</p>
+<p class="rubric">Examples</p>
+<p>Create a singleton class using instance, and retrieve it:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">IPython.config.configurable</span> <span class="kn">import</span> <span class="n">SingletonConfigurable</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">Foo</span><span class="p">(</span><span class="n">SingletonConfigurable</span><span class="p">):</span> <span class="k">pass</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">foo</span> <span class="o">=</span> <span class="n">Foo</span><span class="o">.</span><span class="n">instance</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">foo</span> <span class="o">==</span> <span class="n">Foo</span><span class="o">.</span><span class="n">instance</span><span class="p">()</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<p>Create a subclass that is retrived using the base class instance:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">Bar</span><span class="p">(</span><span class="n">SingletonConfigurable</span><span class="p">):</span> <span class="k">pass</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">Bam</span><span class="p">(</span><span class="n">Bar</span><span class="p">):</span> <span class="k">pass</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">bam</span> <span class="o">=</span> <span class="n">Bam</span><span class="o">.</span><span class="n">instance</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">bam</span> <span class="o">==</span> <span class="n">Bar</span><span class="o">.</span><span class="n">instance</span><span class="p">()</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStop.ipython_dir">
+<tt class="descname">ipython_dir</tt><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStop.ipython_dir" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait for unicode strings.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStop.keyvalue_description">
+<tt class="descname">keyvalue_description</tt><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStop.keyvalue_description" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait for unicode strings.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStop.load_config_file">
+<tt class="descname">load_config_file</tt><big>(</big><em>suppress_errors=True</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStop.load_config_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load the config file.</p>
+<p>By default, errors in loading config are handled, and a warning
+printed on screen. For testing, the suppress_errors option is set
+to False, so errors will make tests fail.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStop.log_level">
+<tt class="descname">log_level</tt><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStop.log_level" title="Permalink to this definition">¶</a></dt>
+<dd><p>An enum that whose value must be in a given sequence.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStop.log_to_file">
+<tt class="descname">log_to_file</tt><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStop.log_to_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>A boolean (True, False) trait.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStop.log_url">
+<tt class="descname">log_url</tt><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStop.log_url" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait for unicode strings.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStop.loop">
+<tt class="descname">loop</tt><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStop.loop" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait whose value must be an instance of a specified class.</p>
+<p>The value can also be an instance of a subclass of the specified class.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStop.name">
+<tt class="descname">name</tt><em class="property"> = u'ipcluster'</em><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStop.name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStop.on_trait_change">
+<tt class="descname">on_trait_change</tt><big>(</big><em>handler</em>, <em>name=None</em>, <em>remove=False</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStop.on_trait_change" title="Permalink to this definition">¶</a></dt>
+<dd><p>Setup a handler to be called when a trait changes.</p>
+<p>This is used to setup dynamic notifications of trait changes.</p>
+<p>Static handlers can be created by creating methods on a HasTraits
+subclass with the naming convention &#8216;_[traitname]_changed&#8217;.  Thus,
+to create static handler for the trait &#8216;a&#8217;, create the method
+_a_changed(self, name, old, new) (fewer arguments can be used, see
+below).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>handler</strong> : callable</p>
+<blockquote>
+<div><p>A callable that is called when a trait changes.  Its 
+signature can be handler(), handler(name), handler(name, new)
+or handler(name, old, new).</p>
+</div></blockquote>
+<p><strong>name</strong> : list, str, None</p>
+<blockquote>
+<div><p>If None, the handler will apply to all traits.  If a list
+of str, handler will apply to all names in the list.  If a
+str, the handler will apply just to that name.</p>
+</div></blockquote>
+<p><strong>remove</strong> : bool</p>
+<blockquote class="last">
+<div><p>If False (the default), then install the handler.  If True
+then unintall it.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStop.option_description">
+<tt class="descname">option_description</tt><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStop.option_description" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait for unicode strings.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStop.overwrite">
+<tt class="descname">overwrite</tt><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStop.overwrite" title="Permalink to this definition">¶</a></dt>
+<dd><p>A boolean (True, False) trait.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStop.parse_command_line">
+<tt class="descname">parse_command_line</tt><big>(</big><em>argv=None</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStop.parse_command_line" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parse the command line arguments.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStop.print_alias_help">
+<tt class="descname">print_alias_help</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStop.print_alias_help" title="Permalink to this definition">¶</a></dt>
+<dd><p>Print the alias part of the help.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStop.print_description">
+<tt class="descname">print_description</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStop.print_description" title="Permalink to this definition">¶</a></dt>
+<dd><p>Print the application description.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStop.print_examples">
+<tt class="descname">print_examples</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStop.print_examples" title="Permalink to this definition">¶</a></dt>
+<dd><p>Print usage and examples.</p>
+<p>This usage string goes at the end of the command line help string
+and should contain examples of the application&#8217;s usage.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStop.print_flag_help">
+<tt class="descname">print_flag_help</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStop.print_flag_help" title="Permalink to this definition">¶</a></dt>
+<dd><p>Print the flag part of the help.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStop.print_help">
+<tt class="descname">print_help</tt><big>(</big><em>classes=False</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStop.print_help" title="Permalink to this definition">¶</a></dt>
+<dd><p>Print the help for each Configurable class in self.classes.</p>
+<p>If classes=False (the default), only flags and aliases are printed.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStop.print_options">
+<tt class="descname">print_options</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStop.print_options" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStop.print_subcommands">
+<tt class="descname">print_subcommands</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStop.print_subcommands" title="Permalink to this definition">¶</a></dt>
+<dd><p>Print the subcommand part of the help.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStop.print_version">
+<tt class="descname">print_version</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStop.print_version" title="Permalink to this definition">¶</a></dt>
+<dd><p>Print the version string.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStop.profile">
+<tt class="descname">profile</tt><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStop.profile" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait for unicode strings.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStop.reinit_logging">
+<tt class="descname">reinit_logging</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStop.reinit_logging" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStop.remove_pid_file">
+<tt class="descname">remove_pid_file</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStop.remove_pid_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove the pid file.</p>
+<p>This should be called at shutdown by registering a callback with
+<tt class="xref py py-func docutils literal"><span class="pre">reactor.addSystemEventTrigger()</span></tt>. This needs to return
+<tt class="docutils literal"><span class="pre">None</span></tt>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStop.signal">
+<tt class="descname">signal</tt><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStop.signal" title="Permalink to this definition">¶</a></dt>
+<dd><p>A integer trait.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStop.stage_default_config_file">
+<tt class="descname">stage_default_config_file</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStop.stage_default_config_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>auto generate default config file, and stage it into the profile.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStop.start">
+<tt class="descname">start</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStop.start" title="Permalink to this definition">¶</a></dt>
+<dd><p>Start the app for the stop subcommand.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStop.subapp">
+<tt class="descname">subapp</tt><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStop.subapp" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait whose value must be an instance of a specified class.</p>
+<p>The value can also be an instance of a subclass of the specified class.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStop.subcommand_description">
+<tt class="descname">subcommand_description</tt><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStop.subcommand_description" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait for unicode strings.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStop.subcommands">
+<tt class="descname">subcommands</tt><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStop.subcommands" title="Permalink to this definition">¶</a></dt>
+<dd><p>An instance of a Python dict.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStop.to_work_dir">
+<tt class="descname">to_work_dir</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStop.to_work_dir" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStop.trait_metadata">
+<tt class="descname">trait_metadata</tt><big>(</big><em>traitname</em>, <em>key</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStop.trait_metadata" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get metadata values for trait by key.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStop.trait_names">
+<tt class="descname">trait_names</tt><big>(</big><em>**metadata</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStop.trait_names" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of all the names of this classes traits.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStop.traits">
+<tt class="descname">traits</tt><big>(</big><em>**metadata</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStop.traits" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of all the traits of this class.</p>
+<p>The TraitTypes returned don&#8217;t know anything about the values
+that the various HasTrait&#8217;s instances are holding.</p>
+<p>This follows the same algorithm as traits does and does not allow
+for any simple way of specifying merely that a metadata name
+exists, but has any value.  This is because get_metadata returns
+None if a metadata key doesn&#8217;t exist.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStop.update_config">
+<tt class="descname">update_config</tt><big>(</big><em>config</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStop.update_config" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fire the traits events when the config is updated.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStop.version">
+<tt class="descname">version</tt><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStop.version" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait for unicode strings.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStop.work_dir">
+<tt class="descname">work_dir</tt><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStop.work_dir" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait for unicode strings.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.apps.ipclusterapp.IPClusterStop.write_pid_file">
+<tt class="descname">write_pid_file</tt><big>(</big><em>overwrite=False</em><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.IPClusterStop.write_pid_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a .pid file in the pid_dir with my pid.</p>
+<p>This must be called after pre_construct, which sets <cite>self.pid_dir</cite>.
+This raises <tt class="xref py py-exc docutils literal"><span class="pre">PIDFileError</span></tt> if the pid file exists already.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="function">
+<h2>Function<a class="headerlink" href="#function" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="IPython.parallel.apps.ipclusterapp.launch_new_instance">
+<tt class="descclassname">IPython.parallel.apps.ipclusterapp.</tt><tt class="descname">launch_new_instance</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.apps.ipclusterapp.launch_new_instance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create and run the IPython cluster.</p>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="IPython.parallel.apps.ipcontrollerapp.html" title="parallel.apps.ipcontrollerapp"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="IPython.parallel.apps.baseapp.html" title="parallel.apps.baseapp"
+             >previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <li><a href="../../search.html">search</a>|&nbsp;</li>
+       <li><a href="../../index.html">documentation </a> &raquo;</li>
+
+          <li><a href="../index.html" >The IPython API</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2008, The IPython Development Team.
+      Last updated on Jul 31, 2011.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1pre.
+    </div>
+  </body>
+</html>

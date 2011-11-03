@@ -1,0 +1,52 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+testing.ipunittest
+==================
+
+Module: :mod:`testing.ipunittest`
+---------------------------------
+Inheritance diagram for ``IPython.testing.ipunittest``:
+
+.. inheritance-diagram:: IPython.testing.ipunittest 
+   :parts: 3
+
+.. automodule:: IPython.testing.ipunittest
+
+.. currentmodule:: IPython.testing.ipunittest
+
+Classes
+-------
+
+:class:`Doc2UnitTester`
+~~~~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: Doc2UnitTester
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`IPython2PythonConverter`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: IPython2PythonConverter
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+Functions
+---------
+
+
+.. autofunction:: IPython.testing.ipunittest.count_failures
+
+
+.. autofunction:: IPython.testing.ipunittest.ipdocstring
+

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Decorators for labeling test objects.
 
 Decorators that merely return a modified version of the original function
@@ -10,27 +11,81 @@ This module provides a set of useful decorators meant to be ready to use in
 your own tests.  See the bottom of the file for the ready-made ones, and if you
 find yourself writing a new one that may be of generic use, add it here.
 
-NOTE: This file contains IPython-specific decorators and imports the
-numpy.testing.decorators file, which we've copied verbatim.  Any of our own
-code will be added at the bottom if we end up extending this.
+Included decorators:
+
+
+Lightweight testing that remains unittest-compatible.
+
+- @parametric, for parametric test support that is vastly easier to use than
+  nose's for debugging. With ours, if a test fails, the stack under inspection
+  is that of the test and not that of the test framework.
+
+- An @as_unittest decorator can be used to tag any normal parameter-less
+  function as a unittest TestCase.  Then, both nose and normal unittest will
+  recognize it as such.  This will make it easier to migrate away from Nose if
+  we ever need/want to while maintaining very lightweight tests.
+
+NOTE: This file contains IPython-specific decorators. Using the machinery in
+IPython.external.decorators, we import either numpy.testing.decorators if numpy is
+available, OR use equivalent code in IPython.external._decorators, which
+we've copied verbatim from numpy.
+
+Authors
+-------
+
+- Fernando Perez <Fernando.Perez@berkeley.edu>
 """
+
+#-----------------------------------------------------------------------------
+#  Copyright (C) 2009-2010  The IPython Development Team
+#
+#  Distributed under the terms of the BSD License.  The full license is in
+#  the file COPYING, distributed as part of this software.
+#-----------------------------------------------------------------------------
+
+#-----------------------------------------------------------------------------
+# Imports
+#-----------------------------------------------------------------------------
 
 # Stdlib imports
 import inspect
 import sys
+import tempfile
+import unittest
 
 # Third-party imports
 
-# This is Michele Simionato's decorator module, also kept verbatim.
-from decorator_msim import decorator, update_wrapper
+# This is Michele Simionato's decorator module, kept verbatim.
+from IPython.external.decorator import decorator
+
+# We already have python3-compliant code for parametric tests
+if sys.version[0]=='2':
+    from _paramtestpy2 import parametric, ParametricTestCase
+else:
+    from _paramtestpy3 import parametric, ParametricTestCase
+
+# Expose the unittest-driven decorators
+from ipunittest import ipdoctest, ipdocstring
 
 # Grab the numpy-specific decorators which we keep in a file that we
-# occasionally update from upstream: decorators_numpy.py is an IDENTICAL copy
-# of numpy.testing.decorators.
-from decorators_numpy import *
+# occasionally update from upstream: decorators.py is a copy of
+# numpy.testing.decorators, we expose all of it here.
+from IPython.external.decorators import *
 
-##############################################################################
-# Local code begins
+#-----------------------------------------------------------------------------
+# Classes and functions
+#-----------------------------------------------------------------------------
+
+# Simple example of the basic idea
+def as_unittest(func):
+    """Decorator to make a simple function into a normal test via unittest."""
+    class Tester(unittest.TestCase):
+        def test(self):
+            func()
+
+    Tester.__name__ = func.__name__
+
+    return Tester
 
 # Utility functions
 
@@ -51,21 +106,23 @@ def apply_wrapper(wrapper,func):
 def make_label_dec(label,ds=None):
     """Factory function to create a decorator that applies one or more labels.
 
-    :Parameters:
+    Parameters
+    ----------
       label : string or sequence
       One or more labels that will be applied by the decorator to the functions
     it decorates.  Labels are attributes of the decorated function with their
     value set to True.
 
-    :Keywords:
       ds : string
       An optional docstring for the resulting decorator.  If not given, a
       default docstring is auto-generated.
 
-    :Returns:
+    Returns
+    -------
       A decorator.
 
-    :Examples:
+    Examples
+    --------
 
     A simple labeling decorator:
     >>> slow = make_label_dec('slow')
@@ -151,7 +208,7 @@ def skipif(skip_condition, msg=None):
 
         # Allow for both boolean or callable skip conditions.
         if callable(skip_condition):
-            skip_val = lambda : skip_condition()
+            skip_val = skip_condition
         else:
             skip_val = lambda : skip_condition
 
@@ -193,11 +250,13 @@ def skipif(skip_condition, msg=None):
 def skip(msg=None):
     """Decorator factory - mark a test function for skipping from test suite.
 
-    :Parameters:
+    Parameters
+    ----------
       msg : string
         Optional message to be added.
 
-    :Returns:
+    Returns
+    -------
        decorator : function
          Decorator, which, when applied to a function, causes SkipTest
          to be raised, with the optional message added.
@@ -206,36 +265,39 @@ def skip(msg=None):
     return skipif(True,msg)
 
 
+def onlyif(condition, msg):
+    """The reverse from skipif, see skipif for details."""
+
+    if callable(condition):
+        skip_condition = lambda : not condition()
+    else:
+        skip_condition = lambda : not condition
+
+    return skipif(skip_condition, msg)
+
 #-----------------------------------------------------------------------------
 # Utility functions for decorators
-def numpy_not_available():
-    """Can numpy be imported?  Returns true if numpy does NOT import.
+def module_not_available(module):
+    """Can module be imported?  Returns true if module does NOT import.
 
-    This is used to make a decorator to skip tests that require numpy to be
+    This is used to make a decorator to skip tests that require module to be
     available, but delay the 'import numpy' to test execution time.
     """
     try:
-        import numpy
-        np_not_avail = False
+        mod = __import__(module)
+        mod_not_avail = False
     except ImportError:
-        np_not_avail = True
+        mod_not_avail = True
 
-    return np_not_avail
+    return mod_not_avail
 
 #-----------------------------------------------------------------------------
 # Decorators for public use
 
-skip_doctest = make_label_dec('skip_doctest',
-    """Decorator - mark a function or method for skipping its doctest.
-
-    This decorator allows you to mark a function whose docstring you wish to
-    omit from testing, while preserving the docstring for introspection, help,
-    etc.""")                              
-
 # Decorators to skip certain tests on specific platforms.
 skip_win32 = skipif(sys.platform == 'win32',
                     "This test does not run under Windows")
-skip_linux = skipif(sys.platform == 'linux2',
+skip_linux = skipif(sys.platform.startswith('linux'),
                     "This test does not run under Linux")
 skip_osx = skipif(sys.platform == 'darwin',"This test does not run under OS X")
 
@@ -243,12 +305,31 @@ skip_osx = skipif(sys.platform == 'darwin',"This test does not run under OS X")
 # Decorators to skip tests if not on specific platforms.
 skip_if_not_win32 = skipif(sys.platform != 'win32',
                            "This test only runs under Windows")
-skip_if_not_linux = skipif(sys.platform != 'linux2',
+skip_if_not_linux = skipif(not sys.platform.startswith('linux'),
                            "This test only runs under Linux")
 skip_if_not_osx = skipif(sys.platform != 'darwin',
                          "This test only runs under OSX")
 
 # Other skip decorators
-skipif_not_numpy = skipif(numpy_not_available,"This test requires numpy")
+skipif_not_numpy = skipif(module_not_available('numpy'),"This test requires numpy")
 
-skipknownfailure = skip('This test is known to fail')
+skipif_not_sympy = skipif(module_not_available('sympy'),"This test requires sympy")
+
+skip_known_failure = knownfailureif(True,'This test is known to fail')
+
+# A null 'decorator', useful to make more readable code that needs to pick
+# between different decorators based on OS or other conditions
+null_deco = lambda f: f
+
+# Some tests only run where we can use unicode paths. Note that we can't just
+# check os.path.supports_unicode_filenames, which is always False on Linux.
+try:
+    f = tempfile.NamedTemporaryFile(prefix=u"tmp€")
+except UnicodeEncodeError:
+    unicode_paths = False
+else:
+    unicode_paths = True
+    f.close()
+
+onlyif_unicode_paths = onlyif(unicode_paths, ("This test is only applicable "
+                                    "where we can use unicode in filenames."))
