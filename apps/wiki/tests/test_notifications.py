@@ -82,16 +82,22 @@ class ReviewTests(TestCaseBase):
         assert 'Your revision has been approved' in mail.outbox[1].subject
 
     def test_based_on_approved(self):
+        u1 = user()
+        u1.save()
         r1 = revision(is_approved=False,
+                     creator=u1,
                      is_ready_for_localization=False,
                      save=True)
+        u2 = user()
+        u2.save()
         r2 = revision(document=r1.document, based_on=r1, is_approved=False,
+                     creator=u2,
                      is_ready_for_localization=False,
                      save=True)
         eq_(0, len(mail.outbox))
         self._review_revision(r=r2)
         eq_(3, len(mail.outbox))
-        assert 'new approved revision' in mail.outbox[0].subject
+        assert 'has a new approved revision' in mail.outbox[0].subject
         assert 'Your revision has been approved' in mail.outbox[1].subject
         assert 'A revision you contributed to has' in mail.outbox[2].subject
 
