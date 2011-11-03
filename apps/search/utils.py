@@ -61,8 +61,3 @@ def locale_or_default(locale):
     if locale not in LOCALES:
         locale = settings.LANGUAGE_CODE
     return locale
-
-
-def sphinx_locale(locale):
-    """Given a locale string like 'en-US', return a Sphinx-ready locale."""
-    return crc32(locale)
