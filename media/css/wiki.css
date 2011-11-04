@@ -310,6 +310,10 @@ html[lang="ja"] #more-help div.support-search input.text {
     padding: 15px 0;
 }
 
+#document-form form li.comment {
+    padding-top: 0;
+}
+
 #document-form form li li {
     display: inline-block;
     padding: 0 10px 0 0;
@@ -340,13 +344,13 @@ article.form-page form li label {
 #document-form label[for="id_is_localizable"],
 #document-form label[for="id_is_archived"],
 #document-form label[for="id_allow_discussion"],
-#localize-document label[for="id_allow_discussion"] {
+#localize-document label[for="id_allow_discussion"],
+#document-form label[for="id_needs_change"] {
     display: inline;
 }
 
-#id_is_localizable,
-#id_is_archived,
-#id_allow_discussion {
+#document-form li > input[type="checkbox"],
+#localize-document li > input[type="checkbox"] {
     margin: 0 .5em;
 }
 
@@ -832,6 +836,7 @@ body.review #content-fields textarea {
 
 #approve-modal div.message,
 #approve-modal div.ready-for-l10n,
+#approve-modal div.needs-change,
 #reject-modal div.message {
     margin: 10px 0;
 }
@@ -873,6 +878,15 @@ body.review #content-fields textarea {
 #approve-modal li:hover div.help-text {
     display: block;
 }
+
+div.needs-change .comment {
+    margin: 0 0 0 17px;
+}
+
+div.needs-change .comment label {
+    display: block;
+}
+
 
 /* Revision diffs */
 div.revision-diff header {

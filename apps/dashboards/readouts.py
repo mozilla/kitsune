@@ -745,6 +745,47 @@ class UnreadyForLocalizationReadout(Readout):
                     updated=reviewed)
 
 
+class NeedsChangesReadout(Readout):
+    """Articles which need change."""
+    title = _lazy(u'Need Changes')
+    description = _lazy(u'Articles that require changes.')
+    # No short_title; the Contributors dash lacks an Overview readout
+    details_link_text = _lazy(u'All articles that require changes...')
+    slug = 'need-changes'
+    column4_label = _lazy(u'Comment')
+    modes = [(MOST_VIEWED, _lazy('Most Viewed'))]
+
+    def _query_and_params(self, max):
+        return ('SELECT wiki_document.slug, wiki_document.title, '
+            'wiki_document.needs_change_comment, '
+            'visits.visits '
+            'FROM wiki_document '
+            'LEFT JOIN dashboards_wikidocumentvisits visits ON '
+                'wiki_document.id=visits.document_id AND '
+                'visits.period=%s '
+            'WHERE wiki_document.locale=%s '  # shouldn't be necessary
+            'AND wiki_document.needs_change '
+            'AND NOT wiki_document.is_archived '
+            'GROUP BY wiki_document.id '
+            + self._order_clause() + self._limit_clause(max),
+            (THIS_WEEK, settings.WIKI_DEFAULT_LANGUAGE))
+
+    def _order_clause(self):
+        # Put the most recently approved articles first, as those are the most
+        # recent to have transitioned onto this dashboard or to change which
+        # revision causes them to be on this dashboard.
+        return ('ORDER BY visits.visits DESC, wiki_document.title ASC')
+
+    def _format_row(self, (slug, title, comment, visits)):
+        return dict(title=title,
+                    url=reverse('wiki.document_revisions',
+                                args=[slug],
+                                locale=settings.WIKI_DEFAULT_LANGUAGE),
+                    visits=visits,
+                    custom=True,
+                    column4_data=comment)
+
+
 # L10n Dashboard tables that have their own whole-page views:
 L10N_READOUTS = SortedDict((t.slug, t) for t in
     [MostVisitedTranslationsReadout, TemplateTranslationsReadout,
@@ -754,7 +795,7 @@ L10N_READOUTS = SortedDict((t.slug, t) for t in
 # Contributors ones:
 CONTRIBUTOR_READOUTS = SortedDict((t.slug, t) for t in
     [MostVisitedDefaultLanguageReadout, UnreviewedReadout,
-     UnreadyForLocalizationReadout, UnhelpfulReadout])
+     NeedsChangesReadout, UnreadyForLocalizationReadout, UnhelpfulReadout])
 
 # All:
 READOUTS = L10N_READOUTS.copy()

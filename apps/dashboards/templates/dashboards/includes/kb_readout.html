@@ -26,7 +26,7 @@
       {% if row.updated is defined %}
         {{ row.updated|timesince }}
       {% elif row.custom %}
-        {{ row.column4_data }}
+        <div class="custom">{{ row.column4_data }}</div>
       {% else %}
         {% if row.status %}
           <a href="{{ row.status_url }}">
