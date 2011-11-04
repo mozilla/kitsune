@@ -357,16 +357,12 @@ def review_revision(request, document_slug, revision_id):
     # former approved versions:
     should_ask_significance = not doc.parent and doc.current_revision
 
-    based_on_revs = []
-    recent_contributors = set()
-    r = rev
-    # Ancestor unapproved revisions that are newer than the current revision.
-    while (r and r.is_approved == False
-           and r.created > getattr(doc.current_revision, 'created',
-                                   datetime.fromordinal(1))):
-        based_on_revs.append(r)
-        recent_contributors.add(r.creator.username)
-        r = r.based_on
+    based_on_revs = doc.revisions.all()
+    last_approved_date = getattr(doc.current_revision, 'created',
+                                   datetime.fromordinal(1))
+    based_on_revs = based_on_revs.filter(created__gt=last_approved_date)
+    recent_contributors = based_on_revs.values_list('creator__username',
+                                                    flat=True)
 
     if request.method == 'POST':
         form = ReviewForm(request.POST)
