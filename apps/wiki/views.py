@@ -38,7 +38,8 @@ from wiki.models import (Document, Revision, HelpfulVote, ImportantDate,
                          GROUPED_OPERATING_SYSTEMS, FIREFOX_VERSIONS,
                          GROUPED_FIREFOX_VERSIONS, PRODUCT_TAGS)
 from wiki.parser import wiki_to_html
-from wiki.tasks import send_reviewed_notification, schedule_rebuild_kb
+from wiki.tasks import (send_reviewed_notification, schedule_rebuild_kb,
+                        send_contributor_notification)
 from wiki.utils import find_related_documents
 
 
@@ -356,6 +357,13 @@ def review_revision(request, document_slug, revision_id):
     # former approved versions:
     should_ask_significance = not doc.parent and doc.current_revision
 
+    based_on_revs = doc.revisions.all()
+    last_approved_date = getattr(doc.current_revision, 'created',
+                                   datetime.fromordinal(1))
+    based_on_revs = based_on_revs.filter(created__gt=last_approved_date)
+    recent_contributors = based_on_revs.values_list('creator__username',
+                                                    flat=True)
+
     if request.method == 'POST':
         form = ReviewForm(request.POST)
         if form.is_valid() and not rev.reviewed:
@@ -387,6 +395,7 @@ def review_revision(request, document_slug, revision_id):
             # there's a Watch table entry) to revision creator.
             msg = form.cleaned_data['comment']
             send_reviewed_notification.delay(rev, doc, msg)
+            send_contributor_notification(based_on_revs, rev, doc, msg)
 
             # Schedule KB rebuild?
             statsd.incr('wiki.review')
@@ -406,6 +415,7 @@ def review_revision(request, document_slug, revision_id):
 
     data = {'revision': rev, 'document': doc, 'form': form,
             'parent_revision': parent_revision,
+            'recent_contributors': list(recent_contributors),
             'should_ask_significance': should_ask_significance}
     data.update(SHOWFOR_DATA)
     return jingo.render(request, template, data)
