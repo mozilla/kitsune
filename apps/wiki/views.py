@@ -979,7 +979,9 @@ def _document_form_initial(document):
                      if t.name not in PRODUCT_TAGS],
             'products': [t.name for t in document.tags.all()
                          if t.name in PRODUCT_TAGS],
-            'allow_discussion': document.allow_discussion}
+            'allow_discussion': document.allow_discussion,
+            'needs_change': document.needs_change,
+            'needs_change_comment': document.needs_change_comment}
 
 
 def _save_rev_and_notify(rev_form, creator, document):
