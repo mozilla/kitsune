@@ -11,7 +11,7 @@ from sumo.widgets import ImageWidget
 from upload.forms import clean_image_extension
 from upload.utils import check_file_size, FileTooLargeError
 from users.models import Profile
-from users.passwords import password_allowed
+from users.passwords import password_allowed, username_allowed
 from users.widgets import FacebookURLWidget, TwitterURLWidget
 
 
@@ -93,6 +93,7 @@ class RegisterForm(forms.ModelForm):
 
     def clean(self):
         super(RegisterForm, self).clean()
+        username = self.cleaned_data.get('username')
         password = self.cleaned_data.get('password')
         password2 = self.cleaned_data.get('password2')
 
@@ -100,6 +101,7 @@ class RegisterForm(forms.ModelForm):
             raise forms.ValidationError(_('Passwords must match.'))
 
         _check_password(password)
+        _check_username(username)
 
         return self.cleaned_data
 
@@ -243,4 +245,12 @@ def _check_password(password):
     if not password_allowed(password):
         msg = _('The password entered is known to be commonly used and '
                 'is not allowed.')
+        raise forms.ValidationError(msg)
+
+
+def _check_username(username):
+    if not username_allowed(username):
+        msg = _('The user name you entered is inappropriate. Please pick '
+                'another and consider that our helpers are other Firefox '
+                'users just like you.')
         raise forms.ValidationError(msg)

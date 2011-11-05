@@ -9,7 +9,7 @@ PASSWORD_CACHE_KEY = 'password-blacklist'
 USERNAME_CACHE_KEY = 'username-blacklist'
 
 
-def username_allowed(username):
+def username_allowed(username=''):
     """Returns True if the given username is not a blatent bad word."""
     blacklist = cache.get(USERNAME_CACHE_KEY)
     if blacklist is None:
