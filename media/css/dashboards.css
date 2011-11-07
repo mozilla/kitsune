@@ -103,13 +103,13 @@ h2.subtitle {
 }
 
 .dashboards table.documents td:nth-child(1) {
-    width: 261px;
+    width: 230px;
 }
 
 .dashboards table.documents td:nth-child(2) {
     padding-right: 6px;
     text-align: right;
-    width: 110px;
+    width: 75px;
 }
 
 .html-rtl .dashboards table.documents td:nth-child(2) {
@@ -121,7 +121,7 @@ h2.subtitle {
 .dashboards table.documents td:nth-child(3),
 .dashboards table.documents th:nth-child(3) {
     padding-left: 0;
-    width: 160px;
+    width: 125px;
 }
 
 .html-rtl .dashboards table.documents td:nth-child(3),
@@ -134,7 +134,7 @@ h2.subtitle {
 .dashboards table.documents th:nth-child(4) {
     text-align: right;
     vertical-align: middle;
-    width: 203px;
+    width: 225px;
 }
 
 .html-rtl .dashboards table.documents td:nth-child(4),
@@ -215,6 +215,26 @@ h2.subtitle {
     padding: 9px 0 0 12px;
 }
 
+/* Some tweaks for Need Changes table */
+#need-changes-table th:nth-child(4),
+#need-changes-table td:nth-child(4) {
+    padding-top: 7px;
+    text-align: left;
+}
+
+#need-changes-table td {
+    padding-top: 14px;
+    vertical-align: top;
+}
+
+#need-changes-table div.custom {
+    max-height: 50px;
+    overflow: hidden;
+}
+
+#need-changes-table tr:hover div.custom {
+    max-height: none;
+}
 
 /* Status badges */
 
