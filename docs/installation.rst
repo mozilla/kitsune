@@ -69,8 +69,12 @@ Getting the Source
 
 Grab the source from Github using::
 
-    git clone --recursive git://github.com/jsocol/kitsune.git
-    cd kitsune
+    $ git clone --recursive git://github.com/jsocol/kitsune.git
+    $ cd kitsune
+
+If you forgot to add ``--recursive``, you can get all the submodules with::
+
+    $ git submodule update --init --recursive
 
 
 Installing the Packages
@@ -84,7 +88,7 @@ client. You can install these using ``pip`` (if you don't have ``pip``, you
 can get it with ``easy_install pip``) or via a package manager.
 To use ``pip``, you only need to do this::
 
-    sudo pip install -r requirements/compiled.txt
+    $ sudo pip install -r requirements/compiled.txt
 
 
 Python Packages
@@ -95,14 +99,8 @@ known as the "vendor library". This makes the packages available to Python
 without installing them globally and keeps them pinned to known-compatible
 versions.
 
-If you clone Kitsune with ``--recursive`` as above, all the dependencies, some
-of which are referenced via ``git submodule``, should come down automatically.
-To bring the submodules back up to date when the vendor library changes, run
-this::
-
-    cd vendor
-    git submodule update --init --recursive
-    cd ..
+See the :ref:`vendor library <vendor-chapter>` documentation for more
+information on getting the vendor lib and keeping it up to date.
 
 
 Configuration
@@ -254,7 +252,7 @@ development database safe from tests.
 
 Running the test suite is easy::
 
-    ./manage.py test -s --noinput --logging-clear-handlers
+    $ ./manage.py test -s --noinput --logging-clear-handlers
 
 For more information, see the :ref:`test documentation <tests-chapter>`.
 
