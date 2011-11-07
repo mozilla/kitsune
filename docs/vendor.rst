@@ -4,18 +4,29 @@
 Vendor Library
 ==============
 
-The vendor library is the easiest way to manage pure-Python dependencies. It
-contains the source code for all the library Kitsune depends on.
+To help make setup faster and deployment easier, we pull all of our pure-Python
+dependencies into a "vendor library" (``kitsune/vendor``) and add them to the
+path in ``manage.py``.
+
+The vendor library used to be optional, with a virtualenv option available, as
+well. While it's still possible to install the compiled requirements in a
+virtualenv, we've decided to simplify docs/setup/tooling and encourage
+environments to be as similar to production as possible, by settling on the
+vendor library as the only method for managing dependencies.
 
 
-Getting the Vendor Library
-==========================
+Getting the Vendor Library and Keeping Up-to-Date
+=================================================
 
-Getting the vendor library is easy. In your Kitsune clone, just type::
+If you cloned Kitsune with ``--recursive``, you already have the vendor library
+in ``vendor/``.
 
-    $ git clone --recursive git://github.com/jsocol/kitsune-lib.git vendor
+If you didn't clone with ``--recursive``, or need to update the vendor library
+(or other submodules), just run::
 
-Git will clone the repository and all its submodules.
+    $ git submodule update --init --recursive
+
+Aliasing that to something short (e.g. ``gsu``) is recommended.
 
 
 Updating the Vendor Library
@@ -119,7 +130,16 @@ Make sure you add any dependencies from the new library, as well.
 Requirements Files
 ==================
 
-We still maintain requirements files in ``requirements/``. Sometimes people
-will use these to install the requirements in a virtual environment. When you
-update the vendor repo, you should make sure to update version numbers (if
-necessary) in the requirements files.
+There are a few requirements that are not included in the vendor library
+because they need to be (or can be, for performance benefits) compiled (or have
+compiled dependencies themselves).
+
+You can :ref:`install <installation-chapter>` these in a virtualenv or at the
+system level by running::
+
+    $ pip install -r requirements/compiled.txt
+
+If you want to run coverage builds or are having issues with tests, you can
+run::
+
+    $ pip install -r requirements/tests-compiled.txt
