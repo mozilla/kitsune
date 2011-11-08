@@ -1074,7 +1074,9 @@ class ReviewRevisionTests(TestCaseBase):
         significance = SIGNIFICANCES[0][0]
         response = post(self.client, 'wiki.review_revision',
                         {'approve': 'Approve Revision',
-                         'significance': significance},
+                         'significance': significance,
+                         'needs_change': True,
+                         'needs_change_comment': 'comment'},
                         args=[self.document.slug, self.revision.id])
 
         eq_(200, response.status_code)
@@ -1082,6 +1084,8 @@ class ReviewRevisionTests(TestCaseBase):
         eq_(significance, r.significance)
         assert r.reviewed
         assert r.is_approved
+        assert r.document.needs_change
+        eq_('comment', r.document.needs_change_comment)
 
         # Verify that revision creator is now in contributors
         assert r.creator in self.document.contributors.all()

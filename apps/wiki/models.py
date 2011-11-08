@@ -235,6 +235,11 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin):
     # List of users that have contributed to this document.
     contributors = models.ManyToManyField(User)
 
+    # Needs change fields.
+    needs_change = models.BooleanField(default=False, help_text=_lazy(
+        u'If checked, this document needs updates.'), db_index=True)
+    needs_change_comment = models.CharField(max_length=500, blank=True)
+
     # firefox_versions,
     # operating_systems:
     #    defined in the respective classes below. Use them as in

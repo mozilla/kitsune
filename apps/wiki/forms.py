@@ -120,6 +120,16 @@ class DocumentForm(forms.ModelForm):
 
     locale = forms.CharField(widget=forms.HiddenInput())
 
+    needs_change = forms.BooleanField(
+        label=_lazy(u'Needs change:'),
+        initial=False,
+        required=False)
+
+    needs_change_comment = forms.CharField(
+        label=_lazy(u'Comment:'),
+        widget=forms.Textarea(),
+        required=False)
+
     def clean_slug(self):
         slug = self.cleaned_data['slug']
         # Blacklist /, ? and +
@@ -130,12 +140,18 @@ class DocumentForm(forms.ModelForm):
     class Meta:
         model = Document
         fields = ('title', 'slug', 'category', 'is_localizable', 'products',
-                  'tags', 'locale', 'is_archived', 'allow_discussion')
+                  'tags', 'locale', 'is_archived', 'allow_discussion',
+                  'needs_change', 'needs_change_comment')
 
     def save(self, parent_doc, **kwargs):
         """Persist the Document form, and return the saved Document."""
         doc = super(DocumentForm, self).save(commit=False, **kwargs)
         doc.parent = parent_doc
+
+        # If document doesn't need change, clear out the comment.
+        if not doc.needs_change:
+            doc.needs_change_comment = ''
+
         doc.save()
         self.save_m2m()  # not strictly necessary since we didn't change
                          # any m2m data since we instantiated the doc
@@ -245,6 +261,16 @@ class ReviewForm(forms.Form):
     is_ready_for_localization = forms.BooleanField(
         initial=False,
         label=_lazy(u'Ready for localization'),
+        required=False)
+
+    needs_change = forms.BooleanField(
+        label=_lazy(u'Needs change'),
+        initial=False,
+        required=False)
+
+    needs_change_comment = forms.CharField(
+        label=_lazy(u'Comment:'),
+        widget=forms.Textarea(),
         required=False)
 
 

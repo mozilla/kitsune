@@ -107,14 +107,19 @@ class DocumentEditingTests(TestCase):
     """Tests for the document-editing view"""
 
     fixtures = ['users.json']
+    client_class = LocalizingClient
+
+    def setUp(self):
+        super(DocumentEditingTests, self).setUp()
+        u = user(save=True)
+        add_permission(u, Document, 'change_document')
+        self.client.login(username=u.username, password='testpass')
 
     def test_retitling(self):
         """When the title of an article is edited, a redirect is made."""
         # Not testing slug changes separately; the model tests cover those plus
         # slug+title changes. If title changes work in the view, the rest
         # should also.
-        client = LocalizingClient()
-        client.login(username='admin', password='testpass')
         new_title = 'Some New Title'
         d, r = doc_rev()
         old_title = d.title
@@ -122,48 +127,45 @@ class DocumentEditingTests(TestCase):
         data.update({'title': new_title,
                      'slug': d.slug,
                      'form': 'doc'})
-        client.post(reverse('wiki.edit_document', args=[d.slug]), data)
+        self.client.post(reverse('wiki.edit_document', args=[d.slug]), data)
         eq_(new_title, Document.uncached.get(slug=d.slug).title)
         assert Document.uncached.get(title=old_title).redirect_url()
 
     def test_changing_products(self):
         """Changing products works as expected."""
-        client = LocalizingClient()
-        client.login(username='admin', password='testpass')
         d, r = doc_rev()
         data = new_document_data()
         data.update({'products': ['desktop', 'sync'],
                      'form': 'doc'})
-        client.post(reverse('wiki.edit_document', args=[d.slug]), data)
+        self.client.post(reverse('wiki.edit_document', args=[d.slug]), data)
         tags_eq(d, ['desktop', 'sync'])
         data.update({'products': ['mobile'],
                      'form': 'doc'})
-        client.post(reverse('wiki.edit_document', args=[data['slug']]), data)
+        self.client.post(reverse('wiki.edit_document', args=[data['slug']]),
+                         data)
         tags_eq(d, ['mobile'])
 
     @mock.patch.object(Site.objects, 'get_current')
     def test_invalid_slugs(self, get_current):
         """Slugs cannot contain /."""
         get_current.return_value.domain = 'testserver'
-        client = LocalizingClient()
-        client.login(username='admin', password='testpass')
         data = new_document_data()
         error = 'The slug provided is not valid.'
 
         data['slug'] = 'inva/lid'
-        response = client.post(reverse('wiki.new_document'), data)
+        response = self.client.post(reverse('wiki.new_document'), data)
         self.assertContains(response, error)
 
         data['slug'] = 'no-question-marks?'
-        response = client.post(reverse('wiki.new_document'), data)
+        response = self.client.post(reverse('wiki.new_document'), data)
         self.assertContains(response, error)
 
         data['slug'] = 'no+plus'
-        response = client.post(reverse('wiki.new_document'), data)
+        response = self.client.post(reverse('wiki.new_document'), data)
         self.assertContains(response, error)
 
         data['slug'] = 'valid'
-        response = client.post(reverse('wiki.new_document'), data)
+        response = self.client.post(reverse('wiki.new_document'), data)
         self.assertRedirects(response, reverse('wiki.document_revisions',
                                                args=[data['slug']],
                                                locale='en-US'))
@@ -171,7 +173,6 @@ class DocumentEditingTests(TestCase):
     def test_localized_based_on(self):
         """Editing a localized article 'based on' an older revision of the
         localization is OK."""
-        self.client.login(username='admin', password='testpass')
         en_r = revision(save=True)
         fr_d = document(parent=en_r.document, locale='fr', save=True)
         revision(document=fr_d, based_on=en_r, is_approved=True, save=True)
@@ -185,6 +186,28 @@ class DocumentEditingTests(TestCase):
         eq_(int(input.value), en_r.pk)
         eq_(doc('#id_keywords')[0].attrib['value'], 'oui')
         eq_(doc('#id_summary').text(), 'lipsum')
+
+    def test_needs_change(self):
+        """Test setting and unsetting the needs change flag"""
+        # Create a new document and edit it, setting needs_change.
+        comment = 'Please update for Firefix.next'
+        doc = revision(save=True).document
+        data = new_document_data()
+        data.update({'needs_change': True,
+                     'needs_change_comment': comment,
+                     'form': 'doc'})
+        self.client.post(reverse('wiki.edit_document', args=[doc.slug]), data)
+        doc = Document.uncached.get(pk=doc.pk)
+        assert doc.needs_change
+        eq_(comment, doc.needs_change_comment)
+
+        # Clear out needs_change
+        data.update({'needs_change': False,
+                     'needs_change_comment': comment})
+        self.client.post(reverse('wiki.edit_document', args=[doc.slug]), data)
+        doc = Document.uncached.get(pk=doc.pk)
+        assert not doc.needs_change
+        eq_('', doc.needs_change_comment)
 
 
 class AddRemoveContributorTests(TestCase):

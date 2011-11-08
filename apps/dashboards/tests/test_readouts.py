@@ -5,7 +5,8 @@ from nose.tools import eq_
 from dashboards.readouts import (UnreviewedReadout, OutOfDateReadout,
                                  TemplateTranslationsReadout, overview_rows,
                                  MostVisitedTranslationsReadout,
-                                 UnreadyForLocalizationReadout)
+                                 UnreadyForLocalizationReadout,
+                                 NeedsChangesReadout)
 from sumo.tests import TestCase
 from wiki.models import (MAJOR_SIGNIFICANCE, MEDIUM_SIGNIFICANCE,
                          TYPO_SIGNIFICANCE)
@@ -399,3 +400,18 @@ class UnreadyTests(ReadoutTestCase):
                                significance=MEDIUM_SIGNIFICANCE,
                                save=True)
         eq_([ready.document.title], self.titles())
+
+
+class NeedsChangesTests(ReadoutTestCase):
+    """Tests for the Needs Changes readout."""
+    readout = NeedsChangesReadout
+
+    def test_unrevieweds_after_current(self):
+        """A document marked with needs_change=True should show up."""
+        document = revision(save=True).document
+        document.needs_change = True
+        document.needs_change_comment = "Please update for Firefox.next"
+        document.save()
+        titles = self.titles()
+        eq_(1, len(titles))
+        assert document.title in titles
