@@ -124,29 +124,6 @@ class SearchTest(SphinxTestCase):
         results = wiki_search.filter(category__in=[30])
         eq_(1, len(results))
 
-    def test_category_exclude_nothing(self):
-        """Excluding no categories should return results."""
-        # Note: We keep the query('') here to force a new S and thus
-        # not inadvertently test with an S that's not in an original
-        # state.
-        results = wiki_search.query('')
-        self.assertNotEquals(0, len(results))
-
-        results = question_search.query('')
-        self.assertNotEquals(0, len(results))
-
-        results = discussion_search.query('')
-        self.assertNotEquals(0, len(results))
-
-    def test_category_exclude(self):
-        q = {'q': 'audio', 'format': 'json', 'w': 1}
-        response = self.client.get(reverse('search'), q)
-        eq_(2, json.loads(response.content)['total'])
-
-        q = {'q': 'audio', 'category': -10, 'format': 'json', 'w': 1}
-        response = self.client.get(reverse('search'), q)
-        eq_(0, json.loads(response.content)['total'])
-
     def test_category_invalid(self):
         qs = {'a': 1, 'w': 3, 'format': 'json', 'category': 'invalid'}
         response = self.client.get(reverse('search'), qs)

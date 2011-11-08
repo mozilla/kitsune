@@ -60,8 +60,7 @@ def search(request, template=None):
                    settings.SEARCH_DEFAULT_CATEGORIES
     except ValueError:
         category = settings.SEARCH_DEFAULT_CATEGORIES
-    r.setlist('category', [x for x in category if x > 0])
-    exclude_category = [abs(x) for x in category if x < 0]
+    r.setlist('category', category)
 
     # Basic form
     if a == '0':
@@ -119,9 +118,6 @@ def search(request, template=None):
     # Category filter
     if cleaned['category']:
         wiki_s = wiki_s.filter(category__in=cleaned['category'])
-
-    if exclude_category:
-        wiki_s = wiki_s.exclude(category__in=exclude_category)
 
     # Locale filter
     wiki_s = wiki_s.filter(locale=language)
