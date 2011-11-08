@@ -25,6 +25,7 @@
             initAOABanner();
         } else if ($body.is('.review')) { // Review pages
             ShowFor.initForTags();
+            initNeedsChange();
         }
 
         if ($body.is('.edit, .new, .translate')) { // Document form page
@@ -411,7 +412,7 @@
         // "Needs change" checkbox. Also, make the textarea required
         // when checked.
         var $checkbox = $('#id_needs_change'),
-            $comment = $('#document-form li.comment');
+            $comment = $('#document-form li.comment,#approve-modal div.comment');
 
         if ($checkbox.length > 0) {
             updateComment();
@@ -423,7 +424,7 @@
                 $comment.slideDown();
                 $comment.find('textarea').attr('required', 'required');
             } else {
-                $comment.slideUp();
+                $comment.hide();
                 $comment.find('textarea').removeAttr('required');
             }
         }

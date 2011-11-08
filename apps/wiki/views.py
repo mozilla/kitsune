@@ -351,7 +351,9 @@ def review_revision(request, document_slug, revision_id):
     rev = get_object_or_404(Revision, pk=revision_id,
                             document__slug=document_slug)
     doc = rev.document
-    form = ReviewForm()
+    form = ReviewForm(
+        initial={'needs_change': doc.needs_change,
+                 'needs_change_comment': doc.needs_change_comment})
 
     # Don't ask significance if this doc is a translation or if it has no
     # former approved versions:
@@ -382,6 +384,14 @@ def review_revision(request, document_slug, revision_id):
                     'is_ready_for_localization']
 
             rev.save()
+
+            # Update the needs change bit.
+            if (doc.locale == settings.WIKI_DEFAULT_LANGUAGE and
+                doc.allows_editing_by(request.user)):
+                doc.needs_change = form.cleaned_data['needs_change']
+                doc.needs_change_comment = \
+                    form.cleaned_data['needs_change_comment']
+                doc.save()
 
             # Send notifications of approvedness and readiness:
             if rev.is_ready_for_localization or rev.is_approved:

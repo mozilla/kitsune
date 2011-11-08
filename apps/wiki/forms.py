@@ -122,6 +122,7 @@ class DocumentForm(forms.ModelForm):
 
     needs_change = forms.BooleanField(
         label=_lazy(u'Needs change:'),
+        initial=False,
         required=False)
 
     needs_change_comment = forms.CharField(
@@ -260,6 +261,16 @@ class ReviewForm(forms.Form):
     is_ready_for_localization = forms.BooleanField(
         initial=False,
         label=_lazy(u'Ready for localization'),
+        required=False)
+
+    needs_change = forms.BooleanField(
+        label=_lazy(u'Needs change'),
+        initial=False,
+        required=False)
+
+    needs_change_comment = forms.CharField(
+        label=_lazy(u'Comment:'),
+        widget=forms.Textarea(),
         required=False)
 
 

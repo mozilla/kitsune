@@ -27,7 +27,7 @@
               {% for field in document_form.visible_fields() if
                  (field.name != 'is_localizable' or not document.translations.exists()) %}
                 <li{% if field.name == 'needs_change_comment' %} class="comment"{% endif %}>
-                  {{ field|label_with_help }}{{ field|safe }}
+                  {{ field|label_with_help }}{{ field }}
                 </li>
               {% endfor %}
             </ul>

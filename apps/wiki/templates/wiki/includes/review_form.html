@@ -27,7 +27,7 @@
           Please pick the appropriate revision level below and consider sending
           a thank you to the person who submitted this.{% endtrans %}
         </p>
-        {{ form.significance|safe }}
+        {{ form.significance }}
       {% endif %}
       {% if not should_ask_significance and not self_approving %}
         <p>
@@ -53,9 +53,18 @@
       {% if document.is_localizable and user.has_perm('wiki.mark_ready_for_l10n') %}
         <div class="ready-for-l10n">
           <label>
-            {{ form.is_ready_for_localization|safe }}
-            {{ form.is_ready_for_localization.label|safe }}
+            {{ form.is_ready_for_localization }}
+            {{ form.is_ready_for_localization.label }}
           </label>
+        </div>
+      {% endif %}
+      {% if document.locale == settings.WIKI_DEFAULT_LANGUAGE and document.allows_editing_by(user) %}
+        <div class="needs-change">
+          {{ form.needs_change }}
+          {{ form.needs_change|label_with_help }}
+          <div class="comment">
+            {{ form.needs_change_comment|label_with_help }}{{ form.needs_change_comment }}
+          </div>
         </div>
       {% endif %}
       <input type="submit" name="approve" value="{{ _('Accept') }}">

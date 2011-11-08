@@ -836,6 +836,7 @@ body.review #content-fields textarea {
 
 #approve-modal div.message,
 #approve-modal div.ready-for-l10n,
+#approve-modal div.needs-change,
 #reject-modal div.message {
     margin: 10px 0;
 }
@@ -877,6 +878,15 @@ body.review #content-fields textarea {
 #approve-modal li:hover div.help-text {
     display: block;
 }
+
+div.needs-change .comment {
+    margin: 0 0 0 17px;
+}
+
+div.needs-change .comment label {
+    display: block;
+}
+
 
 /* Revision diffs */
 div.revision-diff header {
