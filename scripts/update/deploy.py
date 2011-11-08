@@ -10,7 +10,7 @@ import sys
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-from commander.deploy import task, hosts, hostgroups
+from commander.deploy import task, hostgroups
 
 import commander_settings as settings
 
@@ -47,11 +47,43 @@ def install_cron(ctx):
 
 
 @task
-def update_sumo(ctx, tag):
-    """Do typical sumo update"""
-    # TODO:
-    # * Add deploy-to-webservers.
-    # * Call install_cron after deploy-to-webservers.
-    update_code(tag)
+def checkin_changes(ctx):
+    ctx.local(settings.DEPLOY_SCRIPT)
+
+
+@hostgroups(settings.WEB_HOSTGROUP, remote_kwargs={'ssh_key': settings.SSH_KEY})
+def deploy_app(ctx):
+    ctx.remote(settings.REMOTE_UPDATE_SCRIPT)
+    ctx.remote("/bin/touch %s" % settings.REMOTE_WSGI)
+
+
+@hostgroups(settings.CELERY_HOSTGROUP, remote_kwargs={'ssh_key': settings.SSH_KEY})
+def update_celery(ctx):
+    ctx.remote(settings.REMOTE_UPDATE_SCRIPT)
+    ctx.remote('/sbin/service %s restart' % settings.CELERY_SERVICE)
+
+
+@task
+def pre_update(ctx, ref=settings.UPDATE_REF):
+    update_code(ref)
+
+
+@task
+def update(ctx):
     update_locales()
     schematic()
+
+
+@task
+def deploy(ctx):
+    install_cron()
+    checkin_changes()
+    deploy_app()
+    update_celery()
+
+
+@task
+def update_sumo(ctx, tag):
+    """Do typical sumo update"""
+    pre_update(tag)
+    update()
