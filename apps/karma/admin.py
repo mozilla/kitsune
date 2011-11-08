@@ -7,7 +7,8 @@ from django.template import RequestContext
 
 from karma.actions import KarmaAction
 from karma.models import Title
-from karma.tasks import init_karma, update_top_contributors
+from karma.tasks import (init_karma, update_top_contributors,
+                         recalculate_karma_points)
 from questions.karma_actions import (AnswerAction, AnswerMarkedHelpfulAction,
                                      AnswerMarkedNotHelpfulAction,
                                      FirstAnswerAction, SolutionAction)
@@ -35,6 +36,12 @@ def karma(request):
         init_karma.delay()
         messages.add_message(request, messages.SUCCESS,
                              'init_karma task queued!')
+        return HttpResponseRedirect(request.path)
+
+    if request.POST.get('recalculate'):
+        recalculate_karma_points.delay()
+        messages.add_message(request, messages.SUCCESS,
+                             'recalculate_karma_points task queued!')
         return HttpResponseRedirect(request.path)
 
     if request.POST.get('update-top'):

@@ -82,6 +82,14 @@
       <input type="submit" value="Init Karma" />
     </form>
   </section>
+  <section>
+    <h1>Recalculate Karma Points</h1>
+    <form action="" method="POST">
+      {% csrf_token %}
+      <input type="hidden" name="recalculate" value="1" />
+      <input type="submit" value="Recalculate Points" />
+    </form>
+  </section>
 {% endblock %}
 
 {% block footer %}

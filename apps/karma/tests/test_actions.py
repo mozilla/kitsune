@@ -4,23 +4,11 @@ from nose import SkipTest
 from nose.tools import eq_
 import waffle
 
-from karma.actions import KarmaAction
 from karma.manager import KarmaManager
+from karma.tests import TestAction1, TestAction2
 from sumo.redis_utils import redis_client, RedisError
 from sumo.tests import TestCase
 from users.tests import user
-
-
-class TestAction1(KarmaAction):
-    """A test action for testing!"""
-    action_type = 'test-action-1'
-    points = 3
-
-
-class TestAction2(KarmaAction):
-    """Another test action for testing!"""
-    action_type = 'test-action-2'
-    points = 7
 
 
 class KarmaActionTests(TestCase):
