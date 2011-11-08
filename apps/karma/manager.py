@@ -91,6 +91,29 @@ class KarmaManager(object):
             if pts:
                 self.redis.zadd(key, userid, pts)
 
+    def recalculate_points(self, user, actions):
+        """Recalculate the points for a given user.
+
+        `actions` is a dict that maps action types to points."""
+        # TODO: think about having a register mechanism so KarmaManager can
+        # know about all the (registered) actions.
+        key = hash_key(user)
+        values = self.redis.hgetall(key)
+
+        # Remove existing point values
+        point_keys = [k for k in values.keys() if k.startswith('points:')]
+        for k in point_keys:
+            values.pop(k)
+            self.redis.hdel(key, k)
+            # TODO: Redis v2.4.x allows deleting multiple keys in one call.
+
+        # Recalculate all the points
+        for k in values:
+            action_type, action_date = k.split(':')
+            points = actions[action_type] * int(values[k])
+            self.redis.hincrby(key, 'points:{d}'.format(
+                d=action_date), points)
+
     # Getters:
     def top_alltime(self, count=10):
         """Returns the top users based on alltime points."""

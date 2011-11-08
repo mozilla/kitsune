@@ -1,7 +1,10 @@
+from django.contrib.auth.models import User
+
 from celery.decorators import task
 import waffle
 
 from karma.cron import update_top_contributors as _update_top_contributors
+from karma.manager import KarmaManager
 from questions.karma_actions import (AnswerAction, AnswerMarkedHelpfulAction,
                                      AnswerMarkedNotHelpfulAction,
                                      FirstAnswerAction, SolutionAction)
@@ -34,6 +37,22 @@ def init_karma():
 def update_top_contributors():
     """Updates the top contributor sorted sets."""
     _update_top_contributors()
+
+
+@task
+def recalculate_karma_points():
+    """Go through all karma action data and recalculate points."""
+    if not waffle.switch_is_active('karma'):
+        return
+
+    mgr = KarmaManager()
+    actions = [AnswerAction, AnswerMarkedHelpfulAction,
+               AnswerMarkedNotHelpfulAction, FirstAnswerAction,
+               SolutionAction]
+    actions_dict = dict((a.action_type, a.points) for a in actions)
+
+    for userid in User.objects.values_list('id', flat=True):
+        mgr.recalculate_points(userid, actions_dict)
 
 
 @task
