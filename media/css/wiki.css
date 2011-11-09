@@ -1176,3 +1176,25 @@ div.video .kbox-container {
     font-size: 21px;
     font-family: Helvetica, Arial, sans-serif;
 }
+
+#wiki-discussions .thread {
+    list-style-type: none;
+}
+
+#wiki-discussions .watch-form {
+    clear: left;
+}
+
+#wiki-discussions .watch-form input.watchtoggle {
+    border-radius: 4px;
+    -moz-border-radius: 4px;
+    -webkit-border-radius: 4px;
+    float: left;
+    padding: 2px ;
+    margin: 0 10px 0 0;
+}
+
+#wiki-discussions .watch-form input.watchtoggle.on {
+    background: #d7f8e0;
+    color: #10c493;
+}

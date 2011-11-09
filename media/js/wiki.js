@@ -35,6 +35,7 @@
 
         initDiffPicker();
         initDiffToggle();
+        watchDiscussion();
 
         Marky.createFullToolbar('.editor-tools', '#id_content');
 
@@ -403,6 +404,20 @@
                 .attr('value', referrer))
             .append($('<input type="hidden" name="query"/>')
                 .attr('value', query));
+    }
+
+    function watchDiscussion() {
+        // For a thread on the all discussions for a locale.
+        $('.watch-form').click(function() {
+            var form = $(this);
+            $.post(form.attr('action'), form.serialize(), function() {
+                form.find('.watchtoggle').toggleClass('on')
+            }).error(function() {
+                // error growl
+            });
+            return false
+        });
+
     }
 
     $(document).ready(init);

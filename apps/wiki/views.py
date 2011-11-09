@@ -24,7 +24,9 @@ from tower import ugettext_lazy as _lazy
 from tower import ugettext as _
 
 from access.decorators import permission_required, login_required
+from kbforums.models import Thread
 from sumo.helpers import urlparams
+from sumo_locales import LOCALES
 from sumo.urlresolvers import reverse
 from sumo.utils import paginate, smart_int, get_next_url
 from wiki import DOCUMENTS_PER_PAGE
@@ -966,6 +968,14 @@ def remove_contributor(request, document_slug, user_id):
 
     return jingo.render(request, 'wiki/confirm_remove_contributor.html',
                         {'document': document, 'contributor': user})
+
+
+def discussions(request):
+    locale_word = LOCALES[request.locale].english
+    threads = Thread.objects.filter(document__locale=request.locale,
+                                    document__allow_discussion=True)
+    return jingo.render(request, 'wiki/discussions.html',
+                        {'locale_word': locale_word, 'threads': threads})
 
 
 def _document_form_initial(document):

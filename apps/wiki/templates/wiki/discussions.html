@@ -1,0 +1,28 @@
+{% extends "wiki/base.html" %}
+
+{% block content %}
+    <article id="wiki-discussions" class="main">
+      <h1>Discussions in {{ locale_word }} </h1>
+      <ul>
+        {% for t in threads %}
+          <li class="thread">
+            {% if user.is_authenticated() %}
+              <form class="watch-form" action="{{ url('wiki.discuss.watch_thread', t.document.slug, t.id) }}" method="post">
+                {{ csrf() }}
+                {% if t.watches.filter(user=request.user) %}
+                  {% set watch = _('Stop watching') %}
+                  <input type="hidden" name="watch" value="no" />
+                  <input type="image" alt="{{ watch }}" title="{{ watch }}" class="watchtoggle on" src="{{ MEDIA_URL }}img/forums/watch.png"/>
+                {% else %}
+                  {% set watch = _('Watch this thread') %}
+                  <input type="hidden" name="watch" value="yes" />
+                  <input type="image" alt="{{ watch }}" title="{{ watch }}" class="watchtoggle off" src="{{ MEDIA_URL }}img/forums/watch.png"/>
+                {% endif %}
+              </form>
+            {% endif %}
+            <a href="{{ t.get_absolute_url() }}">{{ t }}</a>
+          </li>
+        {% endfor %}
+      </ul>
+    </article>
+{% endblock %}

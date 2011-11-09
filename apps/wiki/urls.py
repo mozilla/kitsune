@@ -89,6 +89,9 @@ document_patterns = patterns('wiki.views',
 urlpatterns = patterns('wiki.views',
     url(r'^$', redirect_to, {'url': 'home'}, name='wiki.home'),
 
+    # All kb discussions by locale.
+    url(r'^/discussions$', 'discussions', name='wiki.discussions'),
+
     # (Un)subscribe to locale 'ready for review' notifications.
     url(r'^/watch-ready-for-review$', 'watch_locale',
         name='wiki.locale_watch'),
