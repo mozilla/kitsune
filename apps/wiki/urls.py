@@ -120,6 +120,10 @@ urlpatterns = patterns('wiki.views',
 )
 
 urlpatterns += patterns('kbforums.views',
+    # All kb discussions by locale.
+    url(r'^/all/discussions$', 'locale_discussions',
+        name='wiki.locale_discussions'),
+
     url(r'^/discuss/watch_locale$', 'watch_locale',
         name='wiki.discuss.watch_locale'),
 )

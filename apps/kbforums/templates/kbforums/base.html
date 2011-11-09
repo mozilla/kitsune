@@ -5,7 +5,9 @@
 {% set scripts = ('forums',) %}
 
 {% block side_top %}
-  {{ document_tabs(document, document.parent, user, 'discussion', settings) }}
+  {% if document %}
+    {{ document_tabs(document, document.parent, user, 'discussion', settings) }}
+  {% endif %}
   {% if user.is_authenticated() %}
     <div id="doc-watch">
       {% include "kbforums/includes/watch_locale.html" %}

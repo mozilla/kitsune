@@ -9,6 +9,7 @@
       {% set watch = _('Get emailed when there is new discussion activity in my locale.') %}
       <input type="hidden" name="watch" value="yes" />
     {% endif %}
+    <input type="hidden" name="next" value="{{ request.get_full_path() }}">
     <input type="submit" class="link-btn" value="{{ watch }}" />
   </form>
 {% endif %}

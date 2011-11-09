@@ -17,6 +17,7 @@ from kbforums.feeds import ThreadsFeed, PostsFeed
 from kbforums.forms import (ReplyForm, NewThreadForm,
                             EditThreadForm, EditPostForm)
 from kbforums.models import Thread, Post
+from sumo_locales import LOCALES
 from sumo.urlresolvers import reverse
 from sumo.utils import paginate, get_next_url
 from users.models import Setting
@@ -385,3 +386,31 @@ def post_preview_async(request, document_slug):
     post = Post(creator=request.user, content=request.POST.get('content', ''))
     return jingo.render(request, 'kbforums/includes/post_preview.html',
                         {'post_preview': post})
+
+
+def locale_discussions(request):
+    locale_name = LOCALES[request.locale].native
+    threads = Thread.objects.filter(document__locale=request.locale,
+                                    document__allow_discussion=True)
+    try:
+        sort = int(request.GET.get('sort', 0))
+    except ValueError:
+        sort = 0
+
+    try:
+        desc = int(request.GET.get('desc', 0))
+    except ValueError:
+        desc = 0
+    desc_toggle = 0 if desc else 1
+
+    threads_ = sort_threads(threads, sort, desc)
+    threads_ = paginate(request, threads_,
+                        per_page=kbforums.THREADS_PER_PAGE)
+    is_watching_locale = (request.user.is_authenticated() and
+                          NewThreadInLocaleEvent.is_notifying(
+                            request.user, locale=request.locale))
+    return jingo.render(request, 'kbforums/discussions.html',
+                        {'locale_name': locale_name, 'threads': threads_,
+                         'desc_toggle': desc_toggle,
+                         'is_watching_locale': is_watching_locale})
+

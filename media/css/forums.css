@@ -99,6 +99,17 @@ ol.threads li div.type {
     text-align: center;
     width: 8%;
 }
+
+#all-threads .threads-columns {
+    overflow: auto;
+    background-color: #F0F0F0;
+}
+#all-threads ol.threads-columns li {
+    border-left: #fff 2px solid;
+    border-bottom: 0px;
+    padding-right: 3px;
+}
+
 /* End column widths */
 
 ol.forums li,
@@ -289,6 +300,21 @@ ol.posts li div.author {
     padding: 0 1% 1em 1%;
 }
 
+#all-threads #watch_locale {
+    margin-bottom: 15px;
+}
+#threads input.watchtoggle {
+    border-radius: 4px;
+    -moz-border-radius: 4px;
+    -webkit-border-radius: 4px;
+    float: left;
+    padding: 2px ;
+}
+
+#threads input.watchtoggle.on {
+    background: #d7f8e0;
+    color: #10c493;
+}
 /* Reply Preview */
 #post-preview {
     margin: 10px 0 0;

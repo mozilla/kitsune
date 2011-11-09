@@ -25,6 +25,20 @@
             $textarea.val(oldtext + reply_text);
             return true;
         });
+        watchDiscussion();
+    }
+    function watchDiscussion() {
+        // For a thread on the all discussions for a locale.
+        $('.watch-form').click(function() {
+            var form = $(this);
+            $.post(form.attr('action'), form.serialize(), function() {
+                form.find('.watchtoggle').toggleClass('on')
+            }).error(function() {
+                // error growl
+            });
+            return false
+        });
+
     }
 
     $(document).ready(init);
