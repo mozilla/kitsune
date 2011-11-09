@@ -86,4 +86,6 @@ class S(oedipus.S):
                 else settings.SPHINX_PORT)
 
 
+ExcerptTimeoutError = oedipus.ExcerptTimeoutError
+ExcerptSocketErrorError = oedipus.ExcerptSocketErrorError
 SearchError = oedipus.SearchError

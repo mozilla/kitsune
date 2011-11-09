@@ -14,9 +14,10 @@ from django.views.decorators.cache import cache_page
 import jingo
 import jinja2
 from mobility.decorators import mobile_template
+from statsd import statsd
 from tower import ugettext as _
 
-from search import SearchError
+from search import SearchError, ExcerptTimeoutError, ExcerptSocketErrorError
 from search.utils import locale_or_default, clean_excerpt
 from forums.models import Thread, discussion_search
 from questions.models import question_search
@@ -311,8 +312,16 @@ def search(request, template=None):
                 results.append(result)
 
             elif type_ == 'question':
-                summary = jinja2.Markup(
-                    clean_excerpt(question_s.excerpt(doc)[0]))
+                try:
+                    excerpt = question_s.excerpt(doc)[0]
+                except ExcerptTimeoutError:
+                    statsd.incr('search.excerpt.timeout')
+                    excerpt = u''
+                except ExcerptSocketErrorError:
+                    statsd.incr('search.excerpt.socketerror')
+                    excerpt = u''
+
+                summary = jinja2.Markup(clean_excerpt(excerpt))
 
                 result = {
                     'search_summary': summary,
@@ -329,8 +338,16 @@ def search(request, template=None):
                 # to get this manually.
                 thread = Thread.objects.get(pk=doc.thread_id)
 
-                summary = jinja2.Markup(
-                    clean_excerpt(discussion_s.excerpt(doc)[0]))
+                try:
+                    excerpt = discussion_s.excerpt(doc)[0]
+                except ExcerptTimeoutError:
+                    statsd.incr('search.excerpt.timeout')
+                    excerpt = u''
+                except ExcerptSocketErrorError:
+                    statsd.incr('search.excerpt.socketerror')
+                    excerpt = u''
+
+                summary = jinja2.Markup(clean_excerpt(excerpt))
 
                 result = {
                     'search_summary': summary,
