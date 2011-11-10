@@ -18,7 +18,7 @@ import commander_settings as settings
 @task
 def update_code(ctx, tag):
     with ctx.lcd(settings.SRC_DIR):
-        ctx.local("git fetch -t")
+        ctx.local("git fetch")
         ctx.local("git checkout -f %s" % tag)
         ctx.local("git submodule sync")
         ctx.local("git submodule update --init --recursive")
