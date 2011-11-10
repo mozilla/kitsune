@@ -22,7 +22,7 @@ def update_code(ctx, tag):
         ctx.local("git checkout -f %s" % tag)
         ctx.local("git submodule sync")
         ctx.local("git submodule update --init --recursive")
-        ctx.local("python2.6 manage.py compress_assets")
+        ctx.local("LANG=en_US.UTF-8 python2.6 manage.py compress_assets")
 
 
 @task
