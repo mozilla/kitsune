@@ -64,8 +64,24 @@ def update_celery(ctx):
 
 
 @task
+def update_info(ctx):
+    with ctx.lcd(settings.SRC_DIR):
+        ctx.local("date")
+        ctx.local("git branch")
+        ctx.local("git log -3")
+        ctx.local("git status")
+        ctx.local("git submodule status")
+        with ctx.lcd("locale"):
+            ctx.local("svn info")
+            ctx.local("svn status")
+
+        ctx.local("git rev-parse HEAD > media/revision.txt")
+
+
+@task
 def pre_update(ctx, ref=settings.UPDATE_REF):
     update_code(ref)
+    update_info()
 
 
 @task
