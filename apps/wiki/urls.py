@@ -91,6 +91,8 @@ urlpatterns = patterns('wiki.views',
 
     # All kb discussions by locale.
     url(r'^/discussions$', 'discussions', name='wiki.discussions'),
+    url(r'^/discussions/watch$', 'watch_locale_discussions',
+        name='wiki.watch_locale_discussions'),
 
     # (Un)subscribe to locale 'ready for review' notifications.
     url(r'^/watch-ready-for-review$', 'watch_locale',
