@@ -182,7 +182,7 @@ def search(request, template=None):
                 discussion_s = discussion_s.filter(is_locked=1)
 
         if cleaned['forum']:
-            discussion_s = discussion_s.filter(forum_id=cleaned['forum'])
+            discussion_s = discussion_s.filter(forum_id__in=cleaned['forum'])
 
     # Filters common to support and discussion forums
     # Created filter
