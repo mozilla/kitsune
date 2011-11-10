@@ -45,14 +45,9 @@ def recalculate_karma_points():
     if not waffle.switch_is_active('karma'):
         return
 
-    mgr = KarmaManager()
-    actions = [AnswerAction, AnswerMarkedHelpfulAction,
-               AnswerMarkedNotHelpfulAction, FirstAnswerAction,
-               SolutionAction]
-    actions_dict = dict((a.action_type, a.points) for a in actions)
-
-    for userid in User.objects.values_list('id', flat=True):
-        mgr.recalculate_points(userid, actions_dict)
+    qs = User.objects.filter(is_active=True).values_list('id', flat=True)
+    for chunk in chunked(qs, 2500):
+        _process_recalculate_chunk.apply_async(args=[chunk])
 
 
 @task
@@ -87,3 +82,16 @@ def _process_answer_vote_chunk(data, **kwargs):
             action_class = AnswerMarkedNotHelpfulAction
         action_class(vote.answer.creator_id, vote.created).save(async=False,
                                                                 redis=redis)
+
+
+@task
+def _process_recalculate_chunk(data, **kwargs):
+    """Recalculate karma points for a chunk of user ids."""
+    mgr = KarmaManager()
+    actions = [AnswerAction, AnswerMarkedHelpfulAction,
+               AnswerMarkedNotHelpfulAction, FirstAnswerAction,
+               SolutionAction]
+    actions_dict = dict((a.action_type, a.points) for a in actions)
+
+    for userid in data:
+        mgr.recalculate_points(userid, actions_dict)
