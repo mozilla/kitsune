@@ -1,7 +1,10 @@
+from django.contrib.auth.models import User
+
 from celery.decorators import task
 import waffle
 
 from karma.cron import update_top_contributors as _update_top_contributors
+from karma.manager import KarmaManager
 from questions.karma_actions import (AnswerAction, AnswerMarkedHelpfulAction,
                                      AnswerMarkedNotHelpfulAction,
                                      FirstAnswerAction, SolutionAction)
@@ -37,6 +40,17 @@ def update_top_contributors():
 
 
 @task
+def recalculate_karma_points():
+    """Go through all karma action data and recalculate points."""
+    if not waffle.switch_is_active('karma'):
+        return
+
+    qs = User.objects.filter(is_active=True).values_list('id', flat=True)
+    for chunk in chunked(qs, 2500):
+        _process_recalculate_chunk.apply_async(args=[chunk])
+
+
+@task
 def _process_question_chunk(data, **kwargs):
     """Save karma data for a chunk of questions."""
     redis = redis_client(name='karma')
@@ -68,3 +82,16 @@ def _process_answer_vote_chunk(data, **kwargs):
             action_class = AnswerMarkedNotHelpfulAction
         action_class(vote.answer.creator_id, vote.created).save(async=False,
                                                                 redis=redis)
+
+
+@task
+def _process_recalculate_chunk(data, **kwargs):
+    """Recalculate karma points for a chunk of user ids."""
+    mgr = KarmaManager()
+    actions = [AnswerAction, AnswerMarkedHelpfulAction,
+               AnswerMarkedNotHelpfulAction, FirstAnswerAction,
+               SolutionAction]
+    actions_dict = dict((a.action_type, a.points) for a in actions)
+
+    for userid in data:
+        mgr.recalculate_points(userid, actions_dict)
