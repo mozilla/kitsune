@@ -1,27 +1,31 @@
 -- Drop Tiki tables resurrected during the move to PHX.
 
-DROP TABLE events_event;
-DROP TABLE events_signup;
-DROP TABLE galaxia_activities;
-DROP TABLE galaxia_activity_roles;
-DROP TABLE galaxia_instance_activities;
-DROP TABLE galaxia_instance_comments;
-DROP TABLE galaxia_instances;
-DROP TABLE galaxia_processes;
-DROP TABLE galaxia_roles;
-DROP TABLE galaxia_transitions;
-DROP TABLE galaxia_user_roles;
-DROP TABLE galaxia_workitems;
-DROP TABLE messu_archive;
-DROP TABLE messu_messages;
-DROP TABLE messu_sent;
-DROP TABLE metrics_assigned;
-DROP TABLE metrics_metric;
-DROP TABLE metrics_tab;
-DROP TABLE se_weights;
-DROP TABLE users_grouppermissions;
-DROP TABLE users_groups;
-DROP TABLE users_objectpermissions;
-DROP TABLE users_permissions;
-DROP TABLE users_usergroups;
-DROP TABLE users_users;
+DROP TABLE IF EXISTS events_event;
+DROP TABLE IF EXISTS events_signup;
+DROP TABLE IF EXISTS galaxia_activities;
+DROP TABLE IF EXISTS galaxia_activity_roles;
+DROP TABLE IF EXISTS galaxia_instance_activities;
+DROP TABLE IF EXISTS galaxia_instance_comments;
+DROP TABLE IF EXISTS galaxia_instances;
+DROP TABLE IF EXISTS galaxia_processes;
+DROP TABLE IF EXISTS galaxia_roles;
+DROP TABLE IF EXISTS galaxia_transitions;
+DROP TABLE IF EXISTS galaxia_user_roles;
+DROP TABLE IF EXISTS galaxia_workitems;
+DROP TABLE IF EXISTS messu_archive;
+DROP TABLE IF EXISTS messu_messages;
+DROP TABLE IF EXISTS messu_sent;
+DROP TABLE IF EXISTS metrics_assigned;
+DROP TABLE IF EXISTS metrics_metric;
+DROP TABLE IF EXISTS metrics_tab;
+DROP TABLE IF EXISTS se_weights;
+DROP TABLE IF EXISTS users_grouppermissions;
+DROP TABLE IF EXISTS users_groups;
+DROP TABLE IF EXISTS users_objectpermissions;
+DROP TABLE IF EXISTS users_permissions;
+DROP TABLE IF EXISTS users_usergroups;
+DROP TABLE IF EXISTS users_users;
+
+-- While we're dropping tables...
+
+DROP TABLE IF EXISTS wiki_helpfulvoteold;
