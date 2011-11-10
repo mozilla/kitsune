@@ -1,0 +1,253 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Making a patch &mdash; IPython 0.11 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.11',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="IPython 0.11 documentation" href="../../index.html" />
+    <link rel="up" title="Working with IPython source code" href="index.html" />
+    <link rel="next" title="Git for development" href="git_development.html" />
+    <link rel="prev" title="Following the latest source" href="following_latest.html" /> 
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<a href="../../index.html"><img src="../../_static/logo.png" border="0" alt="IPython Documentation"/></a>
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="git_development.html" title="Git for development"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="following_latest.html" title="Following the latest source"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <li><a href="../../search.html">search</a>|&nbsp;</li>
+       <li><a href="../../index.html">documentation </a> &raquo;</li>
+
+          <li><a href="../index.html" >IPython developer&#8217;s guide</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Working with IPython source code</a> &raquo;</li> 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Making a patch</a><ul>
+<li><a class="reference internal" href="#making-patches">Making patches</a><ul>
+<li><a class="reference internal" href="#overview">Overview</a></li>
+<li><a class="reference internal" href="#in-detail">In detail</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#moving-from-patching-to-development">Moving from patching to development</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="following_latest.html"
+                        title="previous chapter">Following the latest source</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="git_development.html"
+                        title="next chapter">Git for development</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/development/gitwash/patching.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="making-a-patch">
+<h1>Making a patch<a class="headerlink" href="#making-a-patch" title="Permalink to this headline">¶</a></h1>
+<p>You&#8217;ve discovered a bug or something else you want to change in <a class="reference external" href="http://ipython.org">ipython</a> - excellent!</p>
+<p>You&#8217;ve worked out a way to fix it - even better!</p>
+<p>You want to tell us about it - best of all!</p>
+<p>The easiest way is to make a <em>patch</em> or set of patches.  Here we explain
+how.  Making a patch is the simplest and quickest, but if you&#8217;re going
+to be doing anything more than simple quick things, please consider
+following the <a class="reference internal" href="git_development.html#git-development"><em>Git for development</em></a> model instead.</p>
+<div class="section" id="making-patches">
+<span id="id1"></span><h2>Making patches<a class="headerlink" href="#making-patches" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="overview">
+<h3>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-python"><pre># tell git who you are
+git config --global user.email you@yourdomain.example.com
+git config --global user.name "Your Name Comes Here"
+# get the repository if you don't have it
+git clone git://github.com/ipython/ipython.git
+# make a branch for your patching
+cd ipython
+git branch the-fix-im-thinking-of
+git checkout the-fix-im-thinking-of
+# hack, hack, hack
+# Tell git about any new files you've made
+git add somewhere/tests/test_my_bug.py
+# commit work in progress as you go
+git commit -am 'BF - added tests for Funny bug'
+# hack hack, hack
+git commit -am 'BF - added fix for Funny bug'
+# make the patch files
+git format-patch -M -C master</pre>
+</div>
+<p>Then, send the generated patch files to the <a class="reference external" href="http://mail.scipy.org/mailman/listinfo/IPython-dev">ipython mailing list</a> - where we will thank you warmly.</p>
+</div>
+<div class="section" id="in-detail">
+<h3>In detail<a class="headerlink" href="#in-detail" title="Permalink to this headline">¶</a></h3>
+<ol class="arabic">
+<li><p class="first">Tell <a class="reference external" href="http://git-scm.com/">git</a> who you are so it can label the commits you&#8217;ve made:</p>
+<div class="highlight-python"><pre>git config --global user.email you@yourdomain.example.com
+git config --global user.name "Your Name Comes Here"</pre>
+</div>
+</li>
+<li><p class="first">If you don&#8217;t already have one, clone a copy of the <a class="reference external" href="http://ipython.org">ipython</a> repository:</p>
+<div class="highlight-python"><pre>git clone git://github.com/ipython/ipython.git
+cd ipython</pre>
+</div>
+</li>
+<li><p class="first">Make a &#8216;feature branch&#8217;.  This will be where you work on your bug
+fix.  It&#8217;s nice and safe and leaves you with access to an unmodified
+copy of the code in the main branch:</p>
+<div class="highlight-python"><pre>git branch the-fix-im-thinking-of
+git checkout the-fix-im-thinking-of</pre>
+</div>
+</li>
+<li><p class="first">Do some edits, and commit them as you go:</p>
+<div class="highlight-python"><pre># hack, hack, hack
+# Tell git about any new files you've made
+git add somewhere/tests/test_my_bug.py
+# commit work in progress as you go
+git commit -am 'BF - added tests for Funny bug'
+# hack hack, hack
+git commit -am 'BF - added fix for Funny bug'</pre>
+</div>
+<p>Note the <tt class="docutils literal"><span class="pre">-am</span></tt> options to <tt class="docutils literal"><span class="pre">commit</span></tt>. The <tt class="docutils literal"><span class="pre">m</span></tt> flag just signals
+that you&#8217;re going to type a message on the command line.  The <tt class="docutils literal"><span class="pre">a</span></tt>
+flag - you can just take on faith - or see <a class="reference external" href="http://www.gitready.com/beginner/2009/01/18/the-staging-area.html">why the -a flag?</a>.</p>
+</li>
+<li><p class="first">When you have finished, check you have committed all your changes:</p>
+<div class="highlight-python"><pre>git status</pre>
+</div>
+</li>
+<li><p class="first">Finally, make your commits into patches.  You want all the commits
+since you branched from the <tt class="docutils literal"><span class="pre">master</span></tt> branch:</p>
+<div class="highlight-python"><pre>git format-patch -M -C master</pre>
+</div>
+<p>You will now have several files named for the commits:</p>
+<div class="highlight-python"><pre>0001-BF-added-tests-for-Funny-bug.patch
+0002-BF-added-fix-for-Funny-bug.patch</pre>
+</div>
+<p>Send these files to the <a class="reference external" href="http://mail.scipy.org/mailman/listinfo/IPython-dev">ipython mailing list</a>.</p>
+</li>
+</ol>
+<p>When you are done, to switch back to the main copy of the code, just
+return to the <tt class="docutils literal"><span class="pre">master</span></tt> branch:</p>
+<div class="highlight-python"><pre>git checkout master</pre>
+</div>
+</div>
+</div>
+<div class="section" id="moving-from-patching-to-development">
+<h2>Moving from patching to development<a class="headerlink" href="#moving-from-patching-to-development" title="Permalink to this headline">¶</a></h2>
+<p>If you find you have done some patches, and you have one or more feature
+branches, you will probably want to switch to development mode.  You can
+do this with the repository you have.</p>
+<p>Fork the <a class="reference external" href="http://ipython.org">ipython</a> repository on <a class="reference external" href="http://github.com">github</a> - <a class="reference internal" href="forking_hell.html#forking"><em>Making your own copy (fork) of ipython</em></a>.  Then:</p>
+<div class="highlight-python"><pre># checkout and refresh master branch from main repo
+git checkout master
+git pull origin master
+# rename pointer to main repository to 'upstream'
+git remote rename origin upstream
+# point your repo to default read / write to your fork on github
+git remote add origin git@github.com:your-user-name/ipython.git
+# push up any branches you've made and want to keep
+git push origin the-fix-im-thinking-of</pre>
+</div>
+<p>Then you can, if you want, follow the <a class="reference internal" href="development_workflow.html#development-workflow"><em>Development workflow</em></a>.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="git_development.html" title="Git for development"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="following_latest.html" title="Following the latest source"
+             >previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <li><a href="../../search.html">search</a>|&nbsp;</li>
+       <li><a href="../../index.html">documentation </a> &raquo;</li>
+
+          <li><a href="../index.html" >IPython developer&#8217;s guide</a> &raquo;</li>
+          <li><a href="index.html" >Working with IPython source code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2008, The IPython Development Team.
+      Last updated on Jul 31, 2011.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1pre.
+    </div>
+  </body>
+</html>

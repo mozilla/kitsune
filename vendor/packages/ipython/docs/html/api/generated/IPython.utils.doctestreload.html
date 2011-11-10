@@ -1,0 +1,187 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>utils.doctestreload &mdash; IPython 0.11 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.11',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="IPython 0.11 documentation" href="../../index.html" />
+    <link rel="up" title="The IPython API" href="../index.html" />
+    <link rel="next" title="utils.frame" href="IPython.utils.frame.html" />
+    <link rel="prev" title="utils.dir2" href="IPython.utils.dir2.html" /> 
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<a href="../../index.html"><img src="../../_static/logo.png" border="0" alt="IPython Documentation"/></a>
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="IPython.utils.frame.html" title="utils.frame"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="IPython.utils.dir2.html" title="utils.dir2"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <li><a href="../../search.html">search</a>|&nbsp;</li>
+       <li><a href="../../index.html">documentation </a> &raquo;</li>
+
+          <li><a href="../index.html" accesskey="U">The IPython API</a> &raquo;</li> 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">utils.doctestreload</a><ul>
+<li><a class="reference internal" href="#module-IPython.utils.doctestreload">Module: <tt class="docutils literal"><span class="pre">utils.doctestreload</span></tt></a></li>
+<li><a class="reference internal" href="#functions">Functions</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="IPython.utils.dir2.html"
+                        title="previous chapter">utils.dir2</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="IPython.utils.frame.html"
+                        title="next chapter">utils.frame</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/api/generated/IPython.utils.doctestreload.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="utils-doctestreload">
+<h1>utils.doctestreload<a class="headerlink" href="#utils-doctestreload" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-IPython.utils.doctestreload">
+<span id="module-utils-doctestreload"></span><h2>Module: <tt class="xref py py-mod docutils literal"><span class="pre">utils.doctestreload</span></tt><a class="headerlink" href="#module-IPython.utils.doctestreload" title="Permalink to this headline">¶</a></h2>
+<p>A utility for handling the reloading of doctest.</p>
+</div>
+<div class="section" id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="IPython.utils.doctestreload.dhook_wrap">
+<tt class="descclassname">IPython.utils.doctestreload.</tt><tt class="descname">dhook_wrap</tt><big>(</big><em>func</em>, <em>*a</em>, <em>**k</em><big>)</big><a class="headerlink" href="#IPython.utils.doctestreload.dhook_wrap" title="Permalink to this definition">¶</a></dt>
+<dd><p>Wrap a function call in a sys.displayhook controller.</p>
+<p>Returns a wrapper around func which calls func, with all its arguments and
+keywords unmodified, using the default sys.displayhook.  Since IPython
+modifies sys.displayhook, it breaks the behavior of certain systems that
+rely on the default behavior, notably doctest.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="IPython.utils.doctestreload.doctest_reload">
+<tt class="descclassname">IPython.utils.doctestreload.</tt><tt class="descname">doctest_reload</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.utils.doctestreload.doctest_reload" title="Permalink to this definition">¶</a></dt>
+<dd><p>Properly reload doctest to reuse it interactively.</p>
+<p>This routine:</p>
+<blockquote>
+<div><ul class="simple">
+<li>imports doctest but does NOT reload it (see below).</li>
+<li>resets its global &#8216;master&#8217; attribute to None, so that multiple uses of</li>
+</ul>
+<p>the module interactively don&#8217;t produce cumulative reports.</p>
+<ul class="simple">
+<li>Monkeypatches its core test runner method to protect it from IPython&#8217;s</li>
+</ul>
+<p>modified displayhook.  Doctest expects the default displayhook behavior
+deep down, so our modification breaks it completely.  For this reason, a
+hard monkeypatch seems like a reasonable solution rather than asking
+users to manually use a different doctest runner when under IPython.</p>
+</div></blockquote>
+<p class="rubric">Notes</p>
+<p>This function <em>used to</em> reload doctest, but this has been disabled because
+reloading doctest unconditionally can cause massive breakage of other
+doctest-dependent modules already in memory, such as those for IPython&#8217;s
+own testing system.  The name wasn&#8217;t changed to avoid breaking people&#8217;s
+code, but the reload call isn&#8217;t actually made anymore.</p>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="IPython.utils.frame.html" title="utils.frame"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="IPython.utils.dir2.html" title="utils.dir2"
+             >previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <li><a href="../../search.html">search</a>|&nbsp;</li>
+       <li><a href="../../index.html">documentation </a> &raquo;</li>
+
+          <li><a href="../index.html" >The IPython API</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2008, The IPython Development Team.
+      Last updated on Jul 31, 2011.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1pre.
+    </div>
+  </body>
+</html>

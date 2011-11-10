@@ -1,0 +1,38 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+core.display
+============
+
+Module: :mod:`core.display`
+---------------------------
+.. automodule:: IPython.core.display
+
+.. currentmodule:: IPython.core.display
+
+Functions
+---------
+
+
+.. autofunction:: IPython.core.display.display
+
+
+.. autofunction:: IPython.core.display.display_html
+
+
+.. autofunction:: IPython.core.display.display_javascript
+
+
+.. autofunction:: IPython.core.display.display_json
+
+
+.. autofunction:: IPython.core.display.display_latex
+
+
+.. autofunction:: IPython.core.display.display_png
+
+
+.. autofunction:: IPython.core.display.display_pretty
+
+
+.. autofunction:: IPython.core.display.display_svg
+

@@ -1,0 +1,237 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>lib.guisupport &mdash; IPython 0.11 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.11',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="IPython 0.11 documentation" href="../../index.html" />
+    <link rel="up" title="The IPython API" href="../index.html" />
+    <link rel="next" title="lib.inputhook" href="IPython.lib.inputhook.html" />
+    <link rel="prev" title="lib.demo" href="IPython.lib.demo.html" /> 
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<a href="../../index.html"><img src="../../_static/logo.png" border="0" alt="IPython Documentation"/></a>
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="IPython.lib.inputhook.html" title="lib.inputhook"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="IPython.lib.demo.html" title="lib.demo"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <li><a href="../../search.html">search</a>|&nbsp;</li>
+       <li><a href="../../index.html">documentation </a> &raquo;</li>
+
+          <li><a href="../index.html" accesskey="U">The IPython API</a> &raquo;</li> 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">lib.guisupport</a><ul>
+<li><a class="reference internal" href="#module-IPython.lib.guisupport">Module: <tt class="docutils literal"><span class="pre">lib.guisupport</span></tt></a></li>
+<li><a class="reference internal" href="#functions">Functions</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="IPython.lib.demo.html"
+                        title="previous chapter">lib.demo</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="IPython.lib.inputhook.html"
+                        title="next chapter">lib.inputhook</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/api/generated/IPython.lib.guisupport.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="lib-guisupport">
+<h1>lib.guisupport<a class="headerlink" href="#lib-guisupport" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-IPython.lib.guisupport">
+<span id="module-lib-guisupport"></span><h2>Module: <tt class="xref py py-mod docutils literal"><span class="pre">lib.guisupport</span></tt><a class="headerlink" href="#module-IPython.lib.guisupport" title="Permalink to this headline">¶</a></h2>
+<p>Support for creating GUI apps and starting event loops.</p>
+<p>IPython&#8217;s GUI integration allows interative plotting and GUI usage in IPython
+session. IPython has two different types of GUI integration:</p>
+<ol class="arabic simple">
+<li>The terminal based IPython supports GUI event loops through Python&#8217;s
+PyOS_InputHook. PyOS_InputHook is a hook that Python calls periodically
+whenever raw_input is waiting for a user to type code. We implement GUI
+support in the terminal by setting PyOS_InputHook to a function that 
+iterates the event loop for a short while. It is important to note that
+in this situation, the real GUI event loop is NOT run in the normal
+manner, so you can&#8217;t use the normal means to detect that it is running.</li>
+<li>In the two process IPython kernel/frontend, the GUI event loop is run in 
+the kernel. In this case, the event loop is run in the normal manner by
+calling the function or method of the GUI toolkit that starts the event
+loop.</li>
+</ol>
+<p>In addition to starting the GUI event loops in one of these two ways, IPython
+will <em>always</em> create an appropriate GUI application object when GUi
+integration is enabled.</p>
+<p>If you want your GUI apps to run in IPython you need to do two things:</p>
+<ol class="arabic simple">
+<li>Test to see if there is already an existing main application object. If
+there is, you should use it. If there is not an existing application object
+you should create one.</li>
+<li>Test to see if the GUI event loop is running. If it is, you should not
+start it. If the event loop is not running you may start it.</li>
+</ol>
+<p>This module contains functions for each toolkit that perform these things
+in a consistent manner. Because of how PyOS_InputHook runs the event loop
+you cannot detect if the event loop is running using the traditional calls
+(such as <tt class="docutils literal"><span class="pre">wx.GetApp.IsMainLoopRunning()</span></tt> in wxPython). If PyOS_InputHook is
+set These methods will return a false negative. That is, they will say the
+event loop is not running, when is actually is. To work around this limitation
+we proposed the following informal protocol:</p>
+<ul class="simple">
+<li>Whenever someone starts the event loop, they <em>must</em> set the <tt class="docutils literal"><span class="pre">_in_event_loop</span></tt>
+attribute of the main application object to <tt class="docutils literal"><span class="pre">True</span></tt>. This should be done
+regardless of how the event loop is actually run.</li>
+<li>Whenever someone stops the event loop, they <em>must</em> set the <tt class="docutils literal"><span class="pre">_in_event_loop</span></tt>
+attribute of the main application object to <tt class="docutils literal"><span class="pre">False</span></tt>.</li>
+<li>If you want to see if the event loop is running, you <em>must</em> use <tt class="docutils literal"><span class="pre">hasattr</span></tt>
+to see if <tt class="docutils literal"><span class="pre">_in_event_loop</span></tt> attribute has been set. If it is set, you
+<em>must</em> use its value. If it has not been set, you can query the toolkit
+in the normal manner.</li>
+<li>If you want GUI support and no one else has created an application or
+started the event loop you <em>must</em> do this. We don&#8217;t want projects to 
+attempt to defer these things to someone else if they themselves need it.</li>
+</ul>
+<p>The functions below implement this logic for each GUI toolkit. If you need
+to create custom application subclasses, you will likely have to modify this
+code for your own purposes. This code can be copied into your own project
+so you don&#8217;t have to depend on IPython.</p>
+</div>
+<div class="section" id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="IPython.lib.guisupport.get_app_qt4">
+<tt class="descclassname">IPython.lib.guisupport.</tt><tt class="descname">get_app_qt4</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#IPython.lib.guisupport.get_app_qt4" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a new qt4 app or return an existing one.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="IPython.lib.guisupport.get_app_wx">
+<tt class="descclassname">IPython.lib.guisupport.</tt><tt class="descname">get_app_wx</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#IPython.lib.guisupport.get_app_wx" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a new wx app or return an exiting one.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="IPython.lib.guisupport.is_event_loop_running_qt4">
+<tt class="descclassname">IPython.lib.guisupport.</tt><tt class="descname">is_event_loop_running_qt4</tt><big>(</big><em>app=None</em><big>)</big><a class="headerlink" href="#IPython.lib.guisupport.is_event_loop_running_qt4" title="Permalink to this definition">¶</a></dt>
+<dd><p>Is the qt4 event loop running.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="IPython.lib.guisupport.is_event_loop_running_wx">
+<tt class="descclassname">IPython.lib.guisupport.</tt><tt class="descname">is_event_loop_running_wx</tt><big>(</big><em>app=None</em><big>)</big><a class="headerlink" href="#IPython.lib.guisupport.is_event_loop_running_wx" title="Permalink to this definition">¶</a></dt>
+<dd><p>Is the wx event loop running.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="IPython.lib.guisupport.start_event_loop_qt4">
+<tt class="descclassname">IPython.lib.guisupport.</tt><tt class="descname">start_event_loop_qt4</tt><big>(</big><em>app=None</em><big>)</big><a class="headerlink" href="#IPython.lib.guisupport.start_event_loop_qt4" title="Permalink to this definition">¶</a></dt>
+<dd><p>Start the qt4 event loop in a consistent manner.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="IPython.lib.guisupport.start_event_loop_wx">
+<tt class="descclassname">IPython.lib.guisupport.</tt><tt class="descname">start_event_loop_wx</tt><big>(</big><em>app=None</em><big>)</big><a class="headerlink" href="#IPython.lib.guisupport.start_event_loop_wx" title="Permalink to this definition">¶</a></dt>
+<dd><p>Start the wx event loop in a consistent manner.</p>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="IPython.lib.inputhook.html" title="lib.inputhook"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="IPython.lib.demo.html" title="lib.demo"
+             >previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <li><a href="../../search.html">search</a>|&nbsp;</li>
+       <li><a href="../../index.html">documentation </a> &raquo;</li>
+
+          <li><a href="../index.html" >The IPython API</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2008, The IPython Development Team.
+      Last updated on Jul 31, 2011.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1pre.
+    </div>
+  </body>
+</html>

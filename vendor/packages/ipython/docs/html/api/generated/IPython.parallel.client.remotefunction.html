@@ -1,0 +1,340 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>parallel.client.remotefunction &mdash; IPython 0.11 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.11',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="IPython 0.11 documentation" href="../../index.html" />
+    <link rel="up" title="The IPython API" href="../index.html" />
+    <link rel="next" title="parallel.client.view" href="IPython.parallel.client.view.html" />
+    <link rel="prev" title="parallel.client.map" href="IPython.parallel.client.map.html" /> 
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<a href="../../index.html"><img src="../../_static/logo.png" border="0" alt="IPython Documentation"/></a>
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="IPython.parallel.client.view.html" title="parallel.client.view"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="IPython.parallel.client.map.html" title="parallel.client.map"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <li><a href="../../search.html">search</a>|&nbsp;</li>
+       <li><a href="../../index.html">documentation </a> &raquo;</li>
+
+          <li><a href="../index.html" accesskey="U">The IPython API</a> &raquo;</li> 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">parallel.client.remotefunction</a><ul>
+<li><a class="reference internal" href="#module-parallel-client-remotefunction">Module: <tt class="docutils literal"><span class="pre">parallel.client.remotefunction</span></tt></a></li>
+<li><a class="reference internal" href="#classes">Classes</a><ul>
+<li><a class="reference internal" href="#parallelfunction"><tt class="docutils literal"><span class="pre">ParallelFunction</span></tt></a></li>
+<li><a class="reference internal" href="#remotefunction"><tt class="docutils literal"><span class="pre">RemoteFunction</span></tt></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#functions">Functions</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="IPython.parallel.client.map.html"
+                        title="previous chapter">parallel.client.map</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="IPython.parallel.client.view.html"
+                        title="next chapter">parallel.client.view</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/api/generated/IPython.parallel.client.remotefunction.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="parallel-client-remotefunction">
+<h1>parallel.client.remotefunction<a class="headerlink" href="#parallel-client-remotefunction" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-parallel-client-remotefunction">
+<h2>Module: <tt class="xref py py-mod docutils literal"><span class="pre">parallel.client.remotefunction</span></tt><a class="headerlink" href="#module-parallel-client-remotefunction" title="Permalink to this headline">¶</a></h2>
+<p>Inheritance diagram for <tt class="docutils literal"><span class="pre">IPython.parallel.client.remotefunction</span></tt>:</p>
+<img src="../../_images/inheritance09ae8a35a6.png" usemap="#inheritance09ae8a35a6" class="inheritance"/><map id="inheritance09ae8a35a6" name="inheritance09ae8a35a6">
+</map>
+<span class="target" id="module-IPython.parallel.client.remotefunction"></span><p>Remote Functions and decorators for Views.</p>
+<p>Authors:</p>
+<ul class="simple">
+<li>Brian Granger</li>
+<li>Min RK</li>
+</ul>
+</div>
+<div class="section" id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="parallelfunction">
+<h3><a class="reference internal" href="#IPython.parallel.client.remotefunction.ParallelFunction" title="IPython.parallel.client.remotefunction.ParallelFunction"><tt class="xref py py-class docutils literal"><span class="pre">ParallelFunction</span></tt></a><a class="headerlink" href="#parallelfunction" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="IPython.parallel.client.remotefunction.ParallelFunction">
+<em class="property">class </em><tt class="descclassname">IPython.parallel.client.remotefunction.</tt><tt class="descname">ParallelFunction</tt><big>(</big><em>view</em>, <em>f</em>, <em>dist='b'</em>, <em>block=None</em>, <em>chunksize=None</em>, <em>**flags</em><big>)</big><a class="headerlink" href="#IPython.parallel.client.remotefunction.ParallelFunction" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#IPython.parallel.client.remotefunction.RemoteFunction" title="IPython.parallel.client.remotefunction.RemoteFunction"><tt class="xref py py-class docutils literal"><span class="pre">IPython.parallel.client.remotefunction.RemoteFunction</span></tt></a></p>
+<p>Class for mapping a function to sequences.</p>
+<p>This will distribute the sequences according the a mapper, and call
+the function on each sub-sequence.  If called via map, then the function
+will be called once on each element, rather that each sub-sequence.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>view</strong> : View instance</p>
+<blockquote>
+<div><p>The view to be used for execution</p>
+</div></blockquote>
+<p><strong>f</strong> : callable</p>
+<blockquote>
+<div><p>The function to be wrapped into a remote function</p>
+</div></blockquote>
+<p><strong>dist</strong> : str [default: &#8216;b&#8217;]</p>
+<blockquote>
+<div><p>The key for which mapObject to use to distribute sequences
+options are:</p>
+<blockquote>
+<div><ul class="simple">
+<li>&#8216;b&#8217; : use contiguous chunks in order</li>
+<li>&#8216;r&#8217; : use round-robin striping</li>
+</ul>
+</div></blockquote>
+</div></blockquote>
+<p><strong>block</strong> : bool [default: None]</p>
+<blockquote>
+<div><p>Whether to wait for results or not.  The default behavior is
+to use the current <cite>block</cite> attribute of <cite>view</cite></p>
+</div></blockquote>
+<p><strong>chunksize</strong> : int or None</p>
+<blockquote>
+<div><p>The size of chunk to use when breaking up sequences in a load-balanced manner</p>
+</div></blockquote>
+<p class="last"><strong>**flags</strong> : remaining kwargs are passed to View.temp_flags</p>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="IPython.parallel.client.remotefunction.ParallelFunction.__init__">
+<tt class="descname">__init__</tt><big>(</big><em>view</em>, <em>f</em>, <em>dist='b'</em>, <em>block=None</em>, <em>chunksize=None</em>, <em>**flags</em><big>)</big><a class="headerlink" href="#IPython.parallel.client.remotefunction.ParallelFunction.__init__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.client.remotefunction.ParallelFunction.block">
+<tt class="descname">block</tt><em class="property"> = None</em><a class="headerlink" href="#IPython.parallel.client.remotefunction.ParallelFunction.block" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.client.remotefunction.ParallelFunction.chunksize">
+<tt class="descname">chunksize</tt><em class="property"> = None</em><a class="headerlink" href="#IPython.parallel.client.remotefunction.ParallelFunction.chunksize" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.client.remotefunction.ParallelFunction.flags">
+<tt class="descname">flags</tt><em class="property"> = None</em><a class="headerlink" href="#IPython.parallel.client.remotefunction.ParallelFunction.flags" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.client.remotefunction.ParallelFunction.func">
+<tt class="descname">func</tt><em class="property"> = None</em><a class="headerlink" href="#IPython.parallel.client.remotefunction.ParallelFunction.func" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.client.remotefunction.ParallelFunction.map">
+<tt class="descname">map</tt><big>(</big><em>*sequences</em><big>)</big><a class="headerlink" href="#IPython.parallel.client.remotefunction.ParallelFunction.map" title="Permalink to this definition">¶</a></dt>
+<dd><p>call a function on each element of a sequence remotely. 
+This should behave very much like the builtin map, but return an AsyncMapResult
+if self.block is False.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.client.remotefunction.ParallelFunction.mapObject">
+<tt class="descname">mapObject</tt><em class="property"> = None</em><a class="headerlink" href="#IPython.parallel.client.remotefunction.ParallelFunction.mapObject" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.client.remotefunction.ParallelFunction.view">
+<tt class="descname">view</tt><em class="property"> = None</em><a class="headerlink" href="#IPython.parallel.client.remotefunction.ParallelFunction.view" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="remotefunction">
+<h3><a class="reference internal" href="#IPython.parallel.client.remotefunction.RemoteFunction" title="IPython.parallel.client.remotefunction.RemoteFunction"><tt class="xref py py-class docutils literal"><span class="pre">RemoteFunction</span></tt></a><a class="headerlink" href="#remotefunction" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="IPython.parallel.client.remotefunction.RemoteFunction">
+<em class="property">class </em><tt class="descclassname">IPython.parallel.client.remotefunction.</tt><tt class="descname">RemoteFunction</tt><big>(</big><em>view</em>, <em>f</em>, <em>block=None</em>, <em>**flags</em><big>)</big><a class="headerlink" href="#IPython.parallel.client.remotefunction.RemoteFunction" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></p>
+<p>Turn an existing function into a remote function.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>view</strong> : View instance</p>
+<blockquote>
+<div><p>The view to be used for execution</p>
+</div></blockquote>
+<p><strong>f</strong> : callable</p>
+<blockquote>
+<div><p>The function to be wrapped into a remote function</p>
+</div></blockquote>
+<p><strong>block</strong> : bool [default: None]</p>
+<blockquote>
+<div><p>Whether to wait for results or not.  The default behavior is
+to use the current <cite>block</cite> attribute of <cite>view</cite></p>
+</div></blockquote>
+<p class="last"><strong>**flags</strong> : remaining kwargs are passed to View.temp_flags</p>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="IPython.parallel.client.remotefunction.RemoteFunction.__init__">
+<tt class="descname">__init__</tt><big>(</big><em>view</em>, <em>f</em>, <em>block=None</em>, <em>**flags</em><big>)</big><a class="headerlink" href="#IPython.parallel.client.remotefunction.RemoteFunction.__init__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.client.remotefunction.RemoteFunction.block">
+<tt class="descname">block</tt><em class="property"> = None</em><a class="headerlink" href="#IPython.parallel.client.remotefunction.RemoteFunction.block" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.client.remotefunction.RemoteFunction.flags">
+<tt class="descname">flags</tt><em class="property"> = None</em><a class="headerlink" href="#IPython.parallel.client.remotefunction.RemoteFunction.flags" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.client.remotefunction.RemoteFunction.func">
+<tt class="descname">func</tt><em class="property"> = None</em><a class="headerlink" href="#IPython.parallel.client.remotefunction.RemoteFunction.func" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.client.remotefunction.RemoteFunction.view">
+<tt class="descname">view</tt><em class="property"> = None</em><a class="headerlink" href="#IPython.parallel.client.remotefunction.RemoteFunction.view" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="IPython.parallel.client.remotefunction.parallel">
+<tt class="descclassname">IPython.parallel.client.remotefunction.</tt><tt class="descname">parallel</tt><big>(</big><em>view</em>, <em>dist='b'</em>, <em>block=None</em>, <em>**flags</em><big>)</big><a class="headerlink" href="#IPython.parallel.client.remotefunction.parallel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Turn a function into a parallel remote function.</p>
+<p>This method can be used for map:</p>
+<dl class="docutils">
+<dt>In [1]: &#64;parallel(view, block=True)</dt>
+<dd>...: def func(a):
+...:    pass</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="IPython.parallel.client.remotefunction.remote">
+<tt class="descclassname">IPython.parallel.client.remotefunction.</tt><tt class="descname">remote</tt><big>(</big><em>view</em>, <em>block=None</em>, <em>**flags</em><big>)</big><a class="headerlink" href="#IPython.parallel.client.remotefunction.remote" title="Permalink to this definition">¶</a></dt>
+<dd><p>Turn a function into a remote function.</p>
+<p>This method can be used for map:</p>
+<dl class="docutils">
+<dt>In [1]: &#64;remote(view,block=True)</dt>
+<dd>...: def func(a):
+...:    pass</dd>
+</dl>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="IPython.parallel.client.view.html" title="parallel.client.view"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="IPython.parallel.client.map.html" title="parallel.client.map"
+             >previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <li><a href="../../search.html">search</a>|&nbsp;</li>
+       <li><a href="../../index.html">documentation </a> &raquo;</li>
+
+          <li><a href="../index.html" >The IPython API</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2008, The IPython Development Team.
+      Last updated on Jul 31, 2011.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1pre.
+    </div>
+  </body>
+</html>

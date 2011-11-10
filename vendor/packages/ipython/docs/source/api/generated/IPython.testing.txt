@@ -1,0 +1,13 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+testing
+=======
+
+Module: :mod:`testing`
+----------------------
+.. automodule:: IPython.testing
+
+.. currentmodule:: IPython.testing
+
+.. autofunction:: IPython.testing.test
+

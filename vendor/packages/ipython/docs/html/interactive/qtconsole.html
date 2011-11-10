@@ -1,0 +1,450 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>A Qt Console for IPython &mdash; IPython 0.11 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.11',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="IPython 0.11 documentation" href="../index.html" />
+    <link rel="up" title="Using IPython for interactive work" href="index.html" />
+    <link rel="next" title="Using IPython for parallel computing" href="../parallel/index.html" />
+    <link rel="prev" title="IPython as a system shell" href="shell.html" /> 
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<a href="../index.html"><img src="../_static/logo.png" border="0" alt="IPython Documentation"/></a>
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../parallel/index.html" title="Using IPython for parallel computing"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="shell.html" title="IPython as a system shell"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">home</a>|&nbsp;</li>
+        <li><a href="../search.html">search</a>|&nbsp;</li>
+       <li><a href="../index.html">documentation </a> &raquo;</li>
+
+          <li><a href="index.html" accesskey="U">Using IPython for interactive work</a> &raquo;</li> 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">A Qt Console for IPython</a><ul>
+<li><a class="reference internal" href="#loadpy"><tt class="docutils literal"><span class="pre">%loadpy</span></tt></a></li>
+<li><a class="reference internal" href="#pylab">Pylab</a><ul>
+<li><a class="reference internal" href="#display"><tt class="docutils literal"><span class="pre">display()</span></tt></a></li>
+<li><a class="reference internal" href="#pylab-inline"><tt class="docutils literal"><span class="pre">--pylab=inline</span></tt></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#saving-and-printing">Saving and Printing</a></li>
+<li><a class="reference internal" href="#colors-and-highlighting">Colors and Highlighting</a></li>
+<li><a class="reference internal" href="#fonts">Fonts</a></li>
+<li><a class="reference internal" href="#process-management">Process Management</a><ul>
+<li><a class="reference internal" href="#multiple-consoles">Multiple Consoles</a></li>
+<li><a class="reference internal" href="#stopping-kernels-and-consoles">Stopping Kernels and Consoles</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#qt-and-the-qtconsole">Qt and the QtConsole</a></li>
+<li><a class="reference internal" href="#regressions">Regressions</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="shell.html"
+                        title="previous chapter">IPython as a system shell</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../parallel/index.html"
+                        title="next chapter">Using IPython for parallel computing</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/interactive/qtconsole.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="a-qt-console-for-ipython">
+<span id="qtconsole"></span><h1>A Qt Console for IPython<a class="headerlink" href="#a-qt-console-for-ipython" title="Permalink to this headline">¶</a></h1>
+<p>We now have a version of IPython, using the new two-process <a class="reference internal" href="../development/ipythonzmq.html#ipythonzmq"><em>ZeroMQ Kernel</em></a>, running in a <a class="reference internal" href="#pyqt">PyQt</a> GUI.  This is a very lightweight widget that
+largely feels like a terminal, but provides a number of enhancements only
+possible in a GUI, such as inline figures, proper multiline editing with syntax
+highlighting, graphical calltips, and much more.</p>
+<div class="figure align-center">
+<a class="reference external image-reference" href="../_static/qtconsole.png"><img alt="IPython Qt console with embedded plots" src="../_images/qtconsole.png" style="width: 400px;" /></a>
+<p class="caption">The Qt console for IPython, using inline matplotlib plots.</p>
+</div>
+<p>To get acquainted with the Qt console, type <cite>%guiref</cite> to see a quick
+introduction of its main features.</p>
+<p>The Qt frontend has hand-coded emacs-style bindings for text navigation. This
+is not yet configurable.</p>
+<div class="admonition tip">
+<p class="first admonition-title">Tip</p>
+<p class="last">Since the Qt console tries hard to behave like a terminal, by default it
+immediately executes single lines of input that are complete.  If you want
+to force multiline input, hit <a href="#id1"><span class="problematic" id="id2">:key:`Ctrl-Enter`</span></a> at the end of the first line
+instead of <a href="#id3"><span class="problematic" id="id4">:key:`Enter`</span></a>, and it will open a new line for input.  At any
+point in a multiline block, you can force its execution (without having to
+go to the bottom) with <a href="#id5"><span class="problematic" id="id6">:key:`Shift-Enter`</span></a>.</p>
+</div>
+<div class="section" id="loadpy">
+<h2><tt class="docutils literal"><span class="pre">%loadpy</span></tt><a class="headerlink" href="#loadpy" title="Permalink to this headline">¶</a></h2>
+<p>The new <tt class="docutils literal"><span class="pre">%loadpy</span></tt> magic takes any python script (must end in &#8216;.py&#8217;), and
+pastes its contents as your next input, so you can edit it before
+executing. The script may be on your machine, but you can also specify a url,
+and it will download the script from the web. This is particularly useful for
+playing with examples from documentation, such as matplotlib.</p>
+<div class="highlight-ipython"><div class="highlight"><pre><span class="gp">In [6]: </span><span class="o">%</span><span class="n">loadpy</span> <span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">matplotlib</span><span class="o">.</span><span class="n">sourceforge</span><span class="o">.</span><span class="n">net</span><span class="o">/</span><span class="n">plot_directive</span><span class="o">/</span><span class="n">mpl_examples</span><span class="o">/</span><span class="n">mplot3d</span><span class="o">/</span><span class="n">contour3d_demo</span><span class="o">.</span><span class="n">py</span>
+
+<span class="gp">In [7]: </span><span class="kn">from</span> <span class="nn">mpl_toolkits.mplot3d</span> <span class="kn">import</span> <span class="n">axes3d</span>
+<span class="gp">   ...:</span> <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+<span class="gp">   ...:</span>
+<span class="gp">   ...:</span> <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+<span class="gp">   ...:</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">111</span><span class="p">,</span> <span class="n">projection</span><span class="o">=</span><span class="s">&#39;3d&#39;</span><span class="p">)</span>
+<span class="gp">   ...:</span> <span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">Z</span> <span class="o">=</span> <span class="n">axes3d</span><span class="o">.</span><span class="n">get_test_data</span><span class="p">(</span><span class="mf">0.05</span><span class="p">)</span>
+<span class="gp">   ...:</span> <span class="n">cset</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">contour</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">Z</span><span class="p">)</span>
+<span class="gp">   ...:</span> <span class="n">ax</span><span class="o">.</span><span class="n">clabel</span><span class="p">(</span><span class="n">cset</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">9</span><span class="p">,</span> <span class="n">inline</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">   ...:</span>
+<span class="gp">   ...:</span> <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="pylab">
+<h2>Pylab<a class="headerlink" href="#pylab" title="Permalink to this headline">¶</a></h2>
+<p>One of the most exciting features of the new console is embedded matplotlib
+figures. You can use any standard matplotlib GUI backend (Except native MacOSX)
+to draw the figures, and since there is now a two-process model, there is no
+longer a conflict between user input and the drawing eventloop.</p>
+<img alt="../_images/besselj.png" src="../_images/besselj.png" style="width: 519px;" />
+<div class="section" id="display">
+<h3><tt class="xref py py-func docutils literal"><span class="pre">display()</span></tt><a class="headerlink" href="#display" title="Permalink to this headline">¶</a></h3>
+<p>An additional function, <tt class="xref py py-func docutils literal"><span class="pre">display()</span></tt>, will be added to the global namespace
+if you specify the <tt class="docutils literal"><span class="pre">--pylab</span></tt> option at the command line. The IPython display
+system provides a mechanism for specifying PNG or SVG (and more)
+representations of objects for GUI frontends. By default, IPython registers
+convenient PNG and SVG renderers for matplotlib figures, so you can embed them
+in your document by calling <tt class="xref py py-func docutils literal"><span class="pre">display()</span></tt> on one or more of them. This is
+especially useful for <a class="reference internal" href="#saving">saving</a> your work.</p>
+<div class="highlight-ipython"><div class="highlight"><pre><span class="gp">In [5]: </span><span class="n">plot</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">))</span> <span class="c"># plots in the matplotlib window</span>
+
+<span class="gp">In [6]: </span><span class="n">display</span><span class="p">(</span><span class="n">gcf</span><span class="p">())</span> <span class="c"># embeds the current figure in the qtconsole</span>
+
+<span class="gp">In [7]: </span><span class="n">display</span><span class="p">(</span><span class="o">*</span><span class="n">getfigs</span><span class="p">())</span> <span class="c"># embeds all active figures in the qtconsole</span>
+</pre></div>
+</div>
+<p>If you have a reference to a matplotlib figure object, you can always display
+that specific figure:</p>
+<div class="highlight-ipython"><div class="highlight"><pre><span class="gp">In [1]: </span><span class="n">f</span> <span class="o">=</span> <span class="n">figure</span><span class="p">()</span>
+
+<span class="gp">In [2]: </span><span class="n">plot</span><span class="p">(</span><span class="n">rand</span><span class="p">(</span><span class="mi">100</span><span class="p">))</span>
+<span class="gr">Out[2]: </span><span class="p">[</span><span class="o">&lt;</span><span class="n">matplotlib</span><span class="o">.</span><span class="n">lines</span><span class="o">.</span><span class="n">Line2D</span> <span class="n">at</span> <span class="mh">0x7fc6ac03dd90</span><span class="o">&gt;</span><span class="p">]</span>
+
+<span class="gp">In [3]: </span><span class="n">display</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+
+
+<span class="c"># Plot is shown here</span>
+<span class="gp">In [4]: </span><span class="n">title</span><span class="p">(</span><span class="s">&#39;A title&#39;</span><span class="p">)</span>
+<span class="gr">Out[4]: </span><span class="o">&lt;</span><span class="n">matplotlib</span><span class="o">.</span><span class="n">text</span><span class="o">.</span><span class="n">Text</span> <span class="n">at</span> <span class="mh">0x7fc6ac023450</span><span class="o">&gt;</span>
+
+<span class="gp">In [5]: </span><span class="n">display</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+
+</pre></div>
+</div>
+</div>
+<div class="section" id="pylab-inline">
+<span id="inline"></span><h3><tt class="docutils literal"><span class="pre">--pylab=inline</span></tt><a class="headerlink" href="#pylab-inline" title="Permalink to this headline">¶</a></h3>
+<p>If you want to have all of your figures embedded in your session, instead of
+calling <tt class="xref py py-func docutils literal"><span class="pre">display()</span></tt>, you can specify <tt class="docutils literal"><span class="pre">--pylab=inline</span></tt> when you start the
+console, and each time you make a plot, it will show up in your document, as if
+you had called <tt class="xref py py-func docutils literal"><span class="pre">display(fig)()</span></tt>.</p>
+</div>
+</div>
+<div class="section" id="saving-and-printing">
+<span id="saving"></span><h2>Saving and Printing<a class="headerlink" href="#saving-and-printing" title="Permalink to this headline">¶</a></h2>
+<p>IPythonQt has the ability to save your current session, as either HTML or
+XHTML. If you have been using <tt class="xref py py-func docutils literal"><span class="pre">display()</span></tt> or <a class="reference internal" href="#inline">inline</a> pylab, your figures
+will be PNG in HTML, or inlined as SVG in XHTML. PNG images have the option to
+be either in an external folder, as in many browsers&#8217; &#8220;Webpage, Complete&#8221;
+option, or inlined as well, for a larger, but more portable file.</p>
+<p>The widget also exposes the ability to print directly, via the default print
+shortcut or context menu.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Saving is only available to richtext Qt widgets, which are used by default,
+but if you pass the <tt class="docutils literal"><span class="pre">--plain</span></tt> flag, saving will not be available to you.</p>
+</div>
+<p>See these examples of <a class="reference download internal" href="../_downloads/jn.html"><tt class="xref download docutils literal"><span class="pre">png/html</span></tt></a> and
+<a class="reference download internal" href="../_downloads/jn.xhtml"><tt class="xref download docutils literal"><span class="pre">svg/xhtml</span></tt></a> output. Note that syntax highlighting
+does not survive export. This is a known issue, and is being investigated.</p>
+</div>
+<div class="section" id="colors-and-highlighting">
+<h2>Colors and Highlighting<a class="headerlink" href="#colors-and-highlighting" title="Permalink to this headline">¶</a></h2>
+<p>Terminal IPython has always had some coloring, but never syntax
+highlighting. There are a few simple color choices, specified by the <tt class="docutils literal"><span class="pre">colors</span></tt>
+flag or <tt class="docutils literal"><span class="pre">%colors</span></tt> magic:</p>
+<ul class="simple">
+<li>LightBG for light backgrounds</li>
+<li>Linux for dark backgrounds</li>
+<li>NoColor for a simple colorless terminal</li>
+</ul>
+<p>The Qt widget has full support for the <tt class="docutils literal"><span class="pre">colors</span></tt> flag used in the terminal shell.</p>
+<p>The Qt widget, however, has full syntax highlighting as you type, handled by
+the <a class="reference internal" href="#pygments">pygments</a> library. The <tt class="docutils literal"><span class="pre">style</span></tt> argument exposes access to any style by
+name that can be found by pygments, and there are several already
+installed. The <tt class="docutils literal"><span class="pre">colors</span></tt> argument, if unspecified, will be guessed based on
+the chosen style. Similarly, there are default styles associated with each
+<tt class="docutils literal"><span class="pre">colors</span></tt> option.</p>
+<p>Screenshot of <tt class="docutils literal"><span class="pre">ipython</span> <span class="pre">qtconsole</span> <span class="pre">--colors=linux</span></tt>, which uses the &#8216;monokai&#8217;
+theme by default:</p>
+<img alt="../_images/colors_dark.png" src="../_images/colors_dark.png" style="width: 627px;" />
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Calling <tt class="docutils literal"><span class="pre">ipython</span> <span class="pre">qtconsole</span> <span class="pre">-h</span></tt> will show all the style names that
+pygments can find on your system.</p>
+</div>
+<p>You can also pass the filename of a custom CSS stylesheet, if you want to do
+your own coloring, via the <tt class="docutils literal"><span class="pre">stylesheet</span></tt> argument.  The default LightBG
+stylesheet:</p>
+<div class="highlight-css"><div class="highlight"><pre><span class="nt">QPlainTextEdit</span><span class="o">,</span> <span class="nt">QTextEdit</span> <span class="p">{</span> <span class="k">background-color</span><span class="o">:</span> <span class="nb">white</span><span class="p">;</span>
+        <span class="k">color</span><span class="o">:</span> <span class="nb">black</span> <span class="p">;</span>
+        <span class="n">selection</span><span class="o">-</span><span class="k">background-color</span><span class="o">:</span> <span class="m">#ccc</span><span class="p">}</span>
+<span class="nc">.error</span> <span class="p">{</span> <span class="k">color</span><span class="o">:</span> <span class="nb">red</span><span class="p">;</span> <span class="p">}</span>
+<span class="nc">.in-prompt</span> <span class="p">{</span> <span class="k">color</span><span class="o">:</span> <span class="nb">navy</span><span class="p">;</span> <span class="p">}</span>
+<span class="nc">.in-prompt-number</span> <span class="p">{</span> <span class="k">font-weight</span><span class="o">:</span> <span class="k">bold</span><span class="p">;</span> <span class="p">}</span>
+<span class="nc">.out-prompt</span> <span class="p">{</span> <span class="k">color</span><span class="o">:</span> <span class="nb">darkred</span><span class="p">;</span> <span class="p">}</span>
+<span class="nc">.out-prompt-number</span> <span class="p">{</span> <span class="k">font-weight</span><span class="o">:</span> <span class="k">bold</span><span class="p">;</span> <span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="fonts">
+<h2>Fonts<a class="headerlink" href="#fonts" title="Permalink to this headline">¶</a></h2>
+<p>The QtConsole has configurable via the ConsoleWidget. To change these, set the
+<tt class="docutils literal"><span class="pre">font_family</span></tt> or <tt class="docutils literal"><span class="pre">font_size</span></tt> traits of the ConsoleWidget. For instance, to
+use 9pt Anonymous Pro:</p>
+<div class="highlight-python"><pre>$&gt; ipython qtconsole --ConsoleWidget.font_family="Anonymous Pro" --ConsoleWidget.font_size=9</pre>
+</div>
+</div>
+<div class="section" id="process-management">
+<h2>Process Management<a class="headerlink" href="#process-management" title="Permalink to this headline">¶</a></h2>
+<p>With the two-process ZMQ model, the frontend does not block input during
+execution. This means that actions can be taken by the frontend while the
+Kernel is executing, or even after it crashes. The most basic such command is
+via &#8216;Ctrl-.&#8217;, which restarts the kernel.  This can be done in the middle of a
+blocking execution. The frontend can also know, via a heartbeat mechanism, that
+the kernel has died. This means that the frontend can safely restart the
+kernel.</p>
+<div class="section" id="multiple-consoles">
+<h3>Multiple Consoles<a class="headerlink" href="#multiple-consoles" title="Permalink to this headline">¶</a></h3>
+<p>Since the Kernel listens on the network, multiple frontends can connect to it.
+These do not have to all be qt frontends - any IPython frontend can connect and
+run code.  When you start ipython qtconsole, there will be an output line,
+like:</p>
+<div class="highlight-python"><pre>[IPKernelApp] To connect another client to this kernel, use:
+[IPKernelApp] --existing --shell=60690 --iopub=44045 --stdin=38323 --hb=41797</pre>
+</div>
+<p>Other frontends can connect to your kernel, and share in the execution. This is
+great for collaboration. The <cite>-e</cite> flag is for &#8216;external&#8217;. Starting other
+consoles with that flag will not try to start their own, but rather connect to
+yours. Ultimately, you will not have to specify each port individually, but for
+now this copy-paste method is best.</p>
+<p>By default (for security reasons), the kernel only listens on localhost, so you
+can only connect multiple frontends to the kernel from your local machine. You
+can specify to listen on an external interface by specifying the <tt class="docutils literal"><span class="pre">ip</span></tt>
+argument:</p>
+<div class="highlight-python"><pre>$&gt; ipython qtconsole --ip=192.168.1.123</pre>
+</div>
+<p>If you specify the ip as 0.0.0.0, that refers to all interfaces, so any
+computer that can see yours can connect to the kernel.</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">Since the ZMQ code currently has no security, listening on an
+external-facing IP is dangerous.  You are giving any computer that can see
+you on the network the ability to issue arbitrary shell commands as you on
+your machine. Be very careful with this.</p>
+</div>
+</div>
+<div class="section" id="stopping-kernels-and-consoles">
+<h3>Stopping Kernels and Consoles<a class="headerlink" href="#stopping-kernels-and-consoles" title="Permalink to this headline">¶</a></h3>
+<p>Since there can be many consoles per kernel, the shutdown mechanism and dialog
+are probably more complicated than you are used to. Since you don&#8217;t always want
+to shutdown a kernel when you close a window, you are given the option to just
+close the console window or also close the Kernel and <em>all other windows</em>. Note
+that this only refers to all other <em>local</em> windows, as remote Consoles are not
+allowed to shutdown the kernel, and shutdowns do not close Remote consoles (to
+allow for saving, etc.).</p>
+<p>Rules:</p>
+<blockquote>
+<div><ul class="simple">
+<li>Restarting the kernel automatically clears all <em>local</em> Consoles, and prompts remote
+Consoles about the reset.</li>
+<li>Shutdown closes all <em>local</em> Consoles, and notifies remotes that
+the Kernel has been shutdown.</li>
+<li>Remote Consoles may not restart or shutdown the kernel.</li>
+</ul>
+</div></blockquote>
+</div>
+</div>
+<div class="section" id="qt-and-the-qtconsole">
+<h2>Qt and the QtConsole<a class="headerlink" href="#qt-and-the-qtconsole" title="Permalink to this headline">¶</a></h2>
+<p>An important part of working with the QtConsole when you are writing your own
+Qt code is to remember that user code (in the kernel) is <em>not</em> in the same
+process as the frontend.  This means that there is not necessarily any Qt code
+running in the kernel, and under most normal circumstances there isn&#8217;t. If,
+however, you specify <tt class="docutils literal"><span class="pre">--pylab=qt</span></tt> at the command-line, then there <em>will</em> be a
+<tt class="xref py py-class docutils literal"><span class="pre">QCoreApplication</span></tt> instance running in the kernel process along with
+user-code. To get a reference to this application, do:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">PyQt4</span> <span class="kn">import</span> <span class="n">QtCore</span>
+<span class="n">app</span> <span class="o">=</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">QCoreApplication</span><span class="o">.</span><span class="n">instance</span><span class="p">()</span>
+<span class="c"># app will be None if there is no such instance</span>
+</pre></div>
+</div>
+<p>A common problem listed in the PyQt4 <a class="reference external" href="http://www.riverbankcomputing.co.uk/static/Docs/PyQt4/html/gotchas.html#garbage-collection">Gotchas</a> is the fact that Python&#8217;s garbage
+collection will destroy Qt objects (Windows, etc.) once there is no longer a
+Python reference to them, so you have to hold on to them.  For instance, in:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">make_window</span><span class="p">():</span>
+    <span class="n">win</span> <span class="o">=</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QMainWindow</span><span class="p">()</span>
+
+<span class="k">def</span> <span class="nf">make_and_return_window</span><span class="p">():</span>
+    <span class="n">win</span> <span class="o">=</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QMainWindow</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">win</span>
+</pre></div>
+</div>
+<p><tt class="xref py py-func docutils literal"><span class="pre">make_window()</span></tt> will never draw a window, because garbage collection will
+destroy it before it is drawn, whereas <tt class="xref py py-func docutils literal"><span class="pre">make_and_return_window()</span></tt> lets the
+caller decide when the window object should be destroyed.  If, as a developer,
+you know that you always want your objects to last as long as the process, you
+can attach them to the QApplication instance itself:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># do this just once:</span>
+<span class="n">app</span> <span class="o">=</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">QCoreApplication</span><span class="o">.</span><span class="n">instance</span><span class="p">()</span>
+<span class="n">app</span><span class="o">.</span><span class="n">references</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+<span class="c"># then when you create Windows, add them to the set</span>
+<span class="k">def</span> <span class="nf">make_window</span><span class="p">():</span>
+    <span class="n">win</span> <span class="o">=</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QMainWindow</span><span class="p">()</span>
+    <span class="n">app</span><span class="o">.</span><span class="n">references</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">win</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Now the QApplication itself holds a reference to <tt class="docutils literal"><span class="pre">win</span></tt>, so it will never be
+garbage collected until the application itself is destroyed.</p>
+</div>
+<div class="section" id="regressions">
+<h2>Regressions<a class="headerlink" href="#regressions" title="Permalink to this headline">¶</a></h2>
+<p>There are some features, where the qt console lags behind the Terminal
+frontend:</p>
+<ul>
+<li><dl class="first docutils">
+<dt>!cmd input: Due to our use of pexpect, we cannot pass input to subprocesses</dt>
+<dd><p class="first last">launched using the &#8216;!&#8217; escape, so you should never call a command that
+requires interactive input.  For such cases, use the terminal IPython.  This
+will not be fixed, as abandoning pexpect would significantly degrade the
+console experience.</p>
+</dd>
+</dl>
+</li>
+<li><p class="first">Use of <tt class="docutils literal"><span class="pre">\b</span></tt> and <tt class="docutils literal"><span class="pre">\r</span></tt> characters in the console: these are control
+characters that allow the cursor to move backwards on a line, and are used to
+display things like in-place progress bars in a terminal.  We currently do
+not support this, but it is being tracked as issue <a class="reference external" href="https://github.com/ipython/ipython/issues/629">629</a>.</p>
+</li>
+</ul>
+<table class="docutils citation" frame="void" id="pyqt" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[PyQt]</td><td>PyQt4 <a class="reference external" href="http://www.riverbankcomputing.co.uk/software/pyqt/download">http://www.riverbankcomputing.co.uk/software/pyqt/download</a></td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="pygments" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[pygments]</td><td>Pygments <a class="reference external" href="http://pygments.org/">http://pygments.org/</a></td></tr>
+</tbody>
+</table>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../parallel/index.html" title="Using IPython for parallel computing"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="shell.html" title="IPython as a system shell"
+             >previous</a> |</li>
+        <li><a href="../index.html">home</a>|&nbsp;</li>
+        <li><a href="../search.html">search</a>|&nbsp;</li>
+       <li><a href="../index.html">documentation </a> &raquo;</li>
+
+          <li><a href="index.html" >Using IPython for interactive work</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2008, The IPython Development Team.
+      Last updated on Jul 31, 2011.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1pre.
+    </div>
+  </body>
+</html>

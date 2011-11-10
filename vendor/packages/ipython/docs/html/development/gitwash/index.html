@@ -1,0 +1,175 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Working with IPython source code &mdash; IPython 0.11 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.11',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="IPython 0.11 documentation" href="../../index.html" />
+    <link rel="up" title="IPython developer’s guide" href="../index.html" />
+    <link rel="next" title="Install git" href="git_install.html" />
+    <link rel="prev" title="How to contribute to IPython" href="../contributing.html" /> 
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<a href="../../index.html"><img src="../../_static/logo.png" border="0" alt="IPython Documentation"/></a>
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="git_install.html" title="Install git"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../contributing.html" title="How to contribute to IPython"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <li><a href="../../search.html">search</a>|&nbsp;</li>
+       <li><a href="../../index.html">documentation </a> &raquo;</li>
+
+          <li><a href="../index.html" accesskey="U">IPython developer&#8217;s guide</a> &raquo;</li> 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="../contributing.html"
+                        title="previous chapter">How to contribute to IPython</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="git_install.html"
+                        title="next chapter">Install git</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/development/gitwash/index.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="working-with-ipython-source-code">
+<span id="using-git"></span><h1>Working with IPython source code<a class="headerlink" href="#working-with-ipython-source-code" title="Permalink to this headline">¶</a></h1>
+<p>These pages describe a <a class="reference external" href="http://git-scm.com/">git</a> and <a class="reference external" href="http://github.com">github</a> workflow for the <a class="reference external" href="http://ipython.org">IPython</a> project.</p>
+<p>There are several different workflows here, for different ways of
+working with IPython.</p>
+<p>This is not a comprehensive <a class="reference external" href="http://git-scm.com/">git</a> reference, it&#8217;s just a workflow for our
+own project.  It&#8217;s tailored to the <a class="reference external" href="http://github.com">github</a> hosting service. You may well
+find better or quicker ways of getting stuff done with git, but these
+should get you started.</p>
+<p>For general resources for learning <a class="reference external" href="http://git-scm.com/">git</a> see <a class="reference internal" href="git_resources.html#git-resources"><em>git resources</em></a>.</p>
+<p>Contents:</p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="git_install.html">Install git</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="git_install.html#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="git_install.html#in-detail">In detail</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="following_latest.html">Following the latest source</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="following_latest.html#get-the-local-copy-of-the-code">Get the local copy of the code</a></li>
+<li class="toctree-l2"><a class="reference internal" href="following_latest.html#updating-the-code">Updating the code</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="patching.html">Making a patch</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="patching.html#making-patches">Making patches</a></li>
+<li class="toctree-l2"><a class="reference internal" href="patching.html#moving-from-patching-to-development">Moving from patching to development</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="git_development.html">Git for development</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="forking_hell.html">Making your own copy (fork) of ipython</a></li>
+<li class="toctree-l2"><a class="reference internal" href="set_up_fork.html">Set up your fork</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configure_git.html">Configure git</a></li>
+<li class="toctree-l2"><a class="reference internal" href="development_workflow.html">Development workflow</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="git_resources.html">git resources</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="git_resources.html#tutorials-and-summaries">Tutorials and summaries</a></li>
+<li class="toctree-l2"><a class="reference internal" href="git_resources.html#advanced-git-workflow">Advanced git workflow</a></li>
+<li class="toctree-l2"><a class="reference internal" href="git_resources.html#manual-pages-online">Manual pages online</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="git_install.html" title="Install git"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="../contributing.html" title="How to contribute to IPython"
+             >previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <li><a href="../../search.html">search</a>|&nbsp;</li>
+       <li><a href="../../index.html">documentation </a> &raquo;</li>
+
+          <li><a href="../index.html" >IPython developer&#8217;s guide</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2008, The IPython Development Team.
+      Last updated on Jul 31, 2011.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1pre.
+    </div>
+  </body>
+</html>

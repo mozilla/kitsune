@@ -1,0 +1,27 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+core.display_trap
+=================
+
+Module: :mod:`core.display_trap`
+--------------------------------
+Inheritance diagram for ``IPython.core.display_trap``:
+
+.. inheritance-diagram:: IPython.core.display_trap 
+   :parts: 3
+
+.. automodule:: IPython.core.display_trap
+
+.. currentmodule:: IPython.core.display_trap
+
+:class:`DisplayTrap`
+--------------------
+
+
+.. autoclass:: DisplayTrap
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__

@@ -1,0 +1,267 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>parallel.engine.kernelstarter &mdash; IPython 0.11 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.11',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="IPython 0.11 documentation" href="../../index.html" />
+    <link rel="up" title="The IPython API" href="../index.html" />
+    <link rel="next" title="parallel.engine.streamkernel" href="IPython.parallel.engine.streamkernel.html" />
+    <link rel="prev" title="parallel.engine.engine" href="IPython.parallel.engine.engine.html" /> 
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<a href="../../index.html"><img src="../../_static/logo.png" border="0" alt="IPython Documentation"/></a>
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="IPython.parallel.engine.streamkernel.html" title="parallel.engine.streamkernel"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="IPython.parallel.engine.engine.html" title="parallel.engine.engine"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <li><a href="../../search.html">search</a>|&nbsp;</li>
+       <li><a href="../../index.html">documentation </a> &raquo;</li>
+
+          <li><a href="../index.html" accesskey="U">The IPython API</a> &raquo;</li> 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">parallel.engine.kernelstarter</a><ul>
+<li><a class="reference internal" href="#module-parallel-engine-kernelstarter">Module: <tt class="docutils literal"><span class="pre">parallel.engine.kernelstarter</span></tt></a></li>
+<li><a class="reference internal" href="#kernelstarter"><tt class="docutils literal"><span class="pre">KernelStarter</span></tt></a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="IPython.parallel.engine.engine.html"
+                        title="previous chapter">parallel.engine.engine</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="IPython.parallel.engine.streamkernel.html"
+                        title="next chapter">parallel.engine.streamkernel</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/api/generated/IPython.parallel.engine.kernelstarter.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="parallel-engine-kernelstarter">
+<h1>parallel.engine.kernelstarter<a class="headerlink" href="#parallel-engine-kernelstarter" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-parallel-engine-kernelstarter">
+<h2>Module: <tt class="xref py py-mod docutils literal"><span class="pre">parallel.engine.kernelstarter</span></tt><a class="headerlink" href="#module-parallel-engine-kernelstarter" title="Permalink to this headline">¶</a></h2>
+<p>Inheritance diagram for <tt class="docutils literal"><span class="pre">IPython.parallel.engine.kernelstarter</span></tt>:</p>
+<img src="../../_images/inheritance62122ef1b8.png" usemap="#inheritance62122ef1b8" class="inheritance"/><map id="inheritance62122ef1b8" name="inheritance62122ef1b8">
+</map>
+<span class="target" id="module-IPython.parallel.engine.kernelstarter"></span><p>KernelStarter class that intercepts Control Queue messages, and handles process management.</p>
+<p>Authors:</p>
+<ul class="simple">
+<li>Min RK</li>
+</ul>
+</div>
+<div class="section" id="kernelstarter">
+<h2><a class="reference internal" href="#IPython.parallel.engine.kernelstarter.KernelStarter" title="IPython.parallel.engine.kernelstarter.KernelStarter"><tt class="xref py py-class docutils literal"><span class="pre">KernelStarter</span></tt></a><a class="headerlink" href="#kernelstarter" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="IPython.parallel.engine.kernelstarter.KernelStarter">
+<em class="property">class </em><tt class="descclassname">IPython.parallel.engine.kernelstarter.</tt><tt class="descname">KernelStarter</tt><big>(</big><em>session</em>, <em>upstream</em>, <em>downstream</em>, <em>*kernel_args</em>, <em>**kernel_kwargs</em><big>)</big><a class="headerlink" href="#IPython.parallel.engine.kernelstarter.KernelStarter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></p>
+<p>Object for resetting/killing the Kernel.</p>
+<dl class="method">
+<dt id="IPython.parallel.engine.kernelstarter.KernelStarter.__init__">
+<tt class="descname">__init__</tt><big>(</big><em>session</em>, <em>upstream</em>, <em>downstream</em>, <em>*kernel_args</em>, <em>**kernel_kwargs</em><big>)</big><a class="headerlink" href="#IPython.parallel.engine.kernelstarter.KernelStarter.__init__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.engine.kernelstarter.KernelStarter.dispatch_reply">
+<tt class="descname">dispatch_reply</tt><big>(</big><em>raw_msg</em><big>)</big><a class="headerlink" href="#IPython.parallel.engine.kernelstarter.KernelStarter.dispatch_reply" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.engine.kernelstarter.KernelStarter.dispatch_request">
+<tt class="descname">dispatch_request</tt><big>(</big><em>raw_msg</em><big>)</big><a class="headerlink" href="#IPython.parallel.engine.kernelstarter.KernelStarter.dispatch_request" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.engine.kernelstarter.KernelStarter.has_kernel">
+<tt class="descname">has_kernel</tt><a class="headerlink" href="#IPython.parallel.engine.kernelstarter.KernelStarter.has_kernel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns whether a kernel process has been specified for the kernel
+manager.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.engine.kernelstarter.KernelStarter.interrupt_kernel">
+<tt class="descname">interrupt_kernel</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.engine.kernelstarter.KernelStarter.interrupt_kernel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Interrupts the kernel. Unlike <tt class="docutils literal"><span class="pre">signal_kernel</span></tt>, this operation is
+well supported on all platforms.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.engine.kernelstarter.KernelStarter.is_alive">
+<tt class="descname">is_alive</tt><a class="headerlink" href="#IPython.parallel.engine.kernelstarter.KernelStarter.is_alive" title="Permalink to this definition">¶</a></dt>
+<dd><p>Is the kernel process still running?</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.engine.kernelstarter.KernelStarter.kill_kernel">
+<tt class="descname">kill_kernel</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.engine.kernelstarter.KernelStarter.kill_kernel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Kill the running kernel.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.engine.kernelstarter.KernelStarter.restart_kernel">
+<tt class="descname">restart_kernel</tt><big>(</big><em>now=False</em><big>)</big><a class="headerlink" href="#IPython.parallel.engine.kernelstarter.KernelStarter.restart_kernel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Restarts a kernel with the same arguments that were used to launch
+it. If the old kernel was launched with random ports, the same ports
+will be used for the new kernel.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>now</strong> : bool, optional</p>
+<blockquote class="last">
+<div><p>If True, the kernel is forcefully restarted <em>immediately</em>, without
+having a chance to do any cleanup action.  Otherwise the kernel is
+given 1s to clean up before a forceful restart is issued.</p>
+<p>In all cases the kernel is restarted, the only difference is whether
+it is given a chance to perform a clean shutdown or not.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.engine.kernelstarter.KernelStarter.shutdown_kernel">
+<tt class="descname">shutdown_kernel</tt><big>(</big><em>restart=False</em><big>)</big><a class="headerlink" href="#IPython.parallel.engine.kernelstarter.KernelStarter.shutdown_kernel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Attempts to the stop the kernel process cleanly. If the kernel
+cannot be stopped, it is killed, if possible.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.engine.kernelstarter.KernelStarter.shutdown_request">
+<tt class="descname">shutdown_request</tt><big>(</big><em>msg</em><big>)</big><a class="headerlink" href="#IPython.parallel.engine.kernelstarter.KernelStarter.shutdown_request" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.engine.kernelstarter.KernelStarter.signal_kernel">
+<tt class="descname">signal_kernel</tt><big>(</big><em>signum</em><big>)</big><a class="headerlink" href="#IPython.parallel.engine.kernelstarter.KernelStarter.signal_kernel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sends a signal to the kernel. Note that since only SIGTERM is
+supported on Windows, this function is only useful on Unix systems.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.engine.kernelstarter.KernelStarter.start">
+<tt class="descname">start</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.engine.kernelstarter.KernelStarter.start" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.engine.kernelstarter.KernelStarter.start_kernel">
+<tt class="descname">start_kernel</tt><big>(</big><em>**kw</em><big>)</big><a class="headerlink" href="#IPython.parallel.engine.kernelstarter.KernelStarter.start_kernel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Starts a kernel process and configures the manager to use it.</p>
+<p>If random ports (port=0) are being used, this method must be called
+before the channels are created.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="IPython.parallel.engine.kernelstarter.make_starter">
+<tt class="descclassname">IPython.parallel.engine.kernelstarter.</tt><tt class="descname">make_starter</tt><big>(</big><em>up_addr</em>, <em>down_addr</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#IPython.parallel.engine.kernelstarter.make_starter" title="Permalink to this definition">¶</a></dt>
+<dd><p>entry point function for launching a kernelstarter in a subprocess</p>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="IPython.parallel.engine.streamkernel.html" title="parallel.engine.streamkernel"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="IPython.parallel.engine.engine.html" title="parallel.engine.engine"
+             >previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <li><a href="../../search.html">search</a>|&nbsp;</li>
+       <li><a href="../../index.html">documentation </a> &raquo;</li>
+
+          <li><a href="../index.html" >The IPython API</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2008, The IPython Development Team.
+      Last updated on Jul 31, 2011.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1pre.
+    </div>
+  </body>
+</html>

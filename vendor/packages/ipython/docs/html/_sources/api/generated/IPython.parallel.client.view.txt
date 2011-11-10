@@ -1,0 +1,67 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+parallel.client.view
+====================
+
+Module: :mod:`parallel.client.view`
+-----------------------------------
+Inheritance diagram for ``IPython.parallel.client.view``:
+
+.. inheritance-diagram:: IPython.parallel.client.view 
+   :parts: 3
+
+.. automodule:: IPython.parallel.client.view
+
+.. currentmodule:: IPython.parallel.client.view
+
+Classes
+-------
+
+:class:`DirectView`
+~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: DirectView
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`LoadBalancedView`
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: LoadBalancedView
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`View`
+~~~~~~~~~~~~~
+
+
+.. autoclass:: View
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+Functions
+---------
+
+
+.. autofunction:: IPython.parallel.client.view.save_ids
+
+
+.. autofunction:: IPython.parallel.client.view.spin_after
+
+
+.. autofunction:: IPython.parallel.client.view.sync_results
+

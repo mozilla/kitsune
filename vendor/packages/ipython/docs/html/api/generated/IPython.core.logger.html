@@ -1,0 +1,229 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>core.logger &mdash; IPython 0.11 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.11',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="IPython 0.11 documentation" href="../../index.html" />
+    <link rel="up" title="The IPython API" href="../index.html" />
+    <link rel="next" title="core.macro" href="IPython.core.macro.html" />
+    <link rel="prev" title="core.ipapi" href="IPython.core.ipapi.html" /> 
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<a href="../../index.html"><img src="../../_static/logo.png" border="0" alt="IPython Documentation"/></a>
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="IPython.core.macro.html" title="core.macro"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="IPython.core.ipapi.html" title="core.ipapi"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <li><a href="../../search.html">search</a>|&nbsp;</li>
+       <li><a href="../../index.html">documentation </a> &raquo;</li>
+
+          <li><a href="../index.html" accesskey="U">The IPython API</a> &raquo;</li> 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">core.logger</a><ul>
+<li><a class="reference internal" href="#module-core-logger">Module: <tt class="docutils literal"><span class="pre">core.logger</span></tt></a></li>
+<li><a class="reference internal" href="#logger"><tt class="docutils literal"><span class="pre">Logger</span></tt></a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="IPython.core.ipapi.html"
+                        title="previous chapter">core.ipapi</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="IPython.core.macro.html"
+                        title="next chapter">core.macro</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/api/generated/IPython.core.logger.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="core-logger">
+<h1>core.logger<a class="headerlink" href="#core-logger" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-core-logger">
+<h2>Module: <tt class="xref py py-mod docutils literal"><span class="pre">core.logger</span></tt><a class="headerlink" href="#module-core-logger" title="Permalink to this headline">¶</a></h2>
+<p>Inheritance diagram for <tt class="docutils literal"><span class="pre">IPython.core.logger</span></tt>:</p>
+<img src="../../_images/inheritance0023660690.png" usemap="#inheritance0023660690" class="inheritance"/><map id="inheritance0023660690" name="inheritance0023660690">
+</map>
+<span class="target" id="module-IPython.core.logger"></span><p>Logger class for IPython&#8217;s logging facilities.</p>
+</div>
+<div class="section" id="logger">
+<h2><a class="reference internal" href="#IPython.core.logger.Logger" title="IPython.core.logger.Logger"><tt class="xref py py-class docutils literal"><span class="pre">Logger</span></tt></a><a class="headerlink" href="#logger" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="IPython.core.logger.Logger">
+<em class="property">class </em><tt class="descclassname">IPython.core.logger.</tt><tt class="descname">Logger</tt><big>(</big><em>home_dir</em>, <em>logfname='Logger.log'</em>, <em>loghead=''</em>, <em>logmode='over'</em><big>)</big><a class="headerlink" href="#IPython.core.logger.Logger" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></p>
+<p>A Logfile class with different policies for file creation</p>
+<dl class="method">
+<dt id="IPython.core.logger.Logger.__init__">
+<tt class="descname">__init__</tt><big>(</big><em>home_dir</em>, <em>logfname='Logger.log'</em>, <em>loghead=''</em>, <em>logmode='over'</em><big>)</big><a class="headerlink" href="#IPython.core.logger.Logger.__init__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IPython.core.logger.Logger.close_log">
+<tt class="descname">close_log</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.core.logger.Logger.close_log" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fully stop logging and close log file.</p>
+<p>In order to start logging again, a new logstart() call needs to be
+made, possibly (though not necessarily) with a new filename, mode and
+other options.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.core.logger.Logger.log">
+<tt class="descname">log</tt><big>(</big><em>line_mod</em>, <em>line_ori</em><big>)</big><a class="headerlink" href="#IPython.core.logger.Logger.log" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write the sources to a log.</p>
+<p>Inputs:</p>
+<ul class="simple">
+<li>line_mod: possibly modified input, such as the transformations made</li>
+</ul>
+<p>by input prefilters or input handlers of various kinds.  This should
+always be valid Python.</p>
+<ul class="simple">
+<li>line_ori: unmodified input line from the user.  This is not</li>
+</ul>
+<p>necessarily valid Python.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.core.logger.Logger.log_write">
+<tt class="descname">log_write</tt><big>(</big><em>data</em>, <em>kind='input'</em><big>)</big><a class="headerlink" href="#IPython.core.logger.Logger.log_write" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write data to the log file, if active</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.core.logger.Logger.logmode">
+<tt class="descname">logmode</tt><a class="headerlink" href="#IPython.core.logger.Logger.logmode" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IPython.core.logger.Logger.logstart">
+<tt class="descname">logstart</tt><big>(</big><em>logfname=None</em>, <em>loghead=None</em>, <em>logmode=None</em>, <em>log_output=False</em>, <em>timestamp=False</em>, <em>log_raw_input=False</em><big>)</big><a class="headerlink" href="#IPython.core.logger.Logger.logstart" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate a new log-file with a default header.</p>
+<p>Raises RuntimeError if the log has already been started</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.core.logger.Logger.logstate">
+<tt class="descname">logstate</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.core.logger.Logger.logstate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Print a status message about the logger.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.core.logger.Logger.logstop">
+<tt class="descname">logstop</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.core.logger.Logger.logstop" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fully stop logging and close log file.</p>
+<p>In order to start logging again, a new logstart() call needs to be
+made, possibly (though not necessarily) with a new filename, mode and
+other options.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.core.logger.Logger.switch_log">
+<tt class="descname">switch_log</tt><big>(</big><em>val</em><big>)</big><a class="headerlink" href="#IPython.core.logger.Logger.switch_log" title="Permalink to this definition">¶</a></dt>
+<dd><p>Switch logging on/off. val should be ONLY a boolean.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="IPython.core.macro.html" title="core.macro"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="IPython.core.ipapi.html" title="core.ipapi"
+             >previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <li><a href="../../search.html">search</a>|&nbsp;</li>
+       <li><a href="../../index.html">documentation </a> &raquo;</li>
+
+          <li><a href="../index.html" >The IPython API</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2008, The IPython Development Team.
+      Last updated on Jul 31, 2011.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1pre.
+    </div>
+  </body>
+</html>

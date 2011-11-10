@@ -1,0 +1,66 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+lib.backgroundjobs
+==================
+
+Module: :mod:`lib.backgroundjobs`
+---------------------------------
+Inheritance diagram for ``IPython.lib.backgroundjobs``:
+
+.. inheritance-diagram:: IPython.lib.backgroundjobs 
+   :parts: 3
+
+.. automodule:: IPython.lib.backgroundjobs
+
+.. currentmodule:: IPython.lib.backgroundjobs
+
+Classes
+-------
+
+:class:`BackgroundJobBase`
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: BackgroundJobBase
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`BackgroundJobExpr`
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: BackgroundJobExpr
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`BackgroundJobFunc`
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: BackgroundJobFunc
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`BackgroundJobManager`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: BackgroundJobManager
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__

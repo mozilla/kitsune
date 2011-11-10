@@ -1,0 +1,94 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+utils.io
+========
+
+Module: :mod:`utils.io`
+-----------------------
+Inheritance diagram for ``IPython.utils.io``:
+
+.. inheritance-diagram:: IPython.utils.io 
+   :parts: 3
+
+.. automodule:: IPython.utils.io
+
+.. currentmodule:: IPython.utils.io
+
+Classes
+-------
+
+:class:`IOStream`
+~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: IOStream
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`IOTerm`
+~~~~~~~~~~~~~~~
+
+
+.. autoclass:: IOTerm
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`NLprinter`
+~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: NLprinter
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`Tee`
+~~~~~~~~~~~~
+
+
+.. autoclass:: Tee
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+Functions
+---------
+
+
+.. autofunction:: IPython.utils.io.ask_yes_no
+
+
+.. autofunction:: IPython.utils.io.file_read
+
+
+.. autofunction:: IPython.utils.io.file_readlines
+
+
+.. autofunction:: IPython.utils.io.raw_input_ext
+
+
+.. autofunction:: IPython.utils.io.raw_input_multi
+
+
+.. autofunction:: IPython.utils.io.raw_print
+
+
+.. autofunction:: IPython.utils.io.raw_print_err
+
+
+.. autofunction:: IPython.utils.io.temp_pyfile
+

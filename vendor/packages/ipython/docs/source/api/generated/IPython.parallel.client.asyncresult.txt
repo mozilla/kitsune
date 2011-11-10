@@ -1,0 +1,61 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+parallel.client.asyncresult
+===========================
+
+Module: :mod:`parallel.client.asyncresult`
+------------------------------------------
+Inheritance diagram for ``IPython.parallel.client.asyncresult``:
+
+.. inheritance-diagram:: IPython.parallel.client.asyncresult 
+   :parts: 3
+
+.. automodule:: IPython.parallel.client.asyncresult
+
+.. currentmodule:: IPython.parallel.client.asyncresult
+
+Classes
+-------
+
+:class:`AsyncHubResult`
+~~~~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: AsyncHubResult
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`AsyncMapResult`
+~~~~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: AsyncMapResult
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`AsyncResult`
+~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: AsyncResult
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+Function
+--------
+
+
+.. autofunction:: IPython.parallel.client.asyncresult.check_ready
+

@@ -1,0 +1,748 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Starting the IPython controller and engines &mdash; IPython 0.11 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.11',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="IPython 0.11 documentation" href="../index.html" />
+    <link rel="up" title="Using IPython for parallel computing" href="index.html" />
+    <link rel="next" title="IPython’s Direct interface" href="parallel_multiengine.html" />
+    <link rel="prev" title="Overview and getting started" href="parallel_intro.html" /> 
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<a href="../index.html"><img src="../_static/logo.png" border="0" alt="IPython Documentation"/></a>
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="parallel_multiengine.html" title="IPython’s Direct interface"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="parallel_intro.html" title="Overview and getting started"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">home</a>|&nbsp;</li>
+        <li><a href="../search.html">search</a>|&nbsp;</li>
+       <li><a href="../index.html">documentation </a> &raquo;</li>
+
+          <li><a href="index.html" accesskey="U">Using IPython for parallel computing</a> &raquo;</li> 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Starting the IPython controller and engines</a><ul>
+<li><a class="reference internal" href="#general-considerations">General considerations</a></li>
+<li><a class="reference internal" href="#using-ipcluster">Using <strong class="command">ipcluster</strong></a></li>
+<li><a class="reference internal" href="#configuring-an-ipython-cluster">Configuring an IPython cluster</a><ul>
+<li><a class="reference internal" href="#using-various-batch-systems-with-ipcluster">Using various batch systems with <strong class="command">ipcluster</strong></a></li>
+<li><a class="reference internal" href="#using-ipcluster-in-mpiexec-mpirun-mode">Using <strong class="command">ipcluster</strong> in mpiexec/mpirun mode</a></li>
+<li><a class="reference internal" href="#using-ipcluster-in-pbs-mode">Using <strong class="command">ipcluster</strong> in PBS mode</a></li>
+<li><a class="reference internal" href="#using-ipcluster-in-ssh-mode">Using <strong class="command">ipcluster</strong> in SSH mode</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#using-the-ipcontroller-and-ipengine-commands">Using the <strong class="command">ipcontroller</strong> and <strong class="command">ipengine</strong> commands</a><ul>
+<li><a class="reference internal" href="#starting-the-controller-and-engine-on-your-local-machine">Starting the controller and engine on your local machine</a></li>
+<li><a class="reference internal" href="#starting-the-controller-and-engines-on-different-hosts">Starting the controller and engines on different hosts</a></li>
+<li><a class="reference internal" href="#make-json-files-persistent">Make JSON files persistent</a></li>
+<li><a class="reference internal" href="#log-files">Log files</a></li>
+<li><a class="reference internal" href="#configuring-ipcontroller">Configuring <cite>ipcontroller</cite></a><ul>
+<li><a class="reference internal" href="#ports-and-addresses">Ports and addresses</a></li>
+<li><a class="reference internal" href="#database-backend">Database Backend</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#configuring-ipengine">Configuring <cite>ipengine</cite></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="parallel_intro.html"
+                        title="previous chapter">Overview and getting started</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="parallel_multiengine.html"
+                        title="next chapter">IPython&#8217;s Direct interface</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/parallel/parallel_process.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="starting-the-ipython-controller-and-engines">
+<span id="parallel-process"></span><h1>Starting the IPython controller and engines<a class="headerlink" href="#starting-the-ipython-controller-and-engines" title="Permalink to this headline">¶</a></h1>
+<p>To use IPython for parallel computing, you need to start one instance of
+the controller and one or more instances of the engine. The controller
+and each engine can run on different machines or on the same machine.
+Because of this, there are many different possibilities.</p>
+<p>Broadly speaking, there are two ways of going about starting a controller and engines:</p>
+<ul class="simple">
+<li>In an automated manner using the <strong class="command">ipcluster</strong> command.</li>
+<li>In a more manual way using the <strong class="command">ipcontroller</strong> and
+<strong class="command">ipengine</strong> commands.</li>
+</ul>
+<p>This document describes both of these methods. We recommend that new users
+start with the <strong class="command">ipcluster</strong> command as it simplifies many common usage
+cases.</p>
+<div class="section" id="general-considerations">
+<h2>General considerations<a class="headerlink" href="#general-considerations" title="Permalink to this headline">¶</a></h2>
+<p>Before delving into the details about how you can start a controller and
+engines using the various methods, we outline some of the general issues that
+come up when starting the controller and engines. These things come up no
+matter which method you use to start your IPython cluster.</p>
+<p>If you are running engines on multiple machines, you will likely need to instruct the
+controller to listen for connections on an external interface. This can be done by specifying
+the <tt class="docutils literal"><span class="pre">ip</span></tt> argument on the command-line, or the <tt class="docutils literal"><span class="pre">HubFactory.ip</span></tt> configurable in
+<tt class="file docutils literal"><span class="pre">ipcontroller_config.py</span></tt>.</p>
+<p>If your machines are on a trusted network, you can safely instruct the controller to listen
+on all public interfaces with:</p>
+<div class="highlight-python"><pre>$&gt; ipcontroller --ip=*</pre>
+</div>
+<p>Or you can set the same behavior as the default by adding the following line to your <tt class="file docutils literal"><span class="pre">ipcontroller_config.py</span></tt>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">c</span><span class="o">.</span><span class="n">HubFactory</span><span class="o">.</span><span class="n">ip</span> <span class="o">=</span> <span class="s">&#39;*&#39;</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Due to the lack of security in ZeroMQ, the controller will only listen for connections on
+localhost by default. If you see Timeout errors on engines or clients, then the first
+thing you should check is the ip address the controller is listening on, and make sure
+that it is visible from the timing out machine.</p>
+</div>
+<div class="admonition-see-also admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last">Our <a class="reference external" href="parallel_security">notes</a> on security in the new parallel computing code.</p>
+</div>
+<p>Let&#8217;s say that you want to start the controller on <tt class="docutils literal"><span class="pre">host0</span></tt> and engines on
+hosts <tt class="docutils literal"><span class="pre">host1</span></tt>-<tt class="docutils literal"><span class="pre">hostn</span></tt>. The following steps are then required:</p>
+<ol class="arabic simple">
+<li>Start the controller on <tt class="docutils literal"><span class="pre">host0</span></tt> by running <strong class="command">ipcontroller</strong> on
+<tt class="docutils literal"><span class="pre">host0</span></tt>.  The controller must be instructed to listen on an interface visible
+to the engine machines, via the <tt class="docutils literal"><span class="pre">ip</span></tt> command-line argument or <tt class="docutils literal"><span class="pre">HubFactory.ip</span></tt>
+in <tt class="file docutils literal"><span class="pre">ipcontroller_config.py</span></tt>.</li>
+<li>Move the JSON file (<tt class="file docutils literal"><span class="pre">ipcontroller-engine.json</span></tt>) created by the
+controller from <tt class="docutils literal"><span class="pre">host0</span></tt> to hosts <tt class="docutils literal"><span class="pre">host1</span></tt>-<tt class="docutils literal"><span class="pre">hostn</span></tt>.</li>
+<li>Start the engines on hosts <tt class="docutils literal"><span class="pre">host1</span></tt>-<tt class="docutils literal"><span class="pre">hostn</span></tt> by running
+<strong class="command">ipengine</strong>.  This command has to be told where the JSON file
+(<tt class="file docutils literal"><span class="pre">ipcontroller-engine.json</span></tt>) is located.</li>
+</ol>
+<p>At this point, the controller and engines will be connected. By default, the JSON files
+created by the controller are put into the <tt class="file docutils literal"><span class="pre">~/.ipython/profile_default/security</span></tt>
+directory. If the engines share a filesystem with the controller, step 2 can be skipped as
+the engines will automatically look at that location.</p>
+<p>The final step required to actually use the running controller from a client is to move
+the JSON file <tt class="file docutils literal"><span class="pre">ipcontroller-client.json</span></tt> from <tt class="docutils literal"><span class="pre">host0</span></tt> to any host where clients
+will be run. If these file are put into the <tt class="file docutils literal"><span class="pre">~/.ipython/profile_default/security</span></tt>
+directory of the client&#8217;s host, they will be found automatically. Otherwise, the full path
+to them has to be passed to the client&#8217;s constructor.</p>
+</div>
+<div class="section" id="using-ipcluster">
+<h2>Using <strong class="command">ipcluster</strong><a class="headerlink" href="#using-ipcluster" title="Permalink to this headline">¶</a></h2>
+<p>The <strong class="command">ipcluster</strong> command provides a simple way of starting a
+controller and engines in the following situations:</p>
+<ol class="arabic simple">
+<li>When the controller and engines are all run on localhost. This is useful
+for testing or running on a multicore computer.</li>
+<li>When engines are started using the <strong class="command">mpiexec</strong> command that comes
+with most MPI <a class="reference internal" href="parallel_mpi.html#mpi">[MPI]</a> implementations</li>
+<li>When engines are started using the PBS <a class="reference internal" href="#pbs">[PBS]</a> batch system
+(or other <cite>qsub</cite> systems, such as SGE).</li>
+<li>When the controller is started on localhost and the engines are started on
+remote nodes using <strong class="command">ssh</strong>.</li>
+<li>When engines are started using the Windows HPC Server batch system.</li>
+</ol>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Currently <strong class="command">ipcluster</strong> requires that the
+<tt class="file docutils literal"><span class="pre">~/.ipython/profile_&lt;name&gt;/security</span></tt> directory live on a shared filesystem that is
+seen by both the controller and engines. If you don&#8217;t have a shared file
+system you will need to use <strong class="command">ipcontroller</strong> and
+<strong class="command">ipengine</strong> directly.</p>
+</div>
+<p>Under the hood, <strong class="command">ipcluster</strong> just uses <strong class="command">ipcontroller</strong>
+and <strong class="command">ipengine</strong> to perform the steps described above.</p>
+<p>The simplest way to use ipcluster requires no configuration, and will
+launch a controller and a number of engines on the local machine. For instance,
+to start one controller and 4 engines on localhost, just do:</p>
+<div class="highlight-python"><pre>$ ipcluster start --n=4</pre>
+</div>
+<p>To see other command line options, do:</p>
+<div class="highlight-python"><pre>$ ipcluster -h</pre>
+</div>
+</div>
+<div class="section" id="configuring-an-ipython-cluster">
+<h2>Configuring an IPython cluster<a class="headerlink" href="#configuring-an-ipython-cluster" title="Permalink to this headline">¶</a></h2>
+<p>Cluster configurations are stored as <cite>profiles</cite>.  You can create a new profile with:</p>
+<div class="highlight-python"><pre>$ ipython profile create --parallel --profile=myprofile</pre>
+</div>
+<p>This will create the directory <tt class="file docutils literal"><span class="pre">IPYTHONDIR/profile_myprofile</span></tt>, and populate it
+with the default configuration files for the three IPython cluster commands. Once
+you edit those files, you can continue to call ipcluster/ipcontroller/ipengine
+with no arguments beyond <tt class="docutils literal"><span class="pre">profile=myprofile</span></tt>, and any configuration will be maintained.</p>
+<p>There is no limit to the number of profiles you can have, so you can maintain a profile for each
+of your common use cases. The default profile will be used whenever the
+profile argument is not specified, so edit <tt class="file docutils literal"><span class="pre">IPYTHONDIR/profile_default/*_config.py</span></tt> to
+represent your most common use case.</p>
+<p>The configuration files are loaded with commented-out settings and explanations,
+which should cover most of the available possibilities.</p>
+<div class="section" id="using-various-batch-systems-with-ipcluster">
+<h3>Using various batch systems with <strong class="command">ipcluster</strong><a class="headerlink" href="#using-various-batch-systems-with-ipcluster" title="Permalink to this headline">¶</a></h3>
+<p><strong class="command">ipcluster</strong> has a notion of Launchers that can start controllers
+and engines with various remote execution schemes.  Currently supported
+models include <strong class="command">ssh</strong>, <strong class="command">mpiexec</strong>, PBS-style (Torque, SGE),
+and Windows HPC Server.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The Launchers and configuration are designed in such a way that advanced
+users can subclass and configure them to fit their own system that we
+have not yet supported (such as Condor)</p>
+</div>
+</div>
+<div class="section" id="using-ipcluster-in-mpiexec-mpirun-mode">
+<h3>Using <strong class="command">ipcluster</strong> in mpiexec/mpirun mode<a class="headerlink" href="#using-ipcluster-in-mpiexec-mpirun-mode" title="Permalink to this headline">¶</a></h3>
+<p>The mpiexec/mpirun mode is useful if you:</p>
+<ol class="arabic simple">
+<li>Have MPI installed.</li>
+<li>Your systems are configured to use the <strong class="command">mpiexec</strong> or
+<strong class="command">mpirun</strong> commands to start MPI processes.</li>
+</ol>
+<p>If these are satisfied, you can create a new profile:</p>
+<div class="highlight-python"><pre>$ ipython profile create --parallel --profile=mpi</pre>
+</div>
+<p>and edit the file <tt class="file docutils literal"><span class="pre">IPYTHONDIR/profile_mpi/ipcluster_config.py</span></tt>.</p>
+<p>There, instruct ipcluster to use the MPIExec launchers by adding the lines:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">c</span><span class="o">.</span><span class="n">IPClusterEngines</span><span class="o">.</span><span class="n">engine_launcher</span> <span class="o">=</span> <span class="s">&#39;IPython.parallel.apps.launcher.MPIExecEngineSetLauncher&#39;</span>
+</pre></div>
+</div>
+<p>If the default MPI configuration is correct, then you can now start your cluster, with:</p>
+<div class="highlight-python"><pre>$ ipcluster start --n=4 --profile=mpi</pre>
+</div>
+<p>This does the following:</p>
+<ol class="arabic simple">
+<li>Starts the IPython controller on current host.</li>
+<li>Uses <strong class="command">mpiexec</strong> to start 4 engines.</li>
+</ol>
+<p>If you have a reason to also start the Controller with mpi, you can specify:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">c</span><span class="o">.</span><span class="n">IPClusterStart</span><span class="o">.</span><span class="n">controller_launcher</span> <span class="o">=</span> <span class="s">&#39;IPython.parallel.apps.launcher.MPIExecControllerLauncher&#39;</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The Controller <em>will not</em> be in the same MPI universe as the engines, so there is not
+much reason to do this unless sysadmins demand it.</p>
+</div>
+<p>On newer MPI implementations (such as OpenMPI), this will work even if you
+don&#8217;t make any calls to MPI or call <tt class="xref py py-func docutils literal"><span class="pre">MPI_Init()</span></tt>. However, older MPI
+implementations actually require each process to call <tt class="xref py py-func docutils literal"><span class="pre">MPI_Init()</span></tt> upon
+starting. The easiest way of having this done is to install the mpi4py
+<a class="reference internal" href="parallel_mpi.html#mpi4py">[mpi4py]</a> package and then specify the <tt class="docutils literal"><span class="pre">c.MPI.use</span></tt> option in <tt class="file docutils literal"><span class="pre">ipengine_config.py</span></tt>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">c</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">use</span> <span class="o">=</span> <span class="s">&#39;mpi4py&#39;</span>
+</pre></div>
+</div>
+<p>Unfortunately, even this won&#8217;t work for some MPI implementations. If you are
+having problems with this, you will likely have to use a custom Python
+executable that itself calls <tt class="xref py py-func docutils literal"><span class="pre">MPI_Init()</span></tt> at the appropriate time.
+Fortunately, mpi4py comes with such a custom Python executable that is easy to
+install and use. However, this custom Python executable approach will not work
+with <strong class="command">ipcluster</strong> currently.</p>
+<p>More details on using MPI with IPython can be found <a class="reference internal" href="parallel_mpi.html#parallelmpi"><em>here</em></a>.</p>
+</div>
+<div class="section" id="using-ipcluster-in-pbs-mode">
+<h3>Using <strong class="command">ipcluster</strong> in PBS mode<a class="headerlink" href="#using-ipcluster-in-pbs-mode" title="Permalink to this headline">¶</a></h3>
+<p>The PBS mode uses the Portable Batch System (PBS) to start the engines.</p>
+<p>As usual, we will start by creating a fresh profile:</p>
+<div class="highlight-python"><pre>$ ipython profile create --parallel --profile=pbs</pre>
+</div>
+<p>And in <tt class="file docutils literal"><span class="pre">ipcluster_config.py</span></tt>, we will select the PBS launchers for the controller
+and engines:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">c</span><span class="o">.</span><span class="n">IPClusterStart</span><span class="o">.</span><span class="n">controller_launcher</span> <span class="o">=</span> \
+    <span class="s">&#39;IPython.parallel.apps.launcher.PBSControllerLauncher&#39;</span>
+<span class="n">c</span><span class="o">.</span><span class="n">IPClusterEngines</span><span class="o">.</span><span class="n">engine_launcher</span> <span class="o">=</span> \
+    <span class="s">&#39;IPython.parallel.apps.launcher.PBSEngineSetLauncher&#39;</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Note that the configurable is IPClusterEngines for the engine launcher, and
+IPClusterStart for the controller launcher. This is because the start command is a
+subclass of the engine command, adding a controller launcher. Since it is a subclass,
+any configuration made in IPClusterEngines is inherited by IPClusterStart unless it is
+overridden.</p>
+</div>
+<p>IPython does provide simple default batch templates for PBS and SGE, but you may need
+to specify your own. Here is a sample PBS script template:</p>
+<div class="highlight-bash"><div class="highlight"><pre><span class="c">#PBS -N ipython</span>
+<span class="c">#PBS -j oe</span>
+<span class="c">#PBS -l walltime=00:10:00</span>
+<span class="c">#PBS -l nodes={n/4}:ppn=4</span>
+<span class="c">#PBS -q {queue}</span>
+
+<span class="nb">cd</span> <span class="nv">$PBS_O_WORKDIR</span>
+<span class="nb">export </span><span class="nv">PATH</span><span class="o">=</span><span class="nv">$HOME</span>/usr/local/bin
+<span class="nb">export </span><span class="nv">PYTHONPATH</span><span class="o">=</span><span class="nv">$HOME</span>/usr/local/lib/python2.7/site-packages
+/usr/local/bin/mpiexec -n <span class="o">{</span>n<span class="o">}</span> ipengine --profile-dir<span class="o">={</span>profile_dir<span class="o">}</span>
+</pre></div>
+</div>
+<p>There are a few important points about this template:</p>
+<ol class="arabic simple">
+<li>This template will be rendered at runtime using IPython&#8217;s <tt class="xref py py-class docutils literal"><span class="pre">EvalFormatter</span></tt>.
+This is simply a subclass of <tt class="xref py py-class docutils literal"><span class="pre">string.Formatter</span></tt> that allows simple expressions
+on keys.</li>
+<li>Instead of putting in the actual number of engines, use the notation
+<tt class="docutils literal"><span class="pre">{n}</span></tt> to indicate the number of engines to be started. You can also use
+expressions like <tt class="docutils literal"><span class="pre">{n/4}</span></tt> in the template to indicate the number of nodes.
+There will always be <tt class="docutils literal"><span class="pre">{n}</span></tt> and <tt class="docutils literal"><span class="pre">{profile_dir}</span></tt> variables passed to the formatter.
+These allow the batch system to know how many engines, and where the configuration
+files reside. The same is true for the batch queue, with the template variable
+<tt class="docutils literal"><span class="pre">{queue}</span></tt>.</li>
+<li>Any options to <strong class="command">ipengine</strong> can be given in the batch script
+template, or in <tt class="file docutils literal"><span class="pre">ipengine_config.py</span></tt>.</li>
+<li>Depending on the configuration of you system, you may have to set
+environment variables in the script template.</li>
+</ol>
+<p>The controller template should be similar, but simpler:</p>
+<div class="highlight-bash"><div class="highlight"><pre><span class="c">#PBS -N ipython</span>
+<span class="c">#PBS -j oe</span>
+<span class="c">#PBS -l walltime=00:10:00</span>
+<span class="c">#PBS -l nodes=1:ppn=4</span>
+<span class="c">#PBS -q {queue}</span>
+
+<span class="nb">cd</span> <span class="nv">$PBS_O_WORKDIR</span>
+<span class="nb">export </span><span class="nv">PATH</span><span class="o">=</span><span class="nv">$HOME</span>/usr/local/bin
+<span class="nb">export </span><span class="nv">PYTHONPATH</span><span class="o">=</span><span class="nv">$HOME</span>/usr/local/lib/python2.7/site-packages
+ipcontroller --profile-dir<span class="o">={</span>profile_dir<span class="o">}</span>
+</pre></div>
+</div>
+<p>Once you have created these scripts, save them with names like
+<tt class="file docutils literal"><span class="pre">pbs.engine.template</span></tt>. Now you can load them into the <tt class="file docutils literal"><span class="pre">ipcluster_config</span></tt> with:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">c</span><span class="o">.</span><span class="n">PBSEngineSetLauncher</span><span class="o">.</span><span class="n">batch_template_file</span> <span class="o">=</span> <span class="s">&quot;pbs.engine.template&quot;</span>
+
+<span class="n">c</span><span class="o">.</span><span class="n">PBSControllerLauncher</span><span class="o">.</span><span class="n">batch_template_file</span> <span class="o">=</span> <span class="s">&quot;pbs.controller.template&quot;</span>
+</pre></div>
+</div>
+<p>Alternately, you can just define the templates as strings inside <tt class="file docutils literal"><span class="pre">ipcluster_config</span></tt>.</p>
+<p>Whether you are using your own templates or our defaults, the extra configurables available are
+the number of engines to launch (<tt class="docutils literal"><span class="pre">{n}</span></tt>, and the batch system queue to which the jobs are to be
+submitted (<tt class="docutils literal"><span class="pre">{queue}</span></tt>)). These are configurables, and can be specified in
+<tt class="file docutils literal"><span class="pre">ipcluster_config</span></tt>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">c</span><span class="o">.</span><span class="n">PBSLauncher</span><span class="o">.</span><span class="n">queue</span> <span class="o">=</span> <span class="s">&#39;veryshort.q&#39;</span>
+<span class="n">c</span><span class="o">.</span><span class="n">IPClusterEngines</span><span class="o">.</span><span class="n">n</span> <span class="o">=</span> <span class="mi">64</span>
+</pre></div>
+</div>
+<p>Note that assuming you are running PBS on a multi-node cluster, the Controller&#8217;s default behavior
+of listening only on localhost is likely too restrictive.  In this case, also assuming the
+nodes are safely behind a firewall, you can simply instruct the Controller to listen for
+connections on all its interfaces, by adding in <tt class="file docutils literal"><span class="pre">ipcontroller_config</span></tt>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">c</span><span class="o">.</span><span class="n">HubFactory</span><span class="o">.</span><span class="n">ip</span> <span class="o">=</span> <span class="s">&#39;*&#39;</span>
+</pre></div>
+</div>
+<p>You can now run the cluster with:</p>
+<div class="highlight-python"><pre>$ ipcluster start --profile=pbs --n=128</pre>
+</div>
+<p>Additional configuration options can be found in the PBS section of <tt class="file docutils literal"><span class="pre">ipcluster_config</span></tt>.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Due to the flexibility of configuration, the PBS launchers work with simple changes
+to the template for other <strong class="command">qsub</strong>-using systems, such as Sun Grid Engine,
+and with further configuration in similar batch systems like Condor.</p>
+</div>
+</div>
+<div class="section" id="using-ipcluster-in-ssh-mode">
+<h3>Using <strong class="command">ipcluster</strong> in SSH mode<a class="headerlink" href="#using-ipcluster-in-ssh-mode" title="Permalink to this headline">¶</a></h3>
+<p>The SSH mode uses <strong class="command">ssh</strong> to execute <strong class="command">ipengine</strong> on remote
+nodes and <strong class="command">ipcontroller</strong> can be run remotely as well, or on localhost.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">When using this mode it highly recommended that you have set up SSH keys
+and are using ssh-agent <a class="reference internal" href="#ssh">[SSH]</a> for password-less logins.</p>
+</div>
+<p>As usual, we start by creating a clean profile:</p>
+<div class="highlight-python"><pre>$ ipython profile create --parallel --profile=ssh</pre>
+</div>
+<p>To use this mode, select the SSH launchers in <tt class="file docutils literal"><span class="pre">ipcluster_config.py</span></tt>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">c</span><span class="o">.</span><span class="n">IPClusterEngines</span><span class="o">.</span><span class="n">engine_launcher</span> <span class="o">=</span> \
+    <span class="s">&#39;IPython.parallel.apps.launcher.SSHEngineSetLauncher&#39;</span>
+<span class="c"># and if the Controller is also to be remote:</span>
+<span class="n">c</span><span class="o">.</span><span class="n">IPClusterStart</span><span class="o">.</span><span class="n">controller_launcher</span> <span class="o">=</span> \
+    <span class="s">&#39;IPython.parallel.apps.launcher.SSHControllerLauncher&#39;</span>
+</pre></div>
+</div>
+<p>The controller&#8217;s remote location and configuration can be specified:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># Set the user and hostname for the controller</span>
+<span class="c"># c.SSHControllerLauncher.hostname = &#39;controller.example.com&#39;</span>
+<span class="c"># c.SSHControllerLauncher.user = os.environ.get(&#39;USER&#39;,&#39;username&#39;)</span>
+
+<span class="c"># Set the arguments to be passed to ipcontroller</span>
+<span class="c"># note that remotely launched ipcontroller will not get the contents of</span>
+<span class="c"># the local ipcontroller_config.py unless it resides on the *remote host*</span>
+<span class="c"># in the location specified by the `profile-dir` argument.</span>
+<span class="c"># c.SSHControllerLauncher.program_args = [&#39;--reuse&#39;, &#39;--ip=*&#39;, &#39;--profile-dir=/path/to/cd&#39;]</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">SSH mode does not do any file movement, so you will need to distribute configuration
+files manually.  To aid in this, the <cite>reuse_files</cite> flag defaults to True for ssh-launched
+Controllers, so you will only need to do this once, unless you override this flag back
+to False.</p>
+</div>
+<p>Engines are specified in a dictionary, by hostname and the number of engines to be run
+on that host.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">c</span><span class="o">.</span><span class="n">SSHEngineSetLauncher</span><span class="o">.</span><span class="n">engines</span> <span class="o">=</span> <span class="p">{</span> <span class="s">&#39;host1.example.com&#39;</span> <span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+            <span class="s">&#39;host2.example.com&#39;</span> <span class="p">:</span> <span class="mi">5</span><span class="p">,</span>
+            <span class="s">&#39;host3.example.com&#39;</span> <span class="p">:</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="p">[</span><span class="s">&#39;--profile-dir=/home/different/location&#39;</span><span class="p">]),</span>
+            <span class="s">&#39;host4.example.com&#39;</span> <span class="p">:</span> <span class="mi">8</span> <span class="p">}</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li>The <cite>engines</cite> dict, where the keys are the host we want to run engines on and
+the value is the number of engines to run on that host.</li>
+<li>on host3, the value is a tuple, where the number of engines is first, and the arguments
+to be passed to <strong class="command">ipengine</strong> are the second element.</li>
+</ul>
+<p>For engines without explicitly specified arguments, the default arguments are set in
+a single location:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">c</span><span class="o">.</span><span class="n">SSHEngineSetLauncher</span><span class="o">.</span><span class="n">engine_args</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;--profile-dir=/path/to/profile_ssh&#39;</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>Current limitations of the SSH mode of <strong class="command">ipcluster</strong> are:</p>
+<ul class="simple">
+<li>Untested on Windows. Would require a working <strong class="command">ssh</strong> on Windows.
+Also, we are using shell scripts to setup and execute commands on remote
+hosts.</li>
+<li>No file movement - This is a regression from 0.10, which moved connection files
+around with scp. This will be improved, but not before 0.11 release.</li>
+</ul>
+</div>
+</div>
+<div class="section" id="using-the-ipcontroller-and-ipengine-commands">
+<h2>Using the <strong class="command">ipcontroller</strong> and <strong class="command">ipengine</strong> commands<a class="headerlink" href="#using-the-ipcontroller-and-ipengine-commands" title="Permalink to this headline">¶</a></h2>
+<p>It is also possible to use the <strong class="command">ipcontroller</strong> and <strong class="command">ipengine</strong>
+commands to start your controller and engines. This approach gives you full
+control over all aspects of the startup process.</p>
+<div class="section" id="starting-the-controller-and-engine-on-your-local-machine">
+<h3>Starting the controller and engine on your local machine<a class="headerlink" href="#starting-the-controller-and-engine-on-your-local-machine" title="Permalink to this headline">¶</a></h3>
+<p>To use <strong class="command">ipcontroller</strong> and <strong class="command">ipengine</strong> to start things on your
+local machine, do the following.</p>
+<p>First start the controller:</p>
+<div class="highlight-python"><pre>$ ipcontroller</pre>
+</div>
+<p>Next, start however many instances of the engine you want using (repeatedly)
+the command:</p>
+<div class="highlight-python"><pre>$ ipengine</pre>
+</div>
+<p>The engines should start and automatically connect to the controller using the
+JSON files in <tt class="file docutils literal"><span class="pre">~/.ipython/profile_default/security</span></tt>. You are now ready to use the
+controller and engines from IPython.</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">The order of the above operations may be important.  You <em>must</em>
+start the controller before the engines, unless you are reusing connection
+information (via <tt class="docutils literal"><span class="pre">--reuse</span></tt>), in which case ordering is not important.</p>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">On some platforms (OS X), to put the controller and engine into the
+background you may need to give these commands in the form <tt class="docutils literal"><span class="pre">(ipcontroller</span>
+<span class="pre">&amp;)</span></tt> and <tt class="docutils literal"><span class="pre">(ipengine</span> <span class="pre">&amp;)</span></tt> (with the parentheses) for them to work
+properly.</p>
+</div>
+</div>
+<div class="section" id="starting-the-controller-and-engines-on-different-hosts">
+<h3>Starting the controller and engines on different hosts<a class="headerlink" href="#starting-the-controller-and-engines-on-different-hosts" title="Permalink to this headline">¶</a></h3>
+<p>When the controller and engines are running on different hosts, things are
+slightly more complicated, but the underlying ideas are the same:</p>
+<ol class="arabic simple">
+<li>Start the controller on a host using <strong class="command">ipcontroller</strong>. The controller must be
+instructed to listen on an interface visible to the engine machines, via the <tt class="docutils literal"><span class="pre">ip</span></tt>
+command-line argument or <tt class="docutils literal"><span class="pre">HubFactory.ip</span></tt> in <tt class="file docutils literal"><span class="pre">ipcontroller_config.py</span></tt>.</li>
+<li>Copy <tt class="file docutils literal"><span class="pre">ipcontroller-engine.json</span></tt> from <tt class="file docutils literal"><span class="pre">~/.ipython/profile_&lt;name&gt;/security</span></tt> on
+the controller&#8217;s host to the host where the engines will run.</li>
+<li>Use <strong class="command">ipengine</strong> on the engine&#8217;s hosts to start the engines.</li>
+</ol>
+<p>The only thing you have to be careful of is to tell <strong class="command">ipengine</strong> where
+the <tt class="file docutils literal"><span class="pre">ipcontroller-engine.json</span></tt> file is located. There are two ways you
+can do this:</p>
+<ul class="simple">
+<li>Put <tt class="file docutils literal"><span class="pre">ipcontroller-engine.json</span></tt> in the <tt class="file docutils literal"><span class="pre">~/.ipython/profile_&lt;name&gt;/security</span></tt>
+directory on the engine&#8217;s host, where it will be found automatically.</li>
+<li>Call <strong class="command">ipengine</strong> with the <tt class="docutils literal"><span class="pre">--file=full_path_to_the_file</span></tt>
+flag.</li>
+</ul>
+<p>The <tt class="docutils literal"><span class="pre">file</span></tt> flag works like this:</p>
+<div class="highlight-python"><pre>$ ipengine --file=/path/to/my/ipcontroller-engine.json</pre>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">If the controller&#8217;s and engine&#8217;s hosts all have a shared file system
+(<tt class="file docutils literal"><span class="pre">~/.ipython/profile_&lt;name&gt;/security</span></tt> is the same on all of them), then things
+will just work!</p>
+</div>
+</div>
+<div class="section" id="make-json-files-persistent">
+<h3>Make JSON files persistent<a class="headerlink" href="#make-json-files-persistent" title="Permalink to this headline">¶</a></h3>
+<p>At fist glance it may seem that that managing the JSON files is a bit
+annoying. Going back to the house and key analogy, copying the JSON around
+each time you start the controller is like having to make a new key every time
+you want to unlock the door and enter your house. As with your house, you want
+to be able to create the key (or JSON file) once, and then simply use it at
+any point in the future.</p>
+<p>To do this, the only thing you have to do is specify the <cite>&#8211;reuse</cite> flag, so that
+the connection information in the JSON files remains accurate:</p>
+<div class="highlight-python"><pre>$ ipcontroller --reuse</pre>
+</div>
+<p>Then, just copy the JSON files over the first time and you are set. You can
+start and stop the controller and engines any many times as you want in the
+future, just make sure to tell the controller to reuse the file.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">You may ask the question: what ports does the controller listen on if you
+don&#8217;t tell is to use specific ones? The default is to use high random port
+numbers. We do this for two reasons: i) to increase security through
+obscurity and ii) to multiple controllers on a given host to start and
+automatically use different ports.</p>
+</div>
+</div>
+<div class="section" id="log-files">
+<h3>Log files<a class="headerlink" href="#log-files" title="Permalink to this headline">¶</a></h3>
+<p>All of the components of IPython have log files associated with them.
+These log files can be extremely useful in debugging problems with
+IPython and can be found in the directory <tt class="file docutils literal"><span class="pre">~/.ipython/profile_&lt;name&gt;/log</span></tt>.
+Sending the log files to us will often help us to debug any problems.</p>
+</div>
+<div class="section" id="configuring-ipcontroller">
+<h3>Configuring <cite>ipcontroller</cite><a class="headerlink" href="#configuring-ipcontroller" title="Permalink to this headline">¶</a></h3>
+<p>The IPython Controller takes its configuration from the file <tt class="file docutils literal"><span class="pre">ipcontroller_config.py</span></tt>
+in the active profile directory.</p>
+<div class="section" id="ports-and-addresses">
+<h4>Ports and addresses<a class="headerlink" href="#ports-and-addresses" title="Permalink to this headline">¶</a></h4>
+<p>In many cases, you will want to configure the Controller&#8217;s network identity.  By default,
+the Controller listens only on loopback, which is the most secure but often impractical.
+To instruct the controller to listen on a specific interface, you can set the
+<tt class="xref py py-attr docutils literal"><span class="pre">HubFactory.ip</span></tt> trait.  To listen on all interfaces, simply specify:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">c</span><span class="o">.</span><span class="n">HubFactory</span><span class="o">.</span><span class="n">ip</span> <span class="o">=</span> <span class="s">&#39;*&#39;</span>
+</pre></div>
+</div>
+<p>When connecting to a Controller that is listening on loopback or behind a firewall, it may
+be necessary to specify an SSH server to use for tunnels, and the external IP of the
+Controller. If you specified that the HubFactory listen on loopback, or all interfaces,
+then IPython will try to guess the external IP. If you are on a system with VM network
+devices, or many interfaces, this guess may be incorrect. In these cases, you will want
+to specify the &#8216;location&#8217; of the Controller. This is the IP of the machine the Controller
+is on, as seen by the clients, engines, or the SSH server used to tunnel connections.</p>
+<p>For example, to set up a cluster with a Controller on a work node, using ssh tunnels
+through the login node, an example <tt class="file docutils literal"><span class="pre">ipcontroller_config.py</span></tt> might contain:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># allow connections on all interfaces from engines</span>
+<span class="c"># engines on the same node will use loopback, while engines</span>
+<span class="c"># from other nodes will use an external IP</span>
+<span class="n">c</span><span class="o">.</span><span class="n">HubFactory</span><span class="o">.</span><span class="n">ip</span> <span class="o">=</span> <span class="s">&#39;*&#39;</span>
+
+<span class="c"># you typically only need to specify the location when there are extra</span>
+<span class="c"># interfaces that may not be visible to peer nodes (e.g. VM interfaces)</span>
+<span class="n">c</span><span class="o">.</span><span class="n">HubFactory</span><span class="o">.</span><span class="n">location</span> <span class="o">=</span> <span class="s">&#39;10.0.1.5&#39;</span>
+<span class="c"># or to get an automatic value, try this:</span>
+<span class="kn">import</span> <span class="nn">socket</span>
+<span class="n">ex_ip</span> <span class="o">=</span> <span class="n">socket</span><span class="o">.</span><span class="n">gethostbyname_ex</span><span class="p">(</span><span class="n">socket</span><span class="o">.</span><span class="n">gethostname</span><span class="p">())[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">c</span><span class="o">.</span><span class="n">HubFactory</span><span class="o">.</span><span class="n">location</span> <span class="o">=</span> <span class="n">ex_ip</span>
+
+<span class="c"># now instruct clients to use the login node for SSH tunnels:</span>
+<span class="n">c</span><span class="o">.</span><span class="n">HubFactory</span><span class="o">.</span><span class="n">ssh_server</span> <span class="o">=</span> <span class="s">&#39;login.mycluster.net&#39;</span>
+</pre></div>
+</div>
+<p>After doing this, your <tt class="file docutils literal"><span class="pre">ipcontroller-client.json</span></tt> file will look something like this:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="p">{</span>
+  <span class="s">&quot;url&quot;</span><span class="p">:</span><span class="s">&quot;tcp:\/\/*:43447&quot;</span><span class="p">,</span>
+  <span class="s">&quot;exec_key&quot;</span><span class="p">:</span><span class="s">&quot;9c7779e4-d08a-4c3b-ba8e-db1f80b562c1&quot;</span><span class="p">,</span>
+  <span class="s">&quot;ssh&quot;</span><span class="p">:</span><span class="s">&quot;login.mycluster.net&quot;</span><span class="p">,</span>
+  <span class="s">&quot;location&quot;</span><span class="p">:</span><span class="s">&quot;10.0.1.5&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Then this file will be all you need for a client to connect to the controller, tunneling
+SSH connections through login.mycluster.net.</p>
+</div>
+<div class="section" id="database-backend">
+<h4>Database Backend<a class="headerlink" href="#database-backend" title="Permalink to this headline">¶</a></h4>
+<p>The Hub stores all messages and results passed between Clients and Engines.
+For large and/or long-running clusters, it would be unreasonable to keep all
+of this information in memory. For this reason, we have two database backends:
+<a class="reference internal" href="#id6">[MongoDB]</a> via <a class="reference external" href="http://api.mongodb.org/python/1.9/">PyMongo</a>, and SQLite with the stdlib <tt class="xref py py-mod docutils literal"><span class="pre">sqlite</span></tt>.</p>
+<p>MongoDB is our design target, and the dict-like model it uses has driven our design. As far
+as we are concerned, BSON can be considered essentially the same as JSON, adding support
+for binary data and datetime objects, and any new database backend must support the same
+data types.</p>
+<div class="admonition-see-also admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last">MongoDB <a class="reference external" href="http://www.mongodb.org/display/DOCS/BSON">BSON doc</a></p>
+</div>
+<p>To use one of these backends, you must set the <tt class="xref py py-attr docutils literal"><span class="pre">HubFactory.db_class</span></tt> trait:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># for a simple dict-based in-memory implementation, use dictdb</span>
+<span class="c"># This is the default and the fastest, since it doesn&#39;t involve the filesystem</span>
+<span class="n">c</span><span class="o">.</span><span class="n">HubFactory</span><span class="o">.</span><span class="n">db_class</span> <span class="o">=</span> <span class="s">&#39;IPython.parallel.controller.dictdb.DictDB&#39;</span>
+
+<span class="c"># To use MongoDB:</span>
+<span class="n">c</span><span class="o">.</span><span class="n">HubFactory</span><span class="o">.</span><span class="n">db_class</span> <span class="o">=</span> <span class="s">&#39;IPython.parallel.controller.mongodb.MongoDB&#39;</span>
+
+<span class="c"># and SQLite:</span>
+<span class="n">c</span><span class="o">.</span><span class="n">HubFactory</span><span class="o">.</span><span class="n">db_class</span> <span class="o">=</span> <span class="s">&#39;IPython.parallel.controller.sqlitedb.SQLiteDB&#39;</span>
+</pre></div>
+</div>
+<p>When using the proper databases, you can actually allow for tasks to persist from
+one session to the next by specifying the MongoDB database or SQLite table in
+which tasks are to be stored.  The default is to use a table named for the Hub&#8217;s Session,
+which is a UUID, and thus different every time.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># To keep persistant task history in MongoDB:</span>
+<span class="n">c</span><span class="o">.</span><span class="n">MongoDB</span><span class="o">.</span><span class="n">database</span> <span class="o">=</span> <span class="s">&#39;tasks&#39;</span>
+
+<span class="c"># and in SQLite:</span>
+<span class="n">c</span><span class="o">.</span><span class="n">SQLiteDB</span><span class="o">.</span><span class="n">table</span> <span class="o">=</span> <span class="s">&#39;tasks&#39;</span>
+</pre></div>
+</div>
+<p>Since MongoDB servers can be running remotely or configured to listen on a particular port,
+you can specify any arguments you may need to the PyMongo <a class="reference external" href="http://api.mongodb.org/python/1.9/api/pymongo/connection.html#pymongo.connection.Connection">Connection</a>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># positional args to pymongo.Connection</span>
+<span class="n">c</span><span class="o">.</span><span class="n">MongoDB</span><span class="o">.</span><span class="n">connection_args</span> <span class="o">=</span> <span class="p">[]</span>
+
+<span class="c"># keyword args to pymongo.Connection</span>
+<span class="n">c</span><span class="o">.</span><span class="n">MongoDB</span><span class="o">.</span><span class="n">connection_kwargs</span> <span class="o">=</span> <span class="p">{}</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="configuring-ipengine">
+<h3>Configuring <cite>ipengine</cite><a class="headerlink" href="#configuring-ipengine" title="Permalink to this headline">¶</a></h3>
+<p>The IPython Engine takes its configuration from the file <tt class="file docutils literal"><span class="pre">ipengine_config.py</span></tt></p>
+<p>The Engine itself also has some amount of configuration. Most of this
+has to do with initializing MPI or connecting to the controller.</p>
+<p>To instruct the Engine to initialize with an MPI environment set up by
+mpi4py, add:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">c</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">use</span> <span class="o">=</span> <span class="s">&#39;mpi4py&#39;</span>
+</pre></div>
+</div>
+<p>In this case, the Engine will use our default mpi4py init script to set up
+the MPI environment prior to exection.  We have default init scripts for
+mpi4py and pytrilinos.  If you want to specify your own code to be run
+at the beginning, specify <cite>c.MPI.init_script</cite>.</p>
+<p>You can also specify a file or python command to be run at startup of the
+Engine:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">c</span><span class="o">.</span><span class="n">IPEngineApp</span><span class="o">.</span><span class="n">startup_script</span> <span class="o">=</span> <span class="s">u&#39;/path/to/my/startup.py&#39;</span>
+
+<span class="n">c</span><span class="o">.</span><span class="n">IPEngineApp</span><span class="o">.</span><span class="n">startup_command</span> <span class="o">=</span> <span class="s">&#39;import numpy, scipy, mpi4py&#39;</span>
+</pre></div>
+</div>
+<p>These commands/files will be run again, after each</p>
+<p>It&#8217;s also useful on systems with shared filesystems to run the engines
+in some scratch directory.  This can be set with:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">c</span><span class="o">.</span><span class="n">IPEngineApp</span><span class="o">.</span><span class="n">work_dir</span> <span class="o">=</span> <span class="s">u&#39;/path/to/scratch/&#39;</span>
+</pre></div>
+</div>
+<table class="docutils citation" frame="void" id="id6" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[MongoDB]</td><td>MongoDB database <a class="reference external" href="http://www.mongodb.org">http://www.mongodb.org</a></td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="pbs" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id2">[PBS]</a></td><td>Portable Batch System <a class="reference external" href="http://www.openpbs.org">http://www.openpbs.org</a></td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="ssh" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id4">[SSH]</a></td><td>SSH-Agent <a class="reference external" href="http://en.wikipedia.org/wiki/ssh-agent">http://en.wikipedia.org/wiki/ssh-agent</a></td></tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="parallel_multiengine.html" title="IPython’s Direct interface"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="parallel_intro.html" title="Overview and getting started"
+             >previous</a> |</li>
+        <li><a href="../index.html">home</a>|&nbsp;</li>
+        <li><a href="../search.html">search</a>|&nbsp;</li>
+       <li><a href="../index.html">documentation </a> &raquo;</li>
+
+          <li><a href="index.html" >Using IPython for parallel computing</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2008, The IPython Development Team.
+      Last updated on Jul 31, 2011.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1pre.
+    </div>
+  </body>
+</html>

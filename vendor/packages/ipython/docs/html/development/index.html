@@ -1,0 +1,150 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>IPython developer’s guide &mdash; IPython 0.11 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.11',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="IPython 0.11 documentation" href="../index.html" />
+    <link rel="next" title="How to contribute to IPython" href="contributing.html" />
+    <link rel="prev" title="Outdated configuration information that might still be useful" href="../config/old.html" /> 
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<a href="../index.html"><img src="../_static/logo.png" border="0" alt="IPython Documentation"/></a>
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="contributing.html" title="How to contribute to IPython"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../config/old.html" title="Outdated configuration information that might still be useful"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">home</a>|&nbsp;</li>
+        <li><a href="../search.html">search</a>|&nbsp;</li>
+       <li><a href="../index.html">documentation </a> &raquo;</li>
+ 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="../config/old.html"
+                        title="previous chapter">Outdated configuration information that might still be useful</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="contributing.html"
+                        title="next chapter">How to contribute to IPython</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/development/index.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="ipython-developer-s-guide">
+<span id="developer-guide"></span><h1>IPython developer&#8217;s guide<a class="headerlink" href="#ipython-developer-s-guide" title="Permalink to this headline">¶</a></h1>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">How to contribute to IPython</a></li>
+<li class="toctree-l1"><a class="reference internal" href="gitwash/index.html">Working with IPython source code</a></li>
+<li class="toctree-l1"><a class="reference internal" href="coding_guide.html">Coding guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="doc_guide.html">Documenting IPython</a></li>
+<li class="toctree-l1"><a class="reference internal" href="testing.html">Testing IPython for users and developers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="release.html">Releasing IPython</a></li>
+<li class="toctree-l1"><a class="reference internal" href="roadmap.html">Development roadmap</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reorg.html">IPython module organization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="messaging.html">Messaging in IPython</a></li>
+<li class="toctree-l1"><a class="reference internal" href="parallel_messages.html">Messaging for Parallel Computing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="parallel_connections.html">Connection Diagrams of The IPython ZMQ Cluster</a></li>
+<li class="toctree-l1"><a class="reference internal" href="magic_blueprint.html">The magic commands subsystem</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ipgraph.html">Notes on code execution in <tt class="docutils literal"><span class="pre">InteractiveShell</span></tt></a></li>
+<li class="toctree-l1"><a class="reference internal" href="ipython_qt.html">IPython Qt interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ipythonzmq.html">Porting IPython to a two process model using zeromq</a></li>
+</ul>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="contributing.html" title="How to contribute to IPython"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="../config/old.html" title="Outdated configuration information that might still be useful"
+             >previous</a> |</li>
+        <li><a href="../index.html">home</a>|&nbsp;</li>
+        <li><a href="../search.html">search</a>|&nbsp;</li>
+       <li><a href="../index.html">documentation </a> &raquo;</li>
+ 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2008, The IPython Development Team.
+      Last updated on Jul 31, 2011.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1pre.
+    </div>
+  </body>
+</html>

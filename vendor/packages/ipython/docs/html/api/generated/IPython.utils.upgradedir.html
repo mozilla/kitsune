@@ -1,0 +1,166 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>utils.upgradedir &mdash; IPython 0.11 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.11',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="IPython 0.11 documentation" href="../../index.html" />
+    <link rel="up" title="The IPython API" href="../index.html" />
+    <link rel="next" title="utils.warn" href="IPython.utils.warn.html" />
+    <link rel="prev" title="utils.traitlets" href="IPython.utils.traitlets.html" /> 
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<a href="../../index.html"><img src="../../_static/logo.png" border="0" alt="IPython Documentation"/></a>
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="IPython.utils.warn.html" title="utils.warn"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="IPython.utils.traitlets.html" title="utils.traitlets"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <li><a href="../../search.html">search</a>|&nbsp;</li>
+       <li><a href="../../index.html">documentation </a> &raquo;</li>
+
+          <li><a href="../index.html" accesskey="U">The IPython API</a> &raquo;</li> 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">utils.upgradedir</a><ul>
+<li><a class="reference internal" href="#module-IPython.utils.upgradedir">Module: <tt class="docutils literal"><span class="pre">utils.upgradedir</span></tt></a></li>
+<li><a class="reference internal" href="#functions">Functions</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="IPython.utils.traitlets.html"
+                        title="previous chapter">utils.traitlets</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="IPython.utils.warn.html"
+                        title="next chapter">utils.warn</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/api/generated/IPython.utils.upgradedir.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="utils-upgradedir">
+<h1>utils.upgradedir<a class="headerlink" href="#utils-upgradedir" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-IPython.utils.upgradedir">
+<span id="module-utils-upgradedir"></span><h2>Module: <tt class="xref py py-mod docutils literal"><span class="pre">utils.upgradedir</span></tt><a class="headerlink" href="#module-IPython.utils.upgradedir" title="Permalink to this headline">¶</a></h2>
+<p>A script/util to upgrade all files in a directory</p>
+<p>This is rather conservative in its approach, only copying/overwriting
+new and unedited files.</p>
+<p>To be used by &#8220;upgrade&#8221; feature.</p>
+</div>
+<div class="section" id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="IPython.utils.upgradedir.showdiff">
+<tt class="descclassname">IPython.utils.upgradedir.</tt><tt class="descname">showdiff</tt><big>(</big><em>old</em>, <em>new</em><big>)</big><a class="headerlink" href="#IPython.utils.upgradedir.showdiff" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="IPython.utils.upgradedir.upgrade_dir">
+<tt class="descclassname">IPython.utils.upgradedir.</tt><tt class="descname">upgrade_dir</tt><big>(</big><em>srcdir</em>, <em>tgtdir</em><big>)</big><a class="headerlink" href="#IPython.utils.upgradedir.upgrade_dir" title="Permalink to this definition">¶</a></dt>
+<dd><p>Copy over all files in srcdir to tgtdir w/ native line endings</p>
+<p>Creates .upgrade_report in tgtdir that stores md5sums of all files
+to notice changed files b/w upgrades.</p>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="IPython.utils.warn.html" title="utils.warn"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="IPython.utils.traitlets.html" title="utils.traitlets"
+             >previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <li><a href="../../search.html">search</a>|&nbsp;</li>
+       <li><a href="../../index.html">documentation </a> &raquo;</li>
+
+          <li><a href="../index.html" >The IPython API</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2008, The IPython Development Team.
+      Last updated on Jul 31, 2011.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1pre.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,30 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+parallel.apps.win32support
+==========================
+
+Module: :mod:`parallel.apps.win32support`
+-----------------------------------------
+Inheritance diagram for ``IPython.parallel.apps.win32support``:
+
+.. inheritance-diagram:: IPython.parallel.apps.win32support 
+   :parts: 3
+
+.. automodule:: IPython.parallel.apps.win32support
+
+.. currentmodule:: IPython.parallel.apps.win32support
+
+:class:`ForwarderThread`
+------------------------
+
+
+.. autoclass:: ForwarderThread
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+.. autofunction:: IPython.parallel.apps.win32support.forward_read_events
+

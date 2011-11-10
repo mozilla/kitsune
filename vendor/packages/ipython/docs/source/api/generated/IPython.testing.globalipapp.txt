@@ -1,0 +1,67 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+testing.globalipapp
+===================
+
+Module: :mod:`testing.globalipapp`
+----------------------------------
+Inheritance diagram for ``IPython.testing.globalipapp``:
+
+.. inheritance-diagram:: IPython.testing.globalipapp 
+   :parts: 3
+
+.. automodule:: IPython.testing.globalipapp
+
+.. currentmodule:: IPython.testing.globalipapp
+
+Classes
+-------
+
+:class:`StreamProxy`
+~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: StreamProxy
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`ipnsdict`
+~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: ipnsdict
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`py_file_finder`
+~~~~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: py_file_finder
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+Functions
+---------
+
+
+.. autofunction:: IPython.testing.globalipapp.get_ipython
+
+
+.. autofunction:: IPython.testing.globalipapp.start_ipython
+
+
+.. autofunction:: IPython.testing.globalipapp.xsys
+

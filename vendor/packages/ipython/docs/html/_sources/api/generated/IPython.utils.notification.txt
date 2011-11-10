@@ -1,0 +1,42 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+utils.notification
+==================
+
+Module: :mod:`utils.notification`
+---------------------------------
+Inheritance diagram for ``IPython.utils.notification``:
+
+.. inheritance-diagram:: IPython.utils.notification 
+   :parts: 3
+
+.. automodule:: IPython.utils.notification
+
+.. currentmodule:: IPython.utils.notification
+
+Classes
+-------
+
+:class:`NotificationCenter`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: NotificationCenter
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`NotificationError`
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: NotificationError
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__

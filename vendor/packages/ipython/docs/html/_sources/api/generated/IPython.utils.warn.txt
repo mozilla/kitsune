@@ -1,0 +1,26 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+utils.warn
+==========
+
+Module: :mod:`utils.warn`
+-------------------------
+.. automodule:: IPython.utils.warn
+
+.. currentmodule:: IPython.utils.warn
+
+Functions
+---------
+
+
+.. autofunction:: IPython.utils.warn.error
+
+
+.. autofunction:: IPython.utils.warn.fatal
+
+
+.. autofunction:: IPython.utils.warn.info
+
+
+.. autofunction:: IPython.utils.warn.warn
+

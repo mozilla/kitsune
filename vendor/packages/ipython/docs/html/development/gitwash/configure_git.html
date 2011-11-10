@@ -1,0 +1,213 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Configure git &mdash; IPython 0.11 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.11',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="IPython 0.11 documentation" href="../../index.html" />
+    <link rel="up" title="Git for development" href="git_development.html" />
+    <link rel="next" title="Development workflow" href="development_workflow.html" />
+    <link rel="prev" title="Set up your fork" href="set_up_fork.html" /> 
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<a href="../../index.html"><img src="../../_static/logo.png" border="0" alt="IPython Documentation"/></a>
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="development_workflow.html" title="Development workflow"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="set_up_fork.html" title="Set up your fork"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <li><a href="../../search.html">search</a>|&nbsp;</li>
+       <li><a href="../../index.html">documentation </a> &raquo;</li>
+
+          <li><a href="../index.html" >IPython developer&#8217;s guide</a> &raquo;</li>
+          <li><a href="index.html" >Working with IPython source code</a> &raquo;</li>
+          <li><a href="git_development.html" accesskey="U">Git for development</a> &raquo;</li> 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Configure git</a><ul>
+<li><a class="reference internal" href="#overview">Overview</a></li>
+<li><a class="reference internal" href="#in-detail">In detail</a></li>
+<li><a class="reference internal" href="#advanced-git-configuration">Advanced git configuration</a></li>
+<li><a class="reference internal" href="#other-configuration-recommended-by-yarik">Other configuration recommended by Yarik</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="set_up_fork.html"
+                        title="previous chapter">Set up your fork</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="development_workflow.html"
+                        title="next chapter">Development workflow</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/development/gitwash/configure_git.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="configure-git">
+<span id="id1"></span><h1>Configure git<a class="headerlink" href="#configure-git" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="overview">
+<span id="git-config-basic"></span><h2>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python"><pre>git config --global user.email you@yourdomain.example.com
+git config --global user.name "Your Name Comes Here"</pre>
+</div>
+</div>
+<div class="section" id="in-detail">
+<h2>In detail<a class="headerlink" href="#in-detail" title="Permalink to this headline">¶</a></h2>
+<p>This is to tell <a class="reference external" href="http://git-scm.com/">git</a> who you are, for labeling any changes you make to
+the code.  The simplest way to do this is from the command line:</p>
+<div class="highlight-python"><pre>git config --global user.email you@yourdomain.example.com
+git config --global user.name "Your Name Comes Here"</pre>
+</div>
+<p>This will write the settings into your git configuration file - a file
+called <tt class="docutils literal"><span class="pre">.gitconfig</span></tt> in your home directory.</p>
+</div>
+<div class="section" id="advanced-git-configuration">
+<h2>Advanced git configuration<a class="headerlink" href="#advanced-git-configuration" title="Permalink to this headline">¶</a></h2>
+<p>You might well benefit from some aliases to common commands.</p>
+<p>For example, you might well want to be able to shorten <tt class="docutils literal"><span class="pre">git</span> <span class="pre">checkout</span></tt> to <tt class="docutils literal"><span class="pre">git</span> <span class="pre">co</span></tt>.</p>
+<p>The easiest way to do this, is to create a <tt class="docutils literal"><span class="pre">.gitconfig</span></tt> file in your
+home directory, with contents like this:</p>
+<div class="highlight-python"><pre>[core]
+        editor = emacs
+[user]
+        email = you@yourdomain.example.com
+        name = Your Name Comes Here
+[alias]
+        st = status
+        stat = status
+        co = checkout
+[color]
+        diff = auto
+        status = true</pre>
+</div>
+<p>(of course you&#8217;ll need to set your email and name, and may want to set
+your editor).  If you prefer, you can do the same thing from the command
+line:</p>
+<div class="highlight-python"><pre>git config --global core.editor emacs
+git config --global user.email you@yourdomain.example.com
+git config --global user.name "Your Name Comes Here"
+git config --global alias.st status
+git config --global alias.stat status
+git config --global alias.co checkout
+git config --global color.diff auto
+git config --global color.status true</pre>
+</div>
+<p>These commands will write to your user&#8217;s git configuration file
+<tt class="docutils literal"><span class="pre">~/.gitconfig</span></tt>.</p>
+<p>To set up on another computer, you can copy your <tt class="docutils literal"><span class="pre">~/.gitconfig</span></tt> file,
+or run the commands above.</p>
+</div>
+<div class="section" id="other-configuration-recommended-by-yarik">
+<h2>Other configuration recommended by Yarik<a class="headerlink" href="#other-configuration-recommended-by-yarik" title="Permalink to this headline">¶</a></h2>
+<p>In your <tt class="docutils literal"><span class="pre">~/.gitconfig</span></tt> file alias section:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">wdiff</span> <span class="o">=</span> <span class="n">diff</span> <span class="o">--</span><span class="n">color</span><span class="o">-</span><span class="n">words</span>
+</pre></div>
+</div>
+<p>so that <tt class="docutils literal"><span class="pre">git</span> <span class="pre">wdiff</span></tt> gives a nicely formatted output of the diff.</p>
+<p>To enforce summaries when doing merges(<tt class="docutils literal"><span class="pre">~/.gitconfig</span></tt> file again):</p>
+<div class="highlight-python"><pre>[merge]
+   summary = true</pre>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="development_workflow.html" title="Development workflow"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="set_up_fork.html" title="Set up your fork"
+             >previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <li><a href="../../search.html">search</a>|&nbsp;</li>
+       <li><a href="../../index.html">documentation </a> &raquo;</li>
+
+          <li><a href="../index.html" >IPython developer&#8217;s guide</a> &raquo;</li>
+          <li><a href="index.html" >Working with IPython source code</a> &raquo;</li>
+          <li><a href="git_development.html" >Git for development</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2008, The IPython Development Team.
+      Last updated on Jul 31, 2011.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1pre.
+    </div>
+  </body>
+</html>

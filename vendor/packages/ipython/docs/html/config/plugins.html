@@ -1,0 +1,151 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>IPython plugins &mdash; IPython 0.11 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.11',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="IPython 0.11 documentation" href="../index.html" />
+    <link rel="up" title="Configuration and customization" href="index.html" />
+    <link rel="next" title="Configuring the ipython command line application" href="ipython.html" />
+    <link rel="prev" title="IPython extensions" href="extensions.html" /> 
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<a href="../index.html"><img src="../_static/logo.png" border="0" alt="IPython Documentation"/></a>
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="ipython.html" title="Configuring the ipython command line application"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="extensions.html" title="IPython extensions"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">home</a>|&nbsp;</li>
+        <li><a href="../search.html">search</a>|&nbsp;</li>
+       <li><a href="../index.html">documentation </a> &raquo;</li>
+
+          <li><a href="index.html" accesskey="U">Configuration and customization</a> &raquo;</li> 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="extensions.html"
+                        title="previous chapter">IPython extensions</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="ipython.html"
+                        title="next chapter">Configuring the <strong class="command">ipython</strong> command line application</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/config/plugins.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="ipython-plugins">
+<span id="plugins-overview"></span><h1>IPython plugins<a class="headerlink" href="#ipython-plugins" title="Permalink to this headline">¶</a></h1>
+<p>IPython has a plugin mechanism that allows users to create new and custom
+runtime components for IPython. Plugins are different from extensions:</p>
+<ul class="simple">
+<li>Extensions are used to load plugins.</li>
+<li>Extensions are a more advanced configuration system that gives you access
+to the running IPython instance.</li>
+<li>Plugins add entirely new capabilities to IPython.</li>
+<li>Plugins are traited and configurable.</li>
+</ul>
+<p>At this point, our plugin system is brand new and the documentation is
+minimal. If you are interested in creating a new plugin, see the following
+files:</p>
+<ul class="simple">
+<li><tt class="file docutils literal"><span class="pre">IPython/extensions/parallemagic.py</span></tt></li>
+<li><tt class="file docutils literal"><span class="pre">IPython/extensions/pretty.</span></tt></li>
+</ul>
+<p>As well as our documentation on the configuration system and extensions.</p>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="ipython.html" title="Configuring the ipython command line application"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="extensions.html" title="IPython extensions"
+             >previous</a> |</li>
+        <li><a href="../index.html">home</a>|&nbsp;</li>
+        <li><a href="../search.html">search</a>|&nbsp;</li>
+       <li><a href="../index.html">documentation </a> &raquo;</li>
+
+          <li><a href="index.html" >Configuration and customization</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2008, The IPython Development Team.
+      Last updated on Jul 31, 2011.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1pre.
+    </div>
+  </body>
+</html>

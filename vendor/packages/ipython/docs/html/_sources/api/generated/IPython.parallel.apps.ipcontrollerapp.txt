@@ -1,0 +1,30 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+parallel.apps.ipcontrollerapp
+=============================
+
+Module: :mod:`parallel.apps.ipcontrollerapp`
+--------------------------------------------
+Inheritance diagram for ``IPython.parallel.apps.ipcontrollerapp``:
+
+.. inheritance-diagram:: IPython.parallel.apps.ipcontrollerapp 
+   :parts: 3
+
+.. automodule:: IPython.parallel.apps.ipcontrollerapp
+
+.. currentmodule:: IPython.parallel.apps.ipcontrollerapp
+
+:class:`IPControllerApp`
+------------------------
+
+
+.. autoclass:: IPControllerApp
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+.. autofunction:: IPython.parallel.apps.ipcontrollerapp.launch_new_instance
+

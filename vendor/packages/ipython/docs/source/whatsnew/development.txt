@@ -1,0 +1,21 @@
+================================================
+Development version
+================================================
+
+The changes listed here are a brief summary of the substantial work on IPython
+since the 0.11.x release series. For more details, please consult the actual
+source.
+
+Main `ipython` branch
+=====================
+
+
+New features
+------------
+
+.. * use bullet list
+
+Backwards incompatible changes
+------------------------------
+
+.. * use bullet list

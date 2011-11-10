@@ -1,0 +1,54 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+parallel.controller.dictdb
+==========================
+
+Module: :mod:`parallel.controller.dictdb`
+-----------------------------------------
+Inheritance diagram for ``IPython.parallel.controller.dictdb``:
+
+.. inheritance-diagram:: IPython.parallel.controller.dictdb 
+   :parts: 3
+
+.. automodule:: IPython.parallel.controller.dictdb
+
+.. currentmodule:: IPython.parallel.controller.dictdb
+
+Classes
+-------
+
+:class:`BaseDB`
+~~~~~~~~~~~~~~~
+
+
+.. autoclass:: BaseDB
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`CompositeFilter`
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: CompositeFilter
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`DictDB`
+~~~~~~~~~~~~~~~
+
+
+.. autoclass:: DictDB
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__

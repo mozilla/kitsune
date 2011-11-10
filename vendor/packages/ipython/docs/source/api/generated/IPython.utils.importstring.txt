@@ -1,0 +1,13 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+utils.importstring
+==================
+
+Module: :mod:`utils.importstring`
+---------------------------------
+.. automodule:: IPython.utils.importstring
+
+.. currentmodule:: IPython.utils.importstring
+
+.. autofunction:: IPython.utils.importstring.import_item
+

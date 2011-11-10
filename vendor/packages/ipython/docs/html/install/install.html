@@ -1,0 +1,448 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Overview &mdash; IPython 0.11 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.11',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="IPython 0.11 documentation" href="../index.html" />
+    <link rel="up" title="Installation" href="index.html" />
+    <link rel="next" title="Using IPython for interactive work" href="../interactive/index.html" />
+    <link rel="prev" title="Installation" href="index.html" /> 
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<a href="../index.html"><img src="../_static/logo.png" border="0" alt="IPython Documentation"/></a>
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../interactive/index.html" title="Using IPython for interactive work"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Installation"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">home</a>|&nbsp;</li>
+        <li><a href="../search.html">search</a>|&nbsp;</li>
+       <li><a href="../index.html">documentation </a> &raquo;</li>
+
+          <li><a href="index.html" accesskey="U">Installation</a> &raquo;</li> 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Overview</a></li>
+<li><a class="reference internal" href="#quickstart">Quickstart</a></li>
+<li><a class="reference internal" href="#installing-ipython-itself">Installing IPython itself</a><ul>
+<li><a class="reference internal" href="#installation-using-easy-install">Installation using easy_install</a></li>
+<li><a class="reference internal" href="#installation-from-source">Installation from source</a></li>
+<li><a class="reference internal" href="#windows">Windows</a></li>
+<li><a class="reference internal" href="#installing-the-development-version">Installing the development version</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#basic-optional-dependencies">Basic optional dependencies</a><ul>
+<li><a class="reference internal" href="#readline">readline</a></li>
+<li><a class="reference internal" href="#nose">nose</a></li>
+<li><a class="reference internal" href="#pexpect">pexpect</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#dependencies-for-ipython-parallel-parallel-computing">Dependencies for IPython.parallel (parallel computing)</a></li>
+<li><a class="reference internal" href="#dependencies-for-ipython-zmq">Dependencies for IPython.zmq</a><ul>
+<li><a class="reference internal" href="#pyzmq">pyzmq</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#dependencies-for-ipython-qtconsole-new-gui">Dependencies for ipython qtconsole (new GUI)</a><ul>
+<li><a class="reference internal" href="#qt">Qt</a></li>
+<li><a class="reference internal" href="#pygments">pygments</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">Installation</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../interactive/index.html"
+                        title="next chapter">Using IPython for interactive work</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/install/install.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="overview">
+<h1>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h1>
+<p>This document describes the steps required to install IPython.  IPython is
+organized into a number of subpackages, each of which has its own dependencies.
+All of the subpackages come with IPython, so you don&#8217;t need to download and
+install them separately.  However, to use a given subpackage, you will need to
+install all of its dependencies.</p>
+<p>Please let us know if you have problems installing IPython or any of its
+dependencies. Officially, IPython requires Python version 2.6 or 2.7.  There
+is an experimental port of IPython for Python3 <a class="reference external" href="https://github.com/ipython/ipython-py3k">on GitHub</a></p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p>Officially, IPython supports Python versions 2.6 and 2.7.</p>
+<p class="last">IPython 0.11 has a hard syntax dependency on 2.6, and will no longer work
+on Python &lt;= 2.5.</p>
+</div>
+<p>Some of the installation approaches use the <tt class="xref py py-mod docutils literal"><span class="pre">setuptools</span></tt> package and its
+<strong class="command">easy_install</strong> command line program.  In many scenarios, this provides
+the most simple method of installing IPython and its dependencies.  It is not
+required though.  More information about <tt class="xref py py-mod docutils literal"><span class="pre">setuptools</span></tt> can be found on its
+website.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>On Windows, IPython <em>does</em> depend on <tt class="xref py py-mod docutils literal"><span class="pre">setuptools</span></tt>, and it is recommended
+that you install the <tt class="xref py py-mod docutils literal"><span class="pre">distribute</span></tt> package, which improves
+<tt class="xref py py-mod docutils literal"><span class="pre">setuptools</span></tt> and fixes various bugs.</p>
+<p class="last">We hope to remove this dependency in 0.12.</p>
+</div>
+<p>More general information about installing Python packages can be found in
+Python&#8217;s documentation at <a class="reference external" href="http://www.python.org/doc/">http://www.python.org/doc/</a>.</p>
+</div>
+<div class="section" id="quickstart">
+<h1>Quickstart<a class="headerlink" href="#quickstart" title="Permalink to this headline">¶</a></h1>
+<p>If you have <tt class="xref py py-mod docutils literal"><span class="pre">setuptools</span></tt> installed and you are on OS X or Linux (not
+Windows), the following will download and install IPython <em>and</em> the main
+optional dependencies:</p>
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>easy_install ipython<span class="o">[</span>zmq,test<span class="o">]</span>
+</pre></div>
+</div>
+<p>This will get pyzmq, which is needed for
+IPython&#8217;s parallel computing features as well as the nose package, which will
+enable you to run IPython&#8217;s test suite.</p>
+<p>To run IPython&#8217;s test suite, use the <strong class="command">iptest</strong> command:</p>
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>iptest
+</pre></div>
+</div>
+<p>Read on for more specific details and instructions for Windows.</p>
+</div>
+<div class="section" id="installing-ipython-itself">
+<h1>Installing IPython itself<a class="headerlink" href="#installing-ipython-itself" title="Permalink to this headline">¶</a></h1>
+<p>Given a properly built Python, the basic interactive IPython shell will work
+with no external dependencies.  However, some Python distributions
+(particularly on Windows and OS X), don&#8217;t come with a working <tt class="xref py py-mod docutils literal"><span class="pre">readline</span></tt>
+module.  The IPython shell will work without <tt class="xref py py-mod docutils literal"><span class="pre">readline</span></tt>, but will lack
+many features that users depend on, such as tab completion and command line
+editing.  If you install IPython with <tt class="xref py py-mod docutils literal"><span class="pre">setuptools</span></tt>, (e.g. with <cite>easy_install</cite>),
+then the appropriate <tt class="xref py py-mod docutils literal"><span class="pre">readline</span></tt> for your platform will be installed.
+See below for details of how to make sure you have a working <tt class="xref py py-mod docutils literal"><span class="pre">readline</span></tt>.</p>
+<div class="section" id="installation-using-easy-install">
+<h2>Installation using easy_install<a class="headerlink" href="#installation-using-easy-install" title="Permalink to this headline">¶</a></h2>
+<p>If you have <tt class="xref py py-mod docutils literal"><span class="pre">setuptools</span></tt> installed, the easiest way of getting IPython is
+to simple use <strong class="command">easy_install</strong>:</p>
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>easy_install ipython
+</pre></div>
+</div>
+<p>That&#8217;s it.</p>
+</div>
+<div class="section" id="installation-from-source">
+<h2>Installation from source<a class="headerlink" href="#installation-from-source" title="Permalink to this headline">¶</a></h2>
+<p>If you don&#8217;t want to use <strong class="command">easy_install</strong>, or don&#8217;t have it installed,
+just grab the latest stable build of IPython from <a class="reference external" href="https://github.com/ipython/ipython/downloads">here</a>.  Then do the following:</p>
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>tar -xzf ipython.tar.gz
+<span class="nv">$ </span><span class="nb">cd </span>ipython
+<span class="nv">$ </span>python setup.py install
+</pre></div>
+</div>
+<p>If you are installing to a location (like <tt class="docutils literal"><span class="pre">/usr/local</span></tt>) that requires higher
+permissions, you may need to run the last command with <strong class="command">sudo</strong>.</p>
+</div>
+<div class="section" id="windows">
+<h2>Windows<a class="headerlink" href="#windows" title="Permalink to this headline">¶</a></h2>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>On Windows, IPython requires <tt class="xref py py-mod docutils literal"><span class="pre">setuptools</span></tt> or <tt class="xref py py-mod docutils literal"><span class="pre">distribute</span></tt>.</p>
+<p class="last">We hope to remove this dependency in 0.12.</p>
+</div>
+<p>There are a few caveats for Windows users.  The main issue is that a basic
+<tt class="docutils literal"><span class="pre">python</span> <span class="pre">setup.py</span> <span class="pre">install</span></tt> approach won&#8217;t create <tt class="docutils literal"><span class="pre">.bat</span></tt> file or Start Menu
+shortcuts, which most users want.  To get an installation with these, you can
+use any of the following alternatives:</p>
+<ol class="arabic simple">
+<li>Install using <strong class="command">easy_install</strong>.</li>
+<li>Install using our binary <tt class="docutils literal"><span class="pre">.exe</span></tt> Windows installer, which can be found
+<a class="reference external" href="http://ipython.scipy.org/dist/">here</a></li>
+<li>Install from source, but using <tt class="xref py py-mod docutils literal"><span class="pre">setuptools</span></tt> (<tt class="docutils literal"><span class="pre">python</span> <span class="pre">setupegg.py</span>
+<span class="pre">install</span></tt>).</li>
+</ol>
+<p>IPython by default runs in a terminal window, but the normal terminal
+application supplied by Microsoft Windows is very primitive.  You may want to
+download the excellent and free <a class="reference external" href="http://sourceforge.net/projects/console">Console</a> application instead, which is a far
+superior tool.  You can even configure Console to give you by default an
+IPython tab, which is very convenient to create new IPython sessions directly
+from the working terminal.</p>
+<p>Note for Windows 64 bit users: you may have difficulties with the stock
+installer on 64 bit systems; in this case (since we currently do not have 64
+bit builds of the Windows installer) your best bet is to install from source
+with the setuptools method indicated in #3 above.  See <a class="reference external" href="https://bugs.launchpad.net/ipython/+bug/382214">this bug report</a> for
+further details.</p>
+</div>
+<div class="section" id="installing-the-development-version">
+<h2>Installing the development version<a class="headerlink" href="#installing-the-development-version" title="Permalink to this headline">¶</a></h2>
+<p>It is also possible to install the development version of IPython from our
+<a class="reference external" href="http://git-scm.com/">Git</a> source code repository.  To do this you will
+need to have Git installed on your system.  Then just do:</p>
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>git clone https://github.com/ipython/ipython.git
+<span class="nv">$ </span><span class="nb">cd </span>ipython
+<span class="nv">$ </span>python setup.py install
+</pre></div>
+</div>
+<p>Again, this last step on Windows won&#8217;t create <tt class="docutils literal"><span class="pre">.bat</span></tt> files or Start Menu
+shortcuts, so you will have to use one of the other approaches listed above.</p>
+<p>Some users want to be able to follow the development branch as it changes.  If
+you have <tt class="xref py py-mod docutils literal"><span class="pre">setuptools</span></tt> installed, this is easy. Simply replace the last
+step by:</p>
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>python setupegg.py develop
+</pre></div>
+</div>
+<p>This creates links in the right places and installs the command line script to
+the appropriate places.  Then, if you want to update your IPython at any time,
+just do:</p>
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>git pull
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="basic-optional-dependencies">
+<h1>Basic optional dependencies<a class="headerlink" href="#basic-optional-dependencies" title="Permalink to this headline">¶</a></h1>
+<p>There are a number of basic optional dependencies that most users will want to
+get.  These are:</p>
+<ul class="simple">
+<li>readline (for command line editing, tab completion, etc.)</li>
+<li>nose (to run the IPython test suite)</li>
+<li>pexpect (to use things like irunner)</li>
+</ul>
+<p>If you are comfortable installing these things yourself, have at it, otherwise
+read on for more details.</p>
+<div class="section" id="readline">
+<h2>readline<a class="headerlink" href="#readline" title="Permalink to this headline">¶</a></h2>
+<p>In principle, all Python distributions should come with a working
+<tt class="xref py py-mod docutils literal"><span class="pre">readline</span></tt> module.  But, reality is not quite that simple.  There are two
+common situations where you won&#8217;t have a working <tt class="xref py py-mod docutils literal"><span class="pre">readline</span></tt> module:</p>
+<ul class="simple">
+<li>If you are using the built-in Python on Mac OS X.</li>
+<li>If you are running Windows, which doesn&#8217;t have a <tt class="xref py py-mod docutils literal"><span class="pre">readline</span></tt> module.</li>
+</ul>
+<p>When IPython is installed with <tt class="xref py py-mod docutils literal"><span class="pre">setuptools</span></tt>, (e.g. with <cite>easy_install</cite>),
+readline is added as a dependency on OS X, and PyReadline on Windows, and will
+be installed on your system.  However, if you do not use setuptools, you may
+have to install one of these packages yourself.</p>
+<p>On OS X, the built-in Python doesn&#8217;t not have <tt class="xref py py-mod docutils literal"><span class="pre">readline</span></tt> because of
+license issues.  Starting with OS X 10.5 (Leopard), Apple&#8217;s built-in Python has
+a BSD-licensed not-quite-compatible readline replacement. As of IPython 0.9,
+many of the issues related to the differences between readline and libedit seem
+to have been resolved.  While you may find libedit sufficient, we have
+occasional reports of bugs with it and several developers who use OS X as their
+main environment consider libedit unacceptable for productive, regular use with
+IPython.</p>
+<p>Therefore, we <em>strongly</em> recommend that on OS X you get the full
+<tt class="xref py py-mod docutils literal"><span class="pre">readline</span></tt> module.  We will <em>not</em> consider completion/history problems to
+be bugs for IPython if you are using libedit.</p>
+<p>To get a working <tt class="xref py py-mod docutils literal"><span class="pre">readline</span></tt> module, just do (with <tt class="xref py py-mod docutils literal"><span class="pre">setuptools</span></tt>
+installed):</p>
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>easy_install readline
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Other Python distributions on OS X (such as fink, MacPorts and the official
+python.org binaries) already have readline installed so you likely don&#8217;t
+have to do this step.</p>
+</div>
+<p>If needed, the readline egg can be build and installed from source (see the
+wiki page at <a class="reference external" href="http://ipython.scipy.org/moin/InstallationOSXLeopard">http://ipython.scipy.org/moin/InstallationOSXLeopard</a>).</p>
+<p>On Windows, you will need the PyReadline module. PyReadline is a separate,
+Windows only implementation of readline that uses native Windows calls through
+<tt class="xref py py-mod docutils literal"><span class="pre">ctypes</span></tt>. The easiest way of installing PyReadline is you use the binary
+installer available <a class="reference external" href="https://launchpad.net/pyreadline/+download">here</a>.</p>
+</div>
+<div class="section" id="nose">
+<h2>nose<a class="headerlink" href="#nose" title="Permalink to this headline">¶</a></h2>
+<p>To run the IPython test suite you will need the <tt class="xref py py-mod docutils literal"><span class="pre">nose</span></tt> package.  Nose
+provides a great way of sniffing out and running all of the IPython tests.  The
+simplest way of getting nose, is to use <strong class="command">easy_install</strong>:</p>
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>easy_install nose
+</pre></div>
+</div>
+<p>Another way of getting this is to do:</p>
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>easy_install ipython<span class="o">[</span><span class="nb">test</span><span class="o">]</span>
+</pre></div>
+</div>
+<p>For more installation options, see the <a class="reference external" href="http://somethingaboutorange.com/mrl/projects/nose/">nose website</a>.</p>
+<p>Once you have nose installed, you can run IPython&#8217;s test suite using the
+iptest command:</p>
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>iptest
+</pre></div>
+</div>
+</div>
+<div class="section" id="pexpect">
+<h2>pexpect<a class="headerlink" href="#pexpect" title="Permalink to this headline">¶</a></h2>
+<p>The pexpect package is used in IPython&#8217;s <strong class="command">irunner</strong> script, as well as
+for managing subprocesses <a class="reference internal" href="#id8">[pexpect]</a>. IPython now includes a version of pexpect
+in <tt class="xref py py-mod docutils literal"><span class="pre">IPython.external</span></tt>, but if you have installed pexpect, IPython will use
+that instead. On Unix platforms (including OS X), just do:</p>
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>easy_install pexpect
+</pre></div>
+</div>
+<p>Windows users are out of luck as pexpect does not run there.</p>
+</div>
+</div>
+<div class="section" id="dependencies-for-ipython-parallel-parallel-computing">
+<h1>Dependencies for IPython.parallel (parallel computing)<a class="headerlink" href="#dependencies-for-ipython-parallel-parallel-computing" title="Permalink to this headline">¶</a></h1>
+<p><tt class="xref py py-mod docutils literal"><span class="pre">IPython.kernel</span></tt> has been replaced by <tt class="xref py py-mod docutils literal"><span class="pre">IPython.parallel</span></tt>,
+which uses ZeroMQ for all communication.</p>
+<p>IPython.parallel provides a nice architecture for parallel computing.  The
+main focus of this architecture is on interactive parallel computing.  These
+features require just one package: pyzmq.  See the next section for pyzmq
+details.</p>
+<p>On a Unix style platform (including OS X), if you want to use
+<tt class="xref py py-mod docutils literal"><span class="pre">setuptools</span></tt>, you can just do:</p>
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>easy_install ipython<span class="o">[</span>zmq<span class="o">]</span>    <span class="c"># will include pyzmq</span>
+</pre></div>
+</div>
+<p>Security in IPython.parallel is provided by SSH tunnels.  By default, Linux
+and OSX clients will use the shell ssh command, but on Windows, we also
+support tunneling with paramiko <a class="reference internal" href="#paramiko">[paramiko]</a>.</p>
+</div>
+<div class="section" id="dependencies-for-ipython-zmq">
+<h1>Dependencies for IPython.zmq<a class="headerlink" href="#dependencies-for-ipython-zmq" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="pyzmq">
+<h2>pyzmq<a class="headerlink" href="#pyzmq" title="Permalink to this headline">¶</a></h2>
+<p>IPython 0.11 introduced some new functionality, including a two-process
+execution model using ZeroMQ for communication <a class="reference internal" href="../parallel/parallel_intro.html#zeromq">[ZeroMQ]</a>. The Python bindings
+to ZeroMQ are found in the pyzmq project, which is easy_install-able once you
+have ZeroMQ installed.  If you are on Python 2.6 or 2.7 on OSX, or 2.7 on Windows,
+pyzmq has eggs that include ZeroMQ itself.</p>
+<p>IPython.zmq depends on pyzmq &gt;= 2.1.4.</p>
+</div>
+</div>
+<div class="section" id="dependencies-for-ipython-qtconsole-new-gui">
+<h1>Dependencies for ipython qtconsole (new GUI)<a class="headerlink" href="#dependencies-for-ipython-qtconsole-new-gui" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="qt">
+<h2>Qt<a class="headerlink" href="#qt" title="Permalink to this headline">¶</a></h2>
+<p>Also with 0.11, a new GUI was added using the work in <tt class="xref py py-mod docutils literal"><span class="pre">IPython.zmq</span></tt>,
+which can be launched with <tt class="docutils literal"><span class="pre">ipython</span> <span class="pre">qtconsole</span></tt>. The GUI is built on Qt, and works
+with either PyQt, which can be installed from the
+<a class="reference external" href="http://www.riverbankcomputing.co.uk/">PyQt website</a>, or
+<a class="reference external" href="http://www.pyside.org/">PySide</a>, from Nokia.</p>
+</div>
+<div class="section" id="pygments">
+<h2>pygments<a class="headerlink" href="#pygments" title="Permalink to this headline">¶</a></h2>
+<p>The syntax-highlighting in <tt class="docutils literal"><span class="pre">ipython</span> <span class="pre">qtconsole</span></tt> is done with the pygments project,
+which is easy_install-able <a class="reference internal" href="../interactive/qtconsole.html#pygments">[pygments]</a>.</p>
+<table class="docutils citation" frame="void" id="zeromq" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id5">[ZeroMQ]</a></td><td>ZeroMQ.  <a class="reference external" href="http://www.zeromq.org">http://www.zeromq.org</a></td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="paramiko" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id4">[paramiko]</a></td><td>paramiko. <a class="reference external" href="https://github.com/robey/paramiko">https://github.com/robey/paramiko</a></td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="id7" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id6">[pygments]</a></td><td>Pygments syntax highlighting. <a class="reference external" href="http://pygments.org">http://pygments.org</a></td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="id8" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id3">[pexpect]</a></td><td>Pexpect. <a class="reference external" href="http://www.noah.org/wiki/Pexpect">http://www.noah.org/wiki/Pexpect</a></td></tr>
+</tbody>
+</table>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../interactive/index.html" title="Using IPython for interactive work"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Installation"
+             >previous</a> |</li>
+        <li><a href="../index.html">home</a>|&nbsp;</li>
+        <li><a href="../search.html">search</a>|&nbsp;</li>
+       <li><a href="../index.html">documentation </a> &raquo;</li>
+
+          <li><a href="index.html" >Installation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2008, The IPython Development Team.
+      Last updated on Jul 31, 2011.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1pre.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,30 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+parallel.engine.streamkernel
+============================
+
+Module: :mod:`parallel.engine.streamkernel`
+-------------------------------------------
+Inheritance diagram for ``IPython.parallel.engine.streamkernel``:
+
+.. inheritance-diagram:: IPython.parallel.engine.streamkernel 
+   :parts: 3
+
+.. automodule:: IPython.parallel.engine.streamkernel
+
+.. currentmodule:: IPython.parallel.engine.streamkernel
+
+:class:`Kernel`
+---------------
+
+
+.. autoclass:: Kernel
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+.. autofunction:: IPython.parallel.engine.streamkernel.printer
+

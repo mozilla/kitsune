@@ -1,0 +1,336 @@
+Overview
+========
+
+This document describes the steps required to install IPython.  IPython is
+organized into a number of subpackages, each of which has its own dependencies.
+All of the subpackages come with IPython, so you don't need to download and
+install them separately.  However, to use a given subpackage, you will need to
+install all of its dependencies.
+
+
+Please let us know if you have problems installing IPython or any of its
+dependencies. Officially, IPython requires Python version 2.6 or 2.7.  There
+is an experimental port of IPython for Python3 `on GitHub 
+<https://github.com/ipython/ipython-py3k>`_
+
+.. warning::
+
+    Officially, IPython supports Python versions 2.6 and 2.7.
+
+    IPython 0.11 has a hard syntax dependency on 2.6, and will no longer work
+    on Python <= 2.5.
+
+Some of the installation approaches use the :mod:`setuptools` package and its
+:command:`easy_install` command line program.  In many scenarios, this provides
+the most simple method of installing IPython and its dependencies.  It is not
+required though.  More information about :mod:`setuptools` can be found on its
+website.
+
+.. note::
+
+    On Windows, IPython *does* depend on :mod:`setuptools`, and it is recommended
+    that you install the :mod:`distribute` package, which improves
+    :mod:`setuptools` and fixes various bugs.
+    
+    We hope to remove this dependency in 0.12.
+
+More general information about installing Python packages can be found in
+Python's documentation at http://www.python.org/doc/.
+
+Quickstart
+==========
+
+If you have :mod:`setuptools` installed and you are on OS X or Linux (not
+Windows), the following will download and install IPython *and* the main
+optional dependencies:
+
+.. code-block:: bash
+
+    $ easy_install ipython[zmq,test]
+
+This will get pyzmq, which is needed for
+IPython's parallel computing features as well as the nose package, which will
+enable you to run IPython's test suite.  
+
+To run IPython's test suite, use the :command:`iptest` command:
+
+.. code-block:: bash
+
+    $ iptest
+
+Read on for more specific details and instructions for Windows.
+
+Installing IPython itself
+=========================
+
+Given a properly built Python, the basic interactive IPython shell will work
+with no external dependencies.  However, some Python distributions
+(particularly on Windows and OS X), don't come with a working :mod:`readline`
+module.  The IPython shell will work without :mod:`readline`, but will lack
+many features that users depend on, such as tab completion and command line
+editing.  If you install IPython with :mod:`setuptools`, (e.g. with `easy_install`),
+then the appropriate :mod:`readline` for your platform will be installed.
+See below for details of how to make sure you have a working :mod:`readline`.
+
+Installation using easy_install
+-------------------------------
+
+If you have :mod:`setuptools` installed, the easiest way of getting IPython is
+to simple use :command:`easy_install`:
+
+.. code-block:: bash
+
+    $ easy_install ipython
+
+That's it.
+
+Installation from source
+------------------------
+
+If you don't want to use :command:`easy_install`, or don't have it installed,
+just grab the latest stable build of IPython from `here
+<https://github.com/ipython/ipython/downloads>`_.  Then do the following:
+
+.. code-block:: bash
+
+    $ tar -xzf ipython.tar.gz
+    $ cd ipython
+    $ python setup.py install
+
+If you are installing to a location (like ``/usr/local``) that requires higher
+permissions, you may need to run the last command with :command:`sudo`.
+
+Windows
+-------
+
+.. note::
+
+    On Windows, IPython requires :mod:`setuptools` or :mod:`distribute`.
+    
+    We hope to remove this dependency in 0.12.
+
+There are a few caveats for Windows users.  The main issue is that a basic
+``python setup.py install`` approach won't create ``.bat`` file or Start Menu
+shortcuts, which most users want.  To get an installation with these, you can
+use any of the following alternatives:
+
+1. Install using :command:`easy_install`.
+
+2. Install using our binary ``.exe`` Windows installer, which can be found
+   `here <http://ipython.scipy.org/dist/>`_
+
+3. Install from source, but using :mod:`setuptools` (``python setupegg.py
+   install``).
+
+IPython by default runs in a terminal window, but the normal terminal
+application supplied by Microsoft Windows is very primitive.  You may want to
+download the excellent and free Console_ application instead, which is a far
+superior tool.  You can even configure Console to give you by default an
+IPython tab, which is very convenient to create new IPython sessions directly
+from the working terminal.
+
+.. _Console:  http://sourceforge.net/projects/console
+
+Note for Windows 64 bit users: you may have difficulties with the stock
+installer on 64 bit systems; in this case (since we currently do not have 64
+bit builds of the Windows installer) your best bet is to install from source
+with the setuptools method indicated in #3 above.  See `this bug report`_ for
+further details.
+
+.. _this bug report: https://bugs.launchpad.net/ipython/+bug/382214
+
+   
+Installing the development version
+----------------------------------
+
+It is also possible to install the development version of IPython from our
+`Git <http://git-scm.com/>`_ source code repository.  To do this you will
+need to have Git installed on your system.  Then just do:
+
+.. code-block:: bash
+
+    $ git clone https://github.com/ipython/ipython.git
+    $ cd ipython
+    $ python setup.py install
+
+Again, this last step on Windows won't create ``.bat`` files or Start Menu
+shortcuts, so you will have to use one of the other approaches listed above.
+
+Some users want to be able to follow the development branch as it changes.  If
+you have :mod:`setuptools` installed, this is easy. Simply replace the last
+step by:
+
+.. code-block:: bash
+
+    $ python setupegg.py develop
+
+This creates links in the right places and installs the command line script to
+the appropriate places.  Then, if you want to update your IPython at any time,
+just do:
+
+.. code-block:: bash
+
+    $ git pull
+
+Basic optional dependencies
+===========================
+
+There are a number of basic optional dependencies that most users will want to
+get.  These are:
+
+* readline (for command line editing, tab completion, etc.)
+* nose (to run the IPython test suite)
+* pexpect (to use things like irunner)
+
+If you are comfortable installing these things yourself, have at it, otherwise
+read on for more details.
+
+readline
+--------
+
+In principle, all Python distributions should come with a working
+:mod:`readline` module.  But, reality is not quite that simple.  There are two
+common situations where you won't have a working :mod:`readline` module:
+
+* If you are using the built-in Python on Mac OS X.
+
+* If you are running Windows, which doesn't have a :mod:`readline` module.
+
+When IPython is installed with :mod:`setuptools`, (e.g. with `easy_install`),
+readline is added as a dependency on OS X, and PyReadline on Windows, and will
+be installed on your system.  However, if you do not use setuptools, you may
+have to install one of these packages yourself.
+
+On OS X, the built-in Python doesn't not have :mod:`readline` because of
+license issues.  Starting with OS X 10.5 (Leopard), Apple's built-in Python has
+a BSD-licensed not-quite-compatible readline replacement. As of IPython 0.9,
+many of the issues related to the differences between readline and libedit seem
+to have been resolved.  While you may find libedit sufficient, we have
+occasional reports of bugs with it and several developers who use OS X as their
+main environment consider libedit unacceptable for productive, regular use with
+IPython.
+
+Therefore, we *strongly* recommend that on OS X you get the full
+:mod:`readline` module.  We will *not* consider completion/history problems to
+be bugs for IPython if you are using libedit.
+
+To get a working :mod:`readline` module, just do (with :mod:`setuptools`
+installed):
+
+.. code-block:: bash
+
+    $ easy_install readline
+
+.. note::
+
+    Other Python distributions on OS X (such as fink, MacPorts and the official
+    python.org binaries) already have readline installed so you likely don't
+    have to do this step.
+
+If needed, the readline egg can be build and installed from source (see the
+wiki page at http://ipython.scipy.org/moin/InstallationOSXLeopard).
+
+On Windows, you will need the PyReadline module. PyReadline is a separate,
+Windows only implementation of readline that uses native Windows calls through
+:mod:`ctypes`. The easiest way of installing PyReadline is you use the binary
+installer available `here <https://launchpad.net/pyreadline/+download>`_.
+
+nose
+----
+
+To run the IPython test suite you will need the :mod:`nose` package.  Nose
+provides a great way of sniffing out and running all of the IPython tests.  The
+simplest way of getting nose, is to use :command:`easy_install`:
+
+.. code-block:: bash
+
+    $ easy_install nose
+
+Another way of getting this is to do:
+
+.. code-block:: bash
+
+    $ easy_install ipython[test]
+
+For more installation options, see the `nose website
+<http://somethingaboutorange.com/mrl/projects/nose/>`_.  
+
+Once you have nose installed, you can run IPython's test suite using the
+iptest command:
+
+.. code-block:: bash
+
+    $ iptest
+
+pexpect
+-------
+
+The pexpect package is used in IPython's :command:`irunner` script, as well as
+for managing subprocesses [pexpect]_. IPython now includes a version of pexpect
+in :mod:`IPython.external`, but if you have installed pexpect, IPython will use
+that instead. On Unix platforms (including OS X), just do:
+
+.. code-block:: bash
+
+    $ easy_install pexpect
+
+Windows users are out of luck as pexpect does not run there.
+
+Dependencies for IPython.parallel (parallel computing)
+======================================================
+
+:mod:`IPython.kernel` has been replaced by :mod:`IPython.parallel`, 
+which uses ZeroMQ for all communication.
+
+IPython.parallel provides a nice architecture for parallel computing.  The
+main focus of this architecture is on interactive parallel computing.  These
+features require just one package: pyzmq.  See the next section for pyzmq
+details.
+
+On a Unix style platform (including OS X), if you want to use
+:mod:`setuptools`, you can just do:
+
+.. code-block:: bash
+
+    $ easy_install ipython[zmq]    # will include pyzmq
+
+Security in IPython.parallel is provided by SSH tunnels.  By default, Linux
+and OSX clients will use the shell ssh command, but on Windows, we also
+support tunneling with paramiko [paramiko]_.
+
+Dependencies for IPython.zmq
+============================
+
+pyzmq
+-----
+
+IPython 0.11 introduced some new functionality, including a two-process
+execution model using ZeroMQ for communication [ZeroMQ]_. The Python bindings
+to ZeroMQ are found in the pyzmq project, which is easy_install-able once you
+have ZeroMQ installed.  If you are on Python 2.6 or 2.7 on OSX, or 2.7 on Windows,
+pyzmq has eggs that include ZeroMQ itself.
+
+IPython.zmq depends on pyzmq >= 2.1.4.
+
+Dependencies for ipython qtconsole (new GUI)
+============================================
+
+Qt
+--
+
+Also with 0.11, a new GUI was added using the work in :mod:`IPython.zmq`,
+which can be launched with ``ipython qtconsole``. The GUI is built on Qt, and works
+with either PyQt, which can be installed from the 
+`PyQt website <http://www.riverbankcomputing.co.uk/>`_, or 
+`PySide <http://www.pyside.org/>`_, from Nokia.
+
+pygments
+--------
+
+The syntax-highlighting in ``ipython qtconsole`` is done with the pygments project, 
+which is easy_install-able [pygments]_.
+
+.. [ZeroMQ] ZeroMQ.  http://www.zeromq.org
+.. [paramiko] paramiko. https://github.com/robey/paramiko
+.. [pygments] Pygments syntax highlighting. http://pygments.org
+.. [pexpect] Pexpect. http://www.noah.org/wiki/Pexpect

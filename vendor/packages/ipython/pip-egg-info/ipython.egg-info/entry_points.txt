@@ -1,0 +1,13 @@
+[console_scripts]
+iplogger = IPython.parallel.apps.iploggerapp:launch_new_instance
+iptest = IPython.testing.iptest:main
+ipcluster = IPython.parallel.apps.ipclusterapp:launch_new_instance
+ipython = IPython.frontend.terminal.ipapp:launch_new_instance
+pycolor = IPython.utils.PyColorize:main
+ipcontroller = IPython.parallel.apps.ipcontrollerapp:launch_new_instance
+irunner = IPython.lib.irunner:main
+ipengine = IPython.parallel.apps.ipengineapp:launch_new_instance
+
+[gui_scripts]
+ipython-qtconsole = IPython.frontend.qt.console.qtconsoleapp:main
+

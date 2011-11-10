@@ -1,0 +1,198 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Notes on code execution in InteractiveShell &mdash; IPython 0.11 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.11',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="IPython 0.11 documentation" href="../index.html" />
+    <link rel="up" title="IPython developer’s guide" href="index.html" />
+    <link rel="next" title="IPython Qt interface" href="ipython_qt.html" />
+    <link rel="prev" title="The magic commands subsystem" href="magic_blueprint.html" /> 
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<a href="../index.html"><img src="../_static/logo.png" border="0" alt="IPython Documentation"/></a>
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="ipython_qt.html" title="IPython Qt interface"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="magic_blueprint.html" title="The magic commands subsystem"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">home</a>|&nbsp;</li>
+        <li><a href="../search.html">search</a>|&nbsp;</li>
+       <li><a href="../index.html">documentation </a> &raquo;</li>
+
+          <li><a href="index.html" accesskey="U">IPython developer&#8217;s guide</a> &raquo;</li> 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Notes on code execution in <tt class="docutils literal"><span class="pre">InteractiveShell</span></tt></a><ul>
+<li><a class="reference internal" href="#overview">Overview</a></li>
+<li><a class="reference internal" href="#current-design">Current design</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="magic_blueprint.html"
+                        title="previous chapter">The magic commands subsystem</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="ipython_qt.html"
+                        title="next chapter">IPython Qt interface</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/development/ipgraph.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="notes-on-code-execution-in-interactiveshell">
+<h1>Notes on code execution in <tt class="xref py py-class docutils literal"><span class="pre">InteractiveShell</span></tt><a class="headerlink" href="#notes-on-code-execution-in-interactiveshell" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="overview">
+<h2>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h2>
+<p>This section contains information and notes about the code execution
+system in <tt class="xref py py-class docutils literal"><span class="pre">InteractiveShell</span></tt>.  This system needs to be refactored
+and we are keeping notes about this process here.</p>
+</div>
+<div class="section" id="current-design">
+<h2>Current design<a class="headerlink" href="#current-design" title="Permalink to this headline">¶</a></h2>
+<p>Here is a script that shows the relationships between the various
+methods in <tt class="xref py py-class docutils literal"><span class="pre">InteractiveShell</span></tt> that manage code execution:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">networkx</span> <span class="kn">as</span> <span class="nn">nx</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+
+<span class="n">exec_init_cmd</span> <span class="o">=</span> <span class="s">&#39;exec_init_cmd&#39;</span>
+<span class="n">interact</span> <span class="o">=</span> <span class="s">&#39;interact&#39;</span>
+<span class="n">runlines</span> <span class="o">=</span> <span class="s">&#39;runlines&#39;</span>
+<span class="n">runsource</span> <span class="o">=</span> <span class="s">&#39;runsource&#39;</span>
+<span class="n">runcode</span> <span class="o">=</span> <span class="s">&#39;runcode&#39;</span>
+<span class="n">push_line</span> <span class="o">=</span> <span class="s">&#39;push_line&#39;</span>
+<span class="n">mainloop</span> <span class="o">=</span> <span class="s">&#39;mainloop&#39;</span>
+<span class="n">embed_mainloop</span> <span class="o">=</span> <span class="s">&#39;embed_mainloop&#39;</span>
+<span class="n">ri</span> <span class="o">=</span> <span class="s">&#39;raw_input&#39;</span>
+<span class="n">prefilter</span> <span class="o">=</span> <span class="s">&#39;prefilter&#39;</span>
+
+<span class="n">g</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">DiGraph</span><span class="p">()</span>
+
+<span class="n">g</span><span class="o">.</span><span class="n">add_node</span><span class="p">(</span><span class="n">exec_init_cmd</span><span class="p">)</span>
+<span class="n">g</span><span class="o">.</span><span class="n">add_node</span><span class="p">(</span><span class="n">interact</span><span class="p">)</span>
+<span class="n">g</span><span class="o">.</span><span class="n">add_node</span><span class="p">(</span><span class="n">runlines</span><span class="p">)</span>
+<span class="n">g</span><span class="o">.</span><span class="n">add_node</span><span class="p">(</span><span class="n">runsource</span><span class="p">)</span>
+<span class="n">g</span><span class="o">.</span><span class="n">add_node</span><span class="p">(</span><span class="n">push_line</span><span class="p">)</span>
+<span class="n">g</span><span class="o">.</span><span class="n">add_node</span><span class="p">(</span><span class="n">mainloop</span><span class="p">)</span>
+<span class="n">g</span><span class="o">.</span><span class="n">add_node</span><span class="p">(</span><span class="n">embed_mainloop</span><span class="p">)</span>
+<span class="n">g</span><span class="o">.</span><span class="n">add_node</span><span class="p">(</span><span class="n">ri</span><span class="p">)</span>
+<span class="n">g</span><span class="o">.</span><span class="n">add_node</span><span class="p">(</span><span class="n">prefilter</span><span class="p">)</span>
+
+<span class="n">g</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">exec_init_cmd</span><span class="p">,</span> <span class="n">push_line</span><span class="p">)</span>
+<span class="n">g</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">exec_init_cmd</span><span class="p">,</span> <span class="n">prefilter</span><span class="p">)</span>
+<span class="n">g</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">mainloop</span><span class="p">,</span> <span class="n">exec_init_cmd</span><span class="p">)</span>
+<span class="n">g</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">mainloop</span><span class="p">,</span> <span class="n">interact</span><span class="p">)</span>
+<span class="n">g</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">embed_mainloop</span><span class="p">,</span> <span class="n">interact</span><span class="p">)</span>
+<span class="n">g</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">interact</span><span class="p">,</span> <span class="n">ri</span><span class="p">)</span>
+<span class="n">g</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">interact</span><span class="p">,</span> <span class="n">push_line</span><span class="p">)</span>
+<span class="n">g</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">push_line</span><span class="p">,</span> <span class="n">runsource</span><span class="p">)</span>
+<span class="n">g</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">runlines</span><span class="p">,</span> <span class="n">push_line</span><span class="p">)</span>
+<span class="n">g</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">runlines</span><span class="p">,</span> <span class="n">prefilter</span><span class="p">)</span>
+<span class="n">g</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">runsource</span><span class="p">,</span> <span class="n">runcode</span><span class="p">)</span>
+<span class="n">g</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">ri</span><span class="p">,</span> <span class="n">prefilter</span><span class="p">)</span>
+
+<span class="n">nx</span><span class="o">.</span><span class="n">draw_spectral</span><span class="p">(</span><span class="n">g</span><span class="p">,</span> <span class="n">node_size</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.6</span><span class="p">,</span> <span class="n">node_color</span><span class="o">=</span><span class="s">&#39;r&#39;</span><span class="p">,</span>
+                 <span class="n">font_size</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">node_shape</span><span class="o">=</span><span class="s">&#39;o&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="ipython_qt.html" title="IPython Qt interface"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="magic_blueprint.html" title="The magic commands subsystem"
+             >previous</a> |</li>
+        <li><a href="../index.html">home</a>|&nbsp;</li>
+        <li><a href="../search.html">search</a>|&nbsp;</li>
+       <li><a href="../index.html">documentation </a> &raquo;</li>
+
+          <li><a href="index.html" >IPython developer&#8217;s guide</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2008, The IPython Development Team.
+      Last updated on Jul 31, 2011.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1pre.
+    </div>
+  </body>
+</html>

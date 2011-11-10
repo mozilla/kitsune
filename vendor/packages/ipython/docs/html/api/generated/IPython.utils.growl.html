@@ -1,0 +1,225 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>utils.growl &mdash; IPython 0.11 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.11',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="IPython 0.11 documentation" href="../../index.html" />
+    <link rel="up" title="The IPython API" href="../index.html" />
+    <link rel="next" title="utils.importstring" href="IPython.utils.importstring.html" />
+    <link rel="prev" title="utils.generics" href="IPython.utils.generics.html" /> 
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<a href="../../index.html"><img src="../../_static/logo.png" border="0" alt="IPython Documentation"/></a>
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="IPython.utils.importstring.html" title="utils.importstring"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="IPython.utils.generics.html" title="utils.generics"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <li><a href="../../search.html">search</a>|&nbsp;</li>
+       <li><a href="../../index.html">documentation </a> &raquo;</li>
+
+          <li><a href="../index.html" accesskey="U">The IPython API</a> &raquo;</li> 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">utils.growl</a><ul>
+<li><a class="reference internal" href="#module-utils-growl">Module: <tt class="docutils literal"><span class="pre">utils.growl</span></tt></a></li>
+<li><a class="reference internal" href="#classes">Classes</a><ul>
+<li><a class="reference internal" href="#ipythongrowlerror"><tt class="docutils literal"><span class="pre">IPythonGrowlError</span></tt></a></li>
+<li><a class="reference internal" href="#notifier"><tt class="docutils literal"><span class="pre">Notifier</span></tt></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#functions">Functions</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="IPython.utils.generics.html"
+                        title="previous chapter">utils.generics</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="IPython.utils.importstring.html"
+                        title="next chapter">utils.importstring</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/api/generated/IPython.utils.growl.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="utils-growl">
+<h1>utils.growl<a class="headerlink" href="#utils-growl" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-utils-growl">
+<h2>Module: <tt class="xref py py-mod docutils literal"><span class="pre">utils.growl</span></tt><a class="headerlink" href="#module-utils-growl" title="Permalink to this headline">¶</a></h2>
+<p>Inheritance diagram for <tt class="docutils literal"><span class="pre">IPython.utils.growl</span></tt>:</p>
+<img src="../../_images/inheritance1c663c3a71.png" usemap="#inheritance1c663c3a71" class="inheritance"/><map id="inheritance1c663c3a71" name="inheritance1c663c3a71">
+</map>
+<span class="target" id="module-IPython.utils.growl"></span><p>Utilities using Growl on OS X for notifications.</p>
+</div>
+<div class="section" id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="ipythongrowlerror">
+<h3><a class="reference internal" href="#IPython.utils.growl.IPythonGrowlError" title="IPython.utils.growl.IPythonGrowlError"><tt class="xref py py-class docutils literal"><span class="pre">IPythonGrowlError</span></tt></a><a class="headerlink" href="#ipythongrowlerror" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="IPython.utils.growl.IPythonGrowlError">
+<em class="property">class </em><tt class="descclassname">IPython.utils.growl.</tt><tt class="descname">IPythonGrowlError</tt><a class="headerlink" href="#IPython.utils.growl.IPythonGrowlError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">exceptions.Exception</span></tt></p>
+<dl class="method">
+<dt id="IPython.utils.growl.IPythonGrowlError.__init__">
+<tt class="descname">__init__</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.utils.growl.IPythonGrowlError.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>x.__init__(...) initializes x; see x.__class__.__doc__ for signature</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.utils.growl.IPythonGrowlError.args">
+<tt class="descname">args</tt><a class="headerlink" href="#IPython.utils.growl.IPythonGrowlError.args" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.utils.growl.IPythonGrowlError.message">
+<tt class="descname">message</tt><a class="headerlink" href="#IPython.utils.growl.IPythonGrowlError.message" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="notifier">
+<h3><a class="reference internal" href="#IPython.utils.growl.Notifier" title="IPython.utils.growl.Notifier"><tt class="xref py py-class docutils literal"><span class="pre">Notifier</span></tt></a><a class="headerlink" href="#notifier" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="IPython.utils.growl.Notifier">
+<em class="property">class </em><tt class="descclassname">IPython.utils.growl.</tt><tt class="descname">Notifier</tt><big>(</big><em>app_name</em><big>)</big><a class="headerlink" href="#IPython.utils.growl.Notifier" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></p>
+<dl class="method">
+<dt id="IPython.utils.growl.Notifier.__init__">
+<tt class="descname">__init__</tt><big>(</big><em>app_name</em><big>)</big><a class="headerlink" href="#IPython.utils.growl.Notifier.__init__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IPython.utils.growl.Notifier.notify">
+<tt class="descname">notify</tt><big>(</big><em>title</em>, <em>msg</em><big>)</big><a class="headerlink" href="#IPython.utils.growl.Notifier.notify" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IPython.utils.growl.Notifier.notify_deferred">
+<tt class="descname">notify_deferred</tt><big>(</big><em>r</em>, <em>msg</em><big>)</big><a class="headerlink" href="#IPython.utils.growl.Notifier.notify_deferred" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="IPython.utils.growl.notify">
+<tt class="descclassname">IPython.utils.growl.</tt><tt class="descname">notify</tt><big>(</big><em>title</em>, <em>msg</em><big>)</big><a class="headerlink" href="#IPython.utils.growl.notify" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="IPython.utils.growl.notify_deferred">
+<tt class="descclassname">IPython.utils.growl.</tt><tt class="descname">notify_deferred</tt><big>(</big><em>r</em>, <em>msg</em><big>)</big><a class="headerlink" href="#IPython.utils.growl.notify_deferred" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="IPython.utils.growl.start">
+<tt class="descclassname">IPython.utils.growl.</tt><tt class="descname">start</tt><big>(</big><em>app_name</em><big>)</big><a class="headerlink" href="#IPython.utils.growl.start" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="IPython.utils.importstring.html" title="utils.importstring"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="IPython.utils.generics.html" title="utils.generics"
+             >previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <li><a href="../../search.html">search</a>|&nbsp;</li>
+       <li><a href="../../index.html">documentation </a> &raquo;</li>
+
+          <li><a href="../index.html" >The IPython API</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2008, The IPython Development Team.
+      Last updated on Jul 31, 2011.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1pre.
+    </div>
+  </body>
+</html>

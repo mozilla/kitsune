@@ -1,0 +1,227 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>core.page &mdash; IPython 0.11 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.11',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="IPython 0.11 documentation" href="../../index.html" />
+    <link rel="up" title="The IPython API" href="../index.html" />
+    <link rel="next" title="core.payload" href="IPython.core.payload.html" />
+    <link rel="prev" title="core.oinspect" href="IPython.core.oinspect.html" /> 
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<a href="../../index.html"><img src="../../_static/logo.png" border="0" alt="IPython Documentation"/></a>
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="IPython.core.payload.html" title="core.payload"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="IPython.core.oinspect.html" title="core.oinspect"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <li><a href="../../search.html">search</a>|&nbsp;</li>
+       <li><a href="../../index.html">documentation </a> &raquo;</li>
+
+          <li><a href="../index.html" accesskey="U">The IPython API</a> &raquo;</li> 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">core.page</a><ul>
+<li><a class="reference internal" href="#module-IPython.core.page">Module: <tt class="docutils literal"><span class="pre">core.page</span></tt></a><ul>
+<li><a class="reference internal" href="#notes">Notes</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#functions">Functions</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="IPython.core.oinspect.html"
+                        title="previous chapter">core.oinspect</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="IPython.core.payload.html"
+                        title="next chapter">core.payload</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/api/generated/IPython.core.page.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="core-page">
+<h1>core.page<a class="headerlink" href="#core-page" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-IPython.core.page">
+<span id="module-core-page"></span><h2>Module: <tt class="xref py py-mod docutils literal"><span class="pre">core.page</span></tt><a class="headerlink" href="#module-IPython.core.page" title="Permalink to this headline">¶</a></h2>
+<p>Paging capabilities for IPython.core</p>
+<p>Authors:</p>
+<ul class="simple">
+<li>Brian Granger</li>
+<li>Fernando Perez</li>
+</ul>
+<div class="section" id="notes">
+<h3>Notes<a class="headerlink" href="#notes" title="Permalink to this headline">¶</a></h3>
+<p>For now this uses ipapi, so it can&#8217;t be in IPython.utils.  If we can get
+rid of that dependency, we could move it there.
+&#8212;&#8211;</p>
+</div>
+</div>
+<div class="section" id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="IPython.core.page.get_pager_cmd">
+<tt class="descclassname">IPython.core.page.</tt><tt class="descname">get_pager_cmd</tt><big>(</big><em>pager_cmd=None</em><big>)</big><a class="headerlink" href="#IPython.core.page.get_pager_cmd" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a pager command.</p>
+<p>Makes some attempts at finding an OS-correct one.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="IPython.core.page.get_pager_start">
+<tt class="descclassname">IPython.core.page.</tt><tt class="descname">get_pager_start</tt><big>(</big><em>pager</em>, <em>start</em><big>)</big><a class="headerlink" href="#IPython.core.page.get_pager_start" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the string for paging files with an offset.</p>
+<p>This is the &#8216;+N&#8217; argument which less and more (under Unix) accept.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="IPython.core.page.page">
+<tt class="descclassname">IPython.core.page.</tt><tt class="descname">page</tt><big>(</big><em>strng</em>, <em>start=0</em>, <em>screen_lines=0</em>, <em>pager_cmd=None</em><big>)</big><a class="headerlink" href="#IPython.core.page.page" title="Permalink to this definition">¶</a></dt>
+<dd><p>Print a string, piping through a pager after a certain length.</p>
+<p>The screen_lines parameter specifies the number of <em>usable</em> lines of your
+terminal screen (total lines minus lines you need to reserve to show other
+information).</p>
+<p>If you set screen_lines to a number &lt;=0, page() will try to auto-determine
+your screen size and will only use up to (screen_size+screen_lines) for
+printing, paging after that. That is, if you want auto-detection but need
+to reserve the bottom 3 lines of the screen, use screen_lines = -3, and for
+auto-detection without any lines reserved simply use screen_lines = 0.</p>
+<p>If a string won&#8217;t fit in the allowed lines, it is sent through the
+specified pager command. If none given, look for PAGER in the environment,
+and ultimately default to less.</p>
+<p>If no system pager works, the string is sent through a &#8216;dumb pager&#8217;
+written in python, very simplistic.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="IPython.core.page.page_dumb">
+<tt class="descclassname">IPython.core.page.</tt><tt class="descname">page_dumb</tt><big>(</big><em>strng</em>, <em>start=0</em>, <em>screen_lines=25</em><big>)</big><a class="headerlink" href="#IPython.core.page.page_dumb" title="Permalink to this definition">¶</a></dt>
+<dd><p>Very dumb &#8216;pager&#8217; in Python, for when nothing else works.</p>
+<p>Only moves forward, same interface as page(), except for pager_cmd and
+mode.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="IPython.core.page.page_file">
+<tt class="descclassname">IPython.core.page.</tt><tt class="descname">page_file</tt><big>(</big><em>fname</em>, <em>start=0</em>, <em>pager_cmd=None</em><big>)</big><a class="headerlink" href="#IPython.core.page.page_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Page a file, using an optional pager command and starting line.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="IPython.core.page.snip_print">
+<tt class="descclassname">IPython.core.page.</tt><tt class="descname">snip_print</tt><big>(</big><em>str</em>, <em>width=75</em>, <em>print_full=0</em>, <em>header=''</em><big>)</big><a class="headerlink" href="#IPython.core.page.snip_print" title="Permalink to this definition">¶</a></dt>
+<dd><p>Print a string snipping the midsection to fit in width.</p>
+<dl class="docutils">
+<dt>print_full: mode control:</dt>
+<dd><ul class="first last simple">
+<li>0: only snip long strings</li>
+<li>1: send to page() directly.</li>
+<li>2: snip long strings and ask for full length viewing with page()</li>
+</ul>
+</dd>
+</dl>
+<p>Return 1 if snipping was necessary, 0 otherwise.</p>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="IPython.core.payload.html" title="core.payload"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="IPython.core.oinspect.html" title="core.oinspect"
+             >previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <li><a href="../../search.html">search</a>|&nbsp;</li>
+       <li><a href="../../index.html">documentation </a> &raquo;</li>
+
+          <li><a href="../index.html" >The IPython API</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2008, The IPython Development Team.
+      Last updated on Jul 31, 2011.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1pre.
+    </div>
+  </body>
+</html>

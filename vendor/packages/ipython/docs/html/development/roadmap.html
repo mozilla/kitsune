@@ -1,0 +1,231 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Development roadmap &mdash; IPython 0.11 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.11',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="IPython 0.11 documentation" href="../index.html" />
+    <link rel="up" title="IPython developer’s guide" href="index.html" />
+    <link rel="next" title="IPython module organization" href="reorg.html" />
+    <link rel="prev" title="Releasing IPython" href="release.html" /> 
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<a href="../index.html"><img src="../_static/logo.png" border="0" alt="IPython Documentation"/></a>
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="reorg.html" title="IPython module organization"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="release.html" title="Releasing IPython"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">home</a>|&nbsp;</li>
+        <li><a href="../search.html">search</a>|&nbsp;</li>
+       <li><a href="../index.html">documentation </a> &raquo;</li>
+
+          <li><a href="index.html" accesskey="U">IPython developer&#8217;s guide</a> &raquo;</li> 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Development roadmap</a><ul>
+<li><a class="reference internal" href="#work-targeted-to-particular-releases">Work targeted to particular releases</a><ul>
+<li><a class="reference internal" href="#release-0-11">Release 0.11</a></li>
+<li><a class="reference internal" href="#release-0-12">Release 0.12</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#major-areas-of-work">Major areas of work</a><ul>
+<li><a class="reference internal" href="#refactoring-the-main-ipython-core">Refactoring the main IPython core</a></li>
+<li><a class="reference internal" href="#process-management-for-ipython-parallel">Process management for <tt class="docutils literal"><span class="pre">IPython.parallel</span></tt></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#porting-to-3-0">Porting to 3.0</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="release.html"
+                        title="previous chapter">Releasing IPython</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="reorg.html"
+                        title="next chapter">IPython module organization</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/development/roadmap.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="development-roadmap">
+<span id="roadmap"></span><h1>Development roadmap<a class="headerlink" href="#development-roadmap" title="Permalink to this headline">¶</a></h1>
+<p>IPython is an ambitious project that is still under heavy development.
+However, we want IPython to become useful to as many people as possible, as
+quickly as possible. To help us accomplish this, we are laying out a roadmap
+of where we are headed and what needs to happen to get there. Hopefully, this
+will help the IPython developers figure out the best things to work on for
+each upcoming release.</p>
+<div class="section" id="work-targeted-to-particular-releases">
+<h2>Work targeted to particular releases<a class="headerlink" href="#work-targeted-to-particular-releases" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="release-0-11">
+<h3>Release 0.11<a class="headerlink" href="#release-0-11" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li>Full module and package reorganization (done).</li>
+<li>Removal of the threaded shells and new implementation of GUI support
+based on <tt class="docutils literal"><span class="pre">PyOSInputHook</span></tt> (done).</li>
+<li>Refactor the configuration system (done).</li>
+<li>Prepare to refactor IPython&#8217;s core by creating a new component and
+application system (done).</li>
+<li>Start to refactor IPython&#8217;s core by turning everything into configurables
+(mostly done).</li>
+</ul>
+</div>
+<div class="section" id="release-0-12">
+<h3>Release 0.12<a class="headerlink" href="#release-0-12" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li>Continue to refactor IPython&#8217;s core by turning everything into configurables.</li>
+<li>Merge draft html notebook (started).</li>
+<li>Add two-process Terminal frontend using ZMQ architecture.</li>
+</ul>
+</div>
+</div>
+<div class="section" id="major-areas-of-work">
+<h2>Major areas of work<a class="headerlink" href="#major-areas-of-work" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="refactoring-the-main-ipython-core">
+<h3>Refactoring the main IPython core<a class="headerlink" href="#refactoring-the-main-ipython-core" title="Permalink to this headline">¶</a></h3>
+<p>During the summer of 2009, we began refactoring IPython&#8217;s core. The main
+thrust in this work was to make the IPython core into a set of loosely coupled
+components. The base configurable class for this is
+<tt class="xref py py-class docutils literal"><span class="pre">IPython.core.configurable.Configurable</span></tt>. This section outlines the
+status of this work.</p>
+<p>Parts of the IPython core that have been turned into configurables:</p>
+<ul class="simple">
+<li>The main <a class="reference internal" href="../api/generated/IPython.core.interactiveshell.html#IPython.core.interactiveshell.InteractiveShell" title="IPython.core.interactiveshell.InteractiveShell"><tt class="xref py py-class docutils literal"><span class="pre">InteractiveShell</span></tt></a> class.</li>
+<li>The aliases (<a class="reference internal" href="../api/generated/IPython.core.alias.html#module-IPython.core.alias" title="IPython.core.alias"><tt class="xref py py-mod docutils literal"><span class="pre">IPython.core.alias</span></tt></a>).</li>
+<li>History management (<a class="reference internal" href="../api/generated/IPython.core.history.html#module-IPython.core.history" title="IPython.core.history"><tt class="xref py py-mod docutils literal"><span class="pre">IPython.core.history</span></tt></a>).</li>
+<li>Plugins (<a class="reference internal" href="../api/generated/IPython.core.plugin.html#module-IPython.core.plugin" title="IPython.core.plugin"><tt class="xref py py-mod docutils literal"><span class="pre">IPython.core.plugin</span></tt></a>).</li>
+<li>The display and builtin traps (<a class="reference internal" href="../api/generated/IPython.core.display_trap.html#module-IPython.core.display_trap" title="IPython.core.display_trap"><tt class="xref py py-mod docutils literal"><span class="pre">IPython.core.display_trap</span></tt></a> and
+<a class="reference internal" href="../api/generated/IPython.core.builtin_trap.html#module-IPython.core.builtin_trap" title="IPython.core.builtin_trap"><tt class="xref py py-mod docutils literal"><span class="pre">IPython.core.builtin_trap</span></tt></a>).</li>
+<li>The prefilter machinery (<a class="reference internal" href="../api/generated/IPython.core.prefilter.html#module-IPython.core.prefilter" title="IPython.core.prefilter"><tt class="xref py py-mod docutils literal"><span class="pre">IPython.core.prefilter</span></tt></a>).</li>
+</ul>
+<p>Parts of the IPython core that still need to be Configurable:</p>
+<ul class="simple">
+<li>Magics.</li>
+<li>Prompts.</li>
+<li>Tab completers.</li>
+<li>Exception handling.</li>
+<li>Anything else.</li>
+</ul>
+</div>
+<div class="section" id="process-management-for-ipython-parallel">
+<h3>Process management for <tt class="xref py py-mod docutils literal"><span class="pre">IPython.parallel</span></tt><a class="headerlink" href="#process-management-for-ipython-parallel" title="Permalink to this headline">¶</a></h3>
+<p>A few things need to be done to improve how processes are started
+up and managed for the parallel computing side of IPython:</p>
+<ul class="simple">
+<li>Improve the SSH launcher so it is at least back to the levels of 0.10.2</li>
+<li>We need to add support for other batch systems (LSF, Condor, etc.).</li>
+</ul>
+</div>
+</div>
+<div class="section" id="porting-to-3-0">
+<h2>Porting to 3.0<a class="headerlink" href="#porting-to-3-0" title="Permalink to this headline">¶</a></h2>
+<p>Dropping 2.5 support was a major step towards working with Python 3 due to
+future syntax support in 2.6.  IPython 0.11 requires 2.6 now, so 0.10.2 will
+be the last IPython release that supports Python 2.5.</p>
+<p>We currently have a <a class="reference external" href="https://github.com/ipython/ipython-py3k">separate repo</a>
+tracking IPython development that works with Python 3. The core of IPython does
+work, but the parallel computing code in <tt class="xref py py-mod docutils literal"><span class="pre">IPython.parallel</span></tt> does not yet
+work in Python 3, though the only major dependency of the parallel code, pyzmq,
+does work on Python 3.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="reorg.html" title="IPython module organization"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="release.html" title="Releasing IPython"
+             >previous</a> |</li>
+        <li><a href="../index.html">home</a>|&nbsp;</li>
+        <li><a href="../search.html">search</a>|&nbsp;</li>
+       <li><a href="../index.html">documentation </a> &raquo;</li>
+
+          <li><a href="index.html" >IPython developer&#8217;s guide</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2008, The IPython Development Team.
+      Last updated on Jul 31, 2011.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1pre.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,322 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>testing.decorators &mdash; IPython 0.11 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.11',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="IPython 0.11 documentation" href="../../index.html" />
+    <link rel="up" title="The IPython API" href="../index.html" />
+    <link rel="next" title="testing.globalipapp" href="IPython.testing.globalipapp.html" />
+    <link rel="prev" title="testing" href="IPython.testing.html" /> 
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<a href="../../index.html"><img src="../../_static/logo.png" border="0" alt="IPython Documentation"/></a>
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="IPython.testing.globalipapp.html" title="testing.globalipapp"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="IPython.testing.html" title="testing"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <li><a href="../../search.html">search</a>|&nbsp;</li>
+       <li><a href="../../index.html">documentation </a> &raquo;</li>
+
+          <li><a href="../index.html" accesskey="U">The IPython API</a> &raquo;</li> 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">testing.decorators</a><ul>
+<li><a class="reference internal" href="#module-IPython.testing.decorators">Module: <tt class="docutils literal"><span class="pre">testing.decorators</span></tt></a><ul>
+<li><a class="reference internal" href="#authors">Authors</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#functions">Functions</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="IPython.testing.html"
+                        title="previous chapter">testing</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="IPython.testing.globalipapp.html"
+                        title="next chapter">testing.globalipapp</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/api/generated/IPython.testing.decorators.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="testing-decorators">
+<h1>testing.decorators<a class="headerlink" href="#testing-decorators" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-IPython.testing.decorators">
+<span id="module-testing-decorators"></span><h2>Module: <tt class="xref py py-mod docutils literal"><span class="pre">testing.decorators</span></tt><a class="headerlink" href="#module-IPython.testing.decorators" title="Permalink to this headline">¶</a></h2>
+<p>Decorators for labeling test objects.</p>
+<p>Decorators that merely return a modified version of the original function
+object are straightforward.  Decorators that return a new function object need
+to use nose.tools.make_decorator(original_function)(decorator) in returning the
+decorator, in order to preserve metadata such as function name, setup and
+teardown functions and so on - see nose.tools for more information.</p>
+<p>This module provides a set of useful decorators meant to be ready to use in
+your own tests.  See the bottom of the file for the ready-made ones, and if you
+find yourself writing a new one that may be of generic use, add it here.</p>
+<p>Included decorators:</p>
+<p>Lightweight testing that remains unittest-compatible.</p>
+<ul class="simple">
+<li>&#64;parametric, for parametric test support that is vastly easier to use than
+nose&#8217;s for debugging. With ours, if a test fails, the stack under inspection
+is that of the test and not that of the test framework.</li>
+<li>An &#64;as_unittest decorator can be used to tag any normal parameter-less
+function as a unittest TestCase.  Then, both nose and normal unittest will
+recognize it as such.  This will make it easier to migrate away from Nose if
+we ever need/want to while maintaining very lightweight tests.</li>
+</ul>
+<p>NOTE: This file contains IPython-specific decorators. Using the machinery in
+IPython.external.decorators, we import either numpy.testing.decorators if numpy is
+available, OR use equivalent code in IPython.external._decorators, which
+we&#8217;ve copied verbatim from numpy.</p>
+<div class="section" id="authors">
+<h3>Authors<a class="headerlink" href="#authors" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li>Fernando Perez &lt;<a class="reference external" href="mailto:Fernando&#46;Perez&#37;&#52;&#48;berkeley&#46;edu">Fernando<span>&#46;</span>Perez<span>&#64;</span>berkeley<span>&#46;</span>edu</a>&gt;</li>
+</ul>
+</div>
+</div>
+<div class="section" id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="IPython.testing.decorators.apply_wrapper">
+<tt class="descclassname">IPython.testing.decorators.</tt><tt class="descname">apply_wrapper</tt><big>(</big><em>wrapper</em>, <em>func</em><big>)</big><a class="headerlink" href="#IPython.testing.decorators.apply_wrapper" title="Permalink to this definition">¶</a></dt>
+<dd><p>Apply a wrapper to a function for decoration.</p>
+<p>This mixes Michele Simionato&#8217;s decorator tool with nose&#8217;s make_decorator,
+to apply a wrapper in a decorator so that all nose attributes, as well as
+function signature and other properties, survive the decoration cleanly.
+This will ensure that wrapped functions can still be well introspected via
+IPython, for example.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="IPython.testing.decorators.as_unittest">
+<tt class="descclassname">IPython.testing.decorators.</tt><tt class="descname">as_unittest</tt><big>(</big><em>func</em><big>)</big><a class="headerlink" href="#IPython.testing.decorators.as_unittest" title="Permalink to this definition">¶</a></dt>
+<dd><p>Decorator to make a simple function into a normal test via unittest.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="IPython.testing.decorators.make_label_dec">
+<tt class="descclassname">IPython.testing.decorators.</tt><tt class="descname">make_label_dec</tt><big>(</big><em>label</em>, <em>ds=None</em><big>)</big><a class="headerlink" href="#IPython.testing.decorators.make_label_dec" title="Permalink to this definition">¶</a></dt>
+<dd><p>Factory function to create a decorator that applies one or more labels.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>label</strong> : string or sequence</p>
+<blockquote>
+<div><p>One or more labels that will be applied by the decorator to the functions</p>
+</div></blockquote>
+<p><strong>it decorates.  Labels are attributes of the decorated function with their</strong> :</p>
+<p><strong>value set to True.</strong> :</p>
+<blockquote>
+<div><p>ds : string
+An optional docstring for the resulting decorator.  If not given, a
+default docstring is auto-generated.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns :</th><td class="field-body"><p class="first last"><strong>A decorator.</strong> :</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Examples</p>
+<p>A simple labeling decorator:
+&gt;&gt;&gt; slow = make_label_dec(&#8216;slow&#8217;)
+&gt;&gt;&gt; print slow.__doc__
+Labels a test as &#8216;slow&#8217;.</p>
+<p>And one that uses multiple labels and a custom docstring:
+&gt;&gt;&gt; rare = make_label_dec([&#8216;slow&#8217;,&#8217;hard&#8217;],
+... &#8220;Mix labels &#8216;slow&#8217; and &#8216;hard&#8217; for rare tests.&#8221;)
+&gt;&gt;&gt; print rare.__doc__
+Mix labels &#8216;slow&#8217; and &#8216;hard&#8217; for rare tests.</p>
+<p>Now, let&#8217;s test using this one:
+&gt;&gt;&gt; &#64;rare
+... def f(): pass
+...
+&gt;&gt;&gt;
+&gt;&gt;&gt; f.slow
+True
+&gt;&gt;&gt; f.hard
+True</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="IPython.testing.decorators.module_not_available">
+<tt class="descclassname">IPython.testing.decorators.</tt><tt class="descname">module_not_available</tt><big>(</big><em>module</em><big>)</big><a class="headerlink" href="#IPython.testing.decorators.module_not_available" title="Permalink to this definition">¶</a></dt>
+<dd><p>Can module be imported?  Returns true if module does NOT import.</p>
+<p>This is used to make a decorator to skip tests that require module to be
+available, but delay the &#8216;import numpy&#8217; to test execution time.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="IPython.testing.decorators.onlyif">
+<tt class="descclassname">IPython.testing.decorators.</tt><tt class="descname">onlyif</tt><big>(</big><em>condition</em>, <em>msg</em><big>)</big><a class="headerlink" href="#IPython.testing.decorators.onlyif" title="Permalink to this definition">¶</a></dt>
+<dd><p>The reverse from skipif, see skipif for details.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="IPython.testing.decorators.skip">
+<tt class="descclassname">IPython.testing.decorators.</tt><tt class="descname">skip</tt><big>(</big><em>msg=None</em><big>)</big><a class="headerlink" href="#IPython.testing.decorators.skip" title="Permalink to this definition">¶</a></dt>
+<dd><p>Decorator factory - mark a test function for skipping from test suite.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>msg</strong> : string</p>
+<blockquote>
+<div><p>Optional message to be added.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns :</th><td class="field-body"><p class="first"><strong>decorator</strong> : function</p>
+<blockquote class="last">
+<div><p>Decorator, which, when applied to a function, causes SkipTest
+to be raised, with the optional message added.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="IPython.testing.decorators.skipif">
+<tt class="descclassname">IPython.testing.decorators.</tt><tt class="descname">skipif</tt><big>(</big><em>skip_condition</em>, <em>msg=None</em><big>)</big><a class="headerlink" href="#IPython.testing.decorators.skipif" title="Permalink to this definition">¶</a></dt>
+<dd><p>Make function raise SkipTest exception if skip_condition is true</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>skip_condition</strong> : bool or callable.</p>
+<blockquote>
+<div><p>Flag to determine whether to skip test.  If the condition is a 
+callable, it is used at runtime to dynamically make the decision.  This 
+is useful for tests that may require costly imports, to delay the cost 
+until the test suite is actually executed.        
+msg : string</p>
+<blockquote>
+<div><p>Message to give on raising a SkipTest exception</p>
+</div></blockquote>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns :</th><td class="field-body"><p class="first"><strong>decorator</strong> : function</p>
+<blockquote class="last">
+<div><p>Decorator, which, when applied to a function, causes SkipTest
+to be raised when the skip_condition was True, and the function
+to be called normally otherwise.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Notes</p>
+<p>You will see from the code that we had to further decorate the
+decorator with the nose.tools.make_decorator function in order to
+transmit function name, and various other metadata.</p>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="IPython.testing.globalipapp.html" title="testing.globalipapp"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="IPython.testing.html" title="testing"
+             >previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <li><a href="../../search.html">search</a>|&nbsp;</li>
+       <li><a href="../../index.html">documentation </a> &raquo;</li>
+
+          <li><a href="../index.html" >The IPython API</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2008, The IPython Development Team.
+      Last updated on Jul 31, 2011.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1pre.
+    </div>
+  </body>
+</html>

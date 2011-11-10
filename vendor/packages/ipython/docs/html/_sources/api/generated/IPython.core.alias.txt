@@ -1,0 +1,61 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+core.alias
+==========
+
+Module: :mod:`core.alias`
+-------------------------
+Inheritance diagram for ``IPython.core.alias``:
+
+.. inheritance-diagram:: IPython.core.alias 
+   :parts: 3
+
+.. automodule:: IPython.core.alias
+
+.. currentmodule:: IPython.core.alias
+
+Classes
+-------
+
+:class:`AliasError`
+~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: AliasError
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`AliasManager`
+~~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: AliasManager
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`InvalidAliasError`
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: InvalidAliasError
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+Function
+--------
+
+
+.. autofunction:: IPython.core.alias.default_aliases
+

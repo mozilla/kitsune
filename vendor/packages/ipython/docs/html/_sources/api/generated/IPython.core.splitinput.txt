@@ -1,0 +1,13 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+core.splitinput
+===============
+
+Module: :mod:`core.splitinput`
+------------------------------
+.. automodule:: IPython.core.splitinput
+
+.. currentmodule:: IPython.core.splitinput
+
+.. autofunction:: IPython.core.splitinput.split_user_input
+

@@ -1,0 +1,115 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+core.ultratb
+============
+
+Module: :mod:`core.ultratb`
+---------------------------
+Inheritance diagram for ``IPython.core.ultratb``:
+
+.. inheritance-diagram:: IPython.core.ultratb 
+   :parts: 3
+
+.. automodule:: IPython.core.ultratb
+
+.. currentmodule:: IPython.core.ultratb
+
+Classes
+-------
+
+:class:`AutoFormattedTB`
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: AutoFormattedTB
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`ColorTB`
+~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: ColorTB
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`FormattedTB`
+~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: FormattedTB
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`ListTB`
+~~~~~~~~~~~~~~~
+
+
+.. autoclass:: ListTB
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`SyntaxTB`
+~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: SyntaxTB
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`TBTools`
+~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: TBTools
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`VerboseTB`
+~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: VerboseTB
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+Functions
+---------
+
+
+.. autofunction:: IPython.core.ultratb.findsource
+
+
+.. autofunction:: IPython.core.ultratb.fix_frame_records_filenames
+
+
+.. autofunction:: IPython.core.ultratb.inspect_error
+

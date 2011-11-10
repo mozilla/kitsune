@@ -1,0 +1,70 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+core.hooks
+==========
+
+Module: :mod:`core.hooks`
+-------------------------
+Inheritance diagram for ``IPython.core.hooks``:
+
+.. inheritance-diagram:: IPython.core.hooks 
+   :parts: 3
+
+.. automodule:: IPython.core.hooks
+
+.. currentmodule:: IPython.core.hooks
+
+Class
+-----
+
+:class:`CommandChainDispatcher`
+-------------------------------
+
+
+.. autoclass:: CommandChainDispatcher
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+Functions
+---------
+
+
+.. autofunction:: IPython.core.hooks.calljed
+
+
+.. autofunction:: IPython.core.hooks.clipboard_get
+
+
+.. autofunction:: IPython.core.hooks.editor
+
+
+.. autofunction:: IPython.core.hooks.fix_error_editor
+
+
+.. autofunction:: IPython.core.hooks.generate_prompt
+
+
+.. autofunction:: IPython.core.hooks.input_prefilter
+
+
+.. autofunction:: IPython.core.hooks.late_startup_hook
+
+
+.. autofunction:: IPython.core.hooks.pre_prompt_hook
+
+
+.. autofunction:: IPython.core.hooks.pre_run_code_hook
+
+
+.. autofunction:: IPython.core.hooks.show_in_pager
+
+
+.. autofunction:: IPython.core.hooks.shutdown_hook
+
+
+.. autofunction:: IPython.core.hooks.synchronize_with_editor
+

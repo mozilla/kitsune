@@ -1,0 +1,469 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+utils.traitlets
+===============
+
+Module: :mod:`utils.traitlets`
+------------------------------
+Inheritance diagram for ``IPython.utils.traitlets``:
+
+.. inheritance-diagram:: IPython.utils.traitlets 
+   :parts: 3
+
+.. automodule:: IPython.utils.traitlets
+
+.. currentmodule:: IPython.utils.traitlets
+
+Classes
+-------
+
+:class:`Any`
+~~~~~~~~~~~~
+
+
+.. autoclass:: Any
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`Bool`
+~~~~~~~~~~~~~
+
+
+.. autoclass:: Bool
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`Bytes`
+~~~~~~~~~~~~~~
+
+
+.. autoclass:: Bytes
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`CBool`
+~~~~~~~~~~~~~~
+
+
+.. autoclass:: CBool
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`CBytes`
+~~~~~~~~~~~~~~~
+
+
+.. autoclass:: CBytes
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`CComplex`
+~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: CComplex
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`CFloat`
+~~~~~~~~~~~~~~~
+
+
+.. autoclass:: CFloat
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`CInt`
+~~~~~~~~~~~~~
+
+
+.. autoclass:: CInt
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`CLong`
+~~~~~~~~~~~~~~
+
+
+.. autoclass:: CLong
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`CUnicode`
+~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: CUnicode
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`CaselessStrEnum`
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: CaselessStrEnum
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`ClassBasedTraitType`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: ClassBasedTraitType
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`Complex`
+~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: Complex
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`Container`
+~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: Container
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`DefaultValueGenerator`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: DefaultValueGenerator
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`Dict`
+~~~~~~~~~~~~~
+
+
+.. autoclass:: Dict
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`DottedObjectName`
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: DottedObjectName
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`Enum`
+~~~~~~~~~~~~~
+
+
+.. autoclass:: Enum
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`Float`
+~~~~~~~~~~~~~~
+
+
+.. autoclass:: Float
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`HasTraits`
+~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: HasTraits
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`Instance`
+~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: Instance
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`Int`
+~~~~~~~~~~~~
+
+
+.. autoclass:: Int
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`List`
+~~~~~~~~~~~~~
+
+
+.. autoclass:: List
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`Long`
+~~~~~~~~~~~~~
+
+
+.. autoclass:: Long
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`MetaHasTraits`
+~~~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: MetaHasTraits
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`NoDefaultSpecified`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: NoDefaultSpecified
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`ObjectName`
+~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: ObjectName
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`Set`
+~~~~~~~~~~~~
+
+
+.. autoclass:: Set
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`TCPAddress`
+~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: TCPAddress
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`This`
+~~~~~~~~~~~~~
+
+
+.. autoclass:: This
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`TraitError`
+~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: TraitError
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`TraitType`
+~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: TraitType
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`Tuple`
+~~~~~~~~~~~~~~
+
+
+.. autoclass:: Tuple
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`Type`
+~~~~~~~~~~~~~
+
+
+.. autoclass:: Type
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`Undefined`
+~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: Undefined
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`Unicode`
+~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: Unicode
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+Functions
+---------
+
+
+.. autofunction:: IPython.utils.traitlets.add_article
+
+
+.. autofunction:: IPython.utils.traitlets.class_of
+
+
+.. autofunction:: IPython.utils.traitlets.getmembers
+
+
+.. autofunction:: IPython.utils.traitlets.parse_notifier_name
+
+
+.. autofunction:: IPython.utils.traitlets.repr_type
+

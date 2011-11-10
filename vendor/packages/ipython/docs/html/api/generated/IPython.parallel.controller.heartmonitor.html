@@ -1,0 +1,440 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>parallel.controller.heartmonitor &mdash; IPython 0.11 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.11',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="IPython 0.11 documentation" href="../../index.html" />
+    <link rel="up" title="The IPython API" href="../index.html" />
+    <link rel="next" title="parallel.controller.hub" href="IPython.parallel.controller.hub.html" />
+    <link rel="prev" title="parallel.controller.dictdb" href="IPython.parallel.controller.dictdb.html" /> 
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<a href="../../index.html"><img src="../../_static/logo.png" border="0" alt="IPython Documentation"/></a>
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="IPython.parallel.controller.hub.html" title="parallel.controller.hub"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="IPython.parallel.controller.dictdb.html" title="parallel.controller.dictdb"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <li><a href="../../search.html">search</a>|&nbsp;</li>
+       <li><a href="../../index.html">documentation </a> &raquo;</li>
+
+          <li><a href="../index.html" accesskey="U">The IPython API</a> &raquo;</li> 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">parallel.controller.heartmonitor</a><ul>
+<li><a class="reference internal" href="#module-parallel-controller-heartmonitor">Module: <tt class="docutils literal"><span class="pre">parallel.controller.heartmonitor</span></tt></a></li>
+<li><a class="reference internal" href="#classes">Classes</a><ul>
+<li><a class="reference internal" href="#heart"><tt class="docutils literal"><span class="pre">Heart</span></tt></a></li>
+<li><a class="reference internal" href="#heartmonitor"><tt class="docutils literal"><span class="pre">HeartMonitor</span></tt></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="IPython.parallel.controller.dictdb.html"
+                        title="previous chapter">parallel.controller.dictdb</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="IPython.parallel.controller.hub.html"
+                        title="next chapter">parallel.controller.hub</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/api/generated/IPython.parallel.controller.heartmonitor.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="parallel-controller-heartmonitor">
+<h1>parallel.controller.heartmonitor<a class="headerlink" href="#parallel-controller-heartmonitor" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-parallel-controller-heartmonitor">
+<h2>Module: <tt class="xref py py-mod docutils literal"><span class="pre">parallel.controller.heartmonitor</span></tt><a class="headerlink" href="#module-parallel-controller-heartmonitor" title="Permalink to this headline">¶</a></h2>
+<p>Inheritance diagram for <tt class="docutils literal"><span class="pre">IPython.parallel.controller.heartmonitor</span></tt>:</p>
+<img src="../../_images/inheritance73917a95a3.png" usemap="#inheritance73917a95a3" class="inheritance"/><map id="inheritance73917a95a3" name="inheritance73917a95a3">
+</map>
+<span class="target" id="module-IPython.parallel.controller.heartmonitor"></span><p>A multi-heart Heartbeat system using PUB and XREP sockets. pings are sent out on the PUB,
+and hearts are tracked based on their XREQ identities.</p>
+<p>Authors:</p>
+<ul class="simple">
+<li>Min RK</li>
+</ul>
+</div>
+<div class="section" id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="heart">
+<h3><a class="reference internal" href="#IPython.parallel.controller.heartmonitor.Heart" title="IPython.parallel.controller.heartmonitor.Heart"><tt class="xref py py-class docutils literal"><span class="pre">Heart</span></tt></a><a class="headerlink" href="#heart" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="IPython.parallel.controller.heartmonitor.Heart">
+<em class="property">class </em><tt class="descclassname">IPython.parallel.controller.heartmonitor.</tt><tt class="descname">Heart</tt><big>(</big><em>in_addr</em>, <em>out_addr</em>, <em>in_type=2</em>, <em>out_type=5</em>, <em>heart_id=None</em><big>)</big><a class="headerlink" href="#IPython.parallel.controller.heartmonitor.Heart" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></p>
+<p>A basic heart object for responding to a HeartMonitor.
+This is a simple wrapper with defaults for the most common
+Device model for responding to heartbeats.</p>
+<p>It simply builds a threadsafe zmq.FORWARDER Device, defaulting to using 
+SUB/XREQ for in/out.</p>
+<p>You can specify the XREQ&#8217;s IDENTITY via the optional heart_id argument.</p>
+<dl class="method">
+<dt id="IPython.parallel.controller.heartmonitor.Heart.__init__">
+<tt class="descname">__init__</tt><big>(</big><em>in_addr</em>, <em>out_addr</em>, <em>in_type=2</em>, <em>out_type=5</em>, <em>heart_id=None</em><big>)</big><a class="headerlink" href="#IPython.parallel.controller.heartmonitor.Heart.__init__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.controller.heartmonitor.Heart.device">
+<tt class="descname">device</tt><em class="property"> = None</em><a class="headerlink" href="#IPython.parallel.controller.heartmonitor.Heart.device" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.controller.heartmonitor.Heart.id">
+<tt class="descname">id</tt><em class="property"> = None</em><a class="headerlink" href="#IPython.parallel.controller.heartmonitor.Heart.id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.controller.heartmonitor.Heart.start">
+<tt class="descname">start</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.controller.heartmonitor.Heart.start" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="heartmonitor">
+<h3><a class="reference internal" href="#IPython.parallel.controller.heartmonitor.HeartMonitor" title="IPython.parallel.controller.heartmonitor.HeartMonitor"><tt class="xref py py-class docutils literal"><span class="pre">HeartMonitor</span></tt></a><a class="headerlink" href="#heartmonitor" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="IPython.parallel.controller.heartmonitor.HeartMonitor">
+<em class="property">class </em><tt class="descclassname">IPython.parallel.controller.heartmonitor.</tt><tt class="descname">HeartMonitor</tt><big>(</big><em>**kwargs</em><big>)</big><a class="headerlink" href="#IPython.parallel.controller.heartmonitor.HeartMonitor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="IPython.config.configurable.html#IPython.config.configurable.LoggingConfigurable" title="IPython.config.configurable.LoggingConfigurable"><tt class="xref py py-class docutils literal"><span class="pre">IPython.config.configurable.LoggingConfigurable</span></tt></a></p>
+<p>A basic HeartMonitor class
+pingstream: a PUB stream
+pongstream: an XREP stream
+period: the period of the heartbeat in milliseconds</p>
+<dl class="method">
+<dt id="IPython.parallel.controller.heartmonitor.HeartMonitor.__init__">
+<tt class="descname">__init__</tt><big>(</big><em>**kwargs</em><big>)</big><a class="headerlink" href="#IPython.parallel.controller.heartmonitor.HeartMonitor.__init__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.controller.heartmonitor.HeartMonitor.add_heart_failure_handler">
+<tt class="descname">add_heart_failure_handler</tt><big>(</big><em>handler</em><big>)</big><a class="headerlink" href="#IPython.parallel.controller.heartmonitor.HeartMonitor.add_heart_failure_handler" title="Permalink to this definition">¶</a></dt>
+<dd><p>add a new handler for heart failure</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.controller.heartmonitor.HeartMonitor.add_new_heart_handler">
+<tt class="descname">add_new_heart_handler</tt><big>(</big><em>handler</em><big>)</big><a class="headerlink" href="#IPython.parallel.controller.heartmonitor.HeartMonitor.add_new_heart_handler" title="Permalink to this definition">¶</a></dt>
+<dd><p>add a new handler for new hearts</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.controller.heartmonitor.HeartMonitor.beat">
+<tt class="descname">beat</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.controller.heartmonitor.HeartMonitor.beat" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.parallel.controller.heartmonitor.HeartMonitor.class_config_section">
+<em class="property">classmethod </em><tt class="descname">class_config_section</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.controller.heartmonitor.HeartMonitor.class_config_section" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the config class config section</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.parallel.controller.heartmonitor.HeartMonitor.class_get_help">
+<em class="property">classmethod </em><tt class="descname">class_get_help</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.controller.heartmonitor.HeartMonitor.class_get_help" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the help string for this class in ReST format.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.parallel.controller.heartmonitor.HeartMonitor.class_get_trait_help">
+<em class="property">classmethod </em><tt class="descname">class_get_trait_help</tt><big>(</big><em>trait</em><big>)</big><a class="headerlink" href="#IPython.parallel.controller.heartmonitor.HeartMonitor.class_get_trait_help" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the help string for a single trait.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.parallel.controller.heartmonitor.HeartMonitor.class_print_help">
+<em class="property">classmethod </em><tt class="descname">class_print_help</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.controller.heartmonitor.HeartMonitor.class_print_help" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the help string for a single trait and print it.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.parallel.controller.heartmonitor.HeartMonitor.class_trait_names">
+<em class="property">classmethod </em><tt class="descname">class_trait_names</tt><big>(</big><em>**metadata</em><big>)</big><a class="headerlink" href="#IPython.parallel.controller.heartmonitor.HeartMonitor.class_trait_names" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of all the names of this classes traits.</p>
+<p>This method is just like the <a class="reference internal" href="#IPython.parallel.controller.heartmonitor.HeartMonitor.trait_names" title="IPython.parallel.controller.heartmonitor.HeartMonitor.trait_names"><tt class="xref py py-meth docutils literal"><span class="pre">trait_names()</span></tt></a> method, but is unbound.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="IPython.parallel.controller.heartmonitor.HeartMonitor.class_traits">
+<em class="property">classmethod </em><tt class="descname">class_traits</tt><big>(</big><em>**metadata</em><big>)</big><a class="headerlink" href="#IPython.parallel.controller.heartmonitor.HeartMonitor.class_traits" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of all the traits of this class.</p>
+<p>This method is just like the <a class="reference internal" href="#IPython.parallel.controller.heartmonitor.HeartMonitor.traits" title="IPython.parallel.controller.heartmonitor.HeartMonitor.traits"><tt class="xref py py-meth docutils literal"><span class="pre">traits()</span></tt></a> method, but is unbound.</p>
+<p>The TraitTypes returned don&#8217;t know anything about the values
+that the various HasTrait&#8217;s instances are holding.</p>
+<p>This follows the same algorithm as traits does and does not allow
+for any simple way of specifying merely that a metadata name
+exists, but has any value.  This is because get_metadata returns
+None if a metadata key doesn&#8217;t exist.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.controller.heartmonitor.HeartMonitor.config">
+<tt class="descname">config</tt><a class="headerlink" href="#IPython.parallel.controller.heartmonitor.HeartMonitor.config" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait whose value must be an instance of a specified class.</p>
+<p>The value can also be an instance of a subclass of the specified class.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.controller.heartmonitor.HeartMonitor.created">
+<tt class="descname">created</tt><em class="property"> = None</em><a class="headerlink" href="#IPython.parallel.controller.heartmonitor.HeartMonitor.created" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.controller.heartmonitor.HeartMonitor.handle_heart_failure">
+<tt class="descname">handle_heart_failure</tt><big>(</big><em>heart</em><big>)</big><a class="headerlink" href="#IPython.parallel.controller.heartmonitor.HeartMonitor.handle_heart_failure" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.controller.heartmonitor.HeartMonitor.handle_new_heart">
+<tt class="descname">handle_new_heart</tt><big>(</big><em>heart</em><big>)</big><a class="headerlink" href="#IPython.parallel.controller.heartmonitor.HeartMonitor.handle_new_heart" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.controller.heartmonitor.HeartMonitor.handle_pong">
+<tt class="descname">handle_pong</tt><big>(</big><em>msg</em><big>)</big><a class="headerlink" href="#IPython.parallel.controller.heartmonitor.HeartMonitor.handle_pong" title="Permalink to this definition">¶</a></dt>
+<dd><p>a heart just beat</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.controller.heartmonitor.HeartMonitor.hearts">
+<tt class="descname">hearts</tt><a class="headerlink" href="#IPython.parallel.controller.heartmonitor.HeartMonitor.hearts" title="Permalink to this definition">¶</a></dt>
+<dd><p>An instance of a Python set.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.controller.heartmonitor.HeartMonitor.last_ping">
+<tt class="descname">last_ping</tt><a class="headerlink" href="#IPython.parallel.controller.heartmonitor.HeartMonitor.last_ping" title="Permalink to this definition">¶</a></dt>
+<dd><p>A casting version of the float trait.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.controller.heartmonitor.HeartMonitor.lifetime">
+<tt class="descname">lifetime</tt><a class="headerlink" href="#IPython.parallel.controller.heartmonitor.HeartMonitor.lifetime" title="Permalink to this definition">¶</a></dt>
+<dd><p>A casting version of the float trait.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.controller.heartmonitor.HeartMonitor.log">
+<tt class="descname">log</tt><a class="headerlink" href="#IPython.parallel.controller.heartmonitor.HeartMonitor.log" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait whose value must be an instance of a specified class.</p>
+<p>The value can also be an instance of a subclass of the specified class.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.controller.heartmonitor.HeartMonitor.loop">
+<tt class="descname">loop</tt><a class="headerlink" href="#IPython.parallel.controller.heartmonitor.HeartMonitor.loop" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait whose value must be an instance of a specified class.</p>
+<p>The value can also be an instance of a subclass of the specified class.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.controller.heartmonitor.HeartMonitor.on_probation">
+<tt class="descname">on_probation</tt><a class="headerlink" href="#IPython.parallel.controller.heartmonitor.HeartMonitor.on_probation" title="Permalink to this definition">¶</a></dt>
+<dd><p>An instance of a Python set.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.controller.heartmonitor.HeartMonitor.on_trait_change">
+<tt class="descname">on_trait_change</tt><big>(</big><em>handler</em>, <em>name=None</em>, <em>remove=False</em><big>)</big><a class="headerlink" href="#IPython.parallel.controller.heartmonitor.HeartMonitor.on_trait_change" title="Permalink to this definition">¶</a></dt>
+<dd><p>Setup a handler to be called when a trait changes.</p>
+<p>This is used to setup dynamic notifications of trait changes.</p>
+<p>Static handlers can be created by creating methods on a HasTraits
+subclass with the naming convention &#8216;_[traitname]_changed&#8217;.  Thus,
+to create static handler for the trait &#8216;a&#8217;, create the method
+_a_changed(self, name, old, new) (fewer arguments can be used, see
+below).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>handler</strong> : callable</p>
+<blockquote>
+<div><p>A callable that is called when a trait changes.  Its 
+signature can be handler(), handler(name), handler(name, new)
+or handler(name, old, new).</p>
+</div></blockquote>
+<p><strong>name</strong> : list, str, None</p>
+<blockquote>
+<div><p>If None, the handler will apply to all traits.  If a list
+of str, handler will apply to all names in the list.  If a
+str, the handler will apply just to that name.</p>
+</div></blockquote>
+<p><strong>remove</strong> : bool</p>
+<blockquote class="last">
+<div><p>If False (the default), then install the handler.  If True
+then unintall it.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.controller.heartmonitor.HeartMonitor.period">
+<tt class="descname">period</tt><a class="headerlink" href="#IPython.parallel.controller.heartmonitor.HeartMonitor.period" title="Permalink to this definition">¶</a></dt>
+<dd><p>A casting version of the float trait.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.controller.heartmonitor.HeartMonitor.pingstream">
+<tt class="descname">pingstream</tt><a class="headerlink" href="#IPython.parallel.controller.heartmonitor.HeartMonitor.pingstream" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait whose value must be an instance of a specified class.</p>
+<p>The value can also be an instance of a subclass of the specified class.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.controller.heartmonitor.HeartMonitor.pongstream">
+<tt class="descname">pongstream</tt><a class="headerlink" href="#IPython.parallel.controller.heartmonitor.HeartMonitor.pongstream" title="Permalink to this definition">¶</a></dt>
+<dd><p>A trait whose value must be an instance of a specified class.</p>
+<p>The value can also be an instance of a subclass of the specified class.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.controller.heartmonitor.HeartMonitor.responses">
+<tt class="descname">responses</tt><a class="headerlink" href="#IPython.parallel.controller.heartmonitor.HeartMonitor.responses" title="Permalink to this definition">¶</a></dt>
+<dd><p>An instance of a Python set.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.controller.heartmonitor.HeartMonitor.start">
+<tt class="descname">start</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.controller.heartmonitor.HeartMonitor.start" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.controller.heartmonitor.HeartMonitor.tic">
+<tt class="descname">tic</tt><a class="headerlink" href="#IPython.parallel.controller.heartmonitor.HeartMonitor.tic" title="Permalink to this definition">¶</a></dt>
+<dd><p>A casting version of the float trait.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.controller.heartmonitor.HeartMonitor.trait_metadata">
+<tt class="descname">trait_metadata</tt><big>(</big><em>traitname</em>, <em>key</em><big>)</big><a class="headerlink" href="#IPython.parallel.controller.heartmonitor.HeartMonitor.trait_metadata" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get metadata values for trait by key.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.controller.heartmonitor.HeartMonitor.trait_names">
+<tt class="descname">trait_names</tt><big>(</big><em>**metadata</em><big>)</big><a class="headerlink" href="#IPython.parallel.controller.heartmonitor.HeartMonitor.trait_names" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of all the names of this classes traits.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.controller.heartmonitor.HeartMonitor.traits">
+<tt class="descname">traits</tt><big>(</big><em>**metadata</em><big>)</big><a class="headerlink" href="#IPython.parallel.controller.heartmonitor.HeartMonitor.traits" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of all the traits of this class.</p>
+<p>The TraitTypes returned don&#8217;t know anything about the values
+that the various HasTrait&#8217;s instances are holding.</p>
+<p>This follows the same algorithm as traits does and does not allow
+for any simple way of specifying merely that a metadata name
+exists, but has any value.  This is because get_metadata returns
+None if a metadata key doesn&#8217;t exist.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="IPython.parallel.controller.hub.html" title="parallel.controller.hub"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="IPython.parallel.controller.dictdb.html" title="parallel.controller.dictdb"
+             >previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <li><a href="../../search.html">search</a>|&nbsp;</li>
+       <li><a href="../../index.html">documentation </a> &raquo;</li>
+
+          <li><a href="../index.html" >The IPython API</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2008, The IPython Development Team.
+      Last updated on Jul 31, 2011.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1pre.
+    </div>
+  </body>
+</html>

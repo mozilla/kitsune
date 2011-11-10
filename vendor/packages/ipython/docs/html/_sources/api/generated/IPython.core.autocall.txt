@@ -1,0 +1,54 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+core.autocall
+=============
+
+Module: :mod:`core.autocall`
+----------------------------
+Inheritance diagram for ``IPython.core.autocall``:
+
+.. inheritance-diagram:: IPython.core.autocall 
+   :parts: 3
+
+.. automodule:: IPython.core.autocall
+
+.. currentmodule:: IPython.core.autocall
+
+Classes
+-------
+
+:class:`ExitAutocall`
+~~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: ExitAutocall
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`IPyAutocall`
+~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: IPyAutocall
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`ZMQExitAutocall`
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: ZMQExitAutocall
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__

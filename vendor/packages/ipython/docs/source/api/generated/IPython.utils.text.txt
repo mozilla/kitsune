@@ -1,0 +1,112 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+utils.text
+==========
+
+Module: :mod:`utils.text`
+-------------------------
+Inheritance diagram for ``IPython.utils.text``:
+
+.. inheritance-diagram:: IPython.utils.text 
+   :parts: 3
+
+.. automodule:: IPython.utils.text
+
+.. currentmodule:: IPython.utils.text
+
+Classes
+-------
+
+:class:`EvalFormatter`
+~~~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: EvalFormatter
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`LSString`
+~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: LSString
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`SList`
+~~~~~~~~~~~~~~
+
+
+.. autoclass:: SList
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+Functions
+---------
+
+
+.. autofunction:: IPython.utils.text.dedent
+
+
+.. autofunction:: IPython.utils.text.dgrep
+
+
+.. autofunction:: IPython.utils.text.esc_quotes
+
+
+.. autofunction:: IPython.utils.text.format_screen
+
+
+.. autofunction:: IPython.utils.text.grep
+
+
+.. autofunction:: IPython.utils.text.idgrep
+
+
+.. autofunction:: IPython.utils.text.igrep
+
+
+.. autofunction:: IPython.utils.text.indent
+
+
+.. autofunction:: IPython.utils.text.list_strings
+
+
+.. autofunction:: IPython.utils.text.make_quoted_expr
+
+
+.. autofunction:: IPython.utils.text.marquee
+
+
+.. autofunction:: IPython.utils.text.native_line_ends
+
+
+.. autofunction:: IPython.utils.text.num_ini_spaces
+
+
+.. autofunction:: IPython.utils.text.qw
+
+
+.. autofunction:: IPython.utils.text.qw_lol
+
+
+.. autofunction:: IPython.utils.text.qwflat
+
+
+.. autofunction:: IPython.utils.text.unquote_ends
+
+
+.. autofunction:: IPython.utils.text.wrap_paragraphs
+

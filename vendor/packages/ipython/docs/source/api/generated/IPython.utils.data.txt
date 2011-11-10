@@ -1,0 +1,35 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+utils.data
+==========
+
+Module: :mod:`utils.data`
+-------------------------
+.. automodule:: IPython.utils.data
+
+.. currentmodule:: IPython.utils.data
+
+Functions
+---------
+
+
+.. autofunction:: IPython.utils.data.chop
+
+
+.. autofunction:: IPython.utils.data.flatten
+
+
+.. autofunction:: IPython.utils.data.get_slice
+
+
+.. autofunction:: IPython.utils.data.list2dict
+
+
+.. autofunction:: IPython.utils.data.list2dict2
+
+
+.. autofunction:: IPython.utils.data.sort_compare
+
+
+.. autofunction:: IPython.utils.data.uniq_stable
+

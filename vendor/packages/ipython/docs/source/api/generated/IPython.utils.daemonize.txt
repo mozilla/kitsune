@@ -1,0 +1,13 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+utils.daemonize
+===============
+
+Module: :mod:`utils.daemonize`
+------------------------------
+.. automodule:: IPython.utils.daemonize
+
+.. currentmodule:: IPython.utils.daemonize
+
+.. autofunction:: IPython.utils.daemonize.daemonize
+

@@ -1,0 +1,186 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Using IPython for interactive work &mdash; IPython 0.11 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.11',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="IPython 0.11 documentation" href="../index.html" />
+    <link rel="next" title="Introducing IPython" href="tutorial.html" />
+    <link rel="prev" title="Overview" href="../install/install.html" /> 
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<a href="../index.html"><img src="../_static/logo.png" border="0" alt="IPython Documentation"/></a>
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="tutorial.html" title="Introducing IPython"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../install/install.html" title="Overview"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">home</a>|&nbsp;</li>
+        <li><a href="../search.html">search</a>|&nbsp;</li>
+       <li><a href="../index.html">documentation </a> &raquo;</li>
+ 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="../install/install.html"
+                        title="previous chapter">Overview</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="tutorial.html"
+                        title="next chapter">Introducing IPython</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/interactive/index.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="using-ipython-for-interactive-work">
+<h1>Using IPython for interactive work<a class="headerlink" href="#using-ipython-for-interactive-work" title="Permalink to this headline">¶</a></h1>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="tutorial.html">Introducing IPython</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tutorial.html#tab-completion">Tab completion</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial.html#exploring-your-objects">Exploring your objects</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial.html#magic-functions">Magic functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial.html#history">History</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial.html#system-shell-commands">System shell commands</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial.html#configuration">Configuration</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="tips.html">IPython Tips &amp; Tricks</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tips.html#embed-ipython-in-your-programs">Embed IPython in your programs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tips.html#run-doctests">Run doctests</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tips.html#use-ipython-to-present-interactive-demos">Use IPython to present interactive demos</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tips.html#suppress-output">Suppress output</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tips.html#lightweight-version-control">Lightweight &#8216;version control&#8217;</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="reference.html">IPython reference</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="reference.html#command-line-usage">Command-line usage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference.html#interactive-use">Interactive use</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference.html#ipython-as-your-default-python-environment">IPython as your default Python environment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference.html#embedding-ipython">Embedding IPython</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference.html#using-the-python-debugger-pdb">Using the Python debugger (pdb)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference.html#extensions-for-syntax-processing">Extensions for syntax processing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference.html#gui-event-loop-support">GUI event loop support</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference.html#plotting-with-matplotlib">Plotting with matplotlib</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference.html#interactive-demos-with-ipython">Interactive demos with IPython</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="shell.html">IPython as a system shell</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="shell.html#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="shell.html#aliases">Aliases</a></li>
+<li class="toctree-l2"><a class="reference internal" href="shell.html#directory-management">Directory management</a></li>
+<li class="toctree-l2"><a class="reference internal" href="shell.html#enabled-extensions">Enabled extensions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="shell.html#prompt-customization">Prompt customization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="shell.html#string-lists">String lists</a></li>
+<li class="toctree-l2"><a class="reference internal" href="shell.html#real-world-example-remove-all-files-outside-version-control">Real world example: remove all files outside version control</a></li>
+<li class="toctree-l2"><a class="reference internal" href="shell.html#the-s-n-p-properties">The .s, .n, .p properties</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="qtconsole.html">A Qt Console for IPython</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="qtconsole.html#loadpy"><tt class="docutils literal"><span class="pre">%loadpy</span></tt></a></li>
+<li class="toctree-l2"><a class="reference internal" href="qtconsole.html#pylab">Pylab</a></li>
+<li class="toctree-l2"><a class="reference internal" href="qtconsole.html#saving-and-printing">Saving and Printing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="qtconsole.html#colors-and-highlighting">Colors and Highlighting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="qtconsole.html#fonts">Fonts</a></li>
+<li class="toctree-l2"><a class="reference internal" href="qtconsole.html#process-management">Process Management</a></li>
+<li class="toctree-l2"><a class="reference internal" href="qtconsole.html#qt-and-the-qtconsole">Qt and the QtConsole</a></li>
+<li class="toctree-l2"><a class="reference internal" href="qtconsole.html#regressions">Regressions</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="tutorial.html" title="Introducing IPython"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="../install/install.html" title="Overview"
+             >previous</a> |</li>
+        <li><a href="../index.html">home</a>|&nbsp;</li>
+        <li><a href="../search.html">search</a>|&nbsp;</li>
+       <li><a href="../index.html">documentation </a> &raquo;</li>
+ 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2008, The IPython Development Team.
+      Last updated on Jul 31, 2011.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1pre.
+    </div>
+  </body>
+</html>

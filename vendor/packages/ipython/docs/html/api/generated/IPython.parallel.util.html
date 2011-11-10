@@ -1,0 +1,517 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>parallel.util &mdash; IPython 0.11 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.11',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="IPython 0.11 documentation" href="../../index.html" />
+    <link rel="up" title="The IPython API" href="../index.html" />
+    <link rel="next" title="testing" href="IPython.testing.html" />
+    <link rel="prev" title="parallel.factory" href="IPython.parallel.factory.html" /> 
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<a href="../../index.html"><img src="../../_static/logo.png" border="0" alt="IPython Documentation"/></a>
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="IPython.testing.html" title="testing"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="IPython.parallel.factory.html" title="parallel.factory"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <li><a href="../../search.html">search</a>|&nbsp;</li>
+       <li><a href="../../index.html">documentation </a> &raquo;</li>
+
+          <li><a href="../index.html" accesskey="U">The IPython API</a> &raquo;</li> 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">parallel.util</a><ul>
+<li><a class="reference internal" href="#module-parallel-util">Module: <tt class="docutils literal"><span class="pre">parallel.util</span></tt></a></li>
+<li><a class="reference internal" href="#classes">Classes</a><ul>
+<li><a class="reference internal" href="#namespace"><tt class="docutils literal"><span class="pre">Namespace</span></tt></a></li>
+<li><a class="reference internal" href="#reversedict"><tt class="docutils literal"><span class="pre">ReverseDict</span></tt></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#functions">Functions</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="IPython.parallel.factory.html"
+                        title="previous chapter">parallel.factory</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="IPython.testing.html"
+                        title="next chapter">testing</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/api/generated/IPython.parallel.util.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="parallel-util">
+<h1>parallel.util<a class="headerlink" href="#parallel-util" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-parallel-util">
+<h2>Module: <tt class="xref py py-mod docutils literal"><span class="pre">parallel.util</span></tt><a class="headerlink" href="#module-parallel-util" title="Permalink to this headline">¶</a></h2>
+<p>Inheritance diagram for <tt class="docutils literal"><span class="pre">IPython.parallel.util</span></tt>:</p>
+<img src="../../_images/inheritancecfae40cb04.png" usemap="#inheritancecfae40cb04" class="inheritance"/><map id="inheritancecfae40cb04" name="inheritancecfae40cb04">
+</map>
+<span class="target" id="module-IPython.parallel.util"></span><p>some generic utilities for dealing with classes, urls, and serialization</p>
+<p>Authors:</p>
+<ul class="simple">
+<li>Min RK</li>
+</ul>
+</div>
+<div class="section" id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="namespace">
+<h3><a class="reference internal" href="#IPython.parallel.util.Namespace" title="IPython.parallel.util.Namespace"><tt class="xref py py-class docutils literal"><span class="pre">Namespace</span></tt></a><a class="headerlink" href="#namespace" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="IPython.parallel.util.Namespace">
+<em class="property">class </em><tt class="descclassname">IPython.parallel.util.</tt><tt class="descname">Namespace</tt><a class="headerlink" href="#IPython.parallel.util.Namespace" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">dict</span></tt></p>
+<p>Subclass of dict for attribute access to keys.</p>
+<dl class="method">
+<dt id="IPython.parallel.util.Namespace.__init__">
+<tt class="descname">__init__</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.parallel.util.Namespace.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>x.__init__(...) initializes x; see x.__class__.__doc__ for signature</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.util.Namespace.clear">
+<tt class="descname">clear</tt><a class="headerlink" href="#IPython.parallel.util.Namespace.clear" title="Permalink to this definition">¶</a></dt>
+<dd><p>D.clear() -&gt; None.  Remove all items from D.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.util.Namespace.copy">
+<tt class="descname">copy</tt><a class="headerlink" href="#IPython.parallel.util.Namespace.copy" title="Permalink to this definition">¶</a></dt>
+<dd><p>D.copy() -&gt; a shallow copy of D</p>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="IPython.parallel.util.Namespace.fromkeys">
+<em class="property">static </em><tt class="descname">fromkeys</tt><big>(</big><em>S</em><span class="optional">[</span>, <em>v</em><span class="optional">]</span><big>)</big> &rarr; New dict with keys from S and values equal to v.<a class="headerlink" href="#IPython.parallel.util.Namespace.fromkeys" title="Permalink to this definition">¶</a></dt>
+<dd><p>v defaults to None.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.util.Namespace.get">
+<tt class="descname">get</tt><a class="headerlink" href="#IPython.parallel.util.Namespace.get" title="Permalink to this definition">¶</a></dt>
+<dd><p>D.get(k[,d]) -&gt; D[k] if k in D, else d.  d defaults to None.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.util.Namespace.has_key">
+<tt class="descname">has_key</tt><a class="headerlink" href="#IPython.parallel.util.Namespace.has_key" title="Permalink to this definition">¶</a></dt>
+<dd><p>D.has_key(k) -&gt; True if D has a key k, else False</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.util.Namespace.items">
+<tt class="descname">items</tt><a class="headerlink" href="#IPython.parallel.util.Namespace.items" title="Permalink to this definition">¶</a></dt>
+<dd><p>D.items() -&gt; list of D&#8217;s (key, value) pairs, as 2-tuples</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.util.Namespace.iteritems">
+<tt class="descname">iteritems</tt><a class="headerlink" href="#IPython.parallel.util.Namespace.iteritems" title="Permalink to this definition">¶</a></dt>
+<dd><p>D.iteritems() -&gt; an iterator over the (key, value) items of D</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.util.Namespace.iterkeys">
+<tt class="descname">iterkeys</tt><a class="headerlink" href="#IPython.parallel.util.Namespace.iterkeys" title="Permalink to this definition">¶</a></dt>
+<dd><p>D.iterkeys() -&gt; an iterator over the keys of D</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.util.Namespace.itervalues">
+<tt class="descname">itervalues</tt><a class="headerlink" href="#IPython.parallel.util.Namespace.itervalues" title="Permalink to this definition">¶</a></dt>
+<dd><p>D.itervalues() -&gt; an iterator over the values of D</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.util.Namespace.keys">
+<tt class="descname">keys</tt><a class="headerlink" href="#IPython.parallel.util.Namespace.keys" title="Permalink to this definition">¶</a></dt>
+<dd><p>D.keys() -&gt; list of D&#8217;s keys</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.util.Namespace.pop">
+<tt class="descname">pop</tt><a class="headerlink" href="#IPython.parallel.util.Namespace.pop" title="Permalink to this definition">¶</a></dt>
+<dd><p>D.pop(k[,d]) -&gt; v, remove specified key and return the corresponding value.
+If key is not found, d is returned if given, otherwise KeyError is raised</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.util.Namespace.popitem">
+<tt class="descname">popitem</tt><a class="headerlink" href="#IPython.parallel.util.Namespace.popitem" title="Permalink to this definition">¶</a></dt>
+<dd><p>D.popitem() -&gt; (k, v), remove and return some (key, value) pair as a
+2-tuple; but raise KeyError if D is empty.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.util.Namespace.setdefault">
+<tt class="descname">setdefault</tt><a class="headerlink" href="#IPython.parallel.util.Namespace.setdefault" title="Permalink to this definition">¶</a></dt>
+<dd><p>D.setdefault(k[,d]) -&gt; D.get(k,d), also set D[k]=d if k not in D</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.util.Namespace.update">
+<tt class="descname">update</tt><a class="headerlink" href="#IPython.parallel.util.Namespace.update" title="Permalink to this definition">¶</a></dt>
+<dd><p>D.update(E, <a href="#id1"><span class="problematic" id="id2">**</span></a>F) -&gt; None.  Update D from dict/iterable E and F.
+If E has a .keys() method, does:     for k in E: D[k] = E[k]
+If E lacks .keys() method, does:     for (k, v) in E: D[k] = v
+In either case, this is followed by: for k in F: D[k] = F[k]</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.util.Namespace.values">
+<tt class="descname">values</tt><a class="headerlink" href="#IPython.parallel.util.Namespace.values" title="Permalink to this definition">¶</a></dt>
+<dd><p>D.values() -&gt; list of D&#8217;s values</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="reversedict">
+<h3><a class="reference internal" href="#IPython.parallel.util.ReverseDict" title="IPython.parallel.util.ReverseDict"><tt class="xref py py-class docutils literal"><span class="pre">ReverseDict</span></tt></a><a class="headerlink" href="#reversedict" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="IPython.parallel.util.ReverseDict">
+<em class="property">class </em><tt class="descclassname">IPython.parallel.util.</tt><tt class="descname">ReverseDict</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#IPython.parallel.util.ReverseDict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">dict</span></tt></p>
+<p>simple double-keyed subset of dict methods.</p>
+<dl class="method">
+<dt id="IPython.parallel.util.ReverseDict.__init__">
+<tt class="descname">__init__</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#IPython.parallel.util.ReverseDict.__init__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.util.ReverseDict.clear">
+<tt class="descname">clear</tt><a class="headerlink" href="#IPython.parallel.util.ReverseDict.clear" title="Permalink to this definition">¶</a></dt>
+<dd><p>D.clear() -&gt; None.  Remove all items from D.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.util.ReverseDict.copy">
+<tt class="descname">copy</tt><a class="headerlink" href="#IPython.parallel.util.ReverseDict.copy" title="Permalink to this definition">¶</a></dt>
+<dd><p>D.copy() -&gt; a shallow copy of D</p>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="IPython.parallel.util.ReverseDict.fromkeys">
+<em class="property">static </em><tt class="descname">fromkeys</tt><big>(</big><em>S</em><span class="optional">[</span>, <em>v</em><span class="optional">]</span><big>)</big> &rarr; New dict with keys from S and values equal to v.<a class="headerlink" href="#IPython.parallel.util.ReverseDict.fromkeys" title="Permalink to this definition">¶</a></dt>
+<dd><p>v defaults to None.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.util.ReverseDict.get">
+<tt class="descname">get</tt><big>(</big><em>key</em>, <em>default=None</em><big>)</big><a class="headerlink" href="#IPython.parallel.util.ReverseDict.get" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.util.ReverseDict.has_key">
+<tt class="descname">has_key</tt><a class="headerlink" href="#IPython.parallel.util.ReverseDict.has_key" title="Permalink to this definition">¶</a></dt>
+<dd><p>D.has_key(k) -&gt; True if D has a key k, else False</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.util.ReverseDict.items">
+<tt class="descname">items</tt><a class="headerlink" href="#IPython.parallel.util.ReverseDict.items" title="Permalink to this definition">¶</a></dt>
+<dd><p>D.items() -&gt; list of D&#8217;s (key, value) pairs, as 2-tuples</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.util.ReverseDict.iteritems">
+<tt class="descname">iteritems</tt><a class="headerlink" href="#IPython.parallel.util.ReverseDict.iteritems" title="Permalink to this definition">¶</a></dt>
+<dd><p>D.iteritems() -&gt; an iterator over the (key, value) items of D</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.util.ReverseDict.iterkeys">
+<tt class="descname">iterkeys</tt><a class="headerlink" href="#IPython.parallel.util.ReverseDict.iterkeys" title="Permalink to this definition">¶</a></dt>
+<dd><p>D.iterkeys() -&gt; an iterator over the keys of D</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.util.ReverseDict.itervalues">
+<tt class="descname">itervalues</tt><a class="headerlink" href="#IPython.parallel.util.ReverseDict.itervalues" title="Permalink to this definition">¶</a></dt>
+<dd><p>D.itervalues() -&gt; an iterator over the values of D</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.util.ReverseDict.keys">
+<tt class="descname">keys</tt><a class="headerlink" href="#IPython.parallel.util.ReverseDict.keys" title="Permalink to this definition">¶</a></dt>
+<dd><p>D.keys() -&gt; list of D&#8217;s keys</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.parallel.util.ReverseDict.pop">
+<tt class="descname">pop</tt><big>(</big><em>key</em><big>)</big><a class="headerlink" href="#IPython.parallel.util.ReverseDict.pop" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.util.ReverseDict.popitem">
+<tt class="descname">popitem</tt><a class="headerlink" href="#IPython.parallel.util.ReverseDict.popitem" title="Permalink to this definition">¶</a></dt>
+<dd><p>D.popitem() -&gt; (k, v), remove and return some (key, value) pair as a
+2-tuple; but raise KeyError if D is empty.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.util.ReverseDict.setdefault">
+<tt class="descname">setdefault</tt><a class="headerlink" href="#IPython.parallel.util.ReverseDict.setdefault" title="Permalink to this definition">¶</a></dt>
+<dd><p>D.setdefault(k[,d]) -&gt; D.get(k,d), also set D[k]=d if k not in D</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.util.ReverseDict.update">
+<tt class="descname">update</tt><a class="headerlink" href="#IPython.parallel.util.ReverseDict.update" title="Permalink to this definition">¶</a></dt>
+<dd><p>D.update(E, <a href="#id3"><span class="problematic" id="id4">**</span></a>F) -&gt; None.  Update D from dict/iterable E and F.
+If E has a .keys() method, does:     for k in E: D[k] = E[k]
+If E lacks .keys() method, does:     for (k, v) in E: D[k] = v
+In either case, this is followed by: for k in F: D[k] = F[k]</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.parallel.util.ReverseDict.values">
+<tt class="descname">values</tt><a class="headerlink" href="#IPython.parallel.util.ReverseDict.values" title="Permalink to this definition">¶</a></dt>
+<dd><p>D.values() -&gt; list of D&#8217;s values</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="IPython.parallel.util.asbytes">
+<tt class="descclassname">IPython.parallel.util.</tt><tt class="descname">asbytes</tt><big>(</big><em>s</em><big>)</big><a class="headerlink" href="#IPython.parallel.util.asbytes" title="Permalink to this definition">¶</a></dt>
+<dd><p>ensure that an object is ascii bytes</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="IPython.parallel.util.connect_engine_logger">
+<tt class="descclassname">IPython.parallel.util.</tt><tt class="descname">connect_engine_logger</tt><big>(</big><em>context</em>, <em>iface</em>, <em>engine</em>, <em>loglevel=10</em><big>)</big><a class="headerlink" href="#IPython.parallel.util.connect_engine_logger" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="IPython.parallel.util.connect_logger">
+<tt class="descclassname">IPython.parallel.util.</tt><tt class="descname">connect_logger</tt><big>(</big><em>logname</em>, <em>context</em>, <em>iface</em>, <em>root='ip'</em>, <em>loglevel=10</em><big>)</big><a class="headerlink" href="#IPython.parallel.util.connect_logger" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="IPython.parallel.util.disambiguate_ip_address">
+<tt class="descclassname">IPython.parallel.util.</tt><tt class="descname">disambiguate_ip_address</tt><big>(</big><em>ip</em>, <em>location=None</em><big>)</big><a class="headerlink" href="#IPython.parallel.util.disambiguate_ip_address" title="Permalink to this definition">¶</a></dt>
+<dd><p>turn multi-ip interfaces &#8216;0.0.0.0&#8217; and &#8216;*&#8217; into connectable
+ones, based on the location (default interpretation of location is localhost).</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="IPython.parallel.util.disambiguate_url">
+<tt class="descclassname">IPython.parallel.util.</tt><tt class="descname">disambiguate_url</tt><big>(</big><em>url</em>, <em>location=None</em><big>)</big><a class="headerlink" href="#IPython.parallel.util.disambiguate_url" title="Permalink to this definition">¶</a></dt>
+<dd><p>turn multi-ip interfaces &#8216;0.0.0.0&#8217; and &#8216;*&#8217; into connectable
+ones, based on the location (default interpretation is localhost).</p>
+<p>This is for zeromq urls, such as <a class="reference external" href="tcp://">tcp://</a><a href="#id5"><span class="problematic" id="id6">*</span></a>:10101.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="IPython.parallel.util.generate_exec_key">
+<tt class="descclassname">IPython.parallel.util.</tt><tt class="descname">generate_exec_key</tt><big>(</big><em>keyfile</em><big>)</big><a class="headerlink" href="#IPython.parallel.util.generate_exec_key" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="IPython.parallel.util.integer_loglevel">
+<tt class="descclassname">IPython.parallel.util.</tt><tt class="descname">integer_loglevel</tt><big>(</big><em>loglevel</em><big>)</big><a class="headerlink" href="#IPython.parallel.util.integer_loglevel" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="IPython.parallel.util.interactive">
+<tt class="descclassname">IPython.parallel.util.</tt><tt class="descname">interactive</tt><big>(</big><em>f</em><big>)</big><a class="headerlink" href="#IPython.parallel.util.interactive" title="Permalink to this definition">¶</a></dt>
+<dd><p>decorator for making functions appear as interactively defined.
+This results in the function being linked to the user_ns as globals()
+instead of the module globals().</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="IPython.parallel.util.local_logger">
+<tt class="descclassname">IPython.parallel.util.</tt><tt class="descname">local_logger</tt><big>(</big><em>logname</em>, <em>loglevel=10</em><big>)</big><a class="headerlink" href="#IPython.parallel.util.local_logger" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="IPython.parallel.util.pack_apply_message">
+<tt class="descclassname">IPython.parallel.util.</tt><tt class="descname">pack_apply_message</tt><big>(</big><em>f</em>, <em>args</em>, <em>kwargs</em>, <em>threshold=6.3999999999999997e-05</em><big>)</big><a class="headerlink" href="#IPython.parallel.util.pack_apply_message" title="Permalink to this definition">¶</a></dt>
+<dd><p>pack up a function, args, and kwargs to be sent over the wire
+as a series of buffers. Any object whose data is larger than <cite>threshold</cite>
+will not have their data copied (currently only numpy arrays support zero-copy)</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="IPython.parallel.util.select_random_ports">
+<tt class="descclassname">IPython.parallel.util.</tt><tt class="descname">select_random_ports</tt><big>(</big><em>n</em><big>)</big><a class="headerlink" href="#IPython.parallel.util.select_random_ports" title="Permalink to this definition">¶</a></dt>
+<dd><p>Selects and return n random ports that are available.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="IPython.parallel.util.serialize_object">
+<tt class="descclassname">IPython.parallel.util.</tt><tt class="descname">serialize_object</tt><big>(</big><em>obj</em>, <em>threshold=6.3999999999999997e-05</em><big>)</big><a class="headerlink" href="#IPython.parallel.util.serialize_object" title="Permalink to this definition">¶</a></dt>
+<dd><p>Serialize an object into a list of sendable buffers.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>obj</strong> : object</p>
+<blockquote>
+<div><p>The object to be serialized</p>
+</div></blockquote>
+<p><strong>threshold</strong> : float</p>
+<blockquote>
+<div><p>The threshold for not double-pickling the content.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns :</th><td class="field-body"><p class="first"><strong>(&#8216;pmd&#8217;, [bufs]) :</strong> :</p>
+<blockquote class="last">
+<div><p>where pmd is the pickled metadata wrapper,
+bufs is a list of data buffers</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="IPython.parallel.util.signal_children">
+<tt class="descclassname">IPython.parallel.util.</tt><tt class="descname">signal_children</tt><big>(</big><em>children</em><big>)</big><a class="headerlink" href="#IPython.parallel.util.signal_children" title="Permalink to this definition">¶</a></dt>
+<dd><p>Relay interupt/term signals to children, for more solid process cleanup.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="IPython.parallel.util.split_url">
+<tt class="descclassname">IPython.parallel.util.</tt><tt class="descname">split_url</tt><big>(</big><em>url</em><big>)</big><a class="headerlink" href="#IPython.parallel.util.split_url" title="Permalink to this definition">¶</a></dt>
+<dd><p>split a zmq url (<a class="reference external" href="tcp://ip:port">tcp://ip:port</a>) into (&#8216;tcp&#8217;,&#8217;ip&#8217;,&#8217;port&#8217;).</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="IPython.parallel.util.unpack_apply_message">
+<tt class="descclassname">IPython.parallel.util.</tt><tt class="descname">unpack_apply_message</tt><big>(</big><em>bufs</em>, <em>g=None</em>, <em>copy=True</em><big>)</big><a class="headerlink" href="#IPython.parallel.util.unpack_apply_message" title="Permalink to this definition">¶</a></dt>
+<dd><p>unpack f,args,kwargs from buffers packed by pack_apply_message()
+Returns: original f,args,kwargs</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="IPython.parallel.util.unserialize_object">
+<tt class="descclassname">IPython.parallel.util.</tt><tt class="descname">unserialize_object</tt><big>(</big><em>bufs</em><big>)</big><a class="headerlink" href="#IPython.parallel.util.unserialize_object" title="Permalink to this definition">¶</a></dt>
+<dd><p>reconstruct an object serialized by serialize_object from data buffers.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="IPython.parallel.util.validate_url">
+<tt class="descclassname">IPython.parallel.util.</tt><tt class="descname">validate_url</tt><big>(</big><em>url</em><big>)</big><a class="headerlink" href="#IPython.parallel.util.validate_url" title="Permalink to this definition">¶</a></dt>
+<dd><p>validate a url for zeromq</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="IPython.parallel.util.validate_url_container">
+<tt class="descclassname">IPython.parallel.util.</tt><tt class="descname">validate_url_container</tt><big>(</big><em>container</em><big>)</big><a class="headerlink" href="#IPython.parallel.util.validate_url_container" title="Permalink to this definition">¶</a></dt>
+<dd><p>validate a potentially nested collection of urls.</p>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="IPython.testing.html" title="testing"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="IPython.parallel.factory.html" title="parallel.factory"
+             >previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <li><a href="../../search.html">search</a>|&nbsp;</li>
+       <li><a href="../../index.html">documentation </a> &raquo;</li>
+
+          <li><a href="../index.html" >The IPython API</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2008, The IPython Development Team.
+      Last updated on Jul 31, 2011.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1pre.
+    </div>
+  </body>
+</html>

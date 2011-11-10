@@ -1,0 +1,255 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>utils.pickleutil &mdash; IPython 0.11 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.11',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="IPython 0.11 documentation" href="../../index.html" />
+    <link rel="up" title="The IPython API" href="../index.html" />
+    <link rel="next" title="utils.process" href="IPython.utils.process.html" />
+    <link rel="prev" title="utils.pickleshare" href="IPython.utils.pickleshare.html" /> 
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<a href="../../index.html"><img src="../../_static/logo.png" border="0" alt="IPython Documentation"/></a>
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="IPython.utils.process.html" title="utils.process"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="IPython.utils.pickleshare.html" title="utils.pickleshare"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <li><a href="../../search.html">search</a>|&nbsp;</li>
+       <li><a href="../../index.html">documentation </a> &raquo;</li>
+
+          <li><a href="../index.html" accesskey="U">The IPython API</a> &raquo;</li> 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">utils.pickleutil</a><ul>
+<li><a class="reference internal" href="#module-utils-pickleutil">Module: <tt class="docutils literal"><span class="pre">utils.pickleutil</span></tt></a></li>
+<li><a class="reference internal" href="#classes">Classes</a><ul>
+<li><a class="reference internal" href="#cannedfunction"><tt class="docutils literal"><span class="pre">CannedFunction</span></tt></a></li>
+<li><a class="reference internal" href="#cannedobject"><tt class="docutils literal"><span class="pre">CannedObject</span></tt></a></li>
+<li><a class="reference internal" href="#reference"><tt class="docutils literal"><span class="pre">Reference</span></tt></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#functions">Functions</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="IPython.utils.pickleshare.html"
+                        title="previous chapter">utils.pickleshare</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="IPython.utils.process.html"
+                        title="next chapter">utils.process</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/api/generated/IPython.utils.pickleutil.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="utils-pickleutil">
+<h1>utils.pickleutil<a class="headerlink" href="#utils-pickleutil" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-utils-pickleutil">
+<h2>Module: <tt class="xref py py-mod docutils literal"><span class="pre">utils.pickleutil</span></tt><a class="headerlink" href="#module-utils-pickleutil" title="Permalink to this headline">¶</a></h2>
+<p>Inheritance diagram for <tt class="docutils literal"><span class="pre">IPython.utils.pickleutil</span></tt>:</p>
+<img src="../../_images/inheritance0af87a5d03.png" usemap="#inheritance0af87a5d03" class="inheritance"/><map id="inheritance0af87a5d03" name="inheritance0af87a5d03">
+</map>
+<span class="target" id="module-IPython.utils.pickleutil"></span><p>Pickle related utilities. Perhaps this should be called &#8216;can&#8217;.</p>
+</div>
+<div class="section" id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="cannedfunction">
+<h3><a class="reference internal" href="#IPython.utils.pickleutil.CannedFunction" title="IPython.utils.pickleutil.CannedFunction"><tt class="xref py py-class docutils literal"><span class="pre">CannedFunction</span></tt></a><a class="headerlink" href="#cannedfunction" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="IPython.utils.pickleutil.CannedFunction">
+<em class="property">class </em><tt class="descclassname">IPython.utils.pickleutil.</tt><tt class="descname">CannedFunction</tt><big>(</big><em>f</em><big>)</big><a class="headerlink" href="#IPython.utils.pickleutil.CannedFunction" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#IPython.utils.pickleutil.CannedObject" title="IPython.utils.pickleutil.CannedObject"><tt class="xref py py-class docutils literal"><span class="pre">IPython.utils.pickleutil.CannedObject</span></tt></a></p>
+<dl class="method">
+<dt id="IPython.utils.pickleutil.CannedFunction.__init__">
+<tt class="descname">__init__</tt><big>(</big><em>f</em><big>)</big><a class="headerlink" href="#IPython.utils.pickleutil.CannedFunction.__init__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IPython.utils.pickleutil.CannedFunction.getObject">
+<tt class="descname">getObject</tt><big>(</big><em>g=None</em><big>)</big><a class="headerlink" href="#IPython.utils.pickleutil.CannedFunction.getObject" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="cannedobject">
+<h3><a class="reference internal" href="#IPython.utils.pickleutil.CannedObject" title="IPython.utils.pickleutil.CannedObject"><tt class="xref py py-class docutils literal"><span class="pre">CannedObject</span></tt></a><a class="headerlink" href="#cannedobject" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="IPython.utils.pickleutil.CannedObject">
+<em class="property">class </em><tt class="descclassname">IPython.utils.pickleutil.</tt><tt class="descname">CannedObject</tt><big>(</big><em>obj</em>, <em>keys=</em><span class="optional">[</span><span class="optional">]</span><big>)</big><a class="headerlink" href="#IPython.utils.pickleutil.CannedObject" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></p>
+<dl class="method">
+<dt id="IPython.utils.pickleutil.CannedObject.__init__">
+<tt class="descname">__init__</tt><big>(</big><em>obj</em>, <em>keys=</em><span class="optional">[</span><span class="optional">]</span><big>)</big><a class="headerlink" href="#IPython.utils.pickleutil.CannedObject.__init__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IPython.utils.pickleutil.CannedObject.getObject">
+<tt class="descname">getObject</tt><big>(</big><em>g=None</em><big>)</big><a class="headerlink" href="#IPython.utils.pickleutil.CannedObject.getObject" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="reference">
+<h3><a class="reference internal" href="#IPython.utils.pickleutil.Reference" title="IPython.utils.pickleutil.Reference"><tt class="xref py py-class docutils literal"><span class="pre">Reference</span></tt></a><a class="headerlink" href="#reference" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="IPython.utils.pickleutil.Reference">
+<em class="property">class </em><tt class="descclassname">IPython.utils.pickleutil.</tt><tt class="descname">Reference</tt><big>(</big><em>name</em><big>)</big><a class="headerlink" href="#IPython.utils.pickleutil.Reference" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#IPython.utils.pickleutil.CannedObject" title="IPython.utils.pickleutil.CannedObject"><tt class="xref py py-class docutils literal"><span class="pre">IPython.utils.pickleutil.CannedObject</span></tt></a></p>
+<p>object for wrapping a remote reference by name.</p>
+<dl class="method">
+<dt id="IPython.utils.pickleutil.Reference.__init__">
+<tt class="descname">__init__</tt><big>(</big><em>name</em><big>)</big><a class="headerlink" href="#IPython.utils.pickleutil.Reference.__init__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IPython.utils.pickleutil.Reference.getObject">
+<tt class="descname">getObject</tt><big>(</big><em>g=None</em><big>)</big><a class="headerlink" href="#IPython.utils.pickleutil.Reference.getObject" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="IPython.utils.pickleutil.can">
+<tt class="descclassname">IPython.utils.pickleutil.</tt><tt class="descname">can</tt><big>(</big><em>obj</em><big>)</big><a class="headerlink" href="#IPython.utils.pickleutil.can" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="IPython.utils.pickleutil.canDict">
+<tt class="descclassname">IPython.utils.pickleutil.</tt><tt class="descname">canDict</tt><big>(</big><em>obj</em><big>)</big><a class="headerlink" href="#IPython.utils.pickleutil.canDict" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="IPython.utils.pickleutil.canSequence">
+<tt class="descclassname">IPython.utils.pickleutil.</tt><tt class="descname">canSequence</tt><big>(</big><em>obj</em><big>)</big><a class="headerlink" href="#IPython.utils.pickleutil.canSequence" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="IPython.utils.pickleutil.rebindFunctionGlobals">
+<tt class="descclassname">IPython.utils.pickleutil.</tt><tt class="descname">rebindFunctionGlobals</tt><big>(</big><em>f</em>, <em>glbls</em><big>)</big><a class="headerlink" href="#IPython.utils.pickleutil.rebindFunctionGlobals" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="IPython.utils.pickleutil.uncan">
+<tt class="descclassname">IPython.utils.pickleutil.</tt><tt class="descname">uncan</tt><big>(</big><em>obj</em>, <em>g=None</em><big>)</big><a class="headerlink" href="#IPython.utils.pickleutil.uncan" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="IPython.utils.pickleutil.uncanDict">
+<tt class="descclassname">IPython.utils.pickleutil.</tt><tt class="descname">uncanDict</tt><big>(</big><em>obj</em>, <em>g=None</em><big>)</big><a class="headerlink" href="#IPython.utils.pickleutil.uncanDict" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="IPython.utils.pickleutil.uncanSequence">
+<tt class="descclassname">IPython.utils.pickleutil.</tt><tt class="descname">uncanSequence</tt><big>(</big><em>obj</em>, <em>g=None</em><big>)</big><a class="headerlink" href="#IPython.utils.pickleutil.uncanSequence" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="IPython.utils.process.html" title="utils.process"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="IPython.utils.pickleshare.html" title="utils.pickleshare"
+             >previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <li><a href="../../search.html">search</a>|&nbsp;</li>
+       <li><a href="../../index.html">documentation </a> &raquo;</li>
+
+          <li><a href="../index.html" >The IPython API</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2008, The IPython Development Team.
+      Last updated on Jul 31, 2011.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1pre.
+    </div>
+  </body>
+</html>

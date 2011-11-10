@@ -1,0 +1,155 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>IPython GUI Support Notes &mdash; IPython 0.11 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.11',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="IPython 0.11 documentation" href="../index.html" /> 
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<a href="../index.html"><img src="../_static/logo.png" border="0" alt="IPython Documentation"/></a>
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">home</a>|&nbsp;</li>
+        <li><a href="../search.html">search</a>|&nbsp;</li>
+       <li><a href="../index.html">documentation </a> &raquo;</li>
+ 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/development/inputhook_app.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="ipython-gui-support-notes">
+<h1>IPython GUI Support Notes<a class="headerlink" href="#ipython-gui-support-notes" title="Permalink to this headline">¶</a></h1>
+<p>IPython allows GUI event loops to be run in an interactive IPython session.
+This is done using Python&#8217;s PyOS_InputHook hook which Python calls
+when the <tt class="xref py py-func docutils literal"><span class="pre">raw_input()</span></tt> function is called and waiting for user input.
+IPython has versions of this hook for wx, pyqt4 and pygtk.</p>
+<p>When a GUI program is used interactively within IPython, the event loop of
+the GUI should <em>not</em> be started. This is because, the PyOS_Inputhook itself
+is responsible for iterating the GUI event loop.</p>
+<p>IPython has facilities for installing the needed input hook for each GUI
+toolkit and for creating the needed main GUI application object. Usually,
+these main application objects should be created only once and for some
+GUI toolkits, special options have to be passed to the application object
+to enable it to function properly in IPython.</p>
+<p>We need to answer the following questions:</p>
+<ul class="simple">
+<li>Who is responsible for creating the main GUI application object, IPython
+or third parties (matplotlib, enthought.traits, etc.)?</li>
+<li>What is the proper way for third party code to detect if a GUI application
+object has already been created?  If one has been created, how should
+the existing instance be retrieved?</li>
+<li>In a GUI application object has been created, how should third party code
+detect if the GUI event loop is running. It is not sufficient to call the
+relevant function methods in the GUI toolkits (like <tt class="docutils literal"><span class="pre">IsMainLoopRunning</span></tt>)
+because those don&#8217;t know if the GUI event loop is running through the
+input hook.</li>
+<li>We might need a way for third party code to determine if it is running
+in IPython or not.  Currently, the only way of running GUI code in IPython
+is by using the input hook, but eventually, GUI based versions of IPython
+will allow the GUI event loop in the more traditional manner. We will need
+a way for third party code to distinguish between these two cases.</li>
+</ul>
+<p>Here is some sample code I have been using to debug this issue:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">matplotlib</span> <span class="kn">import</span> <span class="n">pyplot</span> <span class="k">as</span> <span class="n">plt</span>
+
+<span class="kn">from</span> <span class="nn">enthought.traits</span> <span class="kn">import</span> <span class="n">api</span> <span class="k">as</span> <span class="n">traits</span>
+
+<span class="k">class</span> <span class="nc">Foo</span><span class="p">(</span><span class="n">traits</span><span class="o">.</span><span class="n">HasTraits</span><span class="p">):</span>
+    <span class="n">a</span> <span class="o">=</span> <span class="n">traits</span><span class="o">.</span><span class="n">Float</span><span class="p">()</span>
+
+<span class="n">f</span> <span class="o">=</span> <span class="n">Foo</span><span class="p">()</span>
+<span class="n">f</span><span class="o">.</span><span class="n">configure_traits</span><span class="p">()</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">home</a>|&nbsp;</li>
+        <li><a href="../search.html">search</a>|&nbsp;</li>
+       <li><a href="../index.html">documentation </a> &raquo;</li>
+ 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2008, The IPython Development Team.
+      Last updated on Jul 31, 2011.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1pre.
+    </div>
+  </body>
+</html>

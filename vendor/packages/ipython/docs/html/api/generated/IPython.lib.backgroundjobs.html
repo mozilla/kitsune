@@ -1,0 +1,674 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>lib.backgroundjobs &mdash; IPython 0.11 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.11',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="IPython 0.11 documentation" href="../../index.html" />
+    <link rel="up" title="The IPython API" href="../index.html" />
+    <link rel="next" title="lib.clipboard" href="IPython.lib.clipboard.html" />
+    <link rel="prev" title="core.ultratb" href="IPython.core.ultratb.html" /> 
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<a href="../../index.html"><img src="../../_static/logo.png" border="0" alt="IPython Documentation"/></a>
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="IPython.lib.clipboard.html" title="lib.clipboard"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="IPython.core.ultratb.html" title="core.ultratb"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <li><a href="../../search.html">search</a>|&nbsp;</li>
+       <li><a href="../../index.html">documentation </a> &raquo;</li>
+
+          <li><a href="../index.html" accesskey="U">The IPython API</a> &raquo;</li> 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">lib.backgroundjobs</a><ul>
+<li><a class="reference internal" href="#module-lib-backgroundjobs">Module: <tt class="docutils literal"><span class="pre">lib.backgroundjobs</span></tt></a></li>
+<li><a class="reference internal" href="#classes">Classes</a><ul>
+<li><a class="reference internal" href="#backgroundjobbase"><tt class="docutils literal"><span class="pre">BackgroundJobBase</span></tt></a></li>
+<li><a class="reference internal" href="#backgroundjobexpr"><tt class="docutils literal"><span class="pre">BackgroundJobExpr</span></tt></a></li>
+<li><a class="reference internal" href="#backgroundjobfunc"><tt class="docutils literal"><span class="pre">BackgroundJobFunc</span></tt></a></li>
+<li><a class="reference internal" href="#backgroundjobmanager"><tt class="docutils literal"><span class="pre">BackgroundJobManager</span></tt></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="IPython.core.ultratb.html"
+                        title="previous chapter">core.ultratb</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="IPython.lib.clipboard.html"
+                        title="next chapter">lib.clipboard</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/api/generated/IPython.lib.backgroundjobs.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="lib-backgroundjobs">
+<h1>lib.backgroundjobs<a class="headerlink" href="#lib-backgroundjobs" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-lib-backgroundjobs">
+<h2>Module: <tt class="xref py py-mod docutils literal"><span class="pre">lib.backgroundjobs</span></tt><a class="headerlink" href="#module-lib-backgroundjobs" title="Permalink to this headline">¶</a></h2>
+<p>Inheritance diagram for <tt class="docutils literal"><span class="pre">IPython.lib.backgroundjobs</span></tt>:</p>
+<img src="../../_images/inheritance28d7ef5340.png" usemap="#inheritance28d7ef5340" class="inheritance"/><map id="inheritance28d7ef5340" name="inheritance28d7ef5340">
+</map>
+<span class="target" id="module-IPython.lib.backgroundjobs"></span><p>Manage background (threaded) jobs conveniently from an interactive shell.</p>
+<p>This module provides a BackgroundJobManager class.  This is the main class
+meant for public usage, it implements an object which can create and manage
+new background jobs.</p>
+<p>It also provides the actual job classes managed by these BackgroundJobManager
+objects, see their docstrings below.</p>
+<p>This system was inspired by discussions with B. Granger and the
+BackgroundCommand class described in the book Python Scripting for
+Computational Science, by H. P. Langtangen:</p>
+<p><a class="reference external" href="http://folk.uio.no/hpl/scripting">http://folk.uio.no/hpl/scripting</a></p>
+<p>(although ultimately no code from this text was used, as IPython&#8217;s system is a
+separate implementation).</p>
+</div>
+<div class="section" id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="backgroundjobbase">
+<h3><a class="reference internal" href="#IPython.lib.backgroundjobs.BackgroundJobBase" title="IPython.lib.backgroundjobs.BackgroundJobBase"><tt class="xref py py-class docutils literal"><span class="pre">BackgroundJobBase</span></tt></a><a class="headerlink" href="#backgroundjobbase" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="IPython.lib.backgroundjobs.BackgroundJobBase">
+<em class="property">class </em><tt class="descclassname">IPython.lib.backgroundjobs.</tt><tt class="descname">BackgroundJobBase</tt><a class="headerlink" href="#IPython.lib.backgroundjobs.BackgroundJobBase" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">threading.Thread</span></tt></p>
+<p>Base class to build BackgroundJob classes.</p>
+<p>The derived classes must implement:</p>
+<ul class="simple">
+<li>Their own __init__, since the one here raises NotImplementedError.  The</li>
+</ul>
+<p>derived constructor must call self._init() at the end, to provide common
+initialization.</p>
+<ul class="simple">
+<li>A strform attribute used in calls to __str__.</li>
+<li>A call() method, which will make the actual execution call and must</li>
+</ul>
+<p>return a value to be held in the &#8216;result&#8217; field of the job object.</p>
+<dl class="method">
+<dt id="IPython.lib.backgroundjobs.BackgroundJobBase.__init__">
+<tt class="descname">__init__</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.lib.backgroundjobs.BackgroundJobBase.__init__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.lib.backgroundjobs.BackgroundJobBase.daemon">
+<tt class="descname">daemon</tt><a class="headerlink" href="#IPython.lib.backgroundjobs.BackgroundJobBase.daemon" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IPython.lib.backgroundjobs.BackgroundJobBase.getName">
+<tt class="descname">getName</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.lib.backgroundjobs.BackgroundJobBase.getName" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.lib.backgroundjobs.BackgroundJobBase.ident">
+<tt class="descname">ident</tt><a class="headerlink" href="#IPython.lib.backgroundjobs.BackgroundJobBase.ident" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IPython.lib.backgroundjobs.BackgroundJobBase.isAlive">
+<tt class="descname">isAlive</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.lib.backgroundjobs.BackgroundJobBase.isAlive" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IPython.lib.backgroundjobs.BackgroundJobBase.isDaemon">
+<tt class="descname">isDaemon</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.lib.backgroundjobs.BackgroundJobBase.isDaemon" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IPython.lib.backgroundjobs.BackgroundJobBase.is_alive">
+<tt class="descname">is_alive</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.lib.backgroundjobs.BackgroundJobBase.is_alive" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IPython.lib.backgroundjobs.BackgroundJobBase.join">
+<tt class="descname">join</tt><big>(</big><em>timeout=None</em><big>)</big><a class="headerlink" href="#IPython.lib.backgroundjobs.BackgroundJobBase.join" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.lib.backgroundjobs.BackgroundJobBase.name">
+<tt class="descname">name</tt><a class="headerlink" href="#IPython.lib.backgroundjobs.BackgroundJobBase.name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IPython.lib.backgroundjobs.BackgroundJobBase.run">
+<tt class="descname">run</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.lib.backgroundjobs.BackgroundJobBase.run" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IPython.lib.backgroundjobs.BackgroundJobBase.setDaemon">
+<tt class="descname">setDaemon</tt><big>(</big><em>daemonic</em><big>)</big><a class="headerlink" href="#IPython.lib.backgroundjobs.BackgroundJobBase.setDaemon" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IPython.lib.backgroundjobs.BackgroundJobBase.setName">
+<tt class="descname">setName</tt><big>(</big><em>name</em><big>)</big><a class="headerlink" href="#IPython.lib.backgroundjobs.BackgroundJobBase.setName" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IPython.lib.backgroundjobs.BackgroundJobBase.start">
+<tt class="descname">start</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.lib.backgroundjobs.BackgroundJobBase.start" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.lib.backgroundjobs.BackgroundJobBase.stat_completed">
+<tt class="descname">stat_completed</tt><em class="property"> = 'Completed'</em><a class="headerlink" href="#IPython.lib.backgroundjobs.BackgroundJobBase.stat_completed" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.lib.backgroundjobs.BackgroundJobBase.stat_completed_c">
+<tt class="descname">stat_completed_c</tt><em class="property"> = 2</em><a class="headerlink" href="#IPython.lib.backgroundjobs.BackgroundJobBase.stat_completed_c" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.lib.backgroundjobs.BackgroundJobBase.stat_created">
+<tt class="descname">stat_created</tt><em class="property"> = 'Created'</em><a class="headerlink" href="#IPython.lib.backgroundjobs.BackgroundJobBase.stat_created" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.lib.backgroundjobs.BackgroundJobBase.stat_created_c">
+<tt class="descname">stat_created_c</tt><em class="property"> = 0</em><a class="headerlink" href="#IPython.lib.backgroundjobs.BackgroundJobBase.stat_created_c" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.lib.backgroundjobs.BackgroundJobBase.stat_dead">
+<tt class="descname">stat_dead</tt><em class="property"> = 'Dead (Exception), call jobs.traceback() for details'</em><a class="headerlink" href="#IPython.lib.backgroundjobs.BackgroundJobBase.stat_dead" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.lib.backgroundjobs.BackgroundJobBase.stat_dead_c">
+<tt class="descname">stat_dead_c</tt><em class="property"> = -1</em><a class="headerlink" href="#IPython.lib.backgroundjobs.BackgroundJobBase.stat_dead_c" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.lib.backgroundjobs.BackgroundJobBase.stat_running">
+<tt class="descname">stat_running</tt><em class="property"> = 'Running'</em><a class="headerlink" href="#IPython.lib.backgroundjobs.BackgroundJobBase.stat_running" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.lib.backgroundjobs.BackgroundJobBase.stat_running_c">
+<tt class="descname">stat_running_c</tt><em class="property"> = 1</em><a class="headerlink" href="#IPython.lib.backgroundjobs.BackgroundJobBase.stat_running_c" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IPython.lib.backgroundjobs.BackgroundJobBase.traceback">
+<tt class="descname">traceback</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.lib.backgroundjobs.BackgroundJobBase.traceback" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="backgroundjobexpr">
+<h3><a class="reference internal" href="#IPython.lib.backgroundjobs.BackgroundJobExpr" title="IPython.lib.backgroundjobs.BackgroundJobExpr"><tt class="xref py py-class docutils literal"><span class="pre">BackgroundJobExpr</span></tt></a><a class="headerlink" href="#backgroundjobexpr" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="IPython.lib.backgroundjobs.BackgroundJobExpr">
+<em class="property">class </em><tt class="descclassname">IPython.lib.backgroundjobs.</tt><tt class="descname">BackgroundJobExpr</tt><big>(</big><em>expression</em>, <em>glob=None</em>, <em>loc=None</em><big>)</big><a class="headerlink" href="#IPython.lib.backgroundjobs.BackgroundJobExpr" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#IPython.lib.backgroundjobs.BackgroundJobBase" title="IPython.lib.backgroundjobs.BackgroundJobBase"><tt class="xref py py-class docutils literal"><span class="pre">IPython.lib.backgroundjobs.BackgroundJobBase</span></tt></a></p>
+<p>Evaluate an expression as a background job (uses a separate thread).</p>
+<dl class="method">
+<dt id="IPython.lib.backgroundjobs.BackgroundJobExpr.__init__">
+<tt class="descname">__init__</tt><big>(</big><em>expression</em>, <em>glob=None</em>, <em>loc=None</em><big>)</big><a class="headerlink" href="#IPython.lib.backgroundjobs.BackgroundJobExpr.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a new job from a string which can be fed to eval().</p>
+<p>global/locals dicts can be provided, which will be passed to the eval
+call.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.lib.backgroundjobs.BackgroundJobExpr.call">
+<tt class="descname">call</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.lib.backgroundjobs.BackgroundJobExpr.call" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.lib.backgroundjobs.BackgroundJobExpr.daemon">
+<tt class="descname">daemon</tt><a class="headerlink" href="#IPython.lib.backgroundjobs.BackgroundJobExpr.daemon" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IPython.lib.backgroundjobs.BackgroundJobExpr.getName">
+<tt class="descname">getName</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.lib.backgroundjobs.BackgroundJobExpr.getName" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.lib.backgroundjobs.BackgroundJobExpr.ident">
+<tt class="descname">ident</tt><a class="headerlink" href="#IPython.lib.backgroundjobs.BackgroundJobExpr.ident" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IPython.lib.backgroundjobs.BackgroundJobExpr.isAlive">
+<tt class="descname">isAlive</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.lib.backgroundjobs.BackgroundJobExpr.isAlive" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IPython.lib.backgroundjobs.BackgroundJobExpr.isDaemon">
+<tt class="descname">isDaemon</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.lib.backgroundjobs.BackgroundJobExpr.isDaemon" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IPython.lib.backgroundjobs.BackgroundJobExpr.is_alive">
+<tt class="descname">is_alive</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.lib.backgroundjobs.BackgroundJobExpr.is_alive" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IPython.lib.backgroundjobs.BackgroundJobExpr.join">
+<tt class="descname">join</tt><big>(</big><em>timeout=None</em><big>)</big><a class="headerlink" href="#IPython.lib.backgroundjobs.BackgroundJobExpr.join" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.lib.backgroundjobs.BackgroundJobExpr.name">
+<tt class="descname">name</tt><a class="headerlink" href="#IPython.lib.backgroundjobs.BackgroundJobExpr.name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IPython.lib.backgroundjobs.BackgroundJobExpr.run">
+<tt class="descname">run</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.lib.backgroundjobs.BackgroundJobExpr.run" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IPython.lib.backgroundjobs.BackgroundJobExpr.setDaemon">
+<tt class="descname">setDaemon</tt><big>(</big><em>daemonic</em><big>)</big><a class="headerlink" href="#IPython.lib.backgroundjobs.BackgroundJobExpr.setDaemon" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IPython.lib.backgroundjobs.BackgroundJobExpr.setName">
+<tt class="descname">setName</tt><big>(</big><em>name</em><big>)</big><a class="headerlink" href="#IPython.lib.backgroundjobs.BackgroundJobExpr.setName" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IPython.lib.backgroundjobs.BackgroundJobExpr.start">
+<tt class="descname">start</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.lib.backgroundjobs.BackgroundJobExpr.start" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.lib.backgroundjobs.BackgroundJobExpr.stat_completed">
+<tt class="descname">stat_completed</tt><em class="property"> = 'Completed'</em><a class="headerlink" href="#IPython.lib.backgroundjobs.BackgroundJobExpr.stat_completed" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.lib.backgroundjobs.BackgroundJobExpr.stat_completed_c">
+<tt class="descname">stat_completed_c</tt><em class="property"> = 2</em><a class="headerlink" href="#IPython.lib.backgroundjobs.BackgroundJobExpr.stat_completed_c" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.lib.backgroundjobs.BackgroundJobExpr.stat_created">
+<tt class="descname">stat_created</tt><em class="property"> = 'Created'</em><a class="headerlink" href="#IPython.lib.backgroundjobs.BackgroundJobExpr.stat_created" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.lib.backgroundjobs.BackgroundJobExpr.stat_created_c">
+<tt class="descname">stat_created_c</tt><em class="property"> = 0</em><a class="headerlink" href="#IPython.lib.backgroundjobs.BackgroundJobExpr.stat_created_c" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.lib.backgroundjobs.BackgroundJobExpr.stat_dead">
+<tt class="descname">stat_dead</tt><em class="property"> = 'Dead (Exception), call jobs.traceback() for details'</em><a class="headerlink" href="#IPython.lib.backgroundjobs.BackgroundJobExpr.stat_dead" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.lib.backgroundjobs.BackgroundJobExpr.stat_dead_c">
+<tt class="descname">stat_dead_c</tt><em class="property"> = -1</em><a class="headerlink" href="#IPython.lib.backgroundjobs.BackgroundJobExpr.stat_dead_c" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.lib.backgroundjobs.BackgroundJobExpr.stat_running">
+<tt class="descname">stat_running</tt><em class="property"> = 'Running'</em><a class="headerlink" href="#IPython.lib.backgroundjobs.BackgroundJobExpr.stat_running" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.lib.backgroundjobs.BackgroundJobExpr.stat_running_c">
+<tt class="descname">stat_running_c</tt><em class="property"> = 1</em><a class="headerlink" href="#IPython.lib.backgroundjobs.BackgroundJobExpr.stat_running_c" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IPython.lib.backgroundjobs.BackgroundJobExpr.traceback">
+<tt class="descname">traceback</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.lib.backgroundjobs.BackgroundJobExpr.traceback" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="backgroundjobfunc">
+<h3><a class="reference internal" href="#IPython.lib.backgroundjobs.BackgroundJobFunc" title="IPython.lib.backgroundjobs.BackgroundJobFunc"><tt class="xref py py-class docutils literal"><span class="pre">BackgroundJobFunc</span></tt></a><a class="headerlink" href="#backgroundjobfunc" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="IPython.lib.backgroundjobs.BackgroundJobFunc">
+<em class="property">class </em><tt class="descclassname">IPython.lib.backgroundjobs.</tt><tt class="descname">BackgroundJobFunc</tt><big>(</big><em>func</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#IPython.lib.backgroundjobs.BackgroundJobFunc" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#IPython.lib.backgroundjobs.BackgroundJobBase" title="IPython.lib.backgroundjobs.BackgroundJobBase"><tt class="xref py py-class docutils literal"><span class="pre">IPython.lib.backgroundjobs.BackgroundJobBase</span></tt></a></p>
+<p>Run a function call as a background job (uses a separate thread).</p>
+<dl class="method">
+<dt id="IPython.lib.backgroundjobs.BackgroundJobFunc.__init__">
+<tt class="descname">__init__</tt><big>(</big><em>func</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#IPython.lib.backgroundjobs.BackgroundJobFunc.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a new job from a callable object.</p>
+<p>Any positional arguments and keyword args given to this constructor
+after the initial callable are passed directly to it.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.lib.backgroundjobs.BackgroundJobFunc.call">
+<tt class="descname">call</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.lib.backgroundjobs.BackgroundJobFunc.call" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.lib.backgroundjobs.BackgroundJobFunc.daemon">
+<tt class="descname">daemon</tt><a class="headerlink" href="#IPython.lib.backgroundjobs.BackgroundJobFunc.daemon" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IPython.lib.backgroundjobs.BackgroundJobFunc.getName">
+<tt class="descname">getName</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.lib.backgroundjobs.BackgroundJobFunc.getName" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.lib.backgroundjobs.BackgroundJobFunc.ident">
+<tt class="descname">ident</tt><a class="headerlink" href="#IPython.lib.backgroundjobs.BackgroundJobFunc.ident" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IPython.lib.backgroundjobs.BackgroundJobFunc.isAlive">
+<tt class="descname">isAlive</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.lib.backgroundjobs.BackgroundJobFunc.isAlive" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IPython.lib.backgroundjobs.BackgroundJobFunc.isDaemon">
+<tt class="descname">isDaemon</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.lib.backgroundjobs.BackgroundJobFunc.isDaemon" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IPython.lib.backgroundjobs.BackgroundJobFunc.is_alive">
+<tt class="descname">is_alive</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.lib.backgroundjobs.BackgroundJobFunc.is_alive" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IPython.lib.backgroundjobs.BackgroundJobFunc.join">
+<tt class="descname">join</tt><big>(</big><em>timeout=None</em><big>)</big><a class="headerlink" href="#IPython.lib.backgroundjobs.BackgroundJobFunc.join" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.lib.backgroundjobs.BackgroundJobFunc.name">
+<tt class="descname">name</tt><a class="headerlink" href="#IPython.lib.backgroundjobs.BackgroundJobFunc.name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IPython.lib.backgroundjobs.BackgroundJobFunc.run">
+<tt class="descname">run</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.lib.backgroundjobs.BackgroundJobFunc.run" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IPython.lib.backgroundjobs.BackgroundJobFunc.setDaemon">
+<tt class="descname">setDaemon</tt><big>(</big><em>daemonic</em><big>)</big><a class="headerlink" href="#IPython.lib.backgroundjobs.BackgroundJobFunc.setDaemon" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IPython.lib.backgroundjobs.BackgroundJobFunc.setName">
+<tt class="descname">setName</tt><big>(</big><em>name</em><big>)</big><a class="headerlink" href="#IPython.lib.backgroundjobs.BackgroundJobFunc.setName" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IPython.lib.backgroundjobs.BackgroundJobFunc.start">
+<tt class="descname">start</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.lib.backgroundjobs.BackgroundJobFunc.start" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.lib.backgroundjobs.BackgroundJobFunc.stat_completed">
+<tt class="descname">stat_completed</tt><em class="property"> = 'Completed'</em><a class="headerlink" href="#IPython.lib.backgroundjobs.BackgroundJobFunc.stat_completed" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.lib.backgroundjobs.BackgroundJobFunc.stat_completed_c">
+<tt class="descname">stat_completed_c</tt><em class="property"> = 2</em><a class="headerlink" href="#IPython.lib.backgroundjobs.BackgroundJobFunc.stat_completed_c" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.lib.backgroundjobs.BackgroundJobFunc.stat_created">
+<tt class="descname">stat_created</tt><em class="property"> = 'Created'</em><a class="headerlink" href="#IPython.lib.backgroundjobs.BackgroundJobFunc.stat_created" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.lib.backgroundjobs.BackgroundJobFunc.stat_created_c">
+<tt class="descname">stat_created_c</tt><em class="property"> = 0</em><a class="headerlink" href="#IPython.lib.backgroundjobs.BackgroundJobFunc.stat_created_c" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.lib.backgroundjobs.BackgroundJobFunc.stat_dead">
+<tt class="descname">stat_dead</tt><em class="property"> = 'Dead (Exception), call jobs.traceback() for details'</em><a class="headerlink" href="#IPython.lib.backgroundjobs.BackgroundJobFunc.stat_dead" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.lib.backgroundjobs.BackgroundJobFunc.stat_dead_c">
+<tt class="descname">stat_dead_c</tt><em class="property"> = -1</em><a class="headerlink" href="#IPython.lib.backgroundjobs.BackgroundJobFunc.stat_dead_c" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.lib.backgroundjobs.BackgroundJobFunc.stat_running">
+<tt class="descname">stat_running</tt><em class="property"> = 'Running'</em><a class="headerlink" href="#IPython.lib.backgroundjobs.BackgroundJobFunc.stat_running" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IPython.lib.backgroundjobs.BackgroundJobFunc.stat_running_c">
+<tt class="descname">stat_running_c</tt><em class="property"> = 1</em><a class="headerlink" href="#IPython.lib.backgroundjobs.BackgroundJobFunc.stat_running_c" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IPython.lib.backgroundjobs.BackgroundJobFunc.traceback">
+<tt class="descname">traceback</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.lib.backgroundjobs.BackgroundJobFunc.traceback" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="backgroundjobmanager">
+<h3><a class="reference internal" href="#IPython.lib.backgroundjobs.BackgroundJobManager" title="IPython.lib.backgroundjobs.BackgroundJobManager"><tt class="xref py py-class docutils literal"><span class="pre">BackgroundJobManager</span></tt></a><a class="headerlink" href="#backgroundjobmanager" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="IPython.lib.backgroundjobs.BackgroundJobManager">
+<em class="property">class </em><tt class="descclassname">IPython.lib.backgroundjobs.</tt><tt class="descname">BackgroundJobManager</tt><a class="headerlink" href="#IPython.lib.backgroundjobs.BackgroundJobManager" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class to manage a pool of backgrounded threaded jobs.</p>
+<p>Below, we assume that &#8216;jobs&#8217; is a BackgroundJobManager instance.</p>
+<p>Usage summary (see the method docstrings for details):</p>
+<blockquote>
+<div><p>jobs.new(...) -&gt; start a new job</p>
+<p>jobs() or jobs.status() -&gt; print status summary of all jobs</p>
+<p>jobs[N] -&gt; returns job number N.</p>
+<p>foo = jobs[N].result -&gt; assign to variable foo the result of job N</p>
+<p>jobs[N].traceback() -&gt; print the traceback of dead job N</p>
+<p>jobs.remove(N) -&gt; remove (finished) job N</p>
+<p>jobs.flush_finished() -&gt; remove all finished jobs</p>
+</div></blockquote>
+<p>As a convenience feature, BackgroundJobManager instances provide the
+utility result and traceback methods which retrieve the corresponding
+information from the jobs list:</p>
+<blockquote>
+<div>jobs.result(N) &lt;&#8211;&gt; jobs[N].result
+jobs.traceback(N) &lt;&#8211;&gt; jobs[N].traceback()</div></blockquote>
+<p>While this appears minor, it allows you to use tab completion
+interactively on the job manager instance.</p>
+<p>In interactive mode, IPython provides the magic fuction %bg for quick
+creation of backgrounded expression-based jobs. Type bg? for details.</p>
+<dl class="method">
+<dt id="IPython.lib.backgroundjobs.BackgroundJobManager.__init__">
+<tt class="descname">__init__</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.lib.backgroundjobs.BackgroundJobManager.__init__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IPython.lib.backgroundjobs.BackgroundJobManager.flush_finished">
+<tt class="descname">flush_finished</tt><big>(</big><big>)</big><a class="headerlink" href="#IPython.lib.backgroundjobs.BackgroundJobManager.flush_finished" title="Permalink to this definition">¶</a></dt>
+<dd><p>Flush all jobs finished (completed and dead) from lists.</p>
+<p>Running jobs are never flushed.</p>
+<p>It first calls _status_new(), to update info. If any jobs have
+completed since the last _status_new() call, the flush operation
+aborts.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.lib.backgroundjobs.BackgroundJobManager.new">
+<tt class="descname">new</tt><big>(</big><em>func_or_exp</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#IPython.lib.backgroundjobs.BackgroundJobManager.new" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a new background job and start it in a separate thread.</p>
+<p>There are two types of jobs which can be created:</p>
+<p>1. Jobs based on expressions which can be passed to an eval() call.
+The expression must be given as a string.  For example:</p>
+<blockquote>
+<div>job_manager.new(&#8216;myfunc(x,y,z=1)&#8217;[,glob[,loc]])</div></blockquote>
+<p>The given expression is passed to eval(), along with the optional
+global/local dicts provided.  If no dicts are given, they are
+extracted automatically from the caller&#8217;s frame.</p>
+<p>A Python statement is NOT a valid eval() expression.  Basically, you
+can only use as an eval() argument something which can go on the right
+of an &#8216;=&#8217; sign and be assigned to a variable.</p>
+<p>For example,&#8221;print &#8216;hello&#8217;&#8221; is not valid, but &#8216;2+3&#8217; is.</p>
+<p>2. Jobs given a function object, optionally passing additional
+positional arguments:</p>
+<blockquote>
+<div>job_manager.new(myfunc,x,y)</div></blockquote>
+<p>The function is called with the given arguments.</p>
+<p>If you need to pass keyword arguments to your function, you must
+supply them as a dict named kw:</p>
+<blockquote>
+<div>job_manager.new(myfunc,x,y,kw=dict(z=1))</div></blockquote>
+<p>The reason for this assymmetry is that the new() method needs to
+maintain access to its own keywords, and this prevents name collisions
+between arguments to new() and arguments to your own functions.</p>
+<p>In both cases, the result is stored in the job.result field of the
+background job object.</p>
+<p>Notes and caveats:</p>
+<p>1. All threads running share the same standard output.  Thus, if your
+background jobs generate output, it will come out on top of whatever
+you are currently writing.  For this reason, background jobs are best
+used with silent functions which simply return their output.</p>
+<p>2. Threads also all work within the same global namespace, and this
+system does not lock interactive variables.  So if you send job to the
+background which operates on a mutable object for a long time, and
+start modifying that same mutable object interactively (or in another
+backgrounded job), all sorts of bizarre behaviour will occur.</p>
+<p>3. If a background job is spending a lot of time inside a C extension
+module which does not release the Python Global Interpreter Lock
+(GIL), this will block the IPython prompt.  This is simply because the
+Python interpreter can only switch between threads at Python
+bytecodes.  While the execution is inside C code, the interpreter must
+simply wait unless the extension module releases the GIL.</p>
+<p>4. There is no way, due to limitations in the Python threads library,
+to kill a thread once it has started.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.lib.backgroundjobs.BackgroundJobManager.remove">
+<tt class="descname">remove</tt><big>(</big><em>num</em><big>)</big><a class="headerlink" href="#IPython.lib.backgroundjobs.BackgroundJobManager.remove" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove a finished (completed or dead) job.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.lib.backgroundjobs.BackgroundJobManager.result">
+<tt class="descname">result</tt><big>(</big><em>N</em><big>)</big> &rarr; return the result of job N.<a class="headerlink" href="#IPython.lib.backgroundjobs.BackgroundJobManager.result" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IPython.lib.backgroundjobs.BackgroundJobManager.status">
+<tt class="descname">status</tt><big>(</big><em>verbose=0</em><big>)</big><a class="headerlink" href="#IPython.lib.backgroundjobs.BackgroundJobManager.status" title="Permalink to this definition">¶</a></dt>
+<dd><p>Print a status of all jobs currently being managed.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IPython.lib.backgroundjobs.BackgroundJobManager.traceback">
+<tt class="descname">traceback</tt><big>(</big><em>num</em><big>)</big><a class="headerlink" href="#IPython.lib.backgroundjobs.BackgroundJobManager.traceback" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="IPython.lib.clipboard.html" title="lib.clipboard"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="IPython.core.ultratb.html" title="core.ultratb"
+             >previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <li><a href="../../search.html">search</a>|&nbsp;</li>
+       <li><a href="../../index.html">documentation </a> &raquo;</li>
+
+          <li><a href="../index.html" >The IPython API</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2008, The IPython Development Team.
+      Last updated on Jul 31, 2011.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1pre.
+    </div>
+  </body>
+</html>

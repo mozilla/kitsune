@@ -1,0 +1,215 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>utils.frame &mdash; IPython 0.11 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.11',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="IPython 0.11 documentation" href="../../index.html" />
+    <link rel="up" title="The IPython API" href="../index.html" />
+    <link rel="next" title="utils.generics" href="IPython.utils.generics.html" />
+    <link rel="prev" title="utils.doctestreload" href="IPython.utils.doctestreload.html" /> 
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<a href="../../index.html"><img src="../../_static/logo.png" border="0" alt="IPython Documentation"/></a>
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="IPython.utils.generics.html" title="utils.generics"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="IPython.utils.doctestreload.html" title="utils.doctestreload"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <li><a href="../../search.html">search</a>|&nbsp;</li>
+       <li><a href="../../index.html">documentation </a> &raquo;</li>
+
+          <li><a href="../index.html" accesskey="U">The IPython API</a> &raquo;</li> 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">utils.frame</a><ul>
+<li><a class="reference internal" href="#module-IPython.utils.frame">Module: <tt class="docutils literal"><span class="pre">utils.frame</span></tt></a></li>
+<li><a class="reference internal" href="#functions">Functions</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="IPython.utils.doctestreload.html"
+                        title="previous chapter">utils.doctestreload</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="IPython.utils.generics.html"
+                        title="next chapter">utils.generics</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/api/generated/IPython.utils.frame.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="utils-frame">
+<h1>utils.frame<a class="headerlink" href="#utils-frame" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-IPython.utils.frame">
+<span id="module-utils-frame"></span><h2>Module: <tt class="xref py py-mod docutils literal"><span class="pre">utils.frame</span></tt><a class="headerlink" href="#module-IPython.utils.frame" title="Permalink to this headline">¶</a></h2>
+<p>Utilities for working with stack frames.</p>
+</div>
+<div class="section" id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="IPython.utils.frame.debugx">
+<tt class="descclassname">IPython.utils.frame.</tt><tt class="descname">debugx</tt><big>(</big><em>expr</em>, <em>pre_msg=''</em><big>)</big><a class="headerlink" href="#IPython.utils.frame.debugx" title="Permalink to this definition">¶</a></dt>
+<dd><p>Print the value of an expression from the caller&#8217;s frame.</p>
+<p>Takes an expression, evaluates it in the caller&#8217;s frame and prints both
+the given expression and the resulting value (as well as a debug mark
+indicating the name of the calling function.  The input must be of a form
+suitable for eval().</p>
+<p>An optional message can be passed, which will be prepended to the printed
+expr-&gt;value pair.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="IPython.utils.frame.extract_vars">
+<tt class="descclassname">IPython.utils.frame.</tt><tt class="descname">extract_vars</tt><big>(</big><em>*names</em>, <em>**kw</em><big>)</big><a class="headerlink" href="#IPython.utils.frame.extract_vars" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extract a set of variables by name from another frame.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><ul class="first last simple">
+<li><cite>*names</cite>: strings
+One or more variable names which will be extracted from the caller&#8217;s</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>frame.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Keywords :</th><td class="field-body"><ul class="first last simple">
+<li><cite>depth</cite>: integer (0)
+How many frames in the stack to walk when looking for your variables.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Examples:</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>In [2]: def func(x):</dt>
+<dd>...:     y = 1
+...:     print extract_vars(&#8216;x&#8217;,&#8217;y&#8217;)
+...:</dd>
+</dl>
+<p>In [3]: func(&#8216;hello&#8217;)
+{&#8216;y&#8217;: 1, &#8216;x&#8217;: &#8216;hello&#8217;}</p>
+</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="IPython.utils.frame.extract_vars_above">
+<tt class="descclassname">IPython.utils.frame.</tt><tt class="descname">extract_vars_above</tt><big>(</big><em>*names</em><big>)</big><a class="headerlink" href="#IPython.utils.frame.extract_vars_above" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extract a set of variables by name from another frame.</p>
+<p>Similar to extractVars(), but with a specified depth of 1, so that names
+are exctracted exactly from above the caller.</p>
+<p>This is simply a convenience function so that the very common case (for us)
+of skipping exactly 1 frame doesn&#8217;t have to construct a special dict for
+keyword passing.</p>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="IPython.utils.generics.html" title="utils.generics"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="IPython.utils.doctestreload.html" title="utils.doctestreload"
+             >previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <li><a href="../../search.html">search</a>|&nbsp;</li>
+       <li><a href="../../index.html">documentation </a> &raquo;</li>
+
+          <li><a href="../index.html" >The IPython API</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2008, The IPython Development Team.
+      Last updated on Jul 31, 2011.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1pre.
+    </div>
+  </body>
+</html>
