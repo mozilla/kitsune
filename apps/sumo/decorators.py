@@ -1,7 +1,9 @@
-import inspect
+from functools import wraps
+import json
 
+from django import http
 from django.conf import settings
-from django.http import HttpResponseRedirect
+from django.core.exceptions import PermissionDenied
 
 
 def ssl_required(view_func):
@@ -12,18 +14,55 @@ def ssl_required(view_func):
         if not settings.DEBUG and not request.is_secure():
             url_str = request.build_absolute_uri()
             url_str = url_str.replace('http://', 'https://')
-            return HttpResponseRedirect(url_str)
+            return http.HttpResponseRedirect(url_str)
 
         return view_func(request, *args, **kwargs)
     return _checkssl
 
 
-def for_all_methods(decorator):
-    """A class decorator to apply a decorator to all its methods."""
-    def decorate(cls):
-        for method in inspect.getmembers(cls, inspect.ismethod):
-            # Skip __dunder__ methods
-            if not (method[0].startswith('__') and method[0].endswith('__')):
-                setattr(cls, method[0], decorator(getattr(cls, method[0])))
-        return cls
-    return decorate
+# Copy/pasta from from https://gist.github.com/1405096
+# TODO: Log the hell out of the exceptions.
+JSON = 'application/json'
+
+
+def json_view(f):
+    """Ensure the response content is well-formed JSON.
+
+    Views wrapped in @json_view can return JSON-serializable Python objects,
+    like lists and dicts, and the decorator will serialize the output and set
+    the correct Content-type.
+
+    Views may also throw known exceptions, like Http404, PermissionDenied,
+    etc, and @json_view will convert the response to a standard JSON error
+    format, and set the status code and content type.
+
+    """
+
+    @wraps(f)
+    def _wrapped(req, *a, **kw):
+        try:
+            ret = f(req, *a, **kw)
+            blob = json.dumps(ret)
+            return http.HttpResponse(blob, content_type=JSON)
+        except http.Http404, e:
+            blob = json.dumps({
+                'success': False,
+                'error': 404,
+                'message': str(e),
+            })
+            return http.HttpResponseNotFound(blob, content_type=JSON)
+        except PermissionDenied, e:
+            blob = json.dumps({
+                'success': False,
+                'error': 403,
+                'message': str(e),
+            })
+            return http.HttpResponseForbidden(blob, content_type=JSON)
+        except Exception, e:
+            blob = json.dumps({
+                'success': False,
+                'error': 500,
+                'message': str(e),
+            })
+            return http.HttpResponseServerError(blob, content_type=JSON)
+    return _wrapped

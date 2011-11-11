@@ -45,8 +45,7 @@ def recalculate_karma_points():
     if not waffle.switch_is_active('karma'):
         return
 
-    qs = User.objects.filter(is_active=True).values_list('id', flat=True)
-    for chunk in chunked(qs, 2500):
+    for chunk in chunked(KarmaManager().user_ids(), 2500):
         _process_recalculate_chunk.apply_async(args=[chunk])
 
 

@@ -368,8 +368,8 @@ class Answer(ActionMixin, ModelBase):
         # the number of answers. Fallback to database.
         if waffle.switch_is_active('karma'):
             try:
-                return KarmaAction.objects.total_count(
-                    AnswerAction, self.creator)
+                return KarmaAction.objects.count(
+                    self.creator, AnswerAction.action_type)
             except ConnectionError:
                 pass
         return Answer.objects.filter(creator=self.creator).count()
@@ -380,8 +380,8 @@ class Answer(ActionMixin, ModelBase):
         # the number of solutions. Fallback to database.
         if waffle.switch_is_active('karma'):
             try:
-                return KarmaAction.objects.total_count(
-                    SolutionAction, self.creator)
+                return KarmaAction.objects.count(
+                    self.creator, SolutionAction.action_type)
             except ConnectionError:
                 pass
         return Question.objects.filter(
@@ -390,7 +390,7 @@ class Answer(ActionMixin, ModelBase):
     @property
     def creator_num_points(self):
         try:
-            return KarmaAction.objects.total_points(self.creator)
+            return KarmaAction.objects.count(self.creator, type='points')
         except ConnectionError:
             return None
 

@@ -5,7 +5,6 @@ from django.contrib.auth.models import User
 
 from redis.exceptions import ConnectionError
 
-from sumo.decorators import for_all_methods
 from sumo.redis_utils import redis_client, RedisError
 
 
@@ -31,9 +30,12 @@ def _handle_redis_errors(func):
     return wrapper
 
 
-@for_all_methods(_handle_redis_errors)
 class KarmaManager(object):
     """Manager for querying karma data in Redis."""
+
+    date_ranges = {'1w': 7, '1m': 30, '3m': 91, '6m': 182, '1y': 365}
+    action_types = {}
+
     def __init__(self, redis=None):
         if not redis:
             try:
@@ -42,14 +44,21 @@ class KarmaManager(object):
                 log.error('Redis error: %s' % e)
         self.redis = redis
 
+    @classmethod
+    def register(cls, action):
+        cls.action_types[action.action_type] = action.points
+
     # Setters:
     def save_action(self, action):
         """Save a new karma action to redis."""
         key = hash_key(action.userid)
 
+        # Keep a list of users with karma
+        self.redis.sadd('{p}:users'.format(p=KEY_PREFIX), action.userid)
+
         # Point counters:
         # Increment total points
-        self.redis.hincrby(key, 'points:total', action.points)
+        self.redis.hincrby(key, 'points:all', action.points)
         # Increment points daily count
         self.redis.hincrby(key, 'points:{d}'.format(
             d=action.date), action.points)
@@ -62,7 +71,7 @@ class KarmaManager(object):
 
         # Action counters:
         # Increment action total count
-        self.redis.hincrby(key, '{t}:total'.format(t=action.action_type), 1)
+        self.redis.hincrby(key, '{t}:all'.format(t=action.action_type), 1)
         # Increment action daily count
         self.redis.hincrby(key, '{t}:{d}'.format(
              t=action.action_type, d=action.date), 1)
@@ -73,32 +82,48 @@ class KarmaManager(object):
         self.redis.hincrby(key, '{t}:{y}'.format(
             t=action.action_type, y=action.date.year), 1)
 
-    def update_top_alltime(self):
-        """Updated the top contributors alltime sorted set."""
-        # Update sorted set
-        key = '{p}:points:total'.format(p=KEY_PREFIX)
-        for userid in User.objects.values_list('id', flat=True):
-            pts = self.total_points(userid)
+    def update_top(self):
+        """Update the aggregates and indexes for all actions and ranges."""
+        for action_type in self.action_types.keys() + ['points']:
+            for daterange in self.date_ranges.keys() + ['all']:
+                self._update_top(daterange, action_type)
+
+    def _update_top(self, daterange, type):
+        """Update the aggregates and indexes for the given type and range."""
+        key = '{p}:{t}:{r}'.format(p=KEY_PREFIX, t=type, r=daterange)
+        temp_key = key + ':tmp'
+        index_created = False
+
+        for userid in self.user_ids():
+            if daterange == 'all':
+                # '*:all' is always up to date
+                pts = self.count(userid, daterange='all', type=type)
+            else:
+                # Needs recalculating
+                pts = self._count(userid, daterange=daterange, type=type)
+                self._set_or_del_hash(userid,
+                                      '{t}:{r}'.format(t=type, r=daterange),
+                                      pts)
+
             if pts:
-                self.redis.zadd(key, userid, pts)
+                self.redis.zadd(temp_key, userid, pts)
+                index_created = True
 
-    def update_top_week(self):
-        """Updated the top contributors past week sorted set."""
-        # Update sorted set
-        key = '{p}:points:week'.format(p=KEY_PREFIX)
-        for userid in User.objects.values_list('id', flat=True):
-            pts = self.week_points(userid)
-            if pts:
-                self.redis.zadd(key, userid, pts)
+        if index_created:
+            self.redis.rename(temp_key, key)
+        else:
+            self.redis.delete(key)
 
-    def recalculate_points(self, user, actions):
-        """Recalculate the points for a given user.
+    def _set_or_del_hash(self, userid, key, pts):
+        if pts:
+            self.redis.hset(hash_key(userid), key, pts)
+        else:
+            self.redis.hdel(hash_key(userid), key)
 
-        `actions` is a dict that maps action types to points."""
-        # TODO: think about having a register mechanism so KarmaManager can
-        # know about all the (registered) actions.
+    def recalculate_points(self, user):
+        """Recalculate the points for a given user."""
         key = hash_key(user)
-        values = self.redis.hgetall(key)
+        values = self.user_data(user)
 
         # Remove existing point values
         point_keys = [k for k in values.keys() if k.startswith('points:')]
@@ -110,108 +135,81 @@ class KarmaManager(object):
         # Recalculate all the points
         for k in values:
             action_type, action_date = k.split(':')
-            points = actions[action_type] * int(values[k])
+            points = self.action_types[action_type] * int(values[k])
             self.redis.hincrby(key, 'points:{d}'.format(
                 d=action_date), points)
 
     # Getters:
-    def top_alltime(self, count=10):
-        """Returns the top users based on alltime points."""
-        return self._top_points(count, 'total')
-
-    def top_week(self, count=10):
-        """Returns the top users based on points in the last 7 days."""
-        return self._top_points(count, 'week')
-
-    def _top_points(self, count, suffix):
-        ids = self.redis.zrevrange('{p}:points:{s}'.format(
-            p=KEY_PREFIX, s=suffix), 0, count - 1)
+    @_handle_redis_errors
+    def top_users(self, daterange='all', type='points', count=10, offset=0):
+        """Get a list of users sorted for the specified range and type."""
+        ids = self.top_users_ids(daterange, type, count, offset)
         users = list(User.objects.filter(id__in=ids))
         users.sort(key=lambda user: ids.index(str(user.id)))
         return users
 
-    def ranking_alltime(self, user):
-        """The user's alltime ranking."""
-        if not self.total_points(user):
-            return None
-        return self.redis.zrevrank('{p}:points:total'.format(p=KEY_PREFIX),
-                                   userid(user)) + 1
+    def top_users_ids(self, daterange='all', type='points', count=10,
+                      offset=0):
+        """Get a list of user ids sorted for the specified range and type."""
+        return self.redis.zrevrange('{p}:{t}:{s}'.format(
+            p=KEY_PREFIX, t=type, s=daterange), offset, offset + count - 1)
 
-    def ranking_week(self, user):
-        """The user's ranking for last 7 days"""
-        if not self.week_points(user):
+    @_handle_redis_errors
+    def ranking(self, user, daterange='all', type='points'):
+        """The user's ranking for the given range and type."""
+        if not self.count(user=user, daterange=daterange, type=type):
             return None
-        return self.redis.zrevrank('{p}:points:week'.format(p=KEY_PREFIX),
-                                   userid(user)) + 1
+        return self.redis.zrevrank('{p}:{t}:{r}'.format(
+            p=KEY_PREFIX, t=type, r=daterange), userid(user)) + 1
 
-    def total_points(self, user):
-        """Returns the total points for a given user."""
-        count = self.redis.hget(hash_key(user), 'points:total')
+    def count(self, user, daterange='all', type='points'):
+        """The user's count for the given range and type."""
+        count = self.redis.hget(hash_key(user),
+                                '{t}:{r}'.format(t=type, r=daterange))
         return int(count) if count else 0
 
-    def week_points(self, user):
-        """Returns total points from the last 7 days for a given user."""
+    def daily_counts(self, user, daterange='all', type='points'):
+        """Return a list of counts per day for the give range and type."""
         today = date.today()
-        days = [today - timedelta(days=d + 1) for d in range(7)]
-        counts = self.redis.hmget(hash_key(user),
-                                  ['points:{d}'.format(d=d) for d in days])
-        fn = lambda x: int(x) if x else 0
-        count = sum([fn(c) for c in counts])
-        return count
-
-    def daily_points(self, user, days_back=30):
-        """Returns a list of points from the past `days_back` days."""
-        today = date.today()
-        days = [today - timedelta(days=d) for d in range(days_back)]
-        counts = self.redis.hmget(hash_key(user),
-                                  ['points:{d}'.format(d=d) for d in days])
+        num_days = self.date_ranges[daterange]
+        days = [today - timedelta(days=d) for d in range(num_days)]
+        counts = self.redis.hmget(
+            hash_key(user), ['{t}:{d}'.format(t=type, d=d) for d in days])
         fn = lambda x: int(x) if x else 0
         return [fn(c) for c in counts]
 
-    def monthly_points(self, user, months_back=12):
-        """Returns a list of points from the past `months_back` months."""
-        # TODO: probably needed for graphing
-        pass
-
-    def total_count(self, action, user):
-        """Returns the total count of an action for a given user."""
+    def day_count(self, user, date=date.today(), type='points'):
+        """Returns the total count for given type, user and day."""
         count = self.redis.hget(
-            hash_key(user), '{t}:total'.format(t=action.action_type))
+            hash_key(user), '{t}:{d}'.format(d=date, t=type))
         return int(count) if count else 0
 
-    def day_count(self, action, user, date=date.today()):
-        """Returns the total count of an action for a given user and day."""
-        count = self.redis.hget(
-            hash_key(user), '{t}:{d}'.format(d=date, t=action.action_type))
-        return int(count) if count else 0
-
-    def week_count(self, action, user):
-        """Returns total count of an action for a given user (last 7 days)."""
-        # TODO: DRY this up with week_points and daily_points.
-        today = date.today()
-        days = [today - timedelta(days=d + 1) for d in range(7)]
-        counts = self.redis.hmget(hash_key(user), ['{t}:{d}'.format(
-            t=action.action_type, d=d) for d in days])
-        fn = lambda x: int(x) if x else 0
-        count = sum([fn(c) for c in counts])
-        return count
-
-    def month_count(self, action, user, year, month):
-        """Returns the total count of an action for a given user and month."""
+    def month_count(self, user, year, month, type='points'):
+        """Returns the total countfor given type, user and moth."""
         count = self.redis.hget(
             hash_key(user),
-            '{t}:{y}-{m:02d}'.format(t=action.action_type, y=year, m=month))
+            '{t}:{y}-{m:02d}'.format(t=type, y=year, m=month))
         return int(count) if count else 0
 
-    def year_count(self, action, user, year):
-        """Returns the total count of an action for a given user and year."""
+    def year_count(self, user, year, type='points'):
+        """Returns the total count for given type, user and year."""
         count = self.redis.hget(
-            hash_key(user), '{t}:{y}'.format(y=year, t=action.action_type))
+            hash_key(user), '{t}:{y}'.format(y=year, t=type))
         return int(count) if count else 0
 
     def user_data(self, user):
         """Returns all the data stored for the given user."""
         return self.redis.hgetall(hash_key(user))
+
+    def user_ids(self):
+        """Return the user ids of all users with karma activity."""
+        return self.redis.smembers('{p}:users'.format(p=KEY_PREFIX))
+
+    def _count(self, user, daterange, type='points'):
+        """Calculates a user's count for range and type from daily counts."""
+        daily_counts = self.daily_counts(user=user, daterange=daterange,
+                                         type=type)
+        return sum(daily_counts)
 
 
 def hash_key(user):
