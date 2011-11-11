@@ -32,6 +32,14 @@ def reindex(rotate=False):
     call(calls)
 
 
+def es_reindex():
+    """Reindexes the database in Elastic."""
+
+    # Reindex questions.
+    import questions.es_search
+    questions.es_search.reindex_questions()
+
+
 def start_sphinx():
     """Start sphinx.
 
