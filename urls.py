@@ -27,6 +27,7 @@ urlpatterns = patterns('',
     (r'^1', include('inproduct.urls')),
     (r'^postcrash', include('postcrash.urls')),
     (r'^groups', include('groups.urls')),
+    (r'^karma', include('karma.urls')),
 
     # Kitsune admin (not Django admin).
     (r'^admin/', include(admin.site.urls)),

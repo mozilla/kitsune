@@ -73,10 +73,13 @@ class KarmaManager(object):
         self.redis.hincrby(key, '{t}:{y}'.format(
             t=action.action_type, y=action.date.year), 1)
 
+    # TODO: When updating lists, create a new list with temporary name,
+    # then rename it to the canonical list.
     def update_top_alltime(self):
         """Updated the top contributors alltime sorted set."""
         # Update sorted set
         key = '{p}:points:total'.format(p=KEY_PREFIX)
+        # TODO: Stop loading the full user list like this
         for userid in User.objects.values_list('id', flat=True):
             pts = self.total_points(userid)
             if pts:
@@ -86,6 +89,7 @@ class KarmaManager(object):
         """Updated the top contributors past week sorted set."""
         # Update sorted set
         key = '{p}:points:week'.format(p=KEY_PREFIX)
+        # TODO: Stop loading the full user list like this
         for userid in User.objects.values_list('id', flat=True):
             pts = self.week_points(userid)
             if pts:
@@ -98,7 +102,7 @@ class KarmaManager(object):
         # TODO: think about having a register mechanism so KarmaManager can
         # know about all the (registered) actions.
         key = hash_key(user)
-        values = self.redis.hgetall(key)
+        values = self.user_data(user)
 
         # Remove existing point values
         point_keys = [k for k in values.keys() if k.startswith('points:')]
@@ -115,17 +119,17 @@ class KarmaManager(object):
                 d=action_date), points)
 
     # Getters:
-    def top_alltime(self, count=10):
+    def top_alltime(self, count=10, offset=0):
         """Returns the top users based on alltime points."""
-        return self._top_points(count, 'total')
+        return self._top_points(count, offset, 'total')
 
-    def top_week(self, count=10):
+    def top_week(self, count=10, offset=0):
         """Returns the top users based on points in the last 7 days."""
-        return self._top_points(count, 'week')
+        return self._top_points(count, offset, 'week')
 
-    def _top_points(self, count, suffix):
+    def _top_points(self, count, offset, suffix):
         ids = self.redis.zrevrange('{p}:points:{s}'.format(
-            p=KEY_PREFIX, s=suffix), 0, count - 1)
+            p=KEY_PREFIX, s=suffix), offset, offset + count - 1)
         users = list(User.objects.filter(id__in=ids))
         users.sort(key=lambda user: ids.index(str(user.id)))
         return users
