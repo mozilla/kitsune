@@ -24,12 +24,7 @@ from tower import ugettext_lazy as _lazy
 from tower import ugettext as _
 
 from access.decorators import permission_required, login_required
-import kbforums
-from kbforums.models import Thread
-from kbforums.views import sort_threads
-from kbforums.events import NewPostEvent
 from sumo.helpers import urlparams
-from sumo_locales import LOCALES
 from sumo.urlresolvers import reverse
 from sumo.utils import paginate, smart_int, get_next_url
 from wiki import DOCUMENTS_PER_PAGE
@@ -972,44 +967,6 @@ def remove_contributor(request, document_slug, user_id):
     return jingo.render(request, 'wiki/confirm_remove_contributor.html',
                         {'document': document, 'contributor': user})
 
-
-def discussions(request):
-    locale_name = LOCALES[request.locale].native
-    threads = Thread.objects.filter(document__locale=request.locale,
-                                    document__allow_discussion=True)
-    try:
-        sort = int(request.GET.get('sort', 0))
-    except ValueError:
-        sort = 0
-
-    try:
-        desc = int(request.GET.get('desc', 0))
-    except ValueError:
-        desc = 0
-    desc_toggle = 0 if desc else 1
-
-    threads_ = sort_threads(threads, sort, desc)
-    threads_ = paginate(request, threads_,
-                        per_page=kbforums.THREADS_PER_PAGE)
-    return jingo.render(request, 'wiki/discussions.html',
-                        {'locale_name': locale_name, 'threads': threads_,
-                         'desc_toggle':desc_toggle})
-
-
-@login_required
-@require_POST
-def watch_locale_discussions(request):
-    threads = Thread.objects.filter(document__locale=request.locale,
-                                    document__allow_discussion=True)
-    if 'all' in request.POST.get('watch'):
-        for t in threads:
-            NewPostEvent.notify(request.user, t)
-            statsd.incr('kbforums.watches.thread')
-    elif 'none' in request.POST.get('watch'):
-        for t in threads:
-            NewPostEvent.stop_notifying(request.user, t)
-
-    return HttpResponseRedirect(reverse('wiki.discussions'))
 
 def _document_form_initial(document):
     """Return a dict with the document data pertinent for the form."""

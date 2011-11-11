@@ -289,6 +289,19 @@ ol.posts li div.author {
     padding: 0 1% 1em 1%;
 }
 
+#threads input.watchtoggle {
+    border-radius: 4px;
+    -moz-border-radius: 4px;
+    -webkit-border-radius: 4px;
+    float: left;
+    padding: 2px ;
+    margin: 0 10px 0 0;
+}
+
+#threads input.watchtoggle.on {
+    background: #d7f8e0;
+    color: #10c493;
+}
 /* Reply Preview */
 #post-preview {
     margin: 10px 0 0;

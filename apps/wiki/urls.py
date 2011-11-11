@@ -89,11 +89,6 @@ document_patterns = patterns('wiki.views',
 urlpatterns = patterns('wiki.views',
     url(r'^$', redirect_to, {'url': 'home'}, name='wiki.home'),
 
-    # All kb discussions by locale.
-    url(r'^/discussions$', 'discussions', name='wiki.discussions'),
-    url(r'^/discussions/watch$', 'watch_locale_discussions',
-        name='wiki.watch_locale_discussions'),
-
     # (Un)subscribe to locale 'ready for review' notifications.
     url(r'^/watch-ready-for-review$', 'watch_locale',
         name='wiki.locale_watch'),
@@ -125,6 +120,12 @@ urlpatterns = patterns('wiki.views',
 )
 
 urlpatterns += patterns('kbforums.views',
+    # All kb discussions by locale.
+    url(r'^/all/discussions$', 'locale_discussions',
+        name='wiki.locale_discussions'),
+    url(r'^/all/discussions/watch$', 'watch_locale_discussions',
+        name='wiki.watch_locale_discussions'),
+
     url(r'^/discuss/watch_locale$', 'watch_locale',
         name='wiki.discuss.watch_locale'),
 )
