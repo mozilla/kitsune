@@ -29,7 +29,7 @@ from wiki.models import wiki_search
 
 def render(s, context):
     t = jingo.env.from_string(s)
-    return t.render(**context)
+    return t.render(context)
 
 
 class SphinxTestCase(TestCase):

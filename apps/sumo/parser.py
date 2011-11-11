@@ -242,4 +242,4 @@ class WikiParser(Parser):
         template = jingo.env.get_template('wikiparser/hook_image.html')
         r_kwargs = {'image': image, 'params': params,
                     'MEDIA_URL': settings.MEDIA_URL}
-        return template.render(**r_kwargs)
+        return template.render(r_kwargs)

@@ -126,7 +126,7 @@ class Paginator(object):
     def render(self):
         c = {'pager': self.pager, 'num_pages': self.num_pages,
              'count': self.count}
-        t = env.get_template('layout/paginator.html').render(**c)
+        t = env.get_template('layout/paginator.html').render(c)
         return jinja2.Markup(t)
 
 
@@ -150,7 +150,7 @@ def breadcrumbs(context, items=list(), add_default=True):
             crumbs.append(items)
 
     c = {'breadcrumbs': crumbs}
-    t = env.get_template('layout/breadcrumbs.html').render(**c)
+    t = env.get_template('layout/breadcrumbs.html').render(c)
     return jinja2.Markup(t)
 
 
