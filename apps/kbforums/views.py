@@ -406,22 +406,11 @@ def locale_discussions(request):
     threads_ = sort_threads(threads, sort, desc)
     threads_ = paginate(request, threads_,
                         per_page=kbforums.THREADS_PER_PAGE)
+    is_watching_locale = (request.user.is_authenticated() and
+                          NewThreadInLocaleEvent.is_notifying(
+                            request.user, locale=request.locale))
     return jingo.render(request, 'kbforums/discussions.html',
                         {'locale_name': locale_name, 'threads': threads_,
-                         'desc_toggle':desc_toggle})
+                         'desc_toggle': desc_toggle,
+                         'is_watching_locale': is_watching_locale})
 
-
-@login_required
-@require_POST
-def watch_locale_discussions(request):
-    threads = Thread.objects.filter(document__locale=request.locale,
-                                    document__allow_discussion=True)
-    if 'all' in request.POST.get('watch'):
-        for t in threads:
-            NewPostEvent.notify(request.user, t)
-            statsd.incr('kbforums.watches.thread')
-    elif 'none' in request.POST.get('watch'):
-        for t in threads:
-            NewPostEvent.stop_notifying(request.user, t)
-
-    return HttpResponseRedirect(reverse('wiki.locale_discussions'))
