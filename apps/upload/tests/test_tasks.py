@@ -1,5 +1,4 @@
 import os
-import subprocess
 
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -169,7 +168,6 @@ class CompressImageTestCase(TestCase):
     def test_compressed_image_default(self, call):
         """uploaded image is compressed."""
         image = self._uploaded_image()
-        old_size = image.file.size
         compress_image(image, 'file')
         assert call.called
 
@@ -183,8 +181,8 @@ class CompressImageTestCase(TestCase):
 
     @mock.patch.object(settings._wrapped, 'OPTIPNG_PATH', None)
     @mock.patch.object(upload.tasks.subprocess, 'call')
-    def test_compress_no_file(self, call):
+    def test_compress_no_compression_software(self, call):
         """compress_image does not fail when no compression software."""
-        image = ImageAttachment(content_object=self.obj, creator=self.user)
+        image = self._uploaded_image()
         compress_image(image, 'file')
         assert not call.called

@@ -33,19 +33,7 @@ def create_imageattachment(files, user, obj):
     up_file = files.values()[0]
     check_file_size(up_file, settings.IMAGE_MAX_FILESIZE)
 
-    imagefile  = StringIO.StringIO(up_file.read())
-    imageImage = Image.open(imagefile)
-    convertedImage = StringIO.StringIO()
-    if 'transparency' in imageImage.info:  # For GIF transparency support
-        transparency = imageImage.info['transparency']
-        imageImage.save(convertedImage, format='PNG',
-                        transparency=transparency)
-    else:
-        imageImage.save(convertedImage, format='PNG')
-
-    up_file = InMemoryUploadedFile(convertedImage, None,
-                                   os.path.splitext(up_file.name)[0] + '.png',
-                                   'image/png', convertedImage.len, None)
+    up_file = _image_to_png(up_file)
 
     image = ImageAttachment(content_object=obj, creator=user)
     image.file.save(os.path.splitext(up_file.name)[0] + '.png', File(up_file),
@@ -60,6 +48,24 @@ def create_imageattachment(files, user, obj):
             'thumbnail_url': image.thumbnail_if_set().url,
             'width': width, 'height': height,
             'delete_url': image.get_delete_url()}
+
+
+def _image_to_png(up_file):
+    imagefile = StringIO.StringIO(up_file.read())
+    image_image = Image.open(imagefile)
+    converted_image = StringIO.StringIO()
+    if 'transparency' in image_image.info:  # For GIF transparency support
+        transparency = image_image.info['transparency']
+        image_image.save(converted_image, format='PNG',
+                        transparency=transparency)
+    else:
+        image_image.save(converted_image, format='PNG')
+
+    up_file = InMemoryUploadedFile(converted_image, None,
+                                   os.path.splitext(up_file.name)[0] + '.png',
+                                   'image/png', converted_image.len, None)
+
+    return up_file
 
 
 class FileTooLargeError(Exception):

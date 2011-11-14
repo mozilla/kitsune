@@ -1,17 +1,13 @@
 import os
-import StringIO
 
 from django.conf import settings
 from django.core.exceptions import PermissionDenied
 from django.core.files import File
-from django.core.files.uploadedfile import InMemoryUploadedFile
-
-import PIL
 
 from gallery.forms import ImageForm, VideoForm
 from gallery.models import Image, Video
 from sumo.urlresolvers import reverse
-from upload.utils import upload_media, check_file_size
+from upload.utils import _image_to_png, upload_media, check_file_size
 from upload.tasks import _scale_dimensions
 
 
@@ -33,20 +29,7 @@ def create_image(files, user):
     image.description = u'Autosaved draft.'
     image.locale = settings.WIKI_DEFAULT_LANGUAGE
 
-    imagefile  = StringIO.StringIO(up_file.read())
-    imageImage = PIL.Image.open(imagefile)
-    convertedImage = StringIO.StringIO()
-    if 'transparency' in imageImage.info:  # For GIF transparency support
-        transparency = imageImage.info['transparency']
-        imageImage.save(convertedImage, format='PNG',
-                        transparency=transparency)
-    else:
-        imageImage.save(convertedImage, format='PNG')
-
-    up_file = InMemoryUploadedFile(convertedImage, None,
-                                   os.path.splitext(up_file.name)[0] + '.png',
-                                   'image/png', convertedImage.len, None)
-
+    up_file = _image_to_png(up_file)
 
     # Finally save the image along with uploading the file.
     image.file.save(os.path.splitext(up_file.name)[0] + '.png',

@@ -116,4 +116,5 @@ def compress_image(for_obj, for_field):
 
     file_path = for_.path
     if settings.OPTIPNG_PATH is not None:
-        subprocess.call([settings.OPTIPNG_PATH, '-quiet', '-preserve', file_path])
+        subprocess.call([settings.OPTIPNG_PATH,
+                         '-quiet', '-preserve', file_path])
