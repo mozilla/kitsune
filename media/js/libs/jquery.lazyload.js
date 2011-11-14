@@ -32,7 +32,7 @@
         return this;
     };
 
-    $.fn.lazyload.defaults = {threshold: 30};
+    $.fn.lazyload.defaults = {threshold: 750};
 
     function aboveTheFold(element, options){
         var fold = $(window).height() + $(window).scrollTop();
