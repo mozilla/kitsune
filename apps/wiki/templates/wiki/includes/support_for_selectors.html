@@ -5,7 +5,7 @@
     <select id="os" data-oses="{{ oses_json }}" class="enable-if-js" disabled="disabled">
       {% for label, options in oses %}
         {% for _, name, slug, default in options %}
-          <option value="{{ slug }}" data-dependency="{{ label[1] }}"{% if default %} selected="selected" data-default="true"{% endif %}>{{ name }}</option>
+          <option value="{{ slug }}" data-dependency="{{ label[1] }}"{% if default %}{% if label[1] == 'desktop' %} selected="selected"{% endif %} data-default="true"{% endif %}>{{ name }}</option>
         {% endfor %}
       {% endfor %}
     </select>
