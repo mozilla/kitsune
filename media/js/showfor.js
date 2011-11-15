@@ -380,7 +380,8 @@ var ShowFor = {
                 // change the selection appropriately.
                 if (!$body.is('.' + currentDependency)) {
                     var $detectedOS = $osMenu.find('[value=' + BrowserDetect.OS + ']');
-                    if ($detectedOS.data('dependency') != currentDependency) {
+                    if (BrowserDetect.OS && $detectedOS.length &&
+                        $detectedOS.data('dependency') != currentDependency) {
                         // The detected OS is valid. Make it the new selection.
                         $osMenu.val($detectedOS.attr('value'));
                         $browserMenu.val(ShowFor.detectBrowser());
