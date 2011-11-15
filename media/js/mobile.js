@@ -1,3 +1,7 @@
+/*
+ * Scripts for mobile-optimized templates.
+ */
+
 $(document).ready(function() {
     // Used for styling.
     $('body').removeClass('no-js').addClass('js');
@@ -62,6 +66,9 @@ $(document).ready(function() {
         // Prepolate form with user's system info
         new AAQSystemInfo($('#question-form'));
     }
+
+    $('img.lazy').lazyload()
+
 });
 
 function _pd(func) {

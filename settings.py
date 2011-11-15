@@ -528,6 +528,7 @@ MINIFY_BUNDLES = {
             'js/i18n.js',
             'js/libs/jquery.min.js',
             'js/libs/jquery.cookie.js',
+            'js/libs/jquery.lazyload.js',
             'js/browserdetect.js',
             'js/showfor.js',
             'js/ajaxvote.js',
