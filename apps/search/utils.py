@@ -1,3 +1,4 @@
+import pprint
 import subprocess
 import zlib
 
@@ -35,9 +36,39 @@ def reindex(rotate=False):
 def es_reindex():
     """Reindexes the database in Elastic."""
 
+    import elasticutils
+    import pyes
+
+    es = elasticutils.get_es()
+
+    # TODO: unhardcode this
+    es.delete_index("sumo")
+
+    try:
+        es.create_index_if_missing("sumo")
+    except pyes.ElasticSearchException:
+        # TODO: Why would this throw an exception?  We should handle
+        # it.  Maybe Elastic isn't running or something in which case
+        # proceeding is an exercise in futility.
+        pass
+
     # Reindex questions.
     import questions.es_search
     questions.es_search.reindex_questions()
+
+
+def es_whazzup():
+    """Runs cluster_stats on the Elastic system."""
+    import elasticutils
+    import pyes
+
+    es = elasticutils.get_es()
+
+    pprint.pprint(es.cluster_stats())
+
+    print "questions docs count:", es.count(
+        pyes.WildcardQuery('title', '*'),
+        indices="questions")["count"]
 
 
 def start_sphinx():

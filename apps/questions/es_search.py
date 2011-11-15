@@ -37,7 +37,8 @@ def _extract_question_data(question):
     # change how this 'age' thing works or update all the documents
     # every 24 hours.  Keeping it here for now.
     if question.update is not None:
-        d['age'] = (time.time() - time.mktime(question.updated.timetuple())) / AGE_DIVISOR
+        updated_since_epoch = time.mktime(question.updated.timetuple())
+        d['age'] = (time.time() - updated_since_epoch) / AGE_DIVISOR
     else:
         d['age'] = None
 
@@ -71,7 +72,7 @@ def extract_question(question):
     """
     question_data = _extract_question_data(question)
 
-    if not question.answers.count() == 0:
+    if question.answers.count() == 0:
         # If this question has no answers, we fill out the answer
         # section as if it was a left outer join and then return that.
 
@@ -100,6 +101,7 @@ TYPE = 'type'
 ANALYZER = 'analyzer'
 INDEX = 'index'
 
+LONG = 'long'
 INTEGER = 'integer'
 STRING = 'string'
 BOOLEAN = 'boolean'
@@ -117,8 +119,8 @@ def setup_mapping(index):
     # that need analysis.
     mapping = {
         'properties': {
-            'id': {TYPE: INTEGER},
-            'question_id': {TYPE: INTEGER},
+            'id': {TYPE: LONG},
+            'question_id': {TYPE: LONG},
             'title': {TYPE: STRING, INDEX: ANALYZED, ANALYZER: SNOWBALL},
             'question_content':
                 {TYPE: STRING, INDEX: ANALYZED, ANALYZER: SNOWBALL},
@@ -140,13 +142,6 @@ def setup_mapping(index):
         }
 
     es = elasticutils.get_es()
-    try:
-        es.create_index_if_missing(index)
-    except pyes.ElasticSearchException:
-        # TODO: Why would this throw an exception?  We should handle
-        # it.  Maybe Elastic isn't running or something in which case
-        # proceeding is an exercise in futility.
-        pass
 
     # TODO: If the mapping is there already and we do a put_mapping,
     # does that stomp on the existing mapping or raise an error?
@@ -175,10 +170,24 @@ def reindex_questions():
     # want to use a different index for the test harness.
     index = "sumo"
 
+    log.info("reindex questions: %s %s", index, MAPPING_TYPE)
+
     es = elasticutils.get_es()
 
+    log.info("setting up mapping....")
     setup_mapping(index)
+
+    log.info("iterating through questions....")
+    total = Question.objects.count()
+    t = 0
     for q in Question.objects.all():
+        t += 1
+        if t % 100 == 0:
+            log.info("%s/%s...", t, total)
+            # es.flush_bulk(forced=True)
+
         index_doc(es, index, extract_question(q), bulk=True)
 
     es.flush_bulk(forced=True)
+    log.info("done!")
+    es.refresh()
