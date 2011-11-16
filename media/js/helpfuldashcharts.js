@@ -4,19 +4,25 @@
 
 (function($){
     function init() {
-        $.ajax({type: "GET",
-            url: $('#helpful-chart-tall').data('url'),
-            data: null,
-            success: function(response) {
-                $('#helpful-chart-tall').show('fast', function() {
-                    data = response['data'];
-                    makeChart(data);
-                });
-            },
-            error: function() {
-                // Swallow AJAX errors
-            }
-        });
+        $('#show-chart').click(function() {
+            $(this).unbind('click');
+            $(this).html(gettext('Loading...'));
+            $(this).css('color', '#333333').css('cursor', 'auto').css('text-decoration', 'none');
+            $.ajax({type: "GET",
+                url: $('#helpful-chart-tall').data('url'),
+                data: null,
+                success: function(response) {
+                    $('#helpful-chart-tall').show('fast', function() {
+                        data = response['data'];
+                        makeChart(data);
+                    });
+                    $('#show-chart').html('');
+                },
+                error: function() {
+                    $('#show-chart').html(gettext('Error loading chart. (Are you logged in?)'));
+                }
+            });
+        })
     }
 
     function makeChart(data) {

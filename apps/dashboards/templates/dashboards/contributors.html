@@ -28,6 +28,7 @@
     {% for readout in readouts.itervalues() %}
       {{ print_readout(readout, locale=default_locale) }}
     {% endfor %}
+    <a id="show-chart">Show Aggregate Helpfulness Chart</a>
     <div id="helpful-chart-tall" data-url="{{ url('dashboards.get_helpful_graph_async') }}"></div>
   </article>
 {% endblock %}
