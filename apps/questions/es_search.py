@@ -4,14 +4,71 @@ import pyes
 import time
 
 
-# TODO: Move this to the Question class.
-MAPPING_TYPE = 'question'
-
 ID_FACTOR = 100000
 AGE_DIVISOR = 86400
 
 # TODO: Is this the right thing to log to?
 log = logging.getLogger('k.es_search')
+
+
+# TODO: Make this less silly.  I do this because if I typo a name,
+# pyflakes points it out, but if I typo a string, it doesn't notice
+# and typos are always kicking my ass.
+
+TYPE = 'type'
+ANALYZER = 'analyzer'
+INDEX = 'index'
+
+LONG = 'long'
+INTEGER = 'integer'
+STRING = 'string'
+BOOLEAN = 'boolean'
+DATE = 'date'
+
+ANALYZED = 'analyzed'
+
+SNOWBALL = 'snowball'
+
+
+def setup_mapping(index):
+    from questions.models import Question
+
+    # TODO: ES can infer types.  I don't know offhand if we can
+    # provide some types and let it infer the rest.  If that's true,
+    # then we can ditch all the defined types here except the strings
+    # that need analysis.
+    mapping = {
+        'properties': {
+            'id': {TYPE: LONG},
+            'question_id': {TYPE: LONG},
+            'title': {TYPE: STRING, INDEX: ANALYZED, ANALYZER: SNOWBALL},
+            'question_content':
+                {TYPE: STRING, INDEX: ANALYZED, ANALYZER: SNOWBALL},
+            'answer_content':
+                {TYPE: STRING, INDEX: ANALYZED, ANALYZER: SNOWBALL},
+            'replies': {TYPE: INTEGER},
+            'is_solved': {TYPE: BOOLEAN},
+            'is_locked': {TYPE: BOOLEAN},
+            'has_answers': {TYPE: BOOLEAN},
+            'has_helpful': {TYPE: BOOLEAN},
+            'created': {TYPE: DATE},
+            'updated': {TYPE: DATE},
+            'question_creator': {TYPE: STRING},
+            'answer_creator': {TYPE: STRING},
+            'question_votes': {TYPE: INTEGER},
+            'answer_votes': {TYPE: INTEGER},
+            'age': {TYPE: INTEGER},
+            }
+        }
+
+    es = elasticutils.get_es()
+
+    # TODO: If the mapping is there already and we do a put_mapping,
+    # does that stomp on the existing mapping or raise an error?
+    try:
+        es.put_mapping(Question.ElasticMeta.type, mapping, index)
+    except pyes.ElasticSearchException, e:
+        log.error(e)
 
 
 def _extract_question_data(question):
@@ -93,70 +150,13 @@ def extract_question(question):
     return ans_list
 
 
-# TODO: Make this less silly.  I do this because if I typo a name,
-# pyflakes points it out, but if I typo a string, it doesn't notice
-# and typos are always kicking my ass.
-
-TYPE = 'type'
-ANALYZER = 'analyzer'
-INDEX = 'index'
-
-LONG = 'long'
-INTEGER = 'integer'
-STRING = 'string'
-BOOLEAN = 'boolean'
-DATE = 'date'
-
-ANALYZED = 'analyzed'
-
-SNOWBALL = 'snowball'
-
-
-def setup_mapping(index):
-    # TODO: ES can infer types.  I don't know offhand if we can
-    # provide some types and let it infer the rest.  If that's true,
-    # then we can ditch all the defined types here except the strings
-    # that need analysis.
-    mapping = {
-        'properties': {
-            'id': {TYPE: LONG},
-            'question_id': {TYPE: LONG},
-            'title': {TYPE: STRING, INDEX: ANALYZED, ANALYZER: SNOWBALL},
-            'question_content':
-                {TYPE: STRING, INDEX: ANALYZED, ANALYZER: SNOWBALL},
-            'answer_content':
-                {TYPE: STRING, INDEX: ANALYZED, ANALYZER: SNOWBALL},
-            'replies': {TYPE: INTEGER},
-            'is_solved': {TYPE: BOOLEAN},
-            'is_locked': {TYPE: BOOLEAN},
-            'has_answers': {TYPE: BOOLEAN},
-            'has_helpful': {TYPE: BOOLEAN},
-            'created': {TYPE: DATE},
-            'updated': {TYPE: DATE},
-            'question_creator': {TYPE: STRING},
-            'answer_creator': {TYPE: STRING},
-            'question_votes': {TYPE: INTEGER},
-            'answer_votes': {TYPE: INTEGER},
-            'age': {TYPE: INTEGER},
-            }
-        }
-
-    es = elasticutils.get_es()
-
-    # TODO: If the mapping is there already and we do a put_mapping,
-    # does that stomp on the existing mapping or raise an error?
-    try:
-        es.put_mapping(MAPPING_TYPE, mapping, index)
-    except pyes.ElasticSearchException, e:
-        log.error(e)
-
-
 # TODO: Looks like elasticutils.get_es() gives you a thread-local ES
 # instance.  I didn't want to keep calling get_es(), so I'm passing it
 # in here.  Double-check to make sure that's not stupid.
 def index_doc(es, index, documents, bulk=False, force_insert=False):
+    from questions.models import Question
     for doc in documents:
-        es.index(doc, index, doc_type=MAPPING_TYPE,
+        es.index(doc, index, doc_type=Question.ElasticMeta.type,
                  id=doc["id"], bulk=bulk, force_insert=force_insert)
 
 
@@ -170,7 +170,8 @@ def reindex_questions():
     # want to use a different index for the test harness.
     index = "sumo"
 
-    log.info("reindex questions: %s %s", index, MAPPING_TYPE)
+    log.info("reindex questions: %s %s", index,
+             Question.ElasticMeta.type)
 
     es = elasticutils.get_es()
 
@@ -182,9 +183,8 @@ def reindex_questions():
     t = 0
     for q in Question.objects.all():
         t += 1
-        if t % 100 == 0:
+        if t % 1000 == 0:
             log.info("%s/%s...", t, total)
-            # es.flush_bulk(forced=True)
 
         index_doc(es, index, extract_question(q), bulk=True)
 

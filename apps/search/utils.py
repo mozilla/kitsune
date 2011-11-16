@@ -46,7 +46,7 @@ def es_reindex():
 
     try:
         es.create_index_if_missing("sumo")
-    except pyes.ElasticSearchException:
+    except pyes.exceptions.ElasticSearchException:
         # TODO: Why would this throw an exception?  We should handle
         # it.  Maybe Elastic isn't running or something in which case
         # proceeding is an exercise in futility.
@@ -66,6 +66,8 @@ def es_whazzup():
 
     pprint.pprint(es.cluster_stats())
 
+    # This is goofy, but it gives us a count of all the question
+    # documents in the index.
     print "questions docs count:", es.count(
         pyes.WildcardQuery('title', '*'),
         indices="questions")["count"]

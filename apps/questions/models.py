@@ -65,6 +65,9 @@ class Question(ModelBase, BigVocabTaggableMixin):
                  'Can change/remove the solution to a question'),
             )
 
+    class ElasticMeta(object):
+        type = 'question'
+
     class SphinxMeta(object):
         index = 'questions'
         filter_mapping = {
