@@ -773,11 +773,11 @@ def get_helpful_votes_async(request, document_slug):
 
     results = cursor.fetchall()
     for res in results:
-        created = 1000 * int(time.mktime(res[3].timetuple()))
+        created = 1000 * (int(time.mktime(res[3].timetuple()) / 86400) * 86400)
         percent = float(res[1]) / (float(res[1]) + float(res[2]))
-        yes_data.append([created, int(res[1])])
-        no_data.append([created, int(res[2])])
-        perc_data.append([created, percent])
+        yes_data.append({'x': created, 'y': int(res[1])})
+        no_data.append({'x': created, 'y': int(res[2])})
+        perc_data.append({'x': created, 'y': percent})
         date_to_rev_id[created] = res[0]
         date_tooltip[created] = {'yes': int(res[1]),
                                  'no': int(res[2]),
