@@ -809,12 +809,12 @@ def get_helpful_votes_async(request, document_slug):
     for rev in Revision.objects.filter(pk__in=revisions,
                                        created__gte=min_created,
                                        created__lte=max_created):
-        rdate = rev.created
+        rdate = rev.reviewed or rev.created
         rev_data.append({
                     'x': 1000 * int(time.mktime(rdate.timetuple())),
                     # L10n: 'R' is the first letter of "Revision".
                     'title': _('R', 'revision_heading'),
-                    'text': unicode(_('Revision %s')) % rdate
+                    'text': unicode(_('Revision %s')) % rev.created
                     #'url': 'http://www.google.com/'  # Not supported yet
                 })
 
