@@ -98,6 +98,9 @@
                     type: 'all',
                     text: gettext('All')
                 }],
+                buttonTheme: {
+                    width: null
+                },
                 inputStyle: {
                     fontSize: '10px'
                 }
