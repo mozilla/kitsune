@@ -128,15 +128,23 @@
                     var x = this.x,
                         s;
 
-                    // build the header
-                    s = ['<span style="font-size: 10px">' +
-                        Highcharts.dateFormat('%A, %b %e, %Y', x) +
-                        '</span>',
-                        'Yes: <strong>' + dateTooltip[x].yes + '</strong>',
-                        'No: <strong>' + dateTooltip[x].no + '</strong>',
-                        'Percent: <strong>' + dateTooltip[x].percent + '%</strong>'
-                        ]
-
+                    if('key' in this) {
+                        // revision flag
+                        s = ['<span style="font-size: 10px">' +
+                            Highcharts.dateFormat('%b %e, %Y', x) +
+                            '</span>',
+                            this.point.text]
+                    }
+                    else {
+                        // data point element
+                        s = ['<span style="font-size: 10px">' +
+                            Highcharts.dateFormat('%A, %b %e, %Y', x) +
+                            '</span>',
+                            'Yes: <strong>' + dateTooltip[x].yes + '</strong>',
+                            'No: <strong>' + dateTooltip[x].no + '</strong>',
+                            'Percent: <strong>' + dateTooltip[x].percent + '%</strong>'
+                            ]
+                    }
                     return s.join('<br/>');
                 }
             },
