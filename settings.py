@@ -452,6 +452,7 @@ MINIFY_BUNDLES = {
             'js/main.js',
             'js/format.js',
             'js/loadtest.js',
+            'js/sopa.js',
         ),
         'libs/jqueryui': (
             'js/libs/jqueryui.min.js',
