@@ -1,5 +1,5 @@
 (function($) {
-    var html = '<a style="width:400px;height:32px;vertical-align:middle;text-align:center;background-color:#000;position:absolute;z-index:5555;top:40px;left:10px;background-image:url(%simg/mozillaorg_censorship_wht.png);background-position:center center;background-repeat:no-repeat;text-indent:-9999px;" href="http://americancensorship.org">STOP CENSORSHIP</a>';
+    var html = '<a style="width:400px;height:32px;vertical-align:middle;text-align:center;background-color:#000;position:absolute;z-index:5555;left:10px;background-image:url(%simg/mozillaorg_censorship_wht.png);background-position:center center;background-repeat:no-repeat;text-indent:-9999px;-moz-transform:rotate(-1deg);-webkit-transform:rotate(-1deg);transform:rotate(-1deg);top: 41px;" href="http://americancensorship.org">STOP CENSORSHIP</a>';
 
     function isACD() {
         var start = new Date('Wed Nov 16 2011 00:00:01'),
