@@ -17,10 +17,7 @@ def users(request):
     * pagesize - (default: 100)
 
     Returns list of objects with the following fields:
-        userid, username, points, answer_count, answer_points,
-        firstanswer_count, firstanswer_points, solution_count,
-        solution_points, helpful_count, helpful_points,
-        unhelpful_count, unhelpful_points
+        userid, username, points, <action_types>
     """
     daterange = request.GET.get('daterange', '1y')
     sort = request.GET.get('sort', 'points')
@@ -29,9 +26,18 @@ def users(request):
     # TODO: add validation to all the fields. Maybe using django forms?
 
     mgr = KarmaManager()
-    users = mgr.top_users(range=daterange, type=sort, count=pagesize,
-                    offset=(page - 1) * pagesize)
+    users = mgr.top_users(daterange=daterange, type=sort, count=pagesize,
+                          offset=(page - 1) * pagesize)
+
+    action_types = KarmaManager.action_types.keys()
+    schema = ['userid', 'username', 'points'] + action_types
+    user_list = []
+    for u in users:
+        user = [u.id, u.username]
+        user.append(mgr.count(u, daterange=daterange, type='points'))
+        for t in action_types:
+            user.append(mgr.count(u, daterange=daterange, type=t))
+        user_list.append(user)
     return {
-        'users': [(u.id, u.username,
-                   mgr.count(daterange=daterange)) for u in users],
-        'user_schema': ['userid', 'username', 'points']}
+        'users': user_list,
+        'user_schema': schema}
