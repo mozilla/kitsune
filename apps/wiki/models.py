@@ -248,6 +248,9 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin):
                            ('slug', 'locale'))
         permissions = [('archive_document', 'Can archive document')]
 
+    class ElasticMeta(object):
+        type = 'wiki'
+
     class SphinxMeta(object):
         index = 'wiki_pages'
         filter_mapping = {

@@ -8,7 +8,7 @@ ID_FACTOR = 100000
 AGE_DIVISOR = 86400
 
 # TODO: Is this the right thing to log to?
-log = logging.getLogger('k.es_search')
+log = logging.getLogger('k.quetion.es_search')
 
 
 # TODO: Make this less silly.  I do this because if I typo a name,
@@ -150,14 +150,27 @@ def extract_question(question):
     return ans_list
 
 
-# TODO: Looks like elasticutils.get_es() gives you a thread-local ES
-# instance.  I didn't want to keep calling get_es(), so I'm passing it
-# in here.  Double-check to make sure that's not stupid.
-def index_doc(es, index, documents, bulk=False, force_insert=False):
+def index_doc(doc, bulk=False, force_insert=False):
+    from django.conf import settings
     from questions.models import Question
-    for doc in documents:
+    import elasticutils
+
+    index = settings.ES_INDEXES['default']
+
+    es = elasticutils.get_es()
+    try:
         es.index(doc, index, doc_type=Question.ElasticMeta.type,
-                 id=doc["id"], bulk=bulk, force_insert=force_insert)
+                 id=doc['id'], bulk=bulk, force_insert=force_insert)
+    except pyes.urllib3.TimeoutError:
+        # If we have a timeout, try it again rather than die.  If we
+        # have a second one, that will cause everything to die.
+        es.index(doc, index, doc_type=Question.ElasticMeta.type,
+                 id=doc['id'], bulk=bulk, force_insert=force_insert)
+
+
+def index_docs(documents, bulk=False, force_insert=False):
+    for doc in documents:
+        index_doc(doc, bulk, force_insert)
 
 
 # TODO: This is seriously intensive and takes a _long_ time to run.
@@ -165,29 +178,28 @@ def index_doc(es, index, documents, bulk=False, force_insert=False):
 def reindex_questions():
     """Updates the mapping and indexes all questions."""
     from questions.models import Question
+    from django.conf import settings
 
-    # TODO: Unhard-code this.  Put it in settings.py?  We probably
-    # want to use a different index for the test harness.
-    index = "sumo"
+    index = settings.ES_INDEXES['default']
 
-    log.info("reindex questions: %s %s", index,
+    log.info('reindex questions: %s %s', index,
              Question.ElasticMeta.type)
 
     es = elasticutils.get_es()
 
-    log.info("setting up mapping....")
+    log.info('setting up mapping....')
     setup_mapping(index)
 
-    log.info("iterating through questions....")
+    log.info('iterating through questions....')
     total = Question.objects.count()
     t = 0
     for q in Question.objects.all():
         t += 1
         if t % 1000 == 0:
-            log.info("%s/%s...", t, total)
+            log.info('%s/%s...', t, total)
 
-        index_doc(es, index, extract_question(q), bulk=True)
+        index_docs(extract_question(q), bulk=True)
 
     es.flush_bulk(forced=True)
-    log.info("done!")
+    log.info('done!')
     es.refresh()
