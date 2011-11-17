@@ -1,4 +1,5 @@
 from access.decorators import login_required  # , permission_required
+from karma.forms import UserAPIForm
 from karma.manager import KarmaManager
 from sumo.decorators import render_to_json
 
@@ -19,11 +20,14 @@ def users(request):
     Returns list of objects with the following fields:
         userid, username, points, <action_types>
     """
-    daterange = request.GET.get('daterange', '1y')
-    sort = request.GET.get('sort', 'points')
-    page = request.GET.get('page', 1)
-    pagesize = request.GET.get('pagesize', 100)
-    # TODO: add validation to all the fields. Maybe using django forms?
+    form = UserAPIForm(request.GET)
+    if not form.is_valid():
+        return {'success': False, 'errors': form.errors}
+
+    daterange = form.cleaned_data.get('daterange') or '1y'
+    sort = form.cleaned_data.get('sort') or 'points'
+    page = form.cleaned_data.get('page') or 1
+    pagesize = form.cleaned_data.get('pagesize') or 100
 
     mgr = KarmaManager()
     users = mgr.top_users(daterange=daterange, type=sort, count=pagesize,
@@ -38,6 +42,8 @@ def users(request):
         for t in action_types:
             user.append(mgr.count(u, daterange=daterange, type=t))
         user_list.append(user)
+
     return {
+        'success': True,
         'users': user_list,
         'user_schema': schema}
