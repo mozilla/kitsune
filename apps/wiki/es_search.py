@@ -15,7 +15,6 @@ TYPE = 'type'
 ANALYZER = 'analyzer'
 INDEX = 'index'
 
-LONG = 'long'
 INTEGER = 'integer'
 STRING = 'string'
 BOOLEAN = 'boolean'
@@ -35,11 +34,11 @@ def setup_mapping(index):
     # that need analysis.
     mapping = {
         'properties': {
-            'id': {TYPE: LONG},
+            'id': {TYPE: INTEGER},
             'title': {TYPE: STRING, INDEX: ANALYZED, ANALYZER: SNOWBALL},
             'locale': {TYPE: STRING},
-            'current': {TYPE: LONG},
-            'parent_id': {TYPE: LONG},
+            'current': {TYPE: INTEGER},
+            'parent_id': {TYPE: INTEGER},
             'content':
                 {TYPE: STRING, INDEX: ANALYZED, ANALYZER: SNOWBALL},
             'category': {TYPE: INTEGER},
@@ -85,16 +84,14 @@ def extract_document(doc):
     return d
 
 
-# TODO: Looks like elasticutils.get_es() gives you a thread-local ES
-# instance.  I didn't want to keep calling get_es(), so I'm passing it
-# in here.  Double-check to make sure that's not stupid.
-def index_doc(doc, bulk=False, force_insert=False):
+def index_doc(doc, bulk=False, force_insert=False, es=None):
     from wiki.models import Document
-    import elasticutils
     from django.conf import settings
 
+    if es is None:
+        es = elasticutils.get_es()
+
     index = settings.ES_INDEXES['default']
-    es = elasticutils.get_es()
     try:
         es.index(doc, index, doc_type=Document.ElasticMeta.type,
                  id=doc['id'], bulk=bulk, force_insert=force_insert)
@@ -117,7 +114,7 @@ def reindex_documents():
     log.info('reindex documents: %s %s', index,
              Document.ElasticMeta.type)
 
-    es = elasticutils.get_es()
+    es = pyes.ES(settings.ES_HOSTS, timeout=4.0)
 
     log.info('setting up mapping....')
     setup_mapping(index)
@@ -130,7 +127,7 @@ def reindex_documents():
         if t % 1000 == 0:
             log.info('%s/%s...', t, total)
 
-        index_doc(extract_document(d), bulk=True)
+        index_doc(extract_document(d), bulk=True, es=es)
 
     es.flush_bulk(forced=True)
     log.info('done!')

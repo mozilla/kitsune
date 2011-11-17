@@ -150,14 +150,14 @@ def extract_question(question):
     return ans_list
 
 
-def index_doc(doc, bulk=False, force_insert=False):
+def index_doc(doc, bulk=False, force_insert=False, es=None):
     from django.conf import settings
     from questions.models import Question
-    import elasticutils
+
+    if es is None:
+        es = elasticutils.get_es()
 
     index = settings.ES_INDEXES['default']
-
-    es = elasticutils.get_es()
     try:
         es.index(doc, index, doc_type=Question.ElasticMeta.type,
                  id=doc['id'], bulk=bulk, force_insert=force_insert)
@@ -168,9 +168,9 @@ def index_doc(doc, bulk=False, force_insert=False):
                  id=doc['id'], bulk=bulk, force_insert=force_insert)
 
 
-def index_docs(documents, bulk=False, force_insert=False):
+def index_docs(documents, bulk=False, force_insert=False, es=None):
     for doc in documents:
-        index_doc(doc, bulk, force_insert)
+        index_doc(doc, bulk, force_insert, es)
 
 
 # TODO: This is seriously intensive and takes a _long_ time to run.
@@ -185,7 +185,7 @@ def reindex_questions():
     log.info('reindex questions: %s %s', index,
              Question.ElasticMeta.type)
 
-    es = elasticutils.get_es()
+    es = pyes.ES(settings.ES_HOSTS, timeout=4.0)
 
     log.info('setting up mapping....')
     setup_mapping(index)
@@ -198,7 +198,7 @@ def reindex_questions():
         if t % 1000 == 0:
             log.info('%s/%s...', t, total)
 
-        index_docs(extract_question(q), bulk=True)
+        index_docs(extract_question(q), bulk=True, es=es)
 
     es.flush_bulk(forced=True)
     log.info('done!')

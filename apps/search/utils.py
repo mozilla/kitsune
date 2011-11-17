@@ -60,6 +60,10 @@ def es_reindex():
     import wiki.es_search
     wiki.es_search.reindex_documents()
 
+    # Reindex forum posts.
+    import forums.es_search
+    forums.es_search.reindex_documents()
+
 
 def es_whazzup():
     """Runs cluster_stats on the Elastic system."""

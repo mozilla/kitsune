@@ -186,6 +186,9 @@ class Post(ActionMixin, ModelBase):
     class Meta:
         ordering = ['created']
 
+    class ElasticMeta(object):
+        type = 'forums'
+
     class SphinxMeta(object):
         index = 'discussion_forums'
         filter_mapping = {'author_ord': crc32}
