@@ -5,7 +5,6 @@ from django.contrib.auth.models import User
 
 from redis.exceptions import ConnectionError
 
-from sumo.decorators import for_all_methods
 from sumo.redis_utils import redis_client, RedisError
 
 
@@ -31,16 +30,11 @@ def _handle_redis_errors(func):
     return wrapper
 
 
-@for_all_methods(_handle_redis_errors)
 class KarmaManager(object):
     """Manager for querying karma data in Redis."""
 
     date_ranges = {'1w': 7, '1m': 30, '3m': 91, '6m': 182, '1y': 365}
-
-    # TODO: think about having a register mechanism so KarmaManager can
-    # know about all the (registered) actions. For now, this works!
-    action_types = ('answer', 'first-answer', 'solution',
-                    'helpful-answer', 'nothelpful-answer')
+    action_types = {}
 
     def __init__(self, redis=None):
         if not redis:
@@ -49,6 +43,10 @@ class KarmaManager(object):
             except RedisError as e:
                 log.error('Redis error: %s' % e)
         self.redis = redis
+
+    @classmethod
+    def register(cls, action):
+        cls.action_types[action.action_type] = action.points
 
     # Setters:
     def save_action(self, action):
@@ -86,7 +84,7 @@ class KarmaManager(object):
 
     def update_top(self):
         """Update the aggregates and indexes for all actions and ranges."""
-        for action_type in self.action_types + ('points',):
+        for action_type in self.action_types.keys() + ['points']:
             for daterange in self.date_ranges.keys() + ['all']:
                 self._update_top(daterange, action_type)
 
@@ -122,10 +120,8 @@ class KarmaManager(object):
         else:
             self.redis.hdel(hash_key(userid), key)
 
-    def recalculate_points(self, user, actions):
-        """Recalculate the points for a given user.
-
-        `actions` is a dict that maps action types to points."""
+    def recalculate_points(self, user):
+        """Recalculate the points for a given user."""
         key = hash_key(user)
         values = self.user_data(user)
 
@@ -139,11 +135,12 @@ class KarmaManager(object):
         # Recalculate all the points
         for k in values:
             action_type, action_date = k.split(':')
-            points = actions[action_type] * int(values[k])
+            points = self.action_types[action_type] * int(values[k])
             self.redis.hincrby(key, 'points:{d}'.format(
                 d=action_date), points)
 
     # Getters:
+    @_handle_redis_errors
     def top_users(self, daterange='all', type='points', count=10, offset=0):
         """Get a list of users sorted for the specified range and type."""
         ids = self.top_users_ids(daterange, type, count, offset)
@@ -157,6 +154,7 @@ class KarmaManager(object):
         return self.redis.zrevrange('{p}:{t}:{s}'.format(
             p=KEY_PREFIX, t=type, s=daterange), offset, offset + count - 1)
 
+    @_handle_redis_errors
     def ranking(self, user, daterange='all', type='points'):
         """The user's ranking for the given range and type."""
         if not self.count(user=user, daterange=daterange, type=type):
