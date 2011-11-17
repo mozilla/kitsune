@@ -17,9 +17,9 @@ from taggit.models import Tag
 from wikimarkup.parser import ALLOWED_TAGS, ALLOWED_ATTRIBUTES
 
 from questions.tests import tags_eq
-from sumo.urlresolvers import reverse
 from sumo.helpers import urlparams
 from sumo.tests import post, get, attrs_eq
+from sumo.urlresolvers import reverse
 from users.tests import user, add_permission
 from wiki.cron import calculate_related_documents
 from wiki.events import (EditDocumentEvent, ReadyRevisionEvent,
