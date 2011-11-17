@@ -27,10 +27,10 @@ class KarmaManagerTests(TestCase):
         TestAction1(user=self.user).save()  # 3pts
         TestAction1(user=self.user).save()  # 3pts
         TestAction2(user=self.user).save()  # 7pts
-        eq_(13, self.mgr.total_points(self.user))
+        eq_(13, self.mgr.count(self.user, type='points'))
         new_pts = {
             'test-action-1': 15,
             'test-action-2': 12
         }
         self.mgr.recalculate_points(self.user, new_pts)
-        eq_(42, self.mgr.total_points(self.user))
+        eq_(42, self.mgr.count(self.user, type='points'))

@@ -26,13 +26,14 @@ class KarmaActionTests(TestCase):
         """Save an action and verify."""
         switch_is_active.return_value = True
         TestAction1(user=self.user).save()
-        eq_(3, self.mgr.total_points(self.user))
-        eq_(1, self.mgr.total_count(TestAction1, self.user))
+        eq_(3, self.mgr.count(self.user, type='points'))
+        eq_(1, self.mgr.count(self.user, type=TestAction1.action_type))
         today = date.today()
-        eq_(1, self.mgr.day_count(TestAction1, self.user, today))
-        eq_(1, self.mgr.month_count(TestAction1, self.user, today.year,
-                                    today.month))
-        eq_(1, self.mgr.year_count(TestAction1, self.user, today.year))
+        eq_(1, self.mgr.day_count(self.user, today, TestAction1.action_type))
+        eq_(1, self.mgr.month_count(self.user, today.year,
+                                    today.month, TestAction1.action_type))
+        eq_(1, self.mgr.year_count(self.user, today.year,
+                                   TestAction1.action_type))
 
     @mock.patch.object(waffle, 'switch_is_active')
     def test_two_actions(self, switch_is_active):
@@ -41,15 +42,17 @@ class KarmaActionTests(TestCase):
         TestAction1(user=self.user).save()
         TestAction2(user=self.user).save()
         TestAction2(user=self.user).save()
-        eq_(17, self.mgr.total_points(self.user))
-        eq_(1, self.mgr.total_count(TestAction1, self.user))
-        eq_(2, self.mgr.total_count(TestAction2, self.user))
+        eq_(17, self.mgr.count(self.user, type='points'))
+        eq_(1, self.mgr.count(self.user, type=TestAction1.action_type))
+        eq_(2, self.mgr.count(self.user, type=TestAction2.action_type))
         today = date.today()
-        eq_(1, self.mgr.day_count(TestAction1, self.user, today))
-        eq_(1, self.mgr.month_count(TestAction1, self.user, today.year,
-                                    today.month))
-        eq_(1, self.mgr.year_count(TestAction1, self.user, today.year))
-        eq_(2, self.mgr.day_count(TestAction2, self.user, today))
-        eq_(2, self.mgr.month_count(TestAction2, self.user, today.year,
-                                    today.month))
-        eq_(2, self.mgr.year_count(TestAction2, self.user, today.year))
+        eq_(1, self.mgr.day_count(self.user, today, TestAction1.action_type))
+        eq_(1, self.mgr.month_count(self.user, today.year, today.month,
+                                    TestAction1.action_type))
+        eq_(1, self.mgr.year_count(self.user, today.year,
+                                   TestAction1.action_type))
+        eq_(2, self.mgr.day_count(self.user, today, TestAction2.action_type))
+        eq_(2, self.mgr.month_count(self.user, today.year, today.month,
+                                    TestAction2.action_type))
+        eq_(2, self.mgr.year_count(self.user, today.year,
+                                   TestAction2.action_type))

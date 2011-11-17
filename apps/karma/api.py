@@ -12,8 +12,7 @@ def users(request):
 
     GET paramaters:
     * daterange - 7d, 1m, 3m, 6m or 1y (default: 1y)
-    * sort - field to sort on (default: points)
-    * order - asc or desc (default: desc)
+    * sort - field to sort on (default: points). Order is always descending.
     * page - starts at 1 (default: 1)
     * pagesize - (default: 100)
 
@@ -25,16 +24,14 @@ def users(request):
     """
     daterange = request.GET.get('daterange', '1y')
     sort = request.GET.get('sort', 'points')
-    order = request.GET.get('order', 'desc')
     page = request.GET.get('page', 1)
     pagesize = request.GET.get('pagesize', 100)
     # TODO: add validation to all the fields. Maybe using django forms?
 
     mgr = KarmaManager()
-    # TODO: use daterange instead of being hardcoded to alltime.
-    # TODO: handle sort/order
-    users = mgr.top_alltime(count=pagesize, offset=(page - 1) * pagesize)
+    users = mgr.top_users(range=daterange, type=sort, count=pagesize,
+                    offset=(page - 1) * pagesize)
     return {
-        'users': [(u.id, u.username, mgr.total_points(u)) for u in users],
-        'user_schema': ['userid', 'username', 'points']
-    }
+        'users': [(u.id, u.username,
+                   mgr.count(daterange=daterange)) for u in users],
+        'user_schema': ['userid', 'username', 'points']}
