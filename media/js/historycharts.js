@@ -69,7 +69,7 @@
                 y: 40,
             },
             rangeSelector: {
-                selected: 5,
+                selected: 2,
                 buttons: [{
                     type: 'month',
                     count: 1,
