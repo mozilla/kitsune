@@ -5,13 +5,14 @@ from nose import SkipTest
 from nose.tools import eq_
 import waffle
 
+from karma import models
 from karma.manager import KarmaManager
 from karma.tests import TestAction1, TestAction2
 from sumo.helpers import urlparams
 from sumo.redis_utils import redis_client, RedisError
 from sumo.tests import TestCase, LocalizingClient
 from sumo.urlresolvers import reverse
-from users.tests import user
+from users.tests import user, add_permission
 
 
 class KarmaAPITests(TestCase):
@@ -42,7 +43,16 @@ class KarmaAPITests(TestCase):
         self.mgr.update_top()
 
         self.client.login(username=self.user1.username, password='testpass')
-        # TODO: give the user the right permission when that is setup
+        add_permission(self.user1, models.Title, 'view_dashboard')
+
+    @mock.patch.object(waffle, 'switch_is_active')
+    def test_user_api_no_permission(self, switch_is_active):
+        """No view_dashboard permission? No API for you."""
+        switch_is_active.return_value = True
+        self.client.login(username=self.user2.username, password='testpass')
+        url = reverse('karma.api.users')
+        response = self.client.get(url)
+        eq_(403, response.status_code)
 
     @mock.patch.object(waffle, 'switch_is_active')
     def test_user_api_default(self, switch_is_active):

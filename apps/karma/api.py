@@ -1,12 +1,11 @@
-from access.decorators import login_required  # , permission_required
+from access.decorators import login_required, permission_required
 from karma.forms import UserAPIForm
 from karma.manager import KarmaManager
 from sumo.decorators import render_to_json
 
 
 @login_required
-# TODO: setup permissions (how to do this without a model?)
-#@permission_required('karma.admin')
+@permission_required('karma.view_dashboard')
 @render_to_json
 def users(request):
     """Returns list of user karma information.
