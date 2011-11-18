@@ -140,9 +140,9 @@
                         s = ['<span style="font-size: 10px">' +
                             Highcharts.dateFormat('%A, %b %e, %Y', x) +
                             '</span>',
-                            'Yes: <strong>' + dateTooltip[x].yes + '</strong>',
-                            'No: <strong>' + dateTooltip[x].no + '</strong>',
-                            'Percent: <strong>' + dateTooltip[x].percent + '%</strong>'
+                            gettext('Yes') + ': <strong>' + dateTooltip[x].yes + '</strong>',
+                            gettext('No') + ': <strong>' + dateTooltip[x].no + '</strong>',
+                            gettext('Percent') + ': <strong>' + dateTooltip[x].percent + '%</strong>'
                             ]
                     }
                     return s.join('<br/>');
