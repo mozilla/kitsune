@@ -18,6 +18,8 @@ log = logging.getLogger('k.forums.es_search')
 TYPE = 'type'
 ANALYZER = 'analyzer'
 INDEX = 'index'
+TERM_VECTOR = 'term_vector'
+STORE = 'store'
 
 INTEGER = 'integer'
 STRING = 'string'
@@ -26,7 +28,11 @@ DATE = 'date'
 
 ANALYZED = 'analyzed'
 
+YES = 'yes'
+
 SNOWBALL = 'snowball'
+
+WITH_POS_OFFSETS = 'with_positions_offsets'
 
 
 def setup_mapping(index):
@@ -46,7 +52,8 @@ def setup_mapping(index):
             'is_locked': {TYPE: BOOLEAN},
             'author_id': {TYPE: INTEGER},
             'author_ord': {TYPE: STRING},
-            'content': {TYPE: STRING, INDEX: ANALYZED, ANALYZER: SNOWBALL},
+            'content': {TYPE: STRING, INDEX: ANALYZED, ANALYZER: SNOWBALL,
+                        STORE: YES, TERM_VECTOR: WITH_POS_OFFSETS},
             'created': {TYPE: DATE},
             'updated': {TYPE: DATE},
             'age': {TYPE: INTEGER},

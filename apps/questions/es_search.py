@@ -18,6 +18,8 @@ log = logging.getLogger('k.quetion.es_search')
 TYPE = 'type'
 ANALYZER = 'analyzer'
 INDEX = 'index'
+STORE = 'store'
+TERM_VECTOR = 'term_vector'
 
 LONG = 'long'
 INTEGER = 'integer'
@@ -28,6 +30,10 @@ DATE = 'date'
 ANALYZED = 'analyzed'
 
 SNOWBALL = 'snowball'
+
+YES = 'yes'
+
+WITH_POS_OFFSETS = 'with_positions_offsets'
 
 
 def setup_mapping(index):
@@ -43,7 +49,8 @@ def setup_mapping(index):
             'question_id': {TYPE: LONG},
             'title': {TYPE: STRING, INDEX: ANALYZED, ANALYZER: SNOWBALL},
             'question_content':
-                {TYPE: STRING, INDEX: ANALYZED, ANALYZER: SNOWBALL},
+                {TYPE: STRING, INDEX: ANALYZED, ANALYZER: SNOWBALL,
+                 STORE: YES, TERM_VECTOR: WITH_POS_OFFSETS},
             'answer_content':
                 {TYPE: STRING, INDEX: ANALYZED, ANALYZER: SNOWBALL},
             'replies': {TYPE: INTEGER},
