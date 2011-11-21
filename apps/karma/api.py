@@ -30,10 +30,10 @@ def users(request):
 
     mgr = KarmaManager()
     users = mgr.top_users(daterange=daterange, type=sort, count=pagesize,
-                          offset=(page - 1) * pagesize)
+                          offset=(page - 1) * pagesize) or []
 
     action_types = KarmaManager.action_types.keys()
-    schema = ['userid', 'username', 'points'] + action_types
+    schema = ['id', 'username', 'points'] + action_types
     user_list = []
     for u in users:
         user = [u.id, u.username]
@@ -44,5 +44,5 @@ def users(request):
 
     return {
         'success': True,
-        'users': user_list,
-        'user_schema': schema}
+        'results': user_list,
+        'schema': schema}

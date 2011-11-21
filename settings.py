@@ -438,8 +438,8 @@ MINIFY_BUNDLES = {
             'css/groups.css',
             'css/wiki_syntax.css',
         ),
-        'karma': (
-            'css/karma.dashboard.css'
+        'karma.dashboard': (
+            'css/karma.dashboard.css',
         ),
     },
     'js': {
@@ -561,7 +561,7 @@ MINIFY_BUNDLES = {
         'readtracker': (
             'js/readtracker.js',
         ),
-        'karma': (
+        'karma.dashboard': (
             'js/libs/backbone.js',
             'js/karma.dashboard.js',
         ),

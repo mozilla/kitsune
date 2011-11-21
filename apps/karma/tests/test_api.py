@@ -62,7 +62,7 @@ class KarmaAPITests(TestCase):
         response = self.client.get(url)
         eq_(200, response.status_code)
         r = json.loads(response.content)
-        user_ids = [u[0] for u in r['users']]
+        user_ids = [u[0] for u in r['results']]
         eq_([self.user2.id, self.user3.id, self.user1.id], user_ids)
 
     @mock.patch.object(waffle, 'switch_is_active')
@@ -74,7 +74,7 @@ class KarmaAPITests(TestCase):
         response = self.client.get(url)
         eq_(200, response.status_code)
         r = json.loads(response.content)
-        user_ids = [u[0] for u in r['users']]
+        user_ids = [u[0] for u in r['results']]
         eq_([self.user3.id, self.user1.id], user_ids)
 
     @mock.patch.object(waffle, 'switch_is_active')
@@ -86,5 +86,5 @@ class KarmaAPITests(TestCase):
         response = self.client.get(url)
         eq_(200, response.status_code)
         r = json.loads(response.content)
-        user_ids = [u[0] for u in r['users']]
+        user_ids = [u[0] for u in r['results']]
         eq_([self.user2.id], user_ids)

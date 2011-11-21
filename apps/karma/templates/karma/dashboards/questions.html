@@ -1,0 +1,41 @@
+{# vim: set ts=2 et sts=2 sw=2: #}
+{% extends "karma/dashboards/base.html" %}
+{% set classes = ('karma-dashboard questions') %}
+{% set title = _('Support Forum Karma Dashboard') %}
+
+{% block content %}
+  <h1>{{ title }}</h1>
+
+  <article id="karma-dash" data-userlist-url="{{ url('karma.api.users') }}"></article>
+
+  <!-- View Templates -->
+  <script type="text/template" id="userlist-template">
+    <table>
+      <thead>
+        <tr>
+          <th class="select"></th>
+          <th class="username">{{ _('Username') }}</th>
+          <th class="points">{{ _('Total Points') }}</th>
+          <th class="answers">{{ _('Answers') }}</th>
+          <th class="first">{{ _('First Answers') }}</th>
+          <th class="solutions">{{ _('Solutions') }}</th>
+          <th class="helpful">{{ _('Helpful Votes') }}</th>
+          <th class="unhelpful">{{ _('Unhelpful Votes') }}</th>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </script>
+
+  <script type="text/template" id="user-template">
+    <td class="select">
+      <input type="checkbox" name="selected" value="<%= id %>" <% if(selected) { %>checked="checked"<% } %>/>
+    </td>
+    <td class="username"><%= username %></td>
+    <td class="points"><%= points %></td>
+    <td class="answers"><%= answer %></td>
+    <td class="first"><%= firstanswer %></td>
+    <td class="solutions"><%= solution %></td>
+    <td class="helpful"><%= helpfulanswer %></td>
+    <td class="unhelpful"><%= nothelpfulanswer %></td>
+  </script>
+{% endblock %}
