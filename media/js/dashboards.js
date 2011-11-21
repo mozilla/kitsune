@@ -2,6 +2,7 @@
     function init() {
         initReadoutModes();
         initWatchMenu();
+        initNeedsChange();
     }
 
     // Hook up readout mode links (like "This Week" and "All Time") to swap
@@ -68,6 +69,16 @@
                             }
                     });
             });
+    }
+
+    function initNeedsChange() {
+        // Expand rows on click
+        $('#need-changes-table tr').click(function(e) {
+            // Don't expand if a link was clicked.
+            if(!$(e.target).is('a')) {
+                $(this).toggleClass('active');
+            }
+        })
     }
 
     $(document).ready(init);

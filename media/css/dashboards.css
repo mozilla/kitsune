@@ -232,7 +232,11 @@ h2.subtitle {
     overflow: hidden;
 }
 
-#need-changes-table tr:hover div.custom {
+#need-changes-table tr {
+    cursor: pointer;
+}
+
+#need-changes-table tr.active div.custom {
     max-height: none;
 }
 
