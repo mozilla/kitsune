@@ -4,4 +4,63 @@
 
 #main {
     background: none;
+    float: none;
+    min-height: 500px;
+    width: 100%;
+}
+
+.user-list table {
+    border-collapse:collapse;
+    width: 100%;
+}
+
+.user-list th {
+    font-size: 11px;
+    font-weight: normal;
+    vertical-align: bottom;
+}
+
+.user-list th,
+.user-list td {
+    padding: 3px;
+}
+
+th.sort:after {
+    content: '';
+    border-left: solid 5px transparent;
+    border-right: solid 5px transparent;
+    border-top: solid 5px #555;
+    position: relative;
+    left: 3px;
+    top: 9px;
+}
+
+.select-user {
+    width: 20px;
+}
+
+th.sortable {
+    cursor: pointer;
+    width: 66px;
+}
+
+th.sort {
+    cursor: default;
+}
+
+.points {
+    width: 100px;
+}
+
+.helpful-answer {
+    padding: 0 3px 0 0;
+    text-align: right;
+}
+
+.nothelpful-answer {
+    padding: 0 0 0 3px;
+}
+
+.user-list tbody tr:nth-child(odd) {
+    background: #cae1ff;
 }

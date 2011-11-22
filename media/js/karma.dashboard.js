@@ -6,6 +6,9 @@
 
 "use strict";
 
+/*
+ * Models
+ */
 window.User = Backbone.Model.extend({
     defaults: {
         'selected': false
@@ -15,10 +18,30 @@ window.User = Backbone.Model.extend({
 window.Users = Backbone.Collection.extend({
     model: User,
     initialize: function(models, options) {
-        this.baseUrl = options.baseUrl;
+        _.bindAll(this, 'settingsChanged');
+
+        this.settings = options.settings;
+        this.page = 1;
+
+        this.settings.bind('change', this.settingsChanged);
+    },
+    fetch: function(options) {
+        var result,
+            fresh = !options || !options.add;
+        if (fresh) {
+            // Reset the page to 1 if this is a fresh fetch.
+            this.page = 1;
+        }
+        return Backbone.Collection.prototype.fetch.call(this, options);
     },
     url: function() {
-        return this.baseUrl;
+        var url = this.settings.get('baseUsersUrl') + '?' + $.param({
+           sort: this.settings.get('sort'),
+           daterange: this.settings.get('daterange'),
+           pagesize: this.settings.get('pagesize'),
+           page: this.page
+        });
+        return url;
     },
     parse: function(response) {
         var users = [],
@@ -31,11 +54,45 @@ window.Users = Backbone.Collection.extend({
                 });
                 users.push(tmpUser);
             });
+
+            // TODO: calculate and add aggregate properties (%s for bkg vis).
         }
         return users;
+    },
+    fetchMore: function() {
+        this.page++;
+        this.fetch({add: true});
+    },
+    settingsChanged: function() {
+        this.fetch();
     }
 });
 
+window.Settings = Backbone.Model.extend({
+    defaults: {
+        sort: 'points',
+        daterange: '1y',
+        pagesize: 100
+    },
+    sync: function(method, model, options) {
+        // Use localStorage to persist settings.
+        var resp,
+            key = 'settings';
+        if (method === 'read') {
+            resp = JSON.parse(localStorage.getItem(key));
+        } else if (method === 'create' || method === 'update') {
+            resp = localStorage.setItem(key, JSON.stringify(model));
+        } else if (method == 'delete') {
+            resp = localStorage.removeItem(key);
+        }
+        resp ? options.success(resp) : options.error('Record not found');
+    }
+});
+
+
+/*
+ * Views
+ */
 window.UserView = Backbone.View.extend({
     template: _.template($("#user-template").html()),
     tagName: 'tr',
@@ -58,17 +115,23 @@ window.UserListView = Backbone.View.extend({
     tagName: 'section',
     className: 'user-list',
 
-    events: {},
+    events: {
+        'click .sortable:not(.sort)': 'sort'
+    },
 
     initialize: function() {
         _.bindAll(this, 'render', 'renderUser');
+
+        this.settings = this.options.settings;
 
         this.collection.bind('reset', this.render);
         this.collection.bind('add', this.renderUser);
     },
 
     render: function() {
-        $(this.el).html(this.template({}));
+        $(this.el).html(this.template({
+            sort: this.settings.get('sort')
+        }));
         this.collection.each(this.renderUser);
         return this;
     },
@@ -78,19 +141,35 @@ window.UserListView = Backbone.View.extend({
             model: user
         });
         this.$('tbody').append(view.render().el);
+    },
+
+    sort: function(e) {
+        var sortBy = $.trim(e.target.className.replace('sortable', ''));
+        this.settings.save({sort: sortBy});
     }
 });
 
+
+/*
+ * Application
+ */
 window.KarmaDashboard = Backbone.View.extend({
     initialize: function() {
-        // Create Users collection.
+        // Create models and collections.
+        window.settings = new Settings();
+        settings.fetch();
+        settings.save({
+            baseUsersUrl: $(this.el).data('userlist-url')
+        });
+
         window.users = new Users([], {
-            baseUrl: $(this.el).data('userlist-url')
+            settings: settings
         });
 
         // Create the views.
         this.userListView = new UserListView({
-            collection: window.users
+            collection: window.users,
+            settings: settings
         });
 
         // Render the views.
