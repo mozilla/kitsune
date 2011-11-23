@@ -68,6 +68,11 @@ class TestCase(test_utils.TestCase):
         super(TestCase, self).setUp()
         settings.REDIS_BACKENDS = settings.REDIS_TEST_BACKENDS
 
+    @classmethod
+    def setUpClass(cls):
+        super(TestCase, cls).setUpClass()
+        settings.ES_INDEXES = settings.TEST_ES_INDEXES
+
 
 class MigrationTests(TestCase):
     """Sanity checks for the SQL migration scripts"""
@@ -116,7 +121,6 @@ class MigrationTests(TestCase):
 
 
 class MobileTestCase(TestCase):
-
     def setUp(self):
         super(MobileTestCase, self).setUp()
         self.client.cookies[settings.MOBILE_COOKIE] = 'on'

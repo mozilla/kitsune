@@ -41,16 +41,17 @@ def es_reindex():
 
     es = elasticutils.get_es()
 
-    # TODO: unhardcode this
-    es.delete_index("sumo")
+    # Go through and delete, then recreate the indexes.
+    for index in settings.ES_INDEXES.values():
+        es.delete_index_if_exists(index)
 
-    try:
-        es.create_index_if_missing("sumo")
-    except pyes.exceptions.ElasticSearchException:
-        # TODO: Why would this throw an exception?  We should handle
-        # it.  Maybe Elastic isn't running or something in which case
-        # proceeding is an exercise in futility.
-        pass
+        try:
+            es.create_index_if_missing(index)
+        except pyes.exceptions.ElasticSearchException:
+            # TODO: Why would this throw an exception?  We should handle
+            # it.  Maybe Elastic isn't running or something in which case
+            # proceeding is an exercise in futility.
+            pass
 
     # Reindex questions.
     import questions.es_search

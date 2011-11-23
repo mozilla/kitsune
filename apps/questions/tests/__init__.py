@@ -3,7 +3,10 @@ from datetime import datetime
 from django.conf import settings
 from django.template.defaultfilters import slugify
 
+from elasticutils import get_es
+
 from nose.tools import eq_
+from nose import SkipTest
 
 from questions.models import Question
 from sumo.tests import LocalizingClient, TestCase
@@ -39,3 +42,28 @@ def tags_eq(tagged_object, tag_names):
     """Assert that the names of the tags on tagged_object are tag_names."""
     eq_(sorted([t.name for t in tagged_object.tags.all()]),
         sorted(tag_names))
+
+
+# TODO: Have to define this here, since I need the data that TestCaseBase
+# generates.  Should we turn ESTestCase into a mixin?
+class ESTestCase(TestCaseBase):
+    @classmethod
+    def setUpClass(cls):
+        super(ESTestCase, cls).setUpClass()
+        if getattr(settings, 'ES_HOSTS', None) is None:
+            raise SkipTest
+
+        # Delete test indexes if they exist.
+        cls.es = get_es()
+        for index in settings.ES_INDEXES.values():
+            cls.es.delete_index_if_exists(index)
+
+        from search.utils import es_reindex
+
+        es_reindex()
+
+    @classmethod
+    def tearDownClass(cls):
+        for index in settings.ES_INDEXES.values():
+            cls.es.delete_index_if_exists(index)
+        super(ESTestCase, cls).tearDownClass()

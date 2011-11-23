@@ -66,8 +66,8 @@ def setup_mapping(index):
     # TODO: If the mapping is there already and we do a put_mapping,
     # does that stomp on the existing mapping or raise an error?
     try:
-        es.put_mapping(Post.ElasticMeta.type, mapping, index)
-    except pyes.ElasticSearchException, e:
+        es.put_mapping(Post._meta.db_table, mapping, index)
+    except pyes.exceptions.ElasticSearchException, e:
         log.error(e)
 
 
@@ -110,12 +110,12 @@ def index_post(post, bulk=False, force_insert=False, es=None):
 
     index = settings.ES_INDEXES['default']
     try:
-        es.index(post, index, doc_type=Post.ElasticMeta.type,
+        es.index(post, index, doc_type=Post._meta.db_table,
                  id=post['id'], bulk=bulk, force_insert=force_insert)
     except pyes.urllib3.TimeoutError:
         # If we have a timeout, try it again rather than die.  If we
         # have a second one, that will cause everything to die.
-        es.index(post, index, doc_type=Post.ElasticMeta.type,
+        es.index(post, index, doc_type=Post._meta.db_table,
                  id=post['id'], bulk=bulk, force_insert=force_insert)
 
 
@@ -126,12 +126,12 @@ def reindex_documents():
     from forums.models import Post
     from django.conf import settings
 
-    index = settings.ES_INDEXES['default']
+    index = (settings.ES_INDEXES.get(Post._meta.db_table)
+             or settings.ES_INDEXES['default'])
 
-    log.info('reindex posts: %s %s', index,
-             Post.ElasticMeta.type)
+    log.info('reindex posts: %s %s', index, Post._meta.db_table)
 
-    es = pyes.ES(settings.ES_HOSTS, timeout=4.0)
+    es = pyes.ES(settings.ES_HOSTS, timeout=10.0)
 
     log.info('setting up mapping....')
     setup_mapping(index)

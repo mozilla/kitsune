@@ -73,8 +73,8 @@ def setup_mapping(index):
     # TODO: If the mapping is there already and we do a put_mapping,
     # does that stomp on the existing mapping or raise an error?
     try:
-        es.put_mapping(Question.ElasticMeta.type, mapping, index)
-    except pyes.ElasticSearchException, e:
+        es.put_mapping(Question._meta.db_table, mapping, index)
+    except pyes.exceptions.ElasticSearchException, e:
         log.error(e)
 
 
@@ -164,14 +164,16 @@ def index_doc(doc, bulk=False, force_insert=False, es=None):
     if es is None:
         es = elasticutils.get_es()
 
-    index = settings.ES_INDEXES['default']
+    index = (settings.ES_INDEXES.get(Question._meta.db_table)
+             or settings.ES_INDEXES['default'])
+
     try:
-        es.index(doc, index, doc_type=Question.ElasticMeta.type,
+        es.index(doc, index, doc_type=Question._meta.db_table,
                  id=doc['id'], bulk=bulk, force_insert=force_insert)
     except pyes.urllib3.TimeoutError:
         # If we have a timeout, try it again rather than die.  If we
         # have a second one, that will cause everything to die.
-        es.index(doc, index, doc_type=Question.ElasticMeta.type,
+        es.index(doc, index, doc_type=Question._meta.db_table,
                  id=doc['id'], bulk=bulk, force_insert=force_insert)
 
 
@@ -190,9 +192,9 @@ def reindex_questions():
     index = settings.ES_INDEXES['default']
 
     log.info('reindex questions: %s %s', index,
-             Question.ElasticMeta.type)
+             Question._meta.db_table)
 
-    es = pyes.ES(settings.ES_HOSTS, timeout=4.0)
+    es = pyes.ES(settings.ES_HOSTS, timeout=10.0)
 
     log.info('setting up mapping....')
     setup_mapping(index)

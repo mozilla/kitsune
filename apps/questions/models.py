@@ -8,6 +8,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.cache import cache
 from django.db import models
 from django.db.models.signals import post_save
+from django.dispatch import receiver
 
 from product_details import product_details
 from redis.exceptions import ConnectionError
@@ -21,7 +22,7 @@ import questions as constants
 from questions.karma_actions import AnswerAction, SolutionAction
 from questions.question_config import products
 from questions.tasks import (update_question_votes, update_answer_pages,
-                             log_answer)
+                             log_answer, index_questions)
 from search import S
 from search.utils import crc32
 from sumo.helpers import urlparams
@@ -64,9 +65,6 @@ class Question(ModelBase, BigVocabTaggableMixin):
                 ('change_solution',
                  'Can change/remove the solution to a question'),
             )
-
-    class ElasticMeta(object):
-        type = 'question'
 
     class SphinxMeta(object):
         index = 'questions'
@@ -247,6 +245,13 @@ class Question(ModelBase, BigVocabTaggableMixin):
     @property
     def is_solved(self):
         return Answer.objects.filter(pk=self.solution_id).exists()
+
+
+@receiver(post_save, sender=Question,
+          dispatch_uid='questions.search.index')
+def update_question_search_index(sender, instance, **kw):
+    # TODO: waffle here
+    index_questions.delay([instance.id])
 
 
 class QuestionMetaData(ModelBase):

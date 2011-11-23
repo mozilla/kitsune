@@ -4,11 +4,13 @@
 Search
 ======
 
-Kitsune uses `Sphinx Search <http://www.sphinxsearch.com>`_ to power its
-on-site search facility.
+Kitsune is in the process of switching from `Sphinx Search
+<http://www.sphinxsearch.com>`_ to `Elastic Search
+<http://www.elasticsearch.org/>`_ to power its on-site search
+facility.
 
-Sphinx search gives us a number of advantages over MySQL's full-text search or
-Google's site search.
+Both of these give us a number of advantages over MySQL's full-text
+search or Google's site search.
 
 * Much faster than MySQL.
   * And reduces load on MySQL.
@@ -16,6 +18,17 @@ Google's site search.
 * We can adjust searches with non-visible content.
 * We don't rely on Google reindexing the site.
 * We can fine-tune the algorithm ourselves.
+
+.. Note::
+
+   Right now we're rewriting our search system to use Elastic and
+   switching between Sphinx and Elastic.  At some point, the results
+   we're getting with our Elastic-based code will be good enough to
+   switch over.  At that point, we'll remove the Sphinx-based search
+   code.
+
+   Until then, we have instructions for installing both Sphinx Search
+   and Elastic Search.
 
 
 Installing Sphinx Search
@@ -118,3 +131,58 @@ You can also stop ``searchd``::
 This method not only lets you maintain a running Sphinx instance that doesn't
 get wiped out by the tests, but also lets you see some very interesting output
 from Sphinx about indexing rate and statistics.
+
+
+Installing Elastic Search
+=========================
+
+There's an installation guide on the Elastic Search site.
+
+http://www.elasticsearch.org/guide/reference/setup/installation.html
+
+The directory you install Elastic in will hereafter be referred to as
+``ELASTICDIR``.
+
+You can configure Elastic Search with the configuration file at
+``ELASTICDIR/config/elasticsearch.yml``.
+
+Elastic Search uses three settings in ``settings.py`` that you can
+override in ``settings_local.py``::
+
+    # Connection information for Elastic
+    ES_HOSTS = ['127.0.0.1:9200']
+    ES_INDEXES = {'default': 'sumo'}
+    TEST_ES_INDEXES = {'default': 'sumo_test'}
+
+.. Warning::
+
+   The host setting must match the host and port in
+   ``ELASTICDIR/config/elasticsearch.yml``.  So if you change it in
+   one place, you must also change it in the other.
+
+.. Warning::
+
+   Make sure the index name values in ``ES_INDEXES`` and
+   ``TEST_ES_INDEXES`` are **not** the same.  If they are the same,
+   then running unit tests will nix your index.
+
+
+Using Elastic Search
+====================
+
+Start Elastic Search by::
+
+    $ ELASTICDIR/bin/elasticsearch
+
+That launches Elastic Search in the background.
+
+Do a complete reindexing of everything by::
+
+    $ ./manage.py esreindex
+
+This will delete the existing indexes, create new ones, and reindex
+everything in your database.  On my machine it takes about 30 minutes.
+
+You can see Elastic Search statistics/health with::
+
+    $ ./manage.py eswhazzup
