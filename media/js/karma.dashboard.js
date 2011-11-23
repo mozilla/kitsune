@@ -211,6 +211,17 @@ window.KarmaDashboard = Backbone.View.extend({
 
         // Load up the collection.
         users.fetch();
+
+        // Infinite scroll.
+        var $window = $(window),
+            $document = $(document),
+            fudgeFactor = 800;
+        $window.bind('scroll', _.throttle(function(){
+            if ($window.scrollTop() + fudgeFactor >
+                $document.height() - $window.height()){
+                users.fetchMore();
+            }
+        }, 100));
     }
 });
 
