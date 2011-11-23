@@ -303,8 +303,8 @@ html[lang="ja"] #more-help div.support-search input.text {
     vertical-align: top;
 }
 
-#revision-form form li,
-#document-form form li {
+#revision-form form > ul > li,
+#document-form form > ul > li {
     clear: both;
     list-style: none;
     padding: 15px 0;
@@ -314,12 +314,12 @@ html[lang="ja"] #more-help div.support-search input.text {
     padding-top: 0;
 }
 
-#document-form form li li {
+#document-form form > ul > li li {
     display: inline-block;
     padding: 0 10px 0 0;
 }
 
-.html-rtl #document-form form li li {
+.html-rtl #document-form form > ul > li li {
     padding: 0 0 0 10px;
 }
 
@@ -328,7 +328,7 @@ html[lang="ja"] #more-help div.support-search input.text {
     padding: 0;
 }
 
-article.form-page form li label {
+article.form-page form > ul > li label {
     color: #333;
     display: block;
     font-family: Verdana;
@@ -336,7 +336,7 @@ article.form-page form li label {
     margin: 0 0 5px;
 }
 
-#document-form li li label {
+#document-form > ul > li li label {
     color: #666;
     display: inline;
 }
@@ -416,6 +416,10 @@ article.main div.tags input.adder {
     top: 50%;
     width: 165px;
     z-index: 10;
+}
+
+#preview-bottom {
+    display: none;
 }
 
 .html-rtl #preview #support-for,

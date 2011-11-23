@@ -35,7 +35,7 @@ AjaxPreview.prototype = {
 
         $btn.click(function(e) {
             e.preventDefault();
-            $btn.attr('disabled', 'disabled');
+            $(this).attr('disabled', 'disabled');
             $(self).trigger('get-preview');
         });
 

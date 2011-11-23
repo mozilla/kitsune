@@ -160,12 +160,14 @@
      */
     function initArticlePreview() {
         var $preview = $('#preview'),
-            preview = new k.AjaxPreview($('#btn-preview'), {
+            $previewBottom = $('#preview-bottom'),
+            preview = new k.AjaxPreview($('.btn-preview'), {
             contentElement: $('#id_content'),
             previewElement: $preview
         });
         $(preview).bind('done', function(e, success){
             if (success) {
+                $previewBottom.show();
                 ShowFor.initForTags();
                 $preview.find('select.enable-if-js').removeAttr('disabled');
                 $preview.find('.kbox').kbox();
