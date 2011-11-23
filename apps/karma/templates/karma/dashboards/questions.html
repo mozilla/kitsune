@@ -66,4 +66,25 @@
       <%= nothelpfulanswer %>
     </td>
   </script>
+
+  <script type="text/template" id="daterange-template">
+    <label for="daterange">{{ _('Date Range') }}</label>
+    <select id="daterange">
+      <option value="1w" <% if (daterange === '1w') { %>selected<% } %>>
+        {{ _('1 week') }}
+      </option>
+      <option value="1m" <% if (daterange === '1m') { %>selected<% } %>>
+        {{ _('1 month') }}
+      </option>
+      <option value="3m" <% if (daterange === '3m') { %>selected<% } %>>
+        {{ _('3 months') }}
+      </option>
+      <option value="6m" <% if (daterange === '6m') { %>selected<% } %>>
+        {{ _('6 months') }}
+      </option>
+      <option value="1y" <% if (daterange === '1y') { %>selected<% } %>>
+        {{ _('1 year') }}
+      </option>
+    </select>
+  </script>
 {% endblock %}

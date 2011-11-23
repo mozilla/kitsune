@@ -149,6 +149,35 @@ window.UserListView = Backbone.View.extend({
     }
 });
 
+window.DateRangeView = Backbone.View.extend({
+    template: _.template($("#daterange-template").html()),
+    tagName: 'section',
+    className: 'daterange',
+
+    events: {
+        'change select': 'updateSettings'
+    },
+
+    initialize: function() {
+        _.bindAll(this, 'render', 'updateSettings');
+
+        this.settings = this.options.settings;
+    },
+
+    render: function() {
+        $(this.el).html(this.template({
+            daterange: this.settings.get('daterange')
+        }));
+        return this;
+    },
+
+    updateSettings: function() {
+        this.settings.save({
+            daterange: this.$('select').val()
+        });
+    }
+});
+
 
 /*
  * Application
@@ -167,13 +196,18 @@ window.KarmaDashboard = Backbone.View.extend({
         });
 
         // Create the views.
+        this.dateRangeView = new DateRangeView({
+            settings: settings
+        });
         this.userListView = new UserListView({
             collection: window.users,
             settings: settings
         });
 
         // Render the views.
-        $(this.el).append(this.userListView.render().el);
+        $(this.el)
+            .append(this.dateRangeView.render().el)
+            .append(this.userListView.render().el);
 
         // Load up the collection.
         users.fetch();

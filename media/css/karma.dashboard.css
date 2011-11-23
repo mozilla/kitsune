@@ -9,6 +9,24 @@
     width: 100%;
 }
 
+#karma-dash {
+    padding: 10px 0;
+}
+
+section.daterange {
+    float: right;
+}
+
+section.daterange label {
+    display: block;
+    text-align: center;
+}
+
+section.user-list {
+    clear: both;
+    padding: 10px 0;
+}
+
 .user-list table {
     border-collapse:collapse;
     width: 100%;
