@@ -114,6 +114,11 @@ directory, and putting this line in it::
 Now you can copy and modify any settings from ``settings.py`` into
 ``settings_local.py`` and the value will override the default.
 
+For local development you will want to add the following settings::
+
+    DEBUG = True
+    TEMPLATE_DEBUG = DEBUG
+    SESSION_COOKIE_SECURE = False
 
 Redis
 -----
