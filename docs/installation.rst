@@ -111,6 +111,27 @@ directory, and putting this line in it::
 
     from settings import *
 
+    DEBUG = True
+    TEMPLATE_DEBUG = DEBUG
+
+    SESSION_COOKIE_SECURE = False
+
+    TWITTER_CONSUMER_KEY = ''
+    TWITTER_CONSUMER_SECRET = ''
+
+    DATABASES = {
+        'default': {
+            'NAME': 'kitsune',
+            'ENGINE': 'django.db.backends.mysql',
+            'HOST': 'localhost',
+            'USER': 'kitsune',
+            'PASSWORD': '',
+            'OPTIONS': {'init_command': 'SET storage_engine=InnoDB'},
+            'TEST_CHARSET': 'utf8',
+            'TEST_COLLATION': 'utf8_unicode_ci',
+        },
+    }
+
 Now you can copy and modify any settings from ``settings.py`` into
 ``settings_local.py`` and the value will override the default.
 
