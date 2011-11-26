@@ -48,22 +48,34 @@
       <%= username %>
     </td>
     <td class="points">
-      <%= points %>
+      <div style="background: -moz-linear-gradient(left, #ddd, #ddd <%= pointsPerc %>%, transparent <%= pointsPerc %>%, transparent);">
+        <%= points %>
+      </div>
     </td>
     <td class="answer">
-      <%= answer %>
+      <div style="background: -moz-linear-gradient(left, #ddd, #ddd <%= answerPerc %>%, transparent <%= answerPerc %>%, transparent);">
+        <%= answer %>
+      </div>
     </td>
     <td class="first-answer">
-      <%= firstanswer %>
+      <div style="background: -moz-linear-gradient(left, #ddd, #ddd <%= firstanswerPerc %>%, transparent <%=firstanswerPerc %>%, transparent);">
+        <%= firstanswer %>
+      </div>
     </td>
     <td class="solution">
-      <%= solution %>
+      <div style="background: -moz-linear-gradient(left, #ddd, #ddd <%= solutionPerc %>%, transparent <%= solutionPerc %>%, transparent);">
+        <%= solution %>
+      </div>
     </td>
     <td class="helpful-answer">
-      <%= helpfulanswer %>
+      <div style="background: -moz-linear-gradient(left, transparent, transparent <%= 100 - helpfulanswerPerc %>%, #ddd <%= 100 - helpfulanswerPerc %>%, #ddd);">
+        <%= helpfulanswer %>
+      </div>
     </td>
     <td class="nothelpful-answer">
-      <%= nothelpfulanswer %>
+      <div style="background: -moz-linear-gradient(left, #ddd, #ddd <%= nothelpfulanswerPerc %>%, transparent <%= nothelpfulanswerPerc %>%, transparent);">
+        <%= nothelpfulanswer %>
+      </div>
     </td>
   </script>
 

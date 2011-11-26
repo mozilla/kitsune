@@ -17,11 +17,13 @@ window.User = Backbone.Model.extend({
 
 window.Users = Backbone.Collection.extend({
     model: User,
+    valueProperties: ['points', 'answer', 'firstanswer', 'solution',
+                      'helpfulanswer', 'nothelpfulanswer'],
     initialize: function(models, options) {
         _.bindAll(this, 'settingsChanged');
-
         this.settings = options.settings;
         this.page = 1;
+        this.max = {};
 
         this.settings.bind('change', this.settingsChanged);
     },
@@ -55,7 +57,31 @@ window.Users = Backbone.Collection.extend({
                 users.push(tmpUser);
             });
 
-            // TODO: calculate and add aggregate properties (%s for bkg vis).
+            // When fetching a fresh collection, recalculate the maxes.
+            if (this.page === 1) {
+                this.resetMax();
+                _.each(users, function(user) {
+                    _.each(this.valueProperties, function(key) {
+                        if (user[key] > this.max[key]) {
+                            this.max[key] = user[key];
+                        }
+                    }, this);
+                }, this);
+                // Make helpful max = not helpful max.
+                this.max['helpfulanswer'] = this.max['nothelpfulanswer'] =
+                    _.max([this.max['helpfulanswer'], this.max['nothelpfulanswer']]);
+            }
+
+            // Calculate property values as a % of max.
+            _.each(users, function(user) {
+                _.each(this.valueProperties, function(key) {
+                    user[key + 'Perc'] =
+                        Math.round(user[key]*100/this.max[key]);
+                }, this);
+            }, this);
+
+            // TODO: We are looping over 100 (or pageSize) users 2-3 times.
+            // Maybe optimize.
         }
         return users;
     },
@@ -65,6 +91,11 @@ window.Users = Backbone.Collection.extend({
     },
     settingsChanged: function() {
         this.fetch();
+    },
+    resetMax: function() {
+        _.each(this.valueProperties, function(key) {
+            this.max[key] = 0;
+        }, this);
     }
 });
 
@@ -215,7 +246,7 @@ window.KarmaDashboard = Backbone.View.extend({
         // Infinite scroll.
         var $window = $(window),
             $document = $(document),
-            fudgeFactor = 800;
+            fudgeFactor = 600;
         $window.bind('scroll', _.throttle(function(){
             if ($window.scrollTop() + fudgeFactor >
                 $document.height() - $window.height()){

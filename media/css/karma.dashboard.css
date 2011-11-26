@@ -5,7 +5,7 @@
 #main {
     background: none;
     float: none;
-    min-height: 500px;
+    min-height: 1500px;
     width: 100%;
 }
 
@@ -41,6 +41,10 @@ section.user-list {
 .user-list th,
 .user-list td {
     padding: 3px;
+}
+
+.user-list td div {
+    padding: 2px 0 2px 2px;
 }
 
 th.sort:after {
