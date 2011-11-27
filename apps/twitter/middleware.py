@@ -18,10 +18,11 @@ def validate_token(token):
 class SessionMiddleware(object):
 
     def process_request(self, request):
+        scheme = 'https' if request.is_secure() else 'http'
 
         request.twitter = Session.from_request(request)
 
-        ssl_url = url(request, {'scheme': 'https'})
+        ssl_url = url(request, {'scheme': scheme})
         auth = tweepy.OAuthHandler(settings.TWITTER_CONSUMER_KEY,
                                    settings.TWITTER_CONSUMER_SECRET,
                                    ssl_url,
@@ -55,7 +56,7 @@ class SessionMiddleware(object):
                         pass
                     else:
                         # Override path to drop query string.
-                        ssl_url = url(request, {'scheme': 'https',
+                        ssl_url = url(request, {'scheme': scheme,
                                                 'path': request.path})
                         response = http.HttpResponseRedirect(ssl_url)
 
