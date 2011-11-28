@@ -1,4 +1,5 @@
 from karma.actions import KarmaAction
+from karma.manager import KarmaManager
 
 
 class AnswerAction(KarmaAction):
@@ -29,3 +30,10 @@ class SolutionAction(KarmaAction):
     """The user's answer was marked as the solution."""
     action_type = 'solution'
     points = 25
+
+
+KarmaManager.register(AnswerAction)
+KarmaManager.register(FirstAnswerAction)
+KarmaManager.register(AnswerMarkedHelpfulAction)
+KarmaManager.register(AnswerMarkedNotHelpfulAction)
+KarmaManager.register(SolutionAction)

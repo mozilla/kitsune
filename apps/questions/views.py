@@ -136,9 +136,9 @@ def questions(request):
 
     if (waffle.flag_is_active(request, 'karma') and
         waffle.switch_is_active('karma')):
-        data.update(karma_top=KarmaAction.objects.top_alltime())
+        data.update(karma_top=KarmaAction.objects.top_users())
         if request.user.is_authenticated():
-            ranking = KarmaAction.objects.ranking_alltime(request.user)
+            ranking = KarmaAction.objects.ranking(request.user)
             if ranking <= constants.HIGHEST_RANKING:
                 data.update(karma_ranking=ranking)
     else:

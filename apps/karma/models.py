@@ -49,3 +49,8 @@ class Title(ModelBase):
 
     def __unicode__(self):
         return self.name
+
+    class Meta:
+        # Karma dashboard permission isn't exactly related to Titles, but
+        # this is the only karma model to hang a permission on.
+        permissions = (('view_dashboard', 'Can access karma dashboard'), )
