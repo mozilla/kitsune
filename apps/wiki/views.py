@@ -385,9 +385,10 @@ def review_revision(request, document_slug, revision_id):
 
             rev.save()
 
-            # Update the needs change bit.
+            # Update the needs change bit (if approved, default language and 
+            # user has permission).
             if (doc.locale == settings.WIKI_DEFAULT_LANGUAGE and
-                doc.allows_editing_by(request.user)):
+                doc.allows_editing_by(request.user) and rev.is_approved):
                 doc.needs_change = form.cleaned_data['needs_change']
                 doc.needs_change_comment = \
                     form.cleaned_data['needs_change_comment']
