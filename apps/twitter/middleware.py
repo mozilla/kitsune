@@ -18,6 +18,7 @@ def validate_token(token):
 class SessionMiddleware(object):
 
     def process_request(self, request):
+
         request.twitter = Session.from_request(request)
 
         ssl_url = url(request, {'scheme': 'https'})
