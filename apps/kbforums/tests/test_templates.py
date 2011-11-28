@@ -253,6 +253,21 @@ class ThreadsTemplateTests(KBForumTestCase):
                     locale='de'))
         eq_(200, response.status_code)
 
+    def test_all_locale_discussions(self):
+        """Start or stop watching all discussions in a locale."""
+        self.client.login(username='rrosario', password='testpass')
+        doc = Document.objects.all()[0]
+        next_url = reverse('wiki.locale_discussions')
+        # Watch locale.
+        response = post(self.client, 'wiki.discuss.watch_locale',
+                        {'watch': 'yes', 'next': next_url})
+        self.assertContains(response, 'Stop watching this locale')
+        # Stop watching locale.
+        response = post(self.client, 'wiki.discuss.watch_locale',
+                        {'watch': 'no', 'next': next_url})
+        self.assertContains(response,
+                            'Watch this locale')
+
 
 class NewThreadTemplateTests(KBForumTestCase):
 
