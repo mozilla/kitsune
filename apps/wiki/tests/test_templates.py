@@ -1134,13 +1134,37 @@ class ReviewRevisionTests(TestCaseBase):
                          'comment': comment},
                         args=[self.document.slug, self.revision.id])
         eq_(200, response.status_code)
-        r = Revision.uncached.get(pk=self.revision.id)
+        r = Revision.uncached.get(pk=self.revision.pk)
         assert r.reviewed
         assert not r.is_approved
         delay.assert_called_with(r, r.document, comment)
 
         # Verify that revision creator is not in contributors
         assert r.creator not in r.document.contributors.all()
+
+    @mock.patch.object(send_reviewed_notification, 'delay')
+    @mock.patch.object(Site.objects, 'get_current')
+    def test_reject_with_needs_change(self, get_current, delay):
+        """Verify needs_change bit isn't changed when rejecting."""
+        get_current.return_value.domain = 'testserver'
+
+        comment = 'no good'
+
+        d = self.document
+        d.needs_change = True
+        d.needs_change_comment = comment
+        d.save()
+
+        response = post(self.client, 'wiki.review_revision',
+                        {'reject': 'Reject Revision',
+                         'comment': comment}, args=[d.slug, self.revision.id])
+        eq_(200, response.status_code)
+        r = Revision.uncached.get(pk=self.revision.pk)
+        assert r.reviewed
+        assert not r.is_approved
+        d = Document.uncached.get(pk=d.pk)
+        assert d.needs_change
+        eq_(comment, d.needs_change_comment)
 
     def test_review_without_permission(self):
         """Make sure unauthorized users can't review revisions."""
