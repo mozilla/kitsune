@@ -1,5 +1,6 @@
 from messages.models import InboxMessage, OutboxMessage
 from messages.signals import message_sent
+from messages.tasks import email_private_message
 
 
 def send_message(to, text, sender=None):
@@ -13,7 +14,8 @@ def send_message(to, text, sender=None):
         msg = OutboxMessage.objects.create(sender=sender, message=text)
         msg.to.add(*to)
     for user in to:
-        InboxMessage.objects.create(sender=sender, to=user, message=text)
+        im = InboxMessage.objects.create(sender=sender, to=user, message=text)
+        email_private_message(inbox_message=im)
 
     message_sent.send(sender=InboxMessage, to=to, text=text,
                       msg_sender=sender)

@@ -44,6 +44,9 @@ class SettingsForm(forms.Form):
     kbforums_watch_after_reply = forms.BooleanField(
         required=False, initial=True,
         label=_lazy(u'Watch KB discussion threads I comment in'))
+    email_private_messages = forms.BooleanField(
+        required=False, initial=True,
+        label=_lazy(u'Send emails for private messages'))
 
     def save_for_user(self, user):
         for field in self.fields.keys():
