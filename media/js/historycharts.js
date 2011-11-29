@@ -140,9 +140,9 @@
                         s = ['<span style="font-size: 10px">' +
                             Highcharts.dateFormat('%A, %b %e, %Y', x) +
                             '</span>',
-                            'Yes: <strong>' + dateTooltip[x].yes + '</strong>',
-                            'No: <strong>' + dateTooltip[x].no + '</strong>',
-                            'Percent: <strong>' + dateTooltip[x].percent + '%</strong>'
+                            interpolate(gettext('Yes: <strong>%s</strong>'), dateTooltip[x].yes),
+                            interpolate(gettext('No: <strong>%s</strong>'), dateTooltip[x].no),
+                            interpolate(gettext('Percent: <strong>%s</strong>'), dateTooltip[x].percent)
                             ]
                     }
                     return s.join('<br/>');
