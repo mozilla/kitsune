@@ -177,7 +177,7 @@ section#avatar-area {
 }
 
 #main-area h2 {
-    height: 20px;
+    min-height: 20px;
     width: 100%;
 }
 
