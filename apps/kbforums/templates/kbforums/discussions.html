@@ -6,21 +6,17 @@
 {% block content %}
 <article id="threads" class="main">
   <h1>{{ _('{l} Knowledge Base Discussions')|f(l=locale_name) }}</h1>
-  {% if is_watching_locale %}
-    <form action="{{ url('wiki.discuss.watch_locale') }}" method="post">
-      {{ csrf() }}
+  <form id="watch_locale" action="{{ url('wiki.discuss.watch_locale') }}" method="post">
+    {{ csrf() }}
+    <input type="hidden" name="next" value="{{ request.get_full_path() }}">
+    {% if is_watching_locale %}
       <input type="hidden" name="watch" value="no">
-      <input type="hidden" name="next" value="{{ request.get_full_path() }}">
       <input type="submit" value="{{ _("Stop watching this locale") }}">
-    </form>
-  {% else %}
-    <form action="{{ url('wiki.discuss.watch_locale') }}" method="post">
-      {{ csrf() }}
+    {% else %}
       <input type="hidden" name="watch" value="yes">
-      <input type="hidden" name="next" value="{{ request.get_full_path() }}">
       <input type="submit" value="{{ _("Watch this locale") }}">
-    </form>
-  {% endif %}
+    {% endif %}
+  </form>
   <ol class="threads-columns {% if not desc_toggle %}desc{% endif %}">
     <li class="watch">{{ _('Watch') }}</li>
     <li class="title">{{ _('Title') }}</li>

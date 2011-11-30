@@ -289,6 +289,9 @@ ol.posts li div.author {
     padding: 0 1% 1em 1%;
 }
 
+#threads #watch_locale {
+    margin-bottom: 15px;
+}
 #threads input.watchtoggle {
     border-radius: 4px;
     -moz-border-radius: 4px;
