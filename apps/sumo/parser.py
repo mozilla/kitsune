@@ -193,9 +193,13 @@ class WikiParser(Parser):
         self.locale = locale
 
         parser_kwargs = {'tags': tags} if tags else {}
-        return super(WikiParser, self).parse(text, show_toc=show_toc,
+        return super(WikiParser, self).parse(
+            text,
+            show_toc=show_toc,
             attributes=attributes or ALLOWED_ATTRIBUTES,
-            styles=styles or ALLOWED_STYLES, nofollow=nofollow,
+            styles=styles or ALLOWED_STYLES,
+            nofollow=nofollow,
+            strip_comments=True,
             **parser_kwargs)
 
     def _hook_internal_link(self, parser, space, name):
