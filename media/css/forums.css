@@ -91,7 +91,7 @@ ol.forums div.last-post,
 ol.threads-columns li.last-post,
 ol.threads li div.last-post {
     margin-right: 0;
-    width: 24%;
+    width: 20%;
 }
 ol.threads li div.type {
     height: auto;
@@ -99,6 +99,17 @@ ol.threads li div.type {
     text-align: center;
     width: 8%;
 }
+
+#all-threads .threads-columns {
+    overflow: auto;
+    background-color: #F0F0F0;
+}
+#all-threads ol.threads-columns li {
+    border-left: #fff 2px solid;
+    border-bottom: 0px;
+    padding-right: 3px;
+}
+
 /* End column widths */
 
 ol.forums li,
@@ -289,7 +300,7 @@ ol.posts li div.author {
     padding: 0 1% 1em 1%;
 }
 
-#threads #watch_locale {
+#all-threads #watch_locale {
     margin-bottom: 15px;
 }
 #threads input.watchtoggle {

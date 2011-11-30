@@ -4,7 +4,7 @@
 {% set title = _('{l} Discussions | Knowledge Base')|f(l=locale_name) %}
 
 {% block content %}
-<article id="threads" class="main">
+<article id="all-threads" class="main">
   <h1>{{ _('{l} Knowledge Base Discussions')|f(l=locale_name) }}</h1>
   <form id="watch_locale" action="{{ url('wiki.discuss.watch_locale') }}" method="post">
     {{ csrf() }}
