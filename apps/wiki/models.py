@@ -9,6 +9,8 @@ from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from django.core.urlresolvers import resolve
 from django.db import models
 from django.db.models import Q
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 from django.http import Http404
 
 from pyquery import PyQuery
@@ -605,6 +607,19 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin):
         """Return whether `user` is notified of edits to me."""
         from wiki.events import EditDocumentEvent
         return EditDocumentEvent.is_notifying(user, self)
+
+
+@receiver(post_save, sender=Document,
+          dispatch_uid='wiki.search.index')
+def update_document_index(sender, instance, **kw):
+    # raw is True when saving a model exactly as presented--like when
+    # loading fixtures.  In this case we don't want to trigger.
+    if kw.get('raw'):
+        return
+
+    from wiki.tasks import index_documents
+    # TODO: waffle here
+    index_documents.delay([instance.id])
 
 
 class Revision(ModelBase):

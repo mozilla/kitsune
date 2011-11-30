@@ -3,7 +3,7 @@ from datetime import datetime
 
 from django.template.defaultfilters import slugify
 
-from sumo.tests import LocalizingClient, TestCase, with_save
+from sumo.tests import LocalizingClient, TestCase, with_save, ElasticTestMixin
 from users.tests import get_user
 from wiki.models import Document, Revision, CATEGORIES, SIGNIFICANCES
 
@@ -11,6 +11,10 @@ from wiki.models import Document, Revision, CATEGORIES, SIGNIFICANCES
 class TestCaseBase(TestCase):
     """Base TestCase for the wiki app test cases."""
     client_class = LocalizingClient
+
+
+class ESTestCase(TestCaseBase, ElasticTestMixin):
+    pass
 
 
 # Model makers. These make it clearer and more concise to create objects in
