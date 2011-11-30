@@ -454,7 +454,6 @@ MINIFY_BUNDLES = {
             'js/kbox.js',
             'js/main.js',
             'js/format.js',
-            'js/loadtest.js',
         ),
         'libs/jqueryui': (
             'js/libs/jqueryui.min.js',
