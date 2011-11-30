@@ -5,7 +5,7 @@
 
 {% block content %}
 <article id="threads" class="main">
-  <h1>{{ _('{l} Discussions')|f(l=locale_name) }}</h1>
+  <h1>{{ _('{l} Knowledge Base Discussions')|f(l=locale_name) }}</h1>
   {% if is_watching_locale %}
     <form action="{{ url('wiki.discuss.watch_locale') }}" method="post">
       {{ csrf() }}

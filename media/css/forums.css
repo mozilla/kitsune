@@ -91,7 +91,7 @@ ol.forums div.last-post,
 ol.threads-columns li.last-post,
 ol.threads li div.last-post {
     margin-right: 0;
-    width: 20%;
+    width: 24%;
 }
 ol.threads li div.type {
     height: auto;
@@ -295,7 +295,6 @@ ol.posts li div.author {
     -webkit-border-radius: 4px;
     float: left;
     padding: 2px ;
-    margin: 0 10px 0 0;
 }
 
 #threads input.watchtoggle.on {
