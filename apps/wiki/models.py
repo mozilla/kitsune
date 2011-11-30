@@ -8,8 +8,7 @@ from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from django.core.urlresolvers import resolve
 from django.db import models
-from django.db.models import Q
-from django.db.models.signals import post_save
+from django.db.models import Q, signals
 from django.dispatch import receiver
 from django.http import Http404
 
@@ -609,7 +608,7 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin):
         return EditDocumentEvent.is_notifying(user, self)
 
 
-@receiver(post_save, sender=Document,
+@receiver(signals.post_save, sender=Document,
           dispatch_uid='wiki.search.index')
 def update_document_index(sender, instance, **kw):
     # raw is True when saving a model exactly as presented--like when
@@ -620,6 +619,13 @@ def update_document_index(sender, instance, **kw):
     from wiki.tasks import index_documents
     # TODO: waffle here
     index_documents.delay([instance.id])
+
+
+@receiver(signals.pre_delete, sender=Document,
+          dispatch_uid='wiki.search.index')
+def remove_document_index(sender, instance, **kw):
+    from wiki.tasks import unindex_docs
+    unindex_docs([instance.id])
 
 
 class Revision(ModelBase):

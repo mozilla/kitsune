@@ -70,33 +70,27 @@ class TestCase(test_utils.TestCase):
     def setUp(self):
         super(TestCase, self).setUp()
         settings.REDIS_BACKENDS = settings.REDIS_TEST_BACKENDS
-
-    @classmethod
-    def setUpClass(cls):
-        super(TestCase, cls).setUpClass()
         settings.ES_INDEXES = settings.TEST_ES_INDEXES
 
 
 class ElasticTestMixin(object):
-    def setUp(self):
-        super(ElasticTestMixin, self).setUp()
+    def setup_indexes(self):
         if getattr(settings, 'ES_HOSTS', None) is None:
             raise SkipTest
 
         # Delete test indexes if they exist.
         es = get_es()
-        for index in settings.ES_INDEXES.values():
+        for index in settings.TEST_ES_INDEXES.values():
             es.delete_index_if_exists(index)
 
-        from search.utils import es_reindex
+        from search.es_utils import es_reindex
 
         es_reindex()
 
-    def tearDown(self):
+    def teardown_indexes(self):
         es = get_es()
-        for index in settings.ES_INDEXES.values():
+        for index in settings.TEST_ES_INDEXES.values():
             es.delete_index_if_exists(index)
-        super(ElasticTestMixin, self).tearDownClass()
 
 
 class MigrationTests(TestCase):

@@ -3,36 +3,14 @@ import logging
 import pyes
 import time
 
+from search.es_utils import *
+
 
 AGE_DIVISOR = 86400
 
 
 # TODO: Is this the right thing to log to?
 log = logging.getLogger('k.forums.es_search')
-
-
-# TODO: Make this less silly.  I do this because if I typo a name,
-# pyflakes points it out, but if I typo a string, it doesn't notice
-# and typos are always kicking my ass.
-
-TYPE = 'type'
-ANALYZER = 'analyzer'
-INDEX = 'index'
-TERM_VECTOR = 'term_vector'
-STORE = 'store'
-
-INTEGER = 'integer'
-STRING = 'string'
-BOOLEAN = 'boolean'
-DATE = 'date'
-
-ANALYZED = 'analyzed'
-
-YES = 'yes'
-
-SNOWBALL = 'snowball'
-
-WITH_POS_OFFSETS = 'with_positions_offsets'
 
 
 def setup_mapping(index):
@@ -106,12 +84,12 @@ def extract_post(post):
 
 def index_post(post, bulk=False, force_insert=False, es=None):
     from forums.models import Post
-    from django.conf import settings
 
     if es is None:
         es = elasticutils.get_es()
 
-    index = settings.ES_INDEXES['default']
+    index = get_index(Post)
+
     try:
         es.index(post, index, doc_type=Post._meta.db_table,
                  id=post['id'], bulk=bulk, force_insert=force_insert)
@@ -129,8 +107,7 @@ def reindex_documents():
     from forums.models import Post
     from django.conf import settings
 
-    index = (settings.ES_INDEXES.get(Post._meta.db_table)
-             or settings.ES_INDEXES['default'])
+    index = get_index(Post)
 
     log.info('reindex posts: %s %s', index, Post._meta.db_table)
 

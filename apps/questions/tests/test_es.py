@@ -21,4 +21,5 @@ class TestQuestionUpdate(ESTestCase):
 
         question.save()
 
-        eq_(elasticutils.S(Question).query(title=title).count(), 0)
+        # It's in the index now.
+        eq_(elasticutils.S(Question).query(title=title).count(), 1)

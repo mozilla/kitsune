@@ -3,37 +3,14 @@ import logging
 import pyes
 import time
 
+from search.es_utils import *
+
 
 ID_FACTOR = 100000
 AGE_DIVISOR = 86400
 
 # TODO: Is this the right thing to log to?
 log = logging.getLogger('k.quetion.es_search')
-
-
-# TODO: Make this less silly.  I do this because if I typo a name,
-# pyflakes points it out, but if I typo a string, it doesn't notice
-# and typos are always kicking my ass.
-
-TYPE = 'type'
-ANALYZER = 'analyzer'
-INDEX = 'index'
-STORE = 'store'
-TERM_VECTOR = 'term_vector'
-
-LONG = 'long'
-INTEGER = 'integer'
-STRING = 'string'
-BOOLEAN = 'boolean'
-DATE = 'date'
-
-ANALYZED = 'analyzed'
-
-SNOWBALL = 'snowball'
-
-YES = 'yes'
-
-WITH_POS_OFFSETS = 'with_positions_offsets'
 
 
 def setup_mapping(index):
@@ -158,14 +135,12 @@ def extract_question(question):
 
 
 def index_doc(doc, bulk=False, force_insert=False, es=None):
-    from django.conf import settings
     from questions.models import Question
 
     if es is None:
         es = elasticutils.get_es()
 
-    index = (settings.ES_INDEXES.get(Question._meta.db_table)
-             or settings.ES_INDEXES['default'])
+    index = get_index(Question)
 
     try:
         es.index(doc, index, doc_type=Question._meta.db_table,
@@ -175,6 +150,7 @@ def index_doc(doc, bulk=False, force_insert=False, es=None):
         # have a second one, that will cause everything to die.
         es.index(doc, index, doc_type=Question._meta.db_table,
                  id=doc['id'], bulk=bulk, force_insert=force_insert)
+    print 'done indexing', index, doc['id']
 
 
 def index_docs(documents, bulk=False, force_insert=False, es=None):
@@ -189,7 +165,7 @@ def reindex_questions():
     from questions.models import Question
     from django.conf import settings
 
-    index = settings.ES_INDEXES['default']
+    index = get_index(Question)
 
     log.info('reindex questions: %s %s', index,
              Question._meta.db_table)

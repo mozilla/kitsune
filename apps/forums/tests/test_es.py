@@ -26,4 +26,4 @@ class TestPostUpdate(ESTestCase):
 
         new_post.save()
 
-        eq_(elasticutils.S(Post).query(content=content).count(), 0)
+        eq_(elasticutils.S(Post).query(content=content).count(), 1)

@@ -33,55 +33,6 @@ def reindex(rotate=False):
     call(calls)
 
 
-def es_reindex():
-    """Reindexes the database in Elastic."""
-
-    import elasticutils
-    import pyes
-
-    es = elasticutils.get_es()
-
-    # Go through and delete, then recreate the indexes.
-    for index in settings.ES_INDEXES.values():
-        es.delete_index_if_exists(index)
-
-        try:
-            es.create_index_if_missing(index)
-        except pyes.exceptions.ElasticSearchException:
-            # TODO: Why would this throw an exception?  We should handle
-            # it.  Maybe Elastic isn't running or something in which case
-            # proceeding is an exercise in futility.
-            pass
-
-    # Reindex questions.
-    import questions.es_search
-    questions.es_search.reindex_questions()
-
-    # Reindex wiki documents.
-    import wiki.es_search
-    wiki.es_search.reindex_documents()
-
-    # Reindex forum posts.
-    import forums.es_search
-    forums.es_search.reindex_documents()
-
-
-def es_whazzup():
-    """Runs cluster_stats on the Elastic system."""
-    import elasticutils
-    import pyes
-
-    es = elasticutils.get_es()
-
-    pprint.pprint(es.cluster_stats())
-
-    # This is goofy, but it gives us a count of all the question
-    # documents in the index.
-    print "questions docs count:", es.count(
-        pyes.WildcardQuery('title', '*'),
-        indices="questions")["count"]
-
-
 def start_sphinx():
     """Start sphinx.
 

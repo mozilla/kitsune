@@ -256,6 +256,7 @@ def update_question_search_index(sender, instance, **kw):
         return
 
     # TODO: waffle here
+    print 'update_question_search_index', instance.id
     index_questions.delay([instance.id])
 
 

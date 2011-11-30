@@ -2,27 +2,11 @@ import elasticutils
 import logging
 import pyes
 
+from search.es_utils import *
+
 
 # TODO: Is this the right thing to log to?
 log = logging.getLogger('k.wiki.es_search')
-
-
-# TODO: Make this less silly.  I do this because if I typo a name,
-# pyflakes points it out, but if I typo a string, it doesn't notice
-# and typos are always kicking my ass.
-
-TYPE = 'type'
-ANALYZER = 'analyzer'
-INDEX = 'index'
-
-INTEGER = 'integer'
-STRING = 'string'
-BOOLEAN = 'boolean'
-DATE = 'date'
-
-ANALYZED = 'analyzed'
-
-SNOWBALL = 'snowball'
 
 
 def setup_mapping(index):
@@ -86,13 +70,11 @@ def extract_document(doc):
 
 def index_doc(doc, bulk=False, force_insert=False, es=None):
     from wiki.models import Document
-    from django.conf import settings
 
     if es is None:
         es = elasticutils.get_es()
 
-    index = (settings.ES_INDEXES.get(Document._meta.db_table)
-             or settings.ES_INDEXES['default'])
+    index = get_index(Document)
 
     try:
         es.index(doc, index, doc_type=Document._meta.db_table,
@@ -104,6 +86,17 @@ def index_doc(doc, bulk=False, force_insert=False, es=None):
                  id=doc['id'], bulk=bulk, force_insert=force_insert)
 
 
+def unindex_docs(docs):
+    from wiki.models import Document
+
+    es = elasticutils.get_es()
+    index = get_index(Document)
+
+    for doc_id in docs:
+        # TODO wrap this in a try/except
+        es.delete(index, doc_type=Document._meta.db_table, id=doc_id)
+
+
 # TODO: This is seriously intensive and takes a _long_ time to run.
 # Need to reduce the work here.  This should not get called often.
 def reindex_documents():
@@ -111,7 +104,7 @@ def reindex_documents():
     from wiki.models import Document
     from django.conf import settings
 
-    index = settings.ES_INDEXES['default']
+    index = get_index(Document)
 
     log.info('reindex documents: %s %s', index, Document._meta.db_table)
 

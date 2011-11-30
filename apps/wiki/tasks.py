@@ -161,3 +161,9 @@ def index_documents(ids, **kw):
     from wiki.models import Document
     for d in Document.uncached.filter(id__in=ids):
         es_search.index_doc(es_search.extract_document(d))
+
+
+@task
+def remove_documents(ids, **kw):
+    from wiki import es_search
+    es_search.remove_docs(ids)

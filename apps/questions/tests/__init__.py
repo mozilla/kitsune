@@ -16,6 +16,7 @@ class TestCaseBase(TestCase):
     client_class = LocalizingClient
 
     def setUp(self):
+        super(TestCaseBase, self).setUp()
         q = Question.objects.get(pk=1)
         q.last_answer_id = 1
         q.save()
@@ -26,11 +27,18 @@ class TestCaseBase(TestCase):
         settings.TOP_CONTRIBUTORS_CACHE_KEY += slugify(datetime.now())
 
     def tearDown(self):
+        super(TestCaseBase, self).tearDown()
         settings.TOP_CONTRIBUTORS_CACHE_KEY = self.orig_tc_cache_key
 
 
 class ESTestCase(TestCaseBase, ElasticTestMixin):
-    pass
+    def setUp(self):
+        super(ESTestCase, self).setUp()
+        self.setup_indexes()
+
+    def tearDown(self):
+        super(ESTestCase, self).tearDown()
+        self.teardown_indexes()
 
 
 class TaggingTestCaseBase(TestCaseBase):
