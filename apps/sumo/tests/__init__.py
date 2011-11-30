@@ -8,10 +8,13 @@ from django.conf import settings
 from django.test.client import Client
 
 from nose.tools import eq_
+from nose import SkipTest
 import test_utils
 
 import sumo
 from sumo.urlresolvers import reverse, split_path
+
+from elasticutils import get_es
 
 
 get = lambda c, v, **kw: c.get(reverse(v, **kw), follow=True)
@@ -72,6 +75,28 @@ class TestCase(test_utils.TestCase):
     def setUpClass(cls):
         super(TestCase, cls).setUpClass()
         settings.ES_INDEXES = settings.TEST_ES_INDEXES
+
+
+class ElasticTestMixin(object):
+    def setUp(self):
+        super(ElasticTestMixin, self).setUp()
+        if getattr(settings, 'ES_HOSTS', None) is None:
+            raise SkipTest
+
+        # Delete test indexes if they exist.
+        es = get_es()
+        for index in settings.ES_INDEXES.values():
+            es.delete_index_if_exists(index)
+
+        from search.utils import es_reindex
+
+        es_reindex()
+
+    def tearDown(self):
+        es = get_es()
+        for index in settings.ES_INDEXES.values():
+            es.delete_index_if_exists(index)
+        super(ElasticTestMixin, self).tearDownClass()
 
 
 class MigrationTests(TestCase):
