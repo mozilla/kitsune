@@ -137,6 +137,19 @@ class SimpleSyntaxTestCase(TestCase):
         eq_('internal', doc('strong span.filepath').text())
         eq_('hi!', doc('em span.menu').text())
 
+    def test_comments(self):
+        """Markup containing taggy comments shouldn't truncate afterward."""
+        p = WikiParser()
+
+        # This used to truncate after the comment when rendered:
+        eq_(p.parse('Start <!-- <foo --> End'),
+            '<p>Start <!-- <foo --> End\n</p>')
+
+        # Just make sure these don't go awry either:
+        eq_(p.parse('Start <!-- <foo> --> End'),
+            '<p>Start <!-- <foo> --> End\n</p>')
+        eq_(p.parse('Start <!-- foo> --> End'),
+            '<p>Start <!-- foo> --> End\n</p>')
 
 class TestWikiTemplate(TestCase):
     fixtures = ['users.json']
