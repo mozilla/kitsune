@@ -84,7 +84,10 @@ def extract_post(post):
     d['author_ord'] = post.author.username
     d['content'] = post.content
     d['created'] = post.thread.created
-    d['updated'] = post.thread.last_post.created
+    if post.thread.last_post is not None:
+        d['updated'] = post.thread.last_post.created
+    else:
+        d['updates'] = None
 
     # TODO: This isn't going to work right.  When we do incremental
     # updates, then we'll be comparing post with up-to-date ages with

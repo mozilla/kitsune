@@ -32,6 +32,14 @@ def log_reply(post):
     unpin_this_thread()
 
 
+@task
+def index_posts(ids, **kw):
+    from forums import es_search
+    from forums.models import Post
+    for p in Post.uncached.filter(id__in=ids):
+        es_search.index_post(es_search.extract_post(p))
+
+
 def connector(sender, instance, created, **kw):
     if created:
         log_reply.delay(instance)
