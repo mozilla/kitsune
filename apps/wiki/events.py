@@ -130,9 +130,6 @@ class ReviewableRevisionInLocaleEvent(_RevisionConstructor,
 
 class ReadyRevisionEvent(_RevisionConstructor, Event):
     """Event fed to a union when a (en-US) revision becomes ready for l10n
-
-    Note that no diff is sent, only a fulltext of the revision.
-
     """
     event_type = 'ready wiki'
 
@@ -151,7 +148,7 @@ class ReadyRevisionEvent(_RevisionConstructor, Event):
                 locale=document.locale)
 
         ready_template = loader.get_template(
-                                'wiki/email/ready_for_l10n_existing.ltxt')
+                                'wiki/email/ready_for_l10n.ltxt')
 
         c = context_dict(revision)
         for user, watches in users_and_watches:
