@@ -250,6 +250,11 @@ class Question(ModelBase, BigVocabTaggableMixin):
 @receiver(post_save, sender=Question,
           dispatch_uid='questions.search.index')
 def update_question_search_index(sender, instance, **kw):
+    # raw is True when saving a model exactly as presented--like when
+    # loading fixtures.  In this case we don't want to trigger.
+    if kw.get('raw'):
+        return
+
     # TODO: waffle here
     index_questions.delay([instance.id])
 
