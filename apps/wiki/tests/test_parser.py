@@ -29,8 +29,6 @@ def doc_parse_markup(content, markup, title='Template:test'):
 
 class SimpleSyntaxTestCase(TestCase):
     """Simple syntax regexing, like {note}...{/note}, {key Ctrl+K}"""
-    fixtures = ['users.json']
-
     def test_note_simple(self):
         """Simple note syntax"""
         p = WikiParser()
@@ -138,9 +136,8 @@ class SimpleSyntaxTestCase(TestCase):
         eq_('hi!', doc('em span.menu').text())
 
 
-class TestWikiTemplate(TestCase):
-    fixtures = ['users.json']
 
+class TestWikiTemplate(TestCase):
     def test_template(self):
         """Simple template markup."""
         doc, _ = doc_parse_markup('Test content', '[[Template:test]]')
@@ -331,8 +328,6 @@ class TestWikiTemplate(TestCase):
 
 
 class TestWikiInclude(TestCase):
-    fixtures = ['users.json']
-
     def test_revision_include(self):
         """Simple include markup."""
         _, _, p = doc_rev_parser('Test content', 'Test title')
@@ -399,8 +394,6 @@ class TestWikiInclude(TestCase):
 
 class TestWikiVideo(TestCase):
     """Video hook."""
-    fixtures = ['users.json']
-
     def tearDown(self):
         Video.objects.all().delete()
         super(TestWikiVideo, self).tearDown()
