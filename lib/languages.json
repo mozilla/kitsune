@@ -518,5 +518,10 @@
         "iso639_1": "sl",
         "english": "Slovenian",
         "native": "slovensko"
+    },
+    "km": {
+        "iso639_1": "km",
+        "english": "Khmer",
+        "native": "\u1781\u17d2\u1798\u17c2\u179a"
     }
 }
