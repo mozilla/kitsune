@@ -68,20 +68,15 @@ def es_reindex():
 def es_whazzup():
     """Runs cluster_stats on the Elastic system."""
     import elasticutils
-    import pyes
+    from forums.models import Post
+    from questions.models import Question
+    from wiki.models import Document
 
     es = elasticutils.get_es()
 
     pprint.pprint(es.cluster_stats())
 
-    # This is goofy, but it gives us a count of all the question
-    # documents in the index.
-    print "questions docs count:", es.count(
-        pyes.WildcardQuery('title', '*'),
-        indices="questions_question")["count"]
-    print "forums docs count:", es.count(
-        pyes.WildcardQuery('title', '*'),
-        indices="forums_post")["count"]
-    print "wiki docs count:", es.count(
-        pyes.WildcardQuery('title', '*'),
-        indices="wiki_document")["count"]
+    print "Totals:"
+    print "total questions: ", elasticutils.S(Question).count()
+    print "total forum posts: ", elasticutils.S(Post).count()
+    print "total wiki docs: ", elasticutils.S(Document).count()

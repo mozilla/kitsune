@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand
 
-from search.utils import es_whazzup
+from search.es_utils import es_whazzup
 
 
 class Command(BaseCommand):
