@@ -1,4 +1,3 @@
-import os
 import elasticutils
 import pprint
 import pyes
@@ -32,29 +31,17 @@ WITH_POS_OFFSETS = 'with_positions_offsets'
 
 
 def get_index(model):
-    """Returns the index for this model.
-
-    Takes into account whether we're testing or not.
-    """
-    if os.environ.get('DJANGO_ENVIRONMENT') == 'test':
-        index_dict = settings.TEST_ES_INDEXES
-    else:
-        index_dict = settings.ES_INDEXES
-
-    return index_dict.get(model._meta.db_table) or index_dict['default']
+    """Returns the index for this model."""
+    return (settings.ES_INDEXES.get(model._meta.db_table)
+            or settings.ES_INDEXES['default'])
 
 
 def es_reindex():
     """Reindexes the database in Elastic."""
     es = elasticutils.get_es()
 
-    if os.environ.get('DJANGO_ENVIRONMENT') == 'test':
-        index_dict = settings.TEST_ES_INDEXES
-    else:
-        index_dict = settings.ES_INDEXES
-
     # Go through and delete, then recreate the indexes.
-    for index in index_dict.values():
+    for index in settings.ES_INDEXES.values():
         es.delete_index_if_exists(index)
 
         try:

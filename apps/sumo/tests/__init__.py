@@ -70,7 +70,6 @@ class TestCase(test_utils.TestCase):
     def setUp(self):
         super(TestCase, self).setUp()
         settings.REDIS_BACKENDS = settings.REDIS_TEST_BACKENDS
-        settings.ES_INDEXES = settings.TEST_ES_INDEXES
 
 
 class ElasticTestMixin(object):
@@ -80,7 +79,7 @@ class ElasticTestMixin(object):
 
         # Delete test indexes if they exist.
         es = get_es()
-        for index in settings.TEST_ES_INDEXES.values():
+        for index in settings.ES_INDEXES.values():
             es.delete_index_if_exists(index)
 
         from search.es_utils import es_reindex
@@ -89,7 +88,7 @@ class ElasticTestMixin(object):
 
     def teardown_indexes(self):
         es = get_es()
-        for index in settings.TEST_ES_INDEXES.values():
+        for index in settings.ES_INDEXES.values():
             es.delete_index_if_exists(index)
 
 

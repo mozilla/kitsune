@@ -146,25 +146,19 @@ The directory you install Elastic in will hereafter be referred to as
 You can configure Elastic Search with the configuration file at
 ``ELASTICDIR/config/elasticsearch.yml``.
 
-Elastic Search uses three settings in ``settings.py`` that you can
+Elastic Search uses two settings in ``settings.py`` that you can
 override in ``settings_local.py``::
 
     # Connection information for Elastic
     ES_HOSTS = ['127.0.0.1:9200']
     ES_INDEXES = {'default': 'sumo'}
-    TEST_ES_INDEXES = {'default': 'sumo_test'}
+
 
 .. Warning::
 
    The host setting must match the host and port in
    ``ELASTICDIR/config/elasticsearch.yml``.  So if you change it in
    one place, you must also change it in the other.
-
-.. Warning::
-
-   Make sure the index name values in ``ES_INDEXES`` and
-   ``TEST_ES_INDEXES`` are **not** the same.  If they are the same,
-   then running unit tests will nix your index.
 
 
 Using Elastic Search
