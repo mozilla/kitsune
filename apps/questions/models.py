@@ -24,7 +24,7 @@ from questions.question_config import products
 from questions.tasks import (update_question_votes, update_answer_pages,
                              log_answer, index_questions, index_answers,
                              unindex_answers, unindex_questions)
-from search import S
+from search import searcher
 from search.utils import crc32
 from sumo.helpers import urlparams
 from sumo.models import ModelBase
@@ -549,9 +549,11 @@ def _content_parsed(obj):
     return html
 
 
-question_search = (
-    S(Question).weight(title=4, question_content=3, answer_content=3)
-               .group_by('question_id', '-@group')
-               .highlight(before_match='<b>',
-                          after_match='</b>',
-                          limit=settings.SEARCH_SUMMARY_LENGTH))
+def question_searcher(request):
+    """Return a question searcher with default parameters."""
+    return (searcher(request)(Question)
+                .weight(title=4, question_content=3, answer_content=3)
+                .group_by('question_id', '-@group')
+                .highlight(before_match='<b>',
+                           after_match='</b>',
+                           limit=settings.SEARCH_SUMMARY_LENGTH))

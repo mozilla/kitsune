@@ -14,9 +14,8 @@ import forums
 from sumo.helpers import urlparams, wiki_to_html
 from sumo.urlresolvers import reverse
 from sumo.models import ModelBase
+from search import searcher
 from search.utils import crc32
-
-from search import S
 
 
 def _last_post_from(posts, exclude_post=None):
@@ -279,10 +278,10 @@ def remove_post_from_index(sender, instance, **kw):
     unindex_posts([instance.id])
 
 
-# The index is on Post, but with the Thread.title for the Thread
-# related to the Post.  We base the S off of Post because we need
-# to excerpt content.
-discussion_search = (
-    S(Post).weight(title=2, content=1)
-           .group_by('thread_id', '-@group')
-           .order_by('created'))
+def discussion_searcher(request):
+    """Return a forum searcher with default parameters."""
+    # The index is on Post but with the Thread.title for the Thread related to
+    # the Post. We base the S off Post because we need to excerpt content.
+    return (searcher(request)(Post).weight(title=2, content=1)
+                                   .group_by('thread_id', '-@group')
+                                   .order_by('created'))

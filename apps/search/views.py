@@ -19,12 +19,12 @@ from tower import ugettext as _
 
 from search import SearchError, ExcerptTimeoutError, ExcerptSocketErrorError
 from search.utils import locale_or_default, clean_excerpt
-from forums.models import Thread, discussion_search
-from questions.models import question_search
+from forums.models import Thread, discussion_searcher
+from questions.models import question_searcher
 import search as constants
 from search.forms import SearchForm
 from sumo.utils import paginate, smart_int
-from wiki.models import wiki_search
+from wiki.models import wiki_searcher
 
 
 def jsonp_is_valid(func):
@@ -109,9 +109,9 @@ def search(request, template=None):
     else:
         lang_name = ''
 
-    wiki_s = wiki_search
-    question_s = question_search
-    discussion_s = discussion_search
+    wiki_s = wiki_searcher(request)
+    question_s = question_searcher(request)
+    discussion_s = discussion_searcher(request)
 
     documents = []
 
@@ -405,10 +405,11 @@ def suggestions(request):
     site = Site.objects.get_current()
     locale = locale_or_default(request.locale)
     results = list(chain(
-            wiki_search.filter(is_archived=False)
-                       .filter(locale=locale)
-                       .query(term)[:5],
-            question_search.filter(has_helpful=True).query(term)[:5]))
+            wiki_searcher(request).filter(is_archived=False)
+                                  .filter(locale=locale)
+                                  .query(term)[:5],
+            question_searcher(request).filter(has_helpful=True)
+                                      .query(term)[:5]))
     # Assumption: wiki_search sets filter(is_archived=False).
 
     urlize = lambda obj: u'https://%s%s' % (site, obj.get_absolute_url())
