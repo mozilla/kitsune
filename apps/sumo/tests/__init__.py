@@ -73,6 +73,10 @@ class TestCase(test_utils.TestCase):
 
 
 class ElasticTestMixin(object):
+    def refresh(self, index='default'):
+        es = get_es()
+        es.refresh(settings.ES_INDEXES[index], timesleep=0)
+
     def setup_indexes(self):
         if getattr(settings, 'ES_HOSTS', None) is None:
             raise SkipTest

@@ -15,12 +15,12 @@ class TestPostUpdate(ESTestCase):
 
         doc = document(title=title)
 
-        # Assert that it's not in the index before saving.
-        eq_(elasticutils.S(Document).query(title=title).count(), 0)
+        original_count = elasticutils.S(Document).count()
 
         doc.save()
+        self.refresh()
 
-        eq_(elasticutils.S(Document).query(title=title).count(), 1)
+        eq_(elasticutils.S(Document).count(), original_count + 1)
 
     def test_deleted(self):
         # Use a uuid since it's "unique" and makes sure we're not

@@ -21,9 +21,9 @@ class TestPostUpdate(ESTestCase):
         # add a new post, then check that last_post is updated
         new_post = Post(thread=thread, content=content, author=user)
 
-        # Assert that it's not in the index before saving.
-        eq_(elasticutils.S(Post).query(content=content).count(), 0)
+        original_count = elasticutils.S(Post).count()
 
         new_post.save()
+        self.refresh()
 
-        eq_(elasticutils.S(Post).query(content=content).count(), 1)
+        eq_(elasticutils.S(Post).count(), original_count + 1)

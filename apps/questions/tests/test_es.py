@@ -16,10 +16,9 @@ class TestQuestionUpdate(ESTestCase):
                             content='Lorem Ipsum Dolor',
                             creator_id=118533)
 
-        # Assert that it's not in the index before saving.
-        eq_(elasticutils.S(Question).query(title=title).count(), 0)
+        original_count = elasticutils.S(Question).count()
 
         question.save()
+        self.refresh()
 
-        # It's in the index now.
-        eq_(elasticutils.S(Question).query(title=title).count(), 1)
+        eq_(elasticutils.S(Question).count(), original_count + 1)
