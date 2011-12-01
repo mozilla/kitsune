@@ -1,6 +1,9 @@
+from datetime import date, timedelta
+
 from access.decorators import login_required, permission_required
-from karma.forms import UserAPIForm
+from karma.forms import UserAPIForm, OverviewAPIForm
 from karma.manager import KarmaManager
+from questions.models import Question
 from sumo.decorators import json_view
 
 
@@ -46,3 +49,52 @@ def users(request):
         'success': True,
         'results': user_list,
         'schema': schema}
+
+
+@login_required
+@permission_required('karma.view_dashboard')
+@json_view
+def overview(request):
+    """Returns the overview for a daterange.
+
+    GET paramaters:
+    * daterange - 7d, 1m, 3m, 6m or 1y (default: 1y)
+
+    Returns an overview dict with a count for all action types.
+    """
+    form = OverviewAPIForm(request.GET)
+    if not form.is_valid():
+        return {'success': False, 'errors': form.errors}
+
+    daterange = form.cleaned_data.get('daterange') or '1y'
+
+    mgr = KarmaManager()
+    overview = {}
+    for t in KarmaManager.action_types.keys():
+        overview[t] = mgr.count(daterange=daterange, type=t)
+
+    # TODO: Maybe have a karma action not assigned to a user for this?
+    num_days = KarmaManager.date_ranges[daterange]
+    start_day = date.today() - timedelta(days=num_days)
+    overview['question'] = Question.objects.filter(
+        created__gt=start_day).count()
+
+    return {
+        'success': True,
+        'overview': overview}
+
+
+@login_required
+@permission_required('karma.view_dashboard')
+@json_view
+def totals(request):
+    """Returns (for now) monthly totals for each action type.
+
+    Feeds the dashboard chart.
+    """
+    mgr = KarmaManager()
+
+    # TODO: implement me
+
+    return {
+        'success': True}

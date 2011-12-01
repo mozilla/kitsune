@@ -51,36 +51,37 @@ class KarmaManager(object):
     # Setters:
     def save_action(self, action):
         """Save a new karma action to redis."""
-        key = hash_key(action.userid)
-
         # Keep a list of users with karma
         self.redis.sadd('{p}:users'.format(p=KEY_PREFIX), action.userid)
 
         # Point counters:
-        # Increment total points
-        self.redis.hincrby(key, 'points:all', action.points)
-        # Increment points daily count
-        self.redis.hincrby(key, 'points:{d}'.format(
-            d=action.date), action.points)
-        # Increment points monthly count
-        self.redis.hincrby(key, 'points:{y}-{m:02d}'.format(
-            y=action.date.year, m=action.date.month), action.points)
-        # Increment points yearly count
-        self.redis.hincrby(key, 'points:{y}'.format(
-            y=action.date.year), action.points)
+        # Increment user and overview counts
+        for key in [hash_key(action.userid), hash_key('overview')]:
+            # Increment total points
+            self.redis.hincrby(key, 'points:all', action.points)
+            # Increment points daily count
+            self.redis.hincrby(key, 'points:{d}'.format(
+                d=action.date), action.points)
+            # Increment points monthly count
+            self.redis.hincrby(key, 'points:{y}-{m:02d}'.format(
+                y=action.date.year, m=action.date.month), action.points)
+            # Increment points yearly count
+            self.redis.hincrby(key, 'points:{y}'.format(
+                y=action.date.year), action.points)
 
-        # Action counters:
-        # Increment action total count
-        self.redis.hincrby(key, '{t}:all'.format(t=action.action_type), 1)
-        # Increment action daily count
-        self.redis.hincrby(key, '{t}:{d}'.format(
-             t=action.action_type, d=action.date), 1)
-        # Increment action monthly count
-        self.redis.hincrby(key, '{t}:{y}-{m:02d}'.format(
-            t=action.action_type, y=action.date.year, m=action.date.month), 1)
-        # Increment action yearly count
-        self.redis.hincrby(key, '{t}:{y}'.format(
-            t=action.action_type, y=action.date.year), 1)
+            # Action counters:
+            # Increment action total count
+            self.redis.hincrby(key, '{t}:all'.format(t=action.action_type), 1)
+            # Increment action daily count
+            self.redis.hincrby(key, '{t}:{d}'.format(
+                 t=action.action_type, d=action.date), 1)
+            # Increment action monthly count
+            self.redis.hincrby(key, '{t}:{y}-{m:02d}'.format(
+                t=action.action_type, y=action.date.year,
+                m=action.date.month), 1)
+            # Increment action yearly count
+            self.redis.hincrby(key, '{t}:{y}'.format(
+                t=action.action_type, y=action.date.year), 1)
 
     def update_top(self):
         """Update the aggregates and indexes for all actions and ranges."""
@@ -90,33 +91,40 @@ class KarmaManager(object):
 
     def _update_top(self, daterange, type):
         """Update the aggregates and indexes for the given type and range."""
-        key = '{p}:{t}:{r}'.format(p=KEY_PREFIX, t=type, r=daterange)
-        temp_key = key + ':tmp'
-        index_created = False
+        overview_key = hash_key('overview')
+        hash_field_key = '{t}:{r}'.format(t=type, r=daterange)
+        sset_key = '{p}:{t}:{r}'.format(p=KEY_PREFIX, t=type, r=daterange)
+        temp_sset_key = sset_key + ':tmp'
+        created = False
+        total_count = 0
 
         for userid in self.user_ids():
             if daterange == 'all':
                 # '*:all' is always up to date
-                pts = self.count(userid, daterange='all', type=type)
+                count = self.count(userid, daterange='all', type=type)
             else:
                 # Needs recalculating
-                pts = self._count(userid, daterange=daterange, type=type)
-                self._set_or_del_hash(userid,
-                                      '{t}:{r}'.format(t=type, r=daterange),
-                                      pts)
+                count = self._count(userid, daterange=daterange, type=type)
+                self._set_or_del_hash(userid, hash_field_key, count)
 
-            if pts:
-                self.redis.zadd(temp_key, userid, pts)
-                index_created = True
+            if count:
+                self.redis.zadd(temp_sset_key, userid, count)
+                total_count += count
+                created = True
 
-        if index_created:
-            self.redis.rename(temp_key, key)
+        # Update the overview (totals) hash.
+        self.redis.hset(overview_key, hash_field_key, total_count)
+
+        # Replace the old index with the new one, if we created one.
+        # Otherwise, we can delete the old index altogether.
+        if created:
+            self.redis.rename(temp_sset_key, sset_key)
         else:
-            self.redis.delete(key)
+            self.redis.delete(sset_key)
 
-    def _set_or_del_hash(self, userid, key, pts):
-        if pts:
-            self.redis.hset(hash_key(userid), key, pts)
+    def _set_or_del_hash(self, userid, key, count):
+        if count:
+            self.redis.hset(hash_key(userid), key, count)
         else:
             self.redis.hdel(hash_key(userid), key)
 
@@ -162,14 +170,22 @@ class KarmaManager(object):
         return self.redis.zrevrank('{p}:{t}:{r}'.format(
             p=KEY_PREFIX, t=type, r=daterange), userid(user)) + 1
 
-    def count(self, user, daterange='all', type='points'):
-        """The user's count for the given range and type."""
+    def count(self, user='overview', daterange='all', type='points'):
+        """The user's count for the given range and type.
+
+        The default "user" is 'overview' which is an aggregate count
+        over all users.
+        """
         count = self.redis.hget(hash_key(user),
                                 '{t}:{r}'.format(t=type, r=daterange))
         return int(count) if count else 0
 
-    def daily_counts(self, user, daterange='all', type='points'):
-        """Return a list of counts per day for the give range and type."""
+    def daily_counts(self, user='overview', daterange='all', type='points'):
+        """Return a list of counts per day for the give range and type.
+
+        The default "user" is 'overview' which is an aggregate count
+        over all users.
+        """
         today = date.today()
         num_days = self.date_ranges[daterange]
         days = [today - timedelta(days=d) for d in range(num_days)]
@@ -178,21 +194,35 @@ class KarmaManager(object):
         fn = lambda x: int(x) if x else 0
         return [fn(c) for c in counts]
 
-    def day_count(self, user, date=date.today(), type='points'):
-        """Returns the total count for given type, user and day."""
+    def day_count(self, user='overview', date=date.today(), type='points'):
+        """Returns the total count for given type, user and day.
+
+        The default "user" is 'overview' which is an aggregate count
+        over all users.
+        """
         count = self.redis.hget(
             hash_key(user), '{t}:{d}'.format(d=date, t=type))
         return int(count) if count else 0
 
-    def month_count(self, user, year, month, type='points'):
-        """Returns the total countfor given type, user and moth."""
+    def month_count(self, user='overview', year=date.today().year,
+                    month=date.today().month, type='points'):
+        """Returns the total countfor given type, user and month.
+
+        The default "user" is 'overview' which is an aggregate count
+        over all users.
+        """
         count = self.redis.hget(
             hash_key(user),
             '{t}:{y}-{m:02d}'.format(t=type, y=year, m=month))
         return int(count) if count else 0
 
-    def year_count(self, user, year, type='points'):
-        """Returns the total count for given type, user and year."""
+    def year_count(self, user='overview', year=date.today().year,
+                   type='points'):
+        """Returns the total count for given type, user and year.
+
+        The default "user" is 'overview' which is an aggregate count
+        over all users.
+        """
         count = self.redis.hget(
             hash_key(user), '{t}:{y}'.format(y=year, t=type))
         return int(count) if count else 0

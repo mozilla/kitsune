@@ -37,13 +37,12 @@ window.Users = Backbone.Collection.extend({
         return Backbone.Collection.prototype.fetch.call(this, options);
     },
     url: function() {
-        var url = this.settings.get('baseUsersUrl') + '?' + $.param({
+        return this.settings.get('baseUsersUrl') + '?' + $.param({
            sort: this.settings.get('sort'),
            daterange: this.settings.get('daterange'),
            pagesize: this.settings.get('pagesize'),
            page: this.page
         });
-        return url;
     },
     parse: function(response) {
         var users = [],
@@ -117,6 +116,39 @@ window.Settings = Backbone.Model.extend({
             resp = localStorage.removeItem(key);
         }
         resp ? options.success(resp) : options.error('Record not found');
+    }
+});
+
+window.Overview = Backbone.Model.extend({
+    defaults: {
+        'question': 0,
+        'firstanswer': 0,
+        'solution': 0,
+        'answer': 0,
+        'helpfulanswer': 0,
+        'nothelpfulanswer': 0
+    },
+
+    initialize: function(models, options) {
+        _.bindAll(this, 'settingsChanged');
+        this.settings = options.settings;
+
+        this.settings.bind('change:daterange', this.settingsChanged);
+    },
+    url: function() {
+        return this.settings.get('overviewUrl') + '?' + $.param({
+           daterange: this.settings.get('daterange')
+        });
+    },
+    parse: function(response) {
+        var clean = {};
+        _.each(response.overview, function(val, key) {
+            clean[key.replace(/-/g, '')] = val;
+        });
+        return clean;
+    },
+    settingsChanged: function() {
+        this.fetch();
     }
 });
 
@@ -209,6 +241,23 @@ window.DateRangeView = Backbone.View.extend({
     }
 });
 
+window.OverviewView = Backbone.View.extend({
+    template: _.template($("#overview-template").html()),
+    tagName: 'section',
+    className: 'overview',
+
+    initialize: function() {
+        _.bindAll(this, 'render');
+
+        this.model.bind('change', this.render);
+    },
+
+    render: function() {
+        $(this.el).html(this.template(this.model.toJSON()));
+        return this;
+    }
+});
+
 
 /*
  * Application
@@ -219,7 +268,12 @@ window.KarmaDashboard = Backbone.View.extend({
         window.settings = new Settings();
         settings.fetch();
         settings.save({
-            baseUsersUrl: $(this.el).data('userlist-url')
+            baseUsersUrl: $(this.el).data('userlist-url'),
+            overviewUrl: $(this.el).data('overview-url')
+        });
+
+        window.overview = new Overview([], {
+            settings: settings
         });
 
         window.users = new Users([], {
@@ -230,6 +284,10 @@ window.KarmaDashboard = Backbone.View.extend({
         this.dateRangeView = new DateRangeView({
             settings: settings
         });
+        this.overviewView = new OverviewView({
+            model: overview,
+            settings: settings
+        });
         this.userListView = new UserListView({
             collection: window.users,
             settings: settings
@@ -238,10 +296,12 @@ window.KarmaDashboard = Backbone.View.extend({
         // Render the views.
         $(this.el)
             .append(this.dateRangeView.render().el)
+            .append(this.overviewView.render().el)
             .append(this.userListView.render().el);
 
-        // Load up the collection.
+        // Load up the collections and models.
         users.fetch();
+        overview.fetch();
 
         // Infinite scroll.
         var $window = $(window),

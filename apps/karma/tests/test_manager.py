@@ -95,3 +95,17 @@ class KarmaManagerTests(TestCase):
         }
         self.mgr.recalculate_points(self.user1)
         eq_(42, self.mgr.count(self.user1, type='points'))
+
+    @mock.patch.object(waffle, 'switch_is_active')
+    def test_overview_counts(self, switch_is_active):
+        """Verify the overview counts are correct."""
+        switch_is_active.return_value = True
+        self.mgr.update_top()
+        eq_(46, self.mgr.count(type='points'))
+        eq_(6, self.mgr.count(type=TestAction1.action_type))
+        eq_(4, self.mgr.count(type=TestAction2.action_type))
+        eq_(2, self.mgr.count(type=TestAction1.action_type, daterange='1w'))
+        eq_(2, self.mgr.count(type=TestAction2.action_type, daterange='1m'))
+        eq_(3, self.mgr.count(type=TestAction2.action_type, daterange='6m'))
+        eq_(2, self.mgr.day_count(type=TestAction1.action_type))
+        eq_(1, self.mgr.day_count(type=TestAction2.action_type))
