@@ -88,3 +88,16 @@ class KarmaAPITests(TestCase):
         r = json.loads(response.content)
         user_ids = [u[0] for u in r['results']]
         eq_([self.user2.id], user_ids)
+
+    @mock.patch.object(waffle, 'switch_is_active')
+    def test_overview_api(self, switch_is_active):
+        """Test overview API."""
+        switch_is_active.return_value = True
+        url = reverse('karma.api.overview')
+        url = urlparams(url, daterange='6m')
+        response = self.client.get(url)
+        eq_(200, response.status_code)
+        r = json.loads(response.content)
+        overview = r['overview']
+        eq_(4, overview['test-action-1'])
+        eq_(2, overview['test-action-2'])
