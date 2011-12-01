@@ -139,7 +139,7 @@ class RegisterFormTests(TestCaseBase):
                              'password2': 'adssadfsadf',
                              'email': 'newuser@example.com'})
         assert not form.is_valid()
-        # Simple obfucication.
+        # Simple obfuscation.
         form = RegisterForm({'username': 'a.s.s',
                              'password': 'adssadfsadf',
                              'password2': 'adssadfsadf',
