@@ -14,7 +14,13 @@ class ForumTestCase(TestCase):
 
 
 class ESTestCase(ForumTestCase, ElasticTestMixin):
-    pass
+    def setUp(self):
+        super(ESTestCase, self).setUp()
+        self.setup_indexes()
+
+    def tearDown(self):
+        super(ESTestCase, self).tearDown()
+        self.teardown_indexes()
 
 
 class PostTestCase(ForumTestCase):
