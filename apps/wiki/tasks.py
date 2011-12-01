@@ -164,6 +164,6 @@ def index_documents(ids, **kw):
 
 
 @task
-def remove_documents(ids, **kw):
+def unindex_documents(ids, **kw):
     from wiki import es_search
-    es_search.remove_docs(ids)
+    es_search.unindex_documents(ids)

@@ -624,8 +624,8 @@ def update_document_index(sender, instance, **kw):
 @receiver(signals.pre_delete, sender=Document,
           dispatch_uid='wiki.search.index')
 def remove_document_index(sender, instance, **kw):
-    from wiki.tasks import unindex_docs
-    unindex_docs([instance.id])
+    from wiki.tasks import unindex_documents
+    unindex_documents([instance.id])
 
 
 class Revision(ModelBase):

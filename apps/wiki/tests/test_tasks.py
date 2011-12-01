@@ -1,4 +1,4 @@
-from copy import deepcopy
+from copy import copy
 from datetime import datetime
 
 from django.conf import settings
@@ -41,7 +41,7 @@ class RebuildTestCase(TestCase):
     ALWAYS_EAGER = celery.conf.ALWAYS_EAGER
 
     def setUp(self):
-        self.old_settings = deepcopy(settings._wrapped.__dict__)
+        self.old_settings = copy(settings._wrapped.__dict__)
         celery.conf.ALWAYS_EAGER = True
 
     def tearDown(self):

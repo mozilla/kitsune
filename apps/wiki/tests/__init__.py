@@ -14,7 +14,13 @@ class TestCaseBase(TestCase):
 
 
 class ESTestCase(TestCaseBase, ElasticTestMixin):
-    pass
+    def setUp(self):
+        super(ESTestCase, self).setUp()
+        self.setup_indexes()
+
+    def tearDown(self):
+        super(ESTestCase, self).tearDown()
+        self.teardown_indexes()
 
 
 # Model makers. These make it clearer and more concise to create objects in

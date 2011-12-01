@@ -86,7 +86,7 @@ def index_doc(doc, bulk=False, force_insert=False, es=None):
                  id=doc['id'], bulk=bulk, force_insert=force_insert)
 
 
-def unindex_docs(docs):
+def unindex_documents(docs):
     from wiki.models import Document
 
     es = elasticutils.get_es()

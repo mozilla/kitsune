@@ -1,5 +1,3 @@
-from copy import deepcopy
-
 from django.conf import settings
 
 from nose.tools import eq_
@@ -464,10 +462,11 @@ class TestWikiVideo(TestCase):
         video()
         cdn_url = 'http://videos.mozilla.org/serv/sumo/'
 
-        self.old_settings = deepcopy(settings._wrapped.__dict__)
+        print settings._wrapped.__dict__
+        self.old_settings = settings.GALLERY_VIDEO_URL
         settings.GALLERY_VIDEO_URL = cdn_url
         d, _, p = doc_rev_parser('[[V:Some title]]')
-        settings._wrapped.__dict__ = self.old_settings
+        settings.GALLERY_VIDEO_URL = self.old_settings
 
         doc = pq(d.html)
         assert cdn_url in doc('video').attr('data-fallback')
