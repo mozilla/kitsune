@@ -123,14 +123,14 @@ def _rebuild_kb_chunk(data, **kwargs):
             document = Document.objects.get(pk=pk)
 
             # If we know a redirect link to be broken (i.e. if it looks like a
-            # link to a document but the document isn't there), delete it:
+            # link to a document but the document isn't there), log an error:
             url = document.redirect_url()
             if (url and points_to_document_view(url) and
                 not document.redirect_document()):
-                document.delete()
-            else:
-                document.html = document.current_revision.content_parsed
-                document.save()
+                log.error('Invalid redirect document: %d' % pk)
+
+            document.html = document.current_revision.content_parsed
+            document.save()
         except Document.DoesNotExist:
             message = 'Missing document: %d' % pk
         except ValidationError as e:
