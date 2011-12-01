@@ -94,5 +94,4 @@ def index_questions(ids, **kw):
     from questions import es_search
     from questions.models import Question
     for q in Question.uncached.filter(id__in=ids):
-        print 'task.index_questions', q.id
         es_search.index_docs(es_search.extract_question(q))
