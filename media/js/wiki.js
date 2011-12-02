@@ -430,6 +430,8 @@
                 $comment.find('textarea').removeAttr('required');
             }
         }
+    }
+
     function watchDiscussion() {
         // For a thread on the all discussions for a locale.
         $('.watch-form').click(function() {
@@ -441,7 +443,6 @@
             });
             return false
         });
-
     }
     $(document).ready(init);
 
