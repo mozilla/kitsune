@@ -613,7 +613,7 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin):
 def update_document_index(sender, instance, **kw):
     # raw is True when saving a model exactly as presented--like when
     # loading fixtures.  In this case we don't want to trigger.
-    if kw.get('raw'):
+    if not settings.USE_ELASTIC or kw.get('raw'):
         return
 
     from wiki.tasks import index_documents
@@ -624,6 +624,9 @@ def update_document_index(sender, instance, **kw):
 @receiver(signals.pre_delete, sender=Document,
           dispatch_uid='wiki.search.index')
 def remove_document_index(sender, instance, **kw):
+    if not settings.USE_ELASTIC:
+        return
+
     from wiki.tasks import unindex_documents
     unindex_documents([instance.id])
 

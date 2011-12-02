@@ -81,6 +81,8 @@ class ElasticTestMixin(object):
         if getattr(settings, 'ES_HOSTS', None) is None:
             raise SkipTest
 
+        settings.USE_ELASTIC = True
+
         # Delete test indexes if they exist.
         es = get_es()
         for index in settings.ES_INDEXES.values():
@@ -94,6 +96,8 @@ class ElasticTestMixin(object):
         es = get_es()
         for index in settings.ES_INDEXES.values():
             es.delete_index_if_exists(index)
+
+        settings.USE_ELASTIC = False
 
 
 class MigrationTests(TestCase):

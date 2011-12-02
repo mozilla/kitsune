@@ -1,6 +1,7 @@
 import datetime
 
 from django.db import models
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from django.dispatch import receiver
@@ -260,7 +261,7 @@ class Post(ActionMixin, ModelBase):
 def update_post_search_index(sender, instance, **kw):
     # raw is True when saving a model exactly as presented--like when
     # loading fixtures.  In this case we don't want to trigger.
-    if kw.get('raw'):
+    if not settings.USE_ELASTIC or kw.get('raw'):
         return
 
     from forums.tasks import index_posts
