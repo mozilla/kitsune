@@ -6,9 +6,72 @@
 {% block content %}
   <h1>{{ title }}</h1>
 
-  <article id="karma-dash" data-userlist-url="{{ url('karma.api.users') }}"></article>
+  <article id="karma-dash"
+    data-userlist-url="{{ url('karma.api.users') }}"
+    data-overview-url="{{ url('karma.api.overview') }}">
+  </article>
 
   <!-- View Templates -->
+  <script type="text/template" id="overview-template">
+    <table>
+      <thead>
+        <tr>
+          <th class="action"></th>
+          <th class="total">{{ _('Period Total') }}</th>
+          <th class="percent">%</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="action">{{ _('Questions') }}</td>
+          <td class="total">
+            TODO
+          </td>
+          <td class="percent">100%</td>
+        </tr>
+        <tr>
+          <td class="action">{{ _('First Answers') }}</td>
+          <td class="total">
+            <%= firstanswer %>
+          </td>
+          <td class="percent"></td>
+        </tr>
+        <tr>
+          <td class="action">{{ _('Solutions') }}</td>
+          <td class="total">
+            <%= solution %>
+          </td>
+          <td class="percent"></td>
+        </tr>
+        <tr>
+          <td class="action">{{ _('Answers') }}</td>
+          <td class="total">
+            <%= answer %>
+          </td>
+          <td class="percent"></td>
+        </tr>
+        <tr>
+          <td class="action">{{ _('Helpful Votes') }}</td>
+          <td class="total">
+            <%= helpfulanswer %>
+          </td>
+          <td class="percent">
+            <%= Math.round(helpfulanswer*100/(nothelpfulanswer+helpfulanswer)) %>
+          </td>
+        </tr>
+        <tr>
+          <td class="action">{{ _('Unhelpful Votes') }}</td>
+          <td class="total">
+            <%= nothelpfulanswer %>
+          </td>
+          <td class="percent">
+            <%= Math.round(nothelpfulanswer*100/(nothelpfulanswer+helpfulanswer)) %>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </script>
+
   <script type="text/template" id="userlist-template">
     <table>
       <thead>
