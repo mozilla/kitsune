@@ -158,6 +158,48 @@ def index_docs(documents, bulk=False, force_insert=False, es=None):
         index_doc(doc, bulk, force_insert, es)
 
 
+def unindex_questions(ids):
+    """Removes Questions from the index."""
+    from questions.models import Question
+
+    es = elasticutils.get_es()
+    index = get_index(Question)
+
+    for question_id in ids:
+        # TODO wrap this in a try/except--amongst other things, this will
+        # only be in the index if the Question had no Answers.
+        doc_id = question_id * ID_FACTOR
+        try:
+            es.delete(index, doc_type=Question._meta.db_table, id=doc_id)
+        except pyes.exceptions.NotFoundException:
+            # If the document isn't in the index, then we ignore it.
+            # TODO: Is that right?
+            pass
+
+
+def unindex_answers(ids):
+    """Removes Answers from the index.
+
+    :arg ids: list of (question_id, answer_id) tuples
+
+    """
+    # Answers are indexed by question.
+    from questions.models import Question
+
+    es = elasticutils.get_es()
+    index = get_index(Question)
+
+    for question_id, answer_id in ids:
+        doc_id = (question_id * ID_FACTOR) + answer_id
+
+        try:
+            es.delete(index, doc_type=Question._meta.db_table, id=doc_id)
+        except pyes.exceptions.NotFoundException:
+            # If the document isn't in the index, then we ignore it.
+            # TODO: Is that right?
+            pass
+
+
 # TODO: This is seriously intensive and takes a _long_ time to run.
 # Need to reduce the work here.  This should not get called often.
 def reindex_questions():

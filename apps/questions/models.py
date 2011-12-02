@@ -7,7 +7,7 @@ from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
 from django.core.cache import cache
 from django.db import models
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save, pre_delete
 from django.dispatch import receiver
 
 from product_details import product_details
@@ -22,7 +22,8 @@ import questions as constants
 from questions.karma_actions import AnswerAction, SolutionAction
 from questions.question_config import products
 from questions.tasks import (update_question_votes, update_answer_pages,
-                             log_answer, index_questions)
+                             log_answer, index_questions, index_answers,
+                             unindex_answers, unindex_questions)
 from search import S
 from search.utils import crc32
 from sumo.helpers import urlparams
@@ -249,14 +250,23 @@ class Question(ModelBase, BigVocabTaggableMixin):
 
 @receiver(post_save, sender=Question,
           dispatch_uid='questions.search.index')
-def update_question_search_index(sender, instance, **kw):
+def update_question_in_index(sender, instance, **kw):
     # raw is True when saving a model exactly as presented--like when
     # loading fixtures.  In this case we don't want to trigger.
-    if kw.get('raw'):
+    if not settings.USE_ELASTIC or kw.get('raw'):
         return
 
     # TODO: waffle here
     index_questions.delay([instance.id])
+
+
+@receiver(pre_delete, sender=Question,
+          dispatch_uid='questions.search.index')
+def remove_question_from_index(sender, instance, **kw):
+    if not settings.USE_ELASTIC:
+        return
+
+    unindex_questions([instance.id])
 
 
 class QuestionMetaData(ModelBase):
@@ -433,6 +443,27 @@ def answer_connector(sender, instance, created, **kw):
 
 post_save.connect(answer_connector, sender=Answer,
                   dispatch_uid='question_answer_activity')
+
+
+@receiver(post_save, sender=Question,
+          dispatch_uid='questions.search.index')
+def update_answer_in_index(sender, instance, **kw):
+    # raw is True when saving a model exactly as presented--like when
+    # loading fixtures.  In this case we don't want to trigger.
+    if not settings.USE_ELASTIC or kw.get('raw'):
+        return
+
+    # TODO: waffle here
+    index_answers.delay([instance.id])
+
+
+@receiver(pre_delete, sender=Answer,
+          dispatch_uid='questions.search.index')
+def remove_answer_from_index(sender, instance, **kw):
+    if not settings.USE_ELASTIC:
+        return
+
+    unindex_answers([(instance.question.id, instance.id)])
 
 
 class QuestionVote(ModelBase):
