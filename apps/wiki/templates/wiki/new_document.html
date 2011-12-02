@@ -2,6 +2,7 @@
 {% extends "wiki/base.html" %}
 {% from "layout/errorlist.html" import errorlist %}
 {% from "includes/common_macros.html" import content_editor %}
+{% from "wiki/includes/document_macros.html" import submit_revision %}
 {% set title = _('Create a New Article | Knowledge Base') %}
 {# TODO: Change KB url to landing page when we have one #}
 {% set crumbs = [(None, _('New Article'))] %}
@@ -33,7 +34,7 @@
           {% endfor %}
         </ul>
         {{ revision_form.hidden_fields()|join|safe }}
-        {% include 'wiki/includes/submit_revision_for_review.html' %}
+        {{ submit_revision(revision_form) }}
       </form>
     </div>
     <div id="preview"></div>
