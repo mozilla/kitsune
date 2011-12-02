@@ -3,7 +3,7 @@ import datetime
 from django.db import models
 from django.conf import settings
 from django.contrib.auth.models import User
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save, pre_delete
 from django.dispatch import receiver
 
 from tidings.models import NotificationsMixin
@@ -258,15 +258,25 @@ class Post(ActionMixin, ModelBase):
 
 @receiver(post_save, sender=Post,
           dispatch_uid='forums.search.index')
-def update_post_search_index(sender, instance, **kw):
+def update_post_in_index(sender, instance, **kw):
     # raw is True when saving a model exactly as presented--like when
     # loading fixtures.  In this case we don't want to trigger.
     if not settings.USE_ELASTIC or kw.get('raw'):
         return
 
-    from forums.tasks import index_posts
     # TODO: waffle here
+    from forums.tasks import index_posts
     index_posts.delay([instance.id])
+
+
+@receiver(pre_delete, sender=Post,
+          dispatch_uid='forums.search.index')
+def remove_post_from_index(sender, instance, **kw):
+    if not settings.USE_ELASTIC:
+        return
+
+    from forums.tasks import unindex_posts
+    unindex_posts([instance.id])
 
 
 # The index is on Post, but with the Thread.title for the Thread

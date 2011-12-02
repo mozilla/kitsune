@@ -100,6 +100,21 @@ def index_post(post, bulk=False, force_insert=False, es=None):
                  id=post['id'], bulk=bulk, force_insert=force_insert)
 
 
+def unindex_posts(ids):
+    from forums.models import Post
+
+    es = elasticutils.get_es()
+    index = get_index(Post)
+
+    for post_id in ids:
+        try:
+            es.delete(index, doc_type=Post._meta.db_table, id=post_id)
+        except pyes.exception.NotFoundException:
+            # If the document isn't in the index, then we ignore it.
+            # TODO: Is that right?
+            pass
+
+
 # TODO: This is seriously intensive and takes a _long_ time to run.
 # Need to reduce the work here.  This should not get called often.
 def reindex_documents():

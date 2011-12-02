@@ -40,6 +40,12 @@ def index_posts(ids, **kw):
         es_search.index_post(es_search.extract_post(p))
 
 
+@task
+def unindex_posts(ids, **kw):
+    from forums import es_search
+    es_search.unindex_posts(ids)
+
+
 def connector(sender, instance, created, **kw):
     if created:
         log_reply.delay(instance)
