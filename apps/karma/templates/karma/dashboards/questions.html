@@ -6,12 +6,17 @@
 {% block content %}
   <h1>{{ title }}</h1>
 
+
   <article id="karma-dash"
     data-userlist-url="{{ url('karma.api.users') }}"
-    data-overview-url="{{ url('karma.api.overview') }}">
+    data-overview-url="{{ url('karma.api.overview') }}"
+    data-details-url="{{ url('karma.api.details') }}">
   </article>
 
   <!-- View Templates -->
+  <script type="text/template" id="chart-template">
+    <h1>stsuff</h1>
+  </script>
   <script type="text/template" id="overview-template">
     <table>
       <thead>

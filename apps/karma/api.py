@@ -1,7 +1,7 @@
 from datetime import date, timedelta
 
 from access.decorators import login_required, permission_required
-from karma.forms import UserAPIForm, OverviewAPIForm
+from karma.forms import UserAPIForm, OverviewAPIForm, DetailAPIForm
 from karma.manager import KarmaManager
 from questions.models import Question
 from sumo.decorators import json_view
@@ -87,14 +87,29 @@ def overview(request):
 @login_required
 @permission_required('karma.view_dashboard')
 @json_view
-def totals(request):
-    """Returns (for now) monthly totals for each action type.
+def details(request):
+    """Returns monthly or daily totals for an action type.
 
     Feeds the dashboard chart.
     """
     mgr = KarmaManager()
+    form = DetailAPIForm(request.GET)
 
-    # TODO: implement me
+    if not form.is_valid():
+        return {'success': False, 'errors': form.errors}
+    userid = form.cleaned_data.get('userid') or 'overview'
+    daterange = form.cleaned_data.get('daterange') or '1y'
+    counts = {}
+    count_func = mgr.monthly_counts
+    if daterange == '1w':
+        count_func = mgr.daily_counts
+    for t in KarmaManager.action_types.keys():
+        counts[t], time_units = count_func(type=t, **form.cleaned_data)
 
     return {
-        'success': True}
+        'success': True,
+        'time_units': time_units,
+        'counts': counts,
+        'userid': userid
+        }
+

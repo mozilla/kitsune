@@ -23,10 +23,10 @@ section.daterange label {
 }
 
 section.overview {
-    clear: both;
+    clear: right;
     float: right;
     padding: 10px 0;
-    width: 40%;
+    width: 350px;
 }
 
 .overview table {
@@ -116,4 +116,15 @@ th.sort {
 
 .user-list tbody tr:nth-child(odd) {
     background: #cae1ff;
+}
+
+/*
+ * Chart Styles
+ */
+
+#chart {
+    height: 230px;
+    width:600px;
+    float: left;
+
 }

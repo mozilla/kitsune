@@ -1,4 +1,5 @@
 from datetime import date, timedelta
+from dateutil.relativedelta import relativedelta
 import logging
 
 from django.contrib.auth.models import User
@@ -99,6 +100,7 @@ class KarmaManager(object):
         total_count = 0
 
         for userid in self.user_ids():
+            log.info('Updating user.id [{id}]'.format(id=userid))
             if daterange == 'all':
                 # '*:all' is always up to date
                 count = self.count(userid, daterange='all', type=type)
@@ -180,7 +182,8 @@ class KarmaManager(object):
                                 '{t}:{r}'.format(t=type, r=daterange))
         return int(count) if count else 0
 
-    def daily_counts(self, user='overview', daterange='all', type='points'):
+    def daily_counts(self, user='overview', daterange='1y', type='points',
+                     *arg, **kwargs):
         """Return a list of counts per day for the give range and type.
 
         The default "user" is 'overview' which is an aggregate count
@@ -191,26 +194,44 @@ class KarmaManager(object):
         days = [today - timedelta(days=d) for d in range(num_days)]
         counts = self.redis.hmget(
             hash_key(user), ['{t}:{d}'.format(t=type, d=d) for d in days])
-        fn = lambda x: int(x) if x else 0
-        return [fn(c) for c in counts]
+        return [int(c or 0) for c in counts], [d.strftime('%A') for d in days]
 
-    def day_count(self, user='overview', date=date.today(), type='points'):
+    def day_count(self, user='overview', count_date=None, type='points'):
         """Returns the total count for given type, user and day.
 
         The default "user" is 'overview' which is an aggregate count
         over all users.
         """
+        count_date = count_date or date.today()
         count = self.redis.hget(
-            hash_key(user), '{t}:{d}'.format(d=date, t=type))
+            hash_key(user), '{t}:{d}'.format(d=count_date, t=type))
         return int(count) if count else 0
 
-    def month_count(self, user='overview', year=date.today().year,
-                    month=date.today().month, type='points'):
+    def monthly_counts(self, userid=None, daterange=None, type='points',
+                       *arg, **kwargs):
+        daterange = daterange or '1y'
+        month_ranges = {'1m': 1, '3m': 3, '6m': 6, '1y': 12}
+        num_months = month_ranges[daterange]
+        userid = userid or 'overview'
+        today = date.today()
+        dates = []
+        for r in range(-1 * num_months, 0):
+            dates.append(today + relativedelta(months=r+1))
+        counts = self.redis.hmget(
+            hash_key(userid),
+            ['{t}:{y}-{m:02d}'.format(t=type, y=d.year, m=d.month) for
+             d in dates])
+        return [int(c or 0) for c in counts], [d.strftime('%b') for d in dates]
+
+    def month_count(self, user='overview', year=None,
+                    month=None, type='points'):
         """Returns the total countfor given type, user and month.
 
         The default "user" is 'overview' which is an aggregate count
         over all users.
         """
+        year = year or date.today().year
+        month = month or date.today().month
         count = self.redis.hget(
             hash_key(user),
             '{t}:{y}-{m:02d}'.format(t=type, y=year, m=month))
@@ -237,7 +258,7 @@ class KarmaManager(object):
 
     def _count(self, user, daterange, type='points'):
         """Calculates a user's count for range and type from daily counts."""
-        daily_counts = self.daily_counts(user=user, daterange=daterange,
+        daily_counts, days = self.daily_counts(user=user, daterange=daterange,
                                          type=type)
         return sum(daily_counts)
 

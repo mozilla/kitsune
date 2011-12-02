@@ -1,4 +1,16 @@
 /*
+ * Bar charts
+ */
+
+var chart1; // globally available
+function deslugify(slug){
+    return _.map(slug.split('-'), function(w) {
+        return w.charAt(0).toUpperCase() + w.slice(1)
+    }).join(' ')
+}
+
+
+/*
  * Karma Dashboard backbonejs app.
  */
 
@@ -152,6 +164,23 @@ window.Overview = Backbone.Model.extend({
     }
 });
 
+window.ChartModel = Backbone.Model.extend({
+    initialize: function(models, options) {
+        _.bindAll(this, 'settingsChanged');
+        this.settings = options.settings;
+
+        this.settings.bind('change:daterange', this.settingsChanged);
+    },
+    url: function() {
+        return this.settings.get('detailUrl') + '?' + $.param({
+           daterange: this.settings.get('daterange')
+        });
+    },
+    settingsChanged: function() {
+        this.fetch();
+    }
+});
+
 
 /*
  * Views
@@ -258,6 +287,56 @@ window.OverviewView = Backbone.View.extend({
     }
 });
 
+window.ChartView = Backbone.View.extend({
+    template: _.template($("#chart-template").html()),
+    tagName: 'section',
+    id: 'chart',
+
+    initialize: function() {
+        _.bindAll(this, 'render');
+
+        this.model.bind('change', this.render);
+        chart1 = new Highcharts.Chart({
+            chart: {
+                renderTo: this.el,
+                type: 'column'
+            },
+            credits: {
+                enabled: false
+            },
+            yAxis: {
+                min: 0,
+                title: {
+                    text: ''
+                }
+            },
+            title: {
+                text: '',
+            }
+        });
+    },
+
+    render: function() {
+        var counts = this.model.get('counts');
+        var time_units = this.model.get('time_units');
+        if(counts) {
+            chart1.xAxis[0].setCategories(time_units);
+            _.each(counts, function(data, label){
+                var zipped_data = _.zip(time_units, data);
+                if(chart1.get(label)){
+                   chart1.get(label).remove();
+                };
+                chart1.addSeries({
+                    data: zipped_data,
+                    id: label,
+                    name: deslugify(label)
+                });
+            });
+        };
+        return this;
+    }
+});
+
 
 /*
  * Application
@@ -269,7 +348,8 @@ window.KarmaDashboard = Backbone.View.extend({
         settings.fetch();
         settings.save({
             baseUsersUrl: $(this.el).data('userlist-url'),
-            overviewUrl: $(this.el).data('overview-url')
+            overviewUrl: $(this.el).data('overview-url'),
+            detailUrl: $(this.el).data('details-url')
         });
 
         window.overview = new Overview([], {
@@ -277,6 +357,10 @@ window.KarmaDashboard = Backbone.View.extend({
         });
 
         window.users = new Users([], {
+            settings: settings
+        });
+
+        window.chart = new ChartModel([], {
             settings: settings
         });
 
@@ -292,16 +376,22 @@ window.KarmaDashboard = Backbone.View.extend({
             collection: window.users,
             settings: settings
         });
+        this.chartView = new ChartView({
+            model: chart,
+            settings: settings
+        });
 
         // Render the views.
         $(this.el)
             .append(this.dateRangeView.render().el)
             .append(this.overviewView.render().el)
+            .append(this.chartView.render().el)
             .append(this.userListView.render().el);
 
         // Load up the collections and models.
         users.fetch();
         overview.fetch();
+        chart.fetch();
 
         // Infinite scroll.
         var $window = $(window),

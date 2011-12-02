@@ -25,3 +25,16 @@ class OverviewAPIForm(forms.Form):
     daterange = forms.ChoiceField(
         required=False,
         choices=[(k, k) for k in KarmaManager.date_ranges.keys() + ['all']])
+
+
+class DetailAPIForm(forms.Form):
+    """Form for a period of time and granularity and possibly a user"""
+
+    daterange = forms.ChoiceField(
+        required=False,
+        initial='1y',
+        choices=[(k, k) for k in KarmaManager.date_ranges.keys() + ['all']])
+    unit = forms.ChoiceField(required=False,
+                             choices=['day', 'month'],
+                             initial='month')
+    userid = forms.IntegerField(required=False)
