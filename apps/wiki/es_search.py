@@ -86,15 +86,19 @@ def index_doc(doc, bulk=False, force_insert=False, es=None):
                  id=doc['id'], bulk=bulk, force_insert=force_insert)
 
 
-def unindex_documents(docs):
+def unindex_documents(ids):
     from wiki.models import Document
 
     es = elasticutils.get_es()
     index = get_index(Document)
 
-    for doc_id in docs:
-        # TODO wrap this in a try/except
-        es.delete(index, doc_type=Document._meta.db_table, id=doc_id)
+    for doc_id in ids:
+        try:
+            es.delete(index, doc_type=Document._meta.db_table, id=doc_id)
+        except pyes.exceptions.NotFoundException:
+            # If the document isn't in the index, then we ignore it.
+            # TODO: Is that right?
+            pass
 
 
 # TODO: This is seriously intensive and takes a _long_ time to run.
