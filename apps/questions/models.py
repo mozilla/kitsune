@@ -256,7 +256,6 @@ def update_question_in_index(sender, instance, **kw):
     if not settings.USE_ELASTIC or kw.get('raw'):
         return
 
-    # TODO: waffle here
     index_questions.delay([instance.id])
 
 
@@ -453,7 +452,6 @@ def update_answer_in_index(sender, instance, **kw):
     if not settings.USE_ELASTIC or kw.get('raw'):
         return
 
-    # TODO: waffle here
     index_answers.delay([instance.id])
 
 

@@ -1,3 +1,5 @@
+import logging
+
 from django.db import transaction
 from django.db.models.signals import post_save
 
@@ -6,6 +8,9 @@ from multidb.pinning import pin_this_thread, unpin_this_thread
 
 from activity.models import Action
 from forums.models import Post
+
+
+log = logging.getLogger('k.task')
 
 
 @task
@@ -34,6 +39,7 @@ def log_reply(post):
 
 @task
 def index_posts(ids, **kw):
+    log.debug('Indexing posts: %r', ids)
     from forums import es_search
     from forums.models import Post
     for p in Post.uncached.filter(id__in=ids):
@@ -42,6 +48,7 @@ def index_posts(ids, **kw):
 
 @task
 def unindex_posts(ids, **kw):
+    log.debug('Unindexing posts: %r', ids)
     from forums import es_search
     es_search.unindex_posts(ids)
 
