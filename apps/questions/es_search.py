@@ -3,23 +3,20 @@ import logging
 import pyes
 import time
 
-from search.es_utils import *
+from search.es_utils import (TYPE, LONG, INDEX, STRING, ANALYZED, ANALYZER,
+                             SNOWBALL, TERM_VECTOR, STORE, YES, BOOLEAN,
+                             WITH_POS_OFFSETS, DATE, INTEGER, get_index)
 
 
 ID_FACTOR = 100000
 AGE_DIVISOR = 86400
 
-# TODO: Is this the right thing to log to?
 log = logging.getLogger('k.quetion.es_search')
 
 
 def setup_mapping(index):
     from questions.models import Question
 
-    # TODO: ES can infer types.  I don't know offhand if we can
-    # provide some types and let it infer the rest.  If that's true,
-    # then we can ditch all the defined types here except the strings
-    # that need analysis.
     mapping = {
         'properties': {
             'id': {TYPE: LONG},
@@ -79,7 +76,7 @@ def _extract_question_data(question):
     # every 24 hours.  Keeping it here for now.
     if question.update is not None:
         updated_since_epoch = time.mktime(question.updated.timetuple())
-        d['age'] = (time.time() - updated_since_epoch) / AGE_DIVISOR
+        d['age'] = int((time.time() - updated_since_epoch) / AGE_DIVISOR)
     else:
         d['age'] = None
 
@@ -150,7 +147,6 @@ def index_doc(doc, bulk=False, force_insert=False, es=None):
         # have a second one, that will cause everything to die.
         es.index(doc, index, doc_type=Question._meta.db_table,
                  id=doc['id'], bulk=bulk, force_insert=force_insert)
-    print 'done indexing', index, doc['id']
 
 
 def index_docs(documents, bulk=False, force_insert=False, es=None):
@@ -200,10 +196,13 @@ def unindex_answers(ids):
             pass
 
 
-# TODO: This is seriously intensive and takes a _long_ time to run.
-# Need to reduce the work here.  This should not get called often.
 def reindex_questions():
-    """Updates the mapping and indexes all questions."""
+    """Updates the mapping and indexes all questions.
+
+    Note: This gets run from the command line, so we log stuff to let
+    the user know what's going on.
+
+    """
     from questions.models import Question
     from django.conf import settings
 

@@ -5,10 +5,6 @@ import pyes
 from django.conf import settings
 
 
-# TODO: Make this less silly.  I do this because if I typo a name,
-# pyflakes points it out, but if I typo a string, it doesn't notice
-# and typos are always kicking my ass.
-
 TYPE = 'type'
 ANALYZER = 'analyzer'
 INDEX = 'index'
@@ -76,7 +72,7 @@ def es_whazzup():
 
     pprint.pprint(es.cluster_stats())
 
-    print "Totals:"
-    print "total questions: ", elasticutils.S(Question).count()
-    print "total forum posts: ", elasticutils.S(Post).count()
-    print "total wiki docs: ", elasticutils.S(Document).count()
+    print 'Totals:'
+    print 'total questions:', elasticutils.S(Question).count()
+    print 'total forum posts:', elasticutils.S(Post).count()
+    print 'total wiki docs:', elasticutils.S(Document).count()

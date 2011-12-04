@@ -20,7 +20,6 @@ class TestPostUpdate(ESTestCase):
         doc.save()
         self.refresh()
 
-        print "doc.id", doc.id
         eq_(elasticutils.S(Document).count(), original_count + 1)
 
     def test_deleted(self):

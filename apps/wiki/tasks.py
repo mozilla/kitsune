@@ -157,6 +157,7 @@ def _rebuild_kb_chunk(data, **kwargs):
 
 @task
 def index_documents(ids, **kw):
+    log.debug('Indexing documents: %r', ids)
     from wiki import es_search
     from wiki.models import Document
     for d in Document.uncached.filter(id__in=ids):
@@ -165,5 +166,6 @@ def index_documents(ids, **kw):
 
 @task
 def unindex_documents(ids, **kw):
+    log.debug('Unindexing documents: %r', ids)
     from wiki import es_search
     es_search.unindex_documents(ids)

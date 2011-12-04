@@ -2,20 +2,16 @@ import elasticutils
 import logging
 import pyes
 
-from search.es_utils import *
+from search.es_utils import (TYPE, INTEGER, STRING, INDEX, ANALYZED, ANALYZER,
+                             SNOWBALL, BOOLEAN, DATE, get_index)
 
 
-# TODO: Is this the right thing to log to?
 log = logging.getLogger('k.wiki.es_search')
 
 
 def setup_mapping(index):
     from wiki.models import Document
 
-    # TODO: ES can infer types.  I don't know offhand if we can
-    # provide some types and let it infer the rest.  If that's true,
-    # then we can ditch all the defined types here except the strings
-    # that need analysis.
     mapping = {
         'properties': {
             'id': {TYPE: INTEGER},
@@ -101,10 +97,13 @@ def unindex_documents(ids):
             pass
 
 
-# TODO: This is seriously intensive and takes a _long_ time to run.
-# Need to reduce the work here.  This should not get called often.
 def reindex_documents():
-    """Updates the mapping and indexes all documents."""
+    """Updates the mapping and indexes all documents.
+
+    Note: This gets called from the commandline, so we do some logging
+    so the user knows what's going on.
+
+    """
     from wiki.models import Document
     from django.conf import settings
 

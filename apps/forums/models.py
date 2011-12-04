@@ -263,7 +263,6 @@ def update_post_in_index(sender, instance, **kw):
     if not settings.USE_ELASTIC or kw.get('raw'):
         return
 
-    # TODO: waffle here
     from forums.tasks import index_posts
     index_posts.delay([instance.id])
 

@@ -3,23 +3,20 @@ import logging
 import pyes
 import time
 
-from search.es_utils import *
+from search.es_utils import (TYPE, INTEGER, STRING, ANALYZED, ANALYZER,
+                             SNOWBALL, TERM_VECTOR, YES, STORE, BOOLEAN,
+                             INDEX, WITH_POS_OFFSETS, DATE, get_index)
 
 
 AGE_DIVISOR = 86400
 
 
-# TODO: Is this the right thing to log to?
 log = logging.getLogger('k.forums.es_search')
 
 
 def setup_mapping(index):
     from forums.models import Post
 
-    # TODO: ES can infer types.  I don't know offhand if we can
-    # provide some types and let it infer the rest.  If that's true,
-    # then we can ditch all the defined types here except the strings
-    # that need analysis.
     mapping = {
         'properties': {
             'id': {TYPE: INTEGER},
@@ -74,7 +71,7 @@ def extract_post(post):
     # it here for now.
     if post.updated is not None:
         updated_since_epoch = time.mktime(post.updated.timetuple())
-        d['age'] = (time.time() - updated_since_epoch) / AGE_DIVISOR
+        d['age'] = int((time.time() - updated_since_epoch) / AGE_DIVISOR)
     else:
         d['age'] = None
 
@@ -115,10 +112,13 @@ def unindex_posts(ids):
             pass
 
 
-# TODO: This is seriously intensive and takes a _long_ time to run.
-# Need to reduce the work here.  This should not get called often.
 def reindex_documents():
-    """Updates the mapping and indexes all documents."""
+    """Updates the mapping and indexes all documents.
+
+    Note: This only gets called from the command line.  Ergo we do
+    some logging so the user knows what's going on.
+
+    """
     from forums.models import Post
     from django.conf import settings
 

@@ -462,7 +462,6 @@ class TestWikiVideo(TestCase):
         video()
         cdn_url = 'http://videos.mozilla.org/serv/sumo/'
 
-        print settings._wrapped.__dict__
         self.old_settings = settings.GALLERY_VIDEO_URL
         settings.GALLERY_VIDEO_URL = cdn_url
         d, _, p = doc_rev_parser('[[V:Some title]]')
