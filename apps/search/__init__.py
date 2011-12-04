@@ -89,7 +89,7 @@ class SphinxSearcher(oedipus.S):
 
 
 ExcerptTimeoutError = oedipus.ExcerptTimeoutError
-ExcerptSocketErrorError = oedipus.ExcerptSocketErrorError
+ExcerptSocketError = oedipus.ExcerptSocketError
 SearchError = oedipus.SearchError
 
 

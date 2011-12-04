@@ -17,7 +17,7 @@ from mobility.decorators import mobile_template
 from statsd import statsd
 from tower import ugettext as _
 
-from search import SearchError, ExcerptTimeoutError, ExcerptSocketErrorError
+from search import SearchError, ExcerptTimeoutError, ExcerptSocketError
 from search.utils import locale_or_default, clean_excerpt
 from forums.models import Thread, discussion_searcher
 from questions.models import question_searcher
@@ -313,7 +313,7 @@ def search(request, template=None):
                 except ExcerptTimeoutError:
                     statsd.incr('search.excerpt.timeout')
                     excerpt = u''
-                except ExcerptSocketErrorError:
+                except ExcerptSocketError:
                     statsd.incr('search.excerpt.socketerror')
                     excerpt = u''
 
@@ -339,7 +339,7 @@ def search(request, template=None):
                 except ExcerptTimeoutError:
                     statsd.incr('search.excerpt.timeout')
                     excerpt = u''
-                except ExcerptSocketErrorError:
+                except ExcerptSocketError:
                     statsd.incr('search.excerpt.socketerror')
                     excerpt = u''
 
