@@ -22,6 +22,37 @@ section.daterange label {
     text-align: center;
 }
 
+section.overview {
+    clear: both;
+    float: right;
+    padding: 10px 0;
+    width: 40%;
+}
+
+.overview table {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+.overview tr {
+    border-bottom: solid 1px #ccc;
+}
+
+.overview th,
+.overview td {
+    padding: 3px;
+}
+
+.overview .action {
+    width: 50%;
+}
+
+.overview .total,
+.overview .percent {
+    text-align: center;
+    width: 25%;
+}
+
 section.user-list {
     clear: both;
     padding: 10px 0;

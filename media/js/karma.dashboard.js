@@ -120,6 +120,15 @@ window.Settings = Backbone.Model.extend({
 });
 
 window.Overview = Backbone.Model.extend({
+    defaults: {
+        'question': 0,
+        'firstanswer': 0,
+        'solution': 0,
+        'answer': 0,
+        'helpfulanswer': 0,
+        'nothelpfulanswer': 0
+    },
+
     initialize: function(models, options) {
         _.bindAll(this, 'settingsChanged');
         this.settings = options.settings;
@@ -132,7 +141,11 @@ window.Overview = Backbone.Model.extend({
         });
     },
     parse: function(response) {
-        return response.overview;
+        var clean = {};
+        _.each(response.overview, function(val, key) {
+            clean[key.replace(/-/g, '')] = val;
+        });
+        return clean;
     },
     settingsChanged: function() {
         this.fetch();
@@ -233,6 +246,12 @@ window.OverviewView = Backbone.View.extend({
     tagName: 'section',
     className: 'overview',
 
+    initialize: function() {
+        _.bindAll(this, 'render');
+
+        this.model.bind('change', this.render);
+    },
+
     render: function() {
         $(this.el).html(this.template(this.model.toJSON()));
         return this;
@@ -266,6 +285,7 @@ window.KarmaDashboard = Backbone.View.extend({
             settings: settings
         });
         this.overviewView = new OverviewView({
+            model: overview,
             settings: settings
         });
         this.userListView = new UserListView({
@@ -279,8 +299,9 @@ window.KarmaDashboard = Backbone.View.extend({
             .append(this.overviewView.render().el)
             .append(this.userListView.render().el);
 
-        // Load up the collection.
+        // Load up the collections and models.
         users.fetch();
+        overview.fetch();
 
         // Infinite scroll.
         var $window = $(window),

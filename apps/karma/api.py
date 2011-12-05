@@ -1,6 +1,9 @@
+from datetime import date, timedelta
+
 from access.decorators import login_required, permission_required
 from karma.forms import UserAPIForm, OverviewAPIForm
 from karma.manager import KarmaManager
+from questions.models import Question
 from sumo.decorators import json_view
 
 
@@ -69,6 +72,12 @@ def overview(request):
     overview = {}
     for t in KarmaManager.action_types.keys():
         overview[t] = mgr.count(daterange=daterange, type=t)
+
+    # TODO: Maybe have a karma action not assigned to a user for this?
+    num_days = KarmaManager.date_ranges[daterange]
+    start_day = date.today() - timedelta(days=num_days)
+    overview['question'] = Question.objects.filter(
+        created__gt=start_day).count()
 
     return {
         'success': True,
