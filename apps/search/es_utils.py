@@ -68,11 +68,24 @@ def es_whazzup():
     from questions.models import Question
     from wiki.models import Document
 
+    # We create a logger because elasticutils uses it.
+    import logging
+    logging.basicConfig()
+
     es = elasticutils.get_es()
 
     pprint.pprint(es.cluster_stats())
 
     print 'Totals:'
-    print 'total questions:', elasticutils.S(Question).count()
-    print 'total forum posts:', elasticutils.S(Post).count()
-    print 'total wiki docs:', elasticutils.S(Document).count()
+    try:
+        print 'total questions:', elasticutils.S(Question).count()
+    except pyes.exceptions.IndexMissingException:
+        print 'total questions: 0'
+    try:
+        print 'total forum posts:', elasticutils.S(Post).count()
+    except pyes.exceptions.IndexMissingException:
+        print 'total forum posts: 0'
+    try:
+        print 'total wiki docs:', elasticutils.S(Document).count()
+    except pyes.exceptions.IndexMissingException:
+        print 'total wiki docs: 0'
