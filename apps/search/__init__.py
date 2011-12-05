@@ -99,6 +99,6 @@ def searcher(request):
     Which it returns depends on the ``elasticsearch`` waffle flag.
 
     """
-    return (elasticutils.SphinxTolerantElastic if
+    return (oedipus.SphinxTolerantElastic if
             waffle.flag_is_active(request, 'elasticsearch') else
             SphinxSearcher)
