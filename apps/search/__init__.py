@@ -66,9 +66,9 @@ NUMBER_LIST = (
 
 SORT_QUESTIONS = (
     ('-@relevance', 'age'),  # default
-    ('updated',),
-    ('created',),
-    ('replies',)
+    ('-updated',),
+    ('-created',),
+    ('-replies',)
 )
 
 SORTBY_QUESTIONS = (
