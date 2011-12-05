@@ -1,6 +1,8 @@
 {% load i18n %}{# L10n: This is an email. Whitespace matters! #}{% blocktrans %}{{ sender }} sent you the following message:{% endblocktrans %}
 {{ message|safe }}
 
+View this message on the web:
 https://{{ host }}{{ url }}
 
-{% blocktrans %}Unsubscribe from these emails: https://{{ host }}{{ unsubscribe_url }}{% endblocktrans %}
+{% blocktrans %}Change your email preferences:
+https://{{ host }}{{ unsubscribe_url }}{% endblocktrans %}
