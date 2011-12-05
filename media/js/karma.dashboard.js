@@ -312,7 +312,7 @@ window.KarmaDashboard = Backbone.View.extend({
                 $document.height() - $window.height()){
                 users.fetchMore();
             }
-        }, 100));
+        }, 300));
     }
 });
 
