@@ -17,7 +17,7 @@ from pyquery import PyQuery
 from tidings.models import NotificationsMixin
 from tower import ugettext_lazy as _lazy, ugettext as _
 
-from search import S
+from search import searcher
 from search.utils import crc32
 from sumo import ProgrammingError
 from sumo_locales import LOCALES
@@ -902,6 +902,8 @@ def points_to_document_view(url, required_locale=None):
         return False
 
 
-# Default search parameters for the wiki:
-wiki_search = S(Document).weight(title=6, content=1, keywords=4, summary=2)
-# TODO: We probably have several more default filters to add.
+def wiki_searcher(request):
+    """Return a wiki document searcher with default parameters."""
+    return searcher(request)(Document).weight(
+            title=6, content=1, keywords=4, summary=2)
+    # TODO: We probably have several more default filters to add.
