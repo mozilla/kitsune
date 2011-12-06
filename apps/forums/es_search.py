@@ -112,12 +112,14 @@ def unindex_posts(ids):
             pass
 
 
-def reindex_documents():
+def reindex_documents(percent=100):
     """Updates the mapping and indexes all documents.
 
     Note: This only gets called from the command line.  Ergo we do
     some logging so the user knows what's going on.
 
+    :arg percent: The percentage of questions to index.  Defaults to
+        100--e.g. all of them.
     """
     from forums.models import Post
     from django.conf import settings
@@ -135,6 +137,10 @@ def reindex_documents():
 
     log.info('iterating through posts....')
     total = Post.objects.count()
+    to_index = int(total * (percent / 100.0))
+    log.info('total posts: %s (to be indexed %s)', total, to_index)
+    total = to_index
+
     t = 0
     for p in Post.objects.all():
         t += 1
@@ -147,6 +153,9 @@ def reindex_documents():
 
             log.info('%s/%s...  (%s to go)', t, total, time_to_go)
             es.flush_bulk(forced=True)
+
+        if t > total:
+            break
 
         index_post(extract_post(p), bulk=True, es=es)
 

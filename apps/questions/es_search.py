@@ -196,12 +196,14 @@ def unindex_answers(ids):
             pass
 
 
-def reindex_questions():
+def reindex_questions(percent=100):
     """Updates the mapping and indexes all questions.
 
     Note: This gets run from the command line, so we log stuff to let
     the user know what's going on.
 
+    :arg percent: The percentage of questions to index.  Defaults to
+        100--e.g. all of them.
     """
     from questions.models import Question
     from django.conf import settings
@@ -220,6 +222,10 @@ def reindex_questions():
 
     log.info('iterating through questions....')
     total = Question.objects.count()
+    to_index = int(total * (percent / 100.0))
+    log.info('total questions: %s (to be indexed: %s)', total, to_index)
+    total = to_index
+
     t = 0
     for q in Question.objects.all():
         t += 1
@@ -231,6 +237,9 @@ def reindex_questions():
                 time_to_go = "%d min" % (time_to_go / 60)
             log.info('%s/%s...  (%s to go)', t, total, time_to_go)
             es.flush_bulk(forced=True)
+
+        if t > total:
+            break
 
         index_docs(extract_question(q), bulk=True, es=es)
 

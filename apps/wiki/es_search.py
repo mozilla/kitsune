@@ -98,12 +98,14 @@ def unindex_documents(ids):
             pass
 
 
-def reindex_documents():
+def reindex_documents(percent):
     """Updates the mapping and indexes all documents.
 
     Note: This gets called from the commandline, so we do some logging
     so the user knows what's going on.
 
+    :arg percent: The percentage of questions to index.  Defaults to
+        100--e.g. all of them.
     """
     from wiki.models import Document
     from django.conf import settings
@@ -121,6 +123,10 @@ def reindex_documents():
 
     log.info('iterating through documents....')
     total = Document.objects.count()
+    to_index = int(total * (percent / 100.0))
+    log.info('total documents: %s (to be indexed: %s)', total, to_index)
+    total = to_index
+
     t = 0
     for d in Document.objects.all():
         t += 1
@@ -132,6 +138,9 @@ def reindex_documents():
                 time_to_go = "%d min" % (time_to_go / 60)
             log.info('%s/%s...  (%s to go)', t, total, time_to_go)
             es.flush_bulk(forced=True)
+
+        if t > total:
+            break
 
         index_doc(extract_document(d), bulk=True, es=es)
 

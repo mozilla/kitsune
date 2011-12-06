@@ -32,8 +32,13 @@ def get_index(model):
             or settings.ES_INDEXES['default'])
 
 
-def es_reindex():
-    """Reindexes the database in Elastic."""
+def es_reindex(percent=100):
+    """Reindexes the database in Elastic.
+
+    :arg percent: Defaults to 100.  Allows you to specify how much of
+        each doctype you want to index.  This is useful for
+        development where doing a full reindex takes an hour.
+    """
     es = elasticutils.get_es()
 
     # Go through and delete, then recreate the indexes.
@@ -50,15 +55,15 @@ def es_reindex():
 
     # Reindex questions.
     import questions.es_search
-    questions.es_search.reindex_questions()
+    questions.es_search.reindex_questions(percent)
 
     # Reindex wiki documents.
     import wiki.es_search
-    wiki.es_search.reindex_documents()
+    wiki.es_search.reindex_documents(percent)
 
     # Reindex forum posts.
     import forums.es_search
-    forums.es_search.reindex_documents()
+    forums.es_search.reindex_documents(percent)
 
 
 def es_whazzup():
