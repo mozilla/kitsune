@@ -208,6 +208,8 @@ def reindex_questions():
 
     index = get_index(Question)
 
+    start_time = time.time()
+
     log.info('reindex questions: %s %s', index,
              Question._meta.db_table)
 
@@ -222,7 +224,13 @@ def reindex_questions():
     for q in Question.objects.all():
         t += 1
         if t % 1000 == 0:
-            log.info('%s/%s...', t, total)
+            time_to_go = (total - t) * ((time.time() - start_time) / t)
+            if time_to_go < 60:
+                time_to_go = "%d secs" % time_to_go
+            else:
+                time_to_go = "%d min" % (time_to_go / 60)
+            log.info('%s/%s...  (%s to go)', t, total, time_to_go)
+            es.flush_bulk(forced=True)
 
         index_docs(extract_question(q), bulk=True, es=es)
 

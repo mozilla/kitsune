@@ -1,6 +1,7 @@
 import elasticutils
 import logging
 import pyes
+import time
 
 from search.es_utils import (TYPE, INTEGER, STRING, INDEX, ANALYZED, ANALYZER,
                              SNOWBALL, BOOLEAN, DATE, get_index)
@@ -109,6 +110,8 @@ def reindex_documents():
 
     index = get_index(Document)
 
+    start_time = time.time()
+
     log.info('reindex documents: %s %s', index, Document._meta.db_table)
 
     es = pyes.ES(settings.ES_HOSTS, timeout=10.0)
@@ -122,7 +125,13 @@ def reindex_documents():
     for d in Document.objects.all():
         t += 1
         if t % 1000 == 0:
-            log.info('%s/%s...', t, total)
+            time_to_go = (total - t) * ((time.time() - start_time) / t)
+            if time_to_go < 60:
+                time_to_go = "%d secs" % time_to_go
+            else:
+                time_to_go = "%d min" % (time_to_go / 60)
+            log.info('%s/%s...  (%s to go)', t, total, time_to_go)
+            es.flush_bulk(forced=True)
 
         index_doc(extract_document(d), bulk=True, es=es)
 
