@@ -6,7 +6,8 @@ from search.es_utils import es_reindex
 class Command(BaseCommand):
     help = 'Reindex the database for Elastic.'
     option_list = BaseCommand.option_list + (
-        make_option('--percent', type='int', dest='percent', default=100),)
+        make_option('--percent', type='int', dest='percent', default=100,
+                    help='Reindex a percentage of things'),)
 
     def handle(self, *args, **options):
         percent = options['percent']
