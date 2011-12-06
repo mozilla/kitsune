@@ -283,4 +283,5 @@ def discussion_searcher(request):
     # the Post. We base the S off Post because we need to excerpt content.
     return (searcher(request)(Post).weight(title=2, content=1)
                                    .group_by('thread_id', '-@group')
+                                   .query_fields('title', 'content')
                                    .order_by('created'))

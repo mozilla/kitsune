@@ -904,6 +904,7 @@ def points_to_document_view(url, required_locale=None):
 
 def wiki_searcher(request):
     """Return a wiki document searcher with default parameters."""
-    return searcher(request)(Document).weight(
-            title=6, content=1, keywords=4, summary=2)
+    return (searcher(request)(Document)
+            .query_fields('title', 'content')
+            .weight(title=6, content=1, keywords=4, summary=2))
     # TODO: We probably have several more default filters to add.

@@ -550,6 +550,7 @@ def _content_parsed(obj):
 def question_searcher(request):
     """Return a question searcher with default parameters."""
     return (searcher(request)(Question)
+                .query_fields('title', 'question_content', 'answer_content')
                 .weight(title=4, question_content=3, answer_content=3)
                 .group_by('question_id', '-@group')
                 .highlight(before_match='<b>',
