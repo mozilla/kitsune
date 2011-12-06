@@ -11,7 +11,7 @@ from search.es_utils import (TYPE, LONG, INDEX, STRING, ANALYZED, ANALYZER,
 ID_FACTOR = 100000
 AGE_DIVISOR = 86400
 
-log = logging.getLogger('k.quetion.es_search')
+log = logging.getLogger('k.questions.es_search')
 
 
 def setup_mapping(index):
