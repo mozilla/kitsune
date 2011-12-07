@@ -133,7 +133,7 @@
   {% block outer_side %}
     <div id="side">
       {% block side_top %}{% endblock %}
-      {{ quick_links() }}
+      {{ quick_links(request.locale == settings.WIKI_DEFAULT_LANGUAGE) }}
       {% block side %}{% endblock %}
       {{ for_contributors(request, user, settings.WIKI_DEFAULT_LANGUAGE) }}
       <div class="sd-module promos">
