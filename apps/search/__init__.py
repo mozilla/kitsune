@@ -24,7 +24,7 @@ DATE_LIST = (
 )
 
 GROUPSORT = (
-    ('-@relevance', '-updated'),  # default
+    ('-@rank', '-updated'),  # default
     '-updated',
     '-created',
     '-replies',
@@ -65,7 +65,7 @@ NUMBER_LIST = (
 )
 
 SORT_QUESTIONS = (
-    ('-@relevance', '-updated'),  # default
+    ('-@rank', '-updated'),  # default
     ('-updated',),
     ('-created',),
     ('-replies',)
