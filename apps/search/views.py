@@ -288,7 +288,13 @@ def search(request, template=None):
         # at the beginning and end of the list for slice boundaries.
         begin = documents_dict[type_][0]
         end = documents_dict[type_][-1] + 1
-        docs_for_page += [(type_, doc) for doc in search_s[begin:end]]
+        if type_ == 'wiki':
+            wiki_s = search_s = search_s[begin:end]
+        elif type == 'question':
+            question_s = search_s = search_s[begin:end]
+        elif type == 'discussion':
+            discussion_s = search_s = search_s[begin:end]
+        docs_for_page += [(type_, doc) for doc in search_s]
 
     results = []
     for i, docinfo in enumerate(docs_for_page):

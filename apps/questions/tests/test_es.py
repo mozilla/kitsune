@@ -1,10 +1,12 @@
-from questions.tests import ESTestCase
-from questions.models import Question, Answer
-
-import elasticutils
 import uuid
 
+import elasticutils
 from nose.tools import eq_
+
+from questions.tests import ESTestCase
+from questions.models import Question, Answer
+from sumo.tests import LocalizingClient
+from sumo.urlresolvers import reverse
 
 
 class TestQuestionUpdate(ESTestCase):
