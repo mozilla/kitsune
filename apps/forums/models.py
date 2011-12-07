@@ -16,6 +16,7 @@ from sumo.urlresolvers import reverse
 from sumo.models import ModelBase
 from search import searcher
 from search.utils import crc32
+import waffle
 
 
 def _last_post_from(posts, exclude_post=None):
@@ -173,6 +174,28 @@ class Thread(NotificationsMixin, ModelBase):
         # then Post.delete will erase the thread, as well.
 
 
+@receiver(post_save, sender=Thread,
+          dispatch_uid='forums.search.index')
+def update_thread_in_index(sender, instance, **kw):
+    # raw is True when saving a model exactly as presented--like when
+    # loading fixtures.  In this case we don't want to trigger.
+    if not settings.USE_ELASTIC or kw.get('raw'):
+        return
+
+    from forums.tasks import index_threads
+    index_threads.delay([instance.id])
+
+
+@receiver(pre_delete, sender=Thread,
+          dispatch_uid='forums.search.index')
+def remove_thread_from_index(sender, instance, **kw):
+    if not settings.USE_ELASTIC:
+        return
+
+    from forums.tasks import unindex_threads
+    unindex_threads([instance.id])
+
+
 class Post(ActionMixin, ModelBase):
     thread = models.ForeignKey('Thread')
     content = models.TextField()
@@ -263,8 +286,8 @@ def update_post_in_index(sender, instance, **kw):
     if not settings.USE_ELASTIC or kw.get('raw'):
         return
 
-    from forums.tasks import index_posts
-    index_posts.delay([instance.id])
+    from forums.tasks import index_threads
+    index_threads.delay([instance.thread_id])
 
 
 @receiver(pre_delete, sender=Post,
@@ -273,15 +296,21 @@ def remove_post_from_index(sender, instance, **kw):
     if not settings.USE_ELASTIC:
         return
 
-    from forums.tasks import unindex_posts
-    unindex_posts([instance.id])
+    from forums.tasks import index_threads
+    index_threads.delay([instance.thread_id])
 
 
 def discussion_searcher(request):
     """Return a forum searcher with default parameters."""
-    # The index is on Post but with the Thread.title for the Thread related to
-    # the Post. We base the S off Post because we need to excerpt content.
-    return (searcher(request)(Post).weight(title=2, content=1)
-                                   .group_by('thread_id', '-@group')
-                                   .query_fields('title', 'content')
-                                   .order_by('created'))
+    if waffle.flag_is_active(request, 'elasticsearch'):
+        index_model = Thread
+    else:
+        # The index is on Post but with the Thread.title for the
+        # Thread related to the Post. We base the S off Post because
+        # we need to excerpt content.
+        index_model = Post
+
+    return (searcher(request)(index_model).weight(title=2, content=1)
+                                          .group_by('thread_id', '-@group')
+                                          .query_fields('title', 'content')
+                                          .order_by('created'))

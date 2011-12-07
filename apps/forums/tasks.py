@@ -38,19 +38,19 @@ def log_reply(post):
 
 
 @task
-def index_posts(ids, **kw):
-    log.debug('Indexing posts: %r', ids)
+def index_threads(ids, **kw):
+    log.debug('Indexing threads: %r', ids)
     from forums import es_search
-    from forums.models import Post
-    for p in Post.uncached.filter(id__in=ids):
-        es_search.index_post(es_search.extract_post(p))
+    from forums.models import Thread
+    for thread in Thread.uncached.filter(id__in=ids):
+        es_search.index_thread(es_search.extract_thread(thread))
 
 
 @task
-def unindex_posts(ids, **kw):
-    log.debug('Unindexing posts: %r', ids)
+def unindex_threads(ids, **kw):
+    log.debug('Unindexing threads: %r', ids)
     from forums import es_search
-    es_search.unindex_posts(ids)
+    es_search.unindex_threads(ids)
 
 
 def connector(sender, instance, created, **kw):

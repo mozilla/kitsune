@@ -15,7 +15,7 @@ log = logging.getLogger('k.forums.es_search')
 
 
 def setup_mapping(index):
-    from forums.models import Post
+    from forums.models import Thread
 
     mapping = {
         'properties': {
@@ -31,84 +31,92 @@ def setup_mapping(index):
                         STORE: YES, TERM_VECTOR: WITH_POS_OFFSETS},
             'created': {TYPE: DATE},
             'updated': {TYPE: DATE},
-            'age': {TYPE: INTEGER},
             'replies': {TYPE: INTEGER}
             }
         }
 
     es = elasticutils.get_es()
 
-    # TODO: If the mapping is there already and we do a put_mapping,
-    # does that stomp on the existing mapping or raise an error?
     try:
-        es.put_mapping(Post._meta.db_table, mapping, index)
+        es.put_mapping(Thread._meta.db_table, mapping, index)
     except pyes.exceptions.ElasticSearchException, e:
         log.error(e)
 
 
-def extract_post(post):
-    """Extracts indexable attributes from a Post"""
+def extract_thread(thread):
+    """Extracts interesting thing from a Thread and its Posts"""
     d = {}
-    d['id'] = post.id
-    d['thread_id'] = post.thread.id
-    d['forum_id'] = post.thread.forum.id
-    d['title'] = post.thread.title
-    d['is_sticky'] = post.thread.is_sticky
-    d['is_locked'] = post.thread.is_locked
-    d['author_id'] = post.author.id
-    d['author_ord'] = post.author.username
-    d['content'] = post.content
-    d['created'] = post.thread.created
-    if post.thread.last_post is not None:
-        d['updated'] = post.thread.last_post.created
+    d['id'] = thread.id
+    d['forum_id'] = thread.forum.id
+    d['title'] = thread.title
+    d['is_sticky'] = thread.is_sticky
+    d['is_locked'] = thread.is_locked
+    d['created'] = thread.created
+
+    if thread.last_post is not None:
+        d['updated'] = thread.last_post.created
     else:
         d['updates'] = None
 
-    # TODO: This isn't going to work right.  When we do incremental
-    # updates, then we'll be comparing post with up-to-date ages with
-    # post with stale ages.  We need to either change how this 'age'
-    # thing works or update all the documents every 24 hours.  Keeping
-    # it here for now.
-    if post.updated is not None:
-        updated_since_epoch = time.mktime(post.updated.timetuple())
-        d['age'] = int((time.time() - updated_since_epoch) / AGE_DIVISOR)
-    else:
-        d['age'] = None
+    d['replies'] = thread.replies
 
-    d['replies'] = post.thread.replies
+    author_ids = set()
+    author_ords = set()
+    content = []
+
+    for post in thread.post_set.all():
+        author_ids.add(post.author.id)
+        author_ords.add(post.author.username)
+        content.append(post.content)
+
+    d['author_id'] = list(author_ids)
+    d['author_ord'] = list(author_ords)
+    d['content'] = '\n\n'.join(content)
+
     return d
 
 
-def index_post(post, bulk=False, force_insert=False, es=None):
-    from forums.models import Post
+def index_thread(thread, bulk=False, force_insert=False, es=None):
+    from forums.models import Thread
 
     if es is None:
         es = elasticutils.get_es()
 
-    index = get_index(Post)
+    index = get_index(Thread)
 
     try:
-        es.index(post, index, doc_type=Post._meta.db_table,
-                 id=post['id'], bulk=bulk, force_insert=force_insert)
+        es.index(thread, index, doc_type=Thread._meta.db_table,
+                 id=thread['id'], bulk=bulk, force_insert=force_insert)
     except pyes.urllib3.TimeoutError:
         # If we have a timeout, try it again rather than die.  If we
         # have a second one, that will cause everything to die.
-        es.index(post, index, doc_type=Post._meta.db_table,
-                 id=post['id'], bulk=bulk, force_insert=force_insert)
+        es.index(thread, index, doc_type=Thread._meta.db_table,
+                 id=thread['id'], bulk=bulk, force_insert=force_insert)
+
+
+def unindex_threads(ids):
+    from forums.models import Thread
+
+    es = elasticutils.get_es()
+    index = get_index(Thread)
+
+    for thread_id in ids:
+        try:
+            es.delete(index, doc_type=Thread._meta.db_table, id=thread_id)
+        except pyes.exception.NotFoundException:
+            # If the document isn't in the index, then we ignore it.
+            # TODO: Is that right?
+            pass
 
 
 def unindex_posts(ids):
     from forums.models import Post
 
-    es = elasticutils.get_es()
-    index = get_index(Post)
-
     for post_id in ids:
         try:
-            es.delete(index, doc_type=Post._meta.db_table, id=post_id)
-        except pyes.exception.NotFoundException:
-            # If the document isn't in the index, then we ignore it.
-            # TODO: Is that right?
+            post = Post.objects.get(post_id)
+            index_thread(extract_thread(post.thread))
+        except Post.ObjectNotFound:
             pass
 
 
@@ -121,28 +129,28 @@ def reindex_documents(percent=100):
     :arg percent: The percentage of questions to index.  Defaults to
         100--e.g. all of them.
     """
-    from forums.models import Post
+    from forums.models import Thread
     from django.conf import settings
 
-    index = get_index(Post)
+    index = get_index(Thread)
 
     start_time = time.time()
 
-    log.info('reindex posts: %s %s', index, Post._meta.db_table)
+    log.info('reindex threads: %s %s', index, Thread._meta.db_table)
 
     es = pyes.ES(settings.ES_HOSTS, timeout=10.0)
 
     log.info('setting up mapping....')
     setup_mapping(index)
 
-    log.info('iterating through posts....')
-    total = Post.objects.count()
+    log.info('iterating through threads....')
+    total = Thread.objects.count()
     to_index = int(total * (percent / 100.0))
-    log.info('total posts: %s (to be indexed %s)', total, to_index)
+    log.info('total threads: %s (to be indexed %s)', total, to_index)
     total = to_index
 
     t = 0
-    for p in Post.objects.all():
+    for thread in Thread.objects.all():
         t += 1
         if t % 1000 == 0:
             time_to_go = (total - t) * ((time.time() - start_time) / t)
@@ -157,7 +165,7 @@ def reindex_documents(percent=100):
         if t > total:
             break
 
-        index_post(extract_post(p), bulk=True, es=es)
+        index_thread(extract_thread(thread), bulk=True, es=es)
 
     es.flush_bulk(forced=True)
     log.info('done!')

@@ -25,6 +25,7 @@ import search as constants
 from search.forms import SearchForm
 from sumo.utils import paginate, smart_int
 from wiki.models import wiki_searcher
+import waffle
 
 
 def jsonp_is_valid(func):
@@ -330,9 +331,10 @@ def search(request, template=None):
                 results.append(result)
 
             else:
-                # discussion_s is based on Post--not Thread, so we have
-                # to get this manually.
-                thread = Thread.objects.get(pk=doc.thread_id)
+                if waffle.flag_is_active(request, 'elasticsearch'):
+                    thread = doc
+                else:
+                    thread = Thread.objects.get(pk=doc.thread_id)
 
                 try:
                     excerpt = discussion_s.excerpt(doc)[0]
