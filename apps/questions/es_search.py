@@ -9,7 +9,6 @@ from search.es_utils import (TYPE, LONG, INDEX, STRING, ANALYZED, ANALYZER,
 
 
 ID_FACTOR = 100000
-AGE_DIVISOR = 86400
 
 log = logging.getLogger('k.questions.es_search')
 
@@ -38,7 +37,6 @@ def setup_mapping(index):
             'answer_creator': {TYPE: STRING},
             'question_votes': {TYPE: INTEGER},
             'answer_votes': {TYPE: INTEGER},
-            'age': {TYPE: INTEGER},
             }
         }
 
@@ -52,83 +50,51 @@ def setup_mapping(index):
         log.error(e)
 
 
-def _extract_question_data(question):
-    d = {}
-
-    d['question_id'] = question.id
-    d['title'] = question.title
-    d['question_content'] = question.content
-    d['replies'] = question.num_answers
-    d['is_solved'] = bool(question.solution_id)
-    d['is_locked'] = question.is_locked
-    d['has_answers'] = bool(question.num_answers)
-
-    d['created'] = question.created
-    d['updated'] = question.updated
-
-    d['question_creator'] = question.creator.username
-    d['question_votes'] = question.num_votes_past_week
-
-    # TODO: This isn't going to work right.  When we do incremental
-    # updates, then we'll be comparing question/answer with up-to-date
-    # ages with question/answer with stale ages.  We need to either
-    # change how this 'age' thing works or update all the documents
-    # every 24 hours.  Keeping it here for now.
-    if question.update is not None:
-        updated_since_epoch = time.mktime(question.updated.timetuple())
-        d['age'] = int((time.time() - updated_since_epoch) / AGE_DIVISOR)
-    else:
-        d['age'] = None
-
-    return d
-
-
-def _extract_answer(answer, question, question_data):
-    d = {}
-
-    d.update(question_data)
-
-    d['id'] = (question.id * ID_FACTOR) + answer.id
-
-    d['answer_content'] = answer.content
-    d['has_helpful'] = bool(answer.num_helpful_votes)
-    d['answer_creator'] = answer.creator.username
-    d['answer_votes'] = answer.upvotes
-
-    return d
-
-
 def extract_question(question):
-    """Extracts indexable attributes from a Question and its answers
+    """Extracts indexable attributes from a Question and its answers."""
+    question_data = {}
 
-    If the question has no answer, returns a list of one dict of the
-    question data.
+    question_data['id'] = question.id
 
-    If the question has answers, returns a list of one dict per
-    answer.
+    question_data['title'] = question.title
+    question_data['question_content'] = question.content
+    question_data['replies'] = question.num_answers
+    question_data['is_solved'] = bool(question.solution_id)
+    question_data['is_locked'] = question.is_locked
+    question_data['has_answers'] = bool(question.num_answers)
 
-    """
-    question_data = _extract_question_data(question)
+    question_data['created'] = question.created
+    question_data['updated'] = question.updated
 
-    if question.answers.count() == 0:
-        # If this question has no answers, we fill out the answer
-        # section as if it was a left outer join and then return that.
+    question_data['question_creator'] = question.creator.username
+    question_data['question_votes'] = question.num_votes_past_week
 
-        # TODO: Some types can take a "null"--maybe it's better to do
-        # that, but I don't know how that affects queries/filters/etc.
-        question_data['id'] = question.id * ID_FACTOR
-        question_data['answer_content'] = u''
-        question_data['has_helpful'] = False
-        question_data['answer_creator'] = u''
-        question_data['answer_votes'] = 0
-        return [question_data]
+    # answer_content is a \n\n delimited mish-mosh of all the
+    # answer content.
+    answer_content = []
 
-    # Build a list of answers with the question data and then return
-    # that.
-    ans_list = [_extract_answer(ans, question, question_data)
-                for ans in question.answers.all()]
+    # has_helpful is true if at least one answer is marked as
+    # helpful.
+    has_helpful = False
 
-    return ans_list
+    # answer_creator is the set of all answer creator user names.
+    answer_creator = set()
+
+    # answer_votes is the sum of votes for all of the answers.
+    answer_votes = 0
+
+    for ans in question.answers.all():
+        answer_content.append(ans.content)
+        has_helpful = has_helpful or bool(ans.num_helpful_votes)
+        answer_creator.add(ans.creator.username)
+        answer_votes += ans.upvotes
+
+    question_data['answer_content'] = '\n\n'.join(answer_content)
+    question_data['has_helpful'] = has_helpful
+    question_data['answer_creator'] = list(answer_creator)
+    question_data['answer_votes'] = answer_votes
+
+    return question_data
 
 
 def index_doc(doc, bulk=False, force_insert=False, es=None):
@@ -164,9 +130,9 @@ def unindex_questions(ids):
     for question_id in ids:
         # TODO wrap this in a try/except--amongst other things, this will
         # only be in the index if the Question had no Answers.
-        doc_id = question_id * ID_FACTOR
         try:
-            es.delete(index, doc_type=Question._meta.db_table, id=doc_id)
+            es.delete(index, doc_type=Question._meta.db_table,
+                      id=question_id)
         except pyes.exceptions.NotFoundException:
             # If the document isn't in the index, then we ignore it.
             # TODO: Is that right?
@@ -176,23 +142,20 @@ def unindex_questions(ids):
 def unindex_answers(ids):
     """Removes Answers from the index.
 
-    :arg ids: list of (question_id, answer_id) tuples
+    :arg ids: list of question ids
 
     """
-    # Answers are indexed by question.
+    # Answers are rolled up in Question documents, so we reindex the
+    # Question.
     from questions.models import Question
 
-    es = elasticutils.get_es()
-    index = get_index(Question)
-
-    for question_id, answer_id in ids:
-        doc_id = (question_id * ID_FACTOR) + answer_id
-
+    for question_id in ids:
         try:
-            es.delete(index, doc_type=Question._meta.db_table, id=doc_id)
-        except pyes.exceptions.NotFoundException:
-            # If the document isn't in the index, then we ignore it.
-            # TODO: Is that right?
+            # TODO: test the case where we delete the question
+            # twice.
+            question = Question.objects.get(id=question_id)
+            index_doc(extract_question(question))
+        except Question.ObjectDoesNotExist:
             pass
 
 
@@ -241,7 +204,7 @@ def reindex_questions(percent=100):
         if t > total:
             break
 
-        index_docs(extract_question(q), bulk=True, es=es)
+        index_doc(extract_question(q), bulk=True, es=es)
 
     es.flush_bulk(forced=True)
     log.info('done!')

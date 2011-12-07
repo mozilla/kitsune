@@ -30,7 +30,9 @@ class TestQuestionUpdate(ESTestCase):
         answer.save()
         self.refresh()
 
-        eq_(elasticutils.S(Question).count(), original_count + 2)
+        # Question and all its answers are a single document
+        # in the index.
+        eq_(elasticutils.S(Question).count(), original_count + 1)
 
     def test_question_no_answers_deleted(self):
         # Use a uuid since it's "unique" and makes sure we're not
@@ -71,7 +73,9 @@ class TestQuestionUpdate(ESTestCase):
         answer.save()
         self.refresh()
 
-        eq_(elasticutils.S(Question).count(), original_count + 2)
+        # Question and its answers are a single document--so the
+        # index count shouldn't change.
+        eq_(elasticutils.S(Question).count(), original_count + 1)
 
         answer.delete()
         self.refresh()

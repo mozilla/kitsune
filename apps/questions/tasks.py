@@ -94,7 +94,7 @@ def index_questions(ids, **kw):
     from questions import es_search
     from questions.models import Question
     for q in Question.uncached.filter(id__in=ids):
-        es_search.index_docs(es_search.extract_question(q))
+        es_search.index_doc(es_search.extract_question(q))
 
 
 @task
@@ -110,7 +110,7 @@ def index_answers(ids, **kw):
     from questions import es_search
     from questions.models import Answer
     for answer in Answer.uncached.filter(id__in=ids):
-        es_search.index_docs(es_search.extract_answer(answer))
+        es_search.index_doc(es_search.extract_answer(answer))
 
 
 @task

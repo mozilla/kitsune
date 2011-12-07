@@ -461,7 +461,7 @@ def remove_answer_from_index(sender, instance, **kw):
     if not settings.USE_ELASTIC:
         return
 
-    unindex_answers([(instance.question.id, instance.id)])
+    unindex_answers([instance.question.id])
 
 
 class QuestionVote(ModelBase):
