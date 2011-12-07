@@ -69,7 +69,7 @@ Getting the Source
 
 Grab the source from Github using::
 
-    $ git clone --recursive git://github.com/jsocol/kitsune.git
+    $ git clone --recursive git://github.com/mozilla/kitsune.git
     $ cd kitsune
 
 If you forgot to add ``--recursive``, you can get all the submodules with::

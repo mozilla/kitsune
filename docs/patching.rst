@@ -5,7 +5,7 @@ Patching Kitsune
 Submitting a patch to `Kitsune <https://support.mozilla.com>`_ is easy! (Fair
 warning: writing the patch may not be ;)
 
-We use `pull requests <https://github.com/jsocol/kitsune/pulls>`_ to manage
+We use `pull requests <https://github.com/mozilla/kitsune/pulls>`_ to manage
 patches and code reviews, and `Bugzilla <https://bugzilla.mozilla.org>`_ to
 handle actual bug tracking.
 
@@ -27,24 +27,24 @@ The Quick and Dirty
 ===================
 
 Very quick, very little explanation. Those with strong git fu may already see
-some shortcuts. Use them! As long as ``jsocol/master`` doesn't have merge
+some shortcuts. Use them! As long as ``mozilla/master`` doesn't have merge
 commits, it's all good.
 
 Assuming your Github account is ``foobar`` and you've already forked Kitsune::
 
     git clone git@github.com:foobar/kitsune
     cd kitsune
-    git remote add jsocol https://github.com/jsocol/kitsune.git
-    git fetch jsocol
+    git remote add mozilla https://github.com/mozilla/kitsune.git
+    git fetch mozilla
     git checkout -b temp
     git branch -d master
-    git checkout -t jsocol/master
+    git checkout -t mozilla/master
     git branch -d temp
 
 You should only need to do that once. Here's the bit to do every time::
 
     git checkout master
-    git pull --rebase jsocol master
+    git pull --rebase mozilla master
     git checkout -b my-feature
 
     # Make a change and commit it.
@@ -61,7 +61,7 @@ You should only need to do that once. Here's the bit to do every time::
 
     # r+! Rebase and squash.
     git checkout master
-    git pull --rebase jsocol master
+    git pull --rebase mozilla master
     git checkout my-feature
     git rebase -i master  # Squash any feedback commits.
 
@@ -74,7 +74,7 @@ If you *do* have commit access::
 
     git checkout master
     git merge my-feature  # Should be a fast-forward commit.
-    git push jsocol master  # Bots will alert everyone!
+    git push mozilla master  # Bots will alert everyone!
     git push origin master  # Optional but nice.
 
 After the pull request is closed::
@@ -99,25 +99,25 @@ project, at least initially::
 
     git clone git@github.com:<yourname>/kitsune.git
 
-To help keep up to date, you should add ``jsocol/kitsune`` as a remote::
+To help keep up to date, you should add ``mozilla/kitsune`` as a remote::
 
     cd kitsune
-    git remote add jsocol https://github.com/jsocol/kitsune.git
+    git remote add mozilla https://github.com/mozilla/kitsune.git
 
 You should avoid changing your ``master`` branch, it should track
-``jsocol/master``. This can help::
+``mozilla/master``. This can help::
 
-    git fetch jsocol
+    git fetch mozilla
     git checkout master
     git checkout -b temp  # Create a temporary local branch.
     git branch -d master  # Delete your local master.
-    git checkout -t jsocol/master  # Create a tracking branch.
+    git checkout -t mozilla/master  # Create a tracking branch.
     git branch -D temp  # Delete your temporary branch.
 
 The correct way to keep your local master up to date is::
 
     git checkout master
-    git pull --rebase jsocol master
+    git pull --rebase mozilla master
 
 You can avoid typing ``--rebase`` every time by doing::
 
@@ -177,7 +177,7 @@ feature branch.
 ::
 
     git checkout master
-    git pull --rebase jsocol master  # Update local master.
+    git pull --rebase mozilla master  # Update local master.
     git checkout -b my-feature-branch  # Some logical name.
 
 Now you're on a feature branch, go ahead and make your changes. Assuming you
@@ -242,7 +242,7 @@ Ready to Merge!
 
 Once a pull request has gotten an ``r+`` ("R-plus", it's from Bugzilla) it's
 ready to merge in. At this point it should be rebased against the current
-``jsocol/master`` and any feedback/fixup commits should be squashed.
+``mozilla/master`` and any feedback/fixup commits should be squashed.
 
 If you don't have commit access, someone who does may do this for you, if they
 have time.
@@ -250,7 +250,7 @@ have time.
 ::
 
     git checkout master
-    git pull --rebase jsocol master
+    git pull --rebase mozilla master
     git checkout my-feature-branch
     git rebase -i master  # Update and squash.
     python manage.py test  # Make sure tests still pass.
@@ -267,19 +267,19 @@ Continuing from above::
     git checkout master
     git merge my-feature-branch  # Should say something about "fast-forward".
 
-Before pushing to ``jsocol/master``, I like to verify that the merge went fine
+Before pushing to ``mozilla/master``, I like to verify that the merge went fine
 in the logs. For the vast majority of merges, *there should not be a merge
 commit*.
 
 ::
 
     git log -5  # Verify that the merge went OK.
-    git push jsocol master  # !!! Pushing code to the primary repo/branch!
+    git push mozilla master  # !!! Pushing code to the primary repo/branch!
     # Optionally, you can keep your Github master in sync.
     git push origin master  # Not strictly necessary but kinda nice.
     git push origin :my-feature-branch  # Nice to clean up.
 
-Once the commit is on ``jsocol/master``, you should go to the main repo on
+Once the commit is on ``mozilla/master``, you should go to the main repo on
 Github and find and copy the URL of the commit. Then go to the bug in Bugzilla,
 paste the URL, and set the bug to ``RESOLVED FIXED``. This tells QA and others
 that the fix has landed on ``master`` and will be on the dev server soon! And
