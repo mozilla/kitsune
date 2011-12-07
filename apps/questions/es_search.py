@@ -115,11 +115,6 @@ def index_doc(doc, bulk=False, force_insert=False, es=None):
                  id=doc['id'], bulk=bulk, force_insert=force_insert)
 
 
-def index_docs(documents, bulk=False, force_insert=False, es=None):
-    for doc in documents:
-        index_doc(doc, bulk, force_insert, es)
-
-
 def unindex_questions(ids):
     """Removes Questions from the index."""
     from questions.models import Question
