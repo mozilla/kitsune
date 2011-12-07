@@ -761,6 +761,7 @@ div.support-search button.img-submit {
 
 #side {
     float: left;
+    font-family: Helvetica,Arial,sans-serif;
     width: 222px;
 }
 
@@ -860,6 +861,7 @@ div.support-search button.img-submit {
 
 .sd-module h1 {
     color: #32559b;
+    font-family: Georgia,serif;
     font-size: 20px;
     font-style: italic;
 }
@@ -880,6 +882,10 @@ div.support-search button.img-submit {
 .sd-module p {
     color: #666;
     margin: 10px 0;
+}
+
+.sd-module a {
+    font-family: Georgia,serif;
 }
 
 .sd-module section {
