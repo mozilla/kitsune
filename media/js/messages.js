@@ -18,7 +18,7 @@ $(document).ready(function(){
 
     // Show the orginal button and expanding textarea.
     $area.one('focus',function(){
-        $area.autoResize();
+        $area.autoResize({minHeight: 150});
         $('#read-message .editor-tools').show();
         $('#read-message input[type=submit]').show();
         Marky.createSimpleToolbar('#read-message .editor-tools', '#id_message');
