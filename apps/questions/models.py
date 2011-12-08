@@ -369,7 +369,7 @@ class Answer(ActionMixin, ModelBase):
         if waffle.switch_is_active('karma'):
             try:
                 return KarmaAction.objects.count(
-                    self.creator, AnswerAction.action_type)
+                    user=self.creator, type=AnswerAction.action_type)
             except ConnectionError:
                 pass
         return Answer.objects.filter(creator=self.creator).count()
@@ -381,7 +381,7 @@ class Answer(ActionMixin, ModelBase):
         if waffle.switch_is_active('karma'):
             try:
                 return KarmaAction.objects.count(
-                    self.creator, SolutionAction.action_type)
+                    user=self.creator, type=SolutionAction.action_type)
             except ConnectionError:
                 pass
         return Question.objects.filter(

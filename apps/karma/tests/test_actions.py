@@ -1,4 +1,5 @@
 from datetime import date
+
 import mock
 from nose import SkipTest
 from nose.tools import eq_

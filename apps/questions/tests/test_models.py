@@ -1,12 +1,17 @@
 from django.contrib.auth.models import User
 
+import mock
+from nose import SkipTest
 from nose.tools import eq_, raises
-
-import sumo.models
 from taggit.models import Tag
+import waffle
 
 from flagit.models import FlaggedObject
+from karma.manager import KarmaManager
+import sumo.models
+from sumo.redis_utils import RedisError, redis_client
 from questions.events import QuestionReplyEvent
+from questions.karma_actions import SolutionAction, AnswerAction
 from questions.models import (Question, QuestionMetaData, Answer,
                               _tenths_version, _has_beta)
 from questions.tasks import update_answer_pages
@@ -143,6 +148,25 @@ class TestAnswer(TestCaseBase):
         question.save()
 
         eq_(answer.creator_num_solutions, 1)
+
+    @mock.patch.object(waffle, 'switch_is_active')
+    def test_creator_nums_redis(self, switch_is_active):
+        """Test creator_num_* pulled from karma data."""
+        try:
+            KarmaManager()
+            redis_client('karma').flushdb()
+        except RedisError:
+            raise SkipTest
+
+        switch_is_active.return_value = True
+        answer = Answer.objects.all()[0]
+
+        AnswerAction(answer.creator).save()
+        AnswerAction(answer.creator).save()
+        SolutionAction(answer.creator).save()
+
+        eq_(answer.creator_num_solutions, 1)
+        eq_(answer.creator_num_answers, 2)
 
 
 class TestQuestionMetadata(TestCaseBase):
