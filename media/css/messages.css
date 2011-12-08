@@ -245,6 +245,10 @@ section.actions {
     width: 350px;
 }
 
+.message-view form.reply textarea.focused {
+    width: 600px;
+}
+
 #preview {
     margin: 25px 0;
 }
