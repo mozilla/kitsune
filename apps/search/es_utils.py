@@ -5,6 +5,9 @@ import pyes
 from django.conf import settings
 
 
+ESTimeoutError = pyes.urllib3.TimeoutError
+
+
 TYPE = 'type'
 ANALYZER = 'analyzer'
 INDEX = 'index'
