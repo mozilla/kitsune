@@ -15,7 +15,7 @@ import jingo
 import jinja2
 from mobility.decorators import mobile_template
 from statsd import statsd
-from tower import ugettext as _
+from tower import ugettext as _, ugettext_lazy as _lazy
 
 from search import SearchError, ExcerptTimeoutError, ExcerptSocketError
 from search.utils import locale_or_default, clean_excerpt
@@ -26,6 +26,9 @@ from search.forms import SearchForm
 from sumo.utils import paginate, smart_int
 from wiki.models import wiki_searcher
 import waffle
+
+
+excerpt_joiner = _lazy(u'...', 'between search excerpts')
 
 
 def jsonp_is_valid(func):
@@ -288,12 +291,18 @@ def search(request, template=None):
         # at the beginning and end of the list for slice boundaries.
         begin = documents_dict[type_][0]
         end = documents_dict[type_][-1] + 1
+
+        # Update the original symbols with the sliced versions of the S so
+        # that, when we iterate over them in the following list comp, we hang
+        # onto the version that does the query, so we can call excerpt() on it
+        # later.
         if type_ == 'wiki':
             wiki_s = search_s = search_s[begin:end]
         elif type == 'question':
             question_s = search_s = search_s[begin:end]
         elif type == 'discussion':
             discussion_s = search_s = search_s[begin:end]
+
         docs_for_page += [(type_, doc) for doc in search_s]
 
     results = []
@@ -316,7 +325,7 @@ def search(request, template=None):
 
             elif type_ == 'question':
                 try:
-                    excerpt = question_s.excerpt(doc)[0]
+                    excerpt = excerpt_joiner.join(question_s.excerpt(doc)[0])
                 except ExcerptTimeoutError:
                     statsd.incr('search.excerpt.timeout')
                     excerpt = u''
@@ -343,7 +352,7 @@ def search(request, template=None):
                     thread = Thread.objects.get(pk=doc.thread_id)
 
                 try:
-                    excerpt = discussion_s.excerpt(doc)[0]
+                    excerpt = excerpt_joiner.join(discussion_s.excerpt(doc)[0])
                 except ExcerptTimeoutError:
                     statsd.incr('search.excerpt.timeout')
                     excerpt = u''
