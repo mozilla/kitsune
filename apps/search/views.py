@@ -230,8 +230,13 @@ def search(request, template=None):
             except IndexError:
                 pass
 
+            if waffle.flag_is_active(request, 'elasticsearch'):
+                waffle_fields = ['title', 'question_content', 'answer_content']
+            else:
+                waffle_fields = ['content']
+
             question_s = question_s.highlight(
-                'content',
+                *waffle_fields,
                 before_match='<b>',
                 after_match='</b>',
                 limit=settings.SEARCH_SUMMARY_LENGTH)
@@ -325,7 +330,8 @@ def search(request, template=None):
 
             elif type_ == 'question':
                 try:
-                    excerpt = excerpt_joiner.join(question_s.excerpt(doc)[0])
+                    excerpt = excerpt_joiner.join(
+                        [m for m in chain(*question_s.excerpt(doc)) if m])
                 except ExcerptTimeoutError:
                     statsd.incr('search.excerpt.timeout')
                     excerpt = u''
@@ -352,7 +358,8 @@ def search(request, template=None):
                     thread = Thread.objects.get(pk=doc.thread_id)
 
                 try:
-                    excerpt = excerpt_joiner.join(discussion_s.excerpt(doc)[0])
+                    excerpt = excerpt_joiner.join(
+                        [m for m in chain(*discussion_s.excerpt(doc))])
                 except ExcerptTimeoutError:
                     statsd.incr('search.excerpt.timeout')
                     excerpt = u''

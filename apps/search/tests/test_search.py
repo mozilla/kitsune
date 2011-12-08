@@ -338,7 +338,7 @@ class SearchTest(SphinxTestCase):
 
         results = list(ws)
         # page = Document.objects.get(pk=4)
-        excerpt = clean_excerpt(ws.excerpt(results[0])[0])
+        excerpt = clean_excerpt(ws.excerpt(results[0])[0][0])
         assert q in excerpt, u'%s not in %s' % (q, excerpt)
 
     def test_clean_excerpt(self):
@@ -363,7 +363,7 @@ class SearchTest(SphinxTestCase):
                      .query('post').values_dict('id', 'content'))
         results = list(dis_s)
         eq_(1, len(results))
-        eq_(u'yet another <b>post</b>', dis_s.excerpt(results[0])[0])
+        eq_([u'yet another <b>post</b>'], dis_s.excerpt(results[0])[0])
 
     def test_discussion_filter_author(self):
         """Filter by author in discussion forums."""
