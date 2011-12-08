@@ -34,6 +34,13 @@ class TestPostUpdate(ESTestCase):
         new_post.save()
         self.refresh()
 
+        # Creating a new post in a thread doesn't create a new
+        # document in the index.  Therefore, the count remains
+        # original_count + 1.
+        #
+        # TODO: This is ambiguous: it's not clear whether we correctly
+        # updated the document in the index or whether the post_save
+        # hook didn't kick off.  Need a better test.
         eq_(elasticutils.S(Thread).count(), original_count + 1)
 
     def test_deleted(self):

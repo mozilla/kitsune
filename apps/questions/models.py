@@ -22,8 +22,7 @@ import questions as constants
 from questions.karma_actions import AnswerAction, SolutionAction
 from questions.question_config import products
 from questions.tasks import (update_question_votes, update_answer_pages,
-                             log_answer, index_questions, index_answers,
-                             unindex_answers, unindex_questions)
+                             log_answer, index_questions, unindex_questions)
 from search import searcher
 from search.utils import crc32
 from sumo.helpers import urlparams
@@ -249,7 +248,7 @@ class Question(ModelBase, BigVocabTaggableMixin):
 
 
 @receiver(post_save, sender=Question,
-          dispatch_uid='questions.search.index')
+          dispatch_uid='questions.search.index.question.save')
 def update_question_in_index(sender, instance, **kw):
     # raw is True when saving a model exactly as presented--like when
     # loading fixtures.  In this case we don't want to trigger.
@@ -260,7 +259,7 @@ def update_question_in_index(sender, instance, **kw):
 
 
 @receiver(pre_delete, sender=Question,
-          dispatch_uid='questions.search.index')
+          dispatch_uid='questions.search.index.question.delete')
 def remove_question_from_index(sender, instance, **kw):
     if not settings.USE_ELASTIC:
         return
@@ -444,24 +443,24 @@ post_save.connect(answer_connector, sender=Answer,
                   dispatch_uid='question_answer_activity')
 
 
-@receiver(post_save, sender=Question,
-          dispatch_uid='questions.search.index')
+@receiver(post_save, sender=Answer,
+          dispatch_uid='questions.search.index.answer.save')
 def update_answer_in_index(sender, instance, **kw):
     # raw is True when saving a model exactly as presented--like when
     # loading fixtures.  In this case we don't want to trigger.
     if not settings.USE_ELASTIC or kw.get('raw'):
         return
 
-    index_answers.delay([instance.id])
+    index_questions.delay([instance.question_id])
 
 
 @receiver(pre_delete, sender=Answer,
-          dispatch_uid='questions.search.index')
+          dispatch_uid='questions.search.index.answer.delete')
 def remove_answer_from_index(sender, instance, **kw):
     if not settings.USE_ELASTIC:
         return
 
-    unindex_answers([instance.question.id])
+    index_questions.delay([instance.question_id])
 
 
 class QuestionVote(ModelBase):

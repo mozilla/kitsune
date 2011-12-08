@@ -105,15 +105,6 @@ def unindex_questions(ids, **kw):
 
 
 @task
-def index_answers(ids, **kw):
-    log.debug('Indexing answers: %r', ids)
-    from questions import es_search
-    from questions.models import Answer
-    for answer in Answer.uncached.filter(id__in=ids):
-        es_search.index_doc(es_search.extract_answer(answer))
-
-
-@task
 def unindex_answers(ids, **kw):
     log.debug('Unindexing answers: %r', ids)
     from questions import es_search
