@@ -164,19 +164,52 @@ override in ``settings_local.py``::
 Using Elastic Search
 ====================
 
+Running
+-------
+
 Start Elastic Search by::
 
     $ ELASTICDIR/bin/elasticsearch
 
 That launches Elastic Search in the background.
 
+
+Indexing
+--------
+
 Do a complete reindexing of everything by::
 
     $ ./manage.py esreindex
 
 This will delete the existing indexes, create new ones, and reindex
-everything in your database.  On my machine it takes about 30 minutes.
+everything in your database.  On my machine it takes about > 30 minutes.
+
+If you need to get stuff done and don't want to wait for a full indexing,
+you can index a percentage of things.
+
+For example, this indexes 10% of your data::
+
+    $ ./manage.py esreindex --percent 10
+
+This indexes 50% of your data::
+
+    $ ./manage.py esreindex --percent 50
+
+I use this when I'm fiddling with mappings and the indexing code.
+
+
+.. Note::
+
+   Once you've indexed everything, you won't have to do it again unless
+   indexing code changes.  The models have post_save and pre_delete hooks
+   that will update the index as the data changes.
+
+
+Health/statistics
+-----------------
 
 You can see Elastic Search statistics/health with::
 
     $ ./manage.py eswhazzup
+
+I use this to make sure I've got stuff in my index.
