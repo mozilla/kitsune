@@ -575,7 +575,7 @@ SESSION_EXISTS_COOKIE = 'sumo_session'
 # Connection information for Elastic
 ES_HOSTS = ['127.0.0.1:9200']
 ES_INDEXES = {'default': 'sumo'}
-USE_ELASTIC = True
+USE_ELASTIC = False
 
 #
 # Connection information for Sphinx search
