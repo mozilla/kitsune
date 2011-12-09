@@ -252,7 +252,7 @@ class Question(ModelBase, BigVocabTaggableMixin):
 def update_question_in_index(sender, instance, **kw):
     # raw is True when saving a model exactly as presented--like when
     # loading fixtures.  In this case we don't want to trigger.
-    if not settings.USE_ELASTIC or kw.get('raw'):
+    if not settings.ES_LIVE_INDEXING or kw.get('raw'):
         return
 
     index_questions.delay([instance.id])
@@ -261,7 +261,7 @@ def update_question_in_index(sender, instance, **kw):
 @receiver(pre_delete, sender=Question,
           dispatch_uid='questions.search.index.question.delete')
 def remove_question_from_index(sender, instance, **kw):
-    if not settings.USE_ELASTIC:
+    if not settings.ES_LIVE_INDEXING:
         return
 
     unindex_questions([instance.id])
@@ -448,7 +448,7 @@ post_save.connect(answer_connector, sender=Answer,
 def update_answer_in_index(sender, instance, **kw):
     # raw is True when saving a model exactly as presented--like when
     # loading fixtures.  In this case we don't want to trigger.
-    if not settings.USE_ELASTIC or kw.get('raw'):
+    if not settings.ES_LIVE_INDEXING or kw.get('raw'):
         return
 
     index_questions.delay([instance.question_id])
@@ -457,7 +457,7 @@ def update_answer_in_index(sender, instance, **kw):
 @receiver(pre_delete, sender=Answer,
           dispatch_uid='questions.search.index.answer.delete')
 def remove_answer_from_index(sender, instance, **kw):
-    if not settings.USE_ELASTIC:
+    if not settings.ES_LIVE_INDEXING:
         return
 
     index_questions.delay([instance.question_id])

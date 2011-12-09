@@ -179,7 +179,7 @@ class Thread(NotificationsMixin, ModelBase):
 def update_thread_in_index(sender, instance, **kw):
     # raw is True when saving a model exactly as presented--like when
     # loading fixtures.  In this case we don't want to trigger.
-    if not settings.USE_ELASTIC or kw.get('raw'):
+    if not settings.ES_LIVE_INDEXING or kw.get('raw'):
         return
 
     from forums.tasks import index_threads
@@ -189,7 +189,7 @@ def update_thread_in_index(sender, instance, **kw):
 @receiver(pre_delete, sender=Thread,
           dispatch_uid='forums.search.index.thread.delete')
 def remove_thread_from_index(sender, instance, **kw):
-    if not settings.USE_ELASTIC:
+    if not settings.ES_LIVE_INDEXING:
         return
 
     from forums.tasks import unindex_threads
@@ -283,7 +283,7 @@ class Post(ActionMixin, ModelBase):
 def update_post_in_index(sender, instance, **kw):
     # raw is True when saving a model exactly as presented--like when
     # loading fixtures.  In this case we don't want to trigger.
-    if not settings.USE_ELASTIC or kw.get('raw'):
+    if not settings.ES_LIVE_INDEXING or kw.get('raw'):
         return
 
     from forums.tasks import index_threads
@@ -293,7 +293,7 @@ def update_post_in_index(sender, instance, **kw):
 @receiver(pre_delete, sender=Post,
           dispatch_uid='forums.search.index.post.delete')
 def remove_post_from_index(sender, instance, **kw):
-    if not settings.USE_ELASTIC:
+    if not settings.ES_LIVE_INDEXING:
         return
 
     from forums.tasks import index_threads
