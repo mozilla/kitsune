@@ -19,6 +19,7 @@ search or Google's site search.
 * We don't rely on Google reindexing the site.
 * We can fine-tune the algorithm ourselves.
 
+
 .. Note::
 
    Right now we're rewriting our search system to use Elastic and
@@ -29,6 +30,11 @@ search or Google's site search.
 
    Until then, we have instructions for installing both Sphinx Search
    and Elastic Search.
+
+   **To switch between Sphinx Search and Elastic Search**, there's a
+   waffle flag.  In the admin, go to waffle, then turn on and off the
+   ``elasticsearch`` waffle flag.  If it's on, then Elastic is used.
+   If it's off, then Sphinx is used.
 
 
 Installing Sphinx Search
@@ -159,6 +165,11 @@ override in ``settings_local.py``::
    The host setting must match the host and port in
    ``ELASTICDIR/config/elasticsearch.yml``.  So if you change it in
    one place, you must also change it in the other.
+
+There's also ``USE_ELASTIC`` which affects whether Kitsune does Elastic
+indexing when data changes in the ``post_save`` and ``pre_delete`` hooks.
+For tests, ``USE_ELASTIC`` is set to ``False`` except for Elastic specific
+tests.
 
 
 Using Elastic Search
