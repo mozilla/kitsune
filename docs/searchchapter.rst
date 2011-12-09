@@ -166,10 +166,22 @@ override in ``settings_local.py``::
    ``ELASTICDIR/config/elasticsearch.yml``.  So if you change it in
    one place, you must also change it in the other.
 
-There's also ``USE_ELASTIC`` which affects whether Kitsune does Elastic
-indexing when data changes in the ``post_save`` and ``pre_delete`` hooks.
-For tests, ``USE_ELASTIC`` is set to ``False`` except for Elastic specific
-tests.
+You can also set ``USE_ELASTIC`` in your ``settings_local.py`` file.
+This affects whether Kitsune does Elastic indexing when data changes
+in the ``post_save`` and ``pre_delete`` hooks.  For tests,
+``USE_ELASTIC`` is set to ``False`` except for Elastic specific tests.
+
+There are a few other settings you can set in your settings_local.py
+file that override Elastic Utils defaults.  See `the Elastic Utils
+docs <http://elasticutils.readthedocs.org/en/latest/installation.html#configure>`_
+for details.
+
+.. Note::
+
+   One problem I have on my machine is that it takes a while for
+   Elastic to do stuff.  ``ES_TIMEOUT`` defaults to 1, but I set it to
+   2 in my ``settings_local.py`` file which reduces the number of
+   timeout errors I get.
 
 
 Using Elastic Search
