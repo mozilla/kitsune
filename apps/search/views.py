@@ -232,12 +232,12 @@ def search(request, template=None):
                 pass
 
             if waffle.flag_is_active(request, 'elasticsearch'):
-                waffle_fields = ['title', 'question_content', 'answer_content']
+                highlight_fields = ['title', 'question_content', 'answer_content']
             else:
-                waffle_fields = ['content']
+                highlight_fields = ['content']
 
             question_s = question_s.highlight(
-                *waffle_fields,
+                *highlight_fields,
                 before_match='<b>',
                 after_match='</b>',
                 limit=settings.SEARCH_SUMMARY_LENGTH)
