@@ -128,7 +128,7 @@ def reindex_documents(percent):
     total = to_index
 
     t = 0
-    for d in Document.objects.all():
+    for d in Document.objects.order_by('id').all():
         t += 1
         if t % 1000 == 0:
             time_to_go = (total - t) * ((time.time() - start_time) / t)

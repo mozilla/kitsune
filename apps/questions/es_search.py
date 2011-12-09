@@ -185,7 +185,7 @@ def reindex_questions(percent=100):
     total = to_index
 
     t = 0
-    for q in Question.objects.all():
+    for q in Question.objects.order_by('id').all():
         t += 1
         if t % 1000 == 0:
             time_to_go = (total - t) * ((time.time() - start_time) / t)

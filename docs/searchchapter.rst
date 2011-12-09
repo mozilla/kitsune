@@ -210,11 +210,11 @@ everything in your database.  On my machine it takes about > 30 minutes.
 If you need to get stuff done and don't want to wait for a full indexing,
 you can index a percentage of things.
 
-For example, this indexes 10% of your data::
+For example, this indexes 10% of your data ordered by id::
 
     $ ./manage.py esreindex --percent 10
 
-This indexes 50% of your data::
+This indexes 50% of your data ordered by id::
 
     $ ./manage.py esreindex --percent 50
 
