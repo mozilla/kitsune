@@ -4,11 +4,13 @@
 Search
 ======
 
-Kitsune uses `Sphinx Search <http://www.sphinxsearch.com>`_ to power its
-on-site search facility.
+Kitsune is in the process of switching from `Sphinx Search
+<http://www.sphinxsearch.com>`_ to `Elastic Search
+<http://www.elasticsearch.org/>`_ to power its on-site search
+facility.
 
-Sphinx search gives us a number of advantages over MySQL's full-text search or
-Google's site search.
+Both of these give us a number of advantages over MySQL's full-text
+search or Google's site search.
 
 * Much faster than MySQL.
   * And reduces load on MySQL.
@@ -16,6 +18,23 @@ Google's site search.
 * We can adjust searches with non-visible content.
 * We don't rely on Google reindexing the site.
 * We can fine-tune the algorithm ourselves.
+
+
+.. Note::
+
+   Right now we're rewriting our search system to use Elastic and
+   switching between Sphinx and Elastic.  At some point, the results
+   we're getting with our Elastic-based code will be good enough to
+   switch over.  At that point, we'll remove the Sphinx-based search
+   code.
+
+   Until then, we have instructions for installing both Sphinx Search
+   and Elastic Search.
+
+   **To switch between Sphinx Search and Elastic Search**, there's a
+   waffle flag.  In the admin, go to waffle, then turn on and off the
+   ``elasticsearch`` waffle flag.  If it's on, then Elastic is used.
+   If it's off, then Sphinx is used.
 
 
 Installing Sphinx Search
@@ -118,3 +137,102 @@ You can also stop ``searchd``::
 This method not only lets you maintain a running Sphinx instance that doesn't
 get wiped out by the tests, but also lets you see some very interesting output
 from Sphinx about indexing rate and statistics.
+
+
+Installing Elastic Search
+=========================
+
+There's an installation guide on the Elastic Search site.
+
+http://www.elasticsearch.org/guide/reference/setup/installation.html
+
+The directory you install Elastic in will hereafter be referred to as
+``ELASTICDIR``.
+
+You can configure Elastic Search with the configuration file at
+``ELASTICDIR/config/elasticsearch.yml``.
+
+Elastic Search uses two settings in ``settings.py`` that you can
+override in ``settings_local.py``::
+
+    # Connection information for Elastic
+    ES_HOSTS = ['127.0.0.1:9200']
+    ES_INDEXES = {'default': 'sumo'}
+
+
+.. Warning::
+
+   The host setting must match the host and port in
+   ``ELASTICDIR/config/elasticsearch.yml``.  So if you change it in
+   one place, you must also change it in the other.
+
+You can also set ``USE_ELASTIC`` in your ``settings_local.py`` file.
+This affects whether Kitsune does Elastic indexing when data changes
+in the ``post_save`` and ``pre_delete`` hooks.  For tests,
+``USE_ELASTIC`` is set to ``False`` except for Elastic specific tests.
+
+There are a few other settings you can set in your settings_local.py
+file that override Elastic Utils defaults.  See `the Elastic Utils
+docs <http://elasticutils.readthedocs.org/en/latest/installation.html#configure>`_
+for details.
+
+.. Note::
+
+   One problem I have on my machine is that it takes a while for
+   Elastic to do stuff.  ``ES_TIMEOUT`` defaults to 1, but I set it to
+   2 in my ``settings_local.py`` file which reduces the number of
+   timeout errors I get.
+
+
+Using Elastic Search
+====================
+
+Running
+-------
+
+Start Elastic Search by::
+
+    $ ELASTICDIR/bin/elasticsearch
+
+That launches Elastic Search in the background.
+
+
+Indexing
+--------
+
+Do a complete reindexing of everything by::
+
+    $ ./manage.py esreindex
+
+This will delete the existing indexes, create new ones, and reindex
+everything in your database.  On my machine it takes about > 30 minutes.
+
+If you need to get stuff done and don't want to wait for a full indexing,
+you can index a percentage of things.
+
+For example, this indexes 10% of your data ordered by id::
+
+    $ ./manage.py esreindex --percent 10
+
+This indexes 50% of your data ordered by id::
+
+    $ ./manage.py esreindex --percent 50
+
+I use this when I'm fiddling with mappings and the indexing code.
+
+
+.. Note::
+
+   Once you've indexed everything, you won't have to do it again unless
+   indexing code changes.  The models have post_save and pre_delete hooks
+   that will update the index as the data changes.
+
+
+Health/statistics
+-----------------
+
+You can see Elastic Search statistics/health with::
+
+    $ ./manage.py eswhazzup
+
+I use this to make sure I've got stuff in my index.

@@ -7,7 +7,8 @@ from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
 from django.core.cache import cache
 from django.db import models
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save, pre_delete
+from django.dispatch import receiver
 
 from product_details import product_details
 from redis.exceptions import ConnectionError
@@ -21,8 +22,8 @@ import questions as constants
 from questions.karma_actions import AnswerAction, SolutionAction
 from questions.question_config import products
 from questions.tasks import (update_question_votes, update_answer_pages,
-                             log_answer)
-from search import S
+                             log_answer, index_questions, unindex_questions)
+from search import searcher
 from search.utils import crc32
 from sumo.helpers import urlparams
 from sumo.models import ModelBase
@@ -246,6 +247,26 @@ class Question(ModelBase, BigVocabTaggableMixin):
         return Answer.objects.filter(pk=self.solution_id).exists()
 
 
+@receiver(post_save, sender=Question,
+          dispatch_uid='questions.search.index.question.save')
+def update_question_in_index(sender, instance, **kw):
+    # raw is True when saving a model exactly as presented--like when
+    # loading fixtures.  In this case we don't want to trigger.
+    if not settings.USE_ELASTIC or kw.get('raw'):
+        return
+
+    index_questions.delay([instance.id])
+
+
+@receiver(pre_delete, sender=Question,
+          dispatch_uid='questions.search.index.question.delete')
+def remove_question_from_index(sender, instance, **kw):
+    if not settings.USE_ELASTIC:
+        return
+
+    unindex_questions([instance.id])
+
+
 class QuestionMetaData(ModelBase):
     """Metadata associated with a support question."""
     question = models.ForeignKey('Question', related_name='metadata_set')
@@ -422,6 +443,26 @@ post_save.connect(answer_connector, sender=Answer,
                   dispatch_uid='question_answer_activity')
 
 
+@receiver(post_save, sender=Answer,
+          dispatch_uid='questions.search.index.answer.save')
+def update_answer_in_index(sender, instance, **kw):
+    # raw is True when saving a model exactly as presented--like when
+    # loading fixtures.  In this case we don't want to trigger.
+    if not settings.USE_ELASTIC or kw.get('raw'):
+        return
+
+    index_questions.delay([instance.question_id])
+
+
+@receiver(pre_delete, sender=Answer,
+          dispatch_uid='questions.search.index.answer.delete')
+def remove_answer_from_index(sender, instance, **kw):
+    if not settings.USE_ELASTIC:
+        return
+
+    index_questions.delay([instance.question_id])
+
+
 class QuestionVote(ModelBase):
     """I have this problem too.
     Keeps track of users that have problem over time."""
@@ -505,9 +546,12 @@ def _content_parsed(obj):
     return html
 
 
-question_search = (
-    S(Question).weight(title=4, question_content=3, answer_content=3)
-               .group_by('question_id', '-@group')
-               .highlight(before_match='<b>',
-                          after_match='</b>',
-                          limit=settings.SEARCH_SUMMARY_LENGTH))
+def question_searcher(request):
+    """Return a question searcher with default parameters."""
+    return (searcher(request)(Question)
+                .query_fields('title', 'question_content', 'answer_content')
+                .weight(title=4, question_content=3, answer_content=3)
+                .group_by('question_id', '-@group')
+                .highlight(before_match='<b>',
+                           after_match='</b>',
+                           limit=settings.SEARCH_SUMMARY_LENGTH))

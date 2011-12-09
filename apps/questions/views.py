@@ -40,7 +40,7 @@ from questions.forms import (NewQuestionForm, EditQuestionForm, AnswerForm,
 from questions.karma_actions import (SolutionAction, AnswerMarkedHelpfulAction,
                                      AnswerMarkedNotHelpfulAction)
 from questions.models import (Question, Answer, QuestionVote, AnswerVote,
-                              question_search)
+                              question_searcher)
 from questions.question_config import products
 from search.utils import locale_or_default
 from search import SearchError
@@ -52,7 +52,7 @@ from upload.models import ImageAttachment
 from upload.views import upload_imageattachment
 from users.forms import RegisterForm
 from users.utils import handle_login, handle_register
-from wiki.models import Document, wiki_search
+from wiki.models import Document, wiki_searcher
 
 
 log = logging.getLogger('k.questions')
@@ -195,7 +195,9 @@ def new_question(request, template=None):
         if search:
             try:
                 results = _search_suggestions(
-                    search, locale_or_default(request.locale),
+                    request,
+                    search,
+                    locale_or_default(request.locale),
                     product.get('tags'))
             except SearchError:
                 # Just quietly advance the user to the next step.
@@ -828,7 +830,7 @@ def answer_preview_async(request):
                         {'answer_preview': answer})
 
 
-def _search_suggestions(query, locale, category_tags):
+def _search_suggestions(request, query, locale, category_tags):
     """Return an iterable of the most relevant wiki pages and questions.
 
     query -- full text to search on
@@ -845,13 +847,9 @@ def _search_suggestions(query, locale, category_tags):
 
     Returns up to 3 wiki pages, then up to 3 questions.
 
-    TODO: ZOMFG this needs to be refactored and the search app should
-          provide an internal API. Seriously.
-
     """
-
-    my_question_search = question_search
-    my_wiki_search = wiki_search
+    my_question_search = question_searcher(request)
+    my_wiki_search = wiki_searcher(request)
 
     # Max number of search results per type.
     WIKI_RESULTS = QUESTIONS_RESULTS = 3

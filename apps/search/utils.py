@@ -15,7 +15,7 @@ call = lambda x: subprocess.Popen(x, stdout=subprocess.PIPE).communicate()
 
 
 def clean_excerpt(excerpt):
-    return bleach.clean(excerpt)
+    return bleach.clean(excerpt, tags=['b', 'i'])
 
 
 def reindex(rotate=False):

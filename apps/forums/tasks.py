@@ -1,3 +1,5 @@
+import logging
+
 from django.db import transaction
 from django.db.models.signals import post_save
 
@@ -6,6 +8,9 @@ from multidb.pinning import pin_this_thread, unpin_this_thread
 
 from activity.models import Action
 from forums.models import Post
+
+
+log = logging.getLogger('k.task')
 
 
 @task
@@ -30,6 +35,22 @@ def log_reply(post):
 
     transaction.commit_unless_managed()
     unpin_this_thread()
+
+
+@task
+def index_threads(ids, **kw):
+    log.debug('Indexing threads: %r', ids)
+    from forums import es_search
+    from forums.models import Thread
+    for thread in Thread.uncached.filter(id__in=ids):
+        es_search.index_thread(es_search.extract_thread(thread))
+
+
+@task
+def unindex_threads(ids, **kw):
+    log.debug('Unindexing threads: %r', ids)
+    from forums import es_search
+    es_search.unindex_threads(ids)
 
 
 def connector(sender, instance, created, **kw):

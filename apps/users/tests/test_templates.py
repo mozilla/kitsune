@@ -1,4 +1,4 @@
-from copy import deepcopy
+from copy import copy
 import hashlib
 import os
 from smtplib import SMTPRecipientsRefused
@@ -247,7 +247,7 @@ class EditAvatarTests(TestCaseBase):
 
     def setUp(self):
         super(EditAvatarTests, self).setUp()
-        self.old_settings = deepcopy(settings._wrapped.__dict__)
+        self.old_settings = copy(settings._wrapped.__dict__)
 
     def tearDown(self):
         settings._wrapped.__dict__ = self.old_settings

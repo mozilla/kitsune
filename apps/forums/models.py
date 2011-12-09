@@ -1,7 +1,10 @@
 import datetime
 
 from django.db import models
+from django.conf import settings
 from django.contrib.auth.models import User
+from django.db.models.signals import post_save, pre_delete
+from django.dispatch import receiver
 
 from tidings.models import NotificationsMixin
 
@@ -11,9 +14,9 @@ import forums
 from sumo.helpers import urlparams, wiki_to_html
 from sumo.urlresolvers import reverse
 from sumo.models import ModelBase
+from search import searcher
 from search.utils import crc32
-
-from search import S
+import waffle
 
 
 def _last_post_from(posts, exclude_post=None):
@@ -171,6 +174,28 @@ class Thread(NotificationsMixin, ModelBase):
         # then Post.delete will erase the thread, as well.
 
 
+@receiver(post_save, sender=Thread,
+          dispatch_uid='forums.search.index.thread.save')
+def update_thread_in_index(sender, instance, **kw):
+    # raw is True when saving a model exactly as presented--like when
+    # loading fixtures.  In this case we don't want to trigger.
+    if not settings.USE_ELASTIC or kw.get('raw'):
+        return
+
+    from forums.tasks import index_threads
+    index_threads.delay([instance.id])
+
+
+@receiver(pre_delete, sender=Thread,
+          dispatch_uid='forums.search.index.thread.delete')
+def remove_thread_from_index(sender, instance, **kw):
+    if not settings.USE_ELASTIC:
+        return
+
+    from forums.tasks import unindex_threads
+    unindex_threads([instance.id])
+
+
 class Post(ActionMixin, ModelBase):
     thread = models.ForeignKey('Thread')
     content = models.TextField()
@@ -253,10 +278,39 @@ class Post(ActionMixin, ModelBase):
         return wiki_to_html(self.content)
 
 
-# The index is on Post, but with the Thread.title for the Thread
-# related to the Post.  We base the S off of Post because we need
-# to excerpt content.
-discussion_search = (
-    S(Post).weight(title=2, content=1)
-           .group_by('thread_id', '-@group')
-           .order_by('created'))
+@receiver(post_save, sender=Post,
+          dispatch_uid='forums.search.index.post.save')
+def update_post_in_index(sender, instance, **kw):
+    # raw is True when saving a model exactly as presented--like when
+    # loading fixtures.  In this case we don't want to trigger.
+    if not settings.USE_ELASTIC or kw.get('raw'):
+        return
+
+    from forums.tasks import index_threads
+    index_threads.delay([instance.thread_id])
+
+
+@receiver(pre_delete, sender=Post,
+          dispatch_uid='forums.search.index.post.delete')
+def remove_post_from_index(sender, instance, **kw):
+    if not settings.USE_ELASTIC:
+        return
+
+    from forums.tasks import index_threads
+    index_threads.delay([instance.thread_id])
+
+
+def discussion_searcher(request):
+    """Return a forum searcher with default parameters."""
+    if waffle.flag_is_active(request, 'elasticsearch'):
+        index_model = Thread
+    else:
+        # The index is on Post but with the Thread.title for the
+        # Thread related to the Post. We base the S off Post because
+        # we need to excerpt content.
+        index_model = Post
+
+    return (searcher(request)(index_model).weight(title=2, content=1)
+                                          .group_by('thread_id', '-@group')
+                                          .query_fields('title', 'content')
+                                          .order_by('created'))

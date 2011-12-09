@@ -1,6 +1,7 @@
 """
 Tests for the search (sphinx) app.
 """
+from functools import partial
 import os
 import shutil
 import time
@@ -9,6 +10,7 @@ import json
 from django.conf import settings
 from django.contrib.sites.models import Site
 from django.http import QueryDict
+from django.test.client import RequestFactory
 from django.utils.http import urlquote
 
 import jingo
@@ -17,14 +19,21 @@ from nose import SkipTest
 from nose.tools import eq_
 from pyquery import PyQuery as pq
 
-from forums.models import Thread, discussion_search
-from questions.models import question_search
+from forums.models import Thread, discussion_searcher
+from questions.models import question_searcher
 import search as constants
 from search.utils import (start_sphinx, stop_sphinx, reindex,
                           clean_excerpt)
 from sumo.tests import LocalizingClient, TestCase
 from sumo.urlresolvers import reverse
-from wiki.models import wiki_search
+from wiki.models import wiki_searcher
+
+
+# No reason to use test_utils' RequestFactory
+dummy_request = RequestFactory().get('/')
+discussion_searcher = partial(discussion_searcher, dummy_request)
+wiki_searcher = partial(wiki_searcher, dummy_request)
+question_searcher = partial(question_searcher, dummy_request)
 
 
 def render(s, context):
@@ -74,7 +83,7 @@ class SearchTest(SphinxTestCase):
     client_class = LocalizingClient
 
     def test_indexer(self):
-        results = wiki_search.query('audio')
+        results = wiki_searcher().query('audio')
         eq_(2, len(results))
 
     def test_content(self):
@@ -126,9 +135,9 @@ class SearchTest(SphinxTestCase):
         eq_('0', q['r'])
 
     def test_category(self):
-        results = wiki_search.filter(category__in=[10])
+        results = wiki_searcher().filter(category__in=[10])
         eq_(5, len(results))
-        results = wiki_search.filter(category__in=[30])
+        results = wiki_searcher().filter(category__in=[30])
         eq_(1, len(results))
 
     def test_category_invalid(self):
@@ -141,13 +150,13 @@ class SearchTest(SphinxTestCase):
         # Note: We keep the query('') here to force a new S and thus
         # not inadvertently test with an S that's not in an original
         # state.
-        results = list(wiki_search.query(''))
+        results = list(wiki_searcher().query(''))
         eq_(6, len(results))
 
     def test_range_filter(self):
         """Test filtering on a range."""
-        results = wiki_search.filter(updated__gte=1284664176,
-                                     updated__lte=1285765791)
+        results = wiki_searcher().filter(updated__gte=1284664176,
+                                         updated__lte=1285765791)
         eq_(2, len(results))
 
     def test_sort_mode(self):
@@ -157,8 +166,8 @@ class SearchTest(SphinxTestCase):
 
         i = 0
         for sort_mode in constants.SORT_QUESTIONS[1:]:  # Skip default sorting.
-            results = list(question_search.order_by(*sort_mode)
-                                          .values_dict(test_for[i]))
+            results = list(question_searcher().order_by(*sort_mode)
+                                              .values_dict(test_for[i]))
             eq_(4, len(results))
 
             # Compare first and second.
@@ -317,9 +326,9 @@ class SearchTest(SphinxTestCase):
 
     def test_unicode_excerpt(self):
         """Unicode characters in the excerpt should not be a problem."""
-        ws = (wiki_search.highlight('html')
-                         .query(u'\u30c1')
-                         .values_dict('html'))
+        ws = (wiki_searcher().highlight('html')
+                             .query(u'\u30c1')
+                             .values_dict('html'))
         results = list(ws)
         try:
             excerpt = ws.excerpt(results[0])
@@ -330,13 +339,13 @@ class SearchTest(SphinxTestCase):
     def test_utf8_excerpt(self):
         """Characters should stay in UTF-8."""
         q = u'fa\xe7on'
-        ws = (wiki_search.highlight('html')
-                         .query(u'fa\xe7on')
-                         .values_dict('html'))
+        ws = (wiki_searcher().highlight('html')
+                             .query(u'fa\xe7on')
+                             .values_dict('html'))
 
         results = list(ws)
         # page = Document.objects.get(pk=4)
-        excerpt = clean_excerpt(ws.excerpt(results[0])[0])
+        excerpt = clean_excerpt(ws.excerpt(results[0])[0][0])
         assert q in excerpt, u'%s not in %s' % (q, excerpt)
 
     def test_clean_excerpt(self):
@@ -355,12 +364,13 @@ class SearchTest(SphinxTestCase):
 
     def test_discussion_sanity(self):
         """Sanity check for discussion forums search client."""
-        dis_s = (discussion_search.highlight('content')
-                                  .filter(author_ord='admin')
-                                  .query('post').values_dict('id', 'content'))
+        dis_s = (discussion_searcher()
+                     .highlight('content')
+                     .filter(author_ord='admin')
+                     .query('post').values_dict('id', 'content'))
         results = list(dis_s)
         eq_(1, len(results))
-        eq_(u'yet another <b>post</b>', dis_s.excerpt(results[0])[0])
+        eq_([u'yet another <b>post</b>'], dis_s.excerpt(results[0])[0])
 
     def test_discussion_filter_author(self):
         """Filter by author in discussion forums."""
@@ -453,7 +463,7 @@ class SearchTest(SphinxTestCase):
     def test_discussion_sort_mode(self):
         """Test set groupsort."""
         # Initialize client and attrs.
-        ds = discussion_search
+        ds = discussion_searcher()
         test_for = ('updated', 'created')
 
         i = 0
@@ -478,60 +488,60 @@ class SearchTest(SphinxTestCase):
 
     def test_wiki_index_keywords(self):
         """The keywords field of a revision is indexed."""
-        results = list(wiki_search.query('foobar'))
+        results = list(wiki_searcher().query('foobar'))
         eq_(1, len(results))
         eq_(3, results[0].id)
 
     def test_wiki_index_summary(self):
         """The summary field of a revision is indexed."""
-        results = list(wiki_search.query('whatever'))
+        results = list(wiki_searcher().query('whatever'))
         eq_(1, len(results))
         eq_(3, results[0].id)
 
     def test_wiki_index_content(self):
         """Obviously the content should be indexed."""
-        results = list(wiki_search.query('video'))
+        results = list(wiki_searcher().query('video'))
         eq_(1, len(results))
         eq_(1, results[0].id)
 
     def test_wiki_index_strip_html(self):
         """HTML should be stripped, not indexed."""
-        results = list(wiki_search.query('strong'))
+        results = list(wiki_searcher().query('strong'))
         eq_(0, len(results))
 
     def test_ngram_chars(self):
         """Ideographs are handled correctly."""
-        results = list(wiki_search.query(u'\u30c1'))
+        results = list(wiki_searcher().query(u'\u30c1'))
         eq_(1, len(results))
         eq_(2, results[0].id)
 
     def test_no_syntax_error(self):
         """Test that special chars cannot cause a syntax error."""
-        results = list(wiki_search.query('video^$'))
+        results = list(wiki_searcher().query('video^$'))
         eq_(1, len(results))
 
-        results = list(wiki_search.query('video^^^$$$^'))
+        results = list(wiki_searcher().query('video^^^$$$^'))
         eq_(1, len(results))
 
-        results = list(wiki_search.query('google.com/ig'))
+        results = list(wiki_searcher().query('google.com/ig'))
         eq_(0, len(results))
 
     def test_clean_hyphens(self):
         """Hyphens in words aren't special characters."""
-        results = list(wiki_search.query('marque-page'))
+        results = list(wiki_searcher().query('marque-page'))
         eq_(1, len(results))
 
     def test_exclude_words(self):
         """Excluding words with -word works."""
-        results = list(wiki_search.query('spanish'))
+        results = list(wiki_searcher().query('spanish'))
         eq_(1, len(results))
 
-        results = list(wiki_search.query('spanish -content'))
+        results = list(wiki_searcher().query('spanish -content'))
         eq_(0, len(results))
 
     def test_no_redirects(self):
         """Redirect articles should never appear in search results."""
-        results = list(wiki_search.query('ghosts'))
+        results = list(wiki_searcher().query('ghosts'))
         eq_(1, len(results))
 
     def test_search_cookie(self):

@@ -9,13 +9,15 @@ from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from django.core.urlresolvers import resolve
 from django.db import models
 from django.db.models import Q
+from django.db.models.signals import pre_delete, post_save
+from django.dispatch import receiver
 from django.http import Http404
 
 from pyquery import PyQuery
 from tidings.models import NotificationsMixin
 from tower import ugettext_lazy as _lazy, ugettext as _
 
-from search import S
+from search import searcher
 from search.utils import crc32
 from sumo import ProgrammingError
 from sumo_locales import LOCALES
@@ -617,6 +619,28 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin):
         return EditDocumentEvent.is_notifying(user, self)
 
 
+@receiver(post_save, sender=Document,
+          dispatch_uid='wiki.search.index.document.save')
+def update_document_from_index(sender, instance, **kw):
+    # raw is True when saving a model exactly as presented--like when
+    # loading fixtures.  In this case we don't want to trigger.
+    if not settings.USE_ELASTIC or kw.get('raw'):
+        return
+
+    from wiki.tasks import index_documents
+    index_documents.delay([instance.id])
+
+
+@receiver(pre_delete, sender=Document,
+          dispatch_uid='wiki.search.index.document.delete')
+def remove_document_from_index(sender, instance, **kw):
+    if not settings.USE_ELASTIC:
+        return
+
+    from wiki.tasks import unindex_documents
+    unindex_documents([instance.id])
+
+
 class Revision(ModelBase):
     """A revision of a localized knowledgebase document"""
     document = models.ForeignKey(Document, related_name='revisions')
@@ -888,6 +912,9 @@ def points_to_document_view(url, required_locale=None):
         return False
 
 
-# Default search parameters for the wiki:
-wiki_search = S(Document).weight(title=6, content=1, keywords=4, summary=2)
-# TODO: We probably have several more default filters to add.
+def wiki_searcher(request):
+    """Return a wiki document searcher with default parameters."""
+    return (searcher(request)(Document)
+            .query_fields('title', 'content', 'summary', 'keywords')
+            .weight(title=6, content=1, keywords=4, summary=2))
+    # TODO: We probably have several more default filters to add.

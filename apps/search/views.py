@@ -15,16 +15,21 @@ import jingo
 import jinja2
 from mobility.decorators import mobile_template
 from statsd import statsd
-from tower import ugettext as _
+from tower import ugettext as _, ugettext_lazy as _lazy
 
-from search import SearchError, ExcerptTimeoutError, ExcerptSocketErrorError
+from search import SearchError, ExcerptTimeoutError, ExcerptSocketError
 from search.utils import locale_or_default, clean_excerpt
-from forums.models import Thread, discussion_search
-from questions.models import question_search
+from forums.models import Thread, discussion_searcher
+from questions.models import question_searcher
 import search as constants
 from search.forms import SearchForm
+from search.es_utils import ESTimeoutError
 from sumo.utils import paginate, smart_int
-from wiki.models import wiki_search
+from wiki.models import wiki_searcher
+import waffle
+
+
+excerpt_joiner = _lazy(u'...', 'between search excerpts')
 
 
 def jsonp_is_valid(func):
@@ -109,9 +114,9 @@ def search(request, template=None):
     else:
         lang_name = ''
 
-    wiki_s = wiki_search
-    question_s = question_search
-    discussion_s = discussion_search
+    wiki_s = wiki_searcher(request)
+    question_s = question_searcher(request)
+    discussion_s = discussion_searcher(request)
 
     documents = []
 
@@ -226,8 +231,13 @@ def search(request, template=None):
             except IndexError:
                 pass
 
+            if waffle.flag_is_active(request, 'elasticsearch'):
+                highlight_fields = ['title', 'question_content', 'answer_content']
+            else:
+                highlight_fields = ['content']
+
             question_s = question_s.highlight(
-                'content',
+                *highlight_fields,
                 before_match='<b>',
                 after_match='</b>',
                 limit=settings.SEARCH_SUMMARY_LENGTH)
@@ -256,7 +266,118 @@ def search(request, template=None):
             documents += [('discussion', (pair[0], pair[1]))
                           for pair in enumerate(discussion_s.object_ids())]
 
-    except SearchError:
+        pages = paginate(request, documents, settings.SEARCH_RESULTS_PER_PAGE)
+
+        # Build a dict of { type_ -> list of indexes } for the specific
+        # docs that we're going to display on this page.  This makes it
+        # easy for us to slice the appropriate search Ss so we're limiting
+        # our db hits to just the items we're showing.
+        documents_dict = {}
+        for doc in documents[offset:offset + settings.SEARCH_RESULTS_PER_PAGE]:
+            documents_dict.setdefault(doc[0], []).append(doc[1][0])
+
+        docs_for_page = []
+        for type_, search_s in [('wiki', wiki_s),
+                                ('question', question_s),
+                                ('discussion', discussion_s)]:
+            if type_ not in documents_dict:
+                continue
+
+            # documents_dict[type_] is a list of indexes--one for each
+            # object id search result for that type_.  We use the values
+            # at the beginning and end of the list for slice boundaries.
+            begin = documents_dict[type_][0]
+            end = documents_dict[type_][-1] + 1
+
+            # Update the original symbols with the sliced versions of
+            # the S so that, when we iterate over them in the
+            # following list comp, we hang onto the version that does
+            # the query, so we can call excerpt() on it later.
+            if type_ == 'wiki':
+                wiki_s = search_s = search_s[begin:end]
+            elif type == 'question':
+                question_s = search_s = search_s[begin:end]
+            elif type == 'discussion':
+                discussion_s = search_s = search_s[begin:end]
+
+            docs_for_page += [(type_, doc) for doc in search_s]
+
+        results = []
+        for i, docinfo in enumerate(docs_for_page):
+            rank = i + offset
+            type_, doc = docinfo
+            try:
+                if type_ == 'wiki':
+                    summary = doc.current_revision.summary
+
+                    result = {
+                        'search_summary': summary,
+                        'url': doc.get_absolute_url(),
+                        'title': doc.title,
+                        'type': 'document',
+                        'rank': rank,
+                        'object': doc,
+                    }
+                    results.append(result)
+
+                elif type_ == 'question':
+                    try:
+                        excerpt = excerpt_joiner.join(
+                            [m for m in chain(*question_s.excerpt(doc)) if m])
+                    except ExcerptTimeoutError:
+                        statsd.incr('search.excerpt.timeout')
+                        excerpt = u''
+                    except ExcerptSocketError:
+                        statsd.incr('search.excerpt.socketerror')
+                        excerpt = u''
+
+                    summary = jinja2.Markup(clean_excerpt(excerpt))
+
+                    result = {
+                        'search_summary': summary,
+                        'url': doc.get_absolute_url(),
+                        'title': doc.title,
+                        'type': 'question',
+                        'rank': rank,
+                        'object': doc,
+                    }
+                    results.append(result)
+
+                else:
+                    if waffle.flag_is_active(request, 'elasticsearch'):
+                        thread = doc
+                    else:
+                        thread = Thread.objects.get(pk=doc.thread_id)
+
+                    try:
+                        excerpt = excerpt_joiner.join(
+                            [m for m in chain(*discussion_s.excerpt(doc))])
+                    except ExcerptTimeoutError:
+                        statsd.incr('search.excerpt.timeout')
+                        excerpt = u''
+                    except ExcerptSocketError:
+                        statsd.incr('search.excerpt.socketerror')
+                        excerpt = u''
+
+                    summary = jinja2.Markup(clean_excerpt(excerpt))
+
+                    result = {
+                        'search_summary': summary,
+                        'url': thread.get_absolute_url(),
+                        'title': thread.title,
+                        'type': 'thread',
+                        'rank': rank,
+                        'object': thread,
+                    }
+                    results.append(result)
+            except IndexError:
+                break
+            except ObjectDoesNotExist:
+                continue
+
+    except (SearchError, ESTimeoutError):
+        # Handle timeout and all those other transient errors with a
+        # "Search Unavailable" rather than a Django error page.
         if is_json:
             return HttpResponse(json.dumps({'error':
                                              _('Search Unavailable')}),
@@ -264,100 +385,6 @@ def search(request, template=None):
 
         t = 'search/mobile/down.html' if request.MOBILE else 'search/down.html'
         return jingo.render(request, t, {'q': cleaned['q']}, status=503)
-
-    pages = paginate(request, documents, settings.SEARCH_RESULTS_PER_PAGE)
-
-    # Build a dict of { type_ -> list of indexes } for the specific
-    # docs that we're going to display on this page.  This makes it
-    # easy for us to slice the appropriate search Ss so we're limiting
-    # our db hits to just the items we're showing.
-    documents_dict = {}
-    for doc in documents[offset:offset + settings.SEARCH_RESULTS_PER_PAGE]:
-        documents_dict.setdefault(doc[0], []).append(doc[1][0])
-
-    docs_for_page = []
-    for type_, search_s in [('wiki', wiki_s),
-                            ('question', question_s),
-                            ('discussion', discussion_s)]:
-        if type_ not in documents_dict:
-            continue
-
-        # documents_dict[type_] is a list of indexes--one for each
-        # object id search result for that type_.  We use the values
-        # at the beginning and end of the list for slice boundaries.
-        begin = documents_dict[type_][0]
-        end = documents_dict[type_][-1] + 1
-        docs_for_page += [(type_, doc) for doc in search_s[begin:end]]
-
-    results = []
-    for i, docinfo in enumerate(docs_for_page):
-        rank = i + offset
-        type_, doc = docinfo
-        try:
-            if type_ == 'wiki':
-                summary = doc.current_revision.summary
-
-                result = {
-                    'search_summary': summary,
-                    'url': doc.get_absolute_url(),
-                    'title': doc.title,
-                    'type': 'document',
-                    'rank': rank,
-                    'object': doc,
-                }
-                results.append(result)
-
-            elif type_ == 'question':
-                try:
-                    excerpt = question_s.excerpt(doc)[0]
-                except ExcerptTimeoutError:
-                    statsd.incr('search.excerpt.timeout')
-                    excerpt = u''
-                except ExcerptSocketErrorError:
-                    statsd.incr('search.excerpt.socketerror')
-                    excerpt = u''
-
-                summary = jinja2.Markup(clean_excerpt(excerpt))
-
-                result = {
-                    'search_summary': summary,
-                    'url': doc.get_absolute_url(),
-                    'title': doc.title,
-                    'type': 'question',
-                    'rank': rank,
-                    'object': doc,
-                }
-                results.append(result)
-
-            else:
-                # discussion_s is based on Post--not Thread, so we have
-                # to get this manually.
-                thread = Thread.objects.get(pk=doc.thread_id)
-
-                try:
-                    excerpt = discussion_s.excerpt(doc)[0]
-                except ExcerptTimeoutError:
-                    statsd.incr('search.excerpt.timeout')
-                    excerpt = u''
-                except ExcerptSocketErrorError:
-                    statsd.incr('search.excerpt.socketerror')
-                    excerpt = u''
-
-                summary = jinja2.Markup(clean_excerpt(excerpt))
-
-                result = {
-                    'search_summary': summary,
-                    'url': thread.get_absolute_url(),
-                    'title': thread.title,
-                    'type': 'thread',
-                    'rank': rank,
-                    'object': thread,
-                }
-                results.append(result)
-        except IndexError:
-            break
-        except ObjectDoesNotExist:
-            continue
 
     items = [(k, v) for k in search_form.fields for
              v in r.getlist(k) if v and k != 'a']
@@ -405,10 +432,11 @@ def suggestions(request):
     site = Site.objects.get_current()
     locale = locale_or_default(request.locale)
     results = list(chain(
-            wiki_search.filter(is_archived=False)
-                       .filter(locale=locale)
-                       .query(term)[:5],
-            question_search.filter(has_helpful=True).query(term)[:5]))
+            wiki_searcher(request).filter(is_archived=False)
+                                  .filter(locale=locale)
+                                  .query(term)[:5],
+            question_searcher(request).filter(has_helpful=True)
+                                      .query(term)[:5]))
     # Assumption: wiki_search sets filter(is_archived=False).
 
     urlize = lambda obj: u'https://%s%s' % (site, obj.get_absolute_url())

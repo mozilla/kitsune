@@ -33,5 +33,3 @@ ROOT_PATH       = settings.TEST_SPHINX_PATH
 CATALOG_PATH    = '/data'
 LOG_PATH        = '/log'
 ETC_PATH        = '/etc'
-
-AGE_DIVISOR = 86400

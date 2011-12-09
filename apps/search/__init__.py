@@ -2,8 +2,10 @@ import os
 
 from django.conf import settings
 
+import elasticutils
 import oedipus
 from tower import ugettext_lazy as _lazy
+import waffle
 
 
 WHERE_WIKI = 1
@@ -22,7 +24,7 @@ DATE_LIST = (
 )
 
 GROUPSORT = (
-    ('-@relevance', 'age'),  # default
+    ('-@rank', '-updated'),  # default
     '-updated',
     '-created',
     '-replies',
@@ -63,10 +65,10 @@ NUMBER_LIST = (
 )
 
 SORT_QUESTIONS = (
-    ('-@relevance', 'age'),  # default
-    ('updated',),
-    ('created',),
-    ('replies',)
+    ('-@rank', '-updated'),  # default
+    ('-updated',),
+    ('-created',),
+    ('-replies',)
 )
 
 SORTBY_QUESTIONS = (
@@ -77,7 +79,7 @@ SORTBY_QUESTIONS = (
 )
 
 
-class S(oedipus.S):
+class SphinxSearcher(oedipus.S):
     @property
     def port(self):
         """Twiddle Sphinx port at runtime based on var set in SphinxTestCase"""
@@ -87,5 +89,16 @@ class S(oedipus.S):
 
 
 ExcerptTimeoutError = oedipus.ExcerptTimeoutError
-ExcerptSocketErrorError = oedipus.ExcerptSocketErrorError
+ExcerptSocketError = oedipus.ExcerptSocketError
 SearchError = oedipus.SearchError
+
+
+def searcher(request):
+    """Return an ``S`` object for use with either ElasticSearch or Sphinx.
+
+    Which it returns depends on the ``elasticsearch`` waffle flag.
+
+    """
+    return (oedipus.Sphilastic if
+            waffle.flag_is_active(request, 'elasticsearch') else
+            SphinxSearcher)

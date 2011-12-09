@@ -580,6 +580,12 @@ SESSION_ENGINE = 'django.contrib.sessions.backends.cached_db'
 SESSION_EXISTS_COOKIE = 'sumo_session'
 
 #
+# Connection information for Elastic
+ES_HOSTS = ['127.0.0.1:9200']
+ES_INDEXES = {'default': 'sumo'}
+USE_ELASTIC = False
+
+#
 # Connection information for Sphinx search
 SPHINX_HOST = '127.0.0.1'
 SPHINX_PORT = 3381
