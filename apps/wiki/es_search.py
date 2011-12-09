@@ -25,8 +25,8 @@ def setup_mapping(index):
             'category': {TYPE: INTEGER},
             'slug': {TYPE: STRING},
             'is_archived': {TYPE: BOOLEAN},
-            'summary': {TYPE: STRING},
-            'keywords': {TYPE: STRING},
+            'summary': {TYPE: STRING, INDEX: ANALYZED, ANALYZER: SNOWBALL},
+            'keywords': {TYPE: STRING, INDEX: ANALYZED, ANALYZER: SNOWBALL},
             'updated': {TYPE: DATE}
             }
         }
