@@ -8,9 +8,6 @@ from search.es_utils import (TYPE, INTEGER, STRING, ANALYZED, ANALYZER,
                              INDEX, WITH_POS_OFFSETS, DATE, get_index)
 
 
-AGE_DIVISOR = 86400
-
-
 log = logging.getLogger('k.forums.es_search')
 
 

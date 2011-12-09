@@ -8,8 +8,6 @@ from search.es_utils import (TYPE, LONG, INDEX, STRING, ANALYZED, ANALYZER,
                              WITH_POS_OFFSETS, DATE, INTEGER, get_index)
 
 
-ID_FACTOR = 100000
-
 log = logging.getLogger('k.questions.es_search')
 
 
