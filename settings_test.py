@@ -7,7 +7,7 @@ ES_INDEXES = {'default': 'sumo_test'}
 
 # This makes sure we only turn on ES stuff when we're testing ES
 # stuff.
-USE_ELASTIC = False
+ES_LIVE_INDEXING = False
 
 # Make sure we use port 6383 db 2 redis for tests.  That's db 2 of the
 # redis test config.  That shouldn't collide with anything else.
