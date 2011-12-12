@@ -83,7 +83,7 @@ def questions(request):
         {'_num_votes': 'SELECT COUNT(*) FROM questions_questionvote WHERE '
                        'questions_questionvote.question_id = '
                        'questions_question.id'})
-    question_qs = question_qs.filter(creator__is_active=1)
+    question_qs = question_qs.filter(creator__is_active=1, is_locked=False)
 
     if filter_ == 'no-replies':
         question_qs = question_qs.filter(num_answers=0)

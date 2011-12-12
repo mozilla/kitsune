@@ -1060,6 +1060,16 @@ class QuestionsTemplateTestCase(TestCaseBase):
         eq_('/questions?tagged=mobile',
             doc('link[rel="canonical"]')[0].attrib['href'])
 
+    def test_locked_questions_dont_appear(self):
+        """Locked questions are not listed."""
+        q = Question.objects.all()[0]
+        q.is_locked = True
+        q.save()
+        response = get(self.client, 'questions.questions')
+        doc = pq(response.content)
+        eq_(Question.objects.filter(is_locked=False).count(),
+            len(doc('ol.questions li')))
+
 
 class QuestionEditingTests(TestCaseBase):
     """Tests for the question-editing view and templates"""
