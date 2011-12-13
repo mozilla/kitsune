@@ -433,7 +433,7 @@ MINIFY_BUNDLES = {
             'css/wiki_syntax.css',
         ),
         'messages': (
-            'css/autocomplete.css',
+            'css/users.autocomplete.css',
             'css/messages.css',
         ),
         'groups': (
