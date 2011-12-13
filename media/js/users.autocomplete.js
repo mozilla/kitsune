@@ -17,7 +17,11 @@ function init() {
             var serviceUrl = $('body').data('usernames-api');
             $.getJSON(serviceUrl, {
                 term: extractLast(request.term)
-            }, response);
+            },
+            function(data){
+                console.log(data);
+                response(data.suggestions);
+            });
         },
         focus: function(event, ui) {
             return false;

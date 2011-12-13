@@ -1,4 +1,5 @@
-import json
+from django.utils import simplejson as json
+
 
 from django.contrib.auth.models import User
 from django.db.models import Q
@@ -15,7 +16,7 @@ from access.decorators import login_required
 def usernames(request):
     """An API to provide auto-complete data for user names."""
     mimetype = 'application/json'
-    pre = request.GET.get('query', None)
+    pre = request.GET.get('term', None)
     if not pre:
         return HttpResponse(json.dumps([]), mimetype=mimetype)
 
@@ -25,11 +26,10 @@ def usernames(request):
     with statsd.timer('users.api.usernames.search'):
         users = User.objects.filter(
             Q(username__istartswith=pre),
-            Q(email__istartswith=pre),
             ).values('username', 'email')[:10]
     # json.dumps won't serialize a QuerySet, so list comp.
     return HttpResponse(
         json.dumps({
-            'query': pre,
-            'suggestions': users
+            'term': pre,
+            'suggestions': list(users)
         }), mimetype=mimetype)

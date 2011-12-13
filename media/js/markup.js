@@ -115,8 +115,7 @@ Marky.SimpleButton.prototype = {
     render: function() {
         var $out = $(this.html).attr({
             title: this.name,
-            innerHTML: this.name
-        });
+        }).html(this.name);
         $out.addClass(this.classes);
         return $out;
     },
