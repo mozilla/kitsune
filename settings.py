@@ -767,13 +767,6 @@ REDIS_BACKENDS = {
     #'helpfulvotes': 'redis://localhost:6379?socket_timeout=0.5&db=1',
 }
 
-# Redis backends used for testing.
-REDIS_TEST_BACKENDS = {
-    #'default': 'redis://localhost:6383?socket_timeout=0.5&db=0',
-    #'karma': 'redis://localhost:6383?socket_timeout=0.5&db=1',
-    #'helpfulvotes': 'redis://localhost:6379?socket_timeout=0.5&db=1',
-}
-
 # Set this to enable Arecibo (http://www.areciboapp.com/) error reporting:
 ARECIBO_SERVER_URL = ''
 

@@ -67,9 +67,7 @@ class LocalizingClient(Client):
 
 
 class TestCase(test_utils.TestCase):
-    def setUp(self):
-        super(TestCase, self).setUp()
-        settings.REDIS_BACKENDS = settings.REDIS_TEST_BACKENDS
+    pass
 
 
 class ElasticTestMixin(object):
