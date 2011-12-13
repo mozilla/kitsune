@@ -123,15 +123,18 @@ For local development you will want to add the following settings::
 Redis
 -----
 
-You need to copy the ``REDIS_BACKEND`` and ``REDIS_TEST_BACKEND``
-sections from ``settings.py`` into your ``settings_local.py``.  After
-doing that, uncomment the three lines in each section.
+You need to copy the ``REDIS_BACKEND`` section from ``settings.py``
+into your ``settings_local.py``.  After doing that, uncomment the
+three lines in each section.
 
-There are three ``.conf`` files in ``config/redis/`` each
-corresponding to a different redis server configuration.  You need to
-run all three redis servers.
+There are three ``.conf`` files in ``config/redis/``.  One is for
+testing and is used in ``settings_test.py``.  The other two are used
+for the sections in ``REDIS_BACKEND``.
 
-The three conf files need to match the settings in ``settings_local.py``.
+There are two ways to set this up.  First is to set it up like in
+``settings.py`` and run all three redis servers.  The second is to set
+it up differently, tweak the settings in ``settings_local.py``
+accordingly, and run Redis using just the test configuration.
 
 
 Database
@@ -197,7 +200,7 @@ package directory. To set this up, run this command to do the initial fetch::
 Running redis
 -------------
 
-You'll need to run three redis servers--one for each configuration.
+This script runs all three servers---one for each configuration.
 
 I (Will) put that in a script that creates the needed directories in
 ``/var/redis/`` and kicks off the three redis servers::
