@@ -23,11 +23,13 @@ def usernames(request):
     # include that. Don't just OR this with Q(profile__name__startswith=pre).
     # That way lies horrid performance.
     with statsd.timer('users.api.usernames.search'):
-        q = Q(username__istartswith=pre)
-        users = User.objects.filter(q).values_list('username', flat=True)[:10]
+        users = User.objects.filter(
+            Q(username__istartswith=pre),
+            Q(email__istartswith=pre),
+            ).values('username', 'email')[:10]
     # json.dumps won't serialize a QuerySet, so list comp.
     return HttpResponse(
         json.dumps({
             'query': pre,
-            'suggestions': [u for u in users]
+            'suggestions': users
         }), mimetype=mimetype)

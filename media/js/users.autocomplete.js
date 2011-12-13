@@ -6,13 +6,26 @@
 (function($) {
 
 "use strict";
+function extractLast(term) {
+    return term.split(/,\s*/).pop();
+}
 
 function init() {
-    $('input.user-autocomplete').betterautocomplete({
-        serviceUrl: $('body').data('usernames-api'),
-        minChars: 2,
-        delimiter: /(,)\s*/,
-        width: 250
+    var cache = {}, lastXhr;
+    $('input.user-autocomplete').autocomplete({
+        source: function(request, response) {
+            var serviceUrl = $('body').data('usernames-api');
+            $.getJSON(serviceUrl, {
+                term: extractLast(request.term)
+            }, response);
+        },
+        focus: function(event, ui) {
+            return false;
+        },
+        select: function(event, ui) {
+            $(event.target).val(ui.item.username);
+            return false;
+        }
     });
 }
 
