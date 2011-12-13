@@ -50,6 +50,7 @@ class KarmaManager(object):
         cls.action_types[action.action_type] = action.points
 
     # Setters:
+    @_handle_redis_errors
     def save_action(self, action):
         """Save a new karma action to redis."""
         # Keep a list of users with karma
@@ -167,11 +168,14 @@ class KarmaManager(object):
     @_handle_redis_errors
     def ranking(self, user, daterange='all', type='points'):
         """The user's ranking for the given range and type."""
-        if not self.count(user=user, daterange=daterange, type=type):
-            return None
-        return self.redis.zrevrank('{p}:{t}:{r}'.format(
-            p=KEY_PREFIX, t=type, r=daterange), userid(user)) + 1
+        if self.count(user=user, daterange=daterange, type=type):
+            rank = self.redis.zrevrank('{p}:{t}:{r}'.format(
+                p=KEY_PREFIX, t=type, r=daterange), userid(user))
+            if rank != None:
+                return rank + 1
+        return None
 
+    @_handle_redis_errors
     def count(self, user='overview', daterange='all', type='points'):
         """The user's count for the given range and type.
 
