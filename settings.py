@@ -584,6 +584,7 @@ SESSION_EXISTS_COOKIE = 'sumo_session'
 ES_HOSTS = ['127.0.0.1:9200']
 ES_INDEXES = {'default': 'sumo'}
 ES_LIVE_INDEXING = False  # Keep indexes up to date as objects are made/deleted
+ES_TIMEOUT = 5  # 5 second timeouts for querying/indexing
 
 #
 # Connection information for Sphinx search
