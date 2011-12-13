@@ -1,33 +1,41 @@
-import json
-
 from django.contrib.auth.models import User
 from django.db.models import Q
-from django.http import HttpResponse
 from django.views.decorators.http import require_GET
+from users.models import Profile
 
 from statsd import statsd
 
+from sumo.decorators import json_view
 from access.decorators import login_required
+
+
+def display_name_or_none(user):
+    try:
+        return user.profile.name
+    except (Profile.DoesNotExist, AttributeError):
+        return None
 
 
 @login_required
 @require_GET
+@json_view
 def usernames(request):
     """An API to provide auto-complete data for user names."""
-    mimetype = 'application/json'
-    pre = request.GET.get('query', None)
-    if not pre:
-        return HttpResponse(json.dumps([]), mimetype=mimetype)
+    term = request.GET.get('term', '')
+    query = request.GET.get('query', '')
+    pre = term or query
 
-    # Eventually, when display name becomes more prominent, we'll want to
-    # include that. Don't just OR this with Q(profile__name__startswith=pre).
-    # That way lies horrid performance.
+    if not pre:
+        return []
+    if not request.user.is_authenticated():
+        return []
     with statsd.timer('users.api.usernames.search'):
-        q = Q(username__istartswith=pre)
-        users = User.objects.filter(q).values_list('username', flat=True)[:10]
-    # json.dumps won't serialize a QuerySet, so list comp.
-    return HttpResponse(
-        json.dumps({
-            'query': pre,
-            'suggestions': [u for u in users]
-        }), mimetype=mimetype)
+        profiles = Profile.objects.filter(
+            Q(name__istartswith=pre)
+            ).values_list('user_id', flat=True)
+        users = User.objects.filter(
+            Q(username__istartswith=pre) | Q(id__in=profiles),
+            ).select_related('profile')[:10]
+        return [{'username':u.username,
+                'display_name':display_name_or_none(u)}
+                for u in users]
