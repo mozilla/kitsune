@@ -2,7 +2,6 @@
  * Bar charts
  */
 
-var chart1; // globally available
 function deslugify(slug){
     return _.map(slug.split('-'), function(w) {
         return w.charAt(0).toUpperCase() + w.slice(1)
@@ -17,7 +16,7 @@ function deslugify(slug){
 (function($) {
 
 "use strict";
-
+var chart1;
 /*
  * Models
  */
