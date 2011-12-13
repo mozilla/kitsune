@@ -2,6 +2,8 @@ import logging
 
 from django.conf import settings
 
+from statsd import statsd
+
 from sumo.redis_utils import redis_client, RedisError
 from wiki.models import Document
 
@@ -34,6 +36,7 @@ def find_related_documents(doc):
         redis = redis_client('default')
     except RedisError as e:
         # Problem with Redis. Log and return the related docs.
+        statsd.incr('redis.errror')
         log.error('Redis error: %s' % e)
         return related_translated_documents(doc)
 

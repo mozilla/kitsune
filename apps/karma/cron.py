@@ -1,7 +1,7 @@
 import cronjobs
 import waffle
 
-from karma.actions import KarmaAction
+from karma.manager import KarmaManager
 from karma.models import Title
 
 
@@ -11,8 +11,8 @@ def update_top_contributors():
     if not waffle.switch_is_active('karma'):
         return
 
-    KarmaAction.objects.update_top()
+    KarmaManager().update_top()
 
-    top25 = KarmaAction.objects.top_users(count=25)
+    top25 = KarmaManager().top_users(count=25)
     Title.objects.set_top10_contributors(top25[:10])
     Title.objects.set_top25_contributors(top25[10:25])

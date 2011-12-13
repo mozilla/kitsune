@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+import logging
 import re
 
 from django.conf import settings
@@ -11,13 +12,13 @@ from django.db.models.signals import post_save, pre_delete
 from django.dispatch import receiver
 
 from product_details import product_details
-from redis.exceptions import ConnectionError
+from statsd import statsd
 from taggit.models import Tag
 import waffle
 
 from activity.models import ActionMixin
 from flagit.models import FlaggedObject
-from karma.actions import KarmaAction
+from karma.manager import KarmaManager
 import questions as constants
 from questions.karma_actions import AnswerAction, SolutionAction
 from questions.question_config import products
@@ -28,10 +29,14 @@ from search.utils import crc32
 from sumo.helpers import urlparams
 from sumo.models import ModelBase
 from sumo.parser import wiki_to_html
+from sumo.redis_utils import RedisError
 from sumo.urlresolvers import reverse
 from tags.models import BigVocabTaggableMixin
 from tags.utils import add_existing_tag
 from upload.models import ImageAttachment
+
+
+log = logging.getLogger('k.questions')
 
 
 class Question(ModelBase, BigVocabTaggableMixin):
@@ -389,10 +394,14 @@ class Answer(ActionMixin, ModelBase):
         # the number of answers. Fallback to database.
         if waffle.switch_is_active('karma'):
             try:
-                return KarmaAction.objects.count(
+                count = KarmaManager().count(
                     user=self.creator, type=AnswerAction.action_type)
-            except ConnectionError:
-                pass
+                if count != None:
+                    return count
+            except RedisError as e:
+                statsd.incr('redis.errror')
+                log.error('Redis connection error: %s' % e)
+
         return Answer.objects.filter(creator=self.creator).count()
 
     @property
@@ -401,19 +410,24 @@ class Answer(ActionMixin, ModelBase):
         # the number of solutions. Fallback to database.
         if waffle.switch_is_active('karma'):
             try:
-                return KarmaAction.objects.count(
+                count = KarmaManager().count(
                     user=self.creator, type=SolutionAction.action_type)
-            except ConnectionError:
-                pass
+                if count != None:
+                    return count
+            except RedisError as e:
+                statsd.incr('redis.errror')
+                log.error('Redis connection error: %s' % e)
+
         return Question.objects.filter(
             solution__in=Answer.objects.filter(creator=self.creator)).count()
 
     @property
     def creator_num_points(self):
         try:
-            return KarmaAction.objects.count(self.creator, type='points')
-        except ConnectionError:
-            return None
+            return KarmaManager().count(self.creator, type='points')
+        except RedisError as e:
+            statsd.incr('redis.errror')
+            log.error('Redis connection error: %s' % e)
 
     @property
     def num_helpful_votes(self):
