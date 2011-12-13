@@ -4,9 +4,9 @@
 Vendor Library
 ==============
 
-To help make setup faster and deployment easier, we pull all of our pure-Python
-dependencies into a "vendor library" (``kitsune/vendor``) and add them to the
-path in ``manage.py``.
+To help make setup faster and deployment easier, we pull all of our
+pure-Python dependencies into a "vendor library" (``kitsune/vendor``)
+in the kitsune repository and add them to the path in ``manage.py``.
 
 The vendor library used to be optional, with a virtualenv option available, as
 well. While it's still possible to install the compiled requirements in a
@@ -108,9 +108,12 @@ Finally, add the new library to git::
     $ git add packages
     $ git ci -m "Adding version $VERSION of $LIBRARY"
 
-**Caveat developer!** Sometimes a library has dependencies that are already
-installed in the vendor repo. You may need to remove several of them to make
-everything work easily.
+
+.. warning::
+
+   **Caveat developer!** Sometimes a library has dependencies that are
+   already installed in the vendor repo. You may need to remove
+   several of them to make everything work easily.
 
 
 Adding a Library from PyPI
