@@ -404,6 +404,9 @@ def locale_discussions(request):
     desc_toggle = 0 if desc else 1
 
     threads_ = sort_threads(threads, sort, desc)
+
+    # Ignore sticky-ness:
+    threads_ = threads_.order_by('-last_post__created')
     threads_ = paginate(request, threads_,
                         per_page=kbforums.THREADS_PER_PAGE)
     is_watching_locale = (request.user.is_authenticated() and
@@ -413,4 +416,3 @@ def locale_discussions(request):
                         {'locale_name': locale_name, 'threads': threads_,
                          'desc_toggle': desc_toggle,
                          'is_watching_locale': is_watching_locale})
-
