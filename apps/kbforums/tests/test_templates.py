@@ -256,7 +256,6 @@ class ThreadsTemplateTests(KBForumTestCase):
     def test_all_locale_discussions(self):
         """Start or stop watching all discussions in a locale."""
         self.client.login(username='rrosario', password='testpass')
-        doc = Document.objects.all()[0]
         next_url = reverse('wiki.locale_discussions')
         # Watch locale.
         response = post(self.client, 'wiki.discuss.watch_locale',
@@ -265,8 +264,16 @@ class ThreadsTemplateTests(KBForumTestCase):
         # Stop watching locale.
         response = post(self.client, 'wiki.discuss.watch_locale',
                         {'watch': 'no', 'next': next_url})
-        self.assertContains(response,
-                            'Watch this locale')
+        self.assertContains(response, 'Watch this locale')
+
+    def test_locale_discussions_ignores_sticky(self):
+        """Sticky flag is ignored in locale discussions view"""
+        self.client.login(username='rrosario', password='testpass')
+        response = post(self.client, 'wiki.locale_discussions')
+        eq_(200, response.status_code)
+        doc = pq(response.content)
+        title = doc('ol.threads li div.title a:first').text()
+        assert title.startswith('A thread with a very very long')
 
 
 class NewThreadTemplateTests(KBForumTestCase):
