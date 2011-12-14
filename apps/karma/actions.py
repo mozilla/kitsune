@@ -14,8 +14,6 @@ class KarmaAction(object):
     action_type = None  # For example 'first-answer'.
     points = 0  # Number of points the action is worth.
 
-    objects = KarmaManager()
-
     def __init__(self, user, day=date.today()):
         if not waffle.switch_is_active('karma'):
             return

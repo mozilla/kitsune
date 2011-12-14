@@ -2,7 +2,7 @@ import logging
 
 from django.conf import settings
 
-import statsd
+from statsd import statsd
 
 from sumo.redis_utils import redis_client, RedisError
 from wiki.models import Document

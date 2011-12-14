@@ -5,7 +5,7 @@ import logging
 from django.contrib.auth.models import User
 
 from redis.exceptions import ConnectionError
-import statsd
+from statsd import statsd
 
 from sumo.redis_utils import redis_client, RedisError
 
@@ -223,7 +223,7 @@ class KarmaManager(object):
         today = date.today()
         dates = []
         for r in range(-1 * num_months, 0):
-            dates.append(today + relativedelta(months=r+1))
+            dates.append(today + relativedelta(months=r + 1))
         counts = self.redis.hmget(
             hash_key(userid),
             ['{t}:{y}-{m:02d}'.format(t=type, y=d.year, m=d.month) for
