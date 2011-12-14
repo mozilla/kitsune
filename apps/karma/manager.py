@@ -5,6 +5,7 @@ import logging
 from django.contrib.auth.models import User
 
 from redis.exceptions import ConnectionError
+import statsd
 
 from sumo.redis_utils import redis_client, RedisError
 
@@ -26,6 +27,7 @@ def _handle_redis_errors(func):
         try:
             return func(*args, **kwargs)
         except ConnectionError as e:
+            statsd.incr('redis.errror')
             log.error('Redis connection error: %s' % e)
             return None
     return wrapper
@@ -42,6 +44,7 @@ class KarmaManager(object):
             try:
                 redis = redis_client(name='karma')
             except RedisError as e:
+                statsd.incr('redis.errror')
                 log.error('Redis error: %s' % e)
         self.redis = redis
 
