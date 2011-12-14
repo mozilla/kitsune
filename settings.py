@@ -45,6 +45,9 @@ SLAVE_DATABASES = []
 #CACHE_BACKEND = 'caching.backends.memcached://localhost:11211'
 #CACHE_PREFIX = 'sumo:'
 
+# Setting this to the Waffle version.
+WAFFLE_CACHE_PREFIX = 'w0.7.7a:'
+
 # Addresses email comes from
 DEFAULT_FROM_EMAIL = 'notifications@support.mozilla.com'
 SERVER_EMAIL = 'server-error@support.mozilla.com'
