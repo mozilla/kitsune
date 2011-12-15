@@ -551,12 +551,8 @@ MINIFY_BUNDLES = {
         ),
         'messages': (
             'js/markup.js',
-            'js/libs/jquery.ui.core.js',
-            'js/libs/jquery.ui.widget.js',
-            'js/libs/jquery.ui.position.js',
-            'js/libs/jquery.ui.menu.js',
-            'js/libs/jquery.ui.autocomplete.js',
             'js/libs/jquery.autoresize.js',
+            'js/libs/jquery.tokeninput.js',
             'js/users.autocomplete.js',
             'js/ajaxpreview.js',
             'js/messages.js',
