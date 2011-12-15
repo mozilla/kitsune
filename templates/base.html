@@ -1,6 +1,6 @@
 {# vim: set ts=2 et sts=2 sw=2: #}
 {% from 'includes/common_macros.html' import search_box, aux_nav with context %}
-{% from 'includes/sidebar_modules.html' import quick_links, for_contributors %}
+{% from 'includes/sidebar_modules.html' import for_contributors %}
 {% if not top_link %}
   {% set top_link = url('home') %}
 {% endif %}
@@ -133,24 +133,43 @@
   {% block outer_side %}
     <div id="side">
       {% block side_top %}{% endblock %}
-      {{ quick_links(request.locale == settings.WIKI_DEFAULT_LANGUAGE) }}
+      <nav id="quick-links">
+        <ul>
+          {% block quick_links %}
+            <li class="aaq">
+              {% if request.locale == settings.WIKI_DEFAULT_LANGUAGE %}
+                {% set ask_url = url('questions.new_question') %}
+              {% else %}
+                {% set ask_url = url('wiki.document', 'ask') %}
+              {% endif %}
+              {% if waffle.flag('editing-tools-show-hide') %}
+                <a href="{{ ask_url }}">{{ _('Ask the community <mark>Support Forum</mark>') }}</a>
+              {% else %}
+                <a href="{{ ask_url }}">{{ _('Ask a Question') }}</a>
+              {% endif %}
+            </li>
+          {% endblock %}
+        </ul>
+      </nav>
       {% block side %}{% endblock %}
       {{ for_contributors(request, user, settings.WIKI_DEFAULT_LANGUAGE) }}
       <div class="sd-module promos">
         {% block side_promos %}
-          <section id="want-to-get-involved">
-            <h1>{{ _('Be <mark>Awesome</mark>')|safe }}</h1>
-            <div class="img">
-              <a href="{{ url('wiki.document', 'superheroes-wanted') }}">
-                <img src="{{ settings.MEDIA_URL }}img/promo.sumo.png" alt="" />
-              </a>
-            </div>
-            <p>
-              {% trans %}Did you know that Firefox Help is powered by volunteer
-                superheroes all around the world?{% endtrans %}
-            </p>
-            <a href="{{ url('wiki.document', 'superheroes-wanted') }}">{{ _('Grab your cape and join us &raquo;')|safe }}</a>
-          </section>
+          {% if not waffle.flag('editing-tools-show-hide') %}
+            <section id="want-to-get-involved">
+              <h1>{{ _('Be <mark>Awesome</mark>')|safe }}</h1>
+              <div class="img">
+                <a href="{{ url('wiki.document', 'superheroes-wanted') }}">
+                  <img src="{{ settings.MEDIA_URL }}img/promo.sumo.png" alt="" />
+                </a>
+              </div>
+              <p>
+                {% trans %}Did you know that Firefox Help is powered by volunteer
+                  superheroes all around the world?{% endtrans %}
+              </p>
+              <a href="{{ url('wiki.document', 'superheroes-wanted') }}">{{ _('Grab your cape and join us &raquo;')|safe }}</a>
+            </section>
+          {% endif %}
           {% if not hide_plugin_check %}
             <section id="check-your-plugins">
               <h1>{{ _('Check your <mark>plugins</mark>')|safe }}</h1>

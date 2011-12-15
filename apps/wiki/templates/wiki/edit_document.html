@@ -81,5 +81,7 @@
 
 {% block side_top %}
   {{ document_tabs(document, document.parent, user, 'edit', settings) }}
-  {{ document_watch(document, user) }}
+  {% if not waffle.flag('editing-tools-show-hide') %}
+    {{ document_watch(document, user) }}
+  {% endif %}
 {% endblock %}

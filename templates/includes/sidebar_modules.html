@@ -20,18 +20,3 @@
     </section>
   {% endif %}
 {%- endmacro %}
-
-{% macro quick_links(is_default_locale) -%}
-  <nav id="quick-links">
-    <ul>
-      <li class="aaq">
-        {% if is_default_locale %}
-          {% set ask_url = url('questions.new_question') %}
-        {% else %}
-          {% set ask_url = url('wiki.document', 'ask') %}
-        {% endif %}
-        <a href="{{ ask_url }}">{{ _('Ask a Question') }}</a>
-      </li>
-    </ul>
-  </nav>
-{%- endmacro %}
