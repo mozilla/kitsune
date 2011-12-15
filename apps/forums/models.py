@@ -312,5 +312,6 @@ def discussion_searcher(request):
 
     return (searcher(request)(index_model).weight(title=2, content=1)
                                           .group_by('thread_id', '-@group')
-                                          .query_fields('title', 'content')
+                                          .query_fields('title__text',
+                                                        'content__text')
                                           .order_by('created'))

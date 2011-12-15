@@ -10,7 +10,6 @@ import json
 from django.conf import settings
 from django.contrib.sites.models import Site
 from django.http import QueryDict
-from django.test.client import RequestFactory
 from django.utils.http import urlquote
 
 import jingo
@@ -22,6 +21,7 @@ from pyquery import PyQuery as pq
 from forums.models import Thread, discussion_searcher
 from questions.models import question_searcher
 import search as constants
+from search.tests import dummy_request
 from search.utils import (start_sphinx, stop_sphinx, reindex,
                           clean_excerpt)
 from sumo.tests import LocalizingClient, TestCase
@@ -29,8 +29,6 @@ from sumo.urlresolvers import reverse
 from wiki.models import wiki_searcher
 
 
-# No reason to use test_utils' RequestFactory
-dummy_request = RequestFactory().get('/')
 discussion_searcher = partial(discussion_searcher, dummy_request)
 wiki_searcher = partial(wiki_searcher, dummy_request)
 question_searcher = partial(question_searcher, dummy_request)

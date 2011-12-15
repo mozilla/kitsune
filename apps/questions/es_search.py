@@ -18,12 +18,14 @@ def setup_mapping(index):
         'properties': {
             'id': {TYPE: LONG},
             'question_id': {TYPE: LONG},
-            'title': {TYPE: STRING, INDEX: ANALYZED, ANALYZER: SNOWBALL},
+            'title': {TYPE: STRING, ANALYZER: SNOWBALL},
             'question_content':
-                {TYPE: STRING, INDEX: ANALYZED, ANALYZER: SNOWBALL,
+                {TYPE: STRING, ANALYZER: SNOWBALL,
+                # TODO: Stored because originally, this is the only field we
+                # were excerpting on. Standardize one way or the other.
                  STORE: YES, TERM_VECTOR: WITH_POS_OFFSETS},
             'answer_content':
-                {TYPE: STRING, INDEX: ANALYZED, ANALYZER: SNOWBALL},
+                {TYPE: STRING, ANALYZER: SNOWBALL},
             'replies': {TYPE: INTEGER},
             'is_solved': {TYPE: BOOLEAN},
             'is_locked': {TYPE: BOOLEAN},

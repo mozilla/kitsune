@@ -2,14 +2,16 @@ import uuid
 
 import elasticutils
 from nose.tools import eq_
+from waffle.models import Flag
 
-from questions.tests import ESTestCase
-from questions.models import Question, Answer
+from questions.models import Question, Answer, question_searcher
+from questions.tests import ESTestCase, question
+from search.tests import dummy_request
 from sumo.tests import LocalizingClient
 from sumo.urlresolvers import reverse
 
 
-class TestQuestionUpdate(ESTestCase):
+class QuestionUpdateTests(ESTestCase):
     def test_added(self):
         title = str(uuid.uuid4())
         question = Question(title=title,
@@ -93,3 +95,12 @@ class TestQuestionUpdate(ESTestCase):
         self.refresh()
 
         eq_(elasticutils.S(Question).count(), original_count)
+
+
+class QuestionSearchTests(ESTestCase):
+    """Tests about searching for questions"""
+    def test_case_insensitive_search(self):
+        """Ensure the default searcher is case insensitive."""
+        Flag.objects.create(name='elasticsearch', everyone=True)
+        result = question_searcher(dummy_request).query('LOLRUS')
+        assert len(result) > 0
