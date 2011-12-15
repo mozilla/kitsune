@@ -2,6 +2,14 @@
  * Knowledge Base CSS
  */
 
+#doc-tabs {
+    display: none;
+}
+
+.show-editing-tools #doc-tabs {
+    display: block;
+}
+
 /* Document view */
 #wiki-doc > h1 {
     margin-bottom: 5px;

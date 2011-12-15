@@ -824,6 +824,34 @@ div.support-search button.img-submit {
     padding: 5px 30px 5px 0;
 }
 
+#quick-links li.edit a {
+    background: transparent url(../img/icons.actions.png) no-repeat 6px -18px;
+}
+
+.html-rtl #quick-links li.email a {
+    background-position: 180px -18px;
+}
+
+#quick-links li.edit a.hide {
+    display: none;
+}
+
+.show-editing-tools #quick-links li.edit a.show {
+    display: none;
+}
+
+.show-editing-tools #quick-links li.edit a.hide {
+    display: block;
+}
+
+#quick-links li.email div {
+    background: transparent url(../img/icons.actions.png) no-repeat 7px -42px;
+}
+
+.html-rtl #quick-links li.email div {
+    background-position: 180px -42px;
+}
+
 #quick-links li.aaq a {
     background: transparent url(../img/wiki/icons.quicklinks.png) no-repeat 6px -44px;
 }
@@ -838,6 +866,11 @@ div.support-search button.img-submit {
 
 .html-rtl #quick-links li.aaq.active a {
     background-position: 180px -144px;
+}
+
+#quick-links li.aaq a mark {
+    display: block;
+    font-weight: bold;
 }
 
 .sd-module {
@@ -861,7 +894,6 @@ div.support-search button.img-submit {
 
 .sd-module h1 {
     color: #32559b;
-    font-family: Georgia,serif;
     font-size: 20px;
     font-style: italic;
 }
@@ -1170,8 +1202,17 @@ article.main div.submit {
     margin: 20px 20px 0 0;
 }
 
+#quick-links #doc-watch {
+    margin: 0;
+    padding: 5px 0 5px 30px;
+}
+
 #doc-watch input {
     margin: 0 0 10px;
+}
+
+#quick-links #doc-watch input {
+    margin: 0;
 }
 
 /*----------------------------------
