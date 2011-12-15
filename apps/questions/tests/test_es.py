@@ -1,11 +1,12 @@
 import uuid
+import json
 
 import elasticutils
 from nose.tools import eq_
 from waffle.models import Flag
 
 from questions.models import Question, Answer, question_searcher
-from questions.tests import ESTestCase, question
+from questions.tests import ESTestCase
 from search.tests import dummy_request
 from sumo.tests import LocalizingClient
 from sumo.urlresolvers import reverse
@@ -104,3 +105,28 @@ class QuestionSearchTests(ESTestCase):
         Flag.objects.create(name='elasticsearch', everyone=True)
         result = question_searcher(dummy_request).query('LOLRUS')
         assert len(result) > 0
+
+
+class ElasticSearchViewTest(ESTestCase):
+    def test_search_views_with_elasticsearch(self):
+        """This tests to make sure search view works.
+
+        Amongst other things, this tests to make sure excerpting
+        doesn't crash when elasticsearch flag is set to True.  This
+        means that we're calling excerpt on the S that the results
+        came out of.
+
+        """
+        Flag.objects.create(name='elasticsearch', everyone=True)
+
+        c = LocalizingClient()
+
+        response = c.get(reverse('search'), {
+            'format': 'json', 'q': 'audio', 'a': 1
+        })
+        eq_(200, response.status_code)
+
+        # Make sure there are more than 0 results.  Otherwise we don't
+        # really know if it slid through the excerpting code.
+        content = json.loads(response.content)
+        self.assertGreater(content['total'], 0)
