@@ -289,16 +289,18 @@ def search(request, template=None):
             begin = documents_dict[type_][0]
             end = documents_dict[type_][-1] + 1
 
+            search_s = search_s[begin:end]
+
             # Update the original symbols with the sliced versions of
             # the S so that, when we iterate over them in the
             # following list comp, we hang onto the version that does
             # the query, so we can call excerpt() on it later.
             if type_ == 'wiki':
-                wiki_s = search_s = search_s[begin:end]
-            elif type == 'question':
-                question_s = search_s = search_s[begin:end]
-            elif type == 'discussion':
-                discussion_s = search_s = search_s[begin:end]
+                wiki_s = search_s
+            elif type_ == 'question':
+                question_s = search_s
+            elif type_ == 'discussion':
+                discussion_s = search_s
 
             docs_for_page += [(type_, doc) for doc in search_s]
 
