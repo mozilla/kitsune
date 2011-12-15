@@ -277,17 +277,17 @@ def search(request, template=None):
             documents_dict.setdefault(doc[0], []).append(doc[1][0])
 
         docs_for_page = []
-        for type_, search_s in [('wiki', wiki_s),
+        for kind, search_s in [('wiki', wiki_s),
                                 ('question', question_s),
                                 ('discussion', discussion_s)]:
-            if type_ not in documents_dict:
+            if kind not in documents_dict:
                 continue
 
             # documents_dict[type_] is a list of indexes--one for each
             # object id search result for that type_.  We use the values
             # at the beginning and end of the list for slice boundaries.
-            begin = documents_dict[type_][0]
-            end = documents_dict[type_][-1] + 1
+            begin = documents_dict[kind][0]
+            end = documents_dict[kind][-1] + 1
 
             search_s = search_s[begin:end]
 
@@ -295,14 +295,14 @@ def search(request, template=None):
             # the S so that, when we iterate over them in the
             # following list comp, we hang onto the version that does
             # the query, so we can call excerpt() on it later.
-            if type_ == 'wiki':
+            if kind == 'wiki':
                 wiki_s = search_s
-            elif type_ == 'question':
+            elif kind == 'question':
                 question_s = search_s
-            elif type_ == 'discussion':
+            elif kind == 'discussion':
                 discussion_s = search_s
 
-            docs_for_page += [(type_, doc) for doc in search_s]
+            docs_for_page += [(kind, doc) for doc in search_s]
 
         results = []
         for i, docinfo in enumerate(docs_for_page):
