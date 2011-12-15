@@ -1,5 +1,5 @@
 import elasticutils
-import pprint
+from pprint import pprint
 import pyes
 
 from django.conf import settings
@@ -48,14 +48,7 @@ def es_reindex(percent=100):
     # Go through and delete, then recreate the indexes.
     for index in settings.ES_INDEXES.values():
         es.delete_index_if_exists(index)
-
-        try:
-            es.create_index_if_missing(index)
-        except pyes.exceptions.ElasticSearchException:
-            # TODO: Why would this throw an exception?  We should handle
-            # it.  Maybe Elastic isn't running or something in which case
-            # proceeding is an exercise in futility.
-            pass
+        es.create_index_if_missing(index)  # Should always be missing.
 
     # Reindex questions.
     import questions.es_search
@@ -84,7 +77,7 @@ def es_whazzup():
     es = elasticutils.get_es()
 
     try:
-        pprint.pprint(es.cluster_stats())
+        pprint(es.cluster_stats())
     except pyes.urllib3.connectionpool.MaxRetryError:
         print ('ERROR: Your elasticsearch process is not running or '
                'ES_HOSTS is set wrong in your settings_local.py file.')
@@ -96,9 +89,9 @@ def es_whazzup():
     except pyes.exceptions.IndexMissingException:
         print 'total questions: 0'
     try:
-        print 'total forum posts:', elasticutils.S(Post).count()
+        print 'total forum threads:', elasticutils.S(Thread).count()
     except pyes.exceptions.IndexMissingException:
-        print 'total forum posts: 0'
+        print 'total forum threads: 0'
     try:
         print 'total wiki docs:', elasticutils.S(Document).count()
     except pyes.exceptions.IndexMissingException:
