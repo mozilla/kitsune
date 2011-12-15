@@ -18,7 +18,9 @@
     {% endif %}
   </form>
   <ol class="threads-columns {% if not desc_toggle %}desc{% endif %}">
-    <li class="watch">{{ _('Watch') }}</li>
+    {% if user.is_authenticated() %}
+      <li class="watch">{{ _('Watch') }}</li>
+    {% endif %}
     <li class="title">{{ _('Title') }}</li>
     <li class="author{% if sort == 3 %} sort{% endif %}"><a href="{{ request.path|urlparams(sort=3, desc=desc_toggle) }}">{{ _('Author') }}</a></li>
     <li class="replies{% if sort == 4 %} sort{% endif %}"><a href="{{ request.path|urlparams(sort=4, desc=desc_toggle) }}">{{ _('Replies') }}</a></li>
@@ -28,9 +30,9 @@
     <ol class="threads">
     {% for thread in threads.object_list %}
       <li>
-        <div class="watch">
-            {% if user.is_authenticated() %}
-              <form class="watch-form" action="{{ url('wiki.discuss.watch_thread', thread.document.slug, thread.id) }}" method="post">
+        {% if user.is_authenticated() %}
+          <div class="watch">
+            <form class="watch-form" action="{{ url('wiki.discuss.watch_thread', thread.document.slug, thread.id) }}" method="post">
                 {{ csrf() }}
                 {% if thread.watches.filter(user=request.user) %}
                   {% set watch = _('Stop watching') %}
@@ -42,8 +44,8 @@
                   <input type="image" alt="{{ watch }}" title="{{ watch }}" class="watchtoggle off" src="{{ MEDIA_URL }}img/forums/watch.png"/>
                 {% endif %}
               </form>
-            {% endif %}
-        </div>
+          </div>
+        {% endif %}
         <div class="title">
           {% trans thread_url=thread.get_absolute_url(),
                    thread_title=thread.title,
@@ -61,7 +63,7 @@
           </a><br/>
           {{ _('by <a class="username" href="{profile_url}">{username}</a>')|fe(profile_url=profile_url(thread.last_post.creator), username=thread.last_post.creator.username) }}
         </div>
-      <hr/>
+        <hr/>
       </li>
     {% endfor %}
     </ol>
