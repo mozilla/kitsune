@@ -35,6 +35,8 @@
             initNeedsChange();
         }
 
+        initEditingTools();
+
         initDiffPicker();
         initDiffToggle();
 
@@ -443,7 +445,22 @@
             });
             return false
         });
+    }
 
+    function initEditingTools() {
+        if (waffle.flag('editing-tools-show-hide')) {
+            // Init the show/hide links for editing tools
+            $('#quick-links .edit a').click(function(ev) {
+                ev.preventDefault();
+                $('#doc-tabs').slideToggle('fast');
+
+                if ($(this).is('.show')) {
+                    $.cookie('show-editing-tools', 1, {path: '/'});
+                } else {
+                    $.cookie('show-editing-tools', null, {path: '/'});
+                }
+            });
+        }
     }
 
     $(document).ready(init);
