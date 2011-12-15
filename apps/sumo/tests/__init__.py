@@ -79,8 +79,6 @@ class ElasticTestMixin(object):
         if getattr(settings, 'ES_HOSTS', None) is None:
             raise SkipTest
 
-        settings.ES_LIVE_INDEXING = True
-
         # Delete test indexes if they exist.
         es = get_es()
         for index in settings.ES_INDEXES.values():
@@ -89,6 +87,18 @@ class ElasticTestMixin(object):
         from search.es_utils import es_reindex
 
         es_reindex()
+
+        # TODO: This is kind of bad.  If setup_indexes gets called in
+        # a setUp and that setUp at some point throws an exception, we
+        # could end up in a situation where setUp throws an exception,
+        # so tearDown doesn't get called and we never set
+        # ES_LIVE_INDEXING to False and thus ES_LIVE_INDEXING is True
+        # for a bunch of tests it shouldn't be true for.
+        #
+        # For settings like this, it's better to mock it in the class
+        # because the mock will set it back regardless of whether the
+        # test fails.
+        settings.ES_LIVE_INDEXING = True
 
     def teardown_indexes(self):
         es = get_es()
