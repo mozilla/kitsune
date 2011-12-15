@@ -82,7 +82,12 @@ def es_whazzup():
 
     es = elasticutils.get_es()
 
-    pprint.pprint(es.cluster_stats())
+    try:
+        pprint.pprint(es.cluster_stats())
+    except pyes.urllib3.connectionpool.MaxRetryError:
+        print ('ERROR: Your elasticsearch process is not running or '
+               'ES_HOSTS is set wrong in your settings_local.py file.')
+        return
 
     print 'Totals:'
     try:
