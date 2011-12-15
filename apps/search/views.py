@@ -277,30 +277,43 @@ def search(request, template=None):
             documents_dict.setdefault(doc[0], []).append(doc[1][0])
 
         docs_for_page = []
-        for type_, search_s in [('wiki', wiki_s),
+        for kind, search_s in [('wiki', wiki_s),
                                 ('question', question_s),
                                 ('discussion', discussion_s)]:
-            if type_ not in documents_dict:
+            if kind not in documents_dict:
                 continue
 
             # documents_dict[type_] is a list of indexes--one for each
             # object id search result for that type_.  We use the values
             # at the beginning and end of the list for slice boundaries.
-            begin = documents_dict[type_][0]
-            end = documents_dict[type_][-1] + 1
+            begin = documents_dict[kind][0]
+            end = documents_dict[kind][-1] + 1
 
-            # Update the original symbols with the sliced versions of
-            # the S so that, when we iterate over them in the
-            # following list comp, we hang onto the version that does
-            # the query, so we can call excerpt() on it later.
-            if type_ == 'wiki':
-                wiki_s = search_s = search_s[begin:end]
-            elif type == 'question':
-                question_s = search_s = search_s[begin:end]
-            elif type == 'discussion':
-                discussion_s = search_s = search_s[begin:end]
+            search_s = search_s[begin:end]
 
-            docs_for_page += [(type_, doc) for doc in search_s]
+            if waffle.flag_is_active(request, 'elasticsearch'):
+                # If we're doing elasticsearch, then we need to update
+                # the _s variables to point to the sliced versions of
+                # S so that, when we iterate over them in the
+                # following list comp, we hang onto the version that
+                # does the query, so we can call excerpt() on it
+                # later.
+                #
+                # We only need to do this with elasticsearch.  For Sphinx,
+                # search_s at this point is an ObjectResults and not an S
+                # because we've already acquired object_ids on it.  Thus
+                # if we update the _s variables, we'd be pointing to the
+                # ObjectResults and not the S and then excerpting breaks.
+                #
+                # Ugh.
+                if kind == 'wiki':
+                    wiki_s = search_s
+                elif kind == 'question':
+                    question_s = search_s
+                elif kind == 'discussion':
+                    discussion_s = search_s
+
+            docs_for_page += [(kind, doc) for doc in search_s]
 
         results = []
         for i, docinfo in enumerate(docs_for_page):

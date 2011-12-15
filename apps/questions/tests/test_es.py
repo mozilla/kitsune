@@ -1,11 +1,11 @@
 import uuid
+import json
 
 import elasticutils
 from nose.tools import eq_
 
-from questions.tests import ESTestCase
 from questions.models import Question, Answer
-from sumo.tests import LocalizingClient
+from questions.tests import ESTestCase
 from sumo.urlresolvers import reverse
 
 
