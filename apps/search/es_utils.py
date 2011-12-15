@@ -30,7 +30,7 @@ WITH_POS_OFFSETS = 'with_positions_offsets'
 
 
 def get_index(model):
-    """Returns the index for this model."""
+    """Returns the index name for this model."""
     return (settings.ES_INDEXES.get(model._meta.db_table)
             or settings.ES_INDEXES['default'])
 
@@ -41,6 +41,7 @@ def es_reindex(percent=100):
     :arg percent: Defaults to 100.  Allows you to specify how much of
         each doctype you want to index.  This is useful for
         development where doing a full reindex takes an hour.
+
     """
     es = elasticutils.get_es()
 
