@@ -47,6 +47,9 @@ ol.threads-columns.desc li.sort {
 /* End sorting */
 
 /* Column widths */
+#all-threads .watch {
+    width: 40px;
+}
 ol.forums-columns li.name,
 ol.forums div.name {
     width: 64.5%;
