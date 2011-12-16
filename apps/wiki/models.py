@@ -137,15 +137,16 @@ FIREFOX_VERSIONS = tuple(chain(*[options for label, options in
                                  GROUPED_FIREFOX_VERSIONS]))
 
 # OSes used to filter articles and declare {for} sections:
-OsMetaData = namedtuple('OsMetaData', 'id, name, slug, is_default')
+OsMetaData = namedtuple('OsMetaData', 'id, name, slug, show_in_ui, '
+                        'is_default')
 GROUPED_OPERATING_SYSTEMS = (
     ((_lazy(u'Desktop OS:'), 'desktop'), (
-        OsMetaData(1, _lazy(u'Windows'), 'win', True),
-        OsMetaData(2, _lazy(u'Mac OS X'), 'mac', False),
-        OsMetaData(3, _lazy(u'Linux'), 'linux', False))),
+        OsMetaData(1, _lazy(u'Windows'), 'win', True, True),
+        OsMetaData(2, _lazy(u'Mac OS X'), 'mac', True, False),
+        OsMetaData(3, _lazy(u'Linux'), 'linux', True, False))),
     ((_lazy(u'Mobile OS:'), 'mobile'), (
-        OsMetaData(5, _lazy(u'Android'), 'android', True),
-        OsMetaData(4, _lazy(u'Maemo'), 'maemo', False))))
+        OsMetaData(5, _lazy(u'Android'), 'android', True, True),
+        OsMetaData(4, _lazy(u'Maemo'), 'maemo', False, False))))
 
 # Flattened
 OPERATING_SYSTEMS = tuple(chain(*[options for label, options in
