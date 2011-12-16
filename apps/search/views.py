@@ -291,16 +291,27 @@ def search(request, template=None):
 
             search_s = search_s[begin:end]
 
-            # Update the original symbols with the sliced versions of
-            # the S so that, when we iterate over them in the
-            # following list comp, we hang onto the version that does
-            # the query, so we can call excerpt() on it later.
-            if kind == 'wiki':
-                wiki_s = search_s
-            elif kind == 'question':
-                question_s = search_s
-            elif kind == 'discussion':
-                discussion_s = search_s
+            if waffle.flag_is_active(request, 'elasticsearch'):
+                # If we're doing elasticsearch, then we need to update
+                # the _s variables to point to the sliced versions of
+                # S so that, when we iterate over them in the
+                # following list comp, we hang onto the version that
+                # does the query, so we can call excerpt() on it
+                # later.
+                #
+                # We only need to do this with elasticsearch.  For Sphinx,
+                # search_s at this point is an ObjectResults and not an S
+                # because we've already acquired object_ids on it.  Thus
+                # if we update the _s variables, we'd be pointing to the
+                # ObjectResults and not the S and then excerpting breaks.
+                #
+                # Ugh.
+                if kind == 'wiki':
+                    wiki_s = search_s
+                elif kind == 'question':
+                    question_s = search_s
+                elif kind == 'discussion':
+                    discussion_s = search_s
 
             docs_for_page += [(kind, doc) for doc in search_s]
 
