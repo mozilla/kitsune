@@ -111,6 +111,11 @@ div.search-count {
     padding: 0.2em 0 1em;
 }
 
+p.aaq {
+    font-size: 16px;
+    margin: 40px 0 0;
+}
+
 /* Bug 527859 - Add search form to top and bottom of results */
 div.search-refine {
     margin: .5em 0;
