@@ -34,6 +34,7 @@
     font-size: 13px;
     min-width: 90px;
     padding: 2px 0 2px 20px;
+    text-transform: capitalize;
 }
 
 .html-rtl #support-for input {
@@ -90,6 +91,7 @@
     cursor: pointer;
     padding: 2px 0 2px 15px;
     position: relative;
+    text-transform: capitalize;
 }
 
 .html-rtl #support-for div.selectbox-wrapper li {
