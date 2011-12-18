@@ -1,6 +1,7 @@
 from django.contrib.auth.models import User
 from django.db.models import Q
 from django.views.decorators.http import require_GET
+from users.models import Profile
 
 from statsd import statsd
 
@@ -19,12 +20,13 @@ def usernames(request):
         return []
     if not request.user.is_authenticated():
         return []
-    # Eventually, when display name becomes more prominent, we'll want to
-    # include that. Don't just OR this with Q(profile__name__startswith=pre).
-    # That way lies horrid performance.
     with statsd.timer('users.api.usernames.search'):
-        users = User.objects.exclude(
-            ~Q(username__istartswith=pre),
-            ~Q(email__istartswith=pre)
-            ).values('username', 'email')[:10]
-        return list(users)
+        profiles = Profile.objects.filter(
+            Q(name__istartswith=pre)
+            ).values_list('user_id', flat=True)
+        users = User.objects.filter(
+            Q(username__istartswith=pre) | Q(id__in=profiles),
+            )[:10]
+        return [{'username':u.username,
+                'display_name':Profile.objects.get_or_create(user=u)[0].name}
+                for u in users]

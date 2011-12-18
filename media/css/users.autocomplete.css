@@ -122,3 +122,6 @@ div.token-input-dropdown-facebook ul li.token-input-selected-dropdown-item-faceb
     color: #fff;
 }
 
+.display_name {
+   padding-bottom: 5px;
+}

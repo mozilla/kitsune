@@ -24,15 +24,16 @@ function init() {
     $('input.user-autocomplete').tokenInput($('body').data('usernames-api'),
     {
         theme: "facebook",
-        hintText: "Search for a user...",
+        hintText: gettext("Search for a user..."),
         queryParam: "term",
         propertyToSearch: "username",
         tokenValue: "username",
         resultsFormatter: function(item){
         var term = $("#token-input-id_to").val()
-            return ("<li><div style='display: inline-block; padding-left: 10px;'><div class='username'>" +
-                    item.username +  "</div><div class='email'>" +
-                    wrapTerm(item.email, term) + "</div></div></li>")
+            return ("<li><div style='display: inline-block; padding-left: 10px;'>" +
+                    "<div class='username'>" +
+                    item.username +  "</div><div class='display_name'>" +
+                    wrapTerm(item.display_name || '', term) + "</div></div></li>")
         },
 
     });
