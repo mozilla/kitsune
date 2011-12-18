@@ -113,6 +113,13 @@
 {% endblock %}
 
 {% block side %}
+  <div class="side-section">
+      <ul class="actions">
+        <li class="rss">
+          <a href="{{ url('questions.feed') }}">{{ _("Subscribe to feed") }}</a>
+        </li>
+      </ul>
+  </div>
   <a id="toggle-tag-filter" class="off" href="#tag-filter">{{ _('Filter Questions') }}</a>
   <section id="tag-filter" class="sd-module">
     <h1><mark>{{ _('Filter') }}</mark></h1>
