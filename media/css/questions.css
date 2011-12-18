@@ -371,6 +371,11 @@ div.user-section {
     width: 180px;
 }
 
+#side div.side-section {
+    margin-bottom: 10px;
+    padding-top: 2px;
+}
+
 div.avatar a {
     display: inline-block;
     padding: 4px;
