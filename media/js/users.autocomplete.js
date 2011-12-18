@@ -30,10 +30,11 @@ function init() {
         tokenValue: "username",
         resultsFormatter: function(item){
         var term = $("#token-input-id_to").val()
-            return ("<li><div style='display: inline-block; padding-left: 10px;'>" +
-                    "<div class='username'>" +
-                    item.username +  "</div><div class='display_name'>" +
-                    wrapTerm(item.display_name || '', term) + "</div></div></li>")
+            if (item.display_name) {
+                return ("<li><div style='display: inline-block; padding-left: 10px;'>" +
+                        wrapTerm(item.display_name, term) + " [" +item.username +  "]</div></div></li>")
+            }
+            return ("<li><div style='display: inline-block; padding-left: 10px;'>" + item.username + "</div></li>")
         },
 
     });
