@@ -111,9 +111,10 @@ class ElasticSearchViewTest(ESTestCase):
     def test_search_views_with_elasticsearch(self):
         """This tests to make sure search view works.
 
-        Amongst other things, this tests to make sure excerpting works
-        when elasticsearch flag is set to True.  This means that we're
-        calling excerpt on the S that the results came out of.
+        Amongst other things, this tests to make sure excerpting
+        doesn't crash when elasticsearch flag is set to True.  This
+        means that we're calling excerpt on the S that the results
+        came out of.
 
         """
         Flag.objects.create(name='elasticsearch', everyone=True)
