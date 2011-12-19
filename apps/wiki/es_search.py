@@ -3,8 +3,8 @@ import logging
 import pyes
 import time
 
-from search.es_utils import (TYPE, INTEGER, STRING, INDEX, ANALYZED, ANALYZER,
-                             SNOWBALL, BOOLEAN, DATE, get_index)
+from search.es_utils import (TYPE, INTEGER, STRING, INDEX, NOTANALYZED,
+                             ANALYZER, SNOWBALL, BOOLEAN, DATE, get_index)
 
 
 log = logging.getLogger('k.wiki.es_search')
@@ -16,18 +16,19 @@ def setup_mapping(index):
     mapping = {
         'properties': {
             'id': {TYPE: INTEGER},
-            'title': {TYPE: STRING, INDEX: ANALYZED, ANALYZER: SNOWBALL},
-            'locale': {TYPE: STRING},
+            'title': {TYPE: STRING, ANALYZER: SNOWBALL},
+            'locale': {TYPE: STRING, INDEX: NOTANALYZED},
             'current': {TYPE: INTEGER},
             'parent_id': {TYPE: INTEGER},
             'content':
-                {TYPE: STRING, INDEX: ANALYZED, ANALYZER: SNOWBALL},
+                {TYPE: STRING, ANALYZER: SNOWBALL},
             'category': {TYPE: INTEGER},
             'slug': {TYPE: STRING},
             'is_archived': {TYPE: BOOLEAN},
-            'summary': {TYPE: STRING, INDEX: ANALYZED, ANALYZER: SNOWBALL},
-            'keywords': {TYPE: STRING, INDEX: ANALYZED, ANALYZER: SNOWBALL},
-            'updated': {TYPE: DATE}
+            'summary': {TYPE: STRING, ANALYZER: SNOWBALL},
+            'keywords': {TYPE: STRING, ANALYZER: SNOWBALL},
+            'updated': {TYPE: DATE},
+            'tag': {TYPE: STRING}
             }
         }
 
@@ -52,6 +53,7 @@ def extract_document(doc):
     d['category'] = doc.category
     d['slug'] = doc.slug
     d['is_archived'] = doc.is_archived
+    d['tag'] = [tag['name'] for tag in doc.tags.values()]
     if doc.current_revision:
         d['summary'] = doc.current_revision.summary
         d['keywords'] = doc.current_revision.keywords
@@ -65,7 +67,7 @@ def extract_document(doc):
     return d
 
 
-def index_doc(doc, bulk=False, force_insert=False, es=None):
+def index_doc(doc, bulk=False, force_insert=False, es=None, refresh=False):
     from wiki.models import Document
 
     if es is None:
@@ -81,6 +83,9 @@ def index_doc(doc, bulk=False, force_insert=False, es=None):
         # have a second one, that will cause everything to die.
         es.index(doc, index, doc_type=Document._meta.db_table,
                  id=doc['id'], bulk=bulk, force_insert=force_insert)
+
+    if refresh:
+        es.refresh()
 
 
 def unindex_documents(ids):

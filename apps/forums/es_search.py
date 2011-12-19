@@ -68,12 +68,13 @@ def extract_thread(thread):
 
     d['author_id'] = list(author_ids)
     d['author_ord'] = list(author_ords)
-    d['content'] = '\n\n'.join(content)
+    d['content'] = content
 
     return d
 
 
-def index_thread(thread, bulk=False, force_insert=False, es=None):
+def index_thread(thread, bulk=False, force_insert=False, es=None,
+                 refresh=False):
     from forums.models import Thread
 
     if es is None:
@@ -89,6 +90,9 @@ def index_thread(thread, bulk=False, force_insert=False, es=None):
         # have a second one, that will cause everything to die.
         es.index(thread, index, doc_type=Thread._meta.db_table,
                  id=thread['id'], bulk=bulk, force_insert=force_insert)
+
+    if refresh:
+        es.refresh()
 
 
 def unindex_threads(ids):

@@ -1,11 +1,15 @@
+from datetime import datetime
+
 from django.conf import settings
 from django.contrib.auth.models import User
 
 from nose.tools import eq_
 
-from forums.models import Thread, Post, ThreadLockedError
+from forums.models import Forum, Thread, Post, ThreadLockedError
 from forums.views import sort_threads
-from sumo.tests import get, LocalizingClient, TestCase, ElasticTestMixin
+from sumo.tests import (get, LocalizingClient, TestCase, ElasticTestMixin,
+                        with_save)
+from users.tests import user
 
 
 class ForumTestCase(TestCase):
@@ -121,12 +125,12 @@ class PostTestCase(ForumTestCase):
         """Trying to reply to a locked thread should raise an exception."""
         locked = Thread.objects.get(pk=3)
         open = Thread.objects.get(pk=2)
-        user = User.objects.get(pk=118533)
-        fn = lambda: locked.new_post(author=user, content='empty')
+        user1 = User.objects.get(pk=118533)
+        fn = lambda: locked.new_post(author=user1, content='empty')
         self.assertRaises(ThreadLockedError, fn)
 
         # This should not raise an exception.
-        open.new_post(author=user, content='empty')
+        open.new_post(author=user1, content='empty')
 
     def test_post_no_session(self):
         r = get(self.client, 'forums.new_thread',
@@ -143,3 +147,32 @@ class ThreadTestCase(ForumTestCase):
                 kwargs={'forum_slug': 'test-forum', 'thread_id': 1})
         assert(settings.LOGIN_URL in r.redirect_chain[0][0])
         eq_(302, r.redirect_chain[0][1])
+
+
+@with_save
+def forum(**kwargs):
+    if 'name' not in kwargs:
+        kwargs['name'] = u'test forum'
+    if 'slug' not in kwargs:
+        kwargs['slug'] = u'testforum'
+    return Forum(**kwargs)
+
+
+@with_save
+def thread(**kwargs):
+    defaults = dict(created=datetime.now())
+    defaults.update(kwargs)
+    if 'creator' not in kwargs and 'creator_id' not in kwargs:
+        defaults['creator'] = user(save=True)
+    if 'forum' not in kwargs and 'forum_id' not in kwargs:
+        defaults['forum'] = forum(save=True)
+    return Thread(**defaults)
+
+
+@with_save
+def post(**kwargs):
+    defaults = dict()
+    defaults.update(kwargs)
+    if 'author' not in kwargs and 'author_id' not in kwargs:
+        defaults['author'] = user(save=True)
+    return Post(**defaults)

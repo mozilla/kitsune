@@ -3,7 +3,7 @@ import logging
 import pyes
 import time
 
-from search.es_utils import (TYPE, LONG, INDEX, STRING, ANALYZED, ANALYZER,
+from search.es_utils import (TYPE, LONG, STRING, ANALYZER,
                              SNOWBALL, TERM_VECTOR, STORE, YES, BOOLEAN,
                              WITH_POS_OFFSETS, DATE, INTEGER, get_index)
 
@@ -37,6 +37,7 @@ def setup_mapping(index):
             'answer_creator': {TYPE: STRING},
             'question_votes': {TYPE: INTEGER},
             'answer_votes': {TYPE: INTEGER},
+            'tag': {TYPE: STRING}
             }
         }
 
@@ -69,8 +70,9 @@ def extract_question(question):
     question_data['question_creator'] = question.creator.username
     question_data['question_votes'] = question.num_votes_past_week
 
-    # answer_content is a \n\n delimited mish-mosh of all the
-    # answer content.
+    question_data['tag'] = [tag['name'] for tag in question.tags.values()]
+
+    # Array of strings.
     answer_content = []
 
     # has_helpful is true if at least one answer is marked as
@@ -89,7 +91,7 @@ def extract_question(question):
         answer_creator.add(ans.creator.username)
         answer_votes += ans.upvotes
 
-    question_data['answer_content'] = '\n\n'.join(answer_content)
+    question_data['answer_content'] = answer_content
     question_data['has_helpful'] = has_helpful
     question_data['answer_creator'] = list(answer_creator)
     question_data['answer_votes'] = answer_votes
@@ -97,7 +99,7 @@ def extract_question(question):
     return question_data
 
 
-def index_doc(doc, bulk=False, force_insert=False, es=None):
+def index_doc(doc, bulk=False, force_insert=False, es=None, refresh=False):
     from questions.models import Question
 
     if es is None:
@@ -113,6 +115,9 @@ def index_doc(doc, bulk=False, force_insert=False, es=None):
         # have a second one, that will cause everything to die.
         es.index(doc, index, doc_type=Question._meta.db_table,
                  id=doc['id'], bulk=bulk, force_insert=force_insert)
+
+    if refresh:
+        es.refresh()
 
 
 def unindex_questions(ids):

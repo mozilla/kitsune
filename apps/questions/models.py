@@ -503,6 +503,31 @@ class AnswerVote(ModelBase):
         VoteMetadata.objects.create(vote=self, key=key, value=value)
 
 
+@receiver(post_save, sender=AnswerVote,
+          dispatch_uid='questions.search.index.answervote.save')
+def update_answervote_in_index(sender, instance, **kw):
+    # TODO: We only need to update the helpful bit.  It's possible
+    # we could ignore all AnswerVotes that aren't helpful and if
+    # they're marked as helpful, then update the index.  Look into
+    # this.
+
+    # raw is True when saving a model exactly as presented--like when
+    # loading fixtures.  In this case we don't want to trigger.
+    if not settings.ES_LIVE_INDEXING or kw.get('raw'):
+        return
+
+    index_questions.delay([instance.answer.question_id])
+
+
+@receiver(pre_delete, sender=AnswerVote,
+          dispatch_uid='questions.search.index.answervote.delete')
+def remove_answervote_from_index(sender, instance, **kw):
+    if not settings.ES_LIVE_INDEXING:
+        return
+
+    index_questions.delay([instance.answer.question_id])
+
+
 class VoteMetadata(ModelBase):
     """Metadata for question and answer votes."""
     content_type = models.ForeignKey(ContentType, null=True, blank=True)
