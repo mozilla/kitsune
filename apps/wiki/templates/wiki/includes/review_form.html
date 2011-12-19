@@ -7,8 +7,8 @@
     {{ errorlist(form) }}
     <form action="" method="post">
       {{ csrf() }}
-      <input id="btn-approve" class="btn-important" type="submit" name="approve" value="{% if document.parent %}{{_('Approve Translation')  }}{% else %}{{ _('Approve Revision') }}{% endif %}">
-      <input id="btn-reject" type="submit" name="reject" value="{% if document.parent %}{{_('Defer Translation')  }}{% else %}{{ _('Defer Revision') }}{% endif %}">
+      <input id="btn-approve" class="btn-important" type="submit" name="approve" value="{% if document.parent %}{{_('Approve Translation')  }}{% else %}{{ _('Approve Revision') }}{% endif %}" disabled="disabled">
+      <input id="btn-reject" type="submit" name="reject" value="{% if document.parent %}{{_('Defer Translation')  }}{% else %}{{ _('Defer Revision') }}{% endif %}" disabled="disabled">
       <a href="{{ url('wiki.document_revisions', document.slug) }}">{{ _('Cancel Review') }}</a>
     </form>
 
