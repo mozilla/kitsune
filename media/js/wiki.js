@@ -26,6 +26,11 @@
         } else if ($body.is('.review')) { // Review pages
             ShowFor.initForTags();
             initNeedsChange();
+
+            // Enable buttons when done loading.
+            $(window).load(function() {
+                $('#actions input').removeAttr('disabled');
+            });
         }
 
         if ($body.is('.edit, .new, .translate')) { // Document form page
@@ -33,6 +38,11 @@
             initTitleAndSlugCheck();
             initPreValidation();
             initNeedsChange();
+
+            // Enable buttons when done loading.
+            $(window).load(function() {
+                $('.submit input').removeAttr('disabled');
+            });
         }
 
         initEditingTools();
@@ -268,7 +278,7 @@
             kbox = $modal.data('kbox');
         kbox.updateOptions({
             preOpen: function() {
-                var form = $('#btn-submit').closest('form')[0];
+                var form = $('input.btn-submit').closest('form')[0];
                 if (form.checkValidity && !form.checkValidity()) {
                     // If form isn't valid, click the modal submit button
                     // so the validation error is shown. (I couldn't find a
