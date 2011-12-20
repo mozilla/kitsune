@@ -563,9 +563,9 @@ class SearchTest(SphinxTestCase):
         eq_('application/x-suggestions+json', response['content-type'])
         results = json.loads(response.content)
         eq_('audio', results[0])
-        eq_(2, len(results[1]))
+        eq_(3, len(results[1]))
         eq_(0, len(results[2]))
-        eq_(2, len(results[3]))
+        eq_(3, len(results[3]))
 
     @mock.patch.object(Site.objects, 'get_current')
     def test_invalid_suggestions(self, get_current):

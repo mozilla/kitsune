@@ -22,6 +22,8 @@ class ESTestCase(TestCase, ElasticTestMixin):
 
 
 class ElasticSearchViewTests(ESTestCase):
+    localizing_client = LocalizingClient()
+
     def test_excerpting_doesnt_crash(self):
         """This tests to make sure search view works.
 
@@ -33,11 +35,37 @@ class ElasticSearchViewTests(ESTestCase):
         """
         Flag.objects.create(name='elasticsearch', everyone=True)
 
-        c = LocalizingClient()
-
-        response = c.get(reverse('search'), {
+        response = self.localizing_client.get(reverse('search'), {
             'format': 'json', 'q': 'audio', 'a': 1
         })
+        eq_(200, response.status_code)
+
+        # Make sure there are more than 0 results.  Otherwise we don't
+        # really know if it slid through the excerpting code.
+        content = json.loads(response.content)
+        self.assertGreater(content['total'], 0)
+
+    def test_front_page_search(self):
+        """This tests whether doing a search from the front page returns
+        results.
+
+        Bug #709202.
+
+        """
+        Flag.objects.create(name='elasticsearch', everyone=True)
+
+        # This is the search that you get when you start on the sumo
+        # homepage and do a search from the box with two differences:
+        # first, we do it in json since it's easier to deal with
+        # testing-wise and second, we search for 'audio' since we have
+        # fixture data for that.
+        response = self.localizing_client.get(reverse('search'), {
+            'q_tags': 'desktop', 'product': 'desktop', 'q': 'audio',
+            'format': 'json'
+        })
+
+        # TODO: Fix this so it works when a != 1.  Need to add some
+        # more fixture data (I think).
         eq_(200, response.status_code)
 
         # Make sure there are more than 0 results.  Otherwise we don't

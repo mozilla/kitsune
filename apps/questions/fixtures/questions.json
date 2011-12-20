@@ -164,6 +164,16 @@
     },
     {
         "pk": 1,
+        "model": "questions.answervote",
+        "fields": {
+            "answer": 3,
+            "helpful": 1,
+            "created": "2010-08-04 19:42:32",
+            "anonymous_id": "abcdef123"
+        }
+    },
+    {
+        "pk": 1,
         "model": "questions.questionvote",
         "fields": {
             "question": 3,
