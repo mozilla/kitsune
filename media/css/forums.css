@@ -75,7 +75,8 @@ ol.threads li div.title {
     width: 32%;
 }
 
-.title a:visited {
+.title a:visited,
+.last-post a:visited {
     color: #777;
 }
 

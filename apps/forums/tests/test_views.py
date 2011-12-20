@@ -159,6 +159,29 @@ class ThreadTests(ForumTestCase):
         edited_t = Thread.uncached.get(pk=2)
         eq_('new title', edited_t.title)
 
+    def test_new_thread_redirect(self):
+        """Posting a new thread should redirect."""
+        self.client.login(username='pcraciunoiu', password='testpass')
+        f = Forum.objects.get(pk=1)
+        url = reverse('forums.new_thread', args=[f.slug])
+        data = {'title': 'some title', 'content': 'some content'}
+        r = self.client.post(url, data, follow=False)
+        eq_(302, r.status_code)
+        assert f.slug in r['location']
+        assert 'last=' in r['location']
+
+    def test_reply_redirect(self):
+        """Posting a reply should redirect."""
+        self.client.login(username='pcraciunoiu', password='testpass')
+        t = Thread.objects.get(pk=2)
+        url = reverse('forums.reply', args=[t.forum.slug, t.id])
+        data = {'content': 'some content'}
+        r = self.client.post(url, data, follow=False)
+        eq_(302, r.status_code)
+        assert t.forum.slug in r['location']
+        assert str(t.id) in r['location']
+        assert 'last=' in r['location']
+
 
 class ThreadPermissionsTests(ForumTestCase):
 

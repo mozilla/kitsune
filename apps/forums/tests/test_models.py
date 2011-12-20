@@ -50,6 +50,17 @@ class ForumModelTestCase(ForumTestCase):
         p = Post.objects.get(pk=24)
         eq_(2, p.page)
 
+    def test_thread_last_post_url(self):
+        p = Post.objects.get(pk=24)
+        t = p.thread
+        lp = t.last_post
+        f = t.forum
+        url_ = t.get_last_post_url()
+        assert f.slug in url_
+        assert str(t.id) in url_
+        assert '#post-%s' % lp.id in url_
+        assert 'last=%s' % lp.id in url_
+
     def test_last_post_updated(self):
         """Adding/Deleting the last post in a thread and forum should
         update the last_post field

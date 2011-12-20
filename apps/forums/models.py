@@ -151,9 +151,15 @@ class Thread(NotificationsMixin, ModelBase):
         return self.post_set.create(author=author, content=content)
 
     def get_absolute_url(self):
-        return reverse('forums.posts',
-                       kwargs={'forum_slug': self.forum.slug,
-                               'thread_id': self.id})
+        return reverse('forums.posts', args=[self.forum.slug, self.id])
+
+    def get_last_post_url(self):
+        query = {'last': self.last_post_id}
+        page = self.last_page
+        if page > 1:
+            query['page'] = page
+        url = reverse('forums.posts', args=[self.forum.slug, self.id])
+        return urlparams(url, hash='post-%s' % self.last_post_id, **query)
 
     def save(self, *args, **kwargs):
         super(Thread, self).save(*args, **kwargs)
