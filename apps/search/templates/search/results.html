@@ -36,6 +36,11 @@
 
   </div>
 
-  <p>{{ _("Can't find what you're looking for? <a href='{0}'>Ask a support question instead!</a>")|fe(url('wiki.document', 'ask')) }}</p>
+  {% if request.locale == settings.WIKI_DEFAULT_LANGUAGE %}
+    {% set aaq_url = url('questions.new_question') %}
+  {% else %}
+    {% set aaq_url = url('wiki.document', 'ask') %}
+  {% endif %}
+  <p class="aaq">{{ _("Can't find what you're looking for? <a href='{0}'>Ask a question on our community support forum.</a>")|fe(aaq_url) }}</p>
 </article>
 {% endblock %}

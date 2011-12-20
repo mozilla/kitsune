@@ -92,9 +92,9 @@ GROUPED_FIREFOX_VERSIONS = (
         VersionMetadata(15, _lazy(u'Firefox 10'),
                         _lazy(u'Firefox 10'), 'fx10', 10.9999, True, False),
         VersionMetadata(13, _lazy(u'Firefox 9'),
-                        _lazy(u'Firefox 9'), 'fx9', 9.9999, True, False),
+                        _lazy(u'Firefox 9'), 'fx9', 9.9999, True, True),
         VersionMetadata(11, _lazy(u'Firefox 8'),
-                        _lazy(u'Firefox 8'), 'fx8', 8.9999, True, True),
+                        _lazy(u'Firefox 8'), 'fx8', 8.9999, True, False),
         VersionMetadata(9, _lazy(u'Firefox 7'),
                         _lazy(u'Firefox 7'), 'fx7', 7.9999, False, False),
         VersionMetadata(6, _lazy(u'Firefox 6'),
@@ -114,10 +114,10 @@ GROUPED_FIREFOX_VERSIONS = (
                         True, False),
         VersionMetadata(14, _lazy(u'Firefox 9'),
                         _lazy(u'Firefox 9 for Mobile'), 'm9', 9.9999, True,
-                        False),
+                        True),
         VersionMetadata(12, _lazy(u'Firefox 8'),
                         _lazy(u'Firefox 8 for Mobile'), 'm8', 8.9999, True,
-                        True),
+                        False),
         VersionMetadata(10, _lazy(u'Firefox 7'),
                         _lazy(u'Firefox 7 for Mobile'), 'm7', 7.9999, False,
                         False),
@@ -137,15 +137,16 @@ FIREFOX_VERSIONS = tuple(chain(*[options for label, options in
                                  GROUPED_FIREFOX_VERSIONS]))
 
 # OSes used to filter articles and declare {for} sections:
-OsMetaData = namedtuple('OsMetaData', 'id, name, slug, is_default')
+OsMetaData = namedtuple('OsMetaData', 'id, name, slug, show_in_ui, '
+                        'is_default')
 GROUPED_OPERATING_SYSTEMS = (
     ((_lazy(u'Desktop OS:'), 'desktop'), (
-        OsMetaData(1, _lazy(u'Windows'), 'win', True),
-        OsMetaData(2, _lazy(u'Mac OS X'), 'mac', False),
-        OsMetaData(3, _lazy(u'Linux'), 'linux', False))),
+        OsMetaData(1, _lazy(u'Windows'), 'win', True, True),
+        OsMetaData(2, _lazy(u'Mac OS X'), 'mac', True, False),
+        OsMetaData(3, _lazy(u'Linux'), 'linux', True, False))),
     ((_lazy(u'Mobile OS:'), 'mobile'), (
-        OsMetaData(5, _lazy(u'Android'), 'android', True),
-        OsMetaData(4, _lazy(u'Maemo'), 'maemo', False))))
+        OsMetaData(5, _lazy(u'Android'), 'android', True, True),
+        OsMetaData(4, _lazy(u'Maemo'), 'maemo', False, False))))
 
 # Flattened
 OPERATING_SYSTEMS = tuple(chain(*[options for label, options in

@@ -72,7 +72,8 @@ var ShowFor = {
             $body = $('body'),
             hash = self.hashFragment(),
             isSetManually,
-            browserUsed;
+            browserUsed,
+            osUsed = BrowserDetect.OS;
 
         OSES = $osMenu.data('oses');  // {'mac': true, 'win': true, ...}
         BROWSERS = $browserMenu.data('browsers');  // {'fx4': {product: 'fx', maxFloatVersion: 4.9999}, ...}
@@ -80,14 +81,39 @@ var ShowFor = {
         MISSING_MSG = gettext('[missing header]');
 
         browserUsed = ShowFor.detectBrowser();
-        if (browserUsed && $browserMenu.find(
-            'option[value=' + browserUsed + ']').length === 0) {
+
+        function notListed(optionValue, $select) {
+            // Return true if the $select doesn't have optionValue.
+            return optionValue &&
+                $select.find('option[value=' + optionValue + ']').length === 0;
+        }
+
+        if (notListed(browserUsed, $browserMenu)) {
             // If the browser used is not "officially" supported (shown in UI
             // by default) and is a browser we support in our backend, then
             // add it to the browser selections.
             ShowFor.addBrowserToSelect($browserMenu, browserUsed);
             $origBrowserOptions = $browserMenu.find('option').clone();
         }
+
+        if (notListed(hash.browser, $browserMenu)) {
+            // A browser can be forced to show up by using the hash params.
+            ShowFor.addBrowserToSelect($browserMenu, hash.browser);
+            $origBrowserOptions = $browserMenu.find('option').clone();
+        }
+
+        if (notListed(osUsed, $osMenu)) {
+            // If the OS used is not "officially" supported (shown in UI
+            // by default) and is an OS we support in our backend, then
+            // add it to the OS selections.
+            ShowFor.addOsToSelect($osMenu, osUsed);
+        }
+
+        if (notListed(hash.os, $osMenu)) {
+            // An OS can be forced to show up by using the hash params.
+            ShowFor.addOsToSelect($osMenu, hash.os);
+        }
+
 
         // Make the 'Table of Contents' header localizable.
         $('#toc > h2').text(gettext('Table of Contents'));
@@ -523,6 +549,13 @@ var ShowFor = {
         }
 
         return $select;
+    },
+    addOsToSelect: function($select, os) {
+        var $option = $('<option/>');
+        $option.attr('value', os)
+               .attr('text', os)
+               .attr('data-dependency', 'mobile'); // This is only for Maemo at this point.
+        $select.append($option);
     }
 };
 

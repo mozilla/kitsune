@@ -181,12 +181,12 @@
 
 {% macro submit_revision(form, buttons_only=False) -%}
   <div class="submit">
-    <input class="btn-preview" data-preview-url="{{ url('wiki.preview') }}" type="button" value="{{ _('Preview Content') }}" />
-    <input id="btn-submit" type="submit" value="{{ _('Submit for Review') }}" />
+    <input class="btn-important btn-submit" type="submit" value="{{ _('Submit for Review') }}" disabled="disabled" />
+    <input class="btn-preview" data-preview-url="{{ url('wiki.preview') }}" type="button" value="{{ _('Preview Content') }}" disabled="disabled" />
   </div>
   {% if not buttons_only %}
     <div>{# Dummy wrapper so modal doesn't get shown by details/summary code #}
-      <div id="submit-modal" class="kbox" title="{{ _('Submit Your Changes') }}" data-target="#btn-submit" data-modal="true">
+      <div id="submit-modal" class="kbox" title="{{ _('Submit Your Changes') }}" data-target="input.btn-submit" data-modal="true">
         <p>
           {% trans %}You rock! We'll send an email to let you know if your changes get approved. You
           can follow the discussion about this article by clicking the Discussion tab.{% endtrans %}
@@ -219,7 +219,7 @@
     <div>
       <select id="os" data-oses="{{ oses_json }}" class="enable-if-js" disabled="disabled">
         {% for label, options in oses %}
-          {% for _, name, slug, default in options %}
+          {% for _, name, slug, show, default in options if show %}
             <option value="{{ slug }}" data-dependency="{{ label[1] }}"{% if default %}{% if label[1] == 'desktop' %} selected="selected"{% endif %} data-default="true"{% endif %}>{{ name }}</option>
           {% endfor %}
         {% endfor %}
