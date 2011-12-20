@@ -32,7 +32,7 @@
         $('.watch-form').click(function() {
             var form = $(this);
             $.post(form.attr('action'), form.serialize(), function() {
-                form.find('.watchtoggle').toggleClass('on')
+                form.find('a').toggleClass('yes').toggleClass('no')
             }).error(function() {
                 // error growl
             });

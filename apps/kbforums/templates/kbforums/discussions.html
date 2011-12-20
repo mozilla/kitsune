@@ -37,11 +37,11 @@
                 {% if thread.watches.filter(user=request.user) %}
                   {% set watch = _('Stop watching') %}
                   <input type="hidden" name="watch" value="no" />
-                  <input type="image" alt="{{ watch }}" title="{{ watch }}" class="watchtoggle on" src="{{ MEDIA_URL }}img/forums/watch.png"/>
+                  <a class="no"></a>
                 {% else %}
                   {% set watch = _('Watch this thread') %}
                   <input type="hidden" name="watch" value="yes" />
-                  <input type="image" alt="{{ watch }}" title="{{ watch }}" class="watchtoggle off" src="{{ MEDIA_URL }}img/forums/watch.png"/>
+                  <a class="yes"></a>
                 {% endif %}
               </form>
           </div>

@@ -306,18 +306,6 @@ ol.posts li div.author {
 #all-threads #watch_locale {
     margin-bottom: 15px;
 }
-.threads input.watchtoggle {
-    border-radius: 4px;
-    -moz-border-radius: 4px;
-    -webkit-border-radius: 4px;
-    float: left;
-    padding: 2px ;
-}
-
-.threads input.watchtoggle.on {
-    background: #d7f8e0;
-    color: #10c493;
-}
 /* Reply Preview */
 #post-preview {
     margin: 10px 0 0;
@@ -544,4 +532,18 @@ ol.posts li div.post-actions form.report li {
 
 ol.posts form.report .kbox-container {
     left: 0;
+}
+
+.watch-form a {
+    cursor: pointer;
+    display: inline-block;
+    height: 12px;
+    width: 12px;
+    margin: 10px 20px;
+}
+.watch-form a.yes {
+    background: url("/media/img/wiki/icon-yes.gif") no-repeat scroll left top transparent;
+}
+.watch-form a.no {
+    background: url("/media/img/wiki/icon-no.gif") no-repeat scroll left top transparent;
 }
