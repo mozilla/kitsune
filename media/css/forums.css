@@ -306,7 +306,7 @@ ol.posts li div.author {
 #all-threads #watch_locale {
     margin-bottom: 15px;
 }
-#threads input.watchtoggle {
+.threads input.watchtoggle {
     border-radius: 4px;
     -moz-border-radius: 4px;
     -webkit-border-radius: 4px;
@@ -314,7 +314,7 @@ ol.posts li div.author {
     padding: 2px ;
 }
 
-#threads input.watchtoggle.on {
+.threads input.watchtoggle.on {
     background: #d7f8e0;
     color: #10c493;
 }
