@@ -17,6 +17,7 @@ from forums.events import NewPostEvent, NewThreadEvent
 from forums.feeds import ThreadsFeed, PostsFeed
 from forums.forms import ReplyForm, NewThreadForm, EditThreadForm, EditPostForm
 from forums.models import Forum, Thread, Post
+from sumo.helpers import urlparams
 from sumo.urlresolvers import reverse
 from sumo.utils import paginate
 from users.models import Setting
@@ -169,7 +170,7 @@ def reply(request, forum_slug, thread_id):
                 # Send notifications to thread/forum watchers.
                 NewPostEvent(reply_).fire(exclude=reply_.author)
 
-                return HttpResponseRedirect(reply_.get_absolute_url())
+                return HttpResponseRedirect(thread.get_last_post_url())
 
     return posts(request, forum_slug, thread_id, form, post_preview,
                  is_reply=True)
@@ -216,8 +217,8 @@ def new_thread(request, forum_slug):
             if Setting.get_for_user(request.user, 'forums_watch_new_thread'):
                 NewPostEvent.notify(request.user, thread)
 
-            return HttpResponseRedirect(
-                reverse('forums.posts', args=[forum_slug, thread.id]))
+            url = reverse('forums.posts', args=[forum_slug, thread.id])
+            return HttpResponseRedirect(urlparams(url, last=post.id))
 
     return jingo.render(request, 'forums/new_thread.html',
                         {'form': form, 'forum': forum,
