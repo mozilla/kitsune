@@ -3,7 +3,7 @@ import logging
 import pyes
 import time
 
-from search.es_utils import (TYPE, LONG, INDEX, STRING, ANALYZED, ANALYZER,
+from search.es_utils import (TYPE, LONG, STRING, ANALYZER,
                              SNOWBALL, TERM_VECTOR, STORE, YES, BOOLEAN,
                              WITH_POS_OFFSETS, DATE, INTEGER, get_index)
 

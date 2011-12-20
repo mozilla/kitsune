@@ -28,6 +28,7 @@ BOOLEAN = 'boolean'
 DATE = 'date'
 
 ANALYZED = 'analyzed'
+NOTANALYZED = 'not_analyzed'
 
 SNOWBALL = 'snowball'
 
@@ -79,7 +80,6 @@ def es_reindex(percent=100):
 
 def es_whazzup():
     """Runs cluster_stats on the Elastic system."""
-
     # We create a logger because elasticutils uses it.
     logging.basicConfig()
 
