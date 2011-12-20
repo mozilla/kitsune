@@ -9,6 +9,13 @@ from sumo.decorators import json_view
 from access.decorators import login_required
 
 
+def display_name_or_none(user):
+    try:
+        return user.profile.name
+    except Profile.DoesNotExist:
+        return None
+
+
 @login_required
 @require_GET
 @json_view
@@ -26,7 +33,7 @@ def usernames(request):
             ).values_list('user_id', flat=True)
         users = User.objects.filter(
             Q(username__istartswith=pre) | Q(id__in=profiles),
-            )[:10]
+            ).select_related()[:10]
         return [{'username':u.username,
-                'display_name':Profile.objects.get_or_create(user=u)[0].name}
+                'display_name':display_name_or_none(u)}
                 for u in users]
