@@ -35,13 +35,13 @@
             <form class="watch-form" action="{{ url('wiki.discuss.watch_thread', thread.document.slug, thread.id) }}" method="post">
                 {{ csrf() }}
                 {% if thread.watches.filter(user=request.user) %}
-                  {% set watch = _('Stop watching') %}
+                  {% set watch = _('You are watching this thread') %}
                   <input type="hidden" name="watch" value="no" />
-                  <a class="no"></a>
+                  <a class="yes" title="{{ watch }}"></a>
                 {% else %}
-                  {% set watch = _('Watch this thread') %}
+                  {% set watch = _('You are not watching this thread') %}
                   <input type="hidden" name="watch" value="yes" />
-                  <a class="yes"></a>
+                  <a class="no" title="{{ watch }}"></a>
                 {% endif %}
               </form>
           </div>

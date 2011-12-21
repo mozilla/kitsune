@@ -32,7 +32,8 @@
         $('.watch-form').click(function() {
             var form = $(this);
             $.post(form.attr('action'), form.serialize(), function() {
-                form.find('a').toggleClass('yes').toggleClass('no')
+                form.find('a.yes').toggleClass('yes').toggleClass('no').attr("title", gettext("You are not watching this thread"));
+                form.find('a.no').toggleClass('yes').toggleClass('no').attr("title", gettext("You are watching this thread"));
             }).error(function() {
                 // error growl
             });
