@@ -67,6 +67,7 @@
             legend: {
                 enabled: true,
                 y: 40,
+                verticalAlign: 'top',
             },
             rangeSelector: {
                 selected: 2,
@@ -115,11 +116,58 @@
                     text: null
                 }
             },
-            yAxis: {
-                title: {
-                    text: gettext('Votes')
-                }
-            },
+            yAxis: [{ // Primary yAxis
+                     labels: {
+                        style: {
+                           color: '#89A54E'
+                        },
+                        formatter: function() {
+                           return this.value*100 +'%';
+                        },
+                     },
+                     title: {
+                        text: 'Percent Helpfulness',
+                        style: {
+                           color: '#89A54E'
+                        }
+                     }
+                  }, { // Secondary yAxis
+                     gridLineWidth: 1,
+                     gridLineColor: '#4572A7',
+                     gridLineDashStyle: 'shortDash',
+                     title: {
+                        text: gettext('Yes Votes'),
+                        style: {
+                           color: '#4572A7'
+                        }
+                     },
+                     labels: {
+                        style: {
+                           color: '#4572A7'
+                        }
+                     },
+                     opposite: true,
+                     offset: 0,
+                     min: 0
+                  }, { // Tertiary yAxis
+                     gridLineWidth: 1,
+                     gridLineColor: '#AA4643',
+                     gridLineDashStyle: 'shortDot',
+                     title: {
+                        text: gettext('No Votes'),
+                        style: {
+                           color: '#AA4643'
+                        }
+                     },
+                     labels: {
+                        style: {
+                           color: '#AA4643'
+                        }
+                     },
+                     opposite: true,
+                     offset: 45,
+                     min: 0
+                  }],
             tooltip: {
                 style: {
                     width: 200
