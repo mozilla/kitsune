@@ -22,7 +22,7 @@ products = SortedDict([
                 {'title': 'Firefox cannot load websites but other programs '
                           'can',
                  'url': '/kb/Firefox%20cannot%20load%20websites%20but%20other'
-                        '%20programs$%20can'},
+                        '%20programs%20can'},
                 {'title': 'Web sites look wrong',
                  'url': '/kb/Websites%20look%20wrong'},
                 {'title': 'Websites say cookies are blocked',
