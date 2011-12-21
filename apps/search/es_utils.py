@@ -1,8 +1,15 @@
+from itertools import chain, count, izip
+import logging
+
 import elasticutils
 from pprint import pprint
 import pyes
 
 from django.conf import settings
+
+from forums.models import Thread
+from questions.models import Question
+from wiki.models import Document
 
 
 ESTimeoutError = pyes.urllib3.TimeoutError
@@ -35,14 +42,18 @@ def get_index(model):
             or settings.ES_INDEXES['default'])
 
 
-def es_reindex(percent=100):
-    """Reindexes the database in Elastic.
+def es_reindex_with_progress(percent=100):
+    """Rebuild Elastic indexes as you iterate over yielded progress ratios.
 
     :arg percent: Defaults to 100.  Allows you to specify how much of
         each doctype you want to index.  This is useful for
         development where doing a full reindex takes an hour.
 
     """
+    import forums.es_search
+    import questions.es_search
+    import wiki.es_search
+
     es = elasticutils.get_es()
 
     # Go through and delete, then recreate the indexes.
@@ -50,28 +61,26 @@ def es_reindex(percent=100):
         es.delete_index_if_exists(index)
         es.create_index_if_missing(index)  # Should always be missing.
 
-    # Reindex questions.
-    import questions.es_search
-    questions.es_search.reindex_questions(percent)
+    # TODO: Having the knowledge of apps' internals repeated here is lame.
+    total = (Question.objects.count() +
+             Thread.objects.count() +
+             Document.objects.count())
+    return (float(done) / total for done, _ in
+            izip(count(1),
+                 chain(questions.es_search.reindex_questions(percent),
+                       wiki.es_search.reindex_documents(percent),
+                       forums.es_search.reindex_documents(percent))))
 
-    # Reindex wiki documents.
-    import wiki.es_search
-    wiki.es_search.reindex_documents(percent)
 
-    # Reindex forum posts.
-    import forums.es_search
-    forums.es_search.reindex_documents(percent)
+def es_reindex(percent=100):
+    """Rebuild ElasticSearch indexes."""
+    [x for x in es_reindex_with_progress(percent) if False]
 
 
 def es_whazzup():
     """Runs cluster_stats on the Elastic system."""
-    import elasticutils
-    from forums.models import Post
-    from questions.models import Question
-    from wiki.models import Document
 
     # We create a logger because elasticutils uses it.
-    import logging
     logging.basicConfig()
 
     es = elasticutils.get_es()

@@ -118,13 +118,16 @@ def unindex_posts(ids):
 
 
 def reindex_documents(percent=100):
-    """Updates the mapping and indexes all documents.
+    """Iterate over this to update the mapping and index all documents.
+
+    Yields number of documents done.
 
     Note: This only gets called from the command line.  Ergo we do
     some logging so the user knows what's going on.
 
     :arg percent: The percentage of questions to index.  Defaults to
         100--e.g. all of them.
+
     """
     from forums.models import Thread
     from django.conf import settings
@@ -163,6 +166,7 @@ def reindex_documents(percent=100):
             break
 
         index_thread(extract_thread(thread), bulk=True, es=es)
+        yield t
 
     es.flush_bulk(forced=True)
     log.info('done!')

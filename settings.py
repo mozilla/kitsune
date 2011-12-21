@@ -588,6 +588,8 @@ ES_HOSTS = ['127.0.0.1:9200']
 ES_INDEXES = {'default': 'sumo'}
 ES_LIVE_INDEXING = False  # Keep indexes up to date as objects are made/deleted
 ES_TIMEOUT = 5  # 5 second timeouts for querying/indexing
+# Seconds between updating admin progress bar:
+ES_REINDEX_PROGRESS_BAR_INTERVAL = 5
 
 #
 # Connection information for Sphinx search
