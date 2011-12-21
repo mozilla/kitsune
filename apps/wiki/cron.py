@@ -1,6 +1,9 @@
 import logging
+import os
 import time
+import urllib2
 
+from django.conf import settings
 from django.db import connection, transaction
 
 import cronjobs
@@ -78,3 +81,13 @@ def rebuild_kb():
     tasks.rebuild_kb()
 
 
+@cronjobs.register
+def get_highcharts():
+    """Fetch highcharts."""
+    localfilename = os.path.join(settings.MEDIA_ROOT, 'js', 'libs',
+                                 'highstock.src.js')
+    u = urllib2.urlopen('https://raw.github.com/highslide-software/'
+                        'highcharts.com/7df98c2f1d7909edd212fea4519'
+                        'd0bb87adac164/js/highstock.src.js')
+    with open(localfilename, 'w') as f:
+        f.write(u.read())

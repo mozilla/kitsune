@@ -13,3 +13,4 @@ media/uploads
 tmp
 locale
 docs/_build
+highstock.src.js
