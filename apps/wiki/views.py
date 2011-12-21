@@ -385,7 +385,7 @@ def review_revision(request, document_slug, revision_id):
 
             rev.save()
 
-            # Update the needs change bit (if approved, default language and 
+            # Update the needs change bit (if approved, default language and
             # user has permission).
             if (doc.locale == settings.WIKI_DEFAULT_LANGUAGE and
                 doc.allows_editing_by(request.user) and rev.is_approved):
@@ -823,10 +823,12 @@ def get_helpful_votes_async(request, document_slug):
 
     send = {'data': [{'name': _('Yes'),
                       'id': 'yes_data',
-                      'data': yes_data},
+                      'data': yes_data,
+                      'yAxis': 1},
                      {'name': _('No'),
                       'id': 'no_data',
-                      'data': no_data},
+                      'data': no_data,
+                      'yAxis': 1},
                      {'name': _('Helpfulness Percentage'),
                       'id': 'perc_data',
                       'data': perc_data},
