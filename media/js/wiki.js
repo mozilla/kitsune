@@ -21,7 +21,7 @@
 
             ShowFor.initForTags();
             addReferrerAndQueryToVoteForm();
-            new k.AjaxVote('#helpful-vote form', {
+            new k.AjaxVote('.document-vote form', {
                 positionMessage: true
             });
             initAOABanner();
@@ -421,7 +421,7 @@
         var urlParams = k.getQueryParamsAsDict(),
             referrer = k.getReferrer(urlParams),
             query = k.getSearchQuery(urlParams, referrer);
-        $('#helpful-vote form')
+        $('.document-vote form')
             .append($('<input type="hidden" name="referrer"/>')
                 .attr('value', referrer))
             .append($('<input type="hidden" name="query"/>')

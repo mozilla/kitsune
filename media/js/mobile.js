@@ -36,7 +36,7 @@ $(document).ready(function() {
     }
 
     if($('body').is('.document')) {
-        new k.AjaxVote('#helpful-vote form', {
+        new k.AjaxVote('.document-vote form', {
             positionMessage: false
         });
     }

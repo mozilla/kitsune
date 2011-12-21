@@ -11,7 +11,7 @@ from questions.tests import tags_eq
 from sumo.tests import TestCase, LocalizingClient
 from sumo.urlresolvers import reverse
 from users.tests import user, add_permission
-from wiki.models import VersionMetadata, Document
+from wiki.models import VersionMetadata, Document, HelpfulVote
 from wiki.tests import doc_rev, document, new_document_data, revision
 from wiki.views import _version_groups
 
@@ -254,3 +254,26 @@ class VoteTests(TestCase):
         response = self.client.post(reverse('wiki.document_vote', args=['hi']),
                                     {})
         eq_(400, response.status_code)
+
+    def test_unhelpful_survey(self):
+        """The unhelpful survey is stored as vote metadata"""
+        vote = HelpfulVote(revision=revision(save=True))
+        vote.save()
+        response = self.client.post(reverse('wiki.unhelpful_survey'),
+                                    {'vote_id': vote.id,
+                                     'button': 'Submit',
+                                     'confusing': 1,
+                                     'too-long': 1,
+                                     'comment': 'lorem ipsum dolor'})
+        eq_(200, response.status_code)
+        eq_('{"message": "Thanks for making us better!"}',
+            response.content)
+
+        vote_meta = vote.metadata.all()[0]
+        eq_('survey', vote_meta.key)
+
+        survey = json.loads(vote_meta.value)
+        eq_(3, len(survey.keys()))
+        assert 'confusing' in survey
+        assert 'too-long' in survey
+        eq_('lorem ipsum dolor', survey['comment'])
