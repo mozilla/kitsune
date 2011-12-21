@@ -198,7 +198,7 @@ class KarmaManager(object):
         """
         today = date.today()
         num_days = self.date_ranges[daterange]
-        days = [today - timedelta(days=d) for d in range(num_days, 0, -1)]
+        days = [today - timedelta(days=d) for d in range(num_days)][::-1]
         counts = self.redis.hmget(
             hash_key(user), ['{t}:{d}'.format(t=type, d=d) for d in days])
         return [int(c or 0) for c in counts], [d.strftime('%A') for d in days]
