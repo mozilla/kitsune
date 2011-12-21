@@ -37,6 +37,10 @@ def setup_mapping(index):
             'answer_creator': {TYPE: STRING},
             'question_votes': {TYPE: INTEGER},
             'answer_votes': {TYPE: INTEGER},
+            # Currently we concatenate the tags into one big string
+            # field and search that.  We don't want that analyzed
+            # because a tag is a tag is a tag, so we index it as is.
+            'tags': {TYPE: STRING}
             }
         }
 
@@ -69,6 +73,10 @@ def extract_question(question):
     question_data['question_creator'] = question.creator.username
     question_data['question_votes'] = question.num_votes_past_week
 
+    question_data['tags'] = [tag['name'] for tag in question.tags.values()]
+
+    # TODO: Change this to an array.
+    #
     # answer_content is a \n\n delimited mish-mosh of all the
     # answer content.
     answer_content = []
