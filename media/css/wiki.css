@@ -257,14 +257,20 @@ html[lang="ja"] #more-help div.support-search input.text {
 /* document vote form */
 .document-vote {
     color: #444;
+    display: inline-block;
     font-size: 14px;
     font-weight: bold;
     margin: 10px 0 30px;
     padding: 10px 0;
+    vertical-align: top;
 }
 
 #side .document-vote {
     margin: 15px 0 0 20px;
+}
+
+.document-vote p {
+    display: inline-block;
 }
 
 .document-vote span {
@@ -311,6 +317,53 @@ html[lang="ja"] #more-help div.support-search input.text {
 
 .html-rtl .document-vote form.busy img.wait {
     margin: 0 15px 0 0;
+}
+
+/* Unhelpful vote survey */
+#unhelpful-survey {
+    background: #32559B;
+    border-radius: 0 10px 10px 10px;
+    display: inline-block;
+    margin: 15px 0 0 20px;
+    padding: 10px 5px;
+    width: 192px;
+}
+
+#side #unhelpful-survey {
+    margin: 30px 0 30px 20px;
+}
+
+#unhelpful-survey p {
+    color: white;
+    font-size: 16px;
+    font-style: italic;
+    margin: 8px 12px;
+}
+
+#unhelpful-survey ul {
+    list-style: none;
+}
+
+#unhelpful-survey li {
+    color: #fff;
+    cursor: pointer;
+    padding: 2px 0 2px 15px;
+    position: relative;
+}
+
+#unhelpful-survey li input {
+    margin: 0 6px 3px 0;
+}
+
+#unhelpful-survey textarea {
+    font-size: 12px;
+    height: 40px;
+    margin: 6px 0 2px 12px;
+    width: 155px;
+}
+
+#unhelpful-survey input[type="submit"] {
+    margin: 6px 14px;
 }
 
 /* New / Edit / Translate Document */

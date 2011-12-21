@@ -25,7 +25,8 @@ AjaxVote.prototype = {
 
         options = $.extend({
             positionMessage: false,
-            removeForm: false
+            removeForm: false,
+            replaceFormWithMessage: false
         }, options);
         self.options = options;
         self.voted = false;
@@ -50,7 +51,11 @@ AjaxVote.prototype = {
                     data: data,
                     dataType: 'json',
                     success: function(data) {
-                        self.showMessage(data.message, $btn);
+                        if (data.survey) {
+                            self.showSurvey(data.survey, $form.parent());
+                        } else {
+                            self.showMessage(data.message, $btn, $form);
+                        }
                         $btn.addClass('active');
                         $btns.removeAttr('disabled');
                         $form.removeClass('busy');
@@ -70,7 +75,7 @@ AjaxVote.prototype = {
             return false;
         });
     },
-    showMessage: function(message, $showAbove) {
+    showMessage: function(message, $showAbove, $form) {
         // TODO: Tweak KBox to handle this case.
         var self = this,
             $html = $('<div class="ajax-vote-box"><p></p></div>'),
@@ -86,6 +91,8 @@ AjaxVote.prototype = {
             });
             var timer = setTimeout(fadeOut, 10000);
             $('body').one('click', fadeOut);
+        } else if (self.options.replaceFormWithMessage) {
+            $form.replaceWith($html.removeClass('ajax-vote-box'));
         } else {
             // on mobile browsers we just append to the grandfather
             // TODO: make this more configurable with an extra option
@@ -105,6 +112,21 @@ AjaxVote.prototype = {
             $('body').unbind('click', fadeOut);
             clearTimeout(timer);
         }
+    },
+    showSurvey: function(survey, $container) {
+        var self = this,
+            $survey = $(survey);
+
+        $container.after($survey);
+
+        // If we are in the sidebar, remove the vote form container.
+        if ($container.closest('#side').length) {
+            $container.remove();
+        }
+
+        new k.AjaxVote($survey.find('form'), {
+            replaceFormWithMessage: true
+        });
     }
 };
 

@@ -853,7 +853,7 @@ class HelpfulVote(ModelBase):
 
 class HelpfulVoteMetadata(ModelBase):
     """Metadata for article votes."""
-    vote = models.ForeignKey(HelpfulVote)
+    vote = models.ForeignKey(HelpfulVote, related_name='metadata')
     key = models.CharField(max_length=40, db_index=True)
     value = models.CharField(max_length=1000)
 

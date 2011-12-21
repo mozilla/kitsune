@@ -22,6 +22,7 @@ from statsd import statsd
 from taggit.models import Tag
 from tower import ugettext_lazy as _lazy
 from tower import ugettext as _
+import waffle
 
 from access.decorators import permission_required, login_required
 from sumo.helpers import urlparams
@@ -709,6 +710,7 @@ def helpful_vote(request, document_slug):
 
     revision = get_object_or_404(
         Revision, id=smart_int(request.POST['revision_id']))
+    survey = None
 
     if not revision.has_voted(request):
         ua = request.META.get('HTTP_USER_AGENT', '')[:1000]  # 1000 max_length
@@ -728,6 +730,13 @@ def helpful_vote(request, document_slug):
         vote.save()
         statsd.incr('wiki.vote')
 
+        # Send a survey if flag is enabled and vote wasn't helpful.
+        if ('helpful' not in request.POST and
+            waffle.flag_is_active(request, 'editing-tools-show-hide')):
+            survey = jingo.render_to_string(
+                request, 'wiki/includes/unhelpful_survey.html',
+                {'vote_id': vote.id})
+
         # Save vote metadata: referrer and search query (if available)
         for name in ['referrer', 'query']:
             val = request.POST.get(name)
@@ -737,9 +746,32 @@ def helpful_vote(request, document_slug):
         message = _('You already voted on this Article.')
 
     if request.is_ajax():
-        return HttpResponse(json.dumps({'message': message}))
+        r = {'message': message}
+        if survey:
+            r.update(survey=survey)
+
+        return HttpResponse(json.dumps(r))
 
     return HttpResponseRedirect(revision.document.get_absolute_url())
+
+
+@require_POST
+@csrf_exempt
+def unhelpful_survey(request):
+    """Ajax only view: Unhelpful vote survey processing."""
+    vote = get_object_or_404(HelpfulVote,
+                             id=smart_int(request.POST.get('vote_id')))
+
+    # The survey is the posted data, minus the vote_id and button value.
+    survey = request.POST.copy()
+    survey.pop('vote_id')
+    survey.pop('button')
+
+    # Save the survey in JSON format.
+    vote.add_metadata('survey', json.dumps(survey))
+
+    return HttpResponse(
+        json.dumps({'message': _('Thanks for making us better!')}))
 
 
 @require_GET

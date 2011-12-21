@@ -62,7 +62,7 @@ document_patterns = patterns('wiki.views',
     url(r'^/unwatch$', 'unwatch_document', name='wiki.document_unwatch'),
 
     # Vote helpful/not helpful
-    url(r'^/vote', 'helpful_vote', name="wiki.document_vote"),
+    url(r'^/vote', 'helpful_vote', name='wiki.document_vote'),
 
     # Get helpful votes data
     url(r'^/get-votes-async', 'get_helpful_votes_async',
@@ -106,6 +106,10 @@ urlpatterns = patterns('wiki.views',
         name='wiki.ready_watch'),
     url(r'^/unwatch-ready$', 'unwatch_ready',
         name='wiki.ready_unwatch'),
+
+    # Unhelfpul vote survey
+    url(r'^/unhelpful-survey', 'unhelpful_survey',
+        name='wiki.unhelpful_survey'),
 
     url(r'^/json$', 'json_view', name='wiki.json'),
 
