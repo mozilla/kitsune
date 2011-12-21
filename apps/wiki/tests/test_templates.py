@@ -279,7 +279,7 @@ class DocumentTests(TestCaseBase):
         response = self.client.get(d.get_absolute_url())
         eq_(200, response.status_code)
         doc = pq(response.content)
-        assert not doc('#helpful-vote')
+        assert not doc('.document-vote')
 
     def test_templates_noindex(self):
         """Document templates should have a noindex meta tag."""

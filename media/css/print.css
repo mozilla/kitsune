@@ -9,7 +9,7 @@ body {
 div#header,
 div#footer-contents,
 div#toc,
-div#helpful-vote,
+div.document-vote,
 div#more-help,
 div#side,
 div#thread-reply,

@@ -254,8 +254,8 @@ html[lang="ja"] #more-help div.support-search input.text {
     padding: 0 0 0 20px;
 }
 
-/* helpful vote form */
-#helpful-vote {
+/* document vote form */
+.document-vote {
     color: #666;
     font-size: 16px;
     font-style: italic;
@@ -263,7 +263,7 @@ html[lang="ja"] #more-help div.support-search input.text {
     padding: 10px 0;
 }
 
-#helpful-vote input {
+.document-vote input {
     background: #cde6f5;
     border: none;
     border-radius: 10px;
@@ -276,33 +276,33 @@ html[lang="ja"] #more-help div.support-search input.text {
     padding: 3px 10px;
 }
 
-.html-rtl #helpful-vote input {
+.html-rtl .document-vote input {
     margin: 0 10px 0 0;
 }
 
-#helpful-vote input[disabled] {
+.document-vote input[disabled] {
     background: #ddd;
     color: #888;
     cursor: default;
 }
 
-#helpful-vote input.active {
+.document-vote input.active {
     background: #32559b;
     color: #fff;
 }
 
-#helpful-vote img.wait {
+.document-vote img.wait {
     display: none;
 }
 
-#helpful-vote form.busy img.wait {
+.document-vote form.busy img.wait {
     display: inline;
     margin: 0 0 0 15px;
     position: relative;
     top: 3px;
 }
 
-.html-rtl #helpful-vote form.busy img.wait {
+.html-rtl .document-vote form.busy img.wait {
     margin: 0 15px 0 0;
 }
 

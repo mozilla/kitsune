@@ -325,10 +325,6 @@ article p {
     color: #aaa;
 }
 
-#helpful-vote {
-    margin: 28px 14px;
-}
-
 #related ul {
     margin-left: 28px;
 }
@@ -366,20 +362,20 @@ article p {
 /*************************************/
 /*          Article Voting           */
 /*************************************/
-#helpful-vote {
+.document-vote {
     color: #4b473f;
     font-size: 16px;
     margin: 21px 14px;
     padding: 10px 0;
 }
 
-#helpful-vote span {
+.document-vote span {
     display: block;
     font-style: italic;
     margin: 0 0 10px;
 }
 
-#helpful-vote input {
+.document-vote input {
     background: #cde6f5;
     border: none;
     border-radius: 4px;
@@ -392,29 +388,29 @@ article p {
     padding: 7px 14px;
 }
 
-#helpful-vote input[disabled] {
+.document-vote input[disabled] {
     background: #ddd;
     color: #888;
     cursor: default;
 }
 
-#helpful-vote input.active {
+.document-vote input.active {
     background: #32559b;
     color: #fff;
 }
 
-#helpful-vote img.wait {
+.document-vote img.wait {
     display: none;
 }
 
-#helpful-vote form.busy img.wait {
+.document-vote form.busy img.wait {
     display: inline;
     margin: 0 0 0 15px;
     position: relative;
     top: 3px;
 }
 
-#helpful-vote .ajax-vote-box {
+.document-vote .ajax-vote-box {
     background: #32559b;
     border-radius: 4px;
     -moz-border-radius: 4px;
@@ -428,12 +424,12 @@ article p {
     position: relative;
 }
 
-#helpful-vote .ajax-vote-box p {
+.document-vote .ajax-vote-box p {
     position: relative;
     z-index: 2;
 }
 
-#helpful-vote .ajax-vote-box:after {
+.document-vote .ajax-vote-box:after {
     background: #32559b;
     content: '';
     display: block;
@@ -447,7 +443,7 @@ article p {
     z-index: 1;
 }
 
-#helpful-vote .No div.ajax-vote-box:after {
+.document-vote .No div.ajax-vote-box:after {
     left: 90px;
 }
 
