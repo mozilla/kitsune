@@ -13,4 +13,5 @@ class Command(BaseCommand):
         percent = options['percent']
         if percent > 100 or percent < 1:
             raise CommandError('percent should be between 1 and 100')
-        es_reindex(percent)
+        for x in es_reindex(percent):
+            pass

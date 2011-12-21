@@ -155,13 +155,16 @@ def unindex_answers(ids):
 
 
 def reindex_questions(percent=100):
-    """Updates the mapping and indexes all questions.
+    """Iterate over this to update the mapping and index all documents.
+
+    Yields number of documents done.
 
     Note: This gets run from the command line, so we log stuff to let
     the user know what's going on.
 
     :arg percent: The percentage of questions to index.  Defaults to
         100--e.g. all of them.
+
     """
     from questions.models import Question
     from django.conf import settings
@@ -200,6 +203,7 @@ def reindex_questions(percent=100):
             break
 
         index_doc(extract_question(q), bulk=True, es=es)
+        yield t
 
     es.flush_bulk(forced=True)
     log.info('done!')

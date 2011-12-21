@@ -1,0 +1,100 @@
+{% extends "kadmin/base.html" %}
+
+{% block extrastyle %}
+  {{ block.super }}
+  <style type="text/css">
+    div#content div {
+      margin-bottom: .5em;
+    }
+    .disabled {
+      color: #ccc;
+    }
+    progress {
+      width: 400px;
+    }
+  </style>
+{% endblock %}
+
+{% block footer %}
+  {{ block.super }}
+  <script type="text/javascript" src="{{ MEDIA_URL }}js/libs/jquery.min.js"></script>
+  <script type="text/javascript">
+    (function($) {
+        // Quick and dirty AJAX progress bar. No error handling.
+        function initProgressBar() {
+            // Iff the progress bar is there, the reindex task is either
+            // running or about to start.
+            $("#reindex_progress").each(function() {
+                var $bar = $(this);
+
+                function setBar(ratio) {
+                    $bar.attr("value", ratio);
+                    $bar.text(ratio);
+                }
+
+                // We wait until the task starts and outputs a progress value.
+                var started = false;
+
+                // Spin around and actually update the progress bar.
+                function spin(ratio) {
+                    if (ratio === "" && started) {  // finished
+                        document.location = '';  // Get rid of the bar and such.
+                        return;
+                    }
+                    if (ratio !== "") {  // got data
+                        started = true;
+                        setBar(ratio);
+                    }
+                    $.get("{{ progress_url }}",  // Try again.
+                          function ajaxSuccess(ratio) {
+                              setTimeout(function() { spin(ratio); },
+                                         {{ interval }});
+                          });
+                }
+
+                spin("");
+            });
+        }
+
+        $(document).ready(initProgressBar);
+
+    })(jQuery);
+  </script>
+{% endblock %}
+
+{% block content %}
+  <section>
+    <h1>Reindex elasticsearch</h1>
+    <p>
+      You should have to do this only when the search mapping changes or when
+      setting up the site for the first time.
+    </p>
+    <p>
+      If the old index isn't compatible with the new code, you should waffle Sphinx on first.
+    </p>
+    <form method="POST">
+      {% csrf_token %}
+      <div>
+        <input type="submit"
+               name="reindex"
+               value="Reindex"
+               {% if progress %}disabled="disabled"{% endif %}/>
+      </div>
+      <div>
+        <label>
+          <input type="checkbox"
+                 {% if waffle_when_done %}checked="checked"{% endif %}
+                 value="1"
+                 name="waffle_when_done"
+                 {% if progress %}disabled="disabled"{% endif %} />
+          <span{% if progress %} class="disabled"{% endif %}>
+            Waffle Sphinx off when finished
+          </span>
+        </label>
+      </div>
+    </form>
+    {% if progress %}
+      <progress id="reindex_progress" value="{{ progress }}" max="1">{{ progress }}</progress>
+    {% endif %}
+  </section>
+{% endblock %}
