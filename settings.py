@@ -514,7 +514,7 @@ MINIFY_BUNDLES = {
             'js/helpfuldashcharts.js',
         ),
         'highcharts': (
-            'js/libs/highcharts-2.1.4/highcharts.src.js',
+            'js/libs/highstock.src.js',
         ),
         'customercare': (
             'js/libs/jquery.NobleCount.js',
