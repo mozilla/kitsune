@@ -718,8 +718,7 @@ def helpful_vote(request, document_slug):
             vote.helpful = True
             message = _('Glad to hear it &mdash; thanks for the feedback!')
         else:
-            message = _('Sorry to hear that. Try searching for solutions '
-                        'below.')
+            message = _('Sorry to hear that.')
 
         if request.user.is_authenticated():
             vote.creator = request.user

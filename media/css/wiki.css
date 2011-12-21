@@ -256,20 +256,27 @@ html[lang="ja"] #more-help div.support-search input.text {
 
 /* document vote form */
 .document-vote {
-    color: #666;
-    font-size: 16px;
-    font-style: italic;
+    color: #444;
+    font-size: 14px;
+    font-weight: bold;
     margin: 10px 0 30px;
     padding: 10px 0;
 }
 
-.document-vote input {
-    background: #cde6f5;
+#side .document-vote {
+    margin: 15px 0 0 20px;
+}
+
+.document-vote span {
+    display: inline-block;
+    margin: 0 0 6px;
+}
+
+.document-vote input[type="submit"] {
+    background: #CDE6F5;
     border: none;
     border-radius: 10px;
-    -moz-border-radius: 10px;
-    -webkit-border-radius: 10px;
-    color: #3862a9;
+    color: #3862A9;
     cursor: pointer;
     font-size: 14px;
     margin: 0 0 0 10px;
