@@ -1,4 +1,4 @@
-from itertools import chain, count
+from itertools import chain, count, izip
 import logging
 
 import elasticutils
@@ -65,11 +65,11 @@ def es_reindex(percent=100):
     total = (Question.objects.count() +
              Thread.objects.count() +
              Document.objects.count())
-    counter = count(1)
-    return (float(counter.next()) / total for _ in
-            chain(questions.es_search.reindex_questions(percent),
-                  wiki.es_search.reindex_documents(percent),
-                  forums.es_search.reindex_documents(percent)))
+    return (float(done) / total for done, _ in
+            izip(count(1),
+                 chain(questions.es_search.reindex_questions(percent),
+                       wiki.es_search.reindex_documents(percent),
+                       forums.es_search.reindex_documents(percent))))
 
 
 def es_whazzup():
