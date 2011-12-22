@@ -12,7 +12,7 @@ from access.decorators import login_required
 def display_name_or_none(user):
     try:
         return user.profile.name
-    except Profile.DoesNotExist:
+    except (Profile.DoesNotExist, AttributeError):
         return None
 
 
@@ -21,7 +21,9 @@ def display_name_or_none(user):
 @json_view
 def usernames(request):
     """An API to provide auto-complete data for user names."""
-    pre = request.GET.get('term', '')
+    term = request.GET.get('term', '')
+    query = request.GET.get('query', '')
+    pre = term or query
 
     if not pre:
         return []
