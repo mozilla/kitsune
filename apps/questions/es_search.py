@@ -105,7 +105,7 @@ def extract_question(question):
     return question_data
 
 
-def index_doc(doc, bulk=False, force_insert=False, es=None):
+def index_doc(doc, bulk=False, force_insert=False, es=None, refresh=False):
     from questions.models import Question
 
     if es is None:
@@ -121,6 +121,9 @@ def index_doc(doc, bulk=False, force_insert=False, es=None):
         # have a second one, that will cause everything to die.
         es.index(doc, index, doc_type=Question._meta.db_table,
                  id=doc['id'], bulk=bulk, force_insert=force_insert)
+
+    if refresh:
+        es.refresh()
 
 
 def unindex_questions(ids):

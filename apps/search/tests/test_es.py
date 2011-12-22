@@ -5,6 +5,8 @@ from nose.tools import eq_
 from sumo.tests import TestCase, LocalizingClient, ElasticTestMixin
 from sumo.urlresolvers import reverse
 
+from questions.tests import question, answer, answer_vote
+
 from waffle.models import Flag
 
 
@@ -54,6 +56,26 @@ class ElasticSearchViewTests(ESTestCase):
         """
         Flag.objects.create(name='elasticsearch', everyone=True)
 
+        # Create a question with an answer with an answervote that
+        # marks the answer as helpful.  The question should have the
+        # "desktop" tag.
+        ques = question(
+            title=u'audio fails',
+            content=u'my audio dont work.')
+        ques.save()
+
+        ques.tags.add(u'desktop')
+
+        ans = answer(
+            question=ques,
+            content=u'You need to turn your volume up.')
+        ans.save()
+
+        ansvote = answer_vote(
+            answer=ans,
+            helpful=True)
+        ansvote.save()
+
         # This is the search that you get when you start on the sumo
         # homepage and do a search from the box with two differences:
         # first, we do it in json since it's easier to deal with
@@ -64,11 +86,7 @@ class ElasticSearchViewTests(ESTestCase):
             'format': 'json'
         })
 
-        # TODO: Fix this so it works when a != 1.  Need to add some
-        # more fixture data (I think).
         eq_(200, response.status_code)
 
-        # Make sure there are more than 0 results.  Otherwise we don't
-        # really know if it slid through the excerpting code.
         content = json.loads(response.content)
         self.assertGreater(content['total'], 0)
