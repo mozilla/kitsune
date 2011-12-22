@@ -65,7 +65,7 @@ def extract_document(doc):
     return d
 
 
-def index_doc(doc, bulk=False, force_insert=False, es=None):
+def index_doc(doc, bulk=False, force_insert=False, es=None, refresh=False):
     from wiki.models import Document
 
     if es is None:
@@ -81,6 +81,9 @@ def index_doc(doc, bulk=False, force_insert=False, es=None):
         # have a second one, that will cause everything to die.
         es.index(doc, index, doc_type=Document._meta.db_table,
                  id=doc['id'], bulk=bulk, force_insert=force_insert)
+
+    if refresh:
+        es.refresh()
 
 
 def unindex_documents(ids):

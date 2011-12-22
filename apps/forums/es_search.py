@@ -73,7 +73,8 @@ def extract_thread(thread):
     return d
 
 
-def index_thread(thread, bulk=False, force_insert=False, es=None):
+def index_thread(thread, bulk=False, force_insert=False, es=None,
+                 refresh=True):
     from forums.models import Thread
 
     if es is None:
@@ -89,6 +90,9 @@ def index_thread(thread, bulk=False, force_insert=False, es=None):
         # have a second one, that will cause everything to die.
         es.index(thread, index, doc_type=Thread._meta.db_table,
                  id=thread['id'], bulk=bulk, force_insert=force_insert)
+
+    if refresh:
+        es.refresh()
 
 
 def unindex_threads(ids):

@@ -43,7 +43,7 @@ def index_threads(ids, **kw):
     from forums import es_search
     from forums.models import Thread
     for thread in Thread.uncached.filter(id__in=ids):
-        es_search.index_thread(es_search.extract_thread(thread))
+        es_search.index_thread(es_search.extract_thread(thread), refresh=True)
 
 
 @task
