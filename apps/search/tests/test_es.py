@@ -80,7 +80,7 @@ class ElasticSearchViewTests(ESTestCase):
         # homepage and do a search from the box with two differences:
         # first, we do it in json since it's easier to deal with
         # testing-wise and second, we search for 'audio' since we have
-        # fixture data for that.
+        # data for that.
         response = self.localizing_client.get(reverse('search'), {
             'q_tags': 'desktop', 'product': 'desktop', 'q': 'audio',
             'format': 'json'
@@ -89,4 +89,17 @@ class ElasticSearchViewTests(ESTestCase):
         eq_(200, response.status_code)
 
         content = json.loads(response.content)
-        self.assertGreater(content['total'], 0)
+        eq_(content['total'], 1)
+
+        # This is another search that picks up results based on the
+        # answer_content.  answer_content is in a string array, so
+        # this makes sure that works.
+        response = self.localizing_client.get(reverse('search'), {
+            'q_tags': 'desktop', 'product': 'desktop', 'q': 'volume',
+            'format': 'json'
+        })
+
+        eq_(200, response.status_code)
+
+        content = json.loads(response.content)
+        eq_(content['total'], 1)

@@ -75,10 +75,7 @@ def extract_question(question):
 
     question_data['tags'] = [tag['name'] for tag in question.tags.values()]
 
-    # TODO: Change this to an array.
-    #
-    # answer_content is a \n\n delimited mish-mosh of all the
-    # answer content.
+    # Array of strings.
     answer_content = []
 
     # has_helpful is true if at least one answer is marked as
@@ -97,7 +94,7 @@ def extract_question(question):
         answer_creator.add(ans.creator.username)
         answer_votes += ans.upvotes
 
-    question_data['answer_content'] = '\n\n'.join(answer_content)
+    question_data['answer_content'] = answer_content
     question_data['has_helpful'] = has_helpful
     question_data['answer_creator'] = list(answer_creator)
     question_data['answer_votes'] = answer_votes
