@@ -42,8 +42,8 @@ def get_index(model):
             or settings.ES_INDEXES['default'])
 
 
-def es_reindex(percent=100):
-    """Rebuild Elastic indexes, returning an iterable of progress ratios.
+def es_reindex_with_progress(percent=100):
+    """Rebuild Elastic indexes as you iterate over yielded progress ratios.
 
     :arg percent: Defaults to 100.  Allows you to specify how much of
         each doctype you want to index.  This is useful for
@@ -70,6 +70,11 @@ def es_reindex(percent=100):
                  chain(questions.es_search.reindex_questions(percent),
                        wiki.es_search.reindex_documents(percent),
                        forums.es_search.reindex_documents(percent))))
+
+
+def es_reindex(percent=100):
+    """Rebuild ElasticSearch indexes."""
+    [x for x in es_reindex_with_progress(percent) if False]
 
 
 def es_whazzup():

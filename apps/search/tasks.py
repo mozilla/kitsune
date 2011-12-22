@@ -7,7 +7,7 @@ from django.core.cache import cache
 from celery.decorators import task
 from waffle.models import Flag
 
-from search.es_utils import es_reindex
+from search.es_utils import es_reindex_with_progress
 
 
 # This is present in memcached when reindexing is in progress and holds a float
@@ -35,7 +35,7 @@ def reindex_with_progress(waffle_when_done=False):
 
         # Reindex:
         start = time()
-        for ratio in es_reindex():
+        for ratio in es_reindex_with_progress():
             now = time()
             if now > start + settings.ES_REINDEX_PROGRESS_BAR_INTERVAL:
                 # Update memcached only every so often.
