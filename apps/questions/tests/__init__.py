@@ -61,6 +61,7 @@ def question(**kwargs):
                     created=datetime.now(),
                     num_answers=0,
                     is_locked=0)
+    defaults.update(kwargs)
     if 'creator' not in kwargs and 'creator_id' not in kwargs:
         defaults['creator'] = user(save=True)
     return Question(**defaults)
@@ -69,6 +70,7 @@ def question(**kwargs):
 @with_save
 def answer(**kwargs):
     defaults = dict(created=datetime.now(), content='', upvotes=0)
+    defaults.update(kwargs)
     if 'question' not in kwargs and 'question_id' not in kwargs:
         defaults['question'] = question(save=True)
     if 'creator' not in kwargs and 'creator_id' not in kwargs:
