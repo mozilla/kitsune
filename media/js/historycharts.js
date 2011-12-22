@@ -136,7 +136,7 @@
                      gridLineColor: '#4572A7',
                      gridLineDashStyle: 'shortDash',
                      title: {
-                        text: gettext('Yes Votes'),
+                        text: gettext('Number of Votes'),
                         style: {
                            color: '#4572A7'
                         }
@@ -147,25 +147,6 @@
                         }
                      },
                      opposite: true,
-                     offset: 0,
-                     min: 0
-                  }, { // Tertiary yAxis
-                     gridLineWidth: 1,
-                     gridLineColor: '#AA4643',
-                     gridLineDashStyle: 'shortDot',
-                     title: {
-                        text: gettext('No Votes'),
-                        style: {
-                           color: '#AA4643'
-                        }
-                     },
-                     labels: {
-                        style: {
-                           color: '#AA4643'
-                        }
-                     },
-                     opposite: true,
-                     offset: 45,
                      min: 0
                   }],
             tooltip: {
@@ -217,6 +198,14 @@
                         lineWidth: 1
                     },
                     stickyTracking: true,
+                    events: {
+                        hide: function(a) {
+                            this.yAxis.axisTitle.hide();
+                        },
+                        show: function() {
+                            this.yAxis.axisTitle.show();
+                        }
+                    },
                 }
             },
             series: data

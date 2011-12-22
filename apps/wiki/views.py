@@ -828,7 +828,7 @@ def get_helpful_votes_async(request, document_slug):
                      {'name': _('No'),
                       'id': 'no_data',
                       'data': no_data,
-                      'yAxis': 2},
+                      'yAxis': 1},
                      {'name': _('Helpfulness Percentage'),
                       'id': 'perc_data',
                       'data': perc_data},
