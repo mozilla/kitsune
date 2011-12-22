@@ -719,7 +719,7 @@ GALLERY_VIDEO_THUMBNAIL_PATH = 'uploads/gallery/videos/thumbnails/'
 GALLERY_VIDEO_THUMBNAIL_PROGRESS_URL = MEDIA_URL + 'img/video-thumb.png'
 THUMBNAIL_PROGRESS_WIDTH = 32  # width of the above image
 THUMBNAIL_PROGRESS_HEIGHT = 32  # height of the above image
-VIDEO_MAX_FILESIZE = 16777216  # 16 megabytes, in bytes
+VIDEO_MAX_FILESIZE = 52428800  # 50 megabytes, in bytes
 
 # Customer Care settings
 CC_MAX_TWEETS = 500  # Max. no. of tweets in DB
