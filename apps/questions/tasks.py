@@ -102,10 +102,3 @@ def unindex_questions(ids, **kw):
     log.debug('Unindexing questions: %r', ids)
     from questions import es_search
     es_search.unindex_questions(ids)
-
-
-@task
-def unindex_answers(ids, **kw):
-    log.debug('Unindexing answers: %r', ids)
-    from questions import es_search
-    es_search.unindex_answers(ids)
