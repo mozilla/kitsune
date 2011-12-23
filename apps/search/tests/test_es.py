@@ -11,9 +11,6 @@ from waffle.models import Flag
 
 
 class ESTestCase(TestCase, ElasticTestMixin):
-    fixtures = ['users.json', 'search/documents.json',
-                'posts.json', 'questions.json']
-
     def setUp(self):
         super(ESTestCase, self).setUp()
         self.setup_indexes()
@@ -37,6 +34,16 @@ class ElasticSearchViewTests(ESTestCase):
         """
         Flag.objects.create(name='elasticsearch', everyone=True)
 
+        # Create a question with an answer with an answervote that
+        # marks the answer as helpful.  The question should have the
+        # "desktop" tag.
+        ques = question(
+            title=u'audio fails',
+            content=u'my audio dont work.')
+        ques.save()
+
+        ques.tags.add(u'desktop')
+
         response = self.localizing_client.get(reverse('search'), {
             'format': 'json', 'q': 'audio', 'a': 1
         })
@@ -45,11 +52,11 @@ class ElasticSearchViewTests(ESTestCase):
         # Make sure there are more than 0 results.  Otherwise we don't
         # really know if it slid through the excerpting code.
         content = json.loads(response.content)
-        self.assertGreater(content['total'], 0)
+        eq_(content['total'], 1)
 
-    def test_front_page_search(self):
+    def test_front_page_search_for_questions(self):
         """This tests whether doing a search from the front page returns
-        results.
+        question results.
 
         Bug #709202.
 
