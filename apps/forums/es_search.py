@@ -74,7 +74,7 @@ def extract_thread(thread):
 
 
 def index_thread(thread, bulk=False, force_insert=False, es=None,
-                 refresh=True):
+                 refresh=False):
     from forums.models import Thread
 
     if es is None:
