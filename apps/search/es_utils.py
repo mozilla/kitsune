@@ -21,6 +21,8 @@ INDEX = 'index'
 STORE = 'store'
 TERM_VECTOR = 'term_vector'
 
+NOT_INDEXED = 'not_indexed'
+
 LONG = 'long'
 INTEGER = 'integer'
 STRING = 'string'
