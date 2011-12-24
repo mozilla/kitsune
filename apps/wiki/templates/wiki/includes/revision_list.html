@@ -71,7 +71,9 @@
             {% endif %}
           </div>
           <div class="creator">
-            {{ rev.creator }}
+            <a href="{{ profile_url(rev.creator) }}">
+              {{ rev.creator }}
+            </a>
           </div>
           {% if request.locale == settings.WIKI_DEFAULT_LANGUAGE %}
             <div class="l10n">
