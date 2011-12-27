@@ -465,8 +465,6 @@ MINIFY_BUNDLES = {
         'questions': (
             'js/markup.js',
             'js/libs/jquery.ajaxupload.js',
-            'js/libs/jquery.tokeninput.js',
-            'js/libs/jquery.autocomplete.js',
             'js/ajaxvote.js',
             'js/ajaxpreview.js',
             'js/aaq.js',
@@ -498,7 +496,6 @@ MINIFY_BUNDLES = {
             'js/libs/swfobject.js',
             'js/libs/jquery.lazyload.js',
             'js/libs/jquery.selectbox-1.2.js',
-            'js/libs/jquery.autocomplete.js',
             'js/libs/jquery.tokeninput.js',
             'js/users.autocomplete.js',
             'js/screencast.js',
@@ -554,7 +551,6 @@ MINIFY_BUNDLES = {
         ),
         'groups': (
             'js/libs/jquery.tokeninput.js',
-            'js/libs/jquery.autocomplete.js',
             'js/users.autocomplete.js',
             'js/markup.js',
             'js/groups.js',
