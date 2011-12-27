@@ -20,7 +20,8 @@ from activity.models import ActionMixin
 from flagit.models import FlaggedObject
 from karma.manager import KarmaManager
 import questions as constants
-from questions.karma_actions import AnswerAction, SolutionAction
+from questions.karma_actions import (AnswerAction, FirstAnswerAction,
+                                     SolutionAction)
 from questions.question_config import products
 from questions.tasks import (update_question_votes, update_answer_pages,
                              log_answer, index_questions, unindex_questions)
@@ -384,6 +385,14 @@ class Answer(ActionMixin, ModelBase):
                 question.last_answer = None
         if question.solution == self:
             question.solution = None
+
+            # Delete karma solution action.
+            SolutionAction(user=self.creator, day=self.created).delete()
+
+        # Delete karma answer action and first answer action if it was first.
+        AnswerAction(user=self.creator, day=self.created).delete()
+        if self.id == question.answers.all().order_by('created')[0].id:
+            FirstAnswerAction(user=self.creator, day=self.created).delete()
 
         question.num_answers = question.answers.count() - 1
         question.save()

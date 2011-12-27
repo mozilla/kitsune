@@ -42,7 +42,8 @@ def redis_client(name):
     redis = Redis(host=host, port=port, db=db, password=password,
                   socket_timeout=socket_timeout)
     try:
-        redis.info()
+        # Make a cheap call to verify we can connect.
+        redis.exists('dummy-key')
     except ConnectionError:
         raise RedisError(
             'Unable to connect to redis backend: {k}'.format(k=name))
