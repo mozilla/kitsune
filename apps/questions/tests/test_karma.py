@@ -39,6 +39,33 @@ class KarmaTests(TestCaseBase):
         post(self.client, 'questions.solve', args=[question.id, answer.id])
         assert save.called
 
+    @mock.patch.object(SolutionAction, 'delete')
+    def test_unsolve(self, delete):
+        answer = Answer.objects.get(pk=1)
+        question = answer.question
+        self.client.login(username='jsocol', password='testpass')
+        question.solution = answer
+        question.save()
+        post(self.client, 'questions.unsolve', args=[question.id, answer.id])
+        assert delete.called
+
+    @mock.patch.object(AnswerAction, 'delete')
+    def test_delete_answer(self, delete):
+        answer = Answer.objects.get(pk=1)
+        answer.delete()
+        assert delete.called
+
+    @mock.patch.object(SolutionAction, 'delete')
+    @mock.patch.object(AnswerAction, 'delete')
+    def test_delete_solution(self, a_delete, s_delete):
+        answer = Answer.objects.get(pk=1)
+        question = answer.question
+        question.solution = answer
+        question.save()
+        answer.delete()
+        assert a_delete.called
+        assert s_delete.called
+
     @mock.patch.object(AnswerMarkedHelpfulAction, 'save')
     def test_helpful_vote(self, save):
         answer = Answer.objects.get(pk=1)

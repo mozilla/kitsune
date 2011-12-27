@@ -35,7 +35,21 @@ class KarmaAction(object):
                 # Passing self below is required because the method is a @task
                 self._save(self, redis)
 
+    def delete(self, async=True):
+        """Remove an action from redis."""
+        if waffle.switch_is_active('karma'):
+            if async:
+                self._delete.delay(self)
+            else:
+                # Passing self below is required because the method is a @task
+                self._delete(self)
+
     @task
     def _save(self, redis=None):
         statsd.incr('karma.{t}'.format(t=self.action_type))
         KarmaManager(redis).save_action(self)
+
+    @task
+    def _delete(self):
+        statsd.incr('karma.delete.{t}'.format(t=self.action_type))
+        KarmaManager().delete_action(self)

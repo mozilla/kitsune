@@ -444,9 +444,11 @@ def solve(request, question_id, answer_id):
 
     question.solution = answer
     question.save()
+
     statsd.incr('questions.solution')
     QuestionSolvedEvent(answer).fire(exclude=question.creator)
-    SolutionAction(answer.creator).save()
+    SolutionAction(user=answer.creator, day=answer.created).save()
+
     messages.add_message(request, messages.SUCCESS,
                          _('Thank you for choosing a solution!'))
 
@@ -458,7 +460,7 @@ def solve(request, question_id, answer_id):
 def unsolve(request, question_id, answer_id):
     """Accept an answer as the solution to the question."""
     question = get_object_or_404(Question, pk=question_id)
-    get_object_or_404(Answer, pk=answer_id)
+    answer = get_object_or_404(Answer, pk=answer_id)
     if question.is_locked:
         raise PermissionDenied
 
@@ -468,6 +470,9 @@ def unsolve(request, question_id, answer_id):
 
     question.solution = None
     question.save()
+
+    statsd.incr('questions.unsolve')
+    SolutionAction(user=answer.creator, day=answer.created).delete()
 
     messages.add_message(request, messages.SUCCESS,
                          _("The solution was undone successfully."))

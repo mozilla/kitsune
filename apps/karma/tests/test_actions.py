@@ -57,3 +57,43 @@ class KarmaActionTests(TestCase):
                                     TestAction2.action_type))
         eq_(2, self.mgr.year_count(self.user, today.year,
                                    TestAction2.action_type))
+
+    @mock.patch.object(waffle, 'switch_is_active')
+    def test_delete_action(self, switch_is_active):
+        """Save two actions, one twice, and verify."""
+        switch_is_active.return_value = True
+        today = date.today()
+
+        # Create two TestAction1s and verify counts.
+        TestAction1(user=self.user).save()
+        TestAction1(user=self.user).save()
+        eq_(6, self.mgr.count(self.user, type='points'))
+        eq_(2, self.mgr.count(self.user, type=TestAction1.action_type))
+        today = date.today()
+        eq_(2, self.mgr.day_count(self.user, today, TestAction1.action_type))
+        eq_(2, self.mgr.month_count(self.user, today.year,
+                                    today.month, TestAction1.action_type))
+        eq_(2, self.mgr.year_count(self.user, today.year,
+                                   TestAction1.action_type))
+
+        # Delete one and verify new counts
+        TestAction1(user=self.user).delete()
+        eq_(3, self.mgr.count(self.user, type='points'))
+        eq_(1, self.mgr.count(self.user, type=TestAction1.action_type))
+        today = date.today()
+        eq_(1, self.mgr.day_count(self.user, today, TestAction1.action_type))
+        eq_(1, self.mgr.month_count(self.user, today.year,
+                                    today.month, TestAction1.action_type))
+        eq_(1, self.mgr.year_count(self.user, today.year,
+                                   TestAction1.action_type))
+
+        # Delete the other and verify all zeroes
+        TestAction1(user=self.user).delete()
+        eq_(0, self.mgr.count(self.user, type='points'))
+        eq_(0, self.mgr.count(self.user, type=TestAction1.action_type))
+        today = date.today()
+        eq_(0, self.mgr.day_count(self.user, today, TestAction1.action_type))
+        eq_(0, self.mgr.month_count(self.user, today.year,
+                                    today.month, TestAction1.action_type))
+        eq_(0, self.mgr.year_count(self.user, today.year,
+                                   TestAction1.action_type))
