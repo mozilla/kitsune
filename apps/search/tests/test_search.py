@@ -131,6 +131,7 @@ class SearchTest(SphinxTestCase):
         eq_('audio', q['s'])
         eq_('s', q['as'])
         eq_('0', q['r'])
+        eq_('sph', q['e'])
 
     def test_category(self):
         results = wiki_searcher().filter(category__in=[10])

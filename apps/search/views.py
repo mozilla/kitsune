@@ -51,6 +51,11 @@ def search(request, template=None):
     callback = request.GET.get('callback', '').strip()
     mimetype = 'application/x-javascript' if callback else 'application/json'
 
+    if waffle.flag_is_active(request, 'elasticsearch'):
+        engine = 'elastic'
+    else:
+        engine = 'sphinx'
+
     # Search "Expires" header format
     expires_fmt = '%A, %d %B %Y %H:%M:%S GMT'
 
@@ -235,8 +240,9 @@ def search(request, template=None):
             except IndexError:
                 pass
 
-            if waffle.flag_is_active(request, 'elasticsearch'):
-                highlight_fields = ['title', 'question_content', 'answer_content']
+            if engine == 'elastic':
+                highlight_fields = ['title', 'question_content',
+                                    'answer_content']
             else:
                 highlight_fields = ['content']
 
@@ -295,7 +301,7 @@ def search(request, template=None):
 
             search_s = search_s[begin:end]
 
-            if waffle.flag_is_active(request, 'elasticsearch'):
+            if engine == 'elastic':
                 # If we're doing elasticsearch, then we need to update
                 # the _s variables to point to the sliced versions of
                 # S so that, when we iterate over them in the
@@ -361,7 +367,7 @@ def search(request, template=None):
                     results.append(result)
 
                 else:
-                    if waffle.flag_is_active(request, 'elasticsearch'):
+                    if engine == 'elastic':
                         thread = doc
                     else:
                         thread = Thread.objects.get(pk=doc.thread_id)

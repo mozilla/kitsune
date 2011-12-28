@@ -1,5 +1,6 @@
 {# vim: set ts=2 et sts=2 sw=2: #}
 {% from "users/includes/macros.html" import login_form, register_form %}
+{% from "search/includes/macros.html" import search_engine with context %}
 
 {% macro select_product(products) -%}
   <h2>{{ _('Which product would you like to post a question about?') }}</h2>
@@ -65,6 +66,7 @@
 
 {% macro aaq_search_form(product, category, settings, host, request) -%}
   <form id="ask-search-form" class="aaq search" action="{% if settings.SESSION_COOKIE_SECURE %}https://{{ host }}{{ request.get_full_path() }}{% endif %}" method="get">
+    {{ search_engine() }}
     <input type="hidden" name="product" value="{{ product.key }}" />
     <input type="hidden" name="category" value="{{ category.key }}" />
     <input type="text" class="question" name="search" value="{{ request.GET.search }}" required="required" placeholder="{{ _('Summarize your question in a sentence') }}" />

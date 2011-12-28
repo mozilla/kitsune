@@ -1,7 +1,13 @@
 {% macro search_result(result, s=None, as='s', r=None) %}
   <div class="result {{ result.type }}">
-    <a class="title" href="{{ result.url|urlparams(s=s, as=as, r=r) }}">{{ result.title }}</a>
-    <p><a href="{{ result.url|urlparams(s=s, as=as, r=r) }}">
+    {% if waffle.flag('elasticsearch') %}
+      {% set engine = 'es' %}
+    {% else %}
+      {% set engine = 'sph' %}
+    {% endif %}
+    {% set url =  result.url|urlparams(s=s, as=as, r=r, e=engine) %}
+    <a class="title" href="{{ url }}">{{ result.title }}</a>
+    <p><a href="{{ url }}">
       {{ result.search_summary|safe }}
     </a></p>
     {% if result.type == 'question' %}
