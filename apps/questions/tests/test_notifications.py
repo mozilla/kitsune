@@ -70,6 +70,12 @@ answer.
 
 https://testserver/en-US/questions/1#answer-%s
 
+Did you know that pcraciunoiu is a Firefox user
+just like you? Get started helping other Firefox users by
+browsing questions at
+https://testserver/questions?filter=unsolved -- you
+might just make someone's day!
+
 --
 Unsubscribe from these emails:
 https://testserver/en-US/unsubscribe/"""
