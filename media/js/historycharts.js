@@ -206,6 +206,9 @@
                             this.yAxis.axisTitle.show();
                         }
                     },
+                    dataGrouping: {
+                        enabled: false,
+                    },
                 }
             },
             series: data
