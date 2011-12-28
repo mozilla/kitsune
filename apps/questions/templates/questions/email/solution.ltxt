@@ -15,4 +15,10 @@ helpful? Let other Firefox users know by voting next to the
 answer.
 
 https://{{ host }}{{ solution_url }}
+
+Did you know that {{ answerer }} is a Firefox user
+just like you? Get started helping other Firefox users by
+browsing questions at
+https://{{ host }}/questions?filter=unsolved -- you
+might just make someone's day!
 {% endblocktrans %}{% endautoescape %}{% unsubscribe_instructions watch %}
