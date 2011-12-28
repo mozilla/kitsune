@@ -67,7 +67,7 @@
             legend: {
                 enabled: true,
                 y: 40,
-                verticalAlign: 'top',
+                verticalAlign: 'top'
             },
             rangeSelector: {
                 selected: 2,
@@ -123,7 +123,7 @@
                         },
                         formatter: function() {
                            return this.value*100 +'%';
-                        },
+                        }
                      },
                      title: {
                         text: 'Percent Helpfulness',
@@ -206,6 +206,9 @@
                             this.yAxis.axisTitle.show();
                         }
                     },
+                    dataGrouping: {
+                        enabled: false,
+                    }
                 }
             },
             series: data
