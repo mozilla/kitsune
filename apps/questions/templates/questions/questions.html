@@ -7,6 +7,7 @@
 {% if questions.number > 1 %}
   {% set canonical_url = canonical_url|urlparams(page=questions.number) %}
 {% endif %}
+{% set meta = (('robots', 'noindex'),) %}
 
 {% block above_main %}
   <hgroup>
