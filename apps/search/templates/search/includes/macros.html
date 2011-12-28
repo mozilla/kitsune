@@ -1,0 +1,6 @@
+{# vim: set ts=2 et sts=2 sw=2: #}
+
+{% macro search_engine() -%}
+  {# Must be imported with context #}
+  <input type="hidden" name="e" value="{% if waffle.flag('elasticsearch') %}es{% else %}sph{% endif %}" />
+{%- endmacro %}

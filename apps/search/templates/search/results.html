@@ -1,6 +1,7 @@
 {# vim: set ts=2 et sts=2 sw=2: #}
 {% extends "search/base.html" %}
-{% from "search/includes/result.html" import search_result %}
+{% from "search/includes/result.html" import search_result with context %}
+{% from "search/includes/macros.html" import search_engine with context %}
 {% set meta = (('WT.oss', q),
                ('WT.oss_r', num_results)) %}
 
@@ -8,12 +9,13 @@
 <article id="search-results" class="main">
   <div id="basic-search" class="search-refine">
     <form role="search" method="get" action="search">
-    {% for name, field in search_form.fields.items() if not name in ('q',) %}
-      {% set list = request.GET.getlist(name) %}
-      {% for value in list %}
-        <input type="hidden" name="{{ name }}" value="{{ value }}" />
+      {{ search_engine() }}
+      {% for name, field in search_form.fields.items() if not name in ('q',) %}
+        {% set list = request.GET.getlist(name) %}
+        {% for value in list %}
+          <input type="hidden" name="{{ name }}" value="{{ value }}" />
+        {% endfor %}
       {% endfor %}
-    {% endfor %}
       <input type="text" class="search-query search-refine-query" value="{{ q }}" name="q">
       <input type="submit" class="search-refine-submit btn-large" value="{{ _('Search') }}">
     </form>
