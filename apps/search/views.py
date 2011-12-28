@@ -181,12 +181,7 @@ def search(request, template=None):
 
         q_tags = [t.strip() for t in cleaned['q_tags'].split()]
         for t in q_tags:
-            if waffle.flag_is_active(request, 'elasticsearch'):
-                # In ES, tags is a concatenated string.  We check to
-                # see if tag t is in the tags string.
-                question_s = question_s.filter(tags=t)
-            else:
-                question_s = question_s.filter(tag=t)
+            question_s = question_s.filter(tag=t)
 
     # Discussion forum specific filters
     if cleaned['w'] & constants.WHERE_DISCUSSION:
