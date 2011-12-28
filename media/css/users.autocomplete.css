@@ -11,6 +11,7 @@ ul.token-input-list-facebook {
     font-size: 15px;
     font-family: Verdana, sans-serif;
     margin: 3px;
+    padding: 0;
     width: 325px;
     border-image: initial;
     width: 600px;

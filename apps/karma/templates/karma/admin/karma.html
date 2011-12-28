@@ -3,7 +3,7 @@
 
 {% block extrastyle %}
   {{ block.super }}
-  <link rel="stylesheet" media="screen,projection,tv" href="{{ MEDIA_URL }}css/autocomplete.css" />
+  <link rel="stylesheet" media="screen,projection,tv" href="{{ MEDIA_URL }}css/users.autocomplete.css" />
 {% endblock %}
 
 {% block content %}
@@ -53,7 +53,7 @@
   <section>
     <h1>User Karma{% if username %}: {{ username }}{% endif %}</h1>
     <form action="" method="GET">
-      <input type="text" placeholder="username" class="user-autocomplete" name="username" />
+      <input type="text" placeholder="username" class="user-autocomplete single"  name="username" />
       <input type="submit" value="Show Karma Data" />
     </form>
     {% if user_karma %}
@@ -99,6 +99,7 @@
     // Not happy about this... but it works!
     $('body').data('usernames-api', '/en-US/users/api/usernames');
   </script>
-  <script type="text/javascript" src="{{ MEDIA_URL }}js/libs/jquery.autocomplete.js"></script>
+  <script type="text/javascript" src="{{ MEDIA_URL }}js/i18n.js"></script>
+  <script type="text/javascript" src="{{ MEDIA_URL }}js/libs/jquery.tokeninput.js"></script>
   <script type="text/javascript" src="{{ MEDIA_URL }}js/users.autocomplete.js"></script>
 {% endblock %}
