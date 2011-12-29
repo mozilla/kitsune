@@ -168,7 +168,7 @@ class ElasticSearchViewTests(ESTestCase):
         response = self.localizing_client.get(reverse('search'), {
             'author': '', 'created': '0', 'created_date': '',
             'updated': '0', 'updated_date': '', 'sortby': '0',
-            'a': '1', 'w': '4', 'q': 'crash',
+            'a': '1', 'w': '4', 'q': 'hsarc',
             'format': 'json'
         })
 
