@@ -581,3 +581,11 @@ Function.prototype.wtbind = function(obj){
   };
   return temp;
 }
+
+var _tag=new WebTrends();
+_tag.dcsGetId();
+_tag.dcsCustom=function(){
+// Add custom parameters here.
+//_tag.DCSext.param_name=param_value;
+}
+_tag.dcsCollect();
