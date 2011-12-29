@@ -65,5 +65,11 @@
   {{ document_tabs(document, document.parent, user, '', settings) }}
 {% endblock %}
 
+{% block side_bottom %}
+  {% if not revision.reviewed and not document.current_revision %}
+    {{ show_for(header=_('Article is for:')) }}
+  {% endif %}
+{% endblock %}
+
 {% block side %}
 {% endblock %}
