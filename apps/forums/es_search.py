@@ -68,7 +68,7 @@ def extract_thread(thread):
 
     d['author_id'] = list(author_ids)
     d['author_ord'] = list(author_ords)
-    d['content'] = '\n\n'.join(content)
+    d['content'] = content
 
     return d
 
