@@ -27,10 +27,8 @@
             ShowFor.initForTags();
             initNeedsChange();
 
-            // Enable buttons when done loading.
-            $(window).load(function() {
-                $('#actions input').removeAttr('disabled');
-            });
+            // We can enable the buttons now.
+            $('#actions input').removeAttr('disabled');
         }
 
         if ($body.is('.edit, .new, .translate')) { // Document form page
@@ -39,10 +37,8 @@
             initPreValidation();
             initNeedsChange();
 
-            // Enable buttons when done loading.
-            $(window).load(function() {
-                $('.submit input').removeAttr('disabled');
-            });
+            // We can enable the buttons now.
+            $('.submit input').removeAttr('disabled');
         }
 
         initEditingTools();
