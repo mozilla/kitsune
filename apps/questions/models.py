@@ -62,6 +62,7 @@ class Question(ModelBase, BigVocabTaggableMixin):
 
     html_cache_key = u'question:html:%s'
     tags_cache_key = u'question:tags:%s'
+    contributors_cache_key = u'question:contributors:%s'
 
     class Meta:
         ordering = ['-updated']
@@ -87,18 +88,21 @@ class Question(ModelBase, BigVocabTaggableMixin):
     def content_parsed(self):
         return _content_parsed(self)
 
-    def clear_cached_properties(self):
+    def clear_cached_html(self):
         cache.delete(self.html_cache_key % self.id)
 
     def clear_cached_tags(self):
         cache.delete(self.tags_cache_key % self.id)
+
+    def clear_cached_contributors(self):
+        cache.delete(self.contributors_cache_key % self.id)
 
     def save(self, no_update=False, *args, **kwargs):
         """Override save method to take care of updated."""
         new = not self.id
 
         if not new:
-            self.clear_cached_properties()
+            self.clear_cached_html()
             if not no_update:
                 self.updated = datetime.now()
 
@@ -245,11 +249,22 @@ class Question(ModelBase, BigVocabTaggableMixin):
     def is_contributor(self, user):
         """Did the passed in user contribute to this question?"""
         if user.is_authenticated():
-            qs = self.answers.filter(creator=user)
-            if self.creator == user or qs.count() > 0:
-                return True
+            return user.id in self.contributors
 
         return False
+
+    @property
+    def contributors(self):
+        """The contributors to the question."""
+        cache_key = self.contributors_cache_key % self.id
+        contributors = cache.get(cache_key)
+        if contributors is None:
+            contributors = self.answers.all().values_list('creator_id',
+                                                          flat=True)
+            contributors = list(contributors)
+            contributors.append(self.creator_id)
+            cache.add(cache_key, contributors)
+        return contributors
 
     @property
     def is_solved(self):
@@ -326,7 +341,7 @@ class Answer(ActionMixin, ModelBase):
     def content_parsed(self):
         return _content_parsed(self)
 
-    def clear_cached_properties(self):
+    def clear_cached_html(self):
         cache.delete(self.html_cache_key % self.id)
 
     def save(self, no_update=False, no_notify=False, *args, **kwargs):
@@ -342,7 +357,7 @@ class Answer(ActionMixin, ModelBase):
             self.page = page
         else:
             self.updated = datetime.now()
-            self.clear_cached_properties()
+            self.clear_cached_html()
 
         super(Answer, self).save(*args, **kwargs)
 
@@ -350,6 +365,7 @@ class Answer(ActionMixin, ModelBase):
             self.question.num_answers = self.question.answers.count()
             self.question.last_answer = self
             self.question.save(no_update)
+            self.question.clear_cached_contributors()
 
             if not no_notify:
                 # Avoid circular import: events.py imports Question.
@@ -371,6 +387,7 @@ class Answer(ActionMixin, ModelBase):
 
         question.num_answers = question.answers.count() - 1
         question.save()
+        question.clear_cached_contributors()
 
         super(Answer, self).delete(*args, **kwargs)
 
