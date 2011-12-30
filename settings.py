@@ -49,8 +49,8 @@ SLAVE_DATABASES = []
 WAFFLE_CACHE_PREFIX = 'w0.7.7a:'
 
 # Addresses email comes from
-DEFAULT_FROM_EMAIL = 'notifications@support.mozilla.com'
-SERVER_EMAIL = 'server-error@support.mozilla.com'
+DEFAULT_FROM_EMAIL = 'notifications@support.mozilla.org'
+SERVER_EMAIL = 'server-error@support.mozilla.org'
 EMAIL_SUBJECT_PREFIX = '[support] '
 
 PLATFORM_NAME = platform.node()
@@ -741,7 +741,7 @@ TWITTER_CONSUMER_KEY = ''
 TWITTER_CONSUMER_SECRET = ''
 
 
-TIDINGS_FROM_ADDRESS = 'notifications@support.mozilla.com'
+TIDINGS_FROM_ADDRESS = 'notifications@support.mozilla.org'
 # Anonymous watches must be confirmed.
 TIDINGS_CONFIRM_ANONYMOUS_WATCHES = True
 TIDINGS_MODEL_BASE = 'sumo.models.ModelBase'
