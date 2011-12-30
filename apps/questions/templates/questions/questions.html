@@ -93,7 +93,7 @@
             {% if question.is_contributor(user) %}
               <span class="contributed">{{ _('Contributed') }}</span>
             {% endif %}
-            {% set tags = question.tags.all() %}
+            {% set tags = question.my_tags %}
             {% if tags %}
               <ul class="tag-list immutable">
                 {% for tag in tags %}

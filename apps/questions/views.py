@@ -558,7 +558,7 @@ def add_tag(request, question_id):
             reverse('questions.answers', args=[question_id]))
 
     try:
-        canonical_name = _add_tag(request, question_id)
+        question, canonical_name = _add_tag(request, question_id)
     except Tag.DoesNotExist:
         template_data = _answers_data(request, question_id)
         template_data['tag_adding_error'] = UNAPPROVED_TAG
@@ -566,6 +566,7 @@ def add_tag(request, question_id):
         return jingo.render(request, 'questions/answers.html', template_data)
 
     if canonical_name:  # success
+        question.clear_cached_tags()
         return HttpResponseRedirect(
             reverse('questions.answers', args=[question_id]))
 
@@ -584,13 +585,14 @@ def add_tag_async(request, question_id):
 
     """
     try:
-        canonical_name = _add_tag(request, question_id)
+        question, canonical_name = _add_tag(request, question_id)
     except Tag.DoesNotExist:
         return HttpResponse(json.dumps({'error': unicode(UNAPPROVED_TAG)}),
                             mimetype='application/json',
                             status=400)
 
     if canonical_name:
+        question.clear_cached_tags()
         tag = Tag.objects.get(name=canonical_name)
         tag_url = urlparams(reverse('questions.questions'), tagged=tag.slug)
         data = {'canonicalName': canonical_name,
@@ -618,6 +620,7 @@ def remove_tag(request, question_id):
         name = names[0][len(prefix):]
         question = get_object_or_404(Question, pk=question_id)
         question.tags.remove(name)
+        question.clear_cached_tags()
 
     return HttpResponseRedirect(
         reverse('questions.answers', args=[question_id]))
@@ -635,6 +638,7 @@ def remove_tag_async(request, question_id):
     if name:
         question = get_object_or_404(Question, pk=question_id)
         question.tags.remove(name)
+        question.clear_cached_tags()
         return HttpResponse('{}', mimetype='application/json')
 
     return HttpResponseBadRequest(json.dumps({'error': unicode(NO_TAG)}),
@@ -947,9 +951,11 @@ def _add_tag(request, question_id):
         except Tag.DoesNotExist:
             if request.user.has_perm('taggit.add_tag'):
                 question.tags.add(tag_name)  # implicitly creates if needed
-                return tag_name
+                return question, tag_name
             raise
-        return canonical_name
+        return question, canonical_name
+
+    return None, None
 
 
 def _get_top_contributors():
