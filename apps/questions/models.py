@@ -249,7 +249,7 @@ class Question(ModelBase, BigVocabTaggableMixin):
 
     @property
     def is_solved(self):
-        return Answer.objects.filter(pk=self.solution_id).exists()
+        return not not self.solution_id
 
 
 @receiver(post_save, sender=Question,
