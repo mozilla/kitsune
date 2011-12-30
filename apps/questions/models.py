@@ -61,6 +61,7 @@ class Question(ModelBase, BigVocabTaggableMixin):
     flags = generic.GenericRelation(FlaggedObject)
 
     html_cache_key = u'question:html:%s'
+    tags_cache_key = u'question:tags:%s'
 
     class Meta:
         ordering = ['-updated']
@@ -88,6 +89,9 @@ class Question(ModelBase, BigVocabTaggableMixin):
 
     def clear_cached_properties(self):
         cache.delete(self.html_cache_key % self.id)
+
+    def clear_cached_tags(self):
+        cache.delete(self.tags_cache_key % self.id)
 
     def save(self, no_update=False, *args, **kwargs):
         """Override save method to take care of updated."""
@@ -250,6 +254,16 @@ class Question(ModelBase, BigVocabTaggableMixin):
     @property
     def is_solved(self):
         return not not self.solution_id
+
+    @property
+    def my_tags(self):
+        """A caching wrapper around self.tags.all()."""
+        cache_key = self.tags_cache_key % self.id
+        tags = cache.get(cache_key)
+        if tags is None:
+            tags = self.tags.all()
+            cache.add(cache_key, tags)
+        return tags
 
 
 @receiver(post_save, sender=Question,
