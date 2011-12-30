@@ -54,50 +54,59 @@ class KarmaManager(object):
 
     # Setters:
     @_handle_redis_errors
-    def save_action(self, action, multiplier=1):
+    def save_action(self, action, subtract=False):
         """Save a new karma action to redis.
 
-        * multiplier is used by delete_action to substract instead of add
-          to the stats.
+        :arg action: the action to save
+        :arg subract: used by delete_action to subtract instead of add
+            to the stats.
         """
         # Keep a list of users with karma
         self.redis.sadd('{p}:users'.format(p=KEY_PREFIX), action.userid)
+
+        if subtract:
+            pts_incr = action.points * -1
+            count_incr = -1
+        else:
+            pts_incr = action.points
+            count_incr = 1
 
         # Point counters:
         # Increment user and overview counts
         for key in [hash_key(action.userid), hash_key('overview')]:
             # Increment total points
-            self.redis.hincrby(key, 'points:all', action.points * multiplier)
+            self.redis.hincrby(key, 'points:all', pts_incr)
             # Increment points daily count
-            self.redis.hincrby(key, 'points:{d}'.format(
-                d=action.date), action.points * multiplier)
+            self.redis.hincrby(
+                key, 'points:{d}'.format(d=action.date), pts_incr)
             # Increment points monthly count
             self.redis.hincrby(key, 'points:{y}-{m:02d}'.format(
-                y=action.date.year, m=action.date.month),
-                action.points * multiplier)
+                y=action.date.year, m=action.date.month), pts_incr)
             # Increment points yearly count
-            self.redis.hincrby(key, 'points:{y}'.format(
-                y=action.date.year), action.points * multiplier)
+            self.redis.hincrby(
+                key, 'points:{y}'.format(y=action.date.year), pts_incr)
 
             # Action counters:
             # Increment action total count
             self.redis.hincrby(
-                key, '{t}:all'.format(t=action.action_type),
-                1 * multiplier)
+                key, '{t}:all'.format(t=action.action_type), count_incr)
             # Increment action daily count
             self.redis.hincrby(key, '{t}:{d}'.format(
-                 t=action.action_type, d=action.date), 1 * multiplier)
+                 t=action.action_type, d=action.date), count_incr)
             # Increment action monthly count
             self.redis.hincrby(key, '{t}:{y}-{m:02d}'.format(
                 t=action.action_type, y=action.date.year,
-                m=action.date.month), 1 * multiplier)
+                m=action.date.month), count_incr)
             # Increment action yearly count
             self.redis.hincrby(key, '{t}:{y}'.format(
-                t=action.action_type, y=action.date.year), 1 * multiplier)
+                t=action.action_type, y=action.date.year), count_incr)
 
     def delete_action(self, action):
-        """Back out the stats for an action."""
-        self.save_action(action, multiplier=-1)
+        """Back out the stats for an action.
+
+        :arg action: the action to delete
+        """
+        self.save_action(action, subtract=True)
 
     def update_top(self):
         """Update the aggregates and indexes for all actions and ranges."""

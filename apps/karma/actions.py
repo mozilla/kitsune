@@ -27,7 +27,11 @@ class KarmaAction(object):
             self.date = day
 
     def save(self, async=True, redis=None):
-        """Save the action information to redis."""
+        """Save the action information to redis.
+
+        :arg async: save in a celery task
+        :arg redis: used by init task to reuse the redis connection
+        """
         if waffle.switch_is_active('karma'):
             if async:
                 self._save.delay(self)
@@ -36,7 +40,10 @@ class KarmaAction(object):
                 self._save(self, redis)
 
     def delete(self, async=True):
-        """Remove an action from redis."""
+        """Remove an action from redis.
+
+        :arg async: save in a celery task
+        """
         if waffle.switch_is_active('karma'):
             if async:
                 self._delete.delay(self)
