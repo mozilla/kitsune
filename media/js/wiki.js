@@ -12,15 +12,6 @@
         initPrepopulatedSlugs();
         initDetailsTags();
 
-        // Submit form
-        $('#revision-form #id_comment').keypress(function(e) {
-            if(e.which == 13) {
-                $(this).blur();
-                $(this).closest('form').find('input[type=submit]').focus().click();
-                return false;
-            }
-        });
-
         if ($body.is('.document')) {  // Document page
 
 
@@ -43,6 +34,15 @@
         }
 
         if ($body.is('.edit, .new, .translate')) { // Document form page
+            // Submit form
+            $('#id_comment').keypress(function(e) {
+                if(e.which == 13) {
+                    $(this).blur();
+                    $(this).closest('form').find('input[type=submit]').focus().click();
+                    return false;
+                }
+            });
+
             initArticlePreview();
             initTitleAndSlugCheck();
             initPreValidation();
