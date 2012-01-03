@@ -45,6 +45,17 @@ def get_index(model):
             or settings.ES_INDEXES['default'])
 
 
+def get_doctype_stats():
+    stats = {}
+
+    for name, model in (('questions', Question),
+                        ('forums', Thread),
+                        ('wiki', Document)):
+        stats[name] = elasticutils.S(model).count()
+
+    return stats
+
+
 def es_reindex_with_progress(percent=100):
     """Rebuild Elastic indexes as you iterate over yielded progress ratios.
 
@@ -95,15 +106,5 @@ def es_whazzup():
         return
 
     print 'Totals:'
-    try:
-        print 'total questions:', elasticutils.S(Question).count()
-    except pyes.exceptions.IndexMissingException:
-        print 'total questions: 0'
-    try:
-        print 'total forum threads:', elasticutils.S(Thread).count()
-    except pyes.exceptions.IndexMissingException:
-        print 'total forum threads: 0'
-    try:
-        print 'total wiki docs:', elasticutils.S(Document).count()
-    except pyes.exceptions.IndexMissingException:
-        print 'total wiki docs: 0'
+    for name, count in get_doctype_stats().items():
+        print '* %s: %d' % (name, count)

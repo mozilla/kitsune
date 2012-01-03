@@ -64,7 +64,23 @@
 
 {% block content %}
   <section>
-    <h1>Reindex elasticsearch</h1>
+    <h1>Elastic Search Index Status</h1>
+    {% if es_error_message %}
+      <p>
+        {{ es_error_message }}
+      </p>
+    {% else %}
+      <p>
+        Index counts at the time this page was loaded:
+      </p>
+      <ul>
+      {% for stats_name, stats_count in doctype_stats.items %}
+        <li>{{ stats_name }} - {{ stats_count }}
+      {% endfor %}
+      </ul>
+    {% endif %}
+
+    <h1>Reindex Elastic Search</h1>
     <p>
       You should have to do this only when the search mapping changes or when
       setting up the site for the first time.
