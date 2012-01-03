@@ -46,6 +46,16 @@ def get_index(model):
 
 
 def get_doctype_stats():
+    """Returns a dict of name -> count for documents indexed.
+
+    For example:
+
+    >>> get_doctype_stats()
+    {'questions': 1000, 'forums': 1000, 'wiki': 1000}
+
+    :throws pyes.urllib3.MaxRetryError: if it can't connect to elasticsearch
+    :throws pyes.exceptions.IndexMissingException: if the index doesn't exist
+    """
     stats = {}
 
     for name, model in (('questions', Question),
