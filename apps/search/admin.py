@@ -5,9 +5,12 @@ from django.core.exceptions import PermissionDenied
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 
+from search.es_utils import get_doctype_stats
 from search.tasks import (ES_REINDEX_PROGRESS, ES_WAFFLE_WHEN_DONE,
                           reindex_with_progress)
 from sumo.urlresolvers import reverse
+from pyes.urllib3 import MaxRetryError
+from pyes.exceptions import IndexMissingException
 
 
 def search(request):
@@ -27,9 +30,24 @@ def search(request):
         reindex_with_progress.delay(
                 waffle_when_done='waffle_when_done' in request.POST)
 
+    es_error_message = ''
+    stats = {}
+    try:
+        # This gets index stats, but also tells us whether ES is in
+        # a bad state.
+        stats = get_doctype_stats()
+    except MaxRetryError:
+        es_error_message = ('Elastic Search is not set up on this machine '
+                            'or is not responding.  (MaxRetryError)')
+    except IndexMissingException:
+        es_error_message = ('Index is missing.  Press the reindex button '
+                            'below.  (IndexMissingException)')
+
     return render_to_response(
         'search/admin/search.html',
         {'title': 'Search',
+         'doctype_stats': stats,
+         'es_error_message': es_error_message,
           # Dim the buttons even if the form loads before the task fires:
          'progress': cache.get(ES_REINDEX_PROGRESS,
                                '0.001' if reindex_requested else ''),

@@ -1,5 +1,9 @@
 {% extends "kadmin/base.html" %}
 
+{% block content_title %}
+<h1>Elastic Search</h1>
+{% endblock %}
+
 {% block extrastyle %}
   {{ block.super }}
   <style type="text/css">
@@ -11,6 +15,9 @@
     }
     progress {
       width: 400px;
+    }
+    dd {
+      margin-left: 1em;
     }
   </style>
 {% endblock %}
@@ -64,7 +71,24 @@
 
 {% block content %}
   <section>
-    <h1>Reindex elasticsearch</h1>
+    <h1>Status</h1>
+    {% if es_error_message %}
+      <p>
+        {{ es_error_message }}
+      </p>
+    {% else %}
+      <p>
+        Index counts at the time this page was loaded:
+      </p>
+      <dl>
+        {% for stats_name, stats_count in doctype_stats.items %}
+          <dt>{{ stats_name }}</dt>
+          <dd>{{ stats_count }}</dd>
+        {% endfor %}
+      </dl>
+    {% endif %}
+
+    <h1>Reindex</h1>
     <p>
       You should have to do this only when the search mapping changes or when
       setting up the site for the first time.
