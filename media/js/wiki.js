@@ -12,7 +12,8 @@
         initPrepopulatedSlugs();
         initDetailsTags();
 
-        $('#id_comment').keypress(function(e) {
+        // Submit form
+        $('#revision-form #id_comment').keypress(function(e) {
             if(e.which == 13) {
                 $(this).blur();
                 $(this).closest('form').find('input[type=submit]').focus().click();
@@ -21,6 +22,8 @@
         });
 
         if ($body.is('.document')) {  // Document page
+
+
             // Put last search query into search box
             $('#support-search input[name=q]')
                 .val(k.unquote($.cookie('last_search')));
