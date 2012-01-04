@@ -9,8 +9,9 @@ from search.es_utils import get_doctype_stats
 from search.tasks import (ES_REINDEX_PROGRESS, ES_WAFFLE_WHEN_DONE,
                           reindex_with_progress)
 from sumo.urlresolvers import reverse
-from pyes.urllib3 import MaxRetryError
-from pyes.exceptions import IndexMissingException
+
+from search.es_utils import (ESTimeoutError, ESMaxRetryError,
+                             ESIndexMissingException)
 
 
 def search(request):
@@ -36,12 +37,15 @@ def search(request):
         # This gets index stats, but also tells us whether ES is in
         # a bad state.
         stats = get_doctype_stats()
-    except MaxRetryError:
+    except ESMaxRetryError:
         es_error_message = ('Elastic Search is not set up on this machine '
-                            'or is not responding.  (MaxRetryError)')
-    except IndexMissingException:
-        es_error_message = ('Index is missing.  Press the reindex button '
-                            'below.  (IndexMissingException)')
+                            'or is not responding. (MaxRetryError)')
+    except ESIndexMissingException:
+        es_error_message = ('Index is missing. Press the reindex button '
+                            'below. (IndexMissingException)')
+    except ESTimeoutError:
+        es_error_message = ('Connection to Elastic Search timed out. '
+                            '(TimeoutError)')
 
     return render_to_response(
         'search/admin/search.html',

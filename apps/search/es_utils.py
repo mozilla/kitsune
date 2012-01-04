@@ -13,6 +13,8 @@ from wiki.models import Document
 
 
 ESTimeoutError = pyes.urllib3.TimeoutError
+ESMaxRetryError = pyes.urllib3.MaxRetryError
+ESIndexMissingException = pyes.exceptions.IndexMissingException
 
 
 TYPE = 'type'
