@@ -9,7 +9,7 @@ from django.test.client import Client
 
 from nose.tools import eq_
 from nose import SkipTest
-import test_utils
+from test_utils import TestCase  # just for others to import
 
 import sumo
 from sumo.urlresolvers import reverse, split_path
@@ -66,26 +66,22 @@ class LocalizingClient(Client):
     # prepending in a one-off case or do it outside a mock request.
 
 
-class TestCase(test_utils.TestCase):
-    pass
-
-
 class ElasticTestMixin(object):
+    """Base class for Elastic Search tests, providing some conveniences"""
     def refresh(self, index='default'):
         es = get_es()
         es.refresh(settings.ES_INDEXES[index], timesleep=0)
 
     def setup_indexes(self):
+        """(Re-)create ES indexes."""
+        from search.es_utils import es_reindex
+
         if getattr(settings, 'ES_HOSTS', None) is None:
             raise SkipTest
 
-        # Delete test indexes if they exist.
-        es = get_es()
-        for index in settings.ES_INDEXES.values():
-            es.delete_index_if_exists(index)
-
-        from search.es_utils import es_reindex
-
+        # TODO: Don't bother scanning through model objects and indexing any
+        # that exist. None of our tests use any fixtures, so incremental
+        # indexing will suffice for them.
         es_reindex()
 
         # TODO: This is kind of bad.  If setup_indexes gets called in
