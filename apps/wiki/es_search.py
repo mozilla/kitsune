@@ -53,7 +53,11 @@ def extract_document(doc):
     d['category'] = doc.category
     d['slug'] = doc.slug
     d['is_archived'] = doc.is_archived
-    d['tag'] = [tag['name'] for tag in doc.tags.values()]
+    if doc.parent is None:
+        d['tag'] = [tag['name'] for tag in doc.tags.values()]
+    else:
+        # Translations inherit tags from their parents.
+        d['tag'] = [tag['name'] for tag in doc.parent.tags.values()]
     if doc.current_revision:
         d['summary'] = doc.current_revision.summary
         d['keywords'] = doc.current_revision.keywords
