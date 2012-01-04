@@ -22,8 +22,6 @@ def update_code(ctx, tag):
         ctx.local("git checkout -f %s" % tag)
         ctx.local("git submodule sync")
         ctx.local("git submodule update --init --recursive")
-        ctx.local("python2.6 manage.py cron get_highcharts")
-        ctx.local("LANG=en_US.UTF-8 python2.6 manage.py compress_assets")
 
 
 @task
@@ -32,6 +30,12 @@ def update_locales(ctx):
         ctx.local("svn up")
         ctx.local("./compile-mo.sh .")
 
+
+@task
+def update_assets(ctx):
+    with ctx.lcd(settings.SRC_DIR):
+        ctx.local("python2.6 manage.py cron get_highcharts")
+        ctx.local("LANG=en_US.UTF-8 python2.6 manage.py compress_assets")
 
 @task
 def schematic(ctx):
@@ -92,6 +96,7 @@ def pre_update(ctx, ref=settings.UPDATE_REF):
 
 @task
 def update(ctx):
+    update_assets()
     update_locales()
     schematic()
 
