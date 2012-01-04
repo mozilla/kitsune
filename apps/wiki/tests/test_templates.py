@@ -1302,6 +1302,15 @@ class ReviewRevisionTests(TestCaseBase):
         eq_('The English version has no approved content to show.',
             doc('details .warning-box').text())
 
+    def test_default_significance(self):
+        """Verify the default significance is MEDIUM_SIGNIFICANCE."""
+        response = get(self.client, 'wiki.review_revision',
+                       args=[self.document.slug, self.revision.id])
+        eq_(200, response.status_code)
+        doc = pq(response.content)
+        eq_(MEDIUM_SIGNIFICANCE,
+            int(doc('input[name=significance][checked]')[0].attrib['value']))
+
 
 class CompareRevisionTests(TestCaseBase):
     """Tests for Review Revisions"""
