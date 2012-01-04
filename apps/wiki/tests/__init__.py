@@ -54,7 +54,7 @@ def revision(**kwargs):
 
     defaults = {'summary': 'đSome summary', 'content': u'đSome content',
                 'significance': SIGNIFICANCES[0][0],
-                'comment': 'đSome comment',
+                'comment': r'đSome comment',
                 'creator': kwargs.get('creator', get_user()), 'document': d}
     defaults.update(kwargs)
 

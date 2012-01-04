@@ -4,7 +4,6 @@
   <p><a href="{{ url('wiki.document_revisions', document.slug) }}">{{ _('Back to History') }}</a></p>
 {% else %}
   <div id="actions">
-    {{ errorlist(form) }}
     <form action="" method="post">
       {{ csrf() }}
       <input id="btn-approve" class="btn-important" type="submit" name="approve" value="{% if document.parent %}{{_('Approve Translation')  }}{% else %}{{ _('Approve Revision') }}{% endif %}" disabled="disabled">
@@ -23,31 +22,29 @@
       {% endif %}
       {% if should_ask_significance %}
         <p>
-          {% trans %}Clicking Accept will make this version of the article live!
-          Please pick the appropriate revision level below and consider sending
-          a thank you to the person who submitted this.{% endtrans %}
+          {% trans %}Clicking Accept will make this version of the article live! Please take a moment to be sure all options are correct.{% endtrans %}
         </p>
         {{ form.significance }}
       {% endif %}
       {% if not should_ask_significance and not self_approving %}
         <p>
           {% trans %}Thanks for taking the time to review these changes.
-          Please consider sending a thank you to the person who submitted them.{% endtrans %}
+          Clicking Accept will make this version of the article live! Please take a moment to be sure all options are correct.{% endtrans %}
         </p>
       {% endif %}
       {% if not self_approving %}
         <div class="message">
           <label for="id-approve-comment">
             {% if recent_contributors|length == 1 %}
-              {{ _('Leave a message for {contributor}: <span class="optional">(optional)</span>')|fe(contributor=recent_contributors[0]) }}
+              {{ _('Leave a message for {contributor}: ')|fe(contributor=recent_contributors[0]) }}
             {% elif recent_contributors|length == 2 %}
-              {{ _('Leave a message for {contributor1} and {contributor2}: <span class="optional">(optional)</span>')|fe(contributor1=recent_contributors[0], contributor2=recent_contributors[1]) }}
+              {{ _('Leave a message for {contributor1} and {contributor2}:')|fe(contributor1=recent_contributors[0], contributor2=recent_contributors[1]) }}
             {% elif recent_contributors|length > 2 %}
-              {{ _('Leave a message for {rest}, and {last}: <span class="optional">(optional)</span>')|fe(rest=', '.join(recent_contributors[:-1]), last=recent_contributors[-1]) }}
+              {{ _('Leave a message for {rest}, and {last}:')|fe(rest=', '.join(recent_contributors[:-1]), last=recent_contributors[-1]) }}
             {% endif %}
-
+            {{ form.comment.errors }}
           </label>
-          <textarea id="id-approve-comment" name="comment">{% if form.initial %}{{ form.initial.comment }}{% else %}{{ form.comment.data }}{% endif %}</textarea>
+          <textarea id="id-approve-comment" required name="comment">{% if form.initial %}{{ form.initial.comment }}{% else %}{{ form.comment.data }}{% endif %}</textarea>
         </div>
       {% endif %}
       {% if document.is_localizable and user.has_perm('wiki.mark_ready_for_l10n') %}

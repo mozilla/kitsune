@@ -1075,6 +1075,7 @@ class ReviewRevisionTests(TestCaseBase):
         response = post(self.client, 'wiki.review_revision',
                         {'approve': 'Approve Revision',
                          'significance': significance,
+                         'comment': 'something',
                          'needs_change': True,
                          'needs_change_comment': 'comment'},
                         args=[self.document.slug, self.revision.id])
@@ -1092,7 +1093,7 @@ class ReviewRevisionTests(TestCaseBase):
 
         # The "reviewed" mail should be sent to the creator, and the "approved"
         # mail should be sent to any subscribers:
-        reviewed_delay.assert_called_with(r, r.document, '')
+        reviewed_delay.assert_called_with(r, r.document, 'something')
 
         if r.based_on is not None:
             fromfile = u'[%s] %s #%s' % (r.document.locale,
@@ -1227,7 +1228,8 @@ class ReviewRevisionTests(TestCaseBase):
         assert str(rev.id) in diff_heading
 
         # And finally, approve the translation
-        response = self.client.post(url, {'approve': 'Approve Translation'},
+        response = self.client.post(url, {'approve': 'Approve Translation',
+                                          'comment': 'something'},
                                     follow=True)
         eq_(200, response.status_code)
         d = Document.uncached.get(pk=doc_es.id)

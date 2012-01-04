@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import urls
 
 from nose.tools import eq_

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from django.core import mail
 
 from nose.tools import eq_
@@ -47,7 +48,7 @@ class ReviewTests(TestCaseBase):
                          save=True)
 
         # Figure out POST data:
-        data = {'comment': ''}
+        data = {'comment': 'đSome comment'}
         if is_approved:
             data['approve'] = 'Approve Revision'
             data['significance'] = SIGNIFICANCES[0][0]
@@ -141,7 +142,7 @@ class ReadyForL10nTests(TestCaseBase):
                      save=True)
 
         # Figure out POST data:
-        data = {}
+        data = {'comment': 'something'}
 
         response = post(self.client,
                         'wiki.mark_ready_for_l10n_revision',
