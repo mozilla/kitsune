@@ -255,7 +255,7 @@ class ReviewForm(forms.Form):
     significance = forms.ChoiceField(
                     label=_lazy(u'Significance:'),
                     choices=SIGNIFICANCES,
-                    initial=SIGNIFICANCES[0][0],
+                    initial=SIGNIFICANCES[1][0],
                     required=False, widget=_widget)
 
     is_ready_for_localization = forms.BooleanField(
