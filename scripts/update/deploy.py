@@ -37,6 +37,7 @@ def update_assets(ctx):
         ctx.local("python2.6 manage.py cron get_highcharts")
         ctx.local("LANG=en_US.UTF-8 python2.6 manage.py compress_assets")
 
+
 @task
 def schematic(ctx):
     with ctx.lcd(settings.SRC_DIR):
