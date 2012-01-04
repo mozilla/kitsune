@@ -66,8 +66,16 @@ class LocalizingClient(Client):
     # prepending in a one-off case or do it outside a mock request.
 
 
-class ElasticTestMixin(object):
+class ElasticTestCase(TestCase):
     """Base class for Elastic Search tests, providing some conveniences"""
+    def setUp(self):
+        super(ElasticTestCase, self).setUp()
+        self.setup_indexes()
+
+    def tearDown(self):
+        self.teardown_indexes()
+        super(ElasticTestCase, self).tearDown()
+
     def refresh(self, index='default'):
         es = get_es()
         es.refresh(settings.ES_INDEXES[index], timesleep=0)

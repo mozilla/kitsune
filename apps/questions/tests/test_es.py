@@ -5,16 +5,18 @@ from nose.tools import eq_
 from waffle.models import Flag
 
 from questions.models import Question, Answer, question_searcher
-from questions.tests import ESTestCase
+from questions.tests import question, answer, answer_vote
 from search.tests import dummy_request
+from sumo.tests import ElasticTestCase
+from users.tests import get_user
 
 
-class QuestionUpdateTests(ESTestCase):
+class QuestionUpdateTests(ElasticTestCase):
     def test_added(self):
         title = str(uuid.uuid4())
         question = Question(title=title,
                             content='Lorem Ipsum Dolor',
-                            creator_id=118533)
+                            creator=get_user())
 
         original_count = elasticutils.S(Question).count()
 
@@ -25,7 +27,7 @@ class QuestionUpdateTests(ESTestCase):
 
         answer = Answer(content=u'Answer to ' + title,
                         question=question,
-                        creator_id=118533)
+                        creator=get_user())
 
         eq_(elasticutils.S(Question).count(), original_count + 1)
 
@@ -50,7 +52,7 @@ class QuestionUpdateTests(ESTestCase):
 
         question = Question(title=title,
                             content='Lorem Ipsum Dolor',
-                            creator_id=118533)
+                            creator=get_user())
         question.save()
         self.refresh()
 
@@ -70,12 +72,12 @@ class QuestionUpdateTests(ESTestCase):
 
         question = Question(title=title,
                             content='Lorem Ipsum Dolor',
-                            creator_id=118533)
+                            creator=get_user())
         question.save()
 
         answer = Answer(content=u'Answer to ' + title,
                         question=question,
-                        creator_id=118533)
+                        creator=get_user())
 
         answer.save()
         self.refresh()
@@ -95,10 +97,18 @@ class QuestionUpdateTests(ESTestCase):
         eq_(elasticutils.S(Question).count(), original_count)
 
 
-class QuestionSearchTests(ESTestCase):
+class QuestionSearchTests(ElasticTestCase):
     """Tests about searching for questions"""
     def test_case_insensitive_search(self):
         """Ensure the default searcher is case insensitive."""
         Flag.objects.create(name='elasticsearch', everyone=True)
+        answer_vote(
+            answer=answer(question=question(title='lolrus',
+                                            content='I am the lolrus.',
+                                            save=True),
+                          save=True),
+            helpful=True).save()
+        # Haven't needed a self.refresh() here yet. Put one here if this starts
+        # intermittantly failing. It sleeps for 1 sec by default.
         result = question_searcher(dummy_request).query('LOLRUS')
         assert len(result) > 0
