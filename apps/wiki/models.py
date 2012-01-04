@@ -159,7 +159,8 @@ PRODUCTS = (
     Product('desktop', _lazy(u'Desktop')),
     Product('mobile', _lazy(u'Mobile')),
     Product('sync', _lazy(u'Sync')),
-    Product('FxHome', _lazy(u'Home')))
+    Product('FxHome', _lazy(u'Home')),
+    Product('marketplace', _lazy(u'Marketplace')))
 PRODUCT_TAGS = [p.slug for p in PRODUCTS]
 
 

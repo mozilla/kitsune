@@ -6,28 +6,41 @@ from wiki.models import Document
 from wiki.views import SHOWFOR_DATA
 
 
-HOME_DOCS = {'quick': 'Home page - Quick', 'explore': 'Home page - Explore',
-             'top': 'Home page - Top'}
-MOBILE_DOCS = {'quick': 'Mobile home - Quick',
-               'explore': 'Mobile home - Explore',
-               'top': 'Mobile home - Top'}
-SYNC_DOCS = {'quick': 'Sync home - Quick', 'explore': 'Sync home - Explore',
-             'top': 'Sync home - Top'}
-FXHOME_DOCS = {'quick': 'FxHome home - Quick',
-               'explore': 'FxHome home - Explore',
-               'top': 'FxHome home - Top'}
-HOME_DOCS_FOR_MOBILE = {'common':
-                        'Desktop home for mobile - Common Questions',
-                        'top': 'Home page - Top'}
-MOBILE_DOCS_FOR_MOBILE = {'common':
-                          'Mobile home for mobile - Common Questions',
-                          'top': 'Mobile home - Top'}
-SYNC_DOCS_FOR_MOBILE = {'common':
-                        'Sync home for mobile - Common Questions',
-                        'top': 'Sync home - Top'}
-FXHOME_DOCS_FOR_MOBILE = {'common':
-                          'FxHome home for mobile - Common Questions',
-                          'top': 'FxHome home - Top'}
+HOME_DOCS = {
+    'quick': 'Home page - Quick',
+    'explore': 'Home page - Explore',
+    'top': 'Home page - Top'}
+MOBILE_DOCS = {
+    'quick': 'Mobile home - Quick',
+    'explore': 'Mobile home - Explore',
+    'top': 'Mobile home - Top'}
+SYNC_DOCS = {
+    'quick': 'Sync home - Quick',
+    'explore': 'Sync home - Explore',
+    'top': 'Sync home - Top'}
+FXHOME_DOCS = {
+    'quick': 'FxHome home - Quick',
+    'explore': 'FxHome home - Explore',
+    'top': 'FxHome home - Top'}
+MARKETPLACE_DOCS = {
+    'quick': 'Marketplace home - Quick',
+    'explore': 'Marketplace home - Explore',
+    'top': 'Marketplace home - Top'}
+HOME_DOCS_FOR_MOBILE = {
+    'common': 'Desktop home for mobile - Common Questions',
+    'top': 'Home page - Top'}
+MOBILE_DOCS_FOR_MOBILE = {
+    'common': 'Mobile home for mobile - Common Questions',
+    'top': 'Mobile home - Top'}
+SYNC_DOCS_FOR_MOBILE = {
+    'common': 'Sync home for mobile - Common Questions',
+    'top': 'Sync home - Top'}
+FXHOME_DOCS_FOR_MOBILE = {
+    'common': 'FxHome home for mobile - Common Questions',
+    'top': 'FxHome home - Top'}
+MARKETPLACE_DOCS_FOR_MOBILE = {
+    'common': 'Marketplace home for mobile - Common Questions',
+    'top': 'Marketplace home - Top'}
 
 
 @mobile_template('landings/{mobile/}home.html')
@@ -58,15 +71,31 @@ def fxhome(request, template=None):
                         _data(docs, request.locale, 'FxHome'))
 
 
+@mobile_template('landings/{mobile/}marketplace.html')
+def marketplace(request, template=None):
+    docs = MARKETPLACE_DOCS_FOR_MOBILE if request.MOBILE else MARKETPLACE_DOCS
+    # Marketplace search results should only be kb (zendesk is being
+    # used for questions).
+    return jingo.render(request, template,
+                        _data(docs, request.locale, 'marketplace', True))
+
+
 def integrity_check(request):
     return jingo.render(request, 'landings/integrity-check.html')
 
 
-def _data(docs, locale, product):
+def _data(docs, locale, product, only_kb=False):
     """Add the documents and showfor data to the context data."""
     data = {}
     for side, title in docs.iteritems():
         data[side] = get_object_fallback(Document, title, locale)
+
     data.update(SHOWFOR_DATA)
-    data.update(search_params={'q_tags': product, 'product': product})
+    data.update(search_params={'product': product})
+
+    if only_kb:
+        data['search_params'].update(w=1)
+    else:
+        data['search_params'].update(q_tags=product)
+
     return data
