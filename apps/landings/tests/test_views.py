@@ -38,6 +38,15 @@ class MobileHomeTests(MobileTestCase):
         eq_('FxHome', doc('#search input[name="q_tags"]')[0].attrib['value'])
         eq_('FxHome', doc('#search input[name="product"]')[0].attrib['value'])
 
+    def test_marketplace_home_for_mobile(self):
+        r = self.client.get(reverse('home.marketplace'), follow=True)
+        eq_(r.status_code, 200)
+        self.assertTemplateUsed(r, 'landings/mobile/marketplace.html')
+        doc = pq(r.content)
+        eq_('marketplace',
+            doc('#search input[name="product"]')[0].attrib['value'])
+        eq_('1', doc('#search input[name="w"]')[0].attrib['value'])
+
 
 class HomeRedirects(TestCase):
     def test_default_redirect(self):
