@@ -293,6 +293,10 @@
                     $modal.find('input[type="submit"]').click();
                     return false;
                 }
+                // Add this here because the "Submit for Review" button is
+                // a submit button that triggers validation and fails
+                // because the modal hasn't been displayed yet.
+                $modal.find('#id_comment').attr('required', true);
                 return true;
             }
         });
