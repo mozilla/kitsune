@@ -6,7 +6,7 @@ from django.template.defaultfilters import slugify
 from nose.tools import eq_
 
 from questions.models import Question, Answer, AnswerVote
-from sumo.tests import LocalizingClient, TestCase, ElasticTestMixin, with_save
+from sumo.tests import LocalizingClient, TestCase, with_save
 from users.tests import user
 
 
@@ -30,16 +30,6 @@ class TestCaseBase(TestCase):
     def tearDown(self):
         super(TestCaseBase, self).tearDown()
         settings.TOP_CONTRIBUTORS_CACHE_KEY = self.orig_tc_cache_key
-
-
-class ESTestCase(TestCaseBase, ElasticTestMixin):
-    def setUp(self):
-        super(ESTestCase, self).setUp()
-        self.setup_indexes()
-
-    def tearDown(self):
-        super(ESTestCase, self).tearDown()
-        self.teardown_indexes()
 
 
 class TaggingTestCaseBase(TestCaseBase):

@@ -2,27 +2,15 @@ import json
 
 from nose.tools import eq_
 
-from sumo.tests import TestCase, LocalizingClient, ElasticTestMixin
+from sumo.tests import TestCase, LocalizingClient, ElasticTestCase
 from sumo.urlresolvers import reverse
 
 from questions.tests import question, answer, answer_vote
 from wiki.tests import document, revision
 from forums.tests import thread, post
 
-from waffle.models import Flag
 
-
-class ESTestCase(TestCase, ElasticTestMixin):
-    def setUp(self):
-        super(ESTestCase, self).setUp()
-        self.setup_indexes()
-
-    def tearDown(self):
-        super(ESTestCase, self).tearDown()
-        self.teardown_indexes()
-
-
-class ElasticSearchViewTests(ESTestCase):
+class ElasticSearchViewTests(ElasticTestCase):
     localizing_client = LocalizingClient()
 
     def test_excerpting_doesnt_crash(self):
@@ -34,8 +22,6 @@ class ElasticSearchViewTests(ESTestCase):
         came out of.
 
         """
-        Flag.objects.create(name='elasticsearch', everyone=True)
-
         # Create a question with an answer with an answervote that
         # marks the answer as helpful.  The question should have the
         # "desktop" tag.
@@ -63,8 +49,6 @@ class ElasticSearchViewTests(ESTestCase):
         Bug #709202.
 
         """
-        Flag.objects.create(name='elasticsearch', everyone=True)
-
         # Create a question with an answer with an answervote that
         # marks the answer as helpful.  The question should have the
         # "desktop" tag.
@@ -120,8 +104,6 @@ class ElasticSearchViewTests(ESTestCase):
         Bug #709202.
 
         """
-        Flag.objects.create(name='elasticsearch', everyone=True)
-
         doc = document(
             title=u'How to fix your audio',
             locale=u'en-US',
@@ -154,15 +136,13 @@ class ElasticSearchViewTests(ESTestCase):
 
     def test_forums_search(self):
         """This tests whether forum posts show up in searches."""
-        Flag.objects.create(name='elasticsearch', everyone=True)
-
         thread1 = thread(
             title=u'Why don\'t we spell crash backwards?')
         thread1.save()
 
         post1 = post(
             thread=thread1,
-            content=u'What, like hsarc?  That\s silly.')
+            content=u'What, like hsarc?  That\'s silly.')
         post1.save()
 
         response = self.localizing_client.get(reverse('search'), {
