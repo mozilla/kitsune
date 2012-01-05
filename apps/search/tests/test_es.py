@@ -9,8 +9,6 @@ from questions.tests import question, answer, answer_vote
 from wiki.tests import document, revision
 from forums.tests import thread, post
 
-from waffle.models import Flag
-
 
 class ElasticSearchViewTests(ElasticTestCase):
     localizing_client = LocalizingClient()
@@ -24,8 +22,6 @@ class ElasticSearchViewTests(ElasticTestCase):
         came out of.
 
         """
-        Flag.objects.create(name='elasticsearch', everyone=True)
-
         # Create a question with an answer with an answervote that
         # marks the answer as helpful.  The question should have the
         # "desktop" tag.
@@ -53,8 +49,6 @@ class ElasticSearchViewTests(ElasticTestCase):
         Bug #709202.
 
         """
-        Flag.objects.create(name='elasticsearch', everyone=True)
-
         # Create a question with an answer with an answervote that
         # marks the answer as helpful.  The question should have the
         # "desktop" tag.
@@ -110,8 +104,6 @@ class ElasticSearchViewTests(ElasticTestCase):
         Bug #709202.
 
         """
-        Flag.objects.create(name='elasticsearch', everyone=True)
-
         doc = document(
             title=u'How to fix your audio',
             locale=u'en-US',
@@ -144,8 +136,6 @@ class ElasticSearchViewTests(ElasticTestCase):
 
     def test_forums_search(self):
         """This tests whether forum posts show up in searches."""
-        Flag.objects.create(name='elasticsearch', everyone=True)
-
         thread1 = thread(
             title=u'Why don\'t we spell crash backwards?')
         thread1.save()
