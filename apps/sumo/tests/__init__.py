@@ -10,6 +10,7 @@ from django.test.client import Client
 from nose.tools import eq_
 from nose import SkipTest
 from test_utils import TestCase  # just for others to import
+from waffle.models import Flag
 
 import sumo
 from sumo.urlresolvers import reverse, split_path
@@ -71,6 +72,7 @@ class ElasticTestCase(TestCase):
     def setUp(self):
         super(ElasticTestCase, self).setUp()
         self.setup_indexes()
+        Flag.objects.create(name='elasticsearch', everyone=True)
 
     def tearDown(self):
         self.teardown_indexes()

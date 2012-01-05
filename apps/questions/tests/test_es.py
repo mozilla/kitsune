@@ -1,6 +1,5 @@
 import elasticutils
 from nose.tools import eq_
-from waffle.models import Flag
 
 from questions.models import Question, question_searcher
 from questions.tests import question, answer, answer_vote
@@ -64,7 +63,6 @@ class QuestionSearchTests(ElasticTestCase):
     """Tests about searching for questions"""
     def test_case_insensitive_search(self):
         """Ensure the default searcher is case insensitive."""
-        Flag.objects.create(name='elasticsearch', everyone=True)
         answer_vote(
             answer=answer(question=question(title='lolrus',
                                             content='I am the lolrus.',
