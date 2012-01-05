@@ -1,20 +1,14 @@
-import uuid
-
 import elasticutils
 from nose.tools import eq_
 
-from forums.models import Post, Thread
-from forums.tests import forum
+from forums.models import Thread
+from forums.tests import forum, thread, post
 from sumo.tests import ElasticTestCase
-from users.tests import get_user
 
 
 class TestPostUpdate(ElasticTestCase):
     def test_added(self):
-        user = get_user()
-
-        new_thread = Thread(title=str(uuid.uuid4()), forum=forum(save=True),
-                            creator=user)
+        new_thread = thread()
         eq_(elasticutils.S(Thread).count(), 0)
 
         # Saving a new Thread does create a new document in the
@@ -23,8 +17,7 @@ class TestPostUpdate(ElasticTestCase):
         self.refresh()
         eq_(elasticutils.S(Thread).count(), 1)
 
-        new_post = Post(thread=new_thread, content=str(uuid.uuid4()),
-                        author=user)
+        new_post = post(thread=new_thread)
         eq_(elasticutils.S(Thread).count(), 1)
 
         new_post.save()
@@ -39,10 +32,7 @@ class TestPostUpdate(ElasticTestCase):
         eq_(elasticutils.S(Thread).count(), 1)
 
     def test_deleted(self):
-        user = get_user()
-
-        new_thread = Thread(title=str(uuid.uuid4()), forum=forum(save=True),
-                            creator=user)
+        new_thread = thread()
         eq_(elasticutils.S(Thread).count(), 0)
 
         # Saving a new Thread does create a new document in the
@@ -51,8 +41,7 @@ class TestPostUpdate(ElasticTestCase):
         self.refresh()
         eq_(elasticutils.S(Thread).count(), 1)
 
-        new_post = Post(thread=new_thread, content=str(uuid.uuid4()),
-                        author=user)
+        new_post = post(thread=new_thread)
         eq_(elasticutils.S(Thread).count(), 1)
 
         new_post.save()

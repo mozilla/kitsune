@@ -88,7 +88,7 @@ class ElasticTestCase(TestCase):
             raise SkipTest
 
         # TODO: Don't bother scanning through model objects and indexing any
-        # that exist. None of our tests use any fixtures, so incremental
+        # that exist. None of our ES tests use any fixtures, so incremental
         # indexing will suffice for them.
         es_reindex()
 
