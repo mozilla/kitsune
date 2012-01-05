@@ -13,8 +13,7 @@ from search import es_utils
 
 class ElasticSearchTasksTests(TestCase):
     def test_tasks(self):
-        """Tests to make sure tasks are added and run.
-        """
+        """Tests to make sure tasks are added and run"""
 
         times_run = []
 
@@ -30,9 +29,8 @@ class ElasticSearchTasksTests(TestCase):
         eq_(len(times_run), 1)
 
     def test_tasks_squashed(self):
-        """Tests to make sure tasks are squashed
+        """Tests to make sure tasks are squashed"""
 
-        """
         times_run = []
 
         def run_task(*args):
