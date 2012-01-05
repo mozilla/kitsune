@@ -7,24 +7,13 @@ from nose.tools import eq_
 
 from forums.models import Forum, Thread, Post, ThreadLockedError
 from forums.views import sort_threads
-from sumo.tests import (get, LocalizingClient, TestCase, ElasticTestMixin,
-                        with_save)
+from sumo.tests import get, LocalizingClient, TestCase, with_save
 from users.tests import user
 
 
 class ForumTestCase(TestCase):
     fixtures = ['users.json', 'posts.json', 'forums_permissions.json']
     client_class = LocalizingClient
-
-
-class ESTestCase(ForumTestCase, ElasticTestMixin):
-    def setUp(self):
-        super(ESTestCase, self).setUp()
-        self.setup_indexes()
-
-    def tearDown(self):
-        super(ESTestCase, self).tearDown()
-        self.teardown_indexes()
 
 
 class PostTestCase(ForumTestCase):
