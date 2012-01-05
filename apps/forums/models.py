@@ -15,6 +15,7 @@ from sumo.helpers import urlparams, wiki_to_html
 from sumo.urlresolvers import reverse
 from sumo.models import ModelBase
 from search import searcher
+from search import es_utils
 from search.utils import crc32
 import waffle
 
@@ -189,7 +190,7 @@ def update_thread_in_index(sender, instance, **kw):
         return
 
     from forums.tasks import index_threads
-    index_threads.delay([instance.id])
+    es_utils.add_index_task(index_threads.delay, (instance.id,))
 
 
 @receiver(pre_delete, sender=Thread,
@@ -293,7 +294,7 @@ def update_post_in_index(sender, instance, **kw):
         return
 
     from forums.tasks import index_threads
-    index_threads.delay([instance.thread_id])
+    es_utils.add_index_task(index_threads.delay, (instance.thread_id,))
 
 
 @receiver(pre_delete, sender=Post,
@@ -303,7 +304,7 @@ def remove_post_from_index(sender, instance, **kw):
         return
 
     from forums.tasks import index_threads
-    index_threads.delay([instance.thread_id])
+    es_utils.add_index_task(index_threads.delay, (instance.thread_id,))
 
 
 def discussion_searcher(request):

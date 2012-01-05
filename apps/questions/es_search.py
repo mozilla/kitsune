@@ -117,7 +117,7 @@ def index_doc(doc, bulk=False, force_insert=False, es=None, refresh=False):
                  id=doc['id'], bulk=bulk, force_insert=force_insert)
 
     if refresh:
-        es.refresh()
+        es.refresh(timesleep=0)
 
 
 def unindex_questions(ids):

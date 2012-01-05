@@ -12,9 +12,11 @@ class QuestionUpdateTests(ElasticTestCase):
         eq_(elasticutils.S(Question).count(), 0)
 
         q = question(save=True)
+        self.refresh()
         eq_(elasticutils.S(Question).count(), 1)
 
         a = answer(question=q)
+        self.refresh()
         eq_(elasticutils.S(Question).count(), 1)
 
         a.save()
@@ -69,5 +71,6 @@ class QuestionSearchTests(ElasticTestCase):
                                             save=True),
                           save=True),
             helpful=True).save()
+        self.refresh()
         result = question_searcher(dummy_request).query('LOLRUS')
         assert len(result) > 0
