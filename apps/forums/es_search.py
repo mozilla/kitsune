@@ -92,7 +92,7 @@ def index_thread(thread, bulk=False, force_insert=False, es=None,
                  id=thread['id'], bulk=bulk, force_insert=force_insert)
 
     if refresh:
-        es.refresh()
+        es.refresh(timesleep=0)
 
 
 def unindex_threads(ids):

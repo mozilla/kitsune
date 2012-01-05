@@ -8,6 +8,46 @@ from sumo.urlresolvers import reverse
 from questions.tests import question, answer, answer_vote
 from wiki.tests import document, revision
 from forums.tests import thread, post
+from search import es_utils
+
+
+class ElasticSearchTasksTests(TestCase):
+    def test_tasks(self):
+        """Tests to make sure tasks are added and run.
+        """
+
+        times_run = []
+
+        def run_task(*args):
+            times_run.append(1)
+
+        es_utils.add_index_task(run_task, (1,))
+
+        eq_(len(times_run), 0)
+
+        es_utils.generate_tasks()
+
+        eq_(len(times_run), 1)
+
+    def test_tasks_squashed(self):
+        """Tests to make sure tasks are squashed
+
+        """
+        times_run = []
+
+        def run_task(*args):
+            times_run.append(1)
+
+        es_utils.add_index_task(run_task, (1,))
+        es_utils.add_index_task(run_task, (1,))
+        es_utils.add_index_task(run_task, (1,))
+        es_utils.add_index_task(run_task, (1,))
+
+        eq_(len(times_run), 0)
+
+        es_utils.generate_tasks()
+
+        eq_(len(times_run), 1)
 
 
 class ElasticSearchViewTests(ElasticTestCase):
@@ -31,6 +71,7 @@ class ElasticSearchViewTests(ElasticTestCase):
         ques.save()
 
         ques.tags.add(u'desktop')
+        self.refresh()
 
         response = self.localizing_client.get(reverse('search'), {
             'format': 'json', 'q': 'audio', 'a': 1
@@ -68,6 +109,8 @@ class ElasticSearchViewTests(ElasticTestCase):
             answer=ans,
             helpful=True)
         ansvote.save()
+
+        self.refresh()
 
         # This is the search that you get when you start on the sumo
         # homepage and do a search from the box with two differences:
@@ -119,6 +162,8 @@ class ElasticSearchViewTests(ElasticTestCase):
             is_approved=True)
         rev.save()
 
+        self.refresh()
+
         # This is the search that you get when you start on the sumo
         # homepage and do a search from the box with two differences:
         # first, we do it in json since it's easier to deal with
@@ -144,6 +189,8 @@ class ElasticSearchViewTests(ElasticTestCase):
             thread=thread1,
             content=u'What, like hsarc?  That\'s silly.')
         post1.save()
+
+        self.refresh()
 
         response = self.localizing_client.get(reverse('search'), {
             'author': '', 'created': '0', 'created_date': '',

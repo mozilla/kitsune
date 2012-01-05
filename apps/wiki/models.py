@@ -18,6 +18,7 @@ from tidings.models import NotificationsMixin
 from tower import ugettext_lazy as _lazy, ugettext as _
 
 from search import searcher
+from search import es_utils
 from search.utils import crc32
 from sumo import ProgrammingError
 from sumo_locales import LOCALES
@@ -629,7 +630,7 @@ def update_document_from_index(sender, instance, **kw):
         return
 
     from wiki.tasks import index_documents
-    index_documents.delay([instance.id])
+    es_utils.add_index_task(index_documents.delay, (instance.id,))
 
 
 @receiver(pre_delete, sender=Document,

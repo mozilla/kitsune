@@ -1,15 +1,13 @@
 from itertools import chain, count, izip
 import logging
+from threading import local
 
 import elasticutils
 from pprint import pprint
 import pyes
 
 from django.conf import settings
-
-from forums.models import Thread
-from questions.models import Question
-from wiki.models import Document
+from django.core import signals
 
 
 ESTimeoutError = pyes.urllib3.TimeoutError
@@ -41,6 +39,43 @@ YES = 'yes'
 WITH_POS_OFFSETS = 'with_positions_offsets'
 
 
+_thread_local = local()
+_thread_local.es_index_task_set = set()
+
+
+def add_index_task(fun, *args):
+    """Adds an index task.
+
+    Note: args and its contents **must** be hashable.
+
+    :arg fun: the function to call
+    :arg args: arguments to the function
+
+    """
+    _thread_local.es_index_task_set.add((fun, args))
+
+
+def generate_tasks(**kwargs):
+    """Goes through thread local index update tasks set and generates
+    celery tasks for all tasks in the set.
+
+    Because this works off of a set, it naturally de-dupes the tasks,
+    so if four tasks get tossed into the set that are identical, we
+    execute it only once.
+
+    """
+    if not _thread_local.es_index_task_set:
+        return
+
+    for fun, args in _thread_local.es_index_task_set:
+        fun(*args)
+
+    _thread_local.es_index_task_set.clear()
+
+
+signals.request_finished.connect(generate_tasks)
+
+
 def get_index(model):
     """Returns the index name for this model."""
     return (settings.ES_INDEXES.get(model._meta.db_table)
@@ -58,6 +93,15 @@ def get_doctype_stats():
     :throws pyes.urllib3.MaxRetryError: if it can't connect to elasticsearch
     :throws pyes.exceptions.IndexMissingException: if the index doesn't exist
     """
+    # TODO: We have to import these here, otherwise we have an import
+    # loop es_utils -> models.py -> es_utils. This should get fixed by
+    # having the models register themselves as indexable with es_utils
+    # or something like that. Then es_utils won't have to explicitly
+    # know about models.
+    from forums.models import Thread
+    from questions.models import Question
+    from wiki.models import Document
+
     stats = {}
 
     for name, model in (('questions', Question),
@@ -76,9 +120,17 @@ def es_reindex_with_progress(percent=100):
         development where doing a full reindex takes an hour.
 
     """
+    # TODO: We have to import these here, otherwise we have an import
+    # loop es_utils -> models.py -> es_utils. This should get fixed by
+    # having the models register themselves as indexable with es_utils
+    # or something like that. Then es_utils won't have to explicitly
+    # know about models.
     import forums.es_search
+    from forums.models import Thread
     import questions.es_search
+    from questions.models import Question
     import wiki.es_search
+    from wiki.models import Document
 
     es = elasticutils.get_es()
 

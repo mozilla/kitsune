@@ -26,6 +26,7 @@ from questions.question_config import products
 from questions.tasks import (update_question_votes, update_answer_pages,
                              log_answer, index_questions, unindex_questions)
 from search import searcher
+from search import es_utils
 from search.utils import crc32
 from sumo.helpers import urlparams
 from sumo.models import ModelBase
@@ -290,7 +291,7 @@ def update_question_in_index(sender, instance, **kw):
     if not settings.ES_LIVE_INDEXING or kw.get('raw'):
         return
 
-    index_questions.delay([instance.id])
+    es_utils.add_index_task(index_questions.delay, (instance.id,))
 
 
 @receiver(pre_delete, sender=Question,
@@ -505,7 +506,7 @@ def update_answer_in_index(sender, instance, **kw):
     if not settings.ES_LIVE_INDEXING or kw.get('raw'):
         return
 
-    index_questions.delay([instance.question_id])
+    es_utils.add_index_task(index_questions.delay, (instance.question_id,))
 
 
 @receiver(pre_delete, sender=Answer,
@@ -514,7 +515,7 @@ def remove_answer_from_index(sender, instance, **kw):
     if not settings.ES_LIVE_INDEXING:
         return
 
-    index_questions.delay([instance.question_id])
+    es_utils.add_index_task(index_questions.delay, (instance.question_id,))
 
 
 class QuestionVote(ModelBase):
@@ -556,7 +557,8 @@ def update_answervote_in_index(sender, instance, **kw):
     if not settings.ES_LIVE_INDEXING or kw.get('raw'):
         return
 
-    index_questions.delay([instance.answer.question_id])
+    es_utils.add_index_task(index_questions.delay, (
+            instance.answer.question_id,))
 
 
 @receiver(pre_delete, sender=AnswerVote,
@@ -565,7 +567,8 @@ def remove_answervote_from_index(sender, instance, **kw):
     if not settings.ES_LIVE_INDEXING:
         return
 
-    index_questions.delay([instance.answer.question_id])
+    es_utils.add_index_task(index_questions.delay, (
+            instance.answer.question_id,))
 
 
 class VoteMetadata(ModelBase):
