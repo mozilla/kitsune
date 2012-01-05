@@ -2,7 +2,7 @@ import json
 
 from nose.tools import eq_
 
-from sumo.tests import TestCase, LocalizingClient, ElasticTestMixin
+from sumo.tests import TestCase, LocalizingClient, ElasticTestCase
 from sumo.urlresolvers import reverse
 
 from questions.tests import question, answer, answer_vote
@@ -12,17 +12,7 @@ from forums.tests import thread, post
 from waffle.models import Flag
 
 
-class ESTestCase(TestCase, ElasticTestMixin):
-    def setUp(self):
-        super(ESTestCase, self).setUp()
-        self.setup_indexes()
-
-    def tearDown(self):
-        super(ESTestCase, self).tearDown()
-        self.teardown_indexes()
-
-
-class ElasticSearchViewTests(ESTestCase):
+class ElasticSearchViewTests(ElasticTestCase):
     localizing_client = LocalizingClient()
 
     def test_excerpting_doesnt_crash(self):
@@ -162,7 +152,7 @@ class ElasticSearchViewTests(ESTestCase):
 
         post1 = post(
             thread=thread1,
-            content=u'What, like hsarc?  That\s silly.')
+            content=u'What, like hsarc?  That\'s silly.')
         post1.save()
 
         response = self.localizing_client.get(reverse('search'), {
