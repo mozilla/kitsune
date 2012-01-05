@@ -39,8 +39,8 @@ YES = 'yes'
 WITH_POS_OFFSETS = 'with_positions_offsets'
 
 
-_thread_local = local()
-_thread_local.es_index_task_set = set()
+_local_tasks = local()
+_local_tasks.es_index_task_set = set()
 
 
 def add_index_task(fun, *args):
@@ -52,7 +52,7 @@ def add_index_task(fun, *args):
     :arg args: arguments to the function
 
     """
-    _thread_local.es_index_task_set.add((fun, args))
+    _local_tasks.es_index_task_set.add((fun, args))
 
 
 def generate_tasks(**kwargs):
@@ -64,13 +64,11 @@ def generate_tasks(**kwargs):
     execute it only once.
 
     """
-    if not _thread_local.es_index_task_set:
-        return
-
-    for fun, args in _thread_local.es_index_task_set:
+    lt = _local_tasks
+    for fun, args in lt.es_index_task_set:
         fun(*args)
 
-    _thread_local.es_index_task_set.clear()
+    lt.es_index_task_set.clear()
 
 
 signals.request_finished.connect(generate_tasks)
