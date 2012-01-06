@@ -2,50 +2,51 @@ import json
 
 from nose.tools import eq_
 
-from sumo.tests import TestCase, LocalizingClient, ElasticTestCase
+from sumo.tests import LocalizingClient, ElasticTestCase
 from sumo.urlresolvers import reverse
 
+from search.models import generate_tasks
 from questions.tests import question, answer, answer_vote
+from questions.models import Question
 from wiki.tests import document, revision
 from forums.tests import thread, post
-from search import es_utils
+import mock
 
 
-class ElasticSearchTasksTests(TestCase):
-    def test_tasks(self):
+class ElasticSearchTasksTests(ElasticTestCase):
+    @mock.patch.object(Question, 'index')
+    def test_tasks(self, index_fun):
         """Tests to make sure tasks are added and run"""
 
-        times_run = []
+        q = question()
+        # Don't call self.refresh here since that calls generate_tasks().
 
-        def run_task(*args):
-            times_run.append(1)
+        eq_(index_fun.call_count, 0)
 
-        es_utils.add_index_task(run_task, (1,))
+        q.save()
+        generate_tasks()
 
-        eq_(len(times_run), 0)
+        eq_(index_fun.call_count, 1)
 
-        es_utils.generate_tasks()
-
-        eq_(len(times_run), 1)
-
-    def test_tasks_squashed(self):
+    @mock.patch.object(Question, 'index')
+    def test_tasks_squashed(self, index_fun):
         """Tests to make sure tasks are squashed"""
 
-        times_run = []
+        q = question()
+        # Don't call self.refresh here since that calls generate_tasks().
 
-        def run_task(*args):
-            times_run.append(1)
+        eq_(index_fun.call_count, 0)
 
-        es_utils.add_index_task(run_task, (1,))
-        es_utils.add_index_task(run_task, (1,))
-        es_utils.add_index_task(run_task, (1,))
-        es_utils.add_index_task(run_task, (1,))
+        q.save()
+        q.save()
+        q.save()
+        q.save()
 
-        eq_(len(times_run), 0)
+        eq_(index_fun.call_count, 0)
 
-        es_utils.generate_tasks()
+        generate_tasks()
 
-        eq_(len(times_run), 1)
+        eq_(index_fun.call_count, 1)
 
 
 class ElasticSearchViewTests(ElasticTestCase):

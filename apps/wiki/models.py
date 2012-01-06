@@ -18,7 +18,9 @@ from tidings.models import NotificationsMixin
 from tower import ugettext_lazy as _lazy, ugettext as _
 
 from search import searcher
-from search import es_utils
+from search.es_utils import (TYPE, INTEGER, STRING, INDEX, NOTANALYZED,
+                             ANALYZER, SNOWBALL, BOOLEAN, DATE)
+from search.models import SearchMixin
 from search.utils import crc32
 from sumo import ProgrammingError
 from sumo_locales import LOCALES
@@ -182,7 +184,8 @@ class _NotDocumentView(Exception):
     """A URL not pointing to the document view was passed to from_url()."""
 
 
-class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin):
+class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
+               SearchMixin):
     """A localized knowledgebase document, not revision-specific."""
     title = models.CharField(max_length=255, db_index=True)
     slug = models.CharField(max_length=255, db_index=True)
@@ -621,55 +624,93 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin):
         from wiki.events import EditDocumentEvent
         return EditDocumentEvent.is_notifying(user, self)
 
+    @classmethod
+    def get_mapping(cls):
+        mapping = {
+            'properties': {
+                'id': {TYPE: INTEGER},
+                'title': {TYPE: STRING, ANALYZER: SNOWBALL},
+                'locale': {TYPE: STRING, INDEX: NOTANALYZED},
+                'current': {TYPE: INTEGER},
+                'parent_id': {TYPE: INTEGER},
+                'content':
+                    {TYPE: STRING, ANALYZER: SNOWBALL},
+                'category': {TYPE: INTEGER},
+                'slug': {TYPE: STRING},
+                'is_archived': {TYPE: BOOLEAN},
+                'summary': {TYPE: STRING, ANALYZER: SNOWBALL},
+                'keywords': {TYPE: STRING, ANALYZER: SNOWBALL},
+                'updated': {TYPE: DATE},
+                'tag': {TYPE: STRING}
+                }
+            }
+        return mapping
 
-@receiver(post_save, sender=Document,
-          dispatch_uid='wiki.search.index.document.save')
-def update_document_from_index(sender, instance, **kw):
-    # raw is True when saving a model exactly as presented--like when
-    # loading fixtures.  In this case we don't want to trigger.
-    if not settings.ES_LIVE_INDEXING or kw.get('raw'):
-        return
-
-    from wiki.tasks import index_documents
-    es_utils.add_index_task(index_documents.delay, (instance.id,))
-
-
-@receiver(post_save, sender=TaggedItem,
-          dispatch_uid='wiki.search.index.tags.save')
-def update_wiki_tags_in_index(sender, instance, **kwargs):
-    # raw is True when saving a model exactly as presented--like when
-    # loading fixtures.  In this case we don't want to trigger.
-    if (not settings.ES_LIVE_INDEXING or kwargs.get('raw') or
-        not isinstance(instance.content_object, Document)):
-        return
-
-    from wiki.tasks import index_documents
-    es_utils.add_index_task(index_documents.delay,
-                            (instance.content_object.id,))
-
-
-@receiver(pre_delete, sender=Document,
-          dispatch_uid='wiki.search.index.document.delete')
-def remove_document_from_index(sender, instance, **kw):
-    if not settings.ES_LIVE_INDEXING:
-        return
-
-    from wiki.tasks import unindex_documents
-    unindex_documents([instance.id])
+    def extract_document(self):
+        d = {}
+        d['id'] = self.id
+        d['title'] = self.title
+        d['locale'] = self.locale
+        d['parent_id'] = self.parent.id if self.parent else None
+        d['content'] = self.html
+        d['category'] = self.category
+        d['slug'] = self.slug
+        d['is_archived'] = self.is_archived
+        if self.parent is None:
+            d['tag'] = [tag['name'] for tag in self.tags.values()]
+        else:
+            # Translations inherit tags from their parents.
+            d['tag'] = [tag['name'] for tag in self.parent.tags.values()]
+        if self.current_revision:
+            d['summary'] = self.current_revision.summary
+            d['keywords'] = self.current_revision.keywords
+            d['updated'] = self.current_revision.created
+            d['current'] = self.current_revision.id
+        else:
+            d['summary'] = None
+            d['keywords'] = None
+            d['updated'] = None
+            d['current'] = None
+        return d
 
 
-@receiver(pre_delete, sender=TaggedItem,
-          dispatch_uid='wiki.search.index.tags.delete')
-def update_wiki_in_index_on_tags_delete(sender, instance, **kwargs):
-    # raw is True when saving a model exactly as presented--like when
-    # loading fixtures.  In this case we don't want to trigger.
-    if (not settings.ES_LIVE_INDEXING or kwargs.get('raw') or
-        not isinstance(instance.content_object, Document)):
-        return
+# Register this as a model we index in ES.
+Document.register_search_model()
 
-    from wiki.tasks import index_documents
-    es_utils.add_index_task(index_documents.delay,
-                            (instance.content_object.id,))
+
+def _update_w_index(sender, instance, **kw):
+    """Given a Document, creates an index task"""
+    if not kw.get('raw'):
+        obj = instance
+        obj.__class__.add_index_task((obj.id,))
+
+
+def _remove_w_index(sender, instance, **kw):
+    """Given a Document, create an unindex task"""
+    if not kw.get('raw'):
+        obj = instance
+        obj.__class__.add_unindex_task((obj.id,))
+
+
+def _update_tag_index(sender, instance, **kw):
+    """Given a TaggedItem for a Document, creates an index task"""
+    obj = instance.content_object
+    if not kw.get('raw') and isinstance(obj, Document):
+        obj.__class__.add_index_task((obj.id,))
+
+
+w_es_post_save = receiver(
+    post_save, sender=Document,
+    dispatch_uid='w.es.post_save')(_update_w_index)
+w_es_pre_delete = receiver(
+    pre_delete, sender=Document,
+    dispatch_uid='w.es.pre_delete')(_remove_w_index)
+w_tag_post_save = receiver(
+    post_save, sender=TaggedItem,
+    dispatch_uid='w.tag.es.post_save')(_update_tag_index)
+w_tag_pre_delete = receiver(
+    pre_delete, sender=TaggedItem,
+    dispatch_uid='w.tag.es.pre_delete')(_update_tag_index)
 
 
 class Revision(ModelBase):

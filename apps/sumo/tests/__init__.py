@@ -83,7 +83,7 @@ class ElasticTestCase(TestCase):
         # index is ready to be queried.  Given that, it's almost
         # always the case that we want to run all the generated tasks,
         # then refresh.
-        from search.es_utils import generate_tasks
+        from search.models import generate_tasks
         generate_tasks()
 
         es = get_es()
