@@ -29,10 +29,10 @@ def create_image(files, user):
     image.description = u'Autosaved draft.'
     image.locale = settings.WIKI_DEFAULT_LANGUAGE
 
-    up_file = _image_to_png(up_file)
+    (up_file, is_animated) = _image_to_png(up_file)
 
     # Finally save the image along with uploading the file.
-    image.file.save(os.path.splitext(up_file.name)[0] + '.png',
+    image.file.save(up_file.name,
                     File(up_file), save=True)
 
     (width, height) = _scale_dimensions(image.file.width, image.file.height)

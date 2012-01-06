@@ -110,6 +110,13 @@ def compress_image(for_obj, for_field):
                                 id=for_obj.id, for_f=for_field))
         return
 
+    # Bail silently if not a PNG.
+    if not (os.path.splitext(for_.path)[1].lower() == '.png'):
+        log_msg = 'File is not PNG for: {model} {id}, {for_f}'
+        log.info(log_msg.format(model=for_obj.__class__.__name__,
+                                id=for_obj.id, for_f=for_field))
+        return
+
     log_msg = 'Compressing {model} {id}: {for_f}'
     log.info(log_msg.format(model=for_obj.__class__.__name__, id=for_obj.id,
                             for_f=for_field))

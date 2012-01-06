@@ -33,15 +33,16 @@ def create_imageattachment(files, user, obj):
     up_file = files.values()[0]
     check_file_size(up_file, settings.IMAGE_MAX_FILESIZE)
 
-    up_file = _image_to_png(up_file)
+    (up_file, is_animated) = _image_to_png(up_file)
 
     image = ImageAttachment(content_object=obj, creator=user)
-    image.file.save(os.path.splitext(up_file.name)[0] + '.png', File(up_file),
+    image.file.save(up_file.name, File(up_file),
                     save=True)
 
     # Compress and generate thumbnail off thread
     generate_thumbnail.delay(image, 'file', 'thumbnail')
-    compress_image.delay(image, 'file')
+    if not is_animated:
+        compress_image.delay(image, 'file')
 
     (width, height) = _scale_dimensions(image.file.width, image.file.height)
     return {'name': up_file.name, 'url': image.file.url,
@@ -53,19 +54,29 @@ def create_imageattachment(files, user, obj):
 def _image_to_png(up_file):
     imagefile = StringIO.StringIO(up_file.read())
     image_image = Image.open(imagefile)
-    converted_image = StringIO.StringIO()
-    if 'transparency' in image_image.info:  # For GIF transparency support
-        transparency = image_image.info['transparency']
-        image_image.save(converted_image, format='PNG',
-                        transparency=transparency)
+
+    # Don't convert animated GIFs
+    try:
+        image_image.seek(1)
+    except EOFError:
+        is_animated = False
     else:
-        image_image.save(converted_image, format='PNG')
+        is_animated = True
 
-    up_file = InMemoryUploadedFile(converted_image, None,
-                                   os.path.splitext(up_file.name)[0] + '.png',
-                                   'image/png', converted_image.len, None)
+    if not is_animated:
+        converted_image = StringIO.StringIO()
+        if 'transparency' in image_image.info:  # For GIF transparency support
+            transparency = image_image.info['transparency']
+            image_image.save(converted_image, format='PNG',
+                             transparency=transparency)
+        else:
+            image_image.save(converted_image, format='PNG')
 
-    return up_file
+        up_file = InMemoryUploadedFile(converted_image, None,
+                                    os.path.splitext(up_file.name)[0] + '.png',
+                                    'image/png', converted_image.len, None)
+
+    return (up_file, is_animated)
 
 
 class FileTooLargeError(Exception):
