@@ -24,6 +24,7 @@ from sumo import ProgrammingError
 from sumo_locales import LOCALES
 from sumo.models import ModelBase, LocaleField
 from sumo.urlresolvers import reverse, split_path
+from taggit.models import TaggedItem
 from tags.models import BigVocabTaggableMixin
 from wiki import TEMPLATE_TITLE_PREFIX
 
@@ -633,6 +634,20 @@ def update_document_from_index(sender, instance, **kw):
     es_utils.add_index_task(index_documents.delay, (instance.id,))
 
 
+@receiver(post_save, sender=TaggedItem,
+          dispatch_uid='wiki.search.index.tags.save')
+def update_wiki_tags_in_index(sender, instance, **kwargs):
+    # raw is True when saving a model exactly as presented--like when
+    # loading fixtures.  In this case we don't want to trigger.
+    if (not settings.ES_LIVE_INDEXING or kwargs.get('raw') or
+        not isinstance(instance.content_object, Document)):
+        return
+
+    from wiki.tasks import index_documents
+    es_utils.add_index_task(index_documents.delay,
+                            (instance.content_object.id,))
+
+
 @receiver(pre_delete, sender=Document,
           dispatch_uid='wiki.search.index.document.delete')
 def remove_document_from_index(sender, instance, **kw):
@@ -641,6 +656,20 @@ def remove_document_from_index(sender, instance, **kw):
 
     from wiki.tasks import unindex_documents
     unindex_documents([instance.id])
+
+
+@receiver(pre_delete, sender=TaggedItem,
+          dispatch_uid='wiki.search.index.tags.delete')
+def update_wiki_in_index_on_tags_delete(sender, instance, **kwargs):
+    # raw is True when saving a model exactly as presented--like when
+    # loading fixtures.  In this case we don't want to trigger.
+    if (not settings.ES_LIVE_INDEXING or kwargs.get('raw') or
+        not isinstance(instance.content_object, Document)):
+        return
+
+    from wiki.tasks import index_documents
+    es_utils.add_index_task(index_documents.delay,
+                            (instance.content_object.id,))
 
 
 class Revision(ModelBase):

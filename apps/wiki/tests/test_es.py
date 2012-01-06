@@ -1,5 +1,3 @@
-import uuid
-
 import elasticutils
 from nose.tools import eq_
 
@@ -39,3 +37,16 @@ class TestPostUpdate(ElasticTestCase):
         # Verify the translation has the parent's tags.
         doc_dict = extract_document(doc2)
         eq_(doc_dict['tag'], [u'desktop', u'windows'])
+
+    def test_wiki_tags(self):
+        tag = u'hiphop'
+        eq_(elasticutils.S(Document).filter(tag=tag).count(), 0)
+        doc = document(save=True)
+        self.refresh()
+        eq_(elasticutils.S(Document).filter(tag=tag).count(), 0)
+        doc.tags.add(tag)
+        self.refresh()
+        eq_(elasticutils.S(Document).filter(tag=tag).count(), 1)
+        doc.tags.remove(tag)
+        self.refresh()
+        eq_(elasticutils.S(Document).filter(tag=tag).count(), 0)

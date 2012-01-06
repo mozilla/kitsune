@@ -60,6 +60,19 @@ class QuestionUpdateTests(ElasticTestCase):
         self.refresh()
         eq_(elasticutils.S(Question).count(), 0)
 
+    def test_questions_tags(self):
+        tag = u'hiphop'
+        eq_(elasticutils.S(Question).filter(tag=tag).count(), 0)
+        q = question(save=True)
+        self.refresh()
+        eq_(elasticutils.S(Question).filter(tag=tag).count(), 0)
+        q.tags.add(tag)
+        self.refresh()
+        eq_(elasticutils.S(Question).filter(tag=tag).count(), 1)
+        q.tags.remove(tag)
+        self.refresh()
+        eq_(elasticutils.S(Question).filter(tag=tag).count(), 0)
+
 
 class QuestionSearchTests(ElasticTestCase):
     """Tests about searching for questions"""

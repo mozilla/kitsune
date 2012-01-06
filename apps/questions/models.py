@@ -13,7 +13,7 @@ from django.dispatch import receiver
 
 from product_details import product_details
 from statsd import statsd
-from taggit.models import Tag
+from taggit.models import Tag, TaggedItem
 import waffle
 
 from activity.models import ActionMixin
@@ -294,13 +294,39 @@ def update_question_in_index(sender, instance, **kw):
     es_utils.add_index_task(index_questions.delay, (instance.id,))
 
 
+@receiver(post_save, sender=TaggedItem,
+          dispatch_uid='questions.search.index.tags.save')
+def update_question_tags_in_index(sender, instance, **kwargs):
+    # raw is True when saving a model exactly as presented--like when
+    # loading fixtures.  In this case we don't want to trigger.
+    if not settings.ES_LIVE_INDEXING or kwargs.get('raw'):
+        return
+
+    es_utils.add_index_task(index_questions.delay,
+                            (instance.content_object.id,))
+
+
 @receiver(pre_delete, sender=Question,
           dispatch_uid='questions.search.index.question.delete')
 def remove_question_from_index(sender, instance, **kw):
-    if not settings.ES_LIVE_INDEXING:
+    if (not settings.ES_LIVE_INDEXING or kw.get('raw') or
+        not isinstance(instance.content_object, Question)):
         return
 
     unindex_questions([instance.id])
+
+
+@receiver(pre_delete, sender=TaggedItem,
+          dispatch_uid='questions.search.index.tags.delete')
+def update_question_in_index_on_tags_delete(sender, instance, **kwargs):
+    # raw is True when saving a model exactly as presented--like when
+    # loading fixtures.  In this case we don't want to trigger.
+    if (not settings.ES_LIVE_INDEXING or kwargs.get('raw') or
+        not isinstance(instance.content_object, Question)):
+        return
+
+    es_utils.add_index_task(index_questions.delay,
+                            (instance.content_object.id,))
 
 
 class QuestionMetaData(ModelBase):
