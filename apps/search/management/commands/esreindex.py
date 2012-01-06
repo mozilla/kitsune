@@ -7,10 +7,12 @@ class Command(BaseCommand):
     help = 'Reindex the database for Elastic.'
     option_list = BaseCommand.option_list + (
         make_option('--percent', type='int', dest='percent', default=100,
-                    help='Reindex a percentage of things'),)
+                    help='Reindex a percentage of things'),
+        make_option('--fast-fail', '-x', action='store_true', dest='fast_fail',
+                    help='Stop indexing on error.'),)
 
     def handle(self, *args, **options):
         percent = options['percent']
         if percent > 100 or percent < 1:
             raise CommandError('percent should be between 1 and 100')
-        es_reindex(percent)
+        es_reindex(percent, options['fast_fail'])

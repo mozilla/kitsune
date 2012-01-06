@@ -159,7 +159,7 @@ def unindex_answers(ids):
             pass
 
 
-def reindex_questions(percent=100):
+def reindex_questions(percent=100, fast_fail=False):
     """Iterate over this to update the mapping and index all documents.
 
     Yields number of documents done.
@@ -202,12 +202,23 @@ def reindex_questions(percent=100):
             else:
                 time_to_go = "%d min" % (time_to_go / 60)
             log.info('%s/%s...  (%s to go)', t, total, time_to_go)
-            es.flush_bulk(forced=True)
+        if t % 100 == 0:
+            try:
+                es.flush_bulk(forced=True)
+            except Exception, e:
+                if fast_fail:
+                    raise
+                log.error('Error flushing ES.', exc_info=True)
 
         if t > total:
             break
 
-        index_doc(extract_question(q), bulk=True, es=es)
+        try:
+            index_doc(extract_question(q), bulk=True, es=es)
+        except Exception, e:
+            if fast_fail:
+                raise
+            log.error('Error indexing question: %d' % q.pk, exc_info=True)
         yield t
 
     es.flush_bulk(forced=True)

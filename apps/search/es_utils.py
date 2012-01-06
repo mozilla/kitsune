@@ -110,7 +110,7 @@ def get_doctype_stats():
     return stats
 
 
-def es_reindex_with_progress(percent=100):
+def es_reindex_with_progress(percent=100, fast_fail=False):
     """Rebuild Elastic indexes as you iterate over yielded progress ratios.
 
     :arg percent: Defaults to 100.  Allows you to specify how much of
@@ -143,14 +143,15 @@ def es_reindex_with_progress(percent=100):
              Document.objects.count())
     return (float(done) / total for done, _ in
             izip(count(1),
-                 chain(questions.es_search.reindex_questions(percent),
-                       wiki.es_search.reindex_documents(percent),
-                       forums.es_search.reindex_documents(percent))))
+                 chain(
+                    wiki.es_search.reindex_documents(percent, fast_fail),
+                    questions.es_search.reindex_questions(percent, fast_fail),
+                    forums.es_search.reindex_documents(percent, fast_fail))))
 
 
-def es_reindex(percent=100):
+def es_reindex(percent=100, fast_fail=False):
     """Rebuild ElasticSearch indexes."""
-    [x for x in es_reindex_with_progress(percent) if False]
+    [x for x in es_reindex_with_progress(percent, fast_fail) if False]
 
 
 def es_whazzup():
