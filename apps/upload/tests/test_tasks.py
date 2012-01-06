@@ -156,9 +156,9 @@ class CompressImageTestCase(TestCase):
     def tearDown(self):
         ImageAttachment.objects.all().delete()
 
-    def _uploaded_image(self):
+    def _uploaded_image(self, testfile="test.png"):
         image = ImageAttachment(content_object=self.obj, creator=self.user)
-        with open('apps/upload/tests/media/test.jpg') as f:
+        with open('apps/upload/tests/media/' + testfile) as f:
             up_file = File(f)
             image.file.save(up_file.name, up_file, save=True)
         return image
@@ -184,5 +184,13 @@ class CompressImageTestCase(TestCase):
     def test_compress_no_compression_software(self, call):
         """compress_image does not fail when no compression software."""
         image = self._uploaded_image()
+        compress_image(image, 'file')
+        assert not call.called
+
+    @mock.patch.object(settings._wrapped, 'OPTIPNG_PATH', '')
+    @mock.patch.object(upload.tasks.subprocess, 'call')
+    def test_compressed_image_default(self, call):
+        """uploaded animated gif image is not compressed."""
+        image = self._uploaded_image(testfile="animated.gif")
         compress_image(image, 'file')
         assert not call.called
