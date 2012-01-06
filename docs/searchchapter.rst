@@ -166,22 +166,46 @@ override in ``settings_local.py``::
    ``ELASTICDIR/config/elasticsearch.yml``.  So if you change it in
    one place, you must also change it in the other.
 
-You can also set ``USE_ELASTIC`` in your ``settings_local.py`` file.
-This affects whether Kitsune does Elastic indexing when data changes
-in the ``post_save`` and ``pre_delete`` hooks.  For tests,
-``USE_ELASTIC`` is set to ``False`` except for Elastic specific tests.
-
-There are a few other settings you can set in your settings_local.py
+There are a few other settings you can set in your ``settings_local.py``
 file that override Elastic Utils defaults.  See `the Elastic Utils
 docs <http://elasticutils.readthedocs.org/en/latest/installation.html#configure>`_
 for details.
 
-.. Note::
+Other things you can change:
 
-   One problem I have on my machine is that it takes a while for
-   Elastic to do stuff.  ``ES_TIMEOUT`` defaults to 1, but I set it to
-   2 in my ``settings_local.py`` file which reduces the number of
-   timeout errors I get.
+``ES_LIVE_INDEXING``
+
+    You can also set ``ES_LIVE_INDEXING`` in your
+    ``settings_local.py`` file. This affects whether Kitsune does
+    Elastic indexing when data changes in the ``post_save`` and
+    ``pre_delete`` hooks.
+
+    For tests, ``ES_LIVE_INDEXING`` is set to ``False`` except for
+    Elastic specific tests so we're not spending a ton of time
+    indexing things we're not using.
+
+``ES_FLUSH_BULK_EVERY``
+
+    We do bulk indexing meaning we queue up a bunch and then push them
+    through all at the same time. This requires memory to queue them,
+    so if you've got low memory, dropping this value to something
+    lower (but still greater than 1) could help.
+
+``ES_TIMEOUT``
+
+    This affects timeouts for search-related requests.
+
+    If you're having problems with ES being slow, raising this number
+    can be helpful.
+
+``ES_INDEXING_TIMEOUT``
+
+    This affects all index-related operations including creating
+    indexes, deleting indexes, creating mappings, indexing documents
+    and calling flush_bulk.
+
+    If you're having problems with indexing operations timing out,
+    raising this number can sometimes help.
 
 
 Using Elastic Search

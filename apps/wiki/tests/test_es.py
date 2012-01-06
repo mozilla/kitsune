@@ -2,7 +2,6 @@ import elasticutils
 from nose.tools import eq_
 
 from sumo.tests import ElasticTestCase
-from wiki.es_search import extract_document
 from wiki.tests import document
 from wiki.models import Document
 
@@ -31,14 +30,18 @@ class TestPostUpdate(ElasticTestCase):
         doc2.tags.add(u'badtag')
 
         # Verify the parent has the right tags.
-        doc_dict = extract_document(doc1)
+        doc_dict = doc1.extract_document()
         eq_(doc_dict['tag'], [u'desktop', u'windows'])
 
         # Verify the translation has the parent's tags.
-        doc_dict = extract_document(doc2)
+        doc_dict = doc2.extract_document()
         eq_(doc_dict['tag'], [u'desktop', u'windows'])
 
     def test_wiki_tags(self):
+        """Make sure that adding tags to a Document causes it to
+        refresh the index.
+
+        """
         tag = u'hiphop'
         eq_(elasticutils.S(Document).filter(tag=tag).count(), 0)
         doc = document(save=True)

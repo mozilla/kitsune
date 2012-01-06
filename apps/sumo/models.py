@@ -3,6 +3,7 @@ from django.db import models
 
 import caching.base
 
+
 # Our apps should subclass ManagerBase instead of models.Manager or
 # caching.base.CachingManager directly.
 ManagerBase = caching.base.CachingManager
