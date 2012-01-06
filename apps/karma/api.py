@@ -113,3 +113,13 @@ def details(request):
         'userid': userid
         }
 
+
+@login_required
+@permission_required('karma.view_dashboard')
+@json_view
+def percent_answered(request):
+    mgr = KarmaManager()
+
+    return {
+        'success': True,
+    }
