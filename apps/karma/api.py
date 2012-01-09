@@ -1,7 +1,9 @@
 from datetime import date, timedelta
 
 from access.decorators import login_required, permission_required
-from karma.forms import UserAPIForm, OverviewAPIForm, DetailAPIForm
+from karma.forms import (
+    UserAPIForm, OverviewAPIForm, DetailAPIForm, PercentAnsweredForm
+)
 from karma.manager import KarmaManager
 from questions.models import Question
 from sumo.decorators import json_view
@@ -119,6 +121,11 @@ def details(request):
 @json_view
 def percent_answered(request):
     mgr = KarmaManager()
+
+    form = PercentAnsweredForm(request.GET)
+
+    if not form.is_valid():
+        return {'success': False, 'errors': form.errors}
 
     return {
         'success': True,
