@@ -2,7 +2,7 @@ from datetime import date, timedelta
 
 from access.decorators import login_required, permission_required
 from karma.forms import (
-    UserAPIForm, OverviewAPIForm, DetailAPIForm, PercentAnsweredForm
+    UserAPIForm, OverviewAPIForm, DetailAPIForm
 )
 from karma.manager import KarmaManager
 from questions.models import Question

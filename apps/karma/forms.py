@@ -36,9 +36,3 @@ class DetailAPIForm(forms.Form):
         choices=[(k, k) for k in KarmaManager.date_ranges.keys()])
     userid = forms.IntegerField(required=False)
 
-
-class PercentAnsweredForm(forms.Form):
-    daterange = forms.ChoiceField(
-        required=False,
-        initial='1y',
-        choices=[(k, k) for k in KarmaManager.date_ranges.keys()])
