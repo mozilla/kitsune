@@ -57,7 +57,6 @@ def reindex_with_progress(waffle_when_done=False):
 @task
 def index_task(cls, ids, **kw):
     """Indexes documents specified by cls and ids"""
-    print "index_task", cls, ids
     for obj in cls.uncached.filter(id__in=ids):
         cls.index(obj.extract_document(), refresh=True)
 

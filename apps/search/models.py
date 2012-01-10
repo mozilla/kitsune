@@ -54,7 +54,6 @@ class SearchMixin(object):
         :arg args: tuple of ids
 
         """
-        print "add_index_task", cls, ids
         _local_tasks.es_index_task_set.add((index_task, (cls, ids)))
 
     @classmethod

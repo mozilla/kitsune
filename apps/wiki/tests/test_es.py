@@ -38,6 +38,10 @@ class TestPostUpdate(ElasticTestCase):
         eq_(doc_dict['tag'], [u'desktop', u'windows'])
 
     def test_wiki_tags(self):
+        """Make sure that adding tags to a Document causes it to
+        refresh the index.
+
+        """
         tag = u'hiphop'
         eq_(elasticutils.S(Document).filter(tag=tag).count(), 0)
         doc = document(save=True)

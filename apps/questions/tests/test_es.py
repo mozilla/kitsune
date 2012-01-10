@@ -61,6 +61,10 @@ class QuestionUpdateTests(ElasticTestCase):
         eq_(elasticutils.S(Question).count(), 0)
 
     def test_questions_tags(self):
+        """Make sure that adding tags to a Question causes it to
+        refresh the index.
+
+        """
         tag = u'hiphop'
         eq_(elasticutils.S(Question).filter(tag=tag).count(), 0)
         q = question(save=True)
