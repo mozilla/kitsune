@@ -107,7 +107,7 @@ def unindex_documents(ids):
             pass
 
 
-def reindex_documents(percent):
+def reindex_documents(percent, fast_fail=False):
     """Iterate over this to update the mapping and index all documents.
 
     Yields number of documents done.
@@ -149,12 +149,23 @@ def reindex_documents(percent):
             else:
                 time_to_go = "%d min" % (time_to_go / 60)
             log.info('%s/%s...  (%s to go)', t, total, time_to_go)
-            es.flush_bulk(forced=True)
+        if t % 100 == 0:
+            try:
+                es.flush_bulk(forced=True)
+            except Exception, e:
+                if fast_fail:
+                    raise
+                log.error('Error flushing ES.', exc_info=True)
 
         if t > total:
             break
 
-        index_doc(extract_document(d), bulk=True, es=es)
+        try:
+            index_doc(extract_document(d), bulk=True, es=es)
+        except Exception, e:
+            if fast_fail:
+                raise
+            log.error('Error indexing document: %d' % d.pk, exc_info=True)
         yield t
 
     es.flush_bulk(forced=True)
