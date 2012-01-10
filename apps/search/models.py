@@ -31,15 +31,47 @@ _local_tasks.es_index_task_set = set()
 
 
 class SearchMixin(object):
+    """This mixin adds ES indexing support for the model.
+
+    When using this mixin, make sure to implement:
+
+    * get_mapping
+    * extract_document
+
+    Additionally, after defining your model, register it as a
+    search model::
+
+         MyModel.register_search_model()
+
+    """
+
     @classmethod
     def register_search_model(cls):
         """Registers a model as being involved with ES indexing"""
         # TODO: Fix this to use weakrefs
         _search_models[cls._meta.db_table] = cls
 
+    @classmethod
+    def get_mapping(self):
+        """Returns the ES mapping defition for this document type
+
+        This must be implemented. It should return an ES mapping.
+
+        For examples, see the codebase.
+
+        """
+        raise NotImplementedError
+
     def extract_document(self):
-        """Extracts the ES index document for this instance"""
-        return {}
+        """Extracts the ES index document for this instance
+
+        This must be implemented. It should return a dict representing
+        the document to be indexed.
+
+        For examples, see the codebase.
+
+        """
+        raise NotImplementedError
 
     @classmethod
     def _get_index(cls):
@@ -51,19 +83,19 @@ class SearchMixin(object):
     def add_index_task(cls, ids):
         """Adds an index task.
 
-        :arg args: tuple of ids
+        :arg ids: tuple of ids
 
         """
-        _local_tasks.es_index_task_set.add((index_task, (cls, ids)))
+        _local_tasks.es_index_task_set.add((index_task.delay, (cls, ids)))
 
     @classmethod
     def add_unindex_task(cls, ids):
         """Creates a task to remove this document from the ES index
 
-        :arg args: tuple of ids
+        :arg ids: tuple of ids
 
         """
-        _local_tasks.es_index_task_set.add((unindex_task, (cls, ids)))
+        _local_tasks.es_index_task_set.add((unindex_task.delay, (cls, ids)))
 
     @classmethod
     def index(cls, document, bulk=False, force_insert=False, refresh=False,
