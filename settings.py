@@ -273,6 +273,7 @@ INSTALLED_APPS = (
     'groups',
     'karma',
     'tags',
+    'kpi',
 
     # Extra apps for testing.
     'django_nose',
@@ -445,6 +446,9 @@ MINIFY_BUNDLES = {
         'karma.dashboard': (
             'css/karma.dashboard.css',
         ),
+        'kpi.dashboard': (
+            'css/kpi.dashboard.css',
+        ),
     },
     'js': {
         'common': (
@@ -567,6 +571,9 @@ MINIFY_BUNDLES = {
         'karma.dashboard': (
             'js/libs/backbone.js',
             'js/karma.dashboard.js',
+        ),
+        'kpi.dashboard': (
+            'js/kpi.dashboard.js',
         ),
     },
 }
