@@ -315,7 +315,7 @@ class MobileArticleTemplate(MobileTestCase):
         r = revision(save=True, content='Some text.', is_approved=True)
         response = self.client.get(r.document.get_absolute_url())
         eq_(200, response.status_code)
-        self.assertTemplateUsed(r, 'wiki/mobile/document.html')
+        self.assertTemplateUsed(response, 'wiki/mobile/document.html')
 
 
 class RevisionTests(TestCaseBase):
