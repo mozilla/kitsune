@@ -26,9 +26,6 @@ from questions.question_config import products
 from questions.tasks import (update_question_votes, update_answer_pages,
                              log_answer)
 from search import searcher
-from search.es_utils import (TYPE, ANALYZER, STORE, TERM_VECTOR, LONG,
-                             INTEGER, STRING, BOOLEAN, DATE, YES, SNOWBALL,
-                             WITH_POS_OFFSETS)
 from search.models import SearchMixin
 from search.utils import crc32
 from sumo.helpers import urlparams
@@ -289,29 +286,29 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
     def get_mapping(cls):
         mapping = {
             'properties': {
-                'id': {TYPE: LONG},
-                'question_id': {TYPE: LONG},
-                'title': {TYPE: STRING, ANALYZER: SNOWBALL},
+                'id': {'type': 'long'},
+                'question_id': {'type': 'long'},
+                'title': {'type': 'string', 'analyzer': 'snowball'},
                 'question_content':
-                    {TYPE: STRING, ANALYZER: SNOWBALL,
+                    {'type': 'string', 'analyzer': 'snowball',
                     # TODO: Stored because originally, this is the
                     # only field we were excerpting on. Standardize
                     # one way or the other.
-                     STORE: YES, TERM_VECTOR: WITH_POS_OFFSETS},
+                     'store': 'yes', 'term_vector': 'with_positions_offsets'},
                 'answer_content':
-                    {TYPE: STRING, ANALYZER: SNOWBALL},
-                'replies': {TYPE: INTEGER},
-                'is_solved': {TYPE: BOOLEAN},
-                'is_locked': {TYPE: BOOLEAN},
-                'has_answers': {TYPE: BOOLEAN},
-                'has_helpful': {TYPE: BOOLEAN},
-                'created': {TYPE: DATE},
-                'updated': {TYPE: DATE},
-                'question_creator': {TYPE: STRING},
-                'answer_creator': {TYPE: STRING},
-                'question_votes': {TYPE: INTEGER},
-                'answer_votes': {TYPE: INTEGER},
-                'tag': {TYPE: STRING}
+                    {'type': 'string', 'analyzer': 'snowball'},
+                'replies': {'type': 'integer'},
+                'is_solved': {'type': 'boolean'},
+                'is_locked': {'type': 'boolean'},
+                'has_answers': {'type': 'boolean'},
+                'has_helpful': {'type': 'boolean'},
+                'created': {'type': 'date'},
+                'updated': {'type': 'date'},
+                'question_creator': {'type': 'string'},
+                'answer_creator': {'type': 'string'},
+                'question_votes': {'type': 'integer'},
+                'answer_votes': {'type': 'integer'},
+                'tag': {'type': 'string'}
                 }
             }
         return mapping

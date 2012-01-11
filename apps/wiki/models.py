@@ -18,8 +18,6 @@ from tidings.models import NotificationsMixin
 from tower import ugettext_lazy as _lazy, ugettext as _
 
 from search import searcher
-from search.es_utils import (TYPE, INTEGER, STRING, INDEX, NOTANALYZED,
-                             ANALYZER, SNOWBALL, BOOLEAN, DATE)
 from search.models import SearchMixin
 from search.utils import crc32
 from sumo import ProgrammingError
@@ -628,20 +626,20 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
     def get_mapping(cls):
         mapping = {
             'properties': {
-                'id': {TYPE: INTEGER},
-                'title': {TYPE: STRING, ANALYZER: SNOWBALL},
-                'locale': {TYPE: STRING, INDEX: NOTANALYZED},
-                'current': {TYPE: INTEGER},
-                'parent_id': {TYPE: INTEGER},
+                'id': {'type': 'integer'},
+                'title': {'type': 'string', 'analyzer': 'snowball'},
+                'locale': {'type': 'string', 'index': 'not_analyzed'},
+                'current': {'type': 'integer'},
+                'parent_id': {'type': 'integer'},
                 'content':
-                    {TYPE: STRING, ANALYZER: SNOWBALL},
-                'category': {TYPE: INTEGER},
-                'slug': {TYPE: STRING},
-                'is_archived': {TYPE: BOOLEAN},
-                'summary': {TYPE: STRING, ANALYZER: SNOWBALL},
-                'keywords': {TYPE: STRING, ANALYZER: SNOWBALL},
-                'updated': {TYPE: DATE},
-                'tag': {TYPE: STRING}
+                    {'type': 'string', 'analyzer': 'snowball'},
+                'category': {'type': 'integer'},
+                'slug': {'type': 'string'},
+                'is_archived': {'type': 'boolean'},
+                'summary': {'type': 'string', 'analyzer': 'snowball'},
+                'keywords': {'type': 'string', 'analyzer': 'snowball'},
+                'updated': {'type': 'date'},
+                'tag': {'type': 'string'}
                 }
             }
         return mapping

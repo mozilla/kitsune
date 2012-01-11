@@ -15,9 +15,6 @@ from sumo.urlresolvers import reverse
 from sumo.models import ModelBase
 from search import searcher
 from search.models import SearchMixin
-from search.es_utils import (TYPE, ANALYZER, STORE, TERM_VECTOR, INTEGER,
-                             STRING, BOOLEAN, DATE, YES, SNOWBALL,
-                             WITH_POS_OFFSETS)
 from search.utils import crc32
 import waffle
 
@@ -186,19 +183,20 @@ class Thread(NotificationsMixin, ModelBase, SearchMixin):
     def get_mapping(cls):
         mapping = {
             'properties': {
-                'id': {TYPE: INTEGER},
-                'thread_id': {TYPE: INTEGER},
-                'forum_id': {TYPE: INTEGER},
-                'title': {TYPE: STRING, ANALYZER: SNOWBALL},
-                'is_sticky': {TYPE: BOOLEAN},
-                'is_locked': {TYPE: BOOLEAN},
-                'author_id': {TYPE: INTEGER},
-                'author_ord': {TYPE: STRING},
-                'content': {TYPE: STRING, ANALYZER: SNOWBALL,
-                            STORE: YES, TERM_VECTOR: WITH_POS_OFFSETS},
-                'created': {TYPE: DATE},
-                'updated': {TYPE: DATE},
-                'replies': {TYPE: INTEGER}
+                'id': {'type': 'integer'},
+                'thread_id': {'type': 'integer'},
+                'forum_id': {'type': 'integer'},
+                'title': {'type': 'string', 'analyzer': 'snowball'},
+                'is_sticky': {'type': 'boolean'},
+                'is_locked': {'type': 'boolean'},
+                'author_id': {'type': 'integer'},
+                'author_ord': {'type': 'string'},
+                'content': {'type': 'string', 'analyzer': 'snowball',
+                            'store': 'yes',
+                            'term_vector': 'with_positions_offsets'},
+                'created': {'type': 'date'},
+                'updated': {'type': 'date'},
+                'replies': {'type': 'integer'}
                 }
             }
         return mapping

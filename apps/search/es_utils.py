@@ -14,24 +14,6 @@ ESMaxRetryError = pyes.urllib3.MaxRetryError
 ESIndexMissingException = pyes.exceptions.IndexMissingException
 
 
-TYPE = 'type'
-ANALYZER = 'analyzer'
-INDEX = 'index'
-STORE = 'store'
-TERM_VECTOR = 'term_vector'
-NOT_INDEXED = 'not_indexed'
-LONG = 'long'
-INTEGER = 'integer'
-STRING = 'string'
-BOOLEAN = 'boolean'
-DATE = 'date'
-ANALYZED = 'analyzed'
-NOTANALYZED = 'not_analyzed'
-SNOWBALL = 'snowball'
-YES = 'yes'
-WITH_POS_OFFSETS = 'with_positions_offsets'
-
-
 log = logging.getLogger('search.es_utils')
 
 
