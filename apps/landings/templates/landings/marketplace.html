@@ -8,3 +8,9 @@
 {% set top_text = _('Help for Firefox Marketplace') %}
 {% set active_site_nav = 'marketplace' %}
 {% set h1_text = _('Need Help With <mark>Firefox Marketplace?</mark>') %}
+
+{% block quick_links %}
+  <li class="aaq">
+    <a href="{{ url('questions.marketplace_aaq') }}">{{ _('Ask a Question') }}</a>
+  </li>
+{% endblock %}

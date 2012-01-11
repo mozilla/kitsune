@@ -133,3 +133,6 @@
 [submodule "vendor/src/django-tastypie"]
 	path = vendor/src/django-tastypie
 	url = https://github.com/toastdriven/django-tastypie.git
+[submodule "vendor/src/zendesk"]
+	path = vendor/src/zendesk
+	url = git://github.com/eventbrite/zendesk.git

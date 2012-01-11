@@ -36,9 +36,12 @@ import questions as constants
 from questions.events import QuestionReplyEvent, QuestionSolvedEvent
 from questions.feeds import QuestionsFeed, AnswersFeed, TaggedQuestionsFeed
 from questions.forms import (NewQuestionForm, EditQuestionForm, AnswerForm,
-                             WatchQuestionForm, FREQUENCY_CHOICES)
+                             WatchQuestionForm, FREQUENCY_CHOICES,
+                             MarketplaceAaqForm)
 from questions.karma_actions import (SolutionAction, AnswerMarkedHelpfulAction,
                                      AnswerMarkedNotHelpfulAction)
+from questions.marketplace import (MARKETPLACE_CATEGORIES, submit_ticket,
+                                   ZendeskError)
 from questions.models import (Question, Answer, QuestionVote, AnswerVote,
                               question_searcher)
 from questions.question_config import products
@@ -838,6 +841,60 @@ def answer_preview_async(request):
                     content=request.POST.get('content', ''))
     return jingo.render(request, 'questions/includes/answer_preview.html',
                         {'answer_preview': answer})
+
+
+def marketplace(request):
+    """AAQ landing page for Marketplace."""
+    return jingo.render(request, 'questions/marketplace.html', {
+        'categories': MARKETPLACE_CATEGORIES})
+
+
+@anonymous_csrf
+def marketplace_category(request, category_slug):
+    """AAQ category page. Handles form post that submits ticket."""
+    try:
+        category_name = MARKETPLACE_CATEGORIES[category_slug]
+    except KeyError:
+        raise Http404
+
+    error_message = None
+
+    if request.method == 'GET':
+        form = MarketplaceAaqForm(request.user)
+    else:
+        form = MarketplaceAaqForm(request.user, request.POST)
+        if form.is_valid():
+            subject = form.cleaned_data['subject']
+            body = form.cleaned_data['body']
+            category = form.cleaned_data['category']
+
+            if request.user.is_authenticated():
+                email = request.user.email
+            else:
+                email = form.cleaned_data['email']
+
+            # Submit ticket
+            try:
+                submit_ticket(email, category, subject, body)
+            except ZendeskError:
+                error_message = _('There was an error submitting the ticket, '
+                                  'please try again later.')
+
+            if not error_message:
+                return HttpResponseRedirect(
+                    reverse('questions.marketplace_aaq_success'))
+
+    return jingo.render(request, 'questions/marketplace_category.html', {
+        'category': category_name,
+        'category_slug': category_slug,
+        'categories': MARKETPLACE_CATEGORIES,
+        'form': form,
+        'error_message': error_message})
+
+
+def marketplace_success(request):
+    """Confirmation of ticket submitted successfully."""
+    return jingo.render(request, 'questions/marketplace_success.html')
 
 
 def _search_suggestions(request, query, locale, category_tags):

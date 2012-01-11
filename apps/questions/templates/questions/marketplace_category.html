@@ -1,0 +1,56 @@
+{# vim: set ts=2 et sts=2 sw=2: #}
+{% extends "questions/base.html" %}
+{% set title = _('Ask a Question about Firefox Marketplace') %}
+{% set classes = 'new-question' %}
+
+{% block content %}
+  <article class="main">
+    <div id="ask-question">
+      <h1>{{ title }}</h1>
+      <div class="inner-wrap">
+        <div class="selected">
+          <label>{{ _('Category:') }}</label>
+          <span>{{ category }}</span>
+          <a href="{{ url('questions.marketplace_aaq') }}">{{ _('change') }}</a>
+        </div>
+
+        {% if category_slug == 'payments' %}
+          <h2>
+            {% trans %}
+              Please visit the
+              <a href="https://www.paypal.com/cgi-bin/helpweb?cmd=_help">
+              Paypal Help Center</a>.
+            {% endtrans %}
+          </h2>
+        {% elif category_slug == 'applications' %}
+          <h2>
+            {% trans %}
+              Please visit the Firefox Market page for the application. There
+              you can find the developers' contact information and contact them
+              directly.
+            {% endtrans %}
+          </h2>
+        {% elif category_slug == 'account' %}
+          {% if error_message %}
+            <ul class="errorlist">
+              <li>{{ error_message }}</li>
+            </ul>
+          {% endif %}
+          <form id="question-form" action="" method="post">
+            {{ csrf() }}
+            <ol>
+              {{ form.as_ul() }}
+              <li class="submit">
+                <input type="submit" class="btn btn-important" value="{{ _('Submit Issue') }}" />
+              </li>
+            </ol>
+          </form>
+        {% endif %}
+
+      </div>
+    </div>
+  </article>
+{% endblock %}
+
+{% block side %}
+{% endblock %}
