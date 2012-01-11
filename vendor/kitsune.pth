@@ -73,3 +73,4 @@ src/python-recaptcha
 src/django-arecibo
 src/oedipus
 src/elasticutils
+src/django-tastypie
