@@ -1,0 +1,25 @@
+{# vim: set ts=2 et sts=2 sw=2: #}
+{% extends "questions/base.html" %}
+{% set title = _('Ask a Question about Firefox Marketplace') %}
+{% set classes = 'new-question' %}
+
+{% block content %}
+  <article class="main">
+    <div id="ask-question">
+      <h1>{{ title }}</h1>
+      <div class="inner-wrap">
+        <h2>{{ _('Which category best describes your problem?') }}</h2>
+        <ul class="select-one">
+          {% for slug, name in categories.items() %}
+            <li>
+               <a href="{{ url('questions.marketplace_aaq_category', slug) }}">{{ name }}</a>
+            </li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+  </article>
+{% endblock %}
+
+{% block side %}
+{% endblock %}

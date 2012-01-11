@@ -39,6 +39,7 @@ from questions.forms import (NewQuestionForm, EditQuestionForm, AnswerForm,
                              WatchQuestionForm, FREQUENCY_CHOICES)
 from questions.karma_actions import (SolutionAction, AnswerMarkedHelpfulAction,
                                      AnswerMarkedNotHelpfulAction)
+from questions.marketplace import MARKETPLACE_CATEGORIES
 from questions.models import (Question, Answer, QuestionVote, AnswerVote,
                               question_searcher)
 from questions.question_config import products
@@ -838,6 +839,25 @@ def answer_preview_async(request):
                     content=request.POST.get('content', ''))
     return jingo.render(request, 'questions/includes/answer_preview.html',
                         {'answer_preview': answer})
+
+
+def marketplace(request):
+    """AAQ landing page for Marketplace."""
+    return jingo.render(request, 'questions/marketplace.html', {
+        'categories': MARKETPLACE_CATEGORIES})
+
+
+def marketplace_category(request, category):
+    """AAQ category page."""
+    try:
+        category_name = MARKETPLACE_CATEGORIES[category]
+    except KeyError:
+        raise Http404
+
+    return jingo.render(request, 'questions/marketplace_category.html', {
+        'category': category_name,
+        'category_slug': category,
+        'categories': MARKETPLACE_CATEGORIES})
 
 
 def _search_suggestions(request, query, locale, category_tags):
