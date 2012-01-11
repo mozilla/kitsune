@@ -175,6 +175,8 @@ Other things you can change:
 
 ``ES_LIVE_INDEXING``
 
+    Defaults to False.
+
     You can also set ``ES_LIVE_INDEXING`` in your
     ``settings_local.py`` file. This affects whether Kitsune does
     Elastic indexing when data changes in the ``post_save`` and
@@ -186,12 +188,16 @@ Other things you can change:
 
 ``ES_FLUSH_BULK_EVERY``
 
+    Defaults to 1000.
+
     We do bulk indexing meaning we queue up a bunch and then push them
     through all at the same time. This requires memory to queue them,
     so if you've got low memory, dropping this value to something
     lower (but still greater than 1) could help.
 
 ``ES_TIMEOUT``
+
+    Defaults to 5.
 
     This affects timeouts for search-related requests.
 
@@ -200,12 +206,25 @@ Other things you can change:
 
 ``ES_INDEXING_TIMEOUT``
 
+    Defaults to 20.
+
     This affects all index-related operations including creating
     indexes, deleting indexes, creating mappings, indexing documents
     and calling flush_bulk.
 
     If you're having problems with indexing operations timing out,
     raising this number can sometimes help.
+
+
+.. Note::
+
+   Don't have a lot of memory? Having problems with indexing running
+   for 20 minutes and then dying in an overly dramatic firesplosion?
+
+   Try setting::
+
+      ES_INDEXING_TIMEOUT = 60
+      ES_FLUSH_BULK_EVERY = 10
 
 
 Using Elastic Search
