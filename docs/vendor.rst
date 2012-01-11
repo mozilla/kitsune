@@ -68,10 +68,7 @@ Adding a New Library with Git Submodules
 Technically this can be done with ``pip install --no-install`` but there's an
 even easier method when installing a new library from a git repo::
 
-    $ cd vendor/src
-    $ git clone git://<repo>
-    $ cd ../..
-    $ ./addsubmodules.sh
+    $ git submodule add git://<repo> vendor/src
     $ vim kitsune.pth  # Add the new library's path
     $ git add kitsune.pth
     $ git ci -m "Adding $LIBRARY"
