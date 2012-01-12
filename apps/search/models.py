@@ -28,8 +28,15 @@ def get_search_models():
     return values
 
 
+# Holds a threadlocal set of indexing tasks to be filed after the request.
 _local = local()
-_local.tasks = set()
+
+
+def _local_tasks():
+    """(Create and) return the threadlocal set of indexing tasks."""
+    if getattr(_local, 'tasks', None) is None:
+        _local.tasks = set()
+    return _local.tasks
 
 
 class SearchMixin(object):
@@ -86,12 +93,12 @@ class SearchMixin(object):
 
     def index_later(self):
         """Register myself to be indexed at the end of the request."""
-        _local.tasks.add((index_task.delay, (self.__class__, (self.id,))))
+        _local_tasks().add((index_task.delay, (self.__class__, (self.id,))))
 
 
     def unindex_later(self):
         """Register myself to be unindexed at the end of the request."""
-        _local.tasks.add((unindex_task.delay, (self.__class__, (self.id,))))
+        _local_tasks().add((unindex_task.delay, (self.__class__, (self.id,))))
 
     @classmethod
     def index(cls, document, bulk=False, force_insert=False, refresh=False,
@@ -193,10 +200,11 @@ def generate_tasks(**kwargs):
     execute it only once.
 
     """
-    for fun, args in _local.tasks:
+    tasks = _local_tasks()
+    for fun, args in tasks:
         fun(*args)
 
-    _local.tasks.clear()
+    tasks.clear()
 
 
 signals.request_finished.connect(generate_tasks)
