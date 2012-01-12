@@ -58,6 +58,29 @@ MSG_CONTENT_LONG = _lazy(u'Please keep the length of your content to '
 
 REPLY_PLACEHOLDER = _lazy(u'Enter your reply here.')
 
+# Marketplace AAQ form
+EMAIL_PLACEHOLDER = _lazy(u'Enter your email address here.')
+SUBJECT_PLACEHOLDER = _lazy(u'Enter a subject here.')
+SUBJECT_CONTENT_REQUIRED = _lazy(u'Please provide a subject.')
+SUBJECT_CONTENT_SHORT = _lazy(u'The subject is too short (%(show_value)s '
+                              u'characters). It must be at least %(limit_value)s '
+                              u'characters.')
+SUBJECT_CONTENT_LONG = _lazy(u'Please keep the length of the subject to '
+                             u'%(limit_value)s characters or less. It is '
+                             u'currently %(show_value)s characters.')
+BODY_PLACEHOLDER = _lazy(u'Describe your issue here.')
+BODY_CONTENT_REQUIRED = _lazy(u'Please describe your issue in the body.')
+BODY_CONTENT_SHORT = _lazy(u'The body content is too short (%(show_value)s '
+                           u'characters). It must be at least %(limit_value)s '
+                           u'characters.')
+BODY_CONTENT_LONG = _lazy(u'Please keep the length of the body content to '
+                          u'%(limit_value)s characters or less. It is '
+                          u'currently %(show_value)s characters.')
+CATEGORY_CHOICES = [(u'account', _lazy(u'Account Issues')),
+                    (u'installation', _lazy(u'Installation Issues')),
+                    (u'payment', _lazy(u'Payment Issues')),
+                    (u'application', _lazy(u'Application Issues')), ]
+
 
 class EditQuestionForm(forms.Form):
     """Form to edit an existing question"""
@@ -231,3 +254,40 @@ class WatchQuestionForm(forms.Form):
             return self.cleaned_data['email']
         # Clear out the email for logged in users, we don't want to use it.
         return None
+
+
+class MarketplaceAaqForm(forms.Form):
+    """AAQ Form for Marketplace."""
+
+    def __init__(self, user, *args, **kwargs):
+        super(MarketplaceAaqForm, self).__init__(*args, **kwargs)
+
+        # Add email field for users not logged in.
+        if not user.is_authenticated():
+            email = forms.EmailField(
+                label=_lazy(u'Email:'),
+                widget=forms.TextInput(attrs={'placeholder': EMAIL_PLACEHOLDER})
+            )
+            self.fields['email'] = email
+
+    subject = StrippedCharField(
+        label=_lazy(u'Subject:'),
+        min_length=4,
+        max_length=255,
+        widget=forms.TextInput(attrs={'placeholder': SUBJECT_PLACEHOLDER}),
+        error_messages={'required': SUBJECT_CONTENT_REQUIRED,
+                        'min_length': SUBJECT_CONTENT_SHORT,
+                        'max_length': SUBJECT_CONTENT_LONG})
+
+    body = StrippedCharField(
+        label=_lazy(u'Body:'),
+        min_length=5,
+        max_length=10000,
+        widget=forms.Textarea(attrs={'placeholder': BODY_PLACEHOLDER}),
+        error_messages={'required': BODY_CONTENT_REQUIRED,
+                        'min_length': BODY_CONTENT_SHORT,
+                        'max_length': BODY_CONTENT_LONG})
+
+    category = forms.ChoiceField(
+        label=_lazy(u'Category:'),
+        choices=CATEGORY_CHOICES)

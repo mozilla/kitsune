@@ -36,7 +36,8 @@ import questions as constants
 from questions.events import QuestionReplyEvent, QuestionSolvedEvent
 from questions.feeds import QuestionsFeed, AnswersFeed, TaggedQuestionsFeed
 from questions.forms import (NewQuestionForm, EditQuestionForm, AnswerForm,
-                             WatchQuestionForm, FREQUENCY_CHOICES)
+                             WatchQuestionForm, FREQUENCY_CHOICES,
+                             MarketplaceAaqForm)
 from questions.karma_actions import (SolutionAction, AnswerMarkedHelpfulAction,
                                      AnswerMarkedNotHelpfulAction)
 from questions.marketplace import MARKETPLACE_CATEGORIES
@@ -847,6 +848,7 @@ def marketplace(request):
         'categories': MARKETPLACE_CATEGORIES})
 
 
+@anonymous_csrf
 def marketplace_category(request, category):
     """AAQ category page."""
     try:
@@ -854,10 +856,30 @@ def marketplace_category(request, category):
     except KeyError:
         raise Http404
 
+    if request.method == 'GET':
+        form = MarketplaceAaqForm(request.user)
+    else:
+        form = MarketplaceAaqForm(request.user, request.POST)
+        if form.is_valid():
+            subject = form.cleaned_data['subject']
+            body = form.cleaned_data['body']
+            category = form.cleaned_data['category']
+
+            if request.user.is_authenticated():
+                email = request.user.email
+            else:
+                email = form.cleaned_data['email']
+
+            # TODO: Send over to zendesk
+
+            return jingo.render(request,
+                                'questions/marketplace_success.html')
+
     return jingo.render(request, 'questions/marketplace_category.html', {
         'category': category_name,
         'category_slug': category,
-        'categories': MARKETPLACE_CATEGORIES})
+        'categories': MARKETPLACE_CATEGORIES,
+        'form': form})
 
 
 def _search_suggestions(request, query, locale, category_tags):
