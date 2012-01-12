@@ -16,7 +16,7 @@ from tidings.models import NotificationsMixin
 from tower import ugettext_lazy as _lazy, ugettext as _
 
 from search import searcher
-from search.models import SearchMixin, register_live_indexers
+from search.models import SearchMixin, register_for_indexing
 from search.utils import crc32
 from sumo import ProgrammingError
 from sumo_locales import LOCALES
@@ -676,10 +676,8 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
         return d
 
 
-# Register this as a model we index in ES.
-Document.register_search_model()
-register_live_indexers(Document, 'wiki')
-register_live_indexers(
+register_for_indexing(Document, 'wiki')
+register_for_indexing(
     TaggedItem,
     'wiki',
     instance_to_indexee=
