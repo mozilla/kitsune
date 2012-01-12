@@ -46,6 +46,9 @@ class SearchMixin(object):
          MyModel.register_search_model()
 
     """
+    # TODO: We can probably remove this and do it from register_live_indexers
+    # (when and only when the thing is the identity function), which we can
+    # then rename to register_for_indexing().
     @classmethod
     def register_search_model(cls):
         """Register a model as participating in full reindexing and statistic
@@ -126,9 +129,10 @@ class SearchMixin(object):
             pass
 
 
+_identity = lambda s: s
 def register_live_indexers(sender_class,
                            app,
-                           instance_to_indexee=lambda s: s):
+                           instance_to_indexee=_identity):
     """Register signal handlers to keep the index up to date for a model.
 
     :arg sender_class: The class to listen for saves and deletes on
@@ -165,7 +169,11 @@ def register_live_indexers(sender_class,
                 weak=False)
 
     indexing_receiver(post_save, 'post_save')(update)
-    indexing_receiver(pre_delete, 'pre_delete')(delete)
+    indexing_receiver(pre_delete, 'pre_delete')(
+        # If it's the indexed instance that's been deleted, go ahead and delete
+        # it from the index. Otherwise, we just want to update whatever model
+        # it's related to.
+        delete if instance_to_indexee is _identity else update)
 
 
 def generate_tasks(**kwargs):

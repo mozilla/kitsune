@@ -3,7 +3,6 @@ import datetime
 from django.db import models
 from django.contrib.auth.models import User
 from django.db.models.signals import post_save, pre_delete
-from django.dispatch import receiver
 
 from tidings.models import NotificationsMixin
 
@@ -14,7 +13,7 @@ from sumo.helpers import urlparams, wiki_to_html
 from sumo.urlresolvers import reverse
 from sumo.models import ModelBase
 from search import searcher
-from search.models import SearchMixin
+from search.models import SearchMixin, register_live_indexers
 from search.utils import crc32
 import waffle
 
@@ -236,28 +235,7 @@ class Thread(NotificationsMixin, ModelBase, SearchMixin):
 
 # Register this as a model we index in ES.
 Thread.register_search_model()
-
-
-def _update_t_index(sender, instance, **kw):
-    """Given a Thread, creates an index task"""
-    if not kw.get('raw'):
-        obj = instance
-        obj.__class__.add_index_task((obj.id,))
-
-
-def _remove_t_index(sender, instance, **kw):
-    """Given a Thread, create an unindex task"""
-    if not kw.get('raw'):
-        obj = instance
-        obj.__class__.add_unindex_task((obj.id,))
-
-
-f_t_es_post_save = receiver(
-    post_save, sender=Thread,
-    dispatch_uid='f.t.es.post_save')(_update_t_index)
-f_t_es_pre_delete = receiver(
-    pre_delete, sender=Thread,
-    dispatch_uid='f.t.es.pre_delete')(_remove_t_index)
+register_live_indexers(Thread, 'forums')
 
 
 class Post(ActionMixin, ModelBase):
@@ -342,19 +320,7 @@ class Post(ActionMixin, ModelBase):
         return wiki_to_html(self.content)
 
 
-def _update_post_index(sender, instance, **kw):
-    """Given a Post, update the Thread in the index"""
-    if not kw.get('raw'):
-        obj = instance.thread
-        obj.__class__.add_index_task((obj.id,))
-
-
-f_p_es_post_save = receiver(
-    post_save, sender=Post,
-    dispatch_uid='f_p_es_post_save')(_update_post_index)
-f_p_es_pre_delete = receiver(
-    pre_delete, sender=Post,
-    dispatch_uid='f_p_es_pre_delete')(_update_post_index)
+register_live_indexers(Post, 'forums', instance_to_indexee=lambda p: p.thread)
 
 
 def discussion_searcher(request):
