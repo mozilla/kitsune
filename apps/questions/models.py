@@ -8,6 +8,7 @@ from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
 from django.core.cache import cache
 from django.db import models
+from django.db.models.signals import post_save
 
 from product_details import product_details
 from statsd import statsd
