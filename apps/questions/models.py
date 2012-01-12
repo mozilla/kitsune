@@ -8,8 +8,7 @@ from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
 from django.core.cache import cache
 from django.db import models
-from django.db.models.signals import post_save, pre_delete
-from django.dispatch import receiver
+from django.db.models.signals import post_save
 
 from product_details import product_details
 from statsd import statsd
@@ -26,7 +25,7 @@ from questions.question_config import products
 from questions.tasks import (update_question_votes, update_answer_pages,
                              log_answer)
 from search import searcher
-from search.models import SearchMixin
+from search.models import SearchMixin, register_live_indexers
 from search.utils import crc32
 from sumo.helpers import urlparams
 from sumo.models import ModelBase
@@ -363,41 +362,13 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
 
 # Register this as a model we index in ES.
 Question.register_search_model()
-
-
-def _update_qs_index(sender, instance, **kw):
-    """Given a Question, creates an index task"""
-    if not kw.get('raw'):
-        obj = instance
-        obj.__class__.add_index_task((obj.id,))
-
-
-def _update_tag_index(sender, instance, **kw):
-    """Given a TaggedItem for a Question, creates an index task"""
-    obj = instance.content_object
-    if not kw.get('raw') and isinstance(obj, Question):
-        obj.__class__.add_index_task((obj.id,))
-
-
-def _remove_qs_index(sender, instance, **kw):
-    """Given a Question, creates an unindex task"""
-    if not kw.get('raw'):
-        obj = instance
-        obj.__class__.add_unindex_task((obj.id,))
-
-
-q_es_post_save = receiver(
-    post_save, sender=Question,
-    dispatch_uid='q.es.post_save')(_update_qs_index)
-q_es_pre_delete = receiver(
-    pre_delete, sender=Question,
-    dispatch_uid='q.es.pre_delete')(_remove_qs_index)
-q_tag_es_post_save = receiver(
-    post_save, sender=TaggedItem,
-    dispatch_uid='q.es.post_save')(_update_tag_index)
-q_tag_es_pre_delete = receiver(
-    pre_delete, sender=TaggedItem,
-    dispatch_uid='q.tag.es.pre_delete')(_update_tag_index)
+register_live_indexers(Question, 'questions')
+register_live_indexers(
+    TaggedItem,
+    'questions',
+    instance_to_indexee=
+        lambda i: i.content_object if isinstance(i.content_object, Question)
+                  else None)
 
 
 class QuestionMetaData(ModelBase):
@@ -595,19 +566,9 @@ post_save.connect(answer_connector, sender=Answer,
                   dispatch_uid='question_answer_activity')
 
 
-def _update_ans_index(sender, instance, **kw):
-    """Given an Answer for a Question, create an index task"""
-    if not kw.get('raw'):
-        obj = instance.question
-        obj.__class__.add_index_task((obj.id,))
-
-
-q_ans_es_post_save = receiver(
-    post_save, sender=Answer,
-    dispatch_uid='q.ans.es.post_save')(_update_ans_index)
-q_ans_es_pre_delete = receiver(
-    pre_delete, sender=Answer,
-    dispatch_uid='q.ans.es.pre_delete')(_update_ans_index)
+register_live_indexers(Answer,
+                       'questions',
+                       instance_to_indexee=lambda a: a.question)
 
 
 class QuestionVote(ModelBase):
@@ -636,26 +597,12 @@ class AnswerVote(ModelBase):
         VoteMetadata.objects.create(vote=self, key=key, value=value)
 
 
-def _update_ansv_index(sender, instance, **kw):
-    """Given an AnswerVote for an Answer for a Question, creates an
-    unindex task
-
-    """
-    if not kw.get('raw'):
-        obj = instance.answer.question
-        obj.__class__.add_index_task((obj.id,))
-
-
 # TODO: We only need to update the helpful bit.  It's possible
 # we could ignore all AnswerVotes that aren't helpful and if
 # they're marked as helpful, then update the index.  Look into
 # this.
-q_av_es_post_save = receiver(
-    post_save, sender=AnswerVote,
-    dispatch_uid='q.av.es.post_save')(_update_ansv_index)
-q_av_es_pre_delete = receiver(
-    post_save, sender=AnswerVote,
-    dispatch_uid='q.av.es.pre_delete')(_update_ansv_index)
+register_live_indexers(
+    AnswerVote, 'questions', instance_to_indexee=lambda v: v.answer.question)
 
 
 class VoteMetadata(ModelBase):

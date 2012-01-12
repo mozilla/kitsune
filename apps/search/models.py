@@ -5,6 +5,8 @@ from threading import local
 
 from django.conf import settings
 from django.core import signals
+from django.db.models.signals import pre_delete, post_save
+from django.dispatch import receiver
 
 from search.tasks import index_task, unindex_task
 
@@ -26,12 +28,12 @@ def get_search_models():
     return values
 
 
-_local_tasks = local()
-_local_tasks.es_index_task_set = set()
+_local = local()
+_local.tasks = set()
 
 
 class SearchMixin(object):
-    """This mixin adds ES indexing support for the model.
+    """A mixin which adds ES indexing support for the model
 
     When using this mixin, make sure to implement:
 
@@ -44,10 +46,13 @@ class SearchMixin(object):
          MyModel.register_search_model()
 
     """
-
+    # TODO: We can probably remove this and do it from register_live_indexers
+    # (when and only when the thing is the identity function), which we can
+    # then rename to register_for_indexing().
     @classmethod
     def register_search_model(cls):
-        """Registers a model as being involved with ES indexing"""
+        """Register a model as participating in full reindexing and statistic
+        gathering"""
         # TODO: Fix this to use weakrefs
         _search_models[cls._meta.db_table] = cls
 
@@ -79,23 +84,14 @@ class SearchMixin(object):
         indexes = settings.ES_INDEXES
         return indexes.get(cls._meta.db_table) or indexes['default']
 
-    @classmethod
-    def add_index_task(cls, ids):
-        """Adds an index task.
+    def index_later(self):
+        """Register myself to be indexed at the end of the request."""
+        _local.tasks.add((index_task.delay, (self.__class__, (self.id,))))
 
-        :arg ids: tuple of ids
 
-        """
-        _local_tasks.es_index_task_set.add((index_task.delay, (cls, ids)))
-
-    @classmethod
-    def add_unindex_task(cls, ids):
-        """Creates a task to remove this document from the ES index
-
-        :arg ids: tuple of ids
-
-        """
-        _local_tasks.es_index_task_set.add((unindex_task.delay, (cls, ids)))
+    def unindex_later(self):
+        """Register myself to be unindexed at the end of the request."""
+        _local.tasks.add((unindex_task.delay, (self.__class__, (self.id,))))
 
     @classmethod
     def index(cls, document, bulk=False, force_insert=False, refresh=False,
@@ -133,6 +129,60 @@ class SearchMixin(object):
             pass
 
 
+_identity = lambda s: s
+def register_live_indexers(sender_class,
+                           app,
+                           instance_to_indexee=_identity):
+    """Register signal handlers to keep the index up to date for a model.
+
+    :arg sender_class: The class to listen for saves and deletes on
+    :arg app: A bit of UID we use to build the signal handlers' dispatch_uids.
+        This is prepended to the ``sender_class`` model name, "elastic", and
+        the signal name, so it should combine with those to make something
+        unique. For this reason, the app name is usually a good choice,
+        yielding something like "wiki.TaggedItem.elastic.post_save".
+    :arg instance_to_indexee: A callable which takes the signal sender and
+        returns the model instance to be indexed. The returned instance should
+        be a subclass of SearchMixin. If the callable returns None, no indexing
+        is performed. Default: a callable which returns the sender itself.
+
+    """
+    def maybe_call_method(instance, is_raw, method_name):
+        """Call an indexing (or indexing) method on instance if appropriate."""
+        obj = instance_to_indexee(instance)
+        if obj is not None and not is_raw:
+            getattr(obj, method_name)()
+
+    def update(sender, instance, **kw):
+        """File an add-to-index task for the indicated object."""
+        maybe_call_method(instance, kw.get('raw'), 'index_later')
+
+    def delete(sender, instance, **kw):
+        """File an add-to-index task for the indicated object."""
+        maybe_call_method(instance, kw.get('raw'), 'unindex_later')
+
+    def indexing_receiver(signal, signal_name):
+        """Return a routine that registers signal handlers for indexers.
+
+        The returned registration routine uses strong refs, makes up a
+        dispatch_uid, and uses ``sender_class`` as the sender.
+
+        """
+        return receiver(
+                signal,
+                sender=sender_class,
+                dispatch_uid='%s.%s.elastic.%s' %
+                             (app, sender_class.__name__, signal_name),
+                weak=False)
+
+    indexing_receiver(post_save, 'post_save')(update)
+    indexing_receiver(pre_delete, 'pre_delete')(
+        # If it's the indexed instance that's been deleted, go ahead and delete
+        # it from the index. Otherwise, we just want to update whatever model
+        # it's related to.
+        delete if instance_to_indexee is _identity else update)
+
+
 def generate_tasks(**kwargs):
     """Goes through thread local index update tasks set and generates
     celery tasks for all tasks in the set.
@@ -142,11 +192,10 @@ def generate_tasks(**kwargs):
     execute it only once.
 
     """
-    lt = _local_tasks
-    for fun, args in lt.es_index_task_set:
+    for fun, args in _local.tasks:
         fun(*args)
 
-    lt.es_index_task_set.clear()
+    _local.tasks.clear()
 
 
 signals.request_finished.connect(generate_tasks)

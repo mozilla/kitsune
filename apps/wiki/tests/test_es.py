@@ -52,4 +52,9 @@ class TestPostUpdate(ElasticTestCase):
         eq_(elasticutils.S(Document).filter(tag=tag).count(), 1)
         doc.tags.remove(tag)
         self.refresh()
+
+        # Make sure the document itself is still there and that we didn't
+        # accidentally delete it through screwed up signal handling:
+        eq_(elasticutils.S(Document).filter().count(), 1)
+
         eq_(elasticutils.S(Document).filter(tag=tag).count(), 0)
