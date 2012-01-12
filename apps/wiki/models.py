@@ -9,8 +9,6 @@ from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from django.core.urlresolvers import resolve
 from django.db import models
 from django.db.models import Q
-from django.db.models.signals import pre_delete, post_save
-from django.dispatch import receiver
 from django.http import Http404
 
 from pyquery import PyQuery
@@ -18,7 +16,7 @@ from tidings.models import NotificationsMixin
 from tower import ugettext_lazy as _lazy, ugettext as _
 
 from search import searcher
-from search.models import SearchMixin
+from search.models import SearchMixin, register_live_indexers
 from search.utils import crc32
 from sumo import ProgrammingError
 from sumo_locales import LOCALES
@@ -680,41 +678,13 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
 
 # Register this as a model we index in ES.
 Document.register_search_model()
-
-
-def _update_w_index(sender, instance, **kw):
-    """Given a Document, creates an index task"""
-    if not kw.get('raw'):
-        obj = instance
-        obj.__class__.add_index_task((obj.id,))
-
-
-def _remove_w_index(sender, instance, **kw):
-    """Given a Document, create an unindex task"""
-    if not kw.get('raw'):
-        obj = instance
-        obj.__class__.add_unindex_task((obj.id,))
-
-
-def _update_tag_index(sender, instance, **kw):
-    """Given a TaggedItem for a Document, creates an index task"""
-    obj = instance.content_object
-    if not kw.get('raw') and isinstance(obj, Document):
-        obj.__class__.add_index_task((obj.id,))
-
-
-w_es_post_save = receiver(
-    post_save, sender=Document,
-    dispatch_uid='w.es.post_save')(_update_w_index)
-w_es_pre_delete = receiver(
-    pre_delete, sender=Document,
-    dispatch_uid='w.es.pre_delete')(_remove_w_index)
-w_tag_post_save = receiver(
-    post_save, sender=TaggedItem,
-    dispatch_uid='w.tag.es.post_save')(_update_tag_index)
-w_tag_pre_delete = receiver(
-    pre_delete, sender=TaggedItem,
-    dispatch_uid='w.tag.es.pre_delete')(_update_tag_index)
+register_live_indexers(Document, 'wiki')
+register_live_indexers(
+    TaggedItem,
+    'wiki',
+    instance_to_indexee=
+        lambda i: i.content_object if isinstance(i.content_object, Document)
+                  else None)
 
 
 class Revision(ModelBase):
