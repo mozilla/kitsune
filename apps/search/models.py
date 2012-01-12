@@ -145,17 +145,18 @@ def register_live_indexers(sender_class,
     :arg instance_to_indexee: A callable which takes the signal sender and returns the model instance to be indexed. The returned instance should be a subclass of SearchMixin. If the callable returns None, no indexing is performed. Default: a callable which returns the sender itself.
 
     """
-    def updater(sender, instance, **kw):
-        """Return a callable that files an add-to-index task."""
+    def maybe_call_indexing_method(instance, is_raw, method_name):
         obj = instance_to_indexee(instance)
-        if obj is not None and not kw.get('raw'):
-            obj.add_index_task((obj.id,))  # TODO: Make this an instance method?
+        if obj is not None and not is_raw:
+            getattr(obj, method_name)((obj.id,))  # TODO: Make this an instance method?
 
-    def deleter(sender, instance, **kw):
-        """Return a callable that files a delete-from-index task."""
-        obj = instance_to_indexee(instance)
-        if obj is not None and not kw.get('raw'):
-            obj.add_unindex_task((obj.id,))
+    def update(sender, instance, **kw):
+        """File an add-to-index task for the indicated object."""
+        maybe_call_indexing_method(instance, kw.get('raw'), 'add_index_task')
+
+    def delete(sender, instance, **kw):
+        """File an add-to-index task for the indicated object."""
+        maybe_call_indexing_method(instance, kw.get('raw'), 'add_unindex_task')
 
     def indexing_receiver(signal, signal_name):
         """Return a routine that registers signal handlers for indexers.
@@ -171,8 +172,8 @@ def register_live_indexers(sender_class,
                              (app, sender_class.__name__, signal_name),
                 weak=False)
 
-    indexing_receiver(post_save, 'post_save')(updater)
-    indexing_receiver(pre_delete, 'pre_delete')(deleter)
+    indexing_receiver(post_save, 'post_save')(update)
+    indexing_receiver(pre_delete, 'pre_delete')(delete)
 
 
 def generate_tasks(**kwargs):
