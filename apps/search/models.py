@@ -28,8 +28,8 @@ def get_search_models():
     return values
 
 
-_local_tasks = local()
-_local_tasks.es_index_task_set = set()
+_local = local()
+_local.tasks = set()
 
 
 class SearchMixin(object):
@@ -86,14 +86,12 @@ class SearchMixin(object):
 
     def index_later(self):
         """Register myself to be indexed at the end of the request."""
-        _local_tasks.es_index_task_set.add((index_task.delay,
-                                            (self.__class__, (self.id,))))
+        _local.tasks.add((index_task.delay, (self.__class__, (self.id,))))
 
 
     def unindex_later(self):
         """Register myself to be unindexed at the end of the request."""
-        _local_tasks.es_index_task_set.add((unindex_task.delay,
-                                            (self.__class__, (self.id,))))
+        _local.tasks.add((unindex_task.delay, (self.__class__, (self.id,))))
 
     @classmethod
     def index(cls, document, bulk=False, force_insert=False, refresh=False,
@@ -194,11 +192,10 @@ def generate_tasks(**kwargs):
     execute it only once.
 
     """
-    lt = _local_tasks
-    for fun, args in lt.es_index_task_set:
+    for fun, args in _local.tasks:
         fun(*args)
 
-    lt.es_index_task_set.clear()
+    _local.tasks.clear()
 
 
 signals.request_finished.connect(generate_tasks)
