@@ -31,6 +31,11 @@
             {% endtrans %}
           </h2>
         {% elif category_slug == 'account' %}
+          {% if error_message %}
+            <ul class="errorlist">
+              <li>{{ error_message }}</li>
+            </ul>
+          {% endif %}
           <form id="question-form" action="" method="post">
             {{ csrf() }}
             <ol>

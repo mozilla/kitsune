@@ -793,6 +793,6 @@ OPTIPNG_PATH = None
 
 # Zendesk info. Fill in the prefix, email and password in settings_local.py.
 ZENDESK_URL = 'https://appsmarket.zendesk.com'
-ZENDESK_SUBJECT_PREFIX = ''
+ZENDESK_SUBJECT_PREFIX = '[TEST] '  # Set to '' in prod
 ZENDESK_USER_EMAIL = ''
 ZENDESK_USER_PASSWORD = ''

@@ -40,7 +40,8 @@ from questions.forms import (NewQuestionForm, EditQuestionForm, AnswerForm,
                              MarketplaceAaqForm)
 from questions.karma_actions import (SolutionAction, AnswerMarkedHelpfulAction,
                                      AnswerMarkedNotHelpfulAction)
-from questions.marketplace import MARKETPLACE_CATEGORIES
+from questions.marketplace import (MARKETPLACE_CATEGORIES, submit_ticket,
+                                   ZendeskError)
 from questions.models import (Question, Answer, QuestionVote, AnswerVote,
                               question_searcher)
 from questions.question_config import products
@@ -850,11 +851,13 @@ def marketplace(request):
 
 @anonymous_csrf
 def marketplace_category(request, category):
-    """AAQ category page."""
+    """AAQ category page. Handles form post that submits ticket."""
     try:
         category_name = MARKETPLACE_CATEGORIES[category]
     except KeyError:
         raise Http404
+
+    error_message = None
 
     if request.method == 'GET':
         form = MarketplaceAaqForm(request.user)
@@ -870,16 +873,23 @@ def marketplace_category(request, category):
             else:
                 email = form.cleaned_data['email']
 
-            # TODO: Send over to zendesk
+            # Submit ticket
+            try:
+                submit_ticket(email, category, subject, body)
+            except ZendeskError:
+                error_message = _('There was an error submitting the ticket, '
+                                  'please try again later.')
 
-            return jingo.render(request,
-                                'questions/marketplace_success.html')
+            if not error_message:
+                return jingo.render(request,
+                                    'questions/marketplace_success.html')
 
     return jingo.render(request, 'questions/marketplace_category.html', {
         'category': category_name,
         'category_slug': category,
         'categories': MARKETPLACE_CATEGORIES,
-        'form': form})
+        'form': form,
+        'error_message': error_message})
 
 
 def _search_suggestions(request, query, locale, category_tags):
