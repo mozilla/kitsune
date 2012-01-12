@@ -81,23 +81,14 @@ class SearchMixin(object):
         indexes = settings.ES_INDEXES
         return indexes.get(cls._meta.db_table) or indexes['default']
 
-    @classmethod
-    def add_index_task(cls, ids):
-        """Adds an index task.
+    def index_later(self):
+        """Register myself to be indexed at the end of the request."""
+        _local_tasks.es_index_task_set.add((index_task.delay, (self.__class__, (self.id,))))
 
-        :arg ids: tuple of ids
 
-        """
-        _local_tasks.es_index_task_set.add((index_task.delay, (cls, ids)))
-
-    @classmethod
-    def add_unindex_task(cls, ids):
-        """Creates a task to remove this document from the ES index
-
-        :arg ids: tuple of ids
-
-        """
-        _local_tasks.es_index_task_set.add((unindex_task.delay, (cls, ids)))
+    def unindex_later(self):
+        """Register myself to be unindexed at the end of the request."""
+        _local_tasks.es_index_task_set.add((unindex_task.delay, (self.__class__, (self.id,))))
 
     @classmethod
     def index(cls, document, bulk=False, force_insert=False, refresh=False,
@@ -145,18 +136,19 @@ def register_live_indexers(sender_class,
     :arg instance_to_indexee: A callable which takes the signal sender and returns the model instance to be indexed. The returned instance should be a subclass of SearchMixin. If the callable returns None, no indexing is performed. Default: a callable which returns the sender itself.
 
     """
-    def maybe_call_indexing_method(instance, is_raw, method_name):
+    def maybe_call_method(instance, is_raw, method_name):
+        """Call an indexing (or indexing) method on instance if appropriate."""
         obj = instance_to_indexee(instance)
         if obj is not None and not is_raw:
-            getattr(obj, method_name)((obj.id,))  # TODO: Make this an instance method?
+            getattr(obj, method_name)()
 
     def update(sender, instance, **kw):
         """File an add-to-index task for the indicated object."""
-        maybe_call_indexing_method(instance, kw.get('raw'), 'add_index_task')
+        maybe_call_method(instance, kw.get('raw'), 'index_later')
 
     def delete(sender, instance, **kw):
         """File an add-to-index task for the indicated object."""
-        maybe_call_indexing_method(instance, kw.get('raw'), 'add_unindex_task')
+        maybe_call_method(instance, kw.get('raw'), 'unindex_later')
 
     def indexing_receiver(signal, signal_name):
         """Return a routine that registers signal handlers for indexers.
