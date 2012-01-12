@@ -71,9 +71,9 @@ even easier method when installing a new library from a git repo::
     $ cd vendor/src
     $ git clone git://<repo>
     $ cd ../..
-    $ ./addsubmodules.sh
-    $ vim kitsune.pth  # Add the new library's path
-    $ git add kitsune.pth
+    $ vendor/addsubmodules.sh
+    $ vim vendor/kitsune.pth  # Add the new library's path
+    $ git add vendor/kitsune.pth
     $ git ci -m "Adding $LIBRARY"
 
 
