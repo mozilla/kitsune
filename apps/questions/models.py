@@ -25,7 +25,7 @@ from questions.question_config import products
 from questions.tasks import (update_question_votes, update_answer_pages,
                              log_answer)
 from search import searcher
-from search.models import SearchMixin, register_live_indexers
+from search.models import SearchMixin, register_for_indexing
 from search.utils import crc32
 from sumo.helpers import urlparams
 from sumo.models import ModelBase
@@ -360,10 +360,8 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
         return d
 
 
-# Register this as a model we index in ES.
-Question.register_search_model()
-register_live_indexers(Question, 'questions')
-register_live_indexers(
+register_for_indexing(Question, 'questions')
+register_for_indexing(
     TaggedItem,
     'questions',
     instance_to_indexee=
@@ -566,9 +564,9 @@ post_save.connect(answer_connector, sender=Answer,
                   dispatch_uid='question_answer_activity')
 
 
-register_live_indexers(Answer,
-                       'questions',
-                       instance_to_indexee=lambda a: a.question)
+register_for_indexing(Answer,
+                      'questions',
+                      instance_to_indexee=lambda a: a.question)
 
 
 class QuestionVote(ModelBase):
@@ -601,7 +599,7 @@ class AnswerVote(ModelBase):
 # we could ignore all AnswerVotes that aren't helpful and if
 # they're marked as helpful, then update the index.  Look into
 # this.
-register_live_indexers(
+register_for_indexing(
     AnswerVote, 'questions', instance_to_indexee=lambda v: v.answer.question)
 
 

@@ -47,22 +47,14 @@ class SearchMixin(object):
     * get_mapping
     * extract_document
 
-    Additionally, after defining your model, register it as a
-    search model::
+    Additionally, after defining your model, remember to register it and any
+    related models which affect it::
 
-         MyModel.register_search_model()
+         register_for_indexing(MyModel, 'some_app')
+         register_for_indexing(RelatedModel, 'some_app',
+                                instance_to_indexee=lambda r: r.my_model)
 
     """
-    # TODO: We can probably remove this and do it from register_live_indexers
-    # (when and only when the thing is the identity function), which we can
-    # then rename to register_for_indexing().
-    @classmethod
-    def register_search_model(cls):
-        """Register a model as participating in full reindexing and statistic
-        gathering"""
-        # TODO: Fix this to use weakrefs
-        _search_models[cls._meta.db_table] = cls
-
     @classmethod
     def get_mapping(self):
         """Returns the ES mapping defition for this document type
@@ -137,10 +129,14 @@ class SearchMixin(object):
 
 
 _identity = lambda s: s
-def register_live_indexers(sender_class,
+def register_for_indexing(sender_class,
                            app,
                            instance_to_indexee=_identity):
-    """Register signal handlers to keep the index up to date for a model.
+    """Register a model whose changes might invalidate ElasticSearch indexes.
+
+    Specifically, each time an instance of this model is saved or deleted, the
+    index might need to be updated. Registers the model as participating in
+    full indexing, statistics gathering, and live indexing, as appropriate.
 
     :arg sender_class: The class to listen for saves and deletes on
     :arg app: A bit of UID we use to build the signal handlers' dispatch_uids.
@@ -183,6 +179,13 @@ def register_live_indexers(sender_class,
                              (app, sender_class.__name__, signal_name),
                 weak=False)
 
+    # Register a model as participating in full reindexing and statistics
+    # gathering. TODO: Fix this to use weakrefs.
+    if instance_to_indexee is _identity:
+        # Register only the model that "is" the ES doc, not related ones:
+        _search_models[sender_class._meta.db_table] = sender_class
+
+    # Register signal listeners to keep indexes up to date:
     indexing_receiver(post_save, 'post_save')(update)
     indexing_receiver(pre_delete, 'pre_delete')(
         # If it's the indexed instance that's been deleted, go ahead and delete
