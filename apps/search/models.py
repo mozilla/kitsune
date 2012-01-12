@@ -86,12 +86,14 @@ class SearchMixin(object):
 
     def index_later(self):
         """Register myself to be indexed at the end of the request."""
-        _local_tasks.es_index_task_set.add((index_task.delay, (self.__class__, (self.id,))))
+        _local_tasks.es_index_task_set.add((index_task.delay,
+                                            (self.__class__, (self.id,))))
 
 
     def unindex_later(self):
         """Register myself to be unindexed at the end of the request."""
-        _local_tasks.es_index_task_set.add((unindex_task.delay, (self.__class__, (self.id,))))
+        _local_tasks.es_index_task_set.add((unindex_task.delay,
+                                            (self.__class__, (self.id,))))
 
     @classmethod
     def index(cls, document, bulk=False, force_insert=False, refresh=False,
@@ -136,8 +138,15 @@ def register_live_indexers(sender_class,
     """Register signal handlers to keep the index up to date for a model.
 
     :arg sender_class: The class to listen for saves and deletes on
-    :arg app: A bit of UID we use to build the signal handlers' dispatch_uids. This is prepended to the ``sender_class`` model name, "elastic", and the signal name, so it should combine with those to make something unique. For this reason, the app name is usually a good choice, yielding something like "wiki.TaggedItem.elastic.post_save".
-    :arg instance_to_indexee: A callable which takes the signal sender and returns the model instance to be indexed. The returned instance should be a subclass of SearchMixin. If the callable returns None, no indexing is performed. Default: a callable which returns the sender itself.
+    :arg app: A bit of UID we use to build the signal handlers' dispatch_uids.
+        This is prepended to the ``sender_class`` model name, "elastic", and
+        the signal name, so it should combine with those to make something
+        unique. For this reason, the app name is usually a good choice,
+        yielding something like "wiki.TaggedItem.elastic.post_save".
+    :arg instance_to_indexee: A callable which takes the signal sender and
+        returns the model instance to be indexed. The returned instance should
+        be a subclass of SearchMixin. If the callable returns None, no indexing
+        is performed. Default: a callable which returns the sender itself.
 
     """
     def maybe_call_method(instance, is_raw, method_name):
