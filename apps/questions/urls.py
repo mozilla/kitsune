@@ -14,6 +14,8 @@ urlpatterns = patterns('questions.views',
 
     # AAQ flow for Marketplace
     url(r'^/marketplace$', 'marketplace', name='questions.marketplace_aaq'),
+    url(r'^/marketplace/success$',
+        'marketplace_success', name='questions.marketplace_aaq_success'),
     url(r'^/marketplace/(?P<category>[\w\-]+)$',
         'marketplace_category', name='questions.marketplace_aaq_category'),
 

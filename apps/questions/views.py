@@ -881,8 +881,8 @@ def marketplace_category(request, category):
                                   'please try again later.')
 
             if not error_message:
-                return jingo.render(request,
-                                    'questions/marketplace_success.html')
+                return HttpResponseRedirect(
+                    reverse('questions.marketplace_aaq_success'))
 
     return jingo.render(request, 'questions/marketplace_category.html', {
         'category': category_name,
@@ -890,6 +890,11 @@ def marketplace_category(request, category):
         'categories': MARKETPLACE_CATEGORIES,
         'form': form,
         'error_message': error_message})
+
+
+def marketplace_success(request):
+    """Confirmation of ticket submitted successfully."""
+    return jingo.render(request, 'questions/marketplace_success.html')
 
 
 def _search_suggestions(request, query, locale, category_tags):
