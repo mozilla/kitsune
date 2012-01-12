@@ -132,7 +132,11 @@ _identity = lambda s: s
 def register_for_indexing(sender_class,
                            app,
                            instance_to_indexee=_identity):
-    """Register signal handlers to keep the index up to date for a model.
+    """Register a model whose changes might invalidate ElasticSearch indexes.
+    
+    Specifically, each time an instance of this model is saved or deleted, the
+    index might need to be updated. Registers the model as participating in
+    full indexing, statistics gathering, and live indexing, as appropriate.
 
     :arg sender_class: The class to listen for saves and deletes on
     :arg app: A bit of UID we use to build the signal handlers' dispatch_uids.
@@ -175,7 +179,7 @@ def register_for_indexing(sender_class,
                              (app, sender_class.__name__, signal_name),
                 weak=False)
 
-    # Register a model as participating in full reindexing and statistic
+    # Register a model as participating in full reindexing and statistics
     # gathering. TODO: Fix this to use weakrefs.
     if instance_to_indexee is _identity:
         # Register only the model that "is" the ES doc, not related ones:
