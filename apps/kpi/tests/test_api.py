@@ -32,10 +32,16 @@ class KpiAPITests(TestCase):
         question.solution = answer
         question.save()
 
-        url = reverse('kpi.api.percent_answered')
-        response = self.client.get(url)
+        url = reverse('api_dispatch_list', kwargs={'resource_name': 'solution', 'api_name' :'v1'})
+        response = self.client.get(url + '?format=json')
         eq_(200, response.status_code)
         r = json.loads(response.content)
-        eq_(r, {'data': {'solutions': 1,
-                         'without_solutions': 0},
-                'success': True})
+        eq_(r, {u'meta': {u'previous': None,
+                          u'total_count': 1,
+                          u'offset': 0,
+                          u'limit': 20,
+                          u'next': None},
+                u'objects': [{u'date': u'2012-01-01',
+                              u'without_solutions': 0,
+                              u'with_solutions': 1,
+                              u'resource_uri': u''}]})

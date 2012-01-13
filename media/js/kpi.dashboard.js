@@ -2,7 +2,8 @@
     var percent_chart = new Highcharts.Chart({
         chart: {
             renderTo: 'percent_answered',
-            type: 'pie'
+            defaultSeriesType: 'column'
+
         },
         credits: {
             enabled: false
@@ -15,42 +16,30 @@
             }
         },
         title: {
-            text: 'Questions with solutions',
+            text: 'Questions and solutions',
         },
         tooltip: {
             formatter: function() {
-                return '<b>'+ this.point.name +'</b>: '+ this.percentage +' %';
+                return '<b>' + this.percentage.toFixed(1) + ' %';
             }
         },
         plotOptions: {
-            pie: {
-                allowPointSelect: true,
-                cursor: 'pointer',
-                dataLabels: {
-                    enabled: true,
-                    color: '#000000',
-                    connectorColor: '#000000',
-                    formatter: function() {
-                        return '<b>'+ this.point.name +'</b>: '+ this.percentage +' %';
-                    }
-                }
+            column: {
+                stacking: 'normal'
             }
         },
-        series: [{
-            type: 'pie',
-            name: 'Questions with solutions',
-            data: [
-            ]
-        }]
     });
     $.ajax({
         url:  $('#kpi-dash').data('percent-answered-url'),
         context: document.body,
         success: function(data){
-            console.log(data);
             percent_chart.addSeries({
-                'data': [['With Solutions', data.data.solutions],
-                        ['Without Solutions', data.data.without_solutions]]
+                'data':  _.map(data.objects, function(o){return o['without_solutions']}),
+                'name': 'Without Solutions',
+            });
+            percent_chart.addSeries({
+                'data':  _.map(data.objects, function(o){return o['with_solutions']}),
+                'name': 'With Solutions',
             });
         }
     });

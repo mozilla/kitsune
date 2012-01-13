@@ -1,14 +1,14 @@
 {# vim: set ts=2 et sts=2 sw=2: #}
 {% extends "kpi/base.html" %}
-{% set classes = ('kpi-dashboard questions') %}
+{% set classes = ('kpi-dashboard ') %}
 {% set title = _('KPI Dashboard') %}
 
 {% block content %}
-  <h2>{{ title }}</h2>
   <article id="kpi-dash"
-    data-percent-answered-url="{{ url('kpi.api.percent_answered') }}"
+    data-percent-answered-url="{{ url('api_dispatch_list', resource_name='solution', api_name ='v1') }}">
+    <h1>{{ title }}</h1>
+    <div id="percent_answered"></div>
   </article>
-  <div id="percent_answered"></div>
 
 
 {% endblock %}
