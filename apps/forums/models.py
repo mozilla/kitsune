@@ -12,7 +12,7 @@ from sumo.helpers import urlparams, wiki_to_html
 from sumo.urlresolvers import reverse
 from sumo.models import ModelBase
 from search import searcher
-from search.models import SearchMixin, register_live_indexers
+from search.models import SearchMixin, register_for_indexing
 from search.utils import crc32
 import waffle
 
@@ -232,9 +232,7 @@ class Thread(NotificationsMixin, ModelBase, SearchMixin):
         return d
 
 
-# Register this as a model we index in ES.
-Thread.register_search_model()
-register_live_indexers(Thread, 'forums')
+register_for_indexing(Thread, 'forums')
 
 
 class Post(ActionMixin, ModelBase):
@@ -319,7 +317,7 @@ class Post(ActionMixin, ModelBase):
         return wiki_to_html(self.content)
 
 
-register_live_indexers(Post, 'forums', instance_to_indexee=lambda p: p.thread)
+register_for_indexing(Post, 'forums', instance_to_indexee=lambda p: p.thread)
 
 
 def discussion_searcher(request):
