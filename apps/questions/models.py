@@ -346,7 +346,11 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
         # answer_votes is the sum of votes for all of the answers.
         answer_votes = 0
 
-        for ans in self.answers.all():
+        # We don't want to load all answers and keep them in the cache
+        # since answers aren't shared between questions, so we get
+        # nothing out of caching them all. Thus we explicitly make
+        # sure we don't cache them.
+        for ans in Answer.uncached.filter(question=self.id):
             answer_content.append(ans.content)
             has_helpful = has_helpful or bool(ans.num_helpful_votes)
             answer_creator.add(ans.creator.username)

@@ -78,7 +78,7 @@ class SearchMixin(object):
         raise NotImplementedError
 
     @classmethod
-    def _get_index(cls):
+    def get_es_index(cls):
         """Returns the index for this class"""
         indexes = settings.ES_INDEXES
         return indexes.get(cls._meta.db_table) or indexes['default']
@@ -86,7 +86,6 @@ class SearchMixin(object):
     def index_later(self):
         """Register myself to be indexed at the end of the request."""
         _local_tasks().add((index_task.delay, (self.__class__, (self.id,))))
-
 
     def unindex_later(self):
         """Register myself to be unindexed at the end of the request."""
@@ -102,7 +101,7 @@ class SearchMixin(object):
         if es is None:
             es = elasticutils.get_es()
 
-        index = cls._get_index()
+        index = cls.get_es_index()
         doc_type = cls._meta.db_table
 
         # TODO: handle pyes.urllib3.TimeoutErrors here.
@@ -118,7 +117,7 @@ class SearchMixin(object):
         if not settings.ES_LIVE_INDEXING:
             return
 
-        index = cls._get_index()
+        index = cls.get_es_index()
         doc_type = cls._meta.db_table
         try:
             elasticutils.get_es().delete(index, doc_type, id)
@@ -129,9 +128,11 @@ class SearchMixin(object):
 
 
 _identity = lambda s: s
+
+
 def register_for_indexing(sender_class,
-                           app,
-                           instance_to_indexee=_identity):
+                          app,
+                          instance_to_indexee=_identity):
     """Register a model whose changes might invalidate ElasticSearch indexes.
 
     Specifically, each time an instance of this model is saved or deleted, the
