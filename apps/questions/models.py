@@ -346,7 +346,7 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
         # answer_votes is the sum of votes for all of the answers.
         answer_votes = 0
 
-        for ans in self.answers.all():
+        for ans in self.answers.iterator():
             answer_content.append(ans.content)
             has_helpful = has_helpful or bool(ans.num_helpful_votes)
             answer_creator.add(ans.creator.username)

@@ -1,14 +1,17 @@
 import elasticutils
 import logging
 import pyes
+import time
 from threading import local
 
 from django.conf import settings
 from django.core import signals
+from django.db import reset_queries
 from django.db.models.signals import pre_delete, post_save
 from django.dispatch import receiver
 
 from search.tasks import index_task, unindex_task
+from search import es_utils
 
 log = logging.getLogger('es_search')
 
@@ -78,7 +81,7 @@ class SearchMixin(object):
         raise NotImplementedError
 
     @classmethod
-    def _get_index(cls):
+    def get_es_index(cls):
         """Returns the index for this class"""
         indexes = settings.ES_INDEXES
         return indexes.get(cls._meta.db_table) or indexes['default']
@@ -87,10 +90,92 @@ class SearchMixin(object):
         """Register myself to be indexed at the end of the request."""
         _local_tasks().add((index_task.delay, (self.__class__, (self.id,))))
 
-
     def unindex_later(self):
         """Register myself to be unindexed at the end of the request."""
         _local_tasks().add((unindex_task.delay, (self.__class__, (self.id,))))
+
+    @classmethod
+    def index_all(cls, percent=100):
+        """Reindexes all the objects for this model.
+
+        Yields number of documents done.
+
+        Note: This can get run from the command line, so we log stuff
+        to let the user know what's going on.
+
+        :arg percent: The percentage of questions to index. Defaults to
+            100--e.g. all of them.
+
+        """
+        es = es_utils.get_es()
+
+        doc_type = cls._meta.db_table
+        index = cls.get_es_index()
+
+        if index != settings.ES_INDEXES.get('default'):
+            # If this doctype isn't using the default index, then this
+            # doctype is responsible for deleting and re-creating the
+            # index.
+            es.delete_index_if_exists(index)
+            es.create_index(index)
+
+        start_time = time.time()
+
+        log.info('reindex %s into %s index', doc_type, index)
+
+        log.info('setting up mapping....')
+        mapping = cls.get_mapping()
+        es.put_mapping(doc_type, mapping, index)
+
+        log.info('iterating through %s....', doc_type)
+        total = cls.objects.count()
+        to_index = int(total * (percent / 100.0))
+        log.info('total %s: %s (to be indexed: %s)', doc_type, total, to_index)
+        total = to_index
+
+        # Some models have a gazillion instances. So we want to go
+        # through them one at a time in a way that doesn't pull all
+        # the data into memory all at once. So we iterate through ids
+        # and pull the objects one at a time.
+        qs = cls.objects.order_by('id').values_list('id', flat=True)
+
+        for t, obj_id in enumerate(qs.iterator()):
+            if t > total:
+                break
+
+            obj = cls.objects.get(pk=obj_id)
+
+            if t % 1000 == 0 and t > 0:
+                time_to_go = (total - t) * ((time.time() - start_time) / t)
+                log.info('%s/%s... (%s to go)', t, total,
+                         es_utils.format_time(time_to_go))
+
+                # We call this every 1000 or so because we're
+                # essentially loading the whole db and if DEBUG=True,
+                # then Django saves every sql statement which causes
+                # our memory to go up up up. So we reset it and that
+                # makes things happier even in DEBUG environments.
+                reset_queries()
+
+            if t % settings.ES_FLUSH_BULK_EVERY == 0:
+                # We built the ES with this setting, but it doesn't
+                # actually do anything with it unless we call
+                # flush_bulk which causes it to check its bulk_size
+                # and flush it if it's too big.
+                es.flush_bulk()
+
+            try:
+                cls.index(obj.extract_document(), bulk=True, es=es)
+            except Exception:
+                log.exception('Unable to extract/index document (id: %d)',
+                              obj.id)
+
+            yield t
+
+        es.flush_bulk(forced=True)
+        end_time = time.time()
+        log.info('done! (%s)', es_utils.format_time(end_time - start_time))
+        es.refresh()
 
     @classmethod
     def index(cls, document, bulk=False, force_insert=False, refresh=False,
@@ -102,7 +187,7 @@ class SearchMixin(object):
         if es is None:
             es = elasticutils.get_es()
 
-        index = cls._get_index()
+        index = cls.get_es_index()
         doc_type = cls._meta.db_table
 
         # TODO: handle pyes.urllib3.TimeoutErrors here.
@@ -118,7 +203,7 @@ class SearchMixin(object):
         if not settings.ES_LIVE_INDEXING:
             return
 
-        index = cls._get_index()
+        index = cls.get_es_index()
         doc_type = cls._meta.db_table
         try:
             elasticutils.get_es().delete(index, doc_type, id)
@@ -129,9 +214,11 @@ class SearchMixin(object):
 
 
 _identity = lambda s: s
+
+
 def register_for_indexing(sender_class,
-                           app,
-                           instance_to_indexee=_identity):
+                          app,
+                          instance_to_indexee=_identity):
     """Register a model whose changes might invalidate ElasticSearch indexes.
 
     Specifically, each time an instance of this model is saved or deleted, the
