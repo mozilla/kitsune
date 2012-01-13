@@ -22,15 +22,8 @@ class ZendeskSettingsError(ZendeskError):
     """Exception for missing settings."""
 
 
-def submit_ticket(email, category, subject, body):
-    """Submit a marketplace ticket to Zendesk.
-
-    :arg email: user's email address
-    :arg category: issue's category
-    :arg subject: issue's subject
-    :arg body: issue's description
-    """
-
+def get_zendesk():
+    """Instantiate and return a Zendesk client"""
     # Verify required Zendesk settings
     zendesk_url = settings.ZENDESK_URL
     zendesk_email = settings.ZENDESK_USER_EMAIL
@@ -41,8 +34,19 @@ def submit_ticket(email, category, subject, body):
         statsd.incr('questions.zendesk.settingserror')
         raise ZendeskSettingsError('Missing Zendesk settings.')
 
+    return Zendesk(zendesk_url, zendesk_email, zendesk_password)
+
+
+def submit_ticket(email, category, subject, body):
+    """Submit a marketplace ticket to Zendesk.
+
+    :arg email: user's email address
+    :arg category: issue's category
+    :arg subject: issue's subject
+    :arg body: issue's description
+    """
     # Create the Zendesk connection client.
-    zendesk = Zendesk(zendesk_url, zendesk_email, zendesk_password)
+    zendesk = get_zendesk()
 
     # Create the ticket
     new_ticket = {

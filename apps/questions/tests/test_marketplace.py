@@ -1,7 +1,10 @@
 import mock
 from nose.tools import eq_
 from pyquery import PyQuery as pq
+from zendesk import Zendesk
 
+import questions
+from questions.marketplace import submit_ticket
 import questions.views
 from sumo.tests import TestCase, LocalizingClient, get, post
 from users.tests import user
@@ -89,3 +92,33 @@ class MarketplaceAaqTests(TestCase):
                         args=['account'])
         eq_(200, response.status_code)
         submit_ticket.assert_called_with(email, cat, subject, body)
+
+
+class FauxZendesk(Zendesk):
+    def __init__(self, *args, **kwargs):
+        super(FauxZendesk, self).__init__(*args, **kwargs)
+        self.client = mock.Mock()
+        self.client.request.return_value = '', ''
+
+    @staticmethod
+    def _response_handler(response, content, status):
+        return 'https://appsmarket.zendesk.com/ticket/1'
+
+
+class SubmitTicketTests(TestCase):
+    @mock.patch.object(questions.marketplace, 'get_zendesk')
+    def test_submit_ticket(self, get_zendesk):
+        """Verify the http calls that are triggered by submit_ticket"""
+        zd = FauxZendesk('https://appsmarket.zendesk.com', 'x@y.z', 'pwd')
+        get_zendesk.return_value = zd
+
+        submit_ticket('a@b.c', 'cat', 'subject', 'description')
+        zd.client.request.assert_called_with(
+            'https://appsmarket.zendesk.com/tickets.json?',
+            'POST',
+            body='{"ticket": {"requester_email": "a@b.c", "set_tags": "cat", '
+                 '"description": "description", '
+                 '"subject": "[TEST] subject"}}',
+            headers={
+                'Content-Type': 'application/json',
+                'User-agent': 'Zendesk Python Library v1.1.0'})
