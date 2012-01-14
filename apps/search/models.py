@@ -60,7 +60,7 @@ class SearchMixin(object):
     """
     @classmethod
     def get_mapping(self):
-        """Returns the ES mapping defition for this document type
+        """Returns the ES mapping definition for this document type
 
         This must be implemented. It should return an ES mapping.
 
