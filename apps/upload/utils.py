@@ -1,3 +1,4 @@
+import copy
 import os
 import StringIO
 
@@ -52,12 +53,16 @@ def create_imageattachment(files, user, obj):
 
 
 def _image_to_png(up_file):
-    imagefile = StringIO.StringIO(up_file.read())
-    image_image = Image.open(imagefile)
+    # PIL cannot directly open an InMemoryUploadedFile, so read into StringIO.
+    pil_image = Image.open(StringIO.StringIO(up_file.read()))
 
-    # Don't convert animated GIFs
+    # Detect animated GIFS since we don't convert them.
     try:
-        image_image.seek(1)
+        # seek() causes save errors on some unanimated GIFs, so copy it.
+        # PIL does not support writing animated GIFs, so use copy.deepcopy.
+        # TODO: Find a less memory intensive way to do this.
+        image_animation_check = copy.deepcopy(pil_image)
+        image_animation_check.seek(1)
     except EOFError:
         is_animated = False
     else:
@@ -65,12 +70,7 @@ def _image_to_png(up_file):
 
     if not is_animated:
         converted_image = StringIO.StringIO()
-        if 'transparency' in image_image.info:  # For GIF transparency support
-            transparency = image_image.info['transparency']
-            image_image.save(converted_image, format='PNG',
-                             transparency=transparency)
-        else:
-            image_image.save(converted_image, format='PNG')
+        pil_image.save(converted_image, format='PNG', **pil_image.info)
 
         up_file = InMemoryUploadedFile(converted_image, None,
                                     os.path.splitext(up_file.name)[0] + '.png',
