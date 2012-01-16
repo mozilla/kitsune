@@ -18,6 +18,11 @@
 
         loadAboveTheFoldImages(elements, opts);
 
+        if(window.location.hash) {
+            // Reset scroll to anchor position if it exists
+            window.location.hash = window.location.hash;
+        }
+
         var intv = setInterval(function() {
             if(loaded <= 0) {
                 $(window).unbind('scroll');
@@ -42,6 +47,14 @@
     $.fn.lazyload.loadOriginalImage = function(element){
         $(element).attr('src', $(element).data('original-src')).removeData('original-src');
     };
+
+    $.fn.loadnow = function(options) {
+        var elements = this;
+        elements.each(function() {
+            $.fn.lazyload.loadOriginalImage(this);
+            $(this).removeClass('lazy');
+        });
+    }
 
     function loadAboveTheFoldImages(elements, options){
         var loaded = 0;

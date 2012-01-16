@@ -29,6 +29,8 @@
             ShowFor.initForTags();
             initNeedsChange();
 
+            $('img.lazy').loadnow();
+
             // We can enable the buttons now.
             $('#actions input').removeAttr('disabled');
         }
@@ -47,6 +49,8 @@
             initTitleAndSlugCheck();
             initPreValidation();
             initNeedsChange();
+
+            $('img.lazy').loadnow();
 
             // We can enable the buttons now.
             $('.submit input').removeAttr('disabled');

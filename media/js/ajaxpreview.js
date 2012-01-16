@@ -65,7 +65,7 @@ AjaxPreview.prototype = {
                 document.location.hash = $preview.attr('id');
             }
             $btn.removeAttr('disabled');
-            $('img.lazy').lazyload();
+            $('img.lazy').loadnow();
             $(self).trigger('done', [success]);
         });
     }
