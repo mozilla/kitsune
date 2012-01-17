@@ -248,7 +248,7 @@ class RadioFieldRendererWithHelpText(forms.widgets.RadioFieldRenderer):
 
 class ReviewForm(forms.Form):
     comment = StrippedCharField(max_length=2000, widget=forms.Textarea(),
-                                required=True, label=_lazy(u'Comment:'),
+                                required=False, label=_lazy(u'Comment:'),
                                 error_messages={'max_length': COMMENT_LONG})
 
     _widget = forms.RadioSelect(renderer=RadioFieldRendererWithHelpText)
