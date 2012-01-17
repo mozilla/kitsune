@@ -1,13 +1,12 @@
 from itertools import chain, count, izip
 import logging
-from threading import local
+from pprint import pprint
+import time
 
 import elasticutils
-from pprint import pprint
 import pyes
 
 from django.conf import settings
-from django.core import signals
 
 
 ESTimeoutError = pyes.urllib3.TimeoutError
@@ -15,69 +14,7 @@ ESMaxRetryError = pyes.urllib3.MaxRetryError
 ESIndexMissingException = pyes.exceptions.IndexMissingException
 
 
-TYPE = 'type'
-ANALYZER = 'analyzer'
-INDEX = 'index'
-STORE = 'store'
-TERM_VECTOR = 'term_vector'
-
-NOT_INDEXED = 'not_indexed'
-
-LONG = 'long'
-INTEGER = 'integer'
-STRING = 'string'
-BOOLEAN = 'boolean'
-DATE = 'date'
-
-ANALYZED = 'analyzed'
-NOTANALYZED = 'not_analyzed'
-
-SNOWBALL = 'snowball'
-
-YES = 'yes'
-
-WITH_POS_OFFSETS = 'with_positions_offsets'
-
-
-_local_tasks = local()
-_local_tasks.es_index_task_set = set()
-
-
-def add_index_task(fun, *args):
-    """Adds an index task.
-
-    Note: args and its contents **must** be hashable.
-
-    :arg fun: the function to call
-    :arg args: arguments to the function
-
-    """
-    _local_tasks.es_index_task_set.add((fun, args))
-
-
-def generate_tasks(**kwargs):
-    """Goes through thread local index update tasks set and generates
-    celery tasks for all tasks in the set.
-
-    Because this works off of a set, it naturally de-dupes the tasks,
-    so if four tasks get tossed into the set that are identical, we
-    execute it only once.
-
-    """
-    lt = _local_tasks
-    for fun, args in lt.es_index_task_set:
-        fun(*args)
-
-    lt.es_index_task_set.clear()
-
-
-signals.request_finished.connect(generate_tasks)
-
-
-def get_index(model):
-    """Returns the index name for this model."""
-    return (settings.ES_INDEXES.get(model._meta.db_table)
-            or settings.ES_INDEXES['default'])
+log = logging.getLogger('search.es_utils')
 
 
 def get_doctype_stats():
@@ -86,28 +23,77 @@ def get_doctype_stats():
     For example:
 
     >>> get_doctype_stats()
-    {'questions': 1000, 'forums': 1000, 'wiki': 1000}
+    {'questions_question': 14216, 'forums_thread': 419, 'wiki_document': 759}
 
     :throws pyes.urllib3.MaxRetryError: if it can't connect to elasticsearch
     :throws pyes.exceptions.IndexMissingException: if the index doesn't exist
+
     """
-    # TODO: We have to import these here, otherwise we have an import
-    # loop es_utils -> models.py -> es_utils. This should get fixed by
-    # having the models register themselves as indexable with es_utils
-    # or something like that. Then es_utils won't have to explicitly
-    # know about models.
-    from forums.models import Thread
-    from questions.models import Question
-    from wiki.models import Document
+    from search.models import get_search_models
 
     stats = {}
 
-    for name, model in (('questions', Question),
-                        ('forums', Thread),
-                        ('wiki', Document)):
-        stats[name] = elasticutils.S(model).count()
+    for cls in get_search_models():
+        stats[cls._meta.db_table] = elasticutils.S(cls).count()
 
     return stats
+
+
+def reindex_model(cls, percent=100):
+    """Reindexes all the objects for a single mode.
+
+    Yields number of documents done.
+
+    Note: This gets run from the command line, so we log stuff to let
+    the user know what's going on.
+
+    :arg cls: the model class
+    :arg percent: The percentage of questions to index.  Defaults to
+        100--e.g. all of them.
+
+    """
+    doc_type = cls._meta.db_table
+    index = cls._get_index()
+
+    start_time = time.time()
+
+    log.info('reindex %s into %s index', doc_type, index)
+
+    es = pyes.ES(settings.ES_HOSTS, timeout=settings.ES_INDEXING_TIMEOUT)
+
+    log.info('setting up mapping....')
+    mapping = cls.get_mapping()
+    es.put_mapping(doc_type, mapping, index)
+
+    log.info('iterating through %s....', doc_type)
+    total = cls.objects.count()
+    to_index = int(total * (percent / 100.0))
+    log.info('total %s: %s (to be indexed: %s)', doc_type, total, to_index)
+    total = to_index
+
+    t = 0
+    for obj in cls.objects.order_by('id').all():
+        t += 1
+        if t % 1000 == 0:
+            time_to_go = (total - t) * ((time.time() - start_time) / t)
+            if time_to_go < 60:
+                time_to_go = "%d secs" % time_to_go
+            else:
+                time_to_go = "%d min" % (time_to_go / 60)
+            log.info('%s/%s...  (%s to go)', t, total, time_to_go)
+
+        if t % settings.ES_FLUSH_BULK_EVERY == 0:
+            es.flush_bulk()
+
+        if t > total:
+            break
+
+        cls.index(obj.extract_document(), bulk=True, es=es)
+        yield t
+
+    es.flush_bulk(forced=True)
+    log.info('done!')
+    es.refresh()
 
 
 def es_reindex_with_progress(percent=100):
@@ -118,55 +104,43 @@ def es_reindex_with_progress(percent=100):
         development where doing a full reindex takes an hour.
 
     """
-    # TODO: We have to import these here, otherwise we have an import
-    # loop es_utils -> models.py -> es_utils. This should get fixed by
-    # having the models register themselves as indexable with es_utils
-    # or something like that. Then es_utils won't have to explicitly
-    # know about models.
-    import forums.es_search
-    from forums.models import Thread
-    import questions.es_search
-    from questions.models import Question
-    import wiki.es_search
-    from wiki.models import Document
+    from search.models import get_search_models
 
     es = elasticutils.get_es()
 
     # Go through and delete, then recreate the indexes.
     for index in settings.ES_INDEXES.values():
         es.delete_index_if_exists(index)
-        es.create_index_if_missing(index)  # Should always be missing.
+        es.create_index(index)
 
-    # TODO: Having the knowledge of apps' internals repeated here is lame.
-    total = (Question.objects.count() +
-             Thread.objects.count() +
-             Document.objects.count())
+    search_models = get_search_models()
+
+    total = sum([cls.objects.count() for cls in search_models])
+
+    to_index = [reindex_model(cls, percent) for cls in search_models]
+
     return (float(done) / total for done, _ in
-            izip(count(1),
-                 chain(questions.es_search.reindex_questions(percent),
-                       wiki.es_search.reindex_documents(percent),
-                       forums.es_search.reindex_documents(percent))))
+            izip(count(1), chain(*to_index)))
 
 
 def es_reindex(percent=100):
-    """Rebuild ElasticSearch indexes."""
+    """Rebuild ElasticSearch indexes"""
     [x for x in es_reindex_with_progress(percent) if False]
 
 
 def es_whazzup():
-    """Runs cluster_stats on the Elastic system."""
-    # We create a logger because elasticutils uses it.
-    logging.basicConfig()
-
+    """Runs cluster_stats on the Elastic system"""
     es = elasticutils.get_es()
 
+    # TODO: It'd be better to show more useful information than raw
+    # cluster_stats.
     try:
         pprint(es.cluster_stats())
     except pyes.urllib3.connectionpool.MaxRetryError:
-        print ('ERROR: Your elasticsearch process is not running or '
-               'ES_HOSTS is set wrong in your settings_local.py file.')
+        log.error('Your elasticsearch process is not running or ES_HOSTS '
+                  'is set wrong in your settings_local.py file.')
         return
 
-    print 'Totals:'
+    log.info('Totals:')
     for name, count in get_doctype_stats().items():
-        print '* %s: %d' % (name, count)
+        log.info(' * %s: %d', name, count)

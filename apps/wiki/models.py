@@ -9,8 +9,6 @@ from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from django.core.urlresolvers import resolve
 from django.db import models
 from django.db.models import Q
-from django.db.models.signals import pre_delete, post_save
-from django.dispatch import receiver
 from django.http import Http404
 
 from pyquery import PyQuery
@@ -18,12 +16,13 @@ from tidings.models import NotificationsMixin
 from tower import ugettext_lazy as _lazy, ugettext as _
 
 from search import searcher
-from search import es_utils
+from search.models import SearchMixin, register_for_indexing
 from search.utils import crc32
 from sumo import ProgrammingError
 from sumo_locales import LOCALES
 from sumo.models import ModelBase, LocaleField
 from sumo.urlresolvers import reverse, split_path
+from taggit.models import TaggedItem
 from tags.models import BigVocabTaggableMixin
 from wiki import TEMPLATE_TITLE_PREFIX
 
@@ -90,12 +89,14 @@ VersionMetadata = namedtuple('VersionMetadata',
                              'is_default')
 GROUPED_FIREFOX_VERSIONS = (
     ((_lazy(u'Desktop:'), 'desktop'), (
+        VersionMetadata(17, _lazy(u'Firefox 11'),
+                        _lazy(u'Firefox 11'), 'fx11', 11.9999, True, False),
         VersionMetadata(15, _lazy(u'Firefox 10'),
                         _lazy(u'Firefox 10'), 'fx10', 10.9999, True, False),
         VersionMetadata(13, _lazy(u'Firefox 9'),
                         _lazy(u'Firefox 9'), 'fx9', 9.9999, True, True),
         VersionMetadata(11, _lazy(u'Firefox 8'),
-                        _lazy(u'Firefox 8'), 'fx8', 8.9999, True, False),
+                        _lazy(u'Firefox 8'), 'fx8', 8.9999, False, False),
         VersionMetadata(9, _lazy(u'Firefox 7'),
                         _lazy(u'Firefox 7'), 'fx7', 7.9999, False, False),
         VersionMetadata(6, _lazy(u'Firefox 6'),
@@ -110,6 +111,9 @@ GROUPED_FIREFOX_VERSIONS = (
         VersionMetadata(3, _lazy(u'Firefox 3.0'),
                         _lazy(u'Firefox 3.0'), 'fx3', 3.4999, False, False))),
     ((_lazy(u'Mobile:'), 'mobile'), (
+        VersionMetadata(18, _lazy(u'Firefox 11'),
+                        _lazy(u'Firefox 11 for Mobile'), 'm11', 11.9999,
+                        True, False),
         VersionMetadata(16, _lazy(u'Firefox 10'),
                         _lazy(u'Firefox 10 for Mobile'), 'm10', 10.9999,
                         True, False),
@@ -117,7 +121,7 @@ GROUPED_FIREFOX_VERSIONS = (
                         _lazy(u'Firefox 9 for Mobile'), 'm9', 9.9999, True,
                         True),
         VersionMetadata(12, _lazy(u'Firefox 8'),
-                        _lazy(u'Firefox 8 for Mobile'), 'm8', 8.9999, True,
+                        _lazy(u'Firefox 8 for Mobile'), 'm8', 8.9999, False,
                         False),
         VersionMetadata(10, _lazy(u'Firefox 7'),
                         _lazy(u'Firefox 7 for Mobile'), 'm7', 7.9999, False,
@@ -159,7 +163,8 @@ PRODUCTS = (
     Product('desktop', _lazy(u'Desktop')),
     Product('mobile', _lazy(u'Mobile')),
     Product('sync', _lazy(u'Sync')),
-    Product('FxHome', _lazy(u'Home')))
+    Product('FxHome', _lazy(u'Home')),
+    Product('marketplace', _lazy(u'Marketplace')))
 PRODUCT_TAGS = [p.slug for p in PRODUCTS]
 
 
@@ -181,7 +186,8 @@ class _NotDocumentView(Exception):
     """A URL not pointing to the document view was passed to from_url()."""
 
 
-class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin):
+class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
+               SearchMixin):
     """A localized knowledgebase document, not revision-specific."""
     title = models.CharField(max_length=255, db_index=True)
     slug = models.CharField(max_length=255, db_index=True)
@@ -620,27 +626,63 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin):
         from wiki.events import EditDocumentEvent
         return EditDocumentEvent.is_notifying(user, self)
 
+    @classmethod
+    def get_mapping(cls):
+        mapping = {
+            'properties': {
+                'id': {'type': 'integer'},
+                'title': {'type': 'string', 'analyzer': 'snowball'},
+                'locale': {'type': 'string', 'index': 'not_analyzed'},
+                'current': {'type': 'integer'},
+                'parent_id': {'type': 'integer'},
+                'content':
+                    {'type': 'string', 'analyzer': 'snowball'},
+                'category': {'type': 'integer'},
+                'slug': {'type': 'string'},
+                'is_archived': {'type': 'boolean'},
+                'summary': {'type': 'string', 'analyzer': 'snowball'},
+                'keywords': {'type': 'string', 'analyzer': 'snowball'},
+                'updated': {'type': 'date'},
+                'tag': {'type': 'string'}
+                }
+            }
+        return mapping
 
-@receiver(post_save, sender=Document,
-          dispatch_uid='wiki.search.index.document.save')
-def update_document_from_index(sender, instance, **kw):
-    # raw is True when saving a model exactly as presented--like when
-    # loading fixtures.  In this case we don't want to trigger.
-    if not settings.ES_LIVE_INDEXING or kw.get('raw'):
-        return
+    def extract_document(self):
+        d = {}
+        d['id'] = self.id
+        d['title'] = self.title
+        d['locale'] = self.locale
+        d['parent_id'] = self.parent.id if self.parent else None
+        d['content'] = self.html
+        d['category'] = self.category
+        d['slug'] = self.slug
+        d['is_archived'] = self.is_archived
+        if self.parent is None:
+            d['tag'] = [tag['name'] for tag in self.tags.values()]
+        else:
+            # Translations inherit tags from their parents.
+            d['tag'] = [tag['name'] for tag in self.parent.tags.values()]
+        if self.current_revision:
+            d['summary'] = self.current_revision.summary
+            d['keywords'] = self.current_revision.keywords
+            d['updated'] = self.current_revision.created
+            d['current'] = self.current_revision.id
+        else:
+            d['summary'] = None
+            d['keywords'] = None
+            d['updated'] = None
+            d['current'] = None
+        return d
 
-    from wiki.tasks import index_documents
-    es_utils.add_index_task(index_documents.delay, (instance.id,))
 
-
-@receiver(pre_delete, sender=Document,
-          dispatch_uid='wiki.search.index.document.delete')
-def remove_document_from_index(sender, instance, **kw):
-    if not settings.ES_LIVE_INDEXING:
-        return
-
-    from wiki.tasks import unindex_documents
-    unindex_documents([instance.id])
+register_for_indexing(Document, 'wiki')
+register_for_indexing(
+    TaggedItem,
+    'wiki',
+    instance_to_indexee=
+        lambda i: i.content_object if isinstance(i.content_object, Document)
+                  else None)
 
 
 class Revision(ModelBase):

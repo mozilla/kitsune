@@ -8,12 +8,11 @@ from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
 from django.core.cache import cache
 from django.db import models
-from django.db.models.signals import post_save, pre_delete
-from django.dispatch import receiver
+from django.db.models.signals import post_save
 
 from product_details import product_details
 from statsd import statsd
-from taggit.models import Tag
+from taggit.models import Tag, TaggedItem
 import waffle
 
 from activity.models import ActionMixin
@@ -24,9 +23,9 @@ from questions.karma_actions import (AnswerAction, FirstAnswerAction,
                                      SolutionAction)
 from questions.question_config import products
 from questions.tasks import (update_question_votes, update_answer_pages,
-                             log_answer, index_questions, unindex_questions)
+                             log_answer)
 from search import searcher
-from search import es_utils
+from search.models import SearchMixin, register_for_indexing
 from search.utils import crc32
 from sumo.helpers import urlparams
 from sumo.models import ModelBase
@@ -41,7 +40,7 @@ from upload.models import ImageAttachment
 log = logging.getLogger('k.questions')
 
 
-class Question(ModelBase, BigVocabTaggableMixin):
+class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
     """A support question."""
     title = models.CharField(max_length=255)
     creator = models.ForeignKey(User, related_name='questions')
@@ -282,25 +281,92 @@ class Question(ModelBase, BigVocabTaggableMixin):
             cache.add(cache_key, tags)
         return tags
 
+    @classmethod
+    def get_mapping(cls):
+        mapping = {
+            'properties': {
+                'id': {'type': 'long'},
+                'question_id': {'type': 'long'},
+                'title': {'type': 'string', 'analyzer': 'snowball'},
+                'question_content':
+                    {'type': 'string', 'analyzer': 'snowball',
+                    # TODO: Stored because originally, this is the
+                    # only field we were excerpting on. Standardize
+                    # one way or the other.
+                     'store': 'yes', 'term_vector': 'with_positions_offsets'},
+                'answer_content':
+                    {'type': 'string', 'analyzer': 'snowball'},
+                'replies': {'type': 'integer'},
+                'is_solved': {'type': 'boolean'},
+                'is_locked': {'type': 'boolean'},
+                'has_answers': {'type': 'boolean'},
+                'has_helpful': {'type': 'boolean'},
+                'created': {'type': 'date'},
+                'updated': {'type': 'date'},
+                'question_creator': {'type': 'string'},
+                'answer_creator': {'type': 'string'},
+                'question_votes': {'type': 'integer'},
+                'answer_votes': {'type': 'integer'},
+                'tag': {'type': 'string'}
+                }
+            }
+        return mapping
 
-@receiver(post_save, sender=Question,
-          dispatch_uid='questions.search.index.question.save')
-def update_question_in_index(sender, instance, **kw):
-    # raw is True when saving a model exactly as presented--like when
-    # loading fixtures.  In this case we don't want to trigger.
-    if not settings.ES_LIVE_INDEXING or kw.get('raw'):
-        return
+    def extract_document(self):
+        """Extracts indexable attributes from a Question and its answers."""
+        d = {}
 
-    es_utils.add_index_task(index_questions.delay, (instance.id,))
+        d['id'] = self.id
+
+        d['title'] = self.title
+        d['question_content'] = self.content
+        d['replies'] = self.num_answers
+        d['is_solved'] = bool(self.solution_id)
+        d['is_locked'] = self.is_locked
+        d['has_answers'] = bool(self.num_answers)
+
+        d['created'] = self.created
+        d['updated'] = self.updated
+
+        d['question_creator'] = self.creator.username
+        d['question_votes'] = self.num_votes_past_week
+
+        d['tag'] = [tag['name'] for tag in self.tags.values()]
+
+        # Array of strings.
+        answer_content = []
+
+        # has_helpful is true if at least one answer is marked as
+        # helpful.
+        has_helpful = False
+
+        # answer_creator is the set of all answer creator user names.
+        answer_creator = set()
+
+        # answer_votes is the sum of votes for all of the answers.
+        answer_votes = 0
+
+        for ans in self.answers.all():
+            answer_content.append(ans.content)
+            has_helpful = has_helpful or bool(ans.num_helpful_votes)
+            answer_creator.add(ans.creator.username)
+            answer_votes += ans.upvotes
+
+        d['answer_content'] = answer_content
+        d['has_helpful'] = has_helpful
+        d['answer_creator'] = list(answer_creator)
+        d['answer_votes'] = answer_votes
+
+        return d
 
 
-@receiver(pre_delete, sender=Question,
-          dispatch_uid='questions.search.index.question.delete')
-def remove_question_from_index(sender, instance, **kw):
-    if not settings.ES_LIVE_INDEXING:
-        return
-
-    unindex_questions([instance.id])
+register_for_indexing(Question, 'questions')
+register_for_indexing(
+    TaggedItem,
+    'questions',
+    instance_to_indexee=
+        lambda i: i.content_object if isinstance(i.content_object, Question)
+                  else None)
 
 
 class QuestionMetaData(ModelBase):
@@ -498,24 +564,9 @@ post_save.connect(answer_connector, sender=Answer,
                   dispatch_uid='question_answer_activity')
 
 
-@receiver(post_save, sender=Answer,
-          dispatch_uid='questions.search.index.answer.save')
-def update_answer_in_index(sender, instance, **kw):
-    # raw is True when saving a model exactly as presented--like when
-    # loading fixtures.  In this case we don't want to trigger.
-    if not settings.ES_LIVE_INDEXING or kw.get('raw'):
-        return
-
-    es_utils.add_index_task(index_questions.delay, (instance.question_id,))
-
-
-@receiver(pre_delete, sender=Answer,
-          dispatch_uid='questions.search.index.answer.delete')
-def remove_answer_from_index(sender, instance, **kw):
-    if not settings.ES_LIVE_INDEXING:
-        return
-
-    es_utils.add_index_task(index_questions.delay, (instance.question_id,))
+register_for_indexing(Answer,
+                      'questions',
+                      instance_to_indexee=lambda a: a.question)
 
 
 class QuestionVote(ModelBase):
@@ -544,31 +595,12 @@ class AnswerVote(ModelBase):
         VoteMetadata.objects.create(vote=self, key=key, value=value)
 
 
-@receiver(post_save, sender=AnswerVote,
-          dispatch_uid='questions.search.index.answervote.save')
-def update_answervote_in_index(sender, instance, **kw):
-    # TODO: We only need to update the helpful bit.  It's possible
-    # we could ignore all AnswerVotes that aren't helpful and if
-    # they're marked as helpful, then update the index.  Look into
-    # this.
-
-    # raw is True when saving a model exactly as presented--like when
-    # loading fixtures.  In this case we don't want to trigger.
-    if not settings.ES_LIVE_INDEXING or kw.get('raw'):
-        return
-
-    es_utils.add_index_task(index_questions.delay, (
-            instance.answer.question_id,))
-
-
-@receiver(pre_delete, sender=AnswerVote,
-          dispatch_uid='questions.search.index.answervote.delete')
-def remove_answervote_from_index(sender, instance, **kw):
-    if not settings.ES_LIVE_INDEXING:
-        return
-
-    es_utils.add_index_task(index_questions.delay, (
-            instance.answer.question_id,))
+# TODO: We only need to update the helpful bit.  It's possible
+# we could ignore all AnswerVotes that aren't helpful and if
+# they're marked as helpful, then update the index.  Look into
+# this.
+register_for_indexing(
+    AnswerVote, 'questions', instance_to_indexee=lambda v: v.answer.question)
 
 
 class VoteMetadata(ModelBase):

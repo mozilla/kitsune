@@ -1,10 +1,7 @@
 import datetime
 
 from django.db import models
-from django.conf import settings
 from django.contrib.auth.models import User
-from django.db.models.signals import post_save, pre_delete
-from django.dispatch import receiver
 
 from tidings.models import NotificationsMixin
 
@@ -15,7 +12,7 @@ from sumo.helpers import urlparams, wiki_to_html
 from sumo.urlresolvers import reverse
 from sumo.models import ModelBase
 from search import searcher
-from search import es_utils
+from search.models import SearchMixin, register_for_indexing
 from search.utils import crc32
 import waffle
 
@@ -94,7 +91,7 @@ class Forum(NotificationsMixin, ModelBase):
         self.last_post = _last_post_from(posts, exclude_post=exclude_post)
 
 
-class Thread(NotificationsMixin, ModelBase):
+class Thread(NotificationsMixin, ModelBase, SearchMixin):
     title = models.CharField(max_length=255)
     forum = models.ForeignKey('Forum')
     created = models.DateTimeField(default=datetime.datetime.now,
@@ -180,27 +177,62 @@ class Thread(NotificationsMixin, ModelBase):
         # If self.last_post is None, and this was called from Post.delete,
         # then Post.delete will erase the thread, as well.
 
+    @classmethod
+    def get_mapping(cls):
+        mapping = {
+            'properties': {
+                'id': {'type': 'integer'},
+                'thread_id': {'type': 'integer'},
+                'forum_id': {'type': 'integer'},
+                'title': {'type': 'string', 'analyzer': 'snowball'},
+                'is_sticky': {'type': 'boolean'},
+                'is_locked': {'type': 'boolean'},
+                'author_id': {'type': 'integer'},
+                'author_ord': {'type': 'string'},
+                'content': {'type': 'string', 'analyzer': 'snowball',
+                            'store': 'yes',
+                            'term_vector': 'with_positions_offsets'},
+                'created': {'type': 'date'},
+                'updated': {'type': 'date'},
+                'replies': {'type': 'integer'}
+                }
+            }
+        return mapping
 
-@receiver(post_save, sender=Thread,
-          dispatch_uid='forums.search.index.thread.save')
-def update_thread_in_index(sender, instance, **kw):
-    # raw is True when saving a model exactly as presented--like when
-    # loading fixtures.  In this case we don't want to trigger.
-    if not settings.ES_LIVE_INDEXING or kw.get('raw'):
-        return
+    def extract_document(self):
+        """Extracts interesting thing from a Thread and its Posts"""
+        d = {}
+        d['id'] = self.id
+        d['forum_id'] = self.forum.id
+        d['title'] = self.title
+        d['is_sticky'] = self.is_sticky
+        d['is_locked'] = self.is_locked
+        d['created'] = self.created
 
-    from forums.tasks import index_threads
-    es_utils.add_index_task(index_threads.delay, (instance.id,))
+        if self.last_post is not None:
+            d['updated'] = self.last_post.created
+        else:
+            d['updates'] = None
+
+        d['replies'] = self.replies
+
+        author_ids = set()
+        author_ords = set()
+        content = []
+
+        for post in self.post_set.all():
+            author_ids.add(post.author.id)
+            author_ords.add(post.author.username)
+            content.append(post.content)
+
+        d['author_id'] = list(author_ids)
+        d['author_ord'] = list(author_ords)
+        d['content'] = content
+
+        return d
 
 
-@receiver(pre_delete, sender=Thread,
-          dispatch_uid='forums.search.index.thread.delete')
-def remove_thread_from_index(sender, instance, **kw):
-    if not settings.ES_LIVE_INDEXING:
-        return
-
-    from forums.tasks import unindex_threads
-    unindex_threads([instance.id])
+register_for_indexing(Thread, 'forums')
 
 
 class Post(ActionMixin, ModelBase):
@@ -285,26 +317,7 @@ class Post(ActionMixin, ModelBase):
         return wiki_to_html(self.content)
 
 
-@receiver(post_save, sender=Post,
-          dispatch_uid='forums.search.index.post.save')
-def update_post_in_index(sender, instance, **kw):
-    # raw is True when saving a model exactly as presented--like when
-    # loading fixtures.  In this case we don't want to trigger.
-    if not settings.ES_LIVE_INDEXING or kw.get('raw'):
-        return
-
-    from forums.tasks import index_threads
-    es_utils.add_index_task(index_threads.delay, (instance.thread_id,))
-
-
-@receiver(pre_delete, sender=Post,
-          dispatch_uid='forums.search.index.post.delete')
-def remove_post_from_index(sender, instance, **kw):
-    if not settings.ES_LIVE_INDEXING:
-        return
-
-    from forums.tasks import index_threads
-    es_utils.add_index_task(index_threads.delay, (instance.thread_id,))
+register_for_indexing(Post, 'forums', instance_to_indexee=lambda p: p.thread)
 
 
 def discussion_searcher(request):
