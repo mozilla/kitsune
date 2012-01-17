@@ -19,16 +19,11 @@
             type: 'datetime',
         },
         title: {
-            text: 'Questions and solutions',
+            text: 'Percent Questions with solutions',
         },
         tooltip: {
             formatter: function() {
-                return '<b>' + this.percentage.toFixed(1) + ' %';
-            }
-        },
-        plotOptions: {
-            column: {
-                stacking: 'percent'
+                return '<b>' + this.y.toFixed(1) + ' %';
             }
         },
     });
@@ -36,13 +31,12 @@
         url:  $('#kpi-dash').data('percent-answered-url'),
         context: document.body,
         success: function(data){
-            console.log(_.map(data.objects, function(o){return {'x':Date.parse(o['date']),'y':o['without_solutions']}}));
             percent_chart.addSeries({
-                'data':  _.map(data.objects, function(o){return {'x':Date.parse(o['date']),'y':o['without_solutions']}}),
-                'name': 'Without Solutions',
-            });
-            percent_chart.addSeries({
-                'data':  _.map(data.objects, function(o){return {'x':Date.parse(o['date']),'y':o['with_solutions']}}),
+                'data':  _.map(data.objects, function(o){
+                    return {'x':Date.parse(o['date']),
+                            'y':o['with_solutions'] / o['without_solutions'] * 100
+                        }
+                    }),
                 'name': 'With Solutions',
             });
         }
