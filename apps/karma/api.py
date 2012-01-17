@@ -112,4 +112,3 @@ def details(request):
         'counts': counts,
         'userid': userid
         }
-
