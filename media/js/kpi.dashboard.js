@@ -1,9 +1,9 @@
 (function(){
+    "use strict";
     var percent_chart = new Highcharts.Chart({
         chart: {
             renderTo: 'percent_answered',
             defaultSeriesType: 'column'
-
         },
         credits: {
             enabled: false
@@ -15,6 +15,9 @@
                 text: ''
             }
         },
+       xAxis: {
+            type: 'datetime',
+        },
         title: {
             text: 'Questions and solutions',
         },
@@ -25,7 +28,7 @@
         },
         plotOptions: {
             column: {
-                stacking: 'normal'
+                stacking: 'percent'
             }
         },
     });
@@ -33,12 +36,13 @@
         url:  $('#kpi-dash').data('percent-answered-url'),
         context: document.body,
         success: function(data){
+            console.log(_.map(data.objects, function(o){return {'x':Date.parse(o['date']),'y':o['without_solutions']}}));
             percent_chart.addSeries({
-                'data':  _.map(data.objects, function(o){return o['without_solutions']}),
+                'data':  _.map(data.objects, function(o){return {'x':Date.parse(o['date']),'y':o['without_solutions']}}),
                 'name': 'Without Solutions',
             });
             percent_chart.addSeries({
-                'data':  _.map(data.objects, function(o){return o['with_solutions']}),
+                'data':  _.map(data.objects, function(o){return {'x':Date.parse(o['date']),'y':o['with_solutions']}}),
                 'name': 'With Solutions',
             });
         }

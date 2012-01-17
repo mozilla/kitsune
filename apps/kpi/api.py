@@ -5,8 +5,18 @@ from django.db.models import Count
 
 from tastypie.resources import Resource
 from tastypie import fields
+from tastypie.authentication import BasicAuthentication
+from tastypie.authorization import Authorization
 
 from questions.models import Question
+
+
+class PermissionAuthorization(Authorization):
+    def __init__(self, perm):
+        self.perm = perm
+
+    def is_authorized(self, request, object=None):
+        return request.user.has_perm(self.perm)
 
 
 class Struct:
@@ -69,5 +79,6 @@ class SolutionResource(Resource):
         return self.get_object_list(request)
 
     class Meta:
-        resource_name = 'solution'
+        resource_name = 'kpi_solution'
         allowed_methods = ['get']
+        authorization = PermissionAuthorization('users.view_kpi_dashboard')

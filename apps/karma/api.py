@@ -114,19 +114,3 @@ def details(request):
         'counts': counts,
         'userid': userid
         }
-
-
-@login_required
-@permission_required('karma.view_dashboard')
-@json_view
-def percent_answered(request):
-    mgr = KarmaManager()
-
-    form = PercentAnsweredForm(request.GET)
-
-    if not form.is_valid():
-        return {'success': False, 'errors': form.errors}
-
-    return {
-        'success': True,
-    }
