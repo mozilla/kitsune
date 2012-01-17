@@ -850,10 +850,10 @@ def marketplace(request):
 
 
 @anonymous_csrf
-def marketplace_category(request, category):
+def marketplace_category(request, category_slug):
     """AAQ category page. Handles form post that submits ticket."""
     try:
-        category_name = MARKETPLACE_CATEGORIES[category]
+        category_name = MARKETPLACE_CATEGORIES[category_slug]
     except KeyError:
         raise Http404
 
@@ -886,7 +886,7 @@ def marketplace_category(request, category):
 
     return jingo.render(request, 'questions/marketplace_category.html', {
         'category': category_name,
-        'category_slug': category,
+        'category_slug': category_slug,
         'categories': MARKETPLACE_CATEGORIES,
         'form': form,
         'error_message': error_message})
