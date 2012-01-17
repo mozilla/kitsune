@@ -12,6 +12,7 @@ from django.dispatch import receiver
 
 from search.tasks import index_task, unindex_task
 from search import es_utils
+from search.es_utils import INDEX_SETTINGS
 
 log = logging.getLogger('es_search')
 
@@ -117,7 +118,7 @@ class SearchMixin(object):
             # doctype is responsible for deleting and re-creating the
             # index.
             es.delete_index_if_exists(index)
-            es.create_index(index)
+            es.create_index(index, settings=INDEX_SETTINGS)
 
         start_time = time.time()
 

@@ -16,6 +16,20 @@ ESIndexMissingException = pyes.exceptions.IndexMissingException
 log = logging.getLogger('search.es_utils')
 
 
+# Add a custom analyzer which strips HTML so we don't turn up all the <br> tags
+# when searching for "br":
+INDEX_SETTINGS = {
+    'index': {
+        'analysis': {
+            'analyzer': {
+                # Like the snowball analyzer but with html_strip:
+                'snowballHtml': {
+                    'type': 'custom',
+                    'tokenizer': 'standard',
+                    'filter': ['standard', 'lowercase', 'stop', 'snowball'],
+                    'char_filter': ['html_strip']}}}}}
+
+
 def get_doctype_stats():
     """Returns a dict of name -> count for documents indexed.
 
@@ -92,7 +106,7 @@ def es_reindex_with_progress(doctypes=None, percent=100):
             # If we're indexing everything and there's a default index
             # specified in settings, then we delete and recreate it.
             es.delete_index_if_exists(index)
-            es.create_index(index)
+            es.create_index(index, settings=INDEX_SETTINGS)
 
     total = sum([cls.objects.count() for cls in search_models])
 

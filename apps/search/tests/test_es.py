@@ -202,3 +202,28 @@ class ElasticSearchViewTests(ElasticTestCase):
 
         content = json.loads(response.content)
         eq_(content['total'], 1)
+
+
+class ElasticSearchHtmlTests(ElasticTestCase):
+    """Tests for whether we're indexing and excerpting HTML properly"""
+    client_class = LocalizingClient
+
+    def test_html_filtered_out_of_indexed_questions(self):
+        """HTML should be filtered out of question content before indexing."""
+        v = answer_vote(
+            answer=answer(
+                question=question(
+                    content='My<br />printer is on fire.',
+                    save=True),
+                content='Put it out.',
+                save=True),
+            helpful=True,
+            save=True)
+        self.refresh()
+
+        response = self.client.get(reverse('search'),
+                                   {'q': 'br',
+                                    'format': 'json'
+                                   })
+        # It shouldn't find the "br" from the <br> tag:
+        eq_(json.loads(response.content)['total'], 0)

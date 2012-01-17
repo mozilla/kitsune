@@ -283,19 +283,21 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
 
     @classmethod
     def get_mapping(cls):
-        mapping = {
+        return {
             'properties': {
                 'id': {'type': 'long'},
                 'question_id': {'type': 'long'},
                 'title': {'type': 'string', 'analyzer': 'snowball'},
                 'question_content':
-                    {'type': 'string', 'analyzer': 'snowball',
-                    # TODO: Stored because originally, this is the
-                    # only field we were excerpting on. Standardize
-                    # one way or the other.
-                     'store': 'yes', 'term_vector': 'with_positions_offsets'},
+                    {'type': 'string',
+                     'analyzer': 'snowballHtml',
+                     # TODO: Stored because originally, this is the
+                     # only field we were excerpting on. Standardize
+                     # one way or the other.
+                     'store': 'yes',
+                     'term_vector': 'with_positions_offsets'},
                 'answer_content':
-                    {'type': 'string', 'analyzer': 'snowball'},
+                    {'type': 'string', 'analyzer': 'snowballHtml'},
                 'replies': {'type': 'integer'},
                 'is_solved': {'type': 'boolean'},
                 'is_locked': {'type': 'boolean'},
@@ -307,10 +309,7 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
                 'answer_creator': {'type': 'string'},
                 'question_votes': {'type': 'integer'},
                 'answer_votes': {'type': 'integer'},
-                'tag': {'type': 'string'}
-                }
-            }
-        return mapping
+                'tag': {'type': 'string'}}}
 
     def extract_document(self):
         """Extracts indexable attributes from a Question and its answers."""
@@ -319,7 +318,7 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
         d['id'] = self.id
 
         d['title'] = self.title
-        d['question_content'] = self.content
+        d['question_content'] = self.content_parsed
         d['replies'] = self.num_answers
         d['is_solved'] = bool(self.solution_id)
         d['is_locked'] = self.is_locked
@@ -347,7 +346,7 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
         answer_votes = 0
 
         for ans in self.answers.iterator():
-            answer_content.append(ans.content)
+            answer_content.append(ans.content_parsed)
             has_helpful = has_helpful or bool(ans.num_helpful_votes)
             answer_creator.add(ans.creator.username)
             answer_votes += ans.upvotes
