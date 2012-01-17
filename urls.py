@@ -28,10 +28,7 @@ urlpatterns = patterns('',
     (r'^postcrash', include('postcrash.urls')),
     (r'^groups', include('groups.urls')),
     (r'^karma', include('karma.urls')),
-<<<<<<< HEAD
-=======
     (r'^kpi/', include('kpi.urls')),
->>>>>>> f7e8292... moved to tastypie
 
     # Kitsune admin (not Django admin).
     (r'^admin/', include(admin.site.urls)),
