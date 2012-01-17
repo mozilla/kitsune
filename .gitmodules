@@ -130,3 +130,6 @@
 [submodule "vendor/src/elasticutils"]
 	path = vendor/src/elasticutils
 	url = git://github.com/davedash/elasticutils.git
+[submodule "vendor/src/django-tastypie"]
+	path = vendor/src/django-tastypie
+	url = https://github.com/toastdriven/django-tastypie.git

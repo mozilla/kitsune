@@ -35,3 +35,4 @@ class DetailAPIForm(forms.Form):
         initial='1y',
         choices=[(k, k) for k in KarmaManager.date_ranges.keys()])
     userid = forms.IntegerField(required=False)
+
