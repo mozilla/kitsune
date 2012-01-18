@@ -1,7 +1,6 @@
 from itertools import chain, count, izip
 import logging
 from pprint import pprint
-import time
 
 import elasticutils
 import pyes
@@ -58,85 +57,12 @@ def format_time(time_to_go):
     return  "%dm %ds" % (time_to_go / 60, time_to_go % 60)
 
 
-def reindex_model(cls, percent=100):
-    """Reindexes all the objects for a single mode.
-
-    Yields number of documents done.
-
-    Note: This gets run from the command line, so we log stuff to let
-    the user know what's going on.
-
-    :arg cls: the model class
-    :arg percent: The percentage of questions to index.  Defaults to
-        100--e.g. all of them.
-
-    """
-    es = get_es()
-
-    doc_type = cls._meta.db_table
-    index = cls.get_es_index()
-
-    if index != settings.ES_INDEXES.get('default'):
-        # If this doctype isn't using the default index, then this
-        # doctype is responsible for deleting and re-creating the
-        # index.
-        es.delete_index_if_exists(index)
-        es.create_index(index)
-
-    start_time = time.time()
-
-    log.info('reindex %s into %s index', doc_type, index)
-
-    log.info('setting up mapping....')
-    mapping = cls.get_mapping()
-    es.put_mapping(doc_type, mapping, index)
-
-    log.info('iterating through %s....', doc_type)
-    total = cls.objects.count()
-    to_index = int(total * (percent / 100.0))
-    log.info('total %s: %s (to be indexed: %s)', doc_type, total, to_index)
-    total = to_index
-
-    t = 0
-
-    # TODO: Doing values_list here instead of getting all the objects
-    # results in a dramatic decrease in memory usage during indexing
-    # to the point where my system with 4gb of memory can't get
-    # through a full indexing without this "fix".
-    for obj_id in cls.objects.order_by('id').values_list('id', flat=True):
-        obj = cls.objects.get(pk=obj_id)
-        t += 1
-        if t > total:
-            break
-
-        if t % 1000 == 0:
-            time_to_go = (total - t) * ((time.time() - start_time) / t)
-            log.info('%s/%s...  (%s to go)', t, total, format_time(time_to_go))
-
-        if t % settings.ES_FLUSH_BULK_EVERY == 0:
-            es.flush_bulk()
-
-        try:
-            doc = obj.extract_document()
-            del obj
-            cls.index(doc, bulk=True, es=es)
-            del doc
-        except Exception:
-            log.exception('Unable to extract document (id: %d)', obj_id)
-
-        yield t
-
-    es.flush_bulk(forced=True)
-    end_time = time.time()
-    log.info('done!  (%s)', format_time(end_time - start_time))
-    es.refresh()
-
-
 def es_reindex_with_progress(doctypes=None, percent=100):
     """Rebuild Elastic indexes as you iterate over yielded progress ratios.
 
     :arg doctypes: Defaults to None which will index all doctypes.
-        Otherwise indexes the doctypes specified.
+        Otherwise indexes the doctypes specified. See
+        :py:func:`.get_doctype_stats()` for what doctypes look like.
     :arg percent: Defaults to 100.  Allows you to specify how much of
         each doctype you want to index.  This is useful for
         development where doing a full reindex takes an hour.
@@ -161,15 +87,19 @@ def es_reindex_with_progress(doctypes=None, percent=100):
 
     total = sum([cls.objects.count() for cls in search_models])
 
-    to_index = [reindex_model(cls, percent) for cls in search_models]
+    to_index = [cls.index_all(percent) for cls in search_models]
 
     return (float(done) / total for done, _ in
             izip(count(1), chain(*to_index)))
 
 
-def es_reindex(*args, **kwargs):
-    """Rebuild ElasticSearch indexes"""
-    [x for x in es_reindex_with_progress(*args, **kwargs) if False]
+def es_reindex(doctypes=None, percent=100):
+    """Rebuild ElasticSearch indexes
+
+    See :py:func:`.es_reindex_with_progress` for argument details.
+
+    """
+    [x for x in es_reindex_with_progress(doctypes, percent) if False]
 
 
 def es_whazzup():
