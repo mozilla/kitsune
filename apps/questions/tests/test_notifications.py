@@ -10,6 +10,7 @@ from questions.events import QuestionReplyEvent, QuestionSolvedEvent
 from questions.models import Question, Answer
 from questions.tests import TestCaseBase
 from sumo.tests import post, attrs_eq, starts_with
+from users.models import Setting
 from users.tests import user
 
 
@@ -208,6 +209,27 @@ class NotificationsTests(TestCaseBase):
             answer=answer.id))
 
         self._toggle_watch_question('reply', turn_on=False)
+
+    @mock.patch.object(Site.objects, 'get_current')
+    def test_autowatch_reply(self, get_current):
+        get_current.return_value.domain = 'testserver'
+
+        user = User.objects.get(username='timw')
+        t1, t2 = Question.objects.filter(is_locked=False)[0:2]
+        assert not QuestionReplyEvent.is_notifying(user, t1)
+        assert not QuestionReplyEvent.is_notifying(user, t2)
+
+        self.client.login(username='timw', password='testpass')
+        s = Setting.objects.create(user=user, name='questions_watch_after_reply',
+                                   value='True')
+        data = {'content': 'some content'}
+        post(self.client, 'questions.reply', data, args=[t1.id])
+        assert QuestionReplyEvent.is_notifying(user, t1)
+
+        s.value = 'False'
+        s.save()
+        post(self.client, 'questions.reply', data, args=[t2.id])
+        assert not QuestionReplyEvent.is_notifying(user, t2)
 
     @mock.patch.object(Site.objects, 'get_current')
     def test_solution_notification_deleted(self, get_current):
