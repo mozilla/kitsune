@@ -264,9 +264,6 @@ def upload_async(request, media_type='image'):
     except FileTooLargeError as e:
         return HttpResponseBadRequest(
             json.dumps({'status': 'error', 'message': e.args[0]}))
-    except:
-        import traceback
-        traceback.print_exc()
 
     if isinstance(file_info, dict) and 'thumbnail_url' in file_info:
         schedule_rebuild_kb()
