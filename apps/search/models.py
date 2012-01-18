@@ -133,14 +133,11 @@ class SearchMixin(object):
         log.info('total %s: %s (to be indexed: %s)', doc_type, total, to_index)
         total = to_index
 
-        t = 0
-
-        for obj in cls.objects.order_by('id').iterator():
-            t += 1
+        for t, obj in enumerate(cls.objects.order_by('id').iterator()):
             if t > total:
                 break
 
-            if t % 1000 == 0:
+            if t % 1000 == 0 and t > 0:
                 time_to_go = (total - t) * ((time.time() - start_time) / t)
                 log.info('%s/%s... (%s to go)', t, total,
                          es_utils.format_time(time_to_go))

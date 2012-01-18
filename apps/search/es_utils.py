@@ -39,7 +39,16 @@ def get_doctype_stats():
 
 
 def get_es(**kwargs):
-    """Returns a fresh ES instance with specified arguments"""
+    """Returns a fresh ES instance
+
+    Defaults for these arguments come from settings. Specifying them
+    in the function call will override the default.
+
+    :arg server: settings.ES_HOSTS
+    :arg timeout: settings.ES_INDEXING_TIMEOUT
+    :arg bulk_size: settings.ES_FLUSH_BULK_EVERY
+
+    """
     defaults = {
         'server': settings.ES_HOSTS,
         'timeout': settings.ES_INDEXING_TIMEOUT,
