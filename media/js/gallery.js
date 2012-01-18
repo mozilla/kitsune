@@ -433,7 +433,7 @@
                 !$form.find('.preview').hasClass('on')) {
                 $form.find('.metadata').hide();
                 $('#gallery-upload-type').find('input[type="radio"]')
-                                         .attr('disabled', '');
+                                         .removeAttr('disabled');
                 $form.removeClass('draft');
             }
             // finally, show the input again
