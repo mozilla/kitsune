@@ -1,7 +1,10 @@
+from django.views.decorators.cache import never_cache
+
 import jingo
 from mobility.decorators import mobile_template
 
 from sumo.parser import get_object_fallback
+from sumo.views import redirect_to
 from wiki.models import Document
 from wiki.views import SHOWFOR_DATA
 
@@ -41,6 +44,13 @@ FXHOME_DOCS_FOR_MOBILE = {
 MARKETPLACE_DOCS_FOR_MOBILE = {
     'common': 'Marketplace home for mobile - Common Questions',
     'top': 'Marketplace home - Top'}
+
+
+@never_cache
+def desktop_or_mobile(request):
+    """Redirect mobile browsers to /mobile and others to /home."""
+    url_name = 'home.mobile' if request.MOBILE else 'home'
+    return redirect_to(request, url_name, permanent=False)
 
 
 @mobile_template('landings/{mobile/}home.html')

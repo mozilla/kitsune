@@ -1,10 +1,8 @@
 from django.conf.urls.defaults import patterns, url
 
-from sumo.views import redirect_to
-
 
 urlpatterns = patterns('landings.views',
-    url(r'^$', redirect_to, {'url': 'home'}, name='home.default'),
+    url(r'^$', 'desktop_or_mobile', name='home.default'),
     url(r'^home$', 'home', name='home'),
     url(r'^mobile$', 'mobile', name='home.mobile'),
     url(r'^sync$', 'sync', name='home.sync'),

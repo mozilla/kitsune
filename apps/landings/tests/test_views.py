@@ -48,10 +48,19 @@ class MobileHomeTests(MobileTestCase):
         eq_('1', doc('#search input[name="w"]')[0].attrib['value'])
 
 
-class HomeRedirects(TestCase):
+class RootRedirectTests(TestCase):
     def test_default_redirect(self):
         """/ redirects to /home"""
         response = self.client.get(reverse('home.default', locale='en-US'),
                                    follow=False)
-        eq_(301, response.status_code)
+        eq_(302, response.status_code)
         eq_('http://testserver/en-US/home', response['location'])
+
+
+class RootRedirectForMobileTests(MobileTestCase):
+    def test_default_redirect(self):
+        """/ redirects to /mobile"""
+        response = self.client.get(reverse('home.default', locale='en-US'),
+                                   follow=False)
+        eq_(302, response.status_code)
+        eq_('http://testserver/en-US/mobile', response['location'])
