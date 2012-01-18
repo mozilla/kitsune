@@ -346,7 +346,8 @@ def search(request, template=None):
                 elif type_ == 'question':
                     try:
                         excerpt = excerpt_joiner.join(
-                            [m for m in chain(*question_s.excerpt(doc)) if m])
+                            [m.strip() for m in
+                             chain(*question_s.excerpt(doc)) if m])
                     except ExcerptTimeoutError:
                         statsd.incr('search.excerpt.timeout')
                         excerpt = u''
@@ -374,7 +375,8 @@ def search(request, template=None):
 
                     try:
                         excerpt = excerpt_joiner.join(
-                            [m for m in chain(*discussion_s.excerpt(doc))])
+                            [m.strip() for m in
+                             chain(*discussion_s.excerpt(doc))])
                     except ExcerptTimeoutError:
                         statsd.incr('search.excerpt.timeout')
                         excerpt = u''
