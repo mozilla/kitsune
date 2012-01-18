@@ -54,6 +54,7 @@ from tags.utils import add_existing_tag
 from upload.models import ImageAttachment
 from upload.views import upload_imageattachment
 from users.forms import RegisterForm
+from users.models import Setting
 from users.utils import handle_login, handle_register
 from wiki.models import Document, wiki_searcher
 
@@ -408,6 +409,10 @@ def reply(request, question_id):
             up_images = question.images.filter(creator=request.user)
             up_images.update(content_type=ct, object_id=answer.id)
             statsd.incr('questions.answer')
+
+            if Setting.get_for_user(request.user,
+                                    'questions_watch_after_reply'):
+                QuestionReplyEvent.notify(request.user, question)
 
             return HttpResponseRedirect(answer.get_absolute_url())
 
