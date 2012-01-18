@@ -6,7 +6,6 @@ from users import api
 from users import views
 from users.models import Profile
 import flagit.views
-from flagit import views as flagit_views
 
 
 # API patterns. All start with /users/api.
@@ -42,6 +41,10 @@ users_patterns = patterns('',
         views.password_reset_confirm, name="users.pw_reset_confirm"),
     url(r'^/pwresetcomplete$', views.password_reset_complete,
         name="users.pw_reset_complete"),
+
+    # Forgot username
+    url(r'^/forgot-username$', views.forgot_username,
+        name='users.forgot_username'),
 
     # Change password
     url(r'^/pwchange$', views.password_change, name='users.pw_change'),

@@ -26,7 +26,7 @@ from upload.tasks import _create_image_thumbnail
 from users.backends import Sha256Backend  # Monkey patch User.set_password.
 from users.forms import (ProfileForm, AvatarForm, EmailConfirmationForm,
                          AuthenticationForm, EmailChangeForm, SetPasswordForm,
-                         PasswordChangeForm, SettingsForm)
+                         PasswordChangeForm, SettingsForm, ForgotUsernameForm)
 from users.models import (Profile, RegistrationProfile,
                           EmailChange)
 from users.utils import (handle_login, handle_register,
@@ -419,3 +419,36 @@ def password_change(request):
 def password_change_complete(request):
     """Change password complete page."""
     return jingo.render(request, 'users/pw_change_complete.html')
+
+
+@anonymous_csrf
+def forgot_username(request):
+    """Forgot username form page.
+
+    On POST, this view sends an email with the username.
+    """
+    if request.method == "POST":
+        form = ForgotUsernameForm(request.POST)
+        was_valid = form.is_valid()
+        if was_valid:
+            try_send_email_with_form(
+                form.save, form, 'email',
+                use_https=request.is_secure())
+
+        # Form may now be invalid if email failed to send.
+        # ForgotUsernameForm is invalid iff there is no user with the entered
+        # email address.
+        # The condition below ensures we don't leak existence of email address
+        # _unless_ sending an email fails.
+        if form.is_valid() or not was_valid:
+            # Don't leak existence of email addresses.
+            messages.add_message(
+                request, messages.INFO,
+                _(u"We've sent an email with the username to any account"
+                   " using {email}.").format(email=form.data['email']))
+
+            return HttpResponseRedirect(reverse('users.login'))
+    else:
+        form = ForgotUsernameForm()
+
+    return jingo.render(request, 'users/forgot_username.html', {'form': form})

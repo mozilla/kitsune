@@ -4,9 +4,13 @@ from django import forms
 from django.conf import settings
 from django.contrib.auth import authenticate, forms as auth_forms
 from django.contrib.auth.models import User
+from django.contrib.sites.models import get_current_site
+from django.core.mail import send_mail
+from django.template import Context, loader
 
 from tower import ugettext as _, ugettext_lazy as _lazy
 
+from sumo.urlresolvers import reverse
 from sumo.widgets import ImageWidget
 from upload.forms import clean_image_extension
 from upload.utils import check_file_size, FileTooLargeError
@@ -242,6 +246,45 @@ class PasswordChangeForm(auth_forms.PasswordChangeForm):
         super(PasswordChangeForm, self).clean()
         _check_password(self.cleaned_data.get('new_password1'))
         return self.cleaned_data
+
+
+class ForgotUsernameForm(forms.Form):
+    """A simple form to retrieve username.
+
+    Requires an email address."""
+    email = forms.EmailField(label=_lazy(u'Email address:'))
+
+    def clean_email(self):
+        """
+        Validates that an active user exists with the given e-mail address.
+        """
+        email = self.cleaned_data["email"]
+        try:
+            self.user = User.objects.get(email__iexact=email, is_active=True)
+        except User.DoesNotExist:
+            raise forms.ValidationError(
+                _(u"That e-mail address doesn't have an associated user"
+                   " account. Are you sure you've registered?"))
+        return email
+
+    def save(self, email_template='users/email/forgot_username.ltxt',
+             use_https=False, request=None):
+        """Sends email with username."""
+        user = self.user
+        current_site = get_current_site(request)
+        site_name = current_site.name
+        domain = current_site.domain
+        t = loader.get_template(email_template)
+        c = {
+            'email': user.email,
+            'domain': domain,
+            'login_url': reverse('users.login'),
+            'site_name': site_name,
+            'username': user.username,
+            'protocol': use_https and 'https' or 'http'}
+        send_mail(
+            _("Your username on %s") % site_name,
+            t.render(Context(c)), settings.TIDINGS_FROM_ADDRESS, [user.email])
 
 
 def _check_password(password):

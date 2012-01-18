@@ -7,7 +7,7 @@ from nose.tools import eq_
 from pyquery import PyQuery as pq
 
 from users.forms import (AuthenticationForm, ProfileForm, RegisterForm,
-                         SetPasswordForm)
+                         SetPasswordForm, ForgotUsernameForm)
 from users.tests import TestCaseBase, user
 
 
@@ -177,3 +177,18 @@ class PasswordChangeFormFormTests(TestCaseBase):
                                         'new_password2': 'password',
                                         'old_password': 'testpass'})
         assert not form.is_valid()
+
+
+class ForgotUsernameFormTests(TestCaseBase):
+    """ForgotUsernameForm tests."""
+
+    def test_email_doesnt_exist(self):
+        """If no account with email exists, form isn't valid."""
+        form = ForgotUsernameForm({'email': 'a@b.com'})
+        assert not form.is_valid()
+
+    def test_valid_email(self):
+        """"If an account with email exists, form is valid."""
+        u = user(save=True, email='a@b.com', is_active=True)
+        form = ForgotUsernameForm({'email': u.email})
+        assert form.is_valid()
