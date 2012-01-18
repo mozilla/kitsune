@@ -434,3 +434,26 @@ class FlagProfileTests(TestCaseBase):
         eq_(200, response.status_code)
         doc = pq(response.content)
         eq_(1, len(doc('#flagged-queue form.update')))
+
+
+class ForgotUsernameTests(TestCaseBase):
+    """Tests for the Forgot Username flow."""
+
+    def test_GET(self):
+        r = self.client.get(reverse('users.forgot_username'))
+        eq_(200, r.status_code)
+
+    @mock.patch.object(Site.objects, 'get_current')
+    def test_POST(self, get_current):
+        get_current.return_value.domain = 'testserver.com'
+        u = user(save=True, email='a@b.com', is_active=True)
+
+        r = self.client.post(reverse('users.forgot_username'),
+                             {'email': u.email})
+        eq_(302, r.status_code)
+        eq_('http://testserver/en-US/users/login', r['location'])
+
+        # Verify email
+        eq_(1, len(mail.outbox))
+        assert mail.outbox[0].subject.find('Your username on') == 0
+        assert mail.outbox[0].body.find(u.username) > 0

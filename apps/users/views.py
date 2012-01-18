@@ -442,7 +442,6 @@ def forgot_username(request):
         # _unless_ sending an email fails.
         if form.is_valid() or not was_valid:
             # Don't leak existence of email addresses.
-
             messages.add_message(
                 request, messages.INFO,
                 _(u"We've sent an email with the username to any account"
