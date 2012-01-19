@@ -210,7 +210,7 @@ class ElasticSearchHtmlTests(ElasticTestCase):
 
     def test_html_filtered_out_of_question_excerpts(self):
         """HTML should get filtered out of question excerpts."""
-        v = answer_vote(
+        answer_vote(
             answer=answer(
                 question=question(
                     content='My<br />printer is on fire.',
@@ -231,7 +231,7 @@ class ElasticSearchHtmlTests(ElasticTestCase):
 
     def test_html_filtered_out_of_indexed_questions(self):
         """HTML should be filtered out of question content before indexing."""
-        v = answer_vote(
+        answer_vote(
             answer=answer(
                 question=question(
                     content='My<br />printer is on fire.',
