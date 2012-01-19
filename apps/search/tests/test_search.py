@@ -349,8 +349,8 @@ class SearchTest(SphinxTestCase):
 
     def test_clean_excerpt(self):
         """clean_excerpt() should not allow disallowed HTML through."""
-        in_ = '<b>test</b> <div>the start of something</div>'
-        out_ = '<b>test</b> &lt;div&gt;the start of something&lt;/div&gt;'
+        in_ = '<i>test</i> <div>the start of something</div>'
+        out_ = '<i>test</i> the start of something'
         eq_(out_, clean_excerpt(in_))
 
     def test_meta_tags(self):
