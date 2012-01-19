@@ -24,16 +24,16 @@ def context_dict(revision, ready_for_l10n=False):
     document = revision.document
     diff = ''
     l10n = revision.document.revisions.filter(is_ready_for_localization=True)
-    if ready_for_l10n and l10n.count():
+    if ready_for_l10n and l10n.count() > 1:
         fromfile = u'[%s] %s #%s' % (revision.document.locale,
                                      revision.document.title,
-                                     l10n.order_by('-created')[0].id)
+                                     l10n.order_by('-created')[1].id)
         tofile = u'[%s] %s #%s' % (revision.document.locale,
                                    revision.document.title,
                                    revision.id)
 
         diff = clean(u''.join(difflib.unified_diff(
-                                 l10n.order_by('-created')[0].\
+                                 l10n.order_by('-created')[1].\
                                     content.splitlines(1),
                                  revision.content.splitlines(1),
                                  fromfile=fromfile, tofile=tofile)),
