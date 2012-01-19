@@ -118,6 +118,9 @@
       </div>
     </form>
     {% if progress %}
+      <p>
+        Reindexing is currently in progress:
+      </p>
       <progress id="reindex_progress" value="{{ progress }}" max="1">{{ progress }}</progress>
     {% endif %}
   </section>
