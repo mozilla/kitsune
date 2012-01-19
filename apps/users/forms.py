@@ -10,6 +10,7 @@ from django.template import Context, loader
 
 from tower import ugettext as _, ugettext_lazy as _lazy
 
+from sumo.urlresolvers import reverse
 from sumo.widgets import ImageWidget
 from upload.forms import clean_image_extension
 from upload.utils import check_file_size, FileTooLargeError
@@ -277,6 +278,7 @@ class ForgotUsernameForm(forms.Form):
         c = {
             'email': user.email,
             'domain': domain,
+            'login_url': reverse('users.login'),
             'site_name': site_name,
             'username': user.username,
             'protocol': use_https and 'https' or 'http'}
