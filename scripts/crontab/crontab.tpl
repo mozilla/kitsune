@@ -8,7 +8,6 @@ HOME = /tmp
 
 # Every minute!
 * * * * * {{ cron }} collect_tweets
-* * * * * {{ cron }} get_queue_status
 
 # Every hour.
 42 * * * * {{ django }} cleanup
