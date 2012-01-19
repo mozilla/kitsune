@@ -636,7 +636,7 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
                 'current': {'type': 'integer'},
                 'parent_id': {'type': 'integer'},
                 'content':
-                    {'type': 'string', 'analyzer': 'snowball'},
+                    {'type': 'string', 'analyzer': 'snowballHtml'},
                 'category': {'type': 'integer'},
                 'slug': {'type': 'string'},
                 'is_archived': {'type': 'boolean'},
