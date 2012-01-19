@@ -19,10 +19,26 @@ from wiki.models import Document
 log = logging.getLogger('k.wiki.events')
 
 
-def context_dict(revision):
+def context_dict(revision, ready_for_l10n=False):
     """Return a dict that fills in the blanks in KB notification templates."""
     document = revision.document
-    if revision.document.current_revision is not None:
+    diff = ''
+    l10n = revision.document.revisions.filter(is_ready_for_localization=True)
+    if ready_for_l10n and l10n.count():
+        fromfile = u'[%s] %s #%s' % (revision.document.locale,
+                                     revision.document.title,
+                                     l10n.order_by('-created')[0].id)
+        tofile = u'[%s] %s #%s' % (revision.document.locale,
+                                   revision.document.title,
+                                   revision.id)
+
+        diff = clean(u''.join(difflib.unified_diff(
+                                 l10n.order_by('-created')[0].\
+                                    content.splitlines(1),
+                                 revision.content.splitlines(1),
+                                 fromfile=fromfile, tofile=tofile)),
+                    ALLOWED_TAGS, ALLOWED_ATTRIBUTES)
+    elif revision.document.current_revision is not None:
         fromfile = u'[%s] %s #%s' % (revision.document.locale,
                                      revision.document.title,
                                      revision.document.current_revision.id)
@@ -36,8 +52,6 @@ def context_dict(revision):
                                  revision.content.splitlines(1),
                                  fromfile=fromfile, tofile=tofile)),
                     ALLOWED_TAGS, ALLOWED_ATTRIBUTES)
-    else:
-        diff = ''  # No based_on, so diff wouldn't make sense.
 
     return {
         'document_title': document.title,
@@ -150,7 +164,7 @@ class ReadyRevisionEvent(_RevisionConstructor, Event):
         ready_template = loader.get_template(
                                 'wiki/email/ready_for_l10n.ltxt')
 
-        c = context_dict(revision)
+        c = context_dict(revision, ready_for_l10n=True)
         for user, watches in users_and_watches:
             c['watch'] = watches[0]  # TODO: Expose all watches.
 
@@ -215,12 +229,12 @@ class ApprovedOrReadyUnion(EventUnion):
         approved_url = reverse('wiki.document',
                                locale=document.locale,
                                args=[document.slug])
-        c = context_dict(revision)
         for user, watches in users_and_watches:
-            c['watch'] = watches[0]  # TODO: Expose all watches.
             if (is_ready and
                 ReadyRevisionEvent.event_type in
                     (w.event_type for w in watches)):
+                c = context_dict(revision, ready_for_l10n=True)
+                c['watch'] = watches[0]  # TODO: Expose all watches.
                 # We should send a "ready" mail.
                 try:
                     profile = user.profile
@@ -236,8 +250,10 @@ class ApprovedOrReadyUnion(EventUnion):
                                    settings.TIDINGS_FROM_ADDRESS,
                                    [user.email])
             else:
-                # Send an "approved" mail:
+                c = context_dict(revision)
                 c['url'] = approved_url
+                c['watch'] = watches[0]  # TODO: Expose all watches.
+                # Send an "approved" mail:
                 yield EmailMessage(approved_subject,
                                    approved_template.render(Context(c)),
                                    settings.TIDINGS_FROM_ADDRESS,
