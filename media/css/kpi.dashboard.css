@@ -5,3 +5,18 @@
 #main {
     background: none;
 }
+
+#kpi-dash {
+	min-height: 600px;
+}
+
+#kpi-dash section {
+	background: url('../img/wait-trans.gif') no-repeat center center;
+	height: 400px;
+	margin: 20px 0;
+	width: 800px;
+}
+
+#kpi-dash section.loaded {
+	background: none;
+}

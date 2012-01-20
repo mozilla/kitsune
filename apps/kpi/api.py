@@ -34,10 +34,12 @@ class SolutionResource(Resource):
     and without an answer maked as the solution.
     """
     date = fields.DateField('date')
-    with_solutions = fields.IntegerField('solutions', default=0)
-    without_solutions = fields.IntegerField('without_solutions', default=0)
+    solved = fields.IntegerField('solved', default=0)
+    questions = fields.IntegerField('questions', default=0)
 
     def get_object_list(self, request):
+        # TODO: Cache the result.
+
         # Set up the query for the data we need
         qs = Question.objects.filter(created__gte=_start_date()).extra(
             select={
@@ -46,12 +48,11 @@ class SolutionResource(Resource):
             }).values('year', 'month').annotate(count=Count('created'))
 
         # Filter on solution
-        qs_without_solutions = qs.exclude(solution__isnull=False)
         qs_with_solutions = qs.filter(solution__isnull=False)
 
         # Remap
-        w = _remap_date_counts(qs_with_solutions, 'solutions')
-        wo = _remap_date_counts(qs_without_solutions, 'without_solutions')
+        w = _remap_date_counts(qs_with_solutions, 'solved')
+        wo = _remap_date_counts(qs, 'questions')
 
         # Merge
         return _merge_list_of_dicts('date', w, wo)
@@ -65,7 +66,7 @@ class SolutionResource(Resource):
         authorization = PermissionAuthorization('users.view_kpi_dashboard')
 
 
-class ArticleVotesResource(Resource):
+class ArticleVoteResource(Resource):
     """
     Returns the number of total and helpful votes.
     """
@@ -74,6 +75,8 @@ class ArticleVotesResource(Resource):
     votes = fields.IntegerField('votes', default=0)
 
     def get_object_list(self, request):
+        # TODO: Cache the result.
+
         # Set up the query for the data we need
         qs = HelpfulVote.objects.filter(created__gte=_start_date()).extra(
             select={
@@ -95,7 +98,7 @@ class ArticleVotesResource(Resource):
         return self.get_object_list(request)
 
     class Meta:
-        resource_name = 'kpi_kbvotes'
+        resource_name = 'kpi_kbvote'
         allowed_methods = ['get']
         authorization = PermissionAuthorization('users.view_kpi_dashboard')
 
@@ -113,7 +116,8 @@ def _remap_date_counts(qs, label):
     From: [{'count': 2085, 'month': 11, 'year': 2010},...]
     To: {'<label>': 2085, 'date': '2010-11-01'}
     """
-    return [{'date': date(x['year'], x['month'], 1), label: x['count']} for x in qs]
+    return [{'date': date(x['year'], x['month'], 1), label: x['count']}
+            for x in qs]
 
 
 def _merge_results(x, y):
