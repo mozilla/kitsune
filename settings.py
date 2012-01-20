@@ -573,6 +573,7 @@ MINIFY_BUNDLES = {
             'js/karma.dashboard.js',
         ),
         'kpi.dashboard': (
+            'js/libs/backbone.js',
             'js/kpi.dashboard.js',
         ),
     },
