@@ -32,12 +32,14 @@ def context_dict(revision, ready_for_l10n=False):
                                    revision.document.title,
                                    revision.id)
 
-        diff = clean(u''.join(difflib.unified_diff(
-                                 l10n.order_by('-created')[1].\
-                                    content.splitlines(1),
-                                 revision.content.splitlines(1),
-                                 fromfile=fromfile, tofile=tofile)),
-                    ALLOWED_TAGS, ALLOWED_ATTRIBUTES)
+        diff = clean(
+            u''.join(
+                difflib.unified_diff(
+                    l10n.order_by('-created')[1].content.splitlines(1),
+                    revision.content.splitlines(1),
+                    fromfile=fromfile, tofile=tofile)
+                ),
+            ALLOWED_TAGS, ALLOWED_ATTRIBUTES)
     elif revision.document.current_revision is not None:
         fromfile = u'[%s] %s #%s' % (revision.document.locale,
                                      revision.document.title,
@@ -46,12 +48,14 @@ def context_dict(revision, ready_for_l10n=False):
                                    revision.document.title,
                                    revision.id)
 
-        diff = clean(u''.join(difflib.unified_diff(
-                                 revision.document.current_revision.\
-                                    content.splitlines(1),
-                                 revision.content.splitlines(1),
-                                 fromfile=fromfile, tofile=tofile)),
-                    ALLOWED_TAGS, ALLOWED_ATTRIBUTES)
+        diff = clean(
+            u''.join(
+                difflib.unified_diff(
+                    revision.document.current_revision.content.splitlines(1),
+                    revision.content.splitlines(1),
+                    fromfile=fromfile, tofile=tofile)
+                ),
+            ALLOWED_TAGS, ALLOWED_ATTRIBUTES)
 
     return {
         'document_title': document.title,
