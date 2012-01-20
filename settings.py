@@ -785,6 +785,15 @@ REDIS_BACKENDS = {
 # Set this to enable Arecibo (http://www.areciboapp.com/) error reporting:
 ARECIBO_SERVER_URL = ''
 
+def dont_log_googlebot_404s(request, status, **kw):
+    if ('Googlebot' in request.META.get('HTTP_USER_AGENT') and status == 404):
+        return False
+    return True
+
+ARECIBO_SETTINGS = {
+    'CALLBACKS': [dont_log_googlebot_404s],
+}
+
 HELPFULVOTES_UNHELPFUL_KEY = 'helpfulvotes_topunhelpful'
 
 LAST_SEARCH_COOKIE = 'last_search'
