@@ -24,6 +24,9 @@ class Struct:
     def __init__(self, **entries):
         self.__dict__.update(entries)
 
+    def __unicode__(self):
+        return unicode(self.__dict__)
+
 
 class SolutionResource(Resource):
     """
@@ -51,7 +54,7 @@ class SolutionResource(Resource):
         wo = _remap_date_counts(qs_without_solutions, 'without_solutions')
 
         # Merge
-        return _merge_results(w, wo)
+        return _merge_list_of_dicts('date', w, wo)
 
     def obj_get_list(self, request=None, **kwargs):
         return self.get_object_list(request)
@@ -86,7 +89,7 @@ class ArticleVotesResource(Resource):
         helpful = _remap_date_counts(qs_helpful_votes, 'helpful')
 
         # Merge
-        return _merge_results(votes, helpful)
+        return _merge_list_of_dicts('date', votes, helpful)
 
     def obj_get_list(self, request=None, **kwargs):
         return self.get_object_list(request)
@@ -110,8 +113,7 @@ def _remap_date_counts(qs, label):
     From: [{'count': 2085, 'month': 11, 'year': 2010},...]
     To: {'<label>': 2085, 'date': '2010-11-01'}
     """
-    return dict((date(x['year'], x['month'], 1), {label: x['count']})
-                for x in qs)
+    return [{'date': date(x['year'], x['month'], 1), label: x['count']} for x in qs]
 
 
 def _merge_results(x, y):
@@ -129,3 +131,36 @@ def _merge_results(x, y):
     res_list = [dict(date=k, **v) for k, v in res_dict.items()]
     return [Struct(**x) for x in sorted(res_list, key=itemgetter('date'),
                                         reverse=True)]
+
+
+def _merge_list_of_dicts(key, *args):
+    """Merge a lists of dicts into one list, grouping them by key.
+
+    All dicts in the lists must have the specified key.
+
+    From:
+        [{"date": "2011-10-01", "votes": 3},...]
+        [{"date": "2011-10-01", "helpful": 7},...]
+        ...
+    To:
+        [{"date": "2011-10-01", "votes": 3, "helpful": 7, ...},...]
+    """
+    result_dict = {}
+    result_list = []
+
+    # Build the dict
+    for l in args:
+        for d in l:
+            val = d.pop(key)
+            if val in result_dict:
+                result_dict[val].update(d)
+            else:
+                result_dict[val] = d
+
+    # Convert to a list
+    for k in sorted(result_dict.keys(), reverse=True):
+        d = result_dict[k]
+        d.update({key: k})
+        result_list.append(Struct(**d))
+
+    return result_list
