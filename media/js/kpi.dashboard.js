@@ -54,16 +54,28 @@ window.ChartView = Backbone.View.extend({
                     month: '%b'
                 }
             },
+            plotOptions: {
+                line: {
+                    dataLabels: {
+                        enabled: true,
+                        formatter: function() {
+                            return this.y.toFixed(1) + '%';
+                        }
+                    },
+                    enableMouseTracking: false
+                }
+            },
             title: {
                 text: this.options.title,
             },
             tooltip: {
+                enabled: false,
                 formatter: function() {
                     return '<b>' + this.y.toFixed(1) + ' %</b>';
                 }
             },
             legend: {
-                enabled: false
+                //enabled: false
             }
         };
     },
@@ -75,13 +87,18 @@ window.ChartView = Backbone.View.extend({
         if(data) {
             self.chart = new Highcharts.Chart(self.chartOptions);
             _.each(this.options.series, function(series) {
-                self.chart.addSeries({
-                    'data': _.map(data, function(o){
+                var mapper = series.mapper;
+                if (!mapper) {
+                    mapper = function(o){
                         return {
                             x: Date.parse(o['date']),
                             y: o[series.numerator] / o[series.denominator] * 100
                         };
-                    })
+                    };
+                }
+                self.chart.addSeries({
+                    'data': _.map(data, mapper),
+                    'name': series.name
                 });
             });
         }
@@ -110,6 +127,7 @@ window.KpiDashboard = Backbone.View.extend({
             model: this.solvedChart,
             title: 'Questions Solved',
             series: [{
+                name: 'Questions: % Solved',
                 numerator: 'solved',
                 denominator: 'questions'
             }]
@@ -119,9 +137,23 @@ window.KpiDashboard = Backbone.View.extend({
             model: this.voteChart,
             title: 'Article Helpful Votes',
             series: [{
+                name: 'Article Votes: % Helpful',
                 numerator: 'kb_helpful',
                 denominator: 'kb_votes'
-            }]
+            }, {
+                name: 'Answer Votes: % Helpful',
+                numerator: 'ans_helpful',
+                denominator: 'ans_votes'
+            }/* TODO: Leave this out for now, it overlaps the article votes.
+            , {
+                name: 'Total Votes: % Helpful',
+                mapper: function(o) {
+                    return {
+                        x: Date.parse(o['date']),
+                        y: (o['ans_helpful'] + o['kb_helpful']) / (o['kb_votes'] + o['ans_votes']) * 100
+                    };
+                }
+            }*/]
         });
 
         // Render the views.
@@ -136,9 +168,12 @@ window.KpiDashboard = Backbone.View.extend({
 });
 
 
-// Kick off the application
-window.App = new KpiDashboard({
-    el: document.getElementById('kpi-dash-app')
+$(document).ready(function() {
+    // Kick off the application
+    window.App = new KpiDashboard({
+        el: document.getElementById('kpi-dash-app')
+    });
 });
+
 
 }(jQuery));
