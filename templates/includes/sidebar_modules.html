@@ -19,6 +19,9 @@
         {% if user.has_perm('karma.view_dashboard') %}
           <li><a href="{{ url('karma.questions_dashboard') }}">{{ _('Karma Dashboard') }}</a></li>
         {% endif %}
+        {% if user.has_perm('users.view_kpi_dashboard') %}
+          <li><a href="{{ url('kpi.dashboard') }}">{{ _('KPI Dashboard') }}</a></li>
+        {% endif %}
       </ul>
     </section>
   {% endif %}
