@@ -66,13 +66,13 @@ class SolutionResource(Resource):
         authorization = PermissionAuthorization('users.view_kpi_dashboard')
 
 
-class ArticleVoteResource(Resource):
+class VoteResource(Resource):
     """
-    Returns the number of total and helpful votes.
+    Returns the number of total and helpful votes for Articles and Answers.
     """
     date = fields.DateField('date')
-    helpful = fields.IntegerField('helpful', default=0)
-    votes = fields.IntegerField('votes', default=0)
+    kb_helpful = fields.IntegerField('kb_helpful', default=0)
+    kb_votes = fields.IntegerField('kb_votes', default=0)
 
     def get_object_list(self, request):
         # TODO: Cache the result.
@@ -88,17 +88,17 @@ class ArticleVoteResource(Resource):
         qs_helpful_votes = qs.filter(helpful=True)
 
         # Remap
-        votes = _remap_date_counts(qs, 'votes')
-        helpful = _remap_date_counts(qs_helpful_votes, 'helpful')
+        kb_votes = _remap_date_counts(qs, 'kb_votes')
+        kb_helpful = _remap_date_counts(qs_helpful_votes, 'kb_helpful')
 
         # Merge
-        return _merge_list_of_dicts('date', votes, helpful)
+        return _merge_list_of_dicts('date', kb_votes, kb_helpful)
 
     def obj_get_list(self, request=None, **kwargs):
         return self.get_object_list(request)
 
     class Meta:
-        resource_name = 'kpi_kbvote'
+        resource_name = 'kpi_vote'
         allowed_methods = ['get']
         authorization = PermissionAuthorization('users.view_kpi_dashboard')
 

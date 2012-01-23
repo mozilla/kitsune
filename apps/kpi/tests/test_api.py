@@ -45,11 +45,11 @@ class KpiAPITests(TestCase):
         helpful_vote(revision=r, helpful=True, save=True)
 
         url = reverse('api_dispatch_list',
-                      kwargs={'resource_name': 'kpi_kbvote',
+                      kwargs={'resource_name': 'kpi_vote',
                               'api_name': 'v1'})
         self.client.login(username=u.username, password='testpass')
         response = self.client.get(url + '?format=json')
         eq_(200, response.status_code)
         r = json.loads(response.content)
-        eq_(r['objects'][0]['helpful'], 1)
-        eq_(r['objects'][0]['votes'], 3)
+        eq_(r['objects'][0]['kb_helpful'], 1)
+        eq_(r['objects'][0]['kb_votes'], 3)

@@ -35,7 +35,7 @@ window.ChartView = Backbone.View.extend({
         this.chartOptions = {
             chart: {
                 renderTo: this.el,
-                defaultSeriesType: 'column',
+                defaultSeriesType: 'line',
                 width: 800
             },
             credits: {
@@ -119,8 +119,8 @@ window.KpiDashboard = Backbone.View.extend({
             model: this.voteChart,
             title: 'Article Helpful Votes',
             series: [{
-                numerator: 'helpful',
-                denominator: 'votes'
+                numerator: 'kb_helpful',
+                denominator: 'kb_votes'
             }]
         });
 
