@@ -120,23 +120,6 @@ def _remap_date_counts(qs, label):
             for x in qs]
 
 
-def _merge_results(x, y):
-    """Merge query results arrays into one array.
-
-    From:
-        [{"date": "2011-10-01", "votes": 3},...]
-        and
-        [{"date": "2011-10-01", "helpful": 7},...]
-    To:
-        [{"date": "2011-10-01", "votes": 3, "helpful": 7},...]
-    """
-    res_dict = dict((s, dict(x.get(s, {}).items() + y.get(s, {}).items()))
-                    for s in set(x.keys() + y.keys()))
-    res_list = [dict(date=k, **v) for k, v in res_dict.items()]
-    return [Struct(**x) for x in sorted(res_list, key=itemgetter('date'),
-                                        reverse=True)]
-
-
 def _merge_list_of_dicts(key, *args):
     """Merge a lists of dicts into one list, grouping them by key.
 
