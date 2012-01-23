@@ -5,7 +5,8 @@ from django.template.defaultfilters import slugify
 
 from sumo.tests import LocalizingClient, TestCase, with_save
 from users.tests import get_user
-from wiki.models import Document, Revision, CATEGORIES, SIGNIFICANCES
+from wiki.models import (Document, Revision, HelpfulVote,
+                         CATEGORIES, SIGNIFICANCES)
 
 
 class TestCaseBase(TestCase):
@@ -49,6 +50,13 @@ def revision(**kwargs):
     defaults.update(kwargs)
 
     return Revision(**defaults)
+
+
+@with_save
+def helpful_vote(**kwargs):
+    defaults = dict(created=datetime.now(), helpful=False)
+    defaults.update(kwargs)
+    return HelpfulVote(**defaults)
 
 
 def translated_revision(locale='de', save=False, **kwargs):
