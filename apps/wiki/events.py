@@ -19,11 +19,12 @@ from wiki.models import Document
 log = logging.getLogger('k.wiki.events')
 
 
-def context_dict(revision, ready_for_l10n=False):
+def context_dict(revision, ready_for_l10n=False, revision_approved=False):
     """Return a dict that fills in the blanks in KB notification templates."""
     document = revision.document
     diff = ''
     l10n = revision.document.revisions.filter(is_ready_for_localization=True)
+    approved = revision.document.revisions.filter(is_approved=True)
     if ready_for_l10n and l10n.count() > 1:
         fromfile = u'[%s] %s #%s' % (revision.document.locale,
                                      revision.document.title,
@@ -36,6 +37,21 @@ def context_dict(revision, ready_for_l10n=False):
             u''.join(
                 difflib.unified_diff(
                     l10n.order_by('-created')[1].content.splitlines(1),
+                    revision.content.splitlines(1),
+                    fromfile=fromfile, tofile=tofile)
+                ),
+            ALLOWED_TAGS, ALLOWED_ATTRIBUTES)
+    elif revision_approved and approved.count() > 1:
+        doc = revision.document
+        approved_rev = approved.order_by('-created')[1]
+
+        fromfile = u'[%s] %s #%s' % (doc.locale, doc.title, approved_rev.id)
+        tofile = u'[%s] %s #%s' % (doc.locale, doc.title, revision.id)
+
+        diff = clean(
+            u''.join(
+                difflib.unified_diff(
+                    approved_rev.content.splitlines(1),
                     revision.content.splitlines(1),
                     fromfile=fromfile, tofile=tofile)
                 ),
@@ -254,9 +270,10 @@ class ApprovedOrReadyUnion(EventUnion):
                                    settings.TIDINGS_FROM_ADDRESS,
                                    [user.email])
             else:
-                c = context_dict(revision)
+                c = context_dict(revision, revision_approved=True)
                 c['url'] = approved_url
                 c['watch'] = watches[0]  # TODO: Expose all watches.
+                c['reviewer'] = revision.reviewer.username
                 # Send an "approved" mail:
                 yield EmailMessage(approved_subject,
                                    approved_template.render(Context(c)),
