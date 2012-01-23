@@ -20,7 +20,7 @@ class PermissionAuthorization(Authorization):
         return request.user.has_perm(self.perm)
 
 
-class Struct:
+class Struct(object):
     """Convert a dict to an object"""
     def __init__(self, **entries):
         self.__dict__.update(entries)
@@ -63,7 +63,7 @@ class SolutionResource(Resource):
     def obj_get_list(self, request=None, **kwargs):
         return self.get_object_list(request)
 
-    class Meta:
+    class Meta(object):
         resource_name = 'kpi_solution'
         allowed_methods = ['get']
         authorization = PermissionAuthorization('users.view_kpi_dashboard')
@@ -110,7 +110,7 @@ class VoteResource(Resource):
     def obj_get_list(self, request=None, **kwargs):
         return self.get_object_list(request)
 
-    class Meta:
+    class Meta(object):
         resource_name = 'kpi_vote'
         allowed_methods = ['get']
         authorization = PermissionAuthorization('users.view_kpi_dashboard')
