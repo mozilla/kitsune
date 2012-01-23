@@ -18,6 +18,9 @@
 
         loadAboveTheFoldImages(elements, opts);
 
+        // Safari doesn't load images until scroll, sometimes
+        $(window).trigger('scroll');
+
         if(window.location.hash) {
             // Reset scroll to anchor position if it exists
             window.location.hash = window.location.hash;
