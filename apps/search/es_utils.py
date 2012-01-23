@@ -2,6 +2,7 @@ from itertools import chain, count, izip
 import logging
 from pprint import pprint
 
+import bleach
 import elasticutils
 import pyes
 
@@ -16,18 +17,8 @@ ESIndexMissingException = pyes.exceptions.IndexMissingException
 log = logging.getLogger('search.es_utils')
 
 
-# Add a custom analyzer which strips HTML so we don't turn up all the <br> tags
-# when searching for "br":
-INDEX_SETTINGS = {
-    'index': {
-        'analysis': {
-            'analyzer': {
-                # Like the snowball analyzer but with html_strip:
-                'snowballHtml': {
-                    'type': 'custom',
-                    'tokenizer': 'standard',
-                    'filter': ['standard', 'lowercase', 'stop', 'snowball'],
-                    'char_filter': ['html_strip']}}}}}
+# Add custom analyzers for stemming non-English languages here:
+INDEX_SETTINGS = {}
 
 
 def get_doctype_stats():
@@ -141,3 +132,8 @@ def es_whazzup():
     log.info('Totals:')
     for name, count in get_doctype_stats().items():
         log.info(' * %s: %d', name, count)
+
+
+def strip_all_tags(html):
+    """Strip all HTML tags from some text."""
+    return bleach.clean(html, strip=True, tags=[])

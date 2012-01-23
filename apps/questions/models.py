@@ -25,6 +25,7 @@ from questions.question_config import products
 from questions.tasks import (update_question_votes, update_answer_pages,
                              log_answer)
 from search import searcher
+from search.es_utils import strip_all_tags
 from search.models import SearchMixin, register_for_indexing
 from search.utils import crc32
 from sumo.helpers import urlparams
@@ -290,14 +291,14 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
                 'title': {'type': 'string', 'analyzer': 'snowball'},
                 'question_content':
                     {'type': 'string',
-                     'analyzer': 'snowballHtml',
+                     'analyzer': 'snowball',
                      # TODO: Stored because originally, this is the
                      # only field we were excerpting on. Standardize
                      # one way or the other.
                      'store': 'yes',
                      'term_vector': 'with_positions_offsets'},
                 'answer_content':
-                    {'type': 'string', 'analyzer': 'snowballHtml'},
+                    {'type': 'string', 'analyzer': 'snowball'},
                 'replies': {'type': 'integer'},
                 'is_solved': {'type': 'boolean'},
                 'is_locked': {'type': 'boolean'},
@@ -318,7 +319,7 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
         d['id'] = self.id
 
         d['title'] = self.title
-        d['question_content'] = self.content_parsed
+        d['question_content'] = strip_all_tags(self.content_parsed)
         d['replies'] = self.num_answers
         d['is_solved'] = bool(self.solution_id)
         d['is_locked'] = self.is_locked
@@ -346,7 +347,7 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
         answer_votes = 0
 
         for ans in self.answers.iterator():
-            answer_content.append(ans.content_parsed)
+            answer_content.append(strip_all_tags(ans.content_parsed))
             has_helpful = has_helpful or bool(ans.num_helpful_votes)
             answer_creator.add(ans.creator.username)
             answer_votes += ans.upvotes

@@ -234,7 +234,7 @@ class ElasticSearchHtmlTests(ElasticTestCase):
         answer_vote(
             answer=answer(
                 question=question(
-                    content='My<br />printer is on fire.',
+                    content='My<br />printer is on [[FirePage|fire]].',
                     save=True),
                 content='Put it out.',
                 save=True),
@@ -247,4 +247,11 @@ class ElasticSearchHtmlTests(ElasticTestCase):
                                     'format': 'json'
                                    })
         # It shouldn't find the "br" from the <br> tag:
+        eq_(json.loads(response.content)['total'], 0)
+
+        response = self.client.get(reverse('search'),
+                                   {'q': 'FirePage',
+                                    'format': 'json'
+                                   })
+        # ...or the <a> tag, which bleach usually allows:
         eq_(json.loads(response.content)['total'], 0)
