@@ -32,7 +32,7 @@ from wiki.tests import (TestCaseBase, document, revision, new_document_data,
                         translated_revision)
 
 
-READY_FOR_REVIEW_EMAIL_CONTENT = \
+READY_FOR_REVIEW_EMAIL_CONTENT = (
 """admin submitted a new revision to the document
 %s.
 
@@ -54,9 +54,10 @@ Text of the new revision:
 --
 Unsubscribe from these emails:
 https://testserver/en-US/unsubscribe/%s?s=%s
-"""
+""")
 
-DOCUMENT_EDITED_EMAIL_CONTENT = \
+
+DOCUMENT_EDITED_EMAIL_CONTENT = (
 """admin created a new revision to the document
 %s.
 
@@ -67,50 +68,29 @@ https://testserver/en-US/kb/%s/history
 
 --
 Unsubscribe from these emails:
-https://testserver/en-US/unsubscribe/%s?s=%s"""
+https://testserver/en-US/unsubscribe/%s?s=%s""")
 
-APPROVED_EMAIL_CONTENT = \
-"""A new revision has been approved for the document
-%s.
 
-To view the updated document, click the following
-link, or paste it into your browser's location bar:
+APPROVED_EMAIL_CONTENT = (
+"""%(reviewer)s has approved the revision to the document %(document_title)s.
 
-https://testserver/en-US/kb/%s
+To view the updated document, click the following link, or paste it into your browser's location bar:
 
+https://testserver/en-US/kb/%(document_slug)s
 
 --
 Changes:
-%s
+%(diff)s
 
 
 --
 Text of the new revision:
-%s
+%(content)s
 
 --
 Unsubscribe from these emails:
-https://testserver/en-US/unsubscribe/%s?s=%s
-"""
-
-APPROVED_EMAIL_CONTENT_NO_DIFF = \
-"""A new revision has been approved for the document
-%s.
-
-To view the updated document, click the following
-link, or paste it into your browser's location bar:
-
-https://testserver/en-US/kb/%s
-
-
---
-Text of the new revision:
-%s
-
---
-Unsubscribe from these emails:
-https://testserver/en-US/unsubscribe/%s?s=%s
-"""
+https://testserver/en-US/unsubscribe/%(watcher)s?s=%(secret)s
+""")
 
 
 class DocumentTests(TestCaseBase):
@@ -1067,6 +1047,14 @@ class ReviewRevisionTests(TestCaseBase):
                        False)
     def test_approve_revision(self, get_current, reviewed_delay):
         """Verify revision approval with proper notifications."""
+
+        # TODO: This isn't a great unit test. The problem here is that
+        # the unit test code duplicates the code it's testing. So if
+        # the code is bad, it'll be bad in both places and that's not
+        # particularly helpful. Probably better to change the test so
+        # that it sets up the data correctly, then compares the output
+        # with hard-coded expected output.
+
         get_current.return_value.domain = 'testserver'
 
         # Subscribe to approvals:
@@ -1117,13 +1105,34 @@ class ReviewRevisionTests(TestCaseBase):
                             fromfile=fromfile,
                             tofile=tofile)), ALLOWED_TAGS, ALLOWED_ATTRIBUTES)
 
-            expected_body = (APPROVED_EMAIL_CONTENT %
-                    (self.document.title, self.document.slug, watch.pk,
-                     watch.secret, diff, r.content))
         else:
-            expected_body = (APPROVED_EMAIL_CONTENT_NO_DIFF %
-                    (self.document.title, self.document.slug, r.content,
-                     watch.pk, watch.secret))
+            approved = r.document.revisions.filter(is_approved=True)
+            approved_rev = approved.order_by('-created')[1]
+
+            fromfile = u'[%s] %s #%s' % (r.document.locale,
+                                         r.document.title,
+                                         approved_rev.id)
+            tofile = u'[%s] %s #%s' % (r.document.locale,
+                                       r.document.title,
+                                       r.id)
+
+            diff = clean(
+                u''.join(
+                    difflib.unified_diff(
+                        approved_rev.content.splitlines(1),
+                        r.content.splitlines(1),
+                        fromfile=fromfile, tofile=tofile)
+                    ),
+                ALLOWED_TAGS, ALLOWED_ATTRIBUTES)
+
+        expected_body = (APPROVED_EMAIL_CONTENT %
+                         {'reviewer': r.reviewer.username,
+                          'document_title': self.document.title,
+                          'document_slug': self.document.slug,
+                          'watcher': watch.pk,
+                          'secret': watch.secret,
+                          'diff': diff,
+                          'content': r.content})
 
         eq_(1, len(mail.outbox))
         attrs_eq(mail.outbox[0],
