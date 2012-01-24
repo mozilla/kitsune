@@ -50,7 +50,6 @@ class SolutionResource(Resource):
             qs_with_solutions = qs.filter(solution__isnull=False)
 
             result = merge_results(solved=qs_with_solutions, questions=qs)
-            result = _merge_list_of_dicts('date', w, wo)
 
             # Cache
             cache.add(cache_key, result)
@@ -88,23 +87,11 @@ class VoteResource(Resource):
             qs_kb_helpful_votes = qs_kb_votes.filter(helpful=True)
             qs_ans_helpful_votes = qs_ans_votes.filter(helpful=True)
 
-            # Remap
-            kb_votes = _remap_date_counts(qs_kb_votes, 'kb_votes')
-            kb_helpful = _remap_date_counts(qs_kb_helpful_votes, 'kb_helpful')
-            ans_votes = _remap_date_counts(qs_ans_votes, 'ans_votes')
-            ans_helpful = _remap_date_counts(qs_ans_helpful_votes,
-                                             'ans_helpful')
-
-            # Merge
-            result = _merge_list_of_dicts('date', kb_votes, kb_helpful,
-                                        ans_votes, ans_helpful)
-
             result = merge_results(
-                        kb_votes=qs_kb_votes
-                        kb_helpful=kb_helpful
-                        ans_votes=ans_votes
-                        ans_helpful=ans_helpful
-                )
+                        kb_votes=qs_kb_votes,
+                        kb_helpful=qs_kb_helpful_votes,
+                        ans_votes=qs_ans_votes,
+                        ans_helpful=qs_ans_helpful_votes)
             # Cache
             cache.add(cache_key, result)
 
