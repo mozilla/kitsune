@@ -105,6 +105,10 @@ window.KpiDashboard = Backbone.View.extend({
             url: $(this.el).data('vote-url')
         });
 
+        this.fastResponseChart = new ChartModel([], {
+            url: $(this.el).data('fastresponse-url')
+        });
+
         // Create the views.
         this.solvedChartView = new ChartView({
             model: this.solvedChart,
@@ -124,14 +128,25 @@ window.KpiDashboard = Backbone.View.extend({
             }]
         });
 
+        this.fastResponseView = new ChartView({
+            model: this.fastResponseChart,
+            title: 'Questions responded to within 72 hours',
+            series: [{
+                numerator: 'responded',
+                denominator: 'questions'
+            }]
+        });
+
         // Render the views.
         $(this.el)
             .append(this.solvedChartView.render().el)
-            .append(this.voteChartView.render().el);
+            .append(this.voteChartView.render().el)
+            .append(this.fastResponseView.render().el);
 
         // Load up the models.
         this.solvedChart.fetch();
         this.voteChart.fetch();
+        this.fastResponseChart.fetch();
     }
 });
 

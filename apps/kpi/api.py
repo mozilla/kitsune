@@ -108,14 +108,16 @@ class FastResponseResource(Resource):
         # TODO: Cache the result.
 
         # Set up the query for the data we need
-        qs = Question.uncached.extra(
+        qs = Question.objects.filter(created__gte=_start_date()).extra(
             select={
                 'month': 'extract( month from created )',
                 'year': 'extract( year from created )',
             }).values('year', 'month').annotate(count=Count('created'))
 
-        aq = Answer.uncached.filter(
+        # All answers tht were created within 3 days of the question
+        aq = Answer.objects.filter(
                 created__lt=F('question__created') + timedelta(days=3))
+        # Qustions of said answers. This way results in a single query
         rs = qs.filter(id__in=aq.values_list('question'))
 
         # Merge and return
