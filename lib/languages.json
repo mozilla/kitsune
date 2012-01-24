@@ -523,5 +523,10 @@
         "iso639_1": "km",
         "english": "Khmer",
         "native": "\u1781\u17d2\u1798\u17c2\u179a"
+    },
+    "ach": {
+        "iso639_1": "ach",
+        "english": "Acholi",
+        "native": "Acholi"
     }
 }
