@@ -6,7 +6,7 @@ from sumo.models import ModelBase
 
 class MetricKind(ModelBase):
     """A programmer-readable identifier of a metric, like 'clicks: search'"""
-    code = CharField(max_length=255, db_index=True)
+    code = CharField(max_length=255, unique=True)
 
 
 class Metric(ModelBase):
