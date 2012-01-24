@@ -1,13 +1,13 @@
 from operator import itemgetter
 from datetime import date, timedelta
 
-from django.db.models import Count
+from django.db.models import Count, F
 
 from tastypie.resources import Resource
 from tastypie import fields
 from tastypie.authorization import Authorization
 
-from questions.models import Question
+from questions.models import Question, Answer
 from wiki.models import HelpfulVote
 
 
@@ -50,12 +50,8 @@ class SolutionResource(Resource):
         # Filter on solution
         qs_with_solutions = qs.filter(solution__isnull=False)
 
-        # Remap
-        w = _remap_date_counts(qs_with_solutions, 'solved')
-        wo = _remap_date_counts(qs, 'questions')
-
         # Merge
-        return _merge_list_of_dicts('date', w, wo)
+        return merge_results(solved=qs_with_solutions, questions=qs)
 
     def obj_get_list(self, request=None, **kwargs):
         return self.get_object_list(request)
@@ -87,18 +83,49 @@ class ArticleVoteResource(Resource):
         # Filter on helpful
         qs_helpful_votes = qs.filter(helpful=True)
 
-        # Remap
-        votes = _remap_date_counts(qs, 'votes')
-        helpful = _remap_date_counts(qs_helpful_votes, 'helpful')
-
         # Merge
-        return _merge_list_of_dicts('date', votes, helpful)
+        return merge_results(votes=qs, helpful=qs_helpful_votes)
 
     def obj_get_list(self, request=None, **kwargs):
         return self.get_object_list(request)
 
     class Meta:
         resource_name = 'kpi_kbvote'
+        allowed_methods = ['get']
+        authorization = PermissionAuthorization('users.view_kpi_dashboard')
+
+
+class FastResponseResource(Resource):
+    """
+    Returns the total number and number of Questions that recieve an answer
+    within a period of time.
+    """
+    date = fields.DateField('date')
+    questions = fields.IntegerField('questions', default=0)
+    responded = fields.IntegerField('responded', default=0)
+
+    def get_object_list(self, request):
+        # TODO: Cache the result.
+
+        # Set up the query for the data we need
+        qs = Question.uncached.extra(
+            select={
+                'month': 'extract( month from created )',
+                'year': 'extract( year from created )',
+            }).values('year', 'month').annotate(count=Count('created'))
+
+        aq = Answer.uncached.filter(
+                created__lt=F('question__created') + timedelta(days=3))
+        rs = qs.filter(id__in=aq.values_list('question'))
+
+        # Merge and return
+        return merge_results(responded=rs, questions=qs)
+
+    def obj_get_list(self, request=None, **kwargs):
+        return self.get_object_list(request)
+
+    class Meta:
+        resource_name = 'kpi_fast_response'
         allowed_methods = ['get']
         authorization = PermissionAuthorization('users.view_kpi_dashboard')
 
@@ -110,44 +137,33 @@ def _start_date():
     return date(year_ago.year, year_ago.month, 1)
 
 
-def _remap_date_counts(qs, label):
+def _remap_date_counts(**kwargs):
     """Remap the query result.
 
     From: [{'count': 2085, 'month': 11, 'year': 2010},...]
     To: {'<label>': 2085, 'date': '2010-11-01'}
     """
-    return [{'date': date(x['year'], x['month'], 1), label: x['count']}
-            for x in qs]
+    for label, qs in kwargs.iteritems():
+        yield dict((date(x['year'], x['month'], 1), {label: x['count']})
+                    for x in qs)
 
 
-def _merge_list_of_dicts(key, *args):
-    """Merge a lists of dicts into one list, grouping them by key.
+def merge_results(**kwargs):
+    res_dict = reduce(_merge_results, _remap_date_counts(**kwargs))
+    res_list = [dict(date=k, **v) for k, v in res_dict.items()]
+    return [Struct(**x)
+            for x in sorted(res_list, key=itemgetter('date'), reverse=True)]
 
-    All dicts in the lists must have the specified key.
+
+def _merge_results(x, y):
+    """Merge query results arrays into one array.
 
     From:
         [{"date": "2011-10-01", "votes": 3},...]
+        and
         [{"date": "2011-10-01", "helpful": 7},...]
-        ...
     To:
-        [{"date": "2011-10-01", "votes": 3, "helpful": 7, ...},...]
+        [{"date": "2011-10-01", "votes": 3, "helpful": 7},...]
     """
-    result_dict = {}
-    result_list = []
-
-    # Build the dict
-    for l in args:
-        for d in l:
-            val = d.pop(key)
-            if val in result_dict:
-                result_dict[val].update(d)
-            else:
-                result_dict[val] = d
-
-    # Convert to a list
-    for k in sorted(result_dict.keys(), reverse=True):
-        d = result_dict[k]
-        d.update({key: k})
-        result_list.append(Struct(**d))
-
-    return result_list
+    return dict((s, dict(x.get(s, {}).items() + y.get(s, {}).items()))
+                    for s in set(x.keys() + y.keys()))
