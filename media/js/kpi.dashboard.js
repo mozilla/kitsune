@@ -66,16 +66,14 @@ window.ChartView = Backbone.View.extend({
                 }
             },
             title: {
-                text: this.options.title,
+                text: this.options.title
             },
             tooltip: {
-                enabled: false,
+                // TODO: Figure out why this is wonky. 
+                //enabled: true,
                 formatter: function() {
                     return '<b>' + this.y.toFixed(1) + ' %</b>';
                 }
-            },
-            legend: {
-                //enabled: false
             }
         };
     },
