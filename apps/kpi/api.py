@@ -2,12 +2,14 @@ from operator import itemgetter
 from datetime import date, timedelta
 
 from django.db.models import Count, F
+from django.core.cache import cache
+from django.db.models import Count
 
 from tastypie.resources import Resource
 from tastypie import fields
 from tastypie.authorization import Authorization
 
-from questions.models import Question, Answer
+from questions.models import Question, Answer, AnswerVote
 from wiki.models import HelpfulVote
 
 
@@ -19,7 +21,7 @@ class PermissionAuthorization(Authorization):
         return request.user.has_perm(self.perm)
 
 
-class Struct:
+class Struct(object):
     """Convert a dict to an object"""
     def __init__(self, **entries):
         self.__dict__.update(entries)
@@ -38,59 +40,81 @@ class SolutionResource(Resource):
     questions = fields.IntegerField('questions', default=0)
 
     def get_object_list(self, request):
-        # TODO: Cache the result.
+        cache_key = 'kpi:solution'
+        result = cache.get(cache_key)
+        if result is None:
+            # Set up the query for the data we need
+            qs = _qs_for(Question)
 
-        # Set up the query for the data we need
-        qs = Question.objects.filter(created__gte=_start_date()).extra(
-            select={
-                'month': 'extract( month from created )',
-                'year': 'extract( year from created )',
-            }).values('year', 'month').annotate(count=Count('created'))
+            # Filter on solution
+            qs_with_solutions = qs.filter(solution__isnull=False)
 
-        # Filter on solution
-        qs_with_solutions = qs.filter(solution__isnull=False)
+            result = merge_results(solved=qs_with_solutions, questions=qs)
+            result = _merge_list_of_dicts('date', w, wo)
 
-        # Merge
-        return merge_results(solved=qs_with_solutions, questions=qs)
+            # Cache
+            cache.add(cache_key, result)
+
+        return result
 
     def obj_get_list(self, request=None, **kwargs):
         return self.get_object_list(request)
 
-    class Meta:
+    class Meta(object):
         resource_name = 'kpi_solution'
         allowed_methods = ['get']
         authorization = PermissionAuthorization('users.view_kpi_dashboard')
 
 
-class ArticleVoteResource(Resource):
+class VoteResource(Resource):
     """
-    Returns the number of total and helpful votes.
+    Returns the number of total and helpful votes for Articles and Answers.
     """
     date = fields.DateField('date')
-    helpful = fields.IntegerField('helpful', default=0)
-    votes = fields.IntegerField('votes', default=0)
+    kb_helpful = fields.IntegerField('kb_helpful', default=0)
+    kb_votes = fields.IntegerField('kb_votes', default=0)
+    ans_helpful = fields.IntegerField('ans_helpful', default=0)
+    ans_votes = fields.IntegerField('ans_votes', default=0)
 
     def get_object_list(self, request):
-        # TODO: Cache the result.
+        cache_key = 'kpi:vote'
+        result = cache.get(cache_key)
+        if result is None:
+            # Set up the queries for the data we need
+            qs_kb_votes = _qs_for(HelpfulVote)
+            qs_ans_votes = _qs_for(AnswerVote)
 
-        # Set up the query for the data we need
-        qs = HelpfulVote.objects.filter(created__gte=_start_date()).extra(
-            select={
-                'month': 'extract( month from created )',
-                'year': 'extract( year from created )',
-            }).values('year', 'month').annotate(count=Count('created'))
+            # Filter on helpful
+            qs_kb_helpful_votes = qs_kb_votes.filter(helpful=True)
+            qs_ans_helpful_votes = qs_ans_votes.filter(helpful=True)
 
-        # Filter on helpful
-        qs_helpful_votes = qs.filter(helpful=True)
+            # Remap
+            kb_votes = _remap_date_counts(qs_kb_votes, 'kb_votes')
+            kb_helpful = _remap_date_counts(qs_kb_helpful_votes, 'kb_helpful')
+            ans_votes = _remap_date_counts(qs_ans_votes, 'ans_votes')
+            ans_helpful = _remap_date_counts(qs_ans_helpful_votes,
+                                             'ans_helpful')
 
-        # Merge
-        return merge_results(votes=qs, helpful=qs_helpful_votes)
+            # Merge
+            result = _merge_list_of_dicts('date', kb_votes, kb_helpful,
+                                        ans_votes, ans_helpful)
+
+            result = merge_results(
+                        kb_votes=qs_kb_votes
+                        kb_helpful=kb_helpful
+                        ans_votes=ans_votes
+                        ans_helpful=ans_helpful
+                )
+            # Cache
+            cache.add(cache_key, result)
+
+        return result
 
     def obj_get_list(self, request=None, **kwargs):
         return self.get_object_list(request)
 
-    class Meta:
-        resource_name = 'kpi_kbvote'
+    class Meta(object):
+        resource_name = 'kpi_vote'
         allowed_methods = ['get']
         authorization = PermissionAuthorization('users.view_kpi_dashboard')
 
@@ -107,12 +131,7 @@ class FastResponseResource(Resource):
     def get_object_list(self, request):
         # TODO: Cache the result.
 
-        # Set up the query for the data we need
-        qs = Question.objects.filter(created__gte=_start_date()).extra(
-            select={
-                'month': 'extract( month from created )',
-                'year': 'extract( year from created )',
-            }).values('year', 'month').annotate(count=Count('created'))
+        qs = _qs_for(Question)
 
         # All answers tht were created within 3 days of the question
         aq = Answer.objects.filter(
@@ -130,6 +149,14 @@ class FastResponseResource(Resource):
         resource_name = 'kpi_fast_response'
         allowed_methods = ['get']
         authorization = PermissionAuthorization('users.view_kpi_dashboard')
+
+def _qs_for(model_cls):
+    """Return the grouped queryset we need for model_cls."""
+    return model_cls.objects.filter(created__gte=_start_date()).extra(
+        select={
+            'month': 'extract( month from created )',
+            'year': 'extract( year from created )',
+        }).values('year', 'month').annotate(count=Count('created'))
 
 
 def _start_date():
