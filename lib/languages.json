@@ -528,5 +528,10 @@
         "iso639_1": "ach",
         "english": "Acholi",
         "native": "Acholi"
+    },
+    "ff": {
+        "iso639_1": "ff",
+        "english": "Fulah",
+        "native": "Pulaar-Fulfulde"
     }
 }

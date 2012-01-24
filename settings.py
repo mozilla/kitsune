@@ -69,7 +69,7 @@ LANGUAGE_CODE = 'en-US'
 # Supported languages
 SUMO_LANGUAGES = (
     'ach', 'ak', 'ar', 'as', 'ast', 'bg', 'bn-BD', 'bn-IN', 'bs', 'ca', 'cs',
-    'da', 'de', 'el', 'en-US', 'eo', 'es', 'et', 'eu', 'fa', 'fi', 'fr',
+    'da', 'de', 'el', 'en-US', 'eo', 'es', 'et', 'eu', 'fa', 'ff', 'fi', 'fr',
     'fur', 'fy-NL', 'ga-IE', 'gd', 'gl', 'gu-IN', 'he', 'hi-IN', 'hr', 'hu',
     'hy-AM', 'id', 'ilo', 'is', 'it', 'ja', 'kk', 'km', 'kn', 'ko', 'lt',
     'mai', 'mk', 'mn', 'mr', 'ms', 'my', 'nb-NO', 'nl', 'no', 'pa-IN', 'pl',
