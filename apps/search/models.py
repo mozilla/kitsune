@@ -60,11 +60,11 @@ class SearchMixin(object):
     """
     @classmethod
     def get_mapping(self):
-        """Returns the ES mapping defition for this document type
+        """Return the ES mapping properties for this document type.
 
-        This must be implemented. It should return an ES mapping.
+        For example... ::
 
-        For examples, see the codebase.
+            {'id': {'type': 'integer'}, ...}
 
         """
         raise NotImplementedError
@@ -79,12 +79,6 @@ class SearchMixin(object):
 
         """
         raise NotImplementedError
-
-    @classmethod
-    def get_es_index(cls):
-        """Returns the index for this class"""
-        indexes = settings.ES_INDEXES
-        return indexes.get(cls._meta.db_table) or indexes['default']
 
     def index_later(self):
         """Register myself to be indexed at the end of the request."""
@@ -110,22 +104,11 @@ class SearchMixin(object):
         es = es_utils.get_es()
 
         doc_type = cls._meta.db_table
-        index = cls.get_es_index()
-
-        if index != settings.ES_INDEXES.get('default'):
-            # If this doctype isn't using the default index, then this
-            # doctype is responsible for deleting and re-creating the
-            # index.
-            es.delete_index_if_exists(index)
-            es.create_index(index)
+        index = settings.ES_INDEXES['default']
 
         start_time = time.time()
 
         log.info('reindex %s into %s index', doc_type, index)
-
-        log.info('setting up mapping....')
-        mapping = cls.get_mapping()
-        es.put_mapping(doc_type, mapping, index)
 
         log.info('iterating through %s....', doc_type)
         total = cls.objects.count()
@@ -187,12 +170,16 @@ class SearchMixin(object):
         if es is None:
             es = elasticutils.get_es()
 
-        index = cls.get_es_index()
+        index = settings.ES_INDEXES['default']
         doc_type = cls._meta.db_table
 
         # TODO: handle pyes.urllib3.TimeoutErrors here.
-        es.index(document, index=index, doc_type=doc_type, id=document['id'],
-                 bulk=bulk, force_insert=force_insert)
+        es.index(document,
+                 index=index,
+                 doc_type=doc_type,
+                 id=document['id'],
+                 bulk=bulk,
+                 force_insert=force_insert)
 
         if refresh:
             es.refresh(timesleep=0)
@@ -203,10 +190,11 @@ class SearchMixin(object):
         if not settings.ES_LIVE_INDEXING:
             return
 
-        index = cls.get_es_index()
         doc_type = cls._meta.db_table
         try:
-            elasticutils.get_es().delete(index, doc_type, id)
+            elasticutils.get_es().delete(settings.ES_INDEXES['default'],
+                                         doc_type,
+                                         id)
         except pyes.exceptions.NotFoundException:
             # Ignore the case where we try to delete something that's
             # not there.
