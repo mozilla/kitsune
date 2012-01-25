@@ -670,6 +670,16 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
             d['current'] = None
         return d
 
+    @classmethod
+    def index(cls, document, **kwargs):
+        # If there are no revisions or the current revision is a redirect,
+        # we want to remove it from the index.
+        if (document['current'] is None or
+            document['content'].startswith(REDIRECT_HTML)):
+            cls.unindex(document['id'])
+            return
+        super(cls, cls).index(document, **kwargs)
+
 
 register_for_indexing(Document, 'wiki')
 register_for_indexing(
