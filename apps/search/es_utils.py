@@ -38,8 +38,8 @@ def get_doctype_stats():
     return stats
 
 
-def get_es(**kwargs):
-    """Returns a fresh ES instance
+def get_indexing_es(**kwargs):
+    """Returns a fresh ES instance for indexing
 
     Defaults for these arguments come from settings. Specifying them
     in the function call will override the default.
