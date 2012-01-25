@@ -66,12 +66,9 @@ def format_time(time_to_go):
     return  "%dm %ds" % (time_to_go / 60, time_to_go % 60)
 
 
-def es_reindex_with_progress(doctypes=None, percent=100):
+def es_reindex_with_progress(percent=100):
     """Rebuild Elastic indexes as you iterate over yielded progress ratios.
 
-    :arg doctypes: Defaults to None which will index all doctypes.
-        Otherwise indexes the doctypes specified. See
-        :py:func:`.get_doctype_stats()` for what doctypes look like.
     :arg percent: Defaults to 100.  Allows you to specify how much of
         each doctype you want to index.  This is useful for
         development where doing a full reindex takes an hour.
@@ -79,36 +76,35 @@ def es_reindex_with_progress(doctypes=None, percent=100):
     """
     from search.models import get_search_models
 
-    es = elasticutils.get_es()
-
     search_models = get_search_models()
-    if doctypes:
-        search_models = [cls for cls in search_models
-                         if cls._meta.db_table in doctypes]
 
-    if len(search_models) == len(get_search_models()):
-        index = settings.ES_INDEXES.get('default')
-        if index is not None:
-            # If we're indexing everything and there's a default index
-            # specified in settings, then we delete and recreate it.
-            es.delete_index_if_exists(index)
-            es.create_index(index)
+    es = elasticutils.get_es()
+    index = settings.ES_INDEXES['default']
+    es.delete_index_if_exists(index)
+    # There should be no mapping-conflict race here since the index doesn't
+    # exist. Live indexing should just fail.
+
+    # Simultaneously create the index and the mappings, so live indexing
+    # doesn't get a chance to index anything between the two and infer a bogus
+    # mapping (which ES then freaks out over when we try to lay in an
+    # incompatible explicit mapping).
+    mappings = dict((cls._meta.db_table, {'properties': cls.get_mapping()})
+                    for cls in search_models)
+    es.create_index(index, settings={'mappings': mappings})
 
     total = sum([cls.objects.count() for cls in search_models])
-
     to_index = [cls.index_all(percent) for cls in search_models]
-
     return (float(done) / total for done, _ in
             izip(count(1), chain(*to_index)))
 
 
-def es_reindex(doctypes=None, percent=100):
+def es_reindex(percent=100):
     """Rebuild ElasticSearch indexes
 
     See :py:func:`.es_reindex_with_progress` for argument details.
 
     """
-    [x for x in es_reindex_with_progress(doctypes, percent) if False]
+    [x for x in es_reindex_with_progress(percent) if False]
 
 
 def es_whazzup():

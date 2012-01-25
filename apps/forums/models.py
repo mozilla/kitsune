@@ -179,25 +179,21 @@ class Thread(NotificationsMixin, ModelBase, SearchMixin):
 
     @classmethod
     def get_mapping(cls):
-        mapping = {
-            'properties': {
-                'id': {'type': 'integer'},
-                'thread_id': {'type': 'integer'},
-                'forum_id': {'type': 'integer'},
-                'title': {'type': 'string', 'analyzer': 'snowball'},
-                'is_sticky': {'type': 'boolean'},
-                'is_locked': {'type': 'boolean'},
-                'author_id': {'type': 'integer'},
-                'author_ord': {'type': 'string'},
-                'content': {'type': 'string', 'analyzer': 'snowball',
-                            'store': 'yes',
-                            'term_vector': 'with_positions_offsets'},
-                'created': {'type': 'date'},
-                'updated': {'type': 'date'},
-                'replies': {'type': 'integer'}
-                }
-            }
-        return mapping
+        return {
+            'id': {'type': 'integer'},
+            'thread_id': {'type': 'integer'},
+            'forum_id': {'type': 'integer'},
+            'title': {'type': 'string', 'analyzer': 'snowball'},
+            'is_sticky': {'type': 'boolean'},
+            'is_locked': {'type': 'boolean'},
+            'author_id': {'type': 'integer'},
+            'author_ord': {'type': 'string'},
+            'content': {'type': 'string', 'analyzer': 'snowball',
+                        'store': 'yes',
+                        'term_vector': 'with_positions_offsets'},
+            'created': {'type': 'date'},
+            'updated': {'type': 'date'},
+            'replies': {'type': 'integer'}}
 
     def extract_document(self):
         """Extracts interesting thing from a Thread and its Posts"""

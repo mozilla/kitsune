@@ -78,7 +78,7 @@ class ElasticTestCase(TestCase):
         self.teardown_indexes()
         super(ElasticTestCase, self).tearDown()
 
-    def refresh(self, index='default'):
+    def refresh(self):
         # Any time we're doing a refresh, we're making sure that the
         # index is ready to be queried.  Given that, it's almost
         # always the case that we want to run all the generated tasks,
@@ -86,8 +86,7 @@ class ElasticTestCase(TestCase):
         from search.models import generate_tasks
         generate_tasks()
 
-        es = get_es()
-        es.refresh(settings.ES_INDEXES[index], timesleep=0)
+        get_es().refresh(settings.ES_INDEXES['default'], timesleep=0)
 
     def setup_indexes(self):
         """(Re-)create ES indexes."""
@@ -115,8 +114,7 @@ class ElasticTestCase(TestCase):
 
     def teardown_indexes(self):
         es = get_es()
-        for index in settings.ES_INDEXES.values():
-            es.delete_index_if_exists(index)
+        es.delete_index_if_exists(settings.ES_INDEXES['default'])
 
         settings.ES_LIVE_INDEXING = False
 

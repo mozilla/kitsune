@@ -628,25 +628,20 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
 
     @classmethod
     def get_mapping(cls):
-        mapping = {
-            'properties': {
-                'id': {'type': 'integer'},
-                'title': {'type': 'string', 'analyzer': 'snowball'},
-                'locale': {'type': 'string', 'index': 'not_analyzed'},
-                'current': {'type': 'integer'},
-                'parent_id': {'type': 'integer'},
-                'content':
-                    {'type': 'string', 'analyzer': 'snowball'},
-                'category': {'type': 'integer'},
-                'slug': {'type': 'string'},
-                'is_archived': {'type': 'boolean'},
-                'summary': {'type': 'string', 'analyzer': 'snowball'},
-                'keywords': {'type': 'string', 'analyzer': 'snowball'},
-                'updated': {'type': 'date'},
-                'tag': {'type': 'string'}
-                }
-            }
-        return mapping
+        return {
+            'id': {'type': 'integer'},
+            'title': {'type': 'string', 'analyzer': 'snowball'},
+            'locale': {'type': 'string', 'index': 'not_analyzed'},
+            'current': {'type': 'integer'},
+            'parent_id': {'type': 'integer'},
+            'content': {'type': 'string', 'analyzer': 'snowball'},
+            'category': {'type': 'integer'},
+            'slug': {'type': 'string'},
+            'is_archived': {'type': 'boolean'},
+            'summary': {'type': 'string', 'analyzer': 'snowball'},
+            'keywords': {'type': 'string', 'analyzer': 'snowball'},
+            'updated': {'type': 'date'},
+            'tag': {'type': 'string'}}
 
     def extract_document(self):
         d = {}
