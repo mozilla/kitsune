@@ -73,7 +73,7 @@ class TestPostUpdate(ElasticTestCase):
         eq_(elasticutils.S(Document).count(), 0)
         # Create a revision that's not approved and make sure the
         # document is still not in the index.
-        revision(document=doc, save=True)
+        revision(document=doc, is_approved=False, save=True)
         self.refresh()
         eq_(elasticutils.S(Document).count(), 0)
 
