@@ -15,7 +15,9 @@ call = lambda x: subprocess.Popen(x, stdout=subprocess.PIPE).communicate()
 
 
 def clean_excerpt(excerpt):
-    return bleach.clean(excerpt, tags=['b', 'i'])
+    # Allow '<b>' tags through, because those are what we use to emphasize
+    # search highlights.
+    return bleach.clean(excerpt, tags=['b', 'i'], strip=True)
 
 
 def reindex(rotate=False):

@@ -14,6 +14,7 @@ from tidings.models import NotificationsMixin
 from tower import ugettext_lazy as _lazy, ugettext as _
 
 from search import searcher
+from search.es_utils import strip_all_tags
 from search.models import SearchMixin, register_for_indexing
 from search.utils import crc32
 from sumo import ProgrammingError
@@ -494,8 +495,7 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
                 'locale': {'type': 'string', 'index': 'not_analyzed'},
                 'current': {'type': 'integer'},
                 'parent_id': {'type': 'integer'},
-                'content':
-                    {'type': 'string', 'analyzer': 'snowball'},
+                'content': {'type': 'string', 'analyzer': 'snowball'},
                 'category': {'type': 'integer'},
                 'slug': {'type': 'string'},
                 'is_archived': {'type': 'boolean'},
@@ -513,7 +513,7 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
         d['title'] = self.title
         d['locale'] = self.locale
         d['parent_id'] = self.parent.id if self.parent else None
-        d['content'] = self.html
+        d['content'] = strip_all_tags(self.html)
         d['category'] = self.category
         d['slug'] = self.slug
         d['is_archived'] = self.is_archived

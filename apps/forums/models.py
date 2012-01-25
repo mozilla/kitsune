@@ -4,6 +4,7 @@ from django.db import models
 from django.contrib.auth.models import User
 
 from tidings.models import NotificationsMixin
+import waffle
 
 from access import has_perm, perm_is_defined_on
 from activity.models import ActionMixin
@@ -12,9 +13,9 @@ from sumo.helpers import urlparams, wiki_to_html
 from sumo.urlresolvers import reverse
 from sumo.models import ModelBase
 from search import searcher
+from search.es_utils import strip_all_tags
 from search.models import SearchMixin, register_for_indexing
 from search.utils import crc32
-import waffle
 
 
 def _last_post_from(posts, exclude_post=None):
@@ -189,7 +190,8 @@ class Thread(NotificationsMixin, ModelBase, SearchMixin):
                 'is_locked': {'type': 'boolean'},
                 'author_id': {'type': 'integer'},
                 'author_ord': {'type': 'string'},
-                'content': {'type': 'string', 'analyzer': 'snowball',
+                'content': {'type': 'string',
+                            'analyzer': 'snowball',
                             'store': 'yes',
                             'term_vector': 'with_positions_offsets'},
                 'created': {'type': 'date'},
@@ -220,10 +222,10 @@ class Thread(NotificationsMixin, ModelBase, SearchMixin):
         author_ords = set()
         content = []
 
-        for post in self.post_set.all():
+        for post in self.post_set.iterator():
             author_ids.add(post.author.id)
             author_ords.add(post.author.username)
-            content.append(post.content)
+            content.append(strip_all_tags(post.content_parsed))
 
         d['author_id'] = list(author_ids)
         d['author_ord'] = list(author_ords)

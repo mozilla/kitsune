@@ -33,7 +33,7 @@ from wiki.models import wiki_searcher
 import waffle
 
 
-excerpt_joiner = _lazy(u'...', 'between search excerpts')
+EXCERPT_JOINER = _lazy(u'...', 'between search excerpts')
 
 
 def jsonp_is_valid(func):
@@ -332,67 +332,33 @@ def search(request, template=None):
             try:
                 if type_ == 'wiki':
                     summary = doc.current_revision.summary
-
                     result = {
-                        'search_summary': summary,
                         'url': doc.get_absolute_url(),
                         'title': doc.title,
                         'type': 'document',
-                        'rank': rank,
-                        'object': doc,
-                    }
-                    results.append(result)
-
+                        'object': doc}
                 elif type_ == 'question':
-                    try:
-                        excerpt = excerpt_joiner.join(
-                            [m for m in chain(*question_s.excerpt(doc)) if m])
-                    except ExcerptTimeoutError:
-                        statsd.incr('search.excerpt.timeout')
-                        excerpt = u''
-                    except ExcerptSocketError:
-                        statsd.incr('search.excerpt.socketerror')
-                        excerpt = u''
-
-                    summary = jinja2.Markup(clean_excerpt(excerpt))
-
+                    summary = _build_excerpt(question_s, doc)
                     result = {
-                        'search_summary': summary,
                         'url': doc.get_absolute_url(),
                         'title': doc.title,
                         'type': 'question',
-                        'rank': rank,
-                        'object': doc,
-                    }
-                    results.append(result)
-
+                        'object': doc}
                 else:
                     if engine == 'elastic':
                         thread = doc
                     else:
                         thread = Thread.objects.get(pk=doc.thread_id)
 
-                    try:
-                        excerpt = excerpt_joiner.join(
-                            [m for m in chain(*discussion_s.excerpt(doc))])
-                    except ExcerptTimeoutError:
-                        statsd.incr('search.excerpt.timeout')
-                        excerpt = u''
-                    except ExcerptSocketError:
-                        statsd.incr('search.excerpt.socketerror')
-                        excerpt = u''
-
-                    summary = jinja2.Markup(clean_excerpt(excerpt))
-
+                    summary = _build_excerpt(discussion_s, doc)
                     result = {
-                        'search_summary': summary,
                         'url': thread.get_absolute_url(),
                         'title': thread.title,
                         'type': 'thread',
-                        'rank': rank,
-                        'object': thread,
-                    }
-                    results.append(result)
+                        'object': thread}
+                result['search_summary'] = summary
+                result['rank'] = rank
+                results.append(result)
             except IndexError:
                 break
             except ObjectDoesNotExist:
@@ -502,3 +468,24 @@ def _ternary_filter(ternary_value):
 
     """
     return ternary_value == constants.TERNARY_YES
+
+
+def _build_excerpt(searcher, model_obj):
+    """Return concatenated search excerpts.
+
+    :arg searcher: The ``S`` object that did the search
+    :arg model_obj: The model object returned by the search
+
+    """
+    try:
+        excerpt = EXCERPT_JOINER.join(
+            [m.strip() for m in
+             chain(*searcher.excerpt(model_obj)) if m])
+    except ExcerptTimeoutError:
+        statsd.incr('search.excerpt.timeout')
+        excerpt = u''
+    except ExcerptSocketError:
+        statsd.incr('search.excerpt.socketerror')
+        excerpt = u''
+
+    return jinja2.Markup(clean_excerpt(excerpt))

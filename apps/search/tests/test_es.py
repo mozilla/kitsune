@@ -50,7 +50,7 @@ class ElasticSearchTasksTests(ElasticTestCase):
 
 
 class ElasticSearchViewTests(ElasticTestCase):
-    localizing_client = LocalizingClient()
+    client_class = LocalizingClient
 
     def test_excerpting_doesnt_crash(self):
         """This tests to make sure search view works.
@@ -72,7 +72,7 @@ class ElasticSearchViewTests(ElasticTestCase):
         ques.tags.add(u'desktop')
         self.refresh()
 
-        response = self.localizing_client.get(reverse('search'), {
+        response = self.client.get(reverse('search'), {
             'format': 'json', 'q': 'audio', 'a': 1
         })
         eq_(200, response.status_code)
@@ -116,7 +116,7 @@ class ElasticSearchViewTests(ElasticTestCase):
         # first, we do it in json since it's easier to deal with
         # testing-wise and second, we search for 'audio' since we have
         # data for that.
-        response = self.localizing_client.get(reverse('search'), {
+        response = self.client.get(reverse('search'), {
             'q_tags': 'desktop', 'product': 'desktop', 'q': 'audio',
             'format': 'json'
         })
@@ -129,7 +129,7 @@ class ElasticSearchViewTests(ElasticTestCase):
         # This is another search that picks up results based on the
         # answer_content.  answer_content is in a string array, so
         # this makes sure that works.
-        response = self.localizing_client.get(reverse('search'), {
+        response = self.client.get(reverse('search'), {
             'q_tags': 'desktop', 'product': 'desktop', 'q': 'volume',
             'format': 'json'
         })
@@ -168,7 +168,7 @@ class ElasticSearchViewTests(ElasticTestCase):
         # first, we do it in json since it's easier to deal with
         # testing-wise and second, we search for 'audio' since we have
         # data for that.
-        response = self.localizing_client.get(reverse('search'), {
+        response = self.client.get(reverse('search'), {
             'q_tags': 'desktop', 'product': 'desktop', 'q': 'audio',
             'format': 'json'
         })
@@ -191,7 +191,7 @@ class ElasticSearchViewTests(ElasticTestCase):
 
         self.refresh()
 
-        response = self.localizing_client.get(reverse('search'), {
+        response = self.client.get(reverse('search'), {
             'author': '', 'created': '0', 'created_date': '',
             'updated': '0', 'updated_date': '', 'sortby': '0',
             'a': '1', 'w': '4', 'q': 'hsarc',
@@ -202,3 +202,56 @@ class ElasticSearchViewTests(ElasticTestCase):
 
         content = json.loads(response.content)
         eq_(content['total'], 1)
+
+
+class ElasticSearchHtmlTests(ElasticTestCase):
+    """Tests for whether we're indexing and excerpting HTML properly"""
+    client_class = LocalizingClient
+
+    def test_html_filtered_out_of_question_excerpts(self):
+        """HTML should get filtered out of question excerpts."""
+        answer_vote(
+            answer=answer(
+                question=question(
+                    content='My<br />printer is on fire.',
+                    save=True),
+                content='Put it out.',
+                save=True),
+            helpful=True,
+            save=True)
+        self.refresh()
+
+        response = self.client.get(reverse('search'),
+                                   {'q': 'printer',
+                                    'format': 'json'
+                                   })
+        self.assertNotContains(response, '&lt;br')
+        # We leave off the rest of the <br> tag because bleach atm returns
+        # <br/>, but it could have a space or no slash someday.
+
+    def test_html_filtered_out_of_indexed_questions(self):
+        """HTML should be filtered out of question content before indexing."""
+        answer_vote(
+            answer=answer(
+                question=question(
+                    content='My<br />printer is on [[FirePage|fire]].',
+                    save=True),
+                content='Put it out.',
+                save=True),
+            helpful=True,
+            save=True)
+        self.refresh()
+
+        response = self.client.get(reverse('search'),
+                                   {'q': 'br',
+                                    'format': 'json'
+                                   })
+        # It shouldn't find the "br" from the <br> tag:
+        eq_(json.loads(response.content)['total'], 0)
+
+        response = self.client.get(reverse('search'),
+                                   {'q': 'FirePage',
+                                    'format': 'json'
+                                   })
+        # ...or the <a> tag, which bleach usually allows:
+        eq_(json.loads(response.content)['total'], 0)

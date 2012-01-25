@@ -2,6 +2,7 @@ from itertools import chain, count, izip
 import logging
 from pprint import pprint
 
+import bleach
 import elasticutils
 import pyes
 
@@ -14,6 +15,10 @@ ESIndexMissingException = pyes.exceptions.IndexMissingException
 
 
 log = logging.getLogger('search.es_utils')
+
+
+# Add custom analyzers for stemming non-English languages here:
+INDEX_SETTINGS = {}
 
 
 def get_doctype_stats():
@@ -92,7 +97,7 @@ def es_reindex_with_progress(doctypes=None, percent=100):
             # If we're indexing everything and there's a default index
             # specified in settings, then we delete and recreate it.
             es.delete_index_if_exists(index)
-            es.create_index(index)
+            es.create_index(index, settings=INDEX_SETTINGS)
 
     total = sum([cls.objects.count() for cls in search_models])
 
@@ -127,3 +132,8 @@ def es_whazzup():
     log.info('Totals:')
     for name, count in get_doctype_stats().items():
         log.info(' * %s: %d', name, count)
+
+
+def strip_all_tags(html):
+    """Strip all HTML tags from some text."""
+    return bleach.clean(html, strip=True, tags=[])
