@@ -1,0 +1,3 @@
+DROP TABLE customercare_cannedcategory;
+DROP TABLE customercare_cannedresponse;
+DROP TABLE customercare_categorymembership;

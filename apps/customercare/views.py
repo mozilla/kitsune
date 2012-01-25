@@ -18,7 +18,7 @@ from session_csrf import anonymous_csrf
 from tower import ugettext as _, ugettext_lazy as _lazy
 import tweepy
 
-from customercare.models import CannedCategory, Tweet
+from customercare.models import Tweet
 import twitter
 
 
@@ -29,6 +29,148 @@ FILTERS = SortedDict([('recent', _lazy('Most Recent')),
                       ('unanswered', _lazy('Unanswered')),
                       ('answered', _lazy('Answered')),
                       ('all', _lazy('All'))])
+
+
+CANNED_RESPONSES = [
+    {'title': _lazy("Welcome and Thanks"),
+     'responses':
+     [{'title': _lazy("Thanks for using Firefox"),
+       # L10n: This is a reply tweet, so it must fit in 140 characters.
+       'response': _lazy("thanks for using Firefox! You're not just a user, "
+                         "but part of a community that's 400M strong "
+                         "http://mzl.la/e8xdv5")
+        },
+        {'title': _lazy("Tips &amp; tricks"),
+        # L10n: This is a reply tweet, so it must fit in 140 characters.
+         'response': _lazy("getting started with Firefox? Here are some tips "
+                           "&amp; tricks for getting the most out of it "
+                           "http://mzl.la/c0B9P2")
+        },
+        {'title': _lazy("We're a non-profit organization"),
+        # L10n: This is a reply tweet, so it must fit in 140 characters.
+         'response': _lazy("hey, I'm a Mozilla volunteer. Did you know there "
+                           "are 1000s of us worldwide? More here "
+                           "http://mzl.la/cvlwvd")
+        },
+        {'title': _lazy("Welcome to our community"),
+        # L10n: This is a reply tweet, so it must fit in 140 characters.
+         'response': _lazy("Thanx for joining Moz! You're now part of our "
+                           "global community. We're here if you need help "
+                           "http://mzl.la/bMDof6")
+        }]
+    },
+    {'title': _lazy("Using Firefox"),
+     'responses':
+     [{'title': _lazy("Add-on reviews"),
+        # L10n: This is a reply tweet, so it must fit in 140 characters.
+       'response': _lazy("getting started with Firefox? Add-ons personalize it"
+                         " w cool features &amp; function. Some faves "
+                         "http://mzl.la/cGypVI")
+        },
+        {'title': _lazy("Customize Firefox with add-ons"),
+         # L10n: This is a reply tweet, so it must fit in 140 characters.
+         'response': _lazy("have you tried add-ons? Cool apps for shopping, "
+                           "music, news, whatever you do online. Start here: "
+                           "http://mzl.la/blOuoD")
+        },
+        {'title': _lazy("Firefox Panorama"),
+         # L10n: This is a reply tweet, so it must fit in 140 characters.
+         'response': _lazy("heard about Firefox Panorama? It groups + displays"
+                           " your tabs, eliminating clutter. Try it "
+                           "http://mzl.la/d21MyY")
+        },
+        {'title': _lazy("Firefox Sync"),
+         # L10n: This is a reply tweet, so it must fit in 140 characters.
+         'response': _lazy("tried Firefox Sync? It's awesome! Switch computers"
+                           " &amp; it saves open tabs, pwords, history. Try it"
+                           " http://mzl.la/aHHUYA")
+        },
+        {'title': _lazy("Update plugins and add-ons"),
+         # L10n: This is a reply tweet, so it must fit in 140 characters.
+         'response': _lazy("have you updated your plug-ins and add-ons? Should"
+                           " work out the kinks. Here's the place to refresh "
+                           "http://mzl.la/cGCg12")
+        },
+        {'title': _lazy("Upgrade Firefox"),
+         # L10n: This is a reply tweet, so it must fit in 140 characters.
+         'response': _lazy("hey, maybe you need to upgrade Firefox? New "
+                           "version is speedier with a lot more going on: "
+                           "http://mzl.la/9wJe30")
+        }]
+    },
+    {'title': _lazy("Support"),
+     'responses':
+     [{'title': _lazy("Ask SUMO"),
+        # L10n: This is a reply tweet, so it must fit in 140 characters.
+       'response': _lazy("maybe ask SUMO about this issue? Firefox's community"
+                         " support team. They'll know what's up: "
+                         "http://mzl.la/bMDof6")
+        },
+        {'title': _lazy("Firefox doesn't behave"),
+         # L10n: This is a reply tweet, so it must fit in 140 characters.
+         'response': _lazy("sorry your Firefox doesn't behave. Check out the "
+                           "tips here http://mzl.la/bNps7F")
+        },
+        {'title': _lazy("Firefox is slow"),
+         # L10n: This is a reply tweet, so it must fit in 140 characters.
+         'response': _lazy("you can make your Firefox fast again. Try out "
+                           "these steps http://mzl.la/9bB1FY")
+        },
+        {'title': _lazy("Fix crashes"),
+         # L10n: This is a reply tweet, so it must fit in 140 characters.
+         'response': _lazy("sorry your Firefox is hanging :( Here are quick "
+                           "fixes to prevent this again http://mzl.la/atSsFt")
+        },
+        {'title': _lazy("High RAM usage"),
+         # L10n: This is a reply tweet, so it must fit in 140 characters.
+         'response': _lazy("Firefox sometimes uses more memory than it should."
+                           " Try one of these easy fixes http://mzl.la/fPTNo8")
+        },
+        {'title': _lazy("Quick Firefox fixes"),
+         # L10n: This is a reply tweet, so it must fit in 140 characters.
+         'response': _lazy("have you tried Firefox support? If their quick "
+                           "fixes don't help, volunteers can assist! "
+                           "http://mzl.la/9V9uWd")
+        },
+        {'title': _lazy("Slow Firefox startup"),
+         # L10n: This is a reply tweet, so it must fit in 140 characters.
+         'response': _lazy("Firefox needs a refresh. Here are tips to make "
+                           "Firefox load faster http://mzl.la/r0mGyN")
+        }]
+    },
+    {'title': _lazy("Get Involved"),
+     'responses':
+     [{'title': _lazy("Become a beta tester"),
+       # L10n: This is a reply tweet, so it must fit in 140 characters.
+       'response': _lazy("become a beta tester! Help develop the next Firefox."
+                         "You don't have to be a techie to contribute: "
+                         "http://mzl.la/d23n7a")
+        },
+        {'title': _lazy("Get involved with Mozilla"),
+         # L10n: This is a reply tweet, so it must fit in 140 characters.
+         'response': _lazy("Want a better web? Join the Mozilla movement. "
+                           "There is something to do for everyone. Get started"
+                           " http://mzl.la/cufJmX")
+        },
+        {'title': _lazy("Join Drumbeat"),
+         # L10n: This is a reply tweet, so it must fit in 140 characters.
+         'response': _lazy("want to spark a movement? Mozilla Drumbeat is your"
+                           " chance to keep the web open and free. More info "
+                           "http://mzl.la/aIXCLA")
+        },
+        {'title': _lazy("Mozilla Developer Network"),
+         # L10n: This is a reply tweet, so it must fit in 140 characters.
+         'response': _lazy("help make the web better! Build web pages, apps "
+                           "&amp; add-ons here: Mozilla Developer Network "
+                           "http://mzl.la/9gQfrn")
+        },
+        {'title': _lazy("Report a bug"),
+         # L10n: This is a reply tweet, so it must fit in 140 characters.
+         'response': _lazy("Thanks for finding a bug. Make everyone's Firefox"
+                           " experience better by reporting. It's easy "
+                           "http://mzl.la/bcujVc")
+        }]
+    }]
 
 
 def _tweet_for_template(tweet):
@@ -110,8 +252,6 @@ def landing(request):
 
     twitter = request.twitter
 
-    canned_responses = CannedCategory.objects.filter(locale=request.locale)
-
     # Stats. See customercare.cron.get_customercare_stats.
     activity = cache.get(settings.CC_TWEET_ACTIVITY_CACHE_KEY)
     if activity and 'resultset' in activity:
@@ -151,7 +291,7 @@ def landing(request):
     return jingo.render(request, 'customercare/landing.html', {
         'activity_stats': activity_stats,
         'contributor_stats': contributor_stats,
-        'canned_responses': canned_responses,
+        'canned_responses': CANNED_RESPONSES,
         'tweets': _get_tweets(locale=request.locale),
         'authed': twitter.authed,
         'twitter_user': (twitter.api.auth.get_username() if
