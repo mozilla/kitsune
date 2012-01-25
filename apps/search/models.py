@@ -101,7 +101,7 @@ class SearchMixin(object):
             100--e.g. all of them.
 
         """
-        es = es_utils.get_es()
+        es = es_utils.get_indexing_es()
 
         doc_type = cls._meta.db_table
         index = settings.ES_INDEXES['default']
@@ -168,7 +168,9 @@ class SearchMixin(object):
             return
 
         if es is None:
-            es = elasticutils.get_es()
+            # Use the es_utils get_es because it uses
+            # ES_INDEXING_TIMEOUT.
+            es = es_utils.get_indexing_es()
 
         index = settings.ES_INDEXES['default']
         doc_type = cls._meta.db_table
