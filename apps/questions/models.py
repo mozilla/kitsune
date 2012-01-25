@@ -283,34 +283,30 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
 
     @classmethod
     def get_mapping(cls):
-        mapping = {
-            'properties': {
-                'id': {'type': 'long'},
-                'question_id': {'type': 'long'},
-                'title': {'type': 'string', 'analyzer': 'snowball'},
-                'question_content':
-                    {'type': 'string', 'analyzer': 'snowball',
-                    # TODO: Stored because originally, this is the
-                    # only field we were excerpting on. Standardize
-                    # one way or the other.
-                     'store': 'yes', 'term_vector': 'with_positions_offsets'},
-                'answer_content':
-                    {'type': 'string', 'analyzer': 'snowball'},
-                'replies': {'type': 'integer'},
-                'is_solved': {'type': 'boolean'},
-                'is_locked': {'type': 'boolean'},
-                'has_answers': {'type': 'boolean'},
-                'has_helpful': {'type': 'boolean'},
-                'created': {'type': 'date'},
-                'updated': {'type': 'date'},
-                'question_creator': {'type': 'string'},
-                'answer_creator': {'type': 'string'},
-                'question_votes': {'type': 'integer'},
-                'answer_votes': {'type': 'integer'},
-                'tag': {'type': 'string'}
-                }
-            }
-        return mapping
+        return {
+            'id': {'type': 'long'},
+            'question_id': {'type': 'long'},
+            'title': {'type': 'string', 'analyzer': 'snowball'},
+            'question_content':
+                {'type': 'string', 'analyzer': 'snowball',
+                # TODO: Stored because originally, this is the
+                # only field we were excerpting on. Standardize
+                # one way or the other.
+                 'store': 'yes', 'term_vector': 'with_positions_offsets'},
+            'answer_content':
+                {'type': 'string', 'analyzer': 'snowball'},
+            'replies': {'type': 'integer'},
+            'is_solved': {'type': 'boolean'},
+            'is_locked': {'type': 'boolean'},
+            'has_answers': {'type': 'boolean'},
+            'has_helpful': {'type': 'boolean'},
+            'created': {'type': 'date'},
+            'updated': {'type': 'date'},
+            'question_creator': {'type': 'string'},
+            'answer_creator': {'type': 'string'},
+            'question_votes': {'type': 'integer'},
+            'answer_votes': {'type': 'integer'},
+            'tag': {'type': 'string'}}
 
     def extract_document(self):
         """Extracts indexable attributes from a Question and its answers."""
