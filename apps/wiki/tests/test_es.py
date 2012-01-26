@@ -3,8 +3,7 @@ from nose.tools import eq_
 
 from sumo.tests import ElasticTestCase
 from wiki.tests import document, revision
-from wiki.models import Document
-from wiki.config import REDIRECT_CONTENT
+from wiki.models import Document, REDIRECT_CONTENT
 
 
 class TestPostUpdate(ElasticTestCase):
