@@ -6,6 +6,7 @@ from nose.tools import eq_
 import waffle
 
 from karma.manager import KarmaManager
+from karma.models import Points
 from karma.tests import TestAction1, TestAction2
 from sumo.redis_utils import redis_client, RedisError
 from sumo.tests import TestCase
@@ -89,12 +90,20 @@ class KarmaManagerTests(TestCase):
     def test_recalculate_points(self, switch_is_active):
         """Test the recalculate_points method."""
         switch_is_active.return_value = True
-        KarmaManager.action_types = {
-            'test-action-1': 15,
-            'test-action-2': 12
-        }
+
+        # Create Points with new point values.
+        p1 = Points.objects.create(action='test-action-1', points=15)
+        Points.objects.create(action='test-action-2', points=12)
+
         self.mgr.recalculate_points(self.user1)
         eq_(42, self.mgr.count(self.user1, type='points'))
+
+        # Update one of the Point values.
+        p1.points = 30
+        p1.save()
+
+        self.mgr.recalculate_points(self.user1)
+        eq_(72, self.mgr.count(self.user1, type='points'))
 
     @mock.patch.object(waffle, 'switch_is_active')
     def test_overview_counts(self, switch_is_active):

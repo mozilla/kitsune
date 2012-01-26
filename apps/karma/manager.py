@@ -50,7 +50,7 @@ class KarmaManager(object):
 
     @classmethod
     def register(cls, action):
-        cls.action_types[action.action_type] = action.points
+        cls.action_types[action.action_type] = action
 
     # Setters:
     @_handle_redis_errors
@@ -169,7 +169,7 @@ class KarmaManager(object):
         # Recalculate all the points
         for k in values:
             action_type, action_date = k.split(':')
-            points = self.action_types[action_type] * int(values[k])
+            points = self.action_types[action_type].points * int(values[k])
             self.redis.hincrby(key, 'points:{d}'.format(
                 d=action_date), points)
 

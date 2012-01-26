@@ -7,12 +7,22 @@ from statsd import statsd
 import waffle
 
 from karma.manager import KarmaManager
+from karma.models import Points
+
+
+class ClassProperty(property):
+    """Like @property but class based.
+
+    Only supports get.
+    """
+    def __get__(self, cls, owner):
+        return self.fget.__get__(None, owner)()
 
 
 class KarmaAction(object):
     """Abstract base class for karma actions."""
     action_type = None  # For example 'first-answer'.
-    points = 0  # Number of points the action is worth.
+    default_points = 0  # Default number of points the action is worth.
 
     def __init__(self, user, day=date.today()):
         if not waffle.switch_is_active('karma'):
@@ -25,6 +35,12 @@ class KarmaAction(object):
             self.date = day.date()
         else:
             self.date = day
+
+    @ClassProperty
+    @classmethod
+    def points(cls):
+        """Return the number of points for the action."""
+        return Points.get_points(cls)
 
     def save(self, async=True, redis=None):
         """Save the action information to redis.
