@@ -227,7 +227,9 @@ def search(request, template=None):
         cleaned_q = cleaned['q']
 
         if cleaned['w'] & constants.WHERE_WIKI:
-            wiki_s = wiki_s.query(cleaned_q)[:max_results]
+            if cleaned_q:
+                wiki_s = wiki_s.query(cleaned_q)
+            wiki_s = wiki_s[:max_results]
             # Execute the query and append to documents
             documents += [('wiki', (pair[0], pair[1]))
                           for pair in enumerate(wiki_s.object_ids())]
@@ -252,7 +254,9 @@ def search(request, template=None):
                 after_match='</b>',
                 limit=settings.SEARCH_SUMMARY_LENGTH)
 
-            question_s = question_s.query(cleaned_q)[:max_results]
+            if cleaned_q:
+                question_s = question_s.query(cleaned_q)
+            question_s = question_s[:max_results]
             documents += [('question', (pair[0], pair[1]))
                           for pair in enumerate(question_s.object_ids())]
 
@@ -272,7 +276,9 @@ def search(request, template=None):
                 after_match='</b>',
                 limit=settings.SEARCH_SUMMARY_LENGTH)
 
-            discussion_s = discussion_s.query(cleaned_q)[:max_results]
+            if cleaned_q:
+                discussion_s = discussion_s.query(cleaned_q)
+            discussion_s = discussion_s[:max_results]
             documents += [('discussion', (pair[0], pair[1]))
                           for pair in enumerate(discussion_s.object_ids())]
 
