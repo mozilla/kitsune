@@ -9,19 +9,20 @@
     height: 24px !important;
 }
 
-.breadcrumbs li {
-    background-image: url(../img/crumb.gif);
-    background-repeat: no-repeat;
-    background-position: 0 50%;
-    padding: 0 0 0 10px;
+#breadcrumbs li:after {
+    right: -8px;
 }
 
-.html-rtl .breadcrumbs li {
-    padding: 0 10px 0 0;
+#breadcrumbs li.last {
+    padding: 0 30px 0 20px;
 }
 
-.breadcrumbs li {
-    background-image: expression(this.previousSibling==null?'none':'default');
+#breadcrumbs li.last:after {
+    content: none;
+}
+
+#breadcrumbs li.odd {
+    z-index: 2;
 }
 
 ol.posts li div.content pre {
