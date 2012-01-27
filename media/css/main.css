@@ -554,40 +554,93 @@ ul.user-messages li.error {
     Breadcrumbs
 ----------------------------------*/
 
-.breadcrumbs {
-    font-family: Verdana;
-    margin: 0 0 15px;
-    padding: 0 9px;
-}
-
-.breadcrumbs li {
-    display: inline;
-    margin: 0;
-    color: #4b4742;
-    font-size: 83%;
-}
-
-.breadcrumbs li:before {
-    content: '/';
-    padding: 0 4px;
-    color: #807970;
-    font-size: 110%;
-}
-
-.breadcrumbs li:first-child:before {
-    content: '';
+#breadcrumbs {
+    font: bold 16px/30px 'Trebuchet MS';
+    height: 30px;
+    list-style-type: none;
+    margin: 0 0 10px;
     padding: 0;
 }
 
-.breadcrumbs a {
-    color: #0489b7;
-    font-weight: bold;
+#breadcrumbs li {
+    float: left;
+    position: relative;
+}
+
+#breadcrumbs li:last-child {
+    padding: 0 30px 0 20px;
+}
+
+#breadcrumbs a {
+    color: #FFFFFF;
+    float: left;
+    outline: medium none;
+    padding: 0 20px;
+    position: relative;
     text-decoration: none;
 }
 
-.breadcrumbs a:hover,
-.breadcrumbs a:active {
-    text-decoration: underline;
+#breadcrumbs li:after {
+    content: '';
+    border-color: transparent transparent transparent #58A100;
+    border-left: 10px solid #58A100;
+    border-right: medium none;
+    border-style: solid none solid solid;
+    border-width: 15px medium 15px 10px;
+    display: block;
+    height: 0;
+    line-height: 0;
+    position: absolute;
+    right: -10px;
+    top: 0;
+    width: 0;
+    z-index: 100;
+}
+
+#breadcrumbs li:last-child:after {
+    content: none;
+}
+
+#breadcrumbs li:nth-last-child(even):after {
+    border-color: transparent transparent transparent #84C63C;
+}
+
+#breadcrumbs li:first-child:after {
+    border-color: transparent transparent transparent #58A100;
+}
+
+#breadcrumbs li:hover:after,
+#breadcrumbs li:nth-last-child(even):hover:after {
+    border-color: transparent transparent transparent #ddd;
+}
+
+#breadcrumbs li:nth-child(odd) a {
+    background: none repeat scroll 0 0 #58A100;
+    border: 0 none;
+    color: #fff;
+    text-shadow: none;
+}
+
+#breadcrumbs li:nth-child(even) a {
+    background-color: #84C63C;
+    border: 0 none;
+    color: #FFFFFF;
+    text-shadow: none;
+}
+
+#breadcrumbs li:first-child a {
+    background: #58A100 url(../img/icon.home.png) no-repeat 20px center;
+    padding-left: 42px;
+}
+
+#breadcrumbs li:first-child:hover a {
+    background: #ddd url(../img/icon.home.png) no-repeat 20px center;
+    padding-left: 42px;
+}
+
+#breadcrumbs li a:hover {
+    background: none repeat scroll 0 0 #ddd;
+    text-decoration: none;
 }
 
 

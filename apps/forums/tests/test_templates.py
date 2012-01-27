@@ -80,7 +80,7 @@ class PostsTemplateTests(ForumTestCase):
         forum = Forum.objects.filter()[0]
         response = get(self.client, 'forums.posts', args=[forum.slug, 4])
         doc = pq(response.content)
-        crumb = doc('ol.breadcrumbs li:last-child')
+        crumb = doc('#breadcrumbs li:last-child')
         eq_(crumb.text(), 'A thread with a very very ...')
 
     def test_edit_post_moderator(self):
