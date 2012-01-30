@@ -10,3 +10,19 @@ input[type=submit].btn-important {
 #tweets li.hidden-reply {
     -ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=40)";
 }
+
+#breadcrumbs li:after {
+	right: -8px;
+}
+
+#breadcrumbs li.last {
+	padding: 0 30px 0 20px;
+}
+
+#breadcrumbs li.last:after {
+    content: none !important;
+}
+
+#breadcrumbs li.odd {
+	z-index: 2;
+}

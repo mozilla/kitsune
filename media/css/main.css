@@ -601,7 +601,7 @@ ul.user-messages li.error {
     content: none;
 }
 
-#breadcrumbs li:nth-last-child(even):after {
+#breadcrumbs li.even:after {
     border-color: transparent transparent transparent #84C63C;
 }
 
@@ -610,18 +610,18 @@ ul.user-messages li.error {
 }
 
 #breadcrumbs li:hover:after,
-#breadcrumbs li:nth-last-child(even):hover:after {
+#breadcrumbs li.even:hover:after {
     border-color: transparent transparent transparent #ddd;
 }
 
-#breadcrumbs li:nth-child(odd) a {
+#breadcrumbs li.odd a {
     background: none repeat scroll 0 0 #58A100;
     border: 0 none;
     color: #fff;
     text-shadow: none;
 }
 
-#breadcrumbs li:nth-child(even) a {
+#breadcrumbs li.even a {
     background-color: #84C63C;
     border: 0 none;
     color: #FFFFFF;
