@@ -104,8 +104,6 @@ class FastResponseResource(Resource):
     responded = fields.IntegerField('responded', default=0)
 
     def get_object_list(self, request):
-        # TODO: Cache the result.
-
         qs = _qs_for(Question)
 
         # All answers tht were created within 3 days of the question
