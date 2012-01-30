@@ -2,16 +2,29 @@ from operator import itemgetter
 from datetime import date, timedelta
 
 from django.db.models import Count, F
-from django.core.cache import cache
-from django.db.models import Count
-
 from tastypie.resources import Resource
-from tastypie.cache import SimpleCache
 from tastypie import fields
 from tastypie.authorization import Authorization
+from tastypie.cache import SimpleCache
 
 from questions.models import Question, Answer, AnswerVote
 from wiki.models import HelpfulVote
+
+
+class CachedResource(Resource):
+    def obj_get_list(self, request=None, **kwargs):
+        """
+        Overwrite ``obj_get_list`` to use the cache.
+        """
+        cache_key = self.generate_cache_key('list', **kwargs)
+        obj_list = self._meta.cache.get(cache_key)
+
+        if obj_list is None:
+
+            obj_list = self.get_object_list(request)
+            self._meta.cache.set(cache_key, obj_list, timeout=60 * 60 * 3)
+
+        return obj_list
 
 
 class PermissionAuthorization(Authorization):
@@ -20,11 +33,6 @@ class PermissionAuthorization(Authorization):
 
     def is_authorized(self, request, object=None):
         return request.user.has_perm(self.perm)
-
-
-class EasyCache(SimpleCache):
-    def set(self, key, value, timeout=60 * 60 * 3):
-        cache.set(key, value, timeout)
 
 
 class Struct(object):
@@ -36,7 +44,7 @@ class Struct(object):
         return unicode(self.__dict__)
 
 
-class SolutionResource(Resource):
+class SolutionResource(CachedResource):
     """
     Returns the number of questions with
     and without an answer maked as the solution.
@@ -54,17 +62,14 @@ class SolutionResource(Resource):
 
         return merge_results(solved=qs_with_solutions, questions=qs)
 
-    def obj_get_list(self, request=None, **kwargs):
-        return self.get_object_list(request)
-
     class Meta(object):
-        cache = EasyCache()
+        cache = SimpleCache()
         resource_name = 'kpi_solution'
         allowed_methods = ['get']
         authorization = PermissionAuthorization('users.view_kpi_dashboard')
 
 
-class VoteResource(Resource):
+class VoteResource(CachedResource):
     """
     Returns the number of total and helpful votes for Articles and Answers.
     """
@@ -93,13 +98,13 @@ class VoteResource(Resource):
         return self.get_object_list(request)
 
     class Meta(object):
-        cache = EasyCache()
+        cache = SimpleCache()
         resource_name = 'kpi_vote'
         allowed_methods = ['get']
         authorization = PermissionAuthorization('users.view_kpi_dashboard')
 
 
-class FastResponseResource(Resource):
+class FastResponseResource(CachedResource):
     """
     Returns the total number and number of Questions that recieve an answer
     within a period of time.
@@ -120,11 +125,8 @@ class FastResponseResource(Resource):
         # Merge and return
         return merge_results(responded=rs, questions=qs)
 
-    def obj_get_list(self, request=None, **kwargs):
-        return self.get_object_list(request)
-
     class Meta:
-        cache = EasyCache()
+        cache = SimpleCache()
         resource_name = 'kpi_fast_response'
         allowed_methods = ['get']
         authorization = PermissionAuthorization('users.view_kpi_dashboard')
