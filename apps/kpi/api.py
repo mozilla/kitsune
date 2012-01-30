@@ -23,7 +23,7 @@ class PermissionAuthorization(Authorization):
 
 
 class EasyCache(SimpleCache):
-    def set(self, key, value, timeout=60 * 60 * 30):
+    def set(self, key, value, timeout=60 * 60 * 3):
         cache.set(key, value, timeout)
 
 
