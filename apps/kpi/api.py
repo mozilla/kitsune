@@ -6,6 +6,7 @@ from django.core.cache import cache
 from django.db.models import Count
 
 from tastypie.resources import Resource
+from tastypie.cache import SimpleCache
 from tastypie import fields
 from tastypie.authorization import Authorization
 
@@ -40,26 +41,19 @@ class SolutionResource(Resource):
     questions = fields.IntegerField('questions', default=0)
 
     def get_object_list(self, request):
-        cache_key = 'kpi:solution'
-        result = cache.get(cache_key)
-        if result is None:
-            # Set up the query for the data we need
-            qs = _qs_for(Question)
+        # Set up the query for the data we need
+        qs = _qs_for(Question)
 
-            # Filter on solution
-            qs_with_solutions = qs.filter(solution__isnull=False)
+        # Filter on solution
+        qs_with_solutions = qs.filter(solution__isnull=False)
 
-            result = merge_results(solved=qs_with_solutions, questions=qs)
-
-            # Cache
-            cache.add(cache_key, result)
-
-        return result
+        return merge_results(solved=qs_with_solutions, questions=qs)
 
     def obj_get_list(self, request=None, **kwargs):
         return self.get_object_list(request)
 
     class Meta(object):
+        cache = SimpleCache()
         resource_name = 'kpi_solution'
         allowed_methods = ['get']
         authorization = PermissionAuthorization('users.view_kpi_dashboard')
@@ -76,31 +70,25 @@ class VoteResource(Resource):
     ans_votes = fields.IntegerField('ans_votes', default=0)
 
     def get_object_list(self, request):
-        cache_key = 'kpi:vote'
-        result = cache.get(cache_key)
-        if result is None:
-            # Set up the queries for the data we need
-            qs_kb_votes = _qs_for(HelpfulVote)
-            qs_ans_votes = _qs_for(AnswerVote)
+        # Set up the queries for the data we need
+        qs_kb_votes = _qs_for(HelpfulVote)
+        qs_ans_votes = _qs_for(AnswerVote)
 
-            # Filter on helpful
-            qs_kb_helpful_votes = qs_kb_votes.filter(helpful=True)
-            qs_ans_helpful_votes = qs_ans_votes.filter(helpful=True)
+        # Filter on helpful
+        qs_kb_helpful_votes = qs_kb_votes.filter(helpful=True)
+        qs_ans_helpful_votes = qs_ans_votes.filter(helpful=True)
 
-            result = merge_results(
-                        kb_votes=qs_kb_votes,
-                        kb_helpful=qs_kb_helpful_votes,
-                        ans_votes=qs_ans_votes,
-                        ans_helpful=qs_ans_helpful_votes)
-            # Cache
-            cache.add(cache_key, result)
-
-        return result
+        return merge_results(
+                    kb_votes=qs_kb_votes,
+                    kb_helpful=qs_kb_helpful_votes,
+                    ans_votes=qs_ans_votes,
+                    ans_helpful=qs_ans_helpful_votes)
 
     def obj_get_list(self, request=None, **kwargs):
         return self.get_object_list(request)
 
     class Meta(object):
+        cache = SimpleCache()
         resource_name = 'kpi_vote'
         allowed_methods = ['get']
         authorization = PermissionAuthorization('users.view_kpi_dashboard')
@@ -133,9 +121,11 @@ class FastResponseResource(Resource):
         return self.get_object_list(request)
 
     class Meta:
+        cache = SimpleCache()
         resource_name = 'kpi_fast_response'
         allowed_methods = ['get']
         authorization = PermissionAuthorization('users.view_kpi_dashboard')
+
 
 def _qs_for(model_cls):
     """Return the grouped queryset we need for model_cls."""
@@ -155,9 +145,19 @@ def _start_date():
 
 def _remap_date_counts(**kwargs):
     """Remap the query result.
-
-    From: [{'count': 2085, 'month': 11, 'year': 2010},...]
-    To: {'<label>': 2085, 'date': '2010-11-01'}
+    kwargs = {<label>=[{'count': 45, 'month': 2L, 'year': 2010L},
+     {'count': 12, 'month': 1L, 'year': 2010L},
+      {'count': 1, 'month': 12L, 'year': 2009L},..],
+      <label>=[{...},...],
+      ...}
+    returns
+        [{
+            datetime.date(2009, 12, 1): {'<label>': 1},
+            datetime.date(2010, 1, 1): {'<label>': 12},
+            datetime.date(2010, 2, 1): {'<label>': 45}
+            ...
+        },
+        ...]
     """
     for label, qs in kwargs.iteritems():
         yield dict((date(x['year'], x['month'], 1), {label: x['count']})
