@@ -638,7 +638,7 @@ ul.user-messages li.error {
     padding-left: 42px;
 }
 
-#breadcrumbs li a:hover {
+#breadcrumbs li:hover a {
     background: none repeat scroll 0 0 #ddd;
     text-decoration: none;
 }
