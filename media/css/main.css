@@ -594,7 +594,7 @@ ul.user-messages li.error {
     right: -10px;
     top: 0;
     width: 0;
-    z-index: 100;
+    z-index: 1;
 }
 
 #breadcrumbs li:last-child:after {
