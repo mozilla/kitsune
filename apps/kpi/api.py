@@ -22,6 +22,11 @@ class PermissionAuthorization(Authorization):
         return request.user.has_perm(self.perm)
 
 
+class EasyCache(SimpleCache):
+    def set(self, key, value, timeout=60 * 60 * 30):
+        cache.set(key, value, timeout)
+
+
 class Struct(object):
     """Convert a dict to an object"""
     def __init__(self, **entries):
@@ -53,7 +58,7 @@ class SolutionResource(Resource):
         return self.get_object_list(request)
 
     class Meta(object):
-        cache = SimpleCache()
+        cache = EasyCache()
         resource_name = 'kpi_solution'
         allowed_methods = ['get']
         authorization = PermissionAuthorization('users.view_kpi_dashboard')
@@ -88,7 +93,7 @@ class VoteResource(Resource):
         return self.get_object_list(request)
 
     class Meta(object):
-        cache = SimpleCache()
+        cache = EasyCache()
         resource_name = 'kpi_vote'
         allowed_methods = ['get']
         authorization = PermissionAuthorization('users.view_kpi_dashboard')
@@ -119,7 +124,7 @@ class FastResponseResource(Resource):
         return self.get_object_list(request)
 
     class Meta:
-        cache = SimpleCache()
+        cache = EasyCache()
         resource_name = 'kpi_fast_response'
         allowed_methods = ['get']
         authorization = PermissionAuthorization('users.view_kpi_dashboard')
