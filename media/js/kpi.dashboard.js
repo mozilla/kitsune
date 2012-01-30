@@ -69,7 +69,7 @@ window.ChartView = Backbone.View.extend({
                 text: this.options.title
             },
             tooltip: {
-                // TODO: Figure out why this is wonky. 
+                // TODO: Figure out why this is wonky.
                 //enabled: true,
                 formatter: function() {
                     return '<b>' + this.y.toFixed(1) + ' %</b>';
@@ -162,6 +162,7 @@ window.KpiDashboard = Backbone.View.extend({
             model: this.fastResponseChart,
             title: 'Questions responded to within 72 hours',
             series: [{
+                name: 'Responded',
                 numerator: 'responded',
                 denominator: 'questions'
             }]

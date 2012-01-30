@@ -72,9 +72,7 @@ class KpiAPITests(TestCase):
         a.question.save()
 
         a = answer(save=True)
-        a.question.solution = a
         a.question.save()
-
 
         url = reverse('api_dispatch_list',
                       kwargs={'resource_name': 'kpi_fast_response',
