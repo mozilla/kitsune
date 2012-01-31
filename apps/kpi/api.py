@@ -94,9 +94,6 @@ class VoteResource(CachedResource):
                     ans_votes=qs_ans_votes,
                     ans_helpful=qs_ans_helpful_votes)
 
-    def obj_get_list(self, request=None, **kwargs):
-        return self.get_object_list(request)
-
     class Meta(object):
         cache = SimpleCache()
         resource_name = 'kpi_vote'
