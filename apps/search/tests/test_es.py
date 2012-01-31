@@ -202,7 +202,7 @@ class ElasticSearchViewTests(ElasticTestCase):
         # first, we do it in json since it's easier to deal with
         # testing-wise and second, we search for 'audio' since we have
         # data for that.
-        response = self.localizing_client.get(reverse('search'), {
+        response = self.client.get(reverse('search'), {
             'q': '', 'tags': 'desktop', 'w': '1', 'a': '1',
             'format': 'json'
         })
