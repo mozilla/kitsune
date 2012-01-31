@@ -50,7 +50,7 @@ class ElasticSearchTasksTests(ElasticTestCase):
 
 
 class ElasticSearchViewTests(ElasticTestCase):
-    localizing_client = LocalizingClient()
+    client_class = LocalizingClient
 
     def test_excerpting_doesnt_crash(self):
         """This tests to make sure search view works.
@@ -72,7 +72,7 @@ class ElasticSearchViewTests(ElasticTestCase):
         ques.tags.add(u'desktop')
         self.refresh()
 
-        response = self.localizing_client.get(reverse('search'), {
+        response = self.client.get(reverse('search'), {
             'format': 'json', 'q': 'audio', 'a': 1
         })
         eq_(200, response.status_code)
@@ -116,7 +116,7 @@ class ElasticSearchViewTests(ElasticTestCase):
         # first, we do it in json since it's easier to deal with
         # testing-wise and second, we search for 'audio' since we have
         # data for that.
-        response = self.localizing_client.get(reverse('search'), {
+        response = self.client.get(reverse('search'), {
             'q_tags': 'desktop', 'product': 'desktop', 'q': 'audio',
             'format': 'json'
         })
@@ -129,7 +129,7 @@ class ElasticSearchViewTests(ElasticTestCase):
         # This is another search that picks up results based on the
         # answer_content.  answer_content is in a string array, so
         # this makes sure that works.
-        response = self.localizing_client.get(reverse('search'), {
+        response = self.client.get(reverse('search'), {
             'q_tags': 'desktop', 'product': 'desktop', 'q': 'volume',
             'format': 'json'
         })
@@ -168,7 +168,7 @@ class ElasticSearchViewTests(ElasticTestCase):
         # first, we do it in json since it's easier to deal with
         # testing-wise and second, we search for 'audio' since we have
         # data for that.
-        response = self.localizing_client.get(reverse('search'), {
+        response = self.client.get(reverse('search'), {
             'q_tags': 'desktop', 'product': 'desktop', 'q': 'audio',
             'format': 'json'
         })
@@ -225,7 +225,7 @@ class ElasticSearchViewTests(ElasticTestCase):
 
         self.refresh()
 
-        response = self.localizing_client.get(reverse('search'), {
+        response = self.client.get(reverse('search'), {
             'author': '', 'created': '0', 'created_date': '',
             'updated': '0', 'updated_date': '', 'sortby': '0',
             'a': '1', 'w': '4', 'q': 'hsarc',
