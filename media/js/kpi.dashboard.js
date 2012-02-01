@@ -27,7 +27,7 @@ window.ChartView = Backbone.View.extend({
     tagName: 'section',
     className: 'graph',
 
-    initialize: function() {
+    initialize: function(s) {
         _.bindAll(this, 'render');
 
         this.model.bind('change', this.render);
@@ -43,9 +43,7 @@ window.ChartView = Backbone.View.extend({
             },
             yAxis: {
                 min: 0,
-                title: {
-                    text: '%'
-                }
+                title: ''
             },
             xAxis: {
                 type: 'datetime',
@@ -59,7 +57,7 @@ window.ChartView = Backbone.View.extend({
                     dataLabels: {
                         enabled: true,
                         formatter: function() {
-                            return this.y.toFixed(1) + '%';
+                            return this.y.toFixed(0);
                         }
                     },
                     enableMouseTracking: false
@@ -76,6 +74,15 @@ window.ChartView = Backbone.View.extend({
                 }
             }
         };
+
+        if (this.options.percent) {
+            this.chartOptions.yAxis.title = {
+                text: '%'
+            };
+            this.chartOptions.plotOptions.line.dataLabels.formatter = function() {
+                return this.y.toFixed(1) + '%';
+            };
+        }
     },
 
     render: function() {
@@ -124,10 +131,15 @@ window.KpiDashboard = Backbone.View.extend({
             url: $(this.el).data('fastresponse-url')
         });
 
+        this.activeKbContributorsChart = new ChartModel([], {
+            url: $(this.el).data('active-kb-contributors-url')
+        });
+
         // Create the views.
         this.solvedChartView = new ChartView({
             model: this.solvedChart,
             title: 'Questions Solved',
+            percent: true,
             series: [{
                 name: 'Questions: % Solved',
                 numerator: 'solved',
@@ -138,6 +150,7 @@ window.KpiDashboard = Backbone.View.extend({
         this.voteChartView = new ChartView({
             model: this.voteChart,
             title: 'Helpful Votes',
+            percent: true,
             series: [{
                 name: 'Article Votes: % Helpful',
                 numerator: 'kb_helpful',
@@ -161,6 +174,7 @@ window.KpiDashboard = Backbone.View.extend({
         this.fastResponseView = new ChartView({
             model: this.fastResponseChart,
             title: 'Questions responded to within 72 hours',
+            percent: true,
             series: [{
                 name: 'Responded',
                 numerator: 'responded',
@@ -168,16 +182,40 @@ window.KpiDashboard = Backbone.View.extend({
             }]
         });
 
+        this.activeKbContributorsView = new ChartView({
+            model: this.activeKbContributorsChart,
+            title: 'Active KB Contributors',
+            series: [{
+                name: 'en-US',
+                mapper: function(o) {
+                    return {
+                        x: Date.parse(o['date']),
+                        y: o['en_us']
+                    };
+                }
+            }, {
+                name: 'non en-US',
+                mapper: function(o) {
+                    return {
+                        x: Date.parse(o['date']),
+                        y: o['non_en_us']
+                    };
+                }
+            }]
+        });
+
         // Render the views.
         $(this.el)
             .append(this.solvedChartView.render().el)
             .append(this.voteChartView.render().el)
-            .append(this.fastResponseView.render().el);
+            .append(this.fastResponseView.render().el)
+            .append(this.activeKbContributorsView.render().el);
 
         // Load up the models.
         this.solvedChart.fetch();
         this.voteChart.fetch();
         this.fastResponseChart.fetch();
+        this.activeKbContributorsChart.fetch();
     }
 });
 
