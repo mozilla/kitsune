@@ -4,7 +4,6 @@ from datetime import date, timedelta
 from django.db.models import Count, F
 from tastypie.resources import Resource
 from tastypie import fields
-from tastypie.authorization import Authorization
 from tastypie.cache import SimpleCache
 
 from questions.models import Question, Answer, AnswerVote
@@ -25,14 +24,6 @@ class CachedResource(Resource):
             self._meta.cache.set(cache_key, obj_list, timeout=60 * 60 * 3)
 
         return obj_list
-
-
-class PermissionAuthorization(Authorization):
-    def __init__(self, perm):
-        self.perm = perm
-
-    def is_authorized(self, request, object=None):
-        return request.user.has_perm(self.perm)
 
 
 class Struct(object):
@@ -66,7 +57,6 @@ class SolutionResource(CachedResource):
         cache = SimpleCache()
         resource_name = 'kpi_solution'
         allowed_methods = ['get']
-        authorization = PermissionAuthorization('users.view_kpi_dashboard')
 
 
 class VoteResource(CachedResource):
@@ -98,7 +88,6 @@ class VoteResource(CachedResource):
         cache = SimpleCache()
         resource_name = 'kpi_vote'
         allowed_methods = ['get']
-        authorization = PermissionAuthorization('users.view_kpi_dashboard')
 
 
 class FastResponseResource(CachedResource):
@@ -126,7 +115,6 @@ class FastResponseResource(CachedResource):
         cache = SimpleCache()
         resource_name = 'kpi_fast_response'
         allowed_methods = ['get']
-        authorization = PermissionAuthorization('users.view_kpi_dashboard')
 
 
 def _qs_for(model_cls):
