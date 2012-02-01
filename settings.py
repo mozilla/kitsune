@@ -787,14 +787,14 @@ REDIS_BACKENDS = {
 ARECIBO_SERVER_URL = ''
 
 
-def dont_log_googlebot_404s(request, status, **kw):
-    if ('googlebot' in request.META.get('HTTP_USER_AGENT', '').lower() and
-            status == 404):
+def dont_log_crawler_404s(request, status, **kw):
+    ua = request.META.get('HTTP_USER_AGENT', '').lower()
+    if (status == 404 and ('googlebot' in ua or 'bingbot' in ua)):
         return False
     return True
 
 ARECIBO_SETTINGS = {
-    'CALLBACKS': [dont_log_googlebot_404s],
+    'CALLBACKS': [dont_log_crawler_404s],
 }
 
 HELPFULVOTES_UNHELPFUL_KEY = 'helpfulvotes_topunhelpful'
