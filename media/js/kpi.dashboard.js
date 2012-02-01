@@ -137,7 +137,7 @@ window.KpiDashboard = Backbone.View.extend({
 
         this.voteChartView = new ChartView({
             model: this.voteChart,
-            title: 'Article Helpful Votes',
+            title: 'Helpful Votes',
             series: [{
                 name: 'Article Votes: % Helpful',
                 numerator: 'kb_helpful',

@@ -2,12 +2,10 @@ import json
 
 from nose.tools import eq_
 
-from questions.tests import question, answer
 from sumo.tests import TestCase, LocalizingClient
 from sumo.urlresolvers import reverse
-from questions.tests import answer, answer_vote
-from users.tests import user, add_permission
-from users.models import Profile
+from questions.tests import answer, answer_vote, question
+from users.tests import user
 from wiki.tests import revision, helpful_vote
 
 
@@ -17,7 +15,6 @@ class KpiAPITests(TestCase):
     def test_solved(self):
         """Test solved API call."""
         u = user(save=True)
-        add_permission(u, Profile, 'view_kpi_dashboard')
 
         a = answer(save=True)
         a.question.solution = a
@@ -38,7 +35,6 @@ class KpiAPITests(TestCase):
     def test_vote(self):
         """Test vote API call."""
         u = user(save=True)
-        add_permission(u, Profile, 'view_kpi_dashboard')
 
         r = revision(save=True)
         helpful_vote(revision=r, save=True)
@@ -65,7 +61,6 @@ class KpiAPITests(TestCase):
     def test_fast_response(self):
         """Test fast response API call."""
         u = user(save=True)
-        add_permission(u, Profile, 'view_kpi_dashboard')
 
         a = answer(save=True)
         a.question.solution = a
