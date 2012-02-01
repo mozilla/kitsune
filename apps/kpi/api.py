@@ -7,7 +7,7 @@ from tastypie import fields
 from tastypie.cache import SimpleCache
 
 from questions.models import Question, Answer, AnswerVote
-from wiki.models import HelpfulVote
+from wiki.models import HelpfulVote, Revision
 
 
 class CachedResource(Resource):
@@ -92,7 +92,7 @@ class VoteResource(CachedResource):
 
 class FastResponseResource(CachedResource):
     """
-    Returns the total number and number of Questions that recieve an answer
+    Returns the total number and number of Questions that receive an answer
     within a period of time.
     """
     date = fields.DateField('date')
@@ -114,6 +114,63 @@ class FastResponseResource(CachedResource):
     class Meta:
         cache = SimpleCache()
         resource_name = 'kpi_fast_response'
+        allowed_methods = ['get']
+
+
+class ActiveKbContributorsResource(CachedResource):
+    """
+    Returns the number of active contributors in the KB.
+
+    Returns en-US and non-en-US numbers separately.
+    """
+    date = fields.DateField('date')
+    en_us = fields.IntegerField('en_us', default=0)
+    non_en_us = fields.IntegerField('non_en_us', default=0)
+
+    def get_object_list(self, request):
+        # TODO: This whole method is yucky... Is there a nicer way to do this?
+        # It will probably get soon nuked in favor of using the Metric model
+        # when we need to go more granular than monthly.
+        revisions = Revision.objects.filter(created__gte=_start_date()).extra(
+            select={
+                'month': 'extract( month from created )',
+                'year': 'extract( year from created )',
+            })
+
+        creators = revisions.values('year', 'month', 'creator').distinct()
+        reviewers = revisions.values('year', 'month', 'reviewer').distinct()
+
+        def _add_user(monthly_dict, year, month, userid):
+            if userid:
+                yearmonth = (year, month)
+                if yearmonth not in monthly_dict:
+                    monthly_dict[yearmonth] = set()
+                monthly_dict[yearmonth].add(userid)
+
+        def _add_users(monthly_dict, values, column):
+            for r in values:
+                _add_user(monthly_dict, r['year'], r['month'], r[column])
+
+        # Build the en-US contributors list
+        d = {}
+        _add_users(d, creators.filter(document__locale='en-US'), 'creator')
+        _add_users(d, reviewers.filter(document__locale='en-US'), 'reviewer')
+        en_us_list = [{'month': k[1], 'year': k[0], 'count': len(v)} for
+                      k, v in d.items()]
+
+        # Build the non en-US contributors list
+        d = {}
+        _add_users(d, creators.exclude(document__locale='en-US'), 'creator')
+        _add_users(d, reviewers.exclude(document__locale='en-US'), 'reviewer')
+        non_en_us_list = [{'month': k[1], 'year': k[0], 'count': len(v)} for
+                          k, v in d.items()]
+
+        # Merge and return
+        return merge_results(en_us=en_us_list, non_en_us=non_en_us_list)
+
+    class Meta:
+        cache = SimpleCache()
+        resource_name = 'kpi_active_kb_contributors'
         allowed_methods = ['get']
 
 
