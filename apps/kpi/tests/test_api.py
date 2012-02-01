@@ -61,3 +61,25 @@ class KpiAPITests(TestCase):
         eq_(r['objects'][0]['kb_votes'], 3)
         eq_(r['objects'][0]['ans_helpful'], 2)
         eq_(r['objects'][0]['ans_votes'], 3)
+
+    def test_fast_response(self):
+        """Test fast response API call."""
+        u = user(save=True)
+        add_permission(u, Profile, 'view_kpi_dashboard')
+
+        a = answer(save=True)
+        a.question.solution = a
+        a.question.save()
+
+        a = answer(save=True)
+        a.question.save()
+
+        url = reverse('api_dispatch_list',
+                      kwargs={'resource_name': 'kpi_fast_response',
+                              'api_name': 'v1'})
+        self.client.login(username=u.username, password='testpass')
+        response = self.client.get(url + '?format=json')
+        eq_(200, response.status_code)
+        r = json.loads(response.content)
+        eq_(r['objects'][0]['responded'], 2)
+        eq_(r['objects'][0]['questions'], 2)

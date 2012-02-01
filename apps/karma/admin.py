@@ -6,7 +6,7 @@ from django.shortcuts import render_to_response
 from django.template import RequestContext
 
 from karma.manager import KarmaManager
-from karma.models import Title
+from karma.models import Title, Points
 from karma.tasks import (init_karma, update_top_contributors,
                          recalculate_karma_points)
 from questions.karma_actions import (AnswerAction, AnswerMarkedHelpfulAction,
@@ -24,6 +24,14 @@ class TitleAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Title, TitleAdmin)
+
+
+class PointsAdmin(admin.ModelAdmin):
+    list_display = ('action', 'points', 'updated')
+    readonly_fields = ('updated',)
+
+
+admin.site.register(Points, PointsAdmin)
 
 
 # AdminPlus view:
