@@ -1,3 +1,4 @@
+from datetime import datetime
 import json
 
 from nose.tools import eq_
@@ -6,7 +7,7 @@ from sumo.tests import TestCase, LocalizingClient
 from sumo.urlresolvers import reverse
 from questions.tests import answer, answer_vote, question
 from users.tests import user
-from wiki.tests import revision, helpful_vote
+from wiki.tests import document, revision, helpful_vote
 
 
 class KpiAPITests(TestCase):
@@ -78,3 +79,22 @@ class KpiAPITests(TestCase):
         r = json.loads(response.content)
         eq_(r['objects'][0]['responded'], 2)
         eq_(r['objects'][0]['questions'], 2)
+
+    def test_active_kb_contributors(self):
+        """Test active kb contributors API call."""
+        r1 = revision(creator=user(save=True), save=True)
+        r2 = revision(creator=user(save=True), save=True)
+
+        d = document(parent=r1.document, locale='es', save=True)
+        revision(document=d, reviewed=datetime.now(),
+                 reviewer=r1.creator, creator=r2.creator, save=True)
+
+        url = reverse('api_dispatch_list',
+                      kwargs={'resource_name': 'kpi_active_kb_contributors',
+                              'api_name': 'v1'})
+
+        response = self.client.get(url + '?format=json')
+        eq_(200, response.status_code)
+        r = json.loads(response.content)
+        eq_(r['objects'][0]['en_us'], 2)
+        eq_(r['objects'][0]['non_en_us'], 2)
