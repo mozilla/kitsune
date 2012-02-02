@@ -131,11 +131,7 @@ class ActiveKbContributorsResource(CachedResource):
         # TODO: This whole method is yucky... Is there a nicer way to do this?
         # It will probably get soon nuked in favor of using the Metric model
         # when we need to go more granular than monthly.
-        revisions = Revision.objects.filter(created__gte=_start_date()).extra(
-            select={
-                'month': 'extract( month from created )',
-                'year': 'extract( year from created )',
-            })
+        revisions = _monthly_qs_for(Revision)
 
         creators = revisions.values('year', 'month', 'creator').distinct()
         reviewers = revisions.values('year', 'month', 'reviewer').distinct()
@@ -174,13 +170,56 @@ class ActiveKbContributorsResource(CachedResource):
         allowed_methods = ['get']
 
 
-def _qs_for(model_cls):
-    """Return the grouped queryset we need for model_cls."""
+class ActiveAnswerersResource(CachedResource):
+    """
+    Returns the number of active contributors in the support forum.
+
+    Definition of contribution: wrote 10+ posts
+    """
+    date = fields.DateField('date')
+    contributors = fields.IntegerField('contributors', default=0)
+
+    def get_object_list(self, request):
+        qs = _monthly_qs_for(Answer).values('year', 'month', 'creator')
+        qs = qs.annotate(count=Count('creator'))
+        answerers = qs.filter(count__gte=10)
+
+        def _add_user(monthly_dict, year, month, userid):
+            if userid:
+                yearmonth = (year, month)
+                if yearmonth not in monthly_dict:
+                    monthly_dict[yearmonth] = set()
+                monthly_dict[yearmonth].add(userid)
+
+        # Build the answerers count list aggregated by month
+        d = {}
+        for a in answerers:
+            _add_user(d, a['year'], a['month'], a['creator'])
+        contributors = [{'month': k[1], 'year': k[0], 'count': len(v)} for
+                        k, v in d.items()]
+
+        # Merge and return
+        return merge_results(contributors=contributors)
+
+    class Meta:
+        cache = SimpleCache()
+        resource_name = 'kpi_active_answerers'
+        allowed_methods = ['get']
+
+
+def _monthly_qs_for(model_cls):
+    """Return a queryset witht he extra select for month and year."""
     return model_cls.objects.filter(created__gte=_start_date()).extra(
         select={
             'month': 'extract( month from created )',
             'year': 'extract( year from created )',
-        }).values('year', 'month').annotate(count=Count('created'))
+        })
+
+
+def _qs_for(model_cls):
+    """Return the grouped queryset we need for model_cls."""
+    return _monthly_qs_for(model_cls).values(
+        'year', 'month').annotate(count=Count('created'))
 
 
 def _start_date():

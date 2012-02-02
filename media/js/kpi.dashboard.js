@@ -135,6 +135,10 @@ window.KpiDashboard = Backbone.View.extend({
             url: $(this.el).data('active-kb-contributors-url')
         });
 
+        this.activeAnswerersChart = new ChartModel([], {
+            url: $(this.el).data('active-answerers-url')
+        });
+
         // Create the views.
         this.solvedChartView = new ChartView({
             model: this.solvedChart,
@@ -204,18 +208,35 @@ window.KpiDashboard = Backbone.View.extend({
             }]
         });
 
+        this.activeAnswerers = new ChartView({
+            model: this.activeAnswerersChart,
+            title: 'Active Support Forum Contributors',
+            series: [{
+                name: 'Contributors',
+                mapper: function(o) {
+                    return {
+                        x: Date.parse(o['date']),
+                        y: o['contributors']
+                    };
+                }
+            }]
+        });
+
         // Render the views.
         $(this.el)
             .append(this.solvedChartView.render().el)
-            .append(this.voteChartView.render().el)
             .append(this.fastResponseView.render().el)
-            .append(this.activeKbContributorsView.render().el);
+            .append(this.voteChartView.render().el)
+            .append(this.activeKbContributorsView.render().el)
+            .append(this.activeAnswerers.render().el);
+
 
         // Load up the models.
         this.solvedChart.fetch();
         this.voteChart.fetch();
         this.fastResponseChart.fetch();
         this.activeKbContributorsChart.fetch();
+        this.activeAnswerersChart.fetch();
     }
 });
 
