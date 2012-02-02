@@ -580,6 +580,12 @@ ul.user-messages li.error {
     text-decoration: none;
 }
 
+
+.html-rtl #breadcrumbs li,
+.html-rtl #breadcrumbs a {
+    float: right;
+}
+
 #breadcrumbs li:after {
     content: '';
     border-color: transparent transparent transparent #58A100;
@@ -597,6 +603,16 @@ ul.user-messages li.error {
     z-index: 1;
 }
 
+.html-rtl #breadcrumbs li:after {
+    border-color: transparent #58A100 transparent transparent;
+    border-right: 10px solid #58A100;
+    border-left: medium none;
+    border-style: solid solid solid none;
+    border-width: 15px 10px 15px medium;
+    left: -9px;
+    right: auto;
+}
+
 #breadcrumbs li:last-child:after {
     content: none;
 }
@@ -605,13 +621,26 @@ ul.user-messages li.error {
     border-color: transparent transparent transparent #84C63C;
 }
 
+.html-rtl #breadcrumbs li.even:after {
+    border-color: transparent #84C63C transparent transparent;
+}
+
 #breadcrumbs li:first-child:after {
     border-color: transparent transparent transparent #58A100;
+}
+
+.html-rtl #breadcrumbs li:first-child:after {
+    border-color: transparent #58A100 transparent transparent;
 }
 
 #breadcrumbs li:hover:after,
 #breadcrumbs li.even:hover:after {
     border-color: transparent transparent transparent #ddd;
+}
+
+.html-rtl #breadcrumbs li:hover:after,
+.html-rtl #breadcrumbs li.even:hover:after {
+    border-color: transparent #ddd transparent transparent;
 }
 
 #breadcrumbs li.odd a {
@@ -633,9 +662,22 @@ ul.user-messages li.error {
     padding-left: 42px;
 }
 
+.html-rtl #breadcrumbs li:first-child a {
+    background-position: right center;
+    padding-left: 20px;
+    margin-right: 20px;
+}
+
+.html-rtl #breadcrumbs li:first-child {
+    background: #58A100;
+}
+
+.html-rtl #breadcrumbs li:first-child:hover {
+    background: #ddd;
+}
+
 #breadcrumbs li:first-child:hover a {
-    background: #ddd url(../img/icon.home.png) no-repeat 20px center;
-    padding-left: 42px;
+    background-color: #ddd;
 }
 
 #breadcrumbs li:hover a {
