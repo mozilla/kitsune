@@ -131,11 +131,7 @@ class ActiveKbContributorsResource(CachedResource):
         # TODO: This whole method is yucky... Is there a nicer way to do this?
         # It will probably get soon nuked in favor of using the Metric model
         # when we need to go more granular than monthly.
-        revisions = Revision.objects.filter(created__gte=_start_date()).extra(
-            select={
-                'month': 'extract( month from created )',
-                'year': 'extract( year from created )',
-            })
+        revisions = _monthly_qs_for(Revision)
 
         creators = revisions.values('year', 'month', 'creator').distinct()
         reviewers = revisions.values('year', 'month', 'reviewer').distinct()
@@ -174,13 +170,67 @@ class ActiveKbContributorsResource(CachedResource):
         allowed_methods = ['get']
 
 
-def _qs_for(model_cls):
-    """Return the grouped queryset we need for model_cls."""
+class ActiveAnswerersResource(CachedResource):
+    """
+    Returns the number of active contributors in the support forum.
+
+    Definition of contribution: wrote 10+ posts
+    """
+    date = fields.DateField('date')
+    contributors = fields.IntegerField('contributors', default=0)
+
+    def get_object_list(self, request):
+        answers = _monthly_qs_for(Answer)
+
+        answerers = answers.values('year', 'month', 'creator')
+
+        def _add_user(monthly_dict, year, month, userid):
+            """Build up a the dict grouped by month."""
+            if userid:
+                yearmonth = (year, month)
+                if yearmonth not in monthly_dict:
+                    monthly_dict[yearmonth] = {}
+                # Keep a count of the number of posts per user.
+                if userid not in monthly_dict[yearmonth]:
+                    monthly_dict[yearmonth][userid] = 0
+                monthly_dict[yearmonth][userid] += 1
+
+        # Build the answerers count list aggregated by month
+        d = {}
+        for a in answerers:
+            _add_user(d, a['year'], a['month'], a['creator'])
+        contributors_list = []
+        for yearmonth, user_dict in d.items():
+            # Only count contributors as users with >= 10 posts.
+            contributors = [user for user, count in user_dict.items() if
+                            count >= 10]
+            contributors_list.append({
+                'month': yearmonth[1],
+                'year': yearmonth[0],
+                'count': len(contributors)})
+
+        # Merge and return
+        return merge_results(contributors=contributors_list)
+
+    class Meta:
+        cache = SimpleCache()
+        resource_name = 'kpi_active_answerers'
+        allowed_methods = ['get']
+
+
+def _monthly_qs_for(model_cls):
+    """Return a queryset witht he extra select for month and year."""
     return model_cls.objects.filter(created__gte=_start_date()).extra(
         select={
             'month': 'extract( month from created )',
             'year': 'extract( year from created )',
-        }).values('year', 'month').annotate(count=Count('created'))
+        })
+
+
+def _qs_for(model_cls):
+    """Return the grouped queryset we need for model_cls."""
+    return _monthly_qs_for(model_cls).values(
+        'year', 'month').annotate(count=Count('created'))
 
 
 def _start_date():

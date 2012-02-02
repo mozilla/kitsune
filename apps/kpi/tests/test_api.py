@@ -98,3 +98,29 @@ class KpiAPITests(TestCase):
         r = json.loads(response.content)
         eq_(r['objects'][0]['en_us'], 2)
         eq_(r['objects'][0]['non_en_us'], 2)
+
+    def test_active_answerers(self):
+        """Test active answerers API call."""
+        # A user with 10 answers
+        u1 = user(save=True)
+        for x in range(10):
+            answer(save=True, creator=u1)
+
+        # A user with 9 answers
+        u2 = user(save=True)
+        for x in range(9):
+            answer(save=True, creator=u2)
+
+        # A user with 1 answer
+        u3 = user(save=True)
+        answer(save=True, creator=u3)
+
+        # There should be only one active contributor.
+        url = reverse('api_dispatch_list',
+                      kwargs={'resource_name': 'kpi_active_answerers',
+                              'api_name': 'v1'})
+
+        response = self.client.get(url + '?format=json')
+        eq_(200, response.status_code)
+        r = json.loads(response.content)
+        eq_(r['objects'][0]['contributors'], 1)
