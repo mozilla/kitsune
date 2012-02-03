@@ -1,26 +1,26 @@
 from operator import itemgetter
 from datetime import date, timedelta
 
+from django.db import connections, router
 from django.db.models import Count, F
+
 from tastypie.resources import Resource
 from tastypie import fields
 from tastypie.authorization import Authorization
 from tastypie.cache import SimpleCache
 
+from kpi.models import Metric
 from questions.models import Question, Answer, AnswerVote
 from wiki.models import HelpfulVote
 
 
 class CachedResource(Resource):
     def obj_get_list(self, request=None, **kwargs):
-        """
-        Overwrite ``obj_get_list`` to use the cache.
-        """
+        """Override ``obj_get_list`` to use the cache."""
         cache_key = self.generate_cache_key('list', **kwargs)
         obj_list = self._meta.cache.get(cache_key)
 
         if obj_list is None:
-
             obj_list = self.get_object_list(request)
             self._meta.cache.set(cache_key, obj_list, timeout=60 * 60 * 3)
 
@@ -42,6 +42,54 @@ class Struct(object):
 
     def __unicode__(self):
         return unicode(self.__dict__)
+
+
+class SphinxClickthroughResource(Resource):  # TODO: Make cached.
+    """Clickthrough ratio for Sphinx or Elastic searches for one period
+
+    Represents a ratio of {clicks of results}/{total searches} for each engine.
+
+    """
+    #: Date of period start. Assumes 1-week periods.
+    start = fields.DateField('start')
+    #: How many searches had (at least?) 1 result clicked
+    clicks = fields.IntegerField('clicks', default=0)
+    #: How many searches were performed with this engine
+    searches = fields.IntegerField('searches', default=0)
+
+    class Meta(object):
+        resource_name = 'sphinx-clickthrough-rate'
+        object_class = Struct
+        authorization = PermissionAuthorization('users.view_kpi_dashboard')
+        # TODO: authorization for PUT
+
+    def obj_get(self, request=None, **kwargs):
+        """Fetch a particular ratio by start date."""
+        raise NotImplementedError
+
+    def get_object_list(self, request):
+        """Return the authZ-limited set of ratios"""
+        # TODO: Limit by a passed-in start date.
+        return self.obj_get_list(request)
+
+    def obj_get_list(self, request=None, **kwargs):
+        """Return all the ratios.
+
+        If, somehow, half a ratio is missing, that ratio is not returned.
+
+        """
+        # I'm not sure if you can join a table to itself with the ORM.
+        cursor = _cursor()
+        cursor.execute(  # n for numerator, d for denominator
+            'SELECT n.start, n.value, d.value '
+            'FROM kpi_metric n '
+            'INNER JOIN kpi_metric d ON n.start=d.start '
+            'WHERE n.kind_id=(SELECT id FROM kpi_metrickind WHERE code=%s) '
+            'AND d.kind_id=(SELECT id FROM kpi_metrickind WHERE code=%s)',
+            ('search clickthroughs:sphinx:clicks',
+             'search clickthroughs:sphinx:searches'))
+        return [Struct(start=s, clicks=n, searches=d) for
+                s, n, d in cursor.fetchall()]
 
 
 class SolutionResource(CachedResource):
@@ -185,3 +233,8 @@ def _merge_results(x, y):
     """
     return dict((s, dict(x.get(s, {}).items() + y.get(s, {}).items()))
                     for s in set(x.keys() + y.keys()))
+
+
+def _cursor():
+    """Return a DB cursor for reading."""
+    return connections[router.db_for_read(Metric)].cursor()

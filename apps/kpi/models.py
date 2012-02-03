@@ -22,10 +22,17 @@ class Metric(ModelBase):
     # such cases it would probably be nicer to our future selves to put them in
     # a separate store (table or whatever) until bucketing.
 
+    # In the design of this table, we trade off constraints for generality.
+    # There's no way to have the DB prove, for example, that both halves of a
+    # clickthrough rate ratio will always exist, but the app can make sure it's
+    # true upon inserting them.
+
     kind = ForeignKey(MetricKind)
     start = DateField()
+
+    # Not useful yet. Present metrics have spans of known length.
     end = DateField()
-    
+
     # Ints should be good enough for all the currently wish-listed metrics.
     # Percents can be (even better) represented by 2 separate metrics: one for
     # numerator, one for denominator.
