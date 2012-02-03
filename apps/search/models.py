@@ -1,4 +1,3 @@
-import elasticutils
 import logging
 import pyes
 import time
@@ -90,6 +89,14 @@ class SearchMixin(object):
         _local_tasks().add((unindex_task.delay, (self.__class__, (self.id,))))
 
     @classmethod
+    def get_indexable(cls):
+        # Some models have a gazillion instances. So we want to go
+        # through them one at a time in a way that doesn't pull all
+        # the data into memory all at once. So we iterate through ids
+        # and pull the objects one at a time.
+        return cls.objects.order_by('id').values_list('id', flat=True)
+
+    @classmethod
     def index_all(cls, percent=100):
         """Reindexes all the objects for this model.
 
@@ -105,32 +112,34 @@ class SearchMixin(object):
         es = es_utils.get_indexing_es()
 
         doc_type = cls._meta.db_table
-        index = settings.ES_INDEXES['default']
+        index = settings.ES_WRITE_INDEXES['default']
 
         start_time = time.time()
+
+        indexable_qs = cls.get_indexable()
 
         log.info('reindex %s into %s index', doc_type, index)
 
         log.info('iterating through %s....', doc_type)
-        total = cls.objects.count()
+        total = indexable_qs.count()
         to_index = int(total * (percent / 100.0))
         log.info('total %s: %s (to be indexed: %s)', doc_type, total, to_index)
+        if to_index == 0:
+            log.info('done!')
+            return
+
         total = to_index
 
-        # Some models have a gazillion instances. So we want to go
-        # through them one at a time in a way that doesn't pull all
-        # the data into memory all at once. So we iterate through ids
-        # and pull the objects one at a time.
-        qs = cls.objects.order_by('id').values_list('id', flat=True)
-
-        for t, obj_id in enumerate(qs.iterator()):
+        for t, obj_id in enumerate(indexable_qs):
             if t > total:
                 break
 
             if t % 1000 == 0 and t > 0:
                 time_to_go = (total - t) * ((time.time() - start_time) / t)
-                log.info('%s/%s... (%s to go)', t, total,
-                         es_utils.format_time(time_to_go))
+                per_1000 = (time.time() - start_time) / (t / 1000.0)
+                log.info('%s/%s... (%s to go, %s per 1000 docs)', t, total,
+                         es_utils.format_time(time_to_go),
+                         es_utils.format_time(per_1000))
 
                 # We call this every 1000 or so because we're
                 # essentially loading the whole db and if DEBUG=True,
@@ -155,8 +164,10 @@ class SearchMixin(object):
             yield t
 
         es.flush_bulk(forced=True)
-        end_time = time.time()
-        log.info('done! (%s)', es_utils.format_time(end_time - start_time))
+        delta_time = time.time() - start_time
+        log.info('done! (%s, %s per 1000 docs)',
+                 es_utils.format_time(delta_time),
+                 es_utils.format_time(delta_time / (total / 1000.0)))
         es.refresh()
 
     @classmethod
@@ -167,14 +178,13 @@ class SearchMixin(object):
             return
 
         if es is None:
-            # Use the es_utils get_es because it uses
+            # Use es_utils.get_indexing_es() because it uses
             # ES_INDEXING_TIMEOUT.
             es = es_utils.get_indexing_es()
 
-        index = settings.ES_INDEXES['default']
+        index = settings.ES_WRITE_INDEXES['default']
         doc_type = cls._meta.db_table
 
-        # TODO: handle pyes.urllib3.TimeoutErrors here.
         es.index(document,
                  index=index,
                  doc_type=doc_type,
@@ -186,16 +196,22 @@ class SearchMixin(object):
             es.refresh(timesleep=0)
 
     @classmethod
-    def unindex(cls, id):
+    def unindex(cls, id, es=None):
         """Removes a document from the index"""
         if not settings.ES_LIVE_INDEXING:
             return
 
+        if es is None:
+            # Use es_utils.get_indexing_es() because it uses
+            # ES_INDEXING_TIMEOUT.
+            es = es_utils.get_indexing_es()
+
         doc_type = cls._meta.db_table
+        index = settings.ES_WRITE_INDEXES['default']
         try:
-            elasticutils.get_es().delete(settings.ES_INDEXES['default'],
-                                         doc_type,
-                                         id)
+            # TODO: There is a race condition here if this gets called
+            # during reindexing.
+            es.delete(index, doc_type, id)
         except pyes.exceptions.NotFoundException:
             # Ignore the case where we try to delete something that's
             # not there.

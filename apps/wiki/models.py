@@ -536,12 +536,21 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
         return d
 
     @classmethod
+    def get_indexable(cls):
+        # Don't index documents that have no revisions or where the
+        # current revision is a redirect.
+        indexable = super(cls, cls).get_indexable()
+        indexable = indexable.filter(current_revision__isnull=False)
+        indexable = indexable.exclude(html__startswith=REDIRECT_HTML)
+        return indexable
+
+    @classmethod
     def index(cls, document, **kwargs):
         # If there are no revisions or the current revision is a redirect,
         # we want to remove it from the index.
         if (document['current'] is None or
             document['content'].startswith(REDIRECT_HTML)):
-            cls.unindex(document['id'])
+            cls.unindex(document['id'], es=kwargs.get('es', None))
             return
         super(cls, cls).index(document, **kwargs)
 

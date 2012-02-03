@@ -71,21 +71,109 @@
 
 {% block content %}
   <section>
-    <h1>Status</h1>
-    {% if es_error_message %}
+    {% if es_error_message or delete_error_message %}
+      <h1>Status</h1>
+      {% if es_error_message %}
+        <p>
+          es_error_message: {{ es_error_message }}
+        </p>
+      {% endif %}
+      {% if delete_error_message %}
       <p>
-        {{ es_error_message }}
+        delete_error_message: {{ delete_error_message }}
       </p>
+      {% endif %}
     {% else %}
+      <h1>Settings</h1>
       <p>
-        Index counts at the time this page was loaded:
+        Settings at the time this page was loaded:
       </p>
-      <dl>
-        {% for stats_name, stats_count in doctype_stats.items %}
-          <dt>{{ stats_name }}</dt>
-          <dd>{{ stats_count }}</dd>
-        {% endfor %}
-      </dl>
+      <table>
+        <tr><th>ES_LIVE_INDEXING</th><td>{{ settings.ES_LIVE_INDEXING }}</td></tr>
+        <tr><th>ES_INDEX_PREFIX</th><td>{{ settings.ES_INDEX_PREFIX }}</td></tr>
+        <tr><th>ES_INDEXES</th><td>{{ settings.ES_INDEXES }}</td></tr>
+        <tr><th>ES_WRITE_INDEXES</th><td>{{ settings.ES_WRITE_INDEXES }}</td></tr>
+      </table>
+      <h1>Status</h1>
+      <p>
+        All indexes available:
+      </p>
+      <table>
+        <thead>
+          <th>index name</th>
+          <th>total documents in index</th>
+          <th></th>
+          <th></th>
+        </thead>
+        <tbody>
+          {% for index_name, index_count in indexes %}
+            <tr>
+              <td>{{ index_name }}</td><td>{{ index_count }}</td>
+              {% if index_name == read_index %}
+                <td>READ</td>
+                <td></td>
+              {% else %}
+                {% if index_name == write_index %}
+                  <td>WRITE</td>
+                {% else %}
+                  <td></td>
+                {% endif %}
+                <td>
+                  <form method="POST">
+                    {% csrf_token %}
+                    <div>
+                      <input type="hidden" name="delete_index" value="{{ index_name }}">
+                      <input type="submit" value="Delete">
+                    </div>
+                  </form>
+                </td>
+              {% endif %}
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      <h2>Read index ({{ read_index }})</h2>
+      {% if doctype_stats == None %}
+        <p>
+          Read index does not exist.
+        </p>
+      {% else %}
+        <table>
+          <thead>
+            <th>doctype</th>
+            <th>count</th>
+          </thead>
+          <tbody>
+            {% for stats_name, stats_count in doctype_stats.items %}
+              <tr><td>{{ stats_name }}</td><td>{{ stats_count }}</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% endif %}
+      <h2>Write index ({{ write_index }})</h2>
+      {% if read_index == write_index %}
+        <p>
+          Write index is the same as the read index.
+        </p>
+      {% else %}
+        {% if doctype_write_stats == None %}
+        <p>
+          Write index does not exist.
+        </p>
+        {% else %}
+          <table>
+            <thead>
+              <th>doctype</th>
+              <th>count</th>
+            </thead>
+            <tbody>
+              {% for stats_name, stats_count in doctype_write_stats.items %}
+                <tr><td>{{ stats_name }}</td><td>{{ stats_count }}</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        {% endif %}
+      {% endif %}
     {% endif %}
 
     <h1>Reindex</h1>
@@ -96,12 +184,17 @@
     <p>
       If the old index isn't compatible with the new code, you should waffle Sphinx on first.
     </p>
+    {% if read_index == write_index %}
+      <p class="errornote">
+        WARNING! Read and write indexes are the same! Reindexing would be really bad!
+      </p>
+    {% endif %}
     <form method="POST">
       {% csrf_token %}
       <div>
         <input type="submit"
                name="reindex"
-               value="Reindex"
+               value="Reindex into {{ write_index }}"
                {% if progress %}disabled="disabled"{% endif %}/>
       </div>
       <div>
@@ -119,7 +212,7 @@
     </form>
     {% if progress %}
       <p>
-        Reindexing is currently in progress:
+        Reindexing into {{ write_index }} is currently in progress:
       </p>
       <progress id="reindex_progress" value="{{ progress }}" max="1">{{ progress }}</progress>
     {% endif %}

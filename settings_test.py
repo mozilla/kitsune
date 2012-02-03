@@ -4,6 +4,7 @@
 # Make sure the doctypes (the keys) match the doctypes in ES_INDEXES
 # in settings.py and settings_local.py.
 ES_INDEXES = {'default': 'sumo_test'}
+ES_WRITE_INDEXES = ES_INDEXES
 
 # This makes sure we only turn on ES stuff when we're testing ES
 # stuff.
