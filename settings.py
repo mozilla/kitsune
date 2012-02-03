@@ -593,7 +593,8 @@ SESSION_EXISTS_COOKIE = 'sumo_session'
 #
 # Connection information for Elastic
 ES_HOSTS = ['127.0.0.1:9200']
-ES_INDEXES = {'default': 'sumo'}  # Doesn't support non-default indexes atm.
+ES_INDEXES = {'default': 'sumo_v1'}  # Doesn't support non-default indexes atm.
+ES_WRITE_INDEXES = ES_INDEXES  # Indexes for indexing new content.
 ES_LIVE_INDEXING = False  # Keep indexes up to date as objects are made/deleted
 ES_TIMEOUT = 5  # 5 second timeouts for querying
 ES_INDEXING_TIMEOUT = 30  # 30 second timeouts for all things indexing

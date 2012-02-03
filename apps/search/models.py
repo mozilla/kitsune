@@ -105,7 +105,7 @@ class SearchMixin(object):
         es = es_utils.get_indexing_es()
 
         doc_type = cls._meta.db_table
-        index = settings.ES_INDEXES['default']
+        index = settings.ES_WRITE_INDEXES['default']
 
         start_time = time.time()
 
@@ -171,7 +171,7 @@ class SearchMixin(object):
             # ES_INDEXING_TIMEOUT.
             es = es_utils.get_indexing_es()
 
-        index = settings.ES_INDEXES['default']
+        index = settings.ES_WRITE_INDEXES['default']
         doc_type = cls._meta.db_table
 
         # TODO: handle pyes.urllib3.TimeoutErrors here.
@@ -193,9 +193,11 @@ class SearchMixin(object):
 
         doc_type = cls._meta.db_table
         try:
-            elasticutils.get_es().delete(settings.ES_INDEXES['default'],
-                                         doc_type,
-                                         id)
+            # There is a race condition here if this gets called during
+            # reindexing.
+            es = es_utils.get_indexing_es(
+                default_indexes=[settings.ES_WRITE_INDEXES['default']])
+            es.delete(settings.ES_WRITE_INDEXES['default'], doc_type, id)
         except pyes.exceptions.NotFoundException:
             # Ignore the case where we try to delete something that's
             # not there.
