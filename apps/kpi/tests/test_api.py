@@ -11,13 +11,18 @@ from users.models import Profile
 from wiki.tests import revision, helpful_vote
 
 
-class KpiAPITests(TestCase):
+class KpiApiTests(TestCase):
     client_class = LocalizingClient
+
+    def _log_in_as_permissioned(self):
+        """Log in as a user with the ``view_kpi_dashboard`` permission."""
+        u = user(save=True)
+        add_permission(u, Profile, 'view_kpi_dashboard')
+        self.client.login(username=u.username, password='testpass')
 
     def test_solved(self):
         """Test solved API call."""
-        u = user(save=True)
-        add_permission(u, Profile, 'view_kpi_dashboard')
+        self._log_in_as_permissioned()
 
         a = answer(save=True)
         a.question.solution = a
@@ -28,7 +33,6 @@ class KpiAPITests(TestCase):
         url = reverse('api_dispatch_list',
                       kwargs={'resource_name': 'kpi_solution',
                               'api_name': 'v1'})
-        self.client.login(username=u.username, password='testpass')
         response = self.client.get(url + '?format=json')
         eq_(200, response.status_code)
         r = json.loads(response.content)
@@ -37,8 +41,7 @@ class KpiAPITests(TestCase):
 
     def test_vote(self):
         """Test vote API call."""
-        u = user(save=True)
-        add_permission(u, Profile, 'view_kpi_dashboard')
+        self._log_in_as_permissioned()
 
         r = revision(save=True)
         helpful_vote(revision=r, save=True)
@@ -53,7 +56,6 @@ class KpiAPITests(TestCase):
         url = reverse('api_dispatch_list',
                       kwargs={'resource_name': 'kpi_vote',
                               'api_name': 'v1'})
-        self.client.login(username=u.username, password='testpass')
         response = self.client.get(url + '?format=json')
         eq_(200, response.status_code)
         r = json.loads(response.content)
@@ -64,8 +66,7 @@ class KpiAPITests(TestCase):
 
     def test_fast_response(self):
         """Test fast response API call."""
-        u = user(save=True)
-        add_permission(u, Profile, 'view_kpi_dashboard')
+        self._log_in_as_permissioned()
 
         a = answer(save=True)
         a.question.solution = a
@@ -77,7 +78,6 @@ class KpiAPITests(TestCase):
         url = reverse('api_dispatch_list',
                       kwargs={'resource_name': 'kpi_fast_response',
                               'api_name': 'v1'})
-        self.client.login(username=u.username, password='testpass')
         response = self.client.get(url + '?format=json')
         eq_(200, response.status_code)
         r = json.loads(response.content)
