@@ -180,37 +180,26 @@ class ActiveAnswerersResource(CachedResource):
     contributors = fields.IntegerField('contributors', default=0)
 
     def get_object_list(self, request):
-        answers = _monthly_qs_for(Answer)
-
-        answerers = answers.values('year', 'month', 'creator')
+        qs = _monthly_qs_for(Answer).values('year', 'month', 'creator')
+        qs = qs.annotate(count=Count('creator'))
+        answerers = qs.filter(count__gte=10)
 
         def _add_user(monthly_dict, year, month, userid):
-            """Build up a the dict grouped by month."""
             if userid:
                 yearmonth = (year, month)
                 if yearmonth not in monthly_dict:
-                    monthly_dict[yearmonth] = {}
-                # Keep a count of the number of posts per user.
-                if userid not in monthly_dict[yearmonth]:
-                    monthly_dict[yearmonth][userid] = 0
-                monthly_dict[yearmonth][userid] += 1
+                    monthly_dict[yearmonth] = set()
+                monthly_dict[yearmonth].add(userid)
 
         # Build the answerers count list aggregated by month
         d = {}
         for a in answerers:
             _add_user(d, a['year'], a['month'], a['creator'])
-        contributors_list = []
-        for yearmonth, user_dict in d.items():
-            # Only count contributors as users with >= 10 posts.
-            contributors = [user for user, count in user_dict.items() if
-                            count >= 10]
-            contributors_list.append({
-                'month': yearmonth[1],
-                'year': yearmonth[0],
-                'count': len(contributors)})
+        contributors = [{'month': k[1], 'year': k[0], 'count': len(v)} for
+                        k, v in d.items()]
 
         # Merge and return
-        return merge_results(contributors=contributors_list)
+        return merge_results(contributors=contributors)
 
     class Meta:
         cache = SimpleCache()
