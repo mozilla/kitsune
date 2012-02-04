@@ -13,7 +13,7 @@ from django.dispatch import receiver
 from search.tasks import index_task, unindex_task
 from search import es_utils
 
-log = logging.getLogger('es_search')
+log = logging.getLogger('search.es')
 
 
 # db_table name -> model Class for search models
