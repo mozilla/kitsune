@@ -329,29 +329,13 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
 
         d['tag'] = [tag['name'] for tag in self.tags.values()]
 
-        # Array of strings.
-        answer_content = []
+        answer_values = list(self.answers.values_list(
+                        'content', 'creator__username'))
+        d['answer_content'] = [a[0] for a in answer_values]
+        d['answer_creator'] = list(set([a[1] for a in answer_values]))
 
-        # has_helpful is true if at least one answer is marked as
-        # helpful.
-        has_helpful = False
-
-        # answer_creator is the set of all answer creator user names.
-        answer_creator = set()
-
-        # answer_votes is the sum of votes for all of the answers.
-        answer_votes = 0
-
-        for ans in self.answers.iterator():
-            answer_content.append(ans.content)
-            has_helpful = has_helpful or bool(ans.num_helpful_votes)
-            answer_creator.add(ans.creator.username)
-            answer_votes += ans.upvotes
-
-        d['answer_content'] = answer_content
-        d['has_helpful'] = has_helpful
-        d['answer_creator'] = list(answer_creator)
-        d['answer_votes'] = answer_votes
+        helpful_count = self.answers.filter(votes__helpful=True).count()
+        d['has_helpful'] = (helpful_count > 0)
 
         return d
 
