@@ -19,12 +19,12 @@ Bugzilla in the channel.
 ``firebot`` is also an InfoBot and does a lot of generic MozBot-type stuff.
 
 
-``hudson``
-==========
+``jenkins``
+===========
 
-``hudson`` is the IRC notifier from `Jenkins <http://jenkins.mozilla.org/>`_.
-(Someday we'll rename him.) He tells us about the status of our CI builds and
-lets us schedule new ones.
+``jenkins`` is the IRC notifier from `Jenkins <http://jenkins.mozilla.org/>`_.
+He tells us about the status of our CI builds and lets us schedule new
+ones.
 
 
 ``kitsunebot``
