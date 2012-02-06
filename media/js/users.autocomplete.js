@@ -21,12 +21,19 @@ function init() {
         return string.replace(regex, "<strong>$1</strong>");
     }
 
+    var prefill = [];
+
+    if($("#id_to").val()) {
+        prefill = [{username: $("#id_to").val(), display_name: null}];
+    }
+
     var tokenInputSettings = {
         theme: "facebook",
         hintText: gettext("Search for a user..."),
         queryParam: "term",
         propertyToSearch: "username",
         tokenValue: "username",
+        prePopulate: prefill,
         resultsFormatter: function(item){
             var term = $("#token-input-id_to").val();
             if (item.display_name) {
