@@ -313,8 +313,9 @@ class TestWikiInternalLinks(TestCase):
         fr_d.save()
 
         # Without an approved revision, link should go to en-US doc.
+        # The site should stay in fr locale (/<locale>/<en-US slug>).
         link = pq(self.p.parse('[[A doc]]', locale='fr'))
-        eq_('/en-US/kb/a-doc', link.find('a').attr('href'))
+        eq_('/fr/kb/a-doc', link.find('a').attr('href'))
         eq_('A doc', link.find('a').text())
 
          # Approve a revision. Now link should go to fr doc.
