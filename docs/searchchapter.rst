@@ -250,8 +250,8 @@ Do a complete reindexing of everything by::
 This will delete the existing indexes, create new ones, and reindex
 everything in your database.  On my machine it takes about an hour.
 
-If you need to get stuff done and don't want to wait for a full indexing,
-you can index a percentage of things.
+If you need to get stuff done and don't want to wait for a full
+indexing, you can index a percentage of things.
 
 For example, this indexes 10% of your data ordered by id::
 
@@ -263,25 +263,13 @@ This indexes 50% of your data ordered by id::
 
 I use this when I'm fiddling with mappings and the indexing code.
 
-Also, you can index specific doctypes. Doctypes are named are the
-``_meta.db_table`` of the model they map to. At the time of this writing,
-there are three doctypes:
-
-* questions_question
-* wiki_document
-* forums_thread
-
-You can index specific doctypes by specifying the doctypes on the command
-line. This reindexes just questions::
-
-    $ ./manage.py esreindex questions_question
-
 
 .. Note::
 
-   Once you've indexed everything, you won't have to do it again unless
-   indexing code changes.  The models have ``post_save`` and ``pre_delete``
-   hooks that will update the index as the data changes.
+   Once you've indexed everything, you won't have to do it again
+   unless indexing code changes. The models have ``post_save`` and
+   ``pre_delete`` hooks that will update the index as the data
+   changes.
 
 
 Health/statistics
@@ -291,5 +279,5 @@ You can see Elastic Search statistics/health with::
 
     $ ./manage.py eswhazzup
 
-The last few lines tell you how many documents are in the index by doctype.
-I use this to make sure I've got stuff in my index.
+The last few lines tell you how many documents are in the index by
+doctype.  I use this to make sure I've got stuff in my index.
