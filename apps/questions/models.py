@@ -334,8 +334,7 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
         d['answer_content'] = [a[0] for a in answer_values]
         d['answer_creator'] = list(set([a[1] for a in answer_values]))
 
-        helpful_count = self.answers.filter(votes__helpful=True).count()
-        d['has_helpful'] = (helpful_count > 0)
+        d['has_helpful'] = self.answers.filter(votes__helpful=True).exists()
 
         return d
 
