@@ -23,7 +23,7 @@ window.ChartModel = Backbone.Model.extend({
 /*
  * Views
  */
-window.ChartView = Backbone.View.extend({
+window.MonthlyChartView = Backbone.View.extend({
     tagName: 'section',
     className: 'graph',
 
@@ -53,25 +53,24 @@ window.ChartView = Backbone.View.extend({
                 }
             },
             plotOptions: {
-                line: {
-                    dataLabels: {
-                        enabled: true,
-                        formatter: function() {
-                            return this.y.toFixed(0);
-                        }
+                series: {
+                    cursor: 'pointer',
+                    marker: {
+                        lineWidth: 1
                     },
-                    enableMouseTracking: false
+                    stickyTracking: true
                 }
             },
             title: {
                 text: this.options.title
             },
             tooltip: {
-                // TODO: Figure out why this is wonky.
-                //enabled: true,
-                formatter: function() {
-                    return '<b>' + this.y.toFixed(1) + ' %</b>';
-                }
+                style: {
+                    width: 200
+                },
+                enabled: true,
+                shared: true,
+                yDecimals: 0
             }
         };
 
@@ -79,9 +78,8 @@ window.ChartView = Backbone.View.extend({
             this.chartOptions.yAxis.title = {
                 text: '%'
             };
-            this.chartOptions.plotOptions.line.dataLabels.formatter = function() {
-                return this.y.toFixed(1) + '%';
-            };
+            this.chartOptions.tooltip.ySuffix = '%';
+            this.chartOptions.tooltip.yDecimals = 1;
         }
     },
 
@@ -92,7 +90,8 @@ window.ChartView = Backbone.View.extend({
         if(data) {
             self.chart = new Highcharts.Chart(self.chartOptions);
             _.each(this.options.series, function(series) {
-                var mapper = series.mapper;
+                var mapper = series.mapper,
+                    seriesData;
                 if (!mapper) {
                     mapper = function(o){
                         return {
@@ -101,13 +100,165 @@ window.ChartView = Backbone.View.extend({
                         };
                     };
                 }
+
+                seriesData = _.map(data, mapper);
+                seriesData.reverse();
+
                 self.chart.addSeries({
-                    'data': _.map(data, mapper),
-                    'name': series.name
+                    data: seriesData,
+                    name: series.name
                 });
             });
         }
 
+        return this;
+    }
+});
+
+window.StockChartView = Backbone.View.extend({
+    tagName: 'section',
+    className: 'graph',
+
+    initialize: function(s) {
+        _.bindAll(this, 'render');
+
+        this.model.bind('change', this.render);
+
+        this.chartOptions = {
+            chart: {
+                renderTo: this.el,
+                width: 800
+            },
+            title: {
+                text: this.options.title
+            },
+            rangeSelector: {
+                selected: 2,
+                buttons: [{
+                    type: 'month',
+                    count: 1,
+                    /* L10n: short for "1 month" */
+                    text: gettext('1m')
+                }, {
+                    type: 'month',
+                    count: 3,
+                    /* L10n: short for "3 months" */
+                    text: gettext('3m')
+                }, {
+                    type: 'month',
+                    count: 6,
+                    /* L10n: short for "6 months" */
+                    text: gettext('6m')
+                }, {
+                    type: 'ytd',
+                    /* L10n: short for "Year To Date" */
+                    text: gettext('YTD')
+                }, {
+                    type: 'year',
+                    count: 1,
+                    /* L10n: short for "1 year" */
+                    text: gettext('1y')
+                }, {
+                    type: 'all',
+                    text: gettext('All')
+                }],
+                buttonTheme: {
+                    width: null
+                },
+                inputStyle: {
+                    fontSize: '10px'
+                }
+            },
+            xAxis: {
+                type: 'datetime',
+                tickInterval: 24 * 3600 * 1000 * 30,
+                dateTimeLabelFormats: {
+                    month: '%b'
+                }
+            },
+            yAxis: {
+                min: 0,
+                title: '%'
+            },
+            tooltip: {
+                style: {
+                    width: 200
+                },
+                yDecimals: 1,
+                ySuffix: '%',
+                shared: true,
+                pointFormat: '<span style="color:{series.color}">{series.prettyName}</span>: <b>{point.y}</b><br/>'
+            },
+            credits: {
+                enabled: false
+            },
+            plotOptions: {
+                series: {
+                    cursor: 'pointer',
+                    marker: {
+                        lineWidth: 1
+                    },
+                    stickyTracking: true
+                }
+            },
+            legend: {
+                enabled: true,
+                y: 30,
+                verticalAlign: 'top'
+            },
+            series: []
+        };
+    },
+
+    render: function() {
+        var self = this,
+            data = this.model.get('objects');
+
+        if(data) {
+            _.each(this.options.series, function(series) {
+                var seriesData;
+
+                seriesData = _.map(data, function(o){
+                    return [Date.parse(o['date']),
+                            o[series.numerator] / o[series.denominator] * 100];
+                });
+                seriesData.reverse();
+
+                // Add the series with 3 different possible groupings:
+                // daily, weekly, monthly
+                self.chartOptions.series.push({
+                    name: gettext('Daily'),
+                    data: seriesData,
+                    dataGrouping: {
+                        enabled: false
+                    }
+                });
+                self.chartOptions.series.push({
+                    name: gettext('Weekly'),
+                    data: seriesData,
+                    dataGrouping: {
+                        forced: true,
+                        units: [['week', [1]]]
+                    }
+                });
+                self.chartOptions.series.push({
+                    name: gettext('Monthly'),
+                    data: seriesData,
+                    dataGrouping: {
+                        forced: true,
+                        units: [['month', [1]]]
+                    }
+                });
+
+                self.chart = new Highcharts.StockChart(self.chartOptions);
+
+                self.chart.series[0].prettyName = self.chart.series[1].prettyName = self.chart.series[2].prettyName = series.name;
+
+                // Hide the weekly and monthly series.
+                self.chart.series[1].hide();
+                self.chart.series[2].hide();
+            });
+        }
         return this;
     }
 });
@@ -140,27 +291,27 @@ window.KpiDashboard = Backbone.View.extend({
         });
 
         // Create the views.
-        this.solvedChartView = new ChartView({
+        this.solvedChartView = new StockChartView({
             model: this.solvedChart,
-            title: 'Questions Solved',
+            title: gettext('Questions Solved'),
             percent: true,
             series: [{
-                name: 'Questions: % Solved',
+                name: gettext('Solved'),
                 numerator: 'solved',
                 denominator: 'questions'
             }]
         });
 
-        this.voteChartView = new ChartView({
+        this.voteChartView = new MonthlyChartView({
             model: this.voteChart,
-            title: 'Helpful Votes',
+            title: gettext('Helpful Votes'),
             percent: true,
             series: [{
-                name: 'Article Votes: % Helpful',
+                name: gettext('Article Votes: % Helpful'),
                 numerator: 'kb_helpful',
                 denominator: 'kb_votes'
             }, {
-                name: 'Answer Votes: % Helpful',
+                name: gettext('Answer Votes: % Helpful'),
                 numerator: 'ans_helpful',
                 denominator: 'ans_votes'
             }/* TODO: Leave this out for now, it overlaps the article votes.
@@ -175,20 +326,20 @@ window.KpiDashboard = Backbone.View.extend({
             }*/]
         });
 
-        this.fastResponseView = new ChartView({
+        this.fastResponseView = new StockChartView({
             model: this.fastResponseChart,
-            title: 'Questions responded to within 72 hours',
+            title: gettext('Questions responded to within 72 hours'),
             percent: true,
             series: [{
-                name: 'Responded',
+                name: gettext('Responsed'),
                 numerator: 'responded',
                 denominator: 'questions'
             }]
         });
 
-        this.activeKbContributorsView = new ChartView({
+        this.activeKbContributorsView = new MonthlyChartView({
             model: this.activeKbContributorsChart,
-            title: 'Active KB Contributors',
+            title: gettext('Active KB Contributors'),
             series: [{
                 name: 'en-US',
                 mapper: function(o) {
@@ -208,11 +359,11 @@ window.KpiDashboard = Backbone.View.extend({
             }]
         });
 
-        this.activeAnswerers = new ChartView({
+        this.activeAnswerers = new MonthlyChartView({
             model: this.activeAnswerersChart,
-            title: 'Active Support Forum Contributors',
+            title: gettext('Active Support Forum Contributors'),
             series: [{
-                name: 'Contributors',
+                name: gettext('Contributors'),
                 mapper: function(o) {
                     return {
                         x: Date.parse(o['date']),
@@ -233,10 +384,42 @@ window.KpiDashboard = Backbone.View.extend({
 
         // Load up the models.
         this.solvedChart.fetch();
-        this.voteChart.fetch();
         this.fastResponseChart.fetch();
         this.activeKbContributorsChart.fetch();
         this.activeAnswerersChart.fetch();
+        this.voteChart.fetch();
+    }
+});
+
+
+// Set Highcharts options.
+Highcharts.setOptions({
+    lang: {
+        months: [gettext('January'),
+                 gettext('February'),
+                 gettext('March'),
+                 gettext('April'),
+                 gettext('May'),
+                 gettext('June'),
+                 gettext('July'),
+                 gettext('August'),
+                 gettext('September'),
+                 gettext('October'),
+                 gettext('November'),
+                 gettext('December')],
+        weekdays: [gettext('Sunday'),
+                   gettext('Monday'),
+                   gettext('Tuesday'),
+                   gettext('Wednesday'),
+                   gettext('Thursday'),
+                   gettext('Friday'),
+                   gettext('Saturday')],
+        loading: gettext('Loading...'),
+        rangeSelectorFrom: gettext('From'),
+        rangeSelectorTo: gettext('To'),
+        rangeSelectorZoom: gettext('Zoom'),
+        resetZoom: gettext('Reset zoom'),
+        resetZoomTitle: gettext('Reset zoom level 1:1')
     }
 });
 
