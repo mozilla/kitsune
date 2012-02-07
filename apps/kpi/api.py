@@ -46,7 +46,7 @@ class SolutionResource(CachedResource):
 
     def get_object_list(self, request):
         # Set up the query for the data we need
-        qs = _qs_for(Question)
+        qs = _daily_qs_for(Question)
 
         # Filter on solution
         qs_with_solutions = qs.filter(solution__isnull=False)
@@ -100,7 +100,7 @@ class FastResponseResource(CachedResource):
     responded = fields.IntegerField('responded', default=0)
 
     def get_object_list(self, request):
-        qs = _qs_for(Question)
+        qs = _daily_qs_for(Question)
 
         # All answers tht were created within 3 days of the question
         aq = Answer.objects.filter(
@@ -208,7 +208,7 @@ class ActiveAnswerersResource(CachedResource):
 
 
 def _monthly_qs_for(model_cls):
-    """Return a queryset witht he extra select for month and year."""
+    """Return a queryset with the extra select for month and year."""
     return model_cls.objects.filter(created__gte=_start_date()).extra(
         select={
             'month': 'extract( month from created )',
@@ -216,14 +216,24 @@ def _monthly_qs_for(model_cls):
         })
 
 
+def _daily_qs_for(model_cls):
+    """Return the daily grouped queryset we need for model_cls."""
+    return model_cls.objects.filter(created__gte=date(2011, 1, 1)).extra(
+        select={
+            'day': 'extract( day from created )',
+            'month': 'extract( month from created )',
+            'year': 'extract( year from created )',
+        }).values('year', 'month', 'day').annotate(count=Count('created'))
+
+
 def _qs_for(model_cls):
-    """Return the grouped queryset we need for model_cls."""
+    """Return the monthly grouped queryset we need for model_cls."""
     return _monthly_qs_for(model_cls).values(
         'year', 'month').annotate(count=Count('created'))
 
 
 def _start_date():
-    """The date from which we start querying data."""
+    """The date from which we start querying monthly data."""
     # Lets start on the first day of the month a year ago
     year_ago = date.today() - timedelta(days=365)
     return date(year_ago.year, year_ago.month, 1)
@@ -246,8 +256,8 @@ def _remap_date_counts(**kwargs):
         ...]
     """
     for label, qs in kwargs.iteritems():
-        yield dict((date(x['year'], x['month'], 1), {label: x['count']})
-                    for x in qs)
+        yield dict((date(x['year'], x['month'], x.get('day', 1)),
+                   {label: x['count']}) for x in qs)
 
 
 def merge_results(**kwargs):
