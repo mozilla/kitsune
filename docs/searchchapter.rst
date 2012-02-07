@@ -380,12 +380,40 @@ A front page search is what happens when you start on the front page,
 enter in a search query in the search box, and click on the green
 arrow.
 
-This does the following search:
+Front page search does the following:
 
-1. it searches kb and questions only
-2. kb articles are tagged with the product (e.g. "desktop") and must
-   not be archived
-3. questions are tagged with the product (e.g. "desktop") and must
-   have an answer marked as helpful
+1. searches only kb and questions
+2. (filter) kb articles are tagged with the product (e.g. "desktop")
+3. (filter) kb articles must not be archived
+4. (filter) kb articles must be in Troubleshooting (10) and
+   How-to (20) categories
+5. (filter) questions are tagged with the product (e.g. "desktop")
+6. (filter) questions must have an answer marked as helpful
 
-It uses the scoring as specified above.
+
+It scores as specified above.
+
+
+Advanced search
+---------------
+
+The advanced search form lines up with the filters applied.
+
+For example, if you search for knowledge base articles in the
+Troubleshooting category, then we add a filter where the result has to
+be in the Troubleshooting category.
+
+
+Link to the code
+----------------
+
+Here's a link to the search view in the master branch. This is what's
+on dev:
+
+https://github.com/mozilla/kitsune/blob/master/apps/search/views.py
+
+
+Here's a link to the search view in the next branch. This is what's
+on staging:
+
+https://github.com/mozilla/kitsune/blob/next/apps/search/views.py
