@@ -120,8 +120,19 @@ class KpiApiTests(TestCase):
                       kwargs={'resource_name': 'sphinx-clickthrough-rate',
                               'api_name': 'v1'})
         response = self.client.get(url + '?format=json')
-        # Beware of dict order changes someday.
-        self.assertContains(response, '''"objects": [{"clicks": 1, "resource_uri": "", "searches": 10, "start": "2000-01-01"}, {"clicks": 2, "resource_uri": "", "searches": 20, "start": "2000-01-09"}]''')
+        self.assertContains(  # Beware of dict order changes someday.
+            response,
+            '"objects": [{"clicks": 1, "resource_uri": "", "searches": 10, '
+                         '"start": "2000-01-01"}, '
+                        '{"clicks": 2, "resource_uri": "", "searches": 20, '
+                         '"start": "2000-01-09"}]')
+
+        # Test filtering by start date:
+        response = self.client.get(url + '?format=json&min_start=2000-01-09')
+        self.assertContains(  # Beware of dict order changes someday.
+            response,
+            '"objects": [{"clicks": 2, "resource_uri": "", "searches": 20, '
+                         '"start": "2000-01-09"}]')
 
     def test_sphinx_clickthrough_post(self):
         """Test Sphinx clickthrough write API."""
@@ -142,6 +153,9 @@ class KpiApiTests(TestCase):
         # Do a GET, and see if the round trip worked:
         self._log_in_as_permissioned()
         response = self.client.get(url + '?format=json')
-        self.assertContains(
+        self.assertContains(  # Beware of dict order changes someday.
             response,
-            '''"objects": [{"clicks": 50000000, "resource_uri": "", "searches": 100000000, "start": "2000-01-02"}]''')
+            '"objects": [{"clicks": 50000000, "resource_uri": "", '
+                         '"searches": 100000000, "start": "2000-01-02"}]')
+
+    # Correspnding ElasticSearch APIs are likely correct by dint of factoring.
