@@ -8,6 +8,9 @@ class MetricKind(ModelBase):
     """A programmer-readable identifier of a metric, like 'clicks: search'"""
     code = CharField(max_length=255, unique=True)
 
+    def __unicode__(self):
+        return self.code
+
 
 class Metric(ModelBase):
     """A single numeric measurement aggregated over a span of time.
@@ -40,3 +43,6 @@ class Metric(ModelBase):
 
     class Meta(object):
         unique_together = [('kind', 'start', 'end')]
+
+    def __unicode__(self):
+        return '%s (%s thru %s): %s' % (self.kind, self.start, self.end, self.value)
