@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 import logging
 import re
+import time
 
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -300,13 +301,13 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
             'is_locked': {'type': 'boolean'},
             'has_answers': {'type': 'boolean'},
             'has_helpful': {'type': 'boolean'},
-            'created': {'type': 'date'},
-            'updated': {'type': 'date'},
-            'question_creator': {'type': 'string'},
-            'answer_creator': {'type': 'string'},
+            'created': {'type': 'integer'},
+            'updated': {'type': 'integer'},
+            'question_creator': {'type': 'string', 'index': 'not_analyzed'},
+            'answer_creator': {'type': 'string', 'index': 'not_analyzed'},
             'question_votes': {'type': 'integer'},
             'answer_votes': {'type': 'integer'},
-            'tag': {'type': 'string'}}
+            'tag': {'type': 'string', 'index': 'not_analyzed'}}
 
     def extract_document(self):
         """Extracts indexable attributes from a Question and its answers."""
@@ -321,8 +322,13 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
         d['is_locked'] = self.is_locked
         d['has_answers'] = bool(self.num_answers)
 
-        d['created'] = self.created
-        d['updated'] = self.updated
+        # TODO: Sphinx stores created and updated as seconds since the
+        # epoch, so we convert them to that format here so that the
+        # search view works correctly. When we ditch Sphinx, we should
+        # see if it's faster to filter on ints or whether we should
+        # switch them to dates.
+        d['created'] = int(time.mktime(self.created.timetuple()))
+        d['updated'] = int(time.mktime(self.updated.timetuple()))
 
         d['question_creator'] = self.creator.username
         d['question_votes'] = self.num_votes_past_week

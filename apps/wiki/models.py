@@ -1,5 +1,6 @@
 from datetime import datetime
 from urlparse import urlparse
+import time
 
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -495,12 +496,12 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
             'parent_id': {'type': 'integer'},
             'content': {'type': 'string', 'analyzer': 'snowball'},
             'category': {'type': 'integer'},
-            'slug': {'type': 'string'},
+            'slug': {'type': 'string', 'index': 'not_analyzed'},
             'is_archived': {'type': 'boolean'},
             'summary': {'type': 'string', 'analyzer': 'snowball'},
             'keywords': {'type': 'string', 'analyzer': 'snowball'},
-            'updated': {'type': 'date'},
-            'tag': {'type': 'string'}}
+            'updated': {'type': 'integer'},
+            'tag': {'type': 'string', 'index': 'not_analyzed'}}
 
     def extract_document(self):
         d = {}
@@ -520,7 +521,8 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
         if self.current_revision:
             d['summary'] = self.current_revision.summary
             d['keywords'] = self.current_revision.keywords
-            d['updated'] = self.current_revision.created
+            d['updated'] = int(time.mktime(
+                    self.current_revision.created.timetuple()))
             d['current'] = self.current_revision.id
         else:
             d['summary'] = None
