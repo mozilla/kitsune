@@ -9,7 +9,7 @@ from tastypie import fields
 from tastypie.authorization import Authorization
 from tastypie.cache import SimpleCache
 
-from kpi.models import Metric
+from kpi.models import Metric, MetricKind
 from questions.models import Question, Answer, AnswerVote
 from wiki.models import HelpfulVote
 
@@ -28,11 +28,19 @@ class CachedResource(Resource):
 
 
 class PermissionAuthorization(Authorization):
-    def __init__(self, perm):
-        self.perm = perm
+    """Authorization which allows users with one permission to make read-only
+    requests and users with another to write."""
+
+    def __init__(self, read=None, write=None):
+        self.read_perm = read
+        self.write_perm = write
 
     def is_authorized(self, request, object=None):
-        return request.user.has_perm(self.perm)
+        if request.method == 'GET':
+            return request.user.has_perm(self.read_perm)
+        elif request.method == 'POST':
+            return request.user.has_perm(self.write_perm)
+        return False
 
 
 class Struct(object):
@@ -47,7 +55,7 @@ class Struct(object):
 class SphinxClickthroughResource(Resource):  # TODO: Make cached.
     """Clickthrough ratio for Sphinx or Elastic searches for one period
 
-    Represents a ratio of {clicks of results}/{total searches} for each engine.
+    Represents a ratio of {clicks of results}/{total searches} for one engine.
 
     """
     #: Date of period start. Assumes 1-week periods.
@@ -60,8 +68,9 @@ class SphinxClickthroughResource(Resource):  # TODO: Make cached.
     class Meta(object):
         resource_name = 'sphinx-clickthrough-rate'
         object_class = Struct
-        authorization = PermissionAuthorization('users.view_kpi_dashboard')
-        # TODO: authorization for PUT
+        authorization = PermissionAuthorization(
+            read='users.view_kpi_dashboard',
+            write='users.change_metric')
 
     def obj_get(self, request=None, **kwargs):
         """Fetch a particular ratio by start date."""
@@ -90,6 +99,31 @@ class SphinxClickthroughResource(Resource):  # TODO: Make cached.
              'search clickthroughs:sphinx:searches'))
         return [Struct(start=s, clicks=n, searches=d) for
                 s, n, d in cursor.fetchall()]
+
+    def obj_create(self, bundle, request=None, **kwargs):
+        def create_metric(kind, value_field, data):
+            """Given POSTed data, create a Metric.
+
+            Assume week-long buckets for the moment.
+
+            """
+            start = date(*(int(i) for i in data['start'].split('-')))
+            Metric.objects.create(kind=MetricKind.objects.get(code=kind),
+                                  start=start,
+                                  end=start + timedelta(days=7),
+                                  value=data[value_field])
+
+        create_metric('search clickthroughs:sphinx:searches',
+                      'searches',
+                      bundle.data)
+        create_metric('search clickthroughs:sphinx:clicks',
+                      'clicks',
+                      bundle.data)
+
+    def get_resource_uri(self, bundle_or_obj):
+        """Return a fake answer; we don't care, for now."""
+        return ''
+
 
 
 class SolutionResource(CachedResource):

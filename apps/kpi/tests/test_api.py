@@ -3,6 +3,7 @@ import json
 
 from nose.tools import eq_
 
+from kpi.models import Metric
 from kpi.tests import metric, metric_kind
 from questions.tests import question, answer
 from sumo.tests import TestCase, LocalizingClient
@@ -16,11 +17,18 @@ from wiki.tests import revision, helpful_vote
 class KpiApiTests(TestCase):
     client_class = LocalizingClient
 
-    def _log_in_as_permissioned(self):
+    def _log_in_as_permissioned(self, permission='view_kpi_dashboard'):
         """Log in as a user with the ``view_kpi_dashboard`` permission."""
         u = user(save=True)
-        add_permission(u, Profile, 'view_kpi_dashboard')
+        add_permission(u, Profile, permission)
         self.client.login(username=u.username, password='testpass')
+
+    def _make_sphinx_metric_kinds(self):
+        click_kind = metric_kind(code='search clickthroughs:sphinx:clicks',
+                                 save=True)
+        search_kind = metric_kind(code='search clickthroughs:sphinx:searches',
+                                  save=True)
+        return click_kind, search_kind
 
     def test_solved(self):
         """Test solved API call."""
@@ -90,10 +98,7 @@ class KpiApiTests(TestCase):
         """Test Sphinx clickthrough read API."""
         self._log_in_as_permissioned()
 
-        click_kind = metric_kind(code='search clickthroughs:sphinx:clicks',
-                                 save=True)
-        search_kind = metric_kind(code='search clickthroughs:sphinx:searches',
-                                  save=True)
+        click_kind, search_kind = self._make_sphinx_metric_kinds()
         metric(kind=click_kind,
                start=date(2000, 1, 1),
                value=1,
@@ -117,3 +122,26 @@ class KpiApiTests(TestCase):
         response = self.client.get(url + '?format=json')
         # Beware of dict order changes someday.
         self.assertContains(response, '''"objects": [{"clicks": 1, "resource_uri": "", "searches": 10, "start": "2000-01-01"}, {"clicks": 2, "resource_uri": "", "searches": 20, "start": "2000-01-09"}]''')
+
+    def test_sphinx_clickthrough_post(self):
+        """Test Sphinx clickthrough write API."""
+        self._log_in_as_permissioned('change_metric')
+
+        click_kind, search_kind = self._make_sphinx_metric_kinds()
+
+        url = reverse('api_dispatch_list',
+                      kwargs={'resource_name': 'sphinx-clickthrough-rate',
+                              'api_name': 'v1'})
+        response = self.client.post(url,
+                                    json.dumps({'start': '2000-01-02',
+                                                'searches': 1e8,
+                                                'clicks': 5e7}),
+                                    content_type='application/json')
+        eq_(response.status_code, 201)
+
+        # Do a GET, and see if the round trip worked:
+        self._log_in_as_permissioned()
+        response = self.client.get(url + '?format=json')
+        self.assertContains(
+            response,
+            '''"objects": [{"clicks": 50000000, "resource_uri": "", "searches": 100000000, "start": "2000-01-02"}]''')
