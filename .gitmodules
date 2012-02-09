@@ -126,7 +126,7 @@
 	url = https://github.com/andymckay/django-arecibo.git
 [submodule "vendor/src/oedipus"]
 	path = vendor/src/oedipus
-	url = https://github.com/erikrose/oedipus.git
+	url = git://github.com/erikrose/oedipus.git
 [submodule "vendor/src/elasticutils"]
 	path = vendor/src/elasticutils
 	url = git://github.com/davedash/elasticutils.git
