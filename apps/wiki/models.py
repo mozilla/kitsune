@@ -503,27 +503,31 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
             'updated': {'type': 'integer'},
             'tag': {'type': 'string', 'index': 'not_analyzed'}}
 
-    def extract_document(self):
+    @classmethod
+    def extract_document(cls, obj_id):
+        obj = cls.objects.select_related(
+            'current_revision', 'parent').get(pk=obj_id)
+
         d = {}
-        d['id'] = self.id
-        d['title'] = self.title
-        d['locale'] = self.locale
-        d['parent_id'] = self.parent.id if self.parent else None
-        d['content'] = self.html
-        d['category'] = self.category
-        d['slug'] = self.slug
-        d['is_archived'] = self.is_archived
-        if self.parent is None:
-            d['tag'] = [tag['name'] for tag in self.tags.values()]
+        d['id'] = obj.id
+        d['title'] = obj.title
+        d['locale'] = obj.locale
+        d['parent_id'] = obj.parent.id if obj.parent else None
+        d['content'] = obj.html
+        d['category'] = obj.category
+        d['slug'] = obj.slug
+        d['is_archived'] = obj.is_archived
+        if obj.parent is None:
+            d['tag'] = [tag['name'] for tag in obj.tags.values()]
         else:
             # Translations inherit tags from their parents.
-            d['tag'] = [tag['name'] for tag in self.parent.tags.values()]
-        if self.current_revision:
-            d['summary'] = self.current_revision.summary
-            d['keywords'] = self.current_revision.keywords
+            d['tag'] = [tag['name'] for tag in obj.parent.tags.values()]
+        if obj.current_revision:
+            d['summary'] = obj.current_revision.summary
+            d['keywords'] = obj.current_revision.keywords
             d['updated'] = int(time.mktime(
-                    self.current_revision.created.timetuple()))
-            d['current'] = self.current_revision.id
+                    obj.current_revision.created.timetuple()))
+            d['current'] = obj.current_revision.id
         else:
             d['summary'] = None
             d['keywords'] = None
