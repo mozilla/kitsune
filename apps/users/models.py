@@ -70,7 +70,6 @@ class Profile(ModelBase):
 
     class Meta(object):
         permissions = (('view_karma_points', 'Can view karma points'),)
-        permissions = (('view_kpi_dashboard', 'Can view KPI Dashboard'),)
 
     def __unicode__(self):
         return unicode(self.user)

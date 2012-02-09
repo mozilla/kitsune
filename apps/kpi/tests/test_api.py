@@ -1,17 +1,16 @@
-from datetime import date
+from datetime import date, datetime
 import json
 
 from nose.tools import eq_
 
 from kpi.models import Metric
 from kpi.tests import metric, metric_kind
-from questions.tests import question, answer
 from sumo.tests import TestCase, LocalizingClient
 from sumo.urlresolvers import reverse
-from questions.tests import answer, answer_vote
-from users.tests import user, add_permission
+from questions.tests import answer, answer_vote, question
 from users.models import Profile
-from wiki.tests import revision, helpful_vote
+from users.tests import user, add_permission
+from wiki.tests import document, revision, helpful_vote
 
 
 class KpiApiTests(TestCase):
@@ -32,7 +31,7 @@ class KpiApiTests(TestCase):
 
     def test_solved(self):
         """Test solved API call."""
-        self._log_in_as_permissioned()
+        u = user(save=True)
 
         a = answer(save=True)
         a.question.solution = a
@@ -51,7 +50,7 @@ class KpiApiTests(TestCase):
 
     def test_vote(self):
         """Test vote API call."""
-        self._log_in_as_permissioned()
+        u = user(save=True)
 
         r = revision(save=True)
         helpful_vote(revision=r, save=True)
@@ -76,7 +75,7 @@ class KpiApiTests(TestCase):
 
     def test_fast_response(self):
         """Test fast response API call."""
-        self._log_in_as_permissioned()
+        u = user(save=True)
 
         a = answer(save=True)
         a.question.solution = a
@@ -94,10 +93,53 @@ class KpiApiTests(TestCase):
         eq_(r['objects'][0]['responded'], 2)
         eq_(r['objects'][0]['questions'], 2)
 
+    def test_active_kb_contributors(self):
+        """Test active kb contributors API call."""
+        r1 = revision(creator=user(save=True), save=True)
+        r2 = revision(creator=user(save=True), save=True)
+
+        d = document(parent=r1.document, locale='es', save=True)
+        revision(document=d, reviewed=datetime.now(),
+                 reviewer=r1.creator, creator=r2.creator, save=True)
+
+        url = reverse('api_dispatch_list',
+                      kwargs={'resource_name': 'kpi_active_kb_contributors',
+                              'api_name': 'v1'})
+
+        response = self.client.get(url + '?format=json')
+        eq_(200, response.status_code)
+        r = json.loads(response.content)
+        eq_(r['objects'][0]['en_us'], 2)
+        eq_(r['objects'][0]['non_en_us'], 2)
+
+    def test_active_answerers(self):
+        """Test active answerers API call."""
+        # A user with 10 answers
+        u1 = user(save=True)
+        for x in range(10):
+            answer(save=True, creator=u1)
+
+        # A user with 9 answers
+        u2 = user(save=True)
+        for x in range(9):
+            answer(save=True, creator=u2)
+
+        # A user with 1 answer
+        u3 = user(save=True)
+        answer(save=True, creator=u3)
+
+        # There should be only one active contributor.
+        url = reverse('api_dispatch_list',
+                      kwargs={'resource_name': 'kpi_active_answerers',
+                              'api_name': 'v1'})
+
+        response = self.client.get(url + '?format=json')
+        eq_(200, response.status_code)
+        r = json.loads(response.content)
+        eq_(r['objects'][0]['contributors'], 1)
+
     def test_sphinx_clickthrough_get(self):
         """Test Sphinx clickthrough read API."""
-        self._log_in_as_permissioned()
-
         click_kind, search_kind = self._make_sphinx_metric_kinds()
         metric(kind=click_kind,
                start=date(2000, 1, 1),
@@ -151,7 +193,6 @@ class KpiApiTests(TestCase):
         eq_(response.status_code, 201)
 
         # Do a GET, and see if the round trip worked:
-        self._log_in_as_permissioned()
         response = self.client.get(url + '?format=json')
         self.assertContains(  # Beware of dict order changes someday.
             response,
