@@ -50,7 +50,6 @@ class PermissionAuthorization(Authorization):
             return True
         elif request.method == 'POST':
             return request.user.has_perm(self.write_perm)
-            # TODO: What about basic auth?
         return False
 
 
@@ -71,7 +70,7 @@ class SearchClickthroughMeta(object):
     # of reading tastypie docs (and source).
     object_class = Struct
     authentication = WriteOnlyBasicAuthentication()
-    authorization = PermissionAuthorization(write='users.change_metric')
+    authorization = PermissionAuthorization(write='kpi.add_metric')
 
 
 class SearchClickthroughResource(CachedResource):
@@ -80,7 +79,7 @@ class SearchClickthroughResource(CachedResource):
     Represents a ratio of {clicks of results}/{total searches} for one engine.
 
     """
-    #: Date of period start. Assumes 1-week periods.
+    #: Date of period start. Assumes 1-day periods.
     start = fields.DateField('start')
     #: How many searches had (at least?) 1 result clicked
     clicks = fields.IntegerField('clicks', default=0)
@@ -139,13 +138,13 @@ class SearchClickthroughResource(CachedResource):
         def create_metric(kind, value_field, data):
             """Given POSTed data, create a Metric.
 
-            Assume week-long buckets for the moment.
+            Assume day-long buckets for the moment.
 
             """
             start = date(*_parse_date(data['start']))
             Metric.objects.create(kind=MetricKind.objects.get(code=kind),
                                   start=start,
-                                  end=start + timedelta(days=7),
+                                  end=start + timedelta(days=1),
                                   value=data[value_field])
 
         create_metric(self.searches_kind, 'searches', bundle.data)
@@ -166,7 +165,7 @@ class SphinxClickthroughResource(SearchClickthroughResource):
 class ElasticClickthroughResource(SearchClickthroughResource):
     engine = 'elastic'
 
-    class Meta(object):
+    class Meta(SearchClickthroughMeta):
         resource_name = 'elastic-clickthrough-rate'
 
 

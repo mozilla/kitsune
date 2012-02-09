@@ -174,7 +174,7 @@ class KpiApiTests(TestCase):
     def test_sphinx_clickthrough_post(self):
         """Test Sphinx clickthrough write API."""
         u = user(save=True)
-        add_permission(u, Profile, 'change_metric')
+        add_permission(u, Metric, 'add_metric')
 
         click_kind, search_kind = self._make_sphinx_metric_kinds()
 
