@@ -1,3 +1,4 @@
+from base64 import b64encode
 from datetime import date, datetime
 import json
 
@@ -15,12 +16,6 @@ from wiki.tests import document, revision, helpful_vote
 
 class KpiApiTests(TestCase):
     client_class = LocalizingClient
-
-    def _log_in_as_permissioned(self, permission='view_kpi_dashboard'):
-        """Log in as a user with the ``view_kpi_dashboard`` permission."""
-        u = user(save=True)
-        add_permission(u, Profile, permission)
-        self.client.login(username=u.username, password='testpass')
 
     def _make_sphinx_metric_kinds(self):
         click_kind = metric_kind(code='search clickthroughs:sphinx:clicks',
@@ -178,18 +173,22 @@ class KpiApiTests(TestCase):
 
     def test_sphinx_clickthrough_post(self):
         """Test Sphinx clickthrough write API."""
-        self._log_in_as_permissioned('change_metric')
+        u = user(save=True)
+        add_permission(u, Profile, 'change_metric')
 
         click_kind, search_kind = self._make_sphinx_metric_kinds()
 
+        # POST the new object:
         url = reverse('api_dispatch_list',
                       kwargs={'resource_name': 'sphinx-clickthrough-rate',
                               'api_name': 'v1'})
+        auth = 'Basic ' + b64encode('%s:%s' % (u.username, 'testpass'))
         response = self.client.post(url,
                                     json.dumps({'start': '2000-01-02',
                                                 'searches': 1e8,
                                                 'clicks': 5e7}),
-                                    content_type='application/json')
+                                    content_type='application/json',
+                                    HTTP_AUTHORIZATION=auth)
         eq_(response.status_code, 201)
 
         # Do a GET, and see if the round trip worked:

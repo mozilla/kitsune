@@ -4,10 +4,11 @@ from datetime import date, timedelta
 from django.db import connections, router
 from django.db.models import Count, F
 
-from tastypie.resources import Resource
 from tastypie import fields
+from tastypie.authentication import BasicAuthentication
 from tastypie.authorization import Authorization
 from tastypie.cache import SimpleCache
+from tastypie.resources import Resource
 
 from kpi.models import Metric, MetricKind
 from questions.models import Question, Answer, AnswerVote
@@ -25,6 +26,15 @@ class CachedResource(Resource):
             self._meta.cache.set(cache_key, obj_list, timeout=60 * 60 * 3)
 
         return obj_list
+
+
+class WriteOnlyBasicAuthentication(BasicAuthentication):
+    """Authenticator that prompts for credentials only for write requests."""
+    def is_authenticated(self, request, **kwargs):
+        if request.method == 'GET':
+            return True
+        return super(WriteOnlyBasicAuthentication, self).is_authenticated(
+                request, **kwargs)
 
 
 class PermissionAuthorization(Authorization):
@@ -60,6 +70,7 @@ class SearchClickthroughMeta(object):
     # ORM metaclass is. There's might be a supported way, but I'm really sick
     # of reading tastypie docs (and source).
     object_class = Struct
+    authentication = WriteOnlyBasicAuthentication()
     authorization = PermissionAuthorization(write='users.change_metric')
 
 
