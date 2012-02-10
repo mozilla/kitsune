@@ -33,6 +33,7 @@ from sumo.models import ModelBase
 from sumo.parser import wiki_to_html
 from sumo.redis_utils import RedisError
 from sumo.urlresolvers import reverse
+from taggit.models import TaggedItem
 from tags.models import BigVocabTaggableMixin
 from tags.utils import add_existing_tag
 from upload.models import ImageAttachment
@@ -309,38 +310,47 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
             'answer_votes': {'type': 'integer'},
             'tag': {'type': 'string', 'index': 'not_analyzed'}}
 
-    def extract_document(self):
+    @classmethod
+    def extract_document(cls, obj_id):
         """Extracts indexable attributes from a Question and its answers."""
+        obj = cls.uncached.values(
+            'id', 'title', 'content', 'num_answers', 'solution_id',
+            'is_locked', 'created', 'updated', 'num_votes_past_week',
+            'creator__username').get(pk=obj_id)
+
         d = {}
-
-        d['id'] = self.id
-
-        d['title'] = self.title
-        d['question_content'] = self.content
-        d['replies'] = self.num_answers
-        d['is_solved'] = bool(self.solution_id)
-        d['is_locked'] = self.is_locked
-        d['has_answers'] = bool(self.num_answers)
+        d['id'] = obj['id']
+        d['title'] = obj['title']
+        d['question_content'] = obj['content']
+        d['replies'] = obj['num_answers']
+        d['is_solved'] = bool(obj['solution_id'])
+        d['is_locked'] = obj['is_locked']
+        d['has_answers'] = bool(obj['num_answers'])
 
         # TODO: Sphinx stores created and updated as seconds since the
         # epoch, so we convert them to that format here so that the
         # search view works correctly. When we ditch Sphinx, we should
         # see if it's faster to filter on ints or whether we should
         # switch them to dates.
-        d['created'] = int(time.mktime(self.created.timetuple()))
-        d['updated'] = int(time.mktime(self.updated.timetuple()))
+        d['created'] = int(time.mktime(obj['created'].timetuple()))
+        d['updated'] = int(time.mktime(obj['updated'].timetuple()))
 
-        d['question_creator'] = self.creator.username
-        d['question_votes'] = self.num_votes_past_week
+        d['question_creator'] = obj['creator__username']
+        d['question_votes'] = obj['num_votes_past_week']  # TODO: probably wrong?
 
-        d['tag'] = [tag['name'] for tag in self.tags.values()]
+        d['tag'] = list(TaggedItem.tags_for(
+            Question, Question(pk=obj_id)).values_list('name', flat=True))
 
-        answer_values = list(self.answers.values_list(
+        answer_values = list(Answer.objects.filter(question=obj_id).values_list(
                         'content', 'creator__username'))
         d['answer_content'] = [a[0] for a in answer_values]
         d['answer_creator'] = list(set([a[1] for a in answer_values]))
 
-        d['has_helpful'] = self.answers.filter(votes__helpful=True).exists()
+        if not answer_values:
+            d['has_helpful'] = False
+        else:
+            d['has_helpful'] = Answer.objects.filter(
+                question=obj_id).filter(votes__helpful=True).exists()
 
         return d
 

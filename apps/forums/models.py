@@ -196,34 +196,37 @@ class Thread(NotificationsMixin, ModelBase, SearchMixin):
             'updated': {'type': 'integer'},
             'replies': {'type': 'integer'}}
 
-    def extract_document(self):
+    @classmethod
+    def extract_document(cls, obj_id):
         """Extracts interesting thing from a Thread and its Posts"""
+        obj = cls.objects.select_related('last_post').get(pk=obj_id)
+
         d = {}
-        d['id'] = self.id
-        d['forum_id'] = self.forum.id
-        d['title'] = self.title
-        d['is_sticky'] = self.is_sticky
-        d['is_locked'] = self.is_locked
+        d['id'] = obj.id
+        d['forum_id'] = obj.forum.id
+        d['title'] = obj.title
+        d['is_sticky'] = obj.is_sticky
+        d['is_locked'] = obj.is_locked
 
         # TODO: Sphinx stores created and updated as seconds since the
         # epoch, so we convert them to that format here so that the
         # search view works correctly. When we ditch Sphinx, we should
         # see if it's faster to filter on ints or whether we should
         # switch them to dates.
-        d['created'] = int(time.mktime(self.created.timetuple()))
+        d['created'] = int(time.mktime(obj.created.timetuple()))
 
-        if self.last_post is not None:
-            d['updated'] = int(time.mktime(self.last_post.created.timetuple()))
+        if obj.last_post is not None:
+            d['updated'] = int(time.mktime(obj.last_post.created.timetuple()))
         else:
             d['updates'] = None
 
-        d['replies'] = self.replies
+        d['replies'] = obj.replies
 
         author_ids = set()
         author_ords = set()
         content = []
 
-        for post in self.post_set.all():
+        for post in obj.post_set.select_related('author').all():
             author_ids.add(post.author.id)
             author_ords.add(post.author.username)
             content.append(post.content)
