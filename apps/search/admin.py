@@ -5,7 +5,7 @@ from django.core.exceptions import PermissionDenied
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 
-from search.es_utils import get_doctype_stats
+from search.es_utils import get_doctype_stats, get_indexes
 from search.tasks import (ES_REINDEX_PROGRESS, ES_WAFFLE_WHEN_DONE,
                           reindex_with_progress)
 from sumo.urlresolvers import reverse
@@ -33,10 +33,15 @@ def search(request):
 
     es_error_message = ''
     stats = {}
+
+    read_index = settings.ES_INDEXES['default']
+    write_index = settings.ES_WRITE_INDEXES['default']
     try:
         # This gets index stats, but also tells us whether ES is in
         # a bad state.
-        stats = get_doctype_stats()
+        stats = get_doctype_stats(read_index)
+        write_stats = get_doctype_stats(write_index)
+        indexes = get_indexes()
     except ESMaxRetryError:
         es_error_message = ('Elastic Search is not set up on this machine '
                             'or is not responding. (MaxRetryError)')
@@ -51,6 +56,10 @@ def search(request):
         'search/admin/search.html',
         {'title': 'Search',
          'doctype_stats': stats,
+         'doctype_write_stats': write_stats,
+         'indexes': indexes,
+         'read_index': read_index,
+         'write_index': write_index,
          'es_error_message': es_error_message,
           # Dim the buttons even if the form loads before the task fires:
          'progress': cache.get(ES_REINDEX_PROGRESS,

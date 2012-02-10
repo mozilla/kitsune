@@ -90,6 +90,14 @@ class SearchMixin(object):
         _local_tasks().add((unindex_task.delay, (self.__class__, (self.id,))))
 
     @classmethod
+    def get_indexable(cls):
+        # Some models have a gazillion instances. So we want to go
+        # through them one at a time in a way that doesn't pull all
+        # the data into memory all at once. So we iterate through ids
+        # and pull the objects one at a time.
+        return cls.objects.order_by('id').values_list('id', flat=True)
+
+    @classmethod
     def index_all(cls, percent=100):
         """Reindexes all the objects for this model.
 
@@ -109,21 +117,17 @@ class SearchMixin(object):
 
         start_time = time.time()
 
+        indexable_qs = cls.get_indexable()
+
         log.info('reindex %s into %s index', doc_type, index)
 
         log.info('iterating through %s....', doc_type)
-        total = cls.objects.count()
+        total = indexable_qs.count()
         to_index = int(total * (percent / 100.0))
         log.info('total %s: %s (to be indexed: %s)', doc_type, total, to_index)
         total = to_index
 
-        # Some models have a gazillion instances. So we want to go
-        # through them one at a time in a way that doesn't pull all
-        # the data into memory all at once. So we iterate through ids
-        # and pull the objects one at a time.
-        qs = cls.objects.order_by('id').values_list('id', flat=True)
-
-        for t, obj_id in enumerate(qs.iterator()):
+        for t, obj_id in enumerate(indexable_qs):
             if t > total:
                 break
 
@@ -167,14 +171,13 @@ class SearchMixin(object):
             return
 
         if es is None:
-            # Use the es_utils get_es because it uses
+            # Use es_utils.get_indexing_es() because it uses
             # ES_INDEXING_TIMEOUT.
             es = es_utils.get_indexing_es()
 
         index = settings.ES_WRITE_INDEXES['default']
         doc_type = cls._meta.db_table
 
-        # TODO: handle pyes.urllib3.TimeoutErrors here.
         es.index(document,
                  index=index,
                  doc_type=doc_type,
@@ -186,18 +189,22 @@ class SearchMixin(object):
             es.refresh(timesleep=0)
 
     @classmethod
-    def unindex(cls, id):
+    def unindex(cls, id, es=None):
         """Removes a document from the index"""
         if not settings.ES_LIVE_INDEXING:
             return
 
+        if es is None:
+            # Use es_utils.get_indexing_es() because it uses
+            # ES_INDEXING_TIMEOUT.
+            es = es_utils.get_indexing_es()
+
         doc_type = cls._meta.db_table
+        index = settings.ES_WRITE_INDEXES['default']
         try:
-            # There is a race condition here if this gets called during
-            # reindexing.
-            es = es_utils.get_indexing_es(
-                default_indexes=[settings.ES_WRITE_INDEXES['default']])
-            es.delete(settings.ES_WRITE_INDEXES['default'], doc_type, id)
+            # TODO: There is a race condition here if this gets called
+            # during reindexing.
+            es.delete(index, doc_type, id)
         except pyes.exceptions.NotFoundException:
             # Ignore the case where we try to delete something that's
             # not there.

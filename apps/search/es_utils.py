@@ -1,6 +1,5 @@
 from itertools import chain, count, izip
 import logging
-from pprint import pprint
 
 import elasticutils
 import pyes
@@ -16,7 +15,14 @@ ESIndexMissingException = pyes.exceptions.IndexMissingException
 log = logging.getLogger('search.es_utils')
 
 
-def get_doctype_stats():
+def get_indexes():
+    es = get_indexing_es()
+    indexes = [(k, v['num_docs']) for k, v in es.get_indices().items()
+               if k.startswith(settings.ES_INDEX_PREFIX)]
+    return indexes
+
+
+def get_doctype_stats(index):
     """Returns a dict of name -> count for documents indexed.
 
     For example:
@@ -30,10 +36,14 @@ def get_doctype_stats():
     """
     from search.models import get_search_models
 
+    es = elasticutils.get_es()
+    query = pyes.query.MatchAllQuery()
+
     stats = {}
 
     for cls in get_search_models():
-        stats[cls._meta.db_table] = elasticutils.S(cls).count()
+        stats[cls._meta.db_table] = es.count(
+            query, indexes=[index], doc_types=[cls._meta.db_table])['count']
 
     return stats
 
@@ -79,7 +89,7 @@ def es_reindex_with_progress(percent=100):
     search_models = get_search_models()
 
     es = elasticutils.get_es()
-    index = settings.ES_INDEXES['default']
+    index = settings.ES_WRITE_INDEXES['default']
     es.delete_index_if_exists(index)
     # There should be no mapping-conflict race here since the index doesn't
     # exist. Live indexing should just fail.
@@ -109,17 +119,44 @@ def es_reindex(percent=100):
 
 def es_whazzup():
     """Runs cluster_stats on the Elastic system"""
-    es = elasticutils.get_es()
+    read_index = settings.ES_INDEXES['default']
+    write_index = settings.ES_WRITE_INDEXES['default']
 
-    # TODO: It'd be better to show more useful information than raw
-    # cluster_stats.
     try:
-        pprint(es.cluster_stats())
+        read_doctype_stats = get_doctype_stats(read_index)
+        write_doctype_stats = get_doctype_stats(write_index)
+        indexes = get_indexes()
     except pyes.urllib3.connectionpool.MaxRetryError:
         log.error('Your elasticsearch process is not running or ES_HOSTS '
                   'is set wrong in your settings_local.py file.')
         return
 
-    log.info('Totals:')
-    for name, count in get_doctype_stats().items():
-        log.info(' * %s: %d', name, count)
+    log.info('Settings:')
+    log.info('  ES_HOSTS              : %s', settings.ES_HOSTS)
+    log.info('  ES_INDEX_PREFIX       : %s', settings.ES_INDEX_PREFIX)
+    log.info('  ES_LIVE_INDEXING      : %s', settings.ES_LIVE_INDEXING)
+    log.info('  ES_INDEXES            : %s', settings.ES_INDEXES)
+    log.info('  ES_WRITE_INDEXES      : %s', settings.ES_WRITE_INDEXES)
+
+    log.info('Index stats:')
+
+    log.info('  List of %s indexes:', settings.ES_INDEX_PREFIX)
+    for name, count in indexes:
+        read_write = []
+        if name == read_index:
+            read_write.append('READ')
+        if name == write_index:
+            read_write.append('WRITE')
+        log.info('    %-20s: %s %s', name, count,
+                 '/'.join(read_write))
+
+    log.info('  Read index (%s):', read_index)
+    for name, count in read_doctype_stats.items():
+        log.info('    %-20s: %d', name, count)
+
+    if read_index != write_index:
+        log.info('  Write index (%s):', write_index)
+        for name, count in write_doctype_stats.items():
+            log.info('    %-20s: %d', name, count)
+    else:
+        log.info('  Write index is same as read index.')
