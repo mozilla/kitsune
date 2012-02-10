@@ -1,17 +1,28 @@
-from datetime import datetime
+from base64 import b64encode
+from datetime import date, datetime
 import json
 
 from nose.tools import eq_
 
+from kpi.models import Metric
+from kpi.tests import metric, metric_kind
 from sumo.tests import TestCase, LocalizingClient
 from sumo.urlresolvers import reverse
 from questions.tests import answer, answer_vote, question
-from users.tests import user
+from users.models import Profile
+from users.tests import user, add_permission
 from wiki.tests import document, revision, helpful_vote
 
 
-class KpiAPITests(TestCase):
+class KpiApiTests(TestCase):
     client_class = LocalizingClient
+
+    def _make_sphinx_metric_kinds(self):
+        click_kind = metric_kind(code='search clickthroughs:sphinx:clicks',
+                                 save=True)
+        search_kind = metric_kind(code='search clickthroughs:sphinx:searches',
+                                  save=True)
+        return click_kind, search_kind
 
     def test_solved(self):
         """Test solved API call."""
@@ -26,7 +37,6 @@ class KpiAPITests(TestCase):
         url = reverse('api_dispatch_list',
                       kwargs={'resource_name': 'kpi_solution',
                               'api_name': 'v1'})
-        self.client.login(username=u.username, password='testpass')
         response = self.client.get(url + '?format=json')
         eq_(200, response.status_code)
         r = json.loads(response.content)
@@ -50,7 +60,6 @@ class KpiAPITests(TestCase):
         url = reverse('api_dispatch_list',
                       kwargs={'resource_name': 'kpi_vote',
                               'api_name': 'v1'})
-        self.client.login(username=u.username, password='testpass')
         response = self.client.get(url + '?format=json')
         eq_(200, response.status_code)
         r = json.loads(response.content)
@@ -73,7 +82,6 @@ class KpiAPITests(TestCase):
         url = reverse('api_dispatch_list',
                       kwargs={'resource_name': 'kpi_fast_response',
                               'api_name': 'v1'})
-        self.client.login(username=u.username, password='testpass')
         response = self.client.get(url + '?format=json')
         eq_(200, response.status_code)
         r = json.loads(response.content)
@@ -124,3 +132,70 @@ class KpiAPITests(TestCase):
         eq_(200, response.status_code)
         r = json.loads(response.content)
         eq_(r['objects'][0]['contributors'], 1)
+
+    def test_sphinx_clickthrough_get(self):
+        """Test Sphinx clickthrough read API."""
+        click_kind, search_kind = self._make_sphinx_metric_kinds()
+        metric(kind=click_kind,
+               start=date(2000, 1, 1),
+               value=1,
+               save=True)
+        metric(kind=search_kind,
+               start=date(2000, 1, 1),
+               value=10,
+               save=True)
+        metric(kind=click_kind,
+               start=date(2000, 1, 9),
+               value=2,
+               save=True)
+        metric(kind=search_kind,
+               start=date(2000, 1, 9),
+               value=20,
+               save=True)
+
+        url = reverse('api_dispatch_list',
+                      kwargs={'resource_name': 'sphinx-clickthrough-rate',
+                              'api_name': 'v1'})
+        response = self.client.get(url + '?format=json')
+        self.assertContains(  # Beware of dict order changes someday.
+            response,
+            '"objects": [{"clicks": 1, "resource_uri": "", "searches": 10, '
+                         '"start": "2000-01-01"}, '
+                        '{"clicks": 2, "resource_uri": "", "searches": 20, '
+                         '"start": "2000-01-09"}]')
+
+        # Test filtering by start date:
+        response = self.client.get(url + '?format=json&min_start=2000-01-09')
+        self.assertContains(  # Beware of dict order changes someday.
+            response,
+            '"objects": [{"clicks": 2, "resource_uri": "", "searches": 20, '
+                         '"start": "2000-01-09"}]')
+
+    def test_sphinx_clickthrough_post(self):
+        """Test Sphinx clickthrough write API."""
+        u = user(save=True)
+        add_permission(u, Metric, 'add_metric')
+
+        click_kind, search_kind = self._make_sphinx_metric_kinds()
+
+        # POST the new object:
+        url = reverse('api_dispatch_list',
+                      kwargs={'resource_name': 'sphinx-clickthrough-rate',
+                              'api_name': 'v1'})
+        auth = 'Basic ' + b64encode('%s:%s' % (u.username, 'testpass'))
+        response = self.client.post(url,
+                                    json.dumps({'start': '2000-01-02',
+                                                'searches': 1e8,
+                                                'clicks': 5e7}),
+                                    content_type='application/json',
+                                    HTTP_AUTHORIZATION=auth)
+        eq_(response.status_code, 201)
+
+        # Do a GET, and see if the round trip worked:
+        response = self.client.get(url + '?format=json')
+        self.assertContains(  # Beware of dict order changes someday.
+            response,
+            '"objects": [{"clicks": 50000000, "resource_uri": "", '
+                         '"searches": 100000000, "start": "2000-01-02"}]')
+
+    # Correspnding ElasticSearch APIs are likely correct by dint of factoring.
