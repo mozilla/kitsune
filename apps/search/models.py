@@ -1,4 +1,3 @@
-import elasticutils
 import logging
 import pyes
 import time
@@ -133,8 +132,10 @@ class SearchMixin(object):
 
             if t % 1000 == 0 and t > 0:
                 time_to_go = (total - t) * ((time.time() - start_time) / t)
-                log.info('%s/%s... (%s to go)', t, total,
-                         es_utils.format_time(time_to_go))
+                per_1000 = (time.time() - start_time) / (t / 1000)
+                log.info('%s/%s... (~%s to go, ~%s per 1000 docs)', t, total,
+                         es_utils.format_time(time_to_go),
+                         es_utils.format_time(per_1000))
 
                 # We call this every 1000 or so because we're
                 # essentially loading the whole db and if DEBUG=True,
@@ -159,8 +160,10 @@ class SearchMixin(object):
             yield t
 
         es.flush_bulk(forced=True)
-        end_time = time.time()
-        log.info('done! (%s)', es_utils.format_time(end_time - start_time))
+        delta_time = time.time() - start_time
+        log.info('done! (%s, %s per 1000 docs)',
+                 es_utils.format_time(delta_time),
+                 es_utils.format_time(delta_time / (total / 1000)))
         es.refresh()
 
     @classmethod
