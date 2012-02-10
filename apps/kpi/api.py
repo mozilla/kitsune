@@ -1,29 +1,56 @@
 from operator import itemgetter
 from datetime import date, timedelta
 
+from django.db import connections, router
 from django.db.models import Count, F
-from tastypie.resources import Resource
-from tastypie import fields
-from tastypie.cache import SimpleCache
 
+from tastypie import fields
+from tastypie.authentication import BasicAuthentication
+from tastypie.authorization import Authorization
+from tastypie.cache import SimpleCache
+from tastypie.resources import Resource
+
+from kpi.models import Metric, MetricKind
 from questions.models import Question, Answer, AnswerVote
 from wiki.models import HelpfulVote, Revision
 
 
 class CachedResource(Resource):
     def obj_get_list(self, request=None, **kwargs):
-        """
-        Overwrite ``obj_get_list`` to use the cache.
-        """
+        """Override ``obj_get_list`` to use the cache."""
         cache_key = self.generate_cache_key('list', **kwargs)
         obj_list = self._meta.cache.get(cache_key)
 
         if obj_list is None:
-
             obj_list = self.get_object_list(request)
             self._meta.cache.set(cache_key, obj_list, timeout=60 * 60 * 3)
 
         return obj_list
+
+
+class WriteOnlyBasicAuthentication(BasicAuthentication):
+    """Authenticator that prompts for credentials only for write requests."""
+    def is_authenticated(self, request, **kwargs):
+        if request.method == 'GET':
+            return True
+        return super(WriteOnlyBasicAuthentication, self).is_authenticated(
+                request, **kwargs)
+
+
+class PermissionAuthorization(Authorization):
+    """Authorization which allows all users to make read-only requests and
+    users with a certain permission to write."""
+
+    def __init__(self, write=None):
+        self.write_perm = write
+
+    def is_authorized(self, request, object=None):
+        # Supports just GET and POST so far
+        if request.method == 'GET':
+            return True
+        elif request.method == 'POST':
+            return request.user.has_perm(self.write_perm)
+        return False
 
 
 class Struct(object):
@@ -33,6 +60,113 @@ class Struct(object):
 
     def __unicode__(self):
         return unicode(self.__dict__)
+
+
+class SearchClickthroughMeta(object):
+    """Abstract Meta inner class for search clickthrough resources"""
+    # The Resource metaclass isn't smart enough to merge in attributes from
+    # Meta classes defined in subclasses of an abstract resource, like Django's
+    # ORM metaclass is. There's might be a supported way, but I'm really sick
+    # of reading tastypie docs (and source).
+    object_class = Struct
+    authentication = WriteOnlyBasicAuthentication()
+    authorization = PermissionAuthorization(write='kpi.add_metric')
+
+
+class SearchClickthroughResource(CachedResource):
+    """Clickthrough ratio for Sphinx or Elastic searches for one period
+
+    Represents a ratio of {clicks of results}/{total searches} for one engine.
+
+    """
+    #: Date of period start. Assumes 1-day periods.
+    start = fields.DateField('start')
+    #: How many searches had (at least?) 1 result clicked
+    clicks = fields.IntegerField('clicks', default=0)
+    #: How many searches were performed with this engine
+    searches = fields.IntegerField('searches', default=0)
+
+    @property
+    def searches_kind(self):
+        return 'search clickthroughs:%s:searches' % self.engine
+
+    @property
+    def clicks_kind(self):
+        return 'search clickthroughs:%s:clicks' % self.engine
+
+    def obj_get(self, request=None, **kwargs):
+        """Fetch a particular ratio by start date."""
+        raise NotImplementedError
+
+    def get_object_list(self, request):
+        """Return the authZ-limited set of ratios"""
+        return self.obj_get_list(request)
+
+    def obj_get_list(self, request=None, **kwargs):
+        """Return all the ratios.
+
+        Or, if a ``min_start`` query param is present, return the (potentially
+        limited) ratios later than or equal to that. ``min_start`` should be
+        something like ``2001-07-30``.
+
+        If, somehow, half a ratio is missing, that ratio is not returned.
+
+        """
+        # Make min_start either a date or None:
+        min_start = request.GET.get('min_start')
+        if min_start:
+            try:
+                min_start = _parse_date()
+            except (ValueError, TypeError):
+                pass
+
+        # I'm not sure you can join a table to itself with the ORM.
+        cursor = _cursor()
+        cursor.execute(  # n for numerator, d for denominator
+            'SELECT n.start, n.value, d.value '
+            'FROM kpi_metric n '
+            'INNER JOIN kpi_metric d ON n.start=d.start '
+            'WHERE n.kind_id=(SELECT id FROM kpi_metrickind WHERE code=%s) '
+            'AND d.kind_id=(SELECT id FROM kpi_metrickind WHERE code=%s) ' +
+            ('AND n.start>=%s' if min_start else ''),
+            (self.clicks_kind, self.searches_kind) +
+                ((min_start,) if min_start else ()))
+        return [Struct(start=s, clicks=n, searches=d) for
+                s, n, d in cursor.fetchall()]
+
+    def obj_create(self, bundle, request=None, **kwargs):
+        def create_metric(kind, value_field, data):
+            """Given POSTed data, create a Metric.
+
+            Assume day-long buckets for the moment.
+
+            """
+            start = date(*_parse_date(data['start']))
+            Metric.objects.create(kind=MetricKind.objects.get(code=kind),
+                                  start=start,
+                                  end=start + timedelta(days=1),
+                                  value=data[value_field])
+
+        create_metric(self.searches_kind, 'searches', bundle.data)
+        create_metric(self.clicks_kind, 'clicks', bundle.data)
+
+    def get_resource_uri(self, bundle_or_obj):
+        """Return a fake answer; we don't care, for now."""
+        return ''
+
+
+class SphinxClickthroughResource(SearchClickthroughResource):
+    engine = 'sphinx'
+
+    class Meta(SearchClickthroughMeta):
+        resource_name = 'sphinx-clickthrough-rate'
+
+
+class ElasticClickthroughResource(SearchClickthroughResource):
+    engine = 'elastic'
+
+    class Meta(SearchClickthroughMeta):
+        resource_name = 'elastic-clickthrough-rate'
 
 
 class SolutionResource(CachedResource):
@@ -279,3 +413,18 @@ def _merge_results(x, y):
     """
     return dict((s, dict(x.get(s, {}).items() + y.get(s, {}).items()))
                     for s in set(x.keys() + y.keys()))
+
+
+def _cursor():
+    """Return a DB cursor for reading."""
+    return connections[router.db_for_read(Metric)].cursor()
+
+
+def _parse_date(text):
+    """Parse a text date like ``"2004-08-30`` into a triple of numbers.
+
+    May fling ValueErrors or TypeErrors around if the input or date is invalid.
+    It should at least be a string--I mean, come on.
+
+    """
+    return tuple(int(i) for i in text.split('-'))
