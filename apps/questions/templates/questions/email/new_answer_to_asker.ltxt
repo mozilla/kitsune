@@ -4,12 +4,12 @@
 on {{ host }}:
 {{ answer }}
 
+Click this link to reply to {{ answerer }} or add more information
+about your question: https://{{ host }}{{ answer_url }}
+
 If this answered your question, click this link to mark it as solved:
 https://{{ host }}{{ solution_url }}
 This helps other Firefox users find good answers to their support questions.
-
-Click this link to reply to {{ answerer }} or add more information
-about your question: https://{{ host }}{{ answer_url }}
 
 Did you know that {{ answerer }} is a Firefox user
 just like you? Get started helping other Firefox users by

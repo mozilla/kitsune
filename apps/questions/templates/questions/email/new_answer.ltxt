@@ -4,11 +4,11 @@
 question "{{ question_title }}" on {{ host }}:
 {{ answer }}
 
-If this answered your question, click this link and let others
-know it was helpful: https://{{ host }}{{ helpful_url }}
-
 You can see the response on the website by using this link:
 https://{{ host }}{{ answer_url }}
+
+If this answered your question, click this link and let others
+know it was helpful: https://{{ host }}{{ helpful_url }}
 
 Did you know that {{ answerer }} is a Firefox user just
 like you? Get started helping other Firefox users by browsing
