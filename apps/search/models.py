@@ -13,7 +13,7 @@ from django.dispatch import receiver
 from search.tasks import index_task, unindex_task
 from search import es_utils
 
-log = logging.getLogger('es_search')
+log = logging.getLogger('search.es')
 
 
 # db_table name -> model Class for search models
@@ -69,7 +69,8 @@ class SearchMixin(object):
         """
         raise NotImplementedError
 
-    def extract_document(self):
+    @classmethod
+    def extract_document(cls, obj_id):
         """Extracts the ES index document for this instance
 
         This must be implemented. It should return a dict representing
@@ -126,8 +127,6 @@ class SearchMixin(object):
             if t > total:
                 break
 
-            obj = cls.objects.get(pk=obj_id)
-
             if t % 1000 == 0 and t > 0:
                 time_to_go = (total - t) * ((time.time() - start_time) / t)
                 log.info('%s/%s... (%s to go)', t, total,
@@ -148,10 +147,10 @@ class SearchMixin(object):
                 es.flush_bulk()
 
             try:
-                cls.index(obj.extract_document(), bulk=True, es=es)
+                cls.index(cls.extract_document(obj_id), bulk=True, es=es)
             except Exception:
                 log.exception('Unable to extract/index document (id: %d)',
-                              obj.id)
+                              obj_id)
 
             yield t
 

@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 import logging
 import re
+import time
 
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -32,6 +33,7 @@ from sumo.models import ModelBase
 from sumo.parser import wiki_to_html
 from sumo.redis_utils import RedisError
 from sumo.urlresolvers import reverse
+from taggit.models import TaggedItem
 from tags.models import BigVocabTaggableMixin
 from tags.utils import add_existing_tag
 from upload.models import ImageAttachment
@@ -300,58 +302,55 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
             'is_locked': {'type': 'boolean'},
             'has_answers': {'type': 'boolean'},
             'has_helpful': {'type': 'boolean'},
-            'created': {'type': 'date'},
-            'updated': {'type': 'date'},
-            'question_creator': {'type': 'string'},
-            'answer_creator': {'type': 'string'},
+            'created': {'type': 'integer'},
+            'updated': {'type': 'integer'},
+            'question_creator': {'type': 'string', 'index': 'not_analyzed'},
+            'answer_creator': {'type': 'string', 'index': 'not_analyzed'},
             'question_votes': {'type': 'integer'},
             'answer_votes': {'type': 'integer'},
-            'tag': {'type': 'string'}}
+            'tag': {'type': 'string', 'index': 'not_analyzed'}}
 
-    def extract_document(self):
+    @classmethod
+    def extract_document(cls, obj_id):
         """Extracts indexable attributes from a Question and its answers."""
+        obj = cls.uncached.values(
+            'id', 'title', 'content', 'num_answers', 'solution_id',
+            'is_locked', 'created', 'updated', 'num_votes_past_week',
+            'creator__username').get(pk=obj_id)
+
         d = {}
+        d['id'] = obj['id']
+        d['title'] = obj['title']
+        d['question_content'] = obj['content']
+        d['replies'] = obj['num_answers']
+        d['is_solved'] = bool(obj['solution_id'])
+        d['is_locked'] = obj['is_locked']
+        d['has_answers'] = bool(obj['num_answers'])
 
-        d['id'] = self.id
+        # TODO: Sphinx stores created and updated as seconds since the
+        # epoch, so we convert them to that format here so that the
+        # search view works correctly. When we ditch Sphinx, we should
+        # see if it's faster to filter on ints or whether we should
+        # switch them to dates.
+        d['created'] = int(time.mktime(obj['created'].timetuple()))
+        d['updated'] = int(time.mktime(obj['updated'].timetuple()))
 
-        d['title'] = self.title
-        d['question_content'] = self.content
-        d['replies'] = self.num_answers
-        d['is_solved'] = bool(self.solution_id)
-        d['is_locked'] = self.is_locked
-        d['has_answers'] = bool(self.num_answers)
+        d['question_creator'] = obj['creator__username']
+        d['question_votes'] = obj['num_votes_past_week']
 
-        d['created'] = self.created
-        d['updated'] = self.updated
+        d['tag'] = list(TaggedItem.tags_for(
+            Question, Question(pk=obj_id)).values_list('name', flat=True))
 
-        d['question_creator'] = self.creator.username
-        d['question_votes'] = self.num_votes_past_week
+        answer_values = list(Answer.objects.filter(question=obj_id).values_list(
+                        'content', 'creator__username'))
+        d['answer_content'] = [a[0] for a in answer_values]
+        d['answer_creator'] = list(set([a[1] for a in answer_values]))
 
-        d['tag'] = [tag['name'] for tag in self.tags.values()]
-
-        # Array of strings.
-        answer_content = []
-
-        # has_helpful is true if at least one answer is marked as
-        # helpful.
-        has_helpful = False
-
-        # answer_creator is the set of all answer creator user names.
-        answer_creator = set()
-
-        # answer_votes is the sum of votes for all of the answers.
-        answer_votes = 0
-
-        for ans in self.answers.iterator():
-            answer_content.append(ans.content)
-            has_helpful = has_helpful or bool(ans.num_helpful_votes)
-            answer_creator.add(ans.creator.username)
-            answer_votes += ans.upvotes
-
-        d['answer_content'] = answer_content
-        d['has_helpful'] = has_helpful
-        d['answer_creator'] = list(answer_creator)
-        d['answer_votes'] = answer_votes
+        if not answer_values:
+            d['has_helpful'] = False
+        else:
+            d['has_helpful'] = Answer.objects.filter(
+                question=obj_id).filter(votes__helpful=True).exists()
 
         return d
 

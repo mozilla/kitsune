@@ -1,38 +1,56 @@
 from operator import itemgetter
 from datetime import date, timedelta
 
+from django.db import connections, router
 from django.db.models import Count, F
-from tastypie.resources import Resource
+
 from tastypie import fields
+from tastypie.authentication import BasicAuthentication
 from tastypie.authorization import Authorization
 from tastypie.cache import SimpleCache
+from tastypie.resources import Resource
 
+from kpi.models import Metric, MetricKind
 from questions.models import Question, Answer, AnswerVote
-from wiki.models import HelpfulVote
+from wiki.models import HelpfulVote, Revision
 
 
 class CachedResource(Resource):
     def obj_get_list(self, request=None, **kwargs):
-        """
-        Overwrite ``obj_get_list`` to use the cache.
-        """
+        """Override ``obj_get_list`` to use the cache."""
         cache_key = self.generate_cache_key('list', **kwargs)
         obj_list = self._meta.cache.get(cache_key)
 
         if obj_list is None:
-
             obj_list = self.get_object_list(request)
             self._meta.cache.set(cache_key, obj_list, timeout=60 * 60 * 3)
 
         return obj_list
 
 
+class WriteOnlyBasicAuthentication(BasicAuthentication):
+    """Authenticator that prompts for credentials only for write requests."""
+    def is_authenticated(self, request, **kwargs):
+        if request.method == 'GET':
+            return True
+        return super(WriteOnlyBasicAuthentication, self).is_authenticated(
+                request, **kwargs)
+
+
 class PermissionAuthorization(Authorization):
-    def __init__(self, perm):
-        self.perm = perm
+    """Authorization which allows all users to make read-only requests and
+    users with a certain permission to write."""
+
+    def __init__(self, write=None):
+        self.write_perm = write
 
     def is_authorized(self, request, object=None):
-        return request.user.has_perm(self.perm)
+        # Supports just GET and POST so far
+        if request.method == 'GET':
+            return True
+        elif request.method == 'POST':
+            return request.user.has_perm(self.write_perm)
+        return False
 
 
 class Struct(object):
@@ -42,6 +60,113 @@ class Struct(object):
 
     def __unicode__(self):
         return unicode(self.__dict__)
+
+
+class SearchClickthroughMeta(object):
+    """Abstract Meta inner class for search clickthrough resources"""
+    # The Resource metaclass isn't smart enough to merge in attributes from
+    # Meta classes defined in subclasses of an abstract resource, like Django's
+    # ORM metaclass is. There's might be a supported way, but I'm really sick
+    # of reading tastypie docs (and source).
+    object_class = Struct
+    authentication = WriteOnlyBasicAuthentication()
+    authorization = PermissionAuthorization(write='kpi.add_metric')
+
+
+class SearchClickthroughResource(CachedResource):
+    """Clickthrough ratio for Sphinx or Elastic searches for one period
+
+    Represents a ratio of {clicks of results}/{total searches} for one engine.
+
+    """
+    #: Date of period start. Assumes 1-day periods.
+    start = fields.DateField('start')
+    #: How many searches had (at least?) 1 result clicked
+    clicks = fields.IntegerField('clicks', default=0)
+    #: How many searches were performed with this engine
+    searches = fields.IntegerField('searches', default=0)
+
+    @property
+    def searches_kind(self):
+        return 'search clickthroughs:%s:searches' % self.engine
+
+    @property
+    def clicks_kind(self):
+        return 'search clickthroughs:%s:clicks' % self.engine
+
+    def obj_get(self, request=None, **kwargs):
+        """Fetch a particular ratio by start date."""
+        raise NotImplementedError
+
+    def get_object_list(self, request):
+        """Return the authZ-limited set of ratios"""
+        return self.obj_get_list(request)
+
+    def obj_get_list(self, request=None, **kwargs):
+        """Return all the ratios.
+
+        Or, if a ``min_start`` query param is present, return the (potentially
+        limited) ratios later than or equal to that. ``min_start`` should be
+        something like ``2001-07-30``.
+
+        If, somehow, half a ratio is missing, that ratio is not returned.
+
+        """
+        # Make min_start either a date or None:
+        min_start = request.GET.get('min_start')
+        if min_start:
+            try:
+                min_start = _parse_date()
+            except (ValueError, TypeError):
+                pass
+
+        # I'm not sure you can join a table to itself with the ORM.
+        cursor = _cursor()
+        cursor.execute(  # n for numerator, d for denominator
+            'SELECT n.start, n.value, d.value '
+            'FROM kpi_metric n '
+            'INNER JOIN kpi_metric d ON n.start=d.start '
+            'WHERE n.kind_id=(SELECT id FROM kpi_metrickind WHERE code=%s) '
+            'AND d.kind_id=(SELECT id FROM kpi_metrickind WHERE code=%s) ' +
+            ('AND n.start>=%s' if min_start else ''),
+            (self.clicks_kind, self.searches_kind) +
+                ((min_start,) if min_start else ()))
+        return [Struct(start=s, clicks=n, searches=d) for
+                s, n, d in cursor.fetchall()]
+
+    def obj_create(self, bundle, request=None, **kwargs):
+        def create_metric(kind, value_field, data):
+            """Given POSTed data, create a Metric.
+
+            Assume day-long buckets for the moment.
+
+            """
+            start = date(*_parse_date(data['start']))
+            Metric.objects.create(kind=MetricKind.objects.get(code=kind),
+                                  start=start,
+                                  end=start + timedelta(days=1),
+                                  value=data[value_field])
+
+        create_metric(self.searches_kind, 'searches', bundle.data)
+        create_metric(self.clicks_kind, 'clicks', bundle.data)
+
+    def get_resource_uri(self, bundle_or_obj):
+        """Return a fake answer; we don't care, for now."""
+        return ''
+
+
+class SphinxClickthroughResource(SearchClickthroughResource):
+    engine = 'sphinx'
+
+    class Meta(SearchClickthroughMeta):
+        resource_name = 'sphinx-clickthrough-rate'
+
+
+class ElasticClickthroughResource(SearchClickthroughResource):
+    engine = 'elastic'
+
+    class Meta(SearchClickthroughMeta):
+        resource_name = 'elastic-clickthrough-rate'
 
 
 class SolutionResource(CachedResource):
@@ -55,7 +180,7 @@ class SolutionResource(CachedResource):
 
     def get_object_list(self, request):
         # Set up the query for the data we need
-        qs = _qs_for(Question)
+        qs = _daily_qs_for(Question)
 
         # Filter on solution
         qs_with_solutions = qs.filter(solution__isnull=False)
@@ -66,7 +191,6 @@ class SolutionResource(CachedResource):
         cache = SimpleCache()
         resource_name = 'kpi_solution'
         allowed_methods = ['get']
-        authorization = PermissionAuthorization('users.view_kpi_dashboard')
 
 
 class VoteResource(CachedResource):
@@ -98,12 +222,11 @@ class VoteResource(CachedResource):
         cache = SimpleCache()
         resource_name = 'kpi_vote'
         allowed_methods = ['get']
-        authorization = PermissionAuthorization('users.view_kpi_dashboard')
 
 
 class FastResponseResource(CachedResource):
     """
-    Returns the total number and number of Questions that recieve an answer
+    Returns the total number and number of Questions that receive an answer
     within a period of time.
     """
     date = fields.DateField('date')
@@ -111,7 +234,7 @@ class FastResponseResource(CachedResource):
     responded = fields.IntegerField('responded', default=0)
 
     def get_object_list(self, request):
-        qs = _qs_for(Question)
+        qs = _daily_qs_for(Question)
 
         # All answers tht were created within 3 days of the question
         aq = Answer.objects.filter(
@@ -126,20 +249,125 @@ class FastResponseResource(CachedResource):
         cache = SimpleCache()
         resource_name = 'kpi_fast_response'
         allowed_methods = ['get']
-        authorization = PermissionAuthorization('users.view_kpi_dashboard')
 
 
-def _qs_for(model_cls):
-    """Return the grouped queryset we need for model_cls."""
+class ActiveKbContributorsResource(CachedResource):
+    """
+    Returns the number of active contributors in the KB.
+
+    Returns en-US and non-en-US numbers separately.
+    """
+    date = fields.DateField('date')
+    en_us = fields.IntegerField('en_us', default=0)
+    non_en_us = fields.IntegerField('non_en_us', default=0)
+
+    def get_object_list(self, request):
+        # TODO: This whole method is yucky... Is there a nicer way to do this?
+        # It will probably get soon nuked in favor of using the Metric model
+        # when we need to go more granular than monthly.
+        revisions = _monthly_qs_for(Revision)
+
+        creators = revisions.values('year', 'month', 'creator').distinct()
+        reviewers = revisions.values('year', 'month', 'reviewer').distinct()
+
+        def _add_user(monthly_dict, year, month, userid):
+            if userid:
+                yearmonth = (year, month)
+                if yearmonth not in monthly_dict:
+                    monthly_dict[yearmonth] = set()
+                monthly_dict[yearmonth].add(userid)
+
+        def _add_users(monthly_dict, values, column):
+            for r in values:
+                _add_user(monthly_dict, r['year'], r['month'], r[column])
+
+        # Build the en-US contributors list
+        d = {}
+        _add_users(d, creators.filter(document__locale='en-US'), 'creator')
+        _add_users(d, reviewers.filter(document__locale='en-US'), 'reviewer')
+        en_us_list = [{'month': k[1], 'year': k[0], 'count': len(v)} for
+                      k, v in d.items()]
+
+        # Build the non en-US contributors list
+        d = {}
+        _add_users(d, creators.exclude(document__locale='en-US'), 'creator')
+        _add_users(d, reviewers.exclude(document__locale='en-US'), 'reviewer')
+        non_en_us_list = [{'month': k[1], 'year': k[0], 'count': len(v)} for
+                          k, v in d.items()]
+
+        # Merge and return
+        return merge_results(en_us=en_us_list, non_en_us=non_en_us_list)
+
+    class Meta:
+        cache = SimpleCache()
+        resource_name = 'kpi_active_kb_contributors'
+        allowed_methods = ['get']
+
+
+class ActiveAnswerersResource(CachedResource):
+    """
+    Returns the number of active contributors in the support forum.
+
+    Definition of contribution: wrote 10+ posts
+    """
+    date = fields.DateField('date')
+    contributors = fields.IntegerField('contributors', default=0)
+
+    def get_object_list(self, request):
+        qs = _monthly_qs_for(Answer).values('year', 'month', 'creator')
+        qs = qs.annotate(count=Count('creator'))
+        answerers = qs.filter(count__gte=10)
+
+        def _add_user(monthly_dict, year, month, userid):
+            if userid:
+                yearmonth = (year, month)
+                if yearmonth not in monthly_dict:
+                    monthly_dict[yearmonth] = set()
+                monthly_dict[yearmonth].add(userid)
+
+        # Build the answerers count list aggregated by month
+        d = {}
+        for a in answerers:
+            _add_user(d, a['year'], a['month'], a['creator'])
+        contributors = [{'month': k[1], 'year': k[0], 'count': len(v)} for
+                        k, v in d.items()]
+
+        # Merge and return
+        return merge_results(contributors=contributors)
+
+    class Meta:
+        cache = SimpleCache()
+        resource_name = 'kpi_active_answerers'
+        allowed_methods = ['get']
+
+
+def _monthly_qs_for(model_cls):
+    """Return a queryset with the extra select for month and year."""
     return model_cls.objects.filter(created__gte=_start_date()).extra(
         select={
             'month': 'extract( month from created )',
             'year': 'extract( year from created )',
-        }).values('year', 'month').annotate(count=Count('created'))
+        })
+
+
+def _daily_qs_for(model_cls):
+    """Return the daily grouped queryset we need for model_cls."""
+    return model_cls.objects.filter(created__gte=date(2011, 1, 1)).extra(
+        select={
+            'day': 'extract( day from created )',
+            'month': 'extract( month from created )',
+            'year': 'extract( year from created )',
+        }).values('year', 'month', 'day').annotate(count=Count('created'))
+
+
+def _qs_for(model_cls):
+    """Return the monthly grouped queryset we need for model_cls."""
+    return _monthly_qs_for(model_cls).values(
+        'year', 'month').annotate(count=Count('created'))
 
 
 def _start_date():
-    """The date from which we start querying data."""
+    """The date from which we start querying monthly data."""
     # Lets start on the first day of the month a year ago
     year_ago = date.today() - timedelta(days=365)
     return date(year_ago.year, year_ago.month, 1)
@@ -162,8 +390,8 @@ def _remap_date_counts(**kwargs):
         ...]
     """
     for label, qs in kwargs.iteritems():
-        yield dict((date(x['year'], x['month'], 1), {label: x['count']})
-                    for x in qs)
+        yield dict((date(x['year'], x['month'], x.get('day', 1)),
+                   {label: x['count']}) for x in qs)
 
 
 def merge_results(**kwargs):
@@ -185,3 +413,18 @@ def _merge_results(x, y):
     """
     return dict((s, dict(x.get(s, {}).items() + y.get(s, {}).items()))
                     for s in set(x.keys() + y.keys()))
+
+
+def _cursor():
+    """Return a DB cursor for reading."""
+    return connections[router.db_for_read(Metric)].cursor()
+
+
+def _parse_date(text):
+    """Parse a text date like ``"2004-08-30`` into a triple of numbers.
+
+    May fling ValueErrors or TypeErrors around if the input or date is invalid.
+    It should at least be a string--I mean, come on.
+
+    """
+    return tuple(int(i) for i in text.split('-'))

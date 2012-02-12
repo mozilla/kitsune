@@ -22,11 +22,11 @@ search or Google's site search.
 
 .. Note::
 
-   Right now we're rewriting our search system to use Elastic and
-   switching between Sphinx and Elastic.  At some point, the results
-   we're getting with our Elastic-based code will be good enough to
-   switch over.  At that point, we'll remove the Sphinx-based search
-   code.
+   Right now we're rewriting our search system to use Elastic Search
+   and switching between Sphinx and Elastic Search.  At some point,
+   the results we're getting with our Elastic Search-based code will
+   be good enough to switch over.  At that point, we'll remove the
+   Sphinx-based search code.
 
    Until then, we have instructions for installing both Sphinx Search
    and Elastic Search.
@@ -250,8 +250,8 @@ Do a complete reindexing of everything by::
 This will delete the existing indexes, create new ones, and reindex
 everything in your database.  On my machine it takes about an hour.
 
-If you need to get stuff done and don't want to wait for a full indexing,
-you can index a percentage of things.
+If you need to get stuff done and don't want to wait for a full
+indexing, you can index a percentage of things.
 
 For example, this indexes 10% of your data ordered by id::
 
@@ -263,25 +263,13 @@ This indexes 50% of your data ordered by id::
 
 I use this when I'm fiddling with mappings and the indexing code.
 
-Also, you can index specific doctypes. Doctypes are named are the
-``_meta.db_table`` of the model they map to. At the time of this writing,
-there are three doctypes:
-
-* questions_question
-* wiki_document
-* forums_thread
-
-You can index specific doctypes by specifying the doctypes on the command
-line. This reindexes just questions::
-
-    $ ./manage.py esreindex questions_question
-
 
 .. Note::
 
-   Once you've indexed everything, you won't have to do it again unless
-   indexing code changes.  The models have ``post_save`` and ``pre_delete``
-   hooks that will update the index as the data changes.
+   Once you've indexed everything, you won't have to do it again
+   unless indexing code changes. The models have ``post_save`` and
+   ``pre_delete`` hooks that will update the index as the data
+   changes.
 
 
 Health/statistics
@@ -291,5 +279,141 @@ You can see Elastic Search statistics/health with::
 
     $ ./manage.py eswhazzup
 
-The last few lines tell you how many documents are in the index by doctype.
-I use this to make sure I've got stuff in my index.
+The last few lines tell you how many documents are in the index by
+doctype.  I use this to make sure I've got stuff in my index.
+
+
+Tools
+-----
+
+One tool that's helpful for Elastic Search work is `elasticsearch-head
+<https://github.com/mobz/elasticsearch-head>`_. It's like the
+phpmyadmin for Elastic Search.
+
+
+Implementation details
+----------------------
+
+Kitsune uses `elasticutils
+<https://github.com/davedash/elasticutils>`_ and `pyes
+<https://github.com/aparo/pyes>`_.
+
+Most of our code is in the ``search`` app in ``apps/search/``.
+
+Models in Kitsune that are indexable use ``SearchMixin`` defined in
+``models.py``.
+
+Utility functions are implemented in ``es_utils.py``.
+
+Sub commands for ``manage.py`` are implemented in
+``management/commands/``.
+
+
+Search Scoring
+==============
+
+These are the defaults that apply to all searches:
+
+kb:
+
+    query fields: title, content, summary, keywords
+
+    weights:
+
+        ========  =====
+        name      value
+        ========  =====
+        title     6
+        content   1
+        keywords  4
+        summary   2
+        ========  =====
+
+questions:
+
+    query fields: title, question_content, answer_content
+
+    weights:
+
+        ================  =====
+        name              value
+        ================  =====
+        title             4
+        question_content  3
+        answer_content    3
+        ================  =====
+
+forums:
+
+    query fields: title, content
+
+    weights:
+
+        ========  =====
+        name      value
+        ========  =====
+        title     2
+        content   1
+        ========  =====
+
+.. Note::
+
+   The query fields and weights are shared between our Sphinx code and
+   our Elastic Search code.
+
+
+Elastic Search is built on top of Lucene so the `Lucene documentation
+on scoring <http://lucene.apache.org/java/3_5_0/scoring.html>`_ covers
+how a document is scored in regards to the search query and its
+contents. The weights modify that---they're query-level boosts.
+
+Additionally we use a series of filters on tags, q_tags, and other
+properties of the documents like has_helpful, is_locked, is_archived,
+etc, In Elastic Search, filters remove items from the result set, but
+don't otherwise affect the scoring.
+
+
+Front page search
+-----------------
+
+A front page search is what happens when you start on the front page,
+enter in a search query in the search box, and click on the green
+arrow.
+
+Front page search does the following:
+
+1. searches only kb and questions
+2. (filter) kb articles are tagged with the product (e.g. "desktop")
+3. (filter) kb articles must not be archived
+4. (filter) kb articles must be in Troubleshooting (10) and
+   How-to (20) categories
+5. (filter) questions are tagged with the product (e.g. "desktop")
+6. (filter) questions must have an answer marked as helpful
+
+
+It scores as specified above.
+
+
+Advanced search
+---------------
+
+The advanced search form lines up with the filters applied.
+
+For example, if you search for knowledge base articles in the
+Troubleshooting category, then we add a filter where the result has to
+be in the Troubleshooting category.
+
+
+Link to the code
+----------------
+
+Here's a link to the search view in the master branch. This is what's
+on dev:
+
+https://github.com/mozilla/kitsune/blob/master/apps/search/views.py
+
+
+Here's a link to the search view in the next branch. This is what's
+on staging:
+
+https://github.com/mozilla/kitsune/blob/next/apps/search/views.py

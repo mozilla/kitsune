@@ -32,11 +32,11 @@ ANSWER_EMAIL_TO_ANONYMOUS = """rrosario has posted an answer to the
 question "Lorem ipsum dolor sit amet?" on testserver:
 an answer
 
-If this answered your question, click this link and let others
-know it was helpful: https://testserver/en-US/questions/1/vote/{answer}?helpful
-
 You can see the response on the website by using this link:
 https://testserver/en-US/questions/1#answer-{answer}
+
+If this answered your question, click this link and let others
+know it was helpful: https://testserver/en-US/questions/1/vote/{answer}?helpful
 
 Did you know that rrosario is a Firefox user just
 like you? Get started helping other Firefox users by browsing
@@ -52,6 +52,9 @@ ANSWER_EMAIL_TO_ASKER = """Hi jsocol,
 rrosario has posted an answer to your question "Lorem ipsum dolor sit amet?"
 on testserver:
 an answer
+
+Click this link to reply to rrosario or add more information
+about your question: https://testserver/en-US/questions/1#answer-{answer}
 
 If this answered your question, click this link to mark it as solved:"""
 SOLUTION_EMAIL_TO_ANONYMOUS = \

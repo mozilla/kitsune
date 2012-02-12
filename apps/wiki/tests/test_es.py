@@ -34,11 +34,11 @@ class TestPostUpdate(ElasticTestCase):
         doc2.tags.add(u'badtag')
 
         # Verify the parent has the right tags.
-        doc_dict = doc1.extract_document()
+        doc_dict = Document.extract_document(doc1.id)
         eq_(doc_dict['tag'], [u'desktop', u'windows'])
 
         # Verify the translation has the parent's tags.
-        doc_dict = doc2.extract_document()
+        doc_dict = Document.extract_document(doc2.id)
         eq_(doc_dict['tag'], [u'desktop', u'windows'])
 
     def test_wiki_tags(self):

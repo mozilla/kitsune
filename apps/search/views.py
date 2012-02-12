@@ -46,6 +46,10 @@ def jsonp_is_valid(func):
 def search(request, template=None):
     """Performs search or displays the search form."""
 
+    # Time ES and Sphinx separate. See bug 723930.
+    # TODO: Remove this once Sphinx is gone.
+    start = time.time()
+
     # JSON-specific variables
     is_json = (request.GET.get('format') == 'json')
     callback = request.GET.get('callback', '').strip()
@@ -419,6 +423,12 @@ def search(request, template=None):
                            .strftime(expires_fmt)
     results_.set_cookie(settings.LAST_SEARCH_COOKIE, urlquote(cleaned['q']),
                         max_age=3600, secure=False, httponly=False)
+
+    # Send timing information for each engine. Bug 723930.
+    # TODO: Remove this once Sphinx is gone.
+    dt = (time.time() - start) * 1000
+    statsd.timing('search.%s.view' % engine, int(dt))
+
     return results_
 
 

@@ -99,7 +99,8 @@ class DocumentTests(TestCaseBase):
 
     def test_document_view(self):
         """Load the document view page and verify the title and content."""
-        r = revision(save=True, content='Some text.', is_approved=True)
+        r = revision(save=True, summary='search summary', content='Some text.',
+                     is_approved=True)
         response = self.client.get(r.document.get_absolute_url())
         eq_(200, response.status_code)
         doc = pq(response.content)
@@ -108,6 +109,8 @@ class DocumentTests(TestCaseBase):
         # There's a canonical URL in the <head>.
         eq_(r.document.get_absolute_url(),
             doc('link[rel=canonical]').attr('href'))
+        # The summary is in <meta name="description"...
+        eq_('search summary', doc('meta[name=description]').attr('content'))
 
     def test_english_document_no_approved_content(self):
         """Load an English document with no approved content."""

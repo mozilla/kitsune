@@ -808,3 +808,6 @@ ZENDESK_URL = 'https://appsmarket.zendesk.com'
 ZENDESK_SUBJECT_PREFIX = '[TEST] '  # Set to '' in prod
 ZENDESK_USER_EMAIL = ''
 ZENDESK_USER_PASSWORD = ''
+
+# Tasty Pie
+API_LIMIT_PER_PAGE = 0

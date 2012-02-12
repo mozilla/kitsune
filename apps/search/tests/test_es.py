@@ -1,4 +1,5 @@
 import json
+import datetime
 
 from nose.tools import eq_
 
@@ -236,3 +237,74 @@ class ElasticSearchViewTests(ElasticTestCase):
 
         content = json.loads(response.content)
         eq_(content['total'], 1)
+
+    def test_forums_thread_created(self):
+        post_created_ds = datetime.datetime(2010, 1, 1, 12, 00)
+        thread1 = thread(
+            title=u'Why don\'t we spell crash backwards?',
+            created=post_created_ds)
+        thread1.save()
+
+        post1 = post(
+            thread=thread1,
+            content=u'What, like hsarc?  That\'s silly.',
+            created=(post_created_ds + datetime.timedelta(hours=1)))
+        post1.save()
+
+        self.refresh()
+
+        # The thread/post should not show up in results for items
+        # created AFTER 1/12/2010.
+        response = self.client.get(reverse('search'), {
+            'author': '', 'created': '2', 'created_date': '01/12/2010',
+            'updated': '0', 'updated_date': '', 'sortby': '0',
+            'a': '1', 'w': '4', 'q': 'hsarc',
+            'format': 'json'
+        })
+
+        eq_(200, response.status_code)
+
+        content = json.loads(response.content)
+        eq_(content['total'], 0)
+
+        # The thread/post should show up in results for items created
+        # AFTER 1/1/2010.
+        response = self.client.get(reverse('search'), {
+            'author': '', 'created': '2', 'created_date': '01/01/2010',
+            'updated': '0', 'updated_date': '', 'sortby': '0',
+            'a': '1', 'w': '4', 'q': 'hsarc',
+            'format': 'json'
+        })
+
+        eq_(200, response.status_code)
+
+        content = json.loads(response.content)
+        eq_(content['total'], 1)
+
+        # The thread/post should show up in results for items created
+        # BEFORE 1/12/2010.
+        response = self.client.get(reverse('search'), {
+            'author': '', 'created': '1', 'created_date': '01/12/2010',
+            'updated': '0', 'updated_date': '', 'sortby': '0',
+            'a': '1', 'w': '4', 'q': 'hsarc',
+            'format': 'json'
+        })
+
+        eq_(200, response.status_code)
+
+        content = json.loads(response.content)
+        eq_(content['total'], 1)
+
+        # The thread/post should NOT show up in results for items
+        # created BEFORE 12/31/2009.
+        response = self.client.get(reverse('search'), {
+            'author': '', 'created': '1', 'created_date': '12/31/2009',
+            'updated': '0', 'updated_date': '', 'sortby': '0',
+            'a': '1', 'w': '4', 'q': 'hsarc',
+            'format': 'json'
+        })
+
+        eq_(200, response.status_code)
+
+        content = json.loads(response.content)
+        eq_(content['total'], 0)

@@ -41,6 +41,12 @@ Assuming your Github account is ``foobar`` and you've already forked Kitsune::
     git checkout -t mozilla/master
     git branch -d temp
 
+If you haven't set up your local git user, please do before committing any code
+for Kitsune. This way you can take credit for your work::
+
+    git config user.email your@github.email
+    git config user.name "Your Name"
+
 You should only need to do that once. Here's the bit to do every time::
 
     git checkout master
@@ -114,6 +120,12 @@ You should avoid changing your ``master`` branch, it should track
     git checkout -t mozilla/master  # Create a tracking branch.
     git branch -D temp  # Delete your temporary branch.
 
+If you haven't set up your local git user, please do before committing any code
+for Kitsune. This way you can take credit for your work::
+
+    git config user.email your@github.email
+    git config user.name "Your Name"
+
 The correct way to keep your local master up to date is::
 
     git checkout master
@@ -124,18 +136,6 @@ You can avoid typing ``--rebase`` every time by doing::
     git config branch.master.rebase true
 
 More actual code in a minute!
-
-
-Taking Credit
-^^^^^^^^^^^^^
-
-If you haven't set up your local git user, please do before committing any code
-for Kitsune. This just associates the commit with your Github account.
-
-::
-
-    git config --global user.email your@github.email
-    git config --global user.name "Your Name"
 
 
 Find a Bug
@@ -166,8 +166,10 @@ You don't need to bother setting the bug to the ``ASSIGNED`` state.
 Fix the Bug on a Branch
 -----------------------
 
-**NB:** This describes the process for fixing a relatively small bug in a
-single-commit. Large features may differ.
+.. Note::
+
+   This describes the process for fixing a relatively small bug in a
+   single-commit. Large features may differ.
 
 All bug fixes, changes, new features, etc, should be done on a "feature
 branch", which just means "any branch besides ``master``." You should make sure
@@ -205,6 +207,9 @@ Then, in your browser, navigate to
 ``https://github.com/<yourname>/kitsune/compare/my-feature-branch`` and hit the
 **Pull Request** button. If the commit message is clear, the form should be
 filled out enough for you to submit it right away.
+
+We add an ``r?`` in the pull request message indicating that this pull
+request is ready to go and is looking for someone to review it.
 
 
 Respond to Review

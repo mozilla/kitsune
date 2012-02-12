@@ -15,8 +15,14 @@
   {% set localizable_url = url('wiki.document', document.parent.slug, locale=settings.WIKI_DEFAULT_LANGUAGE) %}
 {% endif %}
 
+{% set meta = [] %}
+
 {% if document.is_template %}
-  {% set meta = (('robots', 'noindex'),) %}
+  {% set meta = meta + [('robots', 'noindex')] %}
+{% endif %}
+
+{% if document.current_revision and document.current_revision.summary %}
+  {% set meta = meta + [('description', document.current_revision.summary)] %}
 {% endif %}
 
 {% block content %}
