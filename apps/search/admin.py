@@ -92,6 +92,7 @@ def search(request):
         except ESIndexMissingException:
             write_stats = None
         indexes = get_indexes()
+        indexes.sort(key=lambda m: m[0])
     except ESMaxRetryError:
         es_error_message = ('Elastic Search is not set up on this machine '
                             'or is not responding. (MaxRetryError)')
