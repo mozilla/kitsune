@@ -69,6 +69,10 @@ def get_indexing_es(**kwargs):
     return pyes.ES(**defaults)
 
 
+def delete_index(index):
+    elasticutils.get_es().delete_index_if_exists(index)
+
+
 def format_time(time_to_go):
     """Returns minutes and seconds string for given time in seconds"""
     if time_to_go < 60:
@@ -90,7 +94,8 @@ def es_reindex_with_progress(percent=100):
 
     es = elasticutils.get_es()
     index = settings.ES_WRITE_INDEXES['default']
-    es.delete_index_if_exists(index)
+    delete_index(index)
+
     # There should be no mapping-conflict race here since the index doesn't
     # exist. Live indexing should just fail.
 
@@ -102,7 +107,7 @@ def es_reindex_with_progress(percent=100):
                     for cls in search_models)
     es.create_index(index, settings={'mappings': mappings})
 
-    total = sum([cls.objects.count() for cls in search_models])
+    total = sum([cls.get_indexable().count() for cls in search_models])
     to_index = [cls.index_all(percent) for cls in search_models]
     return (float(done) / total for done, _ in
             izip(count(1), chain(*to_index)))
