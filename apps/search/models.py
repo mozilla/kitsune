@@ -124,6 +124,10 @@ class SearchMixin(object):
         total = indexable_qs.count()
         to_index = int(total * (percent / 100.0))
         log.info('total %s: %s (to be indexed: %s)', doc_type, total, to_index)
+        if to_index == 0:
+            log.info('done!')
+            return
+
         total = to_index
 
         for t, obj_id in enumerate(indexable_qs):
