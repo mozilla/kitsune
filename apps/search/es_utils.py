@@ -148,8 +148,8 @@ def es_delete_cmd(index):
     log.info('Done!')
 
 
-def es_whazzup_cmd():
-    """Runs cluster_stats on the Elastic system"""
+def es_status_cmd():
+    """Shows elastic search index status"""
     read_index = settings.ES_INDEXES['default']
     write_index = settings.ES_WRITE_INDEXES['default']
 
