@@ -3,8 +3,7 @@ from optparse import make_option
 
 from django.core.management.base import BaseCommand, CommandError
 
-from search.es_utils import es_reindex
-from search.models import get_search_models
+from search.es_utils import es_reindex_cmd
 
 
 class Command(BaseCommand):
@@ -18,4 +17,4 @@ class Command(BaseCommand):
         percent = options['percent']
         if not 1 <= percent <= 100:
             raise CommandError('percent should be between 1 and 100')
-        es_reindex(percent)
+        es_reindex_cmd(percent)

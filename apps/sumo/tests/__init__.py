@@ -90,7 +90,7 @@ class ElasticTestCase(TestCase):
 
     def setup_indexes(self):
         """(Re-)create ES indexes."""
-        from search.es_utils import es_reindex
+        from search.es_utils import es_reindex_cmd
 
         if getattr(settings, 'ES_HOSTS', None) is None:
             raise SkipTest
@@ -98,7 +98,7 @@ class ElasticTestCase(TestCase):
         # TODO: Don't bother scanning through model objects and indexing any
         # that exist. None of our ES tests use any fixtures, so incremental
         # indexing will suffice for them.
-        es_reindex()
+        es_reindex_cmd()
 
         # TODO: This is kind of bad.  If setup_indexes gets called in
         # a setUp and that setUp at some point throws an exception, we

@@ -152,19 +152,75 @@ The directory you install Elastic in will hereafter be referred to as
 You can configure Elastic Search with the configuration file at
 ``ELASTICDIR/config/elasticsearch.yml``.
 
-Elastic Search uses two settings in ``settings.py`` that you can
-override in ``settings_local.py``::
+Elastic Search uses several settings in ``settings.py`` that you
+should override in ``settings_local.py``::
 
     # Connection information for Elastic
     ES_HOSTS = ['127.0.0.1:9200']
     ES_INDEXES = {'default': 'sumo'}
+    ES_WRITE_INDEXES = ES_INDEXES
 
 
-.. Warning::
+``ES_HOSTS``
 
-   The host setting must match the host and port in
-   ``ELASTICDIR/config/elasticsearch.yml``.  So if you change it in
-   one place, you must also change it in the other.
+    No default.
+
+    Points to the ip address and port for your Elastic Search
+    instance.
+
+    .. Warning::
+
+       The host setting must match the host and port in
+       ``ELASTICDIR/config/elasticsearch.yml``. So if you change it
+       in one place, you must also change it in the other.
+
+
+``ES_INDEXES``
+
+    Mapping of ``'default'`` to the name of the index used for
+    searching.
+
+    The index name must be prefixed with the value of
+    ``ES_INDEX_PREFIX``.
+
+    Examples if ``ES_INDEX_PREFIX`` is set to ``'sumo'``::
+
+        ES_INDEXES = {'default': 'sumo'}
+        ES_INDEXES = {'default': 'sumo_20120213'}
+
+        ES_INDEXES = {'default': 'tofurkey'}  # WRONG!
+
+
+``ES_WRITE_INDEXES``
+
+    Mapping of ``'default'`` to the name of the index used for
+    indexing.
+
+    The index name must be prefixed with the value of
+    ``ES_INDEX_PREFIX``.
+
+    Examples if ``ES_INDEX_PREFIX`` is set to ``'sumo'``::
+
+        ES_WRITE_INDEXES = ES_INDEXES
+        ES_WRITE_INDEXES = {'default': 'sumo'}
+        ES_WRITE_INDEXES = {'default': 'sumo_20120213'}
+
+        ES_WRITE_INDEXES = {'default': 'tofurkey'}  # WRONG!
+
+    .. Note::
+
+       The separate roles for indexes allows us to push mapping
+       changes to production. In the first push, we'll push the
+       mapping change and give ``ES_WRITE_INDEXES`` a different
+       value. Then we reindex into the new index. Then we push a
+       change updating ``ES_INDEXES`` to equal ``ES_WRITE_INDEXES``
+       allowing the search code to use the new index.
+
+       If you're a developer, the best thing to do is have your
+       ``ES_WRITE_INDEXES`` be the same as ``ES_INDEXES``. That way
+       you can reindex and search and you don't have to fiddle with
+       settings in between.
+
 
 There are a few other settings you can set in your ``settings_local.py``
 file that override Elastic Utils defaults.  See `the Elastic Utils
@@ -172,6 +228,21 @@ docs <http://elasticutils.readthedocs.org/en/latest/installation.html#configure>
 for details.
 
 Other things you can change:
+
+``ES_INDEX_PREFIX``
+
+    Defaults to ``'sumo'``.
+
+    All indexes for this application must start with the index
+    prefix. Indexes that don't start with the index prefix won't show
+    up in index listings and cannot be deleted through the esdelete
+    subcommand and the search admin.
+
+    .. Note::
+
+       The index names in both ``ES_INDEXES`` and ``ES_WRITE_INDEXES``
+       **must** start with this prefix.
+
 
 ``ES_LIVE_INDEXING``
 
@@ -206,25 +277,14 @@ Other things you can change:
 
 ``ES_INDEXING_TIMEOUT``
 
-    Defaults to 20.
+    Defaults to 30.
 
     This affects all index-related operations including creating
     indexes, deleting indexes, creating mappings, indexing documents
     and calling flush_bulk.
 
     If you're having problems with indexing operations timing out,
-    raising this number can sometimes help.
-
-
-.. Note::
-
-   Don't have a lot of memory? Having problems with indexing running
-   for 20 minutes and then dying in an overly dramatic firesplosion?
-
-   Try setting::
-
-      ES_INDEXING_TIMEOUT = 60
-      ES_FLUSH_BULK_EVERY = 10
+    raising this number can sometimes help. Try 60.
 
 
 Using Elastic Search
@@ -247,8 +307,9 @@ Do a complete reindexing of everything by::
 
     $ ./manage.py esreindex
 
-This will delete the existing indexes, create new ones, and reindex
-everything in your database.  On my machine it takes about an hour.
+This will delete the existing index specified by ``ES_WRITE_INDEXES``,
+create a new one, and reindex everything in your database. On my
+machine it takes under an hour.
 
 If you need to get stuff done and don't want to wait for a full
 indexing, you can index a percentage of things.
@@ -266,21 +327,33 @@ I use this when I'm fiddling with mappings and the indexing code.
 
 .. Note::
 
-   Once you've indexed everything, you won't have to do it again
-   unless indexing code changes. The models have ``post_save`` and
-   ``pre_delete`` hooks that will update the index as the data
-   changes.
+   Once you've indexed everything, if you have ``ES_LIVE_INDEXING``
+   set to ``True``, you won't have to do it again unless indexing code
+   changes. The models have ``post_save`` and ``pre_delete`` hooks
+   that will update the index as the data changes.
 
 
 Health/statistics
 -----------------
 
-You can see Elastic Search statistics/health with::
+You can see Elastic Search index status with::
 
-    $ ./manage.py eswhazzup
+    $ ./manage.py esstatus
 
-The last few lines tell you how many documents are in the index by
-doctype.  I use this to make sure I've got stuff in my index.
+This lists the indexes, tells you which ones are set to read and
+write, and tells you how many documents are in the indexes by mapping
+type.
+
+
+Deleting indexes
+----------------
+
+You can use the search admin to delete the index.
+
+On the command line, you can do::
+
+    $ ./manage.py esdelete <index-name>
+
 
 
 Tools
