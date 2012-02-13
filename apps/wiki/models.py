@@ -550,7 +550,6 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
         # we want to remove it from the index.
         if (document['current'] is None or
             document['content'].startswith(REDIRECT_HTML)):
-            print "UNINDEX"
             cls.unindex(document['id'], es=kwargs.get('es', None))
             return
         super(cls, cls).index(document, **kwargs)
