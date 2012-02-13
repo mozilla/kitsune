@@ -136,8 +136,8 @@ class SearchMixin(object):
 
             if t % 1000 == 0 and t > 0:
                 time_to_go = (total - t) * ((time.time() - start_time) / t)
-                per_1000 = (time.time() - start_time) / (t / 1000)
-                log.info('%s/%s... (~%s to go, ~%s per 1000 docs)', t, total,
+                per_1000 = (time.time() - start_time) / (t / 1000.0)
+                log.info('%s/%s... (%s to go, %s per 1000 docs)', t, total,
                          es_utils.format_time(time_to_go),
                          es_utils.format_time(per_1000))
 
@@ -167,7 +167,7 @@ class SearchMixin(object):
         delta_time = time.time() - start_time
         log.info('done! (%s, %s per 1000 docs)',
                  es_utils.format_time(delta_time),
-                 es_utils.format_time(delta_time / (total / 1000)))
+                 es_utils.format_time(delta_time / (total / 1000.0)))
         es.refresh()
 
     @classmethod

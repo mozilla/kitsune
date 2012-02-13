@@ -1,6 +1,6 @@
 import logging
 from django.core.management.base import BaseCommand
-from search.es_utils import es_whazzup
+from search.es_utils import es_whazzup_cmd
 
 
 class Command(BaseCommand):
@@ -8,4 +8,4 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         logging.basicConfig(level=logging.INFO)
-        es_whazzup()
+        es_whazzup_cmd()

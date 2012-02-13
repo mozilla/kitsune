@@ -113,7 +113,7 @@ def es_reindex_with_progress(percent=100):
             izip(count(1), chain(*to_index)))
 
 
-def es_reindex(percent=100):
+def es_reindex_cmd(percent=100):
     """Rebuild ElasticSearch indexes
 
     See :py:func:`.es_reindex_with_progress` for argument details.
@@ -122,14 +122,46 @@ def es_reindex(percent=100):
     [x for x in es_reindex_with_progress(percent) if False]
 
 
-def es_whazzup():
+def es_delete_cmd(index):
+    """Deletes an index"""
+    read_index = settings.ES_INDEXES['default']
+
+    try:
+        indexes = [name for name, count in get_indexes()]
+    except pyes.urllib3.connectionpool.MaxRetryError:
+        log.error('Your elasticsearch process is not running or ES_HOSTS '
+                  'is set wrong in your settings_local.py file.')
+        return
+
+    if index not in indexes:
+        log.error('Index "%s" is not a valid index.', index)
+        return
+
+    if index == read_index:
+        ret = raw_input('"%s" is a read index. Are you sure you want '
+                        'to delete it? (Ctrl-C to abort) ' % index)
+        if not ret:
+            return
+
+    log.info('Deleting index "%s"...', index)
+    delete_index(index)
+    log.info('Done!')
+
+
+def es_whazzup_cmd():
     """Runs cluster_stats on the Elastic system"""
     read_index = settings.ES_INDEXES['default']
     write_index = settings.ES_WRITE_INDEXES['default']
 
     try:
-        read_doctype_stats = get_doctype_stats(read_index)
-        write_doctype_stats = get_doctype_stats(write_index)
+        try:
+            read_doctype_stats = get_doctype_stats(read_index)
+        except pyes.exceptions.IndexMissingException:
+            read_doctype_stats = None
+        try:
+            write_doctype_stats = get_doctype_stats(write_index)
+        except pyes.exceptions.IndexMissingException:
+            write_doctype_stats = None
         indexes = get_indexes()
     except pyes.urllib3.connectionpool.MaxRetryError:
         log.error('Your elasticsearch process is not running or ES_HOSTS '
@@ -145,23 +177,32 @@ def es_whazzup():
 
     log.info('Index stats:')
 
-    log.info('  List of %s indexes:', settings.ES_INDEX_PREFIX)
-    for name, count in indexes:
-        read_write = []
-        if name == read_index:
-            read_write.append('READ')
-        if name == write_index:
-            read_write.append('WRITE')
-        log.info('    %-20s: %s %s', name, count,
-                 '/'.join(read_write))
+    if indexes:
+        log.info('  List of %s indexes:', settings.ES_INDEX_PREFIX)
+        for name, count in indexes:
+            read_write = []
+            if name == read_index:
+                read_write.append('READ')
+            if name == write_index:
+                read_write.append('WRITE')
+            log.info('    %-20s: %s %s', name, count,
+                     '/'.join(read_write))
+    else:
+        log.info('  There are no %s indexes.', settings.ES_INDEX_PREFIX)
 
-    log.info('  Read index (%s):', read_index)
-    for name, count in read_doctype_stats.items():
-        log.info('    %-20s: %d', name, count)
+    if read_doctype_stats is None:
+        log.info('  Read index does not exist. (%s)', read_index)
+    else:
+        log.info('  Read index (%s):', read_index)
+        for name, count in read_doctype_stats.items():
+            log.info('    %-20s: %d', name, count)
 
     if read_index != write_index:
-        log.info('  Write index (%s):', write_index)
-        for name, count in write_doctype_stats.items():
-            log.info('    %-20s: %d', name, count)
+        if write_doctype_stats is None:
+            log.info('  Write index does not exist. (%s)', write_index)
+        else:
+            log.info('  Write index (%s):', write_index)
+            for name, count in write_doctype_stats.items():
+                log.info('    %-20s: %d', name, count)
     else:
         log.info('  Write index is same as read index.')
