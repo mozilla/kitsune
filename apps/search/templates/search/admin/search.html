@@ -96,6 +96,7 @@
           <th>index name</th>
           <th>total documents in index</th>
           <th></th>
+          <th></th>
         </thead>
         <tbody>
           {% for index_name, index_count in indexes %}
@@ -103,50 +104,68 @@
               <td>{{ index_name }}</td><td>{{ index_count }}</td>
               {% if index_name == read_index %}
                 <td>READ</td>
+                <td></td>
               {% else %}
                 {% if index_name == write_index %}
                   <td>WRITE</td>
                 {% else %}
                   <td></td>
                 {% endif %}
+                <td>
+                  <form method="POST">
+                    {% csrf_token %}
+                    <div>
+                      <input type="hidden" name="delete_index" value="{{ index_name }}">
+                      <input type="submit" value="Delete">
+                    </div>
+                  </form>
+                </td>
               {% endif %}
             </tr>
           {% endfor %}
         </tbody>
       </table>
-      <p>
-        Read index counts at time page was loaded ({{ read_index }}):
-      </p>
-      <table>
-        <thead>
-          <th>doctype</th>
-          <th>count</th>
-        </thead>
-        <tbody>
-          {% for stats_name, stats_count in doctype_stats.items %}
-            <tr><td>{{ stats_name }}</td><td>{{ stats_count }}</td></tr>
-          {% endfor %}
-        </tbody>
-      </table>
-      {% if read_index != write_index %}
+      <h2>Read index ({{ read_index }})</h2>
+      {% if doctype_stats == None %}
         <p>
-          Write index counts at time page was loaded ({{ write_index }}):
+          Read index does not exist.
         </p>
+      {% else %}
         <table>
           <thead>
             <th>doctype</th>
             <th>count</th>
           </thead>
           <tbody>
-            {% for stats_name, stats_count in doctype_write_stats.items %}
+            {% for stats_name, stats_count in doctype_stats.items %}
               <tr><td>{{ stats_name }}</td><td>{{ stats_count }}</td></tr>
             {% endfor %}
           </tbody>
         </table>
-      {% else %}
+      {% endif %}
+      <h2>Write index ({{ write_index }})</h2>
+      {% if read_index == write_index %}
         <p>
           Write index is the same as the read index.
         </p>
+      {% else %}
+        {% if doctype_write_stats == None %}
+        <p>
+          Write index does not exist.
+        </p>
+        {% else %}
+          <table>
+            <thead>
+              <th>doctype</th>
+              <th>count</th>
+            </thead>
+            <tbody>
+              {% for stats_name, stats_count in doctype_write_stats.items %}
+                <tr><td>{{ stats_name }}</td><td>{{ stats_count }}</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        {% endif %}
       {% endif %}
     {% endif %}
 

@@ -128,7 +128,7 @@ def es_delete_cmd(index):
 
     try:
         indexes = [name for name, count in get_indexes()]
-    except pyes.urllib3.connectionpool.MaxRetryError:
+    except ESMaxRetryError:
         log.error('Your elasticsearch process is not running or ES_HOSTS '
                   'is set wrong in your settings_local.py file.')
         return
@@ -156,14 +156,14 @@ def es_status_cmd():
     try:
         try:
             read_doctype_stats = get_doctype_stats(read_index)
-        except pyes.exceptions.IndexMissingException:
+        except ESIndexMissingException:
             read_doctype_stats = None
         try:
             write_doctype_stats = get_doctype_stats(write_index)
-        except pyes.exceptions.IndexMissingException:
+        except ESIndexMissingException:
             write_doctype_stats = None
         indexes = get_indexes()
-    except pyes.urllib3.connectionpool.MaxRetryError:
+    except ESMaxRetryError:
         log.error('Your elasticsearch process is not running or ES_HOSTS '
                   'is set wrong in your settings_local.py file.')
         return
