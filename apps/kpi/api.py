@@ -98,11 +98,7 @@ class SearchClickthroughResource(CachedResource):
         """Fetch a particular ratio by start date."""
         raise NotImplementedError
 
-    def get_object_list(self, request):
-        """Return the authZ-limited set of ratios"""
-        return self.obj_get_list(request)
-
-    def obj_get_list(self, request=None, **kwargs):
+    def get_object_list(self, request=None, **kwargs):
         """Return all the ratios.
 
         Or, if a ``min_start`` query param is present, return the (potentially
@@ -112,13 +108,13 @@ class SearchClickthroughResource(CachedResource):
         If, somehow, half a ratio is missing, that ratio is not returned.
 
         """
-        # Make min_start either a date or None:
+        # Get min_start from query string and validate it.
         min_start = request.GET.get('min_start')
         if min_start:
             try:
-                min_start = _parse_date()
+                _parse_date(min_start)
             except (ValueError, TypeError):
-                pass
+                min_start = None
 
         # I'm not sure you can join a table to itself with the ORM.
         cursor = _cursor()
@@ -132,7 +128,7 @@ class SearchClickthroughResource(CachedResource):
             (self.clicks_kind, self.searches_kind) +
                 ((min_start,) if min_start else ()))
         return [Struct(start=s, clicks=n, searches=d) for
-                s, n, d in cursor.fetchall()]
+                s, n, d in reversed(cursor.fetchall())]
 
     def obj_create(self, bundle, request=None, **kwargs):
         def create_metric(kind, value_field, data):

@@ -23,11 +23,11 @@ window.ChartModel = Backbone.Model.extend({
 /*
  * Views
  */
-window.MonthlyChartView = Backbone.View.extend({
+window.BasicChartView = Backbone.View.extend({
     tagName: 'section',
     className: 'graph',
 
-    initialize: function(s) {
+    initialize: function() {
         _.bindAll(this, 'render');
 
         this.model.bind('change', this.render);
@@ -83,12 +83,21 @@ window.MonthlyChartView = Backbone.View.extend({
         }
     },
 
-    render: function() {
+    addModel: function(model) {
+        model.bind('change', this.render);
+    },
+
+    render: function(model) {
         var self = this,
-            data = this.model.get('objects');
+            data = model && model.get('objects');
 
         if(data) {
-            self.chart = new Highcharts.Chart(self.chartOptions);
+
+            // Create the chart if we haven't yet.
+            if (!self.chart) {
+                self.chart = new Highcharts.Chart(self.chartOptions);
+            }
+
             _.each(this.options.series, function(series) {
                 var mapper = series.mapper,
                     seriesData;
@@ -106,7 +115,7 @@ window.MonthlyChartView = Backbone.View.extend({
 
                 self.chart.addSeries({
                     data: seriesData,
-                    name: series.name
+                    name: series.name || model.name
                 });
             });
         }
@@ -119,7 +128,7 @@ window.StockChartView = Backbone.View.extend({
     tagName: 'section',
     className: 'graph',
 
-    initialize: function(s) {
+    initialize: function() {
         _.bindAll(this, 'render');
 
         this.model.bind('change', this.render);
@@ -290,6 +299,17 @@ window.KpiDashboard = Backbone.View.extend({
             url: $(this.el).data('active-answerers-url')
         });
 
+        this.sphinxCtrChart = new ChartModel([], {
+            name: 'Sphinx',
+            url: $(this.el).data('sphinx-ctr-url')
+        });
+        this.sphinxCtrChart.name = 'Sphinx';
+
+        this.elasticCtrChart = new ChartModel([], {
+            url: $(this.el).data('elastic-ctr-url')
+        });
+        this.elasticCtrChart.name = 'Elastic';
+
         // Create the views.
         this.solvedChartView = new StockChartView({
             model: this.solvedChart,
@@ -302,7 +322,7 @@ window.KpiDashboard = Backbone.View.extend({
             }]
         });
 
-        this.voteChartView = new MonthlyChartView({
+        this.voteChartView = new BasicChartView({
             model: this.voteChart,
             title: gettext('Helpful Votes'),
             percent: true,
@@ -337,7 +357,7 @@ window.KpiDashboard = Backbone.View.extend({
             }]
         });
 
-        this.activeKbContributorsView = new MonthlyChartView({
+        this.activeKbContributorsView = new BasicChartView({
             model: this.activeKbContributorsChart,
             title: gettext('Active KB Contributors'),
             series: [{
@@ -359,7 +379,7 @@ window.KpiDashboard = Backbone.View.extend({
             }]
         });
 
-        this.activeAnswerers = new MonthlyChartView({
+        this.activeAnswerersView = new BasicChartView({
             model: this.activeAnswerersChart,
             title: gettext('Active Support Forum Contributors'),
             series: [{
@@ -373,13 +393,29 @@ window.KpiDashboard = Backbone.View.extend({
             }]
         });
 
+        this.ctrView = new BasicChartView({
+            model: this.sphinxCtrChart,
+            title: gettext('Search Clickthrough Rate'),
+            percent: true,
+            series: [{
+                mapper: function(o) {
+                    return {
+                        x: Date.parse(o['start']),
+                        y: o['clicks'] / o['searches'] * 100
+                    };
+                }
+            }]
+        });
+        this.ctrView.addModel(this.elasticCtrChart);
+
         // Render the views.
         $(this.el)
             .append(this.solvedChartView.render().el)
             .append(this.fastResponseView.render().el)
             .append(this.voteChartView.render().el)
             .append(this.activeKbContributorsView.render().el)
-            .append(this.activeAnswerers.render().el);
+            .append(this.activeAnswerersView.render().el)
+            .append(this.ctrView.render().el);
 
 
         // Load up the models.
@@ -388,6 +424,8 @@ window.KpiDashboard = Backbone.View.extend({
         this.activeKbContributorsChart.fetch();
         this.activeAnswerersChart.fetch();
         this.voteChart.fetch();
+        this.sphinxCtrChart.fetch();
+        this.elasticCtrChart.fetch();
     }
 });
 

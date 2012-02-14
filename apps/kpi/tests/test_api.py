@@ -159,10 +159,10 @@ class KpiApiTests(TestCase):
         response = self.client.get(url + '?format=json')
         self.assertContains(  # Beware of dict order changes someday.
             response,
-            '"objects": [{"clicks": 1, "resource_uri": "", "searches": 10, '
-                         '"start": "2000-01-01"}, '
-                        '{"clicks": 2, "resource_uri": "", "searches": 20, '
-                         '"start": "2000-01-09"}]')
+            '"objects": [{"clicks": 2, "resource_uri": "", "searches": 20, '
+                         '"start": "2000-01-09"}, '
+                        '{"clicks": 1, "resource_uri": "", "searches": 10, '
+                         '"start": "2000-01-01"}]')
 
         # Test filtering by start date:
         response = self.client.get(url + '?format=json&min_start=2000-01-09')
