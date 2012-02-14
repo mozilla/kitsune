@@ -9,6 +9,7 @@ from django.template import RequestContext
 from search.es_utils import (get_doctype_stats, get_indexes, delete_index,
                              ESTimeoutError, ESMaxRetryError,
                              ESIndexMissingException)
+from search.models import Record
 from search.tasks import (ES_REINDEX_PROGRESS, ES_WAFFLE_WHEN_DONE,
                           reindex_with_progress)
 from sumo.urlresolvers import reverse
@@ -58,7 +59,7 @@ def search(request):
     reindex_requested = 'reindex' in request.POST
     if reindex_requested:
         reindex_with_progress.delay(
-                waffle_when_done='waffle_when_done' in request.POST)
+            waffle_when_done='waffle_when_done' in request.POST)
 
     delete_requested = 'delete_index' in request.POST
     if delete_requested:
@@ -105,6 +106,8 @@ def search(request):
         es_error_message = ('Connection to Elastic Search timed out. '
                             '(TimeoutError)')
 
+    recent_records = reversed(Record.objects.order_by('starttime')[:20])
+
     return render_to_response(
         'search/admin/search.html',
         {'title': 'Search',
@@ -115,6 +118,7 @@ def search(request):
          'write_index': write_index,
          'delete_error_message': delete_error_message,
          'es_error_message': es_error_message,
+         'recent_records': recent_records,
           # Dim the buttons even if the form loads before the task fires:
          'progress': cache.get(ES_REINDEX_PROGRESS,
                                '0.001' if reindex_requested else ''),

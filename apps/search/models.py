@@ -5,12 +5,14 @@ from threading import local
 
 from django.conf import settings
 from django.core import signals
-from django.db import reset_queries
+from django.db import reset_queries, models
 from django.db.models.signals import pre_delete, post_save
 from django.dispatch import receiver
 
 from search.tasks import index_task, unindex_task
 from search import es_utils
+
+from sumo.models import ModelBase
 
 log = logging.getLogger('search.es')
 
@@ -303,3 +305,21 @@ def generate_tasks(**kwargs):
 
 
 signals.request_finished.connect(generate_tasks)
+
+
+class Record(ModelBase):
+    """Record for the reindexing log"""
+    starttime = models.DateTimeField(null=True)
+    endtime = models.DateTimeField(null=True)
+    text = models.CharField(max_length=255)
+
+    class Meta:
+        permissions = (
+            ('reindex', 'Can run a full reindexing'),
+            )
+
+    def delta(self):
+        """Returns the timedelta"""
+        if self.starttime and self.endtime:
+            return self.endtime - self.starttime
+        return None
