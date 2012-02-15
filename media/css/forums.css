@@ -242,11 +242,8 @@ p#thread-locked {
 }
 
 a#new-thread {
-    background: url(../img/forums/arrow.png) no-repeat scroll left center transparent;
     float: left;
-    font-size: 115%;
-    margin: 0 0 1em 10px;
-    padding-left: 10px;
+    margin: 0 0 1em;
 }
 
 div.forum-actions {
