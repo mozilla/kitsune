@@ -404,7 +404,6 @@ ol.posts li div.content a:hover {
 form.new-thread div.form-widget,
 form.edit-post div.form-widget,
 form.edit-thread div.form-widget {
-    border-top: 1px dotted #c0c0c0;
     clear: left;
     padding: 1em;
 }
@@ -544,4 +543,19 @@ ol.posts form.report .kbox-container {
 }
 .watch-form a.no {
     background: url("/media/img/wiki/icon-no.gif") no-repeat scroll left top transparent;
+}
+
+/* Tweaks for Aurora forums */
+.aurora-forum #quick-links {
+    display: none;
+}
+
+.aurora-forum article.main:before {
+    background: url(../img/firefox-aurora-80x80.png) no-repeat center center;
+    content: '';
+    display: block;
+    float: right;
+    height: 80px;
+    margin: -10px 0 0;
+    width: 80px;
 }
