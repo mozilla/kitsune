@@ -300,7 +300,6 @@ window.KpiDashboard = Backbone.View.extend({
         });
 
         this.sphinxCtrChart = new ChartModel([], {
-            name: 'Sphinx',
             url: $(this.el).data('sphinx-ctr-url')
         });
         this.sphinxCtrChart.name = 'Sphinx';
