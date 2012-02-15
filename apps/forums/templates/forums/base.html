@@ -2,3 +2,23 @@
 {% extends "base.html" %}
 {% set styles = ('forums',) %}
 {% set scripts = ('forums',) %}
+
+{# If we are in an Aurora forum ('aurora' in the slug), we need to tweak the template. #}
+{% if forum and 'aurora' in forum.slug %}
+  {% set is_aurora = True %}
+  {% set classes = 'aurora-forum' %}
+{% endif %}
+
+{% block breadcrumbs %}
+  {% if is_aurora %}
+    {# Aurora forums don't have the normal breadcrumbs. But if we are on a thread page,
+       we need a way to go back to the main aurora forum page. #}
+    {% if thread %}
+      <ol class="breadcrumbs">
+        <li><a href="{{ url('forums.threads', forum.slug) }}">{{ forum.name }}</a></li>
+      </ol>
+    {% endif %}
+  {% else %}
+    {{ super() }}
+  {% endif %}
+{% endblock %}
