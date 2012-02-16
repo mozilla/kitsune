@@ -42,8 +42,13 @@ DATABASE_ROUTERS = ('multidb.PinningMasterSlaveRouter',)
 SLAVE_DATABASES = []
 
 # Cache Settings
-#CACHE_BACKEND = 'caching.backends.memcached://localhost:11211'
-#CACHE_PREFIX = 'sumo:'
+# CACHES = {
+#     'default': {
+#         'BACKEND': 'caching.backends.memcached.CacheClass',
+#         'LOCATION': ['localhost:11211'],
+#         'PREFIX': 'sumo:',
+#     },
+# }
 
 # Setting this to the Waffle version.
 WAFFLE_CACHE_PREFIX = 'w0.7.7a:'
