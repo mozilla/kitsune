@@ -1,11 +1,16 @@
+from datetime import datetime
+import json
+
 from django.conf import settings
 
-from mock import patch
+from mock import patch, Mock
 from nose.tools import eq_
+from test_utils import RequestFactory
 
 from customercare.tests import tweet
-from customercare.models import Tweet
+from customercare.models import Tweet, Reply
 from customercare.views import _get_tweets
+from customercare.views import twitter_post
 from sumo.tests import TestCase, LocalizingClient
 from sumo.urlresolvers import reverse
 
@@ -146,7 +151,8 @@ class FilterCachingTests(FilterTestCase):
     """Test interaction of caching with filters"""
 
     def test_caching(self):
-        """Ensure refiltering the list after replying shows the replied-to tweet as such."""
+        """Ensure refiltering the list after replying shows the replied-to
+        tweet as such."""
         # We need at least one existing answer to get the list of answered
         # tweets to cache:
         question = tweet(save=True)
@@ -163,3 +169,48 @@ class FilterCachingTests(FilterTestCase):
 
         # And make sure we can immediately see that we replied:
         assert 'YO_UNANSWERED' in self._tweet_list('answered')
+
+
+class TweetReplyTests(TestCase):
+    """Test for the twitter_post view."""
+    client_class = LocalizingClient
+
+    def test_post_reply(self):
+        # Create a Tweet to reply to.
+        Tweet.objects.create(
+            pk=1,
+            raw_json='{}',
+            locale='en',
+            created=datetime.now())
+
+        # Create a request and mock all the required properties and methods.
+        request = RequestFactory().post(
+            reverse('customercare.twitter_post'),
+            {'reply_to': 1,
+             'content': '@foobar try Aurora! #fxhelp'})
+        request.session = {}
+        request.twitter = Mock()
+        request.twitter.authed = True
+        request.twitter.api = Mock()
+        return_value = Mock()
+        return_value.__dict__ = {
+            'id': 123456790,
+            'text': '@foobar try Aurora! #fxhelp',
+            'created_at': datetime.now(), }
+        return_value.author = Mock()
+        return_value.author.__dict__ = {
+            'lang': 'en',
+            'id': 42,
+            'screen_name': 'r1cky',
+            'profile_image_url': 'http://example.com/profile.jpg', }
+        request.twitter.api.update_status.return_value = return_value
+
+        # Pass the request to the view and verify response.
+        response = twitter_post(request)
+        eq_(200, response.status_code)
+
+        # Verify the reply was inserted with the right data.
+        reply = Reply.objects.all()[0]
+        eq_('r1cky', reply.twitter_username)
+        eq_(1, reply.reply_to_tweet_id)
+        eq_('@foobar try Aurora! #fxhelp', json.loads(reply.raw_json)['text'])

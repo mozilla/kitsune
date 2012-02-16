@@ -1,6 +1,7 @@
 from datetime import datetime
 import json
 
+from django.contrib.auth.models import User
 from django.db import models
 
 from sumo.models import ModelBase
@@ -34,3 +35,22 @@ class Tweet(ModelBase):
     def __unicode__(self):
         tweet = json.loads(self.raw_json)
         return tweet['text']
+
+
+class Reply(ModelBase):
+    """A reply from an AoA contributor.
+
+    The Tweet table gets truncated regularly so we can't use it for metrics.
+    This model is to keep track of contributor counts and such.
+    """
+    user = models.ForeignKey(User, null=True, related_name='tweet_replies')
+    twitter_username = models.CharField(max_length=20)
+    tweet_id = models.BigIntegerField()
+    raw_json = models.TextField()
+    locale = models.CharField(max_length=20)
+    created = models.DateTimeField(default=datetime.now, db_index=True)
+    reply_to_tweet_id = models.BigIntegerField()
+
+    def __unicode__(self):
+        tweet = json.loads(self.raw_json)
+        return '@{u}: {t}'.format(u=self.twitter_username, t=tweet['text'])
