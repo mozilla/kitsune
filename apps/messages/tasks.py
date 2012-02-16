@@ -3,15 +3,12 @@ import logging
 from django.conf import settings
 from django.contrib.sites.models import Site
 from django.core.mail import send_mail
+from django.core.urlresolvers import reverse
 from django.template import Context, loader
 
-
 from messages.models import InboxMessage
-from sumo.urlresolvers import reverse
 from celery.decorators import task
 from tower import ugettext as _
-
-from sumo.urlresolvers import reverse
 
 
 log = logging.getLogger('k.task')
