@@ -72,14 +72,16 @@ def questions(request):
     filter_ = request.GET.get('filter')
     tagged = request.GET.get('tagged')
     tags = None
-    sort_ = request.GET.get('sort')
+    sort_ = request.GET.get('sort', None)
     cache_count = True  # Some counts are too esoteric to cache right now.
 
     if sort_ == 'requested':
         order = '-num_votes_past_week'
-    else:
-        sort_ = None
+    elif (sort_ == 'updated' or
+         (filter_ == 'my-contributions' and sort_ == None)):
         order = '-updated'
+    else:
+        order = '-created'
 
     question_qs = Question.objects.select_related(
         'creator', 'last_answer', 'last_answer__creator')
