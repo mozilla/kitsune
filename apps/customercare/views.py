@@ -18,7 +18,7 @@ from session_csrf import anonymous_csrf
 from tower import ugettext as _, ugettext_lazy as _lazy
 import tweepy
 
-from customercare.models import Tweet
+from customercare.models import Tweet, Reply
 import twitter
 
 
@@ -355,6 +355,17 @@ def twitter_post(request):
                          locale=author['lang'],
                          created=status['created_at'],
                          reply_to_id=reply_to_id)
+
+    # Record in our Reply table.
+    Reply.objects.create(
+        user=request.user if request.user.is_authenticated() else None,
+        twitter_username=author['screen_name'],
+        tweet_id=status['id'],
+        raw_json=json.dumps(raw_tweet_data),
+        locale=author['lang'],
+        created=status['created_at'],
+        reply_to_tweet_id=reply_to_id
+    )
 
     # We could optimize by not encoding and then decoding JSON.
     return jingo.render(request, 'customercare/tweets.html',
