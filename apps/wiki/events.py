@@ -4,6 +4,7 @@ import logging
 from django.conf import settings
 from django.contrib.sites.models import Site
 from django.core.mail import EmailMessage
+from django.core.urlresolvers import reverse as django_reverse
 from django.template import Context, loader
 
 from bleach import clean
@@ -194,9 +195,8 @@ class ReadyRevisionEvent(_RevisionConstructor, Event):
                 locale = settings.WIKI_DEFAULT_LANGUAGE
             else:
                 locale = profile.locale
-            c['url'] = reverse('wiki.translate',
-                               locale=locale,
-                               args=[document.slug])
+            c['url'] = django_reverse('wiki.select_locale',
+                                      args=[document.slug])
             yield EmailMessage(ready_subject,
                                ready_template.render(Context(c)),
                                settings.TIDINGS_FROM_ADDRESS,
@@ -262,9 +262,8 @@ class ApprovedOrReadyUnion(EventUnion):
                     locale = settings.WIKI_DEFAULT_LANGUAGE
                 else:
                     locale = profile.locale
-                c['url'] = reverse('wiki.translate',
-                                   locale=locale,
-                                   args=[document.slug])
+                c['url'] = django_reverse('wiki.select_locale',
+                                          args=[document.slug])
                 yield EmailMessage(ready_subject,
                                    ready_template.render(Context(c)),
                                    settings.TIDINGS_FROM_ADDRESS,
