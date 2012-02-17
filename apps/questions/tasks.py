@@ -1,5 +1,6 @@
 import logging
 
+from django.conf import settings
 from django.db import connection, transaction
 
 from celery.decorators import task
@@ -25,6 +26,8 @@ def update_question_votes(q):
 @task(rate_limit='4/s')
 def update_question_vote_chunk(data, **kwargs):
     """Update num_votes_past_week for a number of questions."""
+
+    # First we recalculate num_votes_past_week in the db.
     log.info('Calculating past week votes for %s questions.' % len(data))
 
     ids = ','.join(map(str, data))
@@ -41,6 +44,38 @@ def update_question_vote_chunk(data, **kwargs):
     cursor = connection.cursor()
     cursor.execute(sql)
     transaction.commit_unless_managed()
+
+    # Next we update our index with the changes we made directly in
+    # the db.
+    if data and settings.ES_LIVE_INDEXING:
+        # Get the data we just updated from the database.
+        sql = """
+            SELECT id, num_votes_past_week
+            FROM questions_question
+            WHERE id in (%s);
+            """ % ids
+        cursor = connection.cursor()
+        cursor.execute(sql)
+
+        # Since this returns (id, num_votes_past_week) tuples, we can
+        # convert that directly to a dict.
+        id_to_num = dict(cursor.fetchall())
+
+        # Fetch all the documents we need to update.
+        from questions.models import Question
+        from search import es_utils
+        es_docs = es_utils.get_documents(Question, data)
+
+        # For each document, update the data and stick it back in the
+        # index.
+        for doc in es_docs:
+            doc_id = int(doc[u'_id'])
+            document = doc[u'_source']
+            new_num_votes = id_to_num[doc_id]
+
+            document[u'question_votes'] = new_num_votes
+
+            Question.index(document, refresh=True)
 
 
 @task(rate_limit='4/m')
