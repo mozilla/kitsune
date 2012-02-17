@@ -5,7 +5,7 @@ from django.template.defaultfilters import slugify
 
 from nose.tools import eq_
 
-from questions.models import Question, Answer, AnswerVote
+from questions.models import Question, QuestionVote, Answer, AnswerVote
 from sumo.tests import LocalizingClient, TestCase, with_save
 from users.tests import user
 
@@ -55,6 +55,17 @@ def question(**kwargs):
     if 'creator' not in kwargs and 'creator_id' not in kwargs:
         defaults['creator'] = user(save=True)
     return Question(**defaults)
+
+
+@with_save
+def questionvote(**kwargs):
+    defaults = dict(created=datetime.now())
+    defaults.update(kwargs)
+    if 'question' not in kwargs and 'queation_id' not in kwargs:
+        defaults['question'] = question(save=True)
+    if 'creator' not in kwargs and 'creator_id' not in kwargs:
+        defaults['creator'] = user(save=True)
+    return QuestionVote(**defaults)
 
 
 @with_save
