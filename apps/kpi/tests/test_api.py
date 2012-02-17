@@ -4,12 +4,12 @@ import json
 
 from nose.tools import eq_
 
+from customercare.tests import reply
 from kpi.models import Metric
 from kpi.tests import metric, metric_kind
 from sumo.tests import TestCase, LocalizingClient
 from sumo.urlresolvers import reverse
 from questions.tests import answer, answer_vote, question
-from users.models import Profile
 from users.tests import user, add_permission
 from wiki.tests import document, revision, helpful_vote
 
@@ -26,8 +26,6 @@ class KpiApiTests(TestCase):
 
     def test_solved(self):
         """Test solved API call."""
-        u = user(save=True)
-
         a = answer(save=True)
         a.question.solution = a
         a.question.save()
@@ -45,8 +43,6 @@ class KpiApiTests(TestCase):
 
     def test_vote(self):
         """Test vote API call."""
-        u = user(save=True)
-
         r = revision(save=True)
         helpful_vote(revision=r, save=True)
         helpful_vote(revision=r, save=True)
@@ -70,8 +66,6 @@ class KpiApiTests(TestCase):
 
     def test_fast_response(self):
         """Test fast response API call."""
-        u = user(save=True)
-
         a = answer(save=True)
         a.question.solution = a
         a.question.save()
@@ -126,6 +120,21 @@ class KpiApiTests(TestCase):
         # There should be only one active contributor.
         url = reverse('api_dispatch_list',
                       kwargs={'resource_name': 'kpi_active_answerers',
+                              'api_name': 'v1'})
+
+        response = self.client.get(url + '?format=json')
+        eq_(200, response.status_code)
+        r = json.loads(response.content)
+        eq_(r['objects'][0]['contributors'], 1)
+
+    def test_active_aoa_contributors(self):
+        """Test active AOA contributors API call."""
+        # Create a reply
+        reply(save=True)
+
+        # There should be only one active contributor.
+        url = reverse('api_dispatch_list',
+                      kwargs={'resource_name': 'kpi_active_aoa_contributors',
                               'api_name': 'v1'})
 
         response = self.client.get(url + '?format=json')
@@ -198,4 +207,5 @@ class KpiApiTests(TestCase):
             '"objects": [{"clicks": 50000000, "resource_uri": "", '
                          '"searches": 100000000, "start": "2000-01-02"}]')
 
-    # Correspnding ElasticSearch APIs are likely correct by dint of factoring.
+        # Correspnding ElasticSearch APIs are likely correct by dint
+        # of factoring.
