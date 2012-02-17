@@ -80,6 +80,17 @@ def format_time(time_to_go):
     return  "%dm %ds" % (time_to_go / 60, time_to_go % 60)
 
 
+def get_documents(cls, ids):
+    """Returns a list of ES documents with specified ids and doctype"""
+    es = elasticutils.get_es()
+    doctype = cls._meta.db_table
+    index = settings.ES_INDEXES['default']
+
+    ret = es.search(pyes.query.IdsQuery(doctype, ids), indices=[index],
+                    doc_types=[doctype])
+    return ret['hits']['hits']
+
+
 def es_reindex_with_progress(percent=100):
     """Rebuild Elastic indexes as you iterate over yielded progress ratios.
 
