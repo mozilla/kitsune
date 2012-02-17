@@ -10,6 +10,7 @@ from tastypie.authorization import Authorization
 from tastypie.cache import SimpleCache
 from tastypie.resources import Resource
 
+from customercare.models import Reply
 from kpi.models import Metric, MetricKind
 from questions.models import Question, Answer, AnswerVote
 from wiki.models import HelpfulVote, Revision
@@ -166,10 +167,7 @@ class ElasticClickthroughResource(SearchClickthroughResource):
 
 
 class SolutionResource(CachedResource):
-    """
-    Returns the number of questions with
-    and without an answer maked as the solution.
-    """
+    """Returns the number of questions maked as the solution."""
     date = fields.DateField('date')
     solved = fields.IntegerField('solved', default=0)
     questions = fields.IntegerField('questions', default=0)
@@ -190,9 +188,7 @@ class SolutionResource(CachedResource):
 
 
 class VoteResource(CachedResource):
-    """
-    Returns the number of total and helpful votes for Articles and Answers.
-    """
+    """Returns the number helpful votes for Articles and Answers."""
     date = fields.DateField('date')
     kb_helpful = fields.IntegerField('kb_helpful', default=0)
     kb_votes = fields.IntegerField('kb_votes', default=0)
@@ -221,10 +217,7 @@ class VoteResource(CachedResource):
 
 
 class FastResponseResource(CachedResource):
-    """
-    Returns the total number and number of Questions that receive an answer
-    within a period of time.
-    """
+    """Returns the number of Questions that receive an answer within 72hrs."""
     date = fields.DateField('date')
     questions = fields.IntegerField('questions', default=0)
     responded = fields.IntegerField('responded', default=0)
@@ -248,8 +241,7 @@ class FastResponseResource(CachedResource):
 
 
 class ActiveKbContributorsResource(CachedResource):
-    """
-    Returns the number of active contributors in the KB.
+    """Returns the number of active contributors in the KB.
 
     Returns en-US and non-en-US numbers separately.
     """
@@ -301,8 +293,7 @@ class ActiveKbContributorsResource(CachedResource):
 
 
 class ActiveAnswerersResource(CachedResource):
-    """
-    Returns the number of active contributors in the support forum.
+    """Returns the number of active contributors in the support forum.
 
     Definition of contribution: wrote 10+ posts
     """
@@ -334,6 +325,42 @@ class ActiveAnswerersResource(CachedResource):
     class Meta:
         cache = SimpleCache()
         resource_name = 'kpi_active_answerers'
+        allowed_methods = ['get']
+
+
+class ArmyOfAwesomeContributorResource(CachedResource):
+    """Returns the number of active contributors in the Army of Awesome.
+
+    Definition of contribution: 1+ replies
+    """
+    date = fields.DateField('date')
+    contributors = fields.IntegerField('contributors', default=0)
+
+    def get_object_list(self, request):
+        qs = _monthly_qs_for(Reply).values(
+            'year', 'month', 'twitter_username')
+        contributors = qs.distinct()
+
+        def _add_user(monthly_dict, year, month, userid):
+            if userid:
+                yearmonth = (year, month)
+                if yearmonth not in monthly_dict:
+                    monthly_dict[yearmonth] = set()
+                monthly_dict[yearmonth].add(userid)
+
+        # Build the contributors count list aggregated by month
+        d = {}
+        for c in contributors:
+            _add_user(d, c['year'], c['month'], c['twitter_username'])
+        contributors = [{'month': k[1], 'year': k[0], 'count': len(v)} for
+                        k, v in d.items()]
+
+        # Merge and return
+        return merge_results(contributors=contributors)
+
+    class Meta:
+        cache = SimpleCache()
+        resource_name = 'kpi_active_aoa_contributors'
         allowed_methods = ['get']
 
 

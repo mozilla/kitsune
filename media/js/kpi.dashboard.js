@@ -299,6 +299,10 @@ window.KpiDashboard = Backbone.View.extend({
             url: $(this.el).data('active-answerers-url')
         });
 
+        this.aoaContributorsChart = new ChartModel([], {
+            url: $(this.el).data('aoa-contributors-url')
+        });
+
         this.sphinxCtrChart = new ChartModel([], {
             url: $(this.el).data('sphinx-ctr-url')
         });
@@ -392,6 +396,20 @@ window.KpiDashboard = Backbone.View.extend({
             }]
         });
 
+        this.aoaContributorsView = new BasicChartView({
+            model: this.aoaContributorsChart,
+            title: gettext('Army of Awesome Contributors'),
+            series: [{
+                name: gettext('Contributors'),
+                mapper: function(o) {
+                    return {
+                        x: Date.parse(o['date']),
+                        y: o['contributors']
+                    };
+                }
+            }]
+        });
+
         this.ctrView = new BasicChartView({
             model: this.sphinxCtrChart,
             title: gettext('Search Clickthrough Rate'),
@@ -414,6 +432,7 @@ window.KpiDashboard = Backbone.View.extend({
             .append(this.voteChartView.render().el)
             .append(this.activeKbContributorsView.render().el)
             .append(this.activeAnswerersView.render().el)
+            .append(this.aoaContributorsView.render().el)
             .append(this.ctrView.render().el);
 
 
@@ -422,6 +441,7 @@ window.KpiDashboard = Backbone.View.extend({
         this.fastResponseChart.fetch();
         this.activeKbContributorsChart.fetch();
         this.activeAnswerersChart.fetch();
+        this.aoaContributorsChart.fetch();
         this.voteChart.fetch();
         this.sphinxCtrChart.fetch();
         this.elasticCtrChart.fetch();

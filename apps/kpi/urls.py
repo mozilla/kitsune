@@ -3,7 +3,8 @@ from django.conf.urls.defaults import patterns, url, include
 from tastypie.api import Api
 from kpi.api import (SolutionResource, VoteResource, FastResponseResource,
                      ActiveKbContributorsResource, ActiveAnswerersResource,
-                     SphinxClickthroughResource, ElasticClickthroughResource)
+                     SphinxClickthroughResource, ElasticClickthroughResource,
+                     ArmyOfAwesomeContributorResource)
 
 v1_api = Api(api_name='v1')
 v1_api.register(SolutionResource())
@@ -13,6 +14,7 @@ v1_api.register(ActiveKbContributorsResource())
 v1_api.register(ActiveAnswerersResource())
 v1_api.register(SphinxClickthroughResource())
 v1_api.register(ElasticClickthroughResource())
+v1_api.register(ArmyOfAwesomeContributorResource())
 
 
 urlpatterns = patterns('kpi.views',
