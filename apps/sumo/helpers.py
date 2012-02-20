@@ -185,7 +185,13 @@ def datetimeformat(context, value, format='shortdatetime'):
         # Expecting date value
         raise ValueError
 
-    tzinfo = timezone(settings.TIME_ZONE)
+    request = context.get('request')
+    if 'timezone' in request.COOKIES:
+        user_timezone = request.COOKIES['timezone']
+    else:
+        user_timezone = settings.TIME_ZONE
+
+    tzinfo = timezone(user_timezone)
     tzvalue = tzinfo.localize(value)
     locale = _babel_locale(_contextual_locale(context))
 
