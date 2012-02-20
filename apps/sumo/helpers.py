@@ -20,6 +20,7 @@ from tower import ugettext_lazy as _lazy, ungettext
 
 import sumo.parser
 from sumo.urlresolvers import reverse
+from users.models import Profile
 
 
 class DateTimeFormatError(Exception):
@@ -178,39 +179,59 @@ def _contextual_locale(context):
 @jinja2.contextfunction
 def datetimeformat(context, value, format='shortdatetime'):
     """
-    Returns date/time formatted using babel's locale settings. Uses the
-    timezone from settings.py
+    Returns a formatted date/time using Babel's locale settings. Uses the
+    timezone from settings.py, if the user has not been authenticated.
     """
     if not isinstance(value, datetime.datetime):
         # Expecting date value
         raise ValueError
 
-    tzinfo = timezone(settings.TIME_ZONE)
-    tzvalue = tzinfo.localize(value)
+    request = context.get('request')
+
+    default_tzinfo = convert_tzinfo = timezone(settings.TIME_ZONE)
+    if value.tzinfo is None:
+        value = default_tzinfo.localize(value)
+        new_value = value.astimezone(default_tzinfo)
+    else:
+        new_value = value
+
+    if 'timezone' not in request.session:
+        if request.user.is_authenticated():
+            try:
+                convert_tzinfo = request.user.get_profile().timezone or default_tzinfo
+            except (Profile.DoesNotExist, AttributeError):
+                pass
+        request.session['timezone'] = convert_tzinfo
+    else:
+        convert_tzinfo = request.session['timezone']
+
+    convert_value = new_value.astimezone(convert_tzinfo)
     locale = _babel_locale(_contextual_locale(context))
 
     # If within a day, 24 * 60 * 60 = 86400s
     if format == 'shortdatetime':
         # Check if the date is today
-        if value.toordinal() == datetime.date.today().toordinal():
+        if convert_value.toordinal() == datetime.date.today().toordinal():
             formatted = _lazy(u'Today at %s') % format_time(
-                                    tzvalue, format='short', locale=locale)
+                convert_value, format='short', tzinfo=convert_tzinfo, locale=locale)
         else:
-            formatted = format_datetime(tzvalue, format='short', locale=locale)
+            formatted = format_datetime(convert_value, format='short', tzinfo=convert_tzinfo,
+                locale=locale)
     elif format == 'longdatetime':
-        formatted = format_datetime(tzvalue, format='long', locale=locale)
+        formatted = format_datetime(convert_value, format='long', tzinfo=convert_tzinfo,
+            locale=locale)
     elif format == 'date':
-        formatted = format_date(tzvalue, locale=locale)
+        formatted = format_date(convert_value, locale=locale)
     elif format == 'time':
-        formatted = format_time(tzvalue, locale=locale)
+        formatted = format_time(convert_value, tzinfo=convert_tzinfo, locale=locale)
     elif format == 'datetime':
-        formatted = format_datetime(tzvalue, locale=locale)
+        formatted = format_datetime(convert_value, tzinfo=convert_tzinfo, locale=locale)
     else:
         # Unknown format
         raise DateTimeFormatError
 
     return jinja2.Markup('<time datetime="%s">%s</time>' % \
-                         (tzvalue.isoformat(), formatted))
+                         (convert_value.isoformat(), formatted))
 
 
 _whitespace_then_break = re.compile(r'[\r\n\t ]+[\r\n]+')
