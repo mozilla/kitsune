@@ -539,10 +539,10 @@ ol.posts form.report .kbox-container {
     margin: 10px 20px;
 }
 .watch-form a.yes {
-    background: url("/media/img/wiki/icon-yes.gif") no-repeat scroll left top transparent;
+    background: url(../img/wiki/icon-yes.gif) no-repeat scroll left top transparent;
 }
 .watch-form a.no {
-    background: url("/media/img/wiki/icon-no.gif") no-repeat scroll left top transparent;
+    background: url(../img/wiki/icon-no.gif) no-repeat scroll left top transparent;
 }
 
 /* Tweaks for Aurora forums */
