@@ -33,7 +33,6 @@ from sumo.models import ModelBase
 from sumo.parser import wiki_to_html
 from sumo.redis_utils import RedisError
 from sumo.urlresolvers import reverse
-from taggit.models import TaggedItem
 from tags.models import BigVocabTaggableMixin
 from tags.utils import add_existing_tag
 from upload.models import ImageAttachment
