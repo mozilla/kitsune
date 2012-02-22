@@ -425,7 +425,10 @@ class Answer(ActionMixin, ModelBase):
         super(Answer, self).save(*args, **kwargs)
 
         if new:
-            self.question.num_answers = self.question.answers.count()
+            # Need to pull from uncached, otherwise we get the cached
+            # query which doesn't reflect the answer we just saved.
+            self.question.num_answers = Answer.uncached.filter(
+                question=self.question).count()
             self.question.last_answer = self
             self.question.save(no_update)
             self.question.clear_cached_contributors()
