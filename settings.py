@@ -480,7 +480,6 @@ MINIFY_BUNDLES = {
             'js/upload.js',
             'js/questions.js',
             'js/libs/jquery.tokeninput.js',
-            'js/tags.autocomplete.js',
             'js/tags.filter.js',
             'js/tags.js',
             'js/reportabuse.js',

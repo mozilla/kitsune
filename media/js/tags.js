@@ -25,7 +25,6 @@
         );
     }
 
-    // TODO: (try to) replace this with tags.autocomplete.js.
     // Attach an autocomplete widget to each input.autocomplete-tags. Get
     // completion data from the data-tag-vocab attr on the nearest div.tags
     // object outside the input.
