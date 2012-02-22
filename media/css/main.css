@@ -12,10 +12,6 @@ article, header, hgroup, footer, nav, section {
     display: block;
 }
 
-html {
-    background: #fff url(../global/background.png) 0 -700px repeat-x;
-}
-
 body {
     border-top: 2px solid #686868;
     font: 13px/1.231 Georgia, freeserif, serif;
@@ -35,6 +31,10 @@ body.html-rtl {
 
 html[lang=he] body {
     font-family: sans-serif;
+}
+
+#pg-wrap {
+    background: #fff url(../global/background.png) 0 -700px repeat-x;
 }
 
 .clear {

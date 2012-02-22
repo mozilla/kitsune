@@ -74,6 +74,11 @@
   </div>
 {% endif %}
 
+{# Temporary wrapper so that tabzilla pushes down the background.
+   TODO: Get rid of this when changing to the new One Mozilla/Sandstone
+   style. #}
+<div id="pg-wrap">
+
 <header class="global">  
   {% if request.locale == 'en-US' %}
     {# tabzilla is en-US only for now #}
@@ -213,6 +218,8 @@
     {% endwith %}
   </div>{# /#footer-contents #}
 </footer>{# /#footer #}
+
+</div>
 
 <script src="{{ url('jsi18n') }}build:{{ BUILD_ID_JS }}"></script>
 <script src="{{ url('wafflejs') }}"></script>
