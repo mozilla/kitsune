@@ -26,6 +26,12 @@
 {% for style in styles %}
 {{ css(style) }}
 {% endfor %}
+
+{% if request.locale == 'en-US' %}
+  {# tabzilla is en-US only for now #}
+  <link href="//www.mozilla.org/tabzilla/media/css/tabzilla.css" rel="stylesheet" />
+{% endif %}
+
 <!--[if lte IE 7]>
 {{ css('ie') }}
 <![endif]-->
@@ -52,7 +58,7 @@
 <script src="{{ MEDIA_URL }}js/libs/html5-shiv.js"></script>
 <![endif]-->
 </head>
-<body class="html-{{ DIR }} {{ classes }}"
+<body class="html-{{ DIR }} {{ classes }} {{ request.locale }}"
       data-readonly="{{ settings.READ_ONLY|json }}"
       data-for-os="{{ for_os|json }}"
       data-for-version="{{ for_version|json }}"
@@ -68,10 +74,15 @@
   </div>
 {% endif %}
 
-<header class="global">
-  <div id="global-header-tab">
-    <a href="http://mozilla.org/"><img src="{{ MEDIA_URL }}img/mozilla-tab.png" alt="mozilla.org"></a>
-  </div>
+<header class="global">  
+  {% if request.locale == 'en-US' %}
+    {# tabzilla is en-US only for now #}
+    <a href="http://www.mozilla.org/" id="tabzilla">mozilla</a>
+  {% else %}
+    <div id="global-header-tab">
+      <a href="http://mozilla.org/"><img src="{{ MEDIA_URL }}img/mozilla-tab.png" alt="mozilla.org"></a>
+    </div>
+  {% endif %}
   <div class="sumo-header">
     <nav id="aux-nav" role="navigation" class="menu-nav">
       <ul>
@@ -209,6 +220,11 @@
 {% for script in scripts %}
 {{ js(script) }}
 {% endfor %}
+
+{% if request.locale == 'en-US' %}
+  {# tabzilla is en-US only for now #}
+  <script src="//www.mozilla.org/tabzilla/media/js/tabzilla.js"></script>
+{% endif %}
 
 {# Webtrends Stats Tracking #}
 <script defer src="{{ MEDIA_URL }}js/webtrends.js"></script>

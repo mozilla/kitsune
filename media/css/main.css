@@ -24,6 +24,11 @@ body {
     word-wrap: break-word;
 }
 
+body.en-US {
+    /* tabzilla is en-US only for now */
+    border-top-color: #fff;
+}
+
 body.html-rtl {
     text-align: right;
 }
