@@ -769,12 +769,12 @@ TIDINGS_REVERSE = 'sumo.urlresolvers.reverse'
 CHAT_SERVER = 'https://chat-support.mozilla.com:9091'
 CHAT_CACHE_KEY = 'sumo-chat-queue-status'
 
+WEBTRENDS_PROFILE_ID = 'ABC123'  # Profile id for SUMO
 WEBTRENDS_WIKI_REPORT_URL = 'https://example.com/see_production.rst'
 WEBTRENDS_USER = r'someaccount\someusername'
 WEBTRENDS_PASSWORD = 'password'
 WEBTRENDS_EPOCH = date(2010, 8, 1)  # When WebTrends started gathering stats on
                                     # the KB
-WEBTRENDS_REALM = 'Webtrends Basic Authentication'
 
 MOBILE_COOKIE = 'msumo'
 
