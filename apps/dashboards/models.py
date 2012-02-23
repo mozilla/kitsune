@@ -1,6 +1,5 @@
 import json
 import logging
-from urllib2 import HTTPBasicAuthHandler, build_opener
 
 from django.conf import settings
 from django.contrib.auth.models import Group
@@ -11,20 +10,11 @@ from tower import ugettext_lazy as _lazy
 from dashboards import THIS_WEEK, ALL_TIME, PERIODS
 from dashboards.personal import GROUP_DASHBOARDS
 from sumo.models import ModelBase
+from sumo.webtrends import Webtrends, StatsException
 from wiki.models import Document
 
 
 log = logging.getLogger('k.dashboards')
-
-
-class StatsException(Exception):
-    """An error in the stats returned by the third-party analytics package"""
-    def __init__(self, msg):
-        self.msg = msg
-
-
-class StatsIOError(IOError):
-    """An error communicating with WebTrends"""
 
 
 def period_dates():
@@ -119,27 +109,9 @@ class WikiDocumentVisits(ModelBase):
 
     @classmethod
     def json_for(cls, period):
-        """Return the JSON-formatted WebTrends stats for the given period.
-
-        Make one attempt to fetch and reload the data. If something fails, it's
-        the caller's responsibility to retry.
-
-        """
-        auth_handler = HTTPBasicAuthHandler()
-        auth_handler.add_password(realm=settings.WEBTRENDS_REALM,
-                                  uri=settings.WEBTRENDS_WIKI_REPORT_URL,
-                                  user=settings.WEBTRENDS_USER,
-                                  passwd=settings.WEBTRENDS_PASSWORD)
-        opener = build_opener(auth_handler)
+        """Return the JSON-formatted WebTrends stats for the given period."""
         start, end = period_dates()[period]
-        url = (settings.WEBTRENDS_WIKI_REPORT_URL +
-               '&start_period=%s&end_period=%s' % (start, end))
-        try:
-            # TODO: A wrong username or password results in a recursion depth
-            # error.
-            return opener.open(url).read()
-        except IOError, e:
-            raise StatsIOError(*e.args)
+        return Webtrends.wiki_report(start, end)
 
 
 class GroupDashboard(ModelBase):
