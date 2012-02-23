@@ -71,9 +71,12 @@ def send_contributor_notification(based_on, revision, document, message):
                                 'message': message,
                                 'url': url,
                                 'host': Site.objects.get_current().domain}))
+
+    # Send email to all contributors except the reviewer and the creator
+    # of the approved revision.
     send_mail(subject, content, settings.TIDINGS_FROM_ADDRESS,
               [r.creator.email for r in based_on
-               if r.creator != revision.creator])
+               if r.creator not in [revision.creator, revision.reviewer]])
 
 
 def schedule_rebuild_kb():

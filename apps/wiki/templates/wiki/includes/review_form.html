@@ -11,10 +11,13 @@
       <a href="{{ url('wiki.document_revisions', document.slug) }}">{{ _('Cancel Review') }}</a>
     </form>
 
+    {% set self_approving = user == revision.creator %}
+
     <form id="approve-modal" class="kbox" action="" method="post" data-title="{% if document.parent %}{{ _('Accept this Translation') }}{% else %}{{ _('Accept this Revision') }}{% endif %}" data-modal="true" data-target="#btn-approve">
       {{ csrf() }}
-      {% set self_approving = (user == revision.creator and document.locale == settings.WIKI_DEFAULT_LANGUAGE) %}
-      {% if self_approving %}
+      {% if self_approving and document.locale == settings.WIKI_DEFAULT_LANGUAGE %}
+        {# Only show self approving warning to en-US reviewers. In other locales, it
+           is usual for the editor and the reviewer to be the same user. #}
         <p class="warning">
           {% trans url=url('groups.profile', 'reviewers') %}You are about to approve your own edit.
           Please consider asking our <a href="{{ url }}">reviewers</a> instead.{% endtrans %}
@@ -32,7 +35,8 @@
           Clicking Accept will make this version of the article live! Please take a moment to be sure all options are correct.{% endtrans %}
         </p>
       {% endif %}
-      {% if not self_approving %}
+      {% if not self_approving or recent_contributors %}
+        {# Show message textbox if isn't a self-approval OR if there are recent contributors. #}
         <div class="message">
           <label for="id-approve-comment">
             {% if recent_contributors|length == 1 %}
@@ -40,7 +44,7 @@
             {% elif recent_contributors|length == 2 %}
               {{ _('Leave a message for {contributor1} and {contributor2}:')|fe(contributor1=recent_contributors[0], contributor2=recent_contributors[1]) }}
             {% elif recent_contributors|length > 2 %}
-              {{ _('Leave a message for {rest}, and {last}:')|fe(rest=', '.join(recent_contributors[:-1]), last=recent_contributors[-1]) }}
+              {{ _('Leave a message for {rest} and {last}:')|fe(rest=', '.join(recent_contributors[:-1]), last=recent_contributors[-1]) }}
             {% endif %}
             {{ form.comment.errors }}
           </label>
@@ -70,7 +74,8 @@
 
     <form id="reject-modal" class="kbox" action="" method="post" data-title="{% if document.parent %}{{ _('Defer this Translation') }}{% else %}{{ _('Defer this Revision') }}{% endif %}" data-modal="true" data-target="#btn-reject">
       {{ csrf() }}
-      {% if user != revision.creator %}
+      {% if not self_approving or recent_contributors %}
+        {# Show message textbox if isn't a self-approval OR if there are recent contributors. #}
         <p>
           {% trans %}Thanks for taking the time to review these changes.
           Please thank the editor and then give specific, constructive
@@ -78,7 +83,15 @@
           revision to be acceptable.{% endtrans %}
         </p>
         <div class="message">
-          <label for="id-reject-comment">{{ _('Leave a message for the contributor:')|safe }}</label>
+          <label for="id-reject-comment">
+          {% if recent_contributors|length == 1 %}
+              {{ _('Leave a message for {contributor}: ')|fe(contributor=recent_contributors[0]) }}
+            {% elif recent_contributors|length == 2 %}
+              {{ _('Leave a message for {contributor1} and {contributor2}:')|fe(contributor1=recent_contributors[0], contributor2=recent_contributors[1]) }}
+            {% elif recent_contributors|length > 2 %}
+              {{ _('Leave a message for {rest} and {last}:')|fe(rest=', '.join(recent_contributors[:-1]), last=recent_contributors[-1]) }}
+            {% endif %}
+          </label>
           <textarea id="id-reject-comment" required name="comment">{% if form.initial %}{{ form.initial.comment }}{% else %}{{ form.comment.data }}{% endif %}</textarea>
         </div>
       {% endif %}

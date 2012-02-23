@@ -364,8 +364,12 @@ def review_revision(request, document_slug, revision_id):
     last_approved_date = getattr(doc.current_revision, 'created',
                                    datetime.fromordinal(1))
     based_on_revs = based_on_revs.filter(created__gt=last_approved_date)
-    recent_contributors = based_on_revs.values_list('creator__username',
-                                                    flat=True)
+    recent_contributors = list(set(
+        based_on_revs.values_list('creator__username', flat=True)))
+
+    # Don't include the reviewer in the recent contributors list.
+    if request.user.username in recent_contributors:
+        recent_contributors.remove(request.user.username)
 
     if request.method == 'POST':
         form = ReviewForm(request.POST)
