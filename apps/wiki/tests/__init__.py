@@ -4,7 +4,7 @@ from datetime import datetime
 from django.template.defaultfilters import slugify
 
 from sumo.tests import LocalizingClient, TestCase, with_save
-from users.tests import get_user
+from users.tests import user
 from wiki.models import (Document, Revision, HelpfulVote,
                          CATEGORIES, SIGNIFICANCES)
 
@@ -46,7 +46,8 @@ def revision(**kwargs):
     defaults = {'summary': 'đSome summary', 'content': u'đSome content',
                 'significance': SIGNIFICANCES[0][0],
                 'comment': r'đSome comment',
-                'creator': kwargs.get('creator', get_user()), 'document': d}
+                'creator': kwargs.get('creator', user(save=True)),
+                'document': d}
     defaults.update(kwargs)
 
     return Revision(**defaults)
