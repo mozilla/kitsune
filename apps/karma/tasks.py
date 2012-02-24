@@ -1,5 +1,3 @@
-from django.contrib.auth.models import User
-
 from celery.decorators import task
 import waffle
 
@@ -45,7 +43,7 @@ def recalculate_karma_points():
     if not waffle.switch_is_active('karma'):
         return
 
-    for chunk in chunked(KarmaManager().user_ids(), 2500):
+    for chunk in chunked(list(KarmaManager().user_ids()), 2500):
         _process_recalculate_chunk.apply_async(args=[chunk])
 
 
@@ -87,10 +85,5 @@ def _process_answer_vote_chunk(data, **kwargs):
 def _process_recalculate_chunk(data, **kwargs):
     """Recalculate karma points for a chunk of user ids."""
     mgr = KarmaManager()
-    actions = [AnswerAction, AnswerMarkedHelpfulAction,
-               AnswerMarkedNotHelpfulAction, FirstAnswerAction,
-               SolutionAction]
-    actions_dict = dict((a.action_type, a.points) for a in actions)
-
     for userid in data:
-        mgr.recalculate_points(userid, actions_dict)
+        mgr.recalculate_points(userid)
