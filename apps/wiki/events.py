@@ -196,7 +196,7 @@ class ReadyRevisionEvent(_RevisionConstructor, Event):
             else:
                 locale = profile.locale
             c['url'] = django_reverse('wiki.select_locale',
-                               args=[document.slug])
+                                      args=[document.slug])
             yield EmailMessage(ready_subject,
                                ready_template.render(Context(c)),
                                settings.TIDINGS_FROM_ADDRESS,
@@ -262,9 +262,8 @@ class ApprovedOrReadyUnion(EventUnion):
                     locale = settings.WIKI_DEFAULT_LANGUAGE
                 else:
                     locale = profile.locale
-                c['url'] = reverse('wiki.translate',
-                                   locale=locale,
-                                   args=[document.slug])
+                c['url'] = django_reverse('wiki.select_locale',
+                                          args=[document.slug])
                 yield EmailMessage(ready_subject,
                                    ready_template.render(Context(c)),
                                    settings.TIDINGS_FROM_ADDRESS,
