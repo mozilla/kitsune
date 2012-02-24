@@ -258,10 +258,11 @@
   {% endif %}
 {%- endmacro %}
 
-{% macro revision_contributors(contributors) -%}
+{% macro revision_contributors_label(contributors) -%}
   {# This macro is used in the reject and approve revision modals #}
-  {% trans contributors=revision_contributor_list(contributors) %}
-    Leave a message for: {{ contributors }}
+  {% set users = revision_contributor_list(contributors) %}
+  {% trans users=users %}
+    Leave a message for: {{ users }}
   {% endtrans %}
 {%- endmacro %}
 

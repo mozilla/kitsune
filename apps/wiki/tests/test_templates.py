@@ -1333,7 +1333,7 @@ class ReviewRevisionTests(TestCaseBase):
         eq_(MEDIUM_SIGNIFICANCE,
             int(doc('input[name=significance][checked]')[0].attrib['value']))
 
-    def test_self_approve_without_recent_contributors(self):
+    def test_self_approve_without_revision_contributors(self):
         """Verify review page when self approving and no other contributors.
 
         Textarea for approve/defer message should not be included in the page.
@@ -1349,7 +1349,7 @@ class ReviewRevisionTests(TestCaseBase):
         doc = pq(response.content)
         eq_(0, len(doc('textarea[name="comment"]')))
 
-    def test_self_approve_with_recent_contributors(self):
+    def test_self_approve_with_revision_contributors(self):
         """Verify review page when self approving and other contributors.
 
         Textarea for approve/defer message should be included in the page.
