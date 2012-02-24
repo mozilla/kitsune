@@ -260,16 +260,9 @@
 
 {% macro revision_contributors_label(contributors) -%}
   {# This macro is used in the reject and approve revision modals #}
-  {% set users = revision_contributor_list(contributors) %}
-  {% trans users=users %}
-    Leave a message for: {{ users }}
-  {% endtrans %}
-{%- endmacro %}
-
-{% macro revision_contributor_list(contributors) -%}
-  {% set comma = joiner(', ') %}
-  {% for user in contributors -%}
-    {{ comma() }}
-    {{ user }}
-  {%- endfor %}
+  {% if contributors|length == 1 %}
+    {{ _('Leave a message for {contributor}: ')|fe(contributor=contributors[0]) }}
+  {% else %}
+    {{ _('Leave a message for {rest} and {last}:')|fe(rest=', '.join(contributors[:-1]), last=contributors[-1]) }}
+  {% endif %}
 {%- endmacro %}
