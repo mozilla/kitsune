@@ -1,5 +1,6 @@
 {# vim: set ts=2 et sts=2 sw=2: #}
 {% from "layout/errorlist.html" import errorlist %}
+{% from "wiki/includes/document_macros.html" import revision_contributors %}
 {% if revision.reviewed %}
   <p><a href="{{ url('wiki.document_revisions', document.slug) }}">{{ _('Back to History') }}</a></p>
 {% else %}
@@ -39,13 +40,7 @@
         {# Show message textbox if isn't a self-approval OR if there are recent contributors. #}
         <div class="message">
           <label for="id-approve-comment">
-            {% if recent_contributors|length == 1 %}
-              {{ _('Leave a message for {contributor}: ')|fe(contributor=recent_contributors[0]) }}
-            {% elif recent_contributors|length == 2 %}
-              {{ _('Leave a message for {contributor1} and {contributor2}:')|fe(contributor1=recent_contributors[0], contributor2=recent_contributors[1]) }}
-            {% elif recent_contributors|length > 2 %}
-              {{ _('Leave a message for {rest} and {last}:')|fe(rest=', '.join(recent_contributors[:-1]), last=recent_contributors[-1]) }}
-            {% endif %}
+            {{ revision_contributors(recent_contributors) }}
             {{ form.comment.errors }}
           </label>
           <textarea id="id-approve-comment" required name="comment">{% if form.initial %}{{ form.initial.comment }}{% else %}{{ form.comment.data }}{% endif %}</textarea>
@@ -84,13 +79,7 @@
         </p>
         <div class="message">
           <label for="id-reject-comment">
-          {% if recent_contributors|length == 1 %}
-              {{ _('Leave a message for {contributor}: ')|fe(contributor=recent_contributors[0]) }}
-            {% elif recent_contributors|length == 2 %}
-              {{ _('Leave a message for {contributor1} and {contributor2}:')|fe(contributor1=recent_contributors[0], contributor2=recent_contributors[1]) }}
-            {% elif recent_contributors|length > 2 %}
-              {{ _('Leave a message for {rest} and {last}:')|fe(rest=', '.join(recent_contributors[:-1]), last=recent_contributors[-1]) }}
-            {% endif %}
+            {{ revision_contributors(recent_contributors) }}
           </label>
           <textarea id="id-reject-comment" required name="comment">{% if form.initial %}{{ form.initial.comment }}{% else %}{{ form.comment.data }}{% endif %}</textarea>
         </div>

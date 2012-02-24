@@ -257,3 +257,18 @@
     </div>
   {% endif %}
 {%- endmacro %}
+
+{% macro revision_contributors(contributors) -%}
+  {# This macro is used in the reject and approve revision modals #}
+  {% trans contributors=revision_contributor_list(contributors) %}
+    Leave a message for: {{ contributors }}
+  {% endtrans %}
+{%- endmacro %}
+
+{% macro revision_contributor_list(contributors) -%}
+  {% set comma = joiner(', ') %}
+  {% for user in contributors -%}
+    {{ comma() }}
+    {{ user }}
+  {%- endfor %}
+{%- endmacro %}
