@@ -193,8 +193,6 @@ window.StockChartView = Backbone.View.extend({
                 style: {
                     width: 200
                 },
-                yDecimals: 1,
-                ySuffix: '%',
                 shared: true,
                 pointFormat: '<span style="color:{series.color}">{series.prettyName}</span>: <b>{point.y}</b><br/>'
             },
@@ -217,6 +215,14 @@ window.StockChartView = Backbone.View.extend({
             },
             series: []
         };
+
+        if (this.options.percent) {
+            this.chartOptions.yAxis.title = {
+                text: '%'
+            };
+            this.chartOptions.tooltip.ySuffix = '%';
+            this.chartOptions.tooltip.yDecimals = 1;
+        }
     },
 
     render: function() {
@@ -225,47 +231,68 @@ window.StockChartView = Backbone.View.extend({
 
         if(data) {
             _.each(this.options.series, function(series) {
-                var seriesData;
+                var mapper = series.mapper,
+                    seriesData;
+                if (!mapper) {
+                    mapper = function(o){
+                        return {
+                            x: Date.parse(o['date']),
+                            y: o[series.numerator] / o[series.denominator] * 100
+                        };
+                    };
+                }
 
-                seriesData = _.map(data, function(o){
-                    return [Date.parse(o['date']),
-                            o[series.numerator] / o[series.denominator] * 100];
-                });
+                seriesData = _.map(data, mapper);
                 seriesData.reverse();
 
-                // Add the series with 3 different possible groupings:
-                // daily, weekly, monthly
-                self.chartOptions.series.push({
-                    name: gettext('Daily'),
-                    data: seriesData,
-                    dataGrouping: {
-                        enabled: false
-                    }
-                });
-                self.chartOptions.series.push({
-                    name: gettext('Weekly'),
-                    data: seriesData,
-                    dataGrouping: {
-                        forced: true,
-                        units: [['week', [1]]]
-                    }
-                });
-                self.chartOptions.series.push({
-                    name: gettext('Monthly'),
-                    data: seriesData,
-                    dataGrouping: {
-                        forced: true,
-                        units: [['month', [1]]]
-                    }
-                });
+                if (!series.addGroupings) {
+                    self.chartOptions.series.push({
+                        name: series.name,
+                        data: seriesData,
+                        dataGrouping: {
+                            enabled: false
+                        }
+                    });
+                } else {
+                    // Add the series with 3 different possible groupings:
+                    // daily, weekly, monthly
+                    self.chartOptions.series.push({
+                        name: gettext('Daily'),
+                        data: seriesData,
+                        dataGrouping: {
+                            enabled: false
+                        }
+                    });
+                    self.chartOptions.series.push({
+                        name: gettext('Weekly'),
+                        data: seriesData,
+                        dataGrouping: {
+                            forced: true,
+                            units: [['week', [1]]]
+                        }
+                    });
+                    self.chartOptions.series.push({
+                        name: gettext('Monthly'),
+                        data: seriesData,
+                        dataGrouping: {
+                            forced: true,
+                            units: [['month', [1]]]
+                        }
+                    });
+                }
 
                 self.chart = new Highcharts.StockChart(self.chartOptions);
 
-                self.chart.series[0].prettyName = self.chart.series[1].prettyName = self.chart.series[2].prettyName = series.name;
+                if (!series.addGroupings) {
+                    self.chart.series[0].prettyName = series.name;
+                }
+                else {
+                    self.chart.series[0].prettyName = self.chart.series[1].prettyName = self.chart.series[2].prettyName = series.name;
 
-                // Hide the weekly and monthly series.
-                self.chart.series[1].hide();
-                self.chart.series[2].hide();
+                    // Hide the weekly and monthly series.
+                    self.chart.series[1].hide();
+                    self.chart.series[2].hide();
+                }
             });
         }
         return this;
@@ -313,6 +340,10 @@ window.KpiDashboard = Backbone.View.extend({
         });
         this.elasticCtrChart.name = 'Elastic';
 
+        this.visitorsChart = new ChartModel([], {
+            url: $(this.el).data('visitors-url')
+        });
+
         // Create the views.
         this.solvedChartView = new StockChartView({
             model: this.solvedChart,
@@ -321,7 +352,8 @@ window.KpiDashboard = Backbone.View.extend({
             series: [{
                 name: gettext('Solved'),
                 numerator: 'solved',
-                denominator: 'questions'
+                denominator: 'questions',
+                addGroupings: true
             }]
         });
 
@@ -356,7 +388,8 @@ window.KpiDashboard = Backbone.View.extend({
             series: [{
                 name: gettext('Responsed'),
                 numerator: 'responded',
-                denominator: 'questions'
+                denominator: 'questions',
+                addGroupings: true
             }]
         });
 
@@ -425,6 +458,20 @@ window.KpiDashboard = Backbone.View.extend({
         });
         this.ctrView.addModel(this.elasticCtrChart);
 
+        this.visitorsView = new StockChartView({
+            model: this.visitorsChart,
+            title: gettext('Daily Unique Visitors'),
+            series: [{
+                name: gettext('Visitors'),
+                mapper: function(o) {
+                    return {
+                        x: Date.parse(o['date']),
+                        y: o['visitors']
+                    };
+                }
+            }]
+        });
+
         // Render the views.
         $(this.el)
             .append(this.solvedChartView.render().el)
@@ -433,7 +480,8 @@ window.KpiDashboard = Backbone.View.extend({
             .append(this.activeKbContributorsView.render().el)
             .append(this.activeAnswerersView.render().el)
             .append(this.aoaContributorsView.render().el)
-            .append(this.ctrView.render().el);
+            .append(this.ctrView.render().el)
+            .append(this.visitorsView.render().el);
 
 
         // Load up the models.
@@ -445,6 +493,7 @@ window.KpiDashboard = Backbone.View.extend({
         this.voteChart.fetch();
         this.sphinxCtrChart.fetch();
         this.elasticCtrChart.fetch();
+        this.visitorsChart.fetch();
     }
 });
 
