@@ -551,9 +551,11 @@ html.js #tweets li:hover .remove_tweet,
 a.header-button:hover {
     color: #307FC1;
 }
+
 .header-button:visited {
-    color: #000;
+    color: rgb(0, 81, 185);
 }
+
 a.header-button {
     color: #000;
     padding: 4px 8px;

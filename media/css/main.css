@@ -42,12 +42,12 @@ html[lang=he] body {
 }
 
 a:link, a:visited, a:active {
-    color: #447bc4;
+    color: rgb(0, 81, 185);
     text-decoration: none;
 }
 
 a:visited {
-    color: #39508c;
+    color: rgb(66,22,88);
 }
 
 a:hover {
@@ -55,7 +55,7 @@ a:hover {
 }
 
 h1, h2, h3, h4, h5, h6 {
-    color: #303030;
+    color: rgb(40,40,40);
     font-weight: normal;
 }
 
@@ -917,7 +917,7 @@ div.support-search button.img-submit {
 }
 
 .sd-module p {
-    color: #666;
+    color: rgb(40, 40, 40);
     margin: 10px 0;
 }
 
@@ -946,7 +946,7 @@ div.support-search button.img-submit {
 
 /* Side tabs -- TODO: rename doc-tabs to something more generic */
 #doc-tabs {
-    color: #666;
+    color: rgb(40, 40, 40);
     font-size: 13px;
     margin: 16px 0 0;
 }
@@ -1035,7 +1035,7 @@ div.support-search button.img-submit {
 #doc-tabs li.active span,
 #doc-tabs li.active a {
     border-left: solid 2px #fff;
-    color: #666;
+    color: rgb(40, 40, 40);
     left: -2px;
     padding-left: 52px;
     position: relative;
@@ -1144,7 +1144,7 @@ ol.pagination li.prev a {
 }
 
 ol.pagination li.selected a {
-    background: #447bc4;
+    background: rgb(0, 81, 185);
     border-radius: 5px;
     -moz-border-radius: 5px;
     -webkit-border-radius: 5px;
@@ -1544,7 +1544,7 @@ section.marky div.submit button {
 
 #media-modal div.type ol li {
     border-left: 2px solid #929292;
-    color: #447BC4;
+    color: rgb(0, 81, 185);
     cursor: pointer;
     float: left;
     font-weight: bold;
@@ -1738,7 +1738,7 @@ input[type="submit"].link-btn {
     box-shadow: none;
     -moz-box-shadow: none;
     -webkit-box-shadow: none;
-    color: #447bc4;
+    color: rgb(0, 81, 185);
     cursor: pointer;
     font-weight: normal;
     padding: 0;
