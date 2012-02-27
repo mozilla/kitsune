@@ -28,20 +28,24 @@ from users.tests import user
 # never prepend a locale code unless passed force_locale=True. Thus, these
 # test-emails with locale prefixes are not identical to the ones sent in
 # production.
-ANSWER_EMAIL_TO_ANONYMOUS = """rrosario has posted an answer to the
-question "Lorem ipsum dolor sit amet?" on testserver:
-an answer
-
-You can see the response on the website by using this link:
+ANSWER_EMAIL_TO_ANONYMOUS = """rrosario commented on a Firefox question on testserver:
+Lorem ipsum dolor sit amet?
 https://testserver/en-US/questions/1#answer-{answer}
 
-If this answered your question, click this link and let others
-know it was helpful: https://testserver/en-US/questions/1/vote/{answer}?helpful
+rrosario wrote:
+"an answer"
 
-Did you know that rrosario is a Firefox user just
-like you? Get started helping other Firefox users by browsing
-questions at https://testserver/questions?filter=unsolved --
-you might just make someone's day!
+See the comment:
+https://testserver/en-US/questions/1#answer-{answer}
+
+
+If this comment is helpful, vote on it
+https://testserver/en-US/questions/1/vote/{answer}?helpful
+
+Help other Firefox users by browsing for unsolved questions on testserver:
+https://testserver/questions?filter=unsolved
+
+You might just make someone's day!
 
 --
 Unsubscribe from these emails:
@@ -49,14 +53,17 @@ https://testserver/en-US/unsubscribe"""
 ANSWER_EMAIL = u'Hi pcraciunoiu,\n\n' + ANSWER_EMAIL_TO_ANONYMOUS
 ANSWER_EMAIL_TO_ASKER = """Hi jsocol,
 
-rrosario has posted an answer to your question "Lorem ipsum dolor sit amet?"
-on testserver:
-an answer
+rrosario has posted an answer to your question on testserver:
+Lorem ipsum dolor sit amet?
+https://testserver/en-US/questions/1#answer-{answer}
 
-Click this link to reply to rrosario or add more information
-about your question: https://testserver/en-US/questions/1#answer-{answer}
+rrosario wrote:
+"an answer"
 
-If this answered your question, click this link to mark it as solved:"""
+See the answer:
+https://testserver/en-US/questions/1#answer-{answer}
+
+If this answer solves your problem, please mark it as "solved":"""
 SOLUTION_EMAIL_TO_ANONYMOUS = \
 """We just wanted to let you know that pcraciunoiu
 has found a solution to a Firefox question that you're following.
@@ -196,18 +203,19 @@ class NotificationsTests(TestCaseBase):
 
         # Order of emails is not important.
         attrs_eq(mail.outbox[0], to=['user47963@nowhere'],
-                 subject='A new answer was posted to a Firefox question '
-                         "you're watching")
+                 subject='%s commented on a Firefox question '
+                         "you're watching" % answer.creator.username)
         starts_with(mail.outbox[0].body, ANSWER_EMAIL.format(answer=answer.id))
 
         attrs_eq(mail.outbox[1], to=[question.creator.email],
-                 subject='A new answer was posted to your Firefox question')
+                 subject='%s posted an answer to question "%s"' %
+                         (answer.creator.username, question.title))
         starts_with(mail.outbox[1].body, ANSWER_EMAIL_TO_ASKER.format(
             answer=answer.id))
 
         attrs_eq(mail.outbox[2], to=['anon@ymous.com'],
-                 subject='A new answer was posted to a Firefox question '
-                         "you're watching")
+                 subject="%s commented on a Firefox question you're watching" %
+                         answer.creator.username)
         starts_with(mail.outbox[2].body, ANSWER_EMAIL_TO_ANONYMOUS.format(
             answer=answer.id))
 
