@@ -167,7 +167,7 @@ class ElasticClickthroughResource(SearchClickthroughResource):
 
 
 class SolutionResource(CachedResource):
-    """Returns the number of questions maked as the solution."""
+    """Returns the number of questions marked as solved."""
     date = fields.DateField('date')
     solved = fields.IntegerField('solved', default=0)
     questions = fields.IntegerField('questions', default=0)
@@ -365,7 +365,7 @@ class ArmyOfAwesomeContributorResource(CachedResource):
 
 
 class VisitorsResource(CachedResource):
-    """Returns the number of questions maked as the solution."""
+    """Returns the number of unique visitors per day."""
     date = fields.DateField('date')
     visitors = fields.IntegerField('visitors', default=0)
 

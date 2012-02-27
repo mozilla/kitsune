@@ -29,9 +29,9 @@ class Webtrends(object):
         """
 
         # If start and/or end are date or datetime, convert to string.
-        if isinstance(start, date) or isinstance(start, datetime):
+        if isinstance(start, (date, datetime)):
             start = start.strftime('%Ym%md%d')
-        if isinstance(end, date) or isinstance(end, datetime):
+        if isinstance(end, (date, datetime)):
             end = end.strftime('%Ym%md%d')
 
         auth_handler = HTTPBasicAuthHandler()
