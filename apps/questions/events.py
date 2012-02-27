@@ -49,7 +49,7 @@ class QuestionReplyEvent(QuestionEvent):
 
         watcher_subject = _(u'%s commented on a Firefox question '
                             "you're watching" % self.answer.creator.username)
-        asker_subject = _(u'%s posted an answer to question "%s"' %
+        asker_subject = _(u'%s posted an answer to your question "%s"' %
                           (self.answer.creator.username, self.instance.title))
 
         watcher_template = loader.get_template(

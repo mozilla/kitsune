@@ -208,7 +208,7 @@ class NotificationsTests(TestCaseBase):
         starts_with(mail.outbox[0].body, ANSWER_EMAIL.format(answer=answer.id))
 
         attrs_eq(mail.outbox[1], to=[question.creator.email],
-                 subject='%s posted an answer to question "%s"' %
+                 subject='%s posted an answer to your question "%s"' %
                          (answer.creator.username, question.title))
         starts_with(mail.outbox[1].body, ANSWER_EMAIL_TO_ASKER.format(
             answer=answer.id))
