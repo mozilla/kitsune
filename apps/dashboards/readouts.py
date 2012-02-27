@@ -92,6 +92,7 @@ ANY_SIGNIFICANT_UPDATES = (
      'AND engrev.is_ready_for_localization '
      'AND engrev.significance>=%s) ')
 
+
 def _cursor():
     """Return a DB cursor for reading."""
     return connections[router.db_for_read(Document)].cursor()
@@ -151,16 +152,6 @@ def overview_rows(locale):
     total_docs = total.filter(is_template=False).count()
     total_templates = total.filter(is_template=True).count()
 
-    # How many approved, up-to-date documents are there in German that have
-    # parents? Even though users are technically allowed to translate revisions
-    # that aren't marked as ready-for-l10n, we restrict this set to ready-to-
-    # localize documents because we restrict the denominator to those.
-    translated = Document.uncached.filter(
-        locale=locale,
-        is_archived=False,
-        current_revision__isnull=False,
-        parent__isnull=False,
-        parent__latest_localizable_revision__isnull=False)
     # Translations whose based_on revision has no >10-significance, ready-for-
     # l10n revisions after it. It *might* be possible to do this with the ORM
     # by passing wheres and tables to extra():
