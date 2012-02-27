@@ -78,6 +78,10 @@ header.global {
     z-index: 2;
 }
 
+header.global a:visited {
+    color: rgb(0, 81, 185);
+}
+
 #global-header-tab a {
     color: #FFFFFF;
 }
@@ -127,7 +131,8 @@ h1.site-title {
     text-align: right;
 }
 
-h1.site-title a {
+h1.site-title a,
+h1.site-title a:visited {
     color: #333333;
 }
 
@@ -585,7 +590,6 @@ ul.user-messages li.error {
 }
 
 .breadcrumbs a {
-    color: #0489b7;
     font-weight: bold;
     text-decoration: none;
 }
@@ -595,6 +599,9 @@ ul.user-messages li.error {
     text-decoration: underline;
 }
 
+.breadcrumbs a:visited {
+    color: rgb(0, 81, 185);
+}
 
 /*----------------------------------
     Content
@@ -784,6 +791,10 @@ div.support-search button.img-submit {
 #for-contributors li {
     list-style: none;
     padding: 3px 0;
+}
+
+#side a:visited {
+    color: rgb(0, 81, 185);
 }
 
 #quick-links {

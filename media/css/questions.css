@@ -320,6 +320,10 @@ ol.pagination:after {
     margin: 15px 0 0;
 }
 
+#ask-question-module a.btn:visited {
+    color: #fff;
+}
+
 /* top contributors side module */
 #top-contributors ol {
     margin: 5px 0 14px 35px;
