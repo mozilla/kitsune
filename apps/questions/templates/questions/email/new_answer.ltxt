@@ -1,17 +1,21 @@
 {% load i18n %}{% load unsubscribe_instructions %}{# L10n: This is an email. Whitespace matters! #}{% autoescape off %}{% if username %}{% blocktrans %}Hi {{ username }},{% endblocktrans %}
 
-{% endif %}{% blocktrans %}{{ answerer }} has posted an answer to the
-question "{{ question_title }}" on {{ host }}:
-{{ answer }}
-
-You can see the response on the website by using this link:
+{% endif %}{% blocktrans %}{{ answerer }} commented on a Firefox question on {{ host }}:
+{{ question_title }}
 https://{{ host }}{{ answer_url }}
 
-If this answered your question, click this link and let others
-know it was helpful: https://{{ host }}{{ helpful_url }}
+{{ answerer }} wrote:
+"{{ answer }}"
 
-Did you know that {{ answerer }} is a Firefox user just
-like you? Get started helping other Firefox users by browsing
-questions at https://{{ host }}/questions?filter=unsolved --
-you might just make someone's day!
+See the comment:
+https://{{ host }}{{ answer_url }}
+
+
+If this comment is helpful, vote on it
+https://{{ host }}{{ helpful_url }}
+
+Help other Firefox users by browsing for unsolved questions on {{ host }}:
+https://{{ host }}/questions?filter=unsolved
+
+You might just make someone's day!
 {% endblocktrans %}{% endautoescape %}{% unsubscribe_instructions watch %}
