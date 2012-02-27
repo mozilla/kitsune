@@ -75,11 +75,6 @@ ol.threads li div.title {
     width: 32%;
 }
 
-.title a:visited,
-.last-post a:visited {
-    color: #777;
-}
-
 ol.threads-columns li.author,
 ol.threads li div.author {
     width: 18%;
