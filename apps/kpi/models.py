@@ -4,6 +4,9 @@ from django.db.models import (CharField, DateField, ForeignKey,
 from sumo.models import ModelBase
 
 
+VISITORS_METRIC_CODE = 'general keymetrics:visitors'
+
+
 class MetricKind(ModelBase):
     """A programmer-readable identifier of a metric, like 'clicks: search'"""
     code = CharField(max_length=255, unique=True)

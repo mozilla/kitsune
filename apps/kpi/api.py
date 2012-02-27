@@ -11,7 +11,7 @@ from tastypie.cache import SimpleCache
 from tastypie.resources import Resource
 
 from customercare.models import Reply
-from kpi.models import Metric, MetricKind
+from kpi.models import Metric, MetricKind, VISITORS_METRIC_CODE
 from questions.models import Question, Answer, AnswerVote
 from wiki.models import HelpfulVote, Revision
 
@@ -167,7 +167,7 @@ class ElasticClickthroughResource(SearchClickthroughResource):
 
 
 class SolutionResource(CachedResource):
-    """Returns the number of questions maked as the solution."""
+    """Returns the number of questions marked as solved."""
     date = fields.DateField('date')
     solved = fields.IntegerField('solved', default=0)
     questions = fields.IntegerField('questions', default=0)
@@ -361,6 +361,24 @@ class ArmyOfAwesomeContributorResource(CachedResource):
     class Meta:
         cache = SimpleCache()
         resource_name = 'kpi_active_aoa_contributors'
+        allowed_methods = ['get']
+
+
+class VisitorsResource(CachedResource):
+    """Returns the number of unique visitors per day."""
+    date = fields.DateField('date')
+    visitors = fields.IntegerField('visitors', default=0)
+
+    def get_object_list(self, request):
+        # Set up the query for the data we need
+        kind = MetricKind.objects.get(code=VISITORS_METRIC_CODE)
+        qs = Metric.objects.filter(kind=kind)
+
+        return [Struct(date=m.start, visitors=m.value) for m in reversed(qs)]
+
+    class Meta(object):
+        cache = SimpleCache()
+        resource_name = 'kpi_visitors'
         allowed_methods = ['get']
 
 

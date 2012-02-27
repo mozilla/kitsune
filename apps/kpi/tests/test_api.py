@@ -5,7 +5,7 @@ import json
 from nose.tools import eq_
 
 from customercare.tests import reply
-from kpi.models import Metric
+from kpi.models import Metric, VISITORS_METRIC_CODE
 from kpi.tests import metric, metric_kind
 from sumo.tests import TestCase, LocalizingClient
 from sumo.urlresolvers import reverse
@@ -209,3 +209,20 @@ class KpiApiTests(TestCase):
 
         # Correspnding ElasticSearch APIs are likely correct by dint
         # of factoring.
+
+    def test_visitors(self):
+        """Test unique visitors API call."""
+        # Create a reply
+        kind = metric_kind(code=VISITORS_METRIC_CODE, save=True)
+        metric(kind=kind, start=date.today(), end=date.today(), value=42,
+               save=True)
+
+        # There should be only one active contributor.
+        url = reverse('api_dispatch_list',
+                      kwargs={'resource_name': 'kpi_visitors',
+                              'api_name': 'v1'})
+
+        response = self.client.get(url + '?format=json')
+        eq_(200, response.status_code)
+        r = json.loads(response.content)
+        eq_(r['objects'][0]['visitors'], 42)

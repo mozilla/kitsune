@@ -4,9 +4,9 @@ from django.conf import settings
 from mock import patch
 from nose.tools import raises, eq_
 
-from dashboards.models import (WikiDocumentVisits, StatsException, THIS_WEEK,
-                               StatsIOError)
+from dashboards.models import WikiDocumentVisits, THIS_WEEK
 from sumo.tests import TestCase
+from sumo.webtrends import StatsException, StatsIOError
 from wiki.tests import document, revision
 
 

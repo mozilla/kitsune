@@ -71,6 +71,7 @@ HOME = /tmp
 42 0 * * * $CRON update_top_contributors
 0 21 * * * $CRON cache_most_unhelpful_kb_articles
 47 2 * * * $CRON remove_expired_registration_profiles
+0 3 * * * $CRON update_visitors_metric
 
 # Twice per week.
 #05 01 * * 1,4 $CRON update_weekly_votes
