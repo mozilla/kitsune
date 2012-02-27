@@ -424,8 +424,10 @@ class Answer(ActionMixin, ModelBase):
         super(Answer, self).save(*args, **kwargs)
 
         if new:
-            # Need to pull from uncached, otherwise we get the cached
-            # query which doesn't reflect the answer we just saved.
+            # Occasionally, num_answers seems to get out of sync with the
+            # actual number of answers. This changes it to pull from
+            # uncached on the off chance that fixes it. Plus if we enable
+            # caching of counts, this will continue to work.
             self.question.num_answers = Answer.uncached.filter(
                 question=self.question).count()
             self.question.last_answer = self
