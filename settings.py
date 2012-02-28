@@ -98,6 +98,7 @@ NON_SUPPORTED_LOCALES = {
     'nn-NO': 'no',
     'oc': 'fr',
     'sr': 'sr-CYRL',  # Override the tendency to go sr->sr-LATN.
+    'lij': 'it',
 }
 
 TEXT_DOMAIN = 'messages'
