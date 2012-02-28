@@ -134,11 +134,11 @@ class OverviewTests(TestCase):
         eq_(1, overview_rows('de')['all']['numerator'])
         eq_(1, overview_rows('de')['all']['denominator'])
 
+        # ...but not when it's a navigation article:
         t.document.parent.title = t.document.title = 'thing'
         t.document.parent.category = t.document.category = 50
         t.document.parent.save()
         t.document.save()
-        # ...but not when it's a navigation article:
         eq_(0, overview_rows('de')['all']['numerator'])
         eq_(0, overview_rows('de')['all']['denominator'])
 
@@ -146,7 +146,6 @@ class OverviewTests(TestCase):
         t.document.parent.category = t.document.category = 40
         t.document.parent.save()
         t.document.save()
-        # ...but not when it's a navigation article:
         eq_(0, overview_rows('de')['all']['numerator'])
         eq_(0, overview_rows('de')['all']['denominator'])
 
@@ -154,7 +153,6 @@ class OverviewTests(TestCase):
         t.document.parent.category = t.document.category = 30
         t.document.parent.save()
         t.document.save()
-        # ...but not when it's a navigation article:
         eq_(0, overview_rows('de')['all']['numerator'])
         eq_(0, overview_rows('de')['all']['denominator'])
 
