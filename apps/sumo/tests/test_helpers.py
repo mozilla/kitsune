@@ -98,6 +98,7 @@ class TestDateTimeFormat(TestCase):
         url_ = reverse('forums.threads', args=[u'testslug'])
         self.context = {'request': test_utils.RequestFactory().get(url_)}
         self.context['request'].locale = u'en-US'
+        self.context['request'].session.session_key = u'ffc94ac20b5a67b93e210e8f8c71c62b'
 
     def test_today(self):
         """Expects shortdatetime, format: Today at {time}."""
@@ -164,6 +165,12 @@ class TestDateTimeFormat(TestCase):
         date_today = datetime.today()
         assert_raises(DateTimeFormatError, datetimeformat, self.context,
                       date_today, format='unknown')
+
+    def test_timezone(self):
+        date = datetime(2007, 04, 01, 15, 30)
+        value_expected = format_datetime(date, 'full', tzinfo=timezone('Europe/Paris'),
+                        locale='fr_FR')
+        eq_(value_expected, 'dimanche 1 avril 2007 17:30:00 HEC')
 
     def test_invalid_value(self):
         """Passing invalid value raises ValueError."""
