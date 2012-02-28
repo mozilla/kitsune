@@ -173,7 +173,7 @@ CANNED_RESPONSES = [
     }]
 
 
-def _tweet_for_template(tweet):
+def _tweet_for_template(tweet, https=False):
     """Return the dict needed for tweets.html to render a tweet + replies."""
     data = json.loads(tweet.raw_json)
 
@@ -183,11 +183,16 @@ def _tweet_for_template(tweet):
     # Recursively fetch replies.
     if settings.CC_SHOW_REPLIES:
         # If ever slow, optimize to do fewer queries.
-        replies = _get_tweets(limit=0, reply_to=tweet)
+        replies = _get_tweets(limit=0, reply_to=tweet, https=https)
     else:
         replies = None
 
-    return {'profile_img': bleach.clean(data['profile_image_url']),
+    if https:
+        img = bleach.clean(data['profile_image_url_https'])
+    else:
+        img = bleach.clean(data['profile_image_url'])
+
+    return {'profile_img': img,
             'user': bleach.clean(data['from_user']),
             'text': bleach.clean(data['text']),
             'id': tweet.pk,
@@ -199,7 +204,7 @@ def _tweet_for_template(tweet):
 
 
 def _get_tweets(locale=settings.LANGUAGE_CODE, limit=MAX_TWEETS, max_id=None,
-                reply_to=None, filter=None):
+                reply_to=None, filter=None, https=False):
     """
     Fetch a list of tweets.
 
@@ -227,7 +232,7 @@ def _get_tweets(locale=settings.LANGUAGE_CODE, limit=MAX_TWEETS, max_id=None,
     if limit:
         q = q[:limit]
 
-    return [_tweet_for_template(tweet) for tweet in q]
+    return [_tweet_for_template(tweet, https) for tweet in q]
 
 
 @require_GET
@@ -241,7 +246,8 @@ def more_tweets(request):
     return jingo.render(request, 'customercare/tweets.html',
                         {'tweets': _get_tweets(locale=request.locale,
                                                max_id=max_id,
-                                               filter=filter)})
+                                               filter=filter,
+                                               https=request.is_secure())})
 
 
 @require_GET
@@ -292,7 +298,7 @@ def landing(request):
         'activity_stats': activity_stats,
         'contributor_stats': contributor_stats,
         'canned_responses': CANNED_RESPONSES,
-        'tweets': _get_tweets(locale=request.locale),
+        'tweets': _get_tweets(locale=request.locale, https=request.is_secure()),
         'authed': twitter.authed,
         'twitter_user': (twitter.api.auth.get_username() if
                          twitter.authed else None),
@@ -369,7 +375,7 @@ def twitter_post(request):
 
     # We could optimize by not encoding and then decoding JSON.
     return jingo.render(request, 'customercare/tweets.html',
-        {'tweets': [_tweet_for_template(tweet)]})
+        {'tweets': [_tweet_for_template(tweet, request.is_secure())]})
 
 
 @require_POST
