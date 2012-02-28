@@ -41,16 +41,12 @@ def login(request):
     form = handle_login(request)
 
     if request.user.is_authenticated():
-        profile = request.user.get_profile()
-        timezone = profile.timezone
         res = HttpResponseRedirect(next_url)
         max_age = (None if settings.SESSION_EXPIRE_AT_BROWSER_CLOSE
                         else settings.SESSION_COOKIE_AGE)
         res.set_cookie(settings.SESSION_EXISTS_COOKIE,
                        '1',
                        secure=False,
-                       max_age=max_age)
-        res.set_cookie('timezone', timezone, secure=False,
                        max_age=max_age)
         return res
 
