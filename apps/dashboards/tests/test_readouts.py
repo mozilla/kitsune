@@ -127,11 +127,8 @@ class OverviewTests(TestCase):
         eq_(0, overview_rows('de')['all']['numerator'])
         eq_(0, overview_rows('de')['all']['denominator'])
 
-    def test_navigation_and_docs_disjunct(self):
-        """Make sure navigation articles aren't included in the All Articles
-        count.
-
-        """
+    def test_all_articles_doesnt_have_30_40_50(self):
+        """Make sure All Articles doesn't have 30, 40, and 50 articles"""
         t = translated_revision(is_approved=True, save=True)
         # It shows up in All when it's a normal doc:
         eq_(1, overview_rows('de')['all']['numerator'])
@@ -141,7 +138,23 @@ class OverviewTests(TestCase):
         t.document.parent.category = t.document.category = 50
         t.document.parent.save()
         t.document.save()
-        # ...but not when it's a template:
+        # ...but not when it's a navigation article:
+        eq_(0, overview_rows('de')['all']['numerator'])
+        eq_(0, overview_rows('de')['all']['denominator'])
+
+        # ...or administration:
+        t.document.parent.category = t.document.category = 40
+        t.document.parent.save()
+        t.document.save()
+        # ...but not when it's a navigation article:
+        eq_(0, overview_rows('de')['all']['numerator'])
+        eq_(0, overview_rows('de')['all']['denominator'])
+
+        # ...or how to contribute:
+        t.document.parent.category = t.document.category = 30
+        t.document.parent.save()
+        t.document.save()
+        # ...but not when it's a navigation article:
         eq_(0, overview_rows('de')['all']['numerator'])
         eq_(0, overview_rows('de')['all']['denominator'])
 
