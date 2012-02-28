@@ -79,7 +79,7 @@
    style. #}
 <div id="pg-wrap">
 
-<header class="global">  
+<header class="global">
   {% if request.locale == 'en-US' %}
     {# tabzilla is en-US only for now #}
     <a href="http://www.mozilla.org/" id="tabzilla">mozilla</a>
@@ -158,11 +158,7 @@
               {% else %}
                 {% set ask_url = url('wiki.document', 'ask') %}
               {% endif %}
-              {% if waffle.flag('editing-tools-show-hide') %}
-                <a href="{{ ask_url }}">{{ _('Ask the community <mark>Support Forum</mark>') }}</a>
-              {% else %}
-                <a href="{{ ask_url }}">{{ _('Ask a Question') }}</a>
-              {% endif %}
+              <a href="{{ ask_url }}">{{ _('Ask the community <mark>Support Forum</mark>') }}</a>
             </li>
           {% endblock %}
         </ul>
@@ -171,21 +167,6 @@
       {{ for_contributors(request, user, settings.WIKI_DEFAULT_LANGUAGE) }}
       <div class="sd-module promos">
         {% block side_promos %}
-          {% if not waffle.flag('editing-tools-show-hide') %}
-            <section id="want-to-get-involved">
-              <h1>{{ _('Be <mark>Awesome</mark>')|safe }}</h1>
-              <div class="img">
-                <a href="{{ url('wiki.document', 'superheroes-wanted') }}">
-                  <img src="{{ settings.MEDIA_URL }}img/promo.sumo.png" alt="" />
-                </a>
-              </div>
-              <p>
-                {% trans %}Did you know that Firefox Help is powered by volunteer
-                  superheroes all around the world?{% endtrans %}
-              </p>
-              <a href="{{ url('wiki.document', 'superheroes-wanted') }}">{{ _('Grab your cape and join us &raquo;')|safe }}</a>
-            </section>
-          {% endif %}
           {% if not hide_plugin_check %}
             <section id="check-your-plugins">
               <h1>{{ _('Check your <mark>plugins</mark>')|safe }}</h1>

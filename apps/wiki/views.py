@@ -22,7 +22,6 @@ from statsd import statsd
 from taggit.models import Tag
 from tower import ugettext_lazy as _lazy
 from tower import ugettext as _
-import waffle
 
 from access.decorators import permission_required, login_required
 from sumo.helpers import urlparams
@@ -735,8 +734,7 @@ def helpful_vote(request, document_slug):
         statsd.incr('wiki.vote')
 
         # Send a survey if flag is enabled and vote wasn't helpful.
-        if ('helpful' not in request.POST and
-            waffle.flag_is_active(request, 'editing-tools-show-hide')):
+        if 'helpful' not in request.POST:
             survey = jingo.render_to_string(
                 request, 'wiki/includes/unhelpful_survey.html',
                 {'vote_id': vote.id})
