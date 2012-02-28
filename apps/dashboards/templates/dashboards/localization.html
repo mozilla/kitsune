@@ -26,6 +26,7 @@
     {% set rows = overview_rows() %}
     {{ overview_section(readouts, ((rows['most-visited'], True),
                                    (rows['templates'], True),
+                                   (rows['navigation'], True),
                                    (rows['all'], False))) }}
 
     {% for readout in readouts.itervalues() %}
