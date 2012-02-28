@@ -94,6 +94,7 @@ NON_SUPPORTED_LOCALES = {
     'af': None,
     'br': 'fr',
     'csb': 'pl',
+    'lij': 'it',
     'nb-NO': 'no',
     'nn-NO': 'no',
     'oc': 'fr',
