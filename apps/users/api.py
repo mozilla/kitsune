@@ -35,6 +35,8 @@ def usernames(request):
             ).values_list('user_id', flat=True)
         users = User.objects.filter(
             Q(username__istartswith=pre) | Q(id__in=profiles),
+            ).extra(select={'length':'Length(username)'}
+            ).order_by('length'
             ).select_related('profile')[:10]
         return [{'username':u.username,
                 'display_name':display_name_or_none(u)}
