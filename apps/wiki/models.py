@@ -517,6 +517,7 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
         d['category'] = obj.category
         d['slug'] = obj.slug
         d['is_archived'] = obj.is_archived
+
         if obj.parent is None:
             d['tag'] = [tag['name'] for tag in obj.tags.values()]
         else:
