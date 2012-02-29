@@ -46,6 +46,7 @@ from questions.models import (Question, Answer, QuestionVote, AnswerVote,
                               question_searcher)
 from questions.question_config import products
 from search.utils import locale_or_default
+from search.es_utils import ESTimeoutError, ESMaxRetryError, ESException
 from search import SearchError
 from sumo.helpers import urlparams
 from sumo.urlresolvers import reverse
@@ -921,6 +922,11 @@ def _search_suggestions(request, query, locale, category_tags):
     Returns up to 3 wiki pages, then up to 3 questions.
 
     """
+    if waffle.flag_is_active(request, 'elasticsearch'):
+        engine = 'elastic'
+    else:
+        engine = 'sphinx'
+
     my_question_search = question_searcher(request)
     my_wiki_search = wiki_searcher(request)
 
@@ -932,44 +938,58 @@ def _search_suggestions(request, query, locale, category_tags):
         my_question_search = my_question_search.filter(tag__in=category_tags)
         my_wiki_search = my_wiki_search.filter(tag__in=category_tags)
 
-    raw_results = (
-        my_wiki_search.filter(locale=locale,
-                              category__in=settings.SEARCH_DEFAULT_CATEGORIES)
-                      .query(query)
-                      .values_dict('id')[:WIKI_RESULTS])
+    try:
+        raw_results = (
+            my_wiki_search.filter(locale=locale,
+                                  category__in=settings.SEARCH_DEFAULT_CATEGORIES)
+                          .query(query)
+                          .values_dict('id')[:WIKI_RESULTS])
 
-    # Lazily build excerpts from results. Stop when we have enough:
-    results = []
-    for r in raw_results:
-        try:
-            doc = (Document.objects.select_related('current_revision').
-                   get(pk=r['id']))
-            results.append({
-                'search_summary': doc.current_revision.summary,
-                'url': doc.get_absolute_url(),
-                'title': doc.title,
-                'type': 'document',
-                'object': doc,
-            })
-        except Document.DoesNotExist:
-            pass
+        # Lazily build excerpts from results. Stop when we have enough:
+        results = []
+        for r in raw_results:
+            try:
+                doc = (Document.objects.select_related('current_revision').
+                       get(pk=r['id']))
+                results.append({
+                    'search_summary': doc.current_revision.summary,
+                    'url': doc.get_absolute_url(),
+                    'title': doc.title,
+                    'type': 'document',
+                    'object': doc,
+                })
+            except Document.DoesNotExist:
+                pass
 
-    # Questions app is en-US only.
-    raw_results = (my_question_search.query(query)
-                                     .values_dict('id')[:QUESTIONS_RESULTS])
+        # Questions app is en-US only.
+        raw_results = (my_question_search.query(query)
+                                         .values_dict('id')[:QUESTIONS_RESULTS])
 
-    for r in raw_results:
-        try:
-            q = Question.objects.get(pk=r['id'])
-            results.append({
-                'search_summary': q.content[0:500],
-                'url': q.get_absolute_url(),
-                'title': q.title,
-                'type': 'question',
-                'object': q
-            })
-        except Question.DoesNotExist:
-            pass
+        for r in raw_results:
+            try:
+                q = Question.objects.get(pk=r['id'])
+                results.append({
+                    'search_summary': q.content[0:500],
+                    'url': q.get_absolute_url(),
+                    'title': q.title,
+                    'type': 'question',
+                    'object': q
+                })
+            except Question.DoesNotExist:
+                pass
+
+    except (SearchError, ESTimeoutError, ESMaxRetryError, ESException), exc:
+        if isinstance(exc, SearchError):
+            statsd.incr('questions.suggestions.%s.searcherror' % engine)
+        elif isinstance(exc, ESTimeoutError):
+            statsd.incr('questions.suggestions.%s.timeouterror' % engine)
+        elif isinstance(exc, ESMaxRetryError):
+            statsd.incr('questions.suggestions.%s.maxretryerror' % engine)
+        elif isinstance(exc, ESException):
+            statsd.incr('questions.suggestions.%s.elasticsearchexception' %
+                        engine)
+
+        return []
 
     return results
 
