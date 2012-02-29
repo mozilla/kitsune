@@ -26,7 +26,7 @@ from forums.models import Thread, discussion_searcher
 from questions.models import question_searcher
 import search as constants
 from search.forms import SearchForm
-from search.es_utils import ESTimeoutError, ESMaxRetryError
+from search.es_utils import ESTimeoutError, ESMaxRetryError, ESException
 from search.tasks import ES_REINDEX_PROGRESS
 from sumo.utils import paginate, smart_int
 from wiki.models import wiki_searcher
@@ -374,7 +374,7 @@ def search(request, template=None):
             except ObjectDoesNotExist:
                 continue
 
-    except (SearchError, ESTimeoutError, ESMaxRetryError), exc:
+    except (SearchError, ESTimeoutError, ESMaxRetryError, ESException), exc:
         # Handle timeout and all those other transient errors with a
         # "Search Unavailable" rather than a Django error page.
         if is_json:
@@ -388,6 +388,8 @@ def search(request, template=None):
             statsd.incr('search.%s.timeouterror' % engine)
         elif isinstance(exc, ESMaxRetryError):
             statsd.incr('search.%s.maxretryerror' % engine)
+        elif isinstance(exc, ESException):
+            statsd.incr('search.%s.elasticsearchexception' % engine)
 
         t = 'search/mobile/down.html' if request.MOBILE else 'search/down.html'
         return jingo.render(request, t, {'q': cleaned['q']}, status=503)

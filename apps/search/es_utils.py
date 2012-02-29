@@ -10,6 +10,7 @@ from django.conf import settings
 ESTimeoutError = pyes.urllib3.TimeoutError
 ESMaxRetryError = pyes.urllib3.MaxRetryError
 ESIndexMissingException = pyes.exceptions.IndexMissingException
+ESException = pyes.exceptions.ElasticSearchException
 
 
 log = logging.getLogger('search.es_utils')
