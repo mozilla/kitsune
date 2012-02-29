@@ -25,6 +25,24 @@ def paginate(request, queryset, per_page=20, count=None):
     except (paginator.EmptyPage, paginator.InvalidPage):
         paginated = p.page(1)
 
+    paginated.url = build_paged_url(request)
+
+    return paginated
+
+
+def simple_paginate(request, queryset, per_page=20):
+    """Get a SimplePaginator page."""
+    p = paginator.SimplePaginator(queryset, per_page)
+
+    # Let the view the handle exceptions.
+    page = p.page(request.GET.get('page', 1))
+    page.url = build_paged_url(request)
+
+    return page
+
+
+def build_paged_url(request):
+    """Build the url for the paginator."""
     base = request.build_absolute_uri(request.path)
 
     items = [(k, v) for k in request.GET if k != 'page'
@@ -32,8 +50,7 @@ def paginate(request, queryset, per_page=20, count=None):
 
     qsa = urlencode(items)
 
-    paginated.url = u'%s?%s' % (base, qsa)
-    return paginated
+    return u'%s?%s' % (base, qsa)
 
 
 # By Ned Batchelder.
