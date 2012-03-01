@@ -664,9 +664,6 @@ IMAGE_UPLOAD_PATH = 'uploads/images/'
 # String must not contain double quotes!
 IMAGE_ALLOWED_MIMETYPES = 'image/jpeg,image/png,image/gif'
 
-# How long do we cache the question counts (in seconds)?
-QUESTIONS_COUNT_TTL = 900  # 15 minutes.
-
 # Email
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
