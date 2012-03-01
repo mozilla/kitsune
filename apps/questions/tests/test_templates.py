@@ -14,7 +14,8 @@ from tidings.models import Watch
 
 from questions.events import QuestionReplyEvent, QuestionSolvedEvent
 from questions.models import Question, Answer, QuestionVote, VoteMetadata
-from questions.tests import TestCaseBase, TaggingTestCaseBase, tags_eq
+from questions.tests import (TestCaseBase, TaggingTestCaseBase, tags_eq,
+                             question, answer)
 from questions.views import UNAPPROVED_TAG, NO_TAG
 from questions.cron import cache_top_contributors
 from sumo.helpers import urlparams
@@ -688,6 +689,31 @@ class AnswersTemplateTestCase(TestCaseBase):
         doc = pq(response.content)
         eq_('nofollow', doc('#question div.content a')[0].attrib['rel'])
         eq_('nofollow', doc('li.answer div.content a')[0].attrib['rel'])
+
+    def test_robots_noindex(self):
+        """Verify noindex on unanswered questions over 30 days old."""
+        q = question(save=True)
+
+        # A brand new questions shouldn't be noindex'd...
+        response = get(self.client, 'questions.answers', args=[q.id])
+        eq_(200, response.status_code)
+        doc = pq(response.content)
+        eq_(0, len(doc('meta[name=robots]')))
+
+        # But a 31 day old question should be noindexed...
+        q.created = datetime.now() - timedelta(days=31)
+        q.save()
+        response = get(self.client, 'questions.answers', args=[q.id])
+        eq_(200, response.status_code)
+        doc = pq(response.content)
+        eq_(1, len(doc('meta[name=robots]')))
+
+        # Except if it has answers.
+        answer(question=q, save=True)
+        response = get(self.client, 'questions.answers', args=[q.id])
+        eq_(200, response.status_code)
+        doc = pq(response.content)
+        eq_(0, len(doc('meta[name=robots]')))
 
 
 class TaggedQuestionsTestCase(TaggingTestCaseBase):
