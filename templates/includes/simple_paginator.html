@@ -2,12 +2,12 @@
 <ul class="simple-paginator">
   {% if pager.has_previous() %}
     <li class="newer">
-      <a href="{{ pager.url|urlparams(page=pager.previous_page_number()) }}">{{ _('Newer') }}</a>
+      <a class="btn" href="{{ pager.url|urlparams(page=pager.previous_page_number()) }}">{{ _('Newer') }}</a>
     </li>
   {% endif %}
   {% if pager.has_next() %}
-    <li class="next">
-      <a href="{{ pager.url|urlparams(page=pager.next_page_number()) }}">{{ _('Older') }}</a>
+    <li class="older">
+      <a class="btn" href="{{ pager.url|urlparams(page=pager.next_page_number()) }}">{{ _('Older') }}</a>
     </li>
   {% endif %}
 </ul>
