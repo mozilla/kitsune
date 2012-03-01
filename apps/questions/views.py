@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 import json
 import logging
 import random
@@ -160,9 +160,18 @@ def answers(request, question_id, form=None, watch_form=None,
     """View the answers to a question."""
     ans_ = _answers_data(request, question_id, form, watch_form,
                          answer_preview)
+    question = ans_['question']
+
     if request.user.is_authenticated():
-        ans_['images'] = ans_['question'].images.filter(creator=request.user)
+        ans_['images'] = question.images.filter(creator=request.user)
+
     extra_kwargs.update(ans_)
+
+    # Add noindex to questions without answers that are > 30 days old.
+    no_answers = ans_['answers'].paginator.count == 0
+    if no_answers and question.created < datetime.now() - timedelta(days=30):
+        extra_kwargs.update(robots_noindex=True)
+
     return jingo.render(request, 'questions/answers.html', extra_kwargs)
 
 
