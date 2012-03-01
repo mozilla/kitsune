@@ -1,10 +1,12 @@
-from nose.tools import eq_
+from nose.tools import eq_, raises
 import test_utils
 import pyquery
 
+from sumo.paginator import EmptyPage, PageNotAnInteger
 from sumo.urlresolvers import reverse
-from sumo.utils import paginate
+from sumo.utils import paginate, simple_paginate
 from sumo.helpers import paginator
+from sumo.tests import TestCase
 
 
 def test_paginated_url():
@@ -43,3 +45,56 @@ def test_paginator_filter():
     html = paginator(pager)
     doc = pyquery.PyQuery(html)
     eq_(13, len(doc('li')))
+
+
+class SimplePaginatorTestCase(TestCase):
+
+    rf = test_utils.RequestFactory()
+
+    def test_no_explicit_page(self):
+        """No 'page' query param implies page 1."""
+        request = self.rf.get('/questions')
+        queryset = [{}, {}]
+        page = simple_paginate(request, queryset, per_page=2)
+        eq_(1, page.number)
+
+    def test_page_1_without_next(self):
+        """Test page=1, doesn't have next page."""
+        request = self.rf.get('/questions?page=1')
+        queryset = [{}, {}]
+        page = simple_paginate(request, queryset, per_page=2)
+        eq_(1, page.number)
+        assert not page.has_previous()
+        assert not page.has_next()
+
+    def test_page_1_with_next(self):
+        """Test page=1, has next page."""
+        request = self.rf.get('/questions?page=1')
+        queryset = [{}, {}, {}]
+        page = simple_paginate(request, queryset, per_page=2)
+        eq_(1, page.number)
+        assert not page.has_previous()
+        assert page.has_next()
+
+    def test_page_2_without_next(self):
+        """Test page=2, doesn't have next page."""
+        request = self.rf.get('/questions?page=2')
+        queryset = [{}, {}, {}]
+        page = simple_paginate(request, queryset, per_page=2)
+        eq_(2, page.number)
+        assert page.has_previous()
+        assert not page.has_next()
+
+    @raises(EmptyPage)
+    def test_page_2_empty(self):
+        """Test page=1, has next page."""
+        request = self.rf.get('/questions?page=2')
+        queryset = [{}, {}]
+        simple_paginate(request, queryset, per_page=2)
+
+    @raises(PageNotAnInteger)
+    def test_page_isnt_an_int(self):
+        """Test page=1, has next page."""
+        request = self.rf.get('/questions?page=foo')
+        queryset = [{}, {}]
+        simple_paginate(request, queryset, per_page=2)
