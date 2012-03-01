@@ -1,3 +1,5 @@
+from datetime import datetime, timedelta
+
 from django.contrib.auth.models import User
 from django.db.models import Q
 from django.views.decorators.http import require_GET
@@ -25,6 +27,8 @@ def usernames(request):
     query = request.GET.get('query', '')
     pre = term or query
 
+    last_login = datetime.now() - timedelta(weeks=12)
+
     if not pre:
         return []
     if not request.user.is_authenticated():
@@ -35,6 +39,7 @@ def usernames(request):
             ).values_list('user_id', flat=True)
         users = User.objects.filter(
             Q(username__istartswith=pre) | Q(id__in=profiles),
+            ).filter(last_login__gte=last_login
             ).extra(select={'length':'Length(username)'}
             ).order_by('length'
             ).select_related('profile')[:10]
