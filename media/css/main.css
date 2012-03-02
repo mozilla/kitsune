@@ -1848,3 +1848,8 @@ div.ajax-vote-box:after {
     width: 20px;
     z-index: 1;
 }
+
+/* On marketplace pages, hide the Desktop | Mobile site nav */
+body.marketplace #site-nav {
+    display: none;
+}
