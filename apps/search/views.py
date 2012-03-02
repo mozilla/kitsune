@@ -45,6 +45,8 @@ def jsonp_is_valid(func):
 def search_with_es(request, template=None):
     """ES-specific search view"""
 
+    engine = 'elastic'
+
     # Time ES and Sphinx separate. See bug 723930.
     # TODO: Remove this once Sphinx is gone.
     start = time.time()
@@ -53,11 +55,6 @@ def search_with_es(request, template=None):
     is_json = (request.GET.get('format') == 'json')
     callback = request.GET.get('callback', '').strip()
     mimetype = 'application/x-javascript' if callback else 'application/json'
-
-    if waffle.flag_is_active(request, 'elasticsearch'):
-        engine = 'elastic'
-    else:
-        engine = 'sphinx'
 
     # Search "Expires" header format
     expires_fmt = '%A, %d %B %Y %H:%M:%S GMT'
@@ -74,8 +71,8 @@ def search_with_es(request, template=None):
 
     # Search default values
     try:
-        category = map(int, r.getlist('category')) or \
-                   settings.SEARCH_DEFAULT_CATEGORIES
+        category = (map(int, r.getlist('category')) or
+                    settings.SEARCH_DEFAULT_CATEGORIES)
     except ValueError:
         category = settings.SEARCH_DEFAULT_CATEGORIES
     r.setlist('category', category)
@@ -119,6 +116,7 @@ def search_with_es(request, template=None):
     page = max(smart_int(request.GET.get('page')), 1)
     offset = (page - 1) * settings.SEARCH_RESULTS_PER_PAGE
 
+    # TODO: This is fishy--why does it have to be coded this way?
     # get language name for display in template
     lang = language.lower()
     if settings.LANGUAGES.get(lang):
@@ -129,8 +127,6 @@ def search_with_es(request, template=None):
     wiki_s = wiki_searcher(request)
     question_s = question_searcher(request)
     discussion_s = discussion_searcher(request)
-
-    documents = []
 
     # wiki filters
     # Category filter
@@ -224,6 +220,11 @@ def search_with_es(request, template=None):
                 discussion_s = discussion_s.filter(**after)
             question_s = question_s.filter(**after)
 
+    # TODO: fix pagination below so that it only uses counts--no more
+    # range calls.
+
+    documents = []
+
     sortby = smart_int(request.GET.get('sortby'))
     try:
         max_results = settings.SEARCH_MAX_RESULTS
@@ -233,9 +234,8 @@ def search_with_es(request, template=None):
             if cleaned_q:
                 wiki_s = wiki_s.query(cleaned_q)
             wiki_s = wiki_s[:max_results]
-            # Execute the query and append to documents
-            documents += [('wiki', (pair[0], pair[1]))
-                          for pair in enumerate(wiki_s.object_ids())]
+            count = min(wiki_s.count(), max_results)
+            documents += [('wiki', ind) for ind in range(count)]
 
         if cleaned['w'] & constants.WHERE_SUPPORT:
             # Sort results by
@@ -260,8 +260,8 @@ def search_with_es(request, template=None):
             if cleaned_q:
                 question_s = question_s.query(cleaned_q)
             question_s = question_s[:max_results]
-            documents += [('question', (pair[0], pair[1]))
-                          for pair in enumerate(question_s.object_ids())]
+            count = min(question_s.count(), max_results)
+            documents += [('question', ind) for ind in range(count)]
 
         if cleaned['w'] & constants.WHERE_DISCUSSION:
             # Sort results by
@@ -282,57 +282,50 @@ def search_with_es(request, template=None):
             if cleaned_q:
                 discussion_s = discussion_s.query(cleaned_q)
             discussion_s = discussion_s[:max_results]
-            documents += [('discussion', (pair[0], pair[1]))
-                          for pair in enumerate(discussion_s.object_ids())]
+            count = min(question_s.count(), max_results)
+            documents += [('discussion', ind) for ind in range(count)]
+
+
+        # TODO: It'd be nice to not have to generate a list of x things in order
+        # to appropriately paginate.
 
         pages = paginate(request, documents, settings.SEARCH_RESULTS_PER_PAGE)
 
         # Build a dict of { type_ -> list of indexes } for the specific
         # docs that we're going to display on this page.  This makes it
-        # easy for us to slice the appropriate search Ss so we're limiting
-        # our db hits to just the items we're showing.
+        # easy for us to slice the appropriate search Ss.
         documents_dict = {}
         for doc in documents[offset:offset + settings.SEARCH_RESULTS_PER_PAGE]:
-            documents_dict.setdefault(doc[0], []).append(doc[1][0])
+            documents_dict.setdefault(doc[0], []).append(doc[1])
 
         docs_for_page = []
         for kind, search_s in [('wiki', wiki_s),
-                                ('question', question_s),
-                                ('discussion', discussion_s)]:
+                               ('question', question_s),
+                               ('discussion', discussion_s)]:
             if kind not in documents_dict:
                 continue
 
-            # documents_dict[type_] is a list of indexes--one for each
-            # object id search result for that type_.  We use the values
-            # at the beginning and end of the list for slice boundaries.
+            # documents_dict[kind] is a list of indexes--one for each
+            # object search result for that kind.  We use the values
+            # at the beginning and end of the list for slice
+            # boundaries.
             begin = documents_dict[kind][0]
             end = documents_dict[kind][-1] + 1
 
             search_s = search_s[begin:end]
 
-            if engine == 'elastic':
-                # If we're doing elasticsearch, then we need to update
-                # the _s variables to point to the sliced versions of
-                # S so that, when we iterate over them in the
-                # following list comp, we hang onto the version that
-                # does the query, so we can call excerpt() on it
-                # later.
-                #
-                # We only need to do this with elasticsearch.  For Sphinx,
-                # search_s at this point is an ObjectResults and not an S
-                # because we've already acquired object_ids on it.  Thus
-                # if we update the _s variables, we'd be pointing to the
-                # ObjectResults and not the S and then excerpting breaks.
-                #
-                # Ugh.
-                if kind == 'wiki':
-                    wiki_s = search_s
-                elif kind == 'question':
-                    question_s = search_s
-                elif kind == 'discussion':
-                    discussion_s = search_s
+            if kind == 'wiki':
+                wiki_s = search_s
+            elif kind == 'question':
+                question_s = search_s
+            elif kind == 'discussion':
+                discussion_s = search_s
 
             docs_for_page += [(kind, doc) for doc in search_s]
+
+        # TODO: change this so it doesn't require DB hits. that
+        # invovles reworking elasticutils excerpting and also nixing
+        # get_absolute_url().
 
         results = []
         for i, docinfo in enumerate(docs_for_page):
@@ -354,17 +347,12 @@ def search_with_es(request, template=None):
                         'type': 'question',
                         'object': doc}
                 else:
-                    if engine == 'elastic':
-                        thread = doc
-                    else:
-                        thread = Thread.objects.get(pk=doc.thread_id)
-
                     summary = _build_excerpt(discussion_s, doc)
                     result = {
-                        'url': thread.get_absolute_url(),
-                        'title': thread.title,
+                        'url': doc.get_absolute_url(),
+                        'title': doc.title,
                         'type': 'thread',
-                        'object': thread}
+                        'object': doc}
                 result['search_summary'] = summary
                 result['rank'] = rank
                 results.append(result)
@@ -373,7 +361,7 @@ def search_with_es(request, template=None):
             except ObjectDoesNotExist:
                 continue
 
-    except (SearchError, ESTimeoutError, ESMaxRetryError, ESException), exc:
+    except (ESTimeoutError, ESMaxRetryError, ESException), exc:
         # Handle timeout and all those other transient errors with a
         # "Search Unavailable" rather than a Django error page.
         if is_json:
@@ -381,9 +369,7 @@ def search_with_es(request, template=None):
                                              _('Search Unavailable')}),
                                 mimetype=mimetype, status=503)
 
-        if isinstance(exc, SearchError):
-            statsd.incr('search.%s.searcherror' % engine)
-        elif isinstance(exc, ESTimeoutError):
+        if isinstance(exc, ESTimeoutError):
             statsd.incr('search.%s.timeouterror' % engine)
         elif isinstance(exc, ESMaxRetryError):
             statsd.incr('search.%s.maxretryerror' % engine)
