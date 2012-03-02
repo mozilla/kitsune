@@ -4,7 +4,6 @@ import re
 import urlparse
 
 from django.conf import settings
-from django.core.cache import cache
 from django.core.urlresolvers import reverse as django_reverse
 from django.http import QueryDict
 from django.utils.encoding import smart_str
@@ -21,6 +20,7 @@ from tower import ugettext_lazy as _lazy, ungettext
 
 import sumo.parser
 from sumo.urlresolvers import reverse
+from users.models import Profile
 
 
 class DateTimeFormatError(Exception):
@@ -187,13 +187,15 @@ def datetimeformat(context, value, format='shortdatetime'):
         raise ValueError
 
     request = context.get('request')
-    cached_tzinfo = cache.get(settings.TIME_ZONE_CACHE_KEY.format(
-                                request.session.session_key))
-    if cached_tzinfo is None and request.user.is_authenticated():
-        cached_tzinfo = request.user.get_profile().timezone
-        cache.set(settings.TIME_ZONE_CACHE_KEY, cached_tzinfo)
 
-    tzinfo = cached_tzinfo or timezone(settings.TIME_ZONE)
+    tzinfo = timezone(settings.TIME_ZONE)
+    if request.user.is_authenticated():
+        try:
+            tzinfo = request.user.get_profile().timezone or tzinfo
+        except (Profile.DoesNotExist, AttributeError):
+            pass
+    request.session['timezone'] = tzinfo
+
     locale = _babel_locale(_contextual_locale(context))
 
     # If within a day, 24 * 60 * 60 = 86400s
@@ -207,7 +209,7 @@ def datetimeformat(context, value, format='shortdatetime'):
     elif format == 'longdatetime':
         formatted = format_datetime(value, format='long', tzinfo=tzinfo, locale=locale)
     elif format == 'date':
-        formatted = format_date(value, tzinfo=tzinfo, locale=locale)
+        formatted = format_date(value, locale=locale)
     elif format == 'time':
         formatted = format_time(value, tzinfo=tzinfo, locale=locale)
     elif format == 'datetime':
