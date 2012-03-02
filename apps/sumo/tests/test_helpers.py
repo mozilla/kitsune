@@ -2,11 +2,11 @@
 from collections import namedtuple
 from datetime import datetime
 
-from django.conf import settings
 from django.forms.fields import CharField
 
 from babel.dates import format_date, format_time, format_datetime
 import jingo
+from mock import Mock
 from nose.tools import eq_, assert_raises
 from pytz import timezone
 from pyquery import PyQuery as pq
@@ -17,6 +17,8 @@ from sumo.helpers import (datetimeformat, DateTimeFormatError,
                           label_with_help, urlparams, yesno, number, remove)
 from sumo.tests import TestCase
 from sumo.urlresolvers import reverse
+
+from users.models import RegistrationProfile, Setting
 
 
 def render(s, context={}):
@@ -95,10 +97,17 @@ class TestHelpers(TestCase):
 class TestDateTimeFormat(TestCase):
 
     def setUp(self):
+        self.timezone = timezone('US/Pacific')
+        self.locale = u'en_US'
         url_ = reverse('forums.threads', args=[u'testslug'])
+        user = RegistrationProfile.objects.create_inactive_user(
+                    'sumouser1234', 'testpass', 'sumouser@test.com',
+                    locale=self.locale)
         self.context = {'request': test_utils.RequestFactory().get(url_)}
-        self.context['request'].locale = u'en-US'
-        self.context['request'].session.session_key = u'ffc94ac20b5a67b93e210e8f8c71c62b'
+        self.context['request'].locale = self.locale
+        self.context['request'].user = user.profile
+        self.context['request'].user.is_authenticated = Mock(return_value=True)
+        self.context['request'].session = {'timezone': self.timezone}
 
     def test_today(self):
         """Expects shortdatetime, format: Today at {time}."""
@@ -106,7 +115,8 @@ class TestDateTimeFormat(TestCase):
         value_returned = unicode(datetimeformat(self.context, date_today))
         value_expected = 'Today at %s' % format_time(date_today,
                                                      format='short',
-                                                     locale=u'en_US')
+                                                     locale=self.locale,
+                                                     tzinfo=self.timezone)
         eq_(pq(value_returned)('time').text(), value_expected)
 
     def test_locale(self):
@@ -114,7 +124,7 @@ class TestDateTimeFormat(TestCase):
         self.context['request'].locale = u'fr'
         value_test = datetime.fromordinal(733900)
         value_expected = format_datetime(value_test, format='short',
-                                         locale=u'fr')
+                                         locale=u'fr', tzinfo=self.timezone)
         value_returned = datetimeformat(self.context, value_test)
         eq_(pq(value_returned)('time').text(), value_expected)
 
@@ -122,16 +132,15 @@ class TestDateTimeFormat(TestCase):
         """Expects shortdatetime."""
         value_test = datetime.fromordinal(733900)
         value_expected = format_datetime(value_test, format='short',
-                                         locale=u'en_US')
+                                         locale=self.locale, tzinfo=self.timezone)
         value_returned = datetimeformat(self.context, value_test)
         eq_(pq(value_returned)('time').text(), value_expected)
 
     def test_longdatetime(self):
         """Expects long format."""
         value_test = datetime.fromordinal(733900)
-        tzvalue = timezone(settings.TIME_ZONE).localize(value_test)
-        value_expected = format_datetime(tzvalue, format='long',
-                                         locale=u'en_US')
+        value_expected = format_datetime(value_test, format='long',
+                                         locale=self.locale, tzinfo=self.timezone)
         value_returned = datetimeformat(self.context, value_test,
                                         format='longdatetime')
         eq_(pq(value_returned)('time').text(), value_expected)
@@ -139,7 +148,7 @@ class TestDateTimeFormat(TestCase):
     def test_date(self):
         """Expects date format."""
         value_test = datetime.fromordinal(733900)
-        value_expected = format_date(value_test, locale=u'en_US')
+        value_expected = format_date(value_test, locale=self.locale)
         value_returned = datetimeformat(self.context, value_test,
                                         format='date')
         eq_(pq(value_returned)('time').text(), value_expected)
@@ -147,7 +156,8 @@ class TestDateTimeFormat(TestCase):
     def test_time(self):
         """Expects time format."""
         value_test = datetime.fromordinal(733900)
-        value_expected = format_time(value_test, locale=u'en_US')
+        value_expected = format_time(value_test, locale=self.locale,
+                                     tzinfo=self.timezone)
         value_returned = datetimeformat(self.context, value_test,
                                         format='time')
         eq_(pq(value_returned)('time').text(), value_expected)
@@ -155,7 +165,8 @@ class TestDateTimeFormat(TestCase):
     def test_datetime(self):
         """Expects datetime format."""
         value_test = datetime.fromordinal(733900)
-        value_expected = format_datetime(value_test, locale=u'en_US')
+        value_expected = format_datetime(value_test, locale=self.locale,
+                                         tzinfo=self.timezone)
         value_returned = datetimeformat(self.context, value_test,
                                         format='datetime')
         eq_(pq(value_returned)('time').text(), value_expected)
@@ -167,10 +178,33 @@ class TestDateTimeFormat(TestCase):
                       date_today, format='unknown')
 
     def test_timezone(self):
+        self.context['request'].locale = u'fr'
+        self.context['request'].session = {'timezone': timezone('Europe/Paris')}
         date = datetime(2007, 04, 01, 15, 30)
-        value_expected = format_datetime(date, 'full', tzinfo=timezone('Europe/Paris'),
-                        locale='fr_FR')
-        eq_(value_expected, 'dimanche 1 avril 2007 17:30:00 HEC')
+        value_expected = format_datetime(date, tzinfo=self.timezone,
+                        locale=u'fr')
+        value_returned = datetimeformat(self.context, date,
+                                                format='datetime')
+        eq_(pq(value_returned)('time').text(), value_expected)
+
+    def test_timezone_different_locale(self):
+        locale = u'tr'
+        formats = ['full', 'long', 'medium', 'short']
+        results = [u'01 Nisan 2007 Pazar 17:30:00 Fransa Saati',
+                   u'1 Nisan 2007 17:30:00 +0200', u'01.Nis.2007 17:30:00',
+                   u'01.04.2007 17:30']
+        date = datetime(2007, 04, 01, 15, 30)
+        for format, result in zip(formats, results):
+            value_expected = format_datetime(date, format,
+                                             tzinfo=timezone('Europe/Paris'),
+                                             locale=locale)
+            eq_(value_expected, result)
+
+    def test_same_timezone(self):
+        date = datetime(2007, 04, 01, 15, 30)
+        value_expected = format_datetime(date, 'long', tzinfo=self.timezone,
+                        locale=self.locale)
+        eq_(value_expected, u'April 1, 2007 8:30:00 AM PDT')
 
     def test_invalid_value(self):
         """Passing invalid value raises ValueError."""
