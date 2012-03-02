@@ -14,6 +14,7 @@ Contents:
    installation
    coding
    patching
+   development
    bots
    celery
    deployments
