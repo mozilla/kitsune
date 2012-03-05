@@ -859,14 +859,16 @@ def answer_preview_async(request):
                         {'answer_preview': answer})
 
 
-def marketplace(request):
+@mobile_template('questions/{mobile/}marketplace.html')
+def marketplace(request, template=None):
     """AAQ landing page for Marketplace."""
-    return jingo.render(request, 'questions/marketplace.html', {
+    return jingo.render(request, template, {
         'categories': MARKETPLACE_CATEGORIES})
 
 
 @anonymous_csrf
-def marketplace_category(request, category_slug):
+@mobile_template('questions/{mobile/}marketplace_category.html')
+def marketplace_category(request, category_slug, template=None):
     """AAQ category page. Handles form post that submits ticket."""
     try:
         category_name = MARKETPLACE_CATEGORIES[category_slug]
@@ -900,7 +902,7 @@ def marketplace_category(request, category_slug):
                 return HttpResponseRedirect(
                     reverse('questions.marketplace_aaq_success'))
 
-    return jingo.render(request, 'questions/marketplace_category.html', {
+    return jingo.render(request, template, {
         'category': category_name,
         'category_slug': category_slug,
         'categories': MARKETPLACE_CATEGORIES,
@@ -908,9 +910,10 @@ def marketplace_category(request, category_slug):
         'error_message': error_message})
 
 
-def marketplace_success(request):
+@mobile_template('questions/{mobile/}marketplace_success.html')
+def marketplace_success(request, template=None):
     """Confirmation of ticket submitted successfully."""
-    return jingo.render(request, 'questions/marketplace_success.html')
+    return jingo.render(request, template)
 
 
 def _search_suggestions(request, query, locale, category_tags):
