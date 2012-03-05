@@ -1,0 +1,17 @@
+{# vim: set ts=2 et sts=2 sw=2: #}
+{% extends "mobile/base.html" %}
+{% from "layout/errorlist.html" import errorlist %}
+{% set title = _('Ask a Question about Marketplace') %}
+{% set classes = 'aaq' %}
+{% set hide_extra_content = True %}
+
+
+{% block content %}
+  <h1 class="title">{{ title }}</h1>
+  <h2>
+    {% trans %}
+      Your issue has been submitted successfully. You should receive
+      a confirmation email and hear back from us shortly.
+    {% endtrans %}
+  </h2>
+{% endblock %}
