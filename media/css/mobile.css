@@ -122,6 +122,15 @@ article p {
     margin: 21px 14px 0;
 }
 
+#home-content .for {
+     /* Prevent for-wrapped warnings from flashing in then out.
+      * A side effect of this is for-wrapped warnings on the top of the
+      * home page will not show for users with JavaScript disabled
+      * (probably one of the smaller showfor issues they will encounter).
+      */
+    display: none;
+}
+
 /*************************************/
 /*  Landing Page - Common Questions  */
 /*************************************/
