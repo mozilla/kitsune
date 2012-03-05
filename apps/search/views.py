@@ -21,7 +21,7 @@ from statsd import statsd
 from tower import ugettext as _, ugettext_lazy as _lazy
 
 from search import SearchError, ExcerptTimeoutError, ExcerptSocketError
-from search.utils import locale_or_default, clean_excerpt
+from search.utils import locale_or_default, clean_excerpt, FauxDocumentList
 from forums.models import Thread, discussion_searcher
 from questions.models import question_searcher
 import search as constants
@@ -220,10 +220,7 @@ def search_with_es(request, template=None):
                 discussion_s = discussion_s.filter(**after)
             question_s = question_s.filter(**after)
 
-    # TODO: fix pagination below so that it only uses counts--no more
-    # range calls.
-
-    documents = []
+    documents = FauxDocumentList()
 
     sortby = smart_int(request.GET.get('sortby'))
     try:
@@ -234,8 +231,7 @@ def search_with_es(request, template=None):
             if cleaned_q:
                 wiki_s = wiki_s.query(cleaned_q)
             wiki_s = wiki_s[:max_results]
-            count = min(wiki_s.count(), max_results)
-            documents += [('wiki', ind) for ind in range(count)]
+            documents.set_count('wiki', min(wiki_s.count(), max_results))
 
         if cleaned['w'] & constants.WHERE_SUPPORT:
             # Sort results by
@@ -260,8 +256,8 @@ def search_with_es(request, template=None):
             if cleaned_q:
                 question_s = question_s.query(cleaned_q)
             question_s = question_s[:max_results]
-            count = min(question_s.count(), max_results)
-            documents += [('question', ind) for ind in range(count)]
+            documents.set_count('question',
+                                min(question_s.count(), max_results))
 
         if cleaned['w'] & constants.WHERE_DISCUSSION:
             # Sort results by
@@ -282,37 +278,28 @@ def search_with_es(request, template=None):
             if cleaned_q:
                 discussion_s = discussion_s.query(cleaned_q)
             discussion_s = discussion_s[:max_results]
-            count = min(question_s.count(), max_results)
-            documents += [('discussion', ind) for ind in range(count)]
+            documents.set_count('discussion',
+                                min(discussion_s.count(), max_results))
 
-
-        # TODO: It'd be nice to not have to generate a list of x things in order
-        # to appropriately paginate.
-
-        pages = paginate(request, documents, settings.SEARCH_RESULTS_PER_PAGE)
-
-        # Build a dict of { type_ -> list of indexes } for the specific
-        # docs that we're going to display on this page.  This makes it
-        # easy for us to slice the appropriate search Ss.
-        documents_dict = {}
-        for doc in documents[offset:offset + settings.SEARCH_RESULTS_PER_PAGE]:
-            documents_dict.setdefault(doc[0], []).append(doc[1])
-
+        results_per_page = settings.SEARCH_RESULTS_PER_PAGE
+        pages = paginate(request, documents, results_per_page)
         docs_for_page = []
-        for kind, search_s in [('wiki', wiki_s),
-                               ('question', question_s),
-                               ('discussion', discussion_s)]:
-            if kind not in documents_dict:
-                continue
 
-            # documents_dict[kind] is a list of indexes--one for each
-            # object search result for that kind.  We use the values
-            # at the beginning and end of the list for slice
-            # boundaries.
-            begin = documents_dict[kind][0]
-            end = documents_dict[kind][-1] + 1
+        # Update *_s with the bounds because we need the most recent
+        # ones for excerpting. Slicing the documents "faux list" gives
+        # us kind and bounds for what we're going to show.
+        #
+        # TODO: This can be simplified when rewriting excerpting for
+        # ES.
+        for kind, bounds in documents[offset:offset + results_per_page]:
+            if kind == 'wiki':
+                search_s = wiki_s
+            elif kind == 'question':
+                search_s = question_s
+            elif kind == 'discussion':
+                search_s = discussion_s
 
-            search_s = search_s[begin:end]
+            search_s = search_s[bounds[0]:bounds[1]]
 
             if kind == 'wiki':
                 wiki_s = search_s
@@ -816,7 +803,7 @@ def search(request, template=None):
 
     # This is a complete split of the Sphinx from ES code with little
     # to no code sharing.
-    # 
+    #
     # While this makes it harder to make changes to both the ES and
     # Sphinx sides and also possibly makes it testing more difficult,
     # it simplifies making big changes to the ES side and we'll have

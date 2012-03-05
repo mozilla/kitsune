@@ -61,3 +61,115 @@ def locale_or_default(locale):
     if locale not in LOCALES:
         locale = settings.LANGUAGE_CODE
     return locale
+
+
+class FauxDocumentList(object):
+    """Takes counts and pretends they're sublists of a big list
+
+    Handles "length", "index", and "slicing" as if they were
+    operations on the complete list.
+
+    """
+    def __init__(self):
+        self.counts = []
+
+    def set_count(self, kind, count):
+        """Adds a (kind, count) to the counts
+
+        >>> fdl = FauxDocumentList()
+        >>> fdl.set_count('wiki', 10)
+
+        :arg kind: str. e.g. 'wiki'
+        :arg count: int. e.g. 40
+
+        .. Note::
+
+           The order you call set_count() is important. If you have
+           three groups of things, you need to call set_count() in the
+           order you want those things returned in a slice.
+
+        """
+        self.counts.append((kind, count))
+
+    def __repr__(self):
+        return repr(self.counts)
+
+    def __len__(self):
+        """Returns the total length of this faux list
+
+        This is a sum of the counts.
+
+        """
+        return sum(mem[1] for mem in self.counts)
+
+    def __getitem__(self, key):
+        """Returns the 'index' or 'slice' of this faux list
+
+        **index**
+
+        Returns a tuple (kind, index) for the index if the FDL
+        were one big list of (kind, index) tuples.
+
+        Raises IndexError if the index exceeds the list.
+
+        **slice**
+
+        Returns a list of (kind, (start, stop)) tuples for the kinds
+        that are in the slice bounds. The start and stop are not
+        indexes--they're slice start and stop, so it's start up to but
+        not including stop.
+
+        For example::
+
+        >>> fdl = FauxDocumentList()
+        >>> # group a has 5 items indexed 0 through 4
+        ...
+        >>> fdl.set_count('a', 5)
+        >>> # group b has 2 items indexed 0 and 1
+        ...
+        >>> fdl.set_count('b', 2)
+        >>> fdl[1:7]
+        [('a', (1, 5)) ('b', (0, 2))]
+
+        This is the same if this were a real list:
+
+        >>> reallist = [('a', 0), ('a', 1), ('a', 2), ('a', 3)
+        ...     ('a', 4), ('b', 0), ('b', 1)]
+        >>> reallist[1:7]
+        [('a', 1), ('a', 2), ('a', 3), ('a', 4), ('b', 0), ('b', 1)]
+        """
+        if isinstance(key, slice):
+            start = key.start
+            stop = key.stop
+            docs = []
+
+            # figure out the start
+            for mem in self.counts:
+                if start is not None:
+                    if start <= mem[1]:
+                        if stop <= mem[1]:
+                            docs.append((mem[0], (start, stop)))
+                            break
+                        docs.append((mem[0], (start, mem[1])))
+                        start = None
+                    else:
+                        start = start - mem[1]
+                    stop = stop - mem[1]
+                else:
+                    if stop <= mem[1]:
+                        docs.append((mem[0], (0, stop)))
+                        break
+                    else:
+                        docs.append((mem[0], (0, mem[1])))
+                        stop = stop - mem[1]
+
+            return docs
+
+        if isinstance(key, int):
+            for mem in self.counts:
+                if key < mem[1]:
+                    return (mem[0], key)
+                else:
+                    key = key - mem[1]
+            if key >= 0:
+                raise IndexError('Index exceeded list length.')
