@@ -117,7 +117,7 @@
   </div>
 {%- endmacro %}
 
-{% macro marketplace_category(category_slug, form) -%}
+{% macro marketplace_category(category_slug, form, error_message) -%}
   {% if category_slug == 'payments' %}
     <h2>
       {% trans %}
