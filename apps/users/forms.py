@@ -168,7 +168,8 @@ class ProfileForm(forms.ModelForm):
 
     class Meta(object):
         model = Profile
-        exclude = ('user', 'livechat_id', 'avatar')
+        fields = ('name', 'public_email', 'bio', 'website', 'twitter', 'facebook',
+                  'irc_handle', 'timezone', 'country', 'city', 'locale' )
         widgets = {
             'twitter': TwitterURLWidget,
             'facebook': FacebookURLWidget,

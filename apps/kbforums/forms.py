@@ -35,7 +35,7 @@ class ReplyForm(forms.ModelForm):
 
     class Meta:
         model = Post
-        exclude = ('thread', 'creator', 'created', 'updated', 'updated_by')
+        fields = ('content', )
 
 
 class NewThreadForm(forms.Form):
