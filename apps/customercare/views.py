@@ -341,6 +341,8 @@ def twitter_post(request):
     author = dict(result.author.__dict__)
 
     # Raw JSON blob data
+    # Note: The JSON for the tweet posted is different than what we get from
+    # the search API. This makes it similar with the fields that we use.
     raw_tweet_data = {
         'id': status['id'],
         'text': status['text'],
@@ -350,6 +352,7 @@ def twitter_post(request):
         'from_user_id': author['id'],
         'from_user': author['screen_name'],
         'profile_image_url': author['profile_image_url'],
+        'profile_image_url_https': author['profile_image_url_https'],
     }
 
     # The tweet with id `reply_to_id` will not be missing from the DB unless
