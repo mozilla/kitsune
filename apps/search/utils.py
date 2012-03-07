@@ -63,11 +63,59 @@ def locale_or_default(locale):
     return locale
 
 
-class FauxDocumentList(object):
+class ComposedList(object):
     """Takes counts and pretends they're sublists of a big list
+
+    This helps in the case where you know the lengths of the sublists,
+    need to treat them all as a big list, but don't want to actually
+    have to generate the lists.
+
+    With ComposedList, you do pagination and other things
+    including slice the list and get the bounds of the sublists you
+    need allowing you to generate just those tiny bits rather than the
+    whole thing.
 
     Handles "length", "index", and "slicing" as if they were
     operations on the complete list.
+
+
+    **length**
+
+        Length of the ComposedList is the sum of the counts of the
+        sublists.
+
+    **index**
+
+        Returns a tuple (kind, index) for the index if the FDL
+        were one big list of (kind, index) tuples.
+
+        Raises IndexError if the index exceeds the list.
+
+    **slice**
+
+        Returns a list of (kind, (start, stop)) tuples for the kinds
+        that are in the slice bounds. The start and stop are not
+        indexes--they're slice start and stop, so it's start up to but
+        not including stop.
+
+        For example::
+
+        >>> cl = ComposedList()
+        >>> # group a has 5 items indexed 0 through 4
+        ...
+        >>> cl.set_count('a', 5)
+        >>> # group b has 2 items indexed 0 and 1
+        ...
+        >>> cl.set_count('b', 2)
+        >>> cl[1:7]
+        [('a', (1, 5)) ('b', (0, 2))]
+
+        This is the same if this were a real list:
+
+        >>> reallist = [('a', 0), ('a', 1), ('a', 2), ('a', 3)
+        ...     ('a', 4), ('b', 0), ('b', 1)]
+        >>> reallist[1:7]
+        [('a', 1), ('a', 2), ('a', 3), ('a', 4), ('b', 0), ('b', 1)]
 
     """
     def __init__(self):
@@ -76,8 +124,8 @@ class FauxDocumentList(object):
     def set_count(self, kind, count):
         """Adds a (kind, count) to the counts
 
-        >>> fdl = FauxDocumentList()
-        >>> fdl.set_count('wiki', 10)
+        >>> cl = ComposedList()
+        >>> cl.set_count('wiki', 10)
 
         :arg kind: str. e.g. 'wiki'
         :arg count: int. e.g. 40
@@ -95,49 +143,11 @@ class FauxDocumentList(object):
         return repr(self.counts)
 
     def __len__(self):
-        """Returns the total length of this faux list
-
-        This is a sum of the counts.
-
-        """
+        """Returns the total length of the composed list"""
         return sum(mem[1] for mem in self.counts)
 
     def __getitem__(self, key):
-        """Returns the 'index' or 'slice' of this faux list
-
-        **index**
-
-        Returns a tuple (kind, index) for the index if the FDL
-        were one big list of (kind, index) tuples.
-
-        Raises IndexError if the index exceeds the list.
-
-        **slice**
-
-        Returns a list of (kind, (start, stop)) tuples for the kinds
-        that are in the slice bounds. The start and stop are not
-        indexes--they're slice start and stop, so it's start up to but
-        not including stop.
-
-        For example::
-
-        >>> fdl = FauxDocumentList()
-        >>> # group a has 5 items indexed 0 through 4
-        ...
-        >>> fdl.set_count('a', 5)
-        >>> # group b has 2 items indexed 0 and 1
-        ...
-        >>> fdl.set_count('b', 2)
-        >>> fdl[1:7]
-        [('a', (1, 5)) ('b', (0, 2))]
-
-        This is the same if this were a real list:
-
-        >>> reallist = [('a', 0), ('a', 1), ('a', 2), ('a', 3)
-        ...     ('a', 4), ('b', 0), ('b', 1)]
-        >>> reallist[1:7]
-        [('a', 1), ('a', 2), ('a', 3), ('a', 4), ('b', 0), ('b', 1)]
-        """
+        """Returns the 'index' or 'slice' of this composed list"""
         if isinstance(key, slice):
             start = key.start
             stop = key.stop

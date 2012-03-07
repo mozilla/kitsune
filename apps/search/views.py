@@ -21,7 +21,7 @@ from statsd import statsd
 from tower import ugettext as _, ugettext_lazy as _lazy
 
 from search import SearchError, ExcerptTimeoutError, ExcerptSocketError
-from search.utils import locale_or_default, clean_excerpt, FauxDocumentList
+from search.utils import locale_or_default, clean_excerpt, ComposedList
 from forums.models import Thread, discussion_searcher
 from questions.models import question_searcher
 import search as constants
@@ -220,7 +220,7 @@ def search_with_es(request, template=None):
                 discussion_s = discussion_s.filter(**after)
             question_s = question_s.filter(**after)
 
-    documents = FauxDocumentList()
+    documents = ComposedList()
 
     sortby = smart_int(request.GET.get('sortby'))
     try:
