@@ -105,7 +105,7 @@
         </li>
       {% endfor %}
     </ol>
-    {{ questions|paginator }}
+    {{ questions|simple_paginator }}
   {% else %}
     {# Not localized because it's not worth localizers time. #}
     <p>There are no questions. Maybe you should ask some!</p>
