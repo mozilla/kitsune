@@ -241,11 +241,8 @@ def search_with_es(request, template=None):
             except IndexError:
                 pass
 
-            if engine == 'elastic':
-                highlight_fields = ['title', 'question_content',
-                                    'answer_content']
-            else:
-                highlight_fields = ['content']
+            highlight_fields = ['title', 'question_content',
+                                'answer_content']
 
             question_s = question_s.highlight(
                 *highlight_fields,
