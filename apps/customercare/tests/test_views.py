@@ -202,7 +202,8 @@ class TweetReplyTests(TestCase):
             'lang': 'en',
             'id': 42,
             'screen_name': 'r1cky',
-            'profile_image_url': 'http://example.com/profile.jpg', }
+            'profile_image_url': 'http://example.com/profile.jpg',
+            'profile_image_url_https': 'https://example.com/profile.jpg', }
         request.twitter.api.update_status.return_value = return_value
 
         # Pass the request to the view and verify response.
