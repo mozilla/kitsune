@@ -41,6 +41,9 @@ from upload.models import ImageAttachment
 log = logging.getLogger('k.questions')
 
 
+CACHE_TIMEOUT = 10800  # 3 hours
+
+
 class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
     """A support question."""
     title = models.CharField(max_length=255)
@@ -265,7 +268,7 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
                                                           flat=True)
             contributors = list(contributors)
             contributors.append(self.creator_id)
-            cache.add(cache_key, contributors)
+            cache.add(cache_key, contributors, CACHE_TIMEOUT)
         return contributors
 
     @property
@@ -279,7 +282,7 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
         tags = cache.get(cache_key)
         if tags is None:
             tags = self.tags.all()
-            cache.add(cache_key, tags)
+            cache.add(cache_key, tags, CACHE_TIMEOUT)
         return tags
 
     @classmethod
@@ -655,7 +658,7 @@ def _content_parsed(obj):
     html = cache.get(cache_key)
     if html is None:
         html = wiki_to_html(obj.content)
-        cache.add(cache_key, html)
+        cache.add(cache_key, html, CACHE_TIMEOUT)
     return html
 
 
