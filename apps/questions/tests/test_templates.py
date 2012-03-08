@@ -939,10 +939,11 @@ class QuestionsTemplateTestCase(TestCaseBase):
     def test_no_reply_filter(self):
         url_ = urlparams(reverse('questions.questions'),
                          filter='no-replies')
+        q = question(save=True)
         response = self.client.get(url_)
         doc = pq(response.content)
         eq_('active', doc('div#filter ul li')[-1].attrib['class'])
-        eq_('question-2', doc('ol.questions li')[0].attrib['id'])
+        eq_('question-%s' % q.id, doc('ol.questions li')[0].attrib['id'])
         eq_('/questions?filter=no-replies',
             doc('link[rel="canonical"]')[0].attrib['href'])
 
@@ -974,7 +975,7 @@ class QuestionsTemplateTestCase(TestCaseBase):
         response = self.client.get(url_)
         doc = pq(response.content)
         eq_('active', doc('div#filter ul li')[3].attrib['class'])
-        eq_(4, len(doc('ol.questions li')))
+        eq_(2, len(doc('ol.questions li')))
 
         # solve one question then verify that it doesn't show up
         answer = Answer.objects.all()[0]
@@ -982,7 +983,7 @@ class QuestionsTemplateTestCase(TestCaseBase):
         answer.question.save()
         response = self.client.get(url_)
         doc = pq(response.content)
-        eq_(3, len(doc('ol.questions li')))
+        eq_(1, len(doc('ol.questions li')))
         eq_(0, len(doc('ol.questions li#question-%s' % answer.question.id)))
         eq_('/questions?filter=unsolved',
             doc('link[rel="canonical"]')[0].attrib['href'])
@@ -1000,10 +1001,10 @@ class QuestionsTemplateTestCase(TestCaseBase):
 
     def test_my_contributions_filter(self):
         # jsocol should have 2 questions in his contributions
-        self._my_contributions_test_helper('jsocol', 3)
+        self._my_contributions_test_helper('jsocol', 2)
 
         # pcraciunoiu should have 2 questions in his contributions'
-        self._my_contributions_test_helper('pcraciunoiu', 3)
+        self._my_contributions_test_helper('pcraciunoiu', 2)
 
         # rrosario should have 0 questions in his contributions
         self._my_contributions_test_helper('rrosario', 0)
@@ -1023,6 +1024,7 @@ class QuestionsTemplateTestCase(TestCaseBase):
         q = Question.objects.get(pk=2)
         qv = QuestionVote(question=q, anonymous_id='abc123')
         qv.save()
+        answer(question=q, save=True)
 
         response = self.client.get(default)
         doc = pq(response.content)
@@ -1079,6 +1081,9 @@ class QuestionsTemplateTestCase(TestCaseBase):
                         args=[question.id])
         eq_(200, response.status_code)
 
+        # Add an answer
+        answer(question=question, save=True)
+
         # Now there should be 1 question tagged 'mobile'
         response = self.client.get(tagged)
         doc = pq(response.content)
@@ -1093,7 +1098,8 @@ class QuestionsTemplateTestCase(TestCaseBase):
         q.save()
         response = get(self.client, 'questions.questions')
         doc = pq(response.content)
-        eq_(Question.objects.filter(is_locked=False).count(),
+        eq_(Question.objects.filter(is_locked=False,
+                                    num_answers__gt=0).count(),
             len(doc('ol.questions li')))
 
 

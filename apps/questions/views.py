@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 import json
 import logging
 import random
@@ -121,6 +121,11 @@ def questions(request):
         else:
             question_qs = Question.objects.get_empty_query_set()
 
+    # Exclude questions over 90 days old without an answer.
+    oldest_date = date.today() - timedelta(days=90)
+    question_qs = question_qs.exclude(created__lt=oldest_date, num_answers=0)
+
+    # Set the order.
     question_qs = question_qs.order_by(order)
 
     try:
