@@ -15,7 +15,8 @@ import jingo
 from jinja2 import Markup
 from tower import ugettext as _, ugettext_lazy as _lazy
 
-from dashboards import THIS_WEEK, ALL_TIME, PERIODS
+from dashboards import (LAST_7_DAYS, LAST_30_DAYS, LAST_90_DAYS, ALL_TIME,
+                        PERIODS)
 from sumo.urlresolvers import reverse
 from sumo.redis_utils import redis_client, RedisError
 from wiki.models import (Document, MEDIUM_SIGNIFICANCE, MAJOR_SIGNIFICANCE,
@@ -204,7 +205,7 @@ def overview_rows(locale):
                 'LEFT JOIN wiki_revision curtransrev '
                     'ON transdoc.current_revision_id=curtransrev.id ') +
              'LIMIT %s) t1 ',
-        (MEDIUM_SIGNIFICANCE, locale, THIS_WEEK,
+        (MEDIUM_SIGNIFICANCE, locale, LAST_30_DAYS,
          settings.WIKI_DEFAULT_LANGUAGE, TOP_N)) or 0)  # SUM can return NULL.
 
     return {'most-visited': dict(
@@ -265,7 +266,7 @@ class Readout(object):
         """
         self.request = request
         self.locale = locale or request.locale
-        self.mode = mode or (self.modes[0][1] if self.modes else None)
+        self.mode = mode if mode != None else (self.modes[0][1] if self.modes else None)
         # self.mode is allowed to be invalid.
 
     def rows(self, max=None):
@@ -346,6 +347,10 @@ class MostVisitedDefaultLanguageReadout(Readout):
     modes = PERIODS
 
     def _query_and_params(self, max):
+        if self.mode in (ALL_TIME, LAST_7_DAYS, LAST_90_DAYS):
+            period = self.mode
+        else:
+            period = LAST_30_DAYS
         # Review Needed: link to /history.
         return ('SELECT engdoc.slug, engdoc.title, '
                 'dashboards_wikidocumentvisits.visits, '
@@ -363,7 +368,7 @@ class MostVisitedDefaultLanguageReadout(Readout):
                 'GROUP BY engdoc.id '
                 'ORDER BY dashboards_wikidocumentvisits.visits DESC, '
                          'engdoc.title ASC' + self._limit_clause(max),
-            (ALL_TIME if self.mode == ALL_TIME else THIS_WEEK, self.locale))
+            (period, self.locale))
 
     def _format_row(self, (slug, title, visits, num_unreviewed)):
         needs_review = int(num_unreviewed > 0)
@@ -393,6 +398,10 @@ class MostVisitedTranslationsReadout(MostVisitedDefaultLanguageReadout):
     details_link_text = _lazy(u'All translations...')
 
     def _query_and_params(self, max):
+        if self.mode in (ALL_TIME, LAST_7_DAYS, LAST_90_DAYS):
+            period = self.mode
+        else:
+            period = LAST_30_DAYS
         # Immediate Update Needed or Update Needed: link to /edit.
         # Review Needed: link to /history.
         # These match the behavior of the corresponding readouts.
@@ -403,9 +412,7 @@ class MostVisitedTranslationsReadout(MostVisitedDefaultLanguageReadout):
             NEEDS_REVIEW +
             most_visited_translation_from(extra_joins='') +
             self._limit_clause(max),
-            (self.locale,
-             ALL_TIME if self.mode == ALL_TIME else THIS_WEEK,
-             settings.WIKI_DEFAULT_LANGUAGE))
+            (self.locale, period, settings.WIKI_DEFAULT_LANGUAGE))
 
     def _format_row(self, columns):
         return _format_row_with_out_of_dateness(self.locale, *columns)
@@ -524,7 +531,7 @@ class UntranslatedReadout(Readout):
             'parent.category in (10, 20, 60) AND '
             'parent.locale=%s AND NOT parent.is_archived '
             + self._order_clause() + self._limit_clause(max),
-            (self.locale, THIS_WEEK, settings.WIKI_DEFAULT_LANGUAGE))
+            (self.locale, LAST_30_DAYS, settings.WIKI_DEFAULT_LANGUAGE))
 
     def _order_clause(self):
         return ('ORDER BY wiki_revision.reviewed DESC, parent.title ASC'
@@ -619,7 +626,7 @@ class OutOfDateReadout(Readout):
             'WHERE transdoc.locale=%s AND NOT transdoc.is_archived AND '
                 'transdoc.category in (10, 20, 60) '
             + self._order_clause() + self._limit_clause(max),
-            (MEDIUM_SIGNIFICANCE, self._max_significance, THIS_WEEK,
+            (MEDIUM_SIGNIFICANCE, self._max_significance, LAST_30_DAYS,
                 self.locale))
 
     def _order_clause(self):
@@ -679,7 +686,7 @@ class UnreviewedReadout(Readout):
             'AND wiki_document.locale=%s AND NOT wiki_document.is_archived '
             'GROUP BY wiki_document.id '
             + self._order_clause() + self._limit_clause(max),
-            (THIS_WEEK, self.locale))
+            (LAST_30_DAYS, self.locale))
 
     def _order_clause(self):
         return ('ORDER BY maxcreated DESC' if self.mode == MOST_RECENT
@@ -780,7 +787,7 @@ class UnreadyForLocalizationReadout(Readout):
                  'wiki_document.latest_localizable_revision_id IS NULL) '
             'GROUP BY wiki_document.id '
             + self._order_clause() + self._limit_clause(max),
-            (THIS_WEEK, settings.WIKI_DEFAULT_LANGUAGE, TYPO_SIGNIFICANCE))
+            (LAST_30_DAYS, settings.WIKI_DEFAULT_LANGUAGE, TYPO_SIGNIFICANCE))
 
     def _order_clause(self):
         # Put the most recently approved articles first, as those are the most
@@ -821,7 +828,7 @@ class NeedsChangesReadout(Readout):
             'AND NOT wiki_document.is_archived '
             'GROUP BY wiki_document.id '
             + self._order_clause() + self._limit_clause(max),
-            (THIS_WEEK, settings.WIKI_DEFAULT_LANGUAGE))
+            (LAST_30_DAYS, settings.WIKI_DEFAULT_LANGUAGE))
 
     def _order_clause(self):
         # Put the most recently approved articles first, as those are the most

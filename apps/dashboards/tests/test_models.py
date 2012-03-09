@@ -4,7 +4,7 @@ from django.conf import settings
 from mock import patch
 from nose.tools import raises, eq_
 
-from dashboards.models import WikiDocumentVisits, THIS_WEEK
+from dashboards.models import WikiDocumentVisits, LAST_7_DAYS
 from sumo.tests import TestCase
 from sumo.webtrends import StatsException, StatsIOError
 from wiki.tests import document, revision
@@ -41,8 +41,8 @@ class DocumentVisitsTests(TestCase):
         d = document()
         d.save()
         v = WikiDocumentVisits.objects.create(document=d, visits=12,
-                                              period=THIS_WEEK)
-        WikiDocumentVisits.reload_period_from_json(THIS_WEEK, no_pages)
+                                              period=LAST_7_DAYS)
+        WikiDocumentVisits.reload_period_from_json(LAST_7_DAYS, no_pages)
 
         # Visits table should remain unchanged:
         eq_(1, WikiDocumentVisits.objects.filter(pk=v.pk).count())
@@ -112,11 +112,11 @@ class DocumentVisitsTests(TestCase):
                   'https://localhost:123654/nonexistent')
     def test_networking_failure(self):
         """Assert a StatsIOError is thrown when networking fails."""
-        self.assertRaises(StatsIOError, WikiDocumentVisits.json_for, THIS_WEEK)
+        self.assertRaises(StatsIOError, WikiDocumentVisits.json_for, LAST_7_DAYS)
 
     # This takes 14 seconds and hits the WebTrends server, for which you might
     # not have credentials. If you have credentials and want to test the
     # networking, uncomment this.
     # def test_networking(self):
     #     WikiDocumentVisits.reload_period_from_json(
-    #         THIS_WEEK, WikiDocumentVisits.json_for(THIS_WEEK))
+    #         LAST_7_DAYS, WikiDocumentVisits.json_for(LAST_7_DAYS))
