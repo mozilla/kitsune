@@ -7,7 +7,8 @@ from django.db import models
 
 from tower import ugettext_lazy as _lazy
 
-from dashboards import THIS_WEEK, ALL_TIME, PERIODS
+from dashboards import (LAST_7_DAYS, LAST_30_DAYS, LAST_90_DAYS, ALL_TIME,
+                        PERIODS)
 from dashboards.personal import GROUP_DASHBOARDS
 from sumo.models import ModelBase
 from sumo.webtrends import Webtrends, StatsException
@@ -27,8 +28,9 @@ def period_dates():
     # WebTrends' server apparently runs in UTC, FWIW.
     yesterday = 'current_day-1'  # Start at yesterday so we get a full week of
                                  # data.
-    return {THIS_WEEK: ('current_day-7',
-                        yesterday),
+    return {LAST_7_DAYS: ('current_day-7', yesterday),
+            LAST_30_DAYS: ('current_day-30', yesterday),
+            LAST_90_DAYS: ('current_day-90', yesterday),
             ALL_TIME: (settings.WEBTRENDS_EPOCH.strftime('%Ym%md%d'),
                        yesterday)}
 
