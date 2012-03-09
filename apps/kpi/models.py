@@ -5,6 +5,7 @@ from sumo.models import ModelBase
 
 
 VISITORS_METRIC_CODE = 'general keymetrics:visitors'
+L10N_METRIC_CODE = 'general l10n:coverage'
 
 
 class MetricKind(ModelBase):
