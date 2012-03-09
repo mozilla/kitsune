@@ -98,13 +98,13 @@ class WikiDocumentVisits(ModelBase):
             except (ValueError, KeyError, TypeError):
                 continue
 
-            # Sometimes WebTrends repeats a URL modulo a space, etc. These can
-            # resolve to the same document. An arbitrary one wins.
-            # TODO: Should we be summing these?
+            # Sometimes WebTrends repeats a URL modulo a space, .com vs .org,
+            # etc. These resolve to the same document so we add them.
             if doc.pk in counts:
-                log.info('WebTrends has the following duplicate URL for this '
-                         'document: %s' % url)
-            counts[doc.pk] = visits
+                counts[doc.pk] += visits
+            else:
+                counts[doc.pk] = visits
+
         return counts
 
     @classmethod
