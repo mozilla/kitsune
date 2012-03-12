@@ -44,9 +44,7 @@ def update_l10n_metric():
     """Calculate new l10n coverage numbers and save."""
     # Get the top 60 visited articles. We will only use the top 50
     # but a handful aren't localizable so we get some extras.
-    top_60_qs = WikiDocumentVisits.objects.select_related('document').filter(
-        period=LAST_90_DAYS).order_by('-visits')[:50]
-    top_60_docs = [v.document for v in top_60_qs]
+    top_60_docs = _get_top_docs(60)
 
     # Get the visits to each locale in the last 90 days.
     end = date.today() - timedelta(days=1)  # yesterday
@@ -91,3 +89,10 @@ def update_l10n_metric():
         start=day,
         end=day + timedelta(days=1),
         value=int(coverage * 100))  # Store as a % int.
+
+
+def _get_top_docs(count):
+    """Get the top documents by visits."""
+    top_qs = WikiDocumentVisits.objects.select_related('document').filter(
+        period=LAST_90_DAYS).order_by('-visits')[:count]
+    return [v.document for v in top_qs]
