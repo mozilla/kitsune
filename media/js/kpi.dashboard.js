@@ -344,6 +344,10 @@ window.KpiDashboard = Backbone.View.extend({
             url: $(this.el).data('visitors-url')
         });
 
+        this.l10nChart = new ChartModel([], {
+            url: $(this.el).data('l10n-coverage-url')
+        });
+
         // Create the views.
         this.solvedChartView = new StockChartView({
             model: this.solvedChart,
@@ -472,6 +476,21 @@ window.KpiDashboard = Backbone.View.extend({
             }]
         });
 
+        this.l10nView = new BasicChartView({
+            model: this.l10nChart,
+            title: gettext('L10n Coverage'),
+            percent: true,
+            series: [{
+                name: gettext('L10n Coverage'),
+                mapper: function(o) {
+                    return {
+                        x: Date.parse(o['date']),
+                        y: o['coverage']
+                    };
+                }
+            }]
+        });
+
         // Render the views.
         $(this.el)
             .append(this.solvedChartView.render().el)
@@ -481,7 +500,8 @@ window.KpiDashboard = Backbone.View.extend({
             .append(this.activeAnswerersView.render().el)
             .append(this.aoaContributorsView.render().el)
             .append(this.ctrView.render().el)
-            .append(this.visitorsView.render().el);
+            .append(this.visitorsView.render().el)
+            .append(this.l10nView.render().el);
 
 
         // Load up the models.
@@ -494,6 +514,7 @@ window.KpiDashboard = Backbone.View.extend({
         this.sphinxCtrChart.fetch();
         this.elasticCtrChart.fetch();
         this.visitorsChart.fetch();
+        this.l10nChart.fetch();
     }
 });
 
