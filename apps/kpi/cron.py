@@ -42,10 +42,11 @@ def update_visitors_metric():
 @cronjobs.register
 def update_l10n_metric():
     """Calculate new l10n coverage numbers and save."""
-    # Get the top 50 visited articles.
-    top_50_qs = WikiDocumentVisits.objects.select_related('document').filter(
+    # Get the top 60 visited articles. We will only use the top 50
+    # but a handful aren't localizable so we get some extras.
+    top_60_qs = WikiDocumentVisits.objects.select_related('document').filter(
         period=LAST_90_DAYS).order_by('-visits')[:50]
-    top_50_docs = [v.document for v in top_50_qs]
+    top_60_docs = [v.document for v in top_60_qs]
 
     # Get the visits to each locale in the last 90 days.
     end = date.today() - timedelta(days=1)  # yesterday
@@ -63,7 +64,11 @@ def update_l10n_metric():
     for locale, visits in locale_visits.iteritems():
         up_to_date_docs = 0
         num_docs = 0
-        for doc in top_50_docs:
+        for doc in top_60_docs:
+            if num_docs == 50:
+                # Stop at 50 documents.
+                break
+
             if not doc.is_localizable:
                 # Skip non localizable documents.
                 continue
