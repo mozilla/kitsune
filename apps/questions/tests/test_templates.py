@@ -1246,7 +1246,7 @@ class AAQTemplateTestCase(TestCaseBase):
                         search=title, showform=1)
         # Register before asking question
         data = {'register': 'Register', 'username': 'testaaq',
-                'password': 'testpass', 'password2': 'testpass',
+                'password': 'testpass1', 'password2': 'testpass1',
                 'email': 'testaaq@example.com'}
         data.update(**self.data)
         self.client.post(url, data, follow=True)

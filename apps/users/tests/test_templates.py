@@ -196,8 +196,8 @@ class PasswordResetTests(TestCaseBase):
         doc = pq(r.content)
         eq_(1, len(doc('ul.errorlist')))
 
-        r = self.client.post(url, {'new_password1': 'one',
-                                   'new_password2': 'two'})
+        r = self.client.post(url, {'new_password1': 'onetwo12',
+                                   'new_password2': 'twotwo22'})
         eq_(200, r.status_code)
         doc = pq(r.content)
         eq_("The two password fields didn't match.",

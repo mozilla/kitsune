@@ -33,6 +33,11 @@ EMAIL_LONG = _lazy(u'Email address is too long (%(show_value)s characters). '
                    'It must be %(limit_value)s characters or less.')
 PASSWD_REQUIRED = _lazy(u'Password is required.')
 PASSWD2_REQUIRED = _lazy(u'Please enter your password twice.')
+PASSWD_MIN_LENGTH = 8
+PASSWD_MIN_LENGTH_MSG = _lazy('Password must be 8 characters or more.')
+
+
+password_re = re.compile('(?=.*\d)(?=.*[a-zA-Z])')
 
 
 class SettingsForm(forms.Form):
@@ -82,20 +87,23 @@ class RegisterForm(forms.ModelForm):
                         'required': USERNAME_REQUIRED,
                         'min_length': USERNAME_SHORT,
                         'max_length': USERNAME_LONG})
-    email = forms.EmailField(label=_lazy(u'Email address:'),
-                             error_messages={'required': EMAIL_REQUIRED,
-                                             'min_length': EMAIL_SHORT,
-                                             'max_length': EMAIL_LONG})
-    password = forms.CharField(label=_lazy(u'Password:'),
-                               widget=forms.PasswordInput(
-                                   render_value=False),
-                               error_messages={'required': PASSWD_REQUIRED})
-    password2 = forms.CharField(label=_lazy(u'Repeat password:'),
-                                widget=forms.PasswordInput(
-                                    render_value=False),
-                                error_messages={'required': PASSWD2_REQUIRED},
-                                help_text=_lazy(u'Enter the same password as '
-                                                 'above, for verification.'))
+    email = forms.EmailField(
+        label=_lazy(u'Email address:'),
+        error_messages={'required': EMAIL_REQUIRED,
+                        'min_length': EMAIL_SHORT,
+                        'max_length': EMAIL_LONG})
+    password = forms.CharField(
+        label=_lazy(u'Password:'),
+        min_length=PASSWD_MIN_LENGTH,
+        widget=forms.PasswordInput(render_value=False),
+        error_messages={'required': PASSWD_REQUIRED,
+                        'min_length': PASSWD_MIN_LENGTH_MSG})
+    password2 = forms.CharField(
+        label=_lazy(u'Repeat password:'),
+        widget=forms.PasswordInput(render_value=False),
+        error_messages={'required': PASSWD2_REQUIRED},
+        help_text=_lazy(u'Enter the same password as '
+                         'above, for verification.'))
 
     class Meta(object):
         model = User
@@ -168,8 +176,9 @@ class ProfileForm(forms.ModelForm):
 
     class Meta(object):
         model = Profile
-        fields = ('name', 'public_email', 'bio', 'website', 'twitter', 'facebook',
-                  'irc_handle', 'timezone', 'country', 'city', 'locale' )
+        fields = ('name', 'public_email', 'bio', 'website', 'twitter',
+                  'facebook', 'irc_handle', 'timezone', 'country', 'city',
+                  'locale')
         widgets = {
             'twitter': TwitterURLWidget,
             'facebook': FacebookURLWidget,
@@ -239,6 +248,13 @@ class EmailChangeForm(forms.Form):
 
 
 class SetPasswordForm(auth_forms.SetPasswordForm):
+    new_password1 = forms.CharField(
+        label=_lazy(u'New password:'),
+        min_length=PASSWD_MIN_LENGTH,
+        widget=forms.PasswordInput(render_value=False),
+        error_messages={'required': PASSWD_REQUIRED,
+                        'min_length': PASSWD_MIN_LENGTH_MSG})
+
     def clean(self):
         super(SetPasswordForm, self).clean()
         _check_password(self.cleaned_data.get('new_password1'))
@@ -246,6 +262,13 @@ class SetPasswordForm(auth_forms.SetPasswordForm):
 
 
 class PasswordChangeForm(auth_forms.PasswordChangeForm):
+    new_password1 = forms.CharField(
+        label=_lazy(u'New password:'),
+        min_length=PASSWD_MIN_LENGTH,
+        widget=forms.PasswordInput(render_value=False),
+        error_messages={'required': PASSWD_REQUIRED,
+                        'min_length': PASSWD_MIN_LENGTH_MSG})
+
     def clean(self):
         super(PasswordChangeForm, self).clean()
         _check_password(self.cleaned_data.get('new_password1'))
@@ -295,6 +318,10 @@ def _check_password(password):
     if not password_allowed(password):
         msg = _('The password entered is known to be commonly used and '
                 'is not allowed.')
+        raise forms.ValidationError(msg)
+
+    if password and not password_re.search(password):
+        msg = _('Letters and numbers are required in the password.')
         raise forms.ValidationError(msg)
 
 
