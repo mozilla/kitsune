@@ -386,7 +386,7 @@ window.KpiDashboard = Backbone.View.extend({
             title: gettext('Questions responded to within 72 hours'),
             percent: true,
             series: [{
-                name: gettext('Responsed'),
+                name: gettext('Responded'),
                 numerator: 'responded',
                 denominator: 'questions',
                 addGroupings: true
