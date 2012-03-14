@@ -323,8 +323,8 @@ def _check_password(password):
             raise forms.ValidationError(msg)
 
         if not password_re.search(password):
-            msg = _('At least one number and one English letter are required'
-                    ' in the password.')
+            msg = _('At least one number and one English letter are required '
+                    'in the password.')
             raise forms.ValidationError(msg)
 
 
