@@ -57,16 +57,19 @@
     <section id="content">
       {% block content %}{% endblock %}
       {% if not hide_extra_content %}
+        {% if not aaq_url %}
+          {% set aaq_url = url('wiki.document', 'ask') %}
+        {% endif %}
         {% if show_search == 'bottom' %}
           <h2>{{ _("Couldn't find what you were looking for?") }}</h2>
           <ul class="listview">
             <li class="search">{{ mobile_form(q, search_params) }}</li>
-            {{ list_view_item(url('wiki.document', 'ask'), _('Ask a Question')) }}
+            {{ list_view_item(aaq_url, _('Ask a Question')) }}
           </ul>
         {% else %}
           <h2>{{ _('Need More Personal Help?') }}</h2>
           <ul class="listview">
-            {{ list_view_item(url('wiki.document', 'ask'), _('Ask a Question')) }}
+            {{ list_view_item(aaq_url, _('Ask a Question')) }}
           </ul>
         {% endif %}
 

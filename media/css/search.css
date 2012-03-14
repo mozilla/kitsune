@@ -19,7 +19,7 @@
 }
 
 .result p a {
-    color: #000;
+    color: rgb(40,40,40);
     display: block;
     line-height: 140%;
 }

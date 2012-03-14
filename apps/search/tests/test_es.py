@@ -1,4 +1,5 @@
 import json
+import datetime
 
 from nose.tools import eq_
 
@@ -50,7 +51,7 @@ class ElasticSearchTasksTests(ElasticTestCase):
 
 
 class ElasticSearchViewTests(ElasticTestCase):
-    localizing_client = LocalizingClient()
+    client_class = LocalizingClient
 
     def test_excerpting_doesnt_crash(self):
         """This tests to make sure search view works.
@@ -72,7 +73,7 @@ class ElasticSearchViewTests(ElasticTestCase):
         ques.tags.add(u'desktop')
         self.refresh()
 
-        response = self.localizing_client.get(reverse('search'), {
+        response = self.client.get(reverse('search'), {
             'format': 'json', 'q': 'audio', 'a': 1
         })
         eq_(200, response.status_code)
@@ -116,7 +117,7 @@ class ElasticSearchViewTests(ElasticTestCase):
         # first, we do it in json since it's easier to deal with
         # testing-wise and second, we search for 'audio' since we have
         # data for that.
-        response = self.localizing_client.get(reverse('search'), {
+        response = self.client.get(reverse('search'), {
             'q_tags': 'desktop', 'product': 'desktop', 'q': 'audio',
             'format': 'json'
         })
@@ -129,7 +130,7 @@ class ElasticSearchViewTests(ElasticTestCase):
         # This is another search that picks up results based on the
         # answer_content.  answer_content is in a string array, so
         # this makes sure that works.
-        response = self.localizing_client.get(reverse('search'), {
+        response = self.client.get(reverse('search'), {
             'q_tags': 'desktop', 'product': 'desktop', 'q': 'volume',
             'format': 'json'
         })
@@ -168,8 +169,42 @@ class ElasticSearchViewTests(ElasticTestCase):
         # first, we do it in json since it's easier to deal with
         # testing-wise and second, we search for 'audio' since we have
         # data for that.
-        response = self.localizing_client.get(reverse('search'), {
+        response = self.client.get(reverse('search'), {
             'q_tags': 'desktop', 'product': 'desktop', 'q': 'audio',
+            'format': 'json'
+        })
+
+        eq_(200, response.status_code)
+
+        content = json.loads(response.content)
+        eq_(content['total'], 1)
+
+    def test_advanced_search_for_wiki_no_query(self):
+        """Tests advanced search with no query"""
+        doc = document(
+            title=u'How to fix your audio',
+            locale=u'en-US',
+            category=10)
+        doc.save()
+
+        doc.tags.add(u'desktop')
+
+        rev = revision(
+            document=doc,
+            summary=u'Volume.',
+            content=u'Turn up the volume.',
+            is_approved=True)
+        rev.save()
+
+        self.refresh()
+
+        # This is the search that you get when you start on the sumo
+        # homepage and do a search from the box with two differences:
+        # first, we do it in json since it's easier to deal with
+        # testing-wise and second, we search for 'audio' since we have
+        # data for that.
+        response = self.client.get(reverse('search'), {
+            'q': '', 'tags': 'desktop', 'w': '1', 'a': '1',
             'format': 'json'
         })
 
@@ -191,7 +226,7 @@ class ElasticSearchViewTests(ElasticTestCase):
 
         self.refresh()
 
-        response = self.localizing_client.get(reverse('search'), {
+        response = self.client.get(reverse('search'), {
             'author': '', 'created': '0', 'created_date': '',
             'updated': '0', 'updated_date': '', 'sortby': '0',
             'a': '1', 'w': '4', 'q': 'hsarc',
@@ -202,3 +237,74 @@ class ElasticSearchViewTests(ElasticTestCase):
 
         content = json.loads(response.content)
         eq_(content['total'], 1)
+
+    def test_forums_thread_created(self):
+        post_created_ds = datetime.datetime(2010, 1, 1, 12, 00)
+        thread1 = thread(
+            title=u'Why don\'t we spell crash backwards?',
+            created=post_created_ds)
+        thread1.save()
+
+        post1 = post(
+            thread=thread1,
+            content=u'What, like hsarc?  That\'s silly.',
+            created=(post_created_ds + datetime.timedelta(hours=1)))
+        post1.save()
+
+        self.refresh()
+
+        # The thread/post should not show up in results for items
+        # created AFTER 1/12/2010.
+        response = self.client.get(reverse('search'), {
+            'author': '', 'created': '2', 'created_date': '01/12/2010',
+            'updated': '0', 'updated_date': '', 'sortby': '0',
+            'a': '1', 'w': '4', 'q': 'hsarc',
+            'format': 'json'
+        })
+
+        eq_(200, response.status_code)
+
+        content = json.loads(response.content)
+        eq_(content['total'], 0)
+
+        # The thread/post should show up in results for items created
+        # AFTER 1/1/2010.
+        response = self.client.get(reverse('search'), {
+            'author': '', 'created': '2', 'created_date': '01/01/2010',
+            'updated': '0', 'updated_date': '', 'sortby': '0',
+            'a': '1', 'w': '4', 'q': 'hsarc',
+            'format': 'json'
+        })
+
+        eq_(200, response.status_code)
+
+        content = json.loads(response.content)
+        eq_(content['total'], 1)
+
+        # The thread/post should show up in results for items created
+        # BEFORE 1/12/2010.
+        response = self.client.get(reverse('search'), {
+            'author': '', 'created': '1', 'created_date': '01/12/2010',
+            'updated': '0', 'updated_date': '', 'sortby': '0',
+            'a': '1', 'w': '4', 'q': 'hsarc',
+            'format': 'json'
+        })
+
+        eq_(200, response.status_code)
+
+        content = json.loads(response.content)
+        eq_(content['total'], 1)
+
+        # The thread/post should NOT show up in results for items
+        # created BEFORE 12/31/2009.
+        response = self.client.get(reverse('search'), {
+            'author': '', 'created': '1', 'created_date': '12/31/2009',
+            'updated': '0', 'updated_date': '', 'sortby': '0',
+            'a': '1', 'w': '4', 'q': 'hsarc',
+            'format': 'json'
+        })
+
+        eq_(200, response.status_code)
+
+        content = json.loads(response.content)
+        eq_(content['total'], 0)

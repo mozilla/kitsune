@@ -1,3 +1,4 @@
+import datetime
 import logging
 from time import time
 
@@ -23,7 +24,14 @@ log = logging.getLogger('k.task')
 @task
 def reindex_with_progress(waffle_when_done=False):
     """Rebuild elasticsearch index while updating progress bar for admins."""
+    # Need to import Record here to prevent circular import
+    from search.models import Record
     try:
+        rec = Record(
+            starttime=datetime.datetime.now(),
+            text=u'Reindexing into %s' % settings.ES_WRITE_INDEXES['default'])
+        rec.save()
+
         # Init progress bar stuff:
         cache.set(ES_REINDEX_PROGRESS, 0.001)  # An iota so it tests true in
                                                # the template
@@ -49,6 +57,9 @@ def reindex_with_progress(waffle_when_done=False):
             flag = Flag.objects.get(name='elasticsearch')
             flag.everyone = True
             flag.save()
+
+        rec.endtime = datetime.datetime.now()
+        rec.save()
     finally:
         cache.delete(ES_REINDEX_PROGRESS)
         cache.delete(ES_WAFFLE_WHEN_DONE)
@@ -57,8 +68,8 @@ def reindex_with_progress(waffle_when_done=False):
 @task
 def index_task(cls, ids, **kw):
     """Index documents specified by cls and ids"""
-    for obj in cls.uncached.filter(id__in=ids):
-        cls.index(obj.extract_document(), refresh=True)
+    for id in cls.uncached.filter(id__in=ids).values_list('id', flat=True):
+        cls.index(cls.extract_document(id), refresh=True)
 
 
 @task

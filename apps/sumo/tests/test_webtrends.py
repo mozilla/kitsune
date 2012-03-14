@@ -1,0 +1,25 @@
+from datetime import date
+
+from mock import patch
+from nose.tools import eq_
+
+from sumo.tests import TestCase
+from sumo.webtrends import Webtrends
+
+
+KEY_METRICS_JSON_RESPONSE = '{ "definition" : { "accountID" : 123 , "profileID" : "ABC123" , "ID" : "ProfileMetrics" , "name" : "Profile Metrics" , "description" : "" , "language" : null , "timezone" : "UTC -1" , "dimensions" : [ { "ID" : "Profile ID" , "name" : "Profile ID" } ] , "measures" : [ { "name" : "PageViews" , "ID" : "PageViews" , "columnID" : 0 , "measureFormatType" : null },{ "name" : "Visits" , "ID" : "Visits" , "columnID" : 1 , "measureFormatType" : null },{ "name" : "Visitors" , "ID" : "Visitors" , "columnID" : 2 , "measureFormatType" : null },{ "name" : "NewVisitors" , "ID" : "NewVisitors" , "columnID" : 6 , "measureFormatType" : null },{ "name" : "BounceRate" , "ID" : "BounceRate" , "columnID" : 9 , "measureFormatType" : "percent" },{ "name" : "AvgTimeonSite" , "ID" : "AvgTimeOnSite" , "columnID" : 10 , "measureFormatType" : "time_seconds" },{ "name" : "AvgVisitorsperDay" , "ID" : "AvgVisitorsPerDay" , "columnID" : 11 , "measureFormatType" : null },{ "name" : "PageViewsperVisit" , "ID" : "PageViewsPerVisit" , "columnID" : 12 , "measureFormatType" : null },{ "name" : "AvgTimeonSiteperVisitor" , "ID" : "AvgSiteTimePerVisitor" , "columnID" : 13 , "measureFormatType" : "time_seconds" } ] } ,"data" : [ { "ABC123" : {  "attributes" : {  } , "measures" : { "PageViews" : 10523913 , "Visits" : 4274456 , "Visitors" : 4044284 , "NewVisitors" : 2078406 , "BounceRate" : 65.4970831375969 , "AvgTimeonSite" : 274.68279239068 , "AvgVisitorsperDay" : 577754.857142857 , "PageViewsperVisit" : 2.46204733421048 , "AvgTimeonSiteperVisitor" : 96.5800146577243 } , "SubRows" : [  { "period" : "Day" , "start_date" : "2012-01-01" , "end_date" : "2012-01-01" , "measures" : { "PageViews" : 1258143 , "Visits" : 524606 , "Visitors" : 495974 , "NewVisitors" : 254034 , "BounceRate" : 63.9746781394037 , "AvgTimeonSite" : 276.706781356731 , "AvgVisitorsperDay" : 495974 , "PageViewsperVisit" : 2.39826269619486 , "AvgTimeonSiteperVisitor" : 97.029864468702 } , "SubRows" : null }  , {  "period" : "Day" , "start_date" : "2012-01-02" , "end_date" : "2012-01-02" , "measures" : { "PageViews" : 1576014 , "Visits" : 649237 , "Visitors" : 614465 , "NewVisitors" : 320101 , "BounceRate" : 65.3790526417934 , "AvgTimeonSite" : 275.88984425623 , "AvgVisitorsperDay" : 614465 , "PageViewsperVisit" : 2.427486418673 , "AvgTimeonSiteperVisitor" : 97.7010993303117 } , "SubRows" : null }  , {  "period" : "Day" , "start_date" : "2012-01-03" , "end_date" : "2012-01-03" , "measures" : { "PageViews" : 1628215 , "Visits" : 664809 , "Visitors" : 629484 , "NewVisitors" : 326187 , "BounceRate" : 65.9521757376931 , "AvgTimeonSite" : 274.289682249817 , "AvgVisitorsperDay" : 629484 , "PageViewsperVisit" : 2.44914704824995 , "AvgTimeonSiteperVisitor" : 95.4439064376537 } , "SubRows" : null }  , {  "period" : "Day" , "start_date" : "2012-01-04" , "end_date" : "2012-01-04" , "measures" : { "PageViews" : 1622072 , "Visits" : 648066 , "Visitors" : 613411 , "NewVisitors" : 315226 , "BounceRate" : 65.8422136017011 , "AvgTimeonSite" : 272.315030946065 , "AvgVisitorsperDay" : 613411 , "PageViewsperVisit" : 2.50294260152515 , "AvgTimeonSiteperVisitor" : 95.3973388152478 } , "SubRows" : null }  , {  "period" : "Day" , "start_date" : "2012-01-05" , "end_date" : "2012-01-05" , "measures" : { "PageViews" : 1561292 , "Visits" : 619564 , "Visitors" : 585760 , "NewVisitors" : 298016 , "BounceRate" : 65.9460523852257 , "AvgTimeonSite" : 274.38456436392 , "AvgVisitorsperDay" : 585760 , "PageViewsperVisit" : 2.51998502172495 , "AvgTimeonSiteperVisitor" : 96.0481818492215 } , "SubRows" : null }  , {  "period" : "Day" , "start_date" : "2012-01-06" , "end_date" : "2012-01-06" , "measures" : { "PageViews" : 1520252 , "Visits" : 608327 , "Visitors" : 575889 , "NewVisitors" : 294054 , "BounceRate" : 65.7352049144621 , "AvgTimeonSite" : 271.518740910547 , "AvgVisitorsperDay" : 575889 , "PageViewsperVisit" : 2.49907040128089 , "AvgTimeonSiteperVisitor" : 95.6368657848995 } , "SubRows" : null }  , {  "period" : "Day" , "start_date" : "2012-01-07" , "end_date" : "2012-01-07" , "measures" : { "PageViews" : 1357925 , "Visits" : 559847 , "Visitors" : 529301 , "NewVisitors" : 270788 , "BounceRate" : 65.3650015093409 , "AvgTimeonSite" : 278.304308416466 , "AvgVisitorsperDay" : 529301 , "PageViewsperVisit" : 2.42552876053636 , "AvgTimeonSiteperVisitor" : 99.1935042631697 } , "SubRows" : null }  ] } } ] }'
+
+
+class WebtrendsTests(TestCase):
+    """Tests for the Webtrends API helper."""
+
+    @patch.object(Webtrends, 'key_metrics')
+    def test_visits(self, key_metrics):
+        """Test Webtrends.visits()."""
+        key_metrics.return_value = KEY_METRICS_JSON_RESPONSE
+
+        visits = Webtrends.visits(date(2012, 01, 01), date(2012, 01, 07))
+
+        eq_(7, len(visits))
+        eq_(495974, visits['2012-01-01'])
+        eq_(529301, visits['2012-01-07'])

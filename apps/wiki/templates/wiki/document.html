@@ -15,8 +15,14 @@
   {% set localizable_url = url('wiki.document', document.parent.slug, locale=settings.WIKI_DEFAULT_LANGUAGE) %}
 {% endif %}
 
+{% set meta = [] %}
+
 {% if document.is_template %}
-  {% set meta = (('robots', 'noindex'),) %}
+  {% set meta = meta + [('robots', 'noindex')] %}
+{% endif %}
+
+{% if document.current_revision and document.current_revision.summary %}
+  {% set meta = meta + [('description', document.current_revision.summary)] %}
 {% endif %}
 
 {% block content %}
@@ -61,7 +67,7 @@
 {% endblock %}
 
 {% block side %}
-  {% if not waffle.switch('hide-voting') and waffle.flag('editing-tools-show-hide') %}
+  {% if not waffle.switch('hide-voting') %}
     {{ vote_form(document, header=_('Is this document helpful?')) }}
   {% endif %}
 {% endblock %}
@@ -76,9 +82,6 @@
     {% set parent = doc.parent %}
   {% endif %}
   {{ document_tabs(doc, parent, user, 'article', settings) }}
-  {% if not waffle.flag('editing-tools-show-hide') %}
-    {{ document_watch(doc, user) }}
-  {% endif %}
 {% endblock %}
 
 {% block side_bottom %}

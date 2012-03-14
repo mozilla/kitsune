@@ -30,7 +30,7 @@
       </form>
     {% endif %}
     {% if not user.is_authenticated() or forum.allows_posting_by(user) %}
-      <a id="new-thread" href="{{ url('forums.new_thread', forum_slug=forum.slug) }}">{{ _('Post a new thread') }}</a>
+      <a id="new-thread" class="btn btn-important" href="{{ url('forums.new_thread', forum_slug=forum.slug) }}">{{ _('Post a new thread') }}</a>
     {% endif %}
   </div>
   <ol class="threads-columns {% if not desc_toggle %}desc{% endif %}">

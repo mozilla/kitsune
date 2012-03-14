@@ -11,6 +11,9 @@
 {% if answers.number > 1 %}
   {% set canonical_url = canonical_url|urlparams(page=answers.number) %}
 {% endif %}
+{% if robots_noindex %}
+  {% set meta = (('robots', 'noindex'),) %}
+{% endif %}
 
 {% block content %}
   <article class="main">

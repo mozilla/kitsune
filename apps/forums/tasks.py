@@ -37,22 +37,6 @@ def log_reply(post):
     unpin_this_thread()
 
 
-@task
-def index_threads(ids, **kw):
-    log.debug('Indexing threads: %r', ids)
-    from forums import es_search
-    from forums.models import Thread
-    for thread in Thread.uncached.filter(id__in=ids):
-        es_search.index_thread(es_search.extract_thread(thread), refresh=True)
-
-
-@task
-def unindex_threads(ids, **kw):
-    log.debug('Unindexing threads: %r', ids)
-    from forums import es_search
-    es_search.unindex_threads(ids)
-
-
 def connector(sender, instance, created, **kw):
     if created:
         log_reply.delay(instance)

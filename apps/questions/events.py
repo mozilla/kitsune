@@ -47,10 +47,10 @@ class QuestionReplyEvent(QuestionEvent):
         self.answer.question = self.instance
         asker_id = self.answer.question.creator.id
 
-        watcher_subject = _(u'A new answer was posted to a Firefox question '
-                            "you're watching")
-        asker_subject = _(u'A new answer was posted to your Firefox '
-                          'question')
+        watcher_subject = _(u'%s commented on a Firefox question '
+                            "you're watching" % self.answer.creator.username)
+        asker_subject = _(u'%s posted an answer to your question "%s"' %
+                          (self.answer.creator.username, self.instance.title))
 
         watcher_template = loader.get_template(
             'questions/email/new_answer.ltxt')

@@ -1,19 +1,21 @@
 {% load i18n %}{% load unsubscribe_instructions %}{# L10n: This is an email. Whitespace matters! #}{% autoescape off %}{% blocktrans %}Hi {{ username }},
 
-{{ answerer }} has posted an answer to your question "{{ question_title }}"
-on {{ host }}:
-{{ answer }}
+{{ answerer }} has posted an answer to your question on {{ host }}:
+{{ question_title }}
+https://{{ host }}{{ answer_url }}
 
-If this answered your question, click this link to mark it as solved:
+{{ answerer }} wrote:
+"{{ answer }}"
+
+See the answer:
+https://{{ host }}{{ answer_url }}
+
+If this answer solves your problem, please mark it as "solved":
 https://{{ host }}{{ solution_url }}
-This helps other Firefox users find good answers to their support questions.
+This will help other Firefox users find good answers to their questions!
 
-Click this link to reply to {{ answerer }} or add more information
-about your question: https://{{ host }}{{ answer_url }}
+Help other Firefox users by browsing for unsolved questions on {{ host }}:
+https://{{ host }}/questions?filter=unsolved
 
-Did you know that {{ answerer }} is a Firefox user
-just like you? Get started helping other Firefox users by
-browsing questions at
-https://{{ host }}/questions?filter=unsolved -- you
-might just make someone's day!
+You might just make someone's day!
 {% endblocktrans %}{% endautoescape %}{% unsubscribe_instructions watch %}

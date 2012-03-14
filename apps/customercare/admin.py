@@ -1,7 +1,6 @@
 from django.contrib import admin
 
-from customercare.models import (Tweet, CannedCategory, CannedResponse,
-                                 CategoryMembership)
+from customercare.models import Tweet, Reply
 
 
 class TweetAdmin(admin.ModelAdmin):
@@ -9,29 +8,17 @@ class TweetAdmin(admin.ModelAdmin):
     list_display = ('tweet_id', '__unicode__', 'created', 'locale')
     list_filter = ('locale', 'hidden')
     search_fields = ('raw_json',)
+    raw_id_fields = ('reply_to',)
+
 admin.site.register(Tweet, TweetAdmin)
 
 
-class MembershipInline(admin.StackedInline):
-    """Inline to show response/category relationships."""
-    extra = 1
-    model = CategoryMembership
-    raw_id_fields = ('response',)
+class ReplyAdmin(admin.ModelAdmin):
+    date_hierarchy = 'created'
+    list_display = ('tweet_id', 'user', 'twitter_username', '__unicode__',
+    				'created', 'locale')
+    list_filter = ('locale', 'twitter_username')
+    search_fields = ('raw_json',)
+    raw_id_fields = ('user',)
 
-
-class CategoryAdmin(admin.ModelAdmin):
-    list_display = ('title', 'locale', 'weight', 'response_count')
-    inlines = (MembershipInline,)
-
-    def response_count(self, obj):
-        return obj.responses.count()
-admin.site.register(CannedCategory, CategoryAdmin)
-
-
-class ResponseAdmin(admin.ModelAdmin):
-    list_display = ('title', 'locale', 'category_count')
-    inlines = (MembershipInline,)
-
-    def category_count(self, obj):
-        return obj.categories.count()
-admin.site.register(CannedResponse, ResponseAdmin)
+admin.site.register(Reply, ReplyAdmin)

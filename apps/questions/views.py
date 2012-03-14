@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 import json
 import logging
 import random
@@ -11,6 +11,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.sites.models import Site
 from django.core.cache import cache
 from django.core.exceptions import PermissionDenied
+from django.core.paginator import EmptyPage, PageNotAnInteger
 from django.db.models import Q
 from django.http import (HttpResponseRedirect, HttpResponse, Http404,
                          HttpResponseBadRequest, HttpResponseForbidden)
@@ -46,10 +47,11 @@ from questions.models import (Question, Answer, QuestionVote, AnswerVote,
                               question_searcher)
 from questions.question_config import products
 from search.utils import locale_or_default
+from search.es_utils import ESTimeoutError, ESMaxRetryError, ESException
 from search import SearchError
 from sumo.helpers import urlparams
 from sumo.urlresolvers import reverse
-from sumo.utils import paginate
+from sumo.utils import paginate, simple_paginate, build_paged_url
 from tags.utils import add_existing_tag
 from upload.models import ImageAttachment
 from upload.views import upload_imageattachment
@@ -72,13 +74,13 @@ def questions(request):
     filter_ = request.GET.get('filter')
     tagged = request.GET.get('tagged')
     tags = None
-    sort_ = request.GET.get('sort')
-    cache_count = True  # Some counts are too esoteric to cache right now.
+    sort_ = request.GET.get('sort', None)
 
     if sort_ == 'requested':
         order = '-num_votes_past_week'
+    elif sort_ == 'created':
+        order = '-created'
     else:
-        sort_ = None
         order = '-updated'
 
     question_qs = Question.objects.select_related(
@@ -100,7 +102,6 @@ def questions(request):
     elif filter_ == 'my-contributions' and request.user.is_authenticated():
         criteria = Q(answers__creator=request.user) | Q(creator=request.user)
         question_qs = question_qs.filter(criteria).distinct()
-        cache_count = False
     else:
         filter_ = None
 
@@ -108,7 +109,6 @@ def questions(request):
                   QuestionsFeed().title()),)
 
     if tagged:
-        cache_count = False
         tag_slugs = tagged.split(',')
         tags = Tag.objects.filter(slug__in=tag_slugs)
         if tags:
@@ -123,20 +123,18 @@ def questions(request):
 
     question_qs = question_qs.order_by(order)
 
-    if cache_count:
-        cache_key = u'questions:count:%s' % filter_
-        count = cache.get(cache_key)
-        if not count:
-            count = question_qs.count()
-            cache.add(cache_key, count, settings.QUESTIONS_COUNT_TTL)
-    else:
-        count = question_qs.count()
+    try:
+        questions_page = simple_paginate(
+            request, question_qs, per_page=constants.QUESTIONS_PER_PAGE)
+    except (PageNotAnInteger, EmptyPage):
+        # If we aren't on page 1, redirect there.
+        # TODO: Is 404 more appropriate?
+        if request.GET.get('page', '1') != '1':
+            url = build_paged_url(request)
+            return HttpResponseRedirect(urlparams(url, page=1))
 
-    questions_ = paginate(request, question_qs, count=count,
-                          per_page=constants.QUESTIONS_PER_PAGE)
-
-    data = {'questions': questions_, 'feeds': feed_urls, 'filter': filter_,
-            'sort': sort_, 'tags': tags, 'tagged': tagged}
+    data = {'questions': questions_page, 'feeds': feed_urls,
+            'filter': filter_, 'sort': sort_, 'tags': tags, 'tagged': tagged}
 
     if (waffle.flag_is_active(request, 'karma') and
         waffle.switch_is_active('karma')):
@@ -158,9 +156,18 @@ def answers(request, question_id, form=None, watch_form=None,
     """View the answers to a question."""
     ans_ = _answers_data(request, question_id, form, watch_form,
                          answer_preview)
+    question = ans_['question']
+
     if request.user.is_authenticated():
-        ans_['images'] = ans_['question'].images.filter(creator=request.user)
+        ans_['images'] = question.images.filter(creator=request.user)
+
     extra_kwargs.update(ans_)
+
+    # Add noindex to questions without answers that are > 30 days old.
+    no_answers = ans_['answers'].paginator.count == 0
+    if no_answers and question.created < datetime.now() - timedelta(days=30):
+        extra_kwargs.update(robots_noindex=True)
+
     return jingo.render(request, 'questions/answers.html', extra_kwargs)
 
 
@@ -848,14 +855,16 @@ def answer_preview_async(request):
                         {'answer_preview': answer})
 
 
-def marketplace(request):
+@mobile_template('questions/{mobile/}marketplace.html')
+def marketplace(request, template=None):
     """AAQ landing page for Marketplace."""
-    return jingo.render(request, 'questions/marketplace.html', {
+    return jingo.render(request, template, {
         'categories': MARKETPLACE_CATEGORIES})
 
 
 @anonymous_csrf
-def marketplace_category(request, category_slug):
+@mobile_template('questions/{mobile/}marketplace_category.html')
+def marketplace_category(request, category_slug, template=None):
     """AAQ category page. Handles form post that submits ticket."""
     try:
         category_name = MARKETPLACE_CATEGORIES[category_slug]
@@ -889,7 +898,7 @@ def marketplace_category(request, category_slug):
                 return HttpResponseRedirect(
                     reverse('questions.marketplace_aaq_success'))
 
-    return jingo.render(request, 'questions/marketplace_category.html', {
+    return jingo.render(request, template, {
         'category': category_name,
         'category_slug': category_slug,
         'categories': MARKETPLACE_CATEGORIES,
@@ -897,9 +906,10 @@ def marketplace_category(request, category_slug):
         'error_message': error_message})
 
 
-def marketplace_success(request):
+@mobile_template('questions/{mobile/}marketplace_success.html')
+def marketplace_success(request, template=None):
     """Confirmation of ticket submitted successfully."""
-    return jingo.render(request, 'questions/marketplace_success.html')
+    return jingo.render(request, template)
 
 
 def _search_suggestions(request, query, locale, category_tags):
@@ -920,6 +930,11 @@ def _search_suggestions(request, query, locale, category_tags):
     Returns up to 3 wiki pages, then up to 3 questions.
 
     """
+    if waffle.flag_is_active(request, 'elasticsearch'):
+        engine = 'elastic'
+    else:
+        engine = 'sphinx'
+
     my_question_search = question_searcher(request)
     my_wiki_search = wiki_searcher(request)
 
@@ -931,44 +946,58 @@ def _search_suggestions(request, query, locale, category_tags):
         my_question_search = my_question_search.filter(tag__in=category_tags)
         my_wiki_search = my_wiki_search.filter(tag__in=category_tags)
 
-    raw_results = (
-        my_wiki_search.filter(locale=locale,
-                              category__in=settings.SEARCH_DEFAULT_CATEGORIES)
-                      .query(query)
-                      .values_dict('id')[:WIKI_RESULTS])
+    try:
+        raw_results = (
+            my_wiki_search.filter(locale=locale,
+                                  category__in=settings.SEARCH_DEFAULT_CATEGORIES)
+                          .query(query)
+                          .values_dict('id')[:WIKI_RESULTS])
 
-    # Lazily build excerpts from results. Stop when we have enough:
-    results = []
-    for r in raw_results:
-        try:
-            doc = (Document.objects.select_related('current_revision').
-                   get(pk=r['id']))
-            results.append({
-                'search_summary': doc.current_revision.summary,
-                'url': doc.get_absolute_url(),
-                'title': doc.title,
-                'type': 'document',
-                'object': doc,
-            })
-        except Document.DoesNotExist:
-            pass
+        # Lazily build excerpts from results. Stop when we have enough:
+        results = []
+        for r in raw_results:
+            try:
+                doc = (Document.objects.select_related('current_revision').
+                       get(pk=r['id']))
+                results.append({
+                    'search_summary': doc.current_revision.summary,
+                    'url': doc.get_absolute_url(),
+                    'title': doc.title,
+                    'type': 'document',
+                    'object': doc,
+                })
+            except Document.DoesNotExist:
+                pass
 
-    # Questions app is en-US only.
-    raw_results = (my_question_search.query(query)
-                                     .values_dict('id')[:QUESTIONS_RESULTS])
+        # Questions app is en-US only.
+        raw_results = (my_question_search.query(query)
+                                         .values_dict('id')[:QUESTIONS_RESULTS])
 
-    for r in raw_results:
-        try:
-            q = Question.objects.get(pk=r['id'])
-            results.append({
-                'search_summary': q.content[0:500],
-                'url': q.get_absolute_url(),
-                'title': q.title,
-                'type': 'question',
-                'object': q
-            })
-        except Question.DoesNotExist:
-            pass
+        for r in raw_results:
+            try:
+                q = Question.objects.get(pk=r['id'])
+                results.append({
+                    'search_summary': q.content[0:500],
+                    'url': q.get_absolute_url(),
+                    'title': q.title,
+                    'type': 'question',
+                    'object': q
+                })
+            except Question.DoesNotExist:
+                pass
+
+    except (SearchError, ESTimeoutError, ESMaxRetryError, ESException), exc:
+        if isinstance(exc, SearchError):
+            statsd.incr('questions.suggestions.%s.searcherror' % engine)
+        elif isinstance(exc, ESTimeoutError):
+            statsd.incr('questions.suggestions.%s.timeouterror' % engine)
+        elif isinstance(exc, ESMaxRetryError):
+            statsd.incr('questions.suggestions.%s.maxretryerror' % engine)
+        elif isinstance(exc, ESException):
+            statsd.incr('questions.suggestions.%s.elasticsearchexception' %
+                        engine)
+
+        return []
 
     return results
 

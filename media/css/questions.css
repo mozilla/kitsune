@@ -320,6 +320,10 @@ ol.pagination:after {
     margin: 15px 0 0;
 }
 
+#ask-question-module a.btn:visited {
+    color: #fff;
+}
+
 /* top contributors side module */
 #top-contributors ol {
     margin: 5px 0 14px 35px;
@@ -1534,4 +1538,34 @@ a#activate-watch, a#remove-watch {
 
 .result .thread-meta {
     padding: 10px 15px 10px 50px;
+}
+
+/* Simple paginator used on /questions */
+ul.simple-paginator {
+    background: #E0EFFD;
+    border-radius: 0 0 10px 10px;
+    height: 20px;
+    list-style: none;
+    margin: 0 9px;
+    padding: 18px 15px 22px;
+}
+
+ul.simple-paginator li.newer {
+    float: left;
+}
+
+ul.simple-paginator li.newer a:before {
+    content: '← ';
+}
+
+ul.simple-paginator li.older {
+    float: right;
+}
+
+ul.simple-paginator li.older a:after {
+    content: ' →';
+}
+
+ul.simple-paginator li a.btn {
+    margin: 0;
 }

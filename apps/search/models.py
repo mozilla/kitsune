@@ -1,4 +1,3 @@
-import elasticutils
 import logging
 import pyes
 import time
@@ -6,14 +5,16 @@ from threading import local
 
 from django.conf import settings
 from django.core import signals
-from django.db import reset_queries
+from django.db import reset_queries, models
 from django.db.models.signals import pre_delete, post_save
 from django.dispatch import receiver
 
 from search.tasks import index_task, unindex_task
 from search import es_utils
 
-log = logging.getLogger('es_search')
+from sumo.models import ModelBase
+
+log = logging.getLogger('search.es')
 
 
 # db_table name -> model Class for search models
@@ -69,7 +70,8 @@ class SearchMixin(object):
         """
         raise NotImplementedError
 
-    def extract_document(self):
+    @classmethod
+    def extract_document(cls, obj_id):
         """Extracts the ES index document for this instance
 
         This must be implemented. It should return a dict representing
@@ -89,6 +91,14 @@ class SearchMixin(object):
         _local_tasks().add((unindex_task.delay, (self.__class__, (self.id,))))
 
     @classmethod
+    def get_indexable(cls):
+        # Some models have a gazillion instances. So we want to go
+        # through them one at a time in a way that doesn't pull all
+        # the data into memory all at once. So we iterate through ids
+        # and pull the objects one at a time.
+        return cls.objects.order_by('id').values_list('id', flat=True)
+
+    @classmethod
     def index_all(cls, percent=100):
         """Reindexes all the objects for this model.
 
@@ -104,34 +114,34 @@ class SearchMixin(object):
         es = es_utils.get_indexing_es()
 
         doc_type = cls._meta.db_table
-        index = settings.ES_INDEXES['default']
+        index = settings.ES_WRITE_INDEXES['default']
 
         start_time = time.time()
+
+        indexable_qs = cls.get_indexable()
 
         log.info('reindex %s into %s index', doc_type, index)
 
         log.info('iterating through %s....', doc_type)
-        total = cls.objects.count()
+        total = indexable_qs.count()
         to_index = int(total * (percent / 100.0))
         log.info('total %s: %s (to be indexed: %s)', doc_type, total, to_index)
+        if to_index == 0:
+            log.info('done!')
+            return
+
         total = to_index
 
-        # Some models have a gazillion instances. So we want to go
-        # through them one at a time in a way that doesn't pull all
-        # the data into memory all at once. So we iterate through ids
-        # and pull the objects one at a time.
-        qs = cls.objects.order_by('id').values_list('id', flat=True)
-
-        for t, obj_id in enumerate(qs.iterator()):
+        for t, obj_id in enumerate(indexable_qs):
             if t > total:
                 break
 
-            obj = cls.objects.get(pk=obj_id)
-
             if t % 1000 == 0 and t > 0:
                 time_to_go = (total - t) * ((time.time() - start_time) / t)
-                log.info('%s/%s... (%s to go)', t, total,
-                         es_utils.format_time(time_to_go))
+                per_1000 = (time.time() - start_time) / (t / 1000.0)
+                log.info('%s/%s... (%s to go, %s per 1000 docs)', t, total,
+                         es_utils.format_time(time_to_go),
+                         es_utils.format_time(per_1000))
 
                 # We call this every 1000 or so because we're
                 # essentially loading the whole db and if DEBUG=True,
@@ -148,16 +158,18 @@ class SearchMixin(object):
                 es.flush_bulk()
 
             try:
-                cls.index(obj.extract_document(), bulk=True, es=es)
+                cls.index(cls.extract_document(obj_id), bulk=True, es=es)
             except Exception:
                 log.exception('Unable to extract/index document (id: %d)',
-                              obj.id)
+                              obj_id)
 
             yield t
 
         es.flush_bulk(forced=True)
-        end_time = time.time()
-        log.info('done! (%s)', es_utils.format_time(end_time - start_time))
+        delta_time = time.time() - start_time
+        log.info('done! (%s, %s per 1000 docs)',
+                 es_utils.format_time(delta_time),
+                 es_utils.format_time(delta_time / (total / 1000.0)))
         es.refresh()
 
     @classmethod
@@ -168,14 +180,13 @@ class SearchMixin(object):
             return
 
         if es is None:
-            # Use the es_utils get_es because it uses
+            # Use es_utils.get_indexing_es() because it uses
             # ES_INDEXING_TIMEOUT.
             es = es_utils.get_indexing_es()
 
-        index = settings.ES_INDEXES['default']
+        index = settings.ES_WRITE_INDEXES['default']
         doc_type = cls._meta.db_table
 
-        # TODO: handle pyes.urllib3.TimeoutErrors here.
         es.index(document,
                  index=index,
                  doc_type=doc_type,
@@ -187,16 +198,22 @@ class SearchMixin(object):
             es.refresh(timesleep=0)
 
     @classmethod
-    def unindex(cls, id):
+    def unindex(cls, id, es=None):
         """Removes a document from the index"""
         if not settings.ES_LIVE_INDEXING:
             return
 
+        if es is None:
+            # Use es_utils.get_indexing_es() because it uses
+            # ES_INDEXING_TIMEOUT.
+            es = es_utils.get_indexing_es()
+
         doc_type = cls._meta.db_table
+        index = settings.ES_WRITE_INDEXES['default']
         try:
-            elasticutils.get_es().delete(settings.ES_INDEXES['default'],
-                                         doc_type,
-                                         id)
+            # TODO: There is a race condition here if this gets called
+            # during reindexing.
+            es.delete(index, doc_type, id)
         except pyes.exceptions.NotFoundException:
             # Ignore the case where we try to delete something that's
             # not there.
@@ -288,3 +305,21 @@ def generate_tasks(**kwargs):
 
 
 signals.request_finished.connect(generate_tasks)
+
+
+class Record(ModelBase):
+    """Record for the reindexing log"""
+    starttime = models.DateTimeField(null=True)
+    endtime = models.DateTimeField(null=True)
+    text = models.CharField(max_length=255)
+
+    class Meta:
+        permissions = (
+            ('reindex', 'Can run a full reindexing'),
+            )
+
+    def delta(self):
+        """Returns the timedelta"""
+        if self.starttime and self.endtime:
+            return self.endtime - self.starttime
+        return None

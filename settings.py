@@ -42,8 +42,13 @@ DATABASE_ROUTERS = ('multidb.PinningMasterSlaveRouter',)
 SLAVE_DATABASES = []
 
 # Cache Settings
-#CACHE_BACKEND = 'caching.backends.memcached://localhost:11211'
-#CACHE_PREFIX = 'sumo:'
+# CACHES = {
+#     'default': {
+#         'BACKEND': 'caching.backends.memcached.CacheClass',
+#         'LOCATION': ['localhost:11211'],
+#         'PREFIX': 'sumo:',
+#     },
+# }
 
 # Setting this to the Waffle version.
 WAFFLE_CACHE_PREFIX = 'w0.7.7a:'
@@ -72,8 +77,8 @@ SUMO_LANGUAGES = (
     'da', 'de', 'el', 'en-US', 'eo', 'es', 'et', 'eu', 'fa', 'ff', 'fi', 'fr',
     'fur', 'fy-NL', 'ga-IE', 'gd', 'gl', 'gu-IN', 'he', 'hi-IN', 'hr', 'hu',
     'hy-AM', 'id', 'ilo', 'is', 'it', 'ja', 'kk', 'km', 'kn', 'ko', 'lt',
-    'mai', 'mk', 'mn', 'mr', 'ms', 'my', 'nb-NO', 'nl', 'no', 'pa-IN', 'pl',
-    'pt-BR', 'pt-PT', 'rm', 'ro', 'ru', 'rw', 'si', 'sk', 'sl', 'sq',
+    'mai', 'mk', 'ml', 'mn', 'mr', 'ms', 'my', 'nb-NO', 'nl', 'no', 'pa-IN',
+    'pl', 'pt-BR', 'pt-PT', 'rm', 'ro', 'ru', 'rw', 'si', 'sk', 'sl', 'sq',
     'sr-CYRL', 'sr-LATN', 'sv-SE', 'ta-LK', 'te', 'th', 'tr', 'uk', 'vi',
     'zh-CN', 'zh-TW',
 )
@@ -89,6 +94,7 @@ NON_SUPPORTED_LOCALES = {
     'af': None,
     'br': 'fr',
     'csb': 'pl',
+    'lij': 'it',
     'nb-NO': 'no',
     'nn-NO': 'no',
     'oc': 'fr',
@@ -475,7 +481,6 @@ MINIFY_BUNDLES = {
             'js/upload.js',
             'js/questions.js',
             'js/libs/jquery.tokeninput.js',
-            'js/tags.autocomplete.js',
             'js/tags.filter.js',
             'js/tags.js',
             'js/reportabuse.js',
@@ -594,6 +599,9 @@ SESSION_EXISTS_COOKIE = 'sumo_session'
 # Connection information for Elastic
 ES_HOSTS = ['127.0.0.1:9200']
 ES_INDEXES = {'default': 'sumo'}  # Doesn't support non-default indexes atm.
+ES_WRITE_INDEXES = ES_INDEXES  # Indexes for indexing new content.
+ES_INDEX_PREFIX = 'sumo'  # Index listings will only show indexes prefixed
+                          # with this.
 ES_LIVE_INDEXING = False  # Keep indexes up to date as objects are made/deleted
 ES_TIMEOUT = 5  # 5 second timeouts for querying
 ES_INDEXING_TIMEOUT = 30  # 30 second timeouts for all things indexing
@@ -655,9 +663,6 @@ IMAGE_UPLOAD_PATH = 'uploads/images/'
 # A string listing image mime types to accept, comma separated.
 # String must not contain double quotes!
 IMAGE_ALLOWED_MIMETYPES = 'image/jpeg,image/png,image/gif'
-
-# How long do we cache the question counts (in seconds)?
-QUESTIONS_COUNT_TTL = 900  # 15 minutes.
 
 # Email
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
@@ -762,12 +767,12 @@ TIDINGS_REVERSE = 'sumo.urlresolvers.reverse'
 CHAT_SERVER = 'https://chat-support.mozilla.com:9091'
 CHAT_CACHE_KEY = 'sumo-chat-queue-status'
 
+WEBTRENDS_PROFILE_ID = 'ABC123'  # Profile id for SUMO
 WEBTRENDS_WIKI_REPORT_URL = 'https://example.com/see_production.rst'
 WEBTRENDS_USER = r'someaccount\someusername'
 WEBTRENDS_PASSWORD = 'password'
 WEBTRENDS_EPOCH = date(2010, 8, 1)  # When WebTrends started gathering stats on
                                     # the KB
-WEBTRENDS_REALM = 'Webtrends Basic Authentication'
 
 MOBILE_COOKIE = 'msumo'
 
@@ -786,13 +791,15 @@ REDIS_BACKENDS = {
 # Set this to enable Arecibo (http://www.areciboapp.com/) error reporting:
 ARECIBO_SERVER_URL = ''
 
-def dont_log_googlebot_404s(request, status, **kw):
-    if ('Googlebot' in request.META.get('HTTP_USER_AGENT') and status == 404):
+
+def dont_log_crawler_404s(request, status, **kw):
+    ua = request.META.get('HTTP_USER_AGENT', '').lower()
+    if (status == 404 and ('googlebot' in ua or 'bingbot' in ua)):
         return False
     return True
 
 ARECIBO_SETTINGS = {
-    'CALLBACKS': [dont_log_googlebot_404s],
+    'CALLBACKS': [dont_log_crawler_404s],
 }
 
 HELPFULVOTES_UNHELPFUL_KEY = 'helpfulvotes_topunhelpful'
@@ -806,3 +813,6 @@ ZENDESK_URL = 'https://appsmarket.zendesk.com'
 ZENDESK_SUBJECT_PREFIX = '[TEST] '  # Set to '' in prod
 ZENDESK_USER_EMAIL = ''
 ZENDESK_USER_PASSWORD = ''
+
+# Tasty Pie
+API_LIMIT_PER_PAGE = 0

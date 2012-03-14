@@ -75,11 +75,6 @@ ol.threads li div.title {
     width: 32%;
 }
 
-.title a:visited,
-.last-post a:visited {
-    color: #777;
-}
-
 ol.threads-columns li.author,
 ol.threads li div.author {
     width: 18%;
@@ -242,11 +237,8 @@ p#thread-locked {
 }
 
 a#new-thread {
-    background: url(../img/forums/arrow.png) no-repeat scroll left center transparent;
     float: left;
-    font-size: 115%;
-    margin: 0 0 1em 10px;
-    padding-left: 10px;
+    margin: 0 0 1em;
 }
 
 div.forum-actions {
@@ -407,7 +399,6 @@ ol.posts li div.content a:hover {
 form.new-thread div.form-widget,
 form.edit-post div.form-widget,
 form.edit-thread div.form-widget {
-    border-top: 1px dotted #c0c0c0;
     clear: left;
     padding: 1em;
 }
@@ -543,8 +534,23 @@ ol.posts form.report .kbox-container {
     margin: 10px 20px;
 }
 .watch-form a.yes {
-    background: url("/media/img/wiki/icon-yes.gif") no-repeat scroll left top transparent;
+    background: url(../img/wiki/icon-yes.gif) no-repeat scroll left top transparent;
 }
 .watch-form a.no {
-    background: url("/media/img/wiki/icon-no.gif") no-repeat scroll left top transparent;
+    background: url(../img/wiki/icon-no.gif) no-repeat scroll left top transparent;
+}
+
+/* Tweaks for Aurora forums */
+.aurora-forum #quick-links {
+    display: none;
+}
+
+.aurora-forum article.main:before {
+    background: url(../img/firefox-aurora-80x80.png) no-repeat center center;
+    content: '';
+    display: block;
+    float: right;
+    height: 80px;
+    margin: -10px 0 0;
+    width: 80px;
 }

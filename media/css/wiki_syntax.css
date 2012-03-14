@@ -1,6 +1,6 @@
 /* Wiki Document content */
 #doc-content {
-    color: #666;
+    color: rgb(40, 40, 40);
     font-size: 14px;
     line-height: 1.5em;
 }
@@ -59,7 +59,7 @@
 
 #doc-content video,
 #doc-content img {
-    margin: 5px 0;
+    margin: 0;
     max-width: 100%;
 }
 

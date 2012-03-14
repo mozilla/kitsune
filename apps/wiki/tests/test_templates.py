@@ -99,7 +99,8 @@ class DocumentTests(TestCaseBase):
 
     def test_document_view(self):
         """Load the document view page and verify the title and content."""
-        r = revision(save=True, content='Some text.', is_approved=True)
+        r = revision(save=True, summary='search summary', content='Some text.',
+                     is_approved=True)
         response = self.client.get(r.document.get_absolute_url())
         eq_(200, response.status_code)
         doc = pq(response.content)
@@ -108,6 +109,8 @@ class DocumentTests(TestCaseBase):
         # There's a canonical URL in the <head>.
         eq_(r.document.get_absolute_url(),
             doc('link[rel=canonical]').attr('href'))
+        # The summary is in <meta name="description"...
+        eq_('search summary', doc('meta[name=description]').attr('content'))
 
     def test_english_document_no_approved_content(self):
         """Load an English document with no approved content."""
@@ -1287,8 +1290,7 @@ class ReviewRevisionTests(TestCaseBase):
         eq_('Approved English version:',
             doc('#content-fields h3').eq(0).text())
         rev_message = doc('#content-fields p').eq(0).text()
-        assert 'by jsocol' in rev_message, ('%s does not contain "by jsocol"'
-                                            % rev_message)
+        assert 'by %s' % en_revision.creator.username in rev_message
 
     def test_review_translation_of_rejected_parent(self):
         """Translate rejected English document a 2nd time.
@@ -1330,6 +1332,43 @@ class ReviewRevisionTests(TestCaseBase):
         doc = pq(response.content)
         eq_(MEDIUM_SIGNIFICANCE,
             int(doc('input[name=significance][checked]')[0].attrib['value']))
+
+    def test_self_approve_without_revision_contributors(self):
+        """Verify review page when self approving and no other contributors.
+
+        Textarea for approve/defer message should not be included in the page.
+        """
+        rev = revision(is_approved=False, save=True)
+        u = rev.creator
+        add_permission(u, Revision, 'review_revision')
+        self.client.login(username=u.username, password='testpass')
+
+        response = get(self.client, 'wiki.review_revision',
+                       args=[rev.document.slug, rev.id])
+        eq_(200, response.status_code)
+        doc = pq(response.content)
+        eq_(0, len(doc('textarea[name="comment"]')))
+
+    def test_self_approve_with_revision_contributors(self):
+        """Verify review page when self approving and other contributors.
+
+        Textarea for approve/defer message should be included in the page.
+        """
+        rev1 = revision(is_approved=False, save=True)
+        rev2 = revision(is_approved=False, document=rev1.document, save=True)
+        u = rev2.creator
+        add_permission(u, Revision, 'review_revision')
+        self.client.login(username=u.username, password='testpass')
+
+        response = get(self.client, 'wiki.review_revision',
+                       args=[rev2.document.slug, rev2.id])
+        eq_(200, response.status_code)
+
+        doc = pq(response.content)
+        eq_(2, len(doc('textarea[name="comment"]')))
+        label = doc('div.message label').text()
+        assert rev1.creator.username in label
+        assert u.username not in label
 
 
 class CompareRevisionTests(TestCaseBase):

@@ -533,5 +533,10 @@
         "iso639_1": "ff",
         "english": "Fulah",
         "native": "Pulaar-Fulfulde"
+    },
+    "ml": {
+        "iso639_1": "ml",
+        "english": "Malayalam",
+        "native": "\u0d2e\u0d32\u0d2f\u0d3e\u0d33\u0d02"
     }
 }

@@ -28,6 +28,7 @@ HOME = /tmp
 42 0 * * * {{ cron }} update_top_contributors
 0 21 * * * {{ cron }} cache_most_unhelpful_kb_articles
 47 2 * * * {{ cron }} remove_expired_registration_profiles
+0 9 * * * {{ cron }} update_visitors_metric
 
 # Twice per week.
 #05 01 * * 1,4 {{ cron }} update_weekly_votes

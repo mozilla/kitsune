@@ -1,5 +1,6 @@
 from datetime import datetime
 from urlparse import urlparse
+import time
 
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -495,39 +496,64 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
             'parent_id': {'type': 'integer'},
             'content': {'type': 'string', 'analyzer': 'snowball'},
             'category': {'type': 'integer'},
-            'slug': {'type': 'string'},
+            'slug': {'type': 'string', 'index': 'not_analyzed'},
             'is_archived': {'type': 'boolean'},
             'summary': {'type': 'string', 'analyzer': 'snowball'},
             'keywords': {'type': 'string', 'analyzer': 'snowball'},
-            'updated': {'type': 'date'},
-            'tag': {'type': 'string'}}
+            'updated': {'type': 'integer'},
+            'tag': {'type': 'string', 'index': 'not_analyzed'}}
 
-    def extract_document(self):
+    @classmethod
+    def extract_document(cls, obj_id):
+        obj = cls.objects.select_related(
+            'current_revision', 'parent').get(pk=obj_id)
+
         d = {}
-        d['id'] = self.id
-        d['title'] = self.title
-        d['locale'] = self.locale
-        d['parent_id'] = self.parent.id if self.parent else None
-        d['content'] = self.html
-        d['category'] = self.category
-        d['slug'] = self.slug
-        d['is_archived'] = self.is_archived
-        if self.parent is None:
-            d['tag'] = [tag['name'] for tag in self.tags.values()]
+        d['id'] = obj.id
+        d['title'] = obj.title
+        d['locale'] = obj.locale
+        d['parent_id'] = obj.parent.id if obj.parent else None
+        d['content'] = obj.html
+        d['category'] = obj.category
+        d['slug'] = obj.slug
+        d['is_archived'] = obj.is_archived
+
+        if obj.parent is None:
+            d['tag'] = [tag['name'] for tag in obj.tags.values()]
         else:
             # Translations inherit tags from their parents.
-            d['tag'] = [tag['name'] for tag in self.parent.tags.values()]
-        if self.current_revision:
-            d['summary'] = self.current_revision.summary
-            d['keywords'] = self.current_revision.keywords
-            d['updated'] = self.current_revision.created
-            d['current'] = self.current_revision.id
+            d['tag'] = [tag['name'] for tag in obj.parent.tags.values()]
+        if obj.current_revision:
+            d['summary'] = obj.current_revision.summary
+            d['keywords'] = obj.current_revision.keywords
+            d['updated'] = int(time.mktime(
+                    obj.current_revision.created.timetuple()))
+            d['current'] = obj.current_revision.id
         else:
             d['summary'] = None
             d['keywords'] = None
             d['updated'] = None
             d['current'] = None
         return d
+
+    @classmethod
+    def get_indexable(cls):
+        # Don't index documents that have no revisions or where the
+        # current revision is a redirect.
+        indexable = super(cls, cls).get_indexable()
+        indexable = indexable.filter(current_revision__isnull=False)
+        indexable = indexable.exclude(html__startswith=REDIRECT_HTML)
+        return indexable
+
+    @classmethod
+    def index(cls, document, **kwargs):
+        # If there are no revisions or the current revision is a redirect,
+        # we want to remove it from the index.
+        if (document['current'] is None or
+            document['content'].startswith(REDIRECT_HTML)):
+            cls.unindex(document['id'], es=kwargs.get('es', None))
+            return
+        super(cls, cls).index(document, **kwargs)
 
 
 register_for_indexing(Document, 'wiki')

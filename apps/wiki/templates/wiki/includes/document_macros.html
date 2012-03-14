@@ -167,12 +167,12 @@
       {% if document.is_watched_by(user) %}
         <form action="{{ url('wiki.document_unwatch', document.slug) }}" method="post">
           {{ csrf() }}
-          <input type="submit" class="link-btn" value="{% if waffle.flag('editing-tools-show-hide') %}{{ _('Stop article emails') }}{% else %}{{ _('Stop getting emailed when this article changes.') }}{% endif %}" />
+          <input type="submit" class="link-btn" value="{{ _('Stop article emails') }}" />
         </form>
       {% else %}
         <form action="{{ url('wiki.document_watch', document.slug) }}" method="post">
           {{ csrf() }}
-          <input type="submit" class="link-btn" value="{% if waffle.flag('editing-tools-show-hide') %}{{ _('Email me article changes') }}{% else %}{{ _('Get emailed when this article changes.') }}{% endif %}" />
+          <input type="submit" class="link-btn" value="{{ _('Email me article changes') }}" />
         </form>
       {% endif %}
     </div>
@@ -255,5 +255,14 @@
         </p>
       </form>
     </div>
+  {% endif %}
+{%- endmacro %}
+
+{% macro revision_contributors_label(contributors) -%}
+  {# This macro is used in the reject and approve revision modals #}
+  {% if contributors|length == 1 %}
+    {{ _('Leave a message for {contributor}: ')|fe(contributor=contributors[0]) }}
+  {% else %}
+    {{ _('Leave a message for {rest} and {last}:')|fe(rest=', '.join(contributors[:-1]), last=contributors[-1]) }}
   {% endif %}
 {%- endmacro %}

@@ -1,9 +1,10 @@
 from datetime import datetime
 import json
 
+from django.contrib.auth.models import User
 from django.db import models
 
-from sumo.models import ModelBase, LocaleField
+from sumo.models import ModelBase
 
 
 class Tweet(ModelBase):
@@ -36,46 +37,20 @@ class Tweet(ModelBase):
         return tweet['text']
 
 
-class CannedCategory(ModelBase):
-    """Category for canned responses."""
-    title = models.CharField(max_length=255)
-    weight = models.IntegerField(
-        default=0, db_index=True,
-        help_text='Heavier items sink, lighter ones bubble up.')
-    locale = LocaleField(db_index=True)
+class Reply(ModelBase):
+    """A reply from an AoA contributor.
 
-    class Meta:
-        ordering = ('locale', 'weight', 'title')
-        unique_together = ('title', 'locale')
-        verbose_name_plural = 'Canned categories'
-
-    def __unicode__(self):
-        return u'[%s] %s' % (self.locale, self.title)
-
-
-class CannedResponse(ModelBase):
-    """Canned response to tweets."""
-    title = models.CharField(max_length=255)
-    response = models.CharField(max_length=140)
-    categories = models.ManyToManyField(
-        CannedCategory, related_name='responses', through='CategoryMembership')
-    locale = LocaleField(db_index=True)
-
-    class Meta:
-        ordering = ('locale', 'title')
-        unique_together = ('title', 'locale')
+    The Tweet table gets truncated regularly so we can't use it for metrics.
+    This model is to keep track of contributor counts and such.
+    """
+    user = models.ForeignKey(User, null=True, blank=True, related_name='tweet_replies')
+    twitter_username = models.CharField(max_length=20)
+    tweet_id = models.BigIntegerField()
+    raw_json = models.TextField()
+    locale = models.CharField(max_length=20)
+    created = models.DateTimeField(default=datetime.now, db_index=True)
+    reply_to_tweet_id = models.BigIntegerField()
 
     def __unicode__(self):
-        return u'[%s] %s' % (self.locale, self.title)
-
-
-class CategoryMembership(ModelBase):
-    """Mapping table for canned responses <-> categories."""
-    category = models.ForeignKey(CannedCategory, blank=True)
-    response = models.ForeignKey(CannedResponse, blank=True)
-    weight = models.IntegerField(
-        default=0, db_index=True,
-        help_text='Heavier items sink, lighter ones bubble up.')
-
-    def __unicode__(self):
-        return '%s in %s' % (self.response.title, self.category.title)
+        tweet = json.loads(self.raw_json)
+        return '@{u}: {t}'.format(u=self.twitter_username, t=tweet['text'])

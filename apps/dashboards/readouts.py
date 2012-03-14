@@ -92,6 +92,7 @@ ANY_SIGNIFICANT_UPDATES = (
      'AND engrev.is_ready_for_localization '
      'AND engrev.significance>=%s) ')
 
+
 def _cursor():
     """Return a DB cursor for reading."""
     return connections[router.db_for_read(Document)].cursor()
@@ -148,19 +149,14 @@ def overview_rows(locale):
         current_revision__isnull=False,
         is_localizable=True,
         latest_localizable_revision__isnull=False)
-    total_docs = total.filter(is_template=False).count()
+    total_docs = (total.filter(is_template=False)
+                  .filter(category__in=(10, 20, 60))
+                  .count())
+    total_navigation = (total.filter(is_template=False)
+                        .filter(category=50)
+                        .count())
     total_templates = total.filter(is_template=True).count()
 
-    # How many approved, up-to-date documents are there in German that have
-    # parents? Even though users are technically allowed to translate revisions
-    # that aren't marked as ready-for-l10n, we restrict this set to ready-to-
-    # localize documents because we restrict the denominator to those.
-    translated = Document.uncached.filter(
-        locale=locale,
-        is_archived=False,
-        current_revision__isnull=False,
-        parent__isnull=False,
-        parent__latest_localizable_revision__isnull=False)
     # Translations whose based_on revision has no >10-significance, ready-for-
     # l10n revisions after it. It *might* be possible to do this with the ORM
     # by passing wheres and tables to extra():
@@ -176,12 +172,17 @@ def overview_rows(locale):
             'AND engdoc.is_localizable '
             'AND NOT EXISTS ' +
                 ANY_SIGNIFICANT_UPDATES)
-    # TODO: Optimize by running the above query just once and separating the
-    # templates from the non-templates with a GROUP BY.
-    translated_docs = single_result(up_to_date_translation_count,
-                                    (locale, False, MEDIUM_SIGNIFICANCE))
-    translated_templates = single_result(up_to_date_translation_count,
-                                         (locale, True, MEDIUM_SIGNIFICANCE))
+    translated_docs = single_result(
+        up_to_date_translation_count +
+        'AND transdoc.category in (10, 20, 60)',
+        (locale, False, MEDIUM_SIGNIFICANCE))
+    translated_navigation = single_result(
+        up_to_date_translation_count +
+        'AND transdoc.category = 50',
+        (locale, False, MEDIUM_SIGNIFICANCE))
+    translated_templates = single_result(
+        up_to_date_translation_count,
+        (locale, True, MEDIUM_SIGNIFICANCE))
 
     # Of the top 20 most visited English articles, how many have up-to-date
     # translations into German?
@@ -220,6 +221,14 @@ def overview_rows(locale):
                  numerator=translated_templates, denominator=total_templates,
                  percent=percent_or_100(translated_templates, total_templates),
                  description=_('How many of the approved templates '
+                               'which allow translations have an approved '
+                               'translation into this language')),
+            'navigation': dict(
+                 title=_('Navigation Articles'),
+                 url='#' + NavigationTranslationsReadout.slug,
+                 numerator=translated_navigation, denominator=total_navigation,
+                 percent=percent_or_100(translated_navigation, total_navigation),
+                 description=_('How many of the approved navigation articles '
                                'which allow translations have an approved '
                                'translation into this language')),
             'all': dict(
@@ -443,6 +452,48 @@ class TemplateTranslationsReadout(Readout):
             eng_title, slug, title, None, significance, needs_review)
 
 
+class NavigationTranslationsReadout(Readout):
+    """Readout for navigation articles in non-default languages
+
+    Shows the navigation articles even if there are no translations of
+    them yet.  This draws attention to navigation articles that we
+    should drop everything to translate.
+
+    """
+    title = _lazy(u'Navigation Articles')
+    slug = 'template-navigation'
+    details_link_text = _lazy(u'All navigation articles...')
+    column3_label = ''
+    modes = []
+
+    def _query_and_params(self, max):
+        return (
+            'SELECT engdoc.slug, engdoc.title, transdoc.slug, '
+            'transdoc.title, ' +
+            MOST_SIGNIFICANT_CHANGE_READY_TO_TRANSLATE + ', ' +
+            NEEDS_REVIEW +
+
+            'FROM wiki_document engdoc '
+            'LEFT JOIN wiki_document transdoc ON '
+                'transdoc.parent_id=engdoc.id '
+                'AND transdoc.locale=%s '
+            'WHERE engdoc.locale=%s '
+                'AND engdoc.is_localizable '
+                'AND NOT engdoc.is_archived '
+                'AND engdoc.latest_localizable_revision_id IS NOT NULL '
+                'AND engdoc.category = 50 '
+                'AND NOT engdoc.is_template '
+            'ORDER BY COALESCE(transdoc.title, engdoc.title) ASC ' +
+
+            self._limit_clause(max),
+            (self.locale, settings.WIKI_DEFAULT_LANGUAGE))
+
+    def _format_row(self, (eng_slug, eng_title, slug, title, significance,
+                           needs_review)):
+        return _format_row_with_out_of_dateness(self.locale, eng_slug,
+            eng_title, slug, title, None, significance, needs_review)
+
+
 class UntranslatedReadout(Readout):
     title = _lazy(u'Untranslated')
     short_title = _lazy(u'Untranslated')
@@ -455,9 +506,9 @@ class UntranslatedReadout(Readout):
         # against an inner query returning translated docs, and the left join
         # yielded a faster-looking plan (on a production corpus).
         #
-        # Find non-archived, localizable documents having at least one ready-
-        # for-localization revision. Of those, show the ones that have no
-        # translation.
+        # Find non-archived, localizable documents in categories 10,
+        # 20 and 60 having at least one ready- for-localization
+        # revision. Of those, show the ones that have no translation.
         return ('SELECT parent.slug, parent.title, '
             'wiki_revision.reviewed, dashboards_wikidocumentvisits.visits '
             'FROM wiki_document parent '
@@ -470,6 +521,7 @@ class UntranslatedReadout(Readout):
                 'dashboards_wikidocumentvisits.period=%s '
             'WHERE '
             'translated.id IS NULL AND parent.is_localizable AND '
+            'parent.category in (10, 20, 60) AND '
             'parent.locale=%s AND NOT parent.is_archived '
             + self._order_clause() + self._limit_clause(max),
             (self.locale, THIS_WEEK, settings.WIKI_DEFAULT_LANGUAGE))
@@ -564,7 +616,8 @@ class OutOfDateReadout(Readout):
                 'AND dashboards_wikidocumentvisits.period=%s '
             # We needn't check is_localizable, since the models ensure every
             # document with translations has is_localizable set.
-            'WHERE transdoc.locale=%s AND NOT transdoc.is_archived '
+            'WHERE transdoc.locale=%s AND NOT transdoc.is_archived AND '
+                'transdoc.category in (10, 20, 60) '
             + self._order_clause() + self._limit_clause(max),
             (MEDIUM_SIGNIFICANCE, self._max_significance, THIS_WEEK,
                 self.locale))
@@ -788,9 +841,9 @@ class NeedsChangesReadout(Readout):
 
 # L10n Dashboard tables that have their own whole-page views:
 L10N_READOUTS = SortedDict((t.slug, t) for t in
-    [MostVisitedTranslationsReadout, TemplateTranslationsReadout,
-     UntranslatedReadout, OutOfDateReadout, NeedingUpdatesReadout,
-     UnreviewedReadout])
+    [MostVisitedTranslationsReadout, NavigationTranslationsReadout,
+     TemplateTranslationsReadout, UntranslatedReadout,
+     OutOfDateReadout, NeedingUpdatesReadout, UnreviewedReadout])
 
 # Contributors ones:
 CONTRIBUTOR_READOUTS = SortedDict((t.slug, t) for t in
