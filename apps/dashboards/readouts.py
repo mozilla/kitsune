@@ -15,8 +15,7 @@ import jingo
 from jinja2 import Markup
 from tower import ugettext as _, ugettext_lazy as _lazy
 
-from dashboards import (LAST_7_DAYS, LAST_30_DAYS, LAST_90_DAYS, ALL_TIME,
-                        PERIODS)
+from dashboards import LAST_30_DAYS, PERIODS
 from sumo.urlresolvers import reverse
 from sumo.redis_utils import redis_client, RedisError
 from wiki.models import (Document, MEDIUM_SIGNIFICANCE, MAJOR_SIGNIFICANCE,
@@ -256,6 +255,7 @@ class Readout(object):
     column4_label = _lazy(u'Status')
     modes = [(MOST_VIEWED, _lazy('Most Viewed')),
              (MOST_RECENT, _lazy('Most Recent'))]
+    default_mode = MOST_VIEWED
 
     def __init__(self, request, locale=None, mode=None):
         """Take request so the template can use contextual macros that need it.
@@ -266,7 +266,7 @@ class Readout(object):
         """
         self.request = request
         self.locale = locale or request.locale
-        self.mode = mode if mode != None else (self.modes[0][1] if self.modes else None)
+        self.mode = mode if mode != None else self.default_mode
         # self.mode is allowed to be invalid.
 
     def rows(self, max=None):
@@ -345,12 +345,13 @@ class MostVisitedDefaultLanguageReadout(Readout):
     slug = 'most-visited'
     column3_label = _lazy(u'Visits')
     modes = PERIODS
+    default_mode = LAST_30_DAYS
 
     def _query_and_params(self, max):
-        if self.mode in (ALL_TIME, LAST_7_DAYS, LAST_90_DAYS):
+        if self.mode in [m[0] for m in self.modes]:
             period = self.mode
         else:
-            period = LAST_30_DAYS
+            period = self.default_mode
         # Review Needed: link to /history.
         return ('SELECT engdoc.slug, engdoc.title, '
                 'dashboards_wikidocumentvisits.visits, '
@@ -398,10 +399,10 @@ class MostVisitedTranslationsReadout(MostVisitedDefaultLanguageReadout):
     details_link_text = _lazy(u'All translations...')
 
     def _query_and_params(self, max):
-        if self.mode in (ALL_TIME, LAST_7_DAYS, LAST_90_DAYS):
+        if self.mode in [m[0] for m in self.modes]:
             period = self.mode
         else:
-            period = LAST_30_DAYS
+            period = self.default_mode
         # Immediate Update Needed or Update Needed: link to /edit.
         # Review Needed: link to /history.
         # These match the behavior of the corresponding readouts.
@@ -431,6 +432,7 @@ class TemplateTranslationsReadout(Readout):
     details_link_text = _lazy(u'All templates...')
     column3_label = ''
     modes = []
+    default_mode = None
 
     def _query_and_params(self, max):
         return (
@@ -472,6 +474,7 @@ class NavigationTranslationsReadout(Readout):
     details_link_text = _lazy(u'All navigation articles...')
     column3_label = ''
     modes = []
+    default_mode = None
 
     def _query_and_params(self, max):
         return (
@@ -712,6 +715,7 @@ class UnhelpfulReadout(Readout):
     column3_label = _lazy(u'Total Votes')
     column4_label = _lazy(u'Helpfulness')
     modes = []
+    default_mode = None
 
     # This class is a namespace and doesn't get instantiated.
     key = settings.HELPFULVOTES_UNHELPFUL_KEY
@@ -814,6 +818,7 @@ class NeedsChangesReadout(Readout):
     slug = 'need-changes'
     column4_label = _lazy(u'Comment')
     modes = [(MOST_VIEWED, _lazy('Most Viewed'))]
+    default_mode = MOST_VIEWED
 
     def _query_and_params(self, max):
         return ('SELECT wiki_document.slug, wiki_document.title, '
