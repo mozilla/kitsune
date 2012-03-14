@@ -34,10 +34,11 @@ EMAIL_LONG = _lazy(u'Email address is too long (%(show_value)s characters). '
 PASSWD_REQUIRED = _lazy(u'Password is required.')
 PASSWD2_REQUIRED = _lazy(u'Please enter your password twice.')
 PASSWD_MIN_LENGTH = 8
-PASSWD_MIN_LENGTH_MSG = _lazy('Password must be 8 characters or more.')
+PASSWD_MIN_LENGTH_MSG = _lazy('Password must be 8 or more characters.')
 
 
-password_re = re.compile('(?=.*\d)(?=.*[a-zA-Z])')
+# Enforces at least one digit and at least one alpha character.
+password_re = re.compile(r'(?=.*\d)(?=.*[a-zA-Z])')
 
 
 class SettingsForm(forms.Form):
@@ -315,14 +316,16 @@ class ForgotUsernameForm(forms.Form):
 
 
 def _check_password(password):
-    if not password_allowed(password):
-        msg = _('The password entered is known to be commonly used and '
-                'is not allowed.')
-        raise forms.ValidationError(msg)
+    if password:  # Oddly, empty password validation happens after this.
+        if not password_allowed(password):
+            msg = _('The password entered is known to be commonly used and '
+                    'is not allowed.')
+            raise forms.ValidationError(msg)
 
-    if password and not password_re.search(password):
-        msg = _('Letters and numbers are required in the password.')
-        raise forms.ValidationError(msg)
+        if not password_re.search(password):
+            msg = _('At least one number and one English letter are required'
+                    ' in the password.')
+            raise forms.ValidationError(msg)
 
 
 def _check_username(username):
