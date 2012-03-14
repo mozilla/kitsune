@@ -11,7 +11,8 @@ from tastypie.cache import SimpleCache
 from tastypie.resources import Resource
 
 from customercare.models import Reply
-from kpi.models import Metric, MetricKind, VISITORS_METRIC_CODE
+from kpi.models import (Metric, MetricKind, VISITORS_METRIC_CODE,
+                        L10N_METRIC_CODE)
 from questions.models import Question, Answer, AnswerVote
 from wiki.models import HelpfulVote, Revision
 
@@ -379,6 +380,24 @@ class VisitorsResource(CachedResource):
     class Meta(object):
         cache = SimpleCache()
         resource_name = 'kpi_visitors'
+        allowed_methods = ['get']
+
+
+class L10nCoverageResource(CachedResource):
+    """Returns the L10n coverage per day."""
+    date = fields.DateField('date')
+    coverage = fields.IntegerField('coverage', default=0)
+
+    def get_object_list(self, request):
+        # Set up the query for the data we need
+        kind = MetricKind.objects.get(code=L10N_METRIC_CODE)
+        qs = Metric.objects.filter(kind=kind).order_by('-start')
+
+        return [Struct(date=m.start, coverage=m.value) for m in qs]
+
+    class Meta(object):
+        cache = SimpleCache()
+        resource_name = 'kpi_l10n_coverage'
         allowed_methods = ['get']
 
 
