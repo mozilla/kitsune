@@ -374,6 +374,32 @@ Marky.LinkButton.prototype = $.extend({}, Marky.SimpleButton.prototype, {
             $(this).closest('li').find('input[type="radio"]').click();
         });
 
+        $html.find('input[name="internal"]').autocomplete({
+            source: function(request, response) {
+                $.ajax({
+                    url: "/search",
+                    data: {
+                        format: 'json',
+                        q: request.term,
+                        a: 1,
+                        w: 1
+                    },
+                    dataType: 'json',
+                    success: function(data, textStatus) {
+                        var array = [];
+                        $.map(data.results, function(val, i) {
+                            array.push({label: val.title});
+                        });
+
+                        response(array);
+                    },
+                    error: function() {
+                        // pass
+                    }
+                });
+            }
+        });
+
         $html.find('button').text(gettext('Insert Link')).click(function(e){
             // Generate the wiki markup based on what the user has selected
             // (interval vs external links) and entered into the textboxes,
