@@ -80,3 +80,37 @@ class Webtrends(object):
             visits[row['start_date']] = row['measures']['Visitors']
 
         return visits
+
+    @classmethod
+    def visits_by_locale(cls, start, end):
+        """Return the number of unique visits by locale.
+
+        Returns a dict with visits for each locale:
+            {u'en-US': 7683415,
+             u'de': 1293052,
+             u'es': 830521,...}
+        """
+        url = ('https://ws.webtrends.com/v2_1/ReportService/profiles/'
+               '{profile_id}/reports/FRnJo3T7MM6/?format=json')
+        url = url.format(profile_id=settings.WEBTRENDS_PROFILE_ID)
+
+        data = json.loads(cls.request(url, start, end))['data']
+        locales = data[data.keys()[0]]['SubRows']
+
+        visits = {}
+        for url, info in locales.iteritems():
+            locale = url.split('/')[-1]
+
+            if locale not in settings.SUMO_LANGUAGES:
+                # Filter out non locales like /admin.
+                continue
+
+            count = info['measures']['Visits']
+
+            # Locales can appear twice due to .com to .org change.
+            if locale in visits:
+                visits[locale] += count
+            else:
+                visits[locale] = count
+
+        return visits
