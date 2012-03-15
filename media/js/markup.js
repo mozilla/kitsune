@@ -392,9 +392,6 @@ Marky.LinkButton.prototype = $.extend({}, Marky.SimpleButton.prototype, {
                         });
 
                         response(array);
-                    },
-                    error: function() {
-                        // pass
                     }
                 });
             }
