@@ -35,8 +35,8 @@ class RegisterTests(TestCase):
         response = self.client.post(reverse('users.register', locale='en-US'),
                                     {'username': 'newbie',
                                      'email': 'newbie@example.com',
-                                     'password': 'foo',
-                                     'password2': 'foo'}, follow=True)
+                                     'password': 'foobar22',
+                                     'password2': 'foobar22'}, follow=True)
         eq_(200, response.status_code)
         u = User.objects.get(username='newbie')
         assert u.password.startswith('sha256')
@@ -51,7 +51,7 @@ class RegisterTests(TestCase):
         u.save()
         response = self.client.post(reverse('users.login', locale='en-US'),
                                     {'username': 'newbie',
-                                     'password': 'foo'}, follow=True)
+                                     'password': 'foobar22'}, follow=True)
         eq_(200, response.status_code)
         eq_('http://testserver/en-US/home', response.redirect_chain[0][0])
 
@@ -64,14 +64,14 @@ class RegisterTests(TestCase):
         response = self.client.post(reverse('users.register', locale='en-US'),
                                     {'username': 'newbie',
                                      'email': 'newbie@example.com',
-                                     'password': 'foo',
-                                     'password2': 'foo'}, follow=True)
+                                     'password': 'foobar22',
+                                     'password2': 'foobar22'}, follow=True)
         self.assertContains(response, unicode(ERROR_SEND_EMAIL))
         assert not User.objects.filter(username='newbie').exists()
 
     @mock.patch.object(Site.objects, 'get_current')
     def test_unicode_password(self, get_current):
-        u_str = u'\xe5\xe5\xee\xe9\xf8\xe7\u6709\u52b9'
+        u_str = u'a1\xe5\xe5\xee\xe9\xf8\xe7\u6709\u52b9'
         get_current.return_value.domain = 'su.mo.com'
         response = self.client.post(reverse('users.register', locale='ja'),
                                     {'username': 'cjkuser',

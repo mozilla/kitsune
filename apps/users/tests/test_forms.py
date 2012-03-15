@@ -127,34 +127,34 @@ class RegisterFormTests(TestCaseBase):
 
     def test_strong_password(self):
         form = RegisterForm({'username': 'newuser',
-                             'password': 'fksjvaj',
-                             'password2': 'fksjvaj',
+                             'password': 'fksjvaj1',
+                             'password2': 'fksjvaj1',
                              'email': 'newuser@example.com'})
         assert form.is_valid()
 
     def test_bad_username(self):
         #  Simple match.
         form = RegisterForm({'username': 'ass',
-                             'password': 'adssadfsadf',
-                             'password2': 'adssadfsadf',
+                             'password': 'adssadfsadf1',
+                             'password2': 'adssadfsadf1',
                              'email': 'newuser@example.com'})
         assert not form.is_valid()
         # Simple obfuscation.
         form = RegisterForm({'username': 'a.s.s',
-                             'password': 'adssadfsadf',
-                             'password2': 'adssadfsadf',
+                             'password': 'adssadfsadf1',
+                             'password2': 'adssadfsadf1',
                              'email': 'newuser@example.com'})
         assert not form.is_valid()
         # Partial match.
         form = RegisterForm({'username': 'ass.assassin',
-                             'password': 'adssadfsadf',
-                             'password2': 'adssadfsadf',
+                             'password': 'adssadfsadf1',
+                             'password2': 'adssadfsadf1',
                              'email': 'newuser@example.com'})
         assert not form.is_valid()
         # No match.
         form = RegisterForm({'username': 'assassin',
-                             'password': 'adssadfsadf',
-                             'password2': 'adssadfsadf',
+                             'password': 'adssadfsadf1',
+                             'password2': 'adssadfsadf1',
                              'email': 'newuser@example.com'})
         assert form.is_valid()
 
