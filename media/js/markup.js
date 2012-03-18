@@ -404,46 +404,41 @@ Marky.LinkButton.prototype = $.extend({}, Marky.SimpleButton.prototype, {
             var articleName = request.term.split("#")[0]
                 articleName = articleName.toLowerCase().replace(/\s/g, "-");
             var articleURL = "/kb/" + articleName;
-            var xhr = new XMLHttpRequest();
-            xhr.onload = function() {
-                var headings = $("[id^='w_']", this.responseXML);
-                var array = [];
+            
+            $.ajax({
+                url: articleURL,
+                dataType: "text",
+                success: function(data, status) {
+                    var headings = $("[id^='w_']", data);
+                    var array = [];
 
-                if(headings.length == 0) {
-                    array.push({
-                        label: gettext("No sections found"),
-                        value: request.term.replace("#", "")
-                    })
-                }
+                    if(headings.length == 0) {
+                        array.push({
+                            label: gettext("No sections found"),
+                            value: request.term.replace("#", "")
+                        })
+                    }
                 
-                headings.each(function() {
-                    var element = this.nodeName;
-                    var level = element.substring(1);
-                    var label = $(this).text();
-                    var target = $(this).attr("id");
-                    var value = request.term + target + "|" + label;
+                    headings.each(function() {
+                        var element = this.nodeName;
+                        var level = element.substring(1);
+                        var label = $(this).text();
+                        var target = $(this).attr("id");
+                        var value = request.term + target + "|" + label;
                     
-                    // Show hierarchy in the list:
-                    for(var i = 0; i < level - 1; i++)
-                        label = " : " + label;
+                        // Show hierarchy in the list:
+                        for(var i = 0; i < level - 1; i++)
+                            label = " : " + label;
 
-                    array.push({
-                        label: label,
-                        value: value,
-                        target: target
+                        array.push({
+                            label: label,
+                            value: value,
+                            target: target
+                        });
                     });
-                });
-                response(array);
-            }
-            xhr.open("GET", articleURL);
-            try {
-                xhr.responseType = "document"
-            }
-            catch(e) {
-                // responseType 'document' not available
-                xhr.responseType = "text";
-            }
-            xhr.send();
+                    response(array);
+                }
+            });
             
         }
         
