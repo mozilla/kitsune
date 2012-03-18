@@ -374,26 +374,87 @@ Marky.LinkButton.prototype = $.extend({}, Marky.SimpleButton.prototype, {
             $(this).closest('li').find('input[type="radio"]').click();
         });
 
+        // Perform a query for the sections of an article if
+        // last character is a pound:
+        var performSectionSearch = function(request) {
+            return (request.term.indexOf("#") == request.term.length - 1);
+        }        
+
+        var articleSearch = function(request, response) {
+            $.ajax({
+                url: "/search",
+                data: {
+                    format: 'json',
+                    q: request.term,
+                    a: 1,
+                    w: 1
+                },
+                dataType: 'json',
+                success: function(data, textStatus) {
+                    var array = [];
+                    $.map(data.results, function(val, i) {
+                        array.push({label: val.title});
+                    });
+                    response(array);
+                }
+            });
+        };
+        
+        var sectionSearch = function(request, response) {
+            var articleName = request.term.split("#")[0]
+                articleName = articleName.toLowerCase().replace(/\s/g, "-");
+            var articleURL = "/kb/" + articleName;
+            var xhr = new XMLHttpRequest();
+            xhr.onload = function() {
+                var headings = $("[id^='w_']", this.responseXML);
+                var array = [];
+
+                if(headings.length == 0) {
+                    array.push({
+                        label: gettext("No sections found"),
+                        value: request.term.replace("#", "")
+                    })
+                }
+                
+                headings.each(function() {
+                    var element = this.nodeName;
+                    var level = element.substring(1);
+                    var label = $(this).text();
+                    var target = $(this).attr("id");
+                    var value = request.term + target + "|" + label;
+                    
+                    // Show hierarchy in the list:
+                    for(var i = 0; i < level - 1; i++)
+                        label = " : " + label;
+
+                    array.push({
+                        label: label,
+                        value: value,
+                        target: target
+                    });
+                });
+                response(array);
+            }
+            xhr.open("GET", articleURL);
+            try {
+                xhr.responseType = "document"
+            }
+            catch(e) {
+                // responseType 'document' not available
+                xhr.responseType = "text";
+            }
+            xhr.send();
+            
+        }
+        
         $html.find('input[name="internal"]').autocomplete({
             source: function(request, response) {
-                $.ajax({
-                    url: "/search",
-                    data: {
-                        format: 'json',
-                        q: request.term,
-                        a: 1,
-                        w: 1
-                    },
-                    dataType: 'json',
-                    success: function(data, textStatus) {
-                        var array = [];
-                        $.map(data.results, function(val, i) {
-                            array.push({label: val.title});
-                        });
-
-                        response(array);
-                    }
-                });
+                if(performSectionSearch(request)) {
+                    sectionSearch(request, response);
+                }
+                else {
+                    articleSearch(request, response);
+                }
             }
         });
 
