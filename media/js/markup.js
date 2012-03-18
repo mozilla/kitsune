@@ -382,7 +382,7 @@ Marky.LinkButton.prototype = $.extend({}, Marky.SimpleButton.prototype, {
 
         var articleSearch = function(request, response) {
             $.ajax({
-                url: "/search",
+                url: "/en-US/search",
                 data: {
                     format: 'json',
                     q: request.term,
@@ -403,7 +403,9 @@ Marky.LinkButton.prototype = $.extend({}, Marky.SimpleButton.prototype, {
         var sectionSearch = function(request, response) {
             var articleName = request.term.split("#")[0]
                 articleName = articleName.toLowerCase().replace(/\s/g, "-");
-            var articleURL = "/kb/" + articleName;
+            
+            // Forcing en-US locale (as support forums are en-US only)
+            var articleURL = "/en-US/kb/" + articleName;
             
             $.ajax({
                 url: articleURL,
