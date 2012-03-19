@@ -60,9 +60,8 @@
       {{ document.html|safe }}
     {% elif fallback_reason == 'no_translation' %}
       <div id="doc-pending-fallback" class="warning-box">
-        {% trans help_link=url('wiki.document', 'localize-firefox-help'),
-                 locale=settings.LOCALES[request.locale].native %}
-          Our volunteers haven't translated this article into {{ locale }} yet.
+        {% trans help_link=url('wiki.document', 'localize-firefox-help') %}
+          No one has helped translate this article yet.
           <a href="{{ help_link }}">Join us and help get the job done!</a>
         {% endtrans %}
       </div>
