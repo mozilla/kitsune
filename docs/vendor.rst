@@ -77,6 +77,12 @@ even easier method when installing a new library from a git repo::
     $ git ci -m "Adding $LIBRARY"
 
 
+.. Note::
+
+   Use the ``git://`` url for a repository and not the ``http://``
+   one. The git protocol is more resilient and faster to clone over.
+
+
 Using PyPI
 ----------
 
