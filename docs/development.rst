@@ -31,7 +31,7 @@ Creating a new migration
 Each migration increases the schema version number by 1. You can
 figure out which schema your database is running by doing::
 
-    mysql> select * from schema_version;
+    ./vendor/src/schematic/schematic -v migrations
 
 Migrations are stored in files in ``migrations/``.
 
@@ -48,6 +48,21 @@ the output of::
 
 for the app that you made changes to, then editing that down to the
 bits needed.
+
+.. Note::
+
+   If you created new models, make sure to insert the content type and
+   default permissions. e.g. Something like this::
+
+      INSERT INTO django_content_type (name, app_label, model) VALUES
+          ('record', 'search', 'record');
+      SET @ct = (SELECT id from django_content_type WHERE app_label='search'
+          and model='record');
+      INSERT INTO auth_permission (name, content_type_id, codename) VALUES
+          ('Can add record', @ct, 'add_record'),
+          ('Can change record', @ct, 'change_record'),
+          ('Can delete record', @ct, 'delete_record'),
+          ('Can run a full reindexing', @ct, 'reindex');
 
 
 Testing a migration
@@ -72,29 +87,30 @@ Search code that require reindexing.
 Things about non-trivial changes
 --------------------------------
 
-1. We should roll multiple reindex-requiring changes into megapacks when it
-   makes sense and doesn't add complexity.
+1. We should roll multiple reindex-requiring changes into megapacks
+   when it makes sense and doesn't add complexity.
 2. Developers should test changes with recent sumo dumps.
 
 
 Workflow for making the changes
 -------------------------------
 
-1. work on the changes in a separate branch (just like everything else we do)
+1. work on the changes in a separate branch (just like everything else
+   we do)
 2. make a pull request
 3. get the pull request reviewed
 4. rebase the changes so they're in two commits:
 
-   1. a stage 1 commit that changes ES_WRITE_INDEXES, updates the mappings
-      and updates the indexing code
-   2. a stage 2 commit that changes ES_INDEXES, changes ES_WRITE_INDEXES,
-      and changes the search view code
+   1. a stage 1 commit that changes ES_WRITE_INDEXES, updates the
+      mappings and updates the indexing code
+   2. a stage 2 commit that changes ES_INDEXES, changes
+      ES_WRITE_INDEXES, and changes the search view code
 
 5. push those changes to the same pull request
 6. get those two changes reviewed
 
-Once that's ok, then that branch should get updated from master, then pushed to
-stage to get tested.
+Once that's ok, then that branch should get updated from master, then
+pushed to stage to get tested.
 
 That branch should _not_ land in master, yet.
 
@@ -102,9 +118,10 @@ That branch should _not_ land in master, yet.
 Workflow for testing those changes
 ----------------------------------
 
-Once the special branch has been pushed to stage, the new search code is tested.
-If bugs are found, then go back to the coding workflow. Changes get made, a pull
-request is created, then things are rebased into the stage 1 and stage 2 commits.
+Once the special branch has been pushed to stage, the new search code
+is tested.  If bugs are found, then go back to the coding
+workflow. Changes get made, a pull request is created, then things are
+rebased into the stage 1 and stage 2 commits.
 
 
 Workflow for pushing those changes to production
@@ -121,13 +138,15 @@ verify that everything is fine. Then continue.
 6. verify that search works
 7. verify new bugs that have been fixed with the new search code
 
-Pretty sure this process allows us to back out at any time with minimal downtime.
+Pretty sure this process allows us to back out at any time with
+minimal downtime.
 
 
 On the next day
 ---------------
 
-If everything is still fine, then merge the special branch into master and delete the
-old read index.
+If everything is still fine, then merge the special branch into master
+and delete the old read index.
 
-Announce "STUCK THE LANDING!" after a successful mapping change deployment.
+Announce "STUCK THE LANDING!" after a successful mapping change
+deployment.
