@@ -374,6 +374,86 @@ Marky.LinkButton.prototype = $.extend({}, Marky.SimpleButton.prototype, {
             $(this).closest('li').find('input[type="radio"]').click();
         });
 
+        // Perform a query for the sections of an article if
+        // last character is a pound:
+        var performSectionSearch = function(request) {
+            return (request.term.indexOf("#") == request.term.length - 1);
+        };
+
+        var articleSearch = function(request, response) {
+            $.ajax({
+                url: "/en-US/search",
+                data: {
+                    format: 'json',
+                    q: request.term,
+                    a: 1,
+                    w: 1
+                },
+                dataType: 'json',
+                success: function(data, textStatus) {
+                    var array = [];
+                    $.map(data.results, function(val, i) {
+                        array.push({label: val.title});
+                    });
+                    response(array);
+                }
+            });
+        };
+        
+        var sectionSearch = function(request, response) {
+            var articleName = request.term.split("#")[0];
+            articleName = articleName.toLowerCase().replace(/\s/g, "-");
+            
+            // Forcing en-US locale (as support forums are en-US only)
+            var articleURL = "/en-US/kb/" + articleName;
+            
+            $.ajax({
+                url: articleURL,
+                dataType: "text",
+                success: function(data, status) {
+                    var headings = $("[id^='w_']", data);
+                    var array = [];
+
+                    if(headings.length == 0) {
+                        array.push({
+                            label: gettext("No sections found"),
+                            value: request.term.replace("#", "")
+                        });
+                    };
+                
+                    headings.each(function() {
+                        var element = this.nodeName;
+                        var level = element.substring(1);
+                        var label = $(this).text();
+                        var target = $(this).attr("id");
+                        var value = request.term + target + "|" + label;
+
+                        // Show hierarchy in the list:
+                        for(var i = 0; i < level - 1; i++)
+                            label = " : " + label;
+
+                        array.push({
+                            label: label,
+                            value: value,
+                            target: target
+                        });
+                    });
+                    response(array);
+                }
+            });
+        };
+        
+        $html.find('input[name="internal"]').autocomplete({
+            source: function(request, response) {
+                if(performSectionSearch(request)) {
+                    sectionSearch(request, response);
+                }
+                else {
+                    articleSearch(request, response);
+                }
+            }
+        });
+
         $html.find('button').text(gettext('Insert Link')).click(function(e){
             // Generate the wiki markup based on what the user has selected
             // (interval vs external links) and entered into the textboxes,
