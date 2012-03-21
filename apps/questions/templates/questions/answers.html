@@ -287,9 +287,6 @@
     {% endif %}
 
     <section id="question-reply">
-      <header>
-        <h1>{{ _('Post a Reply') }}</h1>
-      </header>
       {% if question.is_locked %}
         <div class="user-section"></div>
         <div class="main-section">
@@ -299,6 +296,9 @@
         </div>
         <div class="side-section"></div>
       {% elif user.is_authenticated() %}
+      <header>
+        <h1>{{ _('Post a Reply') }}</h1>
+      </header>
         <div class="user-section">
           <div class="avatar self">
             <a href="{{ profile_url(user) }}">
