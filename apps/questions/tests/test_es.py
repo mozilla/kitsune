@@ -2,7 +2,7 @@ import elasticutils
 from nose.tools import eq_
 
 from questions.models import Question, question_searcher
-from questions.tests import question, answer, answer_vote
+from questions.tests import question, answer, answervote, questionvote
 from search.tests import dummy_request
 from sumo.tests import ElasticTestCase
 
@@ -60,6 +60,18 @@ class QuestionUpdateTests(ElasticTestCase):
         self.refresh()
         eq_(question_searcher(dummy_request).query('pink').count(), 0)
 
+    def test_question_questionvote(self):
+        # Create a question and verify it doesn't show up in a
+        # query for num_votes__gt=0.
+        q = question(title=u'model makers will inherit the earth', save=True)
+        self.refresh()
+        eq_(question_searcher(dummy_request).filter(num_votes__gt=0).count(), 0)
+
+        # Add a QuestionVote--it should show up now.
+        qv = questionvote(question=q, save=True)
+        self.refresh()
+        eq_(question_searcher(dummy_request).filter(num_votes__gt=0).count(), 1)
+
     def test_questions_tags(self):
         """Make sure that adding tags to a Question causes it to
         refresh the index.
@@ -82,7 +94,7 @@ class QuestionSearchTests(ElasticTestCase):
     """Tests about searching for questions"""
     def test_case_insensitive_search(self):
         """Ensure the default searcher is case insensitive."""
-        answer_vote(
+        answervote(
             answer=answer(question=question(title='lolrus',
                                             content='I am the lolrus.',
                                             save=True),

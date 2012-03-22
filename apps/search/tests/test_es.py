@@ -7,7 +7,7 @@ from sumo.tests import LocalizingClient, ElasticTestCase
 from sumo.urlresolvers import reverse
 
 from search.models import generate_tasks
-from questions.tests import question, answer, answer_vote
+from questions.tests import question, answer, answervote
 from questions.models import Question
 from wiki.tests import document, revision
 from forums.tests import thread, post
@@ -53,36 +53,6 @@ class ElasticSearchTasksTests(ElasticTestCase):
 class ElasticSearchViewTests(ElasticTestCase):
     client_class = LocalizingClient
 
-    def test_excerpting_doesnt_crash(self):
-        """This tests to make sure search view works.
-
-        Amongst other things, this tests to make sure excerpting
-        doesn't crash when elasticsearch flag is set to True.  This
-        means that we're calling excerpt on the S that the results
-        came out of.
-
-        """
-        # Create a question with an answer with an answervote that
-        # marks the answer as helpful.  The question should have the
-        # "desktop" tag.
-        ques = question(
-            title=u'audio fails',
-            content=u'my audio dont work.')
-        ques.save()
-
-        ques.tags.add(u'desktop')
-        self.refresh()
-
-        response = self.client.get(reverse('search'), {
-            'format': 'json', 'q': 'audio', 'a': 1
-        })
-        eq_(200, response.status_code)
-
-        # Make sure there are more than 0 results.  Otherwise we don't
-        # really know if it slid through the excerpting code.
-        content = json.loads(response.content)
-        eq_(content['total'], 1)
-
     def test_front_page_search_for_questions(self):
         """This tests whether doing a search from the front page returns
         question results.
@@ -105,7 +75,7 @@ class ElasticSearchViewTests(ElasticTestCase):
             content=u'You need to turn your volume up.')
         ans.save()
 
-        ansvote = answer_vote(
+        ansvote = answervote(
             answer=ans,
             helpful=True)
         ansvote.save()
