@@ -9,56 +9,56 @@ from sumo.tests import ElasticTestCase
 
 class QuestionUpdateTests(ElasticTestCase):
     def test_added(self):
-        eq_(elasticutils.S(Question).count(), 0)
-
-        q = question(save=True)
+        # Create a question--that adds one document to the index.
+        q = question(title=u'Does this test work?', save=True)
         self.refresh()
-        eq_(elasticutils.S(Question).count(), 1)
+        eq_(question_searcher(dummy_request).query('test').count(), 1)
 
-        a = answer(question=q)
+        # Create an answer for the question. It shouldn't be searchable
+        # until the answer is saved.
+        a = answer(content=u'There\'s only one way to find out!',
+                   question=q)
         self.refresh()
-        eq_(elasticutils.S(Question).count(), 1)
+        eq_(question_searcher(dummy_request).query('only').count(), 0)
 
         a.save()
         self.refresh()
+        eq_(question_searcher(dummy_request).query('only').count(), 1)
 
-        # Creating a new answer for a question doesn't create a new
-        # document in the index.  Therefore, the count remains 1.
-        #
-        # TODO: This is ambiguous: it's not clear whether we correctly
-        # updated the document in the index or whether the post_save
-        # hook didn't kick off.  Need a better test.
+        # Make sure that there's only one question document in the
+        # index--creating an answer should have updated the existing
+        # one.
         eq_(elasticutils.S(Question).count(), 1)
 
     def test_question_no_answers_deleted(self):
-        eq_(elasticutils.S(Question).count(), 0)
-
-        q = question(save=True)
+        q = question(title=u'Does this work?', save=True)
         self.refresh()
-        eq_(elasticutils.S(Question).count(), 1)
+        eq_(question_searcher(dummy_request).query('work').count(), 1)
 
         q.delete()
         self.refresh()
-        eq_(elasticutils.S(Question).count(), 0)
+        eq_(question_searcher(dummy_request).query('work').count(), 0)
 
     def test_question_one_answer_deleted(self):
-        eq_(elasticutils.S(Question).count(), 0)
-
-        q = question(save=True)
-        a = answer(question=q, save=True)
+        q = question(title=u'are model makers the new pink?', save=True)
+        a = answer(content=u'yes.', question=q, save=True)
         self.refresh()
 
         # Question and its answers are a single document--so the
         # index count should be only 1.
-        eq_(elasticutils.S(Question).count(), 1)
+        eq_(question_searcher(dummy_request).query('pink').count(), 1)
 
+        # After deleting the answer, the question document should
+        # remain.
         a.delete()
         self.refresh()
-        eq_(elasticutils.S(Question).count(), 1)
+        eq_(question_searcher(dummy_request).query('pink').count(), 1)
 
+        # Delete the question and it should be removed from the
+        # index.
         q.delete()
         self.refresh()
-        eq_(elasticutils.S(Question).count(), 0)
+        eq_(question_searcher(dummy_request).query('pink').count(), 0)
 
     def test_questions_tags(self):
         """Make sure that adding tags to a Question causes it to
