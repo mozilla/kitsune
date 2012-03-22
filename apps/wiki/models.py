@@ -501,7 +501,8 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
             'summary': {'type': 'string', 'analyzer': 'snowball'},
             'keywords': {'type': 'string', 'analyzer': 'snowball'},
             'updated': {'type': 'integer'},
-            'tag': {'type': 'string', 'index': 'not_analyzed'}}
+            'tag': {'type': 'string', 'index': 'not_analyzed'},
+            'url': {'type': 'string', 'index': 'not_analyzed'}}
 
     @classmethod
     def extract_document(cls, obj_id):
@@ -517,6 +518,7 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
         d['category'] = obj.category
         d['slug'] = obj.slug
         d['is_archived'] = obj.is_archived
+        d['url'] = obj.get_absolute_url()
 
         if obj.parent is None:
             d['tag'] = [tag['name'] for tag in obj.tags.values()]

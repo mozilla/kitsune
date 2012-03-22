@@ -45,9 +45,9 @@ class TestVotesWithElasticSearch(ElasticTestCase):
         # get a Question object which has data from the database and
         # not the index.
         document = (elasticutils.S(Question)
-                                .values_dict('question_votes')
+                                .values_dict('num_votes_past_week')
                                 .query(id=q.id))[0]
-        eq_(document['question_votes'], 0)
+        eq_(document['num_votes_past_week'], 0)
 
         vote = questionvote(question=q, anonymous_id='abc123')
         vote.save()
@@ -60,6 +60,6 @@ class TestVotesWithElasticSearch(ElasticTestCase):
         eq_(1, q.num_votes_past_week)
 
         document = (elasticutils.S(Question)
-                                .values_dict('question_votes')
+                                .values_dict('num_votes_past_week')
                                 .query(id=q.id))[0]
-        eq_(document['question_votes'], 1)
+        eq_(document['num_votes_past_week'], 1)

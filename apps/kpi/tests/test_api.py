@@ -9,7 +9,7 @@ from kpi.models import Metric, VISITORS_METRIC_CODE, L10N_METRIC_CODE
 from kpi.tests import metric, metric_kind
 from sumo.tests import TestCase, LocalizingClient
 from sumo.urlresolvers import reverse
-from questions.tests import answer, answer_vote, question
+from questions.tests import answer, answervote, question
 from users.tests import user, add_permission
 from wiki.tests import document, revision, helpful_vote
 
@@ -49,9 +49,9 @@ class KpiApiTests(TestCase):
         helpful_vote(revision=r, helpful=True, save=True)
 
         a = answer(save=True)
-        answer_vote(answer=a, save=True)
-        answer_vote(answer=a, helpful=True, save=True)
-        answer_vote(answer=a, helpful=True, save=True)
+        answervote(answer=a, save=True)
+        answervote(answer=a, helpful=True, save=True)
+        answervote(answer=a, helpful=True, save=True)
 
         url = reverse('api_dispatch_list',
                       kwargs={'resource_name': 'kpi_vote',
