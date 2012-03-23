@@ -640,9 +640,9 @@ class Revision(ModelBase):
                 old = self.based_on
                 self.based_on = based_on  # Be nice and guess a correct value.
                 # TODO(erik): This error message ignores non-translations.
-                raise ValidationError(_('A revision must be based the '
-                    'English article. Revision ID %(id)s does not fit those'
-                    ' criteria.') %
+                raise ValidationError(_('A revision must be based on the '
+                    'English article. Revision ID %(id)s does not fit this'
+                    ' criterion.') %
                     dict(id=old.id))
 
         if not self.can_be_readied_for_localization():
