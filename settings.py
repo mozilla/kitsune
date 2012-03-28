@@ -208,9 +208,7 @@ MIDDLEWARE_CLASSES = (
 )
 
 # Auth
-AUTHENTICATION_BACKENDS = (
-    'users.backends.Sha256Backend',
-)
+AUTHENTICATION_BACKENDS = ('django.contrib.auth.backends.ModelBackend',)
 AUTH_PROFILE_MODULE = 'users.Profile'
 USER_AVATAR_PATH = 'uploads/avatars/'
 DEFAULT_AVATAR = MEDIA_URL + 'img/avatar.png'
@@ -219,6 +217,13 @@ MAX_AVATAR_FILE_SIZE = 131072  # 100k, in bytes
 GROUP_AVATAR_PATH = 'uploads/groupavatars/'
 
 ACCOUNT_ACTIVATION_DAYS = 30
+
+PASSWORD_HASHERS = (
+    'users.hashers.SHA256PasswordHasher',
+    'django.contrib.auth.hashers.SHA1PasswordHasher',
+    'django.contrib.auth.hashers.MD5PasswordHasher',
+    'django.contrib.auth.hashers.UnsaltedMD5PasswordHasher',
+)
 
 PASSWORD_BLACKLIST = path('configs/password-blacklist.txt')
 USERNAME_BLACKLIST = path('configs/username-blacklist.txt')
