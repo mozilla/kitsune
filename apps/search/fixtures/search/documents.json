@@ -100,7 +100,7 @@
         "model": "wiki.revision",
         "fields": {
             "comment": "",
-            "based_on": 11,
+            "based_on": null,
             "is_approved": true,
             "created": "2010-09-14 15:09:35",
             "summary": "\u30d8\u30eb\u30d7\u3068\u30c1\u30e5\u30fc\u30c8\u30ea\u30a2\u30eb\u4eba\u6c17\u306e\u30b5\u30dd\u30fc\u30c8\u8a18\u4e8b",
@@ -118,7 +118,7 @@
         "model": "wiki.revision",
         "fields": {
             "comment": "",
-            "based_on": 5,
+            "based_on": null,
             "is_approved": true,
             "created": "2010-09-17 07:32:11",
             "summary": "yeah OK whatever",
@@ -136,7 +136,7 @@
         "model": "wiki.revision",
         "fields": {
             "comment": "",
-            "based_on": 18,
+            "based_on": null,
             "is_approved": true,
             "created": "2010-09-23 08:18:56",
             "summary": "ceci n'est pas une pipe!",
@@ -154,7 +154,7 @@
         "model": "wiki.revision",
         "fields": {
             "comment": "",
-            "based_on": 20,
+            "based_on": null,
             "is_approved": true,
             "created": "2010-09-29 09:09:52",
             "summary": "the keyword audio only appears in the summary of this article",

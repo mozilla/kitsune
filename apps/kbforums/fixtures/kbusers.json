@@ -27,7 +27,7 @@
             "last_login": "2010-01-01 00:00:00",
             "groups": [],
             "user_permissions": [],
-            "password": "sha1$d0fcb$661bd5197214051ed4de6da4ecdabe17f5549c7c",
+            "password": "sha256$c0648bd9b3$2d78b7d0504eba77f16fdf168dd7df6b1416075d506faf472a25981c1b3ea781",
             "email": "user1@nowhere",
             "date_joined": "2010-01-01 00:00:00"
         }
@@ -45,7 +45,7 @@
             "last_login": "2010-01-01 00:00:00",
             "groups": [],
             "user_permissions": [],
-            "password": "sha1$d0fcb$661bd5197214051ed4de6da4ecdabe17f5549c7c",
+            "password": "sha256$c0648bd9b3$2d78b7d0504eba77f16fdf168dd7df6b1416075d506faf472a25981c1b3ea781",
             "email": "user2@nowhere",
             "date_joined": "2010-01-01 00:00:00"
         }
@@ -63,7 +63,7 @@
             "last_login": "2010-04-13 10:20:21",
             "groups": [1],
             "user_permissions": [],
-            "password": "sha1$d0fcb$661bd5197214051ed4de6da4ecdabe17f5549c7c",
+            "password": "sha256$c0648bd9b3$2d78b7d0504eba77f16fdf168dd7df6b1416075d506faf472a25981c1b3ea781",
             "email": "user47963@nowhere",
             "date_joined": "2008-10-06 10:34:21"
         }
@@ -81,7 +81,7 @@
             "last_login": "2010-04-26 19:01:45",
             "groups": [],
             "user_permissions": [],
-            "password": "sha1$d0fcb$661bd5197214051ed4de6da4ecdabe17f5549c7c",
+            "password": "sha256$c0648bd9b3$2d78b7d0504eba77f16fdf168dd7df6b1416075d506faf472a25981c1b3ea781",
             "email": "user118533@nowhere",
             "date_joined": "2009-08-10 16:09:45"
         }
@@ -99,7 +99,7 @@
             "last_login": "2010-06-29 10:20:21",
             "groups": [1],
             "user_permissions": [],
-            "password": "sha1$d0fcb$661bd5197214051ed4de6da4ecdabe17f5549c7c",
+            "password": "sha256$c0648bd9b3$2d78b7d0504eba77f16fdf168dd7df6b1416075d506faf472a25981c1b3ea781",
             "email": "user118577@nowhere",
             "date_joined": "2010-06-29 10:20:21"
         }
@@ -117,7 +117,7 @@
             "last_login": "2010-08-13 15:04:35",
             "groups": [],
             "user_permissions": [],
-            "password": "sha1$d0fcb$661bd5197214051ed4de6da4ecdabe17f5549c7c",
+            "password": "sha256$c0648bd9b3$2d78b7d0504eba77f16fdf168dd7df6b1416075d506faf472a25981c1b3ea781",
             "email": "user180054@nowhere",
             "date_joined": "2010-06-10 14:08:53"
         }

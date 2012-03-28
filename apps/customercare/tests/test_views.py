@@ -238,6 +238,8 @@ class TweetReplyTests(TestCase):
             'profile_image_url': 'http://example.com/profile.jpg',
             'profile_image_url_https': 'https://example.com/profile.jpg', }
         request.twitter.api.update_status.return_value = return_value
+        request.user = Mock()
+        request.user.is_authenticated = lambda: False
 
         # Pass the request to the view and verify response.
         response = twitter_post(request)

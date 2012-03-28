@@ -108,28 +108,6 @@ class LoginTests(TestCaseBase):
         eq_(302, response.status_code)
         eq_('http://testserver' + valid_next, response['location'])
 
-    def test_login_legacy_password(self):
-        '''Test logging in with a legacy md5 password.'''
-        legacypw = 'legacypass'
-
-        # Set the user's password to an md5
-        self.u.password = hashlib.md5(legacypw).hexdigest()
-        self.u.save()
-
-        # Log in and verify that it's updated to a SHA-256
-        response = self.client.post(reverse('users.login'),
-                                    {'username': self.u.username,
-                                     'password': legacypw})
-        eq_(302, response.status_code)
-        u = User.objects.get(username=self.u.username)
-        assert u.password.startswith('sha256$')
-
-        # Try to log in again.
-        response = self.client.post(reverse('users.login'),
-                                    {'username': self.u.username,
-                                     'password': legacypw})
-        eq_(302, response.status_code)
-
 
 class PasswordResetTests(TestCaseBase):
 
