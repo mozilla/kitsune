@@ -178,7 +178,7 @@ class SolutionResource(CachedResource):
         qs = _daily_qs_for(Question)
 
         # Filter on solution
-        qs_with_solutions = qs.filter(solution__isnull=False)
+        qs_with_solutions = qs.exclude(solution_id=None)
 
         return merge_results(solved=qs_with_solutions, questions=qs)
 
