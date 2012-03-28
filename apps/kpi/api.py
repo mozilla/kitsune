@@ -188,7 +188,7 @@ class QuestionsResource(CachedResource):
         rs = qs.filter(id__in=aq.values_list('question'))
 
         # Questions with a solution.
-        qs_with_solutions = qs.filter(solution__isnull=False)
+        qs_with_solutions = qs.exclude(solution_id=None)
 
         return merge_results(
             questions=qs,
