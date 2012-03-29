@@ -23,6 +23,7 @@ from sumo.decorators import ssl_required
 from sumo.urlresolvers import reverse
 from sumo.utils import get_next_url
 from upload.tasks import _create_image_thumbnail
+from users.backends import Sha256Backend  # Monkey patch User.set_password.
 from users.forms import (ProfileForm, AvatarForm, EmailConfirmationForm,
                          AuthenticationForm, EmailChangeForm, SetPasswordForm,
                          PasswordChangeForm, SettingsForm, ForgotUsernameForm)
