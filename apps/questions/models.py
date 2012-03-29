@@ -204,6 +204,8 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
                 pass
 
     def get_absolute_url(self):
+        # Note: If this function changes, we need to change it in
+        # extract_document, too.
         return reverse('questions.answers',
                        kwargs={'question_id': self.id})
 
@@ -299,7 +301,7 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
                  'store': 'yes', 'term_vector': 'with_positions_offsets'},
             'answer_content':
                 {'type': 'string', 'analyzer': 'snowball'},
-            'replies': {'type': 'integer'},
+            'num_answers': {'type': 'integer'},
             'is_solved': {'type': 'boolean'},
             'is_locked': {'type': 'boolean'},
             'has_answers': {'type': 'boolean'},
@@ -308,13 +310,18 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
             'updated': {'type': 'integer'},
             'question_creator': {'type': 'string', 'index': 'not_analyzed'},
             'answer_creator': {'type': 'string', 'index': 'not_analyzed'},
-            'question_votes': {'type': 'integer'},
+            'num_votes': {'type': 'integer'},
+            'num_votes_past_week': {'type': 'integer'},
             'answer_votes': {'type': 'integer'},
-            'tag': {'type': 'string', 'index': 'not_analyzed'}}
+            'tag': {'type': 'string', 'index': 'not_analyzed'},
+            'url': {'type': 'string', 'index': 'not_analyzed'}}
 
     @classmethod
     def extract_document(cls, obj_id):
         """Extracts indexable attributes from a Question and its answers."""
+
+        # Note: Need to keep this in sync with
+        # tasks.update_question_vote_chunk.
         obj = cls.uncached.values(
             'id', 'title', 'content', 'num_answers', 'solution_id',
             'is_locked', 'created', 'updated', 'num_votes_past_week',
@@ -324,10 +331,17 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
         d['id'] = obj['id']
         d['title'] = obj['title']
         d['question_content'] = obj['content']
-        d['replies'] = obj['num_answers']
+        d['num_answers'] = obj['num_answers']
         d['is_solved'] = bool(obj['solution_id'])
         d['is_locked'] = obj['is_locked']
         d['has_answers'] = bool(obj['num_answers'])
+
+        # We do this because get_absolute_url is an instance method
+        # and we don't want to create an instance because it's a DB
+        # hit and expensive. So we do it by hand. get_absolute_url
+        # doesn't change much, so this is probably ok.
+        d['url'] = reverse('questions.answers',
+                           kwargs={'question_id': obj['id']})
 
         # TODO: Sphinx stores created and updated as seconds since the
         # epoch, so we convert them to that format here so that the
@@ -338,7 +352,10 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
         d['updated'] = int(time.mktime(obj['updated'].timetuple()))
 
         d['question_creator'] = obj['creator__username']
-        d['question_votes'] = obj['num_votes_past_week']
+        d['num_votes'] = (QuestionVote.objects
+                          .filter(question=obj['id'])
+                          .count())
+        d['num_votes_past_week'] = obj['num_votes_past_week']
 
         d['tag'] = list(TaggedItem.tags_for(
             Question, Question(pk=obj_id)).values_list('name', flat=True))
@@ -582,6 +599,10 @@ class QuestionVote(ModelBase):
 
     def add_metadata(self, key, value):
         VoteMetadata.objects.create(vote=self, key=key, value=value)
+
+
+register_for_indexing(
+    QuestionVote, 'questions', instance_to_indexee=lambda v: v.question)
 
 
 class AnswerVote(ModelBase):

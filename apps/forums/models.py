@@ -194,7 +194,8 @@ class Thread(NotificationsMixin, ModelBase, SearchMixin):
                         'term_vector': 'with_positions_offsets'},
             'created': {'type': 'integer'},
             'updated': {'type': 'integer'},
-            'replies': {'type': 'integer'}}
+            'replies': {'type': 'integer'},
+            'url': {'type': 'string', 'index': 'not_analyzed'}}
 
     @classmethod
     def extract_document(cls, obj_id):
@@ -207,6 +208,7 @@ class Thread(NotificationsMixin, ModelBase, SearchMixin):
         d['title'] = obj.title
         d['is_sticky'] = obj.is_sticky
         d['is_locked'] = obj.is_locked
+        d['url'] = obj.get_absolute_url()
 
         # TODO: Sphinx stores created and updated as seconds since the
         # epoch, so we convert them to that format here so that the

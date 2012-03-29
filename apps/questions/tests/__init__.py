@@ -80,7 +80,7 @@ def answer(**kwargs):
 
 
 @with_save
-def answer_vote(**kwargs):
+def answervote(**kwargs):
     defaults = dict(created=datetime.now(), helpful=False)
     defaults.update(kwargs)
     if 'creator' not in kwargs and 'creator_id' not in kwargs:

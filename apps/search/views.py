@@ -42,6 +42,11 @@ def jsonp_is_valid(func):
     return func_regex.match(func)
 
 
+class ObjectDict(object):
+    def __init__(self, source_dict):
+        self.__dict__.update(source_dict)
+
+
 def search_with_es(request, template=None):
     """ES-specific search view"""
 
@@ -203,20 +208,20 @@ def search_with_es(request, template=None):
     interval_filters = (
         ('created', cleaned['created'], cleaned['created_date']),
         ('updated', cleaned['updated'], cleaned['updated_date']),
-        ('question_votes', cleaned['num_voted'], cleaned['num_votes']))
+        ('num_votes', cleaned['num_voted'], cleaned['num_votes']))
     for filter_name, filter_option, filter_date in interval_filters:
         if filter_option == constants.INTERVAL_BEFORE:
             before = {filter_name + '__gte': 0,
                       filter_name + '__lte': max(filter_date, 0)}
 
-            if filter_name != 'question_votes':
+            if filter_name != 'num_votes':
                 discussion_s = discussion_s.filter(**before)
             question_s = question_s.filter(**before)
         elif filter_option == constants.INTERVAL_AFTER:
             after = {filter_name + '__gte': min(filter_date, unix_now),
                      filter_name + '__lte': unix_now}
 
-            if filter_name != 'question_votes':
+            if filter_name != 'num_votes':
                 discussion_s = discussion_s.filter(**after)
             question_s = question_s.filter(**after)
 
@@ -230,8 +235,8 @@ def search_with_es(request, template=None):
         if cleaned['w'] & constants.WHERE_WIKI:
             if cleaned_q:
                 wiki_s = wiki_s.query(cleaned_q)
-            wiki_s = wiki_s[:max_results]
-            documents.set_count('wiki', min(wiki_s.count(), max_results))
+            documents.set_count(('wiki', wiki_s),
+                                min(wiki_s.count(), max_results))
 
         if cleaned['w'] & constants.WHERE_SUPPORT:
             # Sort results by
@@ -241,31 +246,18 @@ def search_with_es(request, template=None):
             except IndexError:
                 pass
 
-            highlight_fields = ['title', 'question_content',
-                                'answer_content']
-
             question_s = question_s.highlight(
-                *highlight_fields,
+                'title', 'question_content', 'answer_content',
                 before_match='<b>',
                 after_match='</b>',
                 limit=settings.SEARCH_SUMMARY_LENGTH)
 
             if cleaned_q:
                 question_s = question_s.query(cleaned_q)
-            question_s = question_s[:max_results]
-            documents.set_count('question',
+            documents.set_count(('question', question_s),
                                 min(question_s.count(), max_results))
 
         if cleaned['w'] & constants.WHERE_DISCUSSION:
-            # Sort results by
-            try:
-                # Note that the first attribute needs to be the same
-                # here and in forums/models.py discussion_search.
-                discussion_s = discussion_s.group_by(
-                    'thread_id', constants.GROUPSORT[sortby])
-            except IndexError:
-                pass
-
             discussion_s = discussion_s.highlight(
                 'content',
                 before_match='<b>',
@@ -274,76 +266,51 @@ def search_with_es(request, template=None):
 
             if cleaned_q:
                 discussion_s = discussion_s.query(cleaned_q)
-            discussion_s = discussion_s[:max_results]
-            documents.set_count('discussion',
+            documents.set_count(('forum', discussion_s),
                                 min(discussion_s.count(), max_results))
 
         results_per_page = settings.SEARCH_RESULTS_PER_PAGE
         pages = paginate(request, documents, results_per_page)
+
+        # Get the documents we want to show and add them to
+        # docs_for_page.
+        documents = documents[offset:offset + results_per_page]
         docs_for_page = []
-
-        # Update *_s with the bounds because we need the most recent
-        # ones for excerpting. Slicing the documents "faux list" gives
-        # us kind and bounds for what we're going to show.
-        #
-        # TODO: This can be simplified when rewriting excerpting for
-        # ES.
-        for kind, bounds in documents[offset:offset + results_per_page]:
-            if kind == 'wiki':
-                search_s = wiki_s
-            elif kind == 'question':
-                search_s = question_s
-            elif kind == 'discussion':
-                search_s = discussion_s
-
-            search_s = search_s[bounds[0]:bounds[1]]
-
-            if kind == 'wiki':
-                wiki_s = search_s
-            elif kind == 'question':
-                question_s = search_s
-            elif kind == 'discussion':
-                discussion_s = search_s
-
+        for (kind, search_s), bounds in documents:
+            search_s = search_s.values_dict()[bounds[0]:bounds[1]]
             docs_for_page += [(kind, doc) for doc in search_s]
-
-        # TODO: change this so it doesn't require DB hits. that
-        # invovles reworking elasticutils excerpting and also nixing
-        # get_absolute_url().
 
         results = []
         for i, docinfo in enumerate(docs_for_page):
             rank = i + offset
+            # Type here is 'wiki', ... while doc here is an ES result
+            # document.
             type_, doc = docinfo
-            try:
-                if type_ == 'wiki':
-                    summary = doc.current_revision.summary
-                    result = {
-                        'url': doc.get_absolute_url(),
-                        'title': doc.title,
-                        'type': 'document',
-                        'object': doc}
-                elif type_ == 'question':
-                    summary = _build_excerpt(question_s, doc)
-                    result = {
-                        'url': doc.get_absolute_url(),
-                        'title': doc.title,
-                        'type': 'question',
-                        'object': doc}
-                else:
-                    summary = _build_excerpt(discussion_s, doc)
-                    result = {
-                        'url': doc.get_absolute_url(),
-                        'title': doc.title,
-                        'type': 'thread',
-                        'object': doc}
-                result['search_summary'] = summary
-                result['rank'] = rank
-                results.append(result)
-            except IndexError:
-                break
-            except ObjectDoesNotExist:
-                continue
+
+            if type_ == 'wiki':
+                summary = doc['summary']
+                result = {
+                    'url': doc['url'],
+                    'title': doc['title'],
+                    'type': 'document',
+                    'object': ObjectDict(doc)}
+            elif type_ == 'question':
+                summary = _build_es_excerpt(doc)
+                result = {
+                    'url': doc['url'],
+                    'title': doc['title'],
+                    'type': 'question',
+                    'object': ObjectDict(doc)}
+            else:
+                summary = _build_es_excerpt(doc)
+                result = {
+                    'url': doc['url'],
+                    'title': doc['title'],
+                    'type': 'thread',
+                    'object': ObjectDict(doc)}
+            result['search_summary'] = summary
+            result['rank'] = rank
+            results.append(result)
 
     except (ESTimeoutError, ESMaxRetryError, ESException), exc:
         # Handle timeout and all those other transient errors with a
@@ -868,7 +835,7 @@ def _ternary_filter(ternary_value):
 
 
 def _build_excerpt(searcher, model_obj):
-    """Return concatenated search excerpts.
+    """Return concatenated search excerpts for Sphinx.
 
     :arg searcher: The ``S`` object that did the search
     :arg model_obj: The model object returned by the search
@@ -884,5 +851,18 @@ def _build_excerpt(searcher, model_obj):
     except ExcerptSocketError:
         statsd.incr('search.excerpt.socketerror')
         excerpt = u''
+
+    return jinja2.Markup(clean_excerpt(excerpt))
+
+
+def _build_es_excerpt(result):
+    """Return concatenated search excerpts.
+
+    :arg result: The result object from the queryset results
+
+    """
+    excerpt = EXCERPT_JOINER.join(
+        [m.strip() for m in
+         chain(*result.highlighted.values()) if m])
 
     return jinja2.Markup(clean_excerpt(excerpt))

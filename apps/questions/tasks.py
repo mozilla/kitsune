@@ -73,7 +73,9 @@ def update_question_vote_chunk(data, **kwargs):
             document = doc[u'_source']
             new_num_votes = id_to_num[doc_id]
 
-            document[u'question_votes'] = new_num_votes
+            # Note: Need to keep this in sync with
+            # Question.extract_document.
+            document[u'num_votes_past_week'] = new_num_votes
 
             Question.index(document, refresh=True)
 
