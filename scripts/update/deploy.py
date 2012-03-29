@@ -34,6 +34,7 @@ def update_locales(ctx):
 @task
 def update_assets(ctx):
     with ctx.lcd(settings.SRC_DIR):
+        ctx.local("python2.6 manage.py collectstatic")
         ctx.local("python2.6 manage.py cron get_highcharts")
         ctx.local("LANG=en_US.UTF-8 python2.6 manage.py compress_assets")
 

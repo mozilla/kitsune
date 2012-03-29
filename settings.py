@@ -132,10 +132,11 @@ MEDIA_ROOT = path('media')
 # Examples: "http://media.lawrence.com", "http://example.com/media/"
 MEDIA_URL = '/media/'
 
-# URL prefix for admin media -- CSS, JavaScript and images. Make sure to use a
-# trailing slash.
-# Examples: "http://foo.com/media/", "/media/".
+# TODO: Remove this when we upgrade to django 1.4
 ADMIN_MEDIA_PREFIX = '/admin-media/'
+
+STATIC_ROOT = path('static')
+STATIC_URL = '/static/'
 
 # Paths that don't require a locale prefix.
 SUPPORTED_NONLOCALES = ('media', 'admin', 'robots.txt', 'services', '1',
@@ -240,6 +241,7 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.sites',
     'django.contrib.messages',
+    'django.contrib.staticfiles',
     'django.contrib.admin',
     'users',
     'tower',
