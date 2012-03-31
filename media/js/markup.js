@@ -378,7 +378,7 @@ Marky.LinkButton.prototype = $.extend({}, Marky.SimpleButton.prototype, {
         // last character is a pound:
         var performSectionSearch = function(request) {
             return (request.term.indexOf("#") == request.term.length - 1);
-        }        
+        };
 
         var articleSearch = function(request, response) {
             $.ajax({
@@ -401,8 +401,8 @@ Marky.LinkButton.prototype = $.extend({}, Marky.SimpleButton.prototype, {
         };
         
         var sectionSearch = function(request, response) {
-            var articleName = request.term.split("#")[0]
-                articleName = articleName.toLowerCase().replace(/\s/g, "-");
+            var articleName = request.term.split("#")[0];
+            articleName = articleName.toLowerCase().replace(/\s/g, "-");
             
             // Forcing en-US locale (as support forums are en-US only)
             var articleURL = "/en-US/kb/" + articleName;
@@ -418,8 +418,8 @@ Marky.LinkButton.prototype = $.extend({}, Marky.SimpleButton.prototype, {
                         array.push({
                             label: gettext("No sections found"),
                             value: request.term.replace("#", "")
-                        })
-                    }
+                        });
+                    };
                 
                     headings.each(function() {
                         var element = this.nodeName;
@@ -427,7 +427,7 @@ Marky.LinkButton.prototype = $.extend({}, Marky.SimpleButton.prototype, {
                         var label = $(this).text();
                         var target = $(this).attr("id");
                         var value = request.term + target + "|" + label;
-                    
+
                         // Show hierarchy in the list:
                         for(var i = 0; i < level - 1; i++)
                             label = " : " + label;
@@ -441,8 +441,7 @@ Marky.LinkButton.prototype = $.extend({}, Marky.SimpleButton.prototype, {
                     response(array);
                 }
             });
-            
-        }
+        };
         
         $html.find('input[name="internal"]').autocomplete({
             source: function(request, response) {
