@@ -379,6 +379,17 @@ Marky.LinkButton.prototype = $.extend({}, Marky.SimpleButton.prototype, {
         var performSectionSearch = function(request) {
             return (request.term.indexOf("#") == request.term.length - 1);
         };
+        
+        var results = [];
+        
+        //Get the article URL by providing the article name:
+        var getArticleURL = function(name) {
+            for(var i = 0; i < results.length; i++)
+                if(name == results[i].label)
+                    return results[i].url;
+
+            return null;
+        };
 
         var articleSearch = function(request, response) {
             $.ajax({
@@ -391,22 +402,24 @@ Marky.LinkButton.prototype = $.extend({}, Marky.SimpleButton.prototype, {
                 },
                 dataType: 'json',
                 success: function(data, textStatus) {
-                    var array = [];
                     $.map(data.results, function(val, i) {
-                        array.push({label: val.title});
+                        results.push({
+                            label: val.title,
+                            url: val.url
+                        });
                     });
-                    response(array);
+                    response(results);
                 }
             });
         };
         
         var sectionSearch = function(request, response) {
             var articleName = request.term.split("#")[0];
-            articleName = articleName.toLowerCase().replace(/\s/g, "-");
-            
-            // Forcing en-US locale (as support forums are en-US only)
-            var articleURL = "/en-US/kb/" + articleName;
-            
+            var articleURL = getArticleURL(articleName);
+
+            if(!articleURL)
+                return;
+
             $.ajax({
                 url: articleURL,
                 dataType: "text",
