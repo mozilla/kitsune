@@ -384,14 +384,17 @@ Marky.LinkButton.prototype = $.extend({}, Marky.SimpleButton.prototype, {
         
         //Get the article URL by providing the article name:
         var getArticleURL = function(name) {
-            for(var i = 0; i < results.length; i++)
-                if(name == results[i].label)
+            for(var i = 0; i < results.length; i++) {
+                if(name == results[i].label) {
                     return results[i].url;
+                };
+            };
 
             return null;
         };
 
         var articleSearch = function(request, response) {
+            results = [];
             $.ajax({
                 url: "/en-US/search",
                 data: {
@@ -430,20 +433,17 @@ Marky.LinkButton.prototype = $.extend({}, Marky.SimpleButton.prototype, {
                     if(headings.length == 0) {
                         array.push({
                             label: gettext("No sections found"),
-                            value: request.term.replace("#", "")
+                            value: request.term.replace("#", ""),
+                            target: ""
                         });
                     };
-                
+
                     headings.each(function() {
                         var element = this.nodeName;
                         var level = element.substring(1);
                         var label = $(this).text();
                         var target = $(this).attr("id");
-                        var value = request.term + target + "|" + label;
-
-                        // Show hierarchy in the list:
-                        for(var i = 0; i < level - 1; i++)
-                            label = " : " + label;
+                        var value = request.term + target;
 
                         array.push({
                             label: label,
@@ -463,7 +463,17 @@ Marky.LinkButton.prototype = $.extend({}, Marky.SimpleButton.prototype, {
                 }
                 else {
                     articleSearch(request, response);
-                }
+                };
+            },
+            select: function(event, ui) {
+                if(!ui.item.target) {
+                    return;
+                };
+
+                var $linktext = $html.find('input[name=link-text]');
+                if($linktext.val() == "") {
+                    $linktext.val(ui.item.label);
+                };
             }
         });
 
