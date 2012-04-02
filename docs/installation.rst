@@ -36,6 +36,9 @@ following things (in addition to Git, of course).
 
 * Several Python packages. See `Installing the Packages`_.
 
+* Elastic Search and Sphinx Search. :ref:`search-chapter` covers
+  installation, configuration, and running.
+
 Installation for these is very system dependent. Using a package manager, like
 yum, aptitude, or brew, is encouraged.
 
@@ -120,6 +123,47 @@ For local development you will want to add the following settings::
     TEMPLATE_DEBUG = DEBUG
     SESSION_COOKIE_SECURE = False
 
+    # Allows you to run Kitsune without running Celery---all tasks
+    # will be done synchronously.
+    CELERY_ALWAYS_EAGER = False
+
+    # Allows you to specify waffle settings in the querystring.
+    WAFFLE_OVERRIDE = True
+
+    # Change this to True if you're going to be doing search-related
+    # work.
+    ES_LIVE_INDEXING = False
+
+    # Basic cache configuration for development.
+    CACHES = {
+        'default': {
+            'BACKEND': 'caching.backends.memcached.CacheClass',
+            'LOCATION': 'localhost:11211'
+            }
+        }
+
+    CACHE_BACKEND = 'caching.backends.memcached://localhost:11211'
+    CACHE_MACHINE_USE_REDIS = True
+    CACHE_MIDDLEWARE_ALIAS = 'default'
+    CACHE_MIDDLEWARE_KEY_PREFIX = ''
+    CACHE_MIDDLEWARE_SECONDS = 600
+    CACHE_PREFIX = 'sumo:'
+
+    # Basic database configuration for development.
+    DATABASES = {
+        'default': {
+            'NAME': 'kitsune',
+            'ENGINE': 'django.db.backends.mysql',
+            'HOST': 'localhost',
+            'USER': 'kitsune',
+            'PASSWORD': 'password',
+            'OPTIONS': {'init_command': 'SET storage_engine=InnoDB'},
+            'TEST_CHARSET': 'utf8',
+            'TEST_COLLATION': 'utf8_unicode_ci',
+            },
+        }
+
+
 Redis
 -----
 
@@ -135,6 +179,19 @@ There are two ways to set this up.  First is to set it up like in
 ``settings.py`` and run all three redis servers.  The second is to set
 it up differently, tweak the settings in ``settings_local.py``
 accordingly, and run Redis using just the test configuration.
+
+
+memcache
+--------
+
+.. Note::
+
+   This should probably be somewhere else, but the easy way to flush
+   your cache is something like this::
+
+       echo "flush_all" | nc localhost 11211
+
+   Assuming you have memcache configured to listen to 11211.
 
 
 Database
@@ -236,6 +293,15 @@ I (Will) put that in a script that creates the needed directories in
     $REDISBIN $CONFFILE/redis-volatile.conf
 
 
+Elastic search and Sphinx search
+--------------------------------
+
+Elastic Search and Sphinx Search. :ref:`search-chapter` covers
+installation, configuration, and running.
+
+.. todo:: The installation side of these two should get moved here.
+
+
 Testing it Out
 ==============
 
@@ -264,9 +330,8 @@ Running the test suite is easy::
 
 For more information, see the :ref:`test documentation <tests-chapter>`.
 
+.. Note::
 
-Setting Up Search
-=================
-
-See the :ref:`search documentation <search-chapter>` for steps to get
-Sphinx search working.
+   Some of us use `nose-progressive
+   <https://github.com/erikrose/nose-progressive>`_ because it makes
+   tests easier to run and debug.

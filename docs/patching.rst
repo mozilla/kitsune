@@ -1,3 +1,5 @@
+.. _patching:
+
 ================
 Patching Kitsune
 ================

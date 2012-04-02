@@ -6,6 +6,19 @@ This document contains useful information about our coding conventions, and
 things to watch out for, etc.
 
 
+Coding conventions
+==================
+
+We follow most of the practices as detailed in the `Mozilla webdev bootcamp
+guide <http://mozweb.readthedocs.org/en/latest/coding.html>`_.
+
+
+Git conventions
+===============
+
+See :ref:`patching` for our Git usage conventions.
+
+
 Tests
 =====
 
