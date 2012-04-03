@@ -4,10 +4,17 @@ from nose.tools import eq_
 import test_utils
 
 import access
+from authority.models import Permission
 from forums.models import Forum, Thread
-from sumo.tests import TestCase
+from sumo.tests import TestCase, with_save
 from sumo.urlresolvers import reverse
 
+
+@with_save
+def permission(**kwargs):
+    if 'approved' not in kwargs:
+        kwargs['approved'] = True
+    return Permission(**kwargs)
 
 class AccessTests(TestCase):
     """Test stuff in access/__init__.py"""

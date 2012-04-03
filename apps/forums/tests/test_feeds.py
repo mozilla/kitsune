@@ -1,9 +1,13 @@
+from datetime import datetime, timedelta
 from nose.tools import eq_
 from pyquery import PyQuery as pq
 
 from forums.feeds import ThreadsFeed, PostsFeed
-from forums.models import Forum, Thread
-from forums.tests import ForumTestCase, get
+from forums.tests import ForumTestCase, forum, thread, post
+from sumo.tests import get
+
+
+YESTERDAY = datetime.now() - timedelta(days=1)
 
 
 class ForumTestFeedSorting(ForumTestCase):
@@ -13,23 +17,32 @@ class ForumTestFeedSorting(ForumTestCase):
 
     def test_threads_sort(self):
         """Ensure that threads are being sorted properly by date/time."""
-        f = Forum.objects.get(pk=1)
-        given_ = ThreadsFeed().items(f)[0].id
-        exp_ = 4L
-        eq_(exp_, given_)
+        # Threads are sorted descending by last post date.
+        f = forum(save=True)
+        t1 = thread(forum=f, created=YESTERDAY, save=True)
+        post(thread=t1, created=YESTERDAY, save=True)
+        t2 = thread(forum=f, save=True)
+        post(thread=t2, save=True)
+
+        eq_(t2.id, ThreadsFeed().items(f)[0].id)
 
     def test_posts_sort(self):
         """Ensure that posts are being sorted properly by date/time."""
-        t = Thread.objects.get(pk=1)
-        given_ = PostsFeed().items(t)[0].id
-        exp_ = 24L
-        eq_(exp_, given_)
+        t = thread(save=True)
+        post(thread=t, created=YESTERDAY, save=True)
+        post(thread=t, created=YESTERDAY, save=True)
+        p = post(thread=t, save=True)
+
+        # The newest post should be the first one listed.
+        eq_(p.id, PostsFeed().items(t)[0].id)
 
     def test_multi_feed_titling(self):
         """Ensure that titles are being applied properly to feeds."""
-        forum = Forum.objects.filter()[0]
+        t = thread(save=True)
+        forum = t.forum
+        post(thread=t, save=True)
+
         response = get(self.client, 'forums.threads', args=[forum.slug])
         doc = pq(response.content)
-        given_ = doc('link[type="application/atom+xml"]')[0].attrib['title']
-        exp_ = ThreadsFeed().title(forum)
-        eq_(exp_, given_)
+        eq_(ThreadsFeed().title(forum),
+            doc('link[type="application/atom+xml"]')[0].attrib['title'])
