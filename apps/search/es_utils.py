@@ -1,5 +1,6 @@
 from itertools import chain, count, izip
 import logging
+import json
 
 import elasticutils
 import pyes
@@ -218,3 +219,44 @@ def es_status_cmd():
                 log.info('    %-20s: %d', name, count)
     else:
         log.info('  Write index is same as read index.')
+
+
+def es_search_cmd(query):
+    """Simulates a front page search
+
+    .. Note::
+
+       This **doesn't** simulate an advanced search---just a front
+       page search.
+
+    """
+    from sumo.tests import LocalizingClient
+    from sumo.urlresolvers import reverse
+
+    client = LocalizingClient()
+
+    output = []
+    output.append('Search for: %s' % query)
+    output.append('')
+
+    data = {
+        'q': query,
+        'q_tags': 'desktop', 'product': 'desktop', 'format': 'json'
+        }
+    url = reverse('search')
+
+    # The search view shows 10 results at a time. So we hit it few
+    # times---once for each page.
+    for pageno in ('1', '2', '3'):
+        data['page'] = pageno
+        resp = client.get(url, data)
+        assert resp.status_code == 200
+
+        content = json.loads(resp.content)
+        results = content[u'results']
+
+        for mem in results:
+            output.append(u'%4d  %5.2f  %-10s  %-20s' % (
+                    mem['rank'], mem['score'], mem['type'], mem['title']))
+
+    print '\n'.join(output)
