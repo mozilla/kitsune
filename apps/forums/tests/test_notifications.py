@@ -10,9 +10,9 @@ import test_utils
 
 from forums.events import NewPostEvent, NewThreadEvent
 from forums.models import Thread, Forum, Post
-from forums.tests import ForumTestCase
+from forums.tests import OldForumTestCase
 from sumo.urlresolvers import reverse
-from sumo.tests import get, post, attrs_eq, starts_with
+from sumo.tests import post, attrs_eq, starts_with
 from users.models import Setting
 from users.tests import user
 
@@ -61,7 +61,7 @@ Unsubscribe from these emails:
 https://testserver/en-US/unsubscribe/"""
 
 
-class NotificationsTests(ForumTestCase):
+class NotificationsTests(OldForumTestCase):
     """Test that notifications get sent."""
 
     @mock.patch.object(NewPostEvent, 'fire')

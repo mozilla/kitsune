@@ -1,10 +1,8 @@
-from django.contrib.auth.models import User
-
 from nose.tools import eq_
 
 from activity.models import Action
-from forums.models import Forum, Post, Thread
-from forums.tests import ForumTestCase
+from forums.tests import ForumTestCase, thread, post
+from users.tests import user
 
 
 class ReplyLoggingTests(ForumTestCase):
@@ -14,13 +12,13 @@ class ReplyLoggingTests(ForumTestCase):
 
     def test_activity_logged(self):
         assert not Action.uncached.exists(), 'Actions start empty.'
-        orig, replier = User.objects.all()[0:2]
-        f = Forum.objects.all()[0]
-        t = Thread.objects.create(creator=orig, title='foo', forum=f)
-        Post.objects.create(author=orig, content='foo', thread=t)
+        orig = user(save=True)
+        replier = user(save=True)
+        t = thread(creator=orig, title='foo', save=True)
+        post(author=orig, content='foo', thread=t, save=True)
         assert not Action.uncached.exists(), 'No actions were logged.'
 
-        Post.objects.create(author=replier, content='foo2', thread=t)
+        post(author=replier, content='foo2', thread=t, save=True)
         eq_(1, Action.uncached.count(), 'One action was logged.')
 
         a = Action.uncached.all()[0]

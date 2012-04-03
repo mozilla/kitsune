@@ -4,13 +4,13 @@ from nose.tools import eq_
 from django.contrib.auth.models import User
 
 from forums.models import Forum, Thread
-from forums.tests import ForumTestCase
+from forums.tests import OldForumTestCase
 from forums.events import NewThreadEvent, NewPostEvent
 from sumo.tests import get, post
 from sumo.urlresolvers import reverse
 
 
-class PostPermissionsTests(ForumTestCase):
+class PostPermissionsTests(OldForumTestCase):
     """Test post views permissions."""
 
     def test_read_without_permission(self):
@@ -44,7 +44,7 @@ class PostPermissionsTests(ForumTestCase):
         eq_(405, response.status_code)
 
 
-class ThreadAuthorityPermissionsTests(ForumTestCase):
+class ThreadAuthorityPermissionsTests(OldForumTestCase):
     """Test thread views authority permissions."""
 
     def test_new_thread_without_view_permission(self):
@@ -94,7 +94,7 @@ class ThreadAuthorityPermissionsTests(ForumTestCase):
         eq_(404, response.status_code)
 
 
-class ThreadTests(ForumTestCase):
+class ThreadTests(OldForumTestCase):
     """Test thread views."""
 
     def test_watch_forum(self):
@@ -183,7 +183,7 @@ class ThreadTests(ForumTestCase):
         assert 'last=' in r['location']
 
 
-class ThreadPermissionsTests(ForumTestCase):
+class ThreadPermissionsTests(OldForumTestCase):
 
     def setUp(self):
         super(ThreadPermissionsTests, self).setUp()

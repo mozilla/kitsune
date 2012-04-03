@@ -1,11 +1,11 @@
 from nose.tools import eq_
 
 from forums.models import Forum
-from forums.tests import ForumTestCase
+from forums.tests import OldForumTestCase
 from sumo.tests import get, post
 
 
-class BelongsTestCase(ForumTestCase):
+class BelongsTestCase(OldForumTestCase):
     """
     Mixing and matching thread, forum, and post data in URLs should fail.
     """

@@ -4,11 +4,11 @@ from pyquery import PyQuery as pq
 from django.contrib.auth.models import User
 
 from forums.models import Forum, Thread, Post
-from forums.tests import ForumTestCase
+from forums.tests import OldForumTestCase
 from sumo.tests import get, post
 
 
-class PostsTemplateTests(ForumTestCase):
+class PostsTemplateTests(OldForumTestCase):
 
     def test_empty_reply_errors(self):
         """Posting an empty reply shows errors."""
@@ -156,7 +156,7 @@ class PostsTemplateTests(ForumTestCase):
         eq_('nofollow', doc('ol.posts div.content a')[0].attrib['rel'])
 
 
-class ThreadsTemplateTests(ForumTestCase):
+class ThreadsTemplateTests(OldForumTestCase):
 
     def test_last_thread_post_link_has_post_id(self):
         """Make sure the last post url links to the last post (#post-<id>)."""
@@ -257,7 +257,7 @@ class ThreadsTemplateTests(ForumTestCase):
         self.assertNotContains(response, 'Post a new thread')
 
 
-class ForumsTemplateTests(ForumTestCase):
+class ForumsTemplateTests(OldForumTestCase):
 
     def setUp(self):
         super(ForumsTemplateTests, self).setUp()
@@ -291,7 +291,7 @@ class ForumsTemplateTests(ForumTestCase):
             pq(response.content)('link[rel="canonical"]')[0].attrib['href'])
 
 
-class NewThreadTemplateTests(ForumTestCase):
+class NewThreadTemplateTests(OldForumTestCase):
 
     def test_preview(self):
         """Preview the thread post."""
