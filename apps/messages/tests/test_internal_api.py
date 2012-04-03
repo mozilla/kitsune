@@ -3,17 +3,15 @@ from nose.tools import eq_
 from messages import send_message
 from messages.models import InboxMessage, OutboxMessage
 from sumo.tests import TestCase
-from users.tests import get_user
+from users.tests import user
 
 
 class SendTests(TestCase):
     """Tests for the internal send API."""
 
-    fixtures = ['users.json']
-
     def test_send_message(self):
-        to = [get_user('jsocol'), get_user('pcraciunoiu')]
-        sender = get_user('rrosario')
+        to = [user(save=True), user(save=True)]
+        sender = user(save=True)
         msg_text = "hi there!"
         send_message(to=to, text=msg_text, sender=sender)
 
@@ -23,8 +21,8 @@ class SendTests(TestCase):
         msg_out = msgs_out[0]
         eq_(sender, msg_out.sender)
         eq_(msg_text, msg_out.message)
-        for user in msg_out.to.all():
-            assert user in to
+        for u in msg_out.to.all():
+            assert u in to
         eq_(2, msgs_in.count())
         for message in msgs_in:
             eq_(sender, message.sender)
