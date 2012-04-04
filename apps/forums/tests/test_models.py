@@ -8,7 +8,7 @@ from nose.tools import eq_
 from access.tests import permission
 from forums.events import NewPostEvent, NewThreadEvent
 from forums.models import Forum, Thread, Post
-from forums.tests import OldForumTestCase, ForumTestCase, forum, thread, post
+from forums.tests import ForumTestCase, forum, thread, post
 from sumo.helpers import urlparams
 from sumo.urlresolvers import reverse
 from users.tests import user
@@ -167,35 +167,30 @@ class ForumModelTestCase(ForumTestCase):
         assert not NewThreadEvent.is_notifying('me@me.com', f)
 
 
-class ThreadModelTestCase(OldForumTestCase):
-
-    def setUp(self):
-        super(ThreadModelTestCase, self).setUp()
-        self.fixtures = self.fixtures + ['notifications.json']
-
+class ThreadModelTestCase(ForumTestCase):
     def test_delete_thread_with_last_forum_post(self):
         """Deleting the thread with a forum's last post should
         update the last_post field on the forum
         """
-        forum = Forum.objects.get(pk=1)
-        last_post = forum.last_post
+        t = thread(save=True)
+        post(thread=t, save=True)
+        f = t.forum
+        last_post = f.last_post
 
         # add a new thread and post, verify last_post updated
-        thread = Thread(title="test", forum=forum, creator_id=118533)
-        thread.save()
-        post = Post(thread=thread, content="test", author=thread.creator)
-        post.save()
-        forum = Forum.objects.get(pk=1)
-        eq_(forum.last_post.id, post.id)
+        t = thread(title="test", forum=f, save=True)
+        p = post(thread=t, content="test", author=t.creator, save=True)
+        f = Forum.objects.get(id=f.id)
+        eq_(f.last_post.id, p.id)
 
         # delete the post, verify last_post updated
-        thread.delete()
-        forum = Forum.objects.get(pk=1)
-        eq_(forum.last_post.id, last_post.id)
-        eq_(Thread.objects.filter(pk=thread.id).count(), 0)
+        t.delete()
+        f = Forum.objects.get(id=f.id)
+        eq_(f.last_post.id, last_post.id)
+        eq_(Thread.objects.filter(pk=t.id).count(), 0)
 
     def test_delete_removes_watches(self):
-        t = Thread.objects.get(pk=1)
+        t = thread(save=True)
         NewPostEvent.notify('me@me.com', t)
         assert NewPostEvent.is_notifying('me@me.com', t)
         t.delete()
@@ -203,14 +198,12 @@ class ThreadModelTestCase(OldForumTestCase):
 
     def test_delete_last_and_only_post_in_thread(self):
         """Deleting the only post in a thread should delete the thread"""
-        forum = Forum.objects.get(pk=1)
-        thread = Thread(title="test", forum=forum, creator_id=118533)
-        thread.save()
-        post = Post(thread=thread, content="test", author=thread.creator)
-        post.save()
-        eq_(1, thread.post_set.count())
-        post.delete()
-        eq_(0, Thread.uncached.filter(pk=thread.id).count())
+        t = thread(save=True)
+        p = post(thread=t, save=True)
+        f = t.forum
+        eq_(1, t.post_set.count())
+        t.delete()
+        eq_(0, Thread.uncached.filter(pk=t.id).count())
 
 
 class SaveDateTestCase(ForumTestCase):

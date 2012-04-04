@@ -10,7 +10,7 @@ import test_utils
 
 from forums.events import NewPostEvent, NewThreadEvent
 from forums.models import Thread, Forum, Post
-from forums.tests import OldForumTestCase
+from forums.tests import ForumTestCase, thread, forum
 from sumo.urlresolvers import reverse
 from sumo.tests import post, attrs_eq, starts_with
 from users.models import Setting
@@ -61,14 +61,15 @@ Unsubscribe from these emails:
 https://testserver/en-US/unsubscribe/"""
 
 
-class NotificationsTests(OldForumTestCase):
+class NotificationsTests(ForumTestCase):
     """Test that notifications get sent."""
 
     @mock.patch.object(NewPostEvent, 'fire')
     def test_fire_on_reply(self, fire):
         """The event fires when there is a reply."""
-        t = Thread.objects.get(pk=2)
-        self.client.login(username='jsocol', password='testpass')
+        u = user(save=True)
+        t = thread(save=True)
+        self.client.login(username=u.username, password='testpass')
         post(self.client, 'forums.reply', {'content': 'a post'},
              args=[t.forum.slug, t.id])
         # NewPostEvent.fire() is called.
@@ -77,13 +78,15 @@ class NotificationsTests(OldForumTestCase):
     @mock.patch.object(NewThreadEvent, 'fire')
     def test_fire_on_new_thread(self, fire):
         """The event fires when there is a new thread."""
-        f = Forum.objects.get(pk=1)
-        self.client.login(username='jsocol', password='testpass')
+        u = user(save=True)
+        f = forum(save=True)
+        self.client.login(username=u.username, password='testpass')
         post(self.client, 'forums.new_thread',
              {'title': 'a title', 'content': 'a post'},
              args=[f.slug])
         # NewThreadEvent.fire() is called.
         assert fire.called
+    test_fire_on_new_thread.xx = 1
 
     def _toggle_watch_thread_as(self, username, turn_on=True, thread_id=2):
         """Watch a thread and return it."""
