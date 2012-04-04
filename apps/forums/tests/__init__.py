@@ -30,7 +30,9 @@ def forum(**kwargs):
 
 @with_save
 def thread(**kwargs):
-    defaults = dict(created=datetime.now())
+    defaults = dict(
+        created=datetime.now(),
+        title=''.join(random.choice(letters) for x in xrange(15)))
     defaults.update(kwargs)
     if 'creator' not in kwargs and 'creator_id' not in kwargs:
         defaults['creator'] = user(save=True)
@@ -45,4 +47,6 @@ def post(**kwargs):
     defaults.update(kwargs)
     if 'author' not in kwargs and 'author_id' not in kwargs:
         defaults['author'] = user(save=True)
+    if 'thread' not in kwargs and 'thread_id' not in kwargs:
+        defaults['thread'] = thread(save=True)
     return Post(**defaults)

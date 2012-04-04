@@ -1,71 +1,89 @@
-from nose.tools import eq_
+from datetime import datetime, timedelta
 
 from django.conf import settings
 from django.contrib.auth.models import User
 
-from forums.models import Thread, Post, ThreadLockedError
-from forums.tests import OldForumTestCase
+from nose.tools import eq_
+
+from forums.models import Thread, Forum, ThreadLockedError
+from forums.tests import ForumTestCase, thread, post
 from forums.views import sort_threads
 from sumo.tests import get
 
 
-class PostTestCase(OldForumTestCase):
+class PostTestCase(ForumTestCase):
 
     def test_new_post_updates_thread(self):
         """Saving a new post in a thread should update the last_post key in
         that thread to point to the new post."""
-        t = Thread.objects.get(pk=2)
-        post = t.new_post(author=t.creator, content='an update')
-        post.save()
-        eq_(post.id, t.last_post_id)
+        t = thread(save=True)
+        post(thread=t, save=True)
+        p = t.new_post(author=t.creator, content='an update')
+        p.save()
+        t = Thread.objects.get(id=t.id)
+        eq_(p.id, t.last_post_id)
 
     def test_new_post_updates_forum(self):
         """Saving a new post should update the last_post key in the forum to
         point to the new post."""
-        t = Thread.objects.get(pk=2)
-        f = t.forum
-        post = t.new_post(author=t.creator, content='another update')
-        post.save()
-        eq_(post.id, f.last_post_id)
+        t = thread(save=True)
+        post(thread=t, save=True)
+        p = t.new_post(author=t.creator, content='another update')
+        p.save()
+        f = Forum.objects.get(id=t.forum_id)
+        eq_(p.id, f.last_post_id)
 
     def test_update_post_does_not_update_thread(self):
         """Updating/saving an old post in a thread should _not_ update the
         last_post key in that thread."""
-        p = Post.objects.get(pk=2)
-        old = p.thread.last_post_id
-        p.content = 'updated content'
-        p.save()
-        eq_(old, p.thread.last_post_id)
+        t = thread(save=True)
+        old = post(thread=t, save=True)
+        last = post(thread=t, save=True)
+        old.content = 'updated content'
+        old.save()
+        eq_(last.id, old.thread.last_post_id)
 
     def test_update_forum_does_not_update_thread(self):
         """Updating/saving an old post in a forum should _not_ update the
         last_post key in that forum."""
-        p = Post.objects.get(pk=2)
-        old = p.thread.forum.last_post_id
-        p.content = 'updated content'
-        p.save()
-        eq_(old, p.thread.forum.last_post_id)
+        t = thread(save=True)
+        old = post(thread=t, save=True)
+        last = post(thread=t, save=True)
+        old.content = 'updated content'
+        old.save()
+        eq_(last.id, t.forum.last_post_id)
 
     def test_replies_count(self):
         """The Thread.replies value should remain one less than the number of
         posts in the thread."""
-        t = Thread.objects.get(pk=2)
+        t = thread(save=True)
+        post(thread=t, save=True)
+        post(thread=t, save=True)
+        post(thread=t, save=True)
         old = t.replies
+        eq_(2, old)
         t.new_post(author=t.creator, content='test').save()
         eq_(old + 1, t.replies)
 
     def test_sticky_threads_first(self):
         """Sticky threads should come before non-sticky threads."""
-        thread = Thread.objects.all()[0]
-        # Thread 2 is the only sticky thread.
-        eq_(2, thread.id)
+        t = thread(save=True)
+        sticky = thread(forum=t.forum, is_sticky=True, save=True)
+        eq_(sticky.id, Thread.objects.all()[0].id)
 
     def test_thread_sorting(self):
         """After the sticky threads, threads should be sorted by the created
         date of the last post."""
+        # Make sure the datetimes are different.
+        post(created=datetime.now() - timedelta(days=1), save=True)
+        post(save=True)
+        t = thread(is_sticky=True, save=True)
+        post(thread=t, save=True)
+
         threads = Thread.objects.filter(is_sticky=False)
         self.assert_(threads[0].last_post.created >
                      threads[1].last_post.created)
+    test_thread_sorting.xx = 1
 
     def test_post_sorting(self):
         """Posts should be sorted chronologically."""
@@ -121,7 +139,7 @@ class PostTestCase(OldForumTestCase):
         eq_(302, r.redirect_chain[0][1])
 
 
-class ThreadTestCase(OldForumTestCase):
+class ThreadTestCase(ForumTestCase):
 
     def test_delete_no_session(self):
         """Delete a thread while logged out redirects."""
