@@ -53,8 +53,8 @@ GROUPED_FIREFOX_VERSIONS = (
         VersionMetadata(3, _lazy(u'Firefox 3.0'),
                         _lazy(u'Firefox 3.0'), 'fx3', 3.4999, False, False))),
     ((_lazy(u'Mobile:'), 'mobile'), (
-        VersionMetadata(22, _lazy(u'Firefox 13'),
-                        _lazy(u'Firefox 13 for Mobile'), 'm13', 13.9999,
+        VersionMetadata(22, _lazy(u'Firefox 14'),
+                        _lazy(u'Firefox 14 for Mobile'), 'm14', 14.9999,
                         True, False),
         VersionMetadata(20, _lazy(u'Firefox 12'),
                         _lazy(u'Firefox 12 for Mobile'), 'm12', 12.9999,
