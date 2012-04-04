@@ -1,7 +1,6 @@
 from datetime import datetime, timedelta
 
 from django.conf import settings
-from django.contrib.auth.models import User
 
 from nose.tools import eq_
 
@@ -9,6 +8,7 @@ from forums.models import Thread, Forum, ThreadLockedError
 from forums.tests import ForumTestCase, thread, post
 from forums.views import sort_threads
 from sumo.tests import get
+from users.tests import user
 
 
 class PostTestCase(ForumTestCase):
@@ -67,8 +67,12 @@ class PostTestCase(ForumTestCase):
 
     def test_sticky_threads_first(self):
         """Sticky threads should come before non-sticky threads."""
-        t = thread(save=True)
+        t = post(save=True).thread
         sticky = thread(forum=t.forum, is_sticky=True, save=True)
+        yesterday = datetime.now() - timedelta(days=1)
+        post(thread=sticky, created=yesterday, save=True)
+
+        # The older sticky thread shows up first.
         eq_(sticky.id, Thread.objects.all()[0].id)
 
     def test_thread_sorting(self):
@@ -83,54 +87,71 @@ class PostTestCase(ForumTestCase):
         threads = Thread.objects.filter(is_sticky=False)
         self.assert_(threads[0].last_post.created >
                      threads[1].last_post.created)
-    test_thread_sorting.xx = 1
 
     def test_post_sorting(self):
         """Posts should be sorted chronologically."""
-        posts = Thread.objects.get(pk=1).post_set.all()
+        t = thread(save=True)
+        post(thread=t, created=datetime.now() - timedelta(days=1), save=True)
+        post(thread=t, created=datetime.now() - timedelta(days=4), save=True)
+        post(thread=t, created=datetime.now() - timedelta(days=7), save=True)
+        post(thread=t, created=datetime.now() - timedelta(days=11), save=True)
+        post(thread=t, save=True)
+        posts = t.post_set.all()
         for i in range(len(posts) - 1):
             self.assert_(posts[i].created <= posts[i + 1].created)
 
     def test_sorting_creator(self):
         """Sorting threads by creator."""
+        thread(save=True)
+        thread(save=True)
         threads = sort_threads(Thread.objects, 3, 1)
         self.assert_(threads[0].creator.username >=
                      threads[1].creator.username)
 
     def test_sorting_replies(self):
         """Sorting threads by replies."""
+        t = thread(save=True)
+        post(thread=t, save=True)
+        post(thread=t, save=True)
+        post(thread=t, save=True)
+        post(save=True)
         threads = sort_threads(Thread.objects, 4)
         self.assert_(threads[0].replies <= threads[1].replies)
 
     def test_sorting_last_post_desc(self):
         """Sorting threads by last_post descendingly."""
+        t = thread(save=True)
+        post(thread=t, save=True)
+        post(thread=t, save=True)
+        post(thread=t, save=True)
+        post(created=datetime.now() - timedelta(days=1), save=True)
         threads = sort_threads(Thread.objects, 5, 1)
         self.assert_(threads[0].last_post.created >=
                      threads[1].last_post.created)
 
     def test_thread_last_page(self):
         """Thread's last_page property is accurate."""
-        thread = Thread.objects.all()[0]
+        t = post(save=True).thread
         # Format: (# replies, # of pages to expect)
-        test_data = ((thread.replies, 1),  # Test default
+        test_data = ((t.replies, 1),  # Test default
                      (50, 3),  # Test a large number
                      (19, 1),  # Test off-by-one error, low
                      (20, 2),  # Test off-by-one error, high
                     )
         for replies, pages in test_data:
-            thread.replies = replies
-            eq_(thread.last_page, pages)
+            t.replies = replies
+            eq_(t.last_page, pages)
 
     def test_locked_thread(self):
         """Trying to reply to a locked thread should raise an exception."""
-        locked = Thread.objects.get(pk=3)
-        open = Thread.objects.get(pk=2)
-        user1 = User.objects.get(pk=118533)
+        locked = thread(is_locked=True, save=True)
+        unlocked = thread(save=True)
+        user1 = user(save=True)
         fn = lambda: locked.new_post(author=user1, content='empty')
         self.assertRaises(ThreadLockedError, fn)
 
         # This should not raise an exception.
-        open.new_post(author=user1, content='empty')
+        unlocked.new_post(author=user1, content='empty')
 
     def test_post_no_session(self):
         r = get(self.client, 'forums.new_thread',
