@@ -624,7 +624,7 @@ TEST_SPHINX_PORT = 3416
 TEST_SPHINXQL_PORT = 3418
 
 SEARCH_MAX_RESULTS = 1000
-SEARCH_RESULTS_PER_PAGE = 10
+SEARCH_RESULTS_PER_PAGE = 20
 
 # Search default settings
 # comma-separated tuple of included category IDs. Negative IDs are excluded.

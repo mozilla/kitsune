@@ -50,6 +50,45 @@ class ElasticSearchTasksTests(ElasticTestCase):
         eq_(index_fun.call_count, 1)
 
 
+class ElasticSearchViewPagingTests(ElasticTestCase):
+    client_class = LocalizingClient
+
+    def test_front_page_search_paging(self):
+        # Create 30 documents
+        for i in range(30):
+            doc = document(
+                title=u'How to fix your audio %d' % i,
+                locale=u'en-US',
+                category=10,
+                save=True)
+            doc.tags.add(u'desktop')
+            revision(document=doc, is_approved=True, save=True)
+
+        # Create 20 questions
+        for i in range(20):
+            ques = question(title=u'audio',  content=u'audio bad.', save=True)
+            ques.tags.add(u'desktop')
+            ans = answer(question=ques, save=True)
+            answervote(answer=ans, helpful=True, save=True)
+
+        self.refresh()
+
+        response = self.client.get(reverse('search'), {
+            'q_tags': 'desktop', 'product': 'desktop', 'q': 'audio',
+            'format': 'json'
+        })
+        eq_(200, response.status_code)
+        content = json.loads(response.content)
+
+        # Make sure there are 20 results.
+        eq_(content['total'], 20)
+
+        # Make sure only 10 of them are kb.
+        docs = [mem for mem in content['results']
+                if mem['type'] == 'document']
+        eq_(len(docs), 10)
+
+
 class ElasticSearchViewTests(ElasticTestCase):
     client_class = LocalizingClient
 

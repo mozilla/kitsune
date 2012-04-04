@@ -90,8 +90,8 @@ def search_with_es(request, template=None):
         r['language'] = language
         r['a'] = '1'
 
-    # TODO: Rewrite so SearchForm is unbound initially and we can use `initial`
-    # on the form fields.
+    # TODO: Rewrite so SearchForm is unbound initially and we can use
+    # `initial` on the form fields.
     if 'include_archived' not in r:
         r['include_archived'] = False
 
@@ -234,8 +234,15 @@ def search_with_es(request, template=None):
         if cleaned['w'] & constants.WHERE_WIKI:
             if cleaned_q:
                 wiki_s = wiki_s.query(cleaned_q)
+
+            # For a front-page non-advanced search, we want to cap the kb
+            # at 10 results.
+            if a == '0':
+                wiki_max_results = 10
+            else:
+                wiki_max_results = max_results
             documents.set_count(('wiki', wiki_s),
-                                min(wiki_s.count(), max_results))
+                                min(wiki_s.count(), wiki_max_results))
 
         if cleaned['w'] & constants.WHERE_SUPPORT:
             # Sort results by
