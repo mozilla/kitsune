@@ -310,6 +310,7 @@ def search_with_es(request, template=None):
                     'object': ObjectDict(doc)}
             result['search_summary'] = summary
             result['rank'] = rank
+            result['score'] = doc._score
             results.append(result)
 
     except (ESTimeoutError, ESMaxRetryError, ESException), exc:
@@ -863,6 +864,6 @@ def _build_es_excerpt(result):
     """
     excerpt = EXCERPT_JOINER.join(
         [m.strip() for m in
-         chain(*result.highlighted.values()) if m])
+         chain(*result._highlighted.values()) if m])
 
     return jinja2.Markup(clean_excerpt(excerpt))
