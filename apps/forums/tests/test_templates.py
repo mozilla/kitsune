@@ -1,23 +1,25 @@
+from django.contrib.contenttypes.models import ContentType
+
 from nose.tools import eq_
 from pyquery import PyQuery as pq
 
-from django.contrib.auth.models import User
-
-from forums.models import Forum, Thread, Post
-from forums.tests import OldForumTestCase
+from access.tests import permission
+from forums.models import Post
+from forums.tests import ForumTestCase, forum, thread, post as forum_post
 from sumo.tests import get, post
+from users.tests import user, group
 
 
-class PostsTemplateTests(OldForumTestCase):
+class PostsTemplateTests(ForumTestCase):
 
     def test_empty_reply_errors(self):
         """Posting an empty reply shows errors."""
-        self.client.login(username='jsocol', password='testpass')
+        u = user(save=True)
+        t = forum_post(save=True).thread
 
-        f = Forum.objects.filter()[0]
-        t = f.thread_set.all()[0]
+        self.client.login(username=u.username, password='testpass')
         response = post(self.client, 'forums.reply', {'content': ''},
-                        args=[f.slug, t.id])
+                        args=[t.forum.slug, t.id])
 
         doc = pq(response.content)
         error_msg = doc('ul.errorlist li a')[0]
@@ -25,14 +27,13 @@ class PostsTemplateTests(OldForumTestCase):
 
     def test_edit_post_errors(self):
         """Changing post content works."""
-        self.client.login(username='jsocol', password='testpass')
+        p = forum_post(save=True)
+        t = p.thread
+        u = p.author
 
-        f = Forum.objects.filter()[0]
-        t = f.thread_set.all()[0]
-        p_author = User.objects.get(username='jsocol')
-        p = t.post_set.filter(author=p_author)[0]
+        self.client.login(username=u.username, password='testpass')
         response = post(self.client, 'forums.edit_post',
-                        {'content': 'wha?'}, args=[f.slug, t.id, p.id])
+                        {'content': 'wha?'}, args=[t.forum.slug, t.id, p.id])
 
         doc = pq(response.content)
         errors = doc('ul.errorlist li a')
@@ -42,10 +43,12 @@ class PostsTemplateTests(OldForumTestCase):
 
     def test_edit_thread_template(self):
         """The edit-post template should render."""
-        self.client.login(username='jsocol', password='testpass')
+        p = forum_post(save=True)
+        t = p.thread
+        u = p.author
+        assert not t.is_locked
 
-        u = User.objects.get(username='jsocol')
-        p = Post.objects.filter(author=u, thread__is_locked=False)[0]
+        self.client.login(username=u.username, password='testpass')
         res = get(self.client, 'forums.edit_post',
                  args=[p.thread.forum.slug, p.thread.id, p.id])
 
@@ -54,42 +57,53 @@ class PostsTemplateTests(OldForumTestCase):
 
     def test_edit_post(self):
         """Changing post content works."""
-        self.client.login(username='jsocol', password='testpass')
+        p = forum_post(save=True)
+        t = p.thread
+        u = p.author
 
-        f = Forum.objects.filter()[0]
-        t = f.thread_set.all()[0]
-        p_author = User.objects.get(username='jsocol')
-        p = t.post_set.filter(author=p_author)[0]
+        self.client.login(username=u.username, password='testpass')
         post(self.client, 'forums.edit_post', {'content': 'Some new content'},
-             args=[f.slug, t.id, p.id])
-        edited_p = t.post_set.get(pk=p.id)
+             args=[t.forum.slug, t.id, p.id])
+        edited_p = Post.objects.get(id=p.id)
 
         eq_('Some new content', edited_p.content)
 
     def test_posts_fr(self):
         """Posts render for [fr] locale."""
-        forum = Forum.objects.filter()[0]
-        response = get(self.client, 'forums.posts', args=[forum.slug, 4],
+        t = forum_post(save=True).thread
+
+        response = get(self.client, 'forums.posts', args=[t.forum.slug, t.id],
                        locale='fr')
         eq_(200, response.status_code)
-        eq_('/forums/test-forum/4',
+        eq_('/forums/{f}/{t}'.format(f=t.forum.slug, t=t.id),
             pq(response.content)('link[rel="canonical"]')[0].attrib['href'])
 
     def test_long_title_truncated_in_crumbs(self):
         """A very long thread title gets truncated in the breadcrumbs"""
-        forum = Forum.objects.filter()[0]
-        response = get(self.client, 'forums.posts', args=[forum.slug, 4])
+        t = thread(title='A thread with a very very long title', save=True)
+        forum_post(thread=t, save=True)
+
+        response = get(self.client, 'forums.posts', args=[t.forum.slug, t.id])
         doc = pq(response.content)
         crumb = doc('ol.breadcrumbs li:last-child')
         eq_(crumb.text(), 'A thread with a very very ...')
 
     def test_edit_post_moderator(self):
         """Editing post as a moderator works."""
-        self.client.login(username='pcraciunoiu', password='testpass')
-
-        p = Post.objects.get(pk=4)
+        p = forum_post(save=True)
         t = p.thread
         f = t.forum
+
+        # Create the moderator group, give it the edit permission
+        # and add a moderator.
+        moderator_group = group(save=True)
+        ct = ContentType.objects.get_for_model(f)
+        permission(codename='forums_forum.post_edit_forum', content_type=ct,
+                   object_id=f.id, group=moderator_group, save=True)
+        moderator = user(save=True)
+        moderator_group.user_set.add(moderator)
+
+        self.client.login(username=moderator.username, password='testpass')
 
         r = post(self.client, 'forums.edit_post',
                  {'content': 'More new content'}, args=[f.slug, t.id, p.id])
@@ -100,24 +114,26 @@ class PostsTemplateTests(OldForumTestCase):
 
     def test_preview_reply(self):
         """Preview a reply."""
-        self.client.login(username='rrosario', password='testpass')
-        f = Forum.objects.filter()[0]
-        t = f.thread_set.all()[0]
-        num_posts = t.post_set.count()
+        t = forum_post(save=True).thread
+        u = t.creator
+
         content = 'Full of awesome.'
+        self.client.login(username=u.username, password='testpass')
         response = post(self.client, 'forums.reply',
                         {'content': content, 'preview': 'any string'},
-                        args=[f.slug, t.id])
+                        args=[t.forum.slug, t.id])
         eq_(200, response.status_code)
         doc = pq(response.content)
         eq_(content, doc('#post-preview div.content').text())
-        eq_(num_posts, t.post_set.count())
+        eq_(1, t.post_set.count())
 
     def test_watch_thread(self):
         """Watch and unwatch a thread."""
-        self.client.login(username='rrosario', password='testpass')
+        t = forum_post(save=True).thread
+        u = user(save=True)
 
-        t = Thread.objects.filter()[1]
+        self.client.login(username=u.username, password='testpass')
+
         response = post(self.client, 'forums.watch_thread', {'watch': 'yes'},
                         args=[t.forum.slug, t.id])
         self.assertContains(response, 'Watching')
@@ -128,52 +144,60 @@ class PostsTemplateTests(OldForumTestCase):
 
     def test_show_reply_fields(self):
         """Reply fields show if user has permission to post."""
-        self.client.login(username='jsocol', password='testpass')
+        t = forum_post(save=True).thread
+        u = user(save=True)
 
-        f = Forum.objects.filter()[0]
-        t = f.thread_set.all()[0]
-        response = get(self.client, 'forums.posts', args=[f.slug, t.pk])
+        self.client.login(username=u.username, password='testpass')
+        response = get(self.client, 'forums.posts', args=[t.forum.slug, t.pk])
         self.assertContains(response, 'thread-reply')
 
     def test_restricted_hide_reply(self):
         """Reply fields don't show if user has no permission to post."""
-        self.client.login(username='jsocol', password='testpass')
+        t = forum_post(save=True).thread
+        f = t.forum
+        ct = ContentType.objects.get_for_model(f)
+        # If the forum has the permission and the user isn't assigned said
+        # permission, then they can't post.
+        permission(codename='forums_forum.post_in_forum', content_type=ct,
+                   object_id=f.id, save=True)
+        u = user(save=True)
 
-        f = Forum.objects.get(slug='visible')
-        t = f.thread_set.all()[0]
+        self.client.login(username=u.username, password='testpass')
         response = get(self.client, 'forums.posts', args=[f.slug, t.pk])
         self.assertNotContains(response, 'thread-reply')
 
     def test_links_nofollow(self):
         """Links posted should have rel=nofollow."""
-        f = Forum.objects.filter()[0]
-        t = f.thread_set.all()[0]
-        p = t.post_set.all()[0]
-        p.content = 'linking http://test.org'
-        p.save()
+        p = forum_post(content='linking http://test.org', save=True)
+        t = p.thread
+        f = t.forum
+
         response = get(self.client, 'forums.posts', args=[f.slug, t.pk])
         doc = pq(response.content)
         eq_('nofollow', doc('ol.posts div.content a')[0].attrib['rel'])
 
 
-class ThreadsTemplateTests(OldForumTestCase):
+class ThreadsTemplateTests(ForumTestCase):
 
     def test_last_thread_post_link_has_post_id(self):
         """Make sure the last post url links to the last post (#post-<id>)."""
-        response = get(self.client, 'forums.threads', args=['test-forum'])
+        t = forum_post(save=True).thread
+        last = forum_post(thread=t, save=True)
+
+        response = get(self.client, 'forums.threads', args=[t.forum.slug])
         doc = pq(response.content)
         last_post_link = doc('ol.threads div.last-post a:not(.username)')[0]
         href = last_post_link.attrib['href']
-        eq_(href.split('#')[1], 'post-4')
+        eq_(href.split('#')[1], 'post-%s' % last.id)
 
     def test_empty_thread_errors(self):
         """Posting an empty thread shows errors."""
-        self.client.login(username='jsocol', password='testpass')
+        f = forum(save=True)
+        u = user(save=True)
 
-        f = Forum.objects.filter()[0]
+        self.client.login(username=u.username, password='testpass')
         response = post(self.client, 'forums.new_thread',
                         {'title': '', 'content': ''}, args=[f.slug])
-
         doc = pq(response.content)
         errors = doc('ul.errorlist li a')
         eq_(errors[0].text, 'Please provide a title.')
@@ -181,9 +205,10 @@ class ThreadsTemplateTests(OldForumTestCase):
 
     def test_new_short_thread_errors(self):
         """Posting a short new thread shows errors."""
-        self.client.login(username='jsocol', password='testpass')
+        f = forum(save=True)
+        u = user(save=True)
 
-        f = Forum.objects.filter()[0]
+        self.client.login(username=u.username, password='testpass')
         response = post(self.client, 'forums.new_thread',
                         {'title': 'wha?', 'content': 'wha?'}, args=[f.slug])
 
@@ -198,13 +223,12 @@ class ThreadsTemplateTests(OldForumTestCase):
 
     def test_edit_thread_errors(self):
         """Editing thread with too short of a title shows errors."""
-        self.client.login(username='jsocol', password='testpass')
+        t = forum_post(save=True).thread
+        creator = t.creator
 
-        f = Forum.objects.filter()[0]
-        t_creator = User.objects.get(username='jsocol')
-        t = f.thread_set.filter(creator=t_creator)[0]
+        self.client.login(username=creator.username, password='testpass')
         response = post(self.client, 'forums.edit_thread',
-                        {'title': 'wha?'}, args=[f.slug, t.id])
+                        {'title': 'wha?'}, args=[t.forum.slug, t.id])
 
         doc = pq(response.content)
         errors = doc('ul.errorlist li a')
@@ -214,10 +238,10 @@ class ThreadsTemplateTests(OldForumTestCase):
 
     def test_edit_thread_template(self):
         """The edit-thread template should render."""
-        self.client.login(username='jsocol', password='testpass')
+        t = forum_post(save=True).thread
+        creator = t.creator
 
-        u = User.objects.get(username='jsocol')
-        t = Thread.objects.filter(creator=u, is_locked=False)[0]
+        self.client.login(username=creator.username, password='testpass')
         res = get(self.client, 'forums.edit_thread',
                   args=[t.forum.slug, t.id])
 
@@ -226,9 +250,10 @@ class ThreadsTemplateTests(OldForumTestCase):
 
     def test_watch_forum(self):
         """Watch and unwatch a forum."""
-        self.client.login(username='rrosario', password='testpass')
+        f = forum(save=True)
+        u = user(save=True)
 
-        f = Forum.objects.filter()[0]
+        self.client.login(username=u.username, password='testpass')
         response = post(self.client, 'forums.watch_forum', {'watch': 'yes'},
                         args=[f.slug])
         self.assertContains(response, 'Watching')
@@ -238,52 +263,59 @@ class ThreadsTemplateTests(OldForumTestCase):
         self.assertNotContains(response, 'Watching')
 
     def test_canonical_url(self):
-        response = get(self.client, 'forums.threads', args=['test-forum'])
-        eq_('/forums/test-forum',
+        """Verify the canonical URL is set correctly."""
+        f = forum(save=True)
+
+        response = get(self.client, 'forums.threads', args=[f.slug])
+        eq_('/forums/%s' % f.slug,
             pq(response.content)('link[rel="canonical"]')[0].attrib['href'])
 
     def test_show_new_thread(self):
         """'Post new thread' shows if user has permission to post."""
-        self.client.login(username='jsocol', password='testpass')
+        f = forum(save=True)
+        u = user(save=True)
 
-        response = get(self.client, 'forums.threads', args=['test-forum'])
+        self.client.login(username=u.username, password='testpass')
+        response = get(self.client, 'forums.threads', args=[f.slug])
         self.assertContains(response, 'Post a new thread')
 
     def test_restricted_hide_new_thread(self):
         """'Post new thread' doesn't show if user has no permission to post."""
-        self.client.login(username='jsocol', password='testpass')
+        f = forum(save=True)
+        ct = ContentType.objects.get_for_model(f)
+        # If the forum has the permission and the user isn't assigned said
+        # permission, then they can't post.
+        permission(codename='forums_forum.post_in_forum', content_type=ct,
+                   object_id=f.id, save=True)
+        u = user(save=True)
 
-        response = get(self.client, 'forums.threads', args=['visible'])
+        self.client.login(username=u.username, password='testpass')
+        response = get(self.client, 'forums.threads', args=[f.slug])
         self.assertNotContains(response, 'Post a new thread')
 
 
-class ForumsTemplateTests(OldForumTestCase):
-
-    def setUp(self):
-        super(ForumsTemplateTests, self).setUp()
-        self.forum = Forum.objects.all()[0]
-        admin = User.objects.get(pk=1)
-        self.thread = self.forum.thread_set.filter(creator=admin)[0]
-        self.post = self.thread.post_set.all()[0]
-        # Login for testing 403s
-        self.client.login(username='jsocol', password='testpass')
-
-    def tearDown(self):
-        self.client.logout()
-        super(ForumsTemplateTests, self).tearDown()
+class ForumsTemplateTests(ForumTestCase):
 
     def test_last_post_link_has_post_id(self):
         """Make sure the last post url links to the last post (#post-<id>)."""
+        p = forum_post(save=True)
+
         response = get(self.client, 'forums.forums')
         doc = pq(response.content)
         last_post_link = doc('ol.forums div.last-post a:not(.username)')[0]
         href = last_post_link.attrib['href']
-        eq_(href.split('#')[1], 'post-25')
+        eq_(href.split('#')[1], 'post-%s' % p.id)
 
     def test_restricted_is_invisible(self):
         """Forums with restricted view_in permission shouldn't show up."""
+        restricted_forum = forum(save=True)
+        # Make it restricted.
+        ct = ContentType.objects.get_for_model(restricted_forum)
+        permission(codename='forums_forum.view_in_forum', content_type=ct,
+                   object_id=restricted_forum.id, save=True)
+
         response = get(self.client, 'forums.forums')
-        self.assertNotContains(response, 'restricted-forum')
+        self.assertNotContains(response, restricted_forum.slug)
 
     def test_canonical_url(self):
         response = get(self.client, 'forums.forums')
@@ -291,13 +323,14 @@ class ForumsTemplateTests(OldForumTestCase):
             pq(response.content)('link[rel="canonical"]')[0].attrib['href'])
 
 
-class NewThreadTemplateTests(OldForumTestCase):
+class NewThreadTemplateTests(ForumTestCase):
 
     def test_preview(self):
         """Preview the thread post."""
-        self.client.login(username='rrosario', password='testpass')
-        f = Forum.objects.filter()[0]
-        num_threads = f.thread_set.count()
+        f = forum(save=True)
+        u = user(save=True)
+
+        self.client.login(username=u.username, password='testpass')
         content = 'Full of awesome.'
         response = post(self.client, 'forums.new_thread',
                         {'title': 'Topic', 'content': content,
@@ -305,4 +338,4 @@ class NewThreadTemplateTests(OldForumTestCase):
         eq_(200, response.status_code)
         doc = pq(response.content)
         eq_(content, doc('#post-preview div.content').text())
-        eq_(num_threads, f.thread_set.count())
+        eq_(0, f.thread_set.count())  # No thread was created.

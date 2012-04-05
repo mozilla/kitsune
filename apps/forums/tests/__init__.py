@@ -13,11 +13,6 @@ class ForumTestCase(TestCase):
     client_class = LocalizingClient
 
 
-class OldForumTestCase(TestCase):
-    fixtures = ['users.json', 'posts.json', 'forums_permissions.json']
-    client_class = LocalizingClient
-
-
 @with_save
 def forum(**kwargs):
     if 'name' not in kwargs:
@@ -48,5 +43,12 @@ def post(**kwargs):
     if 'author' not in kwargs and 'author_id' not in kwargs:
         defaults['author'] = user(save=True)
     if 'thread' not in kwargs and 'thread_id' not in kwargs:
-        defaults['thread'] = thread(save=True)
+        # The thread creator should match the post author if the
+        # thread doesn't exist yet.
+        kw = {}
+        if 'author' in defaults:
+            kw['creator'] = defaults['author']
+        else:
+            kw['creator_id'] = defaults['author_id']
+        defaults['thread'] = thread(save=True, **kw)
     return Post(**defaults)
