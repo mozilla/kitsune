@@ -1,11 +1,11 @@
-from itertools import chain, count, izip
 import json
 import logging
+from itertools import chain, count, izip
+
+from django.conf import settings
 
 import elasticutils
 import pyes
-
-from django.conf import settings
 
 
 ESTimeoutError = pyes.urllib3.TimeoutError

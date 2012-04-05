@@ -1,5 +1,7 @@
 import logging
+
 from django.core.management.base import BaseCommand, CommandError
+
 from search.es_utils import es_search_cmd
 
 
