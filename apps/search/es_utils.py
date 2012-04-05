@@ -1,6 +1,6 @@
 from itertools import chain, count, izip
-import logging
 import json
+import logging
 
 import elasticutils
 import pyes
@@ -258,5 +258,7 @@ def es_search_cmd(query):
         for mem in results:
             output.append(u'%4d  %5.2f  %-10s  %-20s' % (
                     mem['rank'], mem['score'], mem['type'], mem['title']))
+
+        output.append('')
 
     print '\n'.join(output)
