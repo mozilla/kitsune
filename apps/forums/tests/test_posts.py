@@ -102,8 +102,8 @@ class PostTestCase(ForumTestCase):
 
     def test_sorting_creator(self):
         """Sorting threads by creator."""
-        thread(save=True)
-        thread(save=True)
+        thread(creator=user(username='aaa', save=True), save=True)
+        thread(creator=user(username='bbb', save=True), save=True)
         threads = sort_threads(Thread.objects, 3, 1)
         self.assert_(threads[0].creator.username >=
                      threads[1].creator.username)
