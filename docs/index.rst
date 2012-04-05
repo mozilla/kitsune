@@ -26,6 +26,7 @@ Contents:
    tests
    vendor
    wikidocs
+   sla
 
 
 Indices and tables
