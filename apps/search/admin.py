@@ -6,12 +6,13 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 
+from waffle.models import Flag
+
 from search.es_utils import (get_doctype_stats, get_indexes, delete_index,
                              ESTimeoutError, ESMaxRetryError,
                              ESIndexMissingException)
 from search.models import Record
-from search.tasks import (ES_REINDEX_PROGRESS, ES_WAFFLE_WHEN_DONE,
-                          reindex_with_progress)
+from search.tasks import ES_REINDEX_PROGRESS, reindex_with_progress
 from sumo.urlresolvers import reverse
 
 
@@ -58,8 +59,7 @@ def search(request):
 
     reindex_requested = 'reindex' in request.POST
     if reindex_requested:
-        reindex_with_progress.delay(
-            waffle_when_done='waffle_when_done' in request.POST)
+        reindex_with_progress.delay()
 
     delete_requested = 'delete_index' in request.POST
     if delete_requested:
@@ -108,9 +108,12 @@ def search(request):
 
     recent_records = reversed(Record.objects.order_by('starttime')[:20])
 
+    es_waffle_flag = Flag.objects.get(name=u'elasticsearch')
+
     return render_to_response(
         'search/admin/search.html',
         {'title': 'Search',
+         'es_waffle_flag': es_waffle_flag,
          'doctype_stats': stats,
          'doctype_write_stats': write_stats,
          'indexes': indexes,
@@ -122,11 +125,8 @@ def search(request):
           # Dim the buttons even if the form loads before the task fires:
          'progress': cache.get(ES_REINDEX_PROGRESS,
                                '0.001' if reindex_requested else ''),
-         'waffle_when_done':
-             request.POST.get('waffle_when_done') if reindex_requested else
-             cache.get(ES_WAFFLE_WHEN_DONE),
-          'progress_url': reverse('search.reindex_progress'),
-          'interval': settings.ES_REINDEX_PROGRESS_BAR_INTERVAL * 1000},
+         'progress_url': reverse('search.reindex_progress'),
+         'interval': settings.ES_REINDEX_PROGRESS_BAR_INTERVAL * 1000},
         RequestContext(request, {}))
 
 

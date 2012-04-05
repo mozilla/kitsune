@@ -70,8 +70,8 @@
 {% endblock %}
 
 {% block content %}
-  <section>
-    {% if es_error_message or delete_error_message %}
+  {% if es_error_message or delete_error_message %}
+    <section>
       <h1>Status</h1>
       {% if es_error_message %}
         <p>
@@ -83,7 +83,9 @@
         delete_error_message: {{ delete_error_message }}
       </p>
       {% endif %}
-    {% else %}
+    </section>
+  {% else %}
+    <section>
       <h1>Settings</h1>
       <p>
         Settings at the time this page was loaded:
@@ -94,7 +96,10 @@
         <tr><th>ES_INDEXES</th><td>{{ settings.ES_INDEXES }}</td></tr>
         <tr><th>ES_WRITE_INDEXES</th><td>{{ settings.ES_WRITE_INDEXES }}</td></tr>
       </table>
-      <h1>Status</h1>
+    </section>
+
+    <section>
+      <h1>Index Status</h1>
       <p>
         All indexes available:
       </p>
@@ -174,15 +179,19 @@
           </table>
         {% endif %}
       {% endif %}
-    {% endif %}
+    </section>
+  {% endif %}
 
+  <section>
     <h1>Reindexing history</h1>
     <table>
       <thead>
-        <th>message</th>
-        <th>start time</th>
-        <th>end time</th>
-        <th>delta</th>
+        <tr>
+          <th>message</th>
+          <th>start time</th>
+          <th>end time</th>
+          <th>delta</th>
+        </tr>
       </thead>
       <tbody>
         {% for record in recent_records %}
@@ -193,20 +202,51 @@
             <td>{{ record.delta }}</td>
           </tr>
         {% endfor %}
-      </body>
+      </tbody>
     </table>
+  </section>
 
+  <section>
+    <h1>elasticsearch waffle flag</h1>
+    <table>
+      <thead>
+        <tr>
+          <th>everyone</th>
+          <th>percent</th>
+          <th>testing</th>
+          <th>superuser</th>
+          <th>staff</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>{{ es_waffle_flag.everyone }}</td>
+          <td>{{ es_waffle_flag.percent }}</td>
+          <td>{{ es_waffle_flag.testing }}</td>
+          <td>{{ es_waffle_flag.superusers }}</td>
+          <td>{{ es_waffle_flag.staff }}</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>
+      <a href="{% url admin:waffle_flag_change es_waffle_flag.id %}">change elasticsearch waffle flag</a>
+    </p>
+  </section>
+
+  <section>
     <h1>Reindex</h1>
     <p>
-      You should have to do this only when the search mapping changes or when
-      setting up the site for the first time.
+      You should have to do this only when the search mapping changes
+      or when setting up the site for the first time.
     </p>
     <p>
-      If the old index isn't compatible with the new code, you should waffle Sphinx on first.
+      If the old index isn't compatible with the new code, you should
+      waffle Sphinx on first.
     </p>
     {% if read_index == write_index %}
       <p class="errornote">
-        WARNING! Read and write indexes are the same! Reindexing would be really bad!
+        WARNING! Read and write indexes are the same! Reindexing would
+        be really bad!
       </p>
     {% endif %}
     <p>
@@ -219,18 +259,6 @@
                name="reindex"
                value="Reindex into {{ write_index }}"
                {% if progress %}disabled="disabled"{% endif %}/>
-      </div>
-      <div>
-        <label>
-          <input type="checkbox"
-                 {% if waffle_when_done %}checked="checked"{% endif %}
-                 value="1"
-                 name="waffle_when_done"
-                 {% if progress %}disabled="disabled"{% endif %} />
-          <span{% if progress %} class="disabled"{% endif %}>
-            Waffle Sphinx off when finished
-          </span>
-        </label>
       </div>
     </form>
     {% if progress %}
