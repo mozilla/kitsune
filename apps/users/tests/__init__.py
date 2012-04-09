@@ -40,7 +40,7 @@ def user(**kwargs):
                                        for x in xrange(15))
     if 'email not in kwargs':
         defaults['email'] = ''.join(
-            random.choice(letters) for x in xrange(10)) + '@sumo.org'
+            random.choice(letters) for x in xrange(10)) + '@example.com'
     defaults.update(kwargs)
     user = User(**defaults)
     user.set_password(kwargs.get('password', 'testpass'))

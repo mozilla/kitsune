@@ -41,4 +41,5 @@ def connector(sender, instance, created, **kw):
     if created:
         log_reply.delay(instance)
 
+
 post_save.connect(connector, sender=Post, dispatch_uid='forum_post_activity')

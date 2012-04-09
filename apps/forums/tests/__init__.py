@@ -1,6 +1,5 @@
 from datetime import datetime
-import random
-from string import letters
+import uuid
 
 from django.template.defaultfilters import slugify
 
@@ -16,8 +15,7 @@ class ForumTestCase(TestCase):
 @with_save
 def forum(**kwargs):
     if 'name' not in kwargs:
-        kwargs['name'] = ''.join(random.choice(letters)
-                                 for x in xrange(15))
+        kwargs['name'] = str(uuid.uuid4())
     if 'slug' not in kwargs:
         kwargs['slug'] = slugify(kwargs['name'])
     return Forum(**kwargs)
@@ -27,7 +25,7 @@ def forum(**kwargs):
 def thread(**kwargs):
     defaults = dict(
         created=datetime.now(),
-        title=''.join(random.choice(letters) for x in xrange(15)))
+        title=str(uuid.uuid4()))
     defaults.update(kwargs)
     if 'creator' not in kwargs and 'creator_id' not in kwargs:
         defaults['creator'] = user(save=True)

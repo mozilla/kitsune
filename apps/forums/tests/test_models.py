@@ -1,11 +1,11 @@
 from datetime import datetime, timedelta
 
-from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 
 from nose.tools import eq_
 
 from access.tests import permission
+from forums import POSTS_PER_PAGE
 from forums.events import NewPostEvent, NewThreadEvent
 from forums.models import Forum, Thread, Post
 from forums.tests import ForumTestCase, forum, thread, post
@@ -14,27 +14,29 @@ from sumo.urlresolvers import reverse
 from users.tests import user
 
 
+YESTERDAY = datetime.now() - timedelta(days=1)
+
+
 class ForumModelTestCase(ForumTestCase):
     def test_forum_absolute_url(self):
         f = forum(save=True)
 
-        eq_(reverse('forums.threads', kwargs={'forum_slug': f.slug}),
+        eq_('/forums/%s' % f.slug,
             f.get_absolute_url())
 
     def test_thread_absolute_url(self):
         t = thread(save=True)
 
-        eq_(reverse('forums.posts',
-                    kwargs={'forum_slug': t.forum.slug, 'thread_id': t.id}),
+        eq_('/forums/%s/%s' % (t.forum.slug, t.id),
             t.get_absolute_url())
 
     def test_post_absolute_url(self):
         t = thread(save=True)
-        yesterday = datetime.now() - timedelta(days=1)
+
         # Fill out the first page with posts from yesterday.
-        p1 = post(thread=t, created=yesterday, save=True)
-        for i in range(19):
-            post(thread=t, created=yesterday, save=True)
+        p1 = post(thread=t, created=YESTERDAY, save=True)
+        for i in range(POSTS_PER_PAGE - 1):
+            post(thread=t, created=YESTERDAY, save=True)
         # Second page post from today.
         p2 = post(thread=t, save=True)
 
@@ -51,11 +53,10 @@ class ForumModelTestCase(ForumTestCase):
 
     def test_post_page(self):
         t = thread(save=True)
-        yesterday = datetime.now() - timedelta(days=1)
         # Fill out the first page with posts from yesterday.
         page1 = []
-        for i in range(20):
-            page1.append(post(thread=t, created=yesterday, save=True))
+        for i in range(POSTS_PER_PAGE):
+            page1.append(post(thread=t, created=YESTERDAY, save=True))
         # Second page post from today.
         p2 = post(thread=t, save=True)
 
@@ -78,13 +79,11 @@ class ForumModelTestCase(ForumTestCase):
         """Adding/Deleting the last post in a thread and forum should
         update the last_post field
         """
-        t = thread(save=True)
-        u = user(save=True)
-        yesterday = datetime.now() - timedelta(days=1)
-        orig_post = post(thread=t, created=yesterday, save=True)
+        orig_post = post(created=YESTERDAY, save=True)
+        t = orig_post.thread
 
         # add a new post, then check that last_post is updated
-        new_post = post(thread=t, content="test", author=u, save=True)
+        new_post = post(thread=t, content="test", save=True)
         f = Forum.objects.get(id=t.forum_id)
         t = Thread.objects.get(id=t.id)
         eq_(f.last_post.id, new_post.id)
@@ -100,10 +99,11 @@ class ForumModelTestCase(ForumTestCase):
     def test_public_access(self):
         """Assert Forums think they're publicly viewable and postable at
         appropriate times."""
+        # By default, users have access to forums that aren't restricted.
+        u = user(save=True)
         f = forum(save=True)
-        unprivileged_user = user(save=True)
-        assert f.allows_viewing_by(unprivileged_user)
-        assert f.allows_posting_by(unprivileged_user)
+        assert f.allows_viewing_by(u)
+        assert f.allows_posting_by(u)
 
     def test_access_restriction(self):
         """Assert Forums are inaccessible to the public when restricted."""
@@ -125,19 +125,17 @@ class ForumModelTestCase(ForumTestCase):
         """Moving the thread containing a forum's last post to a new forum
         should update the last_post of both forums. Consequently, deleting
         the last post shouldn't delete the old forum. [bug 588994]"""
-        yesterday = datetime.now() - timedelta(days=1)
-
         # Setup forum to move latest thread from.
-        t1 = thread(save=True)
-        old_forum = t1.forum
-        p1 = post(thread=t1, created=yesterday, save=True)
+        old_forum = forum(save=True)
+        t1 = thread(forum=old_forum, save=True)
+        p1 = post(thread=t1, created=YESTERDAY, save=True)
         t2 = thread(forum=old_forum, save=True)
         p2 = post(thread=t2, save=True)  # Newest post of all.
 
         # Setup forum to move latest thread to.
-        t3 = thread(save=True)
-        new_forum = t3.forum
-        p3 = post(thread=t3, created=yesterday, save=True)
+        new_forum = forum(save=True)
+        t3 = thread(forum=new_forum, save=True)
+        p3 = post(thread=t3, created=YESTERDAY, save=True)
 
         # Verify the last_post's are correct.
         eq_(p2, Forum.objects.get(id=old_forum.id).last_post)
@@ -199,8 +197,8 @@ class ThreadModelTestCase(ForumTestCase):
     def test_delete_last_and_only_post_in_thread(self):
         """Deleting the only post in a thread should delete the thread"""
         t = thread(save=True)
-        p = post(thread=t, save=True)
-        f = t.forum
+        post(thread=t, save=True)
+
         eq_(1, t.post_set.count())
         t.delete()
         eq_(0, Thread.uncached.filter(pk=t.id).count())
@@ -249,12 +247,12 @@ class SaveDateTestCase(ForumTestCase):
 
     def test_save_old_thread_created(self):
         """Saving an old thread should not change its created date."""
-        yesterday = datetime.now() - timedelta(days=1)
-        t = thread(created=yesterday, save=True)
+        t = thread(created=YESTERDAY, save=True)
         t = Thread.objects.get(id=t.id)
         created = t.created
 
-        # Now make an update to the thread and resave. Created shouldn't change.
+        # Now make an update to the thread and resave. Created shouldn't
+        # change.
         t.title = 'new title'
         t.save()
         t = Thread.objects.get(id=t.id)
@@ -277,7 +275,8 @@ class SaveDateTestCase(ForumTestCase):
         """
         created = datetime(2010, 5, 4, 14, 4, 22)
         updated = datetime(2010, 5, 4, 14, 4, 31)
-        p = post(thread=self.thread, created=created, updated=updated, save=True)
+        p = post(thread=self.thread, created=created, updated=updated,
+                 save=True)
 
         eq_(updated, p.updated)
 
@@ -285,7 +284,6 @@ class SaveDateTestCase(ForumTestCase):
         p.updated_by = self.user
         p.save()
         now = datetime.now()
-        
 
         self.assertDateTimeAlmostEqual(now, p.updated, self.delta)
         eq_(created, p.created)

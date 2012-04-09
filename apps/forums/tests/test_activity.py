@@ -1,7 +1,8 @@
 from nose.tools import eq_
 
 from activity.models import Action
-from forums.tests import ForumTestCase, thread, post
+from forums.tests import ForumTestCase, thread, post as forum_post
+from sumo.tests import post
 from users.tests import user
 
 
@@ -15,10 +16,12 @@ class ReplyLoggingTests(ForumTestCase):
         orig = user(save=True)
         replier = user(save=True)
         t = thread(creator=orig, title='foo', save=True)
-        post(author=orig, content='foo', thread=t, save=True)
+        forum_post(author=orig, content='foo', thread=t, save=True)
         assert not Action.uncached.exists(), 'No actions were logged.'
 
-        post(author=replier, content='foo2', thread=t, save=True)
+        self.client.login(username=replier.username, password='testpass')
+        post(self.client, 'forums.reply', {'content': 'foo bar'},
+             args=[t.forum.slug, t.id])
         eq_(1, Action.uncached.count(), 'One action was logged.')
 
         a = Action.uncached.all()[0]

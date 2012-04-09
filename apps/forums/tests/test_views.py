@@ -204,7 +204,6 @@ class ThreadTests(ForumTestCase):
         data = {'title': 'some title', 'content': 'some content'}
         r = self.client.post(url, data, follow=False)
         eq_(302, r.status_code)
-        print r['location']
         assert f.slug in r['location']
         assert 'last=' in r['location']
 
@@ -238,8 +237,8 @@ class ThreadPermissionsTests(ForumTestCase):
     def test_edit_locked_thread_403(self):
         """Editing a locked thread returns 403."""
         locked = thread(is_locked=True, save=True)
-        p = forum_post(thread=locked, author=locked.creator, save=True)
-        u = p.author
+        u = locked.creator
+        forum_post(thread=locked, author=u, save=True)
 
         self.client.login(username=u.username, password='testpass')
         response = get(self.client, 'forums.edit_thread',

@@ -44,9 +44,7 @@ class PostsTemplateTests(ForumTestCase):
     def test_edit_thread_template(self):
         """The edit-post template should render."""
         p = forum_post(save=True)
-        t = p.thread
         u = p.author
-        assert not t.is_locked
 
         self.client.login(username=u.username, password='testpass')
         res = get(self.client, 'forums.edit_post',
