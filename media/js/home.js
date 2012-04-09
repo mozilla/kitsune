@@ -5,6 +5,7 @@
 
 (function ($) {
     function init() {
+        $('img.lazy').lazyload();
         ShowFor.initForTags();
         initClearOddSections();
     }
