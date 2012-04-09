@@ -21,7 +21,7 @@
         // Safari doesn't load images until scroll, sometimes
         $(window).trigger('scroll');
 
-        prevHash = window.location.hash;
+        var prevHash = window.location.hash;
 
         // Anchor links should be preserved
         resetHashPosition();
