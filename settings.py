@@ -566,6 +566,7 @@ MINIFY_BUNDLES = {
             'js/editable.js',
         ),
         'home': (
+            'js/libs/jquery.lazyload.js',
             'js/libs/jquery.selectbox-1.2.js',
             'js/showfor.js',
             'js/home.js',
