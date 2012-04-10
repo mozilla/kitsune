@@ -32,6 +32,11 @@ class KpiApiTests(TestCase):
 
         question(save=True)
 
+        # Add some questions by inactive user. These should't be counted.
+        u = user(is_active=False, save=True)
+        question(creator=u, save=True)
+        question(creator=u, save=True)
+
         url = reverse('api_dispatch_list',
                       kwargs={'resource_name': 'kpi_solution',
                               'api_name': 'v1'})
@@ -72,6 +77,11 @@ class KpiApiTests(TestCase):
 
         a = answer(save=True)
         a.question.save()
+
+        # Add some questions by inactive user. These should't be counted.
+        u = user(is_active=False, save=True)
+        question(creator=u, save=True)
+        question(creator=u, save=True)
 
         url = reverse('api_dispatch_list',
                       kwargs={'resource_name': 'kpi_fast_response',
