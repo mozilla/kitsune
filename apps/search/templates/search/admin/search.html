@@ -114,24 +114,29 @@
           {% for index_name, index_count in indexes %}
             <tr>
               <td>{{ index_name }}</td><td>{{ index_count }}</td>
-              {% if index_name == read_index %}
-                <td>READ</td>
-                <td></td>
-              {% else %}
-                {% if index_name == write_index %}
-                  <td>WRITE</td>
+              <td>
+                {% if index_name == read_index and index_name == write_index %}
+                  READ/WRITE
                 {% else %}
-                  <td></td>
+                  {% if index_name == read_index %}
+                    READ
+                  {% else %}
+                    {% if index_name == write_index %}
+                      WRITE
+                    {% endif %}
+                  {% endif %}
                 {% endif %}
+              </td>
+              {% if index_name != read_index %}
                 <td>
                   <form method="POST">
                     {% csrf_token %}
-                    <div>
                       <input type="hidden" name="delete_index" value="{{ index_name }}">
                       <input type="submit" value="Delete">
-                    </div>
                   </form>
                 </td>
+              {% else %}
+                <td></td>
               {% endif %}
             </tr>
           {% endfor %}
