@@ -2,6 +2,8 @@ from base64 import b64encode
 from datetime import date, datetime
 import json
 
+from django.core.cache import cache
+
 from nose.tools import eq_
 
 from customercare.tests import reply
@@ -41,6 +43,35 @@ class KpiApiTests(TestCase):
         eq_(r['objects'][0]['solved'], 1)
         eq_(r['objects'][0]['questions'], 2)
 
+    def test_solved_inactive_user(self):
+        """Verify questions from inactive users aren't counted."""
+        # Create two questions for an inactive user.
+        # They shouldn't show up in the count.
+        u = user(is_active=False, save=True)
+        question(creator=u, save=True)
+        question(creator=u, save=True)
+
+        url = reverse('api_dispatch_list',
+                      kwargs={'resource_name': 'kpi_solution',
+                              'api_name': 'v1'})
+        response = self.client.get(url + '?format=json')
+        eq_(200, response.status_code)
+        r = json.loads(response.content)
+        eq_(len(r['objects']), 0)
+
+        # Activate the user, now the questions should count.
+        u.is_active = True
+        u.save()
+        cache.clear()  # We need to clear the cache for new results.
+
+        url = reverse('api_dispatch_list',
+                      kwargs={'resource_name': 'kpi_solution',
+                              'api_name': 'v1'})
+        response = self.client.get(url + '?format=json')
+        eq_(200, response.status_code)
+        r = json.loads(response.content)
+        eq_(r['objects'][0]['questions'], 2)
+
     def test_vote(self):
         """Test vote API call."""
         r = revision(save=True)
@@ -64,8 +95,8 @@ class KpiApiTests(TestCase):
         eq_(r['objects'][0]['ans_helpful'], 2)
         eq_(r['objects'][0]['ans_votes'], 3)
 
-    def test_fast_response(self):
-        """Test fast response API call."""
+    def test_responded(self):
+        """Test responded API call."""
         a = answer(save=True)
         a.question.solution = a
         a.question.save()
@@ -80,6 +111,35 @@ class KpiApiTests(TestCase):
         eq_(200, response.status_code)
         r = json.loads(response.content)
         eq_(r['objects'][0]['responded'], 2)
+        eq_(r['objects'][0]['questions'], 2)
+
+    def test_responded_inactive_user(self):
+        """Verify questions from inactive users aren't counted."""
+        # Create two questions for an inactive user.
+        # They shouldn't show up in the count.
+        u = user(is_active=False, save=True)
+        question(creator=u, save=True)
+        question(creator=u, save=True)
+
+        url = reverse('api_dispatch_list',
+                      kwargs={'resource_name': 'kpi_fast_response',
+                              'api_name': 'v1'})
+        response = self.client.get(url + '?format=json')
+        eq_(200, response.status_code)
+        r = json.loads(response.content)
+        eq_(len(r['objects']), 0)
+
+        # Activate the user, now the questions should count.
+        u.is_active = True
+        u.save()
+        cache.clear()  # We need to clear the cache for new results.
+
+        url = reverse('api_dispatch_list',
+                      kwargs={'resource_name': 'kpi_fast_response',
+                              'api_name': 'v1'})
+        response = self.client.get(url + '?format=json')
+        eq_(200, response.status_code)
+        r = json.loads(response.content)
         eq_(r['objects'][0]['questions'], 2)
 
     def test_active_kb_contributors(self):

@@ -412,12 +412,15 @@ def _monthly_qs_for(model_cls):
 
 def _daily_qs_for(model_cls):
     """Return the daily grouped queryset we need for model_cls."""
-    return model_cls.objects.filter(created__gte=date(2011, 1, 1)).extra(
-        select={
-            'day': 'extract( day from created )',
-            'month': 'extract( month from created )',
-            'year': 'extract( year from created )',
-        }).values('year', 'month', 'day').annotate(count=Count('created'))
+    # Limit to newer than 2011/1/1 and active creators.
+    return model_cls.objects.filter(
+        created__gte=date(2011, 1, 1), creator__is_active=1).extra(
+            select={
+                'day': 'extract( day from created )',
+                'month': 'extract( month from created )',
+                'year': 'extract( year from created )',
+            }).values('year', 'month', 'day').annotate(
+                count=Count('created'))
 
 
 def _qs_for(model_cls):
