@@ -601,13 +601,22 @@ SESSION_EXISTS_COOKIE = 'sumo_session'
 #
 # Connection information for Elastic
 ES_HOSTS = ['127.0.0.1:9200']
-ES_INDEXES = {'default': 'sumo'}  # Doesn't support non-default indexes atm.
-ES_WRITE_INDEXES = ES_INDEXES  # Indexes for indexing new content.
-ES_INDEX_PREFIX = 'sumo'  # Index listings will only show indexes prefixed
-                          # with this.
-ES_LIVE_INDEXING = False  # Keep indexes up to date as objects are made/deleted
-ES_TIMEOUT = 5  # 5 second timeouts for querying
-ES_INDEXING_TIMEOUT = 30  # 30 second timeouts for all things indexing
+# Indexes for reading
+ES_INDEXES = {'default': 'sumo'}
+# Indexes for indexing--set this to ES_INDEXES if you want to read to
+# and write to the same index.
+ES_WRITE_INDEXES = ES_INDEXES
+# This is prepended to index names to get the final read/write index
+# names used by kitsune. This is so that you can have multiple environments
+# pointed at the same ElasticSearch cluster and not have them bump into
+# one another.
+ES_INDEX_PREFIX = 'sumo'
+# Keep indexes up to date as objects are made/deleted.
+ES_LIVE_INDEXING = False
+# Timeout for querying requests
+ES_TIMEOUT = 5
+# Timeout for indexing requests
+ES_INDEXING_TIMEOUT = 30
 # Seconds between updating admin progress bar:
 ES_REINDEX_PROGRESS_BAR_INTERVAL = 5
 ES_FLUSH_BULK_EVERY = 100

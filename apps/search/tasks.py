@@ -19,19 +19,20 @@ log = logging.getLogger('k.task')
 
 
 @task
-def reindex_with_progress():
-    """Rebuild elasticsearch index while updating progress bar for admins."""
+def reindex_with_progress(write_index):
+    """Rebuild elasticsearch index while updating progress bar for admins.
+    """
     # Need to import Record here to prevent circular import
     from search.models import Record
     try:
         rec = Record(
             starttime=datetime.datetime.now(),
-            text=u'Reindexing into %s' % settings.ES_WRITE_INDEXES['default'])
+            text=u'Reindexing into %s' % write_index)
         rec.save()
 
         # Init progress bar stuff:
-        cache.set(ES_REINDEX_PROGRESS, 0.001)  # An iota so it tests true in
-                                               # the template
+        cache.set(ES_REINDEX_PROGRESS, 0.001)  # An iota so it tests
+                                               # true in the template
 
         # Reindex:
         start = time()
@@ -40,8 +41,9 @@ def reindex_with_progress():
             if now > start + settings.ES_REINDEX_PROGRESS_BAR_INTERVAL:
                 # Update memcached only every so often.
                 start = now
-                # Format the string to avoid exponential notation, which seems
-                # to be understood by JS but makes me nervous:
+                # Format the string to avoid exponential notation,
+                # which seems to be understood by JS but makes me
+                # nervous:
                 cache.set(ES_REINDEX_PROGRESS, '%.5f' % ratio)
 
         rec.endtime = datetime.datetime.now()

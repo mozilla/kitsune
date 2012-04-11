@@ -12,8 +12,9 @@ from nose import SkipTest
 from test_utils import TestCase  # just for others to import
 from waffle.models import Flag
 
-import sumo
+from search import es_utils
 from sumo.urlresolvers import reverse, split_path
+import sumo
 
 from elasticutils import get_es
 
@@ -70,11 +71,21 @@ class LocalizingClient(Client):
 class ElasticTestCase(TestCase):
     """Base class for Elastic Search tests, providing some conveniences"""
     def setUp(self):
+        # Swap out for better versions.
+        self._old_read_index = es_utils.READ_INDEX
+        self._old_write_index = es_utils.WRITE_INDEX
+        es_utils.READ_INDEX = u'sumo_test'
+        es_utils.WRITE_INDEX = u'sumo_test'
+
         super(ElasticTestCase, self).setUp()
         self.setup_indexes()
         Flag.objects.create(name='elasticsearch', everyone=True)
 
     def tearDown(self):
+        # Restore old settings.
+        es_utils.READ_INDEX = self._old_read_index
+        es_utils.WRITE_INDEX = self._old_write_index
+
         self.teardown_indexes()
         super(ElasticTestCase, self).tearDown()
 
@@ -86,7 +97,7 @@ class ElasticTestCase(TestCase):
         from search.models import generate_tasks
         generate_tasks()
 
-        get_es().refresh(settings.ES_INDEXES['default'], timesleep=0)
+        get_es().refresh(es_utils.WRITE_INDEX, timesleep=0)
 
     def setup_indexes(self):
         """(Re-)create ES indexes."""
@@ -114,7 +125,7 @@ class ElasticTestCase(TestCase):
 
     def teardown_indexes(self):
         es = get_es()
-        es.delete_index_if_exists(settings.ES_INDEXES['default'])
+        es.delete_index_if_exists(es_utils.READ_INDEX)
 
         settings.ES_LIVE_INDEXING = False
 

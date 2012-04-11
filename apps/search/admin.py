@@ -8,6 +8,7 @@ from django.template import RequestContext
 
 from waffle.models import Flag
 
+from search import es_utils
 from search.es_utils import (get_doctype_stats, get_indexes, delete_index,
                              ESTimeoutError, ESMaxRetryError,
                              ESIndexMissingException)
@@ -33,7 +34,7 @@ def handle_delete(request):
         raise DeleteError('"%s" does not exist.' % index_to_delete)
 
     # Rule 3: Don't delete the READ index.
-    if index_to_delete == settings.ES_INDEXES['default']:
+    if index_to_delete == es_utils.READ_INDEX:
         raise DeleteError('"%s" is the read index.' % index_to_delete)
 
     delete_index(index_to_delete)
@@ -44,10 +45,10 @@ def handle_delete(request):
 def search(request):
     """Render the admin view containing search tools.
 
-    It's a dirty little secret that you can fire off 2 concurrent reindexing
-    jobs; the disabling of the buttons while one is running is advisory only.
-    This lets us recover if celery crashes and doesn't clear the memcached
-    token.
+    It's a dirty little secret that you can fire off 2 concurrent
+    reindexing jobs; the disabling of the buttons while one is running
+    is advisory only.  This lets us recover if celery crashes and
+    doesn't clear the memcached token.
 
     """
     if not request.user.has_perm('search.reindex'):
@@ -59,7 +60,7 @@ def search(request):
 
     reindex_requested = 'reindex' in request.POST
     if reindex_requested:
-        reindex_with_progress.delay()
+        reindex_with_progress.delay(es_utils.WRITE_INDEX)
 
     delete_requested = 'delete_index' in request.POST
     if delete_requested:
@@ -78,8 +79,6 @@ def search(request):
             delete_error_message = ('Connection to Elastic Search timed out. '
                                     '(TimeoutError)')
 
-    read_index = settings.ES_INDEXES['default']
-    write_index = settings.ES_WRITE_INDEXES['default']
     stats = None
     write_stats = None
     indexes = []
@@ -87,11 +86,11 @@ def search(request):
         # This gets index stats, but also tells us whether ES is in
         # a bad state.
         try:
-            stats = get_doctype_stats(read_index)
+            stats = get_doctype_stats(es_utils.READ_INDEX)
         except ESIndexMissingException:
             stats = None
         try:
-            write_stats = get_doctype_stats(write_index)
+            write_stats = get_doctype_stats(es_utils.WRITE_INDEX)
         except ESIndexMissingException:
             write_stats = None
         indexes = get_indexes()
@@ -117,8 +116,8 @@ def search(request):
          'doctype_stats': stats,
          'doctype_write_stats': write_stats,
          'indexes': indexes,
-         'read_index': read_index,
-         'write_index': write_index,
+         'read_index': es_utils.READ_INDEX,
+         'write_index': es_utils.WRITE_INDEX,
          'delete_error_message': delete_error_message,
          'es_error_message': es_error_message,
          'recent_records': recent_records,

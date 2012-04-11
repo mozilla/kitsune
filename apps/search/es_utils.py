@@ -14,7 +14,85 @@ ESIndexMissingException = pyes.exceptions.IndexMissingException
 ESException = pyes.exceptions.ElasticSearchException
 
 
+# Calculate index names.
+#
+# Note: This means that you need to restart kitsune to pick up new
+# index names. If that turns out to be lame, then we should switch
+# these to be functions.
+READ_INDEX = (u'%s_%s' % (settings.ES_INDEX_PREFIX,
+                          settings.ES_INDEXES['default']))
+
+WRITE_INDEX = (u'%s_%s' % (settings.ES_INDEX_PREFIX,
+                           settings.ES_WRITE_INDEXES['default']))
+
+
 log = logging.getLogger('search.es_utils')
+
+
+class Sphilastic(elasticutils.S):
+    """Shim around elasticutils' S which makes it look like oedipus.S
+
+    It ignores or implements workalikes for our Sphinx-specific API
+    deviations.
+
+    Use this when you're using ElasticSearch if your project is flipping
+    quickly between ElasticSearch and Sphinx.
+
+    .. Note::
+
+       Originally taken from oedipus and put here so I can stop
+       touching oedipus when I need to make changes.
+
+    """
+    def get_index(self):
+        # Sphilastic is a searcher and so it's _always_ used in a read
+        # context. Therefore, we always return the READ_INDEX.
+        return READ_INDEX
+
+    def query(self, text, **kwargs):
+        """Ignore any non-kw arg."""
+        # TODO: If you're feeling fancy, turn the `text` arg into an "or"
+        # query across all fields, or use the all_ index, or something.
+        return super(Sphilastic, self).query(text, **kwargs)
+
+    def object_ids(self):
+        """Returns a list of object IDs from Sphinx matches.
+
+        If there's a ``SphinxMeta.id_field``, then this will be the
+        values of that field in the results set.  Otherwise it's the
+        ids in the results set.
+
+        """
+        # We don't want object_ids() to bring back highlighted
+        # stuff ("Just the ids, ma'am."), so we gimp
+        # _build_highlight to do nothing, then do our self.raw(),
+        # then ungimp it. That prevents highlight-related bits
+        # from showing up in the query and results.
+
+        build_highlight = self._build_highlight
+        self._build_highlight = lambda: {}
+
+        hits = self.raw()['hits']['hits']
+
+        self._build_highlight = build_highlight
+
+        return [int(r['_id']) for r in hits]
+
+    def order_by(self, *fields):
+        """Change @rank to _score, which ES understands."""
+        transforms = {'@rank': '_score',
+                      '-@rank': '-_score'}
+        return super(Sphilastic, self).order_by(
+            *[transforms.get(f, f) for f in fields])
+
+    def group_by(self, *args, **kwargs):
+        """Do nothing.
+
+        In ES, we smoosh subentities into their parents and index them
+        as a single document, so making this a nop works out.
+
+        """
+        return self
 
 
 def get_indexes():
@@ -86,7 +164,7 @@ def get_documents(cls, ids):
     """Returns a list of ES documents with specified ids and doctype"""
     es = elasticutils.get_es()
     doctype = cls._meta.db_table
-    index = settings.ES_INDEXES['default']
+    index = READ_INDEX
 
     ret = es.search(pyes.query.IdsQuery(doctype, ids), indices=[index],
                     doc_types=[doctype])
@@ -106,16 +184,16 @@ def es_reindex_with_progress(percent=100):
     search_models = get_search_models()
 
     es = elasticutils.get_es()
-    index = settings.ES_WRITE_INDEXES['default']
+    index = WRITE_INDEX
     delete_index(index)
 
     # There should be no mapping-conflict race here since the index doesn't
     # exist. Live indexing should just fail.
 
-    # Simultaneously create the index and the mappings, so live indexing
-    # doesn't get a chance to index anything between the two and infer a bogus
-    # mapping (which ES then freaks out over when we try to lay in an
-    # incompatible explicit mapping).
+    # Simultaneously create the index and the mappings, so live
+    # indexing doesn't get a chance to index anything between the two
+    # and infer a bogus mapping (which ES then freaks out over when we
+    # try to lay in an incompatible explicit mapping).
     mappings = dict((cls._meta.db_table, {'properties': cls.get_mapping()})
                     for cls in search_models)
     es.create_index(index, settings={'mappings': mappings})
@@ -137,8 +215,6 @@ def es_reindex_cmd(percent=100):
 
 def es_delete_cmd(index):
     """Deletes an index"""
-    read_index = settings.ES_INDEXES['default']
-
     try:
         indexes = [name for name, count in get_indexes()]
     except ESMaxRetryError:
@@ -150,7 +226,7 @@ def es_delete_cmd(index):
         log.error('Index "%s" is not a valid index.', index)
         return
 
-    if index == read_index:
+    if index == READ_INDEX:
         ret = raw_input('"%s" is a read index. Are you sure you want '
                         'to delete it? (yes/no) ' % index)
         if ret != 'yes':
@@ -163,16 +239,13 @@ def es_delete_cmd(index):
 
 def es_status_cmd():
     """Shows elastic search index status"""
-    read_index = settings.ES_INDEXES['default']
-    write_index = settings.ES_WRITE_INDEXES['default']
-
     try:
         try:
-            read_doctype_stats = get_doctype_stats(read_index)
+            read_doctype_stats = get_doctype_stats(READ_INDEX)
         except ESIndexMissingException:
             read_doctype_stats = None
         try:
-            write_doctype_stats = get_doctype_stats(write_index)
+            write_doctype_stats = get_doctype_stats(WRITE_INDEX)
         except ESIndexMissingException:
             write_doctype_stats = None
         indexes = get_indexes()
@@ -194,9 +267,9 @@ def es_status_cmd():
         log.info('  List of %s indexes:', settings.ES_INDEX_PREFIX)
         for name, count in indexes:
             read_write = []
-            if name == read_index:
+            if name == READ_INDEX:
                 read_write.append('READ')
-            if name == write_index:
+            if name == WRITE_INDEX:
                 read_write.append('WRITE')
             log.info('    %-20s: %s %s', name, count,
                      '/'.join(read_write))
@@ -204,17 +277,17 @@ def es_status_cmd():
         log.info('  There are no %s indexes.', settings.ES_INDEX_PREFIX)
 
     if read_doctype_stats is None:
-        log.info('  Read index does not exist. (%s)', read_index)
+        log.info('  Read index does not exist. (%s)', READ_INDEX)
     else:
-        log.info('  Read index (%s):', read_index)
+        log.info('  Read index (%s):', READ_INDEX)
         for name, count in read_doctype_stats.items():
             log.info('    %-20s: %d', name, count)
 
-    if read_index != write_index:
+    if READ_INDEX != WRITE_INDEX:
         if write_doctype_stats is None:
-            log.info('  Write index does not exist. (%s)', write_index)
+            log.info('  Write index does not exist. (%s)', WRITE_INDEX)
         else:
-            log.info('  Write index (%s):', write_index)
+            log.info('  Write index (%s):', WRITE_INDEX)
             for name, count in write_doctype_stats.items():
                 log.info('    %-20s: %d', name, count)
     else:

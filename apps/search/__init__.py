@@ -2,7 +2,7 @@ import os
 
 from django.conf import settings
 
-import elasticutils
+from search.es_utils import Sphilastic
 import oedipus
 from tower import ugettext_lazy as _lazy
 import waffle
@@ -99,6 +99,6 @@ def searcher(request):
     Which it returns depends on the ``elasticsearch`` waffle flag.
 
     """
-    return (oedipus.Sphilastic if
+    return (Sphilastic if
             waffle.flag_is_active(request, 'elasticsearch') else
             SphinxSearcher)
