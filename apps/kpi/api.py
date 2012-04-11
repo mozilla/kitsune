@@ -167,24 +167,39 @@ class ElasticClickthroughResource(SearchClickthroughResource):
         resource_name = 'elastic-clickthrough-rate'
 
 
-class SolutionResource(CachedResource):
-    """Returns the number of questions marked as solved."""
+class QuestionsResource(CachedResource):
+    """Returns metrics related to questions.
+
+    * Number of questions asked
+    * Number of questions responded to within 72 hours
+    * Number of questions solved
+    """
     date = fields.DateField('date')
-    solved = fields.IntegerField('solved', default=0)
     questions = fields.IntegerField('questions', default=0)
+    responded = fields.IntegerField('responded', default=0)
+    solved = fields.IntegerField('solved', default=0)
 
     def get_object_list(self, request):
-        # Set up the query for the data we need
+        # Set up the query for the data we need.
         qs = _daily_qs_for(Question)
 
-        # Filter on solution
+        # All answers tht were created within 3 days of the question.
+        aq = Answer.objects.filter(
+                created__lt=F('question__created') + timedelta(days=3))
+        # Questions of said answers.
+        rs = qs.filter(id__in=aq.values_list('question'))
+
+        # Questions with a solution.
         qs_with_solutions = qs.filter(solution__isnull=False)
 
-        return merge_results(solved=qs_with_solutions, questions=qs)
+        return merge_results(
+            questions=qs,
+            solved=qs_with_solutions,
+            responded=rs)
 
     class Meta(object):
         cache = SimpleCache()
-        resource_name = 'kpi_solution'
+        resource_name = 'kpi_questions'
         allowed_methods = ['get']
 
 
@@ -214,30 +229,6 @@ class VoteResource(CachedResource):
     class Meta(object):
         cache = SimpleCache()
         resource_name = 'kpi_vote'
-        allowed_methods = ['get']
-
-
-class FastResponseResource(CachedResource):
-    """Returns the number of Questions that receive an answer within 72hrs."""
-    date = fields.DateField('date')
-    questions = fields.IntegerField('questions', default=0)
-    responded = fields.IntegerField('responded', default=0)
-
-    def get_object_list(self, request):
-        qs = _daily_qs_for(Question)
-
-        # All answers tht were created within 3 days of the question
-        aq = Answer.objects.filter(
-                created__lt=F('question__created') + timedelta(days=3))
-        # Qustions of said answers. This way results in a single query
-        rs = qs.filter(id__in=aq.values_list('question'))
-
-        # Merge and return
-        return merge_results(responded=rs, questions=qs)
-
-    class Meta:
-        cache = SimpleCache()
-        resource_name = 'kpi_fast_response'
         allowed_methods = ['get']
 
 

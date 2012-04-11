@@ -185,16 +185,19 @@ window.StockChartView = Backbone.View.extend({
                     month: '%b'
                 }
             },
-            yAxis: {
+            yAxis: [{
                 min: 0,
                 title: '%'
-            },
+            }, {
+                opposite: true,
+                min: 0
+            }],
             tooltip: {
                 style: {
                     width: 200
                 },
                 shared: true,
-                pointFormat: '<span style="color:{series.color}">{series.prettyName}</span>: <b>{point.y}</b><br/>'
+                pointFormat: '<span style="color:{series.color}">{series.name}</span>: <b>{point.y}</b><br/>'
             },
             credits: {
                 enabled: false
@@ -217,11 +220,9 @@ window.StockChartView = Backbone.View.extend({
         };
 
         if (this.options.percent) {
-            this.chartOptions.yAxis.title = {
+            this.chartOptions.yAxis[0].title = {
                 text: '%'
             };
-            this.chartOptions.tooltip.ySuffix = '%';
-            this.chartOptions.tooltip.yDecimals = 1;
         }
     },
 
@@ -245,55 +246,14 @@ window.StockChartView = Backbone.View.extend({
                 seriesData = _.map(data, mapper);
                 seriesData.reverse();
 
-                if (!series.addGroupings) {
-                    self.chartOptions.series.push({
-                        name: series.name,
-                        data: seriesData,
-                        dataGrouping: {
-                            enabled: false
-                        }
-                    });
-                } else {
-                    // Add the series with 3 different possible groupings:
-                    // daily, weekly, monthly
-                    self.chartOptions.series.push({
-                        name: gettext('Daily'),
-                        data: seriesData,
-                        dataGrouping: {
-                            enabled: false
-                        }
-                    });
-                    self.chartOptions.series.push({
-                        name: gettext('Weekly'),
-                        data: seriesData,
-                        dataGrouping: {
-                            forced: true,
-                            units: [['week', [1]]]
-                        }
-                    });
-                    self.chartOptions.series.push({
-                        name: gettext('Monthly'),
-                        data: seriesData,
-                        dataGrouping: {
-                            forced: true,
-                            units: [['month', [1]]]
-                        }
-                    });
-                }
-
-                self.chart = new Highcharts.StockChart(self.chartOptions);
-
-                if (!series.addGroupings) {
-                    self.chart.series[0].prettyName = series.name;
-                }
-                else {
-                    self.chart.series[0].prettyName = self.chart.series[1].prettyName = self.chart.series[2].prettyName = series.name;
-
-                    // Hide the weekly and monthly series.
-                    self.chart.series[1].hide();
-                    self.chart.series[2].hide();
-                }
+                self.chartOptions.series.push({
+                    name: series.name,
+                    yAxis: series.yAxis || 0,
+                    data: seriesData,
+                    tooltip: series.tooltip
+                });
             });
+            self.chart = new Highcharts.StockChart(self.chartOptions);
         }
         return this;
     }
@@ -306,16 +266,12 @@ window.StockChartView = Backbone.View.extend({
 window.KpiDashboard = Backbone.View.extend({
     initialize: function() {
         // Create the models.
-        this.solvedChart = new ChartModel([], {
-            url: $(this.el).data('solved-url')
+        this.questionsChart = new ChartModel([], {
+            url: $(this.el).data('questions-url')
         });
 
         this.voteChart = new ChartModel([], {
             url: $(this.el).data('vote-url')
-        });
-
-        this.fastResponseChart = new ChartModel([], {
-            url: $(this.el).data('fastresponse-url')
         });
 
         this.activeKbContributorsChart = new ChartModel([], {
@@ -349,15 +305,35 @@ window.KpiDashboard = Backbone.View.extend({
         });
 
         // Create the views.
-        this.solvedChartView = new StockChartView({
-            model: this.solvedChart,
-            title: gettext('Questions Solved'),
+        this.questionsView = new StockChartView({
+            model: this.questionsChart,
+            title: gettext('Questions'),
             percent: true,
             series: [{
                 name: gettext('Solved'),
                 numerator: 'solved',
                 denominator: 'questions',
-                addGroupings: true
+                tooltip: {
+                    ySuffix: '%',
+                    yDecimals: 1
+                }
+            }, {
+                name: gettext('Responded in 72 hours'),
+                numerator: 'responded',
+                denominator: 'questions',
+                tooltip: {
+                    ySuffix: '%',
+                    yDecimals: 1
+                }
+            }, {
+                name: gettext('Questions'),
+                yAxis: 1,
+                mapper: function(o) {
+                    return {
+                        x: Date.parse(o['date']),
+                        y: o['questions']
+                    }
+                }
             }]
         });
 
@@ -383,18 +359,6 @@ window.KpiDashboard = Backbone.View.extend({
                     };
                 }
             }*/]
-        });
-
-        this.fastResponseView = new StockChartView({
-            model: this.fastResponseChart,
-            title: gettext('Questions responded to within 72 hours'),
-            percent: true,
-            series: [{
-                name: gettext('Responded'),
-                numerator: 'responded',
-                denominator: 'questions',
-                addGroupings: true
-            }]
         });
 
         this.activeKbContributorsView = new BasicChartView({
@@ -493,8 +457,7 @@ window.KpiDashboard = Backbone.View.extend({
 
         // Render the views.
         $(this.el)
-            .append(this.solvedChartView.render().el)
-            .append(this.fastResponseView.render().el)
+            .append(this.questionsView.render().el)
             .append(this.voteChartView.render().el)
             .append(this.activeKbContributorsView.render().el)
             .append(this.activeAnswerersView.render().el)
@@ -505,8 +468,7 @@ window.KpiDashboard = Backbone.View.extend({
 
 
         // Load up the models.
-        this.solvedChart.fetch();
-        this.fastResponseChart.fetch();
+        this.questionsChart.fetch();
         this.activeKbContributorsChart.fetch();
         this.activeAnswerersChart.fetch();
         this.aoaContributorsChart.fetch();
