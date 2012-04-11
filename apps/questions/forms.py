@@ -107,7 +107,7 @@ class EditQuestionForm(forms.Form):
                           'min_length': MSG_TITLE_SHORT,
                           'max_length': MSG_TITLE_LONG}
         field = StrippedCharField(label=TITLE_LABEL, min_length=5,
-                                  max_length=255, widget=forms.TextInput(),
+                                  max_length=160, widget=forms.TextInput(),
                                   error_messages=error_messages)
         self.fields['title'] = field
 
