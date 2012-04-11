@@ -1,6 +1,6 @@
 from django.conf.urls.defaults import patterns, url, include
 
-from kpi.api import (SolutionResource, VoteResource, FastResponseResource,
+from kpi.api import (QuestionsResource, VoteResource,
                      ActiveKbContributorsResource, ActiveAnswerersResource,
                      SphinxClickthroughResource, ElasticClickthroughResource,
                      ArmyOfAwesomeContributorResource, VisitorsResource,
@@ -9,9 +9,8 @@ from tastypie.api import Api
 
 
 v1_api = Api(api_name='v1')
-v1_api.register(SolutionResource())
+v1_api.register(QuestionsResource())
 v1_api.register(VoteResource())
-v1_api.register(FastResponseResource())
 v1_api.register(ActiveKbContributorsResource())
 v1_api.register(ActiveAnswerersResource())
 v1_api.register(SphinxClickthroughResource())
