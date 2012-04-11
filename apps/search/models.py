@@ -114,13 +114,12 @@ class SearchMixin(object):
         es = es_utils.get_indexing_es()
 
         doc_type = cls._meta.db_table
-        index = settings.ES_WRITE_INDEXES['default']
 
         start_time = time.time()
 
         indexable_qs = cls.get_indexable()
 
-        log.info('reindex %s into %s index', doc_type, index)
+        log.info('reindex %s into %s index', doc_type, es_utils.WRITE_INDEX)
 
         log.info('iterating through %s....', doc_type)
         total = indexable_qs.count()
@@ -184,11 +183,10 @@ class SearchMixin(object):
             # ES_INDEXING_TIMEOUT.
             es = es_utils.get_indexing_es()
 
-        index = settings.ES_WRITE_INDEXES['default']
         doc_type = cls._meta.db_table
 
         es.index(document,
-                 index=index,
+                 index=es_utils.WRITE_INDEX,
                  doc_type=doc_type,
                  id=document['id'],
                  bulk=bulk,
@@ -209,11 +207,10 @@ class SearchMixin(object):
             es = es_utils.get_indexing_es()
 
         doc_type = cls._meta.db_table
-        index = settings.ES_WRITE_INDEXES['default']
         try:
             # TODO: There is a race condition here if this gets called
             # during reindexing.
-            es.delete(index, doc_type, id)
+            es.delete(es_utils.WRITE_INDEX, doc_type, id)
         except pyes.exceptions.NotFoundException:
             # Ignore the case where we try to delete something that's
             # not there.
@@ -226,23 +223,26 @@ _identity = lambda s: s
 def register_for_indexing(sender_class,
                           app,
                           instance_to_indexee=_identity):
-    """Register a model whose changes might invalidate ElasticSearch indexes.
+    """Register a model whose changes might invalidate ElasticSearch
+    indexes.
 
-    Specifically, each time an instance of this model is saved or deleted, the
-    index might need to be updated. Registers the model as participating in
-    full indexing, statistics gathering, and live indexing, as appropriate.
+    Specifically, each time an instance of this model is saved or
+    deleted, the index might need to be updated. Registers the model
+    as participating in full indexing, statistics gathering, and live
+    indexing, as appropriate.
 
     :arg sender_class: The class to listen for saves and deletes on
-    :arg app: A bit of UID we use to build the signal handlers' dispatch_uids.
-        This is prepended to the ``sender_class`` model name, "elastic", and
-        the signal name, so it should combine with those to make something
-        unique. For this reason, the app name is usually a good choice,
-        yielding something like "wiki.TaggedItem.elastic.post_save".
-    :arg instance_to_indexee: A callable which takes the signalling instance
-        and returns the model instance to be indexed. The returned instance
-        should be a subclass of SearchMixin. If the callable returns None, no
-        indexing is performed. Default: a callable which returns the sender
-        itself.
+    :arg app: A bit of UID we use to build the signal handlers'
+        dispatch_uids.  This is prepended to the ``sender_class``
+        model name, "elastic", and the signal name, so it should
+        combine with those to make something unique. For this reason,
+        the app name is usually a good choice, yielding something like
+        "wiki.TaggedItem.elastic.post_save".
+    :arg instance_to_indexee: A callable which takes the signalling
+        instance and returns the model instance to be indexed. The
+        returned instance should be a subclass of SearchMixin. If the
+        callable returns None, no indexing is performed. Default: a
+        callable which returns the sender itself.
 
     """
     def maybe_call_method(instance, is_raw, method_name):
@@ -282,9 +282,9 @@ def register_for_indexing(sender_class,
     # Register signal listeners to keep indexes up to date:
     indexing_receiver(post_save, 'post_save')(update)
     indexing_receiver(pre_delete, 'pre_delete')(
-        # If it's the indexed instance that's been deleted, go ahead and delete
-        # it from the index. Otherwise, we just want to update whatever model
-        # it's related to.
+        # If it's the indexed instance that's been deleted, go ahead
+        # and delete it from the index. Otherwise, we just want to
+        # update whatever model it's related to.
         delete if instance_to_indexee is _identity else update)
 
 
