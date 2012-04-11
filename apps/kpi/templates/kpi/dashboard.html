@@ -9,9 +9,7 @@
     <h1>{{ title }}</h1>
     <div id="kpi-dash-app"
         data-questions-url="{{ url('api_dispatch_list', resource_name='kpi_questions', api_name='v1') }}"
-        data-active-kb-contributors-url="{{ url('api_dispatch_list', resource_name='kpi_active_kb_contributors', api_name='v1') }}"
-        data-active-answerers-url="{{ url('api_dispatch_list', resource_name='kpi_active_answerers', api_name='v1') }}"
-        data-aoa-contributors-url="{{ url('api_dispatch_list', resource_name='kpi_active_aoa_contributors', api_name='v1') }}"
+        data-active-contributors-url="{{ url('api_dispatch_list', resource_name='kpi_active_contributors', api_name='v1') }}"
         data-sphinx-ctr-url="{{ url('api_dispatch_list', resource_name='sphinx-clickthrough-rate', api_name='v1') }}"
         data-elastic-ctr-url="{{ url('api_dispatch_list', resource_name='elastic-clickthrough-rate', api_name='v1') }}"
         data-visitors-url="{{ url('api_dispatch_list', resource_name='kpi_visitors', api_name='v1') }}"

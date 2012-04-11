@@ -49,7 +49,7 @@ class KpiApiTests(TestCase):
 
     def test_questions_inactive_user(self):
         """Verify questions from inactive users aren't counted."""
-        # Create two questions for an inactive user.
+        # Two questions for an inactive user.
         # They shouldn't show up in the count.
         u = user(is_active=False, save=True)
         question(creator=u, save=True)
@@ -99,17 +99,33 @@ class KpiApiTests(TestCase):
         eq_(r['objects'][0]['ans_helpful'], 2)
         eq_(r['objects'][0]['ans_votes'], 3)
 
-    def test_active_kb_contributors(self):
-        """Test active kb contributors API call."""
+    def test_active_contributors(self):
+        """Test active contributors API call."""
+        # 2 en-US revisions by 2 contributors:
         r1 = revision(creator=user(save=True), save=True)
         r2 = revision(creator=user(save=True), save=True)
-
+        # A translation with 2 contributors (translator + reviewer):
         d = document(parent=r1.document, locale='es', save=True)
         revision(document=d, reviewed=datetime.now(),
                  reviewer=r1.creator, creator=r2.creator, save=True)
+        # 1 active support forum contributor:
+        # A user with 10 answers
+        u1 = user(save=True)
+        for x in range(10):
+            answer(save=True, creator=u1)
+        # A user with 9 answers
+        u2 = user(save=True)
+        for x in range(9):
+            answer(save=True, creator=u2)
+        # A user with 1 answer
+        u3 = user(save=True)
+        answer(save=True, creator=u3)
+
+        # An AoA reply (1 contributor):
+        reply(save=True)
 
         url = reverse('api_dispatch_list',
-                      kwargs={'resource_name': 'kpi_active_kb_contributors',
+                      kwargs={'resource_name': 'kpi_active_contributors',
                               'api_name': 'v1'})
 
         response = self.client.get(url + '?format=json')
@@ -117,47 +133,8 @@ class KpiApiTests(TestCase):
         r = json.loads(response.content)
         eq_(r['objects'][0]['en_us'], 2)
         eq_(r['objects'][0]['non_en_us'], 2)
-
-    def test_active_answerers(self):
-        """Test active answerers API call."""
-        # A user with 10 answers
-        u1 = user(save=True)
-        for x in range(10):
-            answer(save=True, creator=u1)
-
-        # A user with 9 answers
-        u2 = user(save=True)
-        for x in range(9):
-            answer(save=True, creator=u2)
-
-        # A user with 1 answer
-        u3 = user(save=True)
-        answer(save=True, creator=u3)
-
-        # There should be only one active contributor.
-        url = reverse('api_dispatch_list',
-                      kwargs={'resource_name': 'kpi_active_answerers',
-                              'api_name': 'v1'})
-
-        response = self.client.get(url + '?format=json')
-        eq_(200, response.status_code)
-        r = json.loads(response.content)
-        eq_(r['objects'][0]['contributors'], 1)
-
-    def test_active_aoa_contributors(self):
-        """Test active AOA contributors API call."""
-        # Create a reply
-        reply(save=True)
-
-        # There should be only one active contributor.
-        url = reverse('api_dispatch_list',
-                      kwargs={'resource_name': 'kpi_active_aoa_contributors',
-                              'api_name': 'v1'})
-
-        response = self.client.get(url + '?format=json')
-        eq_(200, response.status_code)
-        r = json.loads(response.content)
-        eq_(r['objects'][0]['contributors'], 1)
+        eq_(r['objects'][0]['support_forum'], 1)
+        eq_(r['objects'][0]['aoa'], 1)
 
     def test_sphinx_clickthrough_get(self):
         """Test Sphinx clickthrough read API."""
