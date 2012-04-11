@@ -610,7 +610,7 @@ ES_WRITE_INDEXES = ES_INDEXES
 # names used by kitsune. This is so that you can have multiple environments
 # pointed at the same ElasticSearch cluster and not have them bump into
 # one another.
-ES_INDEX_PREFIX = 'sumo-prod'
+ES_INDEX_PREFIX = 'sumo'
 # Keep indexes up to date as objects are made/deleted.
 ES_LIVE_INDEXING = False
 # Timeout for querying requests
