@@ -1,5 +1,6 @@
 import datetime
 import logging
+from functools import wraps
 from time import time
 
 from django.conf import settings
@@ -50,7 +51,35 @@ def reindex_with_progress():
         cache.delete(ES_REINDEX_PROGRESS)
 
 
+RETRY_TIMES = (
+    60,           # 1 minute
+    5 * 60,       # 5 minutes
+    10 * 60,      # 10 minutes
+    30 * 60,      # 30 minutes
+    60 * 60,      # 60 minutes
+    2 * 60 * 60,  # 2 hours
+    6 * 60 * 60   # 6 hours
+    )
+MAX_RETRIES = len(RETRY_TIMES)
+
+
+def logarithmic_retry(fun):
+    """Wraps a celery task with a logarithmically based retry"""
+    @wraps(fun)
+    def _fun(*args, **kwargs):
+        try:
+            return fun(*args, **kwargs)
+        except Exception, exc:
+            retries = _fun.request.retries
+            # Note: This "self" thing here is because celery does
+            # magic things and turns this into a class.
+            self.retry(exc=exc, max_retries=MAX_RETRIES,
+                       countdown=RETRY_TIMES[retries])
+    return _fun
+
+
 @task
+@logarithmic_retry
 def index_task(cls, ids, **kw):
     """Index documents specified by cls and ids"""
     for id in cls.uncached.filter(id__in=ids).values_list('id', flat=True):
@@ -58,6 +87,7 @@ def index_task(cls, ids, **kw):
 
 
 @task
+@logarithmic_retry
 def unindex_task(cls, ids, **kw):
     """Unindex documents specified by cls and ids"""
     for id in ids:
