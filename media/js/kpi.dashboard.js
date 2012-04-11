@@ -135,6 +135,7 @@ window.StockChartView = Backbone.View.extend({
 
         this.chartOptions = {
             chart: {
+                alignTicks: false,
                 renderTo: this.el,
                 width: 800
             },
@@ -176,6 +177,9 @@ window.StockChartView = Backbone.View.extend({
                 },
                 inputStyle: {
                     fontSize: '10px'
+                },
+                inputBoxStyle: {
+                    top: '65px'
                 }
             },
             xAxis: {
@@ -186,9 +190,14 @@ window.StockChartView = Backbone.View.extend({
                 }
             },
             yAxis: [{
+                maxPadding: 0,
                 min: 0,
                 title: '%'
             }, {
+                gridLineWidth: 0,
+                endOnTick: false,
+                maxPadding: 0,
+                tickPositions: [0, 100, 300],
                 opposite: true,
                 min: 0
             }],
@@ -248,6 +257,7 @@ window.StockChartView = Backbone.View.extend({
 
                 self.chartOptions.series.push({
                     name: series.name,
+                    type: series.type || 'line',
                     yAxis: series.yAxis || 0,
                     data: seriesData,
                     tooltip: series.tooltip
@@ -274,16 +284,8 @@ window.KpiDashboard = Backbone.View.extend({
             url: $(this.el).data('vote-url')
         });
 
-        this.activeKbContributorsChart = new ChartModel([], {
-            url: $(this.el).data('active-kb-contributors-url')
-        });
-
-        this.activeAnswerersChart = new ChartModel([], {
-            url: $(this.el).data('active-answerers-url')
-        });
-
-        this.aoaContributorsChart = new ChartModel([], {
-            url: $(this.el).data('aoa-contributors-url')
+        this.activeContributorsChart = new ChartModel([], {
+            url: $(this.el).data('active-contributors-url')
         });
 
         this.sphinxCtrChart = new ChartModel([], {
@@ -310,6 +312,16 @@ window.KpiDashboard = Backbone.View.extend({
             title: gettext('Questions'),
             percent: true,
             series: [{
+                name: gettext('Questions'),
+                type: 'area',
+                yAxis: 1,
+                mapper: function(o) {
+                    return {
+                        x: Date.parse(o['date']),
+                        y: o['questions']
+                    }
+                }
+            }, {
                 name: gettext('Solved'),
                 numerator: 'solved',
                 denominator: 'questions',
@@ -324,15 +336,6 @@ window.KpiDashboard = Backbone.View.extend({
                 tooltip: {
                     ySuffix: '%',
                     yDecimals: 1
-                }
-            }, {
-                name: gettext('Questions'),
-                yAxis: 1,
-                mapper: function(o) {
-                    return {
-                        x: Date.parse(o['date']),
-                        y: o['questions']
-                    }
                 }
             }]
         });
@@ -361,11 +364,11 @@ window.KpiDashboard = Backbone.View.extend({
             }*/]
         });
 
-        this.activeKbContributorsView = new BasicChartView({
-            model: this.activeKbContributorsChart,
-            title: gettext('Active KB Contributors'),
+        this.activeContributorsView = new BasicChartView({
+            model: this.activeContributorsChart,
+            title: gettext('Active Contributors'),
             series: [{
-                name: 'en-US',
+                name: gettext('en-US KB'),
                 mapper: function(o) {
                     return {
                         x: Date.parse(o['date']),
@@ -373,39 +376,27 @@ window.KpiDashboard = Backbone.View.extend({
                     };
                 }
             }, {
-                name: 'non en-US',
+                name: gettext('non en-US KB'),
                 mapper: function(o) {
                     return {
                         x: Date.parse(o['date']),
                         y: o['non_en_us']
                     };
                 }
-            }]
-        });
-
-        this.activeAnswerersView = new BasicChartView({
-            model: this.activeAnswerersChart,
-            title: gettext('Active Support Forum Contributors'),
-            series: [{
-                name: gettext('Contributors'),
+            }, {
+                name: gettext('Support Forum'),
                 mapper: function(o) {
                     return {
                         x: Date.parse(o['date']),
-                        y: o['contributors']
+                        y: o['support_forum']
                     };
                 }
-            }]
-        });
-
-        this.aoaContributorsView = new BasicChartView({
-            model: this.aoaContributorsChart,
-            title: gettext('Army of Awesome Contributors'),
-            series: [{
-                name: gettext('Contributors'),
+            }, {
+                name: gettext('Army of Awesome'),
                 mapper: function(o) {
                     return {
                         x: Date.parse(o['date']),
-                        y: o['contributors']
+                        y: o['aoa']
                     };
                 }
             }]
@@ -459,9 +450,7 @@ window.KpiDashboard = Backbone.View.extend({
         $(this.el)
             .append(this.questionsView.render().el)
             .append(this.voteChartView.render().el)
-            .append(this.activeKbContributorsView.render().el)
-            .append(this.activeAnswerersView.render().el)
-            .append(this.aoaContributorsView.render().el)
+            .append(this.activeContributorsView.render().el)
             .append(this.ctrView.render().el)
             .append(this.visitorsView.render().el)
             .append(this.l10nView.render().el);
@@ -469,9 +458,7 @@ window.KpiDashboard = Backbone.View.extend({
 
         // Load up the models.
         this.questionsChart.fetch();
-        this.activeKbContributorsChart.fetch();
-        this.activeAnswerersChart.fetch();
-        this.aoaContributorsChart.fetch();
+        this.activeContributorsChart.fetch();
         this.voteChart.fetch();
         this.sphinxCtrChart.fetch();
         this.elasticCtrChart.fetch();

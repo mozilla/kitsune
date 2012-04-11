@@ -232,14 +232,19 @@ class VoteResource(CachedResource):
         allowed_methods = ['get']
 
 
-class ActiveKbContributorsResource(CachedResource):
-    """Returns the number of active contributors in the KB.
+class ActiveContributorsResource(CachedResource):
+    """Returns the number of active contributors.
 
-    Returns en-US and non-en-US numbers separately.
+    * en-US KB contributors
+    * non-en-US contributors
+    * Support Forum contributors
+    * Army of Awesome contributors
     """
     date = fields.DateField('date')
     en_us = fields.IntegerField('en_us', default=0)
     non_en_us = fields.IntegerField('non_en_us', default=0)
+    support_forum = fields.IntegerField('support_forum', default=0)
+    aoa = fields.IntegerField('aoa', default=0)
 
     def get_object_list(self, request):
         # TODO: This whole method is yucky... Is there a nicer way to do this?
@@ -261,98 +266,50 @@ class ActiveKbContributorsResource(CachedResource):
             for r in values:
                 _add_user(monthly_dict, r['year'], r['month'], r[column])
 
-        # Build the en-US contributors list
+        # Build the en-US KB contributors count list
         d = {}
         _add_users(d, creators.filter(document__locale='en-US'), 'creator')
         _add_users(d, reviewers.filter(document__locale='en-US'), 'reviewer')
         en_us_list = [{'month': k[1], 'year': k[0], 'count': len(v)} for
                       k, v in d.items()]
 
-        # Build the non en-US contributors list
+        # Build the non en-US KB contributors count list
         d = {}
         _add_users(d, creators.exclude(document__locale='en-US'), 'creator')
         _add_users(d, reviewers.exclude(document__locale='en-US'), 'reviewer')
         non_en_us_list = [{'month': k[1], 'year': k[0], 'count': len(v)} for
                           k, v in d.items()]
 
-        # Merge and return
-        return merge_results(en_us=en_us_list, non_en_us=non_en_us_list)
-
-    class Meta:
-        cache = SimpleCache()
-        resource_name = 'kpi_active_kb_contributors'
-        allowed_methods = ['get']
-
-
-class ActiveAnswerersResource(CachedResource):
-    """Returns the number of active contributors in the support forum.
-
-    Definition of contribution: wrote 10+ posts
-    """
-    date = fields.DateField('date')
-    contributors = fields.IntegerField('contributors', default=0)
-
-    def get_object_list(self, request):
+        # Build the support forum contributors count list aggregated by month
         qs = _monthly_qs_for(Answer).values('year', 'month', 'creator')
         qs = qs.annotate(count=Count('creator'))
         answerers = qs.filter(count__gte=10)
-
-        def _add_user(monthly_dict, year, month, userid):
-            if userid:
-                yearmonth = (year, month)
-                if yearmonth not in monthly_dict:
-                    monthly_dict[yearmonth] = set()
-                monthly_dict[yearmonth].add(userid)
-
-        # Build the answerers count list aggregated by month
         d = {}
         for a in answerers:
             _add_user(d, a['year'], a['month'], a['creator'])
-        contributors = [{'month': k[1], 'year': k[0], 'count': len(v)} for
+        support_forum = [{'month': k[1], 'year': k[0], 'count': len(v)} for
                         k, v in d.items()]
 
-        # Merge and return
-        return merge_results(contributors=contributors)
-
-    class Meta:
-        cache = SimpleCache()
-        resource_name = 'kpi_active_answerers'
-        allowed_methods = ['get']
-
-
-class ArmyOfAwesomeContributorResource(CachedResource):
-    """Returns the number of active contributors in the Army of Awesome.
-
-    Definition of contribution: 1+ replies
-    """
-    date = fields.DateField('date')
-    contributors = fields.IntegerField('contributors', default=0)
-
-    def get_object_list(self, request):
+        # Build the AoA contributors count list aggregated by month
         qs = _monthly_qs_for(Reply).values(
             'year', 'month', 'twitter_username')
         contributors = qs.distinct()
-
-        def _add_user(monthly_dict, year, month, userid):
-            if userid:
-                yearmonth = (year, month)
-                if yearmonth not in monthly_dict:
-                    monthly_dict[yearmonth] = set()
-                monthly_dict[yearmonth].add(userid)
-
-        # Build the contributors count list aggregated by month
         d = {}
         for c in contributors:
             _add_user(d, c['year'], c['month'], c['twitter_username'])
-        contributors = [{'month': k[1], 'year': k[0], 'count': len(v)} for
+        aoa = [{'month': k[1], 'year': k[0], 'count': len(v)} for
                         k, v in d.items()]
 
         # Merge and return
-        return merge_results(contributors=contributors)
+        return merge_results(
+            en_us=en_us_list,
+            non_en_us=non_en_us_list,
+            support_forum=support_forum,
+            aoa=aoa)
 
     class Meta:
         cache = SimpleCache()
-        resource_name = 'kpi_active_aoa_contributors'
+        resource_name = 'kpi_active_contributors'
         allowed_methods = ['get']
 
 
