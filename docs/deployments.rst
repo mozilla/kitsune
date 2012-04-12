@@ -27,40 +27,38 @@ Master
 ------
 
 The ``master`` branch is our main integration points. All new patches should be
-based on the latest ``master`` (or rebased to it) and except for very rare
-cases, all patches should land on ``master`` first. ``master`` never has code
-freezes.
+based on the latest ``master`` (or rebased to it).
+
+Pull requests are created from those branches when they're "done".
+
+Pull requests get reviewed.
+
+Once reviewed, the branch is rebased against ``master`` and then landed on
+``master``.
 
 Our `dev server <https://support-dev.allizom.org/>`_ runs ``master``, and it
 updates after every commit using a Github service hook.
 
-
-Next
-----
-
-The ``next`` branch provides a stable place for QA to test and verify changes
-before they go to production. Every week, ``next`` is wiped out and re-branched
-off the latest ``master``.
-
-Occasionally, patches need to land on ``next`` after this branch happens. They
-should land on ``master`` first and then be cherry-picked (with
-``git cherry-pick``) onto ``next``.
-
-Our `staging server <https://support.allizom.org/>`_ runs ``next``, and
-it is updated manually with a big red button.
+We deploy to production from ``master``.
 
 
-Tags
-====
+Dev
+===
 
-Every week, we create a new tag for a release. The tags are the date the
-release will go to production (e.g., the tag ``2011-08-23`` was pushed to prod
-on 23 August 2011). Tags are created from the ``next`` branch.
+Dev runs whatever is in master and automatically updates whenever something
+lands.
+
+
+Stage
+=====
+
+We deploy to stage anything we want to test including deployments themselves.
+We deploy using the big red button. Typically we deploy to stage from master,
+but we can deploy from any rev-ish thing.
 
 
 Production
 ==========
 
-`Production <https://support.mozilla.com>`_ runs the latest tagged version of
-Kitsune. It is typically updated on Tuesday afternoons, Pacific Time.
-Deployments to production are manually triggered.
+We deploy to production from master by specified revisions. We deploy when
+things are ready to go using the big red button.
