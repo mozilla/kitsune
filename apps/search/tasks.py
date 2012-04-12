@@ -84,5 +84,5 @@ def unindex_task(cls, ids, **kw):
             cls.unindex(id)
     except Exception, exc:
         retries = unindex_task.request.retries
-        unindex_task.retry(exc=exc, max_retries=MAX_RETRIES,
-                           countdown=RETRY_TIMES[retries - 1])
+        unindex_task.retry(exc=exc, max_retries=MAX_RETRIES - 1,
+                           countdown=RETRY_TIMES[retries])
