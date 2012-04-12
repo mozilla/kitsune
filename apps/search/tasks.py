@@ -1,6 +1,5 @@
 import datetime
 import logging
-from functools import wraps
 from time import time
 
 from django.conf import settings
@@ -51,6 +50,8 @@ def reindex_with_progress():
         cache.delete(ES_REINDEX_PROGRESS)
 
 
+# Note: If you reduce the length of RETRY_TIMES, it affects all tasks
+# currently in the celery queue---they'll throw an IndexError.
 RETRY_TIMES = (
     60,           # 1 minute
     5 * 60,       # 5 minutes
@@ -63,32 +64,25 @@ RETRY_TIMES = (
 MAX_RETRIES = len(RETRY_TIMES)
 
 
-def logarithmic_retry(fun):
-    """Wraps a celery task with a logarithmically based retry"""
-    @wraps(fun)
-    def _fun(*args, **kwargs):
-        try:
-            return fun(*args, **kwargs)
-        except Exception, exc:
-            retries = _fun.request.retries
-            # Note: This "self" thing here is because celery does
-            # magic things and turns this into a class.
-            self.retry(exc=exc, max_retries=MAX_RETRIES,
-                       countdown=RETRY_TIMES[retries])
-    return _fun
-
-
 @task
-@logarithmic_retry
 def index_task(cls, ids, **kw):
     """Index documents specified by cls and ids"""
-    for id in cls.uncached.filter(id__in=ids).values_list('id', flat=True):
-        cls.index(cls.extract_document(id), refresh=True)
+    try:
+        for id in cls.uncached.filter(id__in=ids).values_list('id', flat=True):
+            cls.index(cls.extract_document(id), refresh=True)
+    except Exception, exc:
+        retries = index_task.request.retries
+        index_task.retry(exc=exc, max_retries=MAX_RETRIES,
+                         countdown=RETRY_TIMES[retries - 1])
 
 
 @task
-@logarithmic_retry
 def unindex_task(cls, ids, **kw):
     """Unindex documents specified by cls and ids"""
-    for id in ids:
-        cls.unindex(id)
+    try:
+        for id in ids:
+            cls.unindex(id)
+    except Exception, exc:
+        retries = unindex_task.request.retries
+        unindex_task.retry(exc=exc, max_retries=MAX_RETRIES,
+                           countdown=RETRY_TIMES[retries - 1])
