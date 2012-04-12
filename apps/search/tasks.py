@@ -72,8 +72,8 @@ def index_task(cls, ids, **kw):
             cls.index(cls.extract_document(id), refresh=True)
     except Exception, exc:
         retries = index_task.request.retries
-        index_task.retry(exc=exc, max_retries=MAX_RETRIES,
-                         countdown=RETRY_TIMES[retries - 1])
+        index_task.retry(exc=exc, max_retries=MAX_RETRIES - 1,
+                         countdown=RETRY_TIMES[retries])
 
 
 @task
