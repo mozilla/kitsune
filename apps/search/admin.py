@@ -105,7 +105,7 @@ def search(request):
         es_error_message = ('Connection to Elastic Search timed out. '
                             '(TimeoutError)')
 
-    recent_records = reversed(Record.objects.order_by('starttime')[:20])
+    recent_records = reversed(Record.uncached.order_by('starttime')[:20])
 
     es_waffle_flag = Flag.objects.get(name=u'elasticsearch')
 

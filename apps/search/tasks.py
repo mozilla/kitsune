@@ -1,5 +1,6 @@
 import datetime
 import logging
+import sys
 from time import time
 
 from django.conf import settings
@@ -24,12 +25,12 @@ def reindex_with_progress(write_index):
     """
     # Need to import Record here to prevent circular import
     from search.models import Record
-    try:
-        rec = Record(
-            starttime=datetime.datetime.now(),
-            text=u'Reindexing into %s' % write_index)
-        rec.save()
 
+    rec = Record(
+        starttime=datetime.datetime.now(),
+        text=u'Reindexing into %s' % write_index)
+    rec.save()
+    try:
         # Init progress bar stuff:
         cache.set(ES_REINDEX_PROGRESS, 0.001)  # An iota so it tests
                                                # true in the template
@@ -48,6 +49,13 @@ def reindex_with_progress(write_index):
 
         rec.endtime = datetime.datetime.now()
         rec.save()
+    except Exception:
+
+        rec.text = (u'%s: Errored out %s %s' % (
+                rec.text, sys.exc_type, sys.exc_value))
+        rec.endtime = datetime.datetime.now()
+        rec.save()
+        raise
     finally:
         cache.delete(ES_REINDEX_PROGRESS)
 
