@@ -166,7 +166,7 @@ def get_documents(cls, ids):
     doctype = cls._meta.db_table
     index = READ_INDEX
 
-    ret = es.search(pyes.query.IdsQuery(doctype, ids), indices=[index],
+    ret = es.search(pyes.query.IdsQuery(doctype, ids), indexes=[index],
                     doc_types=[doctype])
     return ret['hits']['hits']
 
