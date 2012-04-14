@@ -2,16 +2,16 @@ import json
 import datetime
 
 from nose.tools import eq_
+import mock
 
-from sumo.tests import LocalizingClient, ElasticTestCase
-from sumo.urlresolvers import reverse
-
-from search.models import generate_tasks
+from forums.tests import thread, post
 from questions.tests import question, answer, answervote
 from questions.models import Question
+from search.models import generate_tasks
+from search.es_utils import get_documents
+from sumo.tests import LocalizingClient, ElasticTestCase
+from sumo.urlresolvers import reverse
 from wiki.tests import document, revision
-from forums.tests import thread, post
-import mock
 
 
 class ElasticSearchTasksTests(ElasticTestCase):
@@ -317,3 +317,12 @@ class ElasticSearchViewTests(ElasticTestCase):
 
         content = json.loads(response.content)
         eq_(content['total'], 0)
+
+
+class ElasticSearchUtilsTests(ElasticTestCase):
+    def test_get_documents(self):
+        q = question(save=True)
+        self.refresh()
+        docs = get_documents(Question, [q.id])
+        docs = [int(mem[u'_id']) for mem in docs]
+        eq_(docs, [q.id])
