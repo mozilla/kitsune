@@ -3,7 +3,6 @@
  */
 
 #support-for {
-    font-family: Helvetica,Arial,sans-serif;
     margin: 30px 0 0 50px;
 }
 
@@ -17,7 +16,8 @@
 
 #support-for h1 {
     color: #333;
-    font-size: 18px;
+    font-size: 20px;
+    font-style: italic;
     margin: 0 0 5px;
     padding: 0 0 0 5px;
 }
@@ -29,7 +29,7 @@
 #support-for input {
     background: transparent url(../img/wiki/bkg.showfor.selector.gif) no-repeat 6px 5px;
     border: none;
-    color: #32559b;
+    color: #0051B9;
     cursor: pointer;
     font-size: 13px;
     min-width: 90px;

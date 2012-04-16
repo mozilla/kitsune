@@ -8,13 +8,18 @@
 /*----------------------------------
     Global
 ----------------------------------*/
+html {
+    /* base color of the body should remain the same throughout the site */
+    color: #282828;
+}
+
 article, header, hgroup, footer, nav, section {
     display: block;
 }
 
 body {
     border-top: 2px solid #686868;
-    font: 13px/1.231 Georgia, freeserif, serif;
+    font: 13px/1.231 "Helvetica Neue", "Nimbus Sans L", Arial, sans-serif;
     min-width: 998px;
     text-align: center;
     word-wrap: break-word;
@@ -55,7 +60,9 @@ a:hover {
 }
 
 h1, h2, h3, h4, h5, h6 {
-    color: rgb(40,40,40);
+    color: #282828;
+    /* keep the header font Georgia, for now - and keep it normal weight */
+    font-family: Georgia, serif;
     font-weight: normal;
 }
 
@@ -98,7 +105,6 @@ header.global a:visited {
 }
 
 .sumo-header {
-    font-family: "Trebuchet MS",sans-serif;
     padding: 0 0 25px;
     zoom: 1;
 }
@@ -773,7 +779,6 @@ div.support-search button.img-submit {
 
 #side {
     float: left;
-    font-family: Helvetica,Arial,sans-serif;
     width: 222px;
 }
 
@@ -909,13 +914,11 @@ div.support-search button.img-submit {
 }
 
 .sd-module h1 {
-    color: #32559b;
     font-size: 20px;
     font-style: italic;
 }
 
 .sd-module h1 mark {
-    color: #32559b;
     font-family: MetaBlack, "Trebuchet MS", sans-serif;
     font-style: normal;
     text-transform: uppercase;
@@ -930,10 +933,6 @@ div.support-search button.img-submit {
 .sd-module p {
     color: rgb(40, 40, 40);
     margin: 10px 0;
-}
-
-.sd-module a {
-    font-family: Georgia,serif;
 }
 
 .sd-module section {
@@ -1700,7 +1699,6 @@ a.btn {
     -webkit-box-shadow: 0 2px rgba(0, 0, 0, 0.1), 0 -3px rgba(0, 0, 0, 0.1) inset;
     color: #fff;
     cursor: pointer;
-    font-family: "Trebuchet MS",Helvetica,sans-serif;
     font-size: 13px;
     font-weight: bold;
     margin: 0 15px 0 0;
@@ -1852,4 +1850,10 @@ div.ajax-vote-box:after {
 /* On marketplace pages, hide the Desktop | Mobile site nav */
 body.marketplace #site-nav {
     display: none;
+}
+
+/* Override footer.css from moz header/footer lib */
+#footer,
+#footer li li a:link, #footer li li a:visited {
+    font-family: "Helvetica Neue", "Nimbus Sans L", Arial, sans-serif;
 }
