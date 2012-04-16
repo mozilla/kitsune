@@ -1854,6 +1854,7 @@ body.marketplace #site-nav {
 
 /* Override footer.css from moz header/footer lib */
 #footer,
-#footer li li a:link, #footer li li a:visited {
+#footer li li a:link,
+#footer li li a:visited {
     font-family: "Helvetica Neue", "Nimbus Sans L", Arial, sans-serif;
 }
