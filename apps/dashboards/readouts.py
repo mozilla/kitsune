@@ -479,7 +479,8 @@ class TemplateTranslationsReadout(Readout):
         # an empty string, then the equality is True and True in
         # Python is 1 and 1 comes after 0... Therefore, False comes
         # first in ordering.
-        rows.sort(key=lambda row: (row['status'] == u'', row['title']))
+        rows.sort(key=lambda row: (
+                row['status'] == u'', row['status_class'], row['title']))
         return rows[:max]
 
 
