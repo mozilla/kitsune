@@ -269,6 +269,18 @@ class Readout(object):
         self.mode = mode if mode != None else self.default_mode
         # self.mode is allowed to be invalid.
 
+    def sort_and_truncate(self, rows, max):
+        """Allows a readout to sort and truncate the rows list
+
+        This happens after generating the row structures which starts
+        with what we get back from SQL and incorporates _format_row
+        and before we render the rows to output.
+
+        :arg rows: the list of rows to sort
+        :arg max: the index at which to truncate
+        """
+        return rows
+
     def rows(self, max=None):
         """Return an iterable of dicts containing the data for the table.
 
@@ -281,7 +293,8 @@ class Readout(object):
         """
         cursor = _cursor()
         cursor.execute(*self._query_and_params(max))
-        return [self._format_row(r) for r in cursor.fetchall()]
+        return self.sort_and_truncate(
+            [self._format_row(r) for r in cursor.fetchall()], max)
 
     def render(self, max_rows=None):
         """Return HTML table rows, optionally limiting to a number of rows."""
@@ -449,16 +462,25 @@ class TemplateTranslationsReadout(Readout):
                 'AND engdoc.is_localizable '
                 'AND NOT engdoc.is_archived '
                 'AND engdoc.latest_localizable_revision_id IS NOT NULL '
-                'AND engdoc.is_template '
-            'ORDER BY COALESCE(transdoc.title, engdoc.title) ASC ' +
-
-            self._limit_clause(max),
+                'AND engdoc.is_template ',
             (self.locale, settings.WIKI_DEFAULT_LANGUAGE))
 
     def _format_row(self, (eng_slug, eng_title, slug, title, significance,
                            needs_review)):
         return _format_row_with_out_of_dateness(self.locale, eng_slug,
             eng_title, slug, title, None, significance, needs_review)
+
+    def sort_and_truncate(self, rows, max):
+        # Bubble the "update needed" templates to the top, but otherwise
+        # keep it ordered by title.
+        #
+        # As a little side note, 'status' here is either an empty
+        # string or a _lazy translation of 'Update Needed'. So if it's
+        # an empty string, then the equality is True and True in
+        # Python is 1 and 1 comes after 0... Therefore, False comes
+        # first in ordering.
+        rows.sort(key=lambda row: (row['status'] == u'', row['title']))
+        return rows[:max]
 
 
 class NavigationTranslationsReadout(Readout):
