@@ -290,6 +290,18 @@ class MostVisitedTranslationsTests(ReadoutTestCase):
         eq_(unicode(row['status']), '')
         eq_(row['status_class'], 'ok')
 
+    def test_one_rejected_revision(self):
+        """A translation with only 1 revision, which is rejected, should show
+        as "Needs Translation".
+
+        """
+        translated_revision(is_approved=False,
+                            reviewed=datetime.now(),
+                            save=True)
+
+        row = self.row()
+        eq_(row['status_class'], 'untranslated')
+
     def test_spam(self):
         """Don't offer unapproved (often spam) articles for translation."""
         r = revision(is_approved=False, save=True)

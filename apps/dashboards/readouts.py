@@ -30,11 +30,23 @@ MOST_RECENT = 2
 
 
 # FROM clause for selecting most-visited translations:
+#
+# The "... EXISTS" bit in the transdoc left join prevents transdocs
+# for which there are only translated revisions that were reviewed and
+# rejected. In this case, we want it to show up as untranslated since
+# that's the most "correct" status.
 most_visited_translation_from = (
     'FROM wiki_document engdoc '
     'LEFT JOIN wiki_document transdoc ON '
         'transdoc.parent_id=engdoc.id '
         'AND transdoc.locale=%s '
+        'AND EXISTS ('
+            'SELECT * '
+            'FROM wiki_revision transrev_inner '
+            'WHERE transrev_inner.document_id=transdoc.id '
+            'AND NOT (NOT transrev_inner.is_approved '
+                     'AND transrev_inner.reviewed IS NOT NULL) '
+        ') '
     'LEFT JOIN dashboards_wikidocumentvisits ON engdoc.id='
         'dashboards_wikidocumentvisits.document_id '
         'AND dashboards_wikidocumentvisits.period=%s '
