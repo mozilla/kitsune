@@ -281,9 +281,17 @@ class ActiveContributorsResource(CachedResource):
                           k, v in d.items()]
 
         # Build the support forum contributors count list aggregated by month
-        qs = _monthly_qs_for(Answer).values('year', 'month', 'creator')
-        qs = qs.annotate(count=Count('creator'))
-        answerers = qs.filter(count__gte=10)
+        answerers = (Answer.objects
+            .exclude(creator=F('question__creator'))
+            .filter(created__gte=_start_date())
+            .extra(
+                select={
+                    'month': 'extract( month from questions_answer.created )',
+                    'year': 'extract( year from questions_answer.created )',
+                })
+            .values('year', 'month', 'creator')
+            .annotate(count=Count('creator'))
+            .filter(count__gte=10))
         d = {}
         for a in answerers:
             _add_user(d, a['year'], a['month'], a['creator'])

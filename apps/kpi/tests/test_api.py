@@ -136,6 +136,41 @@ class KpiApiTests(TestCase):
         eq_(r['objects'][0]['support_forum'], 1)
         eq_(r['objects'][0]['aoa'], 1)
 
+    def test_asker_replies_arent_a_contribution(self):
+        """Verify that replies posted by the question creator aren't counted.
+
+        If a user has 10 replies to their own question, they aren't counted as
+        a contributor.
+        """
+        # A user with 10 answers to own question.
+        q = question(save=True)
+        u = q.creator
+        for x in range(10):
+            answer(creator=u, question=q, save=True)
+
+        url = reverse('api_dispatch_list',
+                      kwargs={'resource_name': 'kpi_active_contributors',
+                              'api_name': 'v1'})
+
+        response = self.client.get(url + '?format=json')
+        eq_(200, response.status_code)
+        r = json.loads(response.content)
+        eq_(len(r['objects']), 0)
+
+        # Change the question creator, now we should have 1 contributor.
+        q.creator = user(save=True)
+        q.save()
+        cache.clear()  # We need to clear the cache for new results.
+
+        url = reverse('api_dispatch_list',
+                      kwargs={'resource_name': 'kpi_active_contributors',
+                              'api_name': 'v1'})
+
+        response = self.client.get(url + '?format=json')
+        eq_(200, response.status_code)
+        r = json.loads(response.content)
+        eq_(r['objects'][0]['support_forum'], 1)
+
     def test_sphinx_clickthrough_get(self):
         """Test Sphinx clickthrough read API."""
         click_kind, search_kind = self._make_sphinx_metric_kinds()
