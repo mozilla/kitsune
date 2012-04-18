@@ -1,16 +1,17 @@
 from nose.tools import eq_
 
 from sumo.urlresolvers import reverse
-from sumo.tests import LocalizingClient
+from sumo.tests import TestCase, LocalizingClient
 
-from search.tests.test_search import SphinxTestCase
+from search.tests.test_es import ElasticTestCase
 
 
-class JSONTest(SphinxTestCase):
+class JSONTest(ElasticTestCase):
+    client_class = LocalizingClient
+
     def test_json_format(self):
         """JSON without callback should return application/json"""
-        c = LocalizingClient()
-        response = c.get(reverse('search'), {
+        response = self.client.get(reverse('search'), {
             'q': 'bookmarks',
             'format': 'json',
         })
@@ -18,7 +19,6 @@ class JSONTest(SphinxTestCase):
 
     def test_json_callback_validation(self):
         """Various json callbacks -- validation"""
-        c = LocalizingClient()
         q = 'bookmarks'
         format = 'json'
 
@@ -43,7 +43,7 @@ class JSONTest(SphinxTestCase):
         )
 
         for callback, status in callbacks:
-            response = c.get(reverse('search'), {
+            response = self.client.get(reverse('search'), {
                 'q': q,
                 'format': format,
                 'callback': callback,
@@ -53,32 +53,31 @@ class JSONTest(SphinxTestCase):
 
     def test_json_empty_query(self):
         """Empty query returns JSON format"""
-        c = LocalizingClient()
-
         # Test with flags for advanced search or not
         a_types = (0, 1, 2)
         for a in a_types:
-            response = c.get(reverse('search'), {
+            response = self.client.get(reverse('search'), {
                 'format': 'json', 'a': a,
             })
             eq_(response['Content-Type'], 'application/json')
 
 
-def test_json_down():
-    """When the Sphinx is down, return JSON and 503 status"""
-    c = LocalizingClient()
+class JSONTestNoSphinx(TestCase):
+    client_class = LocalizingClient
 
-    # Test with flags for advanced search or not
-    callbacks = (
-        ('', 503, 'application/json'),
-        ('validCallback', 503, 'application/x-javascript'),
-        # Invalid callback does not search
-        ('eval("xss");a', 400, 'application/x-javascript'),
-    )
-    for callback, status, mimetype in callbacks:
-        response = c.get(reverse('search'), {
-            'q': 'json down', 'format': 'json',
-            'callback': callback,
-        })
-        eq_(response['Content-Type'], mimetype)
-        eq_(response.status_code, status)
+    def test_json_down(self):
+        """When the Sphinx is down, return JSON and 503 status"""
+        # Test with flags for advanced search or not
+        callbacks = (
+            ('', 503, 'application/json'),
+            ('validCallback', 503, 'application/x-javascript'),
+            # Invalid callback does not search
+            ('eval("xss");a', 400, 'application/x-javascript'),
+        )
+        for callback, status, mimetype in callbacks:
+            response = self.client.get(reverse('search'), {
+                'q': 'json down', 'format': 'json',
+                'callback': callback,
+            })
+            eq_(response['Content-Type'], mimetype)
+            eq_(response.status_code, status)
