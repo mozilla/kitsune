@@ -26,6 +26,15 @@ class KpiApiTests(TestCase):
                                   save=True)
         return click_kind, search_kind
 
+    def _get_api_result(self, resource_name):
+        """Helper to make API calls, parse the json and return the result."""
+        url = reverse('api_dispatch_list',
+                      kwargs={'resource_name': resource_name,
+                              'api_name': 'v1'})
+        response = self.client.get(url + '?format=json')
+        eq_(200, response.status_code)
+        return json.loads(response.content)
+
     def test_questions(self):
         """Test questions API call."""
         # A question with a solution:
@@ -37,12 +46,7 @@ class KpiApiTests(TestCase):
         # A question without answers:
         question(save=True)
 
-        url = reverse('api_dispatch_list',
-                      kwargs={'resource_name': 'kpi_questions',
-                              'api_name': 'v1'})
-        response = self.client.get(url + '?format=json')
-        eq_(200, response.status_code)
-        r = json.loads(response.content)
+        r = self._get_api_result('kpi_questions')
         eq_(r['objects'][0]['solved'], 1)
         eq_(r['objects'][0]['responded'], 2)
         eq_(r['objects'][0]['questions'], 3)
@@ -55,12 +59,7 @@ class KpiApiTests(TestCase):
         question(creator=u, save=True)
         question(creator=u, save=True)
 
-        url = reverse('api_dispatch_list',
-                      kwargs={'resource_name': 'kpi_questions',
-                              'api_name': 'v1'})
-        response = self.client.get(url + '?format=json')
-        eq_(200, response.status_code)
-        r = json.loads(response.content)
+        r = self._get_api_result('kpi_questions')
         eq_(len(r['objects']), 0)
 
         # Activate the user, now the questions should count.
@@ -88,12 +87,7 @@ class KpiApiTests(TestCase):
         answervote(answer=a, helpful=True, save=True)
         answervote(answer=a, helpful=True, save=True)
 
-        url = reverse('api_dispatch_list',
-                      kwargs={'resource_name': 'kpi_vote',
-                              'api_name': 'v1'})
-        response = self.client.get(url + '?format=json')
-        eq_(200, response.status_code)
-        r = json.loads(response.content)
+        r = self._get_api_result('kpi_vote')
         eq_(r['objects'][0]['kb_helpful'], 1)
         eq_(r['objects'][0]['kb_votes'], 3)
         eq_(r['objects'][0]['ans_helpful'], 2)
@@ -124,13 +118,7 @@ class KpiApiTests(TestCase):
         # An AoA reply (1 contributor):
         reply(save=True)
 
-        url = reverse('api_dispatch_list',
-                      kwargs={'resource_name': 'kpi_active_contributors',
-                              'api_name': 'v1'})
-
-        response = self.client.get(url + '?format=json')
-        eq_(200, response.status_code)
-        r = json.loads(response.content)
+        r = self._get_api_result('kpi_active_contributors')
         eq_(r['objects'][0]['en_us'], 2)
         eq_(r['objects'][0]['non_en_us'], 2)
         eq_(r['objects'][0]['support_forum'], 1)
@@ -148,13 +136,7 @@ class KpiApiTests(TestCase):
         for x in range(10):
             answer(creator=u, question=q, save=True)
 
-        url = reverse('api_dispatch_list',
-                      kwargs={'resource_name': 'kpi_active_contributors',
-                              'api_name': 'v1'})
-
-        response = self.client.get(url + '?format=json')
-        eq_(200, response.status_code)
-        r = json.loads(response.content)
+        r = self._get_api_result('kpi_active_contributors')
         eq_(len(r['objects']), 0)
 
         # Change the question creator, now we should have 1 contributor.
@@ -162,13 +144,7 @@ class KpiApiTests(TestCase):
         q.save()
         cache.clear()  # We need to clear the cache for new results.
 
-        url = reverse('api_dispatch_list',
-                      kwargs={'resource_name': 'kpi_active_contributors',
-                              'api_name': 'v1'})
-
-        response = self.client.get(url + '?format=json')
-        eq_(200, response.status_code)
-        r = json.loads(response.content)
+        r = self._get_api_result('kpi_active_contributors')
         eq_(r['objects'][0]['support_forum'], 1)
 
     def test_sphinx_clickthrough_get(self):
@@ -247,13 +223,7 @@ class KpiApiTests(TestCase):
                save=True)
 
         # There should be 42 visitors.
-        url = reverse('api_dispatch_list',
-                      kwargs={'resource_name': 'kpi_visitors',
-                              'api_name': 'v1'})
-
-        response = self.client.get(url + '?format=json')
-        eq_(200, response.status_code)
-        r = json.loads(response.content)
+        r = self._get_api_result('kpi_visitors')
         eq_(r['objects'][0]['visitors'], 42)
 
     def test_l10n_coverage(self):
@@ -264,11 +234,5 @@ class KpiApiTests(TestCase):
                save=True)
 
         # The l10n coverage should be 56%.
-        url = reverse('api_dispatch_list',
-                      kwargs={'resource_name': 'kpi_l10n_coverage',
-                              'api_name': 'v1'})
-
-        response = self.client.get(url + '?format=json')
-        eq_(200, response.status_code)
-        r = json.loads(response.content)
+        r = self._get_api_result('kpi_l10n_coverage')
         eq_(r['objects'][0]['coverage'], 56)
