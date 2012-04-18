@@ -9,6 +9,9 @@ urlpatterns = patterns('landings.views',
     url(r'^firefox-home$', 'fxhome', name='home.fxhome'),
     url(r'^marketplace$', 'marketplace', name='home.marketplace'),
 
+    # Special landing page for MozCamp
+    url(r'^reminder$', 'reminder', name='home.reminder'),
+
     # A static page for downloading FirefoxIntegrityCheck.exe
     url(r'^download-firefox-integrity-check$', 'integrity_check',
         name='download.integrity-check'),

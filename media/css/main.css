@@ -1858,3 +1858,8 @@ body.marketplace #site-nav {
 #footer li li a:visited {
     font-family: "Helvetica Neue", "Nimbus Sans L", Arial, sans-serif;
 }
+
+/* Reminders signup page for MozCamp */
+body.reminder #main {
+    background: none;
+}

@@ -94,6 +94,11 @@ def integrity_check(request):
     return jingo.render(request, 'landings/integrity-check.html')
 
 
+def reminder(request):
+    """MozCamp landing page for people to sign up to contribute."""
+    return jingo.render(request, 'landings/reminder.html')
+
+
 def _data(docs, locale, product, only_kb=False):
     """Add the documents and showfor data to the context data."""
     data = {}
