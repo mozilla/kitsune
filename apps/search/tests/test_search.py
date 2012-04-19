@@ -8,7 +8,8 @@ from nose.tools import eq_
 
 from django.conf import settings
 
-from sumo.tests import LocalizingClient, ElasticTestCase
+from search.tests.test_es import ElasticTestCase
+from sumo.tests import LocalizingClient
 from sumo.urlresolvers import reverse
 from wiki.tests import document, revision
 

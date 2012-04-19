@@ -51,11 +51,25 @@ class SphinxTestCase(TestCase):
     fixtures = ['users.json', 'search/documents.json',
                 'posts.json', 'questions.json']
 
+    skipme = False
+
     @classmethod
     def setUpClass(cls):
         super(SphinxTestCase, cls).setUpClass()
-        if not settings.SPHINX_SEARCHD or not settings.SPHINX_INDEXER:
-            raise SkipTest()
+
+        # If the settings aren't set or the executables don't exist
+        # then skip Sphinx tests.
+        if (not settings.SPHINX_SEARCHD
+            or not os.path.exists(settings.SPHINX_SEARCHD)
+            or not settings.SPHINX_INDEXER
+            or not os.path.exists(settings.SPHINX_INDEXER)
+            ):
+            # This flag causes all the tests to get skipped. We do
+            # this insteade of raising SkipTest here so that the test
+            # numbers show up more correctly and it's less confusing
+            # for whoever is running the tests.
+            cls.skipme = True
+            return
 
         os.environ['DJANGO_ENVIRONMENT'] = 'test'
 
@@ -72,8 +86,14 @@ class SphinxTestCase(TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        stop_sphinx()
         super(SphinxTestCase, cls).tearDownClass()
+        if not cls.skipme:
+            stop_sphinx()
+
+    def setUp(self):
+        super(SphinxTestCase, self).setUp()
+        if self.skipme:
+            raise SkipTest
 
 
 class SearchTest(SphinxTestCase):
