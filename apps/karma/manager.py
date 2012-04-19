@@ -116,6 +116,8 @@ class KarmaManager(object):
 
     def _update_top(self, daterange, type):
         """Update the aggregates and indexes for the given type and range."""
+        log.info('[karma] Updating %s for %s' % (type, daterange))
+
         overview_key = hash_key('overview')
         hash_field_key = '{t}:{r}'.format(t=type, r=daterange)
         sset_key = '{p}:{t}:{r}'.format(p=KEY_PREFIX, t=type, r=daterange)
@@ -124,7 +126,6 @@ class KarmaManager(object):
         total_count = 0
 
         for userid in self.user_ids():
-            log.info('Updating user.id [{id}]'.format(id=userid))
             if daterange == 'all':
                 # '*:all' is always up to date
                 count = self.count(userid, daterange='all', type=type)
@@ -147,6 +148,8 @@ class KarmaManager(object):
             self.redis.rename(temp_sset_key, sset_key)
         else:
             self.redis.delete(sset_key)
+
+        log.info('[karma] Done updating %s for %s' % (type, daterange))
 
     def _set_or_del_hash(self, userid, key, count):
         if count:

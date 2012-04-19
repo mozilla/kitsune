@@ -114,6 +114,11 @@ th.sort {
     padding: 0 0 0 3px;
 }
 
+.last-activity {
+    text-align: right;
+    width: 130px;
+}
+
 .user-list tbody tr:nth-child(odd) {
     background: #cae1ff;
 }

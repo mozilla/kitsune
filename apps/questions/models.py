@@ -360,8 +360,9 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
         d['tag'] = list(TaggedItem.tags_for(
             Question, Question(pk=obj_id)).values_list('name', flat=True))
 
-        answer_values = list(Answer.objects.filter(question=obj_id).values_list(
-                        'content', 'creator__username'))
+        answer_values = list(
+            Answer.objects.filter(question=obj_id)
+                          .values_list('content', 'creator__username'))
         d['answer_content'] = [a[0] for a in answer_values]
         d['answer_creator'] = list(set([a[1] for a in answer_values]))
 
@@ -573,6 +574,16 @@ class Answer(ActionMixin, ModelBase):
             return False
 
         return qs.exists()
+
+    @classmethod
+    def last_activity_for(cls, user):
+        """Returns the datetime of the user's last answer."""
+        try:
+            return (Answer.objects.filter(creator=user)
+                                  .order_by('-created')
+                                  .values_list('created', flat=True)[0])
+        except IndexError:
+            return None
 
 
 def answer_connector(sender, instance, created, **kw):

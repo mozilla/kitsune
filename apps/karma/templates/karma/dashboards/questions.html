@@ -106,6 +106,9 @@
           <th class="nothelpful-answer sortable <% if (sort==='nothelpful-answer') { %>sort<% } %>">
             {{ _('Unhelpful Votes') }}
           </th>
+          <th class="last-activity">
+            {{ _('Days since last activity') }}
+          </th>
       </thead>
       <tbody></tbody>
     </table>
@@ -146,6 +149,11 @@
     <td class="nothelpful-answer">
       <div style="background: -moz-linear-gradient(left, #ddd, #ddd <%= nothelpfulanswerPerc %>%, transparent <%= nothelpfulanswerPerc %>%, transparent);">
         <%= nothelpfulanswer %>
+      </div>
+    </td>
+    <td class="last-activity">
+      <div>
+        <%= lastactivity %>
       </div>
     </td>
   </script>

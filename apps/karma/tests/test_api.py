@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 import json
 
 import mock
@@ -8,6 +9,7 @@ import waffle
 from karma import models
 from karma.manager import KarmaManager
 from karma.tests import TestAction1, TestAction2
+from questions.tests import answer
 from sumo.helpers import urlparams
 from sumo.redis_utils import redis_client, RedisError
 from sumo.tests import TestCase, LocalizingClient
@@ -88,6 +90,26 @@ class KarmaAPITests(TestCase):
         r = json.loads(response.content)
         user_ids = [u[0] for u in r['results']]
         eq_([self.user2.id], user_ids)
+
+    @mock.patch.object(waffle, 'switch_is_active')
+    def test_user_api_last_activity(self, switch_is_active):
+        """Verify the last activity field."""
+        switch_is_active.return_value = True
+
+        now = datetime.now()
+        one_day = now - timedelta(days=1)
+        two_days = now - timedelta(days=2)
+
+        answer(creator=self.user1, created=now, save=True)
+        answer(creator=self.user2, created=one_day, save=True)
+        answer(creator=self.user3, created=two_days, save=True)
+
+        url = reverse('karma.api.users')
+        response = self.client.get(url)
+        eq_(200, response.status_code)
+        r = json.loads(response.content)
+        days_since_last_activity = [u[2] for u in r['results']]
+        eq_([1, 2, 0], days_since_last_activity)
 
     @mock.patch.object(waffle, 'switch_is_active')
     def test_overview_api(self, switch_is_active):

@@ -1,11 +1,11 @@
-from datetime import date, timedelta
+from datetime import datetime, date, timedelta
 
 from access.decorators import login_required, permission_required
 from karma.forms import (
     UserAPIForm, OverviewAPIForm, DetailAPIForm
 )
 from karma.manager import KarmaManager
-from questions.models import Question
+from questions.models import Question, Answer
 from sumo.decorators import json_view
 
 
@@ -37,11 +37,14 @@ def users(request):
     users = mgr.top_users(daterange=daterange, type=sort, count=pagesize,
                           offset=(page - 1) * pagesize) or []
 
+    now = datetime.now()
     action_types = KarmaManager.action_types.keys()
-    schema = ['id', 'username', 'points'] + action_types
+    schema = ['id', 'username', 'lastactivity', 'points'] + action_types
     user_list = []
     for u in users:
         user = [u.id, u.username]
+        last_activity = Answer.last_activity_for(u)
+        user.append((now - last_activity).days if last_activity else None)
         user.append(mgr.count(u, daterange=daterange, type='points'))
         for t in action_types:
             user.append(mgr.count(u, daterange=daterange, type=t))
