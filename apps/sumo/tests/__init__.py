@@ -8,15 +8,10 @@ from django.conf import settings
 from django.test.client import Client
 
 from nose.tools import eq_
-from nose import SkipTest
 from test_utils import TestCase  # just for others to import
-from waffle.models import Flag
 
-from search import es_utils
 from sumo.urlresolvers import reverse, split_path
 import sumo
-
-from elasticutils import get_es
 
 
 get = lambda c, v, **kw: c.get(reverse(v, **kw), follow=True)
@@ -66,68 +61,6 @@ class LocalizingClient(Client):
     # If you use this, you might also find the force_locale=True argument to
     # sumo.urlresolvers.reverse() handy, in case you need to force locale
     # prepending in a one-off case or do it outside a mock request.
-
-
-class ElasticTestCase(TestCase):
-    """Base class for Elastic Search tests, providing some conveniences"""
-    def setUp(self):
-        # Swap out for better versions.
-        self._old_read_index = es_utils.READ_INDEX
-        self._old_write_index = es_utils.WRITE_INDEX
-        es_utils.READ_INDEX = u'sumo_test'
-        es_utils.WRITE_INDEX = u'sumo_test'
-
-        super(ElasticTestCase, self).setUp()
-        self.setup_indexes()
-        Flag.objects.create(name='elasticsearch', everyone=True)
-
-    def tearDown(self):
-        # Restore old settings.
-        es_utils.READ_INDEX = self._old_read_index
-        es_utils.WRITE_INDEX = self._old_write_index
-
-        self.teardown_indexes()
-        super(ElasticTestCase, self).tearDown()
-
-    def refresh(self):
-        # Any time we're doing a refresh, we're making sure that the
-        # index is ready to be queried.  Given that, it's almost
-        # always the case that we want to run all the generated tasks,
-        # then refresh.
-        from search.models import generate_tasks
-        generate_tasks()
-
-        get_es().refresh(es_utils.WRITE_INDEX, timesleep=0)
-
-    def setup_indexes(self):
-        """(Re-)create ES indexes."""
-        from search.es_utils import es_reindex_cmd
-
-        if getattr(settings, 'ES_HOSTS', None) is None:
-            raise SkipTest
-
-        # TODO: Don't bother scanning through model objects and indexing any
-        # that exist. None of our ES tests use any fixtures, so incremental
-        # indexing will suffice for them.
-        es_reindex_cmd()
-
-        # TODO: This is kind of bad.  If setup_indexes gets called in
-        # a setUp and that setUp at some point throws an exception, we
-        # could end up in a situation where setUp throws an exception,
-        # so tearDown doesn't get called and we never set
-        # ES_LIVE_INDEXING to False and thus ES_LIVE_INDEXING is True
-        # for a bunch of tests it shouldn't be true for.
-        #
-        # For settings like this, it's better to mock it in the class
-        # because the mock will set it back regardless of whether the
-        # test fails.
-        settings.ES_LIVE_INDEXING = True
-
-    def teardown_indexes(self):
-        es = get_es()
-        es.delete_index_if_exists(es_utils.READ_INDEX)
-
-        settings.ES_LIVE_INDEXING = False
 
 
 class MigrationTests(TestCase):

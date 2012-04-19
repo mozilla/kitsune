@@ -1,17 +1,106 @@
 import json
 import datetime
 
-from nose.tools import eq_
 import mock
+from django.conf import settings
+from elasticutils import get_es
+from nose import SkipTest
+from nose.tools import eq_
+from test_utils import TestCase
 
 from forums.tests import thread, post
 from questions.tests import question, answer, answervote
 from questions.models import Question
 from search.models import generate_tasks
-from search.es_utils import get_documents
-from sumo.tests import LocalizingClient, ElasticTestCase
+from search import es_utils
+from sumo.tests import LocalizingClient
 from sumo.urlresolvers import reverse
+from waffle.models import Flag
 from wiki.tests import document, revision
+
+
+class ElasticTestCase(TestCase):
+    """Base class for Elastic Search tests, providing some conveniences"""
+    skipme = False
+
+    @classmethod
+    def setUpClass(cls):
+        super(ElasticTestCase, cls).setUpClass()
+
+        if not getattr(settings, 'ES_HOSTS'):
+            cls.skipme = True
+            return
+
+        # try to connect to ES and if it fails, skip ElasticTestCases.
+        import pyes.urllib3
+        import pyes.exceptions
+        try:
+            get_es().collect_info()
+        except pyes.urllib3.MaxRetryError:
+            cls.skipme = True
+            return
+
+        # Swap out for better versions.
+        cls._old_read_index = es_utils.READ_INDEX
+        cls._old_write_index = es_utils.WRITE_INDEX
+        es_utils.READ_INDEX = u'sumo_test'
+        es_utils.WRITE_INDEX = u'sumo_test'
+
+    @classmethod
+    def tearDownClass(cls):
+        if not cls.skipme:
+            # Restore old settings.
+            es_utils.READ_INDEX = cls._old_read_index
+            es_utils.WRITE_INDEX = cls._old_write_index
+
+    def setUp(self):
+        if self.skipme:
+            raise SkipTest
+
+        super(ElasticTestCase, self).setUp()
+        Flag.objects.create(name='elasticsearch', everyone=True)
+        self.setup_indexes()
+
+    def tearDown(self):
+        super(ElasticTestCase, self).tearDown()
+        self.teardown_indexes()
+
+    def refresh(self):
+        index = es_utils.WRITE_INDEX
+
+        # Any time we're doing a refresh, we're making sure that the
+        # index is ready to be queried.  Given that, it's almost
+        # always the case that we want to run all the generated tasks,
+        # then refresh.
+        generate_tasks()
+
+        get_es().refresh(index, timesleep=0)
+
+    def setup_indexes(self):
+        """(Re-)create ES indexes."""
+        from search.es_utils import es_reindex_cmd
+
+        # This removes the previous round of indexes and creates new
+        # ones with mappings and all that.
+        es_reindex_cmd()
+
+        # TODO: This is kind of bad.  If setup_indexes gets called in
+        # a setUp and that setUp at some point throws an exception, we
+        # could end up in a situation where setUp throws an exception,
+        # so tearDown doesn't get called and we never set
+        # ES_LIVE_INDEXING to False and thus ES_LIVE_INDEXING is True
+        # for a bunch of tests it shouldn't be true for.
+        #
+        # For settings like this, it's better to mock it in the class
+        # because the mock will set it back regardless of whether the
+        # test fails.
+        settings.ES_LIVE_INDEXING = True
+
+    def teardown_indexes(self):
+        es = get_es()
+        es.delete_index_if_exists(es_utils.READ_INDEX)
+
+        settings.ES_LIVE_INDEXING = False
 
 
 class ElasticSearchTasksTests(ElasticTestCase):
@@ -323,6 +412,6 @@ class ElasticSearchUtilsTests(ElasticTestCase):
     def test_get_documents(self):
         q = question(save=True)
         self.refresh()
-        docs = get_documents(Question, [q.id])
+        docs = es_utils.get_documents(Question, [q.id])
         docs = [int(mem[u'_id']) for mem in docs]
         eq_(docs, [q.id])

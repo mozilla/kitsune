@@ -4,7 +4,7 @@ from nose.tools import eq_
 from questions.models import Question, question_searcher
 from questions.tests import question, answer, answervote, questionvote
 from search.tests import dummy_request
-from sumo.tests import ElasticTestCase
+from search.tests.test_es import ElasticTestCase
 
 
 class QuestionUpdateTests(ElasticTestCase):
