@@ -133,11 +133,11 @@ class SearchTest(SphinxTestCase):
         results = list(wiki_searcher().query(''))
         eq_(6, len(results))
 
-    def test_range_filter(self):
-        """Test filtering on a range."""
-        results = wiki_searcher().filter(updated__gte=1284664176,
-                                         updated__lte=1285765791)
-        eq_(2, len(results))
+    # def test_range_filter(self):
+    #     """Test filtering on a range."""
+    #     results = wiki_searcher().filter(updated__gte=1284664176,
+    #                                      updated__lte=1285765791)
+    #     eq_(2, len(results))
 
     def test_sort_mode(self):
         """Test set_sort_mode()."""
