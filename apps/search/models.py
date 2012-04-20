@@ -169,7 +169,7 @@ class SearchMixin(object):
         log.info('done! (%s, %s per 1000 docs)',
                  es_utils.format_time(delta_time),
                  es_utils.format_time(delta_time / (total / 1000.0)))
-        es.refresh()
+        es.refresh(es_utils.WRITE_INDEX, timesleep=0)
 
     @classmethod
     def index(cls, document, bulk=False, force_insert=False, refresh=False,
@@ -193,7 +193,7 @@ class SearchMixin(object):
                  force_insert=force_insert)
 
         if refresh:
-            es.refresh(timesleep=0)
+            es.refresh(es_utils.WRITE_INDEX, timesleep=0)
 
     @classmethod
     def unindex(cls, id, es=None):
