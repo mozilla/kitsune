@@ -2,11 +2,10 @@ import elasticutils
 
 from nose.tools import eq_
 
-from sumo.tests import ElasticTestCase
-
 from questions.models import Question, QuestionVote
 from questions.tests import TestCaseBase, question, questionvote
 from questions.cron import update_weekly_votes
+from search.tests.test_es import ElasticTestCase
 
 
 class TestVotes(TestCaseBase):

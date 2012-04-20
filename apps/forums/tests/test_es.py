@@ -2,8 +2,8 @@ import elasticutils
 from nose.tools import eq_
 
 from forums.models import Thread
-from forums.tests import forum, thread, post
-from sumo.tests import ElasticTestCase
+from forums.tests import thread, post
+from search.tests.test_es import ElasticTestCase
 
 
 class TestPostUpdate(ElasticTestCase):
