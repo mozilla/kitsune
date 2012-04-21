@@ -362,7 +362,10 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
         if self.html.startswith(REDIRECT_HTML):
             anchors = PyQuery(self.html)('a[href]')
             if anchors:
-                return anchors[0].get('href')
+                url = split_path(anchors[0].get('href'))[1]
+                if url[0] != '/':
+                    url = '/' + url
+                return url
 
     def redirect_document(self):
         """If I am a redirect to a Document, return that Document.

@@ -6,6 +6,7 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
 from django.core import mail
+from django.core.urlresolvers import reverse as django_reverse
 from django.utils.encoding import smart_str
 
 from bleach import clean
@@ -19,7 +20,7 @@ from wikimarkup.parser import ALLOWED_TAGS, ALLOWED_ATTRIBUTES
 from questions.tests import tags_eq
 from sumo.helpers import urlparams
 from sumo.tests import post, get, attrs_eq, MobileTestCase
-from sumo.urlresolvers import reverse
+from sumo.urlresolvers import reverse, split_path
 from users.tests import user, add_permission
 from wiki.cron import calculate_related_documents
 from wiki.events import (EditDocumentEvent, ReadyRevisionEvent,
@@ -199,7 +200,7 @@ class DocumentTests(TestCaseBase):
 
         """
         target = document(save=True)
-        target_url = target.get_absolute_url()
+        target_url = django_reverse('wiki.document', args=[target.slug])
 
         # Ordinarily, a document with no approved revisions cannot have HTML,
         # but we shove it in manually here as a shortcut:
@@ -214,7 +215,8 @@ class DocumentTests(TestCaseBase):
         self.assertContains(response, redirect_url + '?redirect=no')
         # There's a canonical URL in the <head>.
         doc = pq(response.content)
-        eq_(target_url, doc('link[rel=canonical]').attr('href'))
+        eq_(target_url,
+            '/' + split_path(doc('link[rel=canonical]').attr('href'))[1])
 
     def test_redirect_from_nonexistent(self):
         """The template shouldn't crash or print a backlink if the "from" page

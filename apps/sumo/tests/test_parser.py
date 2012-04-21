@@ -115,12 +115,13 @@ class GetObjectFallbackTests(TestCase):
                               save=True),
             is_approved=True,
             save=True)
-        revision(
+        redirect_rev = revision(
             document=document(title='redirect', save=True),
             content='REDIRECT [[target]]',
-            is_approved=True).save()
+            is_approved=True)
+        redirect_rev.save()
 
-        eq_(translated_target_rev.document,
+        eq_(redirect_rev.document,
             get_object_fallback(Document, 'redirect', 'de'))
 
     def test_redirect_translations_only(self):
