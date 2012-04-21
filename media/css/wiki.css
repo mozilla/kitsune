@@ -760,7 +760,7 @@ details.h2 > summary {
 #revision-list div.comment,
 #revision-list div.comment-head {
     display: inline-block;
-    width: 245px;
+    width: 240px;
 }
 
 #revision-list div.l10n,
