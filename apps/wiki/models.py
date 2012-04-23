@@ -502,7 +502,8 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
             'keywords': {'type': 'string', 'analyzer': 'snowball'},
             'updated': {'type': 'integer'},
             'tag': {'type': 'string', 'index': 'not_analyzed'},
-            'url': {'type': 'string', 'index': 'not_analyzed'}}
+            'url': {'type': 'string', 'index': 'not_analyzed'},
+            'indexed_on': {'type': 'integer'}}
 
     @classmethod
     def extract_document(cls, obj_id):
@@ -536,6 +537,8 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
             d['keywords'] = None
             d['updated'] = None
             d['current'] = None
+
+        d['indexed_on'] = int(time.time())
         return d
 
     @classmethod

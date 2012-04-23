@@ -195,7 +195,8 @@ class Thread(NotificationsMixin, ModelBase, SearchMixin):
             'created': {'type': 'integer'},
             'updated': {'type': 'integer'},
             'replies': {'type': 'integer'},
-            'url': {'type': 'string', 'index': 'not_analyzed'}}
+            'url': {'type': 'string', 'index': 'not_analyzed'},
+            'indexed_on': {'type': 'integer'}}
 
     @classmethod
     def extract_document(cls, obj_id):
@@ -237,6 +238,7 @@ class Thread(NotificationsMixin, ModelBase, SearchMixin):
         d['author_ord'] = list(author_ords)
         d['content'] = content
 
+        d['indexed_on'] = int(time.time())
         return d
 
 
