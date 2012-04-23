@@ -345,7 +345,7 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
         except Document.DoesNotExist:
             return None
 
-    def redirect_url(self):
+    def redirect_url(self, source_locale=settings.LANGUAGE_CODE):
         """If I am a redirect, return the URL to which I redirect.
 
         Otherwise, return None.
@@ -357,7 +357,21 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
         if self.html.startswith(REDIRECT_HTML):
             anchors = PyQuery(self.html)('a[href]')
             if anchors:
-                return anchors[0].get('href')
+                # Articles with a redirect have a link that has the locale
+                # hardcoded into it, and so by simply redirecting to the given
+                # link, we end up possibly losing the locale. So, instead,
+                # we strip out the locale and replace it with the original
+                # source locale only in the case where an article is going
+                # from one locale and redirecting it to a different one.
+                # This only applies when it's a non-default locale because we
+                # don't want to override the redirects that are forcibly
+                # changing to (or staying within) a specific locale.
+                full_url = anchors[0].get('href')
+                (dest_locale, url) = split_path(full_url)
+                if (source_locale != dest_locale
+                    and dest_locale == settings.LANGUAGE_CODE):
+                    return '/' + source_locale + '/' + url
+                return full_url
 
     def redirect_document(self):
         """If I am a redirect to a Document, return that Document.

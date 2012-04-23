@@ -126,7 +126,7 @@ def document(request, document_slug, template=None):
     # redirected-to-page back to a "Redirected from..." link, so you can edit
     # the redirect.
     redirect_url = (None if request.GET.get('redirect') == 'no'
-                    else doc.redirect_url())
+                    else doc.redirect_url(request.locale))
     if redirect_url:
         url = urlparams(redirect_url, query_dict=request.GET,
                         redirectslug=doc.slug, redirectlocale=doc.locale)
