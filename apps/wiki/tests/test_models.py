@@ -266,6 +266,24 @@ class DocumentTests(TestCase):
                            is_approved=True,
                            save=True).document.redirect_document())
 
+    def test_redirect_nondefault_locales(self):
+        title1 = 'title1'
+        title2 = 'title2'
+
+        redirect_to = revision(
+                    document=document(title=title1, locale='es', save=True),
+                    is_approved=True,
+                    save=True)
+
+        redirector = revision(
+                    document=document(title=title2, locale='es', save=True),
+                    content=u'REDIRECT [[%s]]' % redirect_to.document.title,
+                    is_approved=True,
+                    save=True)
+
+        eq_(redirect_to.document.get_absolute_url(),
+            redirector.document.redirect_url())
+
 
 class LocalizableOrLatestRevisionTests(TestCase):
     """Tests for Document.localizable_or_latest_revision()"""

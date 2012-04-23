@@ -350,7 +350,7 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
         except Document.DoesNotExist:
             return None
 
-    def redirect_url(self):
+    def redirect_url(self, source_locale=settings.LANGUAGE_CODE):
         """If I am a redirect, return the URL to which I redirect.
 
         Otherwise, return None.
@@ -362,7 +362,12 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
         if self.html.startswith(REDIRECT_HTML):
             anchors = PyQuery(self.html)('a[href]')
             if anchors:
-                return anchors[0].get('href')
+                full_url = anchors[0].get('href')
+                (dest_locale, url) = split_path(full_url)
+                if (source_locale != dest_locale
+                    and dest_locale == settings.LANGUAGE_CODE):
+                    return '/' + source_locale + '/' + url
+                return full_url
 
     def redirect_document(self):
         """If I am a redirect to a Document, return that Document.
