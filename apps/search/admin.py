@@ -162,8 +162,7 @@ def index_view(request):
             raise Http404
 
         cls = bucket_to_model[requested_bucket]
-        data = list(es_utils.Sphilastic(cls).filter(id=requested_id)
-                                            .values_dict())
+        data = list(cls.search().filter(id=requested_id).values_dict())
         if not data:
             raise Http404
         data = _fix_value_dicts(data)[0]
@@ -175,9 +174,9 @@ def index_view(request):
         # ES.
         last_20_by_bucket = [
             (cls_name,
-             _fix_value_dicts(es_utils.Sphilastic(cls)
-                                      .values_dict('id', 'title', 'indexed_on')
-                                      .order_by('-indexed_on')[:20]))
+             _fix_value_dicts(cls.search()
+                                 .values_dict('id', 'title', 'indexed_on')
+                                 .order_by('-indexed_on')[:20]))
             for cls_name, cls in bucket_to_model.items()]
 
     return render_to_response(

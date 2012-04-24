@@ -9,16 +9,16 @@ from search.tests.test_es import ElasticTestCase
 class TestPostUpdate(ElasticTestCase):
     def test_added(self):
         new_thread = thread()
-        eq_(elasticutils.S(Thread).count(), 0)
+        eq_(Thread.search().count(), 0)
 
         # Saving a new Thread does create a new document in the
         # index.
         new_thread.save()
         self.refresh()
-        eq_(elasticutils.S(Thread).count(), 1)
+        eq_(Thread.search().count(), 1)
 
         new_post = post(thread=new_thread)
-        eq_(elasticutils.S(Thread).count(), 1)
+        eq_(Thread.search().count(), 1)
 
         new_post.save()
         self.refresh()
@@ -29,7 +29,7 @@ class TestPostUpdate(ElasticTestCase):
         # TODO: This is ambiguous: it's not clear whether we correctly
         # updated the document in the index or whether the post_save
         # hook didn't kick off.  Need a better test.
-        eq_(elasticutils.S(Thread).count(), 1)
+        eq_(Thread.search().count(), 1)
 
     def test_deleted(self):
         new_thread = thread()
@@ -39,15 +39,15 @@ class TestPostUpdate(ElasticTestCase):
         # index.
         new_thread.save()
         self.refresh()
-        eq_(elasticutils.S(Thread).count(), 1)
+        eq_(Thread.search().count(), 1)
 
         new_post = post(thread=new_thread)
-        eq_(elasticutils.S(Thread).count(), 1)
+        eq_(Thread.search().count(), 1)
 
         new_post.save()
         self.refresh()
-        eq_(elasticutils.S(Thread).count(), 1)
+        eq_(Thread.search().count(), 1)
 
         new_thread.delete()
         self.refresh()
-        eq_(elasticutils.S(Thread).count(), 0)
+        eq_(Thread.search().count(), 0)

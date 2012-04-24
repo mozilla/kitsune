@@ -937,33 +937,33 @@ def _search_suggestions(request, query, locale, category_tags):
     """
     if waffle.flag_is_active(request, 'elasticsearch'):
         engine = 'elastic'
+        question_s = Question.search()
+        wiki_s = Document.search()
     else:
         engine = 'sphinx'
-
-    my_question_search = question_searcher(request)
-    my_wiki_search = wiki_searcher(request)
+        question_s = question_searcher(request)
+        wiki_s = wiki_searcher(request)
 
     # Max number of search results per type.
     WIKI_RESULTS = QUESTIONS_RESULTS = 3
 
     # Apply category filters
     if category_tags:
-        my_question_search = my_question_search.filter(tag__in=category_tags)
-        my_wiki_search = my_wiki_search.filter(tag__in=category_tags)
+        question_s = question_s.filter(tag__in=category_tags)
+        wiki_s = wiki_s.filter(tag__in=category_tags)
 
     try:
         raw_results = (
-            my_wiki_search.filter(locale=locale,
-                                  category__in=settings.SEARCH_DEFAULT_CATEGORIES)
-                          .query(query)
-                          .values_dict('id')[:WIKI_RESULTS])
+            wiki_s.filter(locale=locale,
+                          category__in=settings.SEARCH_DEFAULT_CATEGORIES)
+                  .query(query)
+                  .values_dict('id')[:WIKI_RESULTS])
 
-        # Lazily build excerpts from results. Stop when we have enough:
         results = []
         for r in raw_results:
             try:
-                doc = (Document.objects.select_related('current_revision').
-                       get(pk=r['id']))
+                doc = (Document.objects.select_related('current_revision')
+                                       .get(pk=r['id']))
                 results.append({
                     'search_summary': doc.current_revision.summary,
                     'url': doc.get_absolute_url(),
@@ -974,9 +974,9 @@ def _search_suggestions(request, query, locale, category_tags):
             except Document.DoesNotExist:
                 pass
 
-        # Questions app is en-US only.
-        raw_results = (my_question_search.query(query)
-                                         .values_dict('id')[:QUESTIONS_RESULTS])
+        # Note: Questions app is en-US only.
+        raw_results = (question_s.query(query)
+                                 .values_dict('id')[:QUESTIONS_RESULTS])
 
         for r in raw_results:
             try:

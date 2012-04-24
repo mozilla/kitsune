@@ -413,5 +413,5 @@ class ElasticSearchUtilsTests(ElasticTestCase):
         q = question(save=True)
         self.refresh()
         docs = es_utils.get_documents(Question, [q.id])
-        docs = [int(mem[u'_id']) for mem in docs]
+        docs = [int(mem[u'id']) for mem in docs]
         eq_(docs, [q.id])

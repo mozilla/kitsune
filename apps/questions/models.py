@@ -291,6 +291,8 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
     def get_mapping(cls):
         return {
             'id': {'type': 'long'},
+            'model': {'type': 'string', 'index': 'not_analyzed',
+                      'store': 'yes'},
             'question_id': {'type': 'long'},
             'title': {'type': 'string', 'analyzer': 'snowball'},
             'question_content':
@@ -330,6 +332,7 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
 
         d = {}
         d['id'] = obj['id']
+        d['model'] = cls.get_model_name()
         d['title'] = obj['title']
         d['question_content'] = obj['content']
         d['num_answers'] = obj['num_answers']
@@ -361,9 +364,11 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
         d['tag'] = list(TaggedItem.tags_for(
             Question, Question(pk=obj_id)).values_list('name', flat=True))
 
-        answer_values = list(
-            Answer.objects.filter(question=obj_id)
-                          .values_list('content', 'creator__username'))
+        answer_values = list(Answer.objects
+                                   .filter(question=obj_id)
+                                   .values_list('content',
+                                                'creator__username'))
+
         d['answer_content'] = [a[0] for a in answer_values]
         d['answer_creator'] = list(set([a[1] for a in answer_values]))
 
@@ -376,14 +381,24 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
         d['indexed_on'] = int(time.time())
         return d
 
+    @classmethod
+    def search(cls):
+        s = super(Question, cls).search()
+        return (s.query_fields('title__text', 'question_content__text',
+                               'answer_content__text')
+                 .weight(title=4, question_content=3, answer_content=3)
+                 .highlight(before_match='<b>',
+                            after_match='</b>',
+                            limit=settings.SEARCH_SUMMARY_LENGTH))
+
 
 register_for_indexing(Question, 'questions')
 register_for_indexing(
     TaggedItem,
     'questions',
-    instance_to_indexee=
+    instance_to_indexee=(
         lambda i: i.content_object if isinstance(i.content_object, Question)
-                  else None)
+                  else None))
 
 
 class QuestionMetaData(ModelBase):
@@ -696,6 +711,7 @@ def _content_parsed(obj):
     return html
 
 
+# NOTE: This only affects Sphinx search--it's not used in ES search.
 def question_searcher(request):
     """Return a question searcher with default parameters."""
     return (searcher(request)(Question)

@@ -82,6 +82,23 @@ class SearchMixin(object):
         """
         raise NotImplementedError
 
+    @classmethod
+    def get_model_name(cls):
+        """Returns model name for this model class
+
+        By default this is ``cls._meta.db_table``.
+        """
+        return cls._meta.db_table
+
+    @classmethod
+    def search(cls):
+        """Returns an S for this class
+
+        This applies a filter on doctype=cls._meta.db_table which
+        makes sure to return results specific to this class.
+        """
+        return es_utils.Sphilastic(cls).filter(model=cls.get_model_name())
+
     def index_later(self):
         """Register myself to be indexed at the end of the request."""
         _local_tasks().add((index_task.delay, (self.__class__, (self.id,))))
@@ -113,18 +130,17 @@ class SearchMixin(object):
         """
         es = es_utils.get_indexing_es()
 
-        doc_type = cls._meta.db_table
+        cls_name = cls._meta.db_table
 
         start_time = time.time()
 
         indexable_qs = cls.get_indexable()
 
-        log.info('reindex %s into %s index', doc_type, es_utils.WRITE_INDEX)
-
-        log.info('iterating through %s....', doc_type)
+        log.info('reindex %s into %s index....', cls_name, es_utils.WRITE_INDEX)
         total = indexable_qs.count()
         to_index = int(total * (percent / 100.0))
-        log.info('total %s: %s (to be indexed: %s)', doc_type, total, to_index)
+        log.info('total %s: %s (to be indexed: %s)',
+                 es_utils.SUMO_DOCTYPE, total, to_index)
         if to_index == 0:
             log.info('done!')
             return
@@ -183,11 +199,9 @@ class SearchMixin(object):
             # ES_INDEXING_TIMEOUT.
             es = es_utils.get_indexing_es()
 
-        doc_type = cls._meta.db_table
-
         es.index(document,
                  index=es_utils.WRITE_INDEX,
-                 doc_type=doc_type,
+                 doc_type=es_utils.SUMO_DOCTYPE,
                  id=document['id'],
                  bulk=bulk,
                  force_insert=force_insert)
@@ -206,11 +220,10 @@ class SearchMixin(object):
             # ES_INDEXING_TIMEOUT.
             es = es_utils.get_indexing_es()
 
-        doc_type = cls._meta.db_table
         try:
             # TODO: There is a race condition here if this gets called
             # during reindexing.
-            es.delete(es_utils.WRITE_INDEX, doc_type, id)
+            es.delete(es_utils.WRITE_INDEX, es_utils.SUMO_DOCTYPE, id)
         except pyes.exceptions.NotFoundException:
             # Ignore the case where we try to delete something that's
             # not there.

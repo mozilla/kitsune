@@ -81,15 +81,11 @@ def update_question_vote_chunk(data, **kwargs):
         # For each document, update the data and stick it back in the
         # index.
         for doc in es_docs:
-            doc_id = int(doc[u'_id'])
-            document = doc[u'_source']
-            new_num_votes = id_to_num[doc_id]
-
             # Note: Need to keep this in sync with
             # Question.extract_document.
-            document[u'num_votes_past_week'] = new_num_votes
+            doc[u'num_votes_past_week'] = id_to_num[int(doc[u'id'])]
 
-            Question.index(document, refresh=True)
+            Question.index(doc, refresh=True)
 
 
 @task(rate_limit='4/m')
