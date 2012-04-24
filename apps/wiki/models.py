@@ -18,18 +18,13 @@ from search import searcher
 from search.models import SearchMixin, register_for_indexing
 from search.utils import crc32
 from sumo import ProgrammingError
-from sumo_locales import LOCALES
 from sumo.models import ModelBase, LocaleField
 from sumo.urlresolvers import reverse, split_path
 from taggit.models import TaggedItem
 from tags.models import BigVocabTaggableMixin
 from wiki import TEMPLATE_TITLE_PREFIX
-from wiki.config import (VersionMetadata, OsMetaData,
-                         GROUPED_FIREFOX_VERSIONS, FIREFOX_VERSIONS,
-                         GROUPED_OPERATING_SYSTEMS, OPERATING_SYSTEMS,
-                         PRODUCTS, PRODUCT_TAGS, CATEGORIES, SIGNIFICANCES,
-                         TYPO_SIGNIFICANCE, MEDIUM_SIGNIFICANCE,
-                         MAJOR_SIGNIFICANCE, SIGNIFICANCES_HELP,
+from wiki.config import (CATEGORIES, SIGNIFICANCES,
+                         TYPO_SIGNIFICANCE, MAJOR_SIGNIFICANCE,
                          REDIRECT_HTML, REDIRECT_CONTENT, REDIRECT_TITLE,
                          REDIRECT_SLUG)
 
@@ -489,12 +484,16 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
     @classmethod
     def get_mapping(cls):
         return {
-            'id': {'type': 'integer'},
+            'id': {'type': 'long'},
+            'model': {'type': 'string', 'index': 'not_analyzed',
+                     'store': 'yes'},
             'title': {'type': 'string', 'analyzer': 'snowball'},
             'locale': {'type': 'string', 'index': 'not_analyzed'},
             'current': {'type': 'integer'},
             'parent_id': {'type': 'integer'},
-            'content': {'type': 'string', 'analyzer': 'snowball'},
+            'content': {'type': 'string', 'analyzer': 'snowball',
+                        'store': 'yes',
+                        'term_vector': 'with_positions_offsets'},
             'category': {'type': 'integer'},
             'slug': {'type': 'string', 'index': 'not_analyzed'},
             'is_archived': {'type': 'boolean'},
@@ -512,6 +511,7 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
 
         d = {}
         d['id'] = obj.id
+        d['model'] = cls.get_model_name()
         d['title'] = obj.title
         d['locale'] = obj.locale
         d['parent_id'] = obj.parent.id if obj.parent else None
@@ -560,14 +560,21 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
             return
         super(cls, cls).index(document, **kwargs)
 
+    @classmethod
+    def search(cls):
+        s = super(Document, cls).search()
+        return (s.query_fields('title__text', 'content__text',
+                               'summary__text', 'keywords__text')
+                 .weight(title=6, content=1, keywords=4, summary=2))
+
 
 register_for_indexing(Document, 'wiki')
 register_for_indexing(
     TaggedItem,
     'wiki',
-    instance_to_indexee=
+    instance_to_indexee=(
         lambda i: i.content_object if isinstance(i.content_object, Document)
-                  else None)
+                  else None))
 
 
 class Revision(ModelBase):
@@ -840,6 +847,7 @@ def points_to_document_view(url, required_locale=None):
         return False
 
 
+# NOTE: This only affects Sphinx search--it's not used in ES search.
 def wiki_searcher(request):
     """Return a wiki document searcher with default parameters."""
     return (searcher(request)(Document)
@@ -848,4 +856,3 @@ def wiki_searcher(request):
                           'summary__text',
                           'keywords__text')
             .weight(title=6, content=1, keywords=4, summary=2))
-    # TODO: We probably have several more default filters to add.

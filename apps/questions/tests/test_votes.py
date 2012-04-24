@@ -1,5 +1,3 @@
-import elasticutils
-
 from nose.tools import eq_
 
 from questions.models import Question, QuestionVote
@@ -43,9 +41,9 @@ class TestVotesWithElasticSearch(ElasticTestCase):
         # NB: Need to call .values_dict() here and later otherwise we
         # get a Question object which has data from the database and
         # not the index.
-        document = (elasticutils.S(Question)
-                                .values_dict('num_votes_past_week')
-                                .query(id=q.id))[0]
+        document = (Question.search()
+                            .values_dict('num_votes_past_week')
+                            .filter(id=q.id))[0]
         eq_(document['num_votes_past_week'], 0)
 
         vote = questionvote(question=q, anonymous_id='abc123')
@@ -58,7 +56,7 @@ class TestVotesWithElasticSearch(ElasticTestCase):
         q = Question.objects.get(pk=q.pk)
         eq_(1, q.num_votes_past_week)
 
-        document = (elasticutils.S(Question)
-                                .values_dict('num_votes_past_week')
-                                .query(id=q.id))[0]
+        document = (Question.search()
+                            .values_dict('num_votes_past_week')
+                            .filter(id=q.id))[0]
         eq_(document['num_votes_past_week'], 1)

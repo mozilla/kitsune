@@ -181,7 +181,9 @@ class Thread(NotificationsMixin, ModelBase, SearchMixin):
     @classmethod
     def get_mapping(cls):
         return {
-            'id': {'type': 'integer'},
+            'id': {'type': 'long'},
+            'model': {'type': 'string', 'index': 'not_analyzed',
+                      'store': 'yes'},
             'thread_id': {'type': 'integer'},
             'forum_id': {'type': 'integer'},
             'title': {'type': 'string', 'analyzer': 'snowball'},
@@ -205,6 +207,7 @@ class Thread(NotificationsMixin, ModelBase, SearchMixin):
 
         d = {}
         d['id'] = obj.id
+        d['model'] = cls.get_model_name()
         d['forum_id'] = obj.forum.id
         d['title'] = obj.title
         d['is_sticky'] = obj.is_sticky
@@ -240,6 +243,13 @@ class Thread(NotificationsMixin, ModelBase, SearchMixin):
 
         d['indexed_on'] = int(time.time())
         return d
+
+    @classmethod
+    def search(cls):
+        s = super(Thread, cls).search()
+        return (s.query_fields('title__text', 'content__text')
+                 .weight(title=2, content=1)
+                 .order_by('created'))
 
 
 register_for_indexing(Thread, 'forums')
@@ -330,6 +340,7 @@ class Post(ActionMixin, ModelBase):
 register_for_indexing(Post, 'forums', instance_to_indexee=lambda p: p.thread)
 
 
+# NOTE: This only affects Sphinx search--it's not used in ES search.
 def discussion_searcher(request):
     """Return a forum searcher with default parameters."""
     if waffle.flag_is_active(request, 'elasticsearch'):

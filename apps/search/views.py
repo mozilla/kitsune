@@ -23,13 +23,13 @@ from tower import ugettext as _, ugettext_lazy as _lazy
 from search import SearchError, ExcerptTimeoutError, ExcerptSocketError
 from search.utils import locale_or_default, clean_excerpt, ComposedList
 from forums.models import Thread, discussion_searcher
-from questions.models import question_searcher
+from questions.models import question_searcher, Question
 import search as constants
 from search.forms import SearchForm
 from search.es_utils import ESTimeoutError, ESMaxRetryError, ESException
 from search.tasks import ES_REINDEX_PROGRESS
 from sumo.utils import paginate, smart_int
-from wiki.models import wiki_searcher
+from wiki.models import wiki_searcher, Document
 import waffle
 
 
@@ -129,9 +129,9 @@ def search_with_es(request, template=None):
     else:
         lang_name = ''
 
-    wiki_s = wiki_searcher(request)
-    question_s = question_searcher(request)
-    discussion_s = discussion_searcher(request)
+    wiki_s = Document.search()
+    question_s = Question.search()
+    discussion_s = Thread.search()
 
     # wiki filters
     # Category filter

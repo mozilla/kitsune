@@ -25,6 +25,8 @@ READ_INDEX = (u'%s_%s' % (settings.ES_INDEX_PREFIX,
 WRITE_INDEX = (u'%s_%s' % (settings.ES_INDEX_PREFIX,
                            settings.ES_WRITE_INDEXES['default']))
 
+# This is the unified elastic search doctype.
+SUMO_DOCTYPE = u'sumodoc'
 
 log = logging.getLogger('search.es_utils')
 
@@ -48,6 +50,10 @@ class Sphilastic(elasticutils.S):
         # Sphilastic is a searcher and so it's _always_ used in a read
         # context. Therefore, we always return the READ_INDEX.
         return READ_INDEX
+
+    def get_doctype(self):
+        # SUMO uses a unified doctype, so this always returns that.
+        return SUMO_DOCTYPE
 
     def query(self, text, **kwargs):
         """Ignore any non-kw arg."""
@@ -95,10 +101,42 @@ class Sphilastic(elasticutils.S):
         return self
 
 
-def get_indexes():
+class MappingMergeError(Exception):
+    """Represents a mapping merge error"""
+    pass
+
+
+def merge_mappings(mappings):
+    merged_mapping = {}
+
+    for cls_name, mapping in mappings:
+        for key, val in mapping.items():
+            if key not in merged_mapping:
+                merged_mapping[key] = (val, [cls_name])
+                continue
+
+            # FIXME - We're comparing two dicts here. This might not
+            # work for non-trivial dicts.
+            if merged_mapping[key][0] != val:
+                raise MappingMergeError(
+                    '%s key different for %s and %s' %
+                    (key, cls_name, merged_mapping[key][1]))
+
+            merged_mapping[key][1].append(cls_name)
+
+    # Remove cls_name annotations from final mapping
+    merged_mapping = dict(
+        [(key, val[0]) for key, val in merged_mapping.items()])
+    return merged_mapping
+
+
+def get_indexes(all_indexes=False):
     es = get_indexing_es()
-    indexes = [(k, v['num_docs']) for k, v in es.get_indices().items()
-               if k.startswith(settings.ES_INDEX_PREFIX)]
+    if all_indexes:
+        indexes = [(k, v['num_docs']) for k, v in es.get_indices().items()]
+    else:
+        indexes = [(k, v['num_docs']) for k, v in es.get_indices().items()
+                   if k.startswith(settings.ES_INDEX_PREFIX)]
     return indexes
 
 
@@ -116,14 +154,8 @@ def get_doctype_stats(index):
     """
     from search.models import get_search_models
 
-    es = elasticutils.get_es()
-    query = pyes.query.MatchAllQuery()
-
-    stats = {}
-
-    for cls in get_search_models():
-        stats[cls._meta.db_table] = es.count(
-            query, indexes=[index], doc_types=[cls._meta.db_table])['count']
+    stats = dict([(cls._meta.db_table, cls.search().count())
+                  for cls in get_search_models()])
 
     return stats
 
@@ -162,13 +194,8 @@ def format_time(time_to_go):
 
 def get_documents(cls, ids):
     """Returns a list of ES documents with specified ids and doctype"""
-    es = elasticutils.get_es()
-    doctype = cls._meta.db_table
-    index = READ_INDEX
-
-    ret = es.search(pyes.query.IdsQuery(doctype, ids), indexes=[index],
-                    doc_types=[doctype])
-    return ret['hits']['hits']
+    ret = cls.search().filter(id__in=ids).values_dict()
+    return list(ret)
 
 
 def es_reindex_with_progress(percent=100):
@@ -182,6 +209,13 @@ def es_reindex_with_progress(percent=100):
     from search.models import get_search_models
 
     search_models = get_search_models()
+    merged_mapping = {
+        SUMO_DOCTYPE: {
+            'properties': merge_mappings(
+                [(cls._meta.db_table, cls.get_mapping())
+                 for cls in search_models])
+            }
+        }
 
     es = elasticutils.get_es()
     index = WRITE_INDEX
@@ -194,9 +228,8 @@ def es_reindex_with_progress(percent=100):
     # indexing doesn't get a chance to index anything between the two
     # and infer a bogus mapping (which ES then freaks out over when we
     # try to lay in an incompatible explicit mapping).
-    mappings = dict((cls._meta.db_table, {'properties': cls.get_mapping()})
-                    for cls in search_models)
-    es.create_index(index, settings={'mappings': mappings})
+
+    es.create_index(index, settings={'mappings': merged_mapping})
 
     total = sum([cls.get_indexable().count() for cls in search_models])
     to_index = [cls.index_all(percent) for cls in search_models]
@@ -244,11 +277,16 @@ def es_status_cmd():
             read_doctype_stats = get_doctype_stats(READ_INDEX)
         except ESIndexMissingException:
             read_doctype_stats = None
-        try:
-            write_doctype_stats = get_doctype_stats(WRITE_INDEX)
-        except ESIndexMissingException:
-            write_doctype_stats = None
-        indexes = get_indexes()
+
+        if READ_INDEX == WRITE_INDEX:
+            write_doctype_stats = read_doctype_stats
+        else:
+            try:
+                write_doctype_stats = get_doctype_stats(WRITE_INDEX)
+            except ESIndexMissingException:
+                write_doctype_stats = None
+
+        indexes = get_indexes(all_indexes=True)
     except ESMaxRetryError:
         log.error('Your elasticsearch process is not running or ES_HOSTS '
                   'is set wrong in your settings_local.py file.')
@@ -264,7 +302,7 @@ def es_status_cmd():
     log.info('Index stats:')
 
     if indexes:
-        log.info('  List of %s indexes:', settings.ES_INDEX_PREFIX)
+        log.info('  List of indexes:')
         for name, count in indexes:
             read_write = []
             if name == READ_INDEX:
@@ -294,7 +332,7 @@ def es_status_cmd():
         log.info('  Write index is same as read index.')
 
 
-def es_search_cmd(query):
+def es_search_cmd(query, pages=1):
     """Simulates a front page search
 
     .. Note::
@@ -320,7 +358,8 @@ def es_search_cmd(query):
 
     # The search view shows 10 results at a time. So we hit it few
     # times---once for each page.
-    for pageno in ('1', '2', '3'):
+    for pageno in range(pages):
+        pageno = pageno + 1
         data['page'] = pageno
         resp = client.get(url, data)
         assert resp.status_code == 200
