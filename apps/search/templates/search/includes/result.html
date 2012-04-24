@@ -7,7 +7,7 @@
     {% endif %}
     {% set url =  result.url|urlparams(s=s, as=as, r=r, e=engine) %}
     <a class="title" href="{{ url }}">{{ result.title }}</a>
-    <p><a href="{{ url }}">
+    <p><a tabindex="-1" href="{{ url }}">
       {{ result.search_summary|safe }}
     </a></p>
     {% if result.type == 'question' %}
