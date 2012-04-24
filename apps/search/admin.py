@@ -1,8 +1,10 @@
+from datetime import datetime
+
 from django.conf import settings
 from django.contrib import admin
 from django.core.cache import cache
 from django.core.exceptions import PermissionDenied
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, Http404
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 
@@ -12,7 +14,7 @@ from search import es_utils
 from search.es_utils import (get_doctype_stats, get_indexes, delete_index,
                              ESTimeoutError, ESMaxRetryError,
                              ESIndexMissingException)
-from search.models import Record
+from search.models import Record, get_search_models
 from search.tasks import ES_REINDEX_PROGRESS, reindex_with_progress
 from sumo.urlresolvers import reverse
 
@@ -129,4 +131,65 @@ def search(request):
         RequestContext(request, {}))
 
 
-admin.site.register_view('search', search, 'Search')
+admin.site.register_view('search', search, 'Search - Index Maintenance')
+
+
+def _fix_value_dicts(values_dict_list):
+    """Takes a values dict returned from an S and humanizes it"""
+    for dict_ in values_dict_list:
+        # Convert datestamps (which are in seconds since epoch) to
+        # Python datetime objects.
+        for key in ('indexed_on', 'created', 'updated'):
+            if key in dict_:
+                dict_[key] = datetime.fromtimestamp(int(dict_[key]))
+    return values_dict_list
+
+
+def index_view(request):
+    requested_bucket = request.GET.get('bucket', '')
+    requested_id = request.GET.get('id', '')
+    last_20_by_bucket = None
+    data = None
+
+    bucket_to_model = dict(
+        [(cls._meta.db_table, cls) for cls in get_search_models()])
+
+    if requested_bucket and requested_id:
+        # The user wants to see a specific item in the index, so we
+        # attempt to fetch it from the index and show that
+        # specifically.
+        if requested_bucket not in bucket_to_model:
+            raise Http404
+
+        cls = bucket_to_model[requested_bucket]
+        data = list(es_utils.Sphilastic(cls).filter(id=requested_id)
+                                            .values_dict())
+        if not data:
+            raise Http404
+        data = _fix_value_dicts(data)[0]
+
+    else:
+        # Create a list of (class, list-of-dicts) showing us the most
+        # recently indexed items for each bucket. We only display the
+        # id, title and indexed_on fields, so only pull those back from
+        # ES.
+        last_20_by_bucket = [
+            (cls_name,
+             _fix_value_dicts(es_utils.Sphilastic(cls)
+                                      .values_dict('id', 'title', 'indexed_on')
+                                      .order_by('-indexed_on')[:20]))
+            for cls_name, cls in bucket_to_model.items()]
+
+    return render_to_response(
+        'search/admin/index.html',
+        {'title': 'Index Browsing',
+         'buckets': [cls_name for cls_name, cls in bucket_to_model.items()],
+         'last_20_by_bucket': last_20_by_bucket,
+         'requested_bucket': requested_bucket,
+         'requested_id': requested_id,
+         'requested_data': data
+         },
+        RequestContext(request, {}))
+
+
+admin.site.register_view('index', index_view, 'Search - Index Browsing')
