@@ -391,6 +391,20 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
                             after_match='</b>',
                             limit=settings.SEARCH_SUMMARY_LENGTH))
 
+    @classmethod
+    def recent_asked_count(cls):
+        """Returns the number of questions asked in the last 72 hours."""
+        start = datetime.now() - timedelta(hours=72)
+        qs = cls.objects.filter(created__gt=start, creator__is_active=True)
+        return qs.count()
+
+    @classmethod
+    def recent_answered_count(cls):
+        """Returns the number of questions replied to in the last 72 hours."""
+        start = datetime.now() - timedelta(hours=72)
+        qs = cls.objects.filter(created__gt=start, num_answers__gt=0)
+        return qs.count()
+
 
 register_for_indexing(Question, 'questions')
 register_for_indexing(
