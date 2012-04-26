@@ -28,11 +28,12 @@ def update_question_votes(question_id):
     try:
         q = Question.uncached.get(id=question_id)
         q.sync_num_votes_past_week()
-        q.save()
+        q.save(no_update=True, force_update=True)
     except Question.DoesNotExist:
         log.info('Question id=%s deleted before task.' % question_id)
 
     unpin_this_thread()
+
 
 @task(rate_limit='4/s')
 def update_question_vote_chunk(data, **kwargs):

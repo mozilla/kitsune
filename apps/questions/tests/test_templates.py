@@ -1022,13 +1022,14 @@ class QuestionsTemplateTestCase(TestCaseBase):
         sorted = urlparams(default, sort='requested')
 
         q = Question.objects.get(pk=2)
-        qv = QuestionVote(question=q, anonymous_id='abc123')
-        qv.save()
         answer(question=q, save=True)
 
         response = self.client.get(default)
         doc = pq(response.content)
         eq_('question-1', doc('ol.questions li')[0].attrib['id'])
+
+        q.num_votes_past_week = 7
+        q.save()
 
         response = self.client.get(sorted)
         doc = pq(response.content)
