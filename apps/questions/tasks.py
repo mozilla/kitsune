@@ -16,13 +16,18 @@ log = logging.getLogger('k.task')
 
 
 @task(rate_limit='1/s')
-def update_question_votes(q):
+def update_question_votes(question_id):
     from questions.models import Question
 
-    log.debug('Got a new QuestionVote.')
+    log.debug('Got a new QuestionVote for question_id=%s.' % question_id)
     statsd.incr('questions.tasks.update')
-    count = q.sync_num_votes_past_week()
-    Question.objects.filter(id=q.id).update(num_votes_past_week=count)
+
+    try:
+        q = Question.objects.get(id=question_id)
+        q.sync_num_votes_past_week()
+        q.save()
+    except Question.DoesNotExist:
+        log.info('Question id=%s deleted before task.' % question_id)
 
 
 @task(rate_limit='4/s')

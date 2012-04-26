@@ -649,7 +649,7 @@ class VoteMetadata(ModelBase):
 def send_vote_update_task(**kwargs):
     if kwargs.get('created'):
         q = kwargs.get('instance').question
-        update_question_votes.delay(q)
+        update_question_votes.delay(q.id)
 
 post_save.connect(send_vote_update_task, sender=QuestionVote)
 
