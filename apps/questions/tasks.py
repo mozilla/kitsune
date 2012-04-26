@@ -16,11 +16,23 @@ log = logging.getLogger('k.task')
 
 
 @task(rate_limit='1/s')
-def update_question_votes(q):
-    log.debug('Got a new QuestionVote.')
+def update_question_votes(question_id):
+    from questions.models import Question
+
+    log.debug('Got a new QuestionVote for question_id=%s.' % question_id)
     statsd.incr('questions.tasks.update')
-    q.sync_num_votes_past_week()
-    q.save(no_update=True, force_update=True)
+
+    # Pin to master db to avoid lag delay issues.
+    pin_this_thread()
+
+    try:
+        q = Question.uncached.get(id=question_id)
+        q.sync_num_votes_past_week()
+        q.save(no_update=True, force_update=True)
+    except Question.DoesNotExist:
+        log.info('Question id=%s deleted before task.' % question_id)
+
+    unpin_this_thread()
 
 
 @task(rate_limit='4/s')
