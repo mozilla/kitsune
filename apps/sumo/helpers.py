@@ -195,6 +195,7 @@ def datetimeformat(context, value, format='shortdatetime'):
         except (Profile.DoesNotExist, AttributeError):
             pass
     request.session['timezone'] = tzinfo
+    value = tzinfo.localize(value)
 
     locale = _babel_locale(_contextual_locale(context))
 
