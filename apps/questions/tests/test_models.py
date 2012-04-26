@@ -1,3 +1,5 @@
+from datetime import datetime, timedelta
+
 from django.contrib.auth.models import User
 
 import mock
@@ -15,7 +17,8 @@ from questions.karma_actions import SolutionAction, AnswerAction
 from questions.models import (Question, QuestionMetaData, Answer,
                               _tenths_version, _has_beta)
 from questions.tasks import update_answer_pages
-from questions.tests import TestCaseBase, TaggingTestCaseBase, tags_eq
+from questions.tests import (TestCaseBase, TaggingTestCaseBase, tags_eq,
+                             question, answer)
 from questions.question_config import products
 from tags.utils import add_existing_tag
 
@@ -314,6 +317,20 @@ class QuestionTests(TestCaseBase):
         q.solution = a
         q.save()
         assert q.is_solved
+
+    def test_recent_counts(self):
+        """Verify recent_asked_count and recent_answered_count."""
+        # create a question for each of past 4 days
+        now = datetime.now()
+        question(created=now, save=True)
+        question(created=now - timedelta(hours=24), save=True)
+        q = question(created=now - timedelta(hours=48), save=True)
+        answer(question=q, save=True)
+        question(created=now - timedelta(hours=72), save=True)
+
+        # Only 3 are recent from last 72 hours, 1 has an answer.
+        eq_(3, Question.recent_asked_count())
+        eq_(1, Question.recent_answered_count())
 
 
 class AddExistingTagTests(TaggingTestCaseBase):

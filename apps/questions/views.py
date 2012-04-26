@@ -102,6 +102,10 @@ def questions(request):
     elif filter_ == 'my-contributions' and request.user.is_authenticated():
         criteria = Q(answers__creator=request.user) | Q(creator=request.user)
         question_qs = question_qs.filter(criteria).distinct()
+    elif filter_ == 'recent-unanswered':
+        # Only unanswered questions from the last 72 hours.
+        start = datetime.now() - timedelta(hours=72)
+        question_qs = question_qs.filter(num_answers=0, created__gt=start)
     else:
         filter_ = None
 
@@ -138,8 +142,14 @@ def questions(request):
             url = build_paged_url(request)
             return HttpResponseRedirect(urlparams(url, page=1))
 
-    data = {'questions': questions_page, 'feeds': feed_urls,
-            'filter': filter_, 'sort': sort_, 'tags': tags, 'tagged': tagged}
+    data = {'questions': questions_page,
+            'feeds': feed_urls,
+            'filter': filter_,
+            'sort': sort_,
+            'tags': tags,
+            'tagged': tagged,
+            'recent_asked_count': Question.recent_asked_count(),
+            'recent_answered_count': Question.recent_answered_count()}
 
     if (waffle.flag_is_active(request, 'karma') and
         waffle.switch_is_active('karma')):
