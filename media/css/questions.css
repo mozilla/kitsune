@@ -63,6 +63,57 @@ body.notifications #main article.main {
     padding-left: 10px;
 }
 
+/* Questions recent stats */
+#recent-stats {
+    color: #aaa;
+    font-size: 13px;
+    padding: 20px 40px 40px;
+}
+
+#recent-stats strong {
+    color: #282828;
+}
+
+#recent-stats a {
+    font-weight: bold;
+}
+
+#recent-stats .total {
+    float: right;
+    margin: 0 12px;
+}
+
+#recent-stats .no-reply {
+    padding: 0 12px;
+}
+
+#recent-stats .graph {
+    background: #DDD;
+    background: -moz-linear-gradient(#DDD,#F8F8F8) repeat scroll 0 0 transparent;
+    background: -webkit-gradient(linear,left top,left bottom,from(#DDD),to(#F8F8F8));
+    border-radius: 12px;
+    height: 25px;
+    margin: 7px 0;
+}
+
+#recent-stats .graph div {
+    background: #F09609;
+    background: -moz-linear-gradient(#FFC900,#F09609) repeat scroll 0 0 transparent;
+    background: -webkit-gradient(linear,left top,left bottom,from(#FFC900),to(#F09609));
+    border-radius: 12px;
+    color: #fff;
+    float: left;
+    font-size: 18px;
+    font-weight: bold;
+    height: 24px;
+    padding: 1px 0 0 0;
+    text-align: right;
+}
+
+#recent-stats .graph div span {
+    padding: 0 15px 0 0;
+}
+
 /* Questions filter/tagging */
 #filter, #tagged {
     font-family: Helvetica,Arial,sans-serif;

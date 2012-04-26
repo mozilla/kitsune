@@ -16,6 +16,28 @@
 {% endblock %}
 
 {% block content %}
+  <div id="recent-stats">
+    <span class="total">
+      {{ _('Total questions: <strong>{num}</strong>')|fe(num=recent_asked_count) }}
+    </span>
+    <p class="no-reply">
+      {% trans num=(recent_asked_count - recent_answered_count),
+               url=url('questions.questions')|urlparams(filter='recent-unanswered') %}
+        <strong>{{num}}</strong> question in the last <strong>3 days</strong> has no reply.
+        <a href="{{url}}">Help solve it!</a>
+      {% pluralize num %}
+        <strong>{{num}}</strong> questions in the last <strong>3 days</strong> have no reply.
+        <a href="{{url}}">Help solve them!</a>
+      {% endtrans %}
+    </p>
+    <div class="graph">
+      <div style="width: {{ recent_answered_percent }}%;">
+        <span>
+          {{ recent_answered_percent }}%
+        </span>
+      </div>
+    </div>
+  </div>
   {% if tags %}
     <div id="tagged">
       {{ _('Showing questions tagged:') }}
