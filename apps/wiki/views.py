@@ -33,8 +33,8 @@ from wiki.events import (EditDocumentEvent, ReviewableRevisionInLocaleEvent,
                          ReadyRevisionEvent)
 from wiki.forms import (AddContributorForm, DocumentForm, RevisionForm,
                         ReviewForm)
-from wiki.models import (Document, Revision, HelpfulVote, ImportantDate,
-                         CATEGORIES, OPERATING_SYSTEMS,
+from wiki.models import Document, Revision, HelpfulVote, ImportantDate
+from wiki.config import (CATEGORIES, OPERATING_SYSTEMS,
                          GROUPED_OPERATING_SYSTEMS, FIREFOX_VERSIONS,
                          GROUPED_FIREFOX_VERSIONS, PRODUCT_TAGS)
 from wiki.parser import wiki_to_html

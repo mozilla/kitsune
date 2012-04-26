@@ -8,9 +8,10 @@ from django.core.exceptions import ValidationError
 from sumo import ProgrammingError
 from sumo.tests import TestCase
 from wiki.cron import calculate_related_documents
-from wiki.models import (Document, RelatedDocument, REDIRECT_CONTENT,
-                         REDIRECT_SLUG, REDIRECT_TITLE, REDIRECT_HTML,
-                         MAJOR_SIGNIFICANCE, CATEGORIES, TYPO_SIGNIFICANCE)
+from wiki.models import Document, RelatedDocument
+from wiki.config import (REDIRECT_SLUG, REDIRECT_TITLE, REDIRECT_HTML,
+                         MAJOR_SIGNIFICANCE, CATEGORIES, TYPO_SIGNIFICANCE,
+                         REDIRECT_CONTENT)
 from wiki.parser import wiki_to_html
 from wiki.tests import document, revision, doc_rev, translated_revision
 from wiki.utils import find_related_documents

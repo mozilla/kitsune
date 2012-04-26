@@ -5,8 +5,8 @@ from django.template.defaultfilters import slugify
 
 from sumo.tests import LocalizingClient, TestCase, with_save
 from users.tests import user
-from wiki.models import (Document, Revision, HelpfulVote,
-                         CATEGORIES, SIGNIFICANCES)
+from wiki.models import Document, Revision, HelpfulVote
+from wiki.config import CATEGORIES, SIGNIFICANCES
 
 
 class TestCaseBase(TestCase):

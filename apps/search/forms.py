@@ -10,7 +10,7 @@ from forums.models import Forum as DiscussionForum
 import search as constants
 from sumo.form_fields import TypedMultipleChoiceField
 from sumo_locales import LOCALES
-from wiki.models import CATEGORIES, PRODUCTS
+from wiki.config import CATEGORIES, PRODUCTS
 
 
 SEARCH_LANGUAGES = [(k, LOCALES[k].native) for

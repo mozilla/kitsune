@@ -25,8 +25,8 @@ from wiki.cron import calculate_related_documents
 from wiki.events import (EditDocumentEvent, ReadyRevisionEvent,
                          ReviewableRevisionInLocaleEvent,
                          ApproveRevisionInLocaleEvent)
-from wiki.models import (Document, Revision, HelpfulVote, HelpfulVoteMetadata,
-                         SIGNIFICANCES, MEDIUM_SIGNIFICANCE)
+from wiki.models import Document, Revision, HelpfulVote, HelpfulVoteMetadata
+from wiki.config import SIGNIFICANCES, MEDIUM_SIGNIFICANCE
 from wiki.tasks import send_reviewed_notification
 from wiki.tests import (TestCaseBase, document, revision, new_document_data,
                         translated_revision)

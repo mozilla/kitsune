@@ -11,7 +11,8 @@ from questions.tests import tags_eq
 from sumo.tests import TestCase, LocalizingClient
 from sumo.urlresolvers import reverse
 from users.tests import user, add_permission
-from wiki.models import VersionMetadata, Document, HelpfulVote
+from wiki.models import Document, HelpfulVote
+from wiki.config import VersionMetadata
 from wiki.tests import doc_rev, document, new_document_data, revision
 from wiki.views import _version_groups
 
