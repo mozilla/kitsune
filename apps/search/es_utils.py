@@ -154,8 +154,14 @@ def get_doctype_stats(index):
     """
     from search.models import get_search_models
 
-    stats = dict([(cls._meta.db_table, cls.search().count())
-                  for cls in get_search_models()])
+    conn = elasticutils.get_es()
+
+    stats = {}
+    for cls in get_search_models():
+        query = pyes.query.TermQuery('model', cls.get_model_name())
+        results = conn.count(query=query, indexes=[index],
+                             doc_types=[SUMO_DOCTYPE])
+        stats[cls.get_model_name()] = results[u'count']
 
     return stats
 
