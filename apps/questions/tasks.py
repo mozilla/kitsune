@@ -17,10 +17,12 @@ log = logging.getLogger('k.task')
 
 @task(rate_limit='1/s')
 def update_question_votes(q):
+    from questions.models import Question
+
     log.debug('Got a new QuestionVote.')
     statsd.incr('questions.tasks.update')
-    q.sync_num_votes_past_week()
-    q.save(no_update=True, force_update=True)
+    count = q.sync_num_votes_past_week()
+    Question.objects.filter(id=q.id).update(num_votes_past_week=count)
 
 
 @task(rate_limit='4/s')
