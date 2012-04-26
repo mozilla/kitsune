@@ -18,7 +18,8 @@ from tower import ugettext as _, ugettext_lazy as _lazy
 from dashboards import LAST_30_DAYS, PERIODS
 from sumo.urlresolvers import reverse
 from sumo.redis_utils import redis_client, RedisError
-from wiki.models import (Document, MEDIUM_SIGNIFICANCE, MAJOR_SIGNIFICANCE,
+from wiki.models import Document
+from wiki.config import (MEDIUM_SIGNIFICANCE, MAJOR_SIGNIFICANCE,
                          TYPO_SIGNIFICANCE)
 
 

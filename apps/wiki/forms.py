@@ -9,9 +9,10 @@ from tower import ugettext_lazy as _lazy
 
 from sumo.form_fields import MultiUsernameField, StrippedCharField
 from tags import forms as tag_forms
-from wiki.models import (Document, Revision, PRODUCTS, PRODUCT_TAGS,
-                         SIGNIFICANCES_HELP, GROUPED_FIREFOX_VERSIONS,
-                         SIGNIFICANCES, GROUPED_OPERATING_SYSTEMS, CATEGORIES)
+from wiki.models import Document, Revision
+from wiki.config import (SIGNIFICANCES_HELP, GROUPED_FIREFOX_VERSIONS,
+                         SIGNIFICANCES, GROUPED_OPERATING_SYSTEMS, CATEGORIES,
+                         PRODUCTS, PRODUCT_TAGS)
 
 
 TITLE_REQUIRED = _lazy(u'Please provide a title.')

@@ -9,7 +9,7 @@ from dashboards.readouts import (UnreviewedReadout, OutOfDateReadout,
                                  NeedsChangesReadout,
                                  NavigationTranslationsReadout)
 from sumo.tests import TestCase
-from wiki.models import (MAJOR_SIGNIFICANCE, MEDIUM_SIGNIFICANCE,
+from wiki.config import (MAJOR_SIGNIFICANCE, MEDIUM_SIGNIFICANCE,
                          TYPO_SIGNIFICANCE)
 from wiki.tests import revision, translated_revision, document
 

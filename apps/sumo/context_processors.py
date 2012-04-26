@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.utils import translation
 
-from wiki.models import OPERATING_SYSTEMS, FIREFOX_VERSIONS
+from wiki.config import OPERATING_SYSTEMS, FIREFOX_VERSIONS
 
 
 def global_settings(request):

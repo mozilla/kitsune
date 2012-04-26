@@ -11,7 +11,7 @@ from forums.models import Thread, Forum
 from sumo.tests import TestCase
 from sumo.urlresolvers import reverse
 from users.tests import user, group, profile
-from wiki.models import MAJOR_SIGNIFICANCE, MEDIUM_SIGNIFICANCE
+from wiki.config import MAJOR_SIGNIFICANCE, MEDIUM_SIGNIFICANCE
 from wiki.tests import revision, translated_revision
 
 

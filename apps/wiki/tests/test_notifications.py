@@ -6,7 +6,7 @@ from nose.tools import eq_
 from sumo.tests import post
 from users.tests import user
 from wiki.events import ReadyRevisionEvent, ApproveRevisionInLocaleEvent
-from wiki.models import SIGNIFICANCES, MEDIUM_SIGNIFICANCE
+from wiki.config import SIGNIFICANCES, MEDIUM_SIGNIFICANCE
 from wiki.tests import revision, TestCaseBase
 
 
