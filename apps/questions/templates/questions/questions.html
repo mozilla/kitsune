@@ -19,7 +19,7 @@
   {% if tags %}
     <div id="tagged">
       {{ _('Showing questions tagged:') }}
-      {% for tag in tags|sort(attribute = 'tags.name')%}
+      {% for tag in tags|sort(attribute='tags.name')-%}
         <a class="tag" href="{{ url('questions.questions')|urlparams(tagged=tags_to_text(tags|remove(tag)), filter=filter, sort=sort) }}">{{ tag.name }}</a>
       {%- endfor %}
       <a class="show-all" href="{{ url('questions.questions')|urlparams(filter=filter, sort=sort) }}">{{ _('Show all questions') }}</a>
@@ -96,7 +96,7 @@
             {% set tags = question.my_tags %}
             {% if tags %}
               <ul class="tag-list immutable">
-                {% for tag in tags %}
+                {% for tag in tags|sort(attribute='tags.name')-%}
                     <li><a class="tag-name" href="{{ url('questions.questions')|urlparams(tagged=tag.slug, filter=filter, sort=sort) }}">{{ tag }}</a></li>
                 {% endfor %}
               </ul>
