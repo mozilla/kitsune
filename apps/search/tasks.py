@@ -7,6 +7,7 @@ from django.conf import settings
 from django.core.cache import cache
 
 from celery.decorators import task
+from statsd import statsd
 
 from search.es_utils import es_reindex_with_progress
 
@@ -77,6 +78,7 @@ MAX_RETRIES = len(RETRY_TIMES)
 @task
 def index_task(cls, ids, **kw):
     """Index documents specified by cls and ids"""
+    statsd.incr('search.tasks.index_task.%s' % cls.get_model_name())
     try:
         for id in cls.uncached.filter(id__in=ids).values_list('id', flat=True):
             cls.index(cls.extract_document(id), refresh=True)
@@ -89,6 +91,7 @@ def index_task(cls, ids, **kw):
 @task
 def unindex_task(cls, ids, **kw):
     """Unindex documents specified by cls and ids"""
+    statsd.incr('search.tasks.unindex_task.%s' % cls.get_model_name())
     try:
         for id in ids:
             cls.unindex(id)
