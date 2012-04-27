@@ -13,7 +13,7 @@ class AnnouncementModelTests(TestCase):
     def setUp(self):
         super(AnnouncementModelTests, self).setUp()
         self.creator = user(save=True)
-        profile(self.creator).save()
+        profile(user=self.creator)
         self.group = group(save=True)
         self.creator.groups.add(self.group)
 
