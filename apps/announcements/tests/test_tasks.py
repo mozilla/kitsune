@@ -20,8 +20,8 @@ class AnnouncementSaveTests(TestCase):
         u1.groups.add(g)
         u2.groups.add(g)
         # Create profiles for these users
-        profile(u1).save()
-        profile(u2).save()
+        profile(user=u1)
+        profile(user=u2)
         self.user = u2
 
         return announcement(creator=u1, group=g, save=True,
