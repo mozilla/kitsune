@@ -45,7 +45,7 @@
       {% else %}
         <a id="signin-button" href="#" class="header-button">{{ _('Sign in') }}</a>
       {% endif %}
-      <img id="refresh-busy" src="{{ MEDIA_URL }}img/customercare/spinner.gif" alt="Loading ..." />
+      <img id="refresh-busy" src="{{ MEDIA_URL }}img/customercare/spinner.gif" alt="{{ _('Loading...') }}" />
     </div>
 
     <br style="clear:both; height: 1px" />
@@ -68,7 +68,7 @@
     </div>
 
     <div id="infinite-scroll">
-      <img id="scroll-busy" src="{{ MEDIA_URL }}img/customercare/spinner.gif" alt="Loading ..." />
+      <img id="scroll-busy" src="{{ MEDIA_URL }}img/customercare/spinner.gif" alt="{{ _('Loading...') }}" />
     </div>
   </div>
 
@@ -141,7 +141,7 @@
   <section id="next-level">
     <h1>{{ _('Take it to the <mark>next level!</mark>')|safe }}</h1>
     <div class="img">
-      <img src="{{ settings.MEDIA_URL }}img/promo.sumo.png" alt="SUMO Logo" />
+      <img src="{{ settings.MEDIA_URL }}img/promo.sumo.png" alt="" />
     </div>
     <p>
       {% trans join_url=url('wiki.document', 'superheroes-wanted') %}
