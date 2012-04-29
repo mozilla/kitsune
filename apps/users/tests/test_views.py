@@ -291,7 +291,7 @@ class AvatarTests(TestCase):
     def setUp(self):
         self.u = user()
         self.u.save()
-        self.p = profile(self.u)
+        self.p = profile(user=self.u)
         self.client.login(username=self.u.username, password='testpass')
 
     def tearDown(self):
@@ -384,7 +384,7 @@ class UserSettingsTests(TestCase):
     def setUp(self):
         self.user = user()
         self.user.save()
-        self.p = profile(self.user)
+        self.p = profile(user=self.user)
         self.client.login(username=self.user.username, password='testpass')
 
     def test_create_setting(self):
@@ -402,7 +402,7 @@ class UserProfileTests(TestCase):
     def setUp(self):
         self.user = user()
         self.user.save()
-        self.profile = profile(self.user)
+        self.profile = profile(user=self.user)
         self.url = reverse('users.profile', args=[self.user.pk],
                            locale='en-US')
 

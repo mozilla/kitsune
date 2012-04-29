@@ -19,7 +19,7 @@ class ProfileTests(TestCase):
     def test_user_get_profile(self):
         """user.get_profile() returns what you'd expect."""
         user = User.objects.all()[0]
-        p = profile(user)
+        p = profile(user=user)
 
         eq_(p, user.get_profile())
 

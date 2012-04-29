@@ -14,12 +14,15 @@ class TestCaseBase(TestCase):
     client_class = LocalizingClient
 
 
-# TODO(Erik): Remove the positional argument. If no users is passed, make one.
-def profile(user, **kwargs):
+def profile(**kwargs):
     """Return a saved profile for a given user."""
-    defaults = {'user': user, 'name': 'Test K. User', 'bio': 'Some bio.',
+    defaults = {'name': 'Test K. User', 'bio': 'Some bio.',
                 'website': 'http://support.mozilla.com',
-                'timezone': None, 'country': 'US', 'city': 'Mountain View'}
+                'timezone': None, 'country': 'US', 'city': 'Mountain View',
+                'locale': 'en_US'}
+    if 'user' not in kwargs:
+        u = user(save=True)
+        defaults['user'] = u
     defaults.update(kwargs)
 
     p = Profile(**defaults)

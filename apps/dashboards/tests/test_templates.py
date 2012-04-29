@@ -203,7 +203,7 @@ class GroupLocaleDashTests(TestCase):
         # Create user/group and add user to group.
         u = user(username='test', save=True)
         u.groups.add(self.g)
-        profile(u).save()
+        profile(user=u)
         # Create site-wide and group announcements and dashboard.
         announcement().save()
         content = 'stardate 12341'
