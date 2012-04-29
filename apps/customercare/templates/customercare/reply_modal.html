@@ -3,15 +3,16 @@
   <div id="reply-container">
 
     <div id="initial-tweet">
-      <a href="" class="avatar" target="_blank"><img src="" /></a>
-      <span class="box">
+      <a href="#" class="avatar" target="_blank"><img src="#" /></a>
+      <div class="box">
         <img src="{{ MEDIA_URL }}img/customercare/initial-tweet-arrow.png" alt="" id="arrow" />
         <a href="" class="twittername" target="_blank"></a>
         <a href="" class="permalink" target="_blank">
-          <time datetime=""></time>
+          <!-- TODO Follow this bug - https://bugzilla.mozilla.org/show_bug.cgi?id=629801 -->
+          <time datetime="">&nbsp;</time>
         </a>
-        <div class="text"></div>
-      </span>
+        <div class="text">&nbsp;</div>
+      </div>
     </div>
 
     <div id="replies">
@@ -54,7 +55,7 @@
 
             <span id="submit-message">{{ _('Your message was sent!') }}</span>
             <span id="error-message"></span>
-            <button type="submit" class="submitButton" id="submit">{{ _('Submit') }} <img id="submit-busy" src="{{ MEDIA_URL }}img/customercare/spinner.gif"/></button>
+            <button type="submit" class="submitButton" id="submit">{{ _('Submit') }} <img id="submit-busy" src="{{ MEDIA_URL }}img/customercare/spinner.gif" alt="{{ _('Loading...') }}" /></button>
           </form>
         </div>
       </div>
