@@ -6,7 +6,17 @@
 Welcome to Kitsune's documentation!
 ===================================
 
-Contents:
+Contents helpful for contributors:
+
+.. toctree::
+   :maxdepth: 2
+
+   contributors
+   hacking_howto
+   contactus
+
+
+Contents helpful for developers:
 
 .. toctree::
    :maxdepth: 2
