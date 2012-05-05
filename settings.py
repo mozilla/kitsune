@@ -463,6 +463,7 @@ MINIFY_BUNDLES = {
             'css/search.css',
             'css/users.autocomplete.css',
             'css/reportabuse.css',
+            'css/cannedresponses.css',
         ),
         'search': (
             'css/search.css',
