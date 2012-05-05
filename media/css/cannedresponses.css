@@ -1,0 +1,147 @@
+.markup-toolbar-button.btn-cannedresponses {
+    background-image: url(../img/icon.magic-hat.png);
+}
+
+#response-list-area {
+    border-right: 1px dashed silver;
+    float: left;
+    margin-left: 21.5%;
+    text-align: center;
+    width: 27%;
+}
+
+.category-list,
+.response-list,
+.response-preview-rendered .content {
+    height: 88%;
+    overflow-y: auto;
+}
+
+#responses-area {
+    border-right: 1px dashed silver;
+    margin-left: -15px;
+    padding-right: 0.2em;
+    text-align: center;
+    width: 23%;
+}
+
+.category-list {
+    font-size: 12px;
+}
+
+#response-list-area .heading-label,
+#responses-area .heading-label {
+    margin-bottom: 5px;
+    margin-top: 0;
+    text-align: center;
+}
+
+.preview-label {
+    display: inline;
+    padding-left: 20px;
+}
+
+.search {
+    text-align: center;
+}
+
+.status-indicator {
+    list-style: none; 
+    text-align: left;
+}
+
+.area {
+    bottom: 3.5em;
+    position: absolute;
+    top: 6.5em;
+}
+
+#response-content-area {
+    float: right;
+    left: 52%;
+    width: 48%;
+}
+
+.response-preview {
+    height: 88%;
+}
+.response-preview-rendered {
+    display: none;
+    height: 95%;
+    margin-top: 0.5em;
+}
+
+.response-preview-rendered .content {
+    background-color: white;
+    border: 1px solid #CCCCCC;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    color: #666666;
+    padding: 1em 2em;
+    width: 82%;
+}
+
+#response-content {
+    height: 100%;
+    width: 95%;
+}
+
+.status-indicator {
+    padding-left: 18px;
+}
+
+.preview-label.busy,
+.status-indicator.busy {
+    background-image: url(../img/customercare/spinner.gif);
+    background-repeat: no-repeat;
+}
+
+.response-heading,
+.response {
+    border-radius: 0 5px 5px 0;
+    color: #0051B9;
+    cursor: pointer;
+    font-size: 12px;
+    list-style: none;
+    margin-bottom: 5px;
+    padding: 3px;
+}
+
+.response-heading.selected,
+.response.selected {
+    background-color: #5784bf;
+    color: white;
+}
+
+.response {
+    cursor: pointer;
+    font-size: 12px;
+    list-style: none;
+    margin-bottom: .5em;
+}
+
+.response a:hover {
+    text-decoration: none;
+}
+
+.response.hide {
+    color: silver;
+}
+
+#response-submit-area {
+    width: 99%;
+}
+
+#response-submit-area button,
+#response-submit-area .kbox-cancel {
+    float: right;
+}
+
+#response-submit-area .kbox-cancel {
+    margin-top: 0.5em;
+}
+
+#response-content-area .toggle-view {
+    float: right;
+    margin: -0.5em 0.5em 0.5em 0;
+}
