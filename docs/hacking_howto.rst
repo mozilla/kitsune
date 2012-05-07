@@ -1,7 +1,7 @@
 .. _hacking-howto-chapter:
 
 ==============================
-Hacking Howto for Contributors
+Hacking HOWTO for Contributors
 ==============================
 
 
@@ -21,19 +21,17 @@ If you have any problems getting Kitsune running, let us know. See the
 Requirements
 ============
 
-You'll need the following:
+For the minimum installation, you'll need the following:
 
 * git
 * Python 2.6
-* `pip <http://pip.openplans.org/>`_
+* `pip <http://www.pip-installer.org/en/latest/>`_
 * MySQL server and client headers
 * Memcached Server
 * libxml and headers
 * libxslt and headers
 * libjpeg and headers
 * zlib and headers
-* `RabbitMQ <http://www.rabbitmq.com/>`_
-* `Redis <http://redis.io>`_
 
 Installation for these is very system dependent. Using a package
 manager, like yum, aptitude, or brew, is encouraged.
@@ -154,29 +152,10 @@ Now you can copy and modify any settings from ``settings.py`` into
 ``settings_local.py`` and the value will override the default.
 
 
-Redis
------
-
-FIXME - do we need redis in the minimal install?
-
-You need to copy the ``REDIS_BACKEND`` section from ``settings.py``
-into your ``settings_local.py``.  After doing that, uncomment the
-three lines in each section.
-
-There are three ``.conf`` files in ``config/redis/``.  One is for
-testing and is used in ``settings_test.py``.  The other two are used
-for the sections in ``REDIS_BACKEND``.
-
-There are two ways to set this up.  First is to set it up like in
-``settings.py`` and run all three redis servers.  The second is to set
-it up differently, tweak the settings in ``settings_local.py``
-accordingly, and run Redis using just the test configuration.
-
-
 memcache
 --------
 
-FIXME - do we need memcache in the minimal install?
+FIXME - instructions for setting up memcache
 
 .. Note::
 
@@ -238,47 +217,6 @@ the initial fetch::
     $ ./manage.py update_product_details
 
 
-Running redis
--------------
-
-FIXME - do we need redis in the minimal install?
-
-This script runs all three servers---one for each configuration.
-
-I (Will) put that in a script that creates the needed directories in
-``/var/redis/`` and kicks off the three redis servers::
-
-    #!/bin/bash
-
-    set -e
-
-    # Adjust these according to your setup!
-    REDISBIN=/usr/bin/redis-server
-    CONFFILE=/path/to/conf/files/
-
-    if test ! -e /var/redis/sumo/
-    then
-        echo "creating /var/redis/sumo/"
-        mkdir -p /var/redis/sumo/
-    fi
-
-    if test ! -e /var/redis/sumo-test/
-    then
-        echo "creating /var/redis/sumo-test/"
-        mkdir -p /var/redis/sumo-test/
-    fi
-
-    if test ! -e /var/redis/sumo-persistent/
-    then
-        echo "creating /var/redis/sumo-persistent/"
-        mkdir -p /var/redis/sumo-persistent/
-    fi
-
-    $REDISBIN $CONFFILE/redis-persistent.conf
-    $REDISBIN $CONFFILE/redis-test.conf
-    $REDISBIN $CONFFILE/redis-volatile.conf
-
-
 Testing it out
 ==============
 
@@ -310,3 +248,20 @@ Running the test suite is easy::
 
 For more information, see the :ref:`test documentation
 <tests-chapter>`.
+
+
+Advanced install
+================
+
+This page covers a minimal install. This minimal install lets you run
+Kitsune and work on many parts of Kitsune. However, it's missing some
+components.
+
+The following aren't installed in this guide:
+
+* Redis
+* RabbitMQ
+* Sphinx search and Elastic Search
+
+For installing and configuring those components, you should look at
+the more comprehensive :ref:`installation-chapter`.
