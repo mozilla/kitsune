@@ -36,16 +36,6 @@ For the minimum installation, you'll need the following:
 Installation for these is very system dependent. Using a package
 manager, like yum, aptitude, or brew, is encouraged.
 
-.. Note::
-
-   Make sure you have ``python26`` in your path.  If not, create a
-   symbollic link for it::
-
-       $ ln -s /usr/bin/python /usr/bin/python26
-
-   Or something along those lines depending on how your system is set
-   up.
-
 
 Getting the Source
 ==================
