@@ -142,14 +142,21 @@ def questions(request):
             url = build_paged_url(request)
             return HttpResponseRedirect(urlparams(url, page=1))
 
+    # Recent answered stats
+    recent_asked_count = Question.recent_asked_count()
+    recent_answered_count = Question.recent_answered_count()
+    recent_answered_percent = int(
+        (float(recent_answered_count) / recent_asked_count) * 100)
+
     data = {'questions': questions_page,
             'feeds': feed_urls,
             'filter': filter_,
             'sort': sort_,
             'tags': tags,
             'tagged': tagged,
-            'recent_asked_count': Question.recent_asked_count(),
-            'recent_answered_count': Question.recent_answered_count()}
+            'recent_asked_count': recent_asked_count,
+            'recent_answered_count': recent_answered_count,
+            'recent_answered_percent': recent_answered_percent}
 
     if (waffle.flag_is_active(request, 'karma') and
         waffle.switch_is_active('karma')):
