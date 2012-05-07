@@ -145,8 +145,11 @@ def questions(request):
     # Recent answered stats
     recent_asked_count = Question.recent_asked_count()
     recent_answered_count = Question.recent_answered_count()
-    recent_answered_percent = int(
-        (float(recent_answered_count) / recent_asked_count) * 100)
+    if recent_asked_count:
+        recent_answered_percent = int(
+            (float(recent_answered_count) / recent_asked_count) * 100)
+    else:
+        recent_answered_percent = 0
 
     data = {'questions': questions_page,
             'feeds': feed_urls,
