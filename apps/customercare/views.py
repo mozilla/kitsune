@@ -15,6 +15,7 @@ from babel.numbers import format_number
 import bleach
 import jingo
 from session_csrf import anonymous_csrf
+from statsd import statsd
 from tower import ugettext as _, ugettext_lazy as _lazy
 import tweepy
 
@@ -261,6 +262,7 @@ def landing(request):
     # Stats. See customercare.cron.get_customercare_stats.
     activity = cache.get(settings.CC_TWEET_ACTIVITY_CACHE_KEY)
     if activity and 'resultset' in activity:
+        statsd.incr('customercare.stats.activity.hit')
         activity_stats = []
         for act in activity['resultset']:
             if act is None:  # Sometimes we get bad data here.
@@ -271,10 +273,12 @@ def landing(request):
                 'perc': act[3] * 100,
             }))
     else:
+        statsd.incr('customercare.stats.activity.miss')
         activity_stats = []
 
     contributors = cache.get(settings.CC_TOP_CONTRIB_CACHE_KEY)
     if contributors and 'resultset' in contributors:
+        statsd.incr('customercare.stats.contributors.hit')
         contributor_stats = {}
         for contrib in contributors['resultset']:
             # Create one list per time period
@@ -292,13 +296,15 @@ def landing(request):
                 'avatar': contributors['avatars'].get(contrib[3]),
             })
     else:
+        statsd.incr('customercare.stats.contributors.miss')
         contributor_stats = {}
 
     return jingo.render(request, 'customercare/landing.html', {
         'activity_stats': activity_stats,
         'contributor_stats': contributor_stats,
         'canned_responses': CANNED_RESPONSES,
-        'tweets': _get_tweets(locale=request.locale, https=request.is_secure()),
+        'tweets': _get_tweets(locale=request.locale,
+                              https=request.is_secure()),
         'authed': twitter.authed,
         'twitter_user': (twitter.api.auth.get_username() if
                          twitter.authed else None),
