@@ -109,8 +109,11 @@ class TestDateTimeFormat(TestCase):
         self.context['request'].session = {'timezone': self.timezone}
 
     def _get_datetime_result(self, locale, timezone, format='short', return_format='shortdatetime'):
-        value_test = datetime.fromordinal(733900)
-        value_localize = self.timezone.localize(value_test)
+        value = datetime.fromordinal(733900)
+        value = self.timezone.localize(value)
+        value_test = value.astimezone(self.timezone)
+
+        value_localize = value_test.astimezone(timezone)
         value_expected = format_datetime(value_localize, format=format,
                                          locale=locale, tzinfo=timezone)
         value_returned = datetimeformat(self.context, value_test,
@@ -173,16 +176,18 @@ class TestDateTimeFormat(TestCase):
 
     def test_timezone(self):
         """Expects Europe/Paris timezone."""
+        fr_timezone = timezone('Europe/Paris')
         self.context['request'].locale = 'fr'
-        self.context['request'].session = {'timezone': timezone('Europe/Paris')}
-        self._get_datetime_result('fr', self.timezone,
+        self.context['request'].session = {'timezone': fr_timezone}
+        self._get_datetime_result('fr', fr_timezone,
                                           'medium', 'datetime')
 
     def test_timezone_different_locale(self):
         """Expects Europe/Paris timezone with different locale."""
+        fr_timezone = timezone('Europe/Paris')
         self.context['request'].locale = 'tr'
-        self.context['request'].session = {'timezone': timezone('Europe/Paris')}
-        self._get_datetime_result('tr', self.timezone,
+        self.context['request'].session = {'timezone': fr_timezone}
+        self._get_datetime_result('tr', fr_timezone,
                                           'medium', 'datetime')
 
     def test_invalid_value(self):
