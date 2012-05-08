@@ -182,8 +182,7 @@ class Thread(NotificationsMixin, ModelBase, SearchMixin):
     def get_mapping(cls):
         return {
             'id': {'type': 'long'},
-            'model': {'type': 'string', 'index': 'not_analyzed',
-                      'store': 'yes'},
+            'model': {'type': 'string', 'index': 'not_analyzed'},
             'thread_id': {'type': 'integer'},
             'forum_id': {'type': 'integer'},
             'title': {'type': 'string', 'analyzer': 'snowball'},

@@ -124,6 +124,9 @@ def merge_mappings(mappings):
 
             merged_mapping[key][1].append(cls_name)
 
+    # import pprint
+    # pprint.pprint(merged_mapping, width=140)
+
     # Remove cls_name annotations from final mapping
     merged_mapping = dict(
         [(key, val[0]) for key, val in merged_mapping.items()])

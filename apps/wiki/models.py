@@ -499,8 +499,7 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
     def get_mapping(cls):
         return {
             'id': {'type': 'long'},
-            'model': {'type': 'string', 'index': 'not_analyzed',
-                     'store': 'yes'},
+            'model': {'type': 'string', 'index': 'not_analyzed'},
             'title': {'type': 'string', 'analyzer': 'snowball'},
             'locale': {'type': 'string', 'index': 'not_analyzed'},
             'current': {'type': 'integer'},

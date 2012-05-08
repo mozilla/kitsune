@@ -291,8 +291,7 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
     def get_mapping(cls):
         return {
             'id': {'type': 'long'},
-            'model': {'type': 'string', 'index': 'not_analyzed',
-                      'store': 'yes'},
+            'model': {'type': 'string', 'index': 'not_analyzed'},
             'question_id': {'type': 'long'},
             'title': {'type': 'string', 'analyzer': 'snowball'},
             'question_content':
