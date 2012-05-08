@@ -1099,15 +1099,20 @@ class QuestionsTemplateTestCase(TestCaseBase):
             doc('link[rel="canonical"]')[0].attrib['href'])
 
     def test_locked_questions_dont_appear(self):
-        """Locked questions are not listed."""
-        q = Question.objects.all()[0]
-        q.is_locked = True
-        q.save()
-        response = get(self.client, 'questions.questions')
+        """Locked questions are not listed on the no-replies list."""
+
+        # TODO: Remove this when we get rid of fixtures.
+        Question.objects.all().delete()
+
+        question(save=True)
+        question(save=True)
+        question(is_locked=True, save=True)
+
+        url = reverse('questions.questions')
+        url = urlparams(url, filter='no-replies')
+        response = self.client.get(url)
         doc = pq(response.content)
-        eq_(Question.objects.filter(is_locked=False,
-                                    num_answers__gt=0).count(),
-            len(doc('ol.questions li')))
+        eq_(2, len(doc('ol.questions li')))
 
 
 class QuestionEditingTests(TestCaseBase):
