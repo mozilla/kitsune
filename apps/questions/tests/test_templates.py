@@ -19,7 +19,8 @@ from questions.tests import (TestCaseBase, TaggingTestCaseBase, tags_eq,
 from questions.views import UNAPPROVED_TAG, NO_TAG
 from questions.cron import cache_top_contributors
 from sumo.helpers import urlparams
-from sumo.tests import get, post, attrs_eq, emailmessage_raise_smtp
+from sumo.tests import (get, post, attrs_eq, emailmessage_raise_smtp, TestCase,
+                        LocalizingClient)
 from sumo.urlresolvers import reverse
 from upload.models import ImageAttachment
 from users.models import RegistrationProfile
@@ -1098,16 +1099,21 @@ class QuestionsTemplateTestCase(TestCaseBase):
         eq_('/questions?tagged=mobile',
             doc('link[rel="canonical"]')[0].attrib['href'])
 
+
+class QuestionsTemplateTestCaseNoFixtures(TestCase):
+    client_class = LocalizingClient
+
     def test_locked_questions_dont_appear(self):
-        """Locked questions are not listed."""
-        q = Question.objects.all()[0]
-        q.is_locked = True
-        q.save()
-        response = get(self.client, 'questions.questions')
+        """Locked questions are not listed on the no-replies list."""
+        question(save=True)
+        question(save=True)
+        question(is_locked=True, save=True)
+
+        url = reverse('questions.questions')
+        url = urlparams(url, filter='no-replies')
+        response = self.client.get(url)
         doc = pq(response.content)
-        eq_(Question.objects.filter(is_locked=False,
-                                    num_answers__gt=0).count(),
-            len(doc('ol.questions li')))
+        eq_(2, len(doc('ol.questions li')))
 
 
 class QuestionEditingTests(TestCaseBase):
