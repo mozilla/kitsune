@@ -10,16 +10,18 @@ from search.tests.test_es import ElasticTestCase
 from sumo.helpers import urlparams
 from sumo.urlresolvers import reverse
 from sumo.tests import MobileTestCase, LocalizingClient
+from wiki.tests import document, revision
 
 
 class AAQTests(ElasticTestCase):
     client_class = LocalizingClient
 
     def test_bleaching(self):
+        """Tests whether summaries are bleached"""
         q = question(
             title=u'cupcakes',
-            content=u'<unbleached>Cupcakes are the best</unbleached')
-        q.save()
+            content=u'<unbleached>Cupcakes are the best</unbleached',
+            save=True)
         q.tags.add(u'desktop')
         q.save()
         self.refresh()
@@ -32,6 +34,35 @@ class AAQTests(ElasticTestCase):
         response = self.client.get(url, follow=True)
 
         assert '<unbleached>' not in response.content
+
+    # TODO: test whether when _search_suggetions fails with a handled
+    # error that the user can still ask a question.
+
+    def test_search_suggestions(self):
+        """Verifies the view doesn't kick up an HTTP 500"""
+        q = question(title=u'CupcakesQuestion cupcakes', save=True)
+        q.tags.add(u'desktop')
+        q.save()
+
+        d = document(title=u'CupcakesKB cupcakes', category=10, save=True)
+        d.tags.add(u'desktop')
+        d.save()
+
+        rev = revision(document=d, is_approved=True)
+        rev.save()
+
+        self.refresh()
+
+        url = urlparams(reverse('questions.new_question'),
+                        product='desktop',
+                        category='d1',
+                        search='cupcakes')
+
+        response = self.client.get(url, follow=True)
+        eq_(200, response.status_code)
+
+        assert 'CupcakesQuestion' in response.content
+        assert 'CupcakesKB' in response.content
 
 
 class MobileAAQTests(MobileTestCase):

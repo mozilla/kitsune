@@ -182,23 +182,22 @@ class Thread(NotificationsMixin, ModelBase, SearchMixin):
     def get_mapping(cls):
         return {
             'id': {'type': 'long'},
-            'model': {'type': 'string', 'index': 'not_analyzed',
-                      'store': 'yes'},
-            'thread_id': {'type': 'integer'},
-            'forum_id': {'type': 'integer'},
-            'title': {'type': 'string', 'analyzer': 'snowball'},
-            'is_sticky': {'type': 'boolean'},
-            'is_locked': {'type': 'boolean'},
-            'author_id': {'type': 'integer'},
-            'author_ord': {'type': 'string', 'index': 'not_analyzed'},
-            'content': {'type': 'string', 'analyzer': 'snowball',
-                        'store': 'yes',
-                        'term_vector': 'with_positions_offsets'},
+            'model': {'type': 'string', 'index': 'not_analyzed'},
+            'url': {'type': 'string', 'index': 'not_analyzed'},
+            'indexed_on': {'type': 'integer'},
             'created': {'type': 'integer'},
             'updated': {'type': 'integer'},
-            'replies': {'type': 'integer'},
-            'url': {'type': 'string', 'index': 'not_analyzed'},
-            'indexed_on': {'type': 'integer'}}
+
+            'post_forum_id': {'type': 'integer'},
+            'post_title': {'type': 'string', 'analyzer': 'snowball'},
+            'post_is_sticky': {'type': 'boolean'},
+            'post_is_locked': {'type': 'boolean'},
+            'post_author_id': {'type': 'integer'},
+            'post_author_ord': {'type': 'string', 'index': 'not_analyzed'},
+            'post_content': {'type': 'string', 'analyzer': 'snowball',
+                             'store': 'yes',
+                             'term_vector': 'with_positions_offsets'},
+            'post_replies': {'type': 'integer'}}
 
     @classmethod
     def extract_document(cls, obj_id):
@@ -208,11 +207,8 @@ class Thread(NotificationsMixin, ModelBase, SearchMixin):
         d = {}
         d['id'] = obj.id
         d['model'] = cls.get_model_name()
-        d['forum_id'] = obj.forum.id
-        d['title'] = obj.title
-        d['is_sticky'] = obj.is_sticky
-        d['is_locked'] = obj.is_locked
         d['url'] = obj.get_absolute_url()
+        d['indexed_on'] = int(time.time())
 
         # TODO: Sphinx stores created and updated as seconds since the
         # epoch, so we convert them to that format here so that the
@@ -226,7 +222,12 @@ class Thread(NotificationsMixin, ModelBase, SearchMixin):
         else:
             d['updates'] = None
 
-        d['replies'] = obj.replies
+        d['post_forum_id'] = obj.forum.id
+        d['post_title'] = obj.title
+        d['post_is_sticky'] = obj.is_sticky
+        d['post_is_locked'] = obj.is_locked
+
+        d['post_replies'] = obj.replies
 
         author_ids = set()
         author_ords = set()
@@ -237,18 +238,16 @@ class Thread(NotificationsMixin, ModelBase, SearchMixin):
             author_ords.add(post.author.username)
             content.append(post.content)
 
-        d['author_id'] = list(author_ids)
-        d['author_ord'] = list(author_ords)
-        d['content'] = content
+        d['post_author_id'] = list(author_ids)
+        d['post_author_ord'] = list(author_ords)
+        d['post_content'] = content
 
-        d['indexed_on'] = int(time.time())
         return d
 
     @classmethod
     def search(cls):
         s = super(Thread, cls).search()
-        return (s.query_fields('title__text', 'content__text')
-                 .weight(title=2, content=1)
+        return (s.query_fields('post_title__text', 'post_content__text')
                  .order_by('created'))
 
 
