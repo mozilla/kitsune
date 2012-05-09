@@ -938,7 +938,78 @@ def marketplace_success(request, template=None):
     return jingo.render(request, template)
 
 
-def _search_suggestions(request, query, locale, category_tags):
+def _search_suggestions_es(request, query, locale, category_tags):
+    """See _search_suggestions
+
+    """
+    engine = 'elastic'
+    question_s = Question.search()
+    wiki_s = Document.search()
+
+    # Max number of search results per type.
+    WIKI_RESULTS = QUESTIONS_RESULTS = 3
+
+    # Apply category filters
+    if category_tags:
+        question_s = question_s.filter(tag__in=category_tags)
+        wiki_s = wiki_s.filter(tag__in=category_tags)
+
+    try:
+        raw_results = (
+            wiki_s.filter(locale=locale,
+                          category__in=settings.SEARCH_DEFAULT_CATEGORIES)
+                  .query(query)
+                  .values_dict('id')[:WIKI_RESULTS])
+
+        results = []
+        for r in raw_results:
+            try:
+                doc = (Document.objects.select_related('current_revision')
+                                       .get(pk=r['id']))
+                results.append({
+                    'search_summary': doc.current_revision.summary,
+                    'url': doc.get_absolute_url(),
+                    'title': doc.title,
+                    'type': 'document',
+                    'object': doc,
+                })
+            except Document.DoesNotExist:
+                pass
+
+        # Note: Questions app is en-US only.
+        raw_results = (question_s.query(query)
+                                 .values_dict('id')[:QUESTIONS_RESULTS])
+
+        for r in raw_results:
+            try:
+                q = Question.objects.get(pk=r['id'])
+                results.append({
+                    'search_summary': q.content[0:500],
+                    'url': q.get_absolute_url(),
+                    'title': q.title,
+                    'type': 'question',
+                    'object': q
+                })
+            except Question.DoesNotExist:
+                pass
+
+    except (SearchError, ESTimeoutError, ESMaxRetryError, ESException), exc:
+        if isinstance(exc, SearchError):
+            statsd.incr('questions.suggestions.%s.searcherror' % engine)
+        elif isinstance(exc, ESTimeoutError):
+            statsd.incr('questions.suggestions.%s.timeouterror' % engine)
+        elif isinstance(exc, ESMaxRetryError):
+            statsd.incr('questions.suggestions.%s.maxretryerror' % engine)
+        elif isinstance(exc, ESException):
+            statsd.incr('questions.suggestions.%s.elasticsearchexception' %
+                        engine)
+
+        return []
+
+    return results
+
+
+def _search_suggestions_sphinx(request, query, locale, category_tags):
     """Return an iterable of the most relevant wiki pages and questions.
 
     query -- full text to search on
@@ -1027,6 +1098,31 @@ def _search_suggestions(request, query, locale, category_tags):
         return []
 
     return results
+
+
+def _search_suggestions(request, query, locale, category_tags):
+    """Return an iterable of the most relevant wiki pages and questions.
+
+    query -- full text to search on
+    locale -- locale to limit to
+
+    Items are dicts of:
+        {
+            'type':
+            'search_summary':
+            'title':
+            'url':
+            'object':
+        }
+
+    Returns up to 3 wiki pages, then up to 3 questions.
+
+    """
+    if waffle.flag_is_active(request, 'elasticsearch'):
+        return _search_suggestions_es(request, query, locale, category_tags)
+    else:
+        return _search_suggestions_sphinx(request, query, locale,
+                                          category_tags)
 
 
 def _answers_data(request, question_id, form=None, watch_form=None,

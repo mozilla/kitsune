@@ -65,7 +65,7 @@ class ElasticTestCase(TestCase):
         super(ElasticTestCase, self).tearDown()
         self.teardown_indexes()
 
-    def refresh(self):
+    def refresh(self, timesleep=0):
         index = es_utils.WRITE_INDEX
 
         # Any time we're doing a refresh, we're making sure that the
@@ -74,7 +74,7 @@ class ElasticTestCase(TestCase):
         # then refresh.
         generate_tasks()
 
-        get_es().refresh(index, timesleep=0)
+        get_es().refresh(index, timesleep=timesleep)
 
     def setup_indexes(self):
         """(Re-)create ES indexes."""
