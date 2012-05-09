@@ -46,7 +46,7 @@ from questions.marketplace import (MARKETPLACE_CATEGORIES, submit_ticket,
 from questions.models import (Question, Answer, QuestionVote, AnswerVote,
                               question_searcher)
 from questions.question_config import products
-from search.utils import locale_or_default
+from search.utils import locale_or_default, clean_excerpt
 from search.es_utils import ESTimeoutError, ESMaxRetryError, ESException
 from search import SearchError
 from sumo.helpers import urlparams
@@ -986,7 +986,8 @@ def _search_suggestions(request, query, locale, category_tags):
                 doc = (Document.objects.select_related('current_revision')
                                        .get(pk=r['id']))
                 results.append({
-                    'search_summary': doc.current_revision.summary,
+                    'search_summary': clean_excerpt(
+                            doc.current_revision.summary),
                     'url': doc.get_absolute_url(),
                     'title': doc.title,
                     'type': 'document',
@@ -1003,7 +1004,7 @@ def _search_suggestions(request, query, locale, category_tags):
             try:
                 q = Question.objects.get(pk=r['id'])
                 results.append({
-                    'search_summary': q.content[0:500],
+                    'search_summary': clean_excerpt(q.content[0:500]),
                     'url': q.get_absolute_url(),
                     'title': q.title,
                     'type': 'question',

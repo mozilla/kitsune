@@ -5,9 +5,33 @@ import mock
 from nose.tools import eq_
 
 from questions.models import Question
+from questions.tests import question
+from search.tests.test_es import ElasticTestCase
 from sumo.helpers import urlparams
 from sumo.urlresolvers import reverse
 from sumo.tests import MobileTestCase, LocalizingClient
+
+
+class AAQTests(ElasticTestCase):
+    client_class = LocalizingClient
+
+    def test_bleaching(self):
+        q = question(
+            title=u'cupcakes',
+            content=u'<unbleached>Cupcakes are the best</unbleached')
+        q.save()
+        q.tags.add(u'desktop')
+        q.save()
+        self.refresh()
+
+        url = urlparams(reverse('questions.new_question'),
+                        product='desktop',
+                        category='d1',
+                        search='cupcakes')
+
+        response = self.client.get(url, follow=True)
+
+        assert '<unbleached>' not in response.content
 
 
 class MobileAAQTests(MobileTestCase):
