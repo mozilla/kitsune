@@ -234,9 +234,9 @@ def overview_rows(locale):
                  numerator=translated_templates, denominator=total_templates,
                  percent=percent_or_100(translated_templates, total_templates),
                  description=_('Templates are a way of reusing pieces of '
-							   'content across KB articles. You can create and '
-							   'update a set of instructions in one place, and '
-							   'then refer to it in other pages.')),
+                               'content across KB articles. You can create and '
+                               'update a set of instructions in one place, and '
+                               'then refer to it in other pages.')),
             'navigation': dict(
                  title=_('Navigation Articles'),
                  url='#' + NavigationTranslationsReadout.slug,
@@ -250,7 +250,7 @@ def overview_rows(locale):
                  numerator=translated_docs, denominator=total_docs,
                  percent=percent_or_100(translated_docs, total_docs),
                  description=_('This is the number of all Knowledge Base '
-							   'articles that are ready to be localized.'))}
+                               'articles that are ready to be localized.'))}
 
 
 class Readout(object):
