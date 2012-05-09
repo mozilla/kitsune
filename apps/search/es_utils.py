@@ -1,5 +1,6 @@
 import json
 import logging
+import pprint
 from itertools import chain, count, izip
 
 from django.conf import settings
@@ -52,6 +53,9 @@ class Sphilastic(elasticutils.S):
         new = super(Sphilastic, self)._clone(next_step)
         new._query_fields = list(self._query_fields)
         return new
+
+    def print_query(self):
+        pprint.pprint(self._build_query())
 
     def get_index(self):
         # Sphilastic is a searcher and so it's _always_ used in a read

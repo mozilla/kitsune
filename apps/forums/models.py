@@ -247,7 +247,6 @@ class Thread(NotificationsMixin, ModelBase, SearchMixin):
     def search(cls):
         s = super(Thread, cls).search()
         return (s.query_fields('title__text', 'content__text')
-                 .weight(title=2, content=1)
                  .order_by('created'))
 
 

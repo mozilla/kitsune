@@ -385,7 +385,6 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
         s = super(Question, cls).search()
         return (s.query_fields('title__text', 'question_content__text',
                                'answer_content__text')
-                 .weight(title=4, question_content=3, answer_content=3)
                  .highlight(before_match='<b>',
                             after_match='</b>',
                             limit=settings.SEARCH_SUMMARY_LENGTH))

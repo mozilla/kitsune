@@ -577,8 +577,7 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
     def search(cls):
         s = super(Document, cls).search()
         return (s.query_fields('title__text', 'content__text',
-                               'summary__text', 'keywords__text')
-                 .weight(title=6, content=1, keywords=4, summary=2))
+                               'summary__text', 'keywords__text'))
 
 
 register_for_indexing(Document, 'wiki')
