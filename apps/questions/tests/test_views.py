@@ -33,6 +33,11 @@ class AAQTests(ElasticTestCase):
 
         assert '<unbleached>' not in response.content
 
+    def test_search_suggestions(self):
+        q = question(title=u'Are cupcakes yummy', save=True)
+        self.refresh()
+
+    # FIXME - finish this
 
 class MobileAAQTests(MobileTestCase):
     fixtures = ['users.json', 'questions.json']
