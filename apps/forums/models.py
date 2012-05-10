@@ -190,9 +190,9 @@ class Thread(NotificationsMixin, ModelBase, SearchMixin):
             'is_locked': {'type': 'boolean'},
             'author_id': {'type': 'integer'},
             'author_ord': {'type': 'string', 'index': 'not_analyzed'},
-            'content': {'type': 'string', 'analyzer': 'snowball',
-                        'store': 'yes',
-                        'term_vector': 'with_positions_offsets'},
+            'post_content': {'type': 'string', 'analyzer': 'snowball',
+                             'store': 'yes',
+                             'term_vector': 'with_positions_offsets'},
             'created': {'type': 'integer'},
             'updated': {'type': 'integer'},
             'replies': {'type': 'integer'},
@@ -238,7 +238,7 @@ class Thread(NotificationsMixin, ModelBase, SearchMixin):
 
         d['author_id'] = list(author_ids)
         d['author_ord'] = list(author_ords)
-        d['content'] = content
+        d['post_content'] = content
 
         d['indexed_on'] = int(time.time())
         return d
@@ -246,7 +246,7 @@ class Thread(NotificationsMixin, ModelBase, SearchMixin):
     @classmethod
     def search(cls):
         s = super(Thread, cls).search()
-        return (s.query_fields('title__text', 'content__text')
+        return (s.query_fields('title__text', 'post_content__text')
                  .order_by('created'))
 
 

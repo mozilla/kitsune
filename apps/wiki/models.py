@@ -504,9 +504,9 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
             'locale': {'type': 'string', 'index': 'not_analyzed'},
             'current': {'type': 'integer'},
             'parent_id': {'type': 'integer'},
-            'content': {'type': 'string', 'analyzer': 'snowball',
-                        'store': 'yes',
-                        'term_vector': 'with_positions_offsets'},
+            'document_content': {'type': 'string', 'analyzer': 'snowball',
+                                 'store': 'yes',
+                                 'term_vector': 'with_positions_offsets'},
             'category': {'type': 'integer'},
             'slug': {'type': 'string', 'index': 'not_analyzed'},
             'is_archived': {'type': 'boolean'},
@@ -528,7 +528,7 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
         d['title'] = obj.title
         d['locale'] = obj.locale
         d['parent_id'] = obj.parent.id if obj.parent else None
-        d['content'] = obj.html
+        d['document_content'] = obj.html
         d['category'] = obj.category
         d['slug'] = obj.slug
         d['is_archived'] = obj.is_archived
@@ -569,7 +569,7 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
         # If there are no revisions or the current revision is a redirect,
         # we want to remove it from the index.
         if (document['current'] is None or
-            document['content'].startswith(REDIRECT_HTML)):
+            document['document_content'].startswith(REDIRECT_HTML)):
             cls.unindex(document['id'], es=kwargs.get('es', None))
             return
         super(cls, cls).index(document, **kwargs)
@@ -577,7 +577,7 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
     @classmethod
     def search(cls):
         s = super(Document, cls).search()
-        return (s.query_fields('title__text', 'content__text',
+        return (s.query_fields('title__text', 'document_content__text',
                                'summary__text', 'keywords__text'))
 
 
