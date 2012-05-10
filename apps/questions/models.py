@@ -314,7 +314,7 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
             'num_votes': {'type': 'integer'},
             'num_votes_past_week': {'type': 'integer'},
             'answer_votes': {'type': 'integer'},
-            'tag': {'type': 'string', 'index': 'not_analyzed'},
+            'question_tag': {'type': 'string', 'index': 'not_analyzed'},
             'url': {'type': 'string', 'index': 'not_analyzed'},
             'indexed_on': {'type': 'integer'}}
 
@@ -360,7 +360,7 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
                           .count())
         d['num_votes_past_week'] = obj['num_votes_past_week']
 
-        d['tag'] = list(TaggedItem.tags_for(
+        d['question_tag'] = list(TaggedItem.tags_for(
             Question, Question(pk=obj_id)).values_list('name', flat=True))
 
         answer_values = list(Answer.objects

@@ -951,8 +951,8 @@ def _search_suggestions_es(request, query, locale, category_tags):
 
     # Apply category filters
     if category_tags:
-        question_s = question_s.filter(tag__in=category_tags)
-        wiki_s = wiki_s.filter(tag__in=category_tags)
+        question_s = question_s.filter(question_tag__in=category_tags)
+        wiki_s = wiki_s.filter(document_tag__in=category_tags)
 
     try:
         raw_results = (

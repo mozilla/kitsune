@@ -513,7 +513,7 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
             'summary': {'type': 'string', 'analyzer': 'snowball'},
             'keywords': {'type': 'string', 'analyzer': 'snowball'},
             'updated': {'type': 'integer'},
-            'tag': {'type': 'string', 'index': 'not_analyzed'},
+            'document_tag': {'type': 'string', 'index': 'not_analyzed'},
             'url': {'type': 'string', 'index': 'not_analyzed'},
             'indexed_on': {'type': 'integer'}}
 
@@ -535,10 +535,11 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
         d['url'] = obj.get_absolute_url()
 
         if obj.parent is None:
-            d['tag'] = [tag['name'] for tag in obj.tags.values()]
+            tags = [tag['name'] for tag in obj.tags.values()]
         else:
             # Translations inherit tags from their parents.
-            d['tag'] = [tag['name'] for tag in obj.parent.tags.values()]
+            tags = [tag['name'] for tag in obj.parent.tags.values()]
+        d['document_tag'] = tags
         if obj.current_revision:
             d['summary'] = obj.current_revision.summary
             d['keywords'] = obj.current_revision.keywords

@@ -76,16 +76,16 @@ class QuestionUpdateTests(ElasticTestCase):
 
         """
         tag = u'hiphop'
-        eq_(Question.search().filter(tag=tag).count(), 0)
+        eq_(Question.search().filter(question_tag=tag).count(), 0)
         q = question(save=True)
         self.refresh()
-        eq_(Question.search().filter(tag=tag).count(), 0)
+        eq_(Question.search().filter(question_tag=tag).count(), 0)
         q.tags.add(tag)
         self.refresh()
-        eq_(Question.search().filter(tag=tag).count(), 1)
+        eq_(Question.search().filter(question_tag=tag).count(), 1)
         q.tags.remove(tag)
         self.refresh()
-        eq_(Question.search().filter(tag=tag).count(), 0)
+        eq_(Question.search().filter(question_tag=tag).count(), 0)
 
 
 class QuestionSearchTests(ElasticTestCase):
