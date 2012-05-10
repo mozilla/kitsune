@@ -36,10 +36,8 @@
           <li><a href="{{ profile_url(user, edit=True) }}">{{ _('Edit Profile') }}</a></li>
           <li><a href="{{ url('dashboards.default') }}">{{ _('Dashboard') }}</a></li>
           <li><a href="{{ url('users.edit_settings') }}">{{ _('Settings') }}</a></li>
+          <li><a href="{{ url('users.logout') }}">{{ _('Sign Out') }}</a></li>
         </ul>
-      </li>
-      <li class="nomenu logout">
-        <a href="{{ url('users.logout') }}">{{ _('Sign Out') }}</a>
       </li>
       <li class="nomenu">
         <a href="{{ url('messages.inbox') }}">
