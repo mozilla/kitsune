@@ -292,7 +292,6 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
         return {
             'id': {'type': 'long'},
             'model': {'type': 'string', 'index': 'not_analyzed'},
-            'question_id': {'type': 'long'},
             'title': {'type': 'string', 'analyzer': 'snowball'},
             'question_content':
                 {'type': 'string', 'analyzer': 'snowball',
