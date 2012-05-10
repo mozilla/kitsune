@@ -942,12 +942,15 @@ def _search_suggestions_es(request, query, locale, category_tags):
     """See _search_suggestions
 
     """
+    # TODO: this can be reworked to pull data from ES rather than
+    # hit the db.
     engine = 'elastic'
     question_s = Question.search()
     wiki_s = Document.search()
 
     # Max number of search results per type.
     WIKI_RESULTS = QUESTIONS_RESULTS = 3
+    default_categories = settings.SEARCH_DEFAULT_CATEGORIES
 
     # Apply category filters
     if category_tags:
@@ -956,8 +959,8 @@ def _search_suggestions_es(request, query, locale, category_tags):
 
     try:
         raw_results = (
-            wiki_s.filter(locale=locale,
-                          category__in=settings.SEARCH_DEFAULT_CATEGORIES)
+            wiki_s.filter(document_locale=locale,
+                          document_category__in=default_categories)
                   .query(query)
                   .values_dict('id')[:WIKI_RESULTS])
 
@@ -989,7 +992,11 @@ def _search_suggestions_es(request, query, locale, category_tags):
                     'url': q.get_absolute_url(),
                     'title': q.title,
                     'type': 'question',
-                    'object': q
+                    'object': q,
+                    'is_solved': q.is_solved,
+                    'num_answers': q.num_answers,
+                    'num_votes': q.num_votes,
+                    'num_votes_past_week': q.num_votes_past_week
                 })
             except Question.DoesNotExist:
                 pass
@@ -1080,7 +1087,10 @@ def _search_suggestions_sphinx(request, query, locale, category_tags):
                     'url': q.get_absolute_url(),
                     'title': q.title,
                     'type': 'question',
-                    'object': q
+                    'is_solved': q.is_solved,
+                    'num_answers': q.num_answers,
+                    'num_votes': q.num_votes,
+                    'num_votes_past_week': q.num_votes_past_week
                 })
             except Question.DoesNotExist:
                 pass

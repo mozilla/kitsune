@@ -55,7 +55,10 @@
             {% for item in items %}
               <tr>
                 <td><a href="?bucket={{ cls_name }}&id={{ item.id }}">{{ item.id }}</a></td>
-                <td>{{ item.title }}</td>
+                {# cheating here because only one of these is filled, but #}
+                {# in django templates, you get an empty string if it's #}
+                {# not there. #}
+                <td>{{ item.question_title }}{{ item.post_title }}{{ item.document_title }}</td>
                 <td>{{ item.indexed_on }}</td>
               </tr>
             {% endfor %}

@@ -292,30 +292,32 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
         return {
             'id': {'type': 'long'},
             'model': {'type': 'string', 'index': 'not_analyzed'},
-            'title': {'type': 'string', 'analyzer': 'snowball'},
+            'url': {'type': 'string', 'index': 'not_analyzed'},
+            'indexed_on': {'type': 'integer'},
+            'created': {'type': 'integer'},
+            'updated': {'type': 'integer'},
+
+            'question_title': {'type': 'string', 'analyzer': 'snowball'},
             'question_content':
                 {'type': 'string', 'analyzer': 'snowball',
                 # TODO: Stored because originally, this is the
                 # only field we were excerpting on. Standardize
                 # one way or the other.
                  'store': 'yes', 'term_vector': 'with_positions_offsets'},
-            'answer_content':
+            'question_answer_content':
                 {'type': 'string', 'analyzer': 'snowball'},
-            'num_answers': {'type': 'integer'},
-            'is_solved': {'type': 'boolean'},
-            'is_locked': {'type': 'boolean'},
-            'has_answers': {'type': 'boolean'},
-            'has_helpful': {'type': 'boolean'},
-            'created': {'type': 'integer'},
-            'updated': {'type': 'integer'},
+            'question_num_answers': {'type': 'integer'},
+            'question_is_solved': {'type': 'boolean'},
+            'question_is_locked': {'type': 'boolean'},
+            'question_has_answers': {'type': 'boolean'},
+            'question_has_helpful': {'type': 'boolean'},
             'question_creator': {'type': 'string', 'index': 'not_analyzed'},
-            'answer_creator': {'type': 'string', 'index': 'not_analyzed'},
-            'num_votes': {'type': 'integer'},
-            'num_votes_past_week': {'type': 'integer'},
-            'answer_votes': {'type': 'integer'},
-            'question_tag': {'type': 'string', 'index': 'not_analyzed'},
-            'url': {'type': 'string', 'index': 'not_analyzed'},
-            'indexed_on': {'type': 'integer'}}
+            'question_answer_creator':
+                {'type': 'string', 'index': 'not_analyzed'},
+            'question_num_votes': {'type': 'integer'},
+            'question_num_votes_past_week': {'type': 'integer'},
+            'question_answer_votes': {'type': 'integer'},
+            'question_tag': {'type': 'string', 'index': 'not_analyzed'}}
 
     @classmethod
     def extract_document(cls, obj_id):
@@ -331,12 +333,6 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
         d = {}
         d['id'] = obj['id']
         d['model'] = cls.get_model_name()
-        d['title'] = obj['title']
-        d['question_content'] = obj['content']
-        d['num_answers'] = obj['num_answers']
-        d['is_solved'] = bool(obj['solution_id'])
-        d['is_locked'] = obj['is_locked']
-        d['has_answers'] = bool(obj['num_answers'])
 
         # We do this because get_absolute_url is an instance method
         # and we don't want to create an instance because it's a DB
@@ -344,6 +340,8 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
         # doesn't change much, so this is probably ok.
         d['url'] = reverse('questions.answers',
                            kwargs={'question_id': obj['id']})
+
+        d['indexed_on'] = int(time.time())
 
         # TODO: Sphinx stores created and updated as seconds since the
         # epoch, so we convert them to that format here so that the
@@ -353,11 +351,18 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
         d['created'] = int(time.mktime(obj['created'].timetuple()))
         d['updated'] = int(time.mktime(obj['updated'].timetuple()))
 
+        d['question_title'] = obj['title']
+        d['question_content'] = obj['content']
+        d['question_num_answers'] = obj['num_answers']
+        d['question_is_solved'] = bool(obj['solution_id'])
+        d['question_is_locked'] = obj['is_locked']
+        d['question_has_answers'] = bool(obj['num_answers'])
+
         d['question_creator'] = obj['creator__username']
-        d['num_votes'] = (QuestionVote.objects
+        d['question_num_votes'] = (QuestionVote.objects
                           .filter(question=obj['id'])
                           .count())
-        d['num_votes_past_week'] = obj['num_votes_past_week']
+        d['question_num_votes_past_week'] = obj['num_votes_past_week']
 
         d['question_tag'] = list(TaggedItem.tags_for(
             Question, Question(pk=obj_id)).values_list('name', flat=True))
@@ -367,26 +372,23 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
                                    .values_list('content',
                                                 'creator__username'))
 
-        d['answer_content'] = [a[0] for a in answer_values]
-        d['answer_creator'] = list(set([a[1] for a in answer_values]))
+        d['question_answer_content'] = [a[0] for a in answer_values]
+        d['question_answer_creator'] = list(set(a[1] for a in answer_values))
 
         if not answer_values:
-            d['has_helpful'] = False
+            d['question_has_helpful'] = False
         else:
-            d['has_helpful'] = Answer.objects.filter(
+            d['question_has_helpful'] = Answer.objects.filter(
                 question=obj_id).filter(votes__helpful=True).exists()
 
-        d['indexed_on'] = int(time.time())
         return d
 
     @classmethod
     def search(cls):
         s = super(Question, cls).search()
-        return (s.query_fields('title__text', 'question_content__text',
-                               'answer_content__text')
-                 .highlight(before_match='<b>',
-                            after_match='</b>',
-                            limit=settings.SEARCH_SUMMARY_LENGTH))
+        return (s.query_fields('question_title__text',
+                               'question_content__text',
+                               'question_answer_content__text'))
 
     @classmethod
     def recent_asked_count(cls):

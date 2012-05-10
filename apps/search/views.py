@@ -136,10 +136,10 @@ def search_with_es(request, template=None):
     # wiki filters
     # Category filter
     if cleaned['category']:
-        wiki_s = wiki_s.filter(category__in=cleaned['category'])
+        wiki_s = wiki_s.filter(document_category__in=cleaned['category'])
 
     # Locale filter
-    wiki_s = wiki_s.filter(locale=language)
+    wiki_s = wiki_s.filter(document_locale=language)
 
     # Product filter
     products = cleaned['product']
@@ -156,7 +156,7 @@ def search_with_es(request, template=None):
         # Default to NO for basic search:
         cleaned['include_archived'] = False
     if not cleaned['include_archived']:
-        wiki_s = wiki_s.filter(is_archived=False)
+        wiki_s = wiki_s.filter(document_is_archived=False)
     # End of wiki filters
 
     # Support questions specific filters
@@ -169,9 +169,9 @@ def search_with_es(request, template=None):
         # These filters are ternary, they can be either YES, NO, or OFF
         ternary_filters = ('is_locked', 'is_solved', 'has_answers',
                            'has_helpful')
-        d = dict((filter_name, _ternary_filter(cleaned[filter_name]))
-                 for filter_name in ternary_filters
-                 if cleaned[filter_name])
+        d = dict(('question_%s' % filter_name,
+                  _ternary_filter(cleaned[filter_name]))
+                 for filter_name in ternary_filters if cleaned[filter_name])
         if d:
             question_s = question_s.filter(**d)
 
@@ -181,7 +181,7 @@ def search_with_es(request, template=None):
 
         if cleaned['answered_by']:
             question_s = question_s.filter(
-                answer_creator=cleaned['answered_by'])
+                question_answer_creator=cleaned['answered_by'])
 
         q_tags = [t.strip() for t in cleaned['q_tags'].split()]
         for t in q_tags:
@@ -190,40 +190,48 @@ def search_with_es(request, template=None):
     # Discussion forum specific filters
     if cleaned['w'] & constants.WHERE_DISCUSSION:
         if cleaned['author']:
-            discussion_s = discussion_s.filter(author_ord=cleaned['author'])
+            discussion_s = discussion_s.filter(
+                post_author_ord=cleaned['author'])
 
         if cleaned['thread_type']:
             if constants.DISCUSSION_STICKY in cleaned['thread_type']:
-                discussion_s = discussion_s.filter(is_sticky=1)
+                discussion_s = discussion_s.filter(post_is_sticky=1)
 
             if constants.DISCUSSION_LOCKED in cleaned['thread_type']:
-                discussion_s = discussion_s.filter(is_locked=1)
+                discussion_s = discussion_s.filter(post_is_locked=1)
 
         if cleaned['forum']:
-            discussion_s = discussion_s.filter(forum_id__in=cleaned['forum'])
+            discussion_s = discussion_s.filter(
+                post_forum_id__in=cleaned['forum'])
 
     # Filters common to support and discussion forums
     # Created filter
     unix_now = int(time.time())
     interval_filters = (
         ('created', cleaned['created'], cleaned['created_date']),
-        ('updated', cleaned['updated'], cleaned['updated_date']),
-        ('num_votes', cleaned['num_voted'], cleaned['num_votes']))
+        ('updated', cleaned['updated'], cleaned['updated_date']))
     for filter_name, filter_option, filter_date in interval_filters:
         if filter_option == constants.INTERVAL_BEFORE:
             before = {filter_name + '__gte': 0,
                       filter_name + '__lte': max(filter_date, 0)}
 
-            if filter_name != 'num_votes':
-                discussion_s = discussion_s.filter(**before)
+            discussion_s = discussion_s.filter(**before)
             question_s = question_s.filter(**before)
         elif filter_option == constants.INTERVAL_AFTER:
             after = {filter_name + '__gte': min(filter_date, unix_now),
                      filter_name + '__lte': unix_now}
 
-            if filter_name != 'num_votes':
-                discussion_s = discussion_s.filter(**after)
+            discussion_s = discussion_s.filter(**after)
             question_s = question_s.filter(**after)
+
+    if cleaned['num_voted'] == constants.INTERVAL_BEFORE:
+        question_s.filter(
+            question_num_voted__lte=max(cleaned['num_votes'], 0))
+    elif cleaned['num_voted'] == constants.INTERVAL_AFTER:
+        question_s.filter(
+            question_num_voted__gte=cleaned['num_votes'])
+
+    # Done with all the filtery stuff--time  to generate results
 
     documents = ComposedList()
     sortby = smart_int(request.GET.get('sortby'))
@@ -253,7 +261,8 @@ def search_with_es(request, template=None):
                 pass
 
             question_s = question_s.highlight(
-                'title', 'question_content', 'answer_content',
+                'question_title', 'question_content',
+                'question_answer_content',
                 before_match='<b>',
                 after_match='</b>',
                 limit=settings.SEARCH_SUMMARY_LENGTH)
@@ -265,7 +274,7 @@ def search_with_es(request, template=None):
 
         if cleaned['w'] & constants.WHERE_DISCUSSION:
             discussion_s = discussion_s.highlight(
-                'content',
+                'discussion_content',
                 before_match='<b>',
                 after_match='</b>',
                 limit=settings.SEARCH_SUMMARY_LENGTH)
@@ -295,24 +304,28 @@ def search_with_es(request, template=None):
             type_, doc = docinfo
 
             if type_ == 'wiki':
-                summary = doc['summary']
+                summary = doc['document_summary']
                 result = {
                     'url': doc['url'],
-                    'title': doc['title'],
+                    'title': doc['document_title'],
                     'type': 'document',
                     'object': ObjectDict(doc)}
             elif type_ == 'question':
                 summary = _build_es_excerpt(doc)
                 result = {
                     'url': doc['url'],
-                    'title': doc['title'],
+                    'title': doc['question_title'],
                     'type': 'question',
-                    'object': ObjectDict(doc)}
+                    'object': ObjectDict(doc),
+                    'is_solved': doc['question_is_solved'],
+                    'num_answers': doc['question_num_answers'],
+                    'num_votes': doc['question_num_votes'],
+                    'num_votes_past_week': doc['question_num_votes_past_week']}
             else:
                 summary = _build_es_excerpt(doc)
                 result = {
                     'url': doc['url'],
-                    'title': doc['title'],
+                    'title': doc['post_title'],
                     'type': 'thread',
                     'object': ObjectDict(doc)}
             result['search_summary'] = summary
@@ -688,7 +701,11 @@ def search_with_sphinx(request, template=None):
                         'url': doc.get_absolute_url(),
                         'title': doc.title,
                         'type': 'question',
-                        'object': doc}
+                        'object': doc,
+                        'is_solved': doc.is_solved,
+                        'num_answers': doc.num_answers,
+                        'num_votes': doc.num_votes,
+                        'num_votes_past_week': doc.num_votes_past_week}
                 else:
                     if engine == 'elastic':
                         thread = doc
