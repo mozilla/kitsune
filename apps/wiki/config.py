@@ -27,14 +27,16 @@ VersionMetadata = namedtuple('VersionMetadata',
                              'is_default')
 GROUPED_FIREFOX_VERSIONS = (
     ((_lazy(u'Desktop:'), 'desktop'), (
+        VersionMetadata(23, _lazy(u'Firefox 14'),
+                        _lazy(u'Firefox 14'), 'fx14', 14.9999, True, False),
         VersionMetadata(21, _lazy(u'Firefox 13'),
                         _lazy(u'Firefox 13'), 'fx13', 13.9999, True, False),
         VersionMetadata(19, _lazy(u'Firefox 12'),
                         _lazy(u'Firefox 12'), 'fx12', 12.9999, True, True),
         VersionMetadata(17, _lazy(u'Firefox 11'),
                         _lazy(u'Firefox 11'), 'fx11', 11.9999, True, False),
-        VersionMetadata(15, _lazy(u'Firefox 10'),
-                        _lazy(u'Firefox 10'), 'fx10', 10.9999, True, False),
+        VersionMetadata(15, _lazy(u'Firefox ESR'),
+                        _lazy(u'Firefox ESR'), 'fx10', 10.9999, True, False),
         VersionMetadata(13, _lazy(u'Firefox 9'),
                         _lazy(u'Firefox 9'), 'fx9', 9.9999, False, False),
         VersionMetadata(11, _lazy(u'Firefox 8'),
