@@ -145,7 +145,7 @@ Find a Bug
 
 Step one is to make sure there's a bug in Bugzilla. Obvious "bugs" just need a
 Bugzilla bug to track the work for all the involved teams. There are `a number
-of open bugs <http://j.mp/q2d4kD>`_ if you want to try your hand at fixing
+of open bugs <http://bit.ly/LUTjcY>`_ if you want to try your hand at fixing
 something!
 
 
