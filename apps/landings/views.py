@@ -90,6 +90,48 @@ def marketplace(request, template=None):
                         _data(docs, request.locale, 'marketplace', True))
 
 
+@mobile_template('landings/{mobile/}firefox.html')
+def firefox(request, template=None):
+    docs = FIREFOX_DOCS_FOR_MOBILE if request.MOBILE else FIREFOX_DOCS
+    return jingo.render(request, template,
+                        _data(docs, request.locale, 'firefox'))
+
+
+@mobile_template('landings/{mobile/}products.html')
+def products(request, template=None):
+    docs = PRODUCTS_DOCS_FOR_MOBILE if request.MOBILE else PRODUCTS_DOCS
+    return jingo.render(request, template,
+                        _data(docs, request.locale, 'products'))
+
+
+@mobile_template('landings/{mobile/}kb.html')
+def kb(request, template=None):
+    docs = KB_DOCS_FOR_MOBILE if request.MOBILE else KB_DOCS
+    return jingo.render(request, template,
+                        _data(docs, request.locale, 'kb'))
+
+
+@mobile_template('landings/{mobile/}ask.html')
+def ask(request, template=None):
+    docs = ASK_DOCS_FOR_MOBILE if request.MOBILE else ASK_DOCS
+    return jingo.render(request, template,
+                        _data(docs, request.locale, 'ask'))
+
+
+@mobile_template('landings/{mobile/}participate.html')
+def participate(request, template=None):
+    docs = PARTICIPATE_DOCS_FOR_MOBILE if request.MOBILE else PARTICIPATE_DOCS
+    return jingo.render(request, template,
+                        _data(docs, request.locale, 'participate'))
+
+
+@mobile_template('landings/{mobile/}feedback.html')
+def feedback(request, template=None):
+    docs = FEEDBACK_DOCS_FOR_MOBILE if request.MOBILE else FEEDBACK_DOCS
+    return jingo.render(request, template,
+                        _data(docs, request.locale, 'feedback'))
+
+
 def integrity_check(request):
     return jingo.render(request, 'landings/integrity-check.html')
 
