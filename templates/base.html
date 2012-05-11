@@ -4,9 +4,6 @@
 {% if not top_link %}
   {% set top_link = url('home') %}
 {% endif %}
-{% if not top_text %}
-  {% set top_text = _('Firefox Help') %}
-{% endif %}
 <!DOCTYPE html>
 <html class="no-js" lang="{{ request.locale }}" {% if DIR %}dir="{{ DIR }}"{% endif %}>
 <head>
