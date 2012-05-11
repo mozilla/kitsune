@@ -8,6 +8,12 @@ urlpatterns = patterns('landings.views',
     url(r'^sync$', 'sync', name='home.sync'),
     url(r'^firefox-home$', 'fxhome', name='home.fxhome'),
     url(r'^marketplace$', 'marketplace', name='home.marketplace'),
+    url(r'^firefox$', 'firefox', name='home.firefox'),
+    url(r'^products$', 'products', name='home.products'),
+    url(r'^kb$', 'kb', name='home.kb'),
+    url(r'^ask$', 'ask', name='home.ask'),
+    url(r'^participate$', 'participate', name='home.participate'),
+    url(r'^feedback$', 'feedback', name='home.feedback'),
 
     # Special landing page for MozCamp
     url(r'^reminder$', 'reminder', name='home.reminder'),
