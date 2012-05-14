@@ -29,6 +29,31 @@ MARKETPLACE_DOCS = {
     'quick': 'Marketplace home - Quick',
     'explore': 'Marketplace home - Explore',
     'top': 'Marketplace home - Top'}
+FIREFOX_DOCS = {
+    'quick': 'Firefox home - Quick',
+    'explore': 'Firefox home - Explore',
+    'top': 'Firefox home - Top'}
+PRODUCTS_DOCS = {
+    'quick': 'Products home - Quick',
+    'explore': 'Products home - Explore',
+    'top': 'Products home - Top'}
+KB_DOCS = {
+    'quick': 'KB home - Quick',
+    'explore': 'KB home - Explore',
+    'top': 'KB home - Top'}
+ASK_DOCS = {
+    'quick': 'Ask home - Quick',
+    'explore': 'Ask home - Explore',
+    'top': 'Ask home - Top'}
+PARTICIPATE_DOCS = {
+    'quick': 'Participate home - Quick',
+    'explore': 'Participate home - Explore',
+    'top': 'Participate home - Top'}
+FEEDBACK_DOCS = {
+    'quick': 'Feedback home - Quick',
+    'explore': 'Feedback home - Explore',
+    'top': 'Feedback home - Top'}
+# Docs for the mobile optimized templates:
 HOME_DOCS_FOR_MOBILE = {
     'common': 'Desktop home for mobile - Common Questions',
     'top': 'Home page - Top'}
@@ -44,6 +69,24 @@ FXHOME_DOCS_FOR_MOBILE = {
 MARKETPLACE_DOCS_FOR_MOBILE = {
     'common': 'Marketplace home for mobile - Common Questions',
     'top': 'Marketplace home - Top'}
+FIREFOX_DOCS_FOR_MOBILE = {
+    'common': 'Firefox home for mobile - Common Questions',
+    'top': 'Firefox home - Top'}
+PRODUCTS_DOCS_FOR_MOBILE = {
+    'common': 'Products home for mobile - Common Questions',
+    'top': 'Products home - Top'}
+KB_DOCS_FOR_MOBILE = {
+    'common': 'KB home for mobile - Common Questions',
+    'top': 'KB home - Top'}
+ASK_DOCS_FOR_MOBILE = {
+    'common': 'Ask home for mobile - Common Questions',
+    'top': 'Ask home - Top'}
+PARTICIPATE_DOCS_FOR_MOBILE = {
+    'common': 'Participate home for mobile - Common Questions',
+    'top': 'Participate home - Top'}
+FEEDBACK_DOCS_FOR_MOBILE = {
+    'common': 'Feedback home for mobile - Common Questions',
+    'top': 'Feedback home - Top'}
 
 
 @never_cache
@@ -94,42 +137,42 @@ def marketplace(request, template=None):
 def firefox(request, template=None):
     docs = FIREFOX_DOCS_FOR_MOBILE if request.MOBILE else FIREFOX_DOCS
     return jingo.render(request, template,
-                        _data(docs, request.locale, 'firefox'))
+                        _data(docs, request.locale, 'desktop'))
 
 
 @mobile_template('landings/{mobile/}products.html')
 def products(request, template=None):
     docs = PRODUCTS_DOCS_FOR_MOBILE if request.MOBILE else PRODUCTS_DOCS
     return jingo.render(request, template,
-                        _data(docs, request.locale, 'products'))
+                        _data(docs, request.locale))
 
 
 @mobile_template('landings/{mobile/}kb.html')
 def kb(request, template=None):
     docs = KB_DOCS_FOR_MOBILE if request.MOBILE else KB_DOCS
     return jingo.render(request, template,
-                        _data(docs, request.locale, 'kb'))
+                        _data(docs, request.locale))
 
 
 @mobile_template('landings/{mobile/}ask.html')
 def ask(request, template=None):
     docs = ASK_DOCS_FOR_MOBILE if request.MOBILE else ASK_DOCS
     return jingo.render(request, template,
-                        _data(docs, request.locale, 'ask'))
+                        _data(docs, request.locale))
 
 
 @mobile_template('landings/{mobile/}participate.html')
 def participate(request, template=None):
     docs = PARTICIPATE_DOCS_FOR_MOBILE if request.MOBILE else PARTICIPATE_DOCS
     return jingo.render(request, template,
-                        _data(docs, request.locale, 'participate'))
+                        _data(docs, request.locale))
 
 
 @mobile_template('landings/{mobile/}feedback.html')
 def feedback(request, template=None):
     docs = FEEDBACK_DOCS_FOR_MOBILE if request.MOBILE else FEEDBACK_DOCS
     return jingo.render(request, template,
-                        _data(docs, request.locale, 'feedback'))
+                        _data(docs, request.locale))
 
 
 def integrity_check(request):
@@ -141,18 +184,20 @@ def reminder(request):
     return jingo.render(request, 'landings/reminder.html')
 
 
-def _data(docs, locale, product, only_kb=False):
+def _data(docs, locale, product=None, only_kb=False):
     """Add the documents and showfor data to the context data."""
     data = {}
     for side, title in docs.iteritems():
         data[side] = get_object_fallback(Document, title, locale)
 
     data.update(SHOWFOR_DATA)
-    data.update(search_params={'product': product})
+
+    if product:
+        data.update(search_params={'product': product})
 
     if only_kb:
         data['search_params'].update(w=1)
-    else:
+    elif product:
         data['search_params'].update(q_tags=product)
 
     return data

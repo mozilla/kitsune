@@ -114,12 +114,14 @@
           {% endif %}
         </a>
       </h1>
-      <nav class="menu-nav" id="site-nav">
-        <ul>
-          <li><a href="{{ url('home') }}"{% if active_site_nav == 'desktop' %} class="active"{% endif %}>{{ _('Desktop') }}</a></li>
-          <li><a href="{{ url('home.mobile') }}"{% if active_site_nav == 'mobile' %} class="active"{% endif %}>{{ _('Mobile') }}</a></li>
-        </ul>
-      </nav>
+      {% if not hide_site_nav %}
+        <nav class="menu-nav" id="site-nav">
+          <ul>
+            <li><a href="{{ url('home') }}"{% if active_site_nav == 'desktop' %} class="active"{% endif %}>{{ _('Desktop') }}</a></li>
+            <li><a href="{{ url('home.mobile') }}"{% if active_site_nav == 'mobile' %} class="active"{% endif %}>{{ _('Mobile') }}</a></li>
+          </ul>
+        </nav>
+      {% endif %}
     </div>
   </div>
 </header>

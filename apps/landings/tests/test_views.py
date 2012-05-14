@@ -47,6 +47,36 @@ class MobileHomeTests(MobileTestCase):
             doc('#search input[name="product"]')[0].attrib['value'])
         eq_('1', doc('#search input[name="w"]')[0].attrib['value'])
 
+    def test_firefox_home_for_mobile(self):
+        r = self.client.get(reverse('home.firefox'), follow=True)
+        eq_(r.status_code, 200)
+        self.assertTemplateUsed(r, 'landings/mobile/firefox.html')
+
+    def test_products_home_for_mobile(self):
+        r = self.client.get(reverse('home.products'), follow=True)
+        eq_(r.status_code, 200)
+        self.assertTemplateUsed(r, 'landings/mobile/products.html')
+
+    def test_kb_home_for_mobile(self):
+        r = self.client.get(reverse('home.kb'), follow=True)
+        eq_(r.status_code, 200)
+        self.assertTemplateUsed(r, 'landings/mobile/kb.html')
+
+    def test_ask_home_for_mobile(self):
+        r = self.client.get(reverse('home.ask'), follow=True)
+        eq_(r.status_code, 200)
+        self.assertTemplateUsed(r, 'landings/mobile/ask.html')
+
+    def test_participate_home_for_mobile(self):
+        r = self.client.get(reverse('home.participate'), follow=True)
+        eq_(r.status_code, 200)
+        self.assertTemplateUsed(r, 'landings/mobile/participate.html')
+
+    def test_feedback_home_for_mobile(self):
+        r = self.client.get(reverse('home.feedback'), follow=True)
+        eq_(r.status_code, 200)
+        self.assertTemplateUsed(r, 'landings/mobile/feedback.html')
+
 
 class RootRedirectTests(TestCase):
     def test_default_redirect(self):
