@@ -4,6 +4,7 @@
 {% from "wiki/includes/document_macros.html" import document_watch with context %}
 {% from "layout/errorlist.html" import errorlist %}
 {% set scripts = ('wiki', 'libs/jqueryui', 'wiki.history', 'highcharts') %}
+{% set meta = (('robots', 'noindex'),) %}
 {% set title = _('Revision History | {document}')|fe(document=document.title) %}
 {% set crumbs = [(url('wiki.category', document.category), document.get_category_display()),
                  (document.get_absolute_url(), document.title),
