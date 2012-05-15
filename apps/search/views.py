@@ -224,12 +224,15 @@ def search_with_es(request, template=None):
             discussion_s = discussion_s.filter(**after)
             question_s = question_s.filter(**after)
 
+    # Note: num_voted (with a d) is a different field than num_votes
+    # (with an s). The former is a dropdown and the latter is an
+    # integer value.
     if cleaned['num_voted'] == constants.INTERVAL_BEFORE:
         question_s.filter(
-            question_num_voted__lte=max(cleaned['num_votes'], 0))
+            question_num_votes__lte=max(cleaned['num_votes'], 0))
     elif cleaned['num_voted'] == constants.INTERVAL_AFTER:
         question_s.filter(
-            question_num_voted__gte=cleaned['num_votes'])
+            question_num_votes__gte=cleaned['num_votes'])
 
     # Done with all the filtery stuff--time  to generate results
 
