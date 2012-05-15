@@ -1,5 +1,6 @@
 import json
 import logging
+import pprint
 from itertools import chain, count, izip
 
 from django.conf import settings
@@ -46,6 +47,16 @@ class Sphilastic(elasticutils.S):
        touching oedipus when I need to make changes.
 
     """
+    _query_fields = []
+
+    def _clone(self, next_step=None):
+        new = super(Sphilastic, self)._clone(next_step)
+        new._query_fields = list(self._query_fields)
+        return new
+
+    def print_query(self):
+        pprint.pprint(self._build_query())
+
     def get_index(self):
         # Sphilastic is a searcher and so it's _always_ used in a read
         # context. Therefore, we always return the READ_INDEX.
@@ -54,12 +65,6 @@ class Sphilastic(elasticutils.S):
     def get_doctype(self):
         # SUMO uses a unified doctype, so this always returns that.
         return SUMO_DOCTYPE
-
-    def query(self, text, **kwargs):
-        """Ignore any non-kw arg."""
-        # TODO: If you're feeling fancy, turn the `text` arg into an "or"
-        # query across all fields, or use the all_ index, or something.
-        return super(Sphilastic, self).query(text, **kwargs)
 
     def object_ids(self):
         """Returns a list of object IDs from Sphinx matches.
@@ -100,6 +105,44 @@ class Sphilastic(elasticutils.S):
         """
         return self
 
+    def query_fields(self, *fields):
+        new = self._clone()
+        new._query_fields = fields
+        return new
+
+    def query(self, *args, **kws):
+        """Sets up a query
+
+        You can specify the query one of two ways:
+
+        1. Call query_fields() with the fields you want to query
+           BEFORE you call query. Then query will run that query
+           with the specified fields.
+
+           Example::
+
+               S(Foo).query_fields('content__text', 'title__text', 'author')
+                     .query('tabs')
+
+           Note that we only search one value at a time.
+
+        2. Call query with keyword arguments. This works just like in
+           elasticutils documentation.
+
+           Example::
+
+               S(Foo).query(or_=dict(content__text='tabs',
+                                     title__text='tabs',
+                                     author='tabs'))
+
+        """
+        assert bool(args) != bool(kws)
+        if args:
+            # Note: We only look at the first arg. The rest we ignore.
+            kws = dict(or_=dict(
+                    (field, args[0]) for field in self._query_fields))
+        return super(Sphilastic, self).query(**kws)
+
 
 class MappingMergeError(Exception):
     """Represents a mapping merge error"""
@@ -123,6 +166,9 @@ def merge_mappings(mappings):
                     (key, cls_name, merged_mapping[key][1]))
 
             merged_mapping[key][1].append(cls_name)
+
+    # import pprint
+    # pprint.pprint(merged_mapping, width=140)
 
     # Remove cls_name annotations from final mapping
     merged_mapping = dict(

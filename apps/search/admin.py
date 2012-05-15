@@ -175,7 +175,7 @@ def index_view(request):
         last_20_by_bucket = [
             (cls_name,
              _fix_value_dicts(cls.search()
-                                 .values_dict('id', 'title', 'indexed_on')
+                                 .values_dict()
                                  .order_by('-indexed_on')[:20]))
             for cls_name, cls in bucket_to_model.items()]
 

@@ -63,12 +63,12 @@ class QuestionUpdateTests(ElasticTestCase):
         # query for num_votes__gt=0.
         q = question(title=u'model makers will inherit the earth', save=True)
         self.refresh()
-        eq_(Question.search().filter(num_votes__gt=0).count(), 0)
+        eq_(Question.search().filter(question_num_votes__gt=0).count(), 0)
 
         # Add a QuestionVote--it should show up now.
         questionvote(question=q, save=True)
         self.refresh()
-        eq_(Question.search().filter(num_votes__gt=0).count(), 1)
+        eq_(Question.search().filter(question_num_votes__gt=0).count(), 1)
 
     def test_questions_tags(self):
         """Make sure that adding tags to a Question causes it to
@@ -76,16 +76,16 @@ class QuestionUpdateTests(ElasticTestCase):
 
         """
         tag = u'hiphop'
-        eq_(Question.search().filter(tag=tag).count(), 0)
+        eq_(Question.search().filter(question_tag=tag).count(), 0)
         q = question(save=True)
         self.refresh()
-        eq_(Question.search().filter(tag=tag).count(), 0)
+        eq_(Question.search().filter(question_tag=tag).count(), 0)
         q.tags.add(tag)
         self.refresh()
-        eq_(Question.search().filter(tag=tag).count(), 1)
+        eq_(Question.search().filter(question_tag=tag).count(), 1)
         q.tags.remove(tag)
         self.refresh()
-        eq_(Question.search().filter(tag=tag).count(), 0)
+        eq_(Question.search().filter(question_tag=tag).count(), 0)
 
 
 class QuestionSearchTests(ElasticTestCase):
