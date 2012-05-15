@@ -40,7 +40,11 @@
           {{ profile.country }}
         {% endif %}
       </h2>
-      {{ private_message(profile.user) }}
+      {% if profile.user == user %}
+        <a href="{{ url('users.logout') }}">{{ _('Sign Out') }}</a>
+      {% else %}
+        {{ private_message(profile.user) }}
+      {% endif %}
       {% if profile.public_email or profile.website or profile.twitter or
             profile.facebook or profile.irc_handle or
             (profile.livechat_id and
