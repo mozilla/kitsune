@@ -7,75 +7,62 @@ from sumo.urlresolvers import reverse
 
 class MobileHomeTests(MobileTestCase):
     def test_desktop_home_for_mobile(self):
-        r = self.client.get(reverse('home'), follow=True)
-        eq_(r.status_code, 200)
-        self.assertTemplateUsed(r, 'landings/mobile/home.html')
+        r = self._check_template('home', 'landings/mobile/home.html')
         doc = pq(r.content)
         eq_('desktop', doc('#search input[name="q_tags"]')[0].attrib['value'])
-        eq_('desktop', doc('#search input[name="product"]')[0].attrib['value'])
+        eq_('desktop',
+            doc('#search input[name="product"]')[0].attrib['value'])
 
     def test_mobile_home_for_mobile(self):
-        r = self.client.get(reverse('home.mobile'), follow=True)
-        eq_(r.status_code, 200)
-        self.assertTemplateUsed(r, 'landings/mobile/mobile.html')
+        r = self._check_template('home.mobile', 'landings/mobile/mobile.html')
         doc = pq(r.content)
         eq_('mobile', doc('#search input[name="q_tags"]')[0].attrib['value'])
         eq_('mobile', doc('#search input[name="product"]')[0].attrib['value'])
 
     def test_sync_home_for_mobile(self):
-        r = self.client.get(reverse('home.sync'), follow=True)
-        eq_(r.status_code, 200)
-        self.assertTemplateUsed(r, 'landings/mobile/sync.html')
+        r = self._check_template('home.sync', 'landings/mobile/sync.html')
         doc = pq(r.content)
         eq_('sync', doc('#search input[name="q_tags"]')[0].attrib['value'])
         eq_('sync', doc('#search input[name="product"]')[0].attrib['value'])
 
     def test_fxhome_home_for_mobile(self):
-        r = self.client.get(reverse('home.fxhome'), follow=True)
-        eq_(r.status_code, 200)
-        self.assertTemplateUsed(r, 'landings/mobile/fxhome.html')
+        r = self._check_template('home.fxhome', 'landings/mobile/fxhome.html')
         doc = pq(r.content)
         eq_('FxHome', doc('#search input[name="q_tags"]')[0].attrib['value'])
         eq_('FxHome', doc('#search input[name="product"]')[0].attrib['value'])
 
     def test_marketplace_home_for_mobile(self):
-        r = self.client.get(reverse('home.marketplace'), follow=True)
-        eq_(r.status_code, 200)
-        self.assertTemplateUsed(r, 'landings/mobile/marketplace.html')
+        r = self._check_template(
+            'home.marketplace', 'landings/mobile/marketplace.html')
         doc = pq(r.content)
         eq_('marketplace',
             doc('#search input[name="product"]')[0].attrib['value'])
         eq_('1', doc('#search input[name="w"]')[0].attrib['value'])
 
     def test_firefox_home_for_mobile(self):
-        r = self.client.get(reverse('home.firefox'), follow=True)
-        eq_(r.status_code, 200)
-        self.assertTemplateUsed(r, 'landings/mobile/firefox.html')
+        self._check_template('home.firefox', 'landings/mobile/firefox.html')
 
     def test_products_home_for_mobile(self):
-        r = self.client.get(reverse('home.products'), follow=True)
-        eq_(r.status_code, 200)
-        self.assertTemplateUsed(r, 'landings/mobile/products.html')
+        self._check_template('home.products', 'landings/mobile/products.html')
 
     def test_kb_home_for_mobile(self):
-        r = self.client.get(reverse('home.kb'), follow=True)
-        eq_(r.status_code, 200)
-        self.assertTemplateUsed(r, 'landings/mobile/kb.html')
+        self._check_template('home.kb', 'landings/mobile/kb.html')
 
     def test_ask_home_for_mobile(self):
-        r = self.client.get(reverse('home.ask'), follow=True)
-        eq_(r.status_code, 200)
-        self.assertTemplateUsed(r, 'landings/mobile/ask.html')
+        self._check_template('home.ask', 'landings/mobile/ask.html')
 
     def test_participate_home_for_mobile(self):
-        r = self.client.get(reverse('home.participate'), follow=True)
-        eq_(r.status_code, 200)
-        self.assertTemplateUsed(r, 'landings/mobile/participate.html')
+        self._check_template(
+            'home.participate', 'landings/mobile/participate.html')
 
     def test_feedback_home_for_mobile(self):
-        r = self.client.get(reverse('home.feedback'), follow=True)
+        self._check_template('home.feedback', 'landings/mobile/feedback.html')
+
+    def _check_template(self, url_name, template):
+        r = self.client.get(reverse(url_name), follow=True)
         eq_(r.status_code, 200)
-        self.assertTemplateUsed(r, 'landings/mobile/feedback.html')
+        self.assertTemplateUsed(r, template)
+        return r
 
 
 class RootRedirectTests(TestCase):
