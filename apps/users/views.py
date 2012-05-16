@@ -6,9 +6,12 @@ from django.contrib import auth, messages
 from django.contrib.auth.forms import PasswordResetForm
 from django.contrib.auth.models import User
 from django.contrib.auth.tokens import default_token_generator
+from django.contrib.sites.models import Site
+from django.core import mail
 from django.http import HttpResponseRedirect, Http404
 from django.views.decorators.http import require_http_methods, require_GET
 from django.shortcuts import get_object_or_404
+from django.template.loader import render_to_string
 from django.utils.http import base36_to_int
 
 import jingo
@@ -120,14 +123,39 @@ def resend_confirmation(request):
             email = form.cleaned_data['email']
             try:
                 reg_prof = RegistrationProfile.objects.get(
-                    user__email=email, user__is_active=False)
-                form = try_send_email_with_form(
-                    RegistrationProfile.objects.send_confirmation_email,
-                    form, 'email',
-                    reg_prof)
+                    user__email=email)
+                if not reg_prof.user.is_active:
+                    form = try_send_email_with_form(
+                        RegistrationProfile.objects.send_confirmation_email,
+                        form, 'email',
+                        reg_prof)
+                else:
+                    form = try_send_email_with_form(
+                        RegistrationProfile.objects.send_confirmation_email,
+                        form, 'email',
+                        reg_prof,
+                        email_template='users/email/already_activated.ltxt',
+                        email_subject=_('Account already activated'))
             except RegistrationProfile.DoesNotExist:
-                # Don't leak existence of email addresses.
-                pass
+                # Send already active email if user exists
+                try:
+                    user = User.objects.get(email=email, is_active=True)
+
+                    current_site = Site.objects.get_current()
+                    email_kwargs = {'domain': current_site.domain,
+                        'login_url': reverse('users.login')}
+                    message = render_to_string(
+                                'users/email/already_activated.ltxt',
+                                email_kwargs)
+                    form = try_send_email_with_form(
+                        mail.send_mail,
+                        form, 'email',
+                        _('Account already activated'),
+                        message, settings.DEFAULT_FROM_EMAIL,
+                        [user.email])
+                except User.DoesNotExist:
+                    # Don't leak existence of email addresses.
+                    pass
             # Form may now be invalid if email failed to send.
             if form.is_valid():
                 return jingo.render(request,
