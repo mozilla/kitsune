@@ -2,7 +2,7 @@
 {% from "karma/includes/karma_macros.html" import titles %}
 <div class="user-section">
   <div class="avatar{% if user == answer.creator %} self{% endif %}{% if answer.id and question.creator == answer.creator %} owner{% endif %}">
-    <a href="{{ profile_url(answer.creator, request.user == answer.creator) }}">
+    <a href="{{ profile_url(answer.creator) }}">
       <img src="{{ profile_avatar(answer.creator) }}" height="48" width="48" alt="{{ answer.creator }}"/>
       {% if user == answer.creator %}
         <span>{{ _('You') }}</span>
@@ -12,7 +12,7 @@
     </a>
   </div>
   <div class="asked-by">
-    <a href="{{ profile_url(answer.creator, request.user == answer.creator) }}">{{ answer.creator }}</a>
+    <a href="{{ profile_url(answer.creator) }}">{{ answer.creator }}</a>
     {% if waffle.switch('karma') and waffle.flag('karma') %}
       {{ titles(answer.creator) }}
     {% endif %}
