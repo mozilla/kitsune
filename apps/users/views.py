@@ -120,11 +120,19 @@ def resend_confirmation(request):
             email = form.cleaned_data['email']
             try:
                 reg_prof = RegistrationProfile.objects.get(
-                    user__email=email, user__is_active=False)
-                form = try_send_email_with_form(
-                    RegistrationProfile.objects.send_confirmation_email,
-                    form, 'email',
-                    reg_prof)
+                    user__email=email)
+                if not reg_prof.user.is_active:
+                    form = try_send_email_with_form(
+                        RegistrationProfile.objects.send_confirmation_email,
+                        form, 'email',
+                        reg_prof)
+                else:
+                    form = try_send_email_with_form(
+                        RegistrationProfile.objects.send_confirmation_email,
+                        form, 'email',
+                        reg_prof,
+                        email_template='users/email/already_activated.ltxt',
+                        email_subject=_('Account already activated'))
             except RegistrationProfile.DoesNotExist:
                 # Don't leak existence of email addresses.
                 pass

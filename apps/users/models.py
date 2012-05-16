@@ -129,7 +129,8 @@ class ConfirmationManager(models.Manager):
         current_site = Site.objects.get_current()
         email_kwargs = {'activation_key': confirmation_profile.activation_key,
                         'domain': current_site.domain,
-                        'activate_url': url}
+                        'activate_url': url,
+                        'login_url': reverse('users.login')}
         email_kwargs.update(kwargs)
         message = render_to_string(email_template, email_kwargs)
         mail.send_mail(subject, message, settings.DEFAULT_FROM_EMAIL,
