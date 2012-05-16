@@ -34,11 +34,11 @@ class TestPostUpdate(ElasticTestCase):
 
         # Verify the parent has the right tags.
         doc_dict = Document.extract_document(doc1.id)
-        eq_(doc_dict['tag'], [u'desktop', u'windows'])
+        eq_(doc_dict['document_tag'], [u'desktop', u'windows'])
 
         # Verify the translation has the parent's tags.
         doc_dict = Document.extract_document(doc2.id)
-        eq_(doc_dict['tag'], [u'desktop', u'windows'])
+        eq_(doc_dict['document_tag'], [u'desktop', u'windows'])
 
     def test_wiki_tags(self):
         """Make sure that adding tags to a Document causes it to
@@ -46,14 +46,14 @@ class TestPostUpdate(ElasticTestCase):
 
         """
         tag = u'hiphop'
-        eq_(Document.search().filter(tag=tag).count(), 0)
+        eq_(Document.search().filter(document_tag=tag).count(), 0)
         doc = document(save=True)
         revision(document=doc, is_approved=True, save=True)
         self.refresh()
-        eq_(Document.search().filter(tag=tag).count(), 0)
+        eq_(Document.search().filter(document_tag=tag).count(), 0)
         doc.tags.add(tag)
         self.refresh()
-        eq_(Document.search().filter(tag=tag).count(), 1)
+        eq_(Document.search().filter(document_tag=tag).count(), 1)
         doc.tags.remove(tag)
         self.refresh()
 
@@ -61,7 +61,7 @@ class TestPostUpdate(ElasticTestCase):
         # accidentally delete it through screwed up signal handling:
         eq_(Document.search().filter().count(), 1)
 
-        eq_(Document.search().filter(tag=tag).count(), 0)
+        eq_(Document.search().filter(document_tag=tag).count(), 0)
 
     def test_wiki_no_revisions(self):
         """Don't index documents without approved revisions"""

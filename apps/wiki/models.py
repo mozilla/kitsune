@@ -499,24 +499,24 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
     def get_mapping(cls):
         return {
             'id': {'type': 'long'},
-            'model': {'type': 'string', 'index': 'not_analyzed',
-                     'store': 'yes'},
-            'title': {'type': 'string', 'analyzer': 'snowball'},
-            'locale': {'type': 'string', 'index': 'not_analyzed'},
-            'current': {'type': 'integer'},
-            'parent_id': {'type': 'integer'},
-            'content': {'type': 'string', 'analyzer': 'snowball',
-                        'store': 'yes',
-                        'term_vector': 'with_positions_offsets'},
-            'category': {'type': 'integer'},
-            'slug': {'type': 'string', 'index': 'not_analyzed'},
-            'is_archived': {'type': 'boolean'},
-            'summary': {'type': 'string', 'analyzer': 'snowball'},
-            'keywords': {'type': 'string', 'analyzer': 'snowball'},
-            'updated': {'type': 'integer'},
-            'tag': {'type': 'string', 'index': 'not_analyzed'},
+            'model': {'type': 'string', 'index': 'not_analyzed'},
             'url': {'type': 'string', 'index': 'not_analyzed'},
-            'indexed_on': {'type': 'integer'}}
+            'indexed_on': {'type': 'integer'},
+            'updated': {'type': 'integer'},
+
+            'document_title': {'type': 'string', 'analyzer': 'snowball'},
+            'document_locale': {'type': 'string', 'index': 'not_analyzed'},
+            'document_current_id': {'type': 'integer'},
+            'document_parent_id': {'type': 'integer'},
+            'document_content': {'type': 'string', 'analyzer': 'snowball',
+                                 'store': 'yes',
+                                 'term_vector': 'with_positions_offsets'},
+            'document_category': {'type': 'integer'},
+            'document_slug': {'type': 'string', 'index': 'not_analyzed'},
+            'document_is_archived': {'type': 'boolean'},
+            'document_summary': {'type': 'string', 'analyzer': 'snowball'},
+            'document_keywords': {'type': 'string', 'analyzer': 'snowball'},
+            'document_tag': {'type': 'string', 'index': 'not_analyzed'}}
 
     @classmethod
     def extract_document(cls, obj_id):
@@ -526,33 +526,35 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
         d = {}
         d['id'] = obj.id
         d['model'] = cls.get_model_name()
-        d['title'] = obj.title
-        d['locale'] = obj.locale
-        d['parent_id'] = obj.parent.id if obj.parent else None
-        d['content'] = obj.html
-        d['category'] = obj.category
-        d['slug'] = obj.slug
-        d['is_archived'] = obj.is_archived
         d['url'] = obj.get_absolute_url()
+        d['indexed_on'] = int(time.time())
+
+        d['document_title'] = obj.title
+        d['document_locale'] = obj.locale
+        d['document_parent_id'] = obj.parent.id if obj.parent else None
+        d['document_content'] = obj.html
+        d['document_category'] = obj.category
+        d['document_slug'] = obj.slug
+        d['document_is_archived'] = obj.is_archived
 
         if obj.parent is None:
-            d['tag'] = [tag['name'] for tag in obj.tags.values()]
+            tags = [tag['name'] for tag in obj.tags.values()]
         else:
             # Translations inherit tags from their parents.
-            d['tag'] = [tag['name'] for tag in obj.parent.tags.values()]
+            tags = [tag['name'] for tag in obj.parent.tags.values()]
+        d['document_tag'] = tags
         if obj.current_revision:
-            d['summary'] = obj.current_revision.summary
-            d['keywords'] = obj.current_revision.keywords
+            d['document_summary'] = obj.current_revision.summary
+            d['document_keywords'] = obj.current_revision.keywords
             d['updated'] = int(time.mktime(
                     obj.current_revision.created.timetuple()))
-            d['current'] = obj.current_revision.id
+            d['document_current_id'] = obj.current_revision.id
         else:
-            d['summary'] = None
-            d['keywords'] = None
+            d['document_summary'] = None
+            d['document_keywords'] = None
             d['updated'] = None
-            d['current'] = None
+            d['document_current_id'] = None
 
-        d['indexed_on'] = int(time.time())
         return d
 
     @classmethod
@@ -568,8 +570,8 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
     def index(cls, document, **kwargs):
         # If there are no revisions or the current revision is a redirect,
         # we want to remove it from the index.
-        if (document['current'] is None or
-            document['content'].startswith(REDIRECT_HTML)):
+        if (document['document_current_id'] is None or
+            document['document_content'].startswith(REDIRECT_HTML)):
             cls.unindex(document['id'], es=kwargs.get('es', None))
             return
         super(cls, cls).index(document, **kwargs)
@@ -577,9 +579,10 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
     @classmethod
     def search(cls):
         s = super(Document, cls).search()
-        return (s.query_fields('title__text', 'content__text',
-                               'summary__text', 'keywords__text')
-                 .weight(title=6, content=1, keywords=4, summary=2))
+        return (s.query_fields('document_title__text',
+                               'document_content__text',
+                               'document_summary__text',
+                               'document_keywords__text'))
 
 
 register_for_indexing(Document, 'wiki')

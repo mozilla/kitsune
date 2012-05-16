@@ -5,15 +5,6 @@
 {% set active_site_nav = 'desktop' %}
 {% set h1_text = _('Need Help With <mark>Firefox?</mark>') %}
 
-{% block intro_text %}
-  {% trans %}
-    You've come to the right place! Start by searching our site below,
-    or browse our list of popular support articles. If you can't find the
-    answer you need, our community of volunteers are ready to help
-    you find a solution.
-  {% endtrans %}
-{% endblock %}
-
 {% block footer_script %}
   {# Ethnio tracking - see bugs 683643 and 673544 #}
   {% if waffle.flag('ethnio-home') %}

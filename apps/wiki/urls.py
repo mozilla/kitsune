@@ -1,7 +1,5 @@
 from django.conf.urls.defaults import patterns, url, include
 
-from sumo.views import redirect_to
-
 
 # These patterns inherit (?P<document_slug>[^\/]).
 document_patterns = patterns('wiki.views',
@@ -51,8 +49,6 @@ document_patterns = patterns('wiki.views',
 )
 
 urlpatterns = patterns('wiki.views',
-    url(r'^$', redirect_to, {'url': 'home'}, name='wiki.home'),
-
     # (Un)subscribe to locale 'ready for review' notifications.
     url(r'^/watch-ready-for-review$', 'watch_locale',
         name='wiki.locale_watch'),
