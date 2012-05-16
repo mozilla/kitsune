@@ -805,11 +805,9 @@ class NewRevisionTests(TestCaseBase):
 
 class HistoryTests(TestCaseBase):
     """Test the history listing of a document."""
-    fixtures = ['users.json']
 
     def setUp(self):
         super(HistoryTests, self).setUp()
-        self.d = _create_document()
         self.client.login(username='admin', password='testpass')
 
     def test_history_noindex(self):
