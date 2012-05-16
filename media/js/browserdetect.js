@@ -20,8 +20,8 @@ var BrowserDetect = {
     searchString: function (data, inputString) {
         for (var i = 0, l = data.length; i < l; i++) {
             // If an inputString is specified (for testing), use that.
-            var dataString = inputString || data[i].string,
-                matchedAll;
+            var matchedAll,
+                dataString = inputString || data[i].string;
 
             this.versionSearchString = data[i].versionSearch || data[i].identity;
 
@@ -37,7 +37,9 @@ var BrowserDetect = {
     },
     searchVersion: function (dataString) {
         var index = dataString.indexOf(this.versionSearchString);
-        if (index == -1) return;
+        if (index === -1) {
+            return;
+        }
         return parseFloat(dataString.substring(index+this.versionSearchString.length+1));  // Turns "1.1.1" into 1.1 rather than 1.11. :-(
     },
     dataBrowser: [

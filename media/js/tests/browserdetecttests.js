@@ -29,7 +29,7 @@ test('Firefox 4', function() {
     var ua = 'Mozilla/5.0 (X11; Linux i686; rv:2.0) Gecko/20100101 Firefox/4.0';
 
     equals(BrowserDetect.searchString(BrowserDetect.dataBrowser, ua), 'fx');
-    equals(4, BrowserDetect.searchVersion(ua));
+    equals(BrowserDetect.searchVersion(ua), 4);
 });
 
 test('Firefox 12', function() {
