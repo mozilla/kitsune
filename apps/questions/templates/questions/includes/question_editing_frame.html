@@ -70,7 +70,7 @@ we can compute the edit-title URL.
                       <span title="{{ _('Click to change your question') }}">
                         {% if form.initial %}{{ form.initial.title }}{% else %}{{ form.title.data }}{% endif %}
                       </span>
-                      <a href="{{ ''|urlparams(product=current_product.key, category=current_category.key, showform=1, search=request.GET.search, edit_title=1) }}#question-form">edit</a>
+                      <a href="{{ url('questions.aaq_step5', product_key=current_product.key, category_key=current_category.key)|urlparams(search=request.GET.search, edit_title=1) }}#question-form">edit</a>
                       {{ field.as_hidden()|safe }}
                     </div>
                   {% elif field.name == 'content' %}

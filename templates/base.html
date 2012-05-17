@@ -153,7 +153,7 @@
           {% block quick_links %}
             <li class="aaq">
               {% if request.locale == settings.WIKI_DEFAULT_LANGUAGE %}
-                {% set ask_url = url('questions.new_question') %}
+                {% set ask_url = url('questions.aaq_step1') %}
               {% else %}
                 {% set ask_url = url('wiki.document', 'ask') %}
               {% endif %}

@@ -39,7 +39,7 @@
   </div>
 
   {% if request.locale == settings.WIKI_DEFAULT_LANGUAGE %}
-    {% set aaq_url = url('questions.new_question') %}
+    {% set aaq_url = url('questions.aaq_step1') %}
   {% else %}
     {% set aaq_url = url('wiki.document', 'ask') %}
   {% endif %}
