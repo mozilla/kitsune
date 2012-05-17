@@ -92,7 +92,7 @@ def monitor(request):
 
         # LOCATION can be a string or a list of strings
         if isinstance(location, basestring):
-            location = [location]
+            location = location.split(';')
 
         if 'memcache' in backend:
             for loc in location:
