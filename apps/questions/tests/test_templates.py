@@ -13,7 +13,7 @@ from pyquery import PyQuery as pq
 from tidings.models import Watch
 
 from questions.events import QuestionReplyEvent, QuestionSolvedEvent
-from questions.models import Question, Answer, QuestionVote, VoteMetadata
+from questions.models import Question, Answer, VoteMetadata
 from questions.tests import (TestCaseBase, TaggingTestCaseBase, tags_eq,
                              question, answer)
 from questions.views import UNAPPROVED_TAG, NO_TAG
@@ -1200,9 +1200,9 @@ class AAQTemplateTestCase(TestCaseBase):
 
     def _post_new_question(self):
         """Post a new question and return the response."""
-        url = urlparams(reverse('questions.new_question'),
-                        product='desktop', category='d1',
-                        search='A test question', showform=1)
+        url = urlparams(
+            reverse('questions.aaq_step5', args=['desktop', 'd1']),
+            search='A test question')
         return self.client.post(url, self.data, follow=True)
 
     def test_full_workflow(self):
@@ -1242,9 +1242,9 @@ class AAQTemplateTestCase(TestCaseBase):
         """Providing an invalid type returns 400."""
         self.client.logout()
 
-        url = urlparams(reverse('questions.new_question'),
-                        product='desktop', category='d1',
-                        search='A test question', showform=1)
+        url = urlparams(
+            reverse('questions.aaq_step5', args=['desktop', 'd1']),
+            search='A test question')
         # Register before asking question
         data = {'username': 'testaaq',
                 'password': 'testpass', 'password2': 'testpass',
@@ -1260,9 +1260,9 @@ class AAQTemplateTestCase(TestCaseBase):
         get_current.return_value.domain = 'testserver'
         self.client.logout()
         title = 'A test question'
-        url = urlparams(reverse('questions.new_question'),
-                        product='desktop', category='d1',
-                        search=title, showform=1)
+        url = urlparams(
+            reverse('questions.aaq_step5', args=['desktop', 'd1']),
+            search=title)
         # Register before asking question
         data = {'register': 'Register', 'username': 'testaaq',
                 'password': 'testpass1', 'password2': 'testpass1',
@@ -1289,12 +1289,11 @@ class AAQTemplateTestCase(TestCaseBase):
         eq_(1, len(mail.outbox))
 
     def test_invalid_product_404(self):
-        url = urlparams(reverse('questions.new_question'), product='lipsum')
+        url = reverse('questions.aaq_step2', args=['lipsum'])
         response = self.client.get(url)
         eq_(404, response.status_code)
 
     def test_invalid_category_404(self):
-        url = urlparams(reverse('questions.new_question'),
-                        product='desktop', category='lipsum')
+        url = reverse('questions.aaq_step3', args=['desktop', 'lipsum'])
         response = self.client.get(url)
         eq_(404, response.status_code)

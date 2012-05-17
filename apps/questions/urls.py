@@ -8,9 +8,19 @@ from flagit import views as flagit_views
 
 urlpatterns = patterns('questions.views',
     url(r'^$', 'questions', name='questions.questions'),
-    url(r'^/new$', 'new_question', name='questions.new_question'),
     url(r'^/answer-preview-async$', 'answer_preview_async',
         name='questions.answer_preview_async'),
+
+    # AAQ
+    url(r'^/new$', 'aaq', name='questions.aaq_step1'),
+    url(r'^/new/(?P<product_key>[\w\-]+)$',
+        'aaq_step2', name='questions.aaq_step2'),
+    url(r'^/new/(?P<product_key>[\w\-]+)/(?P<category_key>[\w\-]+)$',
+        'aaq_step3', name='questions.aaq_step3'),
+    url(r'^/new/(?P<product_key>[\w\-]+)/(?P<category_key>[\w\-]+)/search$',
+        'aaq_step4', name='questions.aaq_step4'),
+    url(r'^/new/(?P<product_key>[\w\-]+)/(?P<category_key>[\w\-]+)/form$',
+        'aaq_step5', name='questions.aaq_step5'),
 
     # AAQ flow for Marketplace
     url(r'^/marketplace$', 'marketplace', name='questions.marketplace_aaq'),
