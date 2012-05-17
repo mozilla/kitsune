@@ -1,7 +1,7 @@
 // WebTrends SmartSource Data Collector Tag
 // Version: 9.4.0     
-// Tag Builder Version: 3.3
-// Created: 12/29/2011 6:05:44 PM
+// Tag Builder Version: 4.0
+// Created: 5/16/2012 2:02:33 AM
 
 function WebTrends(){
   var that=this;
@@ -10,12 +10,16 @@ function WebTrends(){
   this.domain="statse.webtrendslive.com";
   this.timezone=-8;
   this.fpcdom=".support.mozilla.org";
+  this.onsitedoms="support.mozilla.org,support.allizom.org,support-dev.allizom.org";
+  this.navigationtag="div,table";
+  this.trackevents=true;
+  this.trimoffsiteparams=true;
   this.enabled=true;
   this.i18n=false;
   this.fpc="WT_FPC";
   this.paidsearchparams="gclid";
   this.splitvalue="";
-  this.preserve=false;
+  this.preserve=true;
   // end: user modifiable
   this.DCS={};
   this.WT={};
@@ -162,6 +166,67 @@ WebTrends.prototype.dcsFPC=function(){
     WT.vt_f=WT.vt_f_a=rc;
     }
 }
+WebTrends.prototype.dcsIsOnsite=function(host){
+  if (host.length>0){
+      host=host.toLowerCase();
+      if (host==window.location.hostname.toLowerCase()){
+        return true;
+      }
+      if (typeof(this.onsitedoms.test)=="function"){
+        return this.onsitedoms.test(host);
+      }
+      else if (this.onsitedoms.length>0){
+        var doms=this.dcsSplit(this.onsitedoms);
+        var len=doms.length;
+        for (var i=0;i<len;i++){
+          if (host==doms[i]){
+              return true;
+          }
+        }
+      }
+  }
+  return false;
+}
+WebTrends.prototype.dcsEvt=function(evt,tag){
+  var e=evt.target||evt.srcElement;
+  while (e&&e.tagName&&(e.tagName.toLowerCase()!=tag.toLowerCase())){
+    e=e.parentElement||e.parentNode;
+  }
+  return e;
+}
+WebTrends.prototype.dcsNavigation=function(evt){
+  var id="";
+  var cname="";
+  var elems=this.dcsSplit(this.navigationtag);
+  var elen=elems.length;  
+  var i,e,elem;
+  for (i=0;i<elen;i++){
+    elem=elems[i];
+    if (elem.length){
+      e=this.dcsEvt(evt,elem);
+      id=(e.getAttribute&&e.getAttribute("id"))?e.getAttribute("id"):"";
+      cname=e.className||"";
+      if (id.length||cname.length){
+        break;
+      }
+    }
+  }
+  return id.length?id:cname;
+}
+WebTrends.prototype.dcsBind=function(event,func){
+  if ((typeof(func)=="function")&&document.body){
+    if (document.body.addEventListener){
+      document.body.addEventListener(event, func.wtbind(this), true);
+    }
+    else if(document.body.attachEvent){
+      document.body.attachEvent("on"+event, func.wtbind(this));
+    }
+  }
+}
+WebTrends.prototype.dcsET=function(){
+  var e=(navigator.appVersion.indexOf("MSIE")!=-1)?"click":"mousedown";
+  this.dcsBind(e,this.dcsOffsite);
+}
 WebTrends.prototype.dcsMultiTrack=function(){
   var args=dcsMultiTrack.arguments?dcsMultiTrack.arguments:arguments;
   if (args.length%2==0){
@@ -229,7 +294,40 @@ WebTrends.prototype.dcsRestoreProps=function(){
     this.args=[];
   }
 }
+WebTrends.prototype.dcsSplit=function(list){
+  var items=list.toLowerCase().split(",");
+  var len=items.length;
+  for (var i=0;i<len;i++){
+    items[i]=items[i].replace(/^\s*/,"").replace(/\s*$/,"");
+  }
+  return items;
+}
+// Code section for Track clicks to links leading offsite.
+WebTrends.prototype.dcsOffsite=function(evt){
+  evt=evt||(window.event||"");
+  if (evt&&((typeof(evt.which)!="number")||(evt.which==1))){
+    var e=this.dcsEvt(evt,"A");
+    if (e.href){
+        var hn=e.hostname?(e.hostname.split(":")[0]):"";
+        var pr=e.protocol||"";
+        if ((hn.length>0)&&(pr.indexOf("http")==0)&&!this.dcsIsOnsite(hn)){
+          var qry=e.search?e.search.substring(e.search.indexOf("?")+1,e.search.length):"";
+          var pth=e.pathname?((e.pathname.indexOf("/")!=0)?"/"+e.pathname:e.pathname):"/";
+          this.dcsMultiTrack("DCS.dcssip", hn, "DCS.dcsuri", pth, "DCS.dcsqry", this.trimoffsiteparams ? "" : qry, "DCS.dcsref", window.location, "WT.ti", "Offsite:" + hn + pth + (qry.length ? ("?" + qry) : ""), "WT.dl", "24", "WT.nv", this.dcsNavigation(evt));
+        }
+    }
+  }
+}
+
 WebTrends.prototype.dcsAdv=function(){
+  if (this.trackevents&&(typeof(this.dcsET)=="function")){
+    if (window.addEventListener){
+      window.addEventListener("load",this.dcsET.wtbind(this),false);
+    }
+    else if (window.attachEvent){
+      window.attachEvent("onload",this.dcsET.wtbind(this));
+    }
+  }
   this.dcsFPC();
 }
 WebTrends.prototype.dcsVar=function(){

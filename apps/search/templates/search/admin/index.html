@@ -8,12 +8,14 @@
   <section>
     <h1>Find a specific item</h1>
     <form method="GET">
-      <select name="bucket">
+      <label for="bucket-field">Model:</label>
+      <select name="bucket" id="bucket-field">
         {% for bucket in buckets %}
           <option value="{{ bucket }}"{% if requested_bucket == bucket %} selected{% endif %}>{{ bucket }}</option>
         {% endfor %}
       </select>
-      <input type="text" name="id" value="{{ requested_id }}">
+      <label for="id-field">ID:</label>
+      <input type="text" name="id" id="id-field" value="{{ requested_id }}">
       <input type="Submit">
     </form>
   </section>

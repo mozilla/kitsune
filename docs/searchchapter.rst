@@ -304,48 +304,19 @@ kb:
 
     query fields: title, content, summary, keywords
 
-    weights:
-
-        ========  =====
-        name      value
-        ========  =====
-        title     6
-        content   1
-        keywords  4
-        summary   2
-        ========  =====
-
 questions:
 
     query fields: title, question_content, answer_content
-
-    weights:
-
-        ================  =====
-        name              value
-        ================  =====
-        title             4
-        question_content  3
-        answer_content    3
-        ================  =====
 
 forums:
 
     query fields: title, content
 
-    weights:
-
-        ========  =====
-        name      value
-        ========  =====
-        title     2
-        content   1
-        ========  =====
 
 .. Note::
 
-   The query fields and weights are shared between our Sphinx code and
-   our Elastic Search code.
+   We can do boosts/weights, but currently there is no
+   boosting/weighting done.
 
 
 Elastic Search is built on top of Lucene so the `Lucene documentation

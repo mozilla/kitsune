@@ -13,38 +13,54 @@
 var BrowserDetect = {
     init: function () {
         this.browser = this.searchString(this.dataBrowser);
-        this.version = this.searchVersion(navigator.userAgent)
-            || this.searchVersion(navigator.appVersion);
+        this.version = this.searchVersion(navigator.userAgent) ||
+                       this.searchVersion(navigator.appVersion);
         this.OS = this.searchString(this.dataOS);
     },
-    searchString: function (data) {
-        for (var i=0;i<data.length;i++)	{
-            var dataString = data[i].string;
-            var dataProp = data[i].prop;
+    searchString: function (data, inputString) {
+        for (var i = 0, l = data.length; i < l; i++) {
+            // If an inputString is specified (for testing), use that.
+            var matchedAll,
+                dataString = inputString || data[i].string;
+
             this.versionSearchString = data[i].versionSearch || data[i].identity;
-            if (dataString) {
-                if (dataString.indexOf(data[i].subString) != -1)
-                    return data[i].identity;
-            }
-            else if (dataProp)
+
+            // Check if all subStrings are in the dataString.
+            matchedAll = _.reduce(data[i].subStrings, function(memo, sub) {
+                return memo && (dataString.indexOf(sub) !== -1);
+            }, true);
+
+            if (matchedAll) {
                 return data[i].identity;
+            }
         }
     },
     searchVersion: function (dataString) {
         var index = dataString.indexOf(this.versionSearchString);
-        if (index == -1) return;
+        if (index === -1) {
+            return;
+        }
         return parseFloat(dataString.substring(index+this.versionSearchString.length+1));  // Turns "1.1.1" into 1.1 rather than 1.11. :-(
     },
     dataBrowser: [
         {
             string: navigator.userAgent,
-            subString: "Fennec",
+            subStrings: ["Fennec"],
             versionSearch: "Fennec",
+            identity: "m"
+        },
+        { // Fennec's UA changed in v14 to:
+          // Mozilla/5.0 (Android; Mobile; rv:14.0) Gecko/14.0 Firefox/14.0
+          // Now we need to look for the presence of both "Mobile"
+          // and "Firefox".
+            string: navigator.userAgent,
+            subStrings: ["Mobile", "Firefox"],
+            versionSearch: "Firefox",
             identity: "m"
         },
         {
             string: navigator.userAgent,
-            subString: "Firefox",
+            subStrings: ["Firefox"],
             versionSearch: "Firefox",
             identity: "fx"
         }
@@ -52,27 +68,27 @@ var BrowserDetect = {
     dataOS : [
         {
             string: navigator.platform,
-            subString: "Win",
+            subStrings: ["Win"],
             identity: "win"
         },
         {
             string: navigator.platform,
-            subString: "Mac",
+            subStrings: ["Mac"],
             identity: "mac"
         },
         {
             string: navigator.userAgent,
-            subString: "Android",
+            subStrings: ["Android"],
             identity: "android"
         },
         {
             string: navigator.userAgent,
-            subString: "Maemo",
+            subStrings: ["Maemo"],
             identity: "maemo"
         },
         {
             string: navigator.platform,
-            subString: "Linux",
+            subStrings: ["Linux"],
             identity: "linux"
         }
     ]
