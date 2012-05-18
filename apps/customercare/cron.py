@@ -9,12 +9,12 @@ import urllib
 import urllib2
 
 from django.conf import settings
-from django.core.cache import cache
 from django.db.utils import IntegrityError
 
 import cronjobs
 from multidb.pinning import pin_this_thread
 import tweepy
+from sumo.redis_utils import redis_client, RedisError
 from statsd import statsd
 
 from customercare.models import Tweet
@@ -206,4 +206,10 @@ def get_customercare_stats():
                     avatars[username] = user.profile_image_url
             json_data['avatars'] = avatars
 
-        cache.set(cache_key, json_data, settings.CC_STATS_CACHE_TIMEOUT)
+        # Store the stats in redis.
+        try:
+            redis = redis_client(name='default')
+            redis.set(cache_key, json.dumps(json_data))
+        except RedisError as e:
+            statsd.incr('redis.errror')
+            log.error('Redis error: %s' % e)
