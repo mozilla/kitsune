@@ -111,6 +111,7 @@ def questions(request):
     if tagged:
         tag_slugs = tagged.split(',')
         tags = Tag.objects.filter(slug__in=tag_slugs)
+        tags.sort()
         if tags:
             for t in tags:
                 question_qs = question_qs.filter(tags__name__in=[t.name])
