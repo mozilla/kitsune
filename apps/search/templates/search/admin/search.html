@@ -22,131 +22,112 @@
   </style>
 {% endblock %}
 
-{% block footer %}
-  {{ block.super }}
-  <script type="text/javascript" src="{{ MEDIA_URL }}js/libs/jquery.min.js"></script>
-  <script type="text/javascript">
-    (function($) {
-        // Quick and dirty AJAX progress bar. No error handling.
-        function initProgressBar() {
-            // Iff the progress bar is there, the reindex task is either
-            // running or about to start.
-            $("#reindex_progress").each(function() {
-                var $bar = $(this);
-
-                function setBar(ratio) {
-                    $bar.attr("value", ratio);
-                    $bar.text(ratio);
-                }
-
-                // We wait until the task starts and outputs a progress value.
-                var started = false;
-
-                // Spin around and actually update the progress bar.
-                function spin(ratio) {
-                    if (ratio === "" && started) {  // finished
-                        document.location = '';  // Get rid of the bar and such.
-                        return;
-                    }
-                    if (ratio !== "") {  // got data
-                        started = true;
-                        setBar(ratio);
-                    }
-                    $.get("{{ progress_url }}",  // Try again.
-                          function ajaxSuccess(ratio) {
-                              setTimeout(function() { spin(ratio); },
-                                         {{ interval }});
-                          });
-                }
-
-                spin("");
-            });
-        }
-
-        $(document).ready(initProgressBar);
-
-    })(jQuery);
-  </script>
-{% endblock %}
-
 {% block content %}
-  {% if es_error_message or delete_error_message %}
+  {% if error_messages %}
     <section>
-      <h1>Status</h1>
-      {% if es_error_message %}
+      <h1>Errors</h1>
+      {% for msg in error_messages %}
         <p>
-          es_error_message: {{ es_error_message }}
+          {{ msg }}
         </p>
-      {% endif %}
-      {% if delete_error_message %}
-      <p>
-        delete_error_message: {{ delete_error_message }}
-      </p>
-      {% endif %}
+      {% endfor %}
     </section>
-  {% else %}
-    <section>
-      <h1>Settings</h1>
-      <p>
-        Settings at the time this page was loaded:
-      </p>
-      <table>
-        <tr><th>ES_LIVE_INDEXING</th><td>{{ settings.ES_LIVE_INDEXING }}</td></tr>
-        <tr><th>ES_INDEX_PREFIX</th><td>{{ settings.ES_INDEX_PREFIX }}</td></tr>
-        <tr><th>ES_INDEXES</th><td>{{ settings.ES_INDEXES }}</td></tr>
-        <tr><th>ES_WRITE_INDEXES</th><td>{{ settings.ES_WRITE_INDEXES }}</td></tr>
-      </table>
-    </section>
+  {% endif %}
 
+  {% if outstanding_chunks %}
     <section>
-      <h1>Index Status</h1>
+      <h1>{{ outstanding_chunks }} Outstanding indexing tasks</h1>
       <p>
-        All indexes available:
+        <a href="{{ request.path }}">Refresh page</a>
       </p>
-      <table>
-        <thead>
-          <th>index name</th>
-          <th>total documents in index</th>
-          <th></th>
-          <th></th>
-        </thead>
-        <tbody>
-          {% for index_name, index_count in indexes %}
-            <tr>
-              <td>{{ index_name }}</td><td>{{ index_count }}</td>
-              <td>
-                {% if index_name == read_index and index_name == write_index %}
-                  READ/WRITE
+    </section>
+  {% endif %}
+
+  <section>
+    <h1>Settings</h1>
+    <p>
+      Settings at the time this page was loaded:
+    </p>
+    <table>
+      <tr><th>ES_LIVE_INDEXING</th><td>{{ settings.ES_LIVE_INDEXING }}</td></tr>
+      <tr><th>ES_INDEX_PREFIX</th><td>{{ settings.ES_INDEX_PREFIX }}</td></tr>
+      <tr><th>ES_INDEXES</th><td>{{ settings.ES_INDEXES }}</td></tr>
+      <tr><th>ES_WRITE_INDEXES</th><td>{{ settings.ES_WRITE_INDEXES }}</td></tr>
+    </table>
+  </section>
+
+  <section>
+    <h1>Index Status</h1>
+    <p>
+      All indexes available:
+    </p>
+    <table>
+      <thead>
+        <th>index name</th>
+        <th>total documents in index</th>
+        <th></th>
+        <th></th>
+      </thead>
+      <tbody>
+        {% for index_name, index_count in indexes %}
+          <tr>
+            <td>{{ index_name }}</td><td>{{ index_count }}</td>
+            <td>
+              {% if index_name == read_index and index_name == write_index %}
+                READ/WRITE
+              {% else %}
+                {% if index_name == read_index %}
+                  READ
                 {% else %}
-                  {% if index_name == read_index %}
-                    READ
-                  {% else %}
-                    {% if index_name == write_index %}
-                      WRITE
-                    {% endif %}
+                  {% if index_name == write_index %}
+                    WRITE
                   {% endif %}
                 {% endif %}
-              </td>
-              {% if index_name != read_index %}
-                <td>
-                  <form method="POST">
-                    {% csrf_token %}
-                      <input type="hidden" name="delete_index" value="{{ index_name }}">
-                      <input type="submit" value="Delete">
-                  </form>
-                </td>
-              {% else %}
-                <td></td>
               {% endif %}
-            </tr>
+            </td>
+            {% if index_name != read_index %}
+              <td>
+                <form method="POST">
+                  {% csrf_token %}
+                    <input type="hidden" name="delete_index" value="{{ index_name }}">
+                    <input type="submit" value="Delete">
+                </form>
+              </td>
+            {% else %}
+              <td></td>
+            {% endif %}
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <h2>Read index ({{ read_index }})</h2>
+    {% if doctype_stats == None %}
+      <p>
+        Read index does not exist.
+      </p>
+    {% else %}
+      <table>
+        <thead>
+          <th>doctype</th>
+          <th>count</th>
+        </thead>
+        <tbody>
+          {% for stats_name, stats_count in doctype_stats.items %}
+            <tr><td>{{ stats_name }}</td><td>{{ stats_count }}</td></tr>
           {% endfor %}
         </tbody>
       </table>
-      <h2>Read index ({{ read_index }})</h2>
-      {% if doctype_stats == None %}
-        <p>
-          Read index does not exist.
-        </p>
+    {% endif %}
+    <h2>Write index ({{ write_index }})</h2>
+    {% if read_index == write_index %}
+      <p>
+        Write index is the same as the read index.
+      </p>
+    {% else %}
+      {% if doctype_write_stats == None %}
+      <p>
+        Write index does not exist.
+      </p>
       {% else %}
         <table>
           <thead>
@@ -154,38 +135,14 @@
             <th>count</th>
           </thead>
           <tbody>
-            {% for stats_name, stats_count in doctype_stats.items %}
+            {% for stats_name, stats_count in doctype_write_stats.items %}
               <tr><td>{{ stats_name }}</td><td>{{ stats_count }}</td></tr>
             {% endfor %}
           </tbody>
         </table>
       {% endif %}
-      <h2>Write index ({{ write_index }})</h2>
-      {% if read_index == write_index %}
-        <p>
-          Write index is the same as the read index.
-        </p>
-      {% else %}
-        {% if doctype_write_stats == None %}
-        <p>
-          Write index does not exist.
-        </p>
-        {% else %}
-          <table>
-            <thead>
-              <th>doctype</th>
-              <th>count</th>
-            </thead>
-            <tbody>
-              {% for stats_name, stats_count in doctype_write_stats.items %}
-                <tr><td>{{ stats_name }}</td><td>{{ stats_count }}</td></tr>
-              {% endfor %}
-            </tbody>
-          </table>
-        {% endif %}
-      {% endif %}
-    </section>
-  {% endif %}
+    {% endif %}
+  </section>
 
   <section>
     <h1>Reindexing history</h1>
@@ -254,23 +211,18 @@
         be really bad!
       </p>
     {% endif %}
-    <p>
-      <a href="{{ request.path }}">Refresh page</a>
-    </p>
+    {% if outstanding_chunks %}
+      <p class="errornote">
+        WARNING! Therea re outstanding index tasks! Don't launch another
+        indexing pass unless you really know you want to.
+      </p>
+    {% endif %}
     <form method="POST">
       {% csrf_token %}
       <div>
-        <input type="submit"
-               name="reindex"
-               value="Reindex into {{ write_index }}"
-               {% if progress %}disabled="disabled"{% endif %}/>
+        <input type="submit" name="reindex" value="Reindex into {{ write_index }}"
+               {% if outstanding_tasks %}disabled{% endif %}>
       </div>
     </form>
-    {% if progress %}
-      <p>
-        Reindexing into {{ write_index }} is currently in progress:
-      </p>
-      <progress id="reindex_progress" value="{{ progress }}" max="1">{{ progress }}</progress>
-    {% endif %}
   </section>
 {% endblock %}

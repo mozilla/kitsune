@@ -1,12 +1,15 @@
 import json
 import logging
 import pprint
-from itertools import chain, count, izip, islice
+import time
 
 from django.conf import settings
+from django.db import reset_queries
 
 import elasticutils
 import pyes
+
+from search.utils import chunked
 
 
 ESTimeoutError = pyes.urllib3.TimeoutError
@@ -29,7 +32,12 @@ WRITE_INDEX = (u'%s_%s' % (settings.ES_INDEX_PREFIX,
 # This is the unified elastic search doctype.
 SUMO_DOCTYPE = u'sumodoc'
 
-log = logging.getLogger('search.es_utils')
+# The number of things in a chunk. This is for parallel indexing via
+# the admin.
+CHUNK_SIZE = 50000
+
+
+log = logging.getLogger('k.es')
 
 
 class Sphilastic(elasticutils.S):
@@ -251,14 +259,11 @@ def get_documents(cls, ids):
     return list(ret)
 
 
-def es_reindex_with_progress(percent=100):
-    """Rebuild Elastic indexes as you iterate over yielded progress ratios.
+def recreate_index(es=None):
+    """Deletes index if it's there and creates a new one"""
+    if es is None:
+        es = elasticutils.get_es()
 
-    :arg percent: Defaults to 100.  Allows you to specify how much of
-        each doctype you want to index.  This is useful for
-        development where doing a full reindex takes an hour.
-
-    """
     from search.models import get_search_models
 
     search_models = get_search_models()
@@ -270,7 +275,6 @@ def es_reindex_with_progress(percent=100):
             }
         }
 
-    es = elasticutils.get_es()
     index = WRITE_INDEX
     delete_index(index)
 
@@ -284,10 +288,50 @@ def es_reindex_with_progress(percent=100):
 
     es.create_index(index, settings={'mappings': merged_mapping})
 
-    total = sum([cls.get_indexable().count() for cls in search_models])
-    to_index = [cls.index_all(percent) for cls in search_models]
-    return (float(done) / total for done, _ in
-            izip(count(1), chain(*to_index)))
+
+def get_indexable(percent=100):
+    """Returns a list of (class, iterable) for all the things to index
+
+    :arg percent: Defaults to 100.  Allows you to specify how much of
+        each doctype you want to index.  This is useful for
+        development where doing a full reindex takes an hour.
+
+    """
+    from search.models import get_search_models
+
+    search_models = get_search_models()
+    to_index = []
+    percent = float(percent) / 100
+    for cls in search_models:
+        indexable = cls.get_indexable()
+        if percent < 1:
+            indexable = indexable[:int(indexable.count() * percent)]
+        to_index.append((cls, indexable))
+
+    return to_index
+
+
+def index_chunk(cls, chunk, reraise=False, es=None):
+    if es is None:
+        es = get_indexing_es()
+
+    try:
+        for id_ in chunk:
+            try:
+                cls.index(cls.extract_document(id_), bulk=True, es=es)
+            except Exception:
+                log.exception('Unable to extract/index document (id: %d)', id_)
+                if reraise:
+                    raise
+
+    finally:
+        # Try to do these things, but if we fail, it's probably the case
+        # that many things are broken, so just move on.
+        try:
+            es.flush_bulk(forced=True)
+            es.refresh(WRITE_INDEX, timesleep=0)
+        except Exception:
+            log.exception('Unable to flush/refresh')
 
 
 def es_reindex_cmd(percent=100):
@@ -296,7 +340,48 @@ def es_reindex_cmd(percent=100):
     See :py:func:`.es_reindex_with_progress` for argument details.
 
     """
-    [x for x in es_reindex_with_progress(percent) if False]
+    es = get_indexing_es()
+
+    recreate_index(es=es)
+
+    start_time = time.time()
+
+    for cls, indexable in get_indexable(percent):
+        cls_start_time = time.time()
+        total = len(indexable)
+
+        if total == 0:
+            continue
+
+        log.info('reindex %s into %s index. %s to index....',
+                 cls.get_model_name(),
+                 WRITE_INDEX, total)
+
+        i = 0
+        for chunk in chunked(indexable, 1000):
+            index_chunk(cls, chunk, es=es)
+
+            i += len(chunk)
+            time_to_go = (total - i) * ((time.time() - start_time) / i)
+            per_1000 = (time.time() - start_time) / (i / 1000.0)
+            log.info('%s/%s... (%s to go, %s per 1000 docs)', i, total,
+                     format_time(time_to_go),
+                     format_time(per_1000))
+
+            # We call this every 1000 or so because we're
+            # essentially loading the whole db and if DEBUG=True,
+            # then Django saves every sql statement which causes
+            # our memory to go up up up. So we reset it and that
+            # makes things happier even in DEBUG environments.
+            reset_queries()
+
+        delta_time = time.time() - cls_start_time
+        log.info('done! (%s, %s per 1000 docs)',
+                 format_time(delta_time),
+                 format_time(delta_time / (total / 1000.0)))
+
+    delta_time = time.time() - start_time
+    log.info('done! (total time: %s)', format_time(delta_time))
 
 
 def es_delete_cmd(index):
@@ -323,20 +408,8 @@ def es_delete_cmd(index):
     log.info('Done!')
 
 
-def chunked(iterable, n):
-    iterable = iter(iterable)
-    while 1:
-        t = tuple(islice(iterable, n))
-        if t:
-            yield t
-        else:
-            return
-
-
 def es_status_cmd(checkindex=False):
     """Shows elastic search index status"""
-    from search.models import get_search_models
-
     try:
         try:
             read_doctype_stats = get_doctype_stats(READ_INDEX)
@@ -397,13 +470,12 @@ def es_status_cmd(checkindex=False):
         log.info('  Write index is same as read index.')
 
     if checkindex:
-        # Go through the db and verify that everything is in the
-        # index that should be
+        # Go through the index and verify everything
         log.info('Checking index contents....')
 
         missing_docs = 0
-        for cls in get_search_models():
-            id_list = cls.get_indexable()
+
+        for cls, id_list in get_indexable():
             for id_group in chunked(id_list, 100):
                 doc_list = get_documents(cls, id_group)
                 if len(id_group) != len(doc_list):
@@ -413,10 +485,9 @@ def es_status_cmd(checkindex=False):
                             log.info('   Missing %s %s',
                                      cls.get_model_name(), id_)
                             missing_docs += 1
-            break
 
         if missing_docs:
-            print 'There were %d missing docs' % missing_docs
+            print 'There were %d missing_docs' % missing_docs
 
 
 def es_search_cmd(query, pages=1):

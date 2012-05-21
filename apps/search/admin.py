@@ -1,8 +1,8 @@
+import logging
 from datetime import datetime
 
 from django.conf import settings
 from django.contrib import admin
-from django.core.cache import cache
 from django.core.exceptions import PermissionDenied
 from django.http import HttpResponseRedirect, Http404
 from django.shortcuts import render_to_response
@@ -13,10 +13,15 @@ from waffle.models import Flag
 from search import es_utils
 from search.es_utils import (get_doctype_stats, get_indexes, delete_index,
                              ESTimeoutError, ESMaxRetryError,
-                             ESIndexMissingException)
+                             ESIndexMissingException, get_indexable,
+                             CHUNK_SIZE, recreate_index)
 from search.models import Record, get_search_models
-from search.tasks import ES_REINDEX_PROGRESS, reindex_with_progress
-from sumo.urlresolvers import reverse
+from search.tasks import OUTSTANDING_INDEX_CHUNKS, index_chunk_task
+from search.utils import chunked, create_batch_id
+from sumo.redis_utils import redis_client, RedisError
+
+
+log = logging.getLogger('k.es')
 
 
 class DeleteError(Exception):
@@ -44,6 +49,60 @@ def handle_delete(request):
     return HttpResponseRedirect(request.path)
 
 
+class ReindexError(Exception):
+    pass
+
+
+def handle_reindex(request):
+    write_index = es_utils.WRITE_INDEX
+
+    # TODO: If this gets fux0rd, then it's possible this could be
+    # non-zero and we really want to just ignore it. Need the ability
+    # to ignore it.
+    try:
+        client = redis_client('default')
+        val = client.get(OUTSTANDING_INDEX_CHUNKS)
+        if val is not None and int(val) > 0:
+            raise ReindexError('There are %s outstanding chunks.' % val)
+
+        # We don't know how many chunks we're building, but we do want
+        # to make sure another reindex request doesn't slide in here
+        # and kick off a bunch of chunks.
+        #
+        # There is a race condition here.
+        client.set(OUTSTANDING_INDEX_CHUNKS, 1)
+    except RedisError:
+        log.warning('Redis not running. Can not check if there are '
+                    'outstanding tasks.')
+
+    batch_id = create_batch_id()
+
+    # Break up all the things we want to index into chunks. This
+    # chunkifies by class then by chunk size.
+    chunks = []
+    for cls, indexable in get_indexable():
+        chunks.extend(
+            (cls, chunk) for chunk in chunked(indexable, CHUNK_SIZE))
+
+    # The previous lines do a lot of work and take some time to
+    # execute.  So we wait until here to wipe and rebuild the
+    # index. That reduces the time that there is no index by a little.
+    recreate_index()
+
+    chunks_count = len(chunks)
+
+    try:
+        client = redis_client('default')
+        client.set(OUTSTANDING_INDEX_CHUNKS, chunks_count)
+    except RedisError:
+        log.warning('Redis not running. Can\'t denote outstanding tasks.')
+
+    for chunk in chunks:
+        index_chunk_task.delay(write_index, batch_id, chunk)
+
+    return HttpResponseRedirect(request.path)
+
+
 def search(request):
     """Render the admin view containing search tools.
 
@@ -56,30 +115,32 @@ def search(request):
     if not request.user.has_perm('search.reindex'):
         raise PermissionDenied
 
-    delete_error_message = ''
-    es_error_message = ''
+    error_messages = []
     stats = {}
 
     reindex_requested = 'reindex' in request.POST
     if reindex_requested:
-        reindex_with_progress.delay(es_utils.WRITE_INDEX)
+        try:
+            return handle_reindex(request)
+        except ReindexError, e:
+            error_messages.append(u'Error: %s' % e.message)
 
     delete_requested = 'delete_index' in request.POST
     if delete_requested:
         try:
             return handle_delete(request)
         except DeleteError, e:
-            delete_error_message = e.msg
+            error_messages.append(u'Error: %s' % e.message)
         except ESMaxRetryError:
-            delete_error_message = ('Elastic Search is not set up on this '
-                                    'machine or is not responding. '
-                                    '(MaxRetryError)')
+            error_messages.append('Error: Elastic Search is not set up on '
+                                  'this machine or is not responding. '
+                                  '(MaxRetryError)')
         except ESIndexMissingException:
-            delete_error_message = ('Index is missing. Press the reindex '
-                                    'button below. (IndexMissingException)')
+            error_messages.append('Error: Index is missing. Press the reindex '
+                                  'button below. (IndexMissingException)')
         except ESTimeoutError:
-            delete_error_message = ('Connection to Elastic Search timed out. '
-                                    '(TimeoutError)')
+            error_messages.append('Error: Connection to Elastic Search timed '
+                                  'out. (TimeoutError)')
 
     stats = None
     write_stats = None
@@ -98,16 +159,22 @@ def search(request):
         indexes = get_indexes()
         indexes.sort(key=lambda m: m[0])
     except ESMaxRetryError:
-        es_error_message = ('Elastic Search is not set up on this machine '
-                            'or is not responding. (MaxRetryError)')
+        error_messages.append('Error: Elastic Search is not set up on this '
+                              'machine or is not responding. (MaxRetryError)')
     except ESIndexMissingException:
-        es_error_message = ('Index is missing. Press the reindex button '
-                            'below. (IndexMissingException)')
+        error_messages.append('Error: Index is missing. Press the reindex '
+                              'button below. (IndexMissingException)')
     except ESTimeoutError:
-        es_error_message = ('Connection to Elastic Search timed out. '
-                            '(TimeoutError)')
+        error_messages.append('Error: Connection to Elastic Search timed out. '
+                              '(TimeoutError)')
 
-    recent_records = reversed(Record.uncached.order_by('starttime')[:20])
+    try:
+        client = redis_client('default')
+        outstanding_chunks = int(client.get(OUTSTANDING_INDEX_CHUNKS))
+    except (RedisError, TypeError):
+        outstanding_chunks = None
+
+    recent_records = Record.uncached.order_by('-starttime')[:20]
 
     es_waffle_flag = Flag.objects.get(name=u'elasticsearch')
 
@@ -120,14 +187,10 @@ def search(request):
          'indexes': indexes,
          'read_index': es_utils.READ_INDEX,
          'write_index': es_utils.WRITE_INDEX,
-         'delete_error_message': delete_error_message,
-         'es_error_message': es_error_message,
+         'error_messages': error_messages,
          'recent_records': recent_records,
-          # Dim the buttons even if the form loads before the task fires:
-         'progress': cache.get(ES_REINDEX_PROGRESS,
-                               '0.001' if reindex_requested else ''),
-         'progress_url': reverse('search.reindex_progress'),
-         'interval': settings.ES_REINDEX_PROGRESS_BAR_INTERVAL * 1000},
+         'outstanding_chunks': outstanding_chunks,
+         },
         RequestContext(request, {}))
 
 
