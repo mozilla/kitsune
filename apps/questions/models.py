@@ -282,11 +282,12 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
         """A caching wrapper around self.tags.all()."""
         cache_key = self.tags_cache_key % self.id
         tags = cache.get(cache_key)
-        tags.sort()
         if tags is None:
             tags = self.tags.all()
             tags.sort()
             cache.add(cache_key, tags, CACHE_TIMEOUT)
+        else:
+            tags.sort()
         return tags
 
     @classmethod
