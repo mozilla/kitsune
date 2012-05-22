@@ -13,24 +13,23 @@
 <article id="threads" class="main">
   <h1>{{ forum.name }}</h1>
   <div class="badges">
-    {% if is_watching_forum %}<span class="watching">{{ _('Watching') }}</span>{% endif %}
   </div>
   <div class="forum-actions">
+    {% if not user.is_authenticated() or forum.allows_posting_by(user) %}
+      <a id="new-thread" class="btn btn-important" href="{{ url('forums.new_thread', forum_slug=forum.slug) }}">{{ _('Post a new thread') }}</a>
+    {% endif %}
     {% if user.is_authenticated() %}
       <form action="{{ url('forums.watch_forum', forum_slug=forum.slug) }}" method="post">
         {{ csrf() }}
         {% if is_watching_forum %}
-          {% set watch = _('Stop watching') %}
+          {% set watch = _('Stop watching this forum') %}
           <input type="hidden" name="watch" value="no" />
         {% else %}
           {% set watch = _('Watch this forum') %}
           <input type="hidden" name="watch" value="yes" />
         {% endif %}
-        <input type="image" alt="{{ watch }}" title="{{ watch }}" class="watchtoggle" src="{{ MEDIA_URL }}img/forums/watch.png"/>
+        <button type="submit" title="{{ watch }}" class="btn" id="watch-forum-toggle"><img src="{{ MEDIA_URL }}img/forums/watch.png" alt="" /> {{ watch }}</button>
       </form>
-    {% endif %}
-    {% if not user.is_authenticated() or forum.allows_posting_by(user) %}
-      <a id="new-thread" class="btn btn-important" href="{{ url('forums.new_thread', forum_slug=forum.slug) }}">{{ _('Post a new thread') }}</a>
     {% endif %}
   </div>
   <ol class="threads-columns {% if not desc_toggle %}desc{% endif %}">

@@ -460,8 +460,13 @@ div.badges span {
     padding: 2px 10px 2px 32px;
 }
 
-input.watchtoggle {
-    margin: 0 0 0 8px;
+#watch-forum-toggle {
+    margin: 5px 0 1em 1em;
+}
+
+#watch-thread-toggle {
+    margin: 0 2px 0 0;
+    padding: 0 10px 2px 10px;
 }
 
 span.sticky {
