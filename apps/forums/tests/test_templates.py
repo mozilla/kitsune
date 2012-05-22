@@ -134,11 +134,11 @@ class PostsTemplateTests(ForumTestCase):
 
         response = post(self.client, 'forums.watch_thread', {'watch': 'yes'},
                         args=[t.forum.slug, t.id])
-        self.assertContains(response, 'Watching')
+        self.assertContains(response, 'Stop watching this thread')
 
         response = post(self.client, 'forums.watch_thread', {'watch': 'no'},
                         args=[t.forum.slug, t.id])
-        self.assertNotContains(response, 'Watching')
+        self.assertNotContains(response, 'Stop watching this thread')
 
     def test_show_reply_fields(self):
         """Reply fields show if user has permission to post."""
@@ -252,13 +252,14 @@ class ThreadsTemplateTests(ForumTestCase):
         u = user(save=True)
 
         self.client.login(username=u.username, password='testpass')
+
         response = post(self.client, 'forums.watch_forum', {'watch': 'yes'},
                         args=[f.slug])
-        self.assertContains(response, 'Watching')
+        self.assertContains(response, 'Stop watching this forum')
 
         response = post(self.client, 'forums.watch_forum', {'watch': 'no'},
                         args=[f.slug])
-        self.assertNotContains(response, 'Watching')
+        self.assertNotContains(response, 'Stop watching this forum')
 
     def test_canonical_url(self):
         """Verify the canonical URL is set correctly."""
