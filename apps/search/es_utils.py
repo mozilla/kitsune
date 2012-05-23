@@ -1,7 +1,7 @@
 import json
 import logging
 import pprint
-from itertools import chain, count, izip
+from itertools import chain, count, izip, islice
 
 from django.conf import settings
 
@@ -242,8 +242,12 @@ def format_time(time_to_go):
 
 
 def get_documents(cls, ids):
-    """Returns a list of ES documents with specified ids and doctype"""
-    ret = cls.search().filter(id__in=ids).values_dict()
+    """Returns a list of ES documents with specified ids and doctype
+
+    :arg cls: the class with a ``.search()`` to use
+    :arg ids: the list of ids to retrieve documents for
+    """
+    ret = cls.search().filter(id__in=ids).values_dict()[:len(ids)]
     return list(ret)
 
 
@@ -319,8 +323,20 @@ def es_delete_cmd(index):
     log.info('Done!')
 
 
-def es_status_cmd():
+def chunked(iterable, n):
+    iterable = iter(iterable)
+    while 1:
+        t = tuple(islice(iterable, n))
+        if t:
+            yield t
+        else:
+            return
+
+
+def es_status_cmd(checkindex=False):
     """Shows elastic search index status"""
+    from search.models import get_search_models
+
     try:
         try:
             read_doctype_stats = get_doctype_stats(READ_INDEX)
@@ -379,6 +395,28 @@ def es_status_cmd():
                 log.info('    %-20s: %d', name, count)
     else:
         log.info('  Write index is same as read index.')
+
+    if checkindex:
+        # Go through the db and verify that everything is in the
+        # index that should be
+        log.info('Checking index contents....')
+
+        missing_docs = 0
+        for cls in get_search_models():
+            id_list = cls.get_indexable()
+            for id_group in chunked(id_list, 100):
+                doc_list = get_documents(cls, id_group)
+                if len(id_group) != len(doc_list):
+                    doc_list_ids = [doc['id'] for doc in doc_list]
+                    for id_ in id_group:
+                        if id_ not in doc_list_ids:
+                            log.info('   Missing %s %s',
+                                     cls.get_model_name(), id_)
+                            missing_docs += 1
+            break
+
+        if missing_docs:
+            print 'There were %d missing docs' % missing_docs
 
 
 def es_search_cmd(query, pages=1):
