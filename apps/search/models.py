@@ -136,7 +136,7 @@ class SearchMixin(object):
 
         indexable_qs = cls.get_indexable()
 
-        log.info('reindex %s into %s index....', cls_name, es_utils.WRITE_INDEX)
+        log.info('reindex %s into %s index...', cls_name, es_utils.WRITE_INDEX)
         total = indexable_qs.count()
         to_index = int(total * (percent / 100.0))
         log.info('total %s: %s (to be indexed: %s)',
@@ -188,6 +188,11 @@ class SearchMixin(object):
         es.refresh(es_utils.WRITE_INDEX, timesleep=0)
 
     @classmethod
+    def get_index_id(cls, id_):
+        """Generates a composed elasticsearch document id"""
+        return '%s:%s' % (cls.get_model_name(), id_)
+
+    @classmethod
     def index(cls, document, bulk=False, force_insert=False, refresh=False,
               es=None):
         """Indexes a single document"""
@@ -202,7 +207,7 @@ class SearchMixin(object):
         es.index(document,
                  index=es_utils.WRITE_INDEX,
                  doc_type=es_utils.SUMO_DOCTYPE,
-                 id=document['id'],
+                 id=cls.get_index_id(document['id']),
                  bulk=bulk,
                  force_insert=force_insert)
 
@@ -210,7 +215,7 @@ class SearchMixin(object):
             es.refresh(es_utils.WRITE_INDEX, timesleep=0)
 
     @classmethod
-    def unindex(cls, id, es=None):
+    def unindex(cls, id_, es=None):
         """Removes a document from the index"""
         if not settings.ES_LIVE_INDEXING:
             return
@@ -223,7 +228,8 @@ class SearchMixin(object):
         try:
             # TODO: There is a race condition here if this gets called
             # during reindexing.
-            es.delete(es_utils.WRITE_INDEX, es_utils.SUMO_DOCTYPE, id)
+            es.delete(es_utils.WRITE_INDEX, es_utils.SUMO_DOCTYPE,
+                      cls.get_index_id(id_))
         except pyes.exceptions.NotFoundException:
             # Ignore the case where we try to delete something that's
             # not there.
