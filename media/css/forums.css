@@ -469,6 +469,12 @@ div.badges span {
     padding: 0 10px 2px 10px;
 }
 
+#watch-thread-toggle img {
+    position: relative;
+    top: 2px;
+    left: -4px;
+}
+
 span.sticky {
     background: #eaf4f8 url(../img/forums/type/sticky.png) no-repeat 8px center;
     color: #139ec4;
