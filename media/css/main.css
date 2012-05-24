@@ -47,12 +47,12 @@ html[lang=he] body {
 }
 
 a:link, a:visited, a:active {
-    color: rgb(0, 81, 185);
+    color: #0051B9;
     text-decoration: none;
 }
 
 a:visited {
-    color: rgb(66,22,88);
+    color: #609;
 }
 
 a:hover {
