@@ -145,10 +145,10 @@ def questions(request):
 
     # Recent answered stats
     recent_asked_count = Question.recent_asked_count()
-    recent_answered_count = Question.recent_answered_count()
+    recent_unanswered_count = Question.recent_unanswered_count()
     if recent_asked_count:
         recent_answered_percent = int(
-            (float(recent_answered_count) / recent_asked_count) * 100)
+            (float(recent_asked_count - recent_unanswered_count) / recent_asked_count) * 100)
     else:
         recent_answered_percent = 0
 
@@ -159,7 +159,7 @@ def questions(request):
             'tags': tags,
             'tagged': tagged,
             'recent_asked_count': recent_asked_count,
-            'recent_answered_count': recent_answered_count,
+            'recent_unanswered_count': recent_unanswered_count,
             'recent_answered_percent': recent_answered_percent}
 
     if (waffle.flag_is_active(request, 'karma') and
