@@ -404,6 +404,16 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
         qs = cls.objects.filter(created__gt=start, num_answers__gt=0)
         return qs.count()
 
+    @classmethod
+    def recent_unanswered_count(cls):
+        """Returns the number of questions that have not been answered in the
+        last 72 hours
+        """
+        start = datetime.now() - timedelta(hours=72)
+        qs = cls.objects.filter(
+            num_answers=0, created__gt=start, is_locked=False)
+        return qs.count()
+
 
 register_for_indexing(Question, 'questions')
 register_for_indexing(
