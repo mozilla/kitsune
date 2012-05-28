@@ -21,12 +21,12 @@
       {{ _('Total questions: <strong>{num}</strong>')|fe(num=recent_asked_count) }}
     </span>
     <p class="no-reply">
-      {% trans num=recent_unanswered_count,
+      {% trans recent_unanswered_count,
                url=url('questions.questions')|urlparams(filter='recent-unanswered') %}
-        <strong>{{num}}</strong> question in the last <strong>3 days</strong> has no reply.
+        <strong>{{recent_unanswered_count}}</strong> question in the last <strong>3 days</strong> has no reply.
         <a href="{{url}}">Help solve it!</a>
-      {% pluralize num %}
-        <strong>{{num}}</strong> questions in the last <strong>3 days</strong> have no reply.
+      {% pluralize recent_unanswered_count %}
+        <strong>{{recent_unanswered_count}}</strong> questions in the last <strong>3 days</strong> have no reply.
         <a href="{{url}}">Help solve them!</a>
       {% endtrans %}
     </p>
