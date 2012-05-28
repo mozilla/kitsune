@@ -30,7 +30,7 @@
         <a href="{{url}}">Help solve them!</a>
       {% endtrans %}
     </p>
-    <div class="graph">
+    <div class="graph{% if recent_answered_percent == 100 %} complete{% endif %}">
       <div style="width: {{ recent_answered_percent }}%;">
         <span>
           {{ recent_answered_percent }}%
