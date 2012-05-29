@@ -398,13 +398,6 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
         return qs.count()
 
     @classmethod
-    def recent_answered_count(cls):
-        """Returns the number of questions replied to in the last 72 hours."""
-        start = datetime.now() - timedelta(hours=72)
-        qs = cls.objects.filter(created__gt=start, num_answers__gt=0)
-        return qs.count()
-
-    @classmethod
     def recent_unanswered_count(cls):
         """Returns the number of questions that have not been answered in the
         last 72 hours

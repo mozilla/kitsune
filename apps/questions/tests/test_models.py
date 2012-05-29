@@ -319,9 +319,7 @@ class QuestionTests(TestCaseBase):
         assert q.is_solved
 
     def test_recent_counts(self):
-        """Verify recent_asked_count, recent_answered_count and
-        recent unanswered count.
-        """
+        """Verify recent_asked_count and recent unanswered count."""
         # create a question for each of past 4 days
         now = datetime.now()
         question(created=now, save=True)
@@ -333,7 +331,6 @@ class QuestionTests(TestCaseBase):
 
         # Only 3 are recent from last 72 hours, 1 has an answer.
         eq_(3, Question.recent_asked_count())
-        eq_(1, Question.recent_answered_count())
         eq_(1, Question.recent_unanswered_count())
 
 
