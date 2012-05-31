@@ -8,7 +8,7 @@ from django.contrib.auth.models import User
 from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
 from django.core.cache import cache
-from django.db import models
+from django.db import models, connection
 from django.db.models.signals import post_save
 
 from product_details import product_details
@@ -242,8 +242,20 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
     @property
     def helpful_replies(self):
         """Return answers that have been voted as helpful."""
-        votes = AnswerVote.objects.filter(answer__question=self, helpful=True)
-        helpful_ids = list(votes.values_list('answer', flat=True).distinct())
+        cursor = connection.cursor()
+        cursor.execute('SELECT votes.answer_id, '
+                       'SUM(IF(votes.helpful=1,1,-1)) AS score '
+                       'FROM questions_answervote AS votes '
+                       'JOIN questions_answer AS ans '
+                       'ON ans.id=votes.answer_id '
+                       'AND ans.question_id=%s '
+                       'GROUP BY votes.answer_id '
+                       'HAVING score > 0 ', [self.id])
+
+        helpful_ids = []
+        for row in cursor.fetchall():
+            helpful_ids.append(row[0])
+
         # Exclude the solution if it is set
         if self.solution and self.solution.id in helpful_ids:
             helpful_ids.remove(self.solution.id)
