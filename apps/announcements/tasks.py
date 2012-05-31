@@ -5,7 +5,7 @@ from django.core.mail import EmailMessage, get_connection
 from django.template import loader
 
 import bleach
-from celery.decorators import task
+from celery.task import task
 from tower import activate, ugettext as _
 
 from announcements.models import Announcement

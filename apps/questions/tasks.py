@@ -3,7 +3,7 @@ import logging
 from django.conf import settings
 from django.db import connection, transaction
 
-from celery.decorators import task
+from celery.task import task
 from multidb.pinning import pin_this_thread, unpin_this_thread
 from statsd import statsd
 
@@ -36,7 +36,7 @@ def update_question_votes(question_id):
 
 
 @task(rate_limit='4/s')
-def update_question_vote_chunk(data, **kwargs):
+def update_question_vote_chunk(data):
     """Update num_votes_past_week for a number of questions."""
 
     # First we recalculate num_votes_past_week in the db.

@@ -6,8 +6,8 @@ import subprocess
 from django.conf import settings
 from django.core.files.base import ContentFile
 
+from celery.task import task
 from PIL import Image
-from celery.decorators import task
 
 log = logging.getLogger('k.task')
 

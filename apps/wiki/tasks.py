@@ -10,7 +10,7 @@ from django.db import transaction
 from django.template import Context, loader
 
 import celery.conf
-from celery.decorators import task
+from celery.task import task
 from multidb.pinning import pin_this_thread, unpin_this_thread
 from statsd import statsd
 from tower import ugettext as _
@@ -107,7 +107,7 @@ def rebuild_kb():
 
 
 @task(rate_limit='20/m')
-def _rebuild_kb_chunk(data, **kwargs):
+def _rebuild_kb_chunk(data):
     """Re-render a chunk of documents.
 
     Note: Don't use host components when making redirects to wiki pages; those

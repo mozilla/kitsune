@@ -11,7 +11,7 @@ from django.core import mail
 from django.db import models
 from django.template.loader import render_to_string
 
-from celery.decorators import task
+from celery.task import task
 from statsd import statsd
 from timezones.fields import TimeZoneField
 from tower import ugettext as _
@@ -262,7 +262,7 @@ class RegistrationManager(ConfirmationManager):
 
 
 @task
-def _delete_registration_profiles_chunk(data, **kwargs):
+def _delete_registration_profiles_chunk(data):
     log_msg = u'Deleting {num} expired registration profiles.'
     log.info(log_msg.format(num=len(data)))
     qs = RegistrationProfile.objects.filter(id__in=data)
