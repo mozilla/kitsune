@@ -253,9 +253,7 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
                        'HAVING score > 0 '
                        'ORDER BY score DESC LIMIT 2', [self.id])
 
-        helpful_ids = []
-        for row in cursor.fetchall():
-            helpful_ids.append(row[0])
+        helpful_ids = [row[0] for row in cursor.fetchall()]
 
         # Exclude the solution if it is set
         if self.solution and self.solution.id in helpful_ids:
