@@ -250,7 +250,8 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
                        'ON ans.id=votes.answer_id '
                        'AND ans.question_id=%s '
                        'GROUP BY votes.answer_id '
-                       'HAVING score > 0 ', [self.id])
+                       'HAVING score > 0 '
+                       'ORDER BY score DESC LIMIT 2', [self.id])
 
         helpful_ids = []
         for row in cursor.fetchall():
