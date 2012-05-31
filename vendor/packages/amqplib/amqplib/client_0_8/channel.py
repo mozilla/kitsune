@@ -61,8 +61,8 @@ class Channel(AbstractChannel):
         whether the library should attempt to decode the body
         of Messages to a Unicode string if there's a 'content_encoding'
         property for the message.  If there's no 'content_encoding'
-        property, or the decode raises an Exception, the plain string
-        is left as the message body.
+        property, or the decode raises an Exception, the message body
+        is left as plain bytes.
 
         """
         if channel_id is None:
@@ -1099,6 +1099,93 @@ class Channel(AbstractChannel):
         confirm bind successful
 
         This method confirms that the bind was successful.
+
+        """
+        pass
+
+
+    def queue_unbind(self, queue, exchange, routing_key='',
+        nowait=False, arguments=None, ticket=None):
+        """
+        NOTE::::This is not part of AMQP 0-8, but RabbitMQ supports this as
+        an extension
+
+        unbind a queue from an exchange
+
+        This method unbinds a queue from an exchange.
+
+        RULE:
+
+            If a unbind fails, the server MUST raise a connection exception.
+
+        PARAMETERS:
+            queue: shortstr
+
+                Specifies the name of the queue to unbind.
+
+                RULE:
+
+                    The client MUST either specify a queue name or have
+                    previously declared a queue on the same channel
+
+                RULE:
+
+                    The client MUST NOT attempt to unbind a queue that
+                    does not exist.
+
+            exchange: shortstr
+
+                The name of the exchange to unbind from.
+
+                RULE:
+
+                    The client MUST NOT attempt to unbind a queue from an
+                    exchange that does not exist.
+
+                RULE:
+
+                    The server MUST accept a blank exchange name to mean
+                    the default exchange.
+
+            routing_key: shortstr
+
+                routing key of binding
+
+                Specifies the routing key of the binding to unbind.
+
+            arguments: table
+
+                arguments of binding
+
+                Specifies the arguments of the binding to unbind.
+
+        """
+        if arguments is None:
+            arguments = {}
+
+        args = AMQPWriter()
+        if ticket is not None:
+            args.write_short(ticket)
+        else:
+            args.write_short(self.default_ticket)
+        args.write_shortstr(queue)
+        args.write_shortstr(exchange)
+        args.write_shortstr(routing_key)
+        #args.write_bit(nowait)
+        args.write_table(arguments)
+        self._send_method((50, 50), args)
+
+        if not nowait:
+            return self.wait(allowed_methods=[
+                              (50, 51),    # Channel.queue_unbind_ok
+                            ])
+
+
+    def _queue_unbind_ok(self, args):
+        """
+        confirm unbind successful
+
+        This method confirms that the unbind was successful.
 
         """
         pass
@@ -2589,6 +2676,7 @@ class Channel(AbstractChannel):
         (50, 21): _queue_bind_ok,
         (50, 31): _queue_purge_ok,
         (50, 41): _queue_delete_ok,
+        (50, 51): _queue_unbind_ok,
         (60, 11): _basic_qos_ok,
         (60, 21): _basic_consume_ok,
         (60, 31): _basic_cancel_ok,
@@ -2600,3 +2688,7 @@ class Channel(AbstractChannel):
         (90, 21): _tx_commit_ok,
         (90, 31): _tx_rollback_ok,
         }
+
+    _IMMEDIATE_METHODS = [
+        (60, 50), # basic_return
+        ]

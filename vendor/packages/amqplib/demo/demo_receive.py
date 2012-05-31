@@ -15,13 +15,13 @@ import amqplib.client_0_8 as amqp
 
 def callback(msg):
     for key, val in msg.properties.items():
-        print '%s: %s' % (key, str(val))
+        print ('%s: %s' % (key, str(val)))
     for key, val in msg.delivery_info.items():
-        print '> %s: %s' % (key, str(val))
+        print ('> %s: %s' % (key, str(val)))
 
-    print ''
-    print msg.body
-    print '-------'
+    print ('')
+    print (msg.body)
+    print ('-------')
     msg.channel.basic_ack(msg.delivery_tag)
 
     #

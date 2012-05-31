@@ -20,6 +20,7 @@ Read/Write AMQP frames over network transports.
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301
 
+import re
 import socket
 
 #
@@ -31,13 +32,21 @@ try:
 except:
     HAVE_PY26_SSL = False
 
+try:
+    bytes
+except:
+    # Python 2.5 and lower
+    bytes = str
+
 from struct import pack, unpack
 
 AMQP_PORT = 5672
 
 # Yes, Advanced Message Queuing Protocol Protocol is redundant
-AMQP_PROTOCOL_HEADER = 'AMQP\x01\x01\x09\x01'
+AMQP_PROTOCOL_HEADER = 'AMQP\x01\x01\x09\x01'.encode('latin_1')
 
+# Match things like: [fe80::1]:5432, from RFC 2732
+IPV6_LITERAL = re.compile(r'\[([\.0-9a-f:]+)\](?::(\d+))?')
 
 class _AbstractTransport(object):
     """
@@ -45,21 +54,39 @@ class _AbstractTransport(object):
 
     """
     def __init__(self, host, connect_timeout):
-        if ':' in host:
-            host, port = host.split(':', 1)
-            port = int(port)
+        msg = 'socket.getaddrinfo() for %s returned an empty list' % host
+        port = AMQP_PORT
+
+        m = IPV6_LITERAL.match(host)
+        if m:
+            host = m.group(1)
+            if m.group(2):
+                port = int(m.group(2))
         else:
-            port = AMQP_PORT
+            if ':' in host:
+                host, port = host.rsplit(':', 1)
+                port = int(port)
 
-        self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.sock.settimeout(connect_timeout)
+        self.sock = None
+        for res in socket.getaddrinfo(host, port, 0, socket.SOCK_STREAM, socket.SOL_TCP):
+            af, socktype, proto, canonname, sa = res
+            try:
+                self.sock = socket.socket(af, socktype, proto)
+                self.sock.settimeout(connect_timeout)
+                self.sock.connect(sa)
+            except socket.error, msg:
+                self.sock.close()
+                self.sock = None
+                continue
+            break
 
-        try:
-            self.sock.connect((host, port))
-        except socket.error:
-            self.sock.close()
-            raise
+        if not self.sock:
+            # Didn't connect, return the most recent error message
+            raise socket.error, msg
+
         self.sock.settimeout(None)
+        self.sock.setsockopt(socket.SOL_TCP, socket.TCP_NODELAY, 1)
+        self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1)
 
         self._setup_transport()
 
@@ -87,6 +114,14 @@ class _AbstractTransport(object):
         pass
 
 
+    def _shutdown_transport(self):
+        """
+        Do any preliminary work in shutting down the connection.
+
+        """
+        pass
+
+
     def _write(self, s):
         """
         Completely write a string to the peer.
@@ -97,6 +132,11 @@ class _AbstractTransport(object):
 
     def close(self):
         if self.sock is not None:
+            self._shutdown_transport()
+            # Call shutdown first to make sure that pending messages
+            # reach the AMQP broker if the program exits after
+            # calling this method.
+            self.sock.shutdown(socket.SHUT_RDWR)
             self.sock.close()
             self.sock = None
 
@@ -108,11 +148,11 @@ class _AbstractTransport(object):
         """
         frame_type, channel, size = unpack('>BHI', self._read(7))
         payload = self._read(size)
-        ch = self._read(1)
-        if ch == '\xce':
+        ch = ord(self._read(1))
+        if ch == 206: # '\xce'
             return frame_type, channel, payload
         else:
-            raise Exception('Framing Error, received 0x%02x while expecting 0xce' % ord(ch))
+            raise Exception('Framing Error, received 0x%02x while expecting 0xce' % ch)
 
 
     def write_frame(self, frame_type, channel, payload):
@@ -130,6 +170,15 @@ class SSLTransport(_AbstractTransport):
     Transport that works over SSL
 
     """
+    def __init__(self, host, connect_timeout, ssl):
+        if isinstance(ssl, dict):
+            self.sslopts = ssl
+
+        self.sslobj = None
+
+        super(SSLTransport, self).__init__(host, connect_timeout)
+
+
     def _setup_transport(self):
         """
         Wrap the socket in an SSL object, either the
@@ -138,10 +187,23 @@ class SSLTransport(_AbstractTransport):
 
         """
         if HAVE_PY26_SSL:
-            self.sslobj = ssl.wrap_socket(self.sock)
+            if hasattr(self, 'sslopts'):
+                self.sslobj = ssl.wrap_socket(self.sock, **self.sslopts)
+            else:
+                self.sslobj = ssl.wrap_socket(self.sock)
             self.sslobj.do_handshake()
         else:
             self.sslobj = socket.ssl(self.sock)
+
+
+    def _shutdown_transport(self):
+        """
+        Unwrap a Python 2.6 SSL socket, so we can call shutdown()
+
+        """
+        if HAVE_PY26_SSL and (self.sslobj is not None):
+            self.sock = self.sslobj.unwrap()
+            self.sslobj = None
 
 
     def _read(self, n):
@@ -175,7 +237,6 @@ class SSLTransport(_AbstractTransport):
             s = s[n:]
 
 
-
 class TCPTransport(_AbstractTransport):
     """
     Transport that deals directly with TCP socket.
@@ -188,7 +249,7 @@ class TCPTransport(_AbstractTransport):
 
         """
         self._write = self.sock.sendall
-        self._read_buffer = ''
+        self._read_buffer = bytes()
 
 
     def _read(self, n):
@@ -215,6 +276,6 @@ def create_transport(host, connect_timeout, ssl=False):
 
     """
     if ssl:
-        return SSLTransport(host, connect_timeout)
+        return SSLTransport(host, connect_timeout, ssl)
     else:
         return TCPTransport(host, connect_timeout)

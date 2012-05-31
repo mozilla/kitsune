@@ -1,5 +1,58 @@
 CHANGES
 --------
+Version 1.0.2
+
+    Fix a packaging problem for Windows users, no changes
+    to the actual Python code.
+
+Version 1.0.1
+
+    A one-line change to transport.py to fix a problem older
+    FreeBSDs have with socket.getaddrinfo()
+
+    Otherwise just packaging changes to include more Trove
+    classifiers and docs/tests/etc in the source distribution file.
+
+Version 1.0.0
+
+    Big speedup for sending large messages.  For example, sending
+    a single 100MB message on my machine goes from 90 seconds to
+    around 0.6 seconds.
+
+    Use setuptools if available, for enhanced functionality
+    for packagers.
+
+    Raise a ValueError if unserializable objects are present in
+    a Message's application_headers, instead of just quietly failing
+    and causing a connection to close.
+
+    Message objects can now be pickled/unpickled, previously unpickling
+    raised a RuntimeError: maximum recursion depth exceeded
+
+    PYTHON 3.x COMPATIBILITY
+
+        Code has been tweaked so that when 2to3 is run over the client
+        library and the unittests, the unittests will pass for Python
+        3.0, 3.1 and 3.2
+
+        There are some subtle behavioral changes to deal with how Python
+        3.x needs to encode/decode strings and they go/come over the
+        wire.  Message bodies are encoded at transmission time, instead
+        of Message object creation time.  Message application_header
+        strings are assumed to be encoded as UTF-8
+
+    Add support for queue_unbind, since RabbitMQ supports it as an extension
+    to the 0-8 protocol.
+
+    Add IPv6 support.  The client uses socket.getaddrinfo(), so you can use
+    domain names with AAAA DNS records, or IPv6 literal addresses.  If you
+    need to specify a port number along with a literal address, put the
+    address in square brackets (see RFC 2732), for example:
+        [::1]:5672
+
+    Some minor TCP changes, enabling keepalive, NODELAY (big speed
+    improvement there), shutting down sockets before closing to keep from
+    losing data (on Windows mainly?)
 
 Version 0.6.1
 
