@@ -22,6 +22,12 @@ from Queue import Empty, Queue
 from struct import pack, unpack
 
 try:
+    bytes
+except NameError:
+    # Python 2.5 and lower
+    bytes = str
+
+try:
     from collections import defaultdict
 except:
     class defaultdict(dict):
@@ -88,7 +94,7 @@ class _PartialMessage(object):
         self.body_received += len(payload)
 
         if self.body_received == self.body_size:
-            self.msg.body = ''.join(self.body_parts)
+            self.msg.body = bytes().join(self.body_parts)
             self.complete = True
 
 
@@ -230,15 +236,26 @@ class MethodWriter(object):
     def write_method(self, channel, method_sig, args, content=None):
         payload = pack('>HH', method_sig[0], method_sig[1]) + args
 
+        if content:
+            # do this early, so we can raise an exception if there's a
+            # problem with the content properties, before sending the
+            # first frame
+            body = content.body
+            if isinstance(body, unicode):
+                coding = content.properties.get('content_encoding', None)
+                if coding is None:
+                    coding = content.properties['content_encoding'] = 'UTF-8'
+
+                body = body.encode(coding)
+            properties = content._serialize_properties()
+
         self.dest.write_frame(1, channel, payload)
 
         if content:
-            body = content.body
-            payload = pack('>HHQ', method_sig[0], 0, len(body)) + \
-                content._serialize_properties()
+            payload = pack('>HHQ', method_sig[0], 0, len(body)) + properties
 
             self.dest.write_frame(2, channel, payload)
 
-            while body:
-                payload, body = body[:self.frame_max - 8], body[self.frame_max -8:]
-                self.dest.write_frame(3, channel, payload)
+            chunk_size = self.frame_max - 8
+            for i in xrange(0, len(body), chunk_size):
+                self.dest.write_frame(3, channel, body[i:i+chunk_size])

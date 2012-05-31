@@ -39,3 +39,19 @@
  * Added support for py-yajl (Thanks Benjamin Anderson)
  * Improved benchmark script to test serialization performance and
    to use real life data for tests.
+
+0.2.5
+
+ * Added loads and dumps methods so anyjson can be used interchangably
+   with the stdlib json module. Note: The original methods are still
+   in place. Nothing from the 0.2.4 API is changed, removed or deprecated
+   in this release.
+
+0.3
+
+ * Added support for python3
+
+0.3.1
+
+ * Added deprecation warning for cjson and made it the least preferred
+   implementation. See: http://pypi.python.org/pypi/python-cjson/1.0.5

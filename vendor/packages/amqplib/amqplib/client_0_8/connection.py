@@ -36,7 +36,7 @@ __all__ =  [
 #
 LIBRARY_PROPERTIES = {
     'library': 'Python amqplib',
-    'library_version': '0.6.1',
+    'library_version': '1.0.2',
     }
 
 AMQP_LOGGER = logging.getLogger('amqplib')
@@ -83,6 +83,10 @@ class Connection(AbstractChannel):
 
         If login_response is not specified, one is built up for you from
         userid and password if they are present.
+
+        The 'ssl' parameter may be simply True/False, or for Python >= 2.6
+        a dictionary of options to pass to ssl.wrap_socket() such as
+        requiring certain certificates.
 
         """
         if (login_response is None) \
@@ -202,6 +206,15 @@ class Connection(AbstractChannel):
                 or (method_sig in allowed_methods) \
                 or (method_sig == (20, 40))):
                 return method_sig, args, content
+
+            #
+            # Certain methods like basic_return should be dispatched
+            # immediately rather than being queued, even if they're not
+            # one of the 'allowed_methods' we're looking for.
+            #
+            if (channel != 0) and (method_sig in Channel._IMMEDIATE_METHODS):
+                self.channels[channel].dispatch_method(method_sig, args, content)
+                continue
 
             #
             # Not the channel and/or method we were looking for.  Queue
@@ -824,3 +837,6 @@ class Connection(AbstractChannel):
         (10, 60): _close,
         (10, 61): _close_ok,
         }
+
+
+    _IMMEDIATE_METHODS = []
