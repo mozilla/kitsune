@@ -1,4 +1,4 @@
-from celery.decorators import task
+from celery.task import task
 import waffle
 
 from karma.cron import update_top_contributors as _update_top_contributors
@@ -48,7 +48,7 @@ def recalculate_karma_points():
 
 
 @task
-def _process_question_chunk(data, **kwargs):
+def _process_question_chunk(data):
     """Save karma data for a chunk of questions."""
     redis = redis_client(name='karma')
     q_qs = Question.objects.select_related('solution').defer('content')
@@ -68,7 +68,7 @@ def _process_question_chunk(data, **kwargs):
 
 
 @task
-def _process_answer_vote_chunk(data, **kwargs):
+def _process_answer_vote_chunk(data):
     """Save karma data for a chunk of answer votes."""
     redis = redis_client(name='karma')
     v_qs = AnswerVote.objects.select_related('answer')
@@ -82,7 +82,7 @@ def _process_answer_vote_chunk(data, **kwargs):
 
 
 @task
-def _process_recalculate_chunk(data, **kwargs):
+def _process_recalculate_chunk(data):
     """Recalculate karma points for a chunk of user ids."""
     mgr = KarmaManager()
     for userid in data:

@@ -6,9 +6,10 @@ from django.core.mail import send_mail
 from django.core.urlresolvers import reverse
 from django.template import Context, loader
 
-from messages.models import InboxMessage
-from celery.decorators import task
+from celery.task import task
 from tower import ugettext as _
+
+from messages.models import InboxMessage
 
 
 log = logging.getLogger('k.task')

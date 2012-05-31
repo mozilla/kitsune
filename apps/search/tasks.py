@@ -2,7 +2,7 @@ import datetime
 import logging
 import sys
 
-from celery.decorators import task
+from celery.task import task
 from statsd import statsd
 
 from search.es_utils import index_chunk
