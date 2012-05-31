@@ -1,4 +1,5 @@
 from datetime import datetime
+from pprint import pformat
 
 from django.conf import settings
 from django.contrib import admin
@@ -13,7 +14,8 @@ from waffle.models import Flag
 from search import es_utils
 from search.es_utils import (get_doctype_stats, get_indexes, delete_index,
                              ESTimeoutError, ESMaxRetryError,
-                             ESIndexMissingException)
+                             ESIndexMissingException, SUMO_DOCTYPE,
+                             merge_mappings)
 from search.models import Record, get_search_models
 from search.tasks import ES_REINDEX_PROGRESS, reindex_with_progress
 from sumo.urlresolvers import reverse
@@ -192,3 +194,30 @@ def index_view(request):
 
 
 admin.site.register_view('index', index_view, 'Search - Index Browsing')
+
+
+def mapping_view(request):
+    search_models = get_search_models()
+    merged_mapping = {
+        SUMO_DOCTYPE: {
+            'properties': merge_mappings(
+                [(cls._meta.db_table, cls.get_mapping())
+                 for cls in search_models])
+            }
+        }
+
+    # TODO: This indents poorly and the results are hard to read.  I
+    # think to do it better, we'd need to write our own pretty-printer
+    # which isn't hard, but I'm pushing it off until we decide it's
+    # necessary.
+    merged_mapping = pformat(merged_mapping, indent=4)
+
+    return render_to_response(
+        'search/admin/mapping.html',
+        {'title': 'Mapping Browsing',
+         'mapping': merged_mapping
+         },
+        RequestContext(request, {}))
+
+
+admin.site.register_view('mapping', mapping_view, 'Search - Mapping Browsing')
