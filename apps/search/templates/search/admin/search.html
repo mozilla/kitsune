@@ -19,6 +19,10 @@
     dd {
       margin-left: 1em;
     }
+    input[type="submit"].DANGER {
+      border: 3px red solid;
+      font: bold 12px/14px serif;
+    }
   </style>
 {% endblock %}
 
@@ -197,32 +201,44 @@
 
   <section>
     <h1>Reindex</h1>
+    {% if outstanding_chunks %}
+      <p class="errornote">
+        WARNING! There are outstanding index tasks! Don't launch another
+        indexing pass unless you really know you want to.
+      </p>
+    {% endif %}
+    <h2>Reindex into existing index</h2>
     <p>
+      Reindex into the existing WRITE index. Don't do this if you've
+      made mapping changes since this does not recreate the index with
+      the new mappings.
+    </p>
+    <form method="POST">
+      {% csrf_token %}
+      <input type="submit" name="reindex"
+             value="Reindex into {{ write_index }}"
+             {% if outstanding_chunks %}disabled{% endif %}>
+    </form>
+
+    <h2>DELETE existing index, recreate it and reindex</h2>
+    <p>
+      This <strong>DELETES</strong> the existing WRITE index,
+      recreates it with the mappings, and indexes into the new index.
       You should have to do this only when the search mapping changes
       or when setting up the site for the first time.
     </p>
-    <p>
-      If the old index isn't compatible with the new code, you should
-      waffle Sphinx on first.
-    </p>
     {% if read_index == write_index %}
       <p class="errornote">
-        WARNING! Read and write indexes are the same! Reindexing would
-        be really bad!
-      </p>
-    {% endif %}
-    {% if outstanding_chunks %}
-      <p class="errornote">
-        WARNING! Therea re outstanding index tasks! Don't launch another
-        indexing pass unless you really know you want to.
+        WARNING! Read and write indexes are the same! Deleting and
+        rebuilding the index would be really bad!
       </p>
     {% endif %}
     <form method="POST">
       {% csrf_token %}
-      <div>
-        <input type="submit" name="reindex" value="Reindex into {{ write_index }}"
-               {% if outstanding_tasks %}disabled{% endif %}>
-      </div>
+      <input type="hidden" name="delete_index" value="1">
+      <input class="DANGER" type="submit" name="reindex"
+             value="DELETE index and index into {{ write_index }}"
+             {% if outstanding_chunks %}disabled{% endif %}>
     </form>
   </section>
 {% endblock %}

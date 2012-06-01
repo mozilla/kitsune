@@ -58,6 +58,10 @@ class ReindexError(Exception):
 def handle_reindex(request):
     write_index = es_utils.WRITE_INDEX
 
+    # This is truthy if the user wants us to delete and recreate
+    # the index first.
+    delete_index_first = bool(request.POST.get('delete_index'))
+
     # TODO: If this gets fux0rd, then it's possible this could be
     # non-zero and we really want to just ignore it. Need the ability
     # to ignore it.
@@ -86,10 +90,11 @@ def handle_reindex(request):
         chunks.extend(
             (cls, chunk) for chunk in chunked(indexable, CHUNK_SIZE))
 
-    # The previous lines do a lot of work and take some time to
-    # execute.  So we wait until here to wipe and rebuild the
-    # index. That reduces the time that there is no index by a little.
-    recreate_index()
+    if delete_index_first:
+        # The previous lines do a lot of work and take some time to
+        # execute.  So we wait until here to wipe and rebuild the
+        # index. That reduces the time that there is no index by a little.
+        recreate_index()
 
     chunks_count = len(chunks)
 
