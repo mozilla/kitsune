@@ -254,6 +254,14 @@ I use this when I'm fiddling with mappings and the indexing code.
 
        $ ./manage.py celeryctl purge
 
+   If you purge the tasks, you need to reset the Redis scoreboard.
+   Connect to the appropriate Redis and set the value for the magic
+   key to 0. For example, my Redis is running at port 6383, so I::
+
+       $ redis-cli -p 6383 set search:outstanding_index_chunks 0
+
+   If you do this often, it helps to write a shell script for it.
+
 
 Health/statistics
 -----------------

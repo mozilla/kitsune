@@ -334,15 +334,18 @@ def index_chunk(cls, chunk, reraise=False, es=None):
             log.exception('Unable to flush/refresh')
 
 
-def es_reindex_cmd(percent=100):
+def es_reindex_cmd(percent=100, delete=False):
     """Rebuild ElasticSearch indexes
 
-    See :py:func:`.es_reindex_with_progress` for argument details.
+    :arg percent: 1 to 100--the percentage of the db to index
+    :arg delete: whether or not to wipe the index before reindexing
 
     """
     es = get_indexing_es()
 
-    recreate_index(es=es)
+    if delete:
+        log.info('wiping and recreating %s....', WRITE_INDEX)
+        recreate_index(es=es)
 
     start_time = time.time()
 
