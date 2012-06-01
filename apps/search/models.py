@@ -1,11 +1,10 @@
 import logging
 import pyes
-import time
 from threading import local
 
 from django.conf import settings
 from django.core import signals
-from django.db import reset_queries, models
+from django.db import models
 from django.db.models.signals import pre_delete, post_save
 from django.dispatch import receiver
 
@@ -116,79 +115,7 @@ class SearchMixin(object):
         return cls.objects.order_by('id').values_list('id', flat=True)
 
     @classmethod
-    def index_all(cls, percent=100):
-        """Reindexes all the objects for this model.
-
-        Yields number of documents done.
-
-        Note: This can get run from the command line, so we log stuff
-        to let the user know what's going on.
-
-        :arg percent: The percentage of questions to index. Defaults to
-            100--e.g. all of them.
-
-        """
-        es = es_utils.get_indexing_es()
-
-        cls_name = cls._meta.db_table
-
-        start_time = time.time()
-
-        indexable_qs = cls.get_indexable()
-
-        log.info('reindex %s into %s index...', cls_name, es_utils.WRITE_INDEX)
-        total = indexable_qs.count()
-        to_index = int(total * (percent / 100.0))
-        log.info('total %s: %s (to be indexed: %s)',
-                 es_utils.SUMO_DOCTYPE, total, to_index)
-        if to_index == 0:
-            log.info('done!')
-            return
-
-        total = to_index
-
-        for t, obj_id in enumerate(indexable_qs):
-            if t > total:
-                break
-
-            if t % 1000 == 0 and t > 0:
-                time_to_go = (total - t) * ((time.time() - start_time) / t)
-                per_1000 = (time.time() - start_time) / (t / 1000.0)
-                log.info('%s/%s... (%s to go, %s per 1000 docs)', t, total,
-                         es_utils.format_time(time_to_go),
-                         es_utils.format_time(per_1000))
-
-                # We call this every 1000 or so because we're
-                # essentially loading the whole db and if DEBUG=True,
-                # then Django saves every sql statement which causes
-                # our memory to go up up up. So we reset it and that
-                # makes things happier even in DEBUG environments.
-                reset_queries()
-
-            if t % settings.ES_FLUSH_BULK_EVERY == 0:
-                # We built the ES with this setting, but it doesn't
-                # actually do anything with it unless we call
-                # flush_bulk which causes it to check its bulk_size
-                # and flush it if it's too big.
-                es.flush_bulk()
-
-            try:
-                cls.index(cls.extract_document(obj_id), bulk=True, es=es)
-            except Exception:
-                log.exception('Unable to extract/index document (id: %d)',
-                              obj_id)
-
-            yield t
-
-        es.flush_bulk(forced=True)
-        delta_time = time.time() - start_time
-        log.info('done! (%s, %s per 1000 docs)',
-                 es_utils.format_time(delta_time),
-                 es_utils.format_time(delta_time / (total / 1000.0)))
-        es.refresh(es_utils.WRITE_INDEX, timesleep=0)
-
-    @classmethod
-    def get_index_id(cls, id_):
+    def get_document_id(cls, id_):
         """Generates a composed elasticsearch document id"""
         return '%s:%s' % (cls.get_model_name(), id_)
 
@@ -207,7 +134,7 @@ class SearchMixin(object):
         es.index(document,
                  index=es_utils.WRITE_INDEX,
                  doc_type=es_utils.SUMO_DOCTYPE,
-                 id=cls.get_index_id(document['id']),
+                 id=cls.get_document_id(document['id']),
                  bulk=bulk,
                  force_insert=force_insert)
 
@@ -229,7 +156,7 @@ class SearchMixin(object):
             # TODO: There is a race condition here if this gets called
             # during reindexing.
             es.delete(es_utils.WRITE_INDEX, es_utils.SUMO_DOCTYPE,
-                      cls.get_index_id(id_))
+                      cls.get_document_id(id_))
         except pyes.exceptions.NotFoundException:
             # Ignore the case where we try to delete something that's
             # not there.

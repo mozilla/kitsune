@@ -6,14 +6,11 @@ import time
 
 from django.conf import settings
 from django.contrib.sites.models import Site
-from django.core.cache import cache
 from django.db.models import ObjectDoesNotExist
 from django.http import HttpResponse, HttpResponseBadRequest
 from django.utils.http import urlquote
 from django.views.decorators.cache import cache_page
-from django.views.decorators.http import require_GET
 
-from access.decorators import permission_required
 import jingo
 import jinja2
 from mobility.decorators import mobile_template
@@ -27,7 +24,6 @@ from questions.models import question_searcher, Question
 import search as constants
 from search.forms import SearchForm
 from search.es_utils import ESTimeoutError, ESMaxRetryError, ESException
-from search.tasks import ES_REINDEX_PROGRESS
 from sumo.utils import paginate, smart_int
 from wiki.models import wiki_searcher, Document
 import waffle
@@ -839,18 +835,6 @@ def plugin(request):
     return jingo.render(request, 'search/plugin.html',
                         {'site': site, 'locale': request.locale},
                         mimetype='application/opensearchdescription+xml')
-
-
-@require_GET
-@permission_required('search.reindex')
-def reindex_progress(request):
-    """If a reindex is in progress, return its ratio of completeness as text.
-
-    If not, return ''.
-
-    """
-    return HttpResponse(cache.get(ES_REINDEX_PROGRESS, ''),
-                        mimetype='text/plain')
 
 
 def _ternary_filter(ternary_value):

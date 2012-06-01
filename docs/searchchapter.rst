@@ -246,6 +246,15 @@ I use this when I'm fiddling with mappings and the indexing code.
    that will update the index as the data changes.
 
 
+.. Note::
+
+   If you kick off indexing with the admin, then indexing gets done in
+   chunks by celery tasks. If you need to halt indexing, you can purge
+   the tasks with::
+
+       $ ./manage.py celeryctl purge
+
+
 Health/statistics
 -----------------
 
