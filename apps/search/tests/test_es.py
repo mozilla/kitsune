@@ -82,7 +82,7 @@ class ElasticTestCase(TestCase):
 
         # This removes the previous round of indexes and creates new
         # ones with mappings and all that.
-        es_reindex_cmd()
+        es_reindex_cmd(delete=True)
 
         # TODO: This is kind of bad.  If setup_indexes gets called in
         # a setUp and that setUp at some point throws an exception, we
