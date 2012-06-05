@@ -94,7 +94,7 @@ class SessionMiddleware(object):
             if request.REQUEST.get('twitter_delete_auth'):
                 request.twitter.delete(request, response)
 
-            if request.twitter.authed:
+            if request.twitter.authed and REQUEST_KEY_NAME in request.COOKIES:
                 response.delete_cookie(REQUEST_KEY_NAME)
                 response.delete_cookie(REQUEST_SECRET_NAME)
                 request.twitter.save(request, response)

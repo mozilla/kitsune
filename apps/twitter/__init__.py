@@ -8,7 +8,6 @@ from django.conf import settings
 log = logging.getLogger('k')
 
 PREFIX = 'custcare_'
-ACCESS_NAME = PREFIX + 'access'
 REDIRECT_NAME = PREFIX + 'redirect'
 REQUEST_KEY_NAME = PREFIX + 'request_key'
 REQUEST_SECRET_NAME = PREFIX + 'request_secret'
@@ -97,5 +96,4 @@ class Session(object):
     def save(self, request, response):
         request.session[self.key_key] = self.key
         request.session[self.key_secret] = self.secret
-        request.session[ACCESS_NAME] = self.id
         response.set_cookie(REDIRECT_NAME, '1', max_age=MAX_AGE)
