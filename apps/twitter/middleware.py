@@ -21,11 +21,13 @@ class SessionMiddleware(object):
 
         request.twitter = Session.from_request(request)
 
-        ssl_url = url(request, {'scheme': 'https'})
+        is_secure = settings.TWITTER_COOKIE_SECURE
+        ssl_url = url(request, {'scheme': 'https' if is_secure else 'http'})
         auth = tweepy.OAuthHandler(settings.TWITTER_CONSUMER_KEY,
                                    settings.TWITTER_CONSUMER_SECRET,
                                    ssl_url,
-                                   secure=True)
+                                   secure=is_secure)
+        #import pdb; pdb.set_trace()
 
         if request.REQUEST.get('twitter_delete_auth'):
             request.twitter = Session()
@@ -36,7 +38,6 @@ class SessionMiddleware(object):
             request.twitter.api = tweepy.API(auth)
 
         else:
-
             verifier = request.GET.get('oauth_verifier')
             if verifier:
                 # We are completing an OAuth login
@@ -55,8 +56,10 @@ class SessionMiddleware(object):
                         pass
                     else:
                         # Override path to drop query string.
-                        ssl_url = url(request, {'scheme': 'https',
-                                                'path': request.path})
+                        ssl_url = url(
+                            request,
+                            {'scheme': 'https' if is_secure else 'http',
+                             'path': request.path})
                         response = http.HttpResponseRedirect(ssl_url)
 
                         Session(auth.access_token.key,
@@ -75,10 +78,14 @@ class SessionMiddleware(object):
                     log.warning('Tweepy error while getting authorization url')
                 else:
                     response = http.HttpResponseRedirect(redirect_url)
-                    response.set_cookie(REQUEST_KEY_NAME,
-                                        auth.request_token.key, secure=True)
-                    response.set_cookie(REQUEST_SECRET_NAME,
-                                        auth.request_token.secret, secure=True)
+                    response.set_cookie(
+                        REQUEST_KEY_NAME,
+                        auth.request_token.key,
+                        secure=is_secure)
+                    response.set_cookie(
+                        REQUEST_SECRET_NAME,
+                        auth.request_token.secret,
+                        secure=is_secure)
                     return response
 
     def process_response(self, request, response):

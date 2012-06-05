@@ -2,6 +2,7 @@ import logging
 from uuid import uuid4
 
 from django import http
+from django.conf import settings
 from django.core.cache import cache
 
 
@@ -31,9 +32,12 @@ def url(request, override=None):
 def auth_wanted(view_func):
     """Twitter sessions are SSL only, so redirect to SSL if needed."""
     def wrapper(request, *args, **kwargs):
-
-        if request.COOKIES.get(REDIRECT_NAME) and not request.is_secure():
-            ssl_url = url(request, {'scheme': 'https'})
+        is_secure = settings.TWITTER_COOKIE_SECURE
+        if (request.COOKIES.get(REDIRECT_NAME) and
+            (is_secure and not request.is_secure())):
+            ssl_url = url(
+                request,
+                {'scheme': 'https' if is_secure else 'http'})
             return http.HttpResponseRedirect(ssl_url)
 
         return view_func(request, *args, **kwargs)
@@ -94,4 +98,6 @@ class Session(object):
         cache.set(self.cachekey_key, self.key, MAX_AGE)
         cache.set(self.cachekey_secret, self.secret, MAX_AGE)
         response.set_cookie(REDIRECT_NAME, '1', max_age=MAX_AGE)
-        response.set_cookie(ACCESS_NAME, self.id, max_age=MAX_AGE, secure=True)
+        is_secure = settings.TWITTER_COOKIE_SECURE
+        response.set_cookie(
+            ACCESS_NAME, self.id, max_age=MAX_AGE, secure=is_secure)
