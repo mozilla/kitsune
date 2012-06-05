@@ -62,44 +62,40 @@ class Session(object):
     secret = None
 
     @property
-    def cachekey_key(self):
-        return '{0}_key_{1}'.format(ACCESS_NAME, self.id)
+    def key_key(self):
+        return 'twitter_oauth_key'
 
     @property
-    def cachekey_secret(self):
-        return '{0}_secret_{1}'.format(ACCESS_NAME, self.id)
+    def key_secret(self):
+        return 'twitter_oauth_secret'
 
     @property
     def authed(self):
-        return bool(self.id and self.key and self.secret)
+        return bool(self.key and self.secret)
 
     def __init__(self, key=None, secret=None):
-        self.id = uuid4().hex
         self.key = key
         self.secret = secret
 
     @classmethod
     def from_request(cls, request):
         s = cls()
-        s.id = request.session.get(ACCESS_NAME)
-        s.key = request.session.get(s.cachekey_key)
-        s.secret = request.session.get(s.cachekey_secret)
+        s.key = request.session.get(s.key_key)
+        s.secret = request.session.get(s.key_secret)
         return s
 
     def delete(self, request, response):
         response.delete_cookie(REDIRECT_NAME)
-        if ACCESS_NAME in request.session:
-            del request.session[ACCESS_NAME]
-        if self.cachekey_key in request.session:
-            del request.session[self.cachekey_key]
-        if self.cachekey_secret in request.session:
-            del request.session[self.cachekey_secret]
+        if self.key_key in request.session:
+            del request.session[self.key_key]
+        if self.key_secret in request.session:
+            del request.session[self.key_secret]
         self.id = None
         self.key = None
         self.secret = None
 
     def save(self, request, response):
-        request.session[self.cachekey_key] = self.key
-        request.session[self.cachekey_secret] = self.secret
+        request.session[self.key_key] = self.key
+        request.session[self.key_secret] = self.secret
         request.session[ACCESS_NAME] = self.id
         response.set_cookie(REDIRECT_NAME, '1', max_age=MAX_AGE)
