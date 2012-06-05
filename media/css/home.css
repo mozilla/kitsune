@@ -105,7 +105,8 @@ html[lang=ja] body div#featured {
     visibility: hidden;
 }
 
-#home-content-top {
+#home-content-top,
+#home-content-nav {
     font-size: 14px;
     padding: 20px 10px 0;
 }
