@@ -62,8 +62,9 @@ class SessionMiddleware(object):
                              'path': request.path})
                         response = http.HttpResponseRedirect(ssl_url)
 
-                        Session(auth.access_token.key,
-                                auth.access_token.secret).save(response)
+                        Session(
+                            auth.access_token.key,
+                            auth.access_token.secret).save(request, response)
                         return response
                 else:
                     # request tokens didn't validate
@@ -91,11 +92,11 @@ class SessionMiddleware(object):
     def process_response(self, request, response):
         if getattr(request, 'twitter', False):
             if request.REQUEST.get('twitter_delete_auth'):
-                request.twitter.delete(response)
+                request.twitter.delete(request, response)
 
             if request.twitter.authed:
                 response.delete_cookie(REQUEST_KEY_NAME)
                 response.delete_cookie(REQUEST_SECRET_NAME)
-                request.twitter.save(response)
+                request.twitter.save(request, response)
 
         return response

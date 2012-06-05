@@ -3,7 +3,6 @@ from uuid import uuid4
 
 from django import http
 from django.conf import settings
-from django.core.cache import cache
 
 
 log = logging.getLogger('k')
@@ -30,7 +29,9 @@ def url(request, override=None):
 
 
 def auth_wanted(view_func):
-    """Twitter sessions are SSL only, so redirect to SSL if needed."""
+    """Twitter sessions are SSL only, so redirect to SSL if needed.
+
+    Don't redirect if TWITTER_COOKIE_SECURE is False."""
     def wrapper(request, *args, **kwargs):
         is_secure = settings.TWITTER_COOKIE_SECURE
         if (request.COOKIES.get(REDIRECT_NAME) and
@@ -80,24 +81,25 @@ class Session(object):
     @classmethod
     def from_request(cls, request):
         s = cls()
-        s.id = request.COOKIES.get(ACCESS_NAME)
-        s.key = cache.get(s.cachekey_key)
-        s.secret = cache.get(s.cachekey_secret)
+        s.id = request.session.get(ACCESS_NAME)
+        s.key = request.session.get(s.cachekey_key)
+        s.secret = request.session.get(s.cachekey_secret)
         return s
 
-    def delete(self, response):
+    def delete(self, request, response):
         response.delete_cookie(REDIRECT_NAME)
-        response.delete_cookie(ACCESS_NAME)
-        cache.delete(self.cachekey_key)
-        cache.delete(self.cachekey_secret)
+        if ACCESS_NAME in request.session:
+            del request.session[ACCESS_NAME]
+        if self.cachekey_key in request.session:
+            del request.session[self.cachekey_key]
+        if self.cachekey_secret in request.session:
+            del request.session[self.cachekey_secret]
         self.id = None
         self.key = None
         self.secret = None
 
-    def save(self, response):
-        cache.set(self.cachekey_key, self.key, MAX_AGE)
-        cache.set(self.cachekey_secret, self.secret, MAX_AGE)
+    def save(self, request, response):
+        request.session[self.cachekey_key] = self.key
+        request.session[self.cachekey_secret] = self.secret
+        request.session[ACCESS_NAME] = self.id
         response.set_cookie(REDIRECT_NAME, '1', max_age=MAX_AGE)
-        is_secure = settings.TWITTER_COOKIE_SECURE
-        response.set_cookie(
-            ACCESS_NAME, self.id, max_age=MAX_AGE, secure=is_secure)
