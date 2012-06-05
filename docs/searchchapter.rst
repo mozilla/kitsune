@@ -61,7 +61,7 @@ should override in ``settings_local.py``::
 
     # Connection information for Elastic
     ES_HOSTS = ['127.0.0.1:9200']
-    ES_INDEXES = {'default': 'sumo'}
+    ES_INDEXES = {'default': 'sumo_dev'}
     ES_WRITE_INDEXES = ES_INDEXES
 
 
