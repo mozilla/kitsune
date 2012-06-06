@@ -14,8 +14,8 @@
 }
 
 #featured {
-    background: url("../img/nurse.small.png") no-repeat scroll 550px 0px transparent;
-    height: 125px;
+    background: url("../img/nurse.small.png") no-repeat scroll 550px 100% transparent;
+    height: 134px;
     overflow: hidden;
     padding: 75px 330px 0 0;
     position: relative;
@@ -39,7 +39,7 @@ html[lang=ja] body div#featured {
 }
 
 #featured-wrap {
-    height: 125px;
+    height: 134px;
 }
 
 #featured h1 {
