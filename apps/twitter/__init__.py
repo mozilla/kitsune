@@ -1,5 +1,4 @@
 import logging
-from uuid import uuid4
 
 from django import http
 from django.conf import settings
@@ -30,7 +29,8 @@ def url(request, override=None):
 def auth_wanted(view_func):
     """Twitter sessions are SSL only, so redirect to SSL if needed.
 
-    Don't redirect if TWITTER_COOKIE_SECURE is False."""
+    Don't redirect if TWITTER_COOKIE_SECURE is False.
+    """
     def wrapper(request, *args, **kwargs):
         is_secure = settings.TWITTER_COOKIE_SECURE
         if (request.COOKIES.get(REDIRECT_NAME) and
@@ -56,17 +56,8 @@ def auth_required(view_func):
 
 
 class Session(object):
-    id = None
-    key = None
-    secret = None
-
-    @property
-    def key_key(self):
-        return 'twitter_oauth_key'
-
-    @property
-    def key_secret(self):
-        return 'twitter_oauth_secret'
+    key_key = 'twitter_oauth_key'
+    key_secret = 'twitter_oauth_secret'
 
     @property
     def authed(self):
@@ -89,7 +80,6 @@ class Session(object):
             del request.session[self.key_key]
         if self.key_secret in request.session:
             del request.session[self.key_secret]
-        self.id = None
         self.key = None
         self.secret = None
 

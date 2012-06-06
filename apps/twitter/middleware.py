@@ -4,8 +4,8 @@ import re
 from django import http
 from django.conf import settings
 
-from twitter import *
 import tweepy
+from twitter import url, Session, REQUEST_KEY_NAME, REQUEST_SECRET_NAME
 
 
 log = logging.getLogger('k')
@@ -21,13 +21,16 @@ class SessionMiddleware(object):
 
         request.twitter = Session.from_request(request)
 
+        # If is_secure is True (should always be true except for local dev),
+        # we will be redirected back to https and all cookies set will be
+        # secure only.
         is_secure = settings.TWITTER_COOKIE_SECURE
+
         ssl_url = url(request, {'scheme': 'https' if is_secure else 'http'})
         auth = tweepy.OAuthHandler(settings.TWITTER_CONSUMER_KEY,
                                    settings.TWITTER_CONSUMER_SECRET,
                                    ssl_url,
-                                   secure=is_secure)
-        #import pdb; pdb.set_trace()
+                                   secure=True)
 
         if request.REQUEST.get('twitter_delete_auth'):
             request.twitter = Session()
