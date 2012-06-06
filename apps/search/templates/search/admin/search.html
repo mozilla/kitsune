@@ -207,19 +207,20 @@
         indexing pass unless you really know you want to.
       </p>
     {% endif %}
-    <h2>Reindex into existing index</h2>
-    <p>
-      Reindex into the existing WRITE index. Don't do this if you've
-      made mapping changes since this does not recreate the index with
-      the new mappings.
-    </p>
-    <form method="POST">
-      {% csrf_token %}
-      <input type="submit" name="reindex"
-             value="Reindex into {{ write_index }}"
-             {% if outstanding_chunks %}disabled{% endif %}>
-    </form>
-
+    {% if doctype_write_stats != None %}
+      <h2>Reindex into existing index</h2>
+      <p>
+        Reindex into the existing WRITE index. Don't do this if you've
+        made mapping changes since this does not recreate the index with
+        the new mappings.
+      </p>
+      <form method="POST">
+        {% csrf_token %}
+        <input type="submit" name="reindex"
+               value="Reindex into {{ write_index }}"
+               {% if outstanding_chunks %}disabled{% endif %}>
+      </form>
+    {% endif %}
     <h2>DELETE existing index, recreate it and reindex</h2>
     <p>
       This <strong>DELETES</strong> the existing WRITE index,

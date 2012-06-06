@@ -343,6 +343,13 @@ def es_reindex_cmd(percent=100, delete=False):
     """
     es = get_indexing_es()
 
+    try:
+        get_doctype_stats(WRITE_INDEX)
+    except ESIndexMissingException:
+        if not delete:
+            log.error('The index does not exist. You must specify --delete.')
+            return
+
     if delete:
         log.info('wiping and recreating %s....', WRITE_INDEX)
         recreate_index(es=es)
