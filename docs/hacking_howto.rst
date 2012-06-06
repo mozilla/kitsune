@@ -183,8 +183,8 @@ Now you can copy and modify any settings from ``settings.py`` into
 memcached
 ---------
 
-If you are running OSX or Red Hat/CentOS/Fedora, once you have installed
-memcached you can start it and configure it to run on startup using::
+If you are running Red Hat/CentOS/Fedora, once you have installed memcached you
+can start it and configure it to run on startup using::
 
     $ chkconfig memcached on
     $ /etc/init.d/memcached start
