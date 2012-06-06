@@ -67,6 +67,7 @@ For the minimum installation, you'll need the following:
 Installation for these is very system dependent. Using a package
 manager, like yum, aptitude, or brew, is encouraged.
 
+
 Getting the Source
 ==================
 
@@ -182,8 +183,8 @@ Now you can copy and modify any settings from ``settings.py`` into
 memcached
 ---------
 
-Once you have installed memcached you can start it and configure it to run on
-startup::
+If you are running OSX or Red Hat/CentOS/Fedora, once you have installed
+memcached you can start it and configure it to run on startup using::
 
     $ chkconfig memcached on
     $ /etc/init.d/memcached start
