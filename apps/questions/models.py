@@ -415,7 +415,8 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
         """
         start = datetime.now() - timedelta(hours=72)
         qs = cls.objects.filter(
-            num_answers=0, created__gt=start, is_locked=False)
+            num_answers=0, created__gt=start, is_locked=False,
+            creator__is_active=1)
         return qs.count()
 
 
