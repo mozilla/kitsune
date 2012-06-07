@@ -211,7 +211,7 @@ def datetimeformat(context, value, format='shortdatetime'):
     # If within a day, 24 * 60 * 60 = 86400s
     if format == 'shortdatetime':
         # Check if the date is today
-        if convert_value.toordinal() == datetime.date.today().toordinal():
+        if convert_value.toordinal() == datetime.datetime.now(tz=convert_tzinfo).toordinal():
             formatted = _lazy(u'Today at %s') % format_time(
                 convert_value, format='short', tzinfo=convert_tzinfo, locale=locale)
         else:
