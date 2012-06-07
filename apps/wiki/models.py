@@ -496,6 +496,13 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
         return EditDocumentEvent.is_notifying(user, self)
 
     @classmethod
+    def get_query_fields(cls):
+        return ['document_title__text',
+                'document_content__text',
+                'document_summary__text',
+                'document_keywords__text']
+
+    @classmethod
     def get_mapping(cls):
         return {
             'id': {'type': 'long'},
