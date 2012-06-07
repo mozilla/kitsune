@@ -1,2 +1,0 @@
-ALTER TABLE notifications_watch RENAME tidings_watch;
-ALTER TABLE notifications_watchfilter RENAME tidings_watchfilter;

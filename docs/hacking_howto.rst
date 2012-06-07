@@ -264,15 +264,6 @@ To load the latest database schema, use ``scripts/schema.sql`` and
     $ mysql -u kitsune -p kitsune < scripts/schema.sql
     $ ./vendor/src/schematic/schematic migrations/
 
-At this point you may run into an error related to a foreign key
-constraint within migration 109. To solve this issue::
-
-    $ ./manage.py shell
-    >>> from django.models.contenttypes import ContentType
-    >>> from users.models import Profile
-    >>> ContentType.object.get_from_model(Profile)
-    $ ./vendor/src/schematic/schematic migrations/
-
 You'll now have an empty but up-to-date database!
 
 Finally, you'll probably want to create a superuser. Just use Django's
