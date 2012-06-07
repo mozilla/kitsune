@@ -40,6 +40,9 @@ CHUNK_SIZE = 50000
 log = logging.getLogger('search.es')
 
 
+F = elasticutils.F
+
+
 class Sphilastic(elasticutils.S):
     """Shim around elasticutils' S which makes it look like oedipus.S
 

@@ -23,7 +23,8 @@ from forums.models import Thread, discussion_searcher
 from questions.models import question_searcher, Question
 import search as constants
 from search.forms import SearchForm
-from search.es_utils import ESTimeoutError, ESMaxRetryError, ESException
+from search.es_utils import (ESTimeoutError, ESMaxRetryError, ESException,
+                             Sphilastic, F)
 from sumo.utils import paginate, smart_int
 from wiki.models import wiki_searcher, Document
 import waffle
@@ -41,6 +42,339 @@ def jsonp_is_valid(func):
 class ObjectDict(object):
     def __init__(self, source_dict):
         self.__dict__.update(source_dict)
+
+
+def search_with_es_unified(request, template=None):
+    """ES-specific search view"""
+
+    # Time ES and Sphinx separate. See bug 723930.
+    # TODO: Remove this once Sphinx is gone.
+    start = time.time()
+
+    # JSON-specific variables
+    is_json = (request.GET.get('format') == 'json')
+    callback = request.GET.get('callback', '').strip()
+    mimetype = 'application/x-javascript' if callback else 'application/json'
+
+    # Search "Expires" header format
+    expires_fmt = '%A, %d %B %Y %H:%M:%S GMT'
+
+    # Check callback is valid
+    if is_json and callback and not jsonp_is_valid(callback):
+        return HttpResponse(
+            json.dumps({'error': _('Invalid callback function.')}),
+            mimetype=mimetype, status=400)
+
+    language = locale_or_default(request.GET.get('language', request.locale))
+    r = request.GET.copy()
+    a = request.GET.get('a', '0')
+
+    # Search default values
+    try:
+        category = (map(int, r.getlist('category')) or
+                    settings.SEARCH_DEFAULT_CATEGORIES)
+    except ValueError:
+        category = settings.SEARCH_DEFAULT_CATEGORIES
+    r.setlist('category', category)
+
+    # Basic form
+    if a == '0':
+        r['w'] = r.get('w', constants.WHERE_BASIC)
+    # Advanced form
+    if a == '2':
+        r['language'] = language
+        r['a'] = '1'
+
+    # TODO: Rewrite so SearchForm is unbound initially and we can use
+    # `initial` on the form fields.
+    if 'include_archived' not in r:
+        r['include_archived'] = False
+
+    search_form = SearchForm(r)
+
+    if not search_form.is_valid() or a == '2':
+        if is_json:
+            return HttpResponse(
+                json.dumps({'error': _('Invalid search data.')}),
+                mimetype=mimetype,
+                status=400)
+
+        t = template if request.MOBILE else 'search/form.html'
+        search_ = jingo.render(request, t,
+                               {'advanced': a, 'request': request,
+                                'search_form': search_form})
+        search_['Cache-Control'] = 'max-age=%s' % \
+                                   (settings.SEARCH_CACHE_PERIOD * 60)
+        search_['Expires'] = (datetime.utcnow() +
+                              timedelta(
+                                minutes=settings.SEARCH_CACHE_PERIOD)) \
+                              .strftime(expires_fmt)
+        return search_
+
+    cleaned = search_form.cleaned_data
+
+    page = max(smart_int(request.GET.get('page')), 1)
+    offset = (page - 1) * settings.SEARCH_RESULTS_PER_PAGE
+
+    # TODO: This is fishy--why does it have to be coded this way?
+    # get language name for display in template
+    lang = language.lower()
+    if settings.LANGUAGES.get(lang):
+        lang_name = settings.LANGUAGES[lang]
+    else:
+        lang_name = ''
+
+    # Woah! object?! Yeah, so what happens is that Sphilastic is
+    # really an elasticutils.S and that requires a Django ORM model
+    # argument. That argument only gets used if you want object
+    # results--for every hit it gets back from ES, it creates an
+    # object of the type of the Django ORM model you passed in. We use
+    # object here to satisfy the need for a type in the constructor
+    # and make sure we don't ever ask for object results.
+    searcher = Sphilastic(object)
+
+    wiki_f = F()
+    question_f = F()
+    discussion_f = F()
+
+    # Start - wiki filters
+
+    # Category filter
+    if cleaned['category']:
+        wiki_f &= F(document_category__in=cleaned['category'])
+
+    # Locale filter
+    wiki_f &= F(document_locale=language)
+
+    # Product filter
+    products = cleaned['product']
+    for p in products:
+        wiki_f &= F(document_tag=p)
+
+    # Tags filter
+    tags = [t.strip() for t in cleaned['tags'].split()]
+    for t in tags:
+        wiki_f &= F(document_tag=t)
+
+    # Archived bit
+    if a == '0' and not cleaned['include_archived']:
+        # Default to NO for basic search:
+        cleaned['include_archived'] = False
+    if not cleaned['include_archived']:
+        wiki_f &= F(document_is_archived=False)
+
+    # End - wiki filters
+
+    # Start - support questions filters
+
+    if cleaned['w'] & constants.WHERE_SUPPORT:
+
+        # Solved is set by default if using basic search
+        if a == '0' and not cleaned['has_helpful']:
+            cleaned['has_helpful'] = constants.TERNARY_YES
+
+        # These filters are ternary, they can be either YES, NO, or OFF
+        ternary_filters = ('is_locked', 'is_solved', 'has_answers',
+                           'has_helpful')
+        d = dict(('question_%s' % filter_name,
+                  _ternary_filter(cleaned[filter_name]))
+                 for filter_name in ternary_filters if cleaned[filter_name])
+        if d:
+            question_f &= F(**d)
+
+        if cleaned['asked_by']:
+            question_f &= F(question_creator=cleaned['asked_by'])
+
+        if cleaned['answered_by']:
+            question_f &= F(question_answer_creator=cleaned['answered_by'])
+
+        q_tags = [t.strip() for t in cleaned['q_tags'].split()]
+        for t in q_tags:
+            question_f &= F(question_tag=t)
+
+    # End - support questions filters
+
+    # Start - discussion forum filters
+
+    if cleaned['w'] & constants.WHERE_DISCUSSION:
+        if cleaned['author']:
+            discussion_f &= F(post_author_ord=cleaned['author'])
+
+        if cleaned['thread_type']:
+            if constants.DISCUSSION_STICKY in cleaned['thread_type']:
+                discussion_f &= F(post_is_sticky=1)
+
+            if constants.DISCUSSION_LOCKED in cleaned['thread_type']:
+                discussion_f &= F(post_is_locked=1)
+
+        if cleaned['forum']:
+            discussion_f &= F(post_form_id__in=cleaned['forum'])
+
+    # End - discussion forum filters
+
+    # Created filter
+    unix_now = int(time.time())
+    interval_filters = (
+        ('created', cleaned['created'], cleaned['created_date']),
+        ('updated', cleaned['updated'], cleaned['updated_date']))
+    for filter_name, filter_option, filter_date in interval_filters:
+        if filter_option == constants.INTERVAL_BEFORE:
+            before = {filter_name + '__gte': 0,
+                      filter_name + '__lte': max(filter_date, 0)}
+
+            discussion_f &= F(**before)
+            question_f &= F(**before)
+        elif filter_option == constants.INTERVAL_AFTER:
+            after = {filter_name + '__gte': min(filter_date, unix_now),
+                     filter_name + '__lte': unix_now}
+
+            discussion_f &= F(**after)
+            question_f &= F(**after)
+
+    # Note: num_voted (with a d) is a different field than num_votes
+    # (with an s). The former is a dropdown and the latter is an
+    # integer value.
+    if cleaned['num_voted'] == constants.INTERVAL_BEFORE:
+        question_f &= F(question_num_votes__lte=max(cleaned['num_votes'], 0))
+    elif cleaned['num_voted'] == constants.INTERVAL_AFTER:
+        question_f &= F(question_num_votes__gte=cleaned['num_votes'])
+
+    # Done with all the filtery stuff--time  to generate results
+
+    documents = ComposedList()
+    try:
+        cleaned_q = cleaned['q']
+
+        # add filters
+        searcher = searcher.filter(question_f | wiki_f | discussion_f)
+
+        # highlights
+        searcher = searcher.highlight(
+            'question_title', 'question_content', 'question_answer_content',
+            'discussion_content',
+            before_match='<b>',
+            after_match='</b>',
+            limit=settings.SEARCH_SUMMARY_LENGTH)
+
+        # TODO: questions-specific sortby only if it's advanced
+        # and questions only
+        sortby = smart_int(request.GET.get('sortby'))
+
+        # query
+        # TODO: set query fields here
+        searcher = searcher.query(cleaned_q)
+
+        import pprint
+        pprint.pprint(searcher._build_query())
+
+        documents = ComposedList()
+        documents.set_count(('results', searcher),
+                            min(searcher.count(), settings.SEARCH_MAX_RESULTS))
+
+        results_per_page = settings.SEARCH_RESULTS_PER_PAGE
+        pages = paginate(request, documents, results_per_page)
+        num_results = len(documents)
+
+        # Get the documents we want to show and add them to
+        # docs_for_page.
+        documents = documents[offset:offset + results_per_page]
+
+        bounds = documents[0][1]
+        searcher = searcher.values_dict()[bounds[0]:bounds[1]]
+
+        results = []
+        for i, doc in enumerate(searcher):
+            rank = i + offset
+
+            if doc['model'] == 'wiki_document':
+                summary = doc['document_summary']
+                result = {
+                    'url': doc['url'],
+                    'title': doc['document_title'],
+                    'type': 'document',
+                    'object': ObjectDict(doc)}
+            elif doc['model'] == 'questions_question':
+                summary = _build_es_excerpt(doc)
+                result = {
+                    'url': doc['url'],
+                    'title': doc['question_title'],
+                    'type': 'question',
+                    'object': ObjectDict(doc),
+                    'is_solved': doc['question_is_solved'],
+                    'num_answers': doc['question_num_answers'],
+                    'num_votes': doc['question_num_votes'],
+                    'num_votes_past_week': doc['question_num_votes_past_week']}
+            else:
+                summary = _build_es_excerpt(doc)
+                result = {
+                    'url': doc['url'],
+                    'title': doc['post_title'],
+                    'type': 'thread',
+                    'object': ObjectDict(doc)}
+            result['search_summary'] = summary
+            result['rank'] = rank
+            result['score'] = doc._score
+            results.append(result)
+
+    except (ESTimeoutError, ESMaxRetryError, ESException), exc:
+        # Handle timeout and all those other transient errors with a
+        # "Search Unavailable" rather than a Django error page.
+        if is_json:
+            return HttpResponse(json.dumps({'error':
+                                             _('Search Unavailable')}),
+                                mimetype=mimetype, status=503)
+
+        if isinstance(exc, ESTimeoutError):
+            statsd.incr('search.%s.timeouterror.elastic.unified')
+        elif isinstance(exc, ESMaxRetryError):
+            statsd.incr('search.%s.maxretryerror.elastic.unified')
+        elif isinstance(exc, ESException):
+            statsd.incr('search.%s.elasticsearchexception.elastic.unified')
+
+        import logging
+        logging.exception(exc)
+
+        t = 'search/mobile/down.html' if request.MOBILE else 'search/down.html'
+        return jingo.render(request, t, {'q': cleaned['q']}, status=503)
+
+    items = [(k, v) for k in search_form.fields for
+             v in r.getlist(k) if v and k != 'a']
+    items.append(('a', '2'))
+
+    if is_json:
+        # Models are not json serializable.
+        for r in results:
+            del r['object']
+        data = {}
+        data['results'] = results
+        data['total'] = len(results)
+        data['query'] = cleaned['q']
+        if not results:
+            data['message'] = _('No pages matched the search criteria')
+        json_data = json.dumps(data)
+        if callback:
+            json_data = callback + '(' + json_data + ');'
+
+        return HttpResponse(json_data, mimetype=mimetype)
+
+    results_ = jingo.render(request, template,
+        {'num_results': num_results, 'results': results, 'q': cleaned['q'],
+         'pages': pages, 'w': cleaned['w'],
+         'search_form': search_form, 'lang_name': lang_name, })
+    results_['Cache-Control'] = 'max-age=%s' % \
+                                (settings.SEARCH_CACHE_PERIOD * 60)
+    results_['Expires'] = (datetime.utcnow() +
+                           timedelta(minutes=settings.SEARCH_CACHE_PERIOD)) \
+                           .strftime(expires_fmt)
+    results_.set_cookie(settings.LAST_SEARCH_COOKIE, urlquote(cleaned['q']),
+                        max_age=3600, secure=False, httponly=False)
+
+    # Send timing information for each engine. Bug 723930.
+    # TODO: Remove this once Sphinx is gone.
+    dt = (time.time() - start) * 1000
+    statsd.timing('search.elastic.unified.view', int(dt))
+
+    return results_
 
 
 def search_with_es(request, template=None):
@@ -799,6 +1133,9 @@ def search(request, template=None):
     # future.
 
     if waffle.flag_is_active(request, 'elasticsearch'):
+        if (waffle.flag_is_active(request, 'esunified') or
+            request.GET.get('esunified')):
+            return search_with_es_unified(request, template)
         return search_with_es(request, template)
     else:
         return search_with_sphinx(request, template)
