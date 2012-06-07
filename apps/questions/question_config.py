@@ -275,7 +275,7 @@ products = SortedDict([
     }),
     ('home', {
         'name': _lazy(u'Firefox Home'),
-        'subtitle':  _lazy(u'App for iPhone'),
+        'subtitle':  _lazy(u'iPhone and iPad'),
         'tags': ['FxHome'],
         'categories': SortedDict([
             ('i1', {
