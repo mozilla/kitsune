@@ -264,7 +264,7 @@ class Readout(object):
     # short_title= = _lazy(u'Short Title of Readout for In-Page Links')
     # slug = 'Unique URL slug for detail page'
     # details_link_text = _lazy(u'All articles from this readout...')
-    column3_label = _lazy(u'Visits this week')
+    column3_label = _lazy(u'Visits in last 30 days')
     column4_label = _lazy(u'Status')
     modes = [(MOST_VIEWED, _lazy('Most Viewed')),
              (MOST_RECENT, _lazy('Most Recent'))]
