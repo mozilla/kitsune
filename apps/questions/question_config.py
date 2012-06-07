@@ -164,7 +164,7 @@ products = SortedDict([
     }),
     ('mobile', {
         'name': _lazy(u'Firefox for Mobile'),
-        'subtitle': _lazy(u'Android or Maemo systems'),
+        'subtitle': _lazy(u'Android'),
         'extra_fields': ['ff_version', 'os', 'plugins'],
         'tags': ['mobile'],
         'categories': SortedDict([
@@ -275,7 +275,7 @@ products = SortedDict([
     }),
     ('home', {
         'name': _lazy(u'Firefox Home'),
-        'subtitle':  _lazy(u'App for iPhone'),
+        'subtitle':  _lazy(u'iPhone and iPad'),
         'tags': ['FxHome'],
         'categories': SortedDict([
             ('i1', {
