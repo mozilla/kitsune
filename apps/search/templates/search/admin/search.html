@@ -218,7 +218,6 @@
         {% csrf_token %}
         <input type="submit" name="reindex"
                value="Reindex into {{ write_index }}"
-               {% if doctype_write_stats == None %}disabled{% endif %}
                {% if outstanding_chunks %}disabled{% endif %}>
       </form>
     {% endif %}
