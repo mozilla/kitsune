@@ -262,7 +262,18 @@ def search_with_es_unified(request, template=None):
 
         # query
         # TODO: set query fields here
-        searcher = searcher.query(cleaned_q)
+        query = dict((field, cleaned_q) for field in
+                     ('question_title__text',
+                      'question_content__text',
+                      'question_answer_content__text',
+                      'post_title__text',
+                      'post_content__text',
+                      'document_title__text',
+                      'document_content__text',
+                      'document_summary__text',
+                      'document_keywords__text'))
+
+        searcher = searcher.query(or_=query)
 
         import pprint
         pprint.pprint(searcher._build_query())
@@ -289,17 +300,13 @@ def search_with_es_unified(request, template=None):
             if doc['model'] == 'wiki_document':
                 summary = doc['document_summary']
                 result = {
-                    'url': doc['url'],
                     'title': doc['document_title'],
-                    'type': 'document',
-                    'object': ObjectDict(doc)}
+                    'type': 'document'}
             elif doc['model'] == 'questions_question':
                 summary = _build_es_excerpt(doc)
                 result = {
-                    'url': doc['url'],
                     'title': doc['question_title'],
                     'type': 'question',
-                    'object': ObjectDict(doc),
                     'is_solved': doc['question_is_solved'],
                     'num_answers': doc['question_num_answers'],
                     'num_votes': doc['question_num_votes'],
@@ -307,10 +314,11 @@ def search_with_es_unified(request, template=None):
             else:
                 summary = _build_es_excerpt(doc)
                 result = {
-                    'url': doc['url'],
                     'title': doc['post_title'],
-                    'type': 'thread',
-                    'object': ObjectDict(doc)}
+                    'type': 'thread'}
+
+            result['url'] = doc['url']
+            result['object'] = ObjectDict(doc)
             result['search_summary'] = summary
             result['rank'] = rank
             result['score'] = doc._score
