@@ -237,7 +237,7 @@
     <form method="POST">
       {% csrf_token %}
       <input type="hidden" name="delete_index" value="1">
-      <input class="DANGER" type="submit" name="delete"
+      <input class="DANGER" type="submit" name="reindex"
              value="DELETE index and index into {{ write_index }}"
              {% if outstanding_chunks %}disabled{% endif %}>
     </form>
