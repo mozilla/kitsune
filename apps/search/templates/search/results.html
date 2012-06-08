@@ -7,9 +7,7 @@
 
 {% block content %}
 <article id="search-results" class="main">
-  <div id="basic-search" class="search-refine">
-    {{ basic_search_form() }}
-  </div>
+  {{ basic_search_form(True) }}
 
   <div class="search-count">
     {# L10n: {n} is the number of search results, {q} is the search query, {l} is the language searched. #}
@@ -26,9 +24,7 @@
 
     {{ pages|paginator }}
 
-    <div class="search-refine">
-      {{ basic_search_form() }}
-    </div>
+    {{ basic_search_form() }}
 
   </div>
 
