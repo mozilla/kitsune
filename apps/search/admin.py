@@ -26,11 +26,29 @@ from sumo.redis_utils import redis_client, RedisError
 log = logging.getLogger('k.es')
 
 
+def handle_reset(request):
+    """Resets the redis scoreboard we use
+
+    Why? The reason you'd want to reset it is if the system gets
+    itself into a hosed state where the redis scoreboard says there
+    are outstanding tasks, but there aren't. If you enter that state,
+    this lets you reset the scoreboard.
+    """
+    try:
+        client = redis_client('default')
+        client.set(OUTSTANDING_INDEX_CHUNKS, 0)
+    except RedisError:
+        log.warning('Redis not running. Can not check if there are '
+                    'outstanding tasks.')
+    return HttpResponseRedirect(request.path)
+
+
 class DeleteError(Exception):
     pass
 
 
 def handle_delete(request):
+    """Deletes an index"""
     index_to_delete = request.POST['delete_index']
 
     # Rule 1: Has to start with the ES_INDEX_PREFIX.
@@ -56,6 +74,7 @@ class ReindexError(Exception):
 
 
 def handle_reindex(request):
+    """Caculates and kicks off indexing tasks"""
     write_index = es_utils.WRITE_INDEX
 
     # This is truthy if the user wants us to delete and recreate
@@ -111,19 +130,19 @@ def handle_reindex(request):
 
 
 def search(request):
-    """Render the admin view containing search tools.
-
-    It's a dirty little secret that you can fire off 2 concurrent
-    reindexing jobs; the disabling of the buttons while one is running
-    is advisory only.  This lets us recover if celery crashes and
-    doesn't clear the memcached token.
-
-    """
+    """Render the admin view containing search tools"""
     if not request.user.has_perm('search.reindex'):
         raise PermissionDenied
 
     error_messages = []
     stats = {}
+
+    reset_requested = 'reset' in request.POST
+    if reset_requested:
+        try:
+            return handle_reset(request)
+        except ReindexError, e:
+            error_messages.append(u'Error: %s' % e.message)
 
     reindex_requested = 'reindex' in request.POST
     if reindex_requested:

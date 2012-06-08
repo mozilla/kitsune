@@ -237,9 +237,26 @@
     <form method="POST">
       {% csrf_token %}
       <input type="hidden" name="delete_index" value="1">
-      <input class="DANGER" type="submit" name="reindex"
+      <input class="DANGER" type="submit" name="delete"
              value="DELETE index and index into {{ write_index }}"
              {% if outstanding_chunks %}disabled{% endif %}>
+    </form>
+
+    <h2>RESET scoreboard</h2>
+    <p>
+      This resets the redis key which we use as a scoreboard for keeping
+      track of how many outstanding indexing tasks there are.
+    </p>
+    <p>
+      If you believe that the scoreboard is wrong and that it doesn't
+      represent the number of outstanding tasks and that there are no
+      outstanding tasks, then you should reset the scoreboard.
+    </p>
+    <form method="POST">
+      {% csrf_token %}
+      <input type="hidden" name="reset_scoreboard" value="1">
+      <input type="submit" name="reset"
+             value="Reset scoreboard">
     </form>
   </section>
 {% endblock %}
