@@ -36,6 +36,20 @@
 
     {{ pages|paginator }}
 
+    <div class="search-refine">
+      <form role="search" method="get" action="search">
+        {{ search_engine() }}
+        {% for name, field in search_form.fields.items() if not name in ('q',) %}
+          {% set list = request.GET.getlist(name) %}
+          {% for value in list %}
+            <input type="hidden" name="{{ name }}" value="{{ value }}" />
+          {% endfor %}
+        {% endfor %}
+        <input type="text" class="search-query search-refine-query" value="{{ q }}" name="q">
+        <input type="submit" class="search-refine-submit btn-large" value="{{ _('Search') }}">
+      </form>
+    </div>
+
   </div>
 
   {% if request.locale == settings.WIKI_DEFAULT_LANGUAGE %}
