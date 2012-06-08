@@ -1,24 +1,14 @@
 {# vim: set ts=2 et sts=2 sw=2: #}
 {% extends "search/base.html" %}
 {% from "search/includes/result.html" import search_result with context %}
-{% from "search/includes/macros.html" import search_engine with context %}
+{% from "search/includes/macros.html" import search_engine, basic_search_form with context %}
 {% set meta = (('WT.oss', q),
                ('WT.oss_r', num_results)) %}
 
 {% block content %}
 <article id="search-results" class="main">
   <div id="basic-search" class="search-refine">
-    <form role="search" method="get" action="search">
-      {{ search_engine() }}
-      {% for name, field in search_form.fields.items() if not name in ('q',) %}
-        {% set list = request.GET.getlist(name) %}
-        {% for value in list %}
-          <input type="hidden" name="{{ name }}" value="{{ value }}" />
-        {% endfor %}
-      {% endfor %}
-      <input type="text" class="search-query search-refine-query" value="{{ q }}" name="q">
-      <input type="submit" class="search-refine-submit btn-large" value="{{ _('Search') }}">
-    </form>
+    {{ basic_search_form() }}
   </div>
 
   <div class="search-count">
@@ -37,17 +27,7 @@
     {{ pages|paginator }}
 
     <div class="search-refine">
-      <form role="search" method="get" action="search">
-        {{ search_engine() }}
-        {% for name, field in search_form.fields.items() if not name in ('q',) %}
-          {% set list = request.GET.getlist(name) %}
-          {% for value in list %}
-            <input type="hidden" name="{{ name }}" value="{{ value }}" />
-          {% endfor %}
-        {% endfor %}
-        <input type="text" class="search-query search-refine-query" value="{{ q }}" name="q">
-        <input type="submit" class="search-refine-submit btn-large" value="{{ _('Search') }}">
-      </form>
+      {{ basic_search_form() }}
     </div>
 
   </div>
