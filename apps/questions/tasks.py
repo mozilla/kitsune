@@ -127,7 +127,13 @@ def log_answer(answer):
 
     # Record karma actions
     AnswerAction(answer.creator, answer.created.date()).save()
-    if answer == answer.question.answers.order_by('created')[0]:
+    try:
+        from questions.models import Answer
+        answers = Answer.uncached.filter(question=answer.question_id)
+        if answer == answers.order_by('created')[0]:
+            FirstAnswerAction(answer.creator, answer.created.date()).save()
+    except IndexError:
+        # If we hit an IndexError, we assume this is the first answer.
         FirstAnswerAction(answer.creator, answer.created.date()).save()
 
     unpin_this_thread()
