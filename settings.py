@@ -452,6 +452,7 @@ MINIFY_BUNDLES = {
             'css/jqueryui/jqueryui.css',
         ),
         'forums': (
+            'css/jqueryui/jqueryui.css',
             'css/forums.css',
             'css/reportabuse.css',
         ),
