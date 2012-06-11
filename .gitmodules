@@ -87,13 +87,13 @@
 	url = https://github.com/jsocol/django-adminplus
 [submodule "vendor/src/celery"]
 	path = vendor/src/celery
-	url = https://github.com/ask/celery
+	url = https://github.com/celery/celery
 [submodule "vendor/src/django-celery"]
 	path = vendor/src/django-celery
-	url = https://github.com/ask/django-celery
+	url = https://github.com/celery/django-celery
 [submodule "vendor/src/kombu"]
 	path = vendor/src/kombu
-	url = https://github.com/ask/kombu
+	url = https://github.com/celery/kombu
 [submodule "vendor/src/django-tidings"]
 	path = vendor/src/django-tidings
 	url = https://github.com/erikrose/django-tidings.git
