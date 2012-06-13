@@ -61,7 +61,7 @@ should override in ``settings_local.py``::
 
     # Connection information for Elastic
     ES_HOSTS = ['127.0.0.1:9200']
-    ES_INDEXES = {'default': 'sumo'}
+    ES_INDEXES = {'default': 'sumo_dev'}
     ES_WRITE_INDEXES = ES_INDEXES
 
 
@@ -244,6 +244,23 @@ I use this when I'm fiddling with mappings and the indexing code.
    set to ``True``, you won't have to do it again unless indexing code
    changes. The models have ``post_save`` and ``pre_delete`` hooks
    that will update the index as the data changes.
+
+
+.. Note::
+
+   If you kick off indexing with the admin, then indexing gets done in
+   chunks by celery tasks. If you need to halt indexing, you can purge
+   the tasks with::
+
+       $ ./manage.py celeryctl purge
+
+   If you purge the tasks, you need to reset the Redis scoreboard.
+   Connect to the appropriate Redis and set the value for the magic
+   key to 0. For example, my Redis is running at port 6383, so I::
+
+       $ redis-cli -p 6383 set search:outstanding_index_chunks 0
+
+   If you do this often, it helps to write a shell script for it.
 
 
 Health/statistics

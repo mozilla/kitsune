@@ -2,7 +2,7 @@ from datetime import date, datetime
 
 from django.contrib.auth.models import User
 
-from celery.decorators import task
+from celery.task import task
 from statsd import statsd
 import waffle
 

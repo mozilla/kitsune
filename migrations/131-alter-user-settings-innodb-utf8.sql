@@ -1,5 +1,0 @@
-ALTER TABLE users_setting ENGINE=InnoDB;
-ALTER TABLE users_setting CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci;
-
-ALTER TABLE users_setting MODIFY name VARCHAR(100) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL;
-ALTER TABLE users_setting MODIFY value VARCHAR(60) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL;

@@ -5,7 +5,6 @@ import json
 import logging
 
 from django.conf import settings
-from django.core.cache import cache
 from django.http import (HttpResponse, HttpResponseBadRequest,
                          HttpResponseNotFound, HttpResponseServerError)
 from django.views.decorators.http import require_POST, require_GET
@@ -20,6 +19,7 @@ from tower import ugettext as _, ugettext_lazy as _lazy
 import tweepy
 
 from customercare.models import Tweet, Reply
+from sumo.redis_utils import redis_client, RedisError
 import twitter
 
 
@@ -259,8 +259,17 @@ def landing(request):
 
     twitter = request.twitter
 
+    # Get a redis client
+    redis = None
+    try:
+        redis = redis_client(name='default')
+    except RedisError as e:
+        statsd.incr('redis.errror')
+        log.error('Redis error: %s' % e)
     # Stats. See customercare.cron.get_customercare_stats.
-    activity = cache.get(settings.CC_TWEET_ACTIVITY_CACHE_KEY)
+    activity = redis and redis.get(settings.CC_TWEET_ACTIVITY_CACHE_KEY)
+    if activity:
+        activity = json.loads(activity)
     if activity and 'resultset' in activity:
         statsd.incr('customercare.stats.activity.hit')
         activity_stats = []
@@ -276,7 +285,9 @@ def landing(request):
         statsd.incr('customercare.stats.activity.miss')
         activity_stats = []
 
-    contributors = cache.get(settings.CC_TOP_CONTRIB_CACHE_KEY)
+    contributors = redis and redis.get(settings.CC_TOP_CONTRIB_CACHE_KEY)
+    if contributors:
+        contributors = json.loads(contributors)
     if contributors and 'resultset' in contributors:
         statsd.incr('customercare.stats.contributors.hit')
         contributor_stats = {}

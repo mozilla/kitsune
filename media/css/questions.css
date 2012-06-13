@@ -110,6 +110,12 @@ body.notifications #main article.main {
     text-align: right;
 }
 
+#recent-stats .graph.complete div {
+    background: #489615;
+    background: -moz-linear-gradient(#84C63C,#489615) repeat scroll 0 0 transparent;
+    background: -webkit-gradient(linear,left top,left bottom,from(#84C63C),to(#489615));
+}
+
 #recent-stats .graph div span {
     padding: 0 15px 0 0;
 }
@@ -1231,7 +1237,8 @@ form div.attachments-upload img {
 }
 
 #ask-question ul.select-one {
-    font-size: 18px;
+    font-family: Georgia, serif;
+    font-size: 20px;
     margin: 0.5em 0 1em;
 }
 
@@ -1268,31 +1275,37 @@ form div.attachments-upload img {
 
 
 #ask-question ul.products li {
-    padding-left: 45px;
+    float: left;
+    height: 44px;
+    padding: 53px 0 53px 150px;
+    width: 220px;
 }
 
 #ask-question ul.products span {
     color: #6d7581;
     display: block;
-    font-size: 14px;
+    font-size: 15px;
 }
 
 .desktop-icon,
-.beta-icon,
+.beta-icon {
+    background: transparent url(../img/logos.large.sprite.png) no-repeat 0 0px;
+}
+
 .mobile-icon {
-    background: transparent url(../img/logos.sprite.png) no-repeat 0 6px;
+    background: transparent url(../img/logos.large.sprite.png) no-repeat 0 -450px;
 }
 
 .home-icon {
-    background: transparent url(../img/logos.sprite.png) no-repeat 0 -142px;
+    background: transparent url(../img/logos.large.sprite.png) no-repeat 0 -600px;
 }
 
 .sync-icon {
-    background: transparent url(../img/logos.sprite.png) no-repeat 0 -298px;
+    background: transparent url(../img/logos.large.sprite.png) no-repeat 0 -300px;
 }
 
 .other-icon {
-    background: transparent url(../img/logos.sprite.png) no-repeat 0 -442px;
+    background: transparent url(../img/logos.large.sprite.png) no-repeat 0 -150px;
 }
 
 

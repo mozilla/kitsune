@@ -14,8 +14,8 @@
 }
 
 #featured {
-    background: url("../img/nurse.small.png") no-repeat scroll 550px 0px transparent;
-    height: 125px;
+    background: url("../img/nurse.small.png") no-repeat scroll 550px 100% transparent;
+    height: 134px;
     overflow: hidden;
     padding: 75px 330px 0 0;
     position: relative;
@@ -30,7 +30,7 @@
 
 body.mobile #featured,
 body.fxhome #featured {
-    background: url("../img/nurse.mobile.small.png") no-repeat scroll 570px 0px transparent;
+    background: url("../img/nurse.mobile.small.png") no-repeat scroll 570px 100% transparent;
 }
 
 /* Bug 615495 - Don't send the nursecat to Japanese audiences. */
@@ -39,7 +39,7 @@ html[lang=ja] body div#featured {
 }
 
 #featured-wrap {
-    height: 125px;
+    height: 134px;
 }
 
 #featured h1 {
@@ -105,7 +105,8 @@ html[lang=ja] body div#featured {
     visibility: hidden;
 }
 
-#home-content-top {
+#home-content-top,
+#home-content-nav {
     font-size: 14px;
     padding: 20px 10px 0;
 }

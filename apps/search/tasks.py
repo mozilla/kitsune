@@ -1,64 +1,63 @@
 import datetime
 import logging
 import sys
-from time import time
 
-from django.conf import settings
-from django.core.cache import cache
-
-from celery.decorators import task
+from celery.task import task
 from statsd import statsd
 
-from search.es_utils import es_reindex_with_progress
+from search.es_utils import index_chunk
+from sumo.redis_utils import redis_client, RedisError
 
 
 # This is present in memcached when reindexing is in progress and
-# holds a float value between 0 and 100. When reindexing is complete
-# (even if it crashes), the token is removed.
-ES_REINDEX_PROGRESS = 'sumo:search:es_reindex_progress'
+# holds the number of outstanding index chunks. Once it hits 0,
+# indexing is done.
+OUTSTANDING_INDEX_CHUNKS = 'search:outstanding_index_chunks'
+
+CHUNK_SIZE = 50000
 
 log = logging.getLogger('k.task')
 
 
 @task
-def reindex_with_progress(write_index):
-    """Rebuild elasticsearch index while updating progress bar for admins.
+def index_chunk_task(write_index, batch_id, chunk):
+    """Index a chunk of things.
+
+    :arg write_index: the name of the index to index to
+    :arg batch_id: the name for the batch this chunk belongs to
+    :arg chunk: a (class, id_list) of things to index
     """
     # Need to import Record here to prevent circular import
     from search.models import Record
 
+    cls, id_list = chunk
+
+    task_name = '%s %d -> %d' % (cls.get_model_name(), id_list[0], id_list[-1])
+
     rec = Record(
         starttime=datetime.datetime.now(),
-        text=u'Reindexing into %s' % write_index)
+        text=(u'Batch: %s Task: %s: Reindexing into %s' % (
+                batch_id, task_name, write_index)))
     rec.save()
+
     try:
-        # Init progress bar stuff:
-        cache.set(ES_REINDEX_PROGRESS, 0.001)  # An iota so it tests
-                                               # true in the template
+        index_chunk(cls, id_list, reraise=True)
 
-        # Reindex:
-        start = time()
-        for ratio in es_reindex_with_progress():
-            now = time()
-            if now > start + settings.ES_REINDEX_PROGRESS_BAR_INTERVAL:
-                # Update memcached only every so often.
-                start = now
-                # Format the string to avoid exponential notation,
-                # which seems to be understood by JS but makes me
-                # nervous:
-                cache.set(ES_REINDEX_PROGRESS, '%.5f' % ratio)
-
-        rec.endtime = datetime.datetime.now()
-        rec.save()
     except Exception:
-
         rec.text = (u'%s: Errored out %s %s' % (
                 rec.text, sys.exc_type, sys.exc_value))
-        rec.endtime = datetime.datetime.now()
-        rec.save()
         raise
     finally:
-        cache.delete(ES_REINDEX_PROGRESS)
+        rec.endtime = datetime.datetime.now()
+        rec.save()
+
+        try:
+            client = redis_client('default')
+            client.decr(OUTSTANDING_INDEX_CHUNKS, 1)
+        except RedisError:
+            # If Redis isn't running, then we just log that the task
+            # was completed.
+            log.info('Index task %s completed.', task_name)
 
 
 # Note: If you reduce the length of RETRY_TIMES, it affects all tasks

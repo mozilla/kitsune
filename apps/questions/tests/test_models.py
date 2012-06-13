@@ -319,11 +319,11 @@ class QuestionTests(TestCaseBase):
         assert q.is_solved
 
     def test_recent_counts(self):
-        """Verify recent_asked_count and recent_answered_count."""
+        """Verify recent_asked_count and recent unanswered count."""
         # create a question for each of past 4 days
         now = datetime.now()
         question(created=now, save=True)
-        question(created=now - timedelta(hours=24), save=True)
+        question(created=now - timedelta(hours=24), save=True, is_locked=True)
         q = question(created=now - timedelta(hours=48), save=True)
         answer(question=q, save=True)
         # 73 hours instead of 72 to avoid random test fails.
@@ -331,7 +331,7 @@ class QuestionTests(TestCaseBase):
 
         # Only 3 are recent from last 72 hours, 1 has an answer.
         eq_(3, Question.recent_asked_count())
-        eq_(1, Question.recent_answered_count())
+        eq_(1, Question.recent_unanswered_count())
 
 
 class AddExistingTagTests(TaggingTestCaseBase):

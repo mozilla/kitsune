@@ -47,12 +47,12 @@ html[lang=he] body {
 }
 
 a:link, a:visited, a:active {
-    color: rgb(0, 81, 185);
+    color: #0051B9;
     text-decoration: none;
 }
 
 a:visited {
-    color: rgb(66,22,88);
+    color: #609;
 }
 
 a:hover {
@@ -1686,7 +1686,8 @@ ul.ui-autocomplete {
 input[type="button"],
 input[type="submit"]:not(.remover),  /* Exclude tag remover button. */
 section.marky button,
-a.btn {
+a.btn,
+button.btn {
     border: none;
     background: #5784BF;
     background: -moz-linear-gradient(#669BE1, #5784BF) repeat scroll 0 0 transparent;
@@ -1711,14 +1712,16 @@ a.btn {
 .html-rtl input[type="button"],
 .html-rtl input[type="submit"]:not(.remover),  /* Exclude tag remover button. */
 .html-rtl section.marky button,
-.html-rtl a.btn {
+.html-rtl a.btn,
+.html-rtl button.btn {
     margin: 0 0 0 15px;
 }
 
 input[type="button"]:hover,
 input[type="submit"]:not(.remover):hover,  /* Exclude tag remover button. */
 section.marky button:hover,
-a.btn:hover {
+a.btn:hover,
+button.btn:hover {
     box-shadow: 0 2px rgba(0, 0, 0, 0.1), 0 -3px rgba(0, 0, 0, 0.1) inset, 0 0 100px rgba(255, 255, 255, 0.2) inset;
     -moz-box-shadow: 0 2px rgba(0, 0, 0, 0.1), 0 -3px rgba(0, 0, 0, 0.1) inset, 0 0 100px rgba(255, 255, 255, 0.2) inset;
     -webkit-box-shadow: 0 2px rgba(0, 0, 0, 0.1), 0 -3px rgba(0, 0, 0, 0.1) inset, 0 0 100px rgba(255, 255, 255, 0.2) inset;

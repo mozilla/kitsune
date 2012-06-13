@@ -131,7 +131,7 @@ Start by creating a file named ``settings_local.py`` in the
 
     # Allows you to run Kitsune without running Celery---all tasks
     # will be done synchronously.
-    CELERY_ALWAYS_EAGER = False
+    CELERY_ALWAYS_EAGER = True
 
     # Allows you to specify waffle settings in the querystring.
     WAFFLE_OVERRIDE = True
@@ -148,12 +148,10 @@ Start by creating a file named ``settings_local.py`` in the
             }
         }
 
-    CACHE_BACKEND = 'caching.backends.memcached://localhost:11211'
     CACHE_MACHINE_USE_REDIS = True
     CACHE_MIDDLEWARE_ALIAS = 'default'
     CACHE_MIDDLEWARE_KEY_PREFIX = ''
     CACHE_MIDDLEWARE_SECONDS = 600
-    CACHE_PREFIX = 'sumo:'
 
     # Basic database configuration for development.
     DATABASES = {
@@ -169,14 +167,28 @@ Start by creating a file named ``settings_local.py`` in the
             },
         }
 
+    REDIS_BACKENDS = {
+            'default': 'redis://localhost:6379?socket_timeout=0.5&db=0',
+            'karma': 'redis://localhost:6381?socket_timeout=0.5&db=0',
+            'helpfulvotes': 'redis://localhost:6379?socket_timeout=0.\
+                5&db=1',
+        }
+
+    REDIS_BACKEND = REDIS_BACKENDS['default']
+
 Now you can copy and modify any settings from ``settings.py`` into
 ``settings_local.py`` and the value will override the default.
 
 
-memcache
---------
+memcached
+---------
 
-FIXME - instructions for setting up memcache
+If you are running Red Hat/CentOS/Fedora, once you have installed memcached you
+can start it and configure it to run on startup using::
+
+    $ chkconfig memcached on
+    $ /etc/init.d/memcached start
+    $ service memcached start
 
 .. Note::
 
@@ -186,6 +198,45 @@ FIXME - instructions for setting up memcache
        echo "flush_all" | nc localhost 11211
 
    Assuming you have memcache configured to listen to 11211.
+
+
+Running redis
+-------------
+
+This script runs all three servers---one for each configuration.
+
+I (Will) put that in a script that creates the needed directories in
+``/var/redis/`` and kicks off the three redis servers::
+
+    #!/bin/bash
+
+    set -e
+
+    # Adjust these according to your setup!
+    REDISBIN=/usr/bin/redis-server
+    CONFFILE=/path/to/conf/files/
+
+    if test ! -e /var/redis/sumo/
+    then
+        echo "creating /var/redis/sumo/"
+        mkdir -p /var/redis/sumo/
+    fi
+
+    if test ! -e /var/redis/sumo-test/
+    then
+        echo "creating /var/redis/sumo-test/"
+        mkdir -p /var/redis/sumo-test/
+    fi
+
+    if test ! -e /var/redis/sumo-persistent/
+    then
+        echo "creating /var/redis/sumo-persistent/"
+        mkdir -p /var/redis/sumo-persistent/
+    fi
+
+    $REDISBIN $CONFFILE/redis-persistent.conf
+    $REDISBIN $CONFFILE/redis-test.conf
+    $REDISBIN $CONFFILE/redis-volatile.conf
 
 
 Database
@@ -202,7 +253,7 @@ fail. Hundreds.
 Create the database and grant permissions to the user, based on your
 database settings. For example, using the settings above::
 
-    $ mysql -uroot -p
+    $ mysql -u root -p
     mysql> CREATE DATABASE kitsune;
     mysql> GRANT ALL ON kitsune.* TO kitsune@localhost IDENTIFIED BY \
         'password';
@@ -210,7 +261,7 @@ database settings. For example, using the settings above::
 To load the latest database schema, use ``scripts/schema.sql`` and
 ``schematic``::
 
-    $ mysql kitsune < scripts/schema.sql
+    $ mysql -u kitsune -p kitsune < scripts/schema.sql
     $ ./vendor/src/schematic/schematic migrations/
 
 You'll now have an empty but up-to-date database!
@@ -255,7 +306,8 @@ A great way to check that everything really is working is to run the
 test suite. You'll need to add an extra grant in MySQL for your
 database user::
 
-    GRANT ALL ON test_NAME.* TO USER@localhost;
+    $ mysql -u root -p
+    mysql> GRANT ALL ON test_NAME.* TO USER@localhost;
 
 Where ``NAME`` and ``USER`` are the same as the values in your
 database configuration.

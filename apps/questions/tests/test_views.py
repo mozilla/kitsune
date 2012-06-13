@@ -26,10 +26,9 @@ class AAQTests(ElasticTestCase):
         q.save()
         self.refresh()
 
-        url = urlparams(reverse('questions.new_question'),
-                        product='desktop',
-                        category='d1',
-                        search='cupcakes')
+        url = urlparams(
+            reverse('questions.aaq_step4', args=['desktop', 'd1']),
+            search='cupcakes')
 
         response = self.client.get(url, follow=True)
 
@@ -53,10 +52,9 @@ class AAQTests(ElasticTestCase):
 
         self.refresh()
 
-        url = urlparams(reverse('questions.new_question'),
-                        product='desktop',
-                        category='d1',
-                        search='cupcakes')
+        url = urlparams(
+            reverse('questions.aaq_step4', args=['desktop', 'd1']),
+            search='cupcakes')
 
         response = self.client.get(url, follow=True)
         eq_(200, response.status_code)
@@ -80,9 +78,9 @@ class MobileAAQTests(MobileTestCase):
 
     def _new_question(self, post_it=False):
         """Post a new question and return the response."""
-        url = urlparams(reverse('questions.new_question'),
-                        product='desktop', category='d1',
-                        search='A test question', showform=1)
+        url = urlparams(
+            reverse('questions.aaq_step5', args=['desktop', 'd1']),
+            search='A test question')
         if post_it:
             return self.client.post(url, self.data, follow=True)
         return self.client.get(url, follow=True)

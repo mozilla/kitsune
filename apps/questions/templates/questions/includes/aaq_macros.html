@@ -7,7 +7,7 @@
   <ul class="products select-one">
     {% for key, product in products.iteritems() %}
       <li class="{{ key }}-icon {{ product.class }}">
-        <a href="{{ url('questions.new_question')|urlparams(product=key) }}">
+        <a href="{{ url('questions.aaq_step2', product_key=key) }}">
           {{ product.name }}
           <span>{{ product.subtitle }}</span>
         </a>
@@ -21,7 +21,7 @@
     <label>{{ _('Product') }}:</label>
     <span>{{ product.name }}</span>
     {% if can_change %}
-      <a href="{{ url('questions.new_question') }}">{{ _('change') }}</a>
+      <a href="{{ url('questions.aaq_step1') }}">{{ _('change') }}</a>
     {% endif %}
   </div>
 {%- endmacro %}
@@ -31,7 +31,7 @@
   <ul class="select-one">
     {% for key, category in product.categories.iteritems() %}
       <li>
-        <a href="{{ url('questions.new_question')|urlparams(product=product.key, category=key) }}">{{ category.name }}</a>
+        <a href="{{ url('questions.aaq_step3', product_key=product.key, category_key=key) }}">{{ category.name }}</a>
       </li>
     {% endfor %}
   </ul>
@@ -42,7 +42,7 @@
     <label>{{ _('Category') }}:</label>
     <span>{{ category.name }}</span>
     {% if can_change %}
-      <a href="{{ url('questions.new_question')|urlparams(product=product.key) }}">{{ _('change') }}</a>
+      <a href="{{ url('questions.aaq_step2', product_key=product.key) }}">{{ _('change') }}</a>
     {% endif %}
   </div>
 {%- endmacro %}
@@ -65,10 +65,8 @@
 {%- endmacro %}
 
 {% macro aaq_search_form(product, category, settings, host, request) -%}
-  <form id="ask-search-form" class="aaq search" action="{% if settings.SESSION_COOKIE_SECURE %}https://{{ host }}{{ request.get_full_path() }}{% endif %}" method="get">
+  <form id="ask-search-form" class="aaq search" action="{% if settings.SESSION_COOKIE_SECURE %}https://{{ host }}{{ url('questions.aaq_step4', product_key=product.key, category_key=category.key) }}{% endif %}" method="get">
     {{ search_engine() }}
-    <input type="hidden" name="product" value="{{ product.key }}" />
-    <input type="hidden" name="category" value="{{ category.key }}" />
     <input type="text" class="question" name="search" value="{{ request.GET.search }}" required="required" maxlength="160" placeholder="{{ _('Summarize your question in a sentence') }}" />
     <input type="submit" class="btn btn-important" value="{{ _('Ask this') }}" />
   </form>
@@ -93,11 +91,8 @@
     {% set button_text = _('Provide more details') %}
   {% endif %}
 
-  <form action="" method="get">
-    <input type="hidden" name="product" value="{{ product.key }}" />
-    <input type="hidden" name="category" value="{{ category.key }}" />
+  <form action="{{ url('questions.aaq_step5', product_key=product.key, category_key=category.key) }}" method="get">
     <input type="hidden" name="search" value="{{ request.GET.search }}" />
-    <input type="hidden" name="showform" value="1" />
     <input type="submit" id="show-form-btn" class="btn" value="{{ button_text }}" />
   </form>
 {%- endmacro %}

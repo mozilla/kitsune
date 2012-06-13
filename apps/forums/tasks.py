@@ -3,7 +3,7 @@ import logging
 from django.db import transaction
 from django.db.models.signals import post_save
 
-from celery.decorators import task
+from celery.task import task
 from multidb.pinning import pin_this_thread, unpin_this_thread
 
 from activity.models import Action

@@ -100,4 +100,4 @@ class QuestionSearchTests(ElasticTestCase):
             helpful=True).save()
         self.refresh()
         result = Question.search().query('LOLRUS')
-        assert len(result) > 0
+        assert result.count() > 0

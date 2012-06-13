@@ -145,10 +145,10 @@ def questions(request):
 
     # Recent answered stats
     recent_asked_count = Question.recent_asked_count()
-    recent_answered_count = Question.recent_answered_count()
+    recent_unanswered_count = Question.recent_unanswered_count()
     if recent_asked_count:
         recent_answered_percent = int(
-            (float(recent_answered_count) / recent_asked_count) * 100)
+            (float(recent_asked_count - recent_unanswered_count) / recent_asked_count) * 100)
     else:
         recent_answered_percent = 0
 
@@ -159,7 +159,7 @@ def questions(request):
             'tags': tags,
             'tagged': tagged,
             'recent_asked_count': recent_asked_count,
-            'recent_answered_count': recent_answered_count,
+            'recent_unanswered_count': recent_unanswered_count,
             'recent_answered_percent': recent_answered_percent}
 
     if (waffle.flag_is_active(request, 'karma') and
@@ -199,14 +199,19 @@ def answers(request, question_id, form=None, watch_form=None,
 
 @mobile_template('questions/{mobile/}new_question.html')
 @anonymous_csrf  # This view renders a login form
-def new_question(request, template=None):
+def aaq(request, product_key=None, category_key=None, showform=False,
+        template=None):
     """Ask a new question."""
 
-    product_key = request.GET.get('product')
+    if product_key is None:
+        product_key = request.GET.get('product')
     product = products.get(product_key)
     if product_key and not product:
         raise Http404
-    category_key = request.GET.get('category')
+
+    if category_key is None:
+        category_key = request.GET.get('category')
+
     if product and category_key:
         category = product['categories'].get(category_key)
         if not category:
@@ -248,7 +253,7 @@ def new_question(request, template=None):
                 # User is on the "Ask This" step
                 statsd.incr('questions.aaq.search-form')
 
-        if request.GET.get('showform'):
+        if showform or request.GET.get('showform'):
             # Before we show the form, make sure the user is auth'd:
             if not request.user.is_authenticated():
                 # User is on the login or register Step
@@ -360,6 +365,27 @@ def new_question(request, template=None):
                          'current_product': product,
                          'current_category': category,
                          'current_articles': articles})
+
+
+def aaq_step2(request, product_key):
+    """Step 2: The product is selected."""
+    return aaq(request, product_key=product_key)
+
+
+def aaq_step3(request, product_key, category_key):
+    """Step 3: The product and category is selected."""
+    return aaq(request, product_key=product_key, category_key=category_key)
+
+
+def aaq_step4(request, product_key, category_key):
+    """Step 4: Search query entered."""
+    return aaq(request, product_key=product_key, category_key=category_key)
+
+
+def aaq_step5(request, product_key, category_key):
+    """Step 5: Show full question form."""
+    return aaq(request, product_key=product_key, category_key=category_key,
+               showform=True)
 
 
 @require_http_methods(['GET', 'POST'])

@@ -4,8 +4,8 @@ import re
 from django import http
 from django.conf import settings
 
-from twitter import *
 import tweepy
+from twitter import url, Session, REQUEST_KEY_NAME, REQUEST_SECRET_NAME
 
 
 log = logging.getLogger('k')
@@ -21,7 +21,12 @@ class SessionMiddleware(object):
 
         request.twitter = Session.from_request(request)
 
-        ssl_url = url(request, {'scheme': 'https'})
+        # If is_secure is True (should always be true except for local dev),
+        # we will be redirected back to https and all cookies set will be
+        # secure only.
+        is_secure = settings.TWITTER_COOKIE_SECURE
+
+        ssl_url = url(request, {'scheme': 'https' if is_secure else 'http'})
         auth = tweepy.OAuthHandler(settings.TWITTER_CONSUMER_KEY,
                                    settings.TWITTER_CONSUMER_SECRET,
                                    ssl_url,
@@ -36,7 +41,6 @@ class SessionMiddleware(object):
             request.twitter.api = tweepy.API(auth)
 
         else:
-
             verifier = request.GET.get('oauth_verifier')
             if verifier:
                 # We are completing an OAuth login
@@ -55,12 +59,15 @@ class SessionMiddleware(object):
                         pass
                     else:
                         # Override path to drop query string.
-                        ssl_url = url(request, {'scheme': 'https',
-                                                'path': request.path})
+                        ssl_url = url(
+                            request,
+                            {'scheme': 'https' if is_secure else 'http',
+                             'path': request.path})
                         response = http.HttpResponseRedirect(ssl_url)
 
-                        Session(auth.access_token.key,
-                                auth.access_token.secret).save(response)
+                        Session(
+                            auth.access_token.key,
+                            auth.access_token.secret).save(request, response)
                         return response
                 else:
                     # request tokens didn't validate
@@ -75,20 +82,24 @@ class SessionMiddleware(object):
                     log.warning('Tweepy error while getting authorization url')
                 else:
                     response = http.HttpResponseRedirect(redirect_url)
-                    response.set_cookie(REQUEST_KEY_NAME,
-                                        auth.request_token.key, secure=True)
-                    response.set_cookie(REQUEST_SECRET_NAME,
-                                        auth.request_token.secret, secure=True)
+                    response.set_cookie(
+                        REQUEST_KEY_NAME,
+                        auth.request_token.key,
+                        secure=is_secure)
+                    response.set_cookie(
+                        REQUEST_SECRET_NAME,
+                        auth.request_token.secret,
+                        secure=is_secure)
                     return response
 
     def process_response(self, request, response):
         if getattr(request, 'twitter', False):
             if request.REQUEST.get('twitter_delete_auth'):
-                request.twitter.delete(response)
+                request.twitter.delete(request, response)
 
-            if request.twitter.authed:
+            if request.twitter.authed and REQUEST_KEY_NAME in request.COOKIES:
                 response.delete_cookie(REQUEST_KEY_NAME)
                 response.delete_cookie(REQUEST_SECRET_NAME)
-                request.twitter.save(response)
+                request.twitter.save(request, response)
 
         return response

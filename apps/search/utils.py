@@ -1,5 +1,7 @@
 import subprocess
+import time
 import zlib
+from itertools import islice
 
 import bleach
 
@@ -61,6 +63,35 @@ def locale_or_default(locale):
     if locale not in LOCALES:
         locale = settings.LANGUAGE_CODE
     return locale
+
+
+def create_batch_id():
+    """Returns a batch_id"""
+    # TODO: This is silly, but it's a good enough way to distinguish
+    # between batches by looking at a Record. This is just over the
+    # number of seconds in a day.
+    return str(int(time.time()))[-6:]
+
+
+def chunked(iterable, n):
+    """Returns chunks of n length of iterable
+
+    If len(iterable) % n != 0, then the last chunk will have length
+    less than n.
+
+    Example:
+
+    >>> chunked([1, 2, 3, 4, 5], 2)
+    [(1, 2), (3, 4), (5,)]
+
+    """
+    iterable = iter(iterable)
+    while 1:
+        t = tuple(islice(iterable, n))
+        if t:
+            yield t
+        else:
+            return
 
 
 class ComposedList(object):

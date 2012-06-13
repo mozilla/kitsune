@@ -1,0 +1,5 @@
+include README TODO CHANGES INSTALL LICENSE
+recursive-include docs *.txt
+recursive-include demo *.py
+recursive-include extras README *.py
+recursive-include tests *.py

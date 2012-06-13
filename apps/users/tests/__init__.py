@@ -41,7 +41,7 @@ def user(**kwargs):
     if 'username' not in kwargs:
         defaults['username'] = ''.join(random.choice(letters)
                                        for x in xrange(15))
-    if 'email not in kwargs':
+    if 'email' not in kwargs:
         defaults['email'] = ''.join(
             random.choice(letters) for x in xrange(10)) + '@example.com'
     defaults.update(kwargs)
