@@ -134,7 +134,7 @@ def questions(request):
     question_qs = question_qs.order_by(order)
 
     try:
-        with statsd.timer('questions.view.paginate'):
+        with statsd.timer('questions.view.paginate.%s' % filter_):
             questions_page = simple_paginate(
                 request, question_qs, per_page=constants.QUESTIONS_PER_PAGE)
     except (PageNotAnInteger, EmptyPage):
@@ -145,9 +145,8 @@ def questions(request):
             return HttpResponseRedirect(urlparams(url, page=1))
 
     # Recent answered stats
-    with statsd.timer('questions.view.recent_stats'):
-        recent_asked_count = Question.recent_asked_count()
-        recent_unanswered_count = Question.recent_unanswered_count()
+    recent_asked_count = Question.recent_asked_count()
+    recent_unanswered_count = Question.recent_unanswered_count()
     if recent_asked_count:
         recent_answered_percent = int(
             (float(recent_asked_count - recent_unanswered_count) /
@@ -165,17 +164,16 @@ def questions(request):
             'recent_unanswered_count': recent_unanswered_count,
             'recent_answered_percent': recent_answered_percent}
 
-    with statsd.timer('questions.view.top_contributors'):
-        if (waffle.flag_is_active(request, 'karma') and
-            waffle.switch_is_active('karma')):
-            kmgr = KarmaManager()
-            data.update(karma_top=kmgr.top_users())
-            if request.user.is_authenticated():
-                ranking = kmgr.ranking(request.user)
-                if ranking <= constants.HIGHEST_RANKING:
-                    data.update(karma_ranking=ranking)
-        else:
-            data.update(top_contributors=_get_top_contributors())
+    if (waffle.flag_is_active(request, 'karma') and
+        waffle.switch_is_active('karma')):
+        kmgr = KarmaManager()
+        data.update(karma_top=kmgr.top_users())
+        if request.user.is_authenticated():
+            ranking = kmgr.ranking(request.user)
+            if ranking <= constants.HIGHEST_RANKING:
+                data.update(karma_ranking=ranking)
+    else:
+        data.update(top_contributors=_get_top_contributors())
 
     with statsd.timer('questions.view.render'):
         return jingo.render(request, 'questions/questions.html', data)
