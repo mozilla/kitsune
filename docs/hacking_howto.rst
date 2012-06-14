@@ -93,12 +93,11 @@ Compiled Packages
 There are a small number of compiled packages, including the MySQL
 Python client.
 
-You can install these either with your system's package manager or
-with ``pip``.
+You can install these either with ``pip``.
 
-To use pip, do this::
+To use pip, do this from within a virtualenv::
 
-    $ sudo pip install -r requirements/compiled.txt
+    $ pip install -r requirements/compiled.txt
 
 If you want to use your system's package manager, you'll need to go
 through ``requirements/compiled.txt`` and install the dependencies by
