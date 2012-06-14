@@ -163,6 +163,15 @@ For local development you will want to add the following settings::
             },
         }
 
+    REDIS_BACKENDS = {
+            'default': 'redis://localhost:6379?socket_timeout=0.5&db=0',
+            'karma': 'redis://localhost:6381?socket_timeout=0.5&db=0',
+            'helpfulvotes': 'redis://localhost:6379?socket_timeout=0.\
+                5&db=1',
+        }
+
+    REDIS_BACKEND = REDIS_BACKENDS['default']
+
 
 Redis
 -----
@@ -171,7 +180,7 @@ You need to copy the ``REDIS_BACKEND`` section from ``settings.py``
 into your ``settings_local.py``.  After doing that, uncomment the
 three lines in each section.
 
-There are three ``.conf`` files in ``config/redis/``.  One is for
+There are three ``.conf`` files in ``configs/redis/``.  One is for
 testing and is used in ``settings_test.py``.  The other two are used
 for the sections in ``REDIS_BACKEND``.
 
@@ -228,7 +237,7 @@ settings. For example, using the settings above::
 To load the latest database schema, use ``scripts/schema.sql`` and
 ``schematic``::
 
-    $ mysql kitsune < scripts/schema.sql
+    $ mysql  -u kitsune -p kitsune < scripts/schema.sql
     $ ./vendor/src/schematic/schematic migrations/
 
 You'll now have an empty but up-to-date database!
