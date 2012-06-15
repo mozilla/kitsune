@@ -18,6 +18,7 @@ from statsd import statsd
 from tower import ugettext as _, ugettext_lazy as _lazy
 
 from search import SearchError, ExcerptTimeoutError, ExcerptSocketError
+from search.models import get_search_models
 from search.utils import locale_or_default, clean_excerpt, ComposedList
 from forums.models import Thread, discussion_searcher
 from questions.models import question_searcher, Question
@@ -116,8 +117,6 @@ def search_with_es_unified(request, template=None):
     page = max(smart_int(request.GET.get('page')), 1)
     offset = (page - 1) * settings.SEARCH_RESULTS_PER_PAGE
 
-    # TODO: This is fishy--why does it have to be coded this way?
-    # get language name for display in template
     lang = language.lower()
     if settings.LANGUAGES.get(lang):
         lang_name = settings.LANGUAGES[lang]
@@ -256,22 +255,22 @@ def search_with_es_unified(request, template=None):
             after_match='</b>',
             limit=settings.SEARCH_SUMMARY_LENGTH)
 
-        # TODO: questions-specific sortby only if it's advanced
-        # and questions only
-        sortby = smart_int(request.GET.get('sortby'))
+        print a, cleaned['w']
+        if a == '1' and cleaned['w'] & constants.WHERE_SUPPORT:
+            # If this is an advanced search for support questions,
+            # then apply the sortby.
+            sortby = smart_int(request.GET.get('sortby'))
+            try:
+                searcher = searcher.order_by(
+                    *constants.SORT_QUESTIONS_ES[sortby])
+            except IndexError:
+                pass
 
-        # query
-        # TODO: set query fields here
-        query = dict((field, cleaned_q) for field in
-                     ('question_title__text',
-                      'question_content__text',
-                      'question_answer_content__text',
-                      'post_title__text',
-                      'post_content__text',
-                      'document_title__text',
-                      'document_content__text',
-                      'document_summary__text',
-                      'document_keywords__text'))
+        query_fields = chain(*[cls.get_query_fields()
+                               for cls in get_search_models()])
+
+        # build the query
+        query = dict((field, cleaned_q) for field in query_fields)
 
         searcher = searcher.query(or_=query)
 
@@ -459,8 +458,6 @@ def search_with_es(request, template=None):
     page = max(smart_int(request.GET.get('page')), 1)
     offset = (page - 1) * settings.SEARCH_RESULTS_PER_PAGE
 
-    # TODO: This is fishy--why does it have to be coded this way?
-    # get language name for display in template
     lang = language.lower()
     if settings.LANGUAGES.get(lang):
         lang_name = settings.LANGUAGES[lang]
