@@ -396,7 +396,7 @@ window.KpiDashboard = Backbone.View.extend({
             }*/]
         });
 
-        this.activeContributorsView = new BasicChartView({
+        this.activeContributorsView = new StockChartView({
             model: this.activeContributorsChart,
             title: gettext('Active Contributors'),
             series: [{
