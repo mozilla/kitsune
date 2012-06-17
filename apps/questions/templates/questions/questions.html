@@ -21,6 +21,7 @@
       {{ _('Total questions: <strong>{num}</strong>')|fe(num=recent_asked_count) }}
     </span>
     <p class="no-reply">
+    {% if recent_unanswered_count > 0 %}
       {% trans recent_unanswered_count,
                url=url('questions.questions')|urlparams(filter='recent-unanswered') %}
         <strong>{{recent_unanswered_count}}</strong> question in the last <strong>3 days</strong> has no reply.
@@ -29,6 +30,11 @@
         <strong>{{recent_unanswered_count}}</strong> questions in the last <strong>3 days</strong> have no reply.
         <a href="{{url}}">Help solve them!</a>
       {% endtrans %}
+    {% else %}
+      {% trans %}
+        <strong>0</strong> questions in the last <strong>3 days</strong> have no reply. <strong>Good job!</strong>
+      {% endtrans %}
+    {% endif %}
     </p>
     <div class="graph{% if recent_answered_percent == 100 %} complete{% endif %}">
       <div style="width: {{ recent_answered_percent }}%;">
