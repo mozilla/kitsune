@@ -568,7 +568,7 @@ div.main-section div.content p:first-child {
 
 div.main-section div.content ul,
 div.main-section div.content ol {
-    margin: 0 0 1em 2em;
+    margin: 1em 0 1em 2em;
 }
 
 div.main-section div.content li {
