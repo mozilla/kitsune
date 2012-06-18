@@ -255,7 +255,7 @@ def search_with_es(request, template=None):
             # Sort results by
             try:
                 question_s = question_s.order_by(
-                    *constants.SORT_QUESTIONS[sortby])
+                    *constants.SORT_QUESTIONS_ES[sortby])
             except IndexError:
                 pass
 

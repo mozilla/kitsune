@@ -311,6 +311,24 @@ class ElasticSearchViewTests(ElasticTestCase):
         content = json.loads(response.content)
         eq_(content['total'], 1)
 
+    def test_advanced_search_questions_sortby(self):
+        """Tests advanced search for questions with a sortby"""
+        question(title=u'tags tags tags', save=True)
+
+        self.refresh()
+
+        # Advanced search for questions with sortby set to 3 which is
+        # '-replies' which is different between Sphinx and ES.
+        response = self.client.get(reverse('search'), {
+            'q': '', 'tags': 'desktop', 'w': '2', 'a': '1', 'sortby': '3',
+            'format': 'json'
+        })
+
+        eq_(200, response.status_code)
+
+        content = json.loads(response.content)
+        eq_(content['total'], 1)
+
     def test_forums_search(self):
         """This tests whether forum posts show up in searches."""
         thread1 = thread(
