@@ -256,6 +256,14 @@ def search_with_es_unified(request, template=None):
             after_match='</b>',
             limit=settings.SEARCH_SUMMARY_LENGTH)
 
+        # Set up weights
+        searcher = searcher.weight(
+            question_title__text=4, question_content__text=3,
+            question_answer_content__text=3,
+            post_title__text=2, post_content__text=1,
+            document_title__text=6, document_content__text=1,
+            document_keywords__text=4, document_summary__text=2)
+
         # Apply sortby, but only for advanced search for questions
         if a == '1' and cleaned['w'] & constants.WHERE_SUPPORT:
             sortby = smart_int(request.GET.get('sortby'))
