@@ -99,21 +99,6 @@ class SphinxTestCase(TestCase):
 class SearchTest(SphinxTestCase):
     client_class = LocalizingClient
 
-    def test_indexer(self):
-        results = wiki_searcher().query('audio')
-        eq_(2, len(results))
-
-    def test_search_metrics(self):
-        """Ensure that query strings are added to search results"""
-        response = self.client.get(reverse('search'), {'q': 'audio', 'w': 3})
-        doc = pq(response.content)
-        _, _, qs = doc('a.title:first').attr('href').partition('?')
-        q = QueryDict(qs)
-        eq_('audio', q['s'])
-        eq_('s', q['as'])
-        eq_('0', q['r'])
-        eq_('sph', q['e'])
-
     def test_category(self):
         results = wiki_searcher().filter(category__in=[10])
         eq_(5, len(results))

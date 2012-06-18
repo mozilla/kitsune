@@ -173,33 +173,6 @@
   </section>
 
   <section>
-    <h1>elasticsearch waffle flag</h1>
-    <table>
-      <thead>
-        <tr>
-          <th>everyone</th>
-          <th>percent</th>
-          <th>testing</th>
-          <th>superuser</th>
-          <th>staff</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>{{ es_waffle_flag.everyone }}</td>
-          <td>{{ es_waffle_flag.percent }}</td>
-          <td>{{ es_waffle_flag.testing }}</td>
-          <td>{{ es_waffle_flag.superusers }}</td>
-          <td>{{ es_waffle_flag.staff }}</td>
-        </tr>
-      </tbody>
-    </table>
-    <p>
-      <a href="{% url admin:waffle_flag_change es_waffle_flag.id %}">change elasticsearch waffle flag</a>
-    </p>
-  </section>
-
-  <section>
     <h1>Reindex</h1>
     {% if outstanding_chunks %}
       <p class="errornote">

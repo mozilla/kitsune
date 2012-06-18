@@ -3,9 +3,11 @@ import datetime
 
 import mock
 from django.conf import settings
+from django.http import QueryDict
 from elasticutils import get_es
 from nose import SkipTest
 from nose.tools import eq_
+from pyquery import PyQuery as pq
 from test_utils import TestCase
 
 from forums.tests import thread, post
@@ -58,7 +60,6 @@ class ElasticTestCase(TestCase):
             raise SkipTest
 
         super(ElasticTestCase, self).setUp()
-        Flag.objects.create(name='elasticsearch', everyone=True)
         self.setup_indexes()
 
     def tearDown(self):
@@ -141,6 +142,34 @@ class ElasticSearchTasksTests(ElasticTestCase):
 
 class ElasticSearchViewPagingTests(ElasticTestCase):
     client_class = LocalizingClient
+
+    def test_search_metrics(self):
+        """Ensure that query strings are added to search results"""
+        response = self.client.get(reverse('search'), {'q': 'audio', 'w': 3})
+        doc = pq(response.content)
+        _, _, qs = doc('a.title:first').attr('href').partition('?')
+        q = QueryDict(qs)
+        eq_('audio', q['s'])
+        eq_('s', q['as'])
+        eq_('0', q['r'])
+
+    def test_category_invalid(self):
+        d1 = document(title=u'tags tags tags', locale=u'en-US', category=10,
+                      save=True)
+        d1.tags.add(u'desktop')
+        revision(document=d1, is_approved=True, save=True)
+        d2 = document(title=u'tags tags', locale=u'en-US', category=30,
+                      save=True)
+        d2.tags.add(u'desktop')
+        revision(document=d2, is_approved=True, save=True)
+
+        response = self.client.get(reverse('search'), {
+            'a': '1', 'w': '3', 'category': 'invalid',
+            'format': 'json'
+        })
+        eq_(200, response.status_code)
+        content = json.loads(response.content)
+        eq_(content['total'], 2)
 
     def test_front_page_search_paging(self):
         # Create 30 documents

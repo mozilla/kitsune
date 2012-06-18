@@ -70,9 +70,6 @@
 [submodule "vendor/src/django-timezones"]
 	path = vendor/src/django-timezones
 	url = https://github.com/brosner/django-timezones.git
-[submodule "vendor/src/sphinxapi"]
-	path = vendor/src/sphinxapi
-	url = https://github.com/jsocol/sphinxapi
 [submodule "vendor/src/django-waffle"]
 	path = vendor/src/django-waffle
 	url = https://github.com/jsocol/django-waffle.git
@@ -124,9 +121,6 @@
 [submodule "vendor/src/django-arecibo"]
 	path = vendor/src/django-arecibo
 	url = https://github.com/andymckay/django-arecibo.git
-[submodule "vendor/src/oedipus"]
-	path = vendor/src/oedipus
-	url = git://github.com/erikrose/oedipus.git
 [submodule "vendor/src/elasticutils"]
 	path = vendor/src/elasticutils
 	url = git://github.com/mozilla/elasticutils.git

@@ -19,9 +19,6 @@ following things (in addition to Git, of course).
 
 * Memcached Server.
 
-* `Sphinx <http://sphinxsearch.com/>`_ 0.9.9, compiled with the
-  ``--enable-id64`` flag.
-
 * RabbitMQ.
 
 * ``libxml`` and headers.
@@ -36,8 +33,8 @@ following things (in addition to Git, of course).
 
 * Several Python packages. See `Installing the Packages`_.
 
-* Elastic Search and Sphinx Search. :ref:`search-chapter` covers
-  installation, configuration, and running.
+* Elastic Search. :ref:`search-chapter` covers installation,
+  configuration, and running.
 
 Installation for these is very system dependent. Using a package manager, like
 yum, aptitude, or brew, is encouraged.
@@ -293,11 +290,11 @@ I (Will) put that in a script that creates the needed directories in
     $REDISBIN $CONFFILE/redis-volatile.conf
 
 
-Elastic search and Sphinx search
---------------------------------
+Elastic search
+--------------
 
-Elastic Search and Sphinx Search. :ref:`search-chapter` covers
-installation, configuration, and running.
+Elastic Search. :ref:`search-chapter` covers installation,
+configuration, and running.
 
 .. todo:: The installation side of these two should get moved here.
 

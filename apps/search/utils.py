@@ -20,40 +20,6 @@ def clean_excerpt(excerpt):
     return bleach.clean(excerpt, tags=['b', 'i'])
 
 
-def reindex(rotate=False):
-    """Reindex sphinx.
-
-    Note this is only to be used in dev and test environments.
-
-    """
-    calls = [settings.SPHINX_INDEXER, '--all', '--config',
-             settings.SPHINX_CONFIG_PATH]
-    if rotate:
-        calls.append('--rotate')
-
-    call(calls)
-
-
-def start_sphinx():
-    """Start sphinx.
-
-    Note this is only to be used in dev and test environments.
-
-    """
-    call([settings.SPHINX_SEARCHD, '--config',
-        settings.SPHINX_CONFIG_PATH])
-
-
-def stop_sphinx():
-    """Stop sphinx.
-
-    Note this is only to be used in dev and test environments.
-
-    """
-    call([settings.SPHINX_SEARCHD, '--stop', '--config',
-        settings.SPHINX_CONFIG_PATH])
-
-
 def locale_or_default(locale):
     """Return `locale` or, if `locale` isn't a known locale, a default.
 
