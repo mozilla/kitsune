@@ -76,9 +76,7 @@ database.
 Changes that involve reindexing
 ===============================
 
-When we migrate from Sphinx, we won't be able to waffle all search
-traffic over to Sphinx in order to push a change to our Elastic Search
-code that requires a reindexing of all our documents.
+With Elastic Search, it takes a while to reindex. We need to be able to reindex without taking down search.
 
 This walks through the workflow for making changes to our Elastic
 Search code that require reindexing.

@@ -334,7 +334,7 @@ The following aren't installed in this guide:
 
 * Redis
 * RabbitMQ
-* Sphinx search and Elastic Search
+* Elastic Search
 
 For installing and configuring those components, you should look at
 the more comprehensive :ref:`installation-chapter`.

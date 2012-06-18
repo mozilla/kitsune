@@ -9,8 +9,6 @@ from django.http import HttpResponseRedirect, Http404
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 
-from waffle.models import Flag
-
 from search import es_utils
 from search.es_utils import (get_doctype_stats, get_indexes, delete_index,
                              ESTimeoutError, ESMaxRetryError,
@@ -202,12 +200,9 @@ def search(request):
 
     recent_records = Record.uncached.order_by('-starttime')[:20]
 
-    es_waffle_flag = Flag.objects.get(name=u'elasticsearch')
-
     return render_to_response(
         'search/admin/search.html',
         {'title': 'Search',
-         'es_waffle_flag': es_waffle_flag,
          'doctype_stats': stats,
          'doctype_write_stats': write_stats,
          'indexes': indexes,
