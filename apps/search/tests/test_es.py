@@ -9,7 +9,7 @@ from nose.tools import eq_
 from test_utils import TestCase
 
 from forums.tests import thread, post
-from questions.tests import question, answer, answervote
+from questions.tests import question, answer, answervote, questionvote
 from questions.models import Question
 from search.models import generate_tasks
 from search import es_utils
@@ -328,6 +328,42 @@ class ElasticSearchViewTests(ElasticTestCase):
 
         content = json.loads(response.content)
         eq_(content['total'], 1)
+
+    def test_advanced_search_questions_num_votes(self):
+        """Tests advanced search for questions num_votes filter"""
+        q = question(title=u'tags tags tags', save=True)
+
+        # Add two question votes
+        questionvote(question=q, save=True)
+        questionvote(question=q, save=True)
+
+        self.refresh()
+
+        # Advanced search for questions with num_votes > 5. The above
+        # question should be not in this set.
+        response = self.client.get(reverse('search'), {
+            'q': '', 'tags': 'desktop', 'w': '2', 'a': '1',
+            'num_voted': 2, 'num_votes': 5,
+            'format': 'json'
+        })
+
+        eq_(200, response.status_code)
+
+        content = json.loads(response.content)
+        eq_(content['total'], 0)
+
+        # Advanced search for questions with num_votes < 1. The above
+        # question should be not in this set.
+        response = self.client.get(reverse('search'), {
+            'q': '', 'tags': 'desktop', 'w': '2', 'a': '1',
+            'num_voted': 1, 'num_votes': 1,
+            'format': 'json'
+        })
+
+        eq_(200, response.status_code)
+
+        content = json.loads(response.content)
+        eq_(content['total'], 0)
 
     def test_forums_search(self):
         """This tests whether forum posts show up in searches."""
