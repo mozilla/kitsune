@@ -180,7 +180,7 @@ class Thread(NotificationsMixin, ModelBase, SearchMixin):
 
     @classmethod
     def get_query_fields(cls):
-        return ['post_title__text', 'post_content_text']
+        return ['post_title__text', 'post_content__text']
 
     @classmethod
     def get_mapping(cls):

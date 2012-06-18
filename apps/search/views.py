@@ -138,29 +138,30 @@ def search_with_es_unified(request, template=None):
 
     # Start - wiki filters
 
-    # Category filter
-    if cleaned['category']:
-        wiki_f &= F(document_category__in=cleaned['category'])
+    if cleaned['w'] & constants.WHERE_WIKI:
+        # Category filter
+        if cleaned['category']:
+            wiki_f &= F(document_category__in=cleaned['category'])
 
-    # Locale filter
-    wiki_f &= F(document_locale=language)
+        # Locale filter
+        wiki_f &= F(document_locale=language)
 
-    # Product filter
-    products = cleaned['product']
-    for p in products:
-        wiki_f &= F(document_tag=p)
+        # Product filter
+        products = cleaned['product']
+        for p in products:
+            wiki_f &= F(document_tag=p)
 
-    # Tags filter
-    tags = [t.strip() for t in cleaned['tags'].split()]
-    for t in tags:
-        wiki_f &= F(document_tag=t)
+        # Tags filter
+        tags = [t.strip() for t in cleaned['tags'].split()]
+        for t in tags:
+            wiki_f &= F(document_tag=t)
 
-    # Archived bit
-    if a == '0' and not cleaned['include_archived']:
-        # Default to NO for basic search:
-        cleaned['include_archived'] = False
-    if not cleaned['include_archived']:
-        wiki_f &= F(document_is_archived=False)
+        # Archived bit
+        if a == '0' and not cleaned['include_archived']:
+            # Default to NO for basic search:
+            cleaned['include_archived'] = False
+        if not cleaned['include_archived']:
+            wiki_f &= F(document_is_archived=False)
 
     # End - wiki filters
 
@@ -244,10 +245,10 @@ def search_with_es_unified(request, template=None):
     try:
         cleaned_q = cleaned['q']
 
-        # add filters
+        # Add all the filters
         searcher = searcher.filter(question_f | wiki_f | discussion_f)
 
-        # highlights
+        # Set up the highlights
         searcher = searcher.highlight(
             'question_title', 'question_content', 'question_answer_content',
             'discussion_content',
@@ -255,28 +256,28 @@ def search_with_es_unified(request, template=None):
             after_match='</b>',
             limit=settings.SEARCH_SUMMARY_LENGTH)
 
-        print a, cleaned['w']
+        # Apply sortby, but only for advanced search for questions
         if a == '1' and cleaned['w'] & constants.WHERE_SUPPORT:
-            # If this is an advanced search for support questions,
-            # then apply the sortby.
             sortby = smart_int(request.GET.get('sortby'))
             try:
                 searcher = searcher.order_by(
                     *constants.SORT_QUESTIONS_ES[sortby])
             except IndexError:
+                # Skip index errors because they imply the user is
+                # sending us sortby values that aren't valid.
                 pass
 
-        query_fields = chain(*[cls.get_query_fields()
-                               for cls in get_search_models()])
+        # Build the query
+        if cleaned_q:
+            query_fields = chain(*[cls.get_query_fields()
+                                   for cls in get_search_models()])
 
-        # build the query
-        query = dict((field, cleaned_q) for field in query_fields)
+            query = dict((field, cleaned_q) for field in query_fields)
 
-        searcher = searcher.query(or_=query)
+            searcher = searcher.query(or_=query)
 
-        import pprint
-        pprint.pprint(searcher._build_query())
-
+        # TODO - Can ditch the ComposedList here, but we need
+        # something that paginate can use to figure out the paging.
         documents = ComposedList()
         documents.set_count(('results', searcher),
                             min(searcher.count(), settings.SEARCH_MAX_RESULTS))
@@ -286,7 +287,7 @@ def search_with_es_unified(request, template=None):
         num_results = len(documents)
 
         # Get the documents we want to show and add them to
-        # docs_for_page.
+        # docs_for_page
         documents = documents[offset:offset + results_per_page]
 
         bounds = documents[0][1]
@@ -301,6 +302,7 @@ def search_with_es_unified(request, template=None):
                 result = {
                     'title': doc['document_title'],
                     'type': 'document'}
+
             elif doc['model'] == 'questions_question':
                 summary = _build_es_excerpt(doc)
                 result = {
@@ -310,6 +312,7 @@ def search_with_es_unified(request, template=None):
                     'num_answers': doc['question_num_answers'],
                     'num_votes': doc['question_num_votes'],
                     'num_votes_past_week': doc['question_num_votes_past_week']}
+
             else:
                 summary = _build_es_excerpt(doc)
                 result = {
