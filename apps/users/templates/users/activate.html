@@ -2,7 +2,11 @@
 {% extends "users/base.html" %}
 {% from "users/includes/macros.html" import login_form %}
 {% if account %}
-  {% set title = _('Account successfully verified!') %}
+  {% if questions %}
+    {% set title = _('Done!') %}
+  {% else %}
+    {% set title = _('Account successfully verified!') %}
+  {% endif %}
 {% else %}
   {% set title = _('Something is wrong') %}
 {% endif %}
@@ -12,11 +16,13 @@
   <article class="main">
     <h1>{{ title }}</h1>
     {% if account %}
-      <p>{% trans %}
-        You've confirmed your email address and activated your account! You
-        can now log in, and go edit your profile.{% endtrans %}
-      </p>
+
       {% if questions %}
+        <p>{% trans %}
+          Your account is successfully verified, and your question is now posted
+          on the Mozilla community support forum.{% endtrans %}
+        </p>
+        <p>{% trans %}See your question here:{% endtrans %}</p>
         <p>{{ ngettext('Your question is now visible on the site!',
                        'Your questions are now visible on the site!',
                        questions.count()) }}
@@ -25,6 +31,15 @@
             <li><a href="{{ q.get_absolute_url() }}">{{ q.title }}</a></li>
           {% endfor %}
         </ul>
+        <p>{% trans %}
+          Sit back and relax. Our forum contributors will get back to you with
+          an answer.{% endtrans %}
+        </p>
+      {% else %}
+        <p>{% trans %}
+          You've confirmed your email address and activated your account! You
+          can now log in, and go edit your profile.{% endtrans %}
+        </p>
       {% endif %}
       {{ login_form(form, csrf=csrf()) }}
     {% else %}

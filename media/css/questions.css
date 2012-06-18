@@ -63,7 +63,35 @@ body.notifications #main article.main {
     padding-left: 10px;
 }
 
-/* Questions recent stats */
+/* Questions recent stats and AAQ progress */
+#aaq_progress {
+    height: 120px;
+    margin: 35px 0 0 77px;
+    position: relative;
+    width: 770px;
+}
+
+#aaq_progress .graph_labels {
+    left: -77px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    position: absolute;
+    top: 32px;
+    width: 924px;
+}
+
+#aaq_progress .graph_labels li {
+    float: left;
+    padding: 0 10px;
+    text-align: center;
+    width: 134px;
+}
+
+#aaq_progress .graph_labels li.current {
+    font-weight: bold;
+}
+
 #recent-stats {
     color: #aaa;
     font-size: 13px;
@@ -87,16 +115,19 @@ body.notifications #main article.main {
     padding: 0 12px;
 }
 
-#recent-stats .graph {
+#recent-stats .graph,
+#aaq_progress .graph  {
     background: #DDD;
     background: -moz-linear-gradient(#DDD,#F8F8F8) repeat scroll 0 0 transparent;
     background: -webkit-gradient(linear,left top,left bottom,from(#DDD),to(#F8F8F8));
     border-radius: 12px;
     height: 25px;
     margin: 7px 0;
+    position: relative;
 }
 
-#recent-stats .graph div {
+#recent-stats .graph > div,
+#aaq_progress .graph > div {
     background: #F09609;
     background: -moz-linear-gradient(#FFC900,#F09609) repeat scroll 0 0 transparent;
     background: -webkit-gradient(linear,left top,left bottom,from(#FFC900),to(#F09609));
@@ -110,13 +141,44 @@ body.notifications #main article.main {
     text-align: right;
 }
 
-#recent-stats .graph.complete div {
+#aaq_progress .graph > div {
+    left: 0;
+    padding: 0 6px;
+    position: absolute;
+    top: 0;
+    z-index: 100;
+}
+
+#aaq_progress .graph > ul {
+    height: 25px;
+    left: 0;
+    list-style: none;
+    margin: 0 77px;
+    padding: 0;
+    position: absolute;
+    top: 0;
+}
+
+#aaq_progress .graph > ul li {
+    border-color: transparent #F8F8F8 transparent #DDDDDD;
+    border-style: solid;
+    border-width: 0 1px;
+    float: left;
+    height: 25px;
+    margin: 0 76px;
+    overflow: hidden;
+    width: 0;
+}
+
+#recent-stats .graph.complete > div,
+#aaq_progress .graph.complete > div {
     background: #489615;
     background: -moz-linear-gradient(#84C63C,#489615) repeat scroll 0 0 transparent;
     background: -webkit-gradient(linear,left top,left bottom,from(#84C63C),to(#489615));
+    padding: 0;
 }
 
-#recent-stats .graph div span {
+#recent-stats .graph > div > span {
     padding: 0 15px 0 0;
 }
 
