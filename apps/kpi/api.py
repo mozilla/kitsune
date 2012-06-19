@@ -270,9 +270,7 @@ class ActiveContributorsResource(CachedResource):
 
         def merge_results(metrics_qs, label):
             for metric in metrics_qs:
-                if metric.end not in results_dict:
-                    results_dict[metric.end] = {}
-                results_dict[metric.end][label] = metric.value
+                results_dict.setdefault(metric.end, {})[label] = metric.value
 
         merge_results(en_us, 'en_us')
         merge_results(l10n, 'non_en_us')

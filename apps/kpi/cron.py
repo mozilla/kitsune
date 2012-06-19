@@ -24,7 +24,7 @@ def update_visitors_metric():
     """Get new visitor data from webtrends and save."""
     # Start updating the day after the last updated.
     latest_metric = _get_latest_metric(VISITORS_METRIC_CODE)
-    if latest_metric:
+    if latest_metric is not None:
         latest_metric_date = latest_metric.start
     else:
         latest_metric_date = date(2011, 01, 01)
@@ -133,7 +133,7 @@ def update_support_forum_contributors_metric(day=None):
     else:
         latest_metric = _get_latest_metric(
             SUPPORT_FORUM_CONTRIBUTORS_METRIC_CODE)
-        if latest_metric:
+        if latest_metric is not None:
             # Start updating the day after the last updated.
             start = latest_metric.end + timedelta(days=1)
         else:
@@ -179,7 +179,7 @@ def update_kb_contributors_metric(day=None):
         start = end = day
     else:
         latest_metric = _get_latest_metric(KB_ENUS_CONTRIBUTORS_METRIC_CODE)
-        if latest_metric:
+        if latest_metric is not None:
             # Start updating the day after the last updated.
             start = latest_metric.end + timedelta(days=1)
         else:
@@ -242,7 +242,7 @@ def update_aoa_contributors_metric(day=None):
         start = end = day
     else:
         latest_metric = _get_latest_metric(AOA_CONTRIBUTORS_METRIC_CODE)
-        if latest_metric:
+        if latest_metric is not None:
             # Start updating the day after the last updated.
             start = latest_metric.end + timedelta(days=1)
         else:
