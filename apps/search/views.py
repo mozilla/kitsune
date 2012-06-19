@@ -748,16 +748,32 @@ def suggestions(request):
 
     site = Site.objects.get_current()
     locale = locale_or_default(request.locale)
-    results = list(chain(
-            wiki_searcher(request).filter(is_archived=False)
-                                  .filter(locale=locale)
-                                  .query(term)[:5],
-            question_searcher(request).filter(has_helpful=True)
-                                      .query(term)[:5]))
-    # Assumption: wiki_search sets filter(is_archived=False).
+    try:
+        # This uses .search(). We assume that sets the query_fields.
+        # Otherwise the query here won't work.
+        wiki_s = (Document.search()
+                  .filter(document_is_archived=False)
+                  .filter(document_locale=locale)
+                  .values_dict('document_title', 'url')
+                  .query(term)[:5])
+        question_s = (Question.search()
+                      .filter(question_has_helpful=True)
+                      .values_dict('question_title', 'url')
+                      .query(term)[:5])
 
-    urlize = lambda obj: u'https://%s%s' % (site, obj.get_absolute_url())
-    data = [term, [r.title for r in results], [], [urlize(r) for r in results]]
+        results = list(chain(question_s, wiki_s))
+    except (ESTimeoutError, ESMaxRetryError, ESException):
+        # If we have ES problems, we just send back an empty result
+        # set.
+        results = []
+
+    urlize = lambda r: u'https://%s%s' % (site, r['url'])
+    titleize = lambda r: (r['document_title'] if 'document_title' in r
+                          else r['question_title'])
+    data = [term,
+            [titleize(r) for r in results],
+            [],
+            [urlize(r) for r in results]]
     return HttpResponse(json.dumps(data), mimetype=mimetype)
 
 
