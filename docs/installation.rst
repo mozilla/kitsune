@@ -206,7 +206,7 @@ configuration is::
             'ENGINE': 'django.db.backends.mysql',
             'HOST': 'localhost',
             'USER': 'kitsune',
-            'PASSWORD': 'password',
+            'PASSWORD': '<YOUR_PASSWORD>',
             'OPTIONS': {'init_command': 'SET storage_engine=InnoDB'},
             'TEST_CHARSET': 'utf8',
             'TEST_COLLATION': 'utf8_unicode_ci',
@@ -228,7 +228,7 @@ settings. For example, using the settings above::
 To load the latest database schema, use ``scripts/schema.sql`` and
 ``schematic``::
 
-    $ mysql kitsune < scripts/schema.sql
+    $ mysql -u kitsune -p <YOUR_PASSWORD> < scripts/schema.sql
     $ ./vendor/src/schematic/schematic migrations/
 
 You'll now have an empty but up-to-date database!
