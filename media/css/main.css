@@ -481,7 +481,7 @@ header.global #support-search {
     position: absolute;
     right: 0;
     top: 63px;
-    width: 314px;
+    width: 424px;
 }
 
 .html-rtl header.global #support-search {
@@ -709,7 +709,7 @@ div.support-search form {
 }
 
 div.support-search input.text {
-    background: #fff url(../img/icon.searchloupe.png) no-repeat 7px 2px;
+    background: #fff;
     border: solid 1px #d9d9d9;
     border-radius: 5px;
     -moz-border-radius: 5px;
@@ -719,7 +719,7 @@ div.support-search input.text {
     font-size: 16px;
     height: 26px;
     margin: 0 1px 0 0;
-    padding: 2px 0 2px 34px;
+    padding: 2px 0 2px 8px;
     width: 215px;
 }
 
@@ -730,20 +730,11 @@ div.support-search input.text {
     padding: 2px 34px 2px 0;
 }
 
-div.support-search button.img-submit {
+div.support-search input.btn-important {
     float: left;
-    height: 33px;
-    margin: -1px 0 0 2px;
-    width: 40px;
-}
-
-.html-rtl div.support-search button.img-submit {
-    float: right;
-    margin: -1px 2px 0 0;
-}
-
-.html-rtl div.support-search button.img-submit img {
-    -moz-transform: scaleX(-1);
+    font-size: 13px;
+    margin: 0 0 0 6px;
+    padding: 5px 12px 7px 12px;
 }
 
 /*-----------------------------------------------

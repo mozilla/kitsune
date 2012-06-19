@@ -58,8 +58,8 @@ html[lang=ja] body div#featured {
 
 #support-search {
     margin: 0;
-    padding: 20px 0 0 57px;
-    width: 425px;
+    padding: 20px 0 0 2px;
+    width: 535px;
 }
 
 .html-rtl #support-search {
