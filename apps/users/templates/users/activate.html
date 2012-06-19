@@ -22,10 +22,10 @@
           Your account is successfully verified, and your question is now posted
           on the Mozilla community support forum.{% endtrans %}
         </p>
-        <p>{% trans %}See your question here:{% endtrans %}</p>
-        <p>{{ ngettext('Your question is now visible on the site!',
-                       'Your questions are now visible on the site!',
+        <p>{{ ngettext('See your question here:',
+                       'See your questions here:',
                        questions.count()) }}
+        </p>
         <ul class="questions">
           {% for q in questions %}
             <li><a href="{{ q.get_absolute_url() }}">{{ q.title }}</a></li>
@@ -34,6 +34,11 @@
         <p>{% trans %}
           Sit back and relax. Our forum contributors will get back to you with
           an answer.{% endtrans %}
+        </p>
+        <h2>{{ _('While you wait') }}</h2>
+        <p>{% trans %}
+          Log in, so you can respond to your question when it is
+          answered:{% endtrans %}
         </p>
       {% else %}
         <p>{% trans %}

@@ -351,7 +351,7 @@ def aaq(request, product_key=None, category_key=None, showform=False,
 
         if request.user.is_active:
             messages.add_message(request, messages.SUCCESS,
-                _('Thanks! Your question has been posted. See it below.'))
+                _('Done! Your question is now posted on the Mozilla community support forum.'))
             url = reverse('questions.answers',
                           kwargs={'question_id': question.id})
             return HttpResponseRedirect(url)
