@@ -727,7 +727,7 @@ div.support-search input.text {
     background-position: 225px 2px;
     float: right;
     margin: 0 0 0 1px;
-    padding: 2px 34px 2px 0;
+    padding: 2px 8px 2px 0;
 }
 
 div.support-search input.btn-important {
@@ -735,6 +735,10 @@ div.support-search input.btn-important {
     font-size: 13px;
     margin: 0 0 0 6px;
     padding: 5px 12px 7px 12px;
+}
+
+.html-rtl div.support-search input.btn-important {
+    margin: 0 6px 0 0;
 }
 
 /*-----------------------------------------------
