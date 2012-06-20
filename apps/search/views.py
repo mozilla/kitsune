@@ -129,9 +129,9 @@ def search_with_es_unified(request, template=None):
     # and make sure we don't ever ask for object results.
     searcher = Sphilastic(object)
 
-    wiki_f = F()
-    question_f = F()
-    discussion_f = F()
+    wiki_f = F(model='wiki_document')
+    question_f = F(model='questions_question')
+    discussion_f = F(model='forums_thread')
 
     # Start - wiki filters
 
