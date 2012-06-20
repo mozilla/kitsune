@@ -154,8 +154,7 @@ class SimpleSyntaxTestCase(TestCase):
         p = WikiParser()
 
         # Create a new article
-        rev = revision(is_approved=True)
-        rev.save()
+        rev = revision(is_approved=True, save=True)
         doc = rev.document
         doc.current_revision = rev
         doc.title='Real article'
@@ -168,15 +167,10 @@ class SimpleSyntaxTestCase(TestCase):
         redirect = Document.objects.get(slug=old_slug)
 
         # Both internal links should link to the same article
-        eq_(p.parse('[[' + doc.title + ']]'),
-            '<p><a href="/en-US/kb/' + doc.slug + '">' + doc.title + \
-            '</a>\n</p>')
-        eq_(p.parse('[[' + redirect.title + ']]'),
-            '<p><a href="/en-US/kb/' + doc.slug + '">' + doc.title + \
-            '</a>\n</p>')
-        
-        doc.delete()
-        redirect.delete()
+        eq_(p.parse('[[%s]]' % doc.title),
+            '<p><a href="/en-US/kb/%s">%s</a>\n</p>' % (doc.slug, doc.title))
+        eq_(p.parse('[[%s]]' % redirect.title),
+            '<p><a href="/en-US/kb/%s">%s</a>\n</p>' % (doc.slug, doc.title))
 
 class TestWikiTemplate(TestCase):
     def test_template(self):
