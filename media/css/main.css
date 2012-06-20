@@ -738,6 +738,7 @@ div.support-search input.btn-important {
 }
 
 .html-rtl div.support-search input.btn-important {
+    float: right;
     margin: 0 6px 0 0;
 }
 
