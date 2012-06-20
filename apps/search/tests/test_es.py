@@ -3,7 +3,9 @@ import datetime
 
 import mock
 from django.conf import settings
+from django.contrib.sites.models import Site
 from django.http import QueryDict
+from django.utils.http import urlquote
 from elasticutils import get_es
 from nose import SkipTest
 from nose.tools import eq_
@@ -13,10 +15,12 @@ from test_utils import TestCase
 from forums.tests import thread, post
 from questions.tests import question, answer, answervote, questionvote
 from questions.models import Question
-from search.models import generate_tasks
+import search as constants
 from search import es_utils
+from search.models import generate_tasks
 from sumo.tests import LocalizingClient
 from sumo.urlresolvers import reverse
+from users.tests import user
 from waffle.models import Flag
 from wiki.tests import document, revision
 
@@ -145,31 +149,25 @@ class ElasticSearchViewPagingTests(ElasticTestCase):
 
     def test_search_metrics(self):
         """Ensure that query strings are added to search results"""
-        response = self.client.get(reverse('search'), {'q': 'audio', 'w': 3})
+        # Need at least one search result to get links.
+        d1 = document(title=u'audio audio', locale=u'en-US', category=10,
+                      save=True)
+        d1.tags.add(u'desktop')
+        revision(document=d1, is_approved=True, save=True)
+
+        self.refresh()
+
+        response = self.client.get(reverse('search'), {
+            'q': 'audio', 'tags': 'desktop', 'w': '1', 'a': '1'
+        })
+        eq_(200, response.status_code)
+
         doc = pq(response.content)
         _, _, qs = doc('a.title:first').attr('href').partition('?')
         q = QueryDict(qs)
         eq_('audio', q['s'])
         eq_('s', q['as'])
         eq_('0', q['r'])
-
-    def test_category_invalid(self):
-        d1 = document(title=u'tags tags tags', locale=u'en-US', category=10,
-                      save=True)
-        d1.tags.add(u'desktop')
-        revision(document=d1, is_approved=True, save=True)
-        d2 = document(title=u'tags tags', locale=u'en-US', category=30,
-                      save=True)
-        d2.tags.add(u'desktop')
-        revision(document=d2, is_approved=True, save=True)
-
-        response = self.client.get(reverse('search'), {
-            'a': '1', 'w': '3', 'category': 'invalid',
-            'format': 'json'
-        })
-        eq_(200, response.status_code)
-        content = json.loads(response.content)
-        eq_(content['total'], 2)
 
     def test_front_page_search_paging(self):
         # Create 30 documents
@@ -394,6 +392,16 @@ class ElasticSearchViewTests(ElasticTestCase):
         content = json.loads(response.content)
         eq_(content['total'], 0)
 
+    def test_num_voted_none(self):
+        q = question(save=True)
+        questionvote(question=q, save=True)
+
+        self.refresh()
+
+        qs = {'q': '', 'w': 2, 'a': 1, 'num_voted': 2, 'num_votes': ''}
+        response = self.client.get(reverse('search'), qs)
+        eq_(200, response.status_code)
+
     def test_forums_search(self):
         """This tests whether forum posts show up in searches."""
         thread1 = thread(
@@ -497,6 +505,22 @@ class ElasticSearchUnifiedViewTests(ElasticTestCase):
     def setUp(self):
         super(ElasticSearchUnifiedViewTests, self).setUp()
         Flag.objects.create(name='esunified', everyone=True)
+
+    def test_meta_tags(self):
+        url_ = reverse('search')
+        response = self.client.get(url_, {'q': 'contribute'})
+
+        doc = pq(response.content)
+        metas = doc('meta')
+        eq_(3, len(metas))
+
+    def test_search_cookie(self):
+        """Set a cookie with the latest search term."""
+        data = {'q': u'pagap\xf3 banco'}
+        cookie = settings.LAST_SEARCH_COOKIE
+        response = self.client.get(reverse('search', locale='fr'), data)
+        assert cookie in response.cookies
+        eq_(urlquote(data['q']), response.cookies[cookie].value)
 
     def test_front_page_search_for_questions(self):
         """This tests whether doing a search from the front page returns
@@ -641,6 +665,52 @@ class ElasticSearchUnifiedViewTests(ElasticTestCase):
         content = json.loads(response.content)
         eq_(content['total'], 1)
 
+    def test_advanced_search_questions_num_votes(self):
+        """Tests advanced search for questions num_votes filter"""
+        q = question(title=u'tags tags tags', save=True)
+
+        # Add two question votes
+        questionvote(question=q, save=True)
+        questionvote(question=q, save=True)
+
+        self.refresh()
+
+        # Advanced search for questions with num_votes > 5. The above
+        # question should be not in this set.
+        response = self.client.get(reverse('search'), {
+            'q': '', 'tags': 'desktop', 'w': '2', 'a': '1',
+            'num_voted': 2, 'num_votes': 5,
+            'format': 'json'
+        })
+
+        eq_(200, response.status_code)
+
+        content = json.loads(response.content)
+        eq_(content['total'], 0)
+
+        # Advanced search for questions with num_votes < 1. The above
+        # question should be not in this set.
+        response = self.client.get(reverse('search'), {
+            'q': '', 'tags': 'desktop', 'w': '2', 'a': '1',
+            'num_voted': 1, 'num_votes': 1,
+            'format': 'json'
+        })
+
+        eq_(200, response.status_code)
+
+        content = json.loads(response.content)
+        eq_(content['total'], 0)
+
+    def test_num_votes_none(self):
+        q = question(save=True)
+        questionvote(question=q, save=True)
+
+        self.refresh()
+
+        qs = {'q': '', 'w': 2, 'a': 1, 'num_voted': 2, 'num_votes': ''}
+        response = self.client.get(reverse('search'), qs)
+        eq_(200, response.status_code)
+
     def test_forums_search(self):
         """This tests whether forum posts show up in searches."""
         thread1 = thread(
@@ -737,6 +807,353 @@ class ElasticSearchUnifiedViewTests(ElasticTestCase):
         content = json.loads(response.content)
         eq_(content['total'], 0)
 
+    def test_category_invalid(self):
+        """Tests passing an invalid category"""
+        # wiki and questions
+        ques = question(title=u'q1 audio', save=True)
+        ques.tags.add(u'desktop')
+        ans = answer(question=ques, save=True)
+        answervote(answer=ans, helpful=True, save=True)
+
+        d1 = document(title=u'd1 audio', locale=u'en-US', category=10,
+                      is_archived=False, save=True)
+        d1.tags.add(u'desktop')
+        revision(document=d1, is_approved=True, save=True)
+
+        self.refresh()
+
+        qs = {'a': 1, 'w': 3, 'format': 'json', 'category': 'invalid'}
+        response = self.client.get(reverse('search'), qs)
+        eq_(2, json.loads(response.content)['total'])
+
+    def test_created(self):
+        """Basic functionality of created filter."""
+        created_ds = datetime.datetime(2010, 6, 19, 12, 00)
+
+        # on 6/19/2010
+        q1 = question(title=u'q1 audio', created=created_ds, save=True)
+        q1.tags.add(u'desktop')
+        ans = answer(question=q1, save=True)
+        answervote(answer=ans, helpful=True, save=True)
+
+        # on 6/21/2010
+        q2 = question(title=u'q2 audio',
+                      created=(created_ds + datetime.timedelta(days=2)),
+                      save=True)
+        q2.tags.add(u'desktop')
+        ans = answer(question=q2, save=True)
+        answervote(answer=ans, helpful=True, save=True)
+
+        self.refresh()
+
+        qs = {'a': 1, 'w': 2, 'format': 'json',
+              'sortby': 2, 'created_date': '06/20/2010'}
+
+        qs['created'] = constants.INTERVAL_BEFORE
+        response = self.client.get(reverse('search'), qs)
+        results = json.loads(response.content)['results']
+        eq_([q1.get_absolute_url()], [r['url'] for r in results])
+
+        qs['created'] = constants.INTERVAL_AFTER
+        response = self.client.get(reverse('search'), qs)
+        results = json.loads(response.content)['results']
+        eq_([q2.get_absolute_url()], [r['url'] for r in results])
+
+    def test_sortby_invalid(self):
+        """Invalid created_date is ignored."""
+        qs = {'a': 1, 'w': 4, 'format': 'json', 'sortby': ''}
+        response = self.client.get(reverse('search'), qs)
+        eq_(200, response.status_code)
+
+    def test_created_date_invalid(self):
+        """Invalid created_date is ignored."""
+        thread1 = thread(save=True)
+        post(thread=thread1, save=True)
+
+        self.refresh()
+
+        qs = {'a': 1, 'w': 4, 'format': 'json',
+              'created': constants.INTERVAL_AFTER,
+              'created_date': 'invalid'}
+        response = self.client.get(reverse('search'), qs)
+        eq_(1, json.loads(response.content)['total'])
+
+    def test_created_date_nonexistent(self):
+        """created is set while created_date is left out of the query."""
+        qs = {'a': 1, 'w': 2, 'format': 'json', 'created': 1}
+        response = self.client.get(reverse('search'), qs)
+        eq_(200, response.status_code)
+
+    def test_created_range_sanity(self):
+        """Ensure that the created_date range is sane."""
+        qs = {'a': 1, 'w': '2', 'q': 'contribute', 'created': '2',
+              'format': 'json'}
+        date_vals = ('05/28/2099', '05/28/1900', '05/28/1920')
+        for date_ in date_vals:
+            qs.update({'created_date': date_})
+            response = self.client.get(reverse('search'), qs)
+            eq_(0, json.loads(response.content)['total'])
+
+    def test_updated_invalid(self):
+        """Invalid updated_date is ignored."""
+        thread1 = thread(save=True)
+        post(thread=thread1, save=True)
+
+        self.refresh()
+
+        qs = {'a': 1, 'w': 4, 'format': 'json',
+              'updated': 1, 'updated_date': 'invalid'}
+        response = self.client.get(reverse('search'), qs)
+        eq_(1, json.loads(response.content)['total'])
+
+    def test_updated_nonexistent(self):
+        """updated is set while updated_date is left out of the query."""
+        thread1 = thread(save=True)
+        post(thread=thread1, save=True)
+
+        self.refresh()
+
+        qs = {'a': 1, 'w': 2, 'format': 'json', 'updated': 1}
+        response = self.client.get(reverse('search'), qs)
+        eq_(response.status_code, 200)
+
+    def test_updated_range_sanity(self):
+        """Ensure that the updated_date range is sane."""
+        qs = {'a': 1, 'w': '2', 'q': 'contribute', 'updated': '2',
+              'format': 'json'}
+        date_vals = ('05/28/2099', '05/28/1900', '05/28/1920')
+        for date_ in date_vals:
+            qs.update({'updated_date': date_})
+            response = self.client.get(reverse('search'), qs)
+            eq_(0, json.loads(response.content)['total'])
+
+    def test_asked_by(self):
+        """Check several author values, including test for (anon)"""
+        author_vals = (
+            ('DoesNotExist', 0),
+            ('jsocol', 2),
+            ('pcraciunoiu', 2),
+        )
+
+        # Set up all the question data---creats users, creates the
+        # questions, shove it all in the index, then query it and see
+        # what happens.
+        for name, number in author_vals:
+            u = user(username=name, save=True)
+            for i in range(number):
+                ques = question(title=u'audio', creator=u, save=True)
+                ques.tags.add(u'desktop')
+                ans = answer(question=ques, save=True)
+                answervote(answer=ans, helpful=True, save=True)
+
+        self.refresh()
+
+        qs = {'a': 1, 'w': 2, 'format': 'json'}
+
+        for author, total in author_vals:
+            qs.update({'asked_by': author})
+            response = self.client.get(reverse('search'), qs)
+            eq_(total, json.loads(response.content)['total'])
+
+    def test_wiki_tags(self):
+        """Search for tags, includes multiple."""
+        for tags in ('extant', 'extant tagged'):
+            doc = document(locale=u'en-US', category=10, save=True)
+            for tag in tags.split(' '):
+                doc.tags.add(tag)
+            revision(document=doc, is_approved=True, save=True)
+
+        self.refresh()
+
+        qs = {'a': 1, 'w': 1, 'format': 'json'}
+        tags_vals = (
+            ('doesnotexist', 0),
+            ('extant', 2),
+            ('tagged', 1),
+            ('extant tagged', 1),  # two tags
+        )
+
+        for tags, number in tags_vals:
+            qs.update({'tags': tags})
+            response = self.client.get(reverse('search'), qs)
+            eq_(number, json.loads(response.content)['total'])
+
+    def test_wiki_tags_inherit(self):
+        """Translations inherit tags from their parents."""
+        doc = document(locale=u'en-US', category=10, save=True)
+        doc.tags.add(u'desktop')
+        doc.tags.add(u'extant')
+        revision(document=doc, is_approved=True, save=True)
+
+        translated = document(locale=u'es', parent=doc, category=10,
+                              save=True)
+        revision(document=translated, is_approved=True, save=True)
+
+        self.refresh()
+
+        qs = {'a': 1, 'w': 1, 'format': 'json', 'tags': 'extant'}
+        response = self.client.get(reverse('search', locale='es'), qs)
+        eq_(1, json.loads(response.content)['total'])
+
+    def test_products(self):
+        """Search for products."""
+        prod_vals = (
+            ('mobile', 1),
+            ('desktop', 1),
+            ('sync', 2),
+            ('FxHome', 0),
+        )
+
+        for prod, total in prod_vals:
+            for i in range(total):
+                doc = document(locale=u'en-US', category=10, save=True)
+                doc.tags.add(prod)
+                revision(document=doc, is_approved=True, save=True)
+
+        self.refresh()
+
+        qs = {'a': 1, 'w': 1, 'format': 'json'}
+
+        for prod, total in prod_vals:
+            qs.update({'product': prod})
+            response = self.client.get(reverse('search'), qs)
+            eq_(total, json.loads(response.content)['total'])
+
+    def test_products_inherit(self):
+        """Translations inherit products from their parents."""
+        doc = document(locale=u'en-US', category=10, save=True)
+        doc.tags.add(u'desktop')
+        revision(document=doc, is_approved=True, save=True)
+
+        translated = document(locale=u'fr', parent=doc, category=10,
+                              save=True)
+        revision(document=translated, is_approved=True, save=True)
+
+        self.refresh()
+
+        qs = {'a': 1, 'w': 1, 'format': 'json', 'product': 'desktop'}
+        response = self.client.get(reverse('search', locale='fr'), qs)
+        eq_(1, json.loads(response.content)['total'])
+
+    def test_discussion_filter_author(self):
+        """Filter by author in discussion forums."""
+        author_vals = (
+            ('DoesNotExist', 0),
+            ('admin', 1),
+            ('jsocol', 4),
+        )
+
+        for name, number in author_vals:
+            u = user(username=name, save=True)
+            for i in range(number):
+                thread1 = thread(title=u'audio', save=True)
+                post(thread=thread1, author=u, save=True)
+
+        self.refresh()
+
+        qs = {'a': 1, 'w': 4, 'format': 'json'}
+
+        for author, total in author_vals:
+            qs.update({'author': author})
+            response = self.client.get(reverse('search'), qs)
+            eq_(total, json.loads(response.content)['total'])
+
+    def test_discussion_filter_forum(self):
+        """Filter by forum in discussion forums."""
+        raise SkipTest  # TODO: Figure out why this randomly started failing.
+        qs = {'a': 1, 'w': 4, 'format': 'json'}
+        forum_vals = (
+            # (forum_id, num_results)
+            (1, 4),
+            (2, 1),
+            (3, 0),  # this forum does not exist
+        )
+
+        for forum_id, total in forum_vals:
+            qs.update({'forum': forum_id})
+            response = self.client.get(reverse('search'), qs)
+            eq_(total, json.loads(response.content)['total'])
+
+    def test_discussion_filter_sticky(self):
+        """Filter for sticky threads."""
+        raise SkipTest  # TODO: Figure out why this randomly started failing.
+        qs = {'a': 1, 'w': 4, 'format': 'json', 'thread_type': 1, 'forum': 1}
+        response = self.client.get(reverse('search'), qs)
+        result = json.loads(response.content)['results'][0]
+        eq_(u'Sticky Thread', result['title'])
+
+    def test_discussion_filter_locked(self):
+        """Filter for locked threads."""
+        raise SkipTest  # TODO: Figure out why this randomly started failing.
+        qs = {'a': 1, 'w': 4, 'format': 'json', 'thread_type': 2,
+              'forum': 1, 'q': 'locked'}
+        response = self.client.get(reverse('search'), qs)
+        result = json.loads(response.content)['results'][0]
+        eq_(u'Locked Thread', result['title'])
+
+    def test_discussion_filter_sticky_locked(self):
+        """Filter for locked and sticky threads."""
+        thread1 = thread(title=u'audio', is_locked=True, is_sticky=True,
+                         save=True)
+        post(thread=thread1, save=True)
+
+        self.refresh()
+
+        qs = {'a': 1, 'w': 4, 'format': 'json', 'thread_type': (1, 2)}
+        response = self.client.get(reverse('search'), qs)
+        result = json.loads(response.content)['results'][0]
+        eq_(thread1.get_absolute_url(), result['url'])
+
+    def test_forums_filter_updated(self):
+        """Filter for updated date."""
+        post_updated_ds = datetime.datetime(2010, 5, 3, 12, 00)
+
+        thread1 = thread(title=u't1 audio', save=True)
+        post(thread=thread1, created=post_updated_ds, save=True)
+
+        thread2 = thread(title=u't2 audio', save=True)
+        post(thread=thread2,
+             created=(post_updated_ds + datetime.timedelta(days=2)),
+             save=True)
+
+        self.refresh()
+
+        qs = {'a': 1, 'w': 4, 'format': 'json',
+              'sortby': 1, 'updated_date': '05/04/2010'}
+
+        qs['updated'] = constants.INTERVAL_BEFORE
+        response = self.client.get(reverse('search'), qs)
+        results = json.loads(response.content)['results']
+        eq_([thread1.get_absolute_url()], [r['url'] for r in results])
+
+        qs['updated'] = constants.INTERVAL_AFTER
+        response = self.client.get(reverse('search'), qs)
+        results = json.loads(response.content)['results']
+        eq_([thread2.get_absolute_url()], [r['url'] for r in results])
+
+    def test_archived(self):
+        """Ensure archived articles show only when requested."""
+        doc = document(title=u'impalas', locale=u'en-US',
+                 is_archived=True, save=True)
+        revision(document=doc, summary=u'impalas',
+                 is_approved=True, save=True)
+
+        self.refresh()
+
+        # include_archived gets the above document
+        qs = {'q': 'impalas', 'a': 1, 'w': 1, 'format': 'json',
+              'include_archived': 'on'}
+        response = self.client.get(reverse('search'), qs)
+        results = json.loads(response.content)['results']
+        eq_(1, len(results))
+
+        # no include_archived gets you nothing since the only
+        # document in the index is archived
+        qs = {'q': 'impalas', 'a': 0, 'w': 1, 'format': 'json'}
+        response = self.client.get(reverse('search'), qs)
+        results = json.loads(response.content)['results']
+        eq_(0, len(results))
+
 
 class ElasticSearchUtilsTests(ElasticTestCase):
     def test_get_documents(self):
@@ -745,3 +1162,43 @@ class ElasticSearchUtilsTests(ElasticTestCase):
         docs = es_utils.get_documents(Question, [q.id])
         docs = [int(mem[u'id']) for mem in docs]
         eq_(docs, [q.id])
+
+
+class ElasticSearchSuggestionsTests(ElasticTestCase):
+    @mock.patch.object(Site.objects, 'get_current')
+    def test_invalid_suggestions(self, get_current):
+        """The suggestions API needs a query term."""
+        get_current.return_value.domain = 'testserver'
+        response = self.client.get(reverse('search.suggestions',
+                                           locale='en-US'))
+        eq_(400, response.status_code)
+        assert not response.content
+
+    @mock.patch.object(Site.objects, 'get_current')
+    def test_suggestions(self, get_current):
+        """Suggestions API is well-formatted."""
+        get_current.return_value.domain = 'testserver'
+
+        doc = document(title=u'doc1 audio', locale=u'en-US',
+                 is_archived=False, save=True)
+        revision(document=doc, summary=u'audio', content=u'audio',
+                 is_approved=True, save=True)
+
+        ques = question(title=u'q1 audio', save=True)
+        ques.tags.add(u'desktop')
+        ans = answer(question=ques, save=True)
+        answervote(answer=ans, helpful=True, save=True)
+
+        self.refresh()
+
+        response = self.client.get(reverse('search.suggestions',
+                                           locale='en-US'),
+                                   {'q': 'audio'})
+        eq_(200, response.status_code)
+        eq_('application/x-suggestions+json', response['content-type'])
+        results = json.loads(response.content)
+
+        eq_('audio', results[0])
+        eq_(2, len(results[1]))
+        eq_(0, len(results[2]))
+        eq_(2, len(results[3]))
