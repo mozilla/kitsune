@@ -477,14 +477,16 @@ span.unread-message-count {
 }
 
 header.global #support-search {
+    float: right;
     padding: 0;
     position: absolute;
     right: 0;
     top: 63px;
-    width: 424px;
+    width: auto;
 }
 
 .html-rtl header.global #support-search {
+    float: left;
     left: 0;
     right: auto;
 }
