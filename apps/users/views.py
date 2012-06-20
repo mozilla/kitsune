@@ -273,6 +273,9 @@ def edit_profile(request):
         form = ProfileForm(request.POST, request.FILES, instance=user_profile)
         if form.is_valid():
             user_profile = form.save()
+            new_timezone = user_profile.timezone
+            if request.session.get('timezone', None) != new_timezone:
+                request.session['timezone'] = new_timezone
             return HttpResponseRedirect(reverse('users.profile',
                                                 args=[request.user.id]))
     else:  # request.method == 'GET'
