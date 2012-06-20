@@ -153,28 +153,28 @@ class SimpleSyntaxTestCase(TestCase):
            articles and when to redirected articles"""
         p = WikiParser()
 
+        # Create a new article
         rev = revision(is_approved=True)
         rev.save()
-
         doc = rev.document
         doc.current_revision = rev
         doc.title='Real article'
         doc.save()
 
+        # Change the slug of the article to create a redirected article
         old_slug = doc.slug
         doc.slug = 'real-article'
         doc.save()
-
         redirect = Document.objects.get(slug=old_slug)
 
+        # Both internal links should link to the same article
         eq_(p.parse('[[' + doc.title + ']]'),
             '<p><a href="/en-US/kb/' + doc.slug + '">' + doc.title + \
             '</a>\n</p>')
-
         eq_(p.parse('[[' + redirect.title + ']]'),
             '<p><a href="/en-US/kb/' + doc.slug + '">' + doc.title + \
             '</a>\n</p>')
-
+        
         doc.delete()
         redirect.delete()
 
