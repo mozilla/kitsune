@@ -12,7 +12,7 @@ from nose.tools import eq_
 from pyquery import PyQuery as pq
 from test_utils import TestCase
 
-from forums.tests import thread, post
+from forums.tests import forum, thread, post
 from questions.tests import question, answer, answervote, questionvote
 from questions.models import Question
 import search as constants
@@ -54,6 +54,7 @@ class ElasticTestCase(TestCase):
 
     @classmethod
     def tearDownClass(cls):
+        super(ElasticTestCase, cls).tearDownClass()
         if not cls.skipme:
             # Restore old settings.
             es_utils.READ_INDEX = cls._old_read_index
@@ -1058,38 +1059,31 @@ class ElasticSearchUnifiedViewTests(ElasticTestCase):
             response = self.client.get(reverse('search'), qs)
             eq_(total, json.loads(response.content)['total'])
 
-    def test_discussion_filter_forum(self):
-        """Filter by forum in discussion forums."""
-        raise SkipTest  # TODO: Figure out why this randomly started failing.
-        qs = {'a': 1, 'w': 4, 'format': 'json'}
-        forum_vals = (
-            # (forum_id, num_results)
-            (1, 4),
-            (2, 1),
-            (3, 0),  # this forum does not exist
-        )
-
-        for forum_id, total in forum_vals:
-            qs.update({'forum': forum_id})
-            response = self.client.get(reverse('search'), qs)
-            eq_(total, json.loads(response.content)['total'])
-
     def test_discussion_filter_sticky(self):
         """Filter for sticky threads."""
-        raise SkipTest  # TODO: Figure out why this randomly started failing.
+        thread1 = thread(title=u'audio', is_locked=True, is_sticky=True,
+                         save=True)
+        post(thread=thread1, save=True)
+
+        self.refresh()
+
         qs = {'a': 1, 'w': 4, 'format': 'json', 'thread_type': 1, 'forum': 1}
         response = self.client.get(reverse('search'), qs)
-        result = json.loads(response.content)['results'][0]
-        eq_(u'Sticky Thread', result['title'])
+        results = json.loads(response.content)['results']
+        eq_(len(results), 1)
 
     def test_discussion_filter_locked(self):
         """Filter for locked threads."""
-        raise SkipTest  # TODO: Figure out why this randomly started failing.
-        qs = {'a': 1, 'w': 4, 'format': 'json', 'thread_type': 2,
-              'forum': 1, 'q': 'locked'}
+        thread1 = thread(title=u'audio', is_locked=True,
+                         save=True)
+        post(thread=thread1, save=True)
+
+        self.refresh()
+
+        qs = {'a': 1, 'w': 4, 'format': 'json', 'thread_type': 2}
         response = self.client.get(reverse('search'), qs)
-        result = json.loads(response.content)['results'][0]
-        eq_(u'Locked Thread', result['title'])
+        results = json.loads(response.content)['results']
+        eq_(len(results), 1)
 
     def test_discussion_filter_sticky_locked(self):
         """Filter for locked and sticky threads."""
@@ -1153,6 +1147,40 @@ class ElasticSearchUnifiedViewTests(ElasticTestCase):
         response = self.client.get(reverse('search'), qs)
         results = json.loads(response.content)['results']
         eq_(0, len(results))
+
+    def test_discussion_filter_forum(self):
+        """Filter by forum in discussion forums."""
+        forum1 = forum(name=u'Forum 1', save=True)
+        thread1 = thread(forum=forum1, title=u'audio 1', save=True)
+        post(thread=thread1, save=True)
+
+        forum2 = forum(name=u'Forum 2', save=True)
+        thread2 = thread(forum=forum2, title=u'audio 2', save=True)
+        post(thread=thread2, save=True)
+
+        import search.forms
+        reload(search.forms)
+        import search.views
+        import search.forms
+        search.views.SearchForm = search.forms.SearchForm
+
+        # Wait... reload? WTF is that about? What's going on here is
+        # that SearchForm pulls the list of forums from the db **at
+        # module load time**. Since we need it to include the two
+        # forums we just created, we need to reload the module and
+        # rebind it in search.views. Otherwise when we go to get
+        # cleaned_data from it, it ditches the forum data we so
+        # lovingly put in our querystring and then our filters are
+        # wrong and then this test FAILS.
+
+        self.refresh()
+
+        qs = {'a': 1, 'w': 4, 'format': 'json'}
+
+        for forum_id in (forum1.id, forum2.id):
+            qs['forum'] = int(forum_id)
+            response = self.client.get(reverse('search'), qs)
+            eq_(json.loads(response.content)['total'], 1)
 
 
 class ElasticSearchUtilsTests(ElasticTestCase):
