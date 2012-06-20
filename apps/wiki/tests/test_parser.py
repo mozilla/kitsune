@@ -7,6 +7,7 @@ from gallery.models import Video
 from gallery.tests import image, video
 from sumo.tests import TestCase
 import sumo.tests.test_parser
+from wiki.models import Document
 from wiki.parser import (WikiParser, ForParser, PATTERNS, RECURSION_MESSAGE,
                          _build_template_params as _btp,
                          _format_template_content as _ftc, _key_split)
@@ -147,6 +148,35 @@ class SimpleSyntaxTestCase(TestCase):
         eq_(p.parse('Start <!-- foo> --> End'),
             '<p>Start <!-- foo> --> End\n</p>')
 
+    def test_internal_links(self):
+        """Make sure internal links work correctly when not to redirected
+           articles and when to redirected articles"""
+        p = WikiParser()
+
+        rev = revision(is_approved=True)
+        rev.save()
+
+        doc = rev.document
+        doc.current_revision = rev
+        doc.title='Real article'
+        doc.save()
+
+        old_slug = doc.slug
+        doc.slug = 'real-article'
+        doc.save()
+
+        redirect = Document.objects.get(slug=old_slug)
+
+        eq_(p.parse('[[' + doc.title + ']]'),
+            '<p><a href="/en-US/kb/' + doc.slug + '">' + doc.title + \
+            '</a>\n</p>')
+
+        eq_(p.parse('[[' + redirect.title + ']]'),
+            '<p><a href="/en-US/kb/' + doc.slug + '">' + doc.title + \
+            '</a>\n</p>')
+
+        doc.delete()
+        redirect.delete()
 
 class TestWikiTemplate(TestCase):
     def test_template(self):

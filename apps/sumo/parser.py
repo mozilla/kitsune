@@ -106,11 +106,13 @@ def _get_wiki_link(title, locale):
     d = get_object_fallback(Document, locale=locale, title=title,
                             is_template=False)
     if d:
+        # If the article redirects use its destination article
+        while d.redirect_document():
+            d = d.redirect_document()
+
         # The locale in the link urls should always match the current
         # document's locale even if the document/slug being linked to
         # is in the default locale.
-        while d.redirect_document():
-            d = d.redirect_document()
 
         url = reverse('wiki.document', locale=locale, args=[d.slug])
         return {'found': True, 'url': url, 'text': d.title}
