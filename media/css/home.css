@@ -17,7 +17,7 @@
     background: url("../img/nurse.small.png") no-repeat scroll 550px 100% transparent;
     height: 134px;
     overflow: hidden;
-    padding: 75px 330px 0 0;
+    padding: 75px 0 0 0;
     position: relative;
     top: -75px; /* the background image needs to slide under #main-hdr */
     z-index: 1;
@@ -25,7 +25,7 @@
 
 .html-rtl #featured {
     background-position: 30px 100%;
-    padding: 75px 0 0 330px;
+    padding: 75px 0 0 0;
 }
 
 body.mobile #featured,
@@ -64,11 +64,13 @@ html[lang=ja] body div#featured {
 #support-search {
     margin: 0;
     padding: 20px 0 0 2px;
-    width: 535px;
+    width: auto;
+    float: left;
 }
 
 .html-rtl #support-search {
     padding: 20px 2px 0 0;
+    float: right;
 }
 
 #support-search input.text {
