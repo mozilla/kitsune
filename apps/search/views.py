@@ -205,7 +205,7 @@ def search_with_es_unified(request, template=None):
                 discussion_f &= F(post_is_locked=1)
 
         if cleaned['forum']:
-            discussion_f &= F(post_form_id__in=cleaned['forum'])
+            discussion_f &= F(post_forum_id__in=cleaned['forum'])
 
     # End - discussion forum filters
 
@@ -281,22 +281,27 @@ def search_with_es_unified(request, template=None):
 
             searcher = searcher.query(or_=query)
 
+        num_results = min(searcher.count(), settings.SEARCH_MAX_RESULTS)
+
         # TODO - Can ditch the ComposedList here, but we need
         # something that paginate can use to figure out the paging.
         documents = ComposedList()
-        documents.set_count(('results', searcher),
-                            min(searcher.count(), settings.SEARCH_MAX_RESULTS))
+        documents.set_count(('results', searcher), num_results)
 
         results_per_page = settings.SEARCH_RESULTS_PER_PAGE
         pages = paginate(request, documents, results_per_page)
-        num_results = len(documents)
 
-        # Get the documents we want to show and add them to
-        # docs_for_page
-        documents = documents[offset:offset + results_per_page]
+        # If we know there aren't any results, let's cheat and in
+        # doing that, not hit ES again.
+        if num_results == 0:
+            searcher = []
+        else:
+            # Get the documents we want to show and add them to
+            # docs_for_page
+            documents = documents[offset:offset + results_per_page]
 
-        bounds = documents[0][1]
-        searcher = searcher.values_dict()[bounds[0]:bounds[1]]
+            bounds = documents[0][1]
+            searcher = searcher.values_dict()[bounds[0]:bounds[1]]
 
         results = []
         for i, doc in enumerate(searcher):
