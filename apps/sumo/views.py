@@ -8,6 +8,7 @@ from time import time
 import django
 from django.conf import settings
 from django.contrib.sites.models import Site
+from django.core.urlresolvers import reverse
 from django.http import (HttpResponsePermanentRedirect, HttpResponseRedirect,
                          HttpResponse, Http404)
 from django.views.decorators.cache import never_cache
@@ -32,8 +33,9 @@ log = logging.getLogger('k.services')
 @anonymous_csrf
 def handle403(request):
     """A 403 message that looks nicer than the normal Apache forbidden page"""
-    no_cookies = request.META.get('HTTP_REFERER').endswith('/users/register') \
-        or request.META.get('HTTP_REFERER').endswith('/users/login')
+    referer = request.META.get('HTTP_REFERER')
+    no_cookies = referer.endswith(reverse('users.login')) \
+                 or referer.endswith(reverse('users.register'))
     return jingo.render(request, 'handlers/403.html',
                         {'form': AuthenticationForm(), 'no_cookies': no_cookies},
                         status=403)

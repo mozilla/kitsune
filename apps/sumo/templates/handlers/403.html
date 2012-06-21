@@ -10,7 +10,7 @@
 
   {% if no_cookies %}
     <p>{{ _('You must have cookies enabled to login or register.') }}</p>
-    <p><a href="https://support.mozilla.org/en-US/kb/websites-say-cookies-are-blocked-unblock-them">How to unblock cookies</a></p>
+    <p><a href="{{ url('wiki.document', 'websites-say-cookies-are-blocked-unblock-them') }}">How to unblock cookies</a></p>
   {% else %}
     <p>{{ _('You do not have permission to access this page.') }}</p>
   {% endif %}
