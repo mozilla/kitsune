@@ -741,6 +741,9 @@ Marky.CannedResponsesButton.prototype = $.extend({}, Marky.SimpleButton.prototyp
         $btn.click(function(e) {
              me.openModal(e);
         });
+        
+        me.getPermissionBits();
+        
         return $btn[0];
     },
     reset: function() {
@@ -850,40 +853,6 @@ Marky.CannedResponsesButton.prototype = $.extend({}, Marky.SimpleButton.prototyp
                 $previewLabel.removeClass('busy');
             }
         }
-
-        var permissionBits = [];
-        function getPermissionBits() {
-            var profile_link = $('#aux-nav .user').attr('href');
-            if(!profile_link || profile_link === "")  {
-                return;
-            }
-
-            $.ajax({
-                url: profile_link,
-                dataType: 'html',
-                success: function(data, status) {
-                    var userGroups = $('#groups li', data);
-                    userGroups.each(function() {
-                        var group = $(this).text();
-
-                        // Contributors:
-                        if(group === 'Contributors') {
-                            permissionBits.push('c');
-                        }
-                        
-                        // Moderators:
-                        if(group === 'Forum Moderators') {
-                            permissionBits.push('m');
-                        }
-
-                        // Administrators:
-                        if(group === 'Administrators') {
-                            permissionBits.push('a');
-                        }
-                    });
-                }
-            });
-        }
                 
         function isAllowedToUseResponse(response_target) {
             if(response_target.indexOf('#') === -1) {
@@ -897,7 +866,7 @@ Marky.CannedResponsesButton.prototype = $.extend({}, Marky.SimpleButton.prototyp
 
             for(var i = 0; i < permBits.length; i++) {
                 var bit = permBits[i];
-                if(permissionBits.indexOf(bit) !== -1) {
+                if(me.permissionBits.indexOf(bit) !== -1) {
                     return true;
                 }
             }
@@ -930,7 +899,6 @@ Marky.CannedResponsesButton.prototype = $.extend({}, Marky.SimpleButton.prototyp
             var siteLanguage = window.location.pathname.split('/')[1];
             var targetUrl = "/" + siteLanguage + cannedResponsesUrl;
             
-            getPermissionBits();
             $.ajax({
                 url: targetUrl,
                 type: 'GET',
@@ -1008,6 +976,7 @@ Marky.CannedResponsesButton.prototype = $.extend({}, Marky.SimpleButton.prototyp
             position: 'none',
             preOpen: loadCannedResponses
         });
+        
         kbox.open();
                     
         $html.find('#insert-response').click(function() {
@@ -1043,6 +1012,43 @@ Marky.CannedResponsesButton.prototype = $.extend({}, Marky.SimpleButton.prototyp
 
         e.preventDefault();
         return false;    
+    },
+    
+    permissionBits: [],
+    
+    getPermissionBits: function() {
+        var 
+        profile_link = $('#aux-nav .user').attr('href'),
+        me = this;
+        if(!profile_link || profile_link === "")  {
+            return;
+        }
+        
+        $.ajax({
+            url: profile_link,
+            dataType: 'html',
+            success: function(data, status) {
+                var userGroups = $('#groups li', data);
+                userGroups.each(function() {
+                    var group = $(this).text();
+                        
+                    // Contributors:
+                    if(group === 'Contributors') {
+                        me.permissionBits.push('c');
+                    }
+                    
+                    // Moderators:
+                    if(group === 'Forum Moderators') {
+                        me.permissionBits.push('m');
+                    }
+                    
+                    // Administrators:
+                    if(group === 'Administrators') {
+                        me.permissionBits.push('a');
+                    }
+                });
+            }
+        });
     }
 });
 
