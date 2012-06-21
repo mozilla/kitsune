@@ -7,7 +7,7 @@
 (function($){
 
     function init() {
-        Marky.createSimpleToolbar('.editor-tools', '#reply-content, #id_content');
+        Marky.createSimpleToolbar('.editor-tools', '#reply-content, #id_content', true);
         new k.AjaxPreview($('#preview'));
 
         $('span.post-action a.reply').click(function() {
