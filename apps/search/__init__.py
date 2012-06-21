@@ -71,6 +71,13 @@ SORT_QUESTIONS = (
     ('-replies',)
 )
 
+SORT_QUESTIONS_ES = (
+    ('-@rank', '-updated'),  # default
+    ('-updated',),
+    ('-created',),
+    ('-question_num_answers',)
+)
+
 SORTBY_QUESTIONS = (
     (0, _lazy(u'Relevance')),
     (1, _lazy(u'Last answer date')),

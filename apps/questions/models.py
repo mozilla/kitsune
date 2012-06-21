@@ -299,6 +299,12 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
         return tags
 
     @classmethod
+    def get_query_fields(cls):
+        return ['question_title__text',
+                'question_content__text',
+                'question_answer_content__text']
+
+    @classmethod
     def get_mapping(cls):
         return {
             'id': {'type': 'long'},

@@ -107,6 +107,10 @@ class SearchMixin(object):
         _local_tasks().add((unindex_task.delay, (self.__class__, (self.id,))))
 
     @classmethod
+    def get_query_fields(cls):
+        return []
+
+    @classmethod
     def get_indexable(cls):
         # Some models have a gazillion instances. So we want to go
         # through them one at a time in a way that doesn't pull all

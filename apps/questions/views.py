@@ -203,7 +203,7 @@ def answers(request, question_id, form=None, watch_form=None,
 @mobile_template('questions/{mobile/}new_question.html')
 @anonymous_csrf  # This view renders a login form
 def aaq(request, product_key=None, category_key=None, showform=False,
-        template=None):
+        template=None, step=0):
     """Ask a new question."""
 
     if product_key is None:
@@ -288,6 +288,7 @@ def aaq(request, product_key=None, category_key=None, showform=False,
                              'current_category': category,
                              'current_html': html,
                              'current_articles': articles,
+                             'current_step': step,
                              'deadend': deadend,
                              'host': Site.objects.get_current().domain})
 
@@ -350,7 +351,7 @@ def aaq(request, product_key=None, category_key=None, showform=False,
 
         if request.user.is_active:
             messages.add_message(request, messages.SUCCESS,
-                _('Thanks! Your question has been posted. See it below.'))
+                _('Done! Your question is now posted on the Mozilla community support forum.'))
             url = reverse('questions.answers',
                           kwargs={'question_id': question.id})
             return HttpResponseRedirect(url)
@@ -372,23 +373,23 @@ def aaq(request, product_key=None, category_key=None, showform=False,
 
 def aaq_step2(request, product_key):
     """Step 2: The product is selected."""
-    return aaq(request, product_key=product_key)
+    return aaq(request, product_key=product_key, step=1)
 
 
 def aaq_step3(request, product_key, category_key):
     """Step 3: The product and category is selected."""
-    return aaq(request, product_key=product_key, category_key=category_key)
+    return aaq(request, product_key=product_key, category_key=category_key, step=1)
 
 
 def aaq_step4(request, product_key, category_key):
     """Step 4: Search query entered."""
-    return aaq(request, product_key=product_key, category_key=category_key)
+    return aaq(request, product_key=product_key, category_key=category_key, step=1)
 
 
 def aaq_step5(request, product_key, category_key):
     """Step 5: Show full question form."""
     return aaq(request, product_key=product_key, category_key=category_key,
-               showform=True)
+               showform=True, step=3)
 
 
 @require_http_methods(['GET', 'POST'])
