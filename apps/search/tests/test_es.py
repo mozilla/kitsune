@@ -885,16 +885,6 @@ class ElasticSearchUnifiedViewTests(ElasticTestCase):
         response = self.client.get(reverse('search'), qs)
         eq_(200, response.status_code)
 
-    def test_created_range_sanity(self):
-        """Ensure that the created_date range is sane."""
-        qs = {'a': 1, 'w': '2', 'q': 'contribute', 'created': '2',
-              'format': 'json'}
-        date_vals = ('05/28/2099', '05/28/1900', '05/28/1920')
-        for date_ in date_vals:
-            qs.update({'created_date': date_})
-            response = self.client.get(reverse('search'), qs)
-            eq_(0, json.loads(response.content)['total'])
-
     def test_updated_invalid(self):
         """Invalid updated_date is ignored."""
         thread1 = thread(save=True)
@@ -917,16 +907,6 @@ class ElasticSearchUnifiedViewTests(ElasticTestCase):
         qs = {'a': 1, 'w': 2, 'format': 'json', 'updated': 1}
         response = self.client.get(reverse('search'), qs)
         eq_(response.status_code, 200)
-
-    def test_updated_range_sanity(self):
-        """Ensure that the updated_date range is sane."""
-        qs = {'a': 1, 'w': '2', 'q': 'contribute', 'updated': '2',
-              'format': 'json'}
-        date_vals = ('05/28/2099', '05/28/1900', '05/28/1920')
-        for date_ in date_vals:
-            qs.update({'updated_date': date_})
-            response = self.client.get(reverse('search'), qs)
-            eq_(0, json.loads(response.content)['total'])
 
     def test_asked_by(self):
         """Check several author values, including test for (anon)"""
