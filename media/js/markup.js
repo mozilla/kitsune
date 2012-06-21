@@ -25,9 +25,9 @@
 (function($, gettext, document){
 
 var Marky = {
-    createSimpleToolbar: function(toolbarSel, textareaSel) {
-        var SB = Marky.SimpleButton,
-            buttons = [
+    createSimpleToolbar: function(toolbarSel, textareaSel, cannedResp) {
+        var SB = Marky.SimpleButton;
+        var buttons = [
             new SB(gettext('Bold'), "'''", "'''", gettext('bold text'),
                    'btn-bold'),
             new SB(gettext('Italic'), "''", "''", gettext('italic text'),
@@ -38,10 +38,12 @@ var Marky = {
             new SB(gettext('Numbered List'), '# ', '',
                    gettext('Numbered list item'), 'btn-ol', true),
             new SB(gettext('Bulleted List'), '* ', '',
-                   gettext('Bulleted list item'), 'btn-ul', true),
-            new Marky.Separator(),
-            new Marky.CannedResponsesButton()
+                   gettext('Bulleted list item'), 'btn-ul', true)
         ];
+        if (cannedResp) {
+            buttons.push(new Marky.Separator(),
+                         new Marky.CannedResponsesButton());
+        }
         Marky.createCustomToolbar(toolbarSel, textareaSel, buttons);
     },
     createFullToolbar: function(toolbarSel, textareaSel) {
