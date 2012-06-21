@@ -12,10 +12,8 @@ import forums
 from sumo.helpers import urlparams, wiki_to_html
 from sumo.urlresolvers import reverse
 from sumo.models import ModelBase
-from search import searcher
 from search.models import SearchMixin, register_for_indexing
 from search.utils import crc32
-import waffle
 
 
 def _last_post_from(posts, exclude_post=None):
@@ -341,21 +339,3 @@ class Post(ActionMixin, ModelBase):
 
 
 register_for_indexing(Post, 'forums', instance_to_indexee=lambda p: p.thread)
-
-
-# NOTE: This only affects Sphinx search--it's not used in ES search.
-def discussion_searcher(request):
-    """Return a forum searcher with default parameters."""
-    if waffle.flag_is_active(request, 'elasticsearch'):
-        index_model = Thread
-    else:
-        # The index is on Post but with the Thread.title for the
-        # Thread related to the Post. We base the S off Post because
-        # we need to excerpt content.
-        index_model = Post
-
-    return (searcher(request)(index_model).weight(title=2, content=1)
-                                          .group_by('thread_id', '-@group')
-                                          .query_fields('title__text',
-                                                        'content__text')
-                                          .order_by('created'))

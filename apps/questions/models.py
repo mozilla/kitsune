@@ -3,7 +3,6 @@ import logging
 import re
 import time
 
-from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
@@ -25,7 +24,6 @@ from questions.karma_actions import (AnswerAction, FirstAnswerAction,
 from questions.question_config import products
 from questions.tasks import (update_question_votes, update_answer_pages,
                              log_answer)
-from search import searcher
 from search.models import SearchMixin, register_for_indexing
 from search.utils import crc32
 from sumo.helpers import urlparams
@@ -743,17 +741,3 @@ def _content_parsed(obj):
         html = wiki_to_html(obj.content)
         cache.add(cache_key, html, CACHE_TIMEOUT)
     return html
-
-
-# NOTE: This only affects Sphinx search--it's not used in ES search.
-def question_searcher(request):
-    """Return a question searcher with default parameters."""
-    return (searcher(request)(Question)
-                .query_fields('title__text',
-                              'question_content__text',
-                              'answer_content__text')
-                .weight(title=4, question_content=3, answer_content=3)
-                .group_by('question_id', '-@group')  # nop in elasticutils
-                .highlight(before_match='<b>',
-                           after_match='</b>',
-                           limit=settings.SEARCH_SUMMARY_LENGTH))
