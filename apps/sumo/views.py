@@ -32,8 +32,11 @@ log = logging.getLogger('k.services')
 @anonymous_csrf
 def handle403(request):
     """A 403 message that looks nicer than the normal Apache forbidden page"""
+    no_cookies = request.META.get('HTTP_REFERER').endswith('/users/register') \
+        or request.META.get('HTTP_REFERER').endswith('/users/login')
     return jingo.render(request, 'handlers/403.html',
-                        {'form': AuthenticationForm()}, status=403)
+                        {'form': AuthenticationForm(), 'no_cookies': no_cookies},
+                        status=403)
 
 
 def handle404(request):
