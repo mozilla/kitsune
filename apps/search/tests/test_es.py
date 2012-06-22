@@ -538,6 +538,40 @@ class ElasticSearchUnifiedViewTests(ElasticTestCase):
         content = json.loads(response.content)
         eq_(content['total'], 1)
 
+    def test_front_page_only_shows_wiki_and_questions(self):
+        """Tests that the front page doesn't show forums
+
+        This verifies that we're only showing documents of the type
+        that should be shown and that the filters on model are working
+        correctly.
+
+        Bug #767394
+
+        """
+        ques = question(title=u'audio', save=True)
+        ques.tags.add(u'desktop')
+        ans = answer(question=ques, content=u'volume', save=True)
+        answervote(answer=ans, helpful=True, save=True)
+
+        doc = document(title=u'audio', locale=u'en-US', category=10, save=True)
+        doc.tags.add(u'desktop')
+        revision(document=doc, is_approved=True, save=True)
+
+        thread1 = thread(title=u'audio', save=True)
+        post(thread=thread1, save=True)
+
+        self.refresh()
+
+        response = self.client.get(reverse('search'), {
+            'q_tags': 'desktop', 'product': 'desktop', 'q': 'audio',
+            'format': 'json'
+        })
+
+        eq_(200, response.status_code)
+
+        content = json.loads(response.content)
+        eq_(content['total'], 2)
+
     def test_advanced_search_for_wiki_no_query(self):
         """Tests advanced search with no query"""
         doc = document(locale=u'en-US', category=10, save=True)
