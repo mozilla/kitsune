@@ -484,11 +484,16 @@ window.KpiDashboard = Backbone.View.extend({
         // Render the views.
         $(this.el)
             .append(this.questionsView.render().el)
+            .append($('#kpi-legend-questions'))
             .append(this.voteChartView.render().el)
+            .append($('#kpi-legend-vote'))
             .append(this.activeContributorsView.render().el)
+            .append($('#kpi-legend-active-contributors'))
             .append(this.ctrView.render().el)
+            .append($('#kpi-legend-ctr'))
             .append(this.visitorsView.render().el)
-            .append(this.l10nView.render().el);
+            .append(this.l10nView.render().el)
+            .append($('#kpi-legend-l10n'));
 
 
         // Load up the models.
