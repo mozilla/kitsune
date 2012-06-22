@@ -499,6 +499,23 @@ class ElasticSearchViewTests(ElasticTestCase):
         content = json.loads(response.content)
         eq_(content['total'], 0)
 
+    def test_multi_word_tag_search(self):
+        """Tests searching for tags with spaces in them"""
+        ques = question(title=u'audio', save=True)
+        ques.tags.add(u'Windows 7')
+
+        self.refresh()
+
+        response = self.client.get(reverse('search'), {
+            'q': 'audio', 'q_tags': 'Windows 7', 'w': '2', 'a': '1',
+            'sortby': '0', 'format': 'json'
+        })
+
+        eq_(200, response.status_code)
+
+        content = json.loads(response.content)
+        eq_(content['total'], 1)
+
 
 class ElasticSearchUnifiedViewTests(ElasticTestCase):
     client_class = LocalizingClient
@@ -807,6 +824,23 @@ class ElasticSearchUnifiedViewTests(ElasticTestCase):
 
         content = json.loads(response.content)
         eq_(content['total'], 0)
+
+    def test_multi_word_tag_search(self):
+        """Tests searching for tags with spaces in them"""
+        ques = question(title=u'audio', save=True)
+        ques.tags.add(u'Windows 7')
+
+        self.refresh()
+
+        response = self.client.get(reverse('search'), {
+            'q': 'audio', 'q_tags': 'Windows 7', 'w': '2', 'a': '1',
+            'sortby': '0', 'format': 'json'
+        })
+
+        eq_(200, response.status_code)
+
+        content = json.loads(response.content)
+        eq_(content['total'], 1)
 
     def test_category_invalid(self):
         """Tests passing an invalid category"""

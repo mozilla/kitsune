@@ -185,9 +185,10 @@ def search_with_es_unified(request, template=None):
         if cleaned['answered_by']:
             question_f &= F(question_answer_creator=cleaned['answered_by'])
 
-        q_tags = [t.strip() for t in cleaned['q_tags'].split()]
+        q_tags = [t.strip() for t in cleaned['q_tags'].split(',')]
         for t in q_tags:
-            question_f &= F(question_tag=t)
+            if t:
+                question_f &= F(question_tag=t)
 
     # End - support questions filters
 
@@ -531,9 +532,10 @@ def search(request, template=None):
             question_s = question_s.filter(
                 question_answer_creator=cleaned['answered_by'])
 
-        q_tags = [t.strip() for t in cleaned['q_tags'].split()]
+        q_tags = [t.strip() for t in cleaned['q_tags'].split(',')]
         for t in q_tags:
-            question_s = question_s.filter(question_tag=t)
+            if t:
+                question_s = question_s.filter(question_tag=t)
 
     # Discussion forum specific filters
     if cleaned['w'] & constants.WHERE_DISCUSSION:
