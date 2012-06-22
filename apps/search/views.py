@@ -266,7 +266,7 @@ def search_with_es_unified(request, template=None):
             sortby = smart_int(request.GET.get('sortby'))
             try:
                 searcher = searcher.order_by(
-                    *constants.SORT_QUESTIONS_ES[sortby])
+                    *constants.SORT_QUESTIONS[sortby])
             except IndexError:
                 # Skip index errors because they imply the user is
                 # sending us sortby values that aren't valid.
@@ -607,7 +607,7 @@ def search(request, template=None):
             # Sort results by
             try:
                 question_s = question_s.order_by(
-                    *constants.SORT_QUESTIONS_ES[sortby])
+                    *constants.SORT_QUESTIONS[sortby])
             except IndexError:
                 pass
 
