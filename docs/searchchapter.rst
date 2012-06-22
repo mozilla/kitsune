@@ -296,23 +296,23 @@ Search Scoring
 
 These are the defaults that apply to all searches:
 
-kb:
+wiki (aka kb)::
 
-    query fields: title, content, summary, keywords
+    document_title__text           6
+    document_content__text         1
+    document_keywords__text        4
+    document_summary__text         2
 
-questions:
+questions (aka support forums)::
 
-    query fields: title, question_content, answer_content
+    question_title__text           4
+    question_content__text         3
+    question_answer_content__text  3
 
-forums:
+forums (aka contributor forums)::
 
-    query fields: title, content
-
-
-.. Note::
-
-   We can do boosts/weights, but currently there is no
-   boosting/weighting done.
+    post_title__text               2
+    post_content__text             1
 
 
 Elastic Search is built on top of Lucene so the `Lucene documentation
