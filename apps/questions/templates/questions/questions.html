@@ -124,7 +124,7 @@
             {% set tags = question.my_tags %}
             {% if tags %}
               <ul class="tag-list immutable">
-                {% for tag in tags %}
+                {% for tag in tags -%}
                     <li><a class="tag-name" href="{{ url('questions.questions')|urlparams(tagged=tag.slug, filter=filter, sort=sort) }}">{{ tag }}</a></li>
                 {% endfor %}
               </ul>

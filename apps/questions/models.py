@@ -293,7 +293,9 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
         tags = cache.get(cache_key)
         if tags is None:
             tags = self.tags.all()
+            tags.sort()
             cache.add(cache_key, tags, CACHE_TIMEOUT)
+        tags.order_by('name')
         return tags
 
     @classmethod
