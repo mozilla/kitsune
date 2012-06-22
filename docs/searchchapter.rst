@@ -291,8 +291,28 @@ Sub commands for ``manage.py`` are implemented in
 ``management/commands/``.
 
 
-Search Scoring
-==============
+Searching on the site
+=====================
+
+Unified search results
+----------------------
+
+We're in the process of switching from `bucketed` search results where
+the different kinds of results are shown in blocks (e.g. all the kb
+results, then all the support forum results, ...) to `unified` search
+results where all the results are mixed together and sorted by score.
+
+To access unified search results, add ``esunified=1`` to the end of
+the url querystring.
+
+e.g.
+
+* `bucketed` https://support.mozilla.org/en-US/search?q=cookies
+* `unified` https://support.mozilla.org/en-US/search?q=cookies&esunified=1
+
+
+Scoring
+-------
 
 These are the defaults that apply to all searches:
 
