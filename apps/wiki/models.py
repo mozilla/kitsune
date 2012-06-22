@@ -14,7 +14,6 @@ from pyquery import PyQuery
 from tidings.models import NotificationsMixin
 from tower import ugettext_lazy as _lazy, ugettext as _
 
-from search import searcher
 from search.models import SearchMixin, register_for_indexing
 from search.utils import crc32
 from sumo import ProgrammingError
@@ -496,6 +495,13 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
         return EditDocumentEvent.is_notifying(user, self)
 
     @classmethod
+    def get_query_fields(cls):
+        return ['document_title__text',
+                'document_content__text',
+                'document_summary__text',
+                'document_keywords__text']
+
+    @classmethod
     def get_mapping(cls):
         return {
             'id': {'type': 'long'},
@@ -862,14 +868,3 @@ def points_to_document_view(url, required_locale=None):
             url, required_locale=required_locale)
     except _NotDocumentView:
         return False
-
-
-# NOTE: This only affects Sphinx search--it's not used in ES search.
-def wiki_searcher(request):
-    """Return a wiki document searcher with default parameters."""
-    return (searcher(request)(Document)
-            .query_fields('title__text',
-                          'content__text',
-                          'summary__text',
-                          'keywords__text')
-            .weight(title=6, content=1, keywords=4, summary=2))

@@ -125,18 +125,22 @@ window.BasicChartView = Backbone.View.extend({
 });
 
 window.StockChartView = Backbone.View.extend({
+    template: _.template($("#chart-template").html()),
     tagName: 'section',
     className: 'graph',
 
+    events: {
+        'change .grouping': 'changeGrouping'
+    },
+
     initialize: function() {
-        _.bindAll(this, 'render');
+        _.bindAll(this, 'render', 'changeGrouping');
 
         this.model.bind('change', this.render);
 
         this.chartOptions = {
             chart: {
                 alignTicks: false,
-                renderTo: this.el,
                 width: 800
             },
             title: {
@@ -233,16 +237,21 @@ window.StockChartView = Backbone.View.extend({
                 text: '%'
             };
         }
+
+        $(this.el).html(this.template());
     },
 
     render: function() {
         var self = this,
             data = this.model.get('objects');
 
+        self.chartOptions.chart.renderTo = $(this.el).find('.placeholder')[0];
+        self.chartOptions.series = [];
+
         if(data) {
             _.each(this.options.series, function(series) {
                 var mapper = series.mapper,
-                    seriesData;
+                    seriesData, seriesConfig;
                 if (!mapper) {
                     mapper = function(o){
                         return {
@@ -255,17 +264,39 @@ window.StockChartView = Backbone.View.extend({
                 seriesData = _.map(data, mapper);
                 seriesData.reverse();
 
-                self.chartOptions.series.push({
+                seriesConfig = {
                     name: series.name,
                     type: series.type || 'line',
                     yAxis: series.yAxis || 0,
                     data: seriesData,
                     tooltip: series.tooltip
-                });
+                }
+
+                // Group the data into weeks or months?
+                if (self.grouping === 'm') {
+                    seriesConfig.dataGrouping = {
+                        approximation: series.approximation || 'average',
+                        forced: true,
+                        units: [['month', [1]]]
+                    };
+                } else if (self.grouping === 'w') {
+                    seriesConfig.dataGrouping = {
+                        approximation: series.approximation || 'average',
+                        forced: true,
+                        units: [['week', [1]]]
+                    };
+                }
+
+                self.chartOptions.series.push(seriesConfig);
             });
             self.chart = new Highcharts.StockChart(self.chartOptions);
         }
         return this;
+    },
+
+    changeGrouping: function() {
+        this.grouping = $(this.el).find('.grouping').val();
+        this.render();
     }
 });
 
@@ -315,6 +346,7 @@ window.KpiDashboard = Backbone.View.extend({
                 name: gettext('Questions'),
                 type: 'area',
                 yAxis: 1,
+                approximation: 'sum',
                 mapper: function(o) {
                     return {
                         x: Date.parse(o['date']),
@@ -364,7 +396,7 @@ window.KpiDashboard = Backbone.View.extend({
             }*/]
         });
 
-        this.activeContributorsView = new BasicChartView({
+        this.activeContributorsView = new StockChartView({
             model: this.activeContributorsChart,
             title: gettext('Active Contributors'),
             series: [{
@@ -419,14 +451,17 @@ window.KpiDashboard = Backbone.View.extend({
 
         this.visitorsView = new StockChartView({
             model: this.visitorsChart,
-            title: gettext('Daily Unique Visitors'),
+            title: gettext('Visitors'),
             series: [{
-                name: gettext('Visitors'),
+                name: gettext('Daily Unique Visitors'),
                 mapper: function(o) {
                     return {
                         x: Date.parse(o['date']),
                         y: o['visitors']
                     };
+                },
+                tooltip: {
+                    yDecimals: 0
                 }
             }]
         });

@@ -23,6 +23,12 @@ from datetime import datetime
 from decimal import Decimal
 import unittest
 
+try:
+    import cPickle as pickle
+except:
+    import pickle
+
+
 import settings
 
 from amqplib.client_0_8.basic_message import Message
@@ -42,6 +48,38 @@ class TestBasicMessage(unittest.TestCase):
         new_msg.body = msg.body
 
         self.assertEqual(msg, new_msg)
+
+
+    def test_eq(self):
+        msg = Message('hello', content_type='text/plain')
+        self.assertNotEqual(msg, None)
+
+        #
+        # Make sure that something that looks vaguely
+        # like a Message doesn't raise an Attribute
+        # error when compared to a Message, and instead
+        # returns False
+        #
+        class FakeMsg(object): pass
+
+        fake_msg = FakeMsg()
+        fake_msg.properties = {'content_type': 'text/plain'}
+
+        self.assertNotEqual(msg, fake_msg)
+
+
+    def test_pickle(self):
+        msg = Message(
+            'some body' * 200000,
+            content_type='text/plain',
+            content_encoding='utf-8',
+            application_headers={'foo': 7, 'bar': 'baz', 'd2': {'foo2': 'xxx', 'foo3': -1}},
+            delivery_mode=1,
+            priority=7)
+
+        msg2 = pickle.loads(pickle.dumps(msg))
+
+        self.assertEqual(msg, msg2)
 
 
     def test_roundtrip(self):

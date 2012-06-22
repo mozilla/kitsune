@@ -8,7 +8,7 @@ from time import time
 import django
 from django.conf import settings
 from django.contrib.sites.models import Site
-from django.core.cache import parse_backend_uri
+from django.core.urlresolvers import reverse
 from django.http import (HttpResponsePermanentRedirect, HttpResponseRedirect,
                          HttpResponse, Http404)
 from django.views.decorators.cache import never_cache
@@ -33,8 +33,15 @@ log = logging.getLogger('k.services')
 @anonymous_csrf
 def handle403(request):
     """A 403 message that looks nicer than the normal Apache forbidden page"""
+    no_cookies = False
+    referer = request.META.get('HTTP_REFERER')
+    if referer:
+        no_cookies = (referer.endswith(reverse('users.login'))
+                      or referer.endswith(reverse('users.register')))
+
     return jingo.render(request, 'handlers/403.html',
-                        {'form': AuthenticationForm()}, status=403)
+                        {'form': AuthenticationForm(), 'no_cookies': no_cookies},
+                        status=403)
 
 
 def handle404(request):
@@ -84,31 +91,39 @@ def monitor(request):
     status = 200
 
     # Check all memcached servers.
-    scheme, servers, _ = parse_backend_uri(settings.CACHE_BACKEND)
     memcache_results = []
     status_summary['memcache'] = True
-    if 'memcached' in scheme:
-        hosts = servers.split(';')
-        for host in hosts:
-            ip, port = host.split(':')
-            try:
-                s = socket.socket()
-                s.connect((ip, int(port)))
-            except Exception, e:
-                result = False
-                status_summary['memcache'] = False
-                log.critical('Failed to connect to memcached (%s): %s' %
-                                                                    (host, e))
-            else:
-                result = True
-            finally:
-                s.close()
+    for cache_name, cache_props in settings.CACHES.items():
+        result = True
+        backend = cache_props['BACKEND']
+        location = cache_props['LOCATION']
 
-            memcache_results.append((ip, port, result))
+        # LOCATION can be a string or a list of strings
+        if isinstance(location, basestring):
+            location = location.split(';')
+
+        if 'memcache' in backend:
+            for loc in location:
+                # TODO: this doesn't handle unix: variant
+                ip, port = loc.split(':')
+                try:
+                    s = socket.socket()
+                    s.connect((ip, int(port)))
+                except Exception, e:
+                    result = False
+                    status_summary['memcache'] = False
+                    log.critical('Failed to connect to memcached (%s): %s' %
+                                 (location, e))
+                finally:
+                    s.close()
+
+                memcache_results.append((ip, port, result))
+
         if len(memcache_results) < 2:
             status_summary['memcache'] = False
             log.warning('You should have 2+ memcache servers.  You have %s.' %
-                                                        len(memcache_results))
+                        len(memcache_results))
+
     if not memcache_results:
         status_summary['memcache'] = False
         log.warning('Memcache is not configured.')

@@ -6,6 +6,10 @@ from sumo.models import ModelBase
 
 VISITORS_METRIC_CODE = 'general keymetrics:visitors'
 L10N_METRIC_CODE = 'general l10n:coverage'
+AOA_CONTRIBUTORS_METRIC_CODE = 'general aoa:contributors'
+SUPPORT_FORUM_CONTRIBUTORS_METRIC_CODE = 'general supportforum:contributors'
+KB_ENUS_CONTRIBUTORS_METRIC_CODE = 'general kb:en-US:contributors'
+KB_L10N_CONTRIBUTORS_METRIC_CODE = 'general kb:l10n:contributors'
 
 
 class MetricKind(ModelBase):
@@ -49,4 +53,5 @@ class Metric(ModelBase):
         unique_together = [('kind', 'start', 'end')]
 
     def __unicode__(self):
-        return '%s (%s thru %s): %s' % (self.kind, self.start, self.end, self.value)
+        return '%s (%s thru %s): %s' % (
+            self.kind, self.start, self.end, self.value)

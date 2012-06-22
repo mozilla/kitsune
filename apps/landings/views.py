@@ -12,46 +12,57 @@ from wiki.views import SHOWFOR_DATA
 HOME_DOCS = {
     'quick': 'Home page - Quick',
     'explore': 'Home page - Explore',
+    'nav': 'Home page - IA Nav',
     'top': 'Home page - Top'}
 MOBILE_DOCS = {
     'quick': 'Mobile home - Quick',
     'explore': 'Mobile home - Explore',
+    'nav': 'Mobile home - IA Nav',
     'top': 'Mobile home - Top'}
 SYNC_DOCS = {
     'quick': 'Sync home - Quick',
     'explore': 'Sync home - Explore',
+    'nav': 'Sync home - IA Nav',
     'top': 'Sync home - Top'}
 FXHOME_DOCS = {
     'quick': 'FxHome home - Quick',
     'explore': 'FxHome home - Explore',
+    'nav': 'FxHome home - IA Nav',
     'top': 'FxHome home - Top'}
 MARKETPLACE_DOCS = {
     'quick': 'Marketplace home - Quick',
     'explore': 'Marketplace home - Explore',
+    'nav': 'Marketplace home - IA Nav',
     'top': 'Marketplace home - Top'}
 FIREFOX_DOCS = {
     'quick': 'Firefox home - Quick',
     'explore': 'Firefox home - Explore',
+    'nav': 'Firefox home - IA Nav',
     'top': 'Firefox home - Top'}
 PRODUCTS_DOCS = {
     'quick': 'Products home - Quick',
     'explore': 'Products home - Explore',
+    'nav': 'Products home - IA Nav',
     'top': 'Products home - Top'}
 KB_DOCS = {
     'quick': 'KB home - Quick',
     'explore': 'KB home - Explore',
+    'nav': 'KB home - IA Nav',
     'top': 'KB home - Top'}
 ASK_DOCS = {
     'quick': 'Ask home - Quick',
     'explore': 'Ask home - Explore',
+    'nav': 'Ask home - IA Nav',
     'top': 'Ask home - Top'}
 PARTICIPATE_DOCS = {
     'quick': 'Participate home - Quick',
     'explore': 'Participate home - Explore',
+    'nav': 'Participate home - IA Nav',
     'top': 'Participate home - Top'}
 FEEDBACK_DOCS = {
     'quick': 'Feedback home - Quick',
     'explore': 'Feedback home - Explore',
+    'nav': 'Feedback home - IA Nav',
     'top': 'Feedback home - Top'}
 # Docs for the mobile optimized templates:
 HOME_DOCS_FOR_MOBILE = {

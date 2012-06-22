@@ -72,15 +72,88 @@ TIME_ZONE = 'US/Pacific'
 LANGUAGE_CODE = 'en-US'
 
 # Supported languages
+# Note: We periodically add locales to this list and it is easier to review
+# with changes with one locale per line.
 SUMO_LANGUAGES = (
-    'ach', 'ak', 'ar', 'as', 'ast', 'bg', 'bn-BD', 'bn-IN', 'bs', 'ca', 'cs',
-    'da', 'de', 'el', 'en-US', 'eo', 'es', 'et', 'eu', 'fa', 'ff', 'fi', 'fr',
-    'fur', 'fy-NL', 'ga-IE', 'gd', 'gl', 'gu-IN', 'he', 'hi-IN', 'hr', 'hu',
-    'hy-AM', 'id', 'ilo', 'is', 'it', 'ja', 'kk', 'km', 'kn', 'ko', 'lt',
-    'mai', 'mk', 'ml', 'mn', 'mr', 'ms', 'my', 'nb-NO', 'nl', 'no', 'pa-IN',
-    'pl', 'pt-BR', 'pt-PT', 'rm', 'ro', 'ru', 'rw', 'si', 'sk', 'sl', 'sq',
-    'sr-CYRL', 'sr-LATN', 'sv-SE', 'ta-LK', 'te', 'th', 'tr', 'uk', 'vi',
-    'zh-CN', 'zh-TW',
+    'ach',
+    'ak',
+    'ar',
+    'as',
+    'ast',
+    'bg',
+    'bn-BD',
+    'bn-IN',
+    'bs',
+    'ca',
+    'cs',
+    'da',
+    'de',
+    'el',
+    'en-US',
+    'eo',
+    'es',
+    'et',
+    'eu',
+    'fa',
+    'ff',
+    'fi',
+    'fr',
+    'fur',
+    'fy-NL',
+    'ga-IE',
+    'gd',
+    'gl',
+    'gu-IN',
+    'he',
+    'hi-IN',
+    'hr',
+    'hu',
+    'hy-AM',
+    'id',
+    'ilo',
+    'is',
+    'it',
+    'ja',
+    'kk',
+    'km',
+    'kn',
+    'ko',
+    'lt',
+    'mai',
+    'mk',
+    'ml',
+    'mn',
+    'mr',
+    'ms',
+    'my',
+    'nb-NO',
+    'ne-NP',
+    'nl',
+    'no',
+    'pa-IN',
+    'pl',
+    'pt-BR',
+    'pt-PT',
+    'rm',
+    'ro',
+    'ru',
+    'rw',
+    'si',
+    'sk',
+    'sl',
+    'sq',
+    'sr-CYRL',
+    'sr-LATN',
+    'sv-SE',
+    'ta-LK',
+    'ta',
+    'te',
+    'th',
+    'tr',
+    'uk',
+    'vi',
+    'zh-CN',
+    'zh-TW',
 )
 
 LANGUAGE_CHOICES = tuple([(i, LOCALES[i].native) for i in SUMO_LANGUAGES])
@@ -379,6 +452,7 @@ MINIFY_BUNDLES = {
             'css/jqueryui/jqueryui.css',
         ),
         'forums': (
+            'css/jqueryui/jqueryui.css',
             'css/forums.css',
             'css/reportabuse.css',
         ),
@@ -390,6 +464,7 @@ MINIFY_BUNDLES = {
             'css/search.css',
             'css/users.autocomplete.css',
             'css/reportabuse.css',
+            'css/cannedresponses.css',
         ),
         'search': (
             'css/search.css',
@@ -541,6 +616,7 @@ MINIFY_BUNDLES = {
             'js/users.js',
         ),
         'mobile': (
+            'js/libs/underscore.js',
             'global/mobilefeatures.js',
             'js/i18n.js',
             'js/libs/jquery.min.js',
@@ -602,7 +678,7 @@ SESSION_EXISTS_COOKIE = 'sumo_session'
 # Connection information for Elastic
 ES_HOSTS = ['127.0.0.1:9200']
 # Indexes for reading
-ES_INDEXES = {'default': 'sumo'}
+ES_INDEXES = {'default': 'sumo-20120605'}
 # Indexes for indexing--set this to ES_INDEXES if you want to read to
 # and write to the same index.
 ES_WRITE_INDEXES = ES_INDEXES
@@ -620,20 +696,6 @@ ES_INDEXING_TIMEOUT = 30
 # Seconds between updating admin progress bar:
 ES_REINDEX_PROGRESS_BAR_INTERVAL = 5
 ES_FLUSH_BULK_EVERY = 100
-
-#
-# Connection information for Sphinx search
-SPHINX_HOST = '127.0.0.1'
-SPHINX_PORT = 3381
-SPHINXQL_PORT = 3382
-
-SPHINX_INDEXER = '/usr/bin/indexer'
-SPHINX_SEARCHD = '/usr/bin/searchd'
-SPHINX_CONFIG_PATH = path('configs/sphinx/sphinx.conf')
-
-TEST_SPHINX_PATH = path('tmp/test/sphinx')
-TEST_SPHINX_PORT = 3416
-TEST_SPHINXQL_PORT = 3418
 
 SEARCH_MAX_RESULTS = 1000
 SEARCH_RESULTS_PER_PAGE = 20
@@ -764,6 +826,7 @@ CC_STATS_CACHE_TIMEOUT = 24 * 60 * 60  # 24 hours
 CC_STATS_WARNING = 30 * 60 * 60  # Warn if JSON data is older than 30 hours
 CC_IGNORE_USERS = ['fx4status']  # User names whose tweets to ignore.
 
+TWITTER_COOKIE_SECURE = True
 TWITTER_CONSUMER_KEY = ''
 TWITTER_CONSUMER_SECRET = ''
 

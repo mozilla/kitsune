@@ -9,13 +9,22 @@
 {% block content %}
   <div id="featured-wrap">{# Top area, includes "Need Help With FIREFOX?" #}
     <div id="featured">
-      {{ search_box(settings, id='support-search', placeholder=_('What do you need help with?'), params=search_params) }}
+      {{ search_box(settings, id='support-search', params=search_params) }}
     </div>
   </div>
   <div id="home-content">
     <div id="home-content-top">
       {% if top %}{{ top.html|safe }}{% endif %}
     </div>
+    {# NOTE: This below is a temporary hack to implement the new IA directly
+       in the KB while we implement the real thing in templates, code, etc.
+       This temporary solution is limited to en-US.
+    #}
+    {% if nav and request.locale == 'en-US' %}
+      <div id="home-content-nav">
+        {{ nav.html|safe }}
+      </div>
+    {% endif %}
     <div id="home-content-quick">
       {{ quick.html|safe }}
     </div>

@@ -5,7 +5,6 @@ import json
 import logging
 
 from django.conf import settings
-from django.core.cache import cache
 from django.http import (HttpResponse, HttpResponseBadRequest,
                          HttpResponseNotFound, HttpResponseServerError)
 from django.views.decorators.http import require_POST, require_GET
@@ -20,6 +19,7 @@ from tower import ugettext as _, ugettext_lazy as _lazy
 import tweepy
 
 from customercare.models import Tweet, Reply
+from sumo.redis_utils import redis_client, RedisError
 import twitter
 
 
@@ -41,10 +41,10 @@ CANNED_RESPONSES = [
                          "but part of a community that's 400M strong "
                          "http://mzl.la/e8xdv5")
         },
-        {'title': _lazy("Tips &amp; tricks"),
+        {'title': _lazy("Tips & tricks"),
         # L10n: This is a reply tweet, so it must fit in 140 characters.
          'response': _lazy("getting started with Firefox? Here are some tips "
-                           "&amp; tricks for getting the most out of it "
+                           "& tricks for getting the most out of it "
                            "http://mzl.la/c0B9P2")
         },
         {'title': _lazy("We're a non-profit organization"),
@@ -65,7 +65,7 @@ CANNED_RESPONSES = [
      [{'title': _lazy("Add-on reviews"),
         # L10n: This is a reply tweet, so it must fit in 140 characters.
        'response': _lazy("getting started with Firefox? Add-ons personalize it"
-                         " w cool features &amp; function. Some faves "
+                         " w cool features & function. Some faves "
                          "http://mzl.la/cGypVI")
         },
         {'title': _lazy("Customize Firefox with add-ons"),
@@ -83,7 +83,7 @@ CANNED_RESPONSES = [
         {'title': _lazy("Firefox Sync"),
          # L10n: This is a reply tweet, so it must fit in 140 characters.
          'response': _lazy("tried Firefox Sync? It's awesome! Switch computers"
-                           " &amp; it saves open tabs, pwords, history. Try it"
+                           " & it saves open tabs, pwords, history. Try it"
                            " http://mzl.la/aHHUYA")
         },
         {'title': _lazy("Update plugins and add-ons"),
@@ -162,7 +162,7 @@ CANNED_RESPONSES = [
         {'title': _lazy("Mozilla Developer Network"),
          # L10n: This is a reply tweet, so it must fit in 140 characters.
          'response': _lazy("help make the web better! Build web pages, apps "
-                           "&amp; add-ons here: Mozilla Developer Network "
+                           "& add-ons here: Mozilla Developer Network "
                            "http://mzl.la/9gQfrn")
         },
         {'title': _lazy("Report a bug"),
@@ -259,8 +259,17 @@ def landing(request):
 
     twitter = request.twitter
 
+    # Get a redis client
+    redis = None
+    try:
+        redis = redis_client(name='default')
+    except RedisError as e:
+        statsd.incr('redis.errror')
+        log.error('Redis error: %s' % e)
     # Stats. See customercare.cron.get_customercare_stats.
-    activity = cache.get(settings.CC_TWEET_ACTIVITY_CACHE_KEY)
+    activity = redis and redis.get(settings.CC_TWEET_ACTIVITY_CACHE_KEY)
+    if activity:
+        activity = json.loads(activity)
     if activity and 'resultset' in activity:
         statsd.incr('customercare.stats.activity.hit')
         activity_stats = []
@@ -276,7 +285,9 @@ def landing(request):
         statsd.incr('customercare.stats.activity.miss')
         activity_stats = []
 
-    contributors = cache.get(settings.CC_TOP_CONTRIB_CACHE_KEY)
+    contributors = redis and redis.get(settings.CC_TOP_CONTRIB_CACHE_KEY)
+    if contributors:
+        contributors = json.loads(contributors)
     if contributors and 'resultset' in contributors:
         statsd.incr('customercare.stats.contributors.hit')
         contributor_stats = {}

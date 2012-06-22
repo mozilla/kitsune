@@ -803,6 +803,24 @@ class NewRevisionTests(TestCaseBase):
         assert len(pq(response.content)('div.warning-box'))
 
 
+class HistoryTests(TestCaseBase):
+    """Test the history listing of a document."""
+
+    def setUp(self):
+        super(HistoryTests, self).setUp()
+        self.client.login(username='admin', password='testpass')
+
+    def test_history_noindex(self):
+        """Document history should have a noindex meta tag."""
+        # Create a document and verify there is no robots:noindex
+        r = revision(save=True, content='Some text.', is_approved=True)
+        response = get(self.client, 'wiki.document_revisions',
+                       args=[r.document.slug])
+        eq_(200, response.status_code)
+        doc = pq(response.content)
+        eq_('noindex', doc('meta[name=robots]')[0].attrib['content'])
+
+
 class DocumentEditTests(TestCaseBase):
     """Test the editing of document level fields."""
     fixtures = ['users.json']

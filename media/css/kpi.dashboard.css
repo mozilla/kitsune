@@ -16,3 +16,20 @@
 	margin: 20px 0;
 	width: 800px;
 }
+
+.graph {
+	border-bottom: solid 1px #909090;
+	padding: 10px;
+	position: relative;
+}
+
+.grouping {
+	position: absolute;
+	right: 20px;
+	top: 50px;
+	z-index: 2;
+}
+
+.placeholder {
+	z-index: 1;
+}

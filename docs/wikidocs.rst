@@ -14,49 +14,6 @@ pages without requiring code changes.
 In all cases, the title of the English document matters, but the slug, or title
 of the localized versions, does not.
 
-
-Home page - Quick
-=================
-
-Content for the left, narrow column of the home page (``/home``). Use
-``<section>`` tags to break up sections and ``= h1 =`` wiki markup within the
-sections for headings.
-
-
-Home page - Explore
-===================
-
-Content for the right, wide column of the home page (``/home``). Use
-``<section>`` tags to break up sections that can wrap and ``== h2 ==`` wiki
-markup within the sections for headings.
-
-
-Mobile home - Quick
-===================
-
-Identical to **Home page - Quick** except used on the mobile home page
-(``/mobile``).
-
-
-Mobile home - Explore
-=====================
-
-Identical to **Home page - Explore** except used on the mobile home page
-(``/mobile``).
-
-
-Desktop home for mobile - Common Questions
-==========================================
-
-A long name for a short document: this provides content for the "Common
-Questions" section of the desktop home page (``/home``) while on a mobile
-device. It should be an unordered list (i.e. ``<ul>`` or ``* item``) with
-nothing else. The list items are usually links to other KB documents.
-
-
-Mobile home for mobile - Common Questions
-=========================================
-
-Exactly like **Desktop home for mobile - Common Questions** except it provides
-content for the "Common Questions" section of the mobile home page
-(``/mobile``) while on a mobile device.
+For a list of the documents, check out the `Managing Landing Page Content
+<https://support.mozilla.org/en-US/kb/managing-landing-page-content/>`_
+article on SUMO.

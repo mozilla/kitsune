@@ -4,9 +4,7 @@ For more information about AMQP, visit
 
     http://www.amqp.org
 
-Other Python client libraries are available at:
+For other Python client libraries see:
 
-    http://cwiki.apache.org/qpid/
-    http://cwiki.apache.org/qpid/pythonbrokertest.html
+    http://www.rabbitmq.com/devtools.html#python-dev
 
-    https://launchpad.net/txamqp

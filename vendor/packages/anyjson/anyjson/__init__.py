@@ -3,7 +3,7 @@ interface"""
 
 import sys
 
-__version__ = "0.2.4"
+__version__ = "0.3.1"
 __author__ = "Rune Halvorsen <runefh@gmail.com>"
 __homepage__ = "http://bitbucket.org/runeh/anyjson/"
 __docformat__ = "restructuredtext"
@@ -35,14 +35,15 @@ implementation = None
     methods, as well as the exception they throw. Exception can be either
     an exception class or a string.
 """
-_modules = [("cjson", "encode", "EncodeError", "decode", "DecodeError"),
-            ("yajl", "dumps", TypeError, "loads", ValueError),
+_modules = [("yajl", "dumps", TypeError, "loads", ValueError),
             ("jsonlib2", "write", "WriteError", "read", "ReadError"),
             ("jsonlib", "write", "WriteError", "read", "ReadError"),
             ("simplejson", "dumps", TypeError, "loads", ValueError),
             ("json", "dumps", TypeError, "loads", ValueError),
-            ("django.utils.simplejson", "dumps", TypeError, "loads",
-             ValueError)]
+            ("django.utils.simplejson", "dumps", TypeError, "loads",ValueError),
+            ("cjson", "encode", "EncodeError", "decode", "DecodeError")
+           ]
+
 _fields = ("modname", "encoder", "encerror", "decoder", "decerror")
 
 
@@ -51,6 +52,10 @@ class _JsonImplementation(object):
 
     def __init__(self, modspec):
         modinfo = dict(zip(_fields, modspec))
+
+        if modinfo["modname"] == "cjson":
+            import warnings
+            warnings.warn("cjson is deprecated! See http://pypi.python.org/pypi/python-cjson/1.0.5", DeprecationWarning)
 
         # No try block. We want importerror to end up at caller
         module = self._attempt_load(modinfo["modname"])
@@ -123,3 +128,5 @@ else:
 
     serialize = lambda value: implementation.serialize(value)
     deserialize = lambda value: implementation.deserialize(value)
+    dumps = serialize
+    loads = deserialize

@@ -70,9 +70,6 @@
 [submodule "vendor/src/django-timezones"]
 	path = vendor/src/django-timezones
 	url = https://github.com/brosner/django-timezones.git
-[submodule "vendor/src/sphinxapi"]
-	path = vendor/src/sphinxapi
-	url = https://github.com/jsocol/sphinxapi
 [submodule "vendor/src/django-waffle"]
 	path = vendor/src/django-waffle
 	url = https://github.com/jsocol/django-waffle.git
@@ -87,13 +84,13 @@
 	url = https://github.com/jsocol/django-adminplus
 [submodule "vendor/src/celery"]
 	path = vendor/src/celery
-	url = https://github.com/ask/celery
+	url = https://github.com/celery/celery
 [submodule "vendor/src/django-celery"]
 	path = vendor/src/django-celery
-	url = https://github.com/ask/django-celery
+	url = https://github.com/celery/django-celery
 [submodule "vendor/src/kombu"]
 	path = vendor/src/kombu
-	url = https://github.com/ask/kombu
+	url = https://github.com/celery/kombu
 [submodule "vendor/src/django-tidings"]
 	path = vendor/src/django-tidings
 	url = https://github.com/erikrose/django-tidings.git
@@ -124,9 +121,6 @@
 [submodule "vendor/src/django-arecibo"]
 	path = vendor/src/django-arecibo
 	url = https://github.com/andymckay/django-arecibo.git
-[submodule "vendor/src/oedipus"]
-	path = vendor/src/oedipus
-	url = git://github.com/erikrose/oedipus.git
 [submodule "vendor/src/elasticutils"]
 	path = vendor/src/elasticutils
 	url = git://github.com/mozilla/elasticutils.git

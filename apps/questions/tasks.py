@@ -3,7 +3,7 @@ import logging
 from django.conf import settings
 from django.db import connection, transaction
 
-from celery.decorators import task
+from celery.task import task
 from multidb.pinning import pin_this_thread, unpin_this_thread
 from statsd import statsd
 
@@ -36,7 +36,7 @@ def update_question_votes(question_id):
 
 
 @task(rate_limit='4/s')
-def update_question_vote_chunk(data, **kwargs):
+def update_question_vote_chunk(data):
     """Update num_votes_past_week for a number of questions."""
 
     # First we recalculate num_votes_past_week in the db.
@@ -127,7 +127,13 @@ def log_answer(answer):
 
     # Record karma actions
     AnswerAction(answer.creator, answer.created.date()).save()
-    if answer == answer.question.answers.order_by('created')[0]:
+    try:
+        from questions.models import Answer
+        answers = Answer.uncached.filter(question=answer.question_id)
+        if answer == answers.order_by('created')[0]:
+            FirstAnswerAction(answer.creator, answer.created.date()).save()
+    except IndexError:
+        # If we hit an IndexError, we assume this is the first answer.
         FirstAnswerAction(answer.creator, answer.created.date()).save()
 
     unpin_this_thread()

@@ -1,14 +1,12 @@
 import logging
-from uuid import uuid4
 
 from django import http
-from django.core.cache import cache
+from django.conf import settings
 
 
 log = logging.getLogger('k')
 
 PREFIX = 'custcare_'
-ACCESS_NAME = PREFIX + 'access'
 REDIRECT_NAME = PREFIX + 'redirect'
 REQUEST_KEY_NAME = PREFIX + 'request_key'
 REQUEST_SECRET_NAME = PREFIX + 'request_secret'
@@ -29,11 +27,17 @@ def url(request, override=None):
 
 
 def auth_wanted(view_func):
-    """Twitter sessions are SSL only, so redirect to SSL if needed."""
-    def wrapper(request, *args, **kwargs):
+    """Twitter sessions are SSL only, so redirect to SSL if needed.
 
-        if request.COOKIES.get(REDIRECT_NAME) and not request.is_secure():
-            ssl_url = url(request, {'scheme': 'https'})
+    Don't redirect if TWITTER_COOKIE_SECURE is False.
+    """
+    def wrapper(request, *args, **kwargs):
+        is_secure = settings.TWITTER_COOKIE_SECURE
+        if (request.COOKIES.get(REDIRECT_NAME) and
+            (is_secure and not request.is_secure())):
+            ssl_url = url(
+                request,
+                {'scheme': 'https' if is_secure else 'http'})
             return http.HttpResponseRedirect(ssl_url)
 
         return view_func(request, *args, **kwargs)
@@ -52,46 +56,34 @@ def auth_required(view_func):
 
 
 class Session(object):
-    id = None
-    key = None
-    secret = None
-
-    @property
-    def cachekey_key(self):
-        return '{0}_key_{1}'.format(ACCESS_NAME, self.id)
-
-    @property
-    def cachekey_secret(self):
-        return '{0}_secret_{1}'.format(ACCESS_NAME, self.id)
+    key_key = 'twitter_oauth_key'
+    key_secret = 'twitter_oauth_secret'
 
     @property
     def authed(self):
-        return bool(self.id and self.key and self.secret)
+        return bool(self.key and self.secret)
 
     def __init__(self, key=None, secret=None):
-        self.id = uuid4().hex
         self.key = key
         self.secret = secret
 
     @classmethod
     def from_request(cls, request):
         s = cls()
-        s.id = request.COOKIES.get(ACCESS_NAME)
-        s.key = cache.get(s.cachekey_key)
-        s.secret = cache.get(s.cachekey_secret)
+        s.key = request.session.get(s.key_key)
+        s.secret = request.session.get(s.key_secret)
         return s
 
-    def delete(self, response):
+    def delete(self, request, response):
         response.delete_cookie(REDIRECT_NAME)
-        response.delete_cookie(ACCESS_NAME)
-        cache.delete(self.cachekey_key)
-        cache.delete(self.cachekey_secret)
-        self.id = None
+        if self.key_key in request.session:
+            del request.session[self.key_key]
+        if self.key_secret in request.session:
+            del request.session[self.key_secret]
         self.key = None
         self.secret = None
 
-    def save(self, response):
-        cache.set(self.cachekey_key, self.key, MAX_AGE)
-        cache.set(self.cachekey_secret, self.secret, MAX_AGE)
+    def save(self, request, response):
+        request.session[self.key_key] = self.key
+        request.session[self.key_secret] = self.secret
         response.set_cookie(REDIRECT_NAME, '1', max_age=MAX_AGE)
-        response.set_cookie(ACCESS_NAME, self.id, max_age=MAX_AGE, secure=True)

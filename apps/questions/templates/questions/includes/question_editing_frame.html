@@ -23,7 +23,11 @@ we can compute the edit-title URL.
 
         {% block product %}
           {% if current_product %}
-            {{ selected_product(current_product, can_edit_product) }}
+            {% if current_step %}
+              {{ selected_product(current_product, can_edit_product, current_step) }}
+            {% else %}
+              {{ selected_product(current_product, can_edit_product, -1) }}
+            {% endif %}
           {% endif %}
         {% endblock %}
 
@@ -70,7 +74,7 @@ we can compute the edit-title URL.
                       <span title="{{ _('Click to change your question') }}">
                         {% if form.initial %}{{ form.initial.title }}{% else %}{{ form.title.data }}{% endif %}
                       </span>
-                      <a href="{{ ''|urlparams(product=current_product.key, category=current_category.key, showform=1, search=request.GET.search, edit_title=1) }}#question-form">edit</a>
+                      <a href="{{ ''|urlparams(search=request.GET.search, edit_title=1) }}#question-form">edit</a>
                       {{ field.as_hidden()|safe }}
                     </div>
                   {% elif field.name == 'content' %}

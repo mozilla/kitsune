@@ -33,6 +33,7 @@ Contents helpful for developers:
    localization
    licenses
    searchchapter
+   armyofawesome
    tests
    vendor
    wikidocs

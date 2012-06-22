@@ -2,11 +2,7 @@
 {% from "search/includes/macros.html" import search_engine with context %}
 
 {% macro search_box(settings, id=False, prefix=None, target=None,
-                    placeholder=None, params=None) %}
-  {% if placeholder is none %}
-    {# L10n: If your language is particularly verbose, just localize this as 'Search'. #}
-    {% set placeholder = _('Search Firefox Help') %}
-  {% endif %}
+                    params=None) %}
   <div class="support-search"{% if id %} id="{{ id }}"{% endif %} role="search">
     {% if prefix %}
       {{ prefix }}
@@ -18,10 +14,8 @@
           <input type="hidden" name="{{ k }}" value="{{ v }}" />
         {% endfor %}
       {% endif %}
-      <input type="text" class="text" name="q" placeholder="{{ placeholder }}" required="required" />
-      <button type="submit" class="img-submit" title="{{ _('Search') }}">
-        <img src="{{ settings.MEDIA_URL }}img/btn.search.png" alt="{{ _('Search') }}" />
-      </button>
+      <input type="text" class="text" name="q" required="required" />
+      <input type="submit" class="btn-important" title="{{ _('Search') }}" value="{{ _('Search Mozilla Support') }}" />
     </form>
   </div>
 {% endmacro %}

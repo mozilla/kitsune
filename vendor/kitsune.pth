@@ -76,3 +76,4 @@ src/oedipus
 src/elasticutils
 src/django-tastypie
 src/zendesk
+packages/ordereddict

@@ -39,6 +39,14 @@
     right: auto;
 }
 
+.kbox-close:link,
+.kbox-close:visited,
+.kbox-close:active
+.kbox-close:hover {
+    color: #fff;
+    text-decoration: none;
+}
+
 .kbox-title {
     background: #2d488d;
     border-bottom: solid 2px #22366a;

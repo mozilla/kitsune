@@ -23,6 +23,12 @@ import sys
 import time
 import unittest
 
+try:
+    bytes
+except NameError:
+    # Python 2.5 and lower
+    bytes = str
+
 import settings
 
 
@@ -82,7 +88,8 @@ class TestChannel(unittest.TestCase):
         msg = Message('hello world')
         self.ch.basic_publish(msg, 'amq.direct', routing_key=my_routing_key)
         msg2 = self.ch.basic_get(qname, no_ack=True)
-        self.assertFalse(hasattr(msg2, 'content_encoding'))
+        if sys.version_info[0] < 3:
+            self.assertFalse(hasattr(msg2, 'content_encoding'))
         self.assertTrue(isinstance(msg2.body, str))
         self.assertEqual(msg2.body, 'hello world')
 
@@ -97,34 +104,35 @@ class TestChannel(unittest.TestCase):
         self.assertEqual(msg2.body, u'hello world')
 
         #
-        # Explicit latin1 encoding, still comes back as unicode
+        # Explicit latin_1 encoding, still comes back as unicode
         #
-        msg = Message(u'hello world', content_encoding='latin1')
+        msg = Message(u'hello world', content_encoding='latin_1')
         self.ch.basic_publish(msg, 'amq.direct', routing_key=my_routing_key)
         msg2 = self.ch.basic_get(qname, no_ack=True)
-        self.assertEqual(msg2.content_encoding, 'latin1')
+        self.assertEqual(msg2.content_encoding, 'latin_1')
         self.assertTrue(isinstance(msg2.body, unicode))
         self.assertEqual(msg2.body, u'hello world')
 
         #
         # Plain string with specified encoding comes back as unicode
         #
-        msg = Message('hello w\xf6rld', content_encoding='latin1')
+        msg = Message('hello w\xf6rld', content_encoding='latin_1')
         self.ch.basic_publish(msg, 'amq.direct', routing_key=my_routing_key)
         msg2 = self.ch.basic_get(qname, no_ack=True)
-        self.assertEqual(msg2.content_encoding, 'latin1')
+        self.assertEqual(msg2.content_encoding, 'latin_1')
         self.assertTrue(isinstance(msg2.body, unicode))
         self.assertEqual(msg2.body, u'hello w\u00f6rld')
 
         #
-        # Plain string with bogus encoding
+        # Plain string (bytes in Python 3.x) with bogus encoding
         #
-        msg = Message('hello w\xf6rld', content_encoding='I made this up')
+        test_bytes = u'hello w\xd6rld'.encode('latin_1')  # don't really care about latin_1, just want bytes
+        msg = Message(test_bytes, content_encoding='I made this up')
         self.ch.basic_publish(msg, 'amq.direct', routing_key=my_routing_key)
         msg2 = self.ch.basic_get(qname, no_ack=True)
         self.assertEqual(msg2.content_encoding, 'I made this up')
-        self.assertTrue(isinstance(msg2.body, str))
-        self.assertEqual(msg2.body, 'hello w\xf6rld')
+        self.assertTrue(isinstance(msg2.body, bytes))
+        self.assertEqual(msg2.body, test_bytes)
 
         #
         # Turn off auto_decode for remaining tests
@@ -138,28 +146,29 @@ class TestChannel(unittest.TestCase):
         self.ch.basic_publish(msg, 'amq.direct', routing_key=my_routing_key)
         msg2 = self.ch.basic_get(qname, no_ack=True)
         self.assertEqual(msg2.content_encoding, 'UTF-8')
-        self.assertTrue(isinstance(msg2.body, str))
-        self.assertEqual(msg2.body, 'hello w\xc3\xb6rld')
+        self.assertTrue(isinstance(msg2.body, bytes))
+        self.assertEqual(msg2.body, u'hello w\xc3\xb6rld'.encode('latin_1'))
 
         #
         # Plain string with specified encoding stays plain string
         #
-        msg = Message('hello w\xf6rld', content_encoding='latin1')
+        msg = Message('hello w\xf6rld', content_encoding='latin_1')
         self.ch.basic_publish(msg, 'amq.direct', routing_key=my_routing_key)
         msg2 = self.ch.basic_get(qname, no_ack=True)
-        self.assertEqual(msg2.content_encoding, 'latin1')
-        self.assertTrue(isinstance(msg2.body, str))
-        self.assertEqual(msg2.body, 'hello w\xf6rld')
+        self.assertEqual(msg2.content_encoding, 'latin_1')
+        self.assertTrue(isinstance(msg2.body, bytes))
+        self.assertEqual(msg2.body, u'hello w\xf6rld'.encode('latin_1'))
 
         #
-        # Explicit latin1 encoding, comes back as str
+        # Explicit latin_1 encoding, comes back as str
         #
-        msg = Message(u'hello w\u00f6rld', content_encoding='latin1')
+        msg = Message(u'hello w\u00f6rld', content_encoding='latin_1')
         self.ch.basic_publish(msg, 'amq.direct', routing_key=my_routing_key)
         msg2 = self.ch.basic_get(qname, no_ack=True)
-        self.assertEqual(msg2.content_encoding, 'latin1')
-        self.assertTrue(isinstance(msg2.body, str))
-        self.assertEqual(msg2.body, 'hello w\xf6rld')
+        self.assertEqual(msg2.content_encoding, 'latin_1')
+        self.assertTrue(isinstance(msg2.body, bytes))
+        self.assertEqual(msg2.body, u'hello w\xf6rld'.encode('latin_1'))
+
 
     def test_exception(self):
         """
@@ -168,6 +177,23 @@ class TestChannel(unittest.TestCase):
 
         """
         self.assertRaises(AMQPChannelException, self.ch.queue_delete, 'bogus_queue_that_does_not_exist')
+
+
+    def test_invalid_header(self):
+        """
+        Test sending a message with an unserializable object in the header
+
+        http://code.google.com/p/py-amqplib/issues/detail?id=17
+
+        """
+        self.ch.access_request('/data', active=True, write=True, read=True)
+
+        qname, _, _ = self.ch.queue_declare()
+
+        msg = Message(application_headers={'test': None})
+
+        self.assertRaises(ValueError, self.ch.basic_publish, msg, routing_key=qname)
+
 
     def test_large(self):
         """
@@ -217,6 +243,36 @@ class TestChannel(unittest.TestCase):
 
         msg2 = self.ch.basic_get(qname, no_ack=True)
         self.assertEqual(msg, msg2)
+
+
+    def test_unbind(self):
+        self.ch.access_request('/data', active=True, write=True, read=True)
+
+        my_routing_key = 'unittest.test_queue'
+
+        qname, _, _ = self.ch.queue_declare()
+        self.ch.queue_bind(qname, 'amq.direct', routing_key=my_routing_key)
+        self.ch.queue_unbind(qname, 'amq.direct', routing_key=my_routing_key)
+
+
+    def test_basic_return(self):
+        self.ch.access_request('/data', active=True, write=True)
+        self.ch.exchange_declare('unittest.fanout', 'fanout', auto_delete=True)
+
+        msg = Message('unittest message',
+            content_type='text/plain',
+            application_headers={'foo': 7, 'bar': 'baz'})
+
+        self.ch.basic_publish(msg, 'unittest.fanout')
+        self.ch.basic_publish(msg, 'unittest.fanout', immediate=True)
+        self.ch.basic_publish(msg, 'unittest.fanout', mandatory=True)
+        self.ch.basic_publish(msg, 'unittest.fanout', immediate=True, mandatory=True)
+        self.ch.close()
+
+        #
+        # 3 of the 4 messages we sent should have been returned
+        #
+        self.assertEqual(self.ch.returned_messages.qsize(), 3)
 
 
 def main():

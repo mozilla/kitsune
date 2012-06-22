@@ -23,16 +23,34 @@ between byte streams and higher level objects.
 from datetime import datetime
 from decimal import Decimal
 from random import randint
+import sys
 import unittest
+
+try:
+    bytes
+except NameError:
+    # Python 2.5 and lower
+    bytes = str
 
 import settings
 
-from amqplib.client_0_8.serialization import AMQPReader, AMQPWriter
+from amqplib.client_0_8.serialization import AMQPReader, AMQPWriter, GenericContent
 
 class TestSerialization(unittest.TestCase):
+    if sys.version_info[0] >= 3:
+        def assertEqualBinary(self, b, s):
+            """
+            Helper for Py3k Compatibility
+
+            """
+            self.assertEqual(b, s.encode('latin_1'))
+    else:
+        assertEqualBinary = unittest.TestCase.assertEqual
+
+
     def test_empty_writer(self):
         w = AMQPWriter()
-        self.assertEqual(w.getvalue(), '')
+        self.assertEqual(w.getvalue(), bytes())
 
     #
     # Bits
@@ -43,7 +61,7 @@ class TestSerialization(unittest.TestCase):
             w.write_bit(val)
             s = w.getvalue()
 
-            self.assertEqual(s, check)
+            self.assertEqualBinary(s, check)
 
             r = AMQPReader(s)
             self.assertEqual(r.read_bit(), val)
@@ -56,7 +74,7 @@ class TestSerialization(unittest.TestCase):
         w.write_bit(True)
         s = w.getvalue()
 
-        self.assertEqual(s, '\x0b')
+        self.assertEqualBinary(s, '\x0b')
 
         r = AMQPReader(s)
         self.assertEqual(r.read_bit(), True)
@@ -77,7 +95,7 @@ class TestSerialization(unittest.TestCase):
         w.write_bit(True)
         s = w.getvalue()
 
-        self.assertEqual(s, '\x03\x0a\x01')
+        self.assertEqualBinary(s, '\x03\x0a\x01')
 
         r = AMQPReader(s)
         self.assertEqual(r.read_bit(), True)
@@ -99,7 +117,7 @@ class TestSerialization(unittest.TestCase):
 
         s = w.getvalue()
 
-        self.assertEquals(s, '\x55\x55\x05')
+        self.assertEqualBinary(s, '\x55\x55\x05')
 
         r = AMQPReader(s)
         for i in range(10):
@@ -114,7 +132,7 @@ class TestSerialization(unittest.TestCase):
             w = AMQPWriter()
             w.write_octet(val)
             s = w.getvalue()
-            self.assertEqual(s, chr(val))
+            self.assertEqualBinary(s, chr(val))
 
             r = AMQPReader(s)
             self.assertEqual(r.read_octet(), val)
@@ -198,7 +216,7 @@ class TestSerialization(unittest.TestCase):
         w.write_shortstr('')
         s = w.getvalue()
 
-        self.assertEqual(s, '\x00')
+        self.assertEqualBinary(s, '\x00')
 
         r = AMQPReader(s)
         self.assertEqual(r.read_shortstr(), '')
@@ -207,7 +225,7 @@ class TestSerialization(unittest.TestCase):
         w = AMQPWriter()
         w.write_shortstr('hello')
         s = w.getvalue()
-        self.assertEqual(s, '\x05hello')
+        self.assertEqualBinary(s, '\x05hello')
 
         r = AMQPReader(s)
         self.assertEqual(r.read_shortstr(), 'hello')
@@ -216,7 +234,7 @@ class TestSerialization(unittest.TestCase):
         w = AMQPWriter()
         w.write_shortstr(u'hello')
         s = w.getvalue()
-        self.assertEqual(s, '\x05hello')
+        self.assertEqualBinary(s, '\x05hello')
 
         r = AMQPReader(s)
         self.assertEqual(r.read_shortstr(), u'hello')
@@ -238,7 +256,7 @@ class TestSerialization(unittest.TestCase):
         w.write_longstr('')
         s = w.getvalue()
 
-        self.assertEqual(s, '\x00\x00\x00\x00')
+        self.assertEqualBinary(s, '\x00\x00\x00\x00')
 
         r = AMQPReader(s)
         self.assertEqual(r.read_longstr(), '')
@@ -249,10 +267,10 @@ class TestSerialization(unittest.TestCase):
         w.write_longstr(val)
         s = w.getvalue()
 
-        self.assertEqual(s, '\x00\x00\x02\x00' + ('a' * 512))
+        self.assertEqualBinary(s, '\x00\x00\x02\x00' + ('a' * 512))
 
         r = AMQPReader(s)
-        self.assertEqual(r.read_longstr(), val)
+        self.assertEqual(r.read_longstr(), str(val))
 
     def test_longstr_unicode(self):
         val = u'a' * 512
@@ -260,7 +278,7 @@ class TestSerialization(unittest.TestCase):
         w.write_longstr(val)
         s = w.getvalue()
 
-        self.assertEqual(s, '\x00\x00\x02\x00' + ('a' * 512))
+        self.assertEqualBinary(s, '\x00\x00\x02\x00' + ('a' * 512))
 
         r = AMQPReader(s)
         self.assertEqual(r.read_longstr(), val)
@@ -274,7 +292,7 @@ class TestSerialization(unittest.TestCase):
         w.write_table(val)
         s = w.getvalue()
 
-        self.assertEqual(s, '\x00\x00\x00\x00')
+        self.assertEqualBinary(s, '\x00\x00\x00\x00')
 
         r = AMQPReader(s)
         self.assertEqual(r.read_table(), val)
@@ -285,10 +303,20 @@ class TestSerialization(unittest.TestCase):
         w.write_table(val)
         s = w.getvalue()
 
-        self.assertEqual(s, '\x00\x00\x00\x09\x03fooI\x00\x00\x00\x07')
+        self.assertEqualBinary(s, '\x00\x00\x00\x09\x03fooI\x00\x00\x00\x07')
 
         r = AMQPReader(s)
         self.assertEqual(r.read_table(), val)
+
+
+    def test_table_invalid(self):
+        """
+        Check that an un-serializable table entry raises a ValueError
+
+        """
+        val = {'test': None}
+        w = AMQPWriter()
+        self.assertRaises(ValueError, w.write_table, val)
 
 
     def test_table_multi(self):
@@ -318,6 +346,19 @@ class TestSerialization(unittest.TestCase):
 
         r = AMQPReader(s)
         self.assertEqual(r.read_table(), val)
+
+    #
+    # GenericContent
+    #
+    def test_generic_content_eq(self):
+        msg_1 = GenericContent(dummy='foo')
+        msg_2 = GenericContent(dummy='foo')
+        msg_3 = GenericContent(dummy='bar')
+
+        self.assertEqual(msg_1, msg_1)
+        self.assertEqual(msg_1, msg_2)
+        self.assertNotEqual(msg_1, msg_3)
+        self.assertNotEqual(msg_1, None)
 
 
 def main():

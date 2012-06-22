@@ -10,11 +10,15 @@ from tastypie.authorization import Authorization
 from tastypie.cache import SimpleCache
 from tastypie.resources import Resource
 
-from customercare.models import Reply
-from kpi.models import (Metric, MetricKind, VISITORS_METRIC_CODE,
-                        L10N_METRIC_CODE)
+from kpi.models import (Metric, MetricKind,
+                        AOA_CONTRIBUTORS_METRIC_CODE,
+                        KB_ENUS_CONTRIBUTORS_METRIC_CODE,
+                        KB_L10N_CONTRIBUTORS_METRIC_CODE,
+                        L10N_METRIC_CODE,
+                        SUPPORT_FORUM_CONTRIBUTORS_METRIC_CODE,
+                        VISITORS_METRIC_CODE)
 from questions.models import Question, Answer, AnswerVote
-from wiki.models import HelpfulVote, Revision
+from wiki.models import HelpfulVote
 
 
 class CachedResource(Resource):
@@ -247,73 +251,37 @@ class ActiveContributorsResource(CachedResource):
     aoa = fields.IntegerField('aoa', default=0)
 
     def get_object_list(self, request):
-        # TODO: This whole method is yucky... Is there a nicer way to do this?
-        # It will probably get soon nuked in favor of using the Metric model
-        # when we need to go more granular than monthly.
-        revisions = _monthly_qs_for(Revision)
+        # Set up the queries for the data we need
+        kind = MetricKind.objects.get(code=KB_ENUS_CONTRIBUTORS_METRIC_CODE)
+        en_us = Metric.objects.filter(kind=kind).order_by('-start')
 
-        creators = revisions.values('year', 'month', 'creator').distinct()
-        reviewers = revisions.values('year', 'month', 'reviewer').distinct()
+        kind = MetricKind.objects.get(code=KB_L10N_CONTRIBUTORS_METRIC_CODE)
+        l10n = Metric.objects.filter(kind=kind).order_by('-start')
 
-        def _add_user(monthly_dict, year, month, userid):
-            if userid:
-                yearmonth = (year, month)
-                if yearmonth not in monthly_dict:
-                    monthly_dict[yearmonth] = set()
-                monthly_dict[yearmonth].add(userid)
+        kind = MetricKind.objects.get(
+            code=SUPPORT_FORUM_CONTRIBUTORS_METRIC_CODE)
+        answers = Metric.objects.filter(kind=kind).order_by('-start')
 
-        def _add_users(monthly_dict, values, column):
-            for r in values:
-                _add_user(monthly_dict, r['year'], r['month'], r[column])
+        kind = MetricKind.objects.get(code=AOA_CONTRIBUTORS_METRIC_CODE)
+        aoa = Metric.objects.filter(kind=kind).order_by('-start')
 
-        # Build the en-US KB contributors count list
-        d = {}
-        _add_users(d, creators.filter(document__locale='en-US'), 'creator')
-        _add_users(d, reviewers.filter(document__locale='en-US'), 'reviewer')
-        en_us_list = [{'month': k[1], 'year': k[0], 'count': len(v)} for
-                      k, v in d.items()]
+        # Put all the results in a dict with the date as the key.
+        results_dict = {}
 
-        # Build the non en-US KB contributors count list
-        d = {}
-        _add_users(d, creators.exclude(document__locale='en-US'), 'creator')
-        _add_users(d, reviewers.exclude(document__locale='en-US'), 'reviewer')
-        non_en_us_list = [{'month': k[1], 'year': k[0], 'count': len(v)} for
-                          k, v in d.items()]
+        def merge_results(metrics_qs, label):
+            for metric in metrics_qs:
+                results_dict.setdefault(metric.end, {})[label] = metric.value
 
-        # Build the support forum contributors count list aggregated by month
-        answerers = (Answer.objects
-            .exclude(creator=F('question__creator'))
-            .filter(created__gte=_start_date())
-            .extra(
-                select={
-                    'month': 'extract( month from questions_answer.created )',
-                    'year': 'extract( year from questions_answer.created )',
-                })
-            .values('year', 'month', 'creator')
-            .annotate(count=Count('creator'))
-            .filter(count__gte=10))
-        d = {}
-        for a in answerers:
-            _add_user(d, a['year'], a['month'], a['creator'])
-        support_forum = [{'month': k[1], 'year': k[0], 'count': len(v)} for
-                        k, v in d.items()]
+        merge_results(en_us, 'en_us')
+        merge_results(l10n, 'non_en_us')
+        merge_results(answers, 'support_forum')
+        merge_results(aoa, 'aoa')
 
-        # Build the AoA contributors count list aggregated by month
-        qs = _monthly_qs_for(Reply).values(
-            'year', 'month', 'twitter_username')
-        contributors = qs.distinct()
-        d = {}
-        for c in contributors:
-            _add_user(d, c['year'], c['month'], c['twitter_username'])
-        aoa = [{'month': k[1], 'year': k[0], 'count': len(v)} for
-                        k, v in d.items()]
+        # Convert that to a list of dicts.
+        results_list = [dict(date=k, **v) for k, v in results_dict.items()]
 
-        # Merge and return
-        return merge_results(
-            en_us=en_us_list,
-            non_en_us=non_en_us_list,
-            support_forum=support_forum,
-            aoa=aoa)
+        return [Struct(**x) for x in sorted(
+            results_list, key=itemgetter('date'), reverse=True)]
 
     class Meta:
         cache = SimpleCache()
