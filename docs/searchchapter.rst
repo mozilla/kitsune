@@ -336,14 +336,22 @@ forums (aka contributor forums)::
 
 
 Elastic Search is built on top of Lucene so the `Lucene documentation
-on scoring <http://lucene.apache.org/java/3_5_0/scoring.html>`_ covers
-how a document is scored in regards to the search query and its
+on scoring
+<http://lucene.apache.org/core/old_versioned_docs/versions/3_5_0/scoring.html>`_
+covers how a document is scored in regards to the search query and its
 contents. The weights modify that---they're query-level boosts.
 
-Additionally we use a series of filters on tags, q_tags, and other
-properties of the documents like has_helpful, is_locked, is_archived,
-etc, In Elastic Search, filters remove items from the result set, but
-don't otherwise affect the scoring.
+Additionally, `this blog post from 2006 <http://www.supermind.org/blog/378>`_
+is really helpful in terms of provind insight on the implications of
+the way things are scored.
+
+
+Filters
+-------
+
+We use a series of filters on tags, q_tags, and other properties of the
+documents like has_helpful, is_locked, is_archived, etc, In ElasticSearch,
+filters remove items from the result set, but don't affect the scoring.
 
 
 Front page search
