@@ -582,8 +582,17 @@ a.header-button {
     margin-bottom: 5px;
 }
 
-#twitter-modal .cancel,
-#twitter-modal .signin {
+#twitter-modal p {
+    margin: 0 0 10px 0;
+}
+
+#twitter-modal .inner-container > div,
+.btn-modal {
+    height: 36px;
+}
+
+.btn-modal,
+.btn-modal:visited {
     background: -moz-linear-gradient(center top, #f1f1f1 15px, #eee 18px, #ddd, #ccc);
     background: -webkit-gradient(linear, center top, center bottom, color-stop(.417, #f1f1f1), color-stop(.5, #eee), color-stop(.75, #ddd), to(#ccc));
     border-radius: 6px;
@@ -592,25 +601,27 @@ a.header-button {
     color: #5a5a5a;
     display: block;
     float: left;
-    height: 36px;
     line-height: 35px;
     text-align: center;
     text-decoration: none;
     text-shadow: 1px 1px 0 rgba(255, 255, 255, 0.6);
-    width: 140px;
+    width: 200px;
 }
 
-#twitter-modal .cancel {
-    margin: 15px 15px 0px 48px;
+.btn-modal.register {
+    margin: 0 0 0 14px;
 }
 
-#twitter-modal .signin {
+.btn-modal.signin-twitter {
+    float: none;
+    margin: 15px auto;
+    width: 300px;
+}
+
+.btn-modal .highlight,
+.btn-modal.signin-twitter,
+.btn-modal.signin-twitter:visited {
     color: #10a2c6;
-    margin: 15px 0px 0px 0;
-}
-
-#twitter-modal .inner-container div {
-    height: 50px;
 }
 
 /*----------------------------------
