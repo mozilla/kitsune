@@ -10,6 +10,11 @@
     width: 27%;
 }
 
+#response-list-area.filtered {
+    margin-left: -15px;
+    width: 51%;
+}
+
 .category-list,
 .response-list,
 .response-preview-rendered .content {
@@ -23,6 +28,10 @@
     padding-right: 0.2em;
     text-align: center;
     width: 23%;
+}
+
+#responses-area.filtered {
+    display: none;
 }
 
 .category-list {
@@ -122,10 +131,6 @@
 
 .response a:hover {
     text-decoration: none;
-}
-
-.response.hide {
-    color: silver;
 }
 
 #response-submit-area {
