@@ -160,6 +160,15 @@ For local development you will want to add the following settings::
             },
         }
 
+    REDIS_BACKENDS = {
+            'default': 'redis://localhost:6379?socket_timeout=0.5&db=0',
+            'karma': 'redis://localhost:6381?socket_timeout=0.5&db=0',
+            'helpfulvotes': 'redis://localhost:6379?socket_timeout=0.\
+                5&db=1',
+        }
+
+    REDIS_BACKEND = REDIS_BACKENDS['default']
+
 
 Redis
 -----
@@ -168,7 +177,7 @@ You need to copy the ``REDIS_BACKEND`` section from ``settings.py``
 into your ``settings_local.py``.  After doing that, uncomment the
 three lines in each section.
 
-There are three ``.conf`` files in ``config/redis/``.  One is for
+There are three ``.conf`` files in ``configs/redis/``.  One is for
 testing and is used in ``settings_test.py``.  The other two are used
 for the sections in ``REDIS_BACKEND``.
 
@@ -217,7 +226,7 @@ database (see below) and lots of tests will fail. Hundreds.
 Create the database and grant permissions to the user, based on your database
 settings. For example, using the settings above::
 
-    $ mysql -uroot -p
+    $ mysql -u root -p
     mysql> CREATE DATABASE kitsune;
     mysql> GRANT ALL ON kitsune.* TO kitsune@localhost IDENTIFIED BY \
         'password';
