@@ -2,7 +2,9 @@
 
 {% macro search_engine() -%}
   {# Must be imported with context #}
-  <input type="hidden" name="e" value="{% if waffle.flag('elasticsearch') %}es{% else %}sph{% endif %}" />
+  {% if 'esunified' in request.GET and request.GET['esunified'] %}
+    <input type="hidden" name="esunified" value="1" />
+  {% endif %}
 {%- endmacro %}
 
 {% macro basic_search_form(primary=False) -%}
@@ -17,7 +19,7 @@
         {% endfor %}
       {% endfor %}
       <input type="text" class="search-query search-refine-query" value="{{ q }}" name="q">
-      <input type="submit" class="search-refine-submit btn-large" value="{{ _('Search') }}">
+      <input type="submit" class="search-refine-submit btn-large" value="{{ _('Search Mozilla Support') }}">
     </form>
   </div>
 {%- endmacro %}

@@ -19,9 +19,6 @@ following things (in addition to Git, of course).
 
 * Memcached Server.
 
-* `Sphinx <http://sphinxsearch.com/>`_ 0.9.9, compiled with the
-  ``--enable-id64`` flag.
-
 * RabbitMQ.
 
 * ``libxml`` and headers.
@@ -36,8 +33,8 @@ following things (in addition to Git, of course).
 
 * Several Python packages. See `Installing the Packages`_.
 
-* Elastic Search and Sphinx Search. :ref:`search-chapter` covers
-  installation, configuration, and running.
+* Elastic Search. :ref:`search-chapter` covers installation,
+  configuration, and running.
 
 Installation for these is very system dependent. Using a package manager, like
 yum, aptitude, or brew, is encouraged.
@@ -163,6 +160,15 @@ For local development you will want to add the following settings::
             },
         }
 
+    REDIS_BACKENDS = {
+            'default': 'redis://localhost:6379?socket_timeout=0.5&db=0',
+            'karma': 'redis://localhost:6381?socket_timeout=0.5&db=0',
+            'helpfulvotes': 'redis://localhost:6379?socket_timeout=0.\
+                5&db=1',
+        }
+
+    REDIS_BACKEND = REDIS_BACKENDS['default']
+
 
 Redis
 -----
@@ -171,7 +177,7 @@ You need to copy the ``REDIS_BACKEND`` section from ``settings.py``
 into your ``settings_local.py``.  After doing that, uncomment the
 three lines in each section.
 
-There are three ``.conf`` files in ``config/redis/``.  One is for
+There are three ``.conf`` files in ``configs/redis/``.  One is for
 testing and is used in ``settings_test.py``.  The other two are used
 for the sections in ``REDIS_BACKEND``.
 
@@ -206,7 +212,7 @@ configuration is::
             'ENGINE': 'django.db.backends.mysql',
             'HOST': 'localhost',
             'USER': 'kitsune',
-            'PASSWORD': 'password',
+            'PASSWORD': '<YOUR_PASSWORD>',
             'OPTIONS': {'init_command': 'SET storage_engine=InnoDB'},
             'TEST_CHARSET': 'utf8',
             'TEST_COLLATION': 'utf8_unicode_ci',
@@ -220,7 +226,7 @@ database (see below) and lots of tests will fail. Hundreds.
 Create the database and grant permissions to the user, based on your database
 settings. For example, using the settings above::
 
-    $ mysql -uroot -p
+    $ mysql -u root -p
     mysql> CREATE DATABASE kitsune;
     mysql> GRANT ALL ON kitsune.* TO kitsune@localhost IDENTIFIED BY \
         'password';
@@ -228,7 +234,7 @@ settings. For example, using the settings above::
 To load the latest database schema, use ``scripts/schema.sql`` and
 ``schematic``::
 
-    $ mysql kitsune < scripts/schema.sql
+    $ mysql -u kitsune -p <YOUR_PASSWORD> < scripts/schema.sql
     $ ./vendor/src/schematic/schematic migrations/
 
 You'll now have an empty but up-to-date database!
@@ -293,11 +299,11 @@ I (Will) put that in a script that creates the needed directories in
     $REDISBIN $CONFFILE/redis-volatile.conf
 
 
-Elastic search and Sphinx search
---------------------------------
+Elastic search
+--------------
 
-Elastic Search and Sphinx Search. :ref:`search-chapter` covers
-installation, configuration, and running.
+Elastic Search. :ref:`search-chapter` covers installation,
+configuration, and running.
 
 .. todo:: The installation side of these two should get moved here.
 

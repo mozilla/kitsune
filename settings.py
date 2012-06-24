@@ -464,6 +464,7 @@ MINIFY_BUNDLES = {
             'css/search.css',
             'css/users.autocomplete.css',
             'css/reportabuse.css',
+            'css/cannedresponses.css',
         ),
         'search': (
             'css/search.css',
@@ -677,7 +678,7 @@ SESSION_EXISTS_COOKIE = 'sumo_session'
 # Connection information for Elastic
 ES_HOSTS = ['127.0.0.1:9200']
 # Indexes for reading
-ES_INDEXES = {'default': 'sumo-20120605'}
+ES_INDEXES = {'default': 'sumo-20120622'}
 # Indexes for indexing--set this to ES_INDEXES if you want to read to
 # and write to the same index.
 ES_WRITE_INDEXES = ES_INDEXES
@@ -695,20 +696,6 @@ ES_INDEXING_TIMEOUT = 30
 # Seconds between updating admin progress bar:
 ES_REINDEX_PROGRESS_BAR_INTERVAL = 5
 ES_FLUSH_BULK_EVERY = 100
-
-#
-# Connection information for Sphinx search
-SPHINX_HOST = '127.0.0.1'
-SPHINX_PORT = 3381
-SPHINXQL_PORT = 3382
-
-SPHINX_INDEXER = '/usr/bin/indexer'
-SPHINX_SEARCHD = '/usr/bin/searchd'
-SPHINX_CONFIG_PATH = path('configs/sphinx/sphinx.conf')
-
-TEST_SPHINX_PATH = path('tmp/test/sphinx')
-TEST_SPHINX_PORT = 3416
-TEST_SPHINXQL_PORT = 3418
 
 SEARCH_MAX_RESULTS = 1000
 SEARCH_RESULTS_PER_PAGE = 20

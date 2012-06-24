@@ -30,7 +30,7 @@
             new k.AjaxPreview($('#preview'));
         }
 
-        Marky.createSimpleToolbar('.editor-tools', '#reply-content, #id_content');
+        Marky.createSimpleToolbar('.editor-tools', '#reply-content, #id_content', !$body.is('.new-question'));
     }
 
     /*

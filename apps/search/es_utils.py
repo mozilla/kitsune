@@ -40,6 +40,9 @@ CHUNK_SIZE = 50000
 log = logging.getLogger('search.es')
 
 
+F = elasticutils.F
+
+
 class Sphilastic(elasticutils.S):
     """Shim around elasticutils' S which makes it look like oedipus.S
 
@@ -239,7 +242,7 @@ def get_indexing_es(**kwargs):
 
 
 def delete_index(index):
-    elasticutils.get_es().delete_index_if_exists(index)
+    get_indexing_es().delete_index_if_exists(index)
 
 
 def format_time(time_to_go):
@@ -262,7 +265,7 @@ def get_documents(cls, ids):
 def recreate_index(es=None):
     """Deletes index if it's there and creates a new one"""
     if es is None:
-        es = elasticutils.get_es()
+        es = get_indexing_es()
 
     from search.models import get_search_models
 

@@ -25,9 +25,9 @@
 (function($, gettext, document){
 
 var Marky = {
-    createSimpleToolbar: function(toolbarSel, textareaSel) {
-        var SB = Marky.SimpleButton,
-            buttons = [
+    createSimpleToolbar: function(toolbarSel, textareaSel, cannedResp) {
+        var SB = Marky.SimpleButton;
+        var buttons = [
             new SB(gettext('Bold'), "'''", "'''", gettext('bold text'),
                    'btn-bold'),
             new SB(gettext('Italic'), "''", "''", gettext('italic text'),
@@ -40,6 +40,10 @@ var Marky = {
             new SB(gettext('Bulleted List'), '* ', '',
                    gettext('Bulleted list item'), 'btn-ul', true)
         ];
+        if (cannedResp) {
+            buttons.push(new Marky.Separator(),
+                         new Marky.CannedResponsesButton());
+        }
         Marky.createCustomToolbar(toolbarSel, textareaSel, buttons);
     },
     createFullToolbar: function(toolbarSel, textareaSel) {
@@ -80,7 +84,7 @@ var Marky = {
                    'btn-h3', true)
         ];
     }
-};
+}
 
 
 /*
@@ -103,7 +107,7 @@ Marky.SimpleButton = function(name, openTag, closeTag, defaultText,
     }
 
     this.html = '<button class="markup-toolbar-button" />';
-};
+}
 
 Marky.SimpleButton.prototype = {
     // Binds the button to a textarea (DOM node).
@@ -213,7 +217,7 @@ Marky.SimpleButton.prototype = {
                     opentag + line + closetag : line);
         });
     }
-};
+}
 
 /*
  * The showfor helper link.
@@ -229,7 +233,7 @@ Marky.ShowForButton = function() {
 
     this.html = interpolate('<a class="markup-toolbar-link" href="#show-for" title="%s">%s</a>',
                             [this.tooltip, this.name]);
-};
+}
 
 Marky.ShowForButton.prototype = $.extend({}, Marky.SimpleButton.prototype, {
     // Renders the html.
@@ -303,7 +307,7 @@ Marky.ShowForButton.prototype = $.extend({}, Marky.SimpleButton.prototype, {
  */
 Marky.Separator = function() {
     this.html = '<span class="separator"></span>';
-};
+}
 
 Marky.Separator.prototype = {
     node: function() {
@@ -312,7 +316,7 @@ Marky.Separator.prototype = {
     bind: function() {
         return this;
     }
-};
+}
 
 /*
  * The link helper.
@@ -330,7 +334,7 @@ Marky.LinkButton = function() {
     this.origDefaultText = this.defaultText;
 
     this.html = '<button class="markup-toolbar-button" />';
-};
+}
 
 Marky.LinkButton.prototype = $.extend({}, Marky.SimpleButton.prototype, {
     // Gets the DOM node for the button.
@@ -378,7 +382,7 @@ Marky.LinkButton.prototype = $.extend({}, Marky.SimpleButton.prototype, {
         // last character is a pound:
         var performSectionSearch = function(request) {
             return (request.term.indexOf("#") == request.term.length - 1);
-        };
+        }
         
         var results = [];
         
@@ -387,11 +391,11 @@ Marky.LinkButton.prototype = $.extend({}, Marky.SimpleButton.prototype, {
             for(var i = 0; i < results.length; i++) {
                 if(name == results[i].label) {
                     return results[i].url;
-                };
-            };
+                }
+            }
 
             return null;
-        };
+        }
 
         var articleSearch = function(request, response) {
             results = [];
@@ -414,7 +418,7 @@ Marky.LinkButton.prototype = $.extend({}, Marky.SimpleButton.prototype, {
                     response(results);
                 }
             });
-        };
+        }
         
         var sectionSearch = function(request, response) {
             var articleName = request.term.split("#")[0];
@@ -437,7 +441,7 @@ Marky.LinkButton.prototype = $.extend({}, Marky.SimpleButton.prototype, {
                             value: request.term.replace("#", ""),
                             target: ""
                         });
-                    };
+                    }
 
                     headings.each(function() {
                         var element = this.nodeName;
@@ -455,7 +459,7 @@ Marky.LinkButton.prototype = $.extend({}, Marky.SimpleButton.prototype, {
                     response(array);
                 }
             });
-        };
+        }
         
         $html.find('input[name="internal"]').autocomplete({
             source: function(request, response) {
@@ -464,17 +468,17 @@ Marky.LinkButton.prototype = $.extend({}, Marky.SimpleButton.prototype, {
                 }
                 else {
                     articleSearch(request, response);
-                };
+                }
             },
             select: function(event, ui) {
                 if(!ui.item.target) {
                     return;
-                };
+                }
 
                 var $linktext = $html.find('input[name=link-text]');
                 if($linktext.val() == "") {
                     $linktext.val(ui.item.label);
-                };
+                }
             }
         });
 
@@ -568,7 +572,7 @@ Marky.MediaButton = function() {
     this.everyline = false;
 
     this.html = '<button class="markup-toolbar-button" />';
-};
+}
 
 Marky.MediaButton.prototype = $.extend({}, Marky.SimpleButton.prototype, {
     // Gets the DOM node for the button.
@@ -712,6 +716,339 @@ Marky.MediaButton.prototype = $.extend({}, Marky.SimpleButton.prototype, {
 
         e.preventDefault();
         return false;
+    }
+});
+
+/*
+ * The canned responses helper
+ */
+Marky.CannedResponsesButton = function() {
+    this.name = gettext('Insert a canned response...');
+    this.classes = 'btn-cannedresponses';
+    this.openTag = '';
+    this.closeTag = '';
+    this.defaultText = gettext('cannedresponses');
+    this.everyline = false;
+
+    this.html = '<button class="markup-toolbar-button" />';
+}
+
+Marky.CannedResponsesButton.prototype = $.extend({}, Marky.SimpleButton.prototype, {
+    // Gets the DOM node for the button.
+    node: function() {
+        var me = this,
+            $btn = this.render();
+        $btn.click(function(e) {
+             me.openModal(e);
+        });
+        
+        me.getPermissionBits();
+        
+        return $btn[0];
+    },
+    reset: function() {
+        this.openTag = '';
+        this.closeTag = '';
+        this.defaultText = '';
+    },
+    openModal: function(e) {
+        var me = this,
+            $editor = $(me.textarea).closest('.editor'),
+            // TODO: look at using a js template solution (jquery-tmpl?)
+            $html = $(
+                '<section class="marky">' +
+                '<div class="search">' +
+                '<label for="filter-responses-field">' + gettext('Search: ') +'</label>' +
+                '<input type="text" name="q" id="filter-responses-field" placeholder="' 
+                + gettext('Type here to filter the list of shown responses') + '" />' +
+                '</div></div>' +
+                '<div class="area" id="responses-area">' +
+                '<h2 class="heading-label">' + gettext('Categories') + '</h2>' +
+                '<ul class="category-list">' +
+                '<li class="status-indicator busy">' + gettext('Loading...') + '</li>' +
+                '</ul></div>' +
+                '<div class="area" id="response-list-area">' +
+                '<h2 class="heading-label">' + gettext('Responses') + '</h2>' +
+                '<span class="nocat-label">' + gettext('Please select a category from the previous column.') + '</span>' +
+                '<p class="response-list"/>' +
+                '</div>' +
+                '<div class="area" id="response-content-area">' +
+                '<h2 class="heading-label preview-label">' + gettext('Response editor') + '</h2>' +
+                '<button class="toggle-view">' + gettext('Switch to preview mode') + '</button>' +
+                '<p class="response-preview">' +
+                '<textarea id="response-content">' +
+                '</textarea></p>' +
+                '<p class="response-preview-rendered"></p>' +
+                '</div>' +
+                '</div>' +
+                '<div class="placeholder" /><div class="submit" id="response-submit-area">' +
+                '<button id="insert-response">' + gettext('Insert Response') + '</button>' +
+                '<a href="#cancel" class="kbox-cancel">' + gettext('Cancel') + '</a>' +
+                '</div>' +
+                '</section>'
+            ),
+            selectedText = me.getSelectedText(),
+            kbox;
+            
+        const cannedResponsesUrl = '/kb/common-forum-responses';
+        const previewUrl = 'answer-preview-async';
+        
+        function updatePreview() {
+            var response = $('#response-content').val();
+            var token = $('[name=csrfmiddlewaretoken]').attr('value');
+            
+            toggleThrobber(true);
+            
+            $.ajax({
+                type: 'POST',
+                url: previewUrl,
+                data: {
+                    content: response,
+                    csrfmiddlewaretoken: token
+                },
+                dataType: 'html',
+                success: function(html) {
+                    var $container = $('.response-preview-rendered');
+                    var $response_preview = $(html).find('.content');
+                    $container.html($response_preview);
+                },
+                complete: function() {
+                   toggleThrobber(false);
+                }
+            });
+        }
+        
+        function getContent(articleUrl) {
+            // If the article doesn't exist, it has /new in its URL
+            // Don't query nonexisting articles
+            if(!articleUrl || articleUrl.indexOf('/new') !== -1) {
+                return;
+            }
+            
+            articleUrl += '/edit';
+            toggleThrobber(true);
+            
+            $.ajax({
+                url: articleUrl,
+                dataType: 'html',
+                success: function(data, status) {
+                    var article_src = $('#id_content', data).val();
+                    var $textbox = $('#response-content');
+                    $textbox.val(article_src);
+                        
+                    updatePreview();
+                },
+                complete: function() {
+                    toggleThrobber(false);
+                }
+            });
+        }
+        
+        function toggleThrobber(busy) {
+            var $previewLabel = $('.preview-label');
+            if(busy) {
+                $previewLabel.addClass('busy');
+            }
+            else {
+                $previewLabel.removeClass('busy');
+            }
+        }
+                
+        function isAllowedToUseResponse(response_target) {
+            if(response_target.indexOf('#') === -1) {
+                //No permission markers: Everyone's allowed
+                return true;
+            }
+            
+            var articleUrl = response_target.split("#")[0];
+            var permBits = response_target.split('#')[1];
+            response_target = articleUrl;
+
+            for(var i = 0; i < permBits.length; i++) {
+                var bit = permBits[i];
+                if(me.permissionBits.indexOf(bit) !== -1) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        function insertResponse() {
+            var sourceContent = $('#response-content').val();
+            var $responseTextbox = $('#id_content');
+            var targetContent = $responseTextbox.val();
+            
+            $responseTextbox.val(targetContent + sourceContent);
+        }
+
+        function searchResponses(term) {
+            var term = term.toLowerCase();
+            var $responses = $html.find('.response');
+            $responses.each(function() {
+                var text = $(this).text().toLowerCase();
+                if(text.indexOf(term) === -1) {
+                    $(this).addClass('hide');
+                }
+                else {
+                    $(this).removeClass('hide');
+                }
+            });
+        }
+        
+        function loadCannedResponses() {
+            var siteLanguage = window.location.pathname.split('/')[1];
+            var targetUrl = "/" + siteLanguage + cannedResponsesUrl;
+            
+            $.ajax({
+                url: targetUrl,
+                type: 'GET',
+                dataType: 'html',
+                success: function(html) {
+                    var $categoryList = $('.category-list'),
+                        $responsesList = $('.response-list'),
+                        $categories = $(html).find('[id^=w_]');
+
+                    $categoryList.empty();
+                    $responsesList.empty();
+
+                    $categories.each(function(el, i) {
+                        var label = $(this).text(),
+                            $headingItem = $(document.createElement('li')),
+                            $responses = $(document.createElement('ul')).hide(),
+                            $catResponses = $(this).nextUntil('[id^=w_]').find('a'),
+                            $noCatLabel = $html.find('.nocat-label'),
+                            $otherResponses,
+                            $otherHeadings;
+
+                        $catResponses.each(function(el, i) {
+                            var $response = $(document.createElement('li')).addClass('response'),
+                                $response_link = $(document.createElement('a')).text($(this).text()),
+                                response_target = $(this).attr('href'),
+                                canUseResponse = isAllowedToUseResponse(response_target),
+                                response_target = response_target.split('#')[0];
+
+                            if(canUseResponse) {
+                                $response.click(function() {
+                                    $('.response-list li').not($(this)).removeClass('selected');
+                                    $(this).addClass('selected');
+                                    getContent(response_target);
+                                });
+
+                                $response.append($response_link);
+                                $responses.append($response);
+                            }
+                        });
+
+                        $headingItem.addClass('response-heading').text(label)
+                            .on('click', function() {
+                                $noCatLabel.hide();
+                                $otherResponses = $responsesList.find('ul').not($responses);
+                                $otherResponses.hide();
+                                
+                                $otherHeadings = $categoryList.find('.response-heading').not($headingItem);
+                                $otherHeadings.removeClass('selected');
+                            
+                                $(this).addClass('selected');
+                                $responses.show();
+                        });
+                            
+                        $categoryList.append($headingItem);
+                        $responsesList.append($responses);
+                    });
+                },
+                error: function() {
+                    var statusIndicator = $('.status-indicator');
+                    statusIndicator.removeClass('busy');
+                    statusIndicator.text(gettext('There was an error checking for canned responses.'));
+                }
+            });
+            
+            // return true so that the kbox actually opens:
+            return true;
+        }
+
+        kbox = new KBox($html, {
+            title: this.name,
+            destroy: true,
+            modal: true,
+            id: 'media-modal',
+            container: $('body'),
+            position: 'none',
+            preOpen: loadCannedResponses
+        });
+        
+        kbox.open();
+                    
+        $html.find('#insert-response').click(function() {
+            insertResponse();
+            kbox.close();
+        });
+        
+        $html.find('#filter-responses-field').keyup(function() {
+            var term = $(this).val();
+            searchResponses(term);
+        });
+        
+        var $previewLabel = $html.find('.preview-label');
+        var $contentArea = $html.find('.response-preview');
+        var $renderedPreview = $html.find('.response-preview-rendered');
+
+        $html.find('.toggle-view').toggle(
+            function() {
+                updatePreview();
+                $previewLabel.text(gettext('Response preview'));
+                $(this).text(gettext('Switch to edit mode'));
+            
+                $contentArea.hide();
+                $renderedPreview.show();
+            },
+            function() {
+                $previewLabel.text(gettext('Response editor'));
+                $(this).text(gettext('Switch to preview mode'));
+
+                $contentArea.show();
+                $renderedPreview.hide();
+            });
+
+        e.preventDefault();
+        return false;    
+    },
+    
+    permissionBits: [],
+    
+    getPermissionBits: function() {
+        var 
+        profile_link = $('#aux-nav .user').attr('href'),
+        me = this;
+        if(!profile_link || profile_link === "")  {
+            return;
+        }
+        
+        $.ajax({
+            url: profile_link,
+            dataType: 'html',
+            success: function(data, status) {
+                var userGroups = $('#groups li', data);
+                userGroups.each(function() {
+                    var group = $(this).text();
+                        
+                    // Contributors:
+                    if(group === 'Contributors') {
+                        me.permissionBits.push('c');
+                    }
+                    
+                    // Moderators:
+                    if(group === 'Forum Moderators') {
+                        me.permissionBits.push('m');
+                    }
+                    
+                    // Administrators:
+                    if(group === 'Administrators') {
+                        me.permissionBits.push('a');
+                    }
+                });
+            }
+        });
     }
 });
 

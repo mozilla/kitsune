@@ -43,12 +43,10 @@ from questions.karma_actions import (SolutionAction, AnswerMarkedHelpfulAction,
                                      AnswerMarkedNotHelpfulAction)
 from questions.marketplace import (MARKETPLACE_CATEGORIES, submit_ticket,
                                    ZendeskError)
-from questions.models import (Question, Answer, QuestionVote, AnswerVote,
-                              question_searcher)
+from questions.models import Question, Answer, QuestionVote, AnswerVote
 from questions.question_config import products
 from search.utils import locale_or_default, clean_excerpt
 from search.es_utils import ESTimeoutError, ESMaxRetryError, ESException
-from search import SearchError
 from sumo.helpers import urlparams
 from sumo.urlresolvers import reverse
 from sumo.utils import paginate, simple_paginate, build_paged_url
@@ -58,7 +56,7 @@ from upload.views import upload_imageattachment
 from users.forms import RegisterForm
 from users.models import Setting
 from users.utils import handle_login, handle_register
-from wiki.models import Document, wiki_searcher
+from wiki.models import Document
 
 
 log = logging.getLogger('k.questions')
@@ -85,10 +83,13 @@ def questions(request):
 
     question_qs = Question.objects.select_related(
         'creator', 'last_answer', 'last_answer__creator')
-    question_qs = question_qs.extra(
-        {'_num_votes': 'SELECT COUNT(*) FROM questions_questionvote WHERE '
-                       'questions_questionvote.question_id = '
-                       'questions_question.id'})
+
+    if not waffle.switch_is_active('hide-total-question-votes'):
+        question_qs = question_qs.extra(
+            {'_num_votes': 'SELECT COUNT(*) FROM questions_questionvote WHERE '
+                           'questions_questionvote.question_id = '
+                           'questions_question.id'})
+
     question_qs = question_qs.filter(creator__is_active=1)
 
     if filter_ == 'no-replies':
@@ -134,8 +135,9 @@ def questions(request):
     question_qs = question_qs.order_by(order)
 
     try:
-        questions_page = simple_paginate(
-            request, question_qs, per_page=constants.QUESTIONS_PER_PAGE)
+        with statsd.timer('questions.view.paginate.%s' % filter_):
+            questions_page = simple_paginate(
+                request, question_qs, per_page=constants.QUESTIONS_PER_PAGE)
     except (PageNotAnInteger, EmptyPage):
         # If we aren't on page 1, redirect there.
         # TODO: Is 404 more appropriate?
@@ -148,7 +150,8 @@ def questions(request):
     recent_unanswered_count = Question.recent_unanswered_count()
     if recent_asked_count:
         recent_answered_percent = int(
-            (float(recent_asked_count - recent_unanswered_count) / recent_asked_count) * 100)
+            (float(recent_asked_count - recent_unanswered_count) /
+            recent_asked_count) * 100)
     else:
         recent_answered_percent = 0
 
@@ -173,7 +176,8 @@ def questions(request):
     else:
         data.update(top_contributors=_get_top_contributors())
 
-    return jingo.render(request, 'questions/questions.html', data)
+    with statsd.timer('questions.view.render'):
+        return jingo.render(request, 'questions/questions.html', data)
 
 
 @anonymous_csrf  # Need this so the anon csrf gets set for watch forms.
@@ -200,7 +204,7 @@ def answers(request, question_id, form=None, watch_form=None,
 @mobile_template('questions/{mobile/}new_question.html')
 @anonymous_csrf  # This view renders a login form
 def aaq(request, product_key=None, category_key=None, showform=False,
-        template=None):
+        template=None, step=0):
     """Ask a new question."""
 
     if product_key is None:
@@ -236,15 +240,11 @@ def aaq(request, product_key=None, category_key=None, showform=False,
     if request.method == 'GET':
         search = request.GET.get('search', '')
         if search:
-            try:
-                results = _search_suggestions(
-                    request,
-                    search,
-                    locale_or_default(request.locale),
-                    product.get('tags'))
-            except SearchError:
-                # Just quietly advance the user to the next step.
-                results = []
+            results = _search_suggestions(
+                request,
+                search,
+                locale_or_default(request.locale),
+                product.get('tags'))
             tried_search = True
         else:
             results = []
@@ -285,6 +285,7 @@ def aaq(request, product_key=None, category_key=None, showform=False,
                              'current_category': category,
                              'current_html': html,
                              'current_articles': articles,
+                             'current_step': step,
                              'deadend': deadend,
                              'host': Site.objects.get_current().domain})
 
@@ -347,7 +348,7 @@ def aaq(request, product_key=None, category_key=None, showform=False,
 
         if request.user.is_active:
             messages.add_message(request, messages.SUCCESS,
-                _('Thanks! Your question has been posted. See it below.'))
+                _('Done! Your question is now posted on the Mozilla community support forum.'))
             url = reverse('questions.answers',
                           kwargs={'question_id': question.id})
             return HttpResponseRedirect(url)
@@ -369,23 +370,23 @@ def aaq(request, product_key=None, category_key=None, showform=False,
 
 def aaq_step2(request, product_key):
     """Step 2: The product is selected."""
-    return aaq(request, product_key=product_key)
+    return aaq(request, product_key=product_key, step=1)
 
 
 def aaq_step3(request, product_key, category_key):
     """Step 3: The product and category is selected."""
-    return aaq(request, product_key=product_key, category_key=category_key)
+    return aaq(request, product_key=product_key, category_key=category_key, step=1)
 
 
 def aaq_step4(request, product_key, category_key):
     """Step 4: Search query entered."""
-    return aaq(request, product_key=product_key, category_key=category_key)
+    return aaq(request, product_key=product_key, category_key=category_key, step=1)
 
 
 def aaq_step5(request, product_key, category_key):
     """Step 5: Show full question form."""
     return aaq(request, product_key=product_key, category_key=category_key,
-               showform=True)
+               showform=True, step=3)
 
 
 @require_http_methods(['GET', 'POST'])
@@ -964,13 +965,26 @@ def marketplace_success(request, template=None):
     return jingo.render(request, template)
 
 
-def _search_suggestions_es(request, query, locale, category_tags):
-    """See _search_suggestions
+def _search_suggestions(request, query, locale, category_tags):
+    """Return an iterable of the most relevant wiki pages and questions.
+
+    query -- full text to search on
+    locale -- locale to limit to
+
+    Items are dicts of:
+        {
+            'type':
+            'search_summary':
+            'title':
+            'url':
+            'object':
+        }
+
+    Returns up to 3 wiki pages, then up to 3 questions.
 
     """
     # TODO: this can be reworked to pull data from ES rather than
     # hit the db.
-    engine = 'elastic'
     question_s = Question.search()
     wiki_s = Document.search()
 
@@ -1027,139 +1041,17 @@ def _search_suggestions_es(request, query, locale, category_tags):
             except Question.DoesNotExist:
                 pass
 
-    except (SearchError, ESTimeoutError, ESMaxRetryError, ESException), exc:
-        if isinstance(exc, SearchError):
-            statsd.incr('questions.suggestions.%s.searcherror' % engine)
-        elif isinstance(exc, ESTimeoutError):
-            statsd.incr('questions.suggestions.%s.timeouterror' % engine)
+    except (ESTimeoutError, ESMaxRetryError, ESException), exc:
+        if isinstance(exc, ESTimeoutError):
+            statsd.incr('questions.suggestions.timeouterror')
         elif isinstance(exc, ESMaxRetryError):
-            statsd.incr('questions.suggestions.%s.maxretryerror' % engine)
+            statsd.incr('questions.suggestions.maxretryerror')
         elif isinstance(exc, ESException):
-            statsd.incr('questions.suggestions.%s.elasticsearchexception' %
-                        engine)
+            statsd.incr('questions.suggestions.elasticsearchexception')
 
         return []
 
     return results
-
-
-def _search_suggestions_sphinx(request, query, locale, category_tags):
-    """Return an iterable of the most relevant wiki pages and questions.
-
-    query -- full text to search on
-    locale -- locale to limit to
-
-    Items are dicts of:
-        {
-            'type':
-            'search_summary':
-            'title':
-            'url':
-            'object':
-        }
-
-    Returns up to 3 wiki pages, then up to 3 questions.
-
-    """
-    if waffle.flag_is_active(request, 'elasticsearch'):
-        engine = 'elastic'
-        question_s = Question.search()
-        wiki_s = Document.search()
-    else:
-        engine = 'sphinx'
-        question_s = question_searcher(request)
-        wiki_s = wiki_searcher(request)
-
-    # Max number of search results per type.
-    WIKI_RESULTS = QUESTIONS_RESULTS = 3
-
-    # Apply category filters
-    if category_tags:
-        question_s = question_s.filter(tag__in=category_tags)
-        wiki_s = wiki_s.filter(tag__in=category_tags)
-
-    try:
-        raw_results = (
-            wiki_s.filter(locale=locale,
-                          category__in=settings.SEARCH_DEFAULT_CATEGORIES)
-                  .query(query)
-                  .values_dict('id')[:WIKI_RESULTS])
-
-        results = []
-        for r in raw_results:
-            try:
-                doc = (Document.objects.select_related('current_revision')
-                                       .get(pk=r['id']))
-                results.append({
-                    'search_summary': clean_excerpt(
-                            doc.current_revision.summary),
-                    'url': doc.get_absolute_url(),
-                    'title': doc.title,
-                    'type': 'document',
-                    'object': doc,
-                })
-            except Document.DoesNotExist:
-                pass
-
-        # Note: Questions app is en-US only.
-        raw_results = (question_s.query(query)
-                                 .values_dict('id')[:QUESTIONS_RESULTS])
-
-        for r in raw_results:
-            try:
-                q = Question.objects.get(pk=r['id'])
-                results.append({
-                    'search_summary': clean_excerpt(q.content[0:500]),
-                    'url': q.get_absolute_url(),
-                    'title': q.title,
-                    'type': 'question',
-                    'is_solved': q.is_solved,
-                    'num_answers': q.num_answers,
-                    'num_votes': q.num_votes,
-                    'num_votes_past_week': q.num_votes_past_week
-                })
-            except Question.DoesNotExist:
-                pass
-
-    except (SearchError, ESTimeoutError, ESMaxRetryError, ESException), exc:
-        if isinstance(exc, SearchError):
-            statsd.incr('questions.suggestions.%s.searcherror' % engine)
-        elif isinstance(exc, ESTimeoutError):
-            statsd.incr('questions.suggestions.%s.timeouterror' % engine)
-        elif isinstance(exc, ESMaxRetryError):
-            statsd.incr('questions.suggestions.%s.maxretryerror' % engine)
-        elif isinstance(exc, ESException):
-            statsd.incr('questions.suggestions.%s.elasticsearchexception' %
-                        engine)
-
-        return []
-
-    return results
-
-
-def _search_suggestions(request, query, locale, category_tags):
-    """Return an iterable of the most relevant wiki pages and questions.
-
-    query -- full text to search on
-    locale -- locale to limit to
-
-    Items are dicts of:
-        {
-            'type':
-            'search_summary':
-            'title':
-            'url':
-            'object':
-        }
-
-    Returns up to 3 wiki pages, then up to 3 questions.
-
-    """
-    if waffle.flag_is_active(request, 'elasticsearch'):
-        return _search_suggestions_es(request, query, locale, category_tags)
-    else:
-        return _search_suggestions_sphinx(request, query, locale,
-                                          category_tags)
 
 
 def _answers_data(request, question_id, form=None, watch_form=None,

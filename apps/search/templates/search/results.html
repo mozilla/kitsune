@@ -24,7 +24,9 @@
 
     {{ pages|paginator }}
 
-    {{ basic_search_form() }}
+    {% if num_results > 3 %}
+      {{ basic_search_form() }}
+    {% endif %}
 
   </div>
 

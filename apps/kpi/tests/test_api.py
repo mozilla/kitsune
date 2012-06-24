@@ -1,5 +1,5 @@
 from base64 import b64encode
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 import json
 
 from django.core.cache import cache
@@ -7,7 +7,15 @@ from django.core.cache import cache
 from nose.tools import eq_
 
 from customercare.tests import reply
-from kpi.models import Metric, VISITORS_METRIC_CODE, L10N_METRIC_CODE
+from kpi.cron import update_contributor_metrics
+from kpi.models import (Metric,
+                        AOA_CONTRIBUTORS_METRIC_CODE,
+                        KB_ENUS_CONTRIBUTORS_METRIC_CODE,
+                        KB_L10N_CONTRIBUTORS_METRIC_CODE,
+                        L10N_METRIC_CODE,
+                        SUPPORT_FORUM_CONTRIBUTORS_METRIC_CODE,
+                        VISITORS_METRIC_CODE)
+
 from kpi.tests import metric, metric_kind
 from sumo.tests import TestCase, LocalizingClient
 from sumo.urlresolvers import reverse
@@ -25,6 +33,12 @@ class KpiApiTests(TestCase):
         search_kind = metric_kind(code='search clickthroughs:sphinx:searches',
                                   save=True)
         return click_kind, search_kind
+
+    def _make_contributor_metric_kinds(self):
+        metric_kind(code=AOA_CONTRIBUTORS_METRIC_CODE, save=True)
+        metric_kind(code=KB_ENUS_CONTRIBUTORS_METRIC_CODE, save=True)
+        metric_kind(code=KB_L10N_CONTRIBUTORS_METRIC_CODE, save=True)
+        metric_kind(code=SUPPORT_FORUM_CONTRIBUTORS_METRIC_CODE, save=True)
 
     def _get_api_result(self, resource_name):
         """Helper to make API calls, parse the json and return the result."""
@@ -118,7 +132,13 @@ class KpiApiTests(TestCase):
         # An AoA reply (1 contributor):
         reply(save=True)
 
+        # Create metric kinds and update metrics for tomorrow (today's
+        # activity shows up tomorrow).
+        self._make_contributor_metric_kinds()
+        update_contributor_metrics(day=date.today() + timedelta(days=1))
+
         r = self._get_api_result('kpi_active_contributors')
+
         eq_(r['objects'][0]['en_us'], 2)
         eq_(r['objects'][0]['non_en_us'], 2)
         eq_(r['objects'][0]['support_forum'], 1)
@@ -136,16 +156,25 @@ class KpiApiTests(TestCase):
         for x in range(10):
             answer(creator=u, question=q, save=True)
 
+        # Create metric kinds and update metrics for tomorrow (today's
+        # activity shows up tomorrow).
+        self._make_contributor_metric_kinds()
+        update_contributor_metrics(day=date.today() + timedelta(days=1))
+
         r = self._get_api_result('kpi_active_contributors')
-        eq_(len(r['objects']), 0)
+        eq_(r['objects'][0]['support_forum'], 0)
 
         # Change the question creator, now we should have 1 contributor.
         q.creator = user(save=True)
         q.save()
         cache.clear()  # We need to clear the cache for new results.
 
+        Metric.objects.all().delete()
+        update_contributor_metrics(day=date.today() + timedelta(days=1))
+
         r = self._get_api_result('kpi_active_contributors')
         eq_(r['objects'][0]['support_forum'], 1)
+    test_asker_replies_arent_a_contribution.xx = 1
 
     def test_sphinx_clickthrough_get(self):
         """Test Sphinx clickthrough read API."""

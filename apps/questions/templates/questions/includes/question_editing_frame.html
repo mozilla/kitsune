@@ -23,7 +23,11 @@ we can compute the edit-title URL.
 
         {% block product %}
           {% if current_product %}
-            {{ selected_product(current_product, can_edit_product) }}
+            {% if current_step %}
+              {{ selected_product(current_product, can_edit_product, current_step) }}
+            {% else %}
+              {{ selected_product(current_product, can_edit_product, -1) }}
+            {% endif %}
           {% endif %}
         {% endblock %}
 

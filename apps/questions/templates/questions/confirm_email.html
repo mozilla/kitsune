@@ -1,11 +1,13 @@
 {# vim: set ts=2 et sts=2 sw=2: #}
 {% extends "questions/base.html" %}
+{% from "questions/includes/aaq_macros.html" import aaq_progress %}
 {% set title = _('Please Confirm Your Email Address') %}
 {% set classes = 'questions' %}
 
 {% block content %}
   <article class="main">
     <div class="confirm-question">
+      {{ aaq_progress(4) }}
       <h1>{{ _('Please confirm your email address.') }}</h1>
       <p>
         {% trans %}

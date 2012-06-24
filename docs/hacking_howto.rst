@@ -160,7 +160,7 @@ Start by creating a file named ``settings_local.py`` in the
             'ENGINE': 'django.db.backends.mysql',
             'HOST': 'localhost',
             'USER': 'kitsune',
-            'PASSWORD': 'password',
+            'PASSWORD': '<YOUR_PASSWORD>',
             'OPTIONS': {'init_command': 'SET storage_engine=InnoDB'},
             'TEST_CHARSET': 'utf8',
             'TEST_COLLATION': 'utf8_unicode_ci',
@@ -261,7 +261,7 @@ database settings. For example, using the settings above::
 To load the latest database schema, use ``scripts/schema.sql`` and
 ``schematic``::
 
-    $ mysql -u kitsune -p kitsune < scripts/schema.sql
+    $ mysql -u kitsune -p <YOUR_PASSWORD> < scripts/schema.sql
     $ ./vendor/src/schematic/schematic migrations/
 
 You'll now have an empty but up-to-date database!
@@ -334,7 +334,7 @@ The following aren't installed in this guide:
 
 * Redis
 * RabbitMQ
-* Sphinx search and Elastic Search
+* Elastic Search
 
 For installing and configuring those components, you should look at
 the more comprehensive :ref:`installation-chapter`.

@@ -18,6 +18,14 @@ Git conventions
 
 See :ref:`patching` for our Git usage conventions.
 
+See `Webdev bootcamp guide
+<http://mozweb.readthedocs.org/en/latest/git.html#git-and-github>`_
+for:
+
+* git commit message conventions
+* helpful resources for learning git
+* helpful tools
+
 
 Tests
 =====
