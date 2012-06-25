@@ -12,6 +12,7 @@ from flagit.models import FlaggedObject
 from karma.manager import KarmaManager
 import sumo.models
 from sumo.redis_utils import RedisError, redis_client
+from questions.cron import auto_lock_old_questions
 from questions.events import QuestionReplyEvent
 from questions.karma_actions import SolutionAction, AnswerAction
 from questions.models import (Question, QuestionMetaData, Answer,
@@ -20,6 +21,7 @@ from questions.tasks import update_answer_pages
 from questions.tests import (TestCaseBase, TaggingTestCaseBase, tags_eq,
                              question, answer)
 from questions.question_config import products
+from sumo.tests import TestCase
 from tags.utils import add_existing_tag
 
 
@@ -358,3 +360,37 @@ class AddExistingTagTests(TaggingTestCaseBase):
     def test_add_existing_no_such_tag(self):
         """Assert add_existing_tag doesn't work when the tag doesn't exist."""
         add_existing_tag('nonexistent tag', self.untagged_question.tags)
+
+
+class OldQuestionsLockTest(TestCase):
+    def test_lock_old_questions(self):
+        last_updated = datetime.now() - timedelta(days=100)
+
+        # created just now
+        q1 = question(save=True)
+
+        # created 200 days ago
+        q2 = question(created=(datetime.now() - timedelta(days=200)),
+                      updated=last_updated,
+                      save=True)
+
+        # created 200 days ago, already locked
+        q3 = question(created=(datetime.now() - timedelta(days=200)),
+                      is_locked=True,
+                      updated=last_updated,
+                      save=True)
+
+        auto_lock_old_questions()
+
+        # There are three questions.
+        eq_(len(list(Question.objects.all())), 3)
+
+        # q2 and q3 are now locked and updated times are the same
+        locked_questions = list(Question.uncached.filter(is_locked=True))
+        eq_(sorted([(q.id, q.updated.date()) for q in locked_questions]),
+            [(q.id, q.updated.date()) for q in [q2, q3]])
+
+        # q1 is still unlocked.
+        locked_questions = list(Question.uncached.filter(is_locked=False))
+        eq_(sorted([q.id for q in locked_questions]),
+            [q1.id])
