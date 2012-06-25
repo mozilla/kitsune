@@ -239,12 +239,22 @@ def search_with_es_unified(request, template=None):
 
     # Done with all the filtery stuff--time  to generate results
 
+    # Combine all the filters and add to the searcher
+    final_filter = F()
+    if cleaned['w'] & constants.WHERE_WIKI:
+        final_filter |= wiki_f
+
+    if cleaned['w'] & constants.WHERE_SUPPORT:
+        final_filter |= question_f
+
+    if cleaned['w'] & constants.WHERE_DISCUSSION:
+        final_filter |= discussion_f
+
+    searcher = searcher.filter(final_filter)
+
     documents = ComposedList()
     try:
         cleaned_q = cleaned['q']
-
-        # Add all the filters
-        searcher = searcher.filter(question_f | wiki_f | discussion_f)
 
         # Set up the highlights
         searcher = searcher.highlight(
@@ -267,7 +277,7 @@ def search_with_es_unified(request, template=None):
             sortby = smart_int(request.GET.get('sortby'))
             try:
                 searcher = searcher.order_by(
-                    *constants.SORT_QUESTIONS_ES[sortby])
+                    *constants.SORT_QUESTIONS[sortby])
             except IndexError:
                 # Skip index errors because they imply the user is
                 # sending us sortby values that aren't valid.
@@ -609,7 +619,7 @@ def search(request, template=None):
             # Sort results by
             try:
                 question_s = question_s.order_by(
-                    *constants.SORT_QUESTIONS_ES[sortby])
+                    *constants.SORT_QUESTIONS[sortby])
             except IndexError:
                 pass
 

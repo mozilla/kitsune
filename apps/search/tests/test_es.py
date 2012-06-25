@@ -113,7 +113,6 @@ class ElasticSearchTasksTests(ElasticTestCase):
     @mock.patch.object(Question, 'index')
     def test_tasks(self, index_fun):
         """Tests to make sure tasks are added and run"""
-
         q = question()
         # Don't call self.refresh here since that calls generate_tasks().
 
@@ -127,7 +126,6 @@ class ElasticSearchTasksTests(ElasticTestCase):
     @mock.patch.object(Question, 'index')
     def test_tasks_squashed(self, index_fun):
         """Tests to make sure tasks are squashed"""
-
         q = question()
         # Don't call self.refresh here since that calls generate_tasks().
 
@@ -171,13 +169,17 @@ class ElasticSearchViewPagingTests(ElasticTestCase):
         eq_('0', q['r'])
 
     def test_front_page_search_paging(self):
+        """Tests the weird bucketing we do for front page searches
+
+        Currently, the paging is set to 20, so for the first page of
+        results for a front page search, you get 10 kb documents and
+        then 10 question results.
+
+        """
         # Create 30 documents
         for i in range(30):
-            doc = document(
-                title=u'How to fix your audio %d' % i,
-                locale=u'en-US',
-                category=10,
-                save=True)
+            doc = document(title=u'How to fix your audio %d' % i,
+                           locale=u'en-US', category=10, save=True)
             doc.tags.add(u'desktop')
             revision(document=doc, is_approved=True, save=True)
 
@@ -219,22 +221,10 @@ class ElasticSearchViewTests(ElasticTestCase):
         # Create a question with an answer with an answervote that
         # marks the answer as helpful.  The question should have the
         # "desktop" tag.
-        ques = question(
-            title=u'audio fails',
-            content=u'my audio dont work.')
-        ques.save()
-
+        ques = question(title=u'audio fails', save=True)
         ques.tags.add(u'desktop')
-
-        ans = answer(
-            question=ques,
-            content=u'You need to turn your volume up.')
-        ans.save()
-
-        ansvote = answervote(
-            answer=ans,
-            helpful=True)
-        ansvote.save()
+        ans = answer(content=u'volume', question=ques, save=True)
+        answervote(answer=ans, helpful=True, save=True)
 
         self.refresh()
 
@@ -273,20 +263,10 @@ class ElasticSearchViewTests(ElasticTestCase):
         Bug #709202.
 
         """
-        doc = document(
-            title=u'How to fix your audio',
-            locale=u'en-US',
-            category=10)
-        doc.save()
-
+        doc = document(title=u'audio', locale=u'en-US', category=10,
+                       save=True)
         doc.tags.add(u'desktop')
-
-        rev = revision(
-            document=doc,
-            summary=u'Volume.',
-            content=u'Turn up the volume.',
-            is_approved=True)
-        rev.save()
+        revision(document=doc, is_approved=True, save=True)
 
         self.refresh()
 
@@ -307,20 +287,9 @@ class ElasticSearchViewTests(ElasticTestCase):
 
     def test_advanced_search_for_wiki_no_query(self):
         """Tests advanced search with no query"""
-        doc = document(
-            title=u'How to fix your audio',
-            locale=u'en-US',
-            category=10)
-        doc.save()
-
+        doc = document(title=u'audio', locale=u'en-US', category=10, save=True)
         doc.tags.add(u'desktop')
-
-        rev = revision(
-            document=doc,
-            summary=u'Volume.',
-            content=u'Turn up the volume.',
-            is_approved=True)
-        rev.save()
+        revision(document=doc, is_approved=True, save=True)
 
         self.refresh()
 
@@ -331,24 +300,6 @@ class ElasticSearchViewTests(ElasticTestCase):
         # data for that.
         response = self.client.get(reverse('search'), {
             'q': '', 'tags': 'desktop', 'w': '1', 'a': '1',
-            'format': 'json'
-        })
-
-        eq_(200, response.status_code)
-
-        content = json.loads(response.content)
-        eq_(content['total'], 1)
-
-    def test_advanced_search_questions_sortby(self):
-        """Tests advanced search for questions with a sortby"""
-        question(title=u'tags tags tags', save=True)
-
-        self.refresh()
-
-        # Advanced search for questions with sortby set to 3 which is
-        # '-replies' which is different between Sphinx and ES.
-        response = self.client.get(reverse('search'), {
-            'q': '', 'tags': 'desktop', 'w': '2', 'a': '1', 'sortby': '3',
             'format': 'json'
         })
 
@@ -393,7 +344,8 @@ class ElasticSearchViewTests(ElasticTestCase):
         content = json.loads(response.content)
         eq_(content['total'], 0)
 
-    def test_num_voted_none(self):
+    def test_num_votes_none(self):
+        """Tests num_voted filtering where num_votes is ''"""
         q = question(save=True)
         questionvote(question=q, save=True)
 
@@ -404,15 +356,9 @@ class ElasticSearchViewTests(ElasticTestCase):
         eq_(200, response.status_code)
 
     def test_forums_search(self):
-        """This tests whether forum posts show up in searches."""
-        thread1 = thread(
-            title=u'Why don\'t we spell crash backwards?')
-        thread1.save()
-
-        post1 = post(
-            thread=thread1,
-            content=u'What, like hsarc?  That\'s silly.')
-        post1.save()
+        """This tests whether forum posts show up in searches"""
+        thread1 = thread(title=u'crash', save=True)
+        post(thread=thread1, content=u'hsarc?', save=True)
 
         self.refresh()
 
@@ -429,17 +375,12 @@ class ElasticSearchViewTests(ElasticTestCase):
         eq_(content['total'], 1)
 
     def test_forums_thread_created(self):
+        """Tests created/created_date filtering for forums"""
         post_created_ds = datetime.datetime(2010, 1, 1, 12, 00)
-        thread1 = thread(
-            title=u'Why don\'t we spell crash backwards?',
-            created=post_created_ds)
-        thread1.save()
-
-        post1 = post(
-            thread=thread1,
-            content=u'What, like hsarc?  That\'s silly.',
-            created=(post_created_ds + datetime.timedelta(hours=1)))
-        post1.save()
+        thread1 = thread(title=u'crash', created=post_created_ds, save=True)
+        post(thread=thread1,
+             created=(post_created_ds + datetime.timedelta(hours=1)),
+             save=True)
 
         self.refresh()
 
@@ -448,7 +389,7 @@ class ElasticSearchViewTests(ElasticTestCase):
         response = self.client.get(reverse('search'), {
             'author': '', 'created': '2', 'created_date': '01/12/2010',
             'updated': '0', 'updated_date': '', 'sortby': '0',
-            'a': '1', 'w': '4', 'q': 'hsarc',
+            'a': '1', 'w': '4', 'q': 'crash',
             'format': 'json'
         })
 
@@ -462,7 +403,7 @@ class ElasticSearchViewTests(ElasticTestCase):
         response = self.client.get(reverse('search'), {
             'author': '', 'created': '2', 'created_date': '01/01/2010',
             'updated': '0', 'updated_date': '', 'sortby': '0',
-            'a': '1', 'w': '4', 'q': 'hsarc',
+            'a': '1', 'w': '4', 'q': 'crash',
             'format': 'json'
         })
 
@@ -476,7 +417,7 @@ class ElasticSearchViewTests(ElasticTestCase):
         response = self.client.get(reverse('search'), {
             'author': '', 'created': '1', 'created_date': '01/12/2010',
             'updated': '0', 'updated_date': '', 'sortby': '0',
-            'a': '1', 'w': '4', 'q': 'hsarc',
+            'a': '1', 'w': '4', 'q': 'crash',
             'format': 'json'
         })
 
@@ -490,7 +431,7 @@ class ElasticSearchViewTests(ElasticTestCase):
         response = self.client.get(reverse('search'), {
             'author': '', 'created': '1', 'created_date': '12/31/2009',
             'updated': '0', 'updated_date': '', 'sortby': '0',
-            'a': '1', 'w': '4', 'q': 'hsarc',
+            'a': '1', 'w': '4', 'q': 'crash',
             'format': 'json'
         })
 
@@ -525,6 +466,7 @@ class ElasticSearchUnifiedViewTests(ElasticTestCase):
         Flag.objects.create(name='esunified', everyone=True)
 
     def test_meta_tags(self):
+        """Tests that the search results page  has the right meta tags"""
         url_ = reverse('search')
         response = self.client.get(url_, {'q': 'contribute'})
 
@@ -550,22 +492,10 @@ class ElasticSearchUnifiedViewTests(ElasticTestCase):
         # Create a question with an answer with an answervote that
         # marks the answer as helpful.  The question should have the
         # "desktop" tag.
-        ques = question(
-            title=u'audio fails',
-            content=u'my audio dont work.')
-        ques.save()
-
+        ques = question(title=u'audio', save=True)
         ques.tags.add(u'desktop')
-
-        ans = answer(
-            question=ques,
-            content=u'You need to turn your volume up.')
-        ans.save()
-
-        ansvote = answervote(
-            answer=ans,
-            helpful=True)
-        ansvote.save()
+        ans = answer(question=ques, content=u'volume', save=True)
+        answervote(answer=ans, helpful=True, save=True)
 
         self.refresh()
 
@@ -604,20 +534,9 @@ class ElasticSearchUnifiedViewTests(ElasticTestCase):
         Bug #709202.
 
         """
-        doc = document(
-            title=u'How to fix your audio',
-            locale=u'en-US',
-            category=10)
-        doc.save()
-
+        doc = document(title=u'audio', locale=u'en-US', category=10, save=True)
         doc.tags.add(u'desktop')
-
-        rev = revision(
-            document=doc,
-            summary=u'Volume.',
-            content=u'Turn up the volume.',
-            is_approved=True)
-        rev.save()
+        revision(document=doc, is_approved=True, save=True)
 
         self.refresh()
 
@@ -636,22 +555,45 @@ class ElasticSearchUnifiedViewTests(ElasticTestCase):
         content = json.loads(response.content)
         eq_(content['total'], 1)
 
+    def test_front_page_only_shows_wiki_and_questions(self):
+        """Tests that the front page doesn't show forums
+
+        This verifies that we're only showing documents of the type
+        that should be shown and that the filters on model are working
+        correctly.
+
+        Bug #767394
+
+        """
+        ques = question(title=u'audio', save=True)
+        ques.tags.add(u'desktop')
+        ans = answer(question=ques, content=u'volume', save=True)
+        answervote(answer=ans, helpful=True, save=True)
+
+        doc = document(title=u'audio', locale=u'en-US', category=10, save=True)
+        doc.tags.add(u'desktop')
+        revision(document=doc, is_approved=True, save=True)
+
+        thread1 = thread(title=u'audio', save=True)
+        post(thread=thread1, save=True)
+
+        self.refresh()
+
+        response = self.client.get(reverse('search'), {
+            'q_tags': 'desktop', 'product': 'desktop', 'q': 'audio',
+            'format': 'json'
+        })
+
+        eq_(200, response.status_code)
+
+        content = json.loads(response.content)
+        eq_(content['total'], 2)
+
     def test_advanced_search_for_wiki_no_query(self):
         """Tests advanced search with no query"""
-        doc = document(
-            title=u'How to fix your audio',
-            locale=u'en-US',
-            category=10)
-        doc.save()
-
+        doc = document(locale=u'en-US', category=10, save=True)
         doc.tags.add(u'desktop')
-
-        rev = revision(
-            document=doc,
-            summary=u'Volume.',
-            content=u'Turn up the volume.',
-            is_approved=True)
-        rev.save()
+        revision(document=doc, is_approved=True, save=True)
 
         self.refresh()
 
@@ -720,6 +662,7 @@ class ElasticSearchUnifiedViewTests(ElasticTestCase):
         eq_(content['total'], 0)
 
     def test_num_votes_none(self):
+        """Tests num_voted filtering where num_votes is ''"""
         q = question(save=True)
         questionvote(question=q, save=True)
 
@@ -730,22 +673,16 @@ class ElasticSearchUnifiedViewTests(ElasticTestCase):
         eq_(200, response.status_code)
 
     def test_forums_search(self):
-        """This tests whether forum posts show up in searches."""
-        thread1 = thread(
-            title=u'Why don\'t we spell crash backwards?')
-        thread1.save()
-
-        post1 = post(
-            thread=thread1,
-            content=u'What, like hsarc?  That\'s silly.')
-        post1.save()
+        """This tests whether forum posts show up in searches"""
+        thread1 = thread(title=u'crash', save=True)
+        post(thread=thread1, save=True)
 
         self.refresh()
 
         response = self.client.get(reverse('search'), {
             'author': '', 'created': '0', 'created_date': '',
             'updated': '0', 'updated_date': '', 'sortby': '0',
-            'a': '1', 'w': '4', 'q': 'hsarc',
+            'a': '1', 'w': '4', 'q': 'crash',
             'format': 'json'
         })
 
@@ -755,17 +692,12 @@ class ElasticSearchUnifiedViewTests(ElasticTestCase):
         eq_(content['total'], 1)
 
     def test_forums_thread_created(self):
+        """Tests created/created_date filtering for forums"""
         post_created_ds = datetime.datetime(2010, 1, 1, 12, 00)
-        thread1 = thread(
-            title=u'Why don\'t we spell crash backwards?',
-            created=post_created_ds)
-        thread1.save()
-
-        post1 = post(
-            thread=thread1,
-            content=u'What, like hsarc?  That\'s silly.',
-            created=(post_created_ds + datetime.timedelta(hours=1)))
-        post1.save()
+        thread1 = thread(title=u'crash', created=post_created_ds, save=True)
+        post(thread=thread1,
+             created=(post_created_ds + datetime.timedelta(hours=1)),
+             save=True)
 
         self.refresh()
 
@@ -774,7 +706,7 @@ class ElasticSearchUnifiedViewTests(ElasticTestCase):
         response = self.client.get(reverse('search'), {
             'author': '', 'created': '2', 'created_date': '01/12/2010',
             'updated': '0', 'updated_date': '', 'sortby': '0',
-            'a': '1', 'w': '4', 'q': 'hsarc',
+            'a': '1', 'w': '4', 'q': 'crash',
             'format': 'json'
         })
 
@@ -788,7 +720,7 @@ class ElasticSearchUnifiedViewTests(ElasticTestCase):
         response = self.client.get(reverse('search'), {
             'author': '', 'created': '2', 'created_date': '01/01/2010',
             'updated': '0', 'updated_date': '', 'sortby': '0',
-            'a': '1', 'w': '4', 'q': 'hsarc',
+            'a': '1', 'w': '4', 'q': 'crash',
             'format': 'json'
         })
 
@@ -802,7 +734,7 @@ class ElasticSearchUnifiedViewTests(ElasticTestCase):
         response = self.client.get(reverse('search'), {
             'author': '', 'created': '1', 'created_date': '01/12/2010',
             'updated': '0', 'updated_date': '', 'sortby': '0',
-            'a': '1', 'w': '4', 'q': 'hsarc',
+            'a': '1', 'w': '4', 'q': 'crash',
             'format': 'json'
         })
 
@@ -816,7 +748,7 @@ class ElasticSearchUnifiedViewTests(ElasticTestCase):
         response = self.client.get(reverse('search'), {
             'author': '', 'created': '1', 'created_date': '12/31/2009',
             'updated': '0', 'updated_date': '', 'sortby': '0',
-            'a': '1', 'w': '4', 'q': 'hsarc',
+            'a': '1', 'w': '4', 'q': 'crash',
             'format': 'json'
         })
 
