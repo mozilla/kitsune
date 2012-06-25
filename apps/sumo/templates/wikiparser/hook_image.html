@@ -26,7 +26,9 @@
     {% if i == 'lazy' %}src="{{ MEDIA_URL }}img/placeholder.gif"
     data-original-{% endif %}src="{{ image.file.url }}"
     alt="{% if 'alt' in params %}{{ params['alt'] }}{% else %}{{ params['caption'] }}{% endif %}"
-    title="{{ params['caption'] }}"
+    {% if 'alt' in params and params['alt'] != params['caption'] %}
+      title="{{ params['caption'] }}"
+    {% endif %}
     {% if params['width'] and params['width']|int(None) %}
       width="{{ params['width']|int('') }}"
     {% endif %}
