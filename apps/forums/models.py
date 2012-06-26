@@ -13,7 +13,6 @@ from sumo.helpers import urlparams, wiki_to_html
 from sumo.urlresolvers import reverse
 from sumo.models import ModelBase
 from search.models import SearchMixin, register_for_indexing
-from search.utils import crc32
 
 
 def _last_post_from(posts, exclude_post=None):
@@ -270,10 +269,6 @@ class Post(ActionMixin, ModelBase):
 
     class Meta:
         ordering = ['created']
-
-    class SphinxMeta(object):
-        index = 'discussion_forums'
-        filter_mapping = {'author_ord': crc32}
 
     def __unicode__(self):
         return self.content[:50]

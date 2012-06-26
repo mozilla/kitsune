@@ -25,7 +25,6 @@ from questions.question_config import products
 from questions.tasks import (update_question_votes, update_answer_pages,
                              log_answer)
 from search.models import SearchMixin, register_for_indexing
-from search.utils import crc32
 from sumo.helpers import urlparams
 from sumo.models import ModelBase
 from sumo.parser import wiki_to_html
@@ -75,14 +74,6 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
                 ('change_solution',
                  'Can change/remove the solution to a question'),
             )
-
-    class SphinxMeta(object):
-        index = 'questions'
-        filter_mapping = {
-            'tag': crc32,
-            'question_creator': crc32,
-            'answer_creator': crc32}
-        id_field = 'question_id'
 
     def __unicode__(self):
         return self.title
