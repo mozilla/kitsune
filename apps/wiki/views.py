@@ -203,7 +203,8 @@ def new_document(request):
     """Create a new wiki document."""
     if request.method == 'GET':
         doc_form = DocumentForm(
-            can_create_tags=request.user.has_perm('taggit.add_tag'))
+            can_create_tags=request.user.has_perm('taggit.add_tag'),
+            initial_title=request.GET.get('title'))
         rev_form = RevisionForm()
         return jingo.render(request, 'wiki/new_document.html',
                             {'document_form': doc_form,
