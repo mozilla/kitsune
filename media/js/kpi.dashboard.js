@@ -319,11 +319,6 @@ window.KpiDashboard = Backbone.View.extend({
             url: $(this.el).data('active-contributors-url')
         });
 
-        this.sphinxCtrChart = new ChartModel([], {
-            url: $(this.el).data('sphinx-ctr-url')
-        });
-        this.sphinxCtrChart.name = 'Sphinx';
-
         this.elasticCtrChart = new ChartModel([], {
             url: $(this.el).data('elastic-ctr-url')
         });
@@ -435,7 +430,7 @@ window.KpiDashboard = Backbone.View.extend({
         });
 
         this.ctrView = new BasicChartView({
-            model: this.sphinxCtrChart,
+            model: this.elasticCtrChart,
             title: gettext('Search Clickthrough Rate'),
             percent: true,
             series: [{
@@ -447,7 +442,6 @@ window.KpiDashboard = Backbone.View.extend({
                 }
             }]
         });
-        this.ctrView.addModel(this.elasticCtrChart);
 
         this.visitorsView = new StockChartView({
             model: this.visitorsChart,
@@ -500,7 +494,6 @@ window.KpiDashboard = Backbone.View.extend({
         this.questionsChart.fetch();
         this.activeContributorsChart.fetch();
         this.voteChart.fetch();
-        this.sphinxCtrChart.fetch();
         this.elasticCtrChart.fetch();
         this.visitorsChart.fetch();
         this.l10nChart.fetch();
