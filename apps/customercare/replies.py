@@ -72,7 +72,10 @@ def get_common_replies(locale=settings.WIKI_DEFAULT_LANGUAGE):
 
     if locale != default_doc.locale:
         translated_doc = default_doc.translated_to(locale)
-        doc = translated_doc or default_doc
+        if translated_doc and translated_doc.current_revision:
+            doc = translated_doc
+        else:
+            doc = default_doc
     else:
         doc = default_doc
 
