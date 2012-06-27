@@ -63,6 +63,9 @@ def cache_top_contributors():
 @cronjobs.register
 def auto_lock_old_questions():
     """Locks all questions that were created over 180 days ago"""
+    # Set up logging so it doesn't send Ricky email.
+    logging.basicConfig(level=logging.ERROR)
+
     # Get a list of ids of questions we're going to go change. We need
     # a list of ids so that we can feed it to the update, but then
     # also know what we need to update in the index.
