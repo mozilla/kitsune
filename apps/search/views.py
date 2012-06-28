@@ -311,8 +311,14 @@ def search_with_es_unified(request, template=None):
             # docs_for_page
             documents = documents[offset:offset + results_per_page]
 
-            bounds = documents[0][1]
-            searcher = searcher.values_dict()[bounds[0]:bounds[1]]
+            if len(documents) == 0:
+                # If the user requested a page that's beyond the
+                # pagination, then documents is an empty list and
+                # there are no results to show.
+                searcher = []
+            else:
+                bounds = documents[0][1]
+                searcher = searcher.values_dict()[bounds[0]:bounds[1]]
 
         results = []
         for i, doc in enumerate(searcher):

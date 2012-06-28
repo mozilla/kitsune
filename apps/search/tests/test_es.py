@@ -482,6 +482,19 @@ class ElasticSearchUnifiedViewTests(ElasticTestCase):
         assert cookie in response.cookies
         eq_(urlquote(data['q']), response.cookies[cookie].value)
 
+    def test_empty_pages(self):
+        """Tests requesting a page that has no results"""
+        ques = question(title=u'audio', save=True)
+        ques.tags.add(u'desktop')
+        ans = answer(question=ques, content=u'volume', save=True)
+        answervote(answer=ans, helpful=True, save=True)
+
+        self.refresh()
+
+        qs = {'q': 'audio', 'page': 81}
+        response = self.client.get(reverse('search'), qs)
+        eq_(200, response.status_code)
+
     def test_front_page_search_for_questions(self):
         """This tests whether doing a search from the front page returns
         question results.
