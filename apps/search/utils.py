@@ -1,6 +1,5 @@
 import subprocess
 import time
-import zlib
 from itertools import islice
 
 import bleach
@@ -8,9 +7,6 @@ import bleach
 from django.conf import settings
 
 from sumo_locales import LOCALES
-
-
-crc32 = lambda x: zlib.crc32(x.encode('utf-8')) & 0xffffffff
 
 
 call = lambda x: subprocess.Popen(x, stdout=subprocess.PIPE).communicate()

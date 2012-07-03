@@ -760,7 +760,7 @@ Marky.CannedResponsesButton.prototype = $.extend({}, Marky.SimpleButton.prototyp
                 '<div class="search">' +
                 '<label for="filter-responses-field">' + gettext('Search: ') +'</label>' +
                 '<input type="text" name="q" id="filter-responses-field" placeholder="' 
-                + gettext('Type here to filter the list of shown responses') + '" />' +
+                + gettext('Search for common responses') + '" />' +
                 '</div></div>' +
                 '<div class="area" id="responses-area">' +
                 '<h2 class="heading-label">' + gettext('Categories') + '</h2>' +
@@ -769,7 +769,7 @@ Marky.CannedResponsesButton.prototype = $.extend({}, Marky.SimpleButton.prototyp
                 '</ul></div>' +
                 '<div class="area" id="response-list-area">' +
                 '<h2 class="heading-label">' + gettext('Responses') + '</h2>' +
-                '<span class="nocat-label">' + gettext('Please select a category from the previous column.') + '</span>' +
+                '<span class="nocat-label">' + gettext('Please select a category from the previous column or start a search.') + '</span>' +
                 '<p class="response-list"/>' +
                 '</div>' +
                 '<div class="area" id="response-content-area">' +
@@ -882,15 +882,37 @@ Marky.CannedResponsesButton.prototype = $.extend({}, Marky.SimpleButton.prototyp
         }
 
         function searchResponses(term) {
-            var term = term.toLowerCase();
+            var term = term.toLowerCase().trim();
+            var $searchHeading = $html.find('#response-list-area .heading-label');
+            var $noCategorySelected = $html.find('.nocat-label');
+            var $responseLists = $html.find('.response-list ul');
             var $responses = $html.find('.response');
+            var $responseListArea = $html.find('#response-list-area');
+            var $responsesArea = $html.find('#responses-area');
+            
+            if(term === '') {
+                $searchHeading.text(gettext('Responses'));
+                $responseListArea.removeClass('filtered');
+                $responsesArea.removeClass('filtered');
+                $noCategorySelected.show();
+                $responses.show();
+                $responseLists.hide();
+                return;
+            }
+            
+            $responseListArea.addClass('filtered');
+            $responsesArea.addClass('filtered');
+            $searchHeading.text(gettext('Matching responses'));
+            $noCategorySelected.hide();
+            $responseLists.show();
+            
             $responses.each(function() {
                 var text = $(this).text().toLowerCase();
                 if(text.indexOf(term) === -1) {
-                    $(this).addClass('hide');
+                    $(this).hide();
                 }
                 else {
-                    $(this).removeClass('hide');
+                    $(this).show();
                 }
             });
         }

@@ -185,9 +185,10 @@ def search_with_es_unified(request, template=None):
         if cleaned['answered_by']:
             question_f &= F(question_answer_creator=cleaned['answered_by'])
 
-        q_tags = [t.strip() for t in cleaned['q_tags'].split()]
+        q_tags = [t.strip() for t in cleaned['q_tags'].split(',')]
         for t in q_tags:
-            question_f &= F(question_tag=t)
+            if t:
+                question_f &= F(question_tag=t)
 
     # End - support questions filters
 
@@ -238,12 +239,22 @@ def search_with_es_unified(request, template=None):
 
     # Done with all the filtery stuff--time  to generate results
 
+    # Combine all the filters and add to the searcher
+    final_filter = F()
+    if cleaned['w'] & constants.WHERE_WIKI:
+        final_filter |= wiki_f
+
+    if cleaned['w'] & constants.WHERE_SUPPORT:
+        final_filter |= question_f
+
+    if cleaned['w'] & constants.WHERE_DISCUSSION:
+        final_filter |= discussion_f
+
+    searcher = searcher.filter(final_filter)
+
     documents = ComposedList()
     try:
         cleaned_q = cleaned['q']
-
-        # Add all the filters
-        searcher = searcher.filter(question_f | wiki_f | discussion_f)
 
         # Set up the highlights
         searcher = searcher.highlight(
@@ -266,7 +277,7 @@ def search_with_es_unified(request, template=None):
             sortby = smart_int(request.GET.get('sortby'))
             try:
                 searcher = searcher.order_by(
-                    *constants.SORT_QUESTIONS_ES[sortby])
+                    *constants.SORT_QUESTIONS[sortby])
             except IndexError:
                 # Skip index errors because they imply the user is
                 # sending us sortby values that aren't valid.
@@ -300,8 +311,14 @@ def search_with_es_unified(request, template=None):
             # docs_for_page
             documents = documents[offset:offset + results_per_page]
 
-            bounds = documents[0][1]
-            searcher = searcher.values_dict()[bounds[0]:bounds[1]]
+            if len(documents) == 0:
+                # If the user requested a page that's beyond the
+                # pagination, then documents is an empty list and
+                # there are no results to show.
+                searcher = []
+            else:
+                bounds = documents[0][1]
+                searcher = searcher.values_dict()[bounds[0]:bounds[1]]
 
         results = []
         for i, doc in enumerate(searcher):
@@ -531,9 +548,10 @@ def search(request, template=None):
             question_s = question_s.filter(
                 question_answer_creator=cleaned['answered_by'])
 
-        q_tags = [t.strip() for t in cleaned['q_tags'].split()]
+        q_tags = [t.strip() for t in cleaned['q_tags'].split(',')]
         for t in q_tags:
-            question_s = question_s.filter(question_tag=t)
+            if t:
+                question_s = question_s.filter(question_tag=t)
 
     # Discussion forum specific filters
     if cleaned['w'] & constants.WHERE_DISCUSSION:
@@ -607,7 +625,7 @@ def search(request, template=None):
             # Sort results by
             try:
                 question_s = question_s.order_by(
-                    *constants.SORT_QUESTIONS_ES[sortby])
+                    *constants.SORT_QUESTIONS[sortby])
             except IndexError:
                 pass
 

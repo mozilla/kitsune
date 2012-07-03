@@ -15,7 +15,6 @@ from tidings.models import NotificationsMixin
 from tower import ugettext_lazy as _lazy, ugettext as _
 
 from search.models import SearchMixin, register_for_indexing
-from search.utils import crc32
 from sumo import ProgrammingError
 from sumo.models import ModelBase, LocaleField
 from sumo.urlresolvers import reverse, split_path
@@ -121,13 +120,6 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
         unique_together = (('parent', 'locale'), ('title', 'locale'),
                            ('slug', 'locale'))
         permissions = [('archive_document', 'Can archive document')]
-
-    class SphinxMeta(object):
-        index = 'wiki_pages'
-        filter_mapping = {
-            'locale': crc32,
-            'tag': crc32,
-            }
 
     def _collides(self, attr, value):
         """Return whether there exists a doc in this locale whose `attr` attr

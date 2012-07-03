@@ -27,7 +27,7 @@ There's an installation guide on the Elastic Search site.
 
 http://www.elasticsearch.org/guide/reference/setup/installation.html
 
-We're currently using 0.17.something in production.
+We're currently using 0.17.x in production.
 
 The directory you install Elastic in will hereafter be referred to as
 ``ELASTICDIR``.
@@ -294,16 +294,16 @@ Sub commands for ``manage.py`` are implemented in
 Searching on the site
 =====================
 
-Unified search results
-----------------------
+Unified vs. bucketed search results
+-----------------------------------
 
 We're in the process of switching from `bucketed` search results where
 the different kinds of results are shown in blocks (e.g. all the kb
 results, then all the support forum results, ...) to `unified` search
 results where all the results are mixed together and sorted by score.
 
-To access unified search results, add ``esunified=1`` to the end of
-the url querystring.
+Unified search results aren't shown by default. To access unified
+search results, add ``esunified=1`` to the end of the url querystring.
 
 e.g.
 
@@ -314,7 +314,7 @@ e.g.
 Scoring
 -------
 
-These are the defaults that apply to all searches:
+These are the default weights that apply to all searches:
 
 wiki (aka kb)::
 
@@ -349,28 +349,34 @@ the way things are scored.
 Filters
 -------
 
-We use a series of filters on tags, q_tags, and other properties of the
-documents like has_helpful, is_locked, is_archived, etc, In ElasticSearch,
-filters remove items from the result set, but don't affect the scoring.
+We use a series of filters on tags, q_tags, and other properties of
+the documents like `has_helpful`, `is_locked`, `is_archived`, etc.
+
+In ElasticSearch, filters remove items from the result set, but don't
+affect the scoring.
+
+We cannot apply weights to filtered fields.
 
 
-Front page search
------------------
+Regular search
+--------------
 
-A front page search is what happens when you start on the front page,
-enter in a search query in the search box, and click on the green
-arrow.
+A `regular` search is any search that doesn't start from the `Advanced
+Search` form.
 
-Front page search does the following:
+You could start a `regular` search from the front page or from the
+search form on any article page.
 
-1. searches only kb and questions
+Regular search does the following:
+
+1. searches only kb and support forums
 2. (filter) kb articles are tagged with the product (e.g. "desktop")
 3. (filter) kb articles must not be archived
 4. (filter) kb articles must be in Troubleshooting (10) and
    How-to (20) categories
-5. (filter) questions are tagged with the product (e.g. "desktop")
-6. (filter) questions must have an answer marked as helpful
-
+5. (filter) support forum posts tagged with the product
+   (e.g. "desktop")
+6. (filter) support forum posts must have an answer marked as helpful
 
 It scores as specified above.
 
@@ -378,7 +384,11 @@ It scores as specified above.
 Advanced search
 ---------------
 
-The advanced search form lines up with the filters applied.
+The `advanced` search is any search that starts from the `Advanced
+Search` form.
+
+The advanced search is defined by whatever you specify in the
+`Advanced Search` form.
 
 For example, if you search for knowledge base articles in the
 Troubleshooting category, then we add a filter where the result has to
@@ -388,13 +398,6 @@ be in the Troubleshooting category.
 Link to the Elastic Search code
 -------------------------------
 
-Here's a link to the search view in the master branch. This is what's
-on dev:
+Here's a link to the search view in the master branch:
 
 https://github.com/mozilla/kitsune/blob/master/apps/search/views.py
-
-
-Here's a link to the search view in the next branch. This is what's
-on staging:
-
-https://github.com/mozilla/kitsune/blob/next/apps/search/views.py

@@ -2,6 +2,7 @@ import json
 import re
 
 from django import forms
+from django.template.defaultfilters import slugify
 from django.utils.encoding import smart_str
 from django.utils.safestring import mark_safe
 
@@ -51,8 +52,15 @@ class DocumentForm(forms.ModelForm):
         # Quasi-kwargs:
         can_create_tags = kwargs.pop('can_create_tags', False)
         can_archive = kwargs.pop('can_archive', False)
+        initial_title = kwargs.pop('initial_title', '')
 
         super(DocumentForm, self).__init__(*args, **kwargs)
+
+        title_field = self.fields['title']
+        title_field.initial = initial_title
+
+        slug_field = self.fields['slug']
+        slug_field.initial = slugify(initial_title)
 
         # Set up tags field, which is instantiated deep within taggit:
         tags_field = self.fields['tags']

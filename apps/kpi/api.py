@@ -80,7 +80,7 @@ class SearchClickthroughMeta(object):
 
 
 class SearchClickthroughResource(CachedResource):
-    """Clickthrough ratio for Sphinx or Elastic searches for one period
+    """Clickthrough ratio for searches over one period
 
     Represents a ratio of {clicks of results}/{total searches} for one engine.
 
@@ -155,13 +155,6 @@ class SearchClickthroughResource(CachedResource):
     def get_resource_uri(self, bundle_or_obj):
         """Return a fake answer; we don't care, for now."""
         return ''
-
-
-class SphinxClickthroughResource(SearchClickthroughResource):
-    engine = 'sphinx'
-
-    class Meta(SearchClickthroughMeta):
-        resource_name = 'sphinx-clickthrough-rate'
 
 
 class ElasticClickthroughResource(SearchClickthroughResource):
