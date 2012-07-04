@@ -49,6 +49,7 @@
             initTitleAndSlugCheck();
             initPreValidation();
             initNeedsChange();
+            initSummaryCount();
 
             $('img.lazy').loadnow();
 
@@ -177,6 +178,24 @@
                    .prepopulate($(field.dependency_ids.join(',')),
                                 field.maxLength);
         });
+    }
+    
+    function initSummaryCount() {
+        var $summaryCount = $('#remaining-characters'),
+            $summaryBox = $('#id_summary'),
+            maxCount = $summaryCount.text(),
+            updateCount = function() {
+                var currentCount = $summaryBox.val().length;
+                if(maxCount - currentCount >= 0) {
+                    $summaryCount.text(maxCount - currentCount);
+                } else {
+                    $summaryCount.text(0);
+                    $summaryBox.val($summaryBox.val().substr(0, maxCount));
+                }
+            };
+        
+        updateCount();
+        $summaryBox.bind("input", updateCount);
     }
 
     /*
