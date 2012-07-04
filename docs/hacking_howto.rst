@@ -261,7 +261,7 @@ database settings. For example, using the settings above::
 To load the latest database schema, use ``scripts/schema.sql`` and
 ``schematic``::
 
-    $ mysql -u kitsune -p <YOUR_PASSWORD> < scripts/schema.sql
+    $ mysql -u kitsune -p kitsune < scripts/schema.sql
     $ ./vendor/src/schematic/schematic migrations/
 
 You'll now have an empty but up-to-date database!
