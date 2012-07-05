@@ -134,14 +134,14 @@
 #home-content .note,
 #doc-content .note {
    background: #F5F5FF;
-   color: #626266;
+   color: #282828;
    padding: .5em 1em;
 }
 
 #home-content .warning,
 #doc-content .warning {
    background: #fef0a7 url(../img/wiki/bkg.warning.png) repeat-y left top;
-   color: #666458;
+   color: #282828;
    padding: .5em 1em .5em 2em;
 }
 
