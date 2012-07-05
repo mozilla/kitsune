@@ -7,6 +7,7 @@ import time
 from django.conf import settings
 from django.contrib.sites.models import Site
 from django.http import HttpResponse, HttpResponseBadRequest
+from django.utils.html import escape
 from django.utils.http import urlquote
 from django.views.decorators.cache import cache_page
 
@@ -23,7 +24,7 @@ from questions.models import Question
 import search as constants
 from search.forms import SearchForm
 from search.es_utils import (ESTimeoutError, ESMaxRetryError, ESException,
-                             Sphilastic, F)
+                             Sphilastic, F, format_explanation)
 from sumo.utils import paginate, smart_int
 from wiki.models import Document
 import waffle
@@ -252,6 +253,9 @@ def search_with_es_unified(request, template=None):
 
     searcher = searcher.filter(final_filter)
 
+    if 'explain' in request.GET and request.GET['explain'] == '1':
+        searcher = searcher.explain()
+
     documents = ComposedList()
     try:
         cleaned_q = cleaned['q']
@@ -351,6 +355,8 @@ def search_with_es_unified(request, template=None):
             result['search_summary'] = summary
             result['rank'] = rank
             result['score'] = doc._score
+            result['explanation'] = escape(format_explanation(
+                    doc._explanation))
             results.append(result)
 
     except (ESTimeoutError, ESMaxRetryError, ESException), exc:
@@ -418,7 +424,7 @@ def search(request, template=None):
     """ES-specific search view"""
 
     if (waffle.flag_is_active(request, 'esunified') or
-        request.GET.get('esunified')):
+        request.GET.get('esunified') == '1'):
         return search_with_es_unified(request, template)
 
     start = time.time()

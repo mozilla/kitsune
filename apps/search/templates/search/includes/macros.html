@@ -3,7 +3,7 @@
 {% macro search_engine() -%}
   {# Must be imported with context #}
   <input type="hidden" name="e" value="{% if waffle.flag('esunified') %}un{% else %}es{% endif %}" />
-  {% if 'esunified' in request.GET and request.GET['esunified'] %}
+  {% if 'esunified' in request.GET and request.GET['esunified'] == '1' %}
     <input type="hidden" name="esunified" value="1" />
   {% endif %}
 {%- endmacro %}
