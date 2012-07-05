@@ -665,6 +665,8 @@ MINIFY_BUNDLES = {
 
 JAVA_BIN = '/usr/bin/java'
 
+LESS_BIN = 'lessc'
+
 #
 # Sessions
 SESSION_COOKIE_AGE = 4 * 7 * 24 * 60 * 60  # 4 weeks
