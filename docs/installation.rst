@@ -29,6 +29,8 @@ following things (in addition to Git, of course).
 
 * ``zlib`` and headers.
 
+* LESS
+
 * `Redis <http://redis.io>`_
 
 * Several Python packages. See `Installing the Packages`_.
@@ -169,6 +171,8 @@ For local development you will want to add the following settings::
 
     REDIS_BACKEND = REDIS_BACKENDS['default']
 
+    LESS_PREPROCESS = True
+
 
 Redis
 -----
@@ -258,6 +262,20 @@ files containing historical Firefox version data and write them within its
 package directory. To set this up, run this command to do the initial fetch::
 
     $ ./manage.py update_product_details
+
+
+LESS
+----
+
+To install LESS you will first need to `install Node.js and NPM
+<https://github.com/joyent/node/wiki/Installing-Node.js-via-package-manager>`_.
+
+Now install LESS using::
+
+    $ sudo npm install less
+
+Ensure that lessc (might be located at /usr/lib/node_modules/less/bin) is
+accessible on your PATH.
 
 
 Running redis
