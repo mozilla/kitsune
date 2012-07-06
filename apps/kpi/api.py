@@ -210,8 +210,8 @@ class VoteResource(CachedResource):
 
     def get_object_list(self, request):
         # Set up the queries for the data we need
-        qs_kb_votes = _qs_for(HelpfulVote)
-        qs_ans_votes = _qs_for(AnswerVote)
+        qs_kb_votes = _daily_qs_for(HelpfulVote)
+        qs_ans_votes = _daily_qs_for(AnswerVote)
 
         # Filter on helpful
         qs_kb_helpful_votes = qs_kb_votes.filter(helpful=True)
