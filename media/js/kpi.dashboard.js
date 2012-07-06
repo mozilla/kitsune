@@ -367,7 +367,7 @@ window.KpiDashboard = Backbone.View.extend({
             }]
         });
 
-        this.voteChartView = new BasicChartView({
+        this.voteChartView = new StockChartView({
             model: this.voteChart,
             title: gettext('Helpful Votes'),
             percent: true,
