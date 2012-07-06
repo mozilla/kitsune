@@ -25,7 +25,14 @@
 (function($, gettext, document){
 
 var Marky = {
-    createSimpleToolbar: function(toolbarSel, textareaSel, cannedResp) {
+    createSimpleToolbar: function(toolbarSel, textareaSel, options) {
+        var defaults = {
+            cannedResponses: false,
+            privateMessaging: false
+        };
+
+        var settings = $.extend({}, defaults, options);
+
         var SB = Marky.SimpleButton;
         var buttons = [
             new SB(gettext('Bold'), "'''", "'''", gettext('bold text'),
@@ -40,10 +47,15 @@ var Marky = {
             new SB(gettext('Bulleted List'), '* ', '',
                    gettext('Bulleted list item'), 'btn-ul', true)
         ];
-        if (cannedResp) {
+        if (settings.cannedResponses) {
             buttons.push(new Marky.Separator(),
                          new Marky.CannedResponsesButton());
         }
+        if(settings.privateMessaging) {
+            buttons.push(new Marky.Separator(),
+                         new Marky.QuoteButton());
+        }
+
         Marky.createCustomToolbar(toolbarSel, textareaSel, buttons);
     },
     createFullToolbar: function(toolbarSel, textareaSel) {
@@ -1073,6 +1085,23 @@ Marky.CannedResponsesButton.prototype = $.extend({}, Marky.SimpleButton.prototyp
         });
     }
 });
+
+/*
+ * The quote button helper
+ */
+Marky.QuoteButton = function() {
+    var name = gettext('Quote previous message...');
+    var previousContent = $('#read-message').attr('data-message-content');
+    var previousAuthor = $('.from a').text();
+    var previousAuthorLink = $('.from a').attr('href');
+    var quote = '[' + previousAuthorLink + ' ' + previousAuthor + ']' 
+                + gettext(' said') + '\r\n';
+    quote += '<blockquote>\r\n';
+    quote += previousContent + '\r\n';
+    quote += '</blockquote>\r\n';
+
+    return new Marky.SimpleButton(name, quote, '', '', 'btn-quote', true);
+}
 
 window.Marky = Marky;
 
