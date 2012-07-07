@@ -80,6 +80,7 @@ SUMO_LANGUAGES = (
     'ar',
     'as',
     'ast',
+    'be',
     'bg',
     'bn-BD',
     'bn-IN',
@@ -118,6 +119,7 @@ SUMO_LANGUAGES = (
     'km',
     'kn',
     'ko',
+    'lg',
     'lt',
     'mai',
     'mk',
@@ -130,6 +132,7 @@ SUMO_LANGUAGES = (
     'ne-NP',
     'nl',
     'no',
+    'nso',
     'pa-IN',
     'pl',
     'pt-BR',
@@ -141,6 +144,7 @@ SUMO_LANGUAGES = (
     'si',
     'sk',
     'sl',
+    'son',
     'sq',
     'sr-CYRL',
     'sr-LATN',
@@ -154,6 +158,7 @@ SUMO_LANGUAGES = (
     'vi',
     'zh-CN',
     'zh-TW',
+    'zu',
 )
 
 LANGUAGE_CHOICES = tuple([(i, LOCALES[i].native) for i in SUMO_LANGUAGES])
@@ -664,6 +669,8 @@ MINIFY_BUNDLES = {
 }
 
 JAVA_BIN = '/usr/bin/java'
+
+LESS_BIN = 'lessc'
 
 #
 # Sessions

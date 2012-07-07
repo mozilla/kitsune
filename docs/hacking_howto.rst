@@ -176,6 +176,8 @@ Start by creating a file named ``settings_local.py`` in the
 
     REDIS_BACKEND = REDIS_BACKENDS['default']
 
+    LESS_PREPROCESS = True
+
 Now you can copy and modify any settings from ``settings.py`` into
 ``settings_local.py`` and the value will override the default.
 
@@ -198,6 +200,20 @@ can start it and configure it to run on startup using::
        echo "flush_all" | nc localhost 11211
 
    Assuming you have memcache configured to listen to 11211.
+
+
+LESS
+----
+
+To install LESS you will first need to `install Node.js and NPM
+<https://github.com/joyent/node/wiki/Installing-Node.js-via-package-manager>`_.
+
+Now install LESS using::
+
+    $ sudo npm install less
+
+Ensure that lessc (might be located at /usr/lib/node_modules/less/bin) is
+accessible on your PATH.
 
 
 Running redis
@@ -261,7 +277,7 @@ database settings. For example, using the settings above::
 To load the latest database schema, use ``scripts/schema.sql`` and
 ``schematic``::
 
-    $ mysql -u kitsune -p <YOUR_PASSWORD> < scripts/schema.sql
+    $ mysql -u kitsune -p kitsune < scripts/schema.sql
     $ ./vendor/src/schematic/schematic migrations/
 
 You'll now have an empty but up-to-date database!

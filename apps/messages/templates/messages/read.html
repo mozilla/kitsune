@@ -6,7 +6,8 @@
 
 {% block content %}
   <article class="main">
-    <section id="read-message" class="message-view">
+    <section id="read-message" class="message-view"
+      data-message-content="{{ message.message }}">
       <h1>{{ title }}</h1>
       {{ inbox_message(message) }}
       {% if message.sender %}
