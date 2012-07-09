@@ -86,8 +86,7 @@
     // Is the question for FF on the desktop?
     // TODO: Stop duplicating with AAQSystemInfo.isDesktopFF.
     function isDesktopFF() {
-        return document.location.search.indexOf('product=desktop') >= 0 ||
-               document.location.search.indexOf('product=beta') >= 0;
+        return document.location.pathname.indexOf('desktop') >= 0;
     }
 
     /*
