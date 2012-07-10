@@ -116,8 +116,6 @@ def more_tweets(request):
 def landing(request):
     """Customer Care Landing page."""
 
-    twitter = request.twitter
-
     # Get a redis client
     redis = None
     try:
@@ -169,15 +167,22 @@ def landing(request):
         statsd.incr('customercare.stats.contributors.miss')
         contributor_stats = {}
 
+    try:
+        twitter_user = (request.twitter.api.auth.get_username() if
+                        request.twitter.authed else None)
+    except tweepy.TweepError:
+        # Bad oauth token. Create a new session so user re-auths.
+        twitter_user = None
+        request.twitter = twitter.Session()
+
     return jingo.render(request, 'customercare/landing.html', {
         'activity_stats': activity_stats,
         'contributor_stats': contributor_stats,
         'canned_responses': get_common_replies(request.locale),
         'tweets': _get_tweets(locale=request.locale,
                               https=request.is_secure()),
-        'authed': twitter.authed,
-        'twitter_user': (twitter.api.auth.get_username() if
-                         twitter.authed else None),
+        'authed': request.twitter.authed,
+        'twitter_user': twitter_user,
         'filters': FILTERS,
     })
 
