@@ -27,6 +27,7 @@
             initHaveThisProblemTooAjax();
             initEmailSubscribeAjax();
             initHelpfulVote();
+            initCrashIdLinking();
             new k.AjaxPreview($('#preview'));
         }
 
@@ -171,6 +172,41 @@
             e.preventDefault();
             $('#tag-filter').slideToggle('fast');  // CSS3: Y U NO TRANSITION TO `height: auto;`?
             $(this).toggleClass('off');
+        });
+    }
+
+    /*
+     * Links all crash IDs found in the passed HTML container elements
+     */
+    function linkCrashIds(container) {
+        if(!container) {
+            return;
+        }
+        var crashIDRegex = new RegExp("(bp-)?([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})", "g");
+        var crashStatsBase = "https://crash-stats.mozilla.com/report/index/";
+        var helpingWithCrashesArticle = "/kb/helping-crashes";
+        var iconPath = "/media/img/questions/icon.questionmark.png";
+        var crashReportContainer =
+            "<span class='crash-report'>" +
+            "<a href='" + crashStatsBase + "$2' target='_blank'>$2</a>" +
+            "<a href='" + helpingWithCrashesArticle + "' target='_blank'>" +
+            "<img src='" + iconPath + "'></img></a></span>";
+
+        container.html(
+            container.html().replace(crashIDRegex,
+                crashReportContainer));
+    }
+
+    // For testing purposes only:
+    k.linkCrashIds = linkCrashIds;
+
+    /*
+     * Initialize the automatic linking of crash IDs
+     */
+    function initCrashIdLinking() {
+        var postContents = $("#answers .content, #question .content, #more-system-details");
+        postContents.each(function() {
+            linkCrashIds($(this));
         });
     }
 

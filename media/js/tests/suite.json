@@ -4,6 +4,8 @@
         "js/libs/jquery.selectbox-1.2.js",
         "js/libs/jquery.mockjax.js",
         "js/browserdetect.js",
+        "js/markup.js",
+        "js/questions.js",
         "js/showfor.js",
         "js/libs/jstestnet.js",
         "js/testutils.js",
