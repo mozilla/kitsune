@@ -569,6 +569,7 @@ class UntranslatedReadout(Readout):
             'translated.id IS NULL AND parent.is_localizable AND '
             'parent.category in (10, 20, 60) AND '
             'parent.locale=%s AND NOT parent.is_archived '
+            'AND wiki_revision.content NOT LIKE "REDIRECT%%" '
             + self._order_clause() + self._limit_clause(max),
             (self.locale, LAST_30_DAYS, settings.WIKI_DEFAULT_LANGUAGE))
 
