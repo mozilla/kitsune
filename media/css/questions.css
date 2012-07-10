@@ -1072,6 +1072,16 @@ ol.answers form.report {
     position: relative;
 }
 
+.crash-report {
+    display: inline-block;
+}
+
+.crash-report img {
+    left: 2px;
+    position: relative;
+    top: 3px;
+}
+
 /* reply to question */
 #answer-preview,
 #question-reply {
