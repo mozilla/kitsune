@@ -114,6 +114,7 @@
             <div class="localized">
               <h3><label for="{{ revision_form.summary.auto_id }}" title="{{ revision_form.summary.help_text }}">{{ _('Search result summary in {locale}:')|f(locale=language) }}</label></h3>
               {{ revision_form.summary|safe }}
+              <p><span id="remaining-characters">{{ revision_form.summary.field.max_length }}</span> {{_('characters remaining.') }}</p>
             </div>
           </li>
         </ul>
