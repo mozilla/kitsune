@@ -272,3 +272,24 @@ class VoteTests(TestCase):
         assert 'confusing' in survey
         assert 'too-long' in survey
         eq_('lorem ipsum dolor', survey['comment'])
+
+    def test_unhelpful_truncation(self):
+        """Give helpful_vote a survey that is too long.
+
+        It should be truncated safely, instead of generating bad JSON.
+        """
+        vote = HelpfulVote(revision=revision(save=True))
+        vote.save()
+
+        too_long_comment = ('lorem ipsum' * 100) + 'bad data'
+
+        response = self.client.post(reverse('wiki.unhelpful_survey'),
+                                    {'vote_id': vote.id,
+                                     'button': 'Submit',
+                                     'comment': too_long_comment})
+
+        vote_meta = vote.metadata.all()[0]
+        # Will fail if it is not proper json
+        survey = json.loads(vote_meta.value)
+        # Make sure the right thing was truncated
+        assert 'bad data' not in survey['comment']
