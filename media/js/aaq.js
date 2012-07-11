@@ -105,12 +105,11 @@ AAQSystemInfo.prototype = {
     },
     isDesktopFF: function() {
         // Is the question for FF on the desktop?
-        return document.location.search.indexOf('product=beta') >= 0 ||
-               document.location.search.indexOf('product=desktop') >= 0;
+        return document.location.pathname.indexOf('desktop') >= 0;
     },
     isMobileFF: function() {
         // Is the question for FF on mobile?
-        return document.location.search.indexOf('product=mobile') >= 0;
+        return document.location.pathname.indexOf('mobile') >= 0;
     }
 };
 

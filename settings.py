@@ -284,6 +284,7 @@ MIDDLEWARE_CLASSES = (
     'commonware.middleware.ScrubRequestOnException',
     'django_arecibo.middleware.AreciboMiddlewareCelery',
     'commonware.response.middleware.GraphiteRequestTimingMiddleware',
+    'waffle.middleware.WaffleMiddleware',
 )
 
 # Auth

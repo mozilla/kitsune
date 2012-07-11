@@ -367,18 +367,26 @@ window.KpiDashboard = Backbone.View.extend({
             }]
         });
 
-        this.voteChartView = new BasicChartView({
+        this.voteChartView = new StockChartView({
             model: this.voteChart,
             title: gettext('Helpful Votes'),
             percent: true,
             series: [{
                 name: gettext('Article Votes: % Helpful'),
                 numerator: 'kb_helpful',
-                denominator: 'kb_votes'
+                denominator: 'kb_votes',
+                tooltip: {
+                  ySuffix: '%',
+                  yDecimals: 1
+                }
             }, {
                 name: gettext('Answer Votes: % Helpful'),
                 numerator: 'ans_helpful',
-                denominator: 'ans_votes'
+                denominator: 'ans_votes',
+                tooltip: {
+                  ySuffix: '%',
+                  yDecimals: 1
+                }
             }/* TODO: Leave this out for now, it overlaps the article votes.
             , {
                 name: 'Total Votes: % Helpful',
