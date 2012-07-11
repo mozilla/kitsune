@@ -75,12 +75,6 @@ In short,::
     sudo ln -s /usr/lib/`uname -i`-linux-gnu/libjpeg.so /usr/lib/
     sudo ln -s /usr/lib/`uname -i`-linux-gnu/libz.so /usr/lib/
 
-Additionally, you will need to download and install `Java 6
-<http://java.com/en/download/manual_v6.jsp>`_ manually. You will then have to
-set the environment variable ``$JAVA_HOME`` to point to the Java installation,
-so Elastic Search can find it.
-
-For more details on Elastic Search see :ref:`search-chapter`.
 
 Additional Requirements
 -----------------------

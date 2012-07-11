@@ -63,13 +63,6 @@ For the minimum installation, you'll need the following:
 * libjpeg and headers
 * zlib and headers
 
-For a more complete installation that passes all tests, and skips only a
-minimal amount, you will also need
-
-* Redis
-* Java 6
-* Elastic Search
-
 Installation for these is very system dependent. Using a package
 manager, like yum, aptitude, or brew, is encouraged.
 
@@ -81,26 +74,19 @@ These ppas and packages should satisify the above requirements.::
     $ apt-get add-apt-repository ppa:fkrull/deadsnakes # For Python 2.6
     $ apt-get add-apt-repository ppa:chris-lea/node.js # For Node.js
     $ apt-get update
-    $ apt-get install mysql-server mysql-client libxml2 libxml2-dev memcached \
-        redis-server sudo apt-get install libmysqlclient-dev libxslt1.1 \
-        libxslt1-dev python-software-properties libjpeg-dev python2.6 \
-        python2.6-dev nodejs npm
+    $ apt-get install mysql-server mysql-client libxml2 libxml2-dev \
+        memcached redis-server libmysqlclient-dev libxslt1.1 libxslt1-dev \
+        python-software-properties libjpeg-dev python2.6 python2.6-dev \
+        nodejs npm
 
 To get PIL to be able to see the ``libjpeg`` and ``zlib`` libraries, follow the
 steps detailed `here
 <http://www.sandersnewmedia.com/why/2012/04/16/installing-pil-virtualenv-ubuntu-1204-precise-pangolin/>`_.
 In short,::
 
-    sudo ln -s /usr/lib/`uname -i`-linux-gnu/libfreetype.so /usr/lib/
-    sudo ln -s /usr/lib/`uname -i`-linux-gnu/libjpeg.so /usr/lib/
-    sudo ln -s /usr/lib/`uname -i`-linux-gnu/libz.so /usr/lib/
-
-If you want to install ElasticSearch, you will need to download and install
-`Java 6 <http://java.com/en/download/manual_v6.jsp>`_ manually. You will then
-have to set the environment variable ``$JAVA_HOME`` to point to the Java
-installation, so Elastic Search can find it.
-
-For more details on Elastic Search see :ref:`search-chapter`.
+    $ sudo ln -s /usr/lib/`uname -i`-linux-gnu/libfreetype.so /usr/lib/
+    $ sudo ln -s /usr/lib/`uname -i`-linux-gnu/libjpeg.so /usr/lib/
+    $ sudo ln -s /usr/lib/`uname -i`-linux-gnu/libz.so /usr/lib/
 
 
 Getting the Source
@@ -139,10 +125,12 @@ If you want to use your system's package manager, you'll need to go
 through ``requirements/compiled.txt`` and install the dependencies by
 hand.
 
-Make sure that you have ``libjpeg``, ``zlib``, and their development headers
-installed at this point, or else PIL won't compile with JPEG and PNG support.
-If you already installed PIL without support, then you will have to remove it
-and reinstall it so that it will recompile.
+.. Note::
+
+    Make sure that you have ``libjpeg``, ``zlib``, and their development
+    headers installed at this point, or else PIL won't compile with JPEG and
+    PNG support.  If you already installed PIL without support, then you will
+    have to remove it and reinstall it so that it will recompile.
 
 
 Python Packages
@@ -212,12 +200,6 @@ Start by creating a file named ``settings_local.py`` in the
             'karma': 'redis://localhost:6381?socket_timeout=0.5&db=0',
             'helpfulvotes': 'redis://localhost:6379?socket_timeout=0.\
                 5&db=1',
-        }
-
-    REDIS_TEST_BACKENDS = {
-            'default': 'redis://localhost:6383?socket_timeout=0.5&db=0',
-            'karma': 'redis://localhost:6383?socket_timeout=0.5&db=1',
-            'helpfulvotes': 'redis://localhost:6383?socket_timeout=0.5&db=2',
         }
 
     REDIS_BACKEND = REDIS_BACKENDS['default']
