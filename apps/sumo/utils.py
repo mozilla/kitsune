@@ -1,3 +1,4 @@
+import json
 import urlparse
 
 from django.conf import settings
@@ -134,3 +135,23 @@ def get_next_url(request):
             url = None
 
     return url
+
+
+def truncated_json_dumps(obj, max_length, key=None):
+    """Dump and object to JSON, and make sure the result is short enough.
+
+    If ``key`` is not ``None``, then the truncation will happen by truncating
+    ``obj[key]``. If ``key`` is not specifed, then the longest value in the
+    generated JSON will be truncated.
+    """
+    orig = json.dumps(obj)
+    diff = len(orig) - max_length
+    if diff < 0:
+        return orig
+    # Make a copy, so that we don't modify the original
+    dupe = json.loads(orig)
+    if key is None:
+        # Choose the longest value in dupe to truncate
+        key = max((len(dupe[k]), k) for k in dupe.keys())[1]
+    dupe[key] = dupe[key][:-diff]
+    return json.dumps(dupe)
