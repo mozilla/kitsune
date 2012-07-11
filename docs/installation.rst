@@ -8,7 +8,9 @@ Requirements
 ============
 
 To run everything and make all the tests pass locally, you'll need the
-following things (in addition to Git, of course).
+following things.
+
+* Git
 
 * Python 2.6.
 
@@ -51,6 +53,34 @@ yum, aptitude, or brew, is encouraged.
 
    Or something along those lines depending on how your system is set up.
 
+Ubuntu 12.04
+------------
+
+These ppas and packages should satisify the above requirements.::
+
+    $ apt-get add-apt-repository ppa:fkrull/deadsnakes # For Python 2.6
+    $ apt-get add-apt-repository ppa:chris-lea/node.js # For Node.js
+    $ apt-get update
+    $ apt-get install mysql-server mysql-client libxml2 libxml2-dev memcached \
+        redis-server sudo apt-get install libmysqlclient-dev libxslt1.1 \
+        libxslt1-dev python-software-properties libjpeg-dev python2.6 \
+        python2.6-dev nodejs npm
+
+To get PIL to be able to see the ``libjpeg`` and ``zlib`` libraries, follow the
+steps detailed `here
+<http://www.sandersnewmedia.com/why/2012/04/16/installing-pil-virtualenv-ubuntu-1204-precise-pangolin/>`_.
+In short,::
+
+    sudo ln -s /usr/lib/`uname -i`-linux-gnu/libfreetype.so /usr/lib/
+    sudo ln -s /usr/lib/`uname -i`-linux-gnu/libjpeg.so /usr/lib/
+    sudo ln -s /usr/lib/`uname -i`-linux-gnu/libz.so /usr/lib/
+
+Additionally, you will need to download and install `Java 6
+<http://java.com/en/download/manual_v6.jsp>`_ manually. You will then have to
+set the environment variable ``$JAVA_HOME`` to point to the Java installation,
+so Elastic Search can find it.
+
+For more details on Elastic Search see :ref:`search-chapter`.
 
 Additional Requirements
 -----------------------
@@ -169,6 +199,12 @@ For local development you will want to add the following settings::
                 5&db=1',
         }
 
+    REDIS_TEST_BACKENDS = {
+            'default': 'redis://localhost:6383?socket_timeout=0.5&db=0',
+            'karma': 'redis://localhost:6383?socket_timeout=0.5&db=1',
+            'helpfulvotes': 'redis://localhost:6383?socket_timeout=0.5&db=2',
+        }
+
     REDIS_BACKEND = REDIS_BACKENDS['default']
 
     LESS_PREPROCESS = True
@@ -176,10 +212,6 @@ For local development you will want to add the following settings::
 
 Redis
 -----
-
-You need to copy the ``REDIS_BACKEND`` section from ``settings.py``
-into your ``settings_local.py``.  After doing that, uncomment the
-three lines in each section.
 
 There are three ``.conf`` files in ``configs/redis/``.  One is for
 testing and is used in ``settings_test.py``.  The other two are used
@@ -232,8 +264,7 @@ settings. For example, using the settings above::
 
     $ mysql -u root -p
     mysql> CREATE DATABASE kitsune;
-    mysql> GRANT ALL ON kitsune.* TO kitsune@localhost IDENTIFIED BY \
-        'password';
+    mysql> GRANT ALL ON kitsune.* TO kitsune@localhost IDENTIFIED BY 'password';
 
 To load the latest database schema, use ``scripts/schema.sql`` and
 ``schematic``::
@@ -340,10 +371,12 @@ Running the Tests
 A great way to check that everything really is working is to run the test
 suite. You'll need to add an extra grant in MySQL for your database user::
 
-    GRANT ALL ON test_NAME.* TO USER@localhost;
+    $ mysql -u root -p
+    mysql> CREATE DATABASE test_kitsune;
+    mysql> GRANT ALL ON test_kitsune.* TO kitsune@localhost;
 
-Where ``NAME`` and ``USER`` are the same as the values in your database
-configuration.
+(assuming that you called your normal database ``kitsune``, and are using the
+username ``kitsune``)
 
 The test suite will create and use this database, to keep any data in your
 development database safe from tests.
