@@ -193,12 +193,6 @@ For local development you will want to add the following settings::
                 5&db=1',
         }
 
-    REDIS_TEST_BACKENDS = {
-            'default': 'redis://localhost:6383?socket_timeout=0.5&db=0',
-            'karma': 'redis://localhost:6383?socket_timeout=0.5&db=1',
-            'helpfulvotes': 'redis://localhost:6383?socket_timeout=0.5&db=2',
-        }
-
     REDIS_BACKEND = REDIS_BACKENDS['default']
 
     LESS_PREPROCESS = True
