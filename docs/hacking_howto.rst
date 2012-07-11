@@ -42,11 +42,10 @@ so if you run into problems, let us know.
 
 Linux
 -----
-
-We know these work in Debian Testing (Wheezy) and will probably work
-in Debian derivatives like Ubuntu. It's likely that you'll encounter
-some steps that are slightly different. If you run into problems, let
-us know.
+We know these work in Debian Testing (Wheezy) and have been known to work in
+Ubuntu 12.04. They will probably also work on other version and derivatives of
+Debian. It's likely that you'll encounter some steps that are slightly
+different. If you run into problems, let us know.
 
 
 Requirements
@@ -64,8 +63,44 @@ For the minimum installation, you'll need the following:
 * libjpeg and headers
 * zlib and headers
 
+For a more complete installation that passes all tests, and skips only a
+minimal amount, you will also need
+
+* Redis
+* Java 6
+* Elastic Search
+
 Installation for these is very system dependent. Using a package
 manager, like yum, aptitude, or brew, is encouraged.
+
+Ubuntu 12.04
+------------
+
+These ppas and packages should satisify the above requirements.::
+
+    $ apt-get add-apt-repository ppa:fkrull/deadsnakes # For Python 2.6
+    $ apt-get add-apt-repository ppa:chris-lea/node.js # For Node.js
+    $ apt-get update
+    $ apt-get install mysql-server mysql-client libxml2 libxml2-dev memcached \
+        redis-server sudo apt-get install libmysqlclient-dev libxslt1.1 \
+        libxslt1-dev python-software-properties libjpeg-dev python2.6 \
+        python2.6-dev nodejs npm
+
+To get PIL to be able to see the ``libjpeg`` and ``zlib`` libraries, follow the
+steps detailed `here
+<http://www.sandersnewmedia.com/why/2012/04/16/installing-pil-virtualenv-ubuntu-1204-precise-pangolin/>`_.
+In short,::
+
+    sudo ln -s /usr/lib/`uname -i`-linux-gnu/libfreetype.so /usr/lib/
+    sudo ln -s /usr/lib/`uname -i`-linux-gnu/libjpeg.so /usr/lib/
+    sudo ln -s /usr/lib/`uname -i`-linux-gnu/libz.so /usr/lib/
+
+If you want to install ElasticSearch, you will need to download and install
+`Java 6 <http://java.com/en/download/manual_v6.jsp>`_ manually. You will then
+have to set the environment variable ``$JAVA_HOME`` to point to the Java
+installation, so Elastic Search can find it.
+
+For more details on Elastic Search see :ref:`search-chapter`.
 
 
 Getting the Source
@@ -103,6 +138,11 @@ To use pip, do this::
 If you want to use your system's package manager, you'll need to go
 through ``requirements/compiled.txt`` and install the dependencies by
 hand.
+
+Make sure that you have ``libjpeg``, ``zlib``, and their development headers
+installed at this point, or else PIL won't compile with JPEG and PNG support.
+If you already installed PIL without support, then you will have to remove it
+and reinstall it so that it will recompile.
 
 
 Python Packages
@@ -174,6 +214,12 @@ Start by creating a file named ``settings_local.py`` in the
                 5&db=1',
         }
 
+    REDIS_TEST_BACKENDS = {
+            'default': 'redis://localhost:6383?socket_timeout=0.5&db=0',
+            'karma': 'redis://localhost:6383?socket_timeout=0.5&db=1',
+            'helpfulvotes': 'redis://localhost:6383?socket_timeout=0.5&db=2',
+        }
+
     REDIS_BACKEND = REDIS_BACKENDS['default']
 
     LESS_PREPROCESS = True
@@ -216,7 +262,7 @@ Ensure that lessc (might be located at /usr/lib/node_modules/less/bin) is
 accessible on your PATH.
 
 
-Running redis
+Running Redis
 -------------
 
 This script runs all three servers---one for each configuration.
@@ -323,10 +369,11 @@ test suite. You'll need to add an extra grant in MySQL for your
 database user::
 
     $ mysql -u root -p
-    mysql> GRANT ALL ON test_NAME.* TO USER@localhost;
+    mysql> CREATE DATABASE test_kitsune;
+    mysql> GRANT ALL ON test_kitsune.* TO kitsune@localhost;
 
-Where ``NAME`` and ``USER`` are the same as the values in your
-database configuration.
+(assuming that you called your normal database ``kitsune``, and are using the
+username ``kitsune``)
 
 The test suite will create and use this database, to keep any data in
 your development database safe from tests.
