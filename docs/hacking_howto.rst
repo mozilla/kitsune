@@ -42,10 +42,11 @@ so if you run into problems, let us know.
 
 Linux
 -----
-We know these work in Debian Testing (Wheezy) and have been known to work in
-Ubuntu 12.04. They will probably also work on other version and derivatives of
-Debian. It's likely that you'll encounter some steps that are slightly
-different. If you run into problems, let us know.
+
+We know these work in Debian Testing (Wheezy) and will probably work
+in Debian derivatives like Ubuntu. It's likely that you'll encounter
+some steps that are slightly different. If you run into problems, let
+us know.
 
 
 Requirements
