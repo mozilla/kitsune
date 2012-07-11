@@ -26,7 +26,7 @@ from tower import ugettext as _
 from access.decorators import permission_required, login_required
 from sumo.helpers import urlparams
 from sumo.urlresolvers import reverse
-from sumo.utils import paginate, smart_int, get_next_url
+from sumo.utils import paginate, smart_int, get_next_url, truncated_json_dumps
 from wiki import DOCUMENTS_PER_PAGE
 from wiki.events import (EditDocumentEvent, ReviewableRevisionInLocaleEvent,
                          ApproveRevisionInLocaleEvent, ApprovedOrReadyUnion,
@@ -770,8 +770,8 @@ def unhelpful_survey(request):
     survey.pop('vote_id')
     survey.pop('button')
 
-    # Save the survey in JSON format.
-    vote.add_metadata('survey', json.dumps(survey))
+    # Save the survey in JSON format, taking care not to exceed 1000 chars.
+    vote.add_metadata('survey', truncated_json_dumps(survey, 1000, 'comment'))
 
     return HttpResponse(
         json.dumps({'message': _('Thanks for making us better!')}))

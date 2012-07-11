@@ -11,9 +11,10 @@ from questions.tests import tags_eq
 from sumo.tests import TestCase, LocalizingClient
 from sumo.urlresolvers import reverse
 from users.tests import user, add_permission
-from wiki.models import Document, HelpfulVote
+from wiki.models import Document
 from wiki.config import VersionMetadata
-from wiki.tests import doc_rev, document, new_document_data, revision
+from wiki.tests import (doc_rev, document, helpful_vote, new_document_data,
+                        revision)
 from wiki.views import _version_groups
 
 
@@ -252,8 +253,7 @@ class VoteTests(TestCase):
 
     def test_unhelpful_survey(self):
         """The unhelpful survey is stored as vote metadata"""
-        vote = HelpfulVote(revision=revision(save=True))
-        vote.save()
+        vote = helpful_vote(save=True)
         response = self.client.post(reverse('wiki.unhelpful_survey'),
                                     {'vote_id': vote.id,
                                      'button': 'Submit',
@@ -272,3 +272,20 @@ class VoteTests(TestCase):
         assert 'confusing' in survey
         assert 'too-long' in survey
         eq_('lorem ipsum dolor', survey['comment'])
+
+    def test_unhelpful_truncation(self):
+        """Give helpful_vote a survey that is too long.
+
+        It should be truncated safely, instead of generating bad JSON.
+        """
+        vote = helpful_vote(save=True)
+        too_long_comment = ('lorem ipsum' * 100) + 'bad data'
+        response = self.client.post(reverse('wiki.unhelpful_survey'),
+                                    {'vote_id': vote.id,
+                                     'button': 'Submit',
+                                     'comment': too_long_comment})
+        vote_meta = vote.metadata.all()[0]
+        # Will fail if it is not proper json, ie: bad truncation happened.
+        survey = json.loads(vote_meta.value)
+        # Make sure the right value was truncated.
+        assert 'bad data' not in survey['comment']

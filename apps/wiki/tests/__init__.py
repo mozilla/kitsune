@@ -55,7 +55,8 @@ def revision(**kwargs):
 
 @with_save
 def helpful_vote(**kwargs):
-    defaults = dict(created=datetime.now(), helpful=False)
+    r = kwargs.pop('revision', None) or revision(save=True)
+    defaults = {'created': datetime.now(), 'helpful': False, 'revision': r}
     defaults.update(kwargs)
     return HelpfulVote(**defaults)
 
