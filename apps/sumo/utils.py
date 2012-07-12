@@ -138,7 +138,7 @@ def get_next_url(request):
 
 
 def truncated_json_dumps(obj, max_length, key=None):
-    """Dump and object to JSON, and make sure the result is short enough.
+    """Dump an object to JSON, and make sure the result is short enough.
 
     If ``key`` is not ``None``, then the truncation will happen by truncating
     ``obj[key]``. If ``key`` is not specifed, then the longest value in the

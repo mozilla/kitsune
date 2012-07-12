@@ -116,7 +116,7 @@ AjaxVote.prototype = {
     showSurvey: function(survey, $container) {
         var self = this,
             $survey = $(survey),
-            $summaryCount,
+            $commentCount,
             $commentBox,
             maxCount;
 
@@ -128,15 +128,15 @@ AjaxVote.prototype = {
         }
 
         $commentBox = $survey.find('textarea')
-        $summaryCount = $survey.find('#remaining-characters');
-        maxCount = parseInt($summaryCount.text());
+        $commentCount = $survey.find('#remaining-characters');
+        maxCount = parseInt($commentCount.text());
 
-        $commentBox.bind("change", function() {
+        $commentBox.bind("input", function() {
             var currentCount = $commentBox.val().length;
             if (maxCount - currentCount >= 0) {
-                $summaryCount.text(maxCount - currentCount);
+                $commentCount.text(maxCount - currentCount);
             } else {
-                $summaryCount.text(0);
+                $commentCount.text(0);
                 $commentBox.val($commentBox.val().substr(0, maxCount));
             }
         });

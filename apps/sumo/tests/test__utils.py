@@ -62,7 +62,7 @@ class JSONTests(TestCase):
         eq_(json.dumps(d), trunc)
 
     def test_truncated_no_key(self):
-        """Make sure truncation works as expected."""
+        """Make sure truncation works as expected when key is not specified."""
         d = {
             'foo': 'a long string that should be truncated',
             'bar': 'a shorter string'
@@ -73,7 +73,7 @@ class JSONTests(TestCase):
         eq_(obj['foo'], 'a long string tha')
 
     def test_truncated_key(self):
-        """Make sure truncation works as expected."""
+        """Make sure truncation works as expected when key is specified."""
         d = {'foo': 'a long string that should be truncated'}
         trunc = truncated_json_dumps(d, 30, 'foo')
         obj = json.loads(trunc)

@@ -770,9 +770,8 @@ def unhelpful_survey(request):
     survey.pop('vote_id')
     survey.pop('button')
 
-    # Save the survey in JSON format.
+    # Save the survey in JSON format, taking care not to exceed 1000 chars.
     vote.add_metadata('survey', truncated_json_dumps(survey, 1000, 'comment'))
-    #vote.add_metadata('survey', json.dumps(survey))
 
     return HttpResponse(
         json.dumps({'message': _('Thanks for making us better!')}))
