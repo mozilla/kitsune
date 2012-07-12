@@ -82,7 +82,7 @@ class HelpfulVotesGraphTests(TestCase):
         r.save()
 
         for x in range(0, 4):
-            _add_vote_in_past(r, 0, 15)
+            _add_vote_in_past(r, 0, 3)
 
         cache_most_unhelpful_kb_articles()
 
