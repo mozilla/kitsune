@@ -239,6 +239,10 @@ def index_view(request):
         [(cls._meta.db_table, cls) for cls in get_search_models()])
 
     if requested_bucket and requested_id:
+        # Nix whitespace because I keep accidentally picking up spaces
+        # when I copy and paste.
+        requested_id = requested_id.strip()
+
         # The user wants to see a specific item in the index, so we
         # attempt to fetch it from the index and show that
         # specifically.
