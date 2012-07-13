@@ -196,6 +196,11 @@ DB_LOCALIZE = {
             'comments': ['This is a karma title.'],
         }
     },
+    'products': {
+        'Product': {
+            'attrs': ['title', 'description'],
+        }
+    },
 }
 
 # Use the real robots.txt?
@@ -361,6 +366,7 @@ INSTALLED_APPS = (
     'karma',
     'tags',
     'kpi',
+    'products',
 
     # Extra apps for testing.
     'django_nose',
