@@ -55,7 +55,7 @@ Requirements
 For the minimum installation, you'll need the following:
 
 * git
-* Python 2.6
+* Python 2.6 or 2.7
 * `pip <http://www.pip-installer.org/en/latest/>`_
 * MySQL server and client headers
 * Memcached Server

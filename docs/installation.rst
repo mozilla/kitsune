@@ -10,7 +10,7 @@ Requirements
 To run everything and make all the tests pass locally, you'll need the
 following things (in addition to Git, of course).
 
-* Python 2.6.
+* Python 2.6 or 2.7.
 
 * `setuptools <http://pypi.python.org/pypi/setuptools#downloads>`_
   or `pip <http://pip.openplans.org/>`_.
@@ -40,16 +40,6 @@ following things (in addition to Git, of course).
 
 Installation for these is very system dependent. Using a package manager, like
 yum, aptitude, or brew, is encouraged.
-
-
-.. Note::
-
-   Make sure you have ``python26`` in your path.  If not, create a
-   symbollic link for it::
-
-       ln -s /usr/bin/python /usr/bin/python26
-
-   Or something along those lines depending on how your system is set up.
 
 
 Additional Requirements
