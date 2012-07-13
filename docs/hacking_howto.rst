@@ -67,6 +67,28 @@ For the minimum installation, you'll need the following:
 Installation for these is very system dependent. Using a package
 manager, like yum, aptitude, or brew, is encouraged.
 
+Ubuntu 12.04
+------------
+
+These ppas and packages should satisify the above requirements.::
+
+    $ apt-get add-apt-repository ppa:fkrull/deadsnakes # For Python 2.6
+    $ apt-get add-apt-repository ppa:chris-lea/node.js # For Node.js
+    $ apt-get update
+    $ apt-get install mysql-server mysql-client libxml2 libxml2-dev \
+        memcached redis-server libmysqlclient-dev libxslt1.1 libxslt1-dev \
+        python-software-properties libjpeg-dev python2.6 python2.6-dev \
+        nodejs npm
+
+To get PIL to be able to see the ``libjpeg`` and ``zlib`` libraries, follow the
+steps detailed `here
+<http://www.sandersnewmedia.com/why/2012/04/16/installing-pil-virtualenv-ubuntu-1204-precise-pangolin/>`_.
+In short,::
+
+    $ sudo ln -s /usr/lib/`uname -i`-linux-gnu/libfreetype.so /usr/lib/
+    $ sudo ln -s /usr/lib/`uname -i`-linux-gnu/libjpeg.so /usr/lib/
+    $ sudo ln -s /usr/lib/`uname -i`-linux-gnu/libz.so /usr/lib/
+
 
 Getting the Source
 ==================
@@ -103,6 +125,13 @@ To use pip, do this::
 If you want to use your system's package manager, you'll need to go
 through ``requirements/compiled.txt`` and install the dependencies by
 hand.
+
+.. Note::
+
+    Make sure that you have ``libjpeg``, ``zlib``, and their development
+    headers installed at this point, or else PIL won't compile with JPEG and
+    PNG support.  If you already installed PIL without support, then you will
+    have to remove it and reinstall it so that it will recompile.
 
 
 Python Packages
@@ -216,7 +245,7 @@ Ensure that lessc (might be located at /usr/lib/node_modules/less/bin) is
 accessible on your PATH.
 
 
-Running redis
+Running Redis
 -------------
 
 This script runs all three servers---one for each configuration.
@@ -323,10 +352,11 @@ test suite. You'll need to add an extra grant in MySQL for your
 database user::
 
     $ mysql -u root -p
-    mysql> GRANT ALL ON test_NAME.* TO USER@localhost;
+    mysql> CREATE DATABASE test_kitsune;
+    mysql> GRANT ALL ON test_kitsune.* TO kitsune@localhost;
 
-Where ``NAME`` and ``USER`` are the same as the values in your
-database configuration.
+(assuming that you called your normal database ``kitsune``, and are using the
+username ``kitsune``)
 
 The test suite will create and use this database, to keep any data in
 your development database safe from tests.
