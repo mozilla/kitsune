@@ -137,21 +137,25 @@ def get_next_url(request):
     return url
 
 
-def truncated_json_dumps(obj, max_length, key=None):
-    """Dump an object to JSON, and make sure the result is short enough.
+class TruncationException(Exception):
+    pass
 
-    If ``key`` is not ``None``, then the truncation will happen by truncating
-    ``obj[key]``. If ``key`` is not specifed, then the longest value in the
-    generated JSON will be truncated.
+
+def truncated_json_dumps(obj, max_length, key):
+    """Dump an object to JSON, and ensure the dump is less than ``max_length``.
+
+    The truncation will happen by truncating ``obj[key]``. If ``key`` is not
+    long enough to achieve the goal, an exception will be thrown.
     """
     orig = json.dumps(obj)
     diff = len(orig) - max_length
     if diff < 0:
+        # No need to truncate
         return orig
     # Make a copy, so that we don't modify the original
     dupe = json.loads(orig)
-    if key is None:
-        # Choose the longest value in dupe to truncate
-        key = max((len(dupe[k]), k) for k in dupe.keys())[1]
+    if len(dupe[key]) < diff:
+        raise TruncationException("Can't truncate enough to satisfy "
+                                  "`max_length`.")
     dupe[key] = dupe[key][:-diff]
     return json.dumps(dupe)
