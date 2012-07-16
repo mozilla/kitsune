@@ -14,7 +14,10 @@ class Product(ModelBase):
     # lists.
     display_order = models.IntegerField()
 
-    slug = models.CharField(max_length=255, db_index=True)
+    # Whether or not this product is visible in the ui to users.
+    visible = models.BooleanField(default=False)
+
+    slug = models.SlugField()
 
     class Meta(object):
         ordering = ['display_order']
@@ -25,4 +28,4 @@ class Product(ModelBase):
     @property
     def image_url(self):
         return os.path.join(
-            settings.MEDIA_URL, 'img', 'products', self.slug + '.png')
+            settings.STATIC_URL, 'img', 'products', self.slug + '.png')
