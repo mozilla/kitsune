@@ -53,6 +53,7 @@ class DocumentForm(forms.ModelForm):
         can_create_tags = kwargs.pop('can_create_tags', False)
         can_archive = kwargs.pop('can_archive', False)
         initial_title = kwargs.pop('initial_title', '')
+        initial_comment = kwargs.pop('initial_comment', '')
 
         super(DocumentForm, self).__init__(*args, **kwargs)
 
@@ -61,6 +62,9 @@ class DocumentForm(forms.ModelForm):
 
         slug_field = self.fields['slug']
         slug_field.initial = slugify(initial_title)
+
+        comment_field = self.fields['needs_change_comment']
+        comment_field.initial = initial_comment
 
         # Set up tags field, which is instantiated deep within taggit:
         tags_field = self.fields['tags']
