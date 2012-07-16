@@ -74,7 +74,7 @@ k = {};
         '>': '&gt;',
         "'": '&#39;',
         '"': '&quot;'
-    }
+    };
     k.safeString = function(str) {
         return str.replace(new RegExp('[&<>\'"]', 'g'),
                            function(m) { return UNSAFE_CHARS[m]; });
