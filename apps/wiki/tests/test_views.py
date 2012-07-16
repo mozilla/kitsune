@@ -205,6 +205,11 @@ class DocumentEditingTests(TestCase):
         assert not doc.needs_change
         eq_('', doc.needs_change_comment)
 
+    def test_initial_revision_comment(self):
+        url = reverse('wiki.new_document', force_locale=True)
+
+        resp = self.client.get(url)
+        assert 'first revision' in resp.content
 
 class AddRemoveContributorTests(TestCase):
     def setUp(self):
