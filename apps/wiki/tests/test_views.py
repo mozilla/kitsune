@@ -13,7 +13,7 @@ from sumo.urlresolvers import reverse
 from users.tests import user, add_permission
 from wiki.models import Document
 from wiki.config import VersionMetadata
-from wiki.tests import (doc_rev, document, helpfulvote, new_document_data,
+from wiki.tests import (doc_rev, document, helpful_vote, new_document_data,
                         revision)
 from wiki.views import _version_groups
 
@@ -253,7 +253,7 @@ class VoteTests(TestCase):
 
     def test_unhelpful_survey(self):
         """The unhelpful survey is stored as vote metadata"""
-        vote = helpfulvote(save=True)
+        vote = helpful_vote(save=True)
         response = self.client.post(reverse('wiki.unhelpful_survey'),
                                     {'vote_id': vote.id,
                                      'button': 'Submit',
@@ -278,7 +278,7 @@ class VoteTests(TestCase):
 
         It should be truncated safely, instead of generating bad JSON.
         """
-        vote = helpfulvote(save=True)
+        vote = helpful_vote(save=True)
         too_long_comment = ('lorem ipsum' * 100) + 'bad data'
         response = self.client.post(reverse('wiki.unhelpful_survey'),
                                     {'vote_id': vote.id,
