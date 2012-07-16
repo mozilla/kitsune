@@ -49,6 +49,7 @@ AAQSystemInfo.prototype = {
                 ['Windows Server 2003', /(Windows NT 5.2)/i],
                 ['Windows Vista', /(Windows NT 6.0)/i],
                 ['Windows 7', /(Windows NT 6.1)/i],
+                ['Windows 8', /(Windows NT 6.2)/i],
                 ['Windows NT 4.0', /(Windows NT 4.0)|(WinNT4.0)|(WinNT)|(Windows NT)/i],
                 ['Windows ME', /Windows ME/i],
                 ['Windows', /Windows/i],
