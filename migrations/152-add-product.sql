@@ -3,7 +3,8 @@ CREATE TABLE `products_product` (
     `title` varchar(255) NOT NULL,
     `description` longtext NOT NULL,
     `display_order` integer NOT NULL,
-    `slug` varchar(255) NOT NULL
+    `visible` bool NOT NULL,
+    `slug` varchar(50) NOT NULL
 ) ENGINE=InnoDB CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 CREATE INDEX `products_product_7be581d8` ON `products_product` (`title`);
