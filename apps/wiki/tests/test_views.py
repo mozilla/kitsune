@@ -208,7 +208,7 @@ class DocumentEditingTests(TestCase):
         url = reverse('wiki.new_document', force_locale=True)
 
         resp = self.client.get(url)
-        assert resp.content.find('first revision') != -1
+        assert 'first revision' in resp.content
 
 class AddRemoveContributorTests(TestCase):
     def setUp(self):
