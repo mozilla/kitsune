@@ -141,13 +141,19 @@ class TruncationException(Exception):
     pass
 
 
-def truncated_json_dumps(obj, max_length, key):
+def truncated_json_dumps(obj, max_length, key, ensure_ascii=False):
     """Dump an object to JSON, and ensure the dump is less than ``max_length``.
 
     The truncation will happen by truncating ``obj[key]``. If ``key`` is not
     long enough to achieve the goal, an exception will be thrown.
+
+    If ``ensure_ascii`` is ``True``, the value returned will be only ASCII,
+    even if that means representing Unicode characters as escape sequences. If
+    ``False``, a Unicode string will be returned without escape sequences. The
+    default is ``False``. This is the same as the ``ensure_ascii`` paramater on
+    ``json.dumps``.
     """
-    orig = json.dumps(obj)
+    orig = json.dumps(obj, ensure_ascii=ensure_ascii)
     diff = len(orig) - max_length
     if diff < 0:
         # No need to truncate
@@ -158,4 +164,4 @@ def truncated_json_dumps(obj, max_length, key):
         raise TruncationException("Can't truncate enough to satisfy "
                                   "`max_length`.")
     dupe[key] = dupe[key][:-diff]
-    return json.dumps(dupe)
+    return json.dumps(dupe, ensure_ascii=ensure_ascii)

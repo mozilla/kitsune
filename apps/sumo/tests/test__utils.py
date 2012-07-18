@@ -1,3 +1,4 @@
+# -*- coding: utf8 -*-
 import json
 from mock import patch
 from nose.tools import eq_
@@ -68,3 +69,9 @@ class JSONTests(TestCase):
         obj = json.loads(trunc)
         eq_(obj['foo'], 'a long string that ')
         eq_(len(trunc), 30)
+
+    def test_unicode(self):
+        """Unicode should not be treated as longer than it is."""
+        d = {'formula': u'A=πr²'}
+        trunc = truncated_json_dumps(d, 25, 'formula')
+        eq_(json.dumps(d, ensure_ascii=False), trunc)
