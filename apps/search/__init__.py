@@ -51,7 +51,7 @@ NUMBER_LIST = (
 )
 
 SORT_QUESTIONS = (
-    ('-@rank', '-updated'),  # default
+    ('-_score', '-updated'),  # default
     ('-updated',),
     ('-created',),
     ('-question_num_answers',)
