@@ -30,7 +30,7 @@ def update_question_votes(question_id):
     try:
         q = Question.uncached.get(id=question_id)
         q.sync_num_votes_past_week()
-        q.save(no_update=True, force_update=True)
+        q.save(force_update=True)
     except Question.DoesNotExist:
         log.info('Question id=%s deleted before task.' % question_id)
 
@@ -105,7 +105,7 @@ def update_answer_pages(question):
     i = 0
     for answer in question.answers.using('default').order_by('created').all():
         answer.page = i / ANSWERS_PER_PAGE + 1
-        answer.save(no_update=True, no_notify=True)
+        answer.save(no_notify=True)
         i += 1
 
 

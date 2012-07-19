@@ -91,13 +91,13 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
     def clear_cached_contributors(self):
         cache.delete(self.contributors_cache_key % self.id)
 
-    def save(self, no_update=False, *args, **kwargs):
-        """Override save method to take care of updated."""
+    def save(self, update=False, *args, **kwargs):
+        """Override save method to take care of updated if requested."""
         new = not self.id
 
         if not new:
             self.clear_cached_html()
-            if not no_update:
+            if update:
                 self.updated = datetime.now()
 
         super(Question, self).save(*args, **kwargs)
@@ -467,7 +467,7 @@ class Answer(ActionMixin, ModelBase):
     def clear_cached_html(self):
         cache.delete(self.html_cache_key % self.id)
 
-    def save(self, no_update=False, no_notify=False, *args, **kwargs):
+    def save(self, update=True, no_notify=False, *args, **kwargs):
         """
         Override save method to update question info and take care of
         updated.
@@ -492,7 +492,7 @@ class Answer(ActionMixin, ModelBase):
             self.question.num_answers = Answer.uncached.filter(
                 question=self.question).count()
             self.question.last_answer = self
-            self.question.save(no_update)
+            self.question.save(update)
             self.question.clear_cached_contributors()
 
             if not no_notify:
