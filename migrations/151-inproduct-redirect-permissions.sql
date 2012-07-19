@@ -1,3 +1,5 @@
+INSERT INTO `django_content_type` (`name`, `app_label`, `model`) VALUES ('redirect','inproduct','redirect');
+
 SELECT (@id:=`id`) FROM `django_content_type` WHERE `name` = 'redirect';
 
 INSERT INTO auth_permission (`name`, `content_type_id`, `codename`) VALUES
