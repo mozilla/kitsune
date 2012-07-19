@@ -1025,7 +1025,7 @@ def _document_form_initial(document):
             'is_archived': document.is_archived,
             'tags': [t.name for t in document.tags.all()
                      if t.name not in PRODUCT_TAGS],
-            'products': [t.name for t in document.tags.all()
+            'product_tags': [t.name for t in document.tags.all()
                          if t.name in PRODUCT_TAGS],
             'allow_discussion': document.allow_discussion,
             'needs_change': document.needs_change,

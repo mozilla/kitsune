@@ -131,11 +131,11 @@ class DocumentEditingTests(TestCase):
         """Changing products works as expected."""
         d, r = doc_rev()
         data = new_document_data()
-        data.update({'products': ['desktop', 'sync'],
+        data.update({'product_tags': ['desktop', 'sync'],
                      'form': 'doc'})
         self.client.post(reverse('wiki.edit_document', args=[d.slug]), data)
         tags_eq(d, ['desktop', 'sync'])
-        data.update({'products': ['mobile'],
+        data.update({'product_tags': ['mobile'],
                      'form': 'doc'})
         self.client.post(reverse('wiki.edit_document', args=[data['slug']]),
                          data)

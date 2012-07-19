@@ -458,7 +458,7 @@ class NewDocumentTests(TestCaseBase):
         self.client.login(username='admin', password='testpass')
         response = self.client.get(reverse('wiki.new_document'))
         doc = pq(response.content)
-        eq_(1, len(doc('input[name="products"][checked=checked]')))
+        eq_(1, len(doc('input[name="product_tags"][checked=checked]')))
         eq_(None, doc('input[name="tags"]').attr('required'))
         eq_('checked', doc('input#id_allow_discussion').attr('checked'))
         eq_(None, doc('input#id_allow_discussion').attr('required'))
@@ -562,7 +562,7 @@ class NewDocumentTests(TestCaseBase):
         """Try to create a new document with an invalid product."""
         self.client.login(username='admin', password='testpass')
         data = new_document_data(['tag1', 'tag2'])
-        data['products'] = [1337]
+        data['product_tags'] = [1337]
         response = self.client.post(reverse('wiki.new_document'), data,
                                     follow=True)
         doc = pq(response.content)

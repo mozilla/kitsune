@@ -96,7 +96,7 @@ class DocumentForm(forms.ModelForm):
                         'min_length': SLUG_SHORT,
                         'max_length': SLUG_LONG})
 
-    products = forms.MultipleChoiceField(
+    product_tags = forms.MultipleChoiceField(
         label=_lazy(u'Relevant to:'),
         choices=PRODUCTS,
         initial=[PRODUCTS[0][0]],
@@ -152,7 +152,7 @@ class DocumentForm(forms.ModelForm):
 
     class Meta:
         model = Document
-        fields = ('title', 'slug', 'category', 'is_localizable', 'products',
+        fields = ('title', 'slug', 'category', 'is_localizable', 'product_tags',
                   'tags', 'locale', 'is_archived', 'allow_discussion',
                   'needs_change', 'needs_change_comment')
 
@@ -172,7 +172,7 @@ class DocumentForm(forms.ModelForm):
         if not parent_doc:
             # Set the products as tags.
             # products are not set on the translations.
-            prods = self.cleaned_data['products']
+            prods = self.cleaned_data['product_tags']
             doc.tags.add(*prods)
             doc.tags.remove(*[p for p in PRODUCT_TAGS if p not in prods])
 

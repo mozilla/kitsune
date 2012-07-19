@@ -14,6 +14,7 @@ from pyquery import PyQuery
 from tidings.models import NotificationsMixin
 from tower import ugettext_lazy as _lazy, ugettext as _
 
+from products.models import Product
 from search.models import SearchMixin, register_for_indexing
 from sumo import ProgrammingError
 from sumo.models import ModelBase, LocaleField
@@ -102,6 +103,9 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
 
     # List of users that have contributed to this document.
     contributors = models.ManyToManyField(User)
+
+    # List of products this document applies to.
+    products = models.ManyToManyField(Product)
 
     # Needs change fields.
     needs_change = models.BooleanField(default=False, help_text=_lazy(
