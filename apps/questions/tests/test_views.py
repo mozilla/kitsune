@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
 
@@ -5,11 +7,12 @@ import mock
 from nose.tools import eq_
 
 from questions.models import Question
-from questions.tests import question
+from questions.tests import answer, question
 from search.tests.test_es import ElasticTestCase
 from sumo.helpers import urlparams
+from sumo.tests import MobileTestCase, LocalizingClient, TestCase
 from sumo.urlresolvers import reverse
-from sumo.tests import MobileTestCase, LocalizingClient
+from users.tests import user
 from wiki.tests import document, revision
 
 
@@ -126,3 +129,73 @@ class MobileAAQTests(MobileTestCase):
         eq_(200, response.status_code)
         self.assertTemplateUsed(response,
                                 'questions/mobile/confirm_email.html')
+
+
+class TestQuestionUpdates(TestCase):
+    """Tests that questions are only updated in the right cases."""
+    client_class = LocalizingClient
+
+    def setUp(self):
+        super(TestQuestionUpdates, self).setUp()
+        self.u = user(is_superuser=True, save=True)
+        self.client.login(username=self.u.username, password='testpass')
+
+        self.q = question(updated=datetime(2012, 7, 9, 9, 0, 0), save=True)
+        # Get it from the database to make sure it has the right precision on
+        # the updated datetimestamp.
+        self.q = Question.objects.get(pk=self.q.id)
+        self.a = answer(question=self.q, save=True)
+
+    def tearDown(self):
+        self.client.logout()
+        self.u.delete()
+        self.q.delete()
+
+    def _request_and_no_update(self, url, req_type='POST', data={}):
+        updated = self.q.updated
+
+        {
+            'GET': self.client.get,
+            'POST': self.client.post,
+        }[req_type](url, data, follow=True)
+
+        self.q = Question.objects.get(pk=self.q.id)
+        eq_(updated, self.q.updated)
+
+    def test_no_update_edit(self):
+        url = urlparams(reverse('questions.edit_question', args=[self.q.id]))
+        self._request_and_no_update(url, req_type='POST', data={
+                'title': 'A new title.',
+                'content': 'Some new content.'
+            })
+
+    def test_no_update_solve(self):
+        url = urlparams(reverse('questions.solve',
+            args=[self.q.id, self.a.id]))
+        self._request_and_no_update(url)
+
+    def test_no_update_unsolve(self):
+        url = urlparams(reverse('questions.unsolve',
+            args=[self.q.id, self.a.id]))
+        self._request_and_no_update(url)
+
+    def test_no_update_vote(self):
+        url = urlparams(reverse('questions.vote', args=[self.q.id]))
+        self._request_and_no_update(url, req_type='POST')
+
+    def test_no_update_lock(self):
+        url = urlparams(reverse('questions.lock', args=[self.q.id]))
+        self._request_and_no_update(url, req_type='POST')
+        # Now unlock
+        self._request_and_no_update(url, req_type='POST')
+
+    def test_no_update_tagging(self):
+        url = urlparams(reverse('questions.add_tag', args=[self.q.id]))
+        self._request_and_no_update(url, req_type='POST', data={
+                'tag-name': 'foo'
+            })
+
+        url = urlparams(reverse('questions.remove_tag', args=[self.q.id]))
+        self._request_and_no_update(url, req_type='POST', data={
+                'remove-tag-foo': 1
+            })
