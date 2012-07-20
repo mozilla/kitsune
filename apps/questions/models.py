@@ -467,7 +467,7 @@ class Answer(ActionMixin, ModelBase):
     def clear_cached_html(self):
         cache.delete(self.html_cache_key % self.id)
 
-    def save(self, no_update=False, no_notify=False, *args, **kwargs):
+    def save(self, update=True, no_notify=False, *args, **kwargs):
         """
         Override save method to update question info and take care of
         updated.
@@ -492,7 +492,7 @@ class Answer(ActionMixin, ModelBase):
             self.question.num_answers = Answer.uncached.filter(
                 question=self.question).count()
             self.question.last_answer = self
-            self.question.save(update=(not no_update))
+            self.question.save(update)
             self.question.clear_cached_contributors()
 
             if not no_notify:

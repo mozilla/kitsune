@@ -135,16 +135,19 @@ class TestQuestionUpdates(TestCase):
     """Tests that questions are only updated in the right cases."""
     client_class = LocalizingClient
 
+    date_format = '%Y%M%d%H%m%S'
+
     def setUp(self):
         super(TestQuestionUpdates, self).setUp()
         self.u = user(is_superuser=True, save=True)
         self.client.login(username=self.u.username, password='testpass')
 
         self.q = question(updated=datetime(2012, 7, 9, 9, 0, 0), save=True)
-        # Get it from the database to make sure it has the right precision on
-        # the updated datetimestamp.
-        self.q = Question.objects.get(pk=self.q.id)
         self.a = answer(question=self.q, save=True)
+
+        # Get the question from the database so we have a consistent level of
+        # precision during the test.
+        self.q = Question.objects.get(pk=self.q.id)
 
     def tearDown(self):
         self.client.logout()
@@ -154,13 +157,16 @@ class TestQuestionUpdates(TestCase):
     def _request_and_no_update(self, url, req_type='POST', data={}):
         updated = self.q.updated
 
-        {
-            'GET': self.client.get,
-            'POST': self.client.post,
-        }[req_type](url, data, follow=True)
+        if req_type == 'POST':
+            self.client.post(url, data, follow=True)
+        elif req_type == 'GET':
+            self.client.get(url, data, follow=True)
+        else:
+            raise ValueError('req_type must be either "GET" or "POST"')
 
         self.q = Question.objects.get(pk=self.q.id)
-        eq_(updated, self.q.updated)
+        eq_(updated.strftime(self.date_format),
+            self.q.updated.strftime(self.date_format))
 
     def test_no_update_edit(self):
         url = urlparams(reverse('questions.edit_question', args=[self.q.id]))
