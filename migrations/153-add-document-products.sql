@@ -3,7 +3,7 @@ CREATE TABLE `wiki_document_products` (
     `document_id` integer NOT NULL,
     `product_id` integer NOT NULL,
     UNIQUE (`document_id`, `product_id`)
-)
+) ENGINE=InnoDB CHARACTER SET utf8 COLLATE utf8_general_ci;
 ;
 ALTER TABLE `wiki_document_products` ADD CONSTRAINT `product_id_refs_id_6da56fea` FOREIGN KEY (`product_id`) REFERENCES `products_product` (`id`);
 
