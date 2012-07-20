@@ -211,6 +211,7 @@ def search(request):
          'error_messages': error_messages,
          'recent_records': recent_records,
          'outstanding_chunks': outstanding_chunks,
+         'now': datetime.now(),
          },
         RequestContext(request, {}))
 
