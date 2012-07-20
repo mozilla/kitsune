@@ -120,6 +120,7 @@ article.message-list span.user {
 
 article.message-list span.user a {
     color: #666;
+    font-weight: bold;
 }
 
 .message-list input[type="checkbox"] {
