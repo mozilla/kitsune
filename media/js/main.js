@@ -68,6 +68,31 @@ k = {};
         return str;
     }
 
+    var UNSAFE_CHARS = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        "'": '&#39;',
+        '"': '&quot;'
+    };
+    k.safeString = function(str) {
+        return str.replace(new RegExp('[&<>\'"]', 'g'),
+                           function(m) { return UNSAFE_CHARS[m]; });
+    };
+
+    k.safeInterpolate = function(fmt, obj, named) {
+        if (named) {
+            for (var j in obj) {
+                obj[j] = k.safeString(obj[j]);
+            }
+        } else {
+            for (var i=0, l=obj.length; i<l; i++) {
+                obj[i] = k.safeString(obj[i]);
+            }
+        }
+        return interpolate(fmt, obj, named);
+    };
+
 
     // Pass CSRF token in XHR header
     $.ajaxSetup({

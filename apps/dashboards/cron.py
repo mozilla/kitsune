@@ -29,7 +29,7 @@ def reload_wiki_traffic_stats():
 
 def _get_old_unhelpful():
     """
-    Gets the data from 2 months ago and formats it as output so that we can
+    Gets the data from 2 weeks ago and formats it as output so that we can
     get a percent change.
     """
 
@@ -44,9 +44,9 @@ def _get_old_unhelpful():
                 SUM(NOT(limitedvotes.helpful)) as no
             FROM
                 (SELECT * FROM wiki_helpfulvote
-                    WHERE created <= DATE_SUB(CURDATE(), INTERVAL 1 MONTH)
+                    WHERE created <= DATE_SUB(CURDATE(), INTERVAL 1 WEEK)
                     AND created >= DATE_SUB(DATE_SUB(CURDATE(),
-                        INTERVAL 1 MONTH), INTERVAL 1 MONTH)
+                        INTERVAL 1 WEEK), INTERVAL 1 WEEK)
                 ) as limitedvotes
             INNER JOIN wiki_revision ON
                 limitedvotes.revision_id=wiki_revision.id
@@ -73,7 +73,7 @@ def _get_old_unhelpful():
 
 
 def _get_current_unhelpful(old_formatted):
-    """Gets the data for the past month and formats it as return value."""
+    """Gets the data for the past week and formats it as return value."""
 
     final = {}
     cursor = connection.cursor()
@@ -86,7 +86,7 @@ def _get_current_unhelpful(old_formatted):
                 SUM(NOT(limitedvotes.helpful)) as no
             FROM
                 (SELECT * FROM wiki_helpfulvote
-                    WHERE created >= DATE_SUB(CURDATE(), INTERVAL 1 MONTH)
+                    WHERE created >= DATE_SUB(CURDATE(), INTERVAL 1 WEEK)
                 ) as limitedvotes
             INNER JOIN wiki_revision ON
                 limitedvotes.revision_id=wiki_revision.id

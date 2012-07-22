@@ -1,8 +1,10 @@
+# -*- coding: utf8 -*-
+import json
 from mock import patch
 from nose.tools import eq_
 from test_utils import RequestFactory
 
-from sumo.utils import smart_int, get_next_url
+from sumo.utils import smart_int, get_next_url, truncated_json_dumps
 from sumo.tests import TestCase
 
 
@@ -52,3 +54,24 @@ class GetNextUrlTests(TestCase):
         r = self.r.post('/users/login',
                         {'next': 'http://su.mo.com/kb/new'})
         eq_('/kb/new', get_next_url(r))
+
+class JSONTests(TestCase):
+    def test_truncated_noop(self):
+        """Make sure short enough things are unmodified."""
+        d = {'foo': 'bar'}
+        trunc = truncated_json_dumps(d, 1000, 'foo')
+        eq_(json.dumps(d), trunc)
+
+    def test_truncated_key(self):
+        """Make sure truncation works as expected."""
+        d = {'foo': 'a long string that should be truncated'}
+        trunc = truncated_json_dumps(d, 30, 'foo')
+        obj = json.loads(trunc)
+        eq_(obj['foo'], 'a long string that ')
+        eq_(len(trunc), 30)
+
+    def test_unicode(self):
+        """Unicode should not be treated as longer than it is."""
+        d = {'formula': u'A=πr²'}
+        trunc = truncated_json_dumps(d, 25, 'formula')
+        eq_(json.dumps(d, ensure_ascii=False), trunc)

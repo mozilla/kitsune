@@ -26,7 +26,7 @@ from tower import ugettext as _
 from access.decorators import permission_required, login_required
 from sumo.helpers import urlparams
 from sumo.urlresolvers import reverse
-from sumo.utils import paginate, smart_int, get_next_url
+from sumo.utils import paginate, smart_int, get_next_url, truncated_json_dumps
 from wiki import DOCUMENTS_PER_PAGE
 from wiki.events import (EditDocumentEvent, ReviewableRevisionInLocaleEvent,
                          ApproveRevisionInLocaleEvent, ApprovedOrReadyUnion,
@@ -204,7 +204,8 @@ def new_document(request):
     if request.method == 'GET':
         doc_form = DocumentForm(
             can_create_tags=request.user.has_perm('taggit.add_tag'),
-            initial_title=request.GET.get('title'))
+            initial_title=request.GET.get('title'),
+            initial_comment='first revision')
         rev_form = RevisionForm()
         return jingo.render(request, 'wiki/new_document.html',
                             {'document_form': doc_form,
@@ -770,8 +771,8 @@ def unhelpful_survey(request):
     survey.pop('vote_id')
     survey.pop('button')
 
-    # Save the survey in JSON format.
-    vote.add_metadata('survey', json.dumps(survey))
+    # Save the survey in JSON format, taking care not to exceed 1000 chars.
+    vote.add_metadata('survey', truncated_json_dumps(survey, 1000, 'comment'))
 
     return HttpResponse(
         json.dumps({'message': _('Thanks for making us better!')}))
@@ -1024,7 +1025,7 @@ def _document_form_initial(document):
             'is_archived': document.is_archived,
             'tags': [t.name for t in document.tags.all()
                      if t.name not in PRODUCT_TAGS],
-            'products': [t.name for t in document.tags.all()
+            'product_tags': [t.name for t in document.tags.all()
                          if t.name in PRODUCT_TAGS],
             'allow_discussion': document.allow_discussion,
             'needs_change': document.needs_change,

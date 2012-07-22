@@ -55,7 +55,8 @@ def revision(**kwargs):
 
 @with_save
 def helpful_vote(**kwargs):
-    defaults = dict(created=datetime.now(), helpful=False)
+    r = kwargs.pop('revision', None) or revision(save=True)
+    defaults = {'created': datetime.now(), 'helpful': False, 'revision': r}
     defaults.update(kwargs)
     return HelpfulVote(**defaults)
 
@@ -89,7 +90,7 @@ def new_document_data(tags=None):
         'title': 'A Test Article',
         'slug': 'a-test-article',
         'tags': tags or [],
-        'products': ['desktop'],
+        'product_tags': ['desktop'],
         'category': CATEGORIES[0][0],
         'keywords': 'key1, key2',
         'summary': 'lipsum',

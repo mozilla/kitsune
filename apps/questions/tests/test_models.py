@@ -36,6 +36,8 @@ class TestAnswer(TestCaseBase):
                             creator_id=118533)
         question.save()
 
+        updated = question.updated
+
         eq_(0, question.num_answers)
         eq_(None, question.last_answer)
 
@@ -46,6 +48,7 @@ class TestAnswer(TestCaseBase):
         question = Question.objects.get(pk=question.id)
         eq_(1, question.num_answers)
         eq_(answer, question.last_answer)
+        self.assertNotEqual(updated, question.updated)
 
         question.delete()
 
@@ -273,17 +276,17 @@ class QuestionTests(TestCaseBase):
     """Tests for Question model"""
 
     def test_save_updated(self):
-        """Make sure saving updates the `updated` field."""
+        """Saving with the `update` option should update `updated`."""
         q = Question.objects.all()[0]
         updated = q.updated
-        q.save()
+        q.save(update=True)
         self.assertNotEqual(updated, q.updated)
 
     def test_save_no_update(self):
-        """Saving with the `no_update` option shouldn't update `updated`."""
+        """Saving without the `update` option shouldn't update `updated`."""
         q = Question.objects.all()[0]
         updated = q.updated
-        q.save(no_update=True)
+        q.save()
         eq_(updated, q.updated)
 
     def test_default_manager(self):

@@ -77,45 +77,8 @@ class Sphilastic(elasticutils.S):
         # SUMO uses a unified doctype, so this always returns that.
         return SUMO_DOCTYPE
 
-    def object_ids(self):
-        """Returns a list of object IDs from Sphinx matches.
-
-        If there's a ``SphinxMeta.id_field``, then this will be the
-        values of that field in the results set.  Otherwise it's the
-        ids in the results set.
-
-        """
-        # We don't want object_ids() to bring back highlighted
-        # stuff ("Just the ids, ma'am."), so we gimp
-        # _build_highlight to do nothing, then do our self.raw(),
-        # then ungimp it. That prevents highlight-related bits
-        # from showing up in the query and results.
-
-        build_highlight = self._build_highlight
-        self._build_highlight = lambda: {}
-
-        hits = self.raw()['hits']['hits']
-
-        self._build_highlight = build_highlight
-
-        return [int(r['_id']) for r in hits]
-
-    def order_by(self, *fields):
-        """Change @rank to _score, which ES understands."""
-        transforms = {'@rank': '_score',
-                      '-@rank': '-_score'}
-        return super(Sphilastic, self).order_by(
-            *[transforms.get(f, f) for f in fields])
-
-    def group_by(self, *args, **kwargs):
-        """Do nothing.
-
-        In ES, we smoosh subentities into their parents and index them
-        as a single document, so making this a nop works out.
-
-        """
-        return self
-
+    # TODO: Remove this when we remove bucketed search. Need to fix
+    # suggestions to specify query fields when we do this.
     def query_fields(self, *fields):
         new = self._clone()
         new._query_fields = fields
