@@ -1,0 +1,61 @@
+{% extends "kadmin/base.html" %}
+
+{% block content_title %}
+<h1>Elastic Search - Troubleshooting</h1>
+{% endblock %}
+
+{% block content %}
+<section>
+  <p>
+    What is this? Well, it shows the last 50 wiki documents indexed
+    and the last 50 revisions that were reviewed.
+
+  <table>
+    <tr>
+      <td>
+        <h2>INDEX</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>id</th>
+        <th>title</th>
+        <th>indexed on ({{ settings.TIME_ZONE }})</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for doc in last_50_indexed %}
+        <tr>
+          <td><a href="/admin/index?bucket=wiki_document&id={{ doc.id }}">{{ doc.id }}</a></td>
+          <td>{{ doc.document_title }}</td>
+          <td>{{ doc.indexed_on }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+      </td>
+
+      <td>
+        <h2>DB</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>id</th>
+        <th>title</th>
+        <th>reviewed on ({{ settings.TIME_ZONE }})</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for doc in last_50_reviewed %}
+        <tr>
+          <td><a href="{{ doc.get_absolute_url }}">{{ doc.id }}</a></td>
+          <td>{{ doc.title }}</td>
+          <td>{{ doc.current_revision.reviewed }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+    </tr>
+  </table>
+</section>
+{% endblock %}

@@ -19,6 +19,7 @@ from search.models import Record, get_search_models
 from search.tasks import OUTSTANDING_INDEX_CHUNKS, index_chunk_task
 from search.utils import chunked, create_batch_id
 from sumo.redis_utils import redis_client, RedisError
+from wiki.models import Document
 
 
 log = logging.getLogger('k.es')
@@ -308,3 +309,26 @@ def mapping_view(request):
 
 
 admin.site.register_view('mapping', mapping_view, 'Search - Mapping Browsing')
+
+
+def troubleshooting_view(request):
+    # Build a list of the most recently indexed 50 wiki documents.
+    last_50_indexed = _fix_value_dicts(Document.search()
+                                               .values_dict()
+                                               .order_by('-indexed_on')[:50])
+
+    last_50_reviewed = (Document.uncached
+                                .filter(current_revision__is_approved=True)
+                                .order_by('-current_revision__reviewed')[:50])
+
+    return render_to_response(
+        'search/admin/troubleshooting.html',
+        {'title': 'Index Troubleshooting',
+         'last_50_indexed': last_50_indexed,
+         'last_50_reviewed': last_50_reviewed
+         },
+        RequestContext(request, {}))
+
+
+admin.site.register_view('troubleshooting', troubleshooting_view,
+                         'Search - Index Troubleshooting')
