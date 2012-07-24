@@ -197,7 +197,7 @@ def landing(request):
 
     recent_answered_count = _count_tweets(locale=request.locale,
                                           filter='answered',
-                                          since=yesterday),
+                                          since=yesterday)
 
     if recent_answered_count > reply_goal:
         recent_answered_count = reply_goal
