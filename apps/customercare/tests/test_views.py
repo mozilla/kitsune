@@ -9,7 +9,7 @@ from test_utils import RequestFactory
 
 from customercare.tests import tweet, reply
 from customercare.models import Tweet, Reply
-from customercare.views import _get_tweets, _count_replies
+from customercare.views import _get_tweets, _count_answered_tweets
 from customercare.views import twitter_post
 from sumo.tests import TestCase, LocalizingClient
 from sumo.urlresolvers import reverse
@@ -94,11 +94,15 @@ class TweetListTests(TestCase):
 class CountTests(TestCase):
     def test_count_replies(self):
         """Test filtering when counting tweets"""
-        reply(created=datetime.now(), save=True)
-        reply(created=datetime.now() - timedelta(days=3), save=True)
+        tweet(save=True)
+        id = Tweet.latest().tweet_id
+
+        reply(reply_to_tweet_id=id, created=datetime.now(), save=True)
+        reply(reply_to_tweet_id=id, created=datetime.now(), save=True)
+        reply(created=datetime.now() - timedelta(days=1, minutes=1), save=True)
 
         yesterday = datetime.now() - timedelta(days=1)
-        count_recent_answered = _count_replies(since=yesterday)
+        count_recent_answered = _count_answered_tweets(since=yesterday)
         eq_(count_recent_answered, 1)
 
 
