@@ -193,6 +193,15 @@ def landing(request):
 
     yesterday = datetime.now() - timedelta(days=1)
 
+    reply_goal = 100
+
+    recent_answered_count = _count_tweets(locale=request.locale,
+                                          filter='answered',
+                                          since=yesterday),
+
+    if recent_answered_count > reply_goal:
+        recent_answered_count = reply_goal
+
     return jingo.render(request, 'customercare/landing.html', {
         'activity_stats': activity_stats,
         'contributor_stats': contributor_stats,
@@ -202,9 +211,8 @@ def landing(request):
         'authed': request.twitter.authed,
         'twitter_user': twitter_user,
         'filters': FILTERS,
-        'recent_answered_count': _count_tweets(locale=request.locale,
-                                               filter='answered',
-                                               since=yesterday),
+        'goal': reply_goal,
+        'recent_answered_count': recent_answered_count,
     })
 
 
