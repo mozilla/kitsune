@@ -27,13 +27,13 @@
     </ol>
   </div>
 
-  {% set percent = recent_answered_count * 100 / goal %}
+  {% set percent = recent_replies_count * 100 / goal %}
   <div id="stats">
     <span>{{ _('Total tweets to answer') }}: <strong>{{ goal }}</strong></span>
     <p>
-      <strong>{{ goal - recent_answered_count }}</strong>
-      {{ _('tweets in the last') }} <strong>{{ _('24 hours') }}</strong>
-      {{ _('have no reply') }}
+      <strong>{{ goal - recent_replies_count }}</strong>
+      {{ _('more tweets from the last') }} <strong>{{ _('24 hours') }}</strong>
+      {{ _('should be replied to') }}
     </p>
     <div class="progressbar {% if percent == 100 %}complete{% endif %}">
       <div style="width: {{ percent|int }}%;">

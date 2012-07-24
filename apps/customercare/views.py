@@ -95,15 +95,8 @@ def _get_tweets(locale=settings.LANGUAGE_CODE, limit=MAX_TWEETS, max_id=None,
     return [_tweet_for_template(tweet, https) for tweet in q]
 
 
-def _count_tweets(locale=settings.LANGUAGE_CODE, filter=None, since=None):
-    q = Tweet.uncached.filter(locale=locale)
-
-    if filter != 'all':
-        q = q.filter(hidden=False)
-    if filter == 'unanswered':
-        q = q.filter(replies__pk__isnull=True)
-    elif filter == 'answered':
-        q = q.filter(replies__pk__isnull=False)
+def _count_replies(filter=None, since=None):
+    q = Reply.uncached.filter()
 
     if since:
         q = q.filter(created__gte=since)
@@ -195,12 +188,10 @@ def landing(request):
 
     reply_goal = 100
 
-    recent_answered_count = _count_tweets(locale=request.locale,
-                                          filter='answered',
-                                          since=yesterday)
+    recent_replies_count = _count_replies(since=yesterday)
 
-    if recent_answered_count > reply_goal:
-        recent_answered_count = reply_goal
+    if recent_replies_count > reply_goal:
+        recent_replies_count = reply_goal
 
     return jingo.render(request, 'customercare/landing.html', {
         'activity_stats': activity_stats,
@@ -212,7 +203,7 @@ def landing(request):
         'twitter_user': twitter_user,
         'filters': FILTERS,
         'goal': reply_goal,
-        'recent_answered_count': recent_answered_count,
+        'recent_replies_count': recent_replies_count,
     })
 
 

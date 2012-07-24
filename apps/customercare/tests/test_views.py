@@ -7,9 +7,9 @@ from mock import patch, Mock
 from nose.tools import eq_
 from test_utils import RequestFactory
 
-from customercare.tests import tweet
+from customercare.tests import tweet, reply
 from customercare.models import Tweet, Reply
-from customercare.views import _get_tweets, _count_tweets
+from customercare.views import _get_tweets, _count_replies
 from customercare.views import twitter_post
 from sumo.tests import TestCase, LocalizingClient
 from sumo.urlresolvers import reverse
@@ -92,27 +92,14 @@ class TweetListTests(TestCase):
 
 
 class CountTests(TestCase):
-    def test_count_tweets(self):
+    def test_count_replies(self):
         """Test filtering when counting tweets"""
-
-        tweet(created=datetime.now() - timedelta(days=3), save=True)
-        tweet(created=datetime.now(), save=True)
-        tw = Tweet.latest()
-
-        # create a reply
-        tweet(reply_to=tw, hidden=True, save=True)
-
-        count_answered = _count_tweets(locale=tw.locale, filter='answered')
-        eq_(count_answered, 1)
-
-        count_unanswered = _count_tweets(locale=tw.locale, filter='unanswered')
-        eq_(count_unanswered, 1)
+        reply(created=datetime.now(), save=True)
+        reply(created=datetime.now() - timedelta(days=3), save=True)
 
         yesterday = datetime.now() - timedelta(days=1)
-        count_recent_unanswered = _count_tweets(locale=tw.locale,
-                                                filter='unanswered',
-                                                since=yesterday)
-        eq_(count_recent_unanswered, 0)
+        count_recent_answered = _count_replies(since=yesterday)
+        eq_(count_recent_answered, 1)
 
 
 class FilterTestCase(TestCase):
