@@ -64,6 +64,16 @@ class TwitterCronTestCase(TestCase):
         self.tweet['from_user'] = 'fx4status'
         assert _filter_tweet(self.tweet) is None
 
+    def test_username_contains_firefox(self):
+        """Do not display tweets with 'firefox' in the title"""
+        self.tweet['from_user'] = 'ilovefirefox4ever'
+        self.tweet['text'] = 'I love teh Internetz'
+        assert _filter_tweet(self.tweet) is None
+
+    def test_username_and_tweet_contain_firefox(self):
+        self.tweet['from_user'] = 'ilovefirefox4ever'
+        self.tweet['text'] = 'My Firefox crashes :-( Any advice?'
+        assert _filter_tweet(self.tweet) is not None
 
 class GetOldestTweetTestCase(TestCase):
     fixtures = ['tweets.json']
