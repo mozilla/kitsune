@@ -95,7 +95,7 @@ def _get_tweets(locale=settings.LANGUAGE_CODE, limit=MAX_TWEETS, max_id=None,
     return [_tweet_for_template(tweet, https) for tweet in q]
 
 
-def _count_answered_tweets(filter=None, since=None):
+def _count_answered_tweets(since=None):
     q = Reply.uncached.values('reply_to_tweet_id').distinct()
 
     if since:
