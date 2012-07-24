@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 import json
 
 from django.conf import settings
@@ -7,9 +7,9 @@ from mock import patch, Mock
 from nose.tools import eq_
 from test_utils import RequestFactory
 
-from customercare.tests import tweet
+from customercare.tests import tweet, reply
 from customercare.models import Tweet, Reply
-from customercare.views import _get_tweets
+from customercare.views import _get_tweets, _count_tweets
 from customercare.views import twitter_post
 from sumo.tests import TestCase, LocalizingClient
 from sumo.urlresolvers import reverse
@@ -89,6 +89,30 @@ class TweetListTests(TestCase):
             reverse('customercare.hide_tweet', locale='en-US'),
             {'id': tw.tweet_id})
         eq_(r.status_code, 418)  # Don't tell a teapot to brew coffee.
+
+
+class CountTests(TestCase):
+    def test_count_tweets(self):
+        """Test filtering when counting tweets"""
+
+        tweet(created=datetime.now() - timedelta(days=3), save=True)
+        tweet(created=datetime.now(), save=True)
+        tw = Tweet.latest()
+
+        # create a reply
+        tweet(reply_to=tw, hidden=True, save=True)
+
+        count_answered = _count_tweets(locale=tw.locale, filter='answered')
+        eq_(count_answered, 1)
+
+        count_unanswered = _count_tweets(locale=tw.locale, filter='unanswered')
+        eq_(count_unanswered, 1)
+
+        yesterday = datetime.now() - timedelta(days=1)
+        count_recent_unanswered = _count_tweets(locale=tw.locale,
+                                                filter='unanswered',
+                                                since=yesterday)
+        eq_(count_recent_unanswered, 0)
 
 
 class FilterTestCase(TestCase):
