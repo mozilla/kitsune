@@ -41,6 +41,41 @@
     margin: 15px 200px 0 0;
 }
 
+.progressbar {
+    background: #DDD;
+    background: -moz-linear-gradient(#DDD,#F8F8F8) repeat scroll 0 0 transparent;
+    background: -webkit-gradient(linear,left top,left bottom,from(#DDD),to(#F8F8F8));
+    border-radius: 12px;
+    height: 25px;
+    margin: 7px 0;
+    position: relative;
+}
+
+.progressbar > div {
+    background: #F09609;
+    background: -moz-linear-gradient(#FFC900,#F09609) repeat scroll 0 0 transparent;
+    background: -webkit-gradient(linear,left top,left bottom,from(#FFC900),to(#F09609));
+    border-radius: 12px;
+    color: #fff;
+    float: left;
+    font-size: 18px;
+    font-weight: bold;
+    height: 24px;
+    padding: 1px 0 0 0;
+    text-align: right;
+}
+
+.progressbar.complete > div {
+    background: #489615;
+    background: -moz-linear-gradient(#84C63C,#489615) repeat scroll 0 0 transparent;
+    background: -webkit-gradient(linear,left top,left bottom,from(#84C63C),to(#489615));
+    padding: 0;
+}
+
+.progressbar > div > span {
+    padding: 0 15px 0 0;
+}
+
 #speech-bubbles {
     background: transparent url(../img/customercare/bubbles.png) no-repeat 0 25px;
     min-height: 100px;
@@ -63,6 +98,24 @@
     font-size: 21px;
     font-style: normal;
     text-transform: uppercase;
+}
+
+#stats {
+    color: #aaa;
+    padding: 20px 40px 40px;
+}
+
+#stats strong {
+    color: #282828;
+}
+
+#stats > span {
+    float: right;
+    margin: 0 12px;
+}
+
+#stats > p {
+    padding: 0 12px;
 }
 
 #tweetcontainer {

@@ -1,5 +1,5 @@
 import calendar
-from datetime import datetime
+from datetime import datetime, timedelta
 from email.utils import parsedate, formatdate
 import json
 import logging
@@ -95,6 +95,15 @@ def _get_tweets(locale=settings.LANGUAGE_CODE, limit=MAX_TWEETS, max_id=None,
     return [_tweet_for_template(tweet, https) for tweet in q]
 
 
+def _count_replies(filter=None, since=None):
+    q = Reply.uncached.filter()
+
+    if since:
+        q = q.filter(created__gte=since)
+
+    return q.count()
+
+
 @require_GET
 def more_tweets(request):
     """AJAX view returning a list of tweets."""
@@ -175,6 +184,10 @@ def landing(request):
         twitter_user = None
         request.twitter = twitter.Session()
 
+    yesterday = datetime.now() - timedelta(days=1)
+
+    recent_replies_count = _count_replies(since=yesterday)
+
     return jingo.render(request, 'customercare/landing.html', {
         'activity_stats': activity_stats,
         'contributor_stats': contributor_stats,
@@ -184,6 +197,8 @@ def landing(request):
         'authed': request.twitter.authed,
         'twitter_user': twitter_user,
         'filters': FILTERS,
+        'goal': 100,
+        'recent_replies_count': recent_replies_count,
     })
 
 

@@ -31,3 +31,9 @@ def isotime(t):
 def round_percent(num):
     """Return a customercare-format percentage from a number."""
     return round(num, 1) if num < 10 else int(round(num, 0))
+
+@register.filter
+def max(num, limit):
+    if num > limit:
+        num = limit
+    return num
