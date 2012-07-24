@@ -186,12 +186,7 @@ def landing(request):
 
     yesterday = datetime.now() - timedelta(days=1)
 
-    reply_goal = 100
-
     recent_replies_count = _count_replies(since=yesterday)
-
-    if recent_replies_count > reply_goal:
-        recent_replies_count = reply_goal
 
     return jingo.render(request, 'customercare/landing.html', {
         'activity_stats': activity_stats,
@@ -202,7 +197,7 @@ def landing(request):
         'authed': request.twitter.authed,
         'twitter_user': twitter_user,
         'filters': FILTERS,
-        'goal': reply_goal,
+        'goal': 100,
         'recent_replies_count': recent_replies_count,
     })
 

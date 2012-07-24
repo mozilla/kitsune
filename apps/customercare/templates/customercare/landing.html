@@ -34,9 +34,9 @@
       <strong>{{ recent_replies_count }}</strong> {{ _('tweets in the last') }}
       <strong>{{ _('24 hours') }}</strong> {{ _('have replies') }}
     </p>
-    <div class="progressbar {% if percent == 100 %}complete{% endif %}">
-      <div style="width: {{ percent|int }}%;">
-        <span>{{ percent|int }}%</span>
+    <div class="progressbar {% if percent >= 100 %}complete{% endif %}">
+      <div style="width: {{ percent|int|max(100) }}%;">
+        <span>{{ percent|int|max(100) }}%</span>
       </div>
     </div>
   </div>
