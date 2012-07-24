@@ -7,7 +7,7 @@ from mock import patch, Mock
 from nose.tools import eq_
 from test_utils import RequestFactory
 
-from customercare.tests import tweet, reply
+from customercare.tests import tweet
 from customercare.models import Tweet, Reply
 from customercare.views import _get_tweets, _count_tweets
 from customercare.views import twitter_post
