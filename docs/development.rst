@@ -51,6 +51,23 @@ bits needed.
 
 .. Note::
 
+   If you have CREATE TABLE statements, make sure they end with setting
+   the engine to InnoDB. For example::
+
+       CREATE TABLE `topics_topic` (
+           `id` integer AUTO_INCREMENT NOT NULL PRIMARY KEY,
+           `title` varchar(255) NOT NULL,
+           `slug` varchar(50) NOT NULL,
+           `description` longtext NOT NULL,
+           `image` varchar(250),
+           `parent_id` integer,
+           `display_order` integer NOT NULL,
+           `visible` bool NOT NULL
+       ) ENGINE=InnoDB CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+
+.. Note::
+
    If you created new models, make sure to insert the content type and
    default permissions. e.g. Something like this::
 
