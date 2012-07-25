@@ -45,6 +45,30 @@
       {% else %}
         {{ private_message(profile.user) }}
       {% endif %}
+      {% if num_answers > 0 or num_questions > 0 or num_solutions > 0 %}
+        <div id="contributions-box">
+        <h2>Contributions</h2>
+          <ul>
+            {% if num_answers > 0 %}
+              <li>
+                <a href="{{ url('search') }}?answered_by={{ profile.user.username}}&sortby=1&a=1&w=2">
+                  {{num_answers}} answers
+                </a>
+              </li>
+            {% endif %}
+            {% if num_solutions > 0 %}
+              <li>{{num_solutions}} solutions</li>
+            {% endif %}
+            {% if num_questions > 0 %}
+              <li>
+                <a href="{{ url('search') }}?asked_by={{ profile.user.username}}&sortby=1&a=1&w=2">
+                  {{num_answers}} answers
+                </a>
+              </li>
+            {% endif %}
+          </ul>
+        </div>
+      {% endif %}
       {% if profile.public_email or profile.website or profile.twitter or
             profile.facebook or profile.irc_handle or
             (profile.livechat_id and

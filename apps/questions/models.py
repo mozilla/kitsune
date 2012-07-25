@@ -732,3 +732,40 @@ def _content_parsed(obj):
         html = wiki_to_html(obj.content)
         cache.add(cache_key, html, CACHE_TIMEOUT)
     return html
+
+
+def user_num_questions(user):
+    """Count the number of questions a user has
+
+    Unfortunatly, we can't use the KarmaManager for this :(
+    """
+    return Question.objects.filter(creator=user).count()
+
+
+def user_num_answers(user):
+    if waffle.switch_is_active('karma'):
+        try:
+            km = KarmaManager()
+            count = km.count(user=user, type=AnswerAction.action_type)
+            if count is not None:
+                return count
+        except RedisError as e:
+            statsd.incr('redis.error')
+            log.error('Redis connection error: %s' % e)
+
+    return Answer.objects.filter(creator=user).count()
+
+
+def user_num_solutions(user):
+    if waffle.switch_is_active('karma'):
+        try:
+            km = KarmaManager()
+            count = km.count(user=user, type=SolutionAction.action_type)
+            if count is not None:
+                return count
+        except RedisError as e:
+            statsd.incr('redis.error')
+            log.error('Redis connection error: %s' % e)
+
+    return Question.objects.filter(solution__in=Answer.objects
+            .filter(creator=user)).count()

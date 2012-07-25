@@ -21,7 +21,8 @@ from tidings.tasks import claim_watches
 from tower import ugettext as _
 
 from access.decorators import logout_required, login_required
-from questions.models import Question
+from questions.models import (Question, user_num_answers, user_num_questions,
+                              user_num_solutions)
 from sumo.decorators import ssl_required
 from sumo.urlresolvers import reverse
 from sumo.utils import get_next_url
@@ -221,9 +222,15 @@ def confirm_change_email(request, activation_key):
 def profile(request, user_id):
     user_profile = get_object_or_404(Profile, user__id=user_id,
                                      user__is_active=True)
+
     groups = user_profile.user.groups.all()
-    return jingo.render(request, 'users/profile.html',
-                        {'profile': user_profile, 'groups': groups})
+    return jingo.render(request, 'users/profile.html', {
+        'profile': user_profile,
+        'groups': groups,
+        'num_questions': user_num_questions(user_profile),
+        'num_answers': user_num_answers(user_profile),
+        'num_solutions': user_num_solutions(user_profile)
+    })
 
 
 @login_required
