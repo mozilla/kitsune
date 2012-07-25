@@ -197,7 +197,7 @@ def landing(request):
         'authed': request.twitter.authed,
         'twitter_user': twitter_user,
         'filters': FILTERS,
-        'goal': 100,
+        'goal': settings.CC_REPLIES_GOAL,
         'recent_replied_count': recent_replied_count,
     })
 
