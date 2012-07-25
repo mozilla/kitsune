@@ -201,6 +201,11 @@ DB_LOCALIZE = {
             'attrs': ['title', 'description'],
         }
     },
+    'topics': {
+        'Topic': {
+            'attrs': ['title', 'description'],
+        }
+    },
 }
 
 # Use the real robots.txt?
@@ -367,6 +372,7 @@ INSTALLED_APPS = (
     'tags',
     'kpi',
     'products',
+    'topics',
 
     # Extra apps for testing.
     'django_nose',
@@ -751,6 +757,9 @@ IMAGE_UPLOAD_PATH = 'uploads/images/'
 # A string listing image mime types to accept, comma separated.
 # String must not contain double quotes!
 IMAGE_ALLOWED_MIMETYPES = 'image/jpeg,image/png,image/gif'
+
+# Topics
+TOPIC_IMAGE_PATH = 'uploads/topics/'
 
 # Email
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
