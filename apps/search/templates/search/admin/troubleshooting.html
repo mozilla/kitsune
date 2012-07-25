@@ -41,6 +41,7 @@
       <tr>
         <th>id</th>
         <th>title</th>
+        <th>redirect?</th>
         <th>reviewed on ({{ settings.TIME_ZONE }})</th>
       </tr>
     </thead>
@@ -49,6 +50,7 @@
         <tr>
           <td><a href="{{ doc.get_absolute_url }}">{{ doc.id }}</a></td>
           <td>{{ doc.title }}</td>
+          <td>{% if doc.redirect_url != None %}Y{% endif %}</td>
           <td>{{ doc.current_revision.reviewed }}</td>
         </tr>
       {% endfor %}

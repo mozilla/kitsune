@@ -201,6 +201,11 @@ DB_LOCALIZE = {
             'attrs': ['title', 'description'],
         }
     },
+    'topics': {
+        'Topic': {
+            'attrs': ['title', 'description'],
+        }
+    },
 }
 
 # Use the real robots.txt?
@@ -367,6 +372,7 @@ INSTALLED_APPS = (
     'tags',
     'kpi',
     'products',
+    'topics',
 
     # Extra apps for testing.
     'django_nose',
@@ -752,6 +758,9 @@ IMAGE_UPLOAD_PATH = 'uploads/images/'
 # String must not contain double quotes!
 IMAGE_ALLOWED_MIMETYPES = 'image/jpeg,image/png,image/gif'
 
+# Topics
+TOPIC_IMAGE_PATH = 'uploads/topics/'
+
 # Email
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
@@ -839,6 +848,7 @@ CC_TOP_CONTRIB_CACHE_KEY = 'sumo-cc-top-contrib-stats'
 CC_STATS_CACHE_TIMEOUT = 24 * 60 * 60  # 24 hours
 CC_STATS_WARNING = 30 * 60 * 60  # Warn if JSON data is older than 30 hours
 CC_IGNORE_USERS = ['fx4status']  # User names whose tweets to ignore.
+CC_REPLIES_GOAL = 175  # Goal # of replies in 24 hours.
 
 TWITTER_COOKIE_SECURE = True
 TWITTER_CONSUMER_KEY = ''
