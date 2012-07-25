@@ -8,7 +8,11 @@ from sumo.models import ModelBase
 
 class Product(ModelBase):
     title = models.CharField(max_length=255, db_index=True)
+    slug = models.SlugField()
     description = models.TextField()
+    image = models.ImageField(upload_to=settings.PRODUCT_IMAGE_PATH, null=True,
+                              blank=True,
+                              max_length=settings.MAX_FILEPATH_LENGTH)
 
     # Dictates the order in which products are displayed in product
     # lists.
@@ -16,8 +20,6 @@ class Product(ModelBase):
 
     # Whether or not this product is visible in the ui to users.
     visible = models.BooleanField(default=False)
-
-    slug = models.SlugField()
 
     class Meta(object):
         ordering = ['display_order']
@@ -27,5 +29,7 @@ class Product(ModelBase):
 
     @property
     def image_url(self):
+        if self.image is not None:
+            return self.image.url
         return os.path.join(
-            settings.STATIC_URL, 'img', 'products', self.slug + '.png')
+            settings.STATIC_URL, 'img', 'product_placeholder.png')

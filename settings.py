@@ -761,6 +761,9 @@ IMAGE_ALLOWED_MIMETYPES = 'image/jpeg,image/png,image/gif'
 # Topics
 TOPIC_IMAGE_PATH = 'uploads/topics/'
 
+# Products
+PRODUCT_IMAGE_PATH = 'uploads/products/'
+
 # Email
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
