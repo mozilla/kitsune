@@ -21,6 +21,7 @@ from sumo.models import ModelBase, LocaleField
 from sumo.urlresolvers import reverse, split_path
 from taggit.models import TaggedItem
 from tags.models import BigVocabTaggableMixin
+from topics.models import Topic
 from wiki import TEMPLATE_TITLE_PREFIX
 from wiki.config import (CATEGORIES, SIGNIFICANCES,
                          TYPO_SIGNIFICANCE, MAJOR_SIGNIFICANCE,
@@ -106,6 +107,9 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
 
     # List of products this document applies to.
     products = models.ManyToManyField(Product)
+
+    # List of topics this document applies to.
+    topics = models.ManyToManyField(Topic)
 
     # Needs change fields.
     needs_change = models.BooleanField(default=False, help_text=_lazy(
