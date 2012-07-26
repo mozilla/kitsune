@@ -1117,6 +1117,13 @@ ol.answers form.report {
     margin: 15px 0 0;
 }
 
+.notice-locked {
+    background-color: #f0f7fe;
+    font-size: 14px;
+    margin: 0 42px 30px 42px;
+    padding: 9px 16px;
+}
+
 /*
  * Questions image upload form
  */

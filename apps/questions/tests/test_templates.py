@@ -500,9 +500,7 @@ class AnswersTemplateTestCase(TestCaseBase):
         response = post(self.client, 'questions.lock', args=[q.id])
         eq_(200, response.status_code)
         eq_(True, Question.objects.get(pk=q.pk).is_locked)
-        doc = pq(response.content)
-        eq_('This question is locked.',
-            doc('#question-reply div.main-section p').text())
+        assert 'This thread was closed.' in response.content
 
         # now unlock it
         response = post(self.client, 'questions.lock', args=[q.id])
