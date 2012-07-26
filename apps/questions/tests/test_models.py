@@ -24,7 +24,7 @@ from questions.tests import (TestCaseBase, TaggingTestCaseBase, tags_eq,
 from questions.question_config import products
 from sumo.tests import TestCase
 from tags.utils import add_existing_tag
-from users.tests import profile
+from users.tests import user
 
 
 class TestAnswer(TestCaseBase):
@@ -404,48 +404,48 @@ class OldQuestionsLockTest(TestCase):
 class UserActionCounts(TestCase):
     def test_user_num_questions(self):
         """Answers are counted correctly on a user."""
-        prof = profile()
+        u = user(save=True)
 
-        eq_(user_num_questions(prof), 0)
-        q1 = question(creator=prof.user, save=True)
-        eq_(user_num_questions(prof), 1)
-        q2 = question(creator=prof.user, save=True)
-        eq_(user_num_questions(prof), 2)
+        eq_(user_num_questions(u), 0)
+        q1 = question(creator=u, save=True)
+        eq_(user_num_questions(u), 1)
+        q2 = question(creator=u, save=True)
+        eq_(user_num_questions(u), 2)
         q1.delete()
-        eq_(user_num_questions(prof), 1)
+        eq_(user_num_questions(u), 1)
         q2.delete()
-        eq_(user_num_questions(prof), 0)
+        eq_(user_num_questions(u), 0)
 
     def test_user_num_answers(self):
-        prof = profile()
+        u = user(save=True)
         q = question(save=True)
 
-        eq_(user_num_answers(prof), 0)
-        a1 = answer(creator=prof.user, question=q, save=True)
-        eq_(user_num_answers(prof), 1)
-        a2 = answer(creator=prof.user, question=q, save=True)
-        eq_(user_num_answers(prof), 2)
+        eq_(user_num_answers(u), 0)
+        a1 = answer(creator=u, question=q, save=True)
+        eq_(user_num_answers(u), 1)
+        a2 = answer(creator=u, question=q, save=True)
+        eq_(user_num_answers(u), 2)
         a1.delete()
-        eq_(user_num_answers(prof), 1)
+        eq_(user_num_answers(u), 1)
         a2.delete()
-        eq_(user_num_answers(prof), 0)
+        eq_(user_num_answers(u), 0)
 
     def test_user_num_solutions(self):
-        prof = profile()
+        u = user(save=True)
         q1 = question(save=True)
         q2 = question(save=True)
-        a1 = answer(creator=prof.user, question=q1, save=True)
-        a2 = answer(creator=prof.user, question=q2, save=True)
+        a1 = answer(creator=u, question=q1, save=True)
+        a2 = answer(creator=u, question=q2, save=True)
 
-        eq_(user_num_solutions(prof), 0)
+        eq_(user_num_solutions(u), 0)
         q1.solution = a1
         q1.save()
-        eq_(user_num_solutions(prof), 1)
+        eq_(user_num_solutions(u), 1)
         q2.solution = a2
         q2.save()
-        eq_(user_num_solutions(prof), 2)
+        eq_(user_num_solutions(u), 2)
         q1.solution = None
         q1.save()
-        eq_(user_num_solutions(prof), 1)
+        eq_(user_num_solutions(u), 1)
         a2.delete()
-        eq_(user_num_solutions(prof), 0)
+        eq_(user_num_solutions(u), 0)

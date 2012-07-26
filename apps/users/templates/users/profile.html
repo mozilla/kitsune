@@ -45,26 +45,26 @@
       {% else %}
         {{ private_message(profile.user) }}
       {% endif %}
-      {% if num_answers > 0 or num_questions > 0 or num_solutions > 0 %}
+      {% if num_answers or num_questions or num_solutions %}
         <div id="contributions-box">
         <h2>Contributions</h2>
           <ul>
-            {% if num_answers > 0 %}
+            {% if num_questions %}
               <li>
-                <a href="{{ url('search') }}?answered_by={{ profile.user.username}}&sortby=1&a=1&w=2">
-                  {{num_answers}} answers
+                <a href="{{ url('search')|urlparams(aksed_by=profile.user.username, sortby=1, a=1, w=2) }}">
+                  {{ num_questions }} questions
                 </a>
               </li>
             {% endif %}
-            {% if num_solutions > 0 %}
-              <li>{{num_solutions}} solutions</li>
-            {% endif %}
-            {% if num_questions > 0 %}
+            {% if num_answers %}
               <li>
-                <a href="{{ url('search') }}?asked_by={{ profile.user.username}}&sortby=1&a=1&w=2">
-                  {{num_answers}} answers
+                <a href="{{ url('search')|urlparams(answered_by=profile.user.username, sortby=1, a=1, w=2) }}">
+                  {{ num_answers }} answers
                 </a>
               </li>
+            {% endif %}
+            {% if num_solutions %}
+              <li>{{ num_solutions }} solutions</li>
             {% endif %}
           </ul>
         </div>

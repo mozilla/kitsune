@@ -735,14 +735,20 @@ def _content_parsed(obj):
 
 
 def user_num_questions(user):
-    """Count the number of questions a user has
+    """Count the number of questions a user has.
 
-    Unfortunatly, we can't use the KarmaManager for this :(
+    Unfortunately, we can't use the KarmaManager for this, since questions
+    don't effect karma, so this always counts objects in the database.
     """
     return Question.objects.filter(creator=user).count()
 
 
 def user_num_answers(user):
+    """Count the number of answers a user has.
+
+    If karma is enabled, and redis is working, this will query that (much
+    faster), otherwise it will just count objects in the database.
+    """
     if waffle.switch_is_active('karma'):
         try:
             km = KarmaManager()
@@ -750,13 +756,21 @@ def user_num_answers(user):
             if count is not None:
                 return count
         except RedisError as e:
-            statsd.incr('redis.error')
+            statsd.incr('redis.errror')
             log.error('Redis connection error: %s' % e)
 
     return Answer.objects.filter(creator=user).count()
 
 
 def user_num_solutions(user):
+    """Count the number of solutions a user has.
+
+    This means the number of answers the user has submitted that are then
+    marked as the solution to the question they belong to.
+
+    If karma is enabled, and redis is working, this will query that (much
+    faster), otherwise it will just count objects in the database.
+    """
     if waffle.switch_is_active('karma'):
         try:
             km = KarmaManager()
@@ -764,7 +778,7 @@ def user_num_solutions(user):
             if count is not None:
                 return count
         except RedisError as e:
-            statsd.incr('redis.error')
+            statsd.incr('redis.errror')
             log.error('Redis connection error: %s' % e)
 
     return Question.objects.filter(solution__in=Answer.objects
