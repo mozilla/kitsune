@@ -85,11 +85,11 @@ def doc_rev(content=''):
 # End model makers.
 
 
-def new_document_data(tags=None):
+def new_document_data(topic_ids=None):
     return {
         'title': 'A Test Article',
         'slug': 'a-test-article',
-        'tags': tags or [],
+        'topics': topic_ids or [],
         'product_tags': ['desktop'],
         'category': CATEGORIES[0][0],
         'keywords': 'key1, key2',

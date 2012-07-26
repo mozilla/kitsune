@@ -377,6 +377,9 @@ INSTALLED_APPS = (
     # Extra apps for testing.
     'django_nose',
     'test_utils',
+
+    # Extra app for python migrations.
+    'django_extensions'
 )
 
 TEST_RUNNER = 'test_utils.runner.RadicalTestSuiteRunner'
