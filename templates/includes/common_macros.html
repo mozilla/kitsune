@@ -1,5 +1,4 @@
 {# vim: set ts=2 et sts=2 sw=2: #}
-{% from "search/includes/macros.html" import search_engine with context %}
 
 {% macro search_box(settings, id=False, prefix=None, target=None,
                     params=None) %}
@@ -8,7 +7,6 @@
       {{ prefix }}
     {% endif %}
     <form action="{{ url('search') }}" method="get" {% if target %} target="{{ target }}"{% endif %}>
-      {{ search_engine() }}
       {% if params %}
         {% for k, v in params.items() %}
           <input type="hidden" name="{{ k }}" value="{{ v }}" />

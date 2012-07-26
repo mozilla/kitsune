@@ -1,11 +1,9 @@
 {# vim: set ts=2 et sts=2 sw=2: #}
-{% from "search/includes/macros.html" import search_engine with context %}
 
 {% macro form(q='') -%}
   <div id="basic-search" class="search-empty">
   {{ _('Enter your terms in the form below and click <strong>Search</strong>')|safe }}
     <form role="search" method="get" action="{{ url('search') }}">
-      {{ search_engine() }}
       <input type="text" class="search-query search-empty-query" value="{{ q }}" name="q">
       <input type="submit" class="search-empty-submit btn-large" value="{{ _('Search', 'button') }}">
     </form>
@@ -14,7 +12,6 @@
 
 {% macro mobile_form(q='', params=None) -%}
   <form id="search" action="{{ url('search') }}">
-    {{ search_engine() }}
     {% if params %}
       {% for k, v in params.items() %}
         <input type="hidden" name="{{ k }}" value="{{ v }}" />
