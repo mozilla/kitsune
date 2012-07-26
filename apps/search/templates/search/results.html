@@ -1,7 +1,7 @@
 {# vim: set ts=2 et sts=2 sw=2: #}
 {% extends "search/base.html" %}
 {% from "search/includes/result.html" import search_result with context %}
-{% from "search/includes/macros.html" import search_engine, basic_search_form with context %}
+{% from "search/includes/macros.html" import basic_search_form with context %}
 {% set meta = (('WT.oss', q),
                ('WT.oss_r', num_results)) %}
 

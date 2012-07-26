@@ -1,11 +1,6 @@
 {% macro search_result(result, s=None, as='s', r=None) %}
   <div class="result {{ result.type }}">
-    {% if waffle.flag('esunified') %}
-      {% set engine = 'un' %}
-    {% else %}
-      {% set engine = 'es' %}
-    {% endif %}
-    {% set url =  result.url|urlparams(s=s, as=as, r=r, e=engine) %}
+    {% set url =  result.url|urlparams(s=s, as=as, r=r) %}
     <a class="title" href="{{ url }}">{{ result.title }}</a>
     <p><a tabindex="-1" href="{{ url }}">
       {{ result.search_summary|safe }}
