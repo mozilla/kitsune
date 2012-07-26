@@ -18,6 +18,12 @@
 {% block content %}
   <article class="main">
     <section id="question">
+      {% if question.is_locked %}
+        <div class="notice-locked">
+          {{ _('This thread was closed.') }}
+          <a href="{{ url('questions.views.aaq') }}">{{ _('Please ask a new question if you need help.') }}</a>
+        </div>
+      {% endif %}
       <div class="user-section">
         <div class="avatar{% if user == question.creator %} self{% endif %}">
           <a href="{{ profile_url(question.creator, request.user == question.creator) }}">
@@ -287,59 +293,53 @@
     {% endif %}
 
     <section id="question-reply">
-      {% if question.is_locked %}
-        <div class="user-section"></div>
-        <div class="main-section">
-          <p>
-            {{ _('This question is locked.') }}
-          </p>
-        </div>
-        <div class="side-section"></div>
-      {% elif user.is_authenticated() %}
-        <header>
-          <h1>{{ _('Post a Reply') }}</h1>
-        </header>
-        <div class="user-section">
-          <div class="avatar self">
-            <a href="{{ profile_url(user) }}">
-              <img src="{{ profile_avatar(user) }}" height="48" width="48" alt="{{ user }}"/>
-              <span>{{ _('You') }}</span>
-            </a>
+      {% if not question.is_locked %}
+        {% if user.is_authenticated() %}
+          <header>
+            <h1>{{ _('Post a Reply') }}</h1>
+          </header>
+          <div class="user-section">
+            <div class="avatar self">
+              <a href="{{ profile_url(user) }}">
+                <img src="{{ profile_avatar(user) }}" height="48" width="48" alt="{{ user }}"/>
+                <span>{{ _('You') }}</span>
+              </a>
+            </div>
           </div>
-        </div>
-        <div class="main-section">
-          <form action="{{ url('questions.reply', question_id=question.id) }}#question-reply" method="post" enctype="multipart/form-data">
-            {{ csrf() }}
-            {{ errorlist(form) }}
+          <div class="main-section">
+            <form action="{{ url('questions.reply', question_id=question.id) }}#question-reply" method="post" enctype="multipart/form-data">
+              {{ csrf() }}
+              {{ errorlist(form) }}
 
-            <div class="content">
-              {{ content_editor(form.content) }}
-              <div class="stem"></div>{# for the speech bubble arrow #}
-            </div>
+              <div class="content">
+                {{ content_editor(form.content) }}
+                <div class="stem"></div>{# for the speech bubble arrow #}
+              </div>
 
-            {{ attachments_form('questions.Question', question.pk, images, settings, user) }}
+              {{ attachments_form('questions.Question', question.pk, images, settings, user) }}
 
-            <div class="submit">
-              <input type="submit" class="btn-important" value="{{ _('Post Reply') }}" />
-              <input type="submit" id="preview" name="preview" value="{{ _('Preview Reply') }}"
-                data-preview-url="{{ url('questions.answer_preview_async') }}"
-                data-preview-container-id="answer-preview"
-                data-preview-content-id="id_content" />
-            </div>
-          </form>
-        </div>
-        <div class="side-section"></div>
-      {% else %}
-        <div class="user-section"></div>
-        <div class="main-section">
-          <p>
-            {{ _('You must <a href="{url}">log in to your account</a> to reply to posts.')|fe(url=url('users.login')) }}
-          </p>
-          <p>
-            {{ _("Don't have an account? You can <a href='{url}'>create a free account</a> now.")|fe(url=url('users.register')) }}
-          </p>
-        </div>
-        <div class="side-section"></div>
+              <div class="submit">
+                <input type="submit" class="btn-important" value="{{ _('Post Reply') }}" />
+                <input type="submit" id="preview" name="preview" value="{{ _('Preview Reply') }}"
+                  data-preview-url="{{ url('questions.answer_preview_async') }}"
+                  data-preview-container-id="answer-preview"
+                  data-preview-content-id="id_content" />
+              </div>
+            </form>
+          </div>
+          <div class="side-section"></div>
+        {% else %}
+          <div class="user-section"></div>
+          <div class="main-section">
+            <p>
+              {{ _('You must <a href="{url}">log in to your account</a> to reply to posts.')|fe(url=url('users.login')) }}
+            </p>
+            <p>
+              {{ _("Don't have an account? You can <a href='{url}'>create a free account</a> now.")|fe(url=url('users.register')) }}
+            </p>
+          </div>
+          <div class="side-section"></div>
+        {% endif %}
       {% endif %}
     </section>
     <section id="answer-preview">
