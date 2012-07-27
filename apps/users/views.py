@@ -227,9 +227,9 @@ def profile(request, user_id):
     return jingo.render(request, 'users/profile.html', {
         'profile': user_profile,
         'groups': groups,
-        'num_questions': user_num_questions(user_profile),
-        'num_answers': user_num_answers(user_profile),
-        'num_solutions': user_num_solutions(user_profile)
+        'num_questions': user_num_questions(user_profile.user),
+        'num_answers': user_num_answers(user_profile.user),
+        'num_solutions': user_num_solutions(user_profile.user)
     })
 
 

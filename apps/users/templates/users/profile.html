@@ -51,20 +51,22 @@
           <ul>
             {% if num_questions %}
               <li>
-                <a href="{{ url('search')|urlparams(aksed_by=profile.user.username, sortby=1, a=1, w=2) }}">
-                  {{ num_questions }} questions
+                <a href="{{ url('search')|urlparams(asked_by=profile.user.username, sortby=1, a=1, w=2) }}">
+                  {{ ngettext('{0} question', '{0} questions', num_questions)|f(num_questions) }}
                 </a>
               </li>
             {% endif %}
             {% if num_answers %}
               <li>
                 <a href="{{ url('search')|urlparams(answered_by=profile.user.username, sortby=1, a=1, w=2) }}">
-                  {{ num_answers }} answers
+                  {{ ngettext('{0} answer', '{0} answers', num_answers)|f(num_answers) }}
                 </a>
               </li>
             {% endif %}
             {% if num_solutions %}
-              <li>{{ num_solutions }} solutions</li>
+              <li>
+                {{ ngettext('{0} solution', '{0} solutions', num_solutions)|f(num_solutions) }}
+              </li>
             {% endif %}
           </ul>
         </div>
