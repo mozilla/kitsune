@@ -27,6 +27,7 @@ from access.decorators import permission_required, login_required
 from sumo.helpers import urlparams
 from sumo.urlresolvers import reverse
 from sumo.utils import paginate, smart_int, get_next_url, truncated_json_dumps
+from topics.models import Topic
 from wiki import DOCUMENTS_PER_PAGE
 from wiki.events import (EditDocumentEvent, ReviewableRevisionInLocaleEvent,
                          ApproveRevisionInLocaleEvent, ApprovedOrReadyUnion,
@@ -165,7 +166,7 @@ def revision(request, document_slug, revision_id):
 
 
 @require_GET
-def list_documents(request, category=None, tag=None):
+def list_documents(request, category=None, topic=None):
     """List wiki documents."""
     docs = Document.objects.filter(locale=request.locale).order_by('title')
     if category:
@@ -179,23 +180,22 @@ def list_documents(request, category=None, tag=None):
         except KeyError:
             raise Http404
 
-    if tag:
-        tagobj = get_object_or_404(Tag, slug=tag)
+    if topic:
+        topic = get_object_or_404(Topic, slug=topic)
         default_lang = settings.WIKI_DEFAULT_LANGUAGE
         if request.locale == default_lang:
-            docs = docs.filter(tags__name=tagobj.name)
+            docs = docs.filter(topics=topic)
         else:
             # blows up: docs = docs.filter(parent__tags__name=tagobj.name)
             parent_ids = Document.objects.filter(
-                locale=default_lang, tags__name=tagobj.name) \
-                .values_list('id', flat=True)
+                locale=default_lang, topic=topic).values_list('id', flat=True)
             docs = docs.filter(parent__in=parent_ids)
 
     docs = paginate(request, docs, per_page=DOCUMENTS_PER_PAGE)
     return jingo.render(request, 'wiki/list_documents.html',
                         {'documents': docs,
                          'category': category,
-                         'tag': tag})
+                         'topic': topic.title if topic else None})
 
 
 @login_required
@@ -203,7 +203,6 @@ def new_document(request):
     """Create a new wiki document."""
     if request.method == 'GET':
         doc_form = DocumentForm(
-            can_create_tags=request.user.has_perm('taggit.add_tag'),
             initial_title=request.GET.get('title'),
             initial_comment='first revision')
         rev_form = RevisionForm()
@@ -213,8 +212,7 @@ def new_document(request):
 
     post_data = request.POST.copy()
     post_data.update({'locale': request.locale})
-    doc_form = DocumentForm(post_data,
-        can_create_tags=request.user.has_perm('taggit.add_tag'))
+    doc_form = DocumentForm(post_data)
     rev_form = RevisionForm(post_data)
 
     if doc_form.is_valid() and rev_form.is_valid():
@@ -256,7 +254,6 @@ def edit_document(request, document_slug, revision_id=None):
     if doc.allows_editing_by(user):
         doc_form = DocumentForm(
             initial=_document_form_initial(doc),
-            can_create_tags=user.has_perm('taggit.add_tag'),
             can_archive=user.has_perm('wiki.archive_document'))
 
     if request.method == 'GET':
@@ -275,7 +272,6 @@ def edit_document(request, document_slug, revision_id=None):
                 doc_form = DocumentForm(
                     post_data,
                     instance=doc,
-                    can_create_tags=user.has_perm('taggit.add_tag'),
                     can_archive=user.has_perm('wiki.archive_document'))
                 if doc_form.is_valid():
                     # Get the possibly new slug for the imminent redirection:
@@ -522,8 +518,7 @@ def translate(request, document_slug, revision_id=None):
 
     if user_has_doc_perm:
         doc_initial = _document_form_initial(doc) if doc else None
-        doc_form = DocumentForm(initial=doc_initial,
-            can_create_tags=user.has_perm('taggit.add_tag'))
+        doc_form = DocumentForm(initial=doc_initial)
     if user_has_rev_perm:
         initial = {'based_on': based_on_rev.id, 'comment': ''}
         if revision_id:
@@ -553,8 +548,7 @@ def translate(request, document_slug, revision_id=None):
             disclose_description = True
             post_data = request.POST.copy()
             post_data.update({'locale': request.locale})
-            doc_form = DocumentForm(post_data, instance=doc,
-                can_create_tags=user.has_perm('taggit.add_tag'))
+            doc_form = DocumentForm(post_data, instance=doc)
             doc_form.instance.locale = request.locale
             doc_form.instance.parent = parent_doc
             if which_form == 'both':
@@ -1023,8 +1017,8 @@ def _document_form_initial(document):
             'category': document.category,
             'is_localizable': document.is_localizable,
             'is_archived': document.is_archived,
-            'tags': [t.name for t in document.tags.all()
-                     if t.name not in PRODUCT_TAGS],
+            'topics': Topic.uncached.filter(
+                document=document).values_list('id', flat=True),
             'product_tags': [t.name for t in document.tags.all()
                          if t.name in PRODUCT_TAGS],
             'allow_discussion': document.allow_discussion,

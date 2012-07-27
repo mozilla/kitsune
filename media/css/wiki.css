@@ -394,6 +394,7 @@ html[lang="ja"] #more-help div.support-search input.text {
 #document-form form > ul > li li {
     display: inline-block;
     padding: 0 10px 0 0;
+    width: 45%;
 }
 
 .html-rtl #document-form form > ul > li li {
