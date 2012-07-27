@@ -19,11 +19,11 @@ from django.views.decorators.http import (require_GET, require_POST,
 import jingo
 from mobility.decorators import mobile_template
 from statsd import statsd
-from taggit.models import Tag
 from tower import ugettext_lazy as _lazy
 from tower import ugettext as _
 
 from access.decorators import permission_required, login_required
+from products.models import Product
 from sumo.helpers import urlparams
 from sumo.urlresolvers import reverse
 from sumo.utils import paginate, smart_int, get_next_url, truncated_json_dumps
@@ -37,7 +37,7 @@ from wiki.forms import (AddContributorForm, DocumentForm, RevisionForm,
 from wiki.models import Document, Revision, HelpfulVote, ImportantDate
 from wiki.config import (CATEGORIES, OPERATING_SYSTEMS,
                          GROUPED_OPERATING_SYSTEMS, FIREFOX_VERSIONS,
-                         GROUPED_FIREFOX_VERSIONS, PRODUCT_TAGS)
+                         GROUPED_FIREFOX_VERSIONS)
 from wiki.parser import wiki_to_html
 from wiki.tasks import (send_reviewed_notification, schedule_rebuild_kb,
                         send_contributor_notification)
@@ -1018,8 +1018,8 @@ def _document_form_initial(document):
             'is_archived': document.is_archived,
             'topics': Topic.uncached.filter(
                 document=document).values_list('id', flat=True),
-            'product_tags': [t.name for t in document.tags.all()
-                         if t.name in PRODUCT_TAGS],
+            'products': Product.uncached.filter(
+                document=document).values_list('id', flat=True),
             'allow_discussion': document.allow_discussion,
             'needs_change': document.needs_change,
             'needs_change_comment': document.needs_change_comment}
