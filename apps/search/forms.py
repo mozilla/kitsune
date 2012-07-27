@@ -6,8 +6,8 @@ from django.forms.util import ValidationError
 
 from tower import ugettext_lazy as _lazy
 
-from forums.models import Forum as DiscussionForum
 import search as constants
+from forums.models import Forum as DiscussionForum
 from sumo.form_fields import TypedMultipleChoiceField
 from sumo_locales import LOCALES
 from wiki.config import CATEGORIES, PRODUCTS
@@ -19,6 +19,13 @@ SEARCH_LANGUAGES = [(k, LOCALES[k].native) for
 
 class SearchForm(forms.Form):
     """Django form for handling display and validation"""
+    # TODO: Wrote this, but can't use it until we switch to product
+    # field in the index.
+    # def __init__(self, *args, **kwargs):
+    #     super(SearchForm, self).__init__(*args, **kwargs)
+
+    #     product_field = self.fields['product']
+    #     product_field.choices = Product.objects.values_list('id', 'title')
 
     def clean(self):
         """Clean up data and set defaults"""

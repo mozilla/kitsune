@@ -114,6 +114,7 @@ OPERATING_SYSTEMS = tuple(chain(*[options for label, options in
                                   GROUPED_OPERATING_SYSTEMS]))
 
 # Products supported
+# TODO: We can nix this once we finish the product changes in search.
 Product = namedtuple('Product', 'slug, name')  # slug is used for tag/topic
 PRODUCTS = (
     Product('desktop', _lazy(u'Desktop')),

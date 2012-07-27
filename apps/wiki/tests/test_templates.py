@@ -13,7 +13,6 @@ import mock
 from nose import SkipTest
 from nose.tools import eq_
 from pyquery import PyQuery as pq
-from taggit.models import Tag
 from wikimarkup.parser import ALLOWED_TAGS, ALLOWED_ATTRIBUTES
 
 from sumo.helpers import urlparams
@@ -458,7 +457,10 @@ class NewDocumentTests(TestCaseBase):
         self.client.login(username='admin', password='testpass')
         response = self.client.get(reverse('wiki.new_document'))
         doc = pq(response.content)
-        eq_(1, len(doc('input[name="product_tags"][checked=checked]')))
+        # TODO: Do we want to re-implement the initial product
+        # checked? Maybe add a column to the table and use that to
+        # figure out which are initial?
+        # eq_(1, len(doc('input[name="products"][checked=checked]')))
         eq_(None, doc('input[name="tags"]').attr('required'))
         eq_('checked', doc('input#id_allow_discussion').attr('checked'))
         eq_(None, doc('input#id_allow_discussion').attr('required'))
@@ -560,13 +562,13 @@ class NewDocumentTests(TestCaseBase):
         """Try to create a new document with an invalid product."""
         self.client.login(username='admin', password='testpass')
         data = new_document_data()
-        data['product_tags'] = [1337]
+        data['products'] = ['l337']
         response = self.client.post(reverse('wiki.new_document'), data,
                                     follow=True)
         doc = pq(response.content)
         ul = doc('#document-form > ul.errorlist')
         eq_(1, len(ul))
-        eq_('Select a valid choice. 1337 is not one of the available choices.',
+        eq_('Select a valid choice. l337 is not one of the available choices.',
             ul('li').text())
 
     def test_slug_collision_validation(self):

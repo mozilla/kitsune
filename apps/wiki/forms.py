@@ -8,12 +8,12 @@ from django.utils.safestring import mark_safe
 
 from tower import ugettext_lazy as _lazy
 
+from products.models import Product
 from sumo.form_fields import MultiUsernameField, StrippedCharField
 from topics.models import Topic
 from wiki.models import Document, Revision
 from wiki.config import (SIGNIFICANCES_HELP, GROUPED_FIREFOX_VERSIONS,
-                         SIGNIFICANCES, GROUPED_OPERATING_SYSTEMS, CATEGORIES,
-                         PRODUCTS, PRODUCT_TAGS)
+                         SIGNIFICANCES, GROUPED_OPERATING_SYSTEMS, CATEGORIES)
 
 
 TITLE_REQUIRED = _lazy(u'Please provide a title.')
@@ -68,6 +68,9 @@ class DocumentForm(forms.ModelForm):
         topics_field = self.fields['topics']
         topics_field.choices = Topic.objects.values_list('id', 'title')
 
+        products_field = self.fields['products']
+        products_field.choices = Product.objects.values_list('id', 'title')
+
         # If user hasn't permission to frob is_archived, remove the field. This
         # causes save() to skip it as well.
         if not can_archive:
@@ -94,10 +97,8 @@ class DocumentForm(forms.ModelForm):
                         'min_length': SLUG_SHORT,
                         'max_length': SLUG_LONG})
 
-    product_tags = forms.MultipleChoiceField(
+    products = forms.MultipleChoiceField(
         label=_lazy(u'Relevant to:'),
-        choices=PRODUCTS,
-        initial=[PRODUCTS[0][0]],
         required=False,
         widget=forms.CheckboxSelectMultiple())
 
@@ -149,7 +150,7 @@ class DocumentForm(forms.ModelForm):
 
     class Meta:
         model = Document
-        fields = ('title', 'slug', 'category', 'is_localizable', 'product_tags',
+        fields = ('title', 'slug', 'category', 'is_localizable', 'products',
                   'topics', 'locale', 'is_archived', 'allow_discussion',
                   'needs_change', 'needs_change_comment')
 
@@ -165,12 +166,9 @@ class DocumentForm(forms.ModelForm):
         doc.save()
         self.save_m2m()
 
-        if not parent_doc:
-            # Set the products as tags.
-            # products are not set on the translations.
-            prods = self.cleaned_data['product_tags']
-            doc.tags.add(*prods)
-            doc.tags.remove(*[p for p in PRODUCT_TAGS if p not in prods])
+        if parent_doc:
+            # Products are not set on translations.
+            doc.products.remove(*[p for p in doc.products.all()])
 
         return doc
 

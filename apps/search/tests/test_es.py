@@ -1,5 +1,5 @@
-import json
 import datetime
+import json
 
 import mock
 from django.conf import settings
@@ -12,10 +12,10 @@ from nose.tools import eq_
 from pyquery import PyQuery as pq
 from test_utils import TestCase
 
+import search as constants
 from forums.tests import forum, thread, post
 from questions.tests import question, answer, answervote, questionvote
 from questions.models import Question
-import search as constants
 from search import es_utils
 from search.models import generate_tasks
 from sumo.tests import LocalizingClient
