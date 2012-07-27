@@ -326,7 +326,7 @@ html[lang="ja"] #more-help div.support-search input.text {
     display: inline-block;
     margin: 15px 0 0 20px;
     padding: 10px 5px;
-    width: 192px;
+    width: 230px;
 }
 
 #side #unhelpful-survey {
@@ -347,7 +347,7 @@ html[lang="ja"] #more-help div.support-search input.text {
 #unhelpful-survey li {
     color: #fff;
     cursor: pointer;
-    padding: 2px 0 2px 15px;
+    padding: 2px 0 2px 12px;
     position: relative;
 }
 
@@ -360,15 +360,21 @@ html[lang="ja"] #more-help div.support-search input.text {
     height: 40px;
     margin: 6px 0 2px 12px;
     resize: vertical;
-    width: 155px;
+    width: 193px;
 }
 
 #unhelpful-survey input[type="submit"] {
     margin: 6px 14px;
+    float: left;
 }
 
 #unhelpful-survey .character-counter {
     font-size: 10px;
+}
+
+#unhelpful-survey .disabled-reason {
+    font-size: 12px;
+    padding-top: 5px;
 }
 
 /* New / Edit / Translate Document */

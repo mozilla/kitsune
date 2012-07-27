@@ -4,19 +4,19 @@
         <input type="hidden" name="vote_id" value="{{ vote_id }}" />
         <p>{{ _('Sorry to hear that.') }}</p>
         <ul id="helpful-contents">
-            <li><input type="checkbox" name="too-long" value="1" />{{ _('Too long') }}</li>
-            <li><input type="checkbox" name="not-complete" value="1" />{{ _('Not complete') }}</li>
-            <li><input type="checkbox" name="confusing" value="1" />{{ _('Confusing') }}</li>
-            <li><input type="checkbox" name="overly-technical" value="1" />{{ _('Overly technical') }}</li>
-            <li><input type="checkbox" name="incorrect-info" value="1" />{{ _('Incorrect info') }}</li>
-            <li><input type="checkbox" name="didnt-work" value="1" />{{ _("Solution didn't work") }}</li>
-            <li><input type="checkbox" name="wrong-topic" value="1" />{{ _('Wrong topic') }}</li>
-            <li><input type="checkbox" name="other" value="1" />{{ _('Other') }}</li>
+            <li><input type="radio" name="unhelpful-reason" value="confusing" />{{ _('Confusing') }}</li>
+            <li><input type="radio" name="unhelpful-reason" value="didnt-work" />{{ _("Solution didn't work") }}</li>
+            <li><input type="radio" name="unhelpful-reason" value="too-long" />{{ _('Too long') }}</li>
+            <li><input type="radio" name="unhelpful-reason" value="other" />{{ _('Other') }}</li>
+            <li><input type="radio" name="unhelpful-reason" value="firefox-feedback" />{{ _('I have feedback about Firefox') }}</li>
         </ul>
         <textarea name="comment" placeholder="{{ _('Tell us more.') }}"></textarea>
         <p class="character-counter">
           <span id="remaining-characters">600</span> {{_('characters remaining.') }}
         </p>
         <input type="submit" name="button" value="{{ _('Submit') }}" />
+        <p class="disabled-reason">
+          {{ _('Please provide more details') }}
+        </p>
     </form>
 </div>
