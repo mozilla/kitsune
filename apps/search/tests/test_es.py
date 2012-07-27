@@ -14,12 +14,14 @@ from test_utils import TestCase
 
 import search as constants
 from forums.tests import forum, thread, post
+from products.tests import product
 from questions.tests import question, answer, answervote, questionvote
 from questions.models import Question
 from search import es_utils
 from search.models import generate_tasks
 from sumo.tests import LocalizingClient
 from sumo.urlresolvers import reverse
+from topics.tests import topic
 from users.tests import user
 from wiki.tests import document, revision
 
@@ -211,6 +213,7 @@ class ElasticSearchUnifiedViewTests(ElasticTestCase):
         # Create a question with an answer with an answervote that
         # marks the answer as helpful.  The question should have the
         # "desktop" tag.
+        product(slug=u'desktop', save=True)
         ques = question(title=u'audio', save=True)
         ques.tags.add(u'desktop')
         ans = answer(question=ques, content=u'volume', save=True)
@@ -254,7 +257,7 @@ class ElasticSearchUnifiedViewTests(ElasticTestCase):
 
         """
         doc = document(title=u'audio', locale=u'en-US', category=10, save=True)
-        doc.tags.add(u'desktop')
+        doc.products.add(product(slug=u'desktop', save=True))
         revision(document=doc, is_approved=True, save=True)
 
         self.refresh()
@@ -290,7 +293,7 @@ class ElasticSearchUnifiedViewTests(ElasticTestCase):
         answervote(answer=ans, helpful=True, save=True)
 
         doc = document(title=u'audio', locale=u'en-US', category=10, save=True)
-        doc.tags.add(u'desktop')
+        doc.products.add(product(slug=u'desktop', save=True))
         revision(document=doc, is_approved=True, save=True)
 
         thread1 = thread(title=u'audio', save=True)
@@ -623,32 +626,38 @@ class ElasticSearchUnifiedViewTests(ElasticTestCase):
 
     def test_wiki_tags(self):
         """Search for tags, includes multiple."""
-        for tags in ('extant', 'extant tagged'):
-            doc = document(locale=u'en-US', category=10, save=True)
-            for tag in tags.split(' '):
-                doc.tags.add(tag)
-            revision(document=doc, is_approved=True, save=True)
+        t1 = topic(slug='doesnotexist', save=True)
+        t2 = topic(slug='extant', save=True)
+        t3 = topic(slug='tagged', save=True)
+
+        doc = document(locale=u'en-US', category=10, save=True)
+        doc.topics.add(t2)
+        revision(document=doc, is_approved=True, save=True)
+
+        doc = document(locale=u'en-US', category=10, save=True)
+        doc.topics.add(t2)
+        doc.topics.add(t3)
+        revision(document=doc, is_approved=True, save=True)
 
         self.refresh()
 
-        qs = {'a': 1, 'w': 1, 'format': 'json'}
-        tags_vals = (
-            ('doesnotexist', 0),
-            ('extant', 2),
-            ('tagged', 1),
-            ('extant tagged', 1),  # two tags
+        topic_vals = (
+            (t1.slug, 0),
+            (t2.slug, 2),
+            (t3.slug, 1),
+            ([t2.slug, t3.slug], 1),
         )
 
-        for tags, number in tags_vals:
-            qs.update({'tags': tags})
+        qs = {'a': 1, 'w': 1, 'format': 'json'}
+        for topics, number in topic_vals:
+            qs.update({'topics': topics})
             response = self.client.get(reverse('search'), qs)
             eq_(number, json.loads(response.content)['total'])
 
-    def test_wiki_tags_inherit(self):
+    def test_wiki_topics_inherit(self):
         """Translations inherit tags from their parents."""
         doc = document(locale=u'en-US', category=10, save=True)
-        doc.tags.add(u'desktop')
-        doc.tags.add(u'extant')
+        doc.topics.add(topic(slug='extant', save=True))
         revision(document=doc, is_approved=True, save=True)
 
         translated = document(locale=u'es', parent=doc, category=10,
@@ -657,23 +666,23 @@ class ElasticSearchUnifiedViewTests(ElasticTestCase):
 
         self.refresh()
 
-        qs = {'a': 1, 'w': 1, 'format': 'json', 'tags': 'extant'}
+        qs = {'a': 1, 'w': 1, 'format': 'json', 'topics': 'extant'}
         response = self.client.get(reverse('search', locale='es'), qs)
         eq_(1, json.loads(response.content)['total'])
 
     def test_products(self):
         """Search for products."""
+
         prod_vals = (
-            ('mobile', 1),
-            ('desktop', 1),
-            ('sync', 2),
-            ('FxHome', 0),
+            (product(slug='b2g', save=True), 0),
+            (product(slug='mobile', save=True), 1),
+            (product(slug='desktop', save=True), 2),
         )
 
         for prod, total in prod_vals:
             for i in range(total):
                 doc = document(locale=u'en-US', category=10, save=True)
-                doc.tags.add(prod)
+                doc.products.add(prod)
                 revision(document=doc, is_approved=True, save=True)
 
         self.refresh()
@@ -681,14 +690,15 @@ class ElasticSearchUnifiedViewTests(ElasticTestCase):
         qs = {'a': 1, 'w': 1, 'format': 'json'}
 
         for prod, total in prod_vals:
-            qs.update({'product': prod})
+            qs.update({'product': prod.slug})
             response = self.client.get(reverse('search'), qs)
             eq_(total, json.loads(response.content)['total'])
 
     def test_products_inherit(self):
         """Translations inherit products from their parents."""
         doc = document(locale=u'en-US', category=10, save=True)
-        doc.tags.add(u'desktop')
+        p = product(title=u'Firefox', slug=u'desktop', save=True)
+        doc.products.add(p)
         revision(document=doc, is_approved=True, save=True)
 
         translated = document(locale=u'fr', parent=doc, category=10,
@@ -697,7 +707,7 @@ class ElasticSearchUnifiedViewTests(ElasticTestCase):
 
         self.refresh()
 
-        qs = {'a': 1, 'w': 1, 'format': 'json', 'product': 'desktop'}
+        qs = {'a': 1, 'w': 1, 'format': 'json', 'product': p.slug}
         response = self.client.get(reverse('search', locale='fr'), qs)
         eq_(1, json.loads(response.content)['total'])
 

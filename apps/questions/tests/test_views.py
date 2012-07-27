@@ -6,6 +6,7 @@ from django.contrib.sites.models import Site
 import mock
 from nose.tools import eq_
 
+from products.tests import product
 from questions.models import Question
 from questions.tests import answer, question
 from search.tests.test_es import ElasticTestCase
@@ -47,7 +48,7 @@ class AAQTests(ElasticTestCase):
         q.save()
 
         d = document(title=u'CupcakesKB cupcakes', category=10, save=True)
-        d.tags.add(u'desktop')
+        d.products.add(product(slug=u'desktop', save=True))
         d.save()
 
         rev = revision(document=d, is_approved=True)

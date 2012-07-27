@@ -965,11 +965,12 @@ def marketplace_success(request, template=None):
     return jingo.render(request, template)
 
 
-def _search_suggestions(request, query, locale, category_tags):
+def _search_suggestions(request, query, locale, product_slugs):
     """Return an iterable of the most relevant wiki pages and questions.
 
     query -- full text to search on
     locale -- locale to limit to
+    product_slugs -- list of product slugs (["desktop", "mobile", ...])
 
     Items are dicts of:
         {
@@ -992,10 +993,10 @@ def _search_suggestions(request, query, locale, category_tags):
     WIKI_RESULTS = QUESTIONS_RESULTS = 3
     default_categories = settings.SEARCH_DEFAULT_CATEGORIES
 
-    # Apply category filters
-    if category_tags:
-        question_s = question_s.filter(question_tag__in=category_tags)
-        wiki_s = wiki_s.filter(document_tag__in=category_tags)
+    # Apply product filters
+    if product_slugs:
+        question_s = question_s.filter(question_tag__in=product_slugs)
+        wiki_s = wiki_s.filter(document_product__in=product_slugs)
 
     try:
         raw_results = (

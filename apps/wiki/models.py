@@ -626,12 +626,6 @@ register_for_indexing(
     'wiki',
     instance_to_indexee=lambda i: i,
     m2m=True)
-register_for_indexing(
-    TaggedItem,
-    'wiki',
-    instance_to_indexee=(
-        lambda i: i.content_object if isinstance(i.content_object, Document)
-                  else None))
 
 
 class Revision(ModelBase):
