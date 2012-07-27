@@ -10,7 +10,7 @@ class MobileHomeTests(MobileTestCase):
         r = self._check_template('home', 'landings/mobile/home.html')
         doc = pq(r.content)
         eq_('desktop', doc('#search input[name="q_tags"]')[0].attrib['value'])
-        eq_('desktop',
+        eq_('firefox',
             doc('#search input[name="product"]')[0].attrib['value'])
 
     def test_mobile_home_for_mobile(self):
@@ -21,22 +21,14 @@ class MobileHomeTests(MobileTestCase):
 
     def test_sync_home_for_mobile(self):
         r = self._check_template('home.sync', 'landings/mobile/sync.html')
-        doc = pq(r.content)
-        eq_('sync', doc('#search input[name="q_tags"]')[0].attrib['value'])
-        eq_('sync', doc('#search input[name="product"]')[0].attrib['value'])
 
     def test_fxhome_home_for_mobile(self):
         r = self._check_template('home.fxhome', 'landings/mobile/fxhome.html')
-        doc = pq(r.content)
-        eq_('FxHome', doc('#search input[name="q_tags"]')[0].attrib['value'])
-        eq_('FxHome', doc('#search input[name="product"]')[0].attrib['value'])
 
     def test_marketplace_home_for_mobile(self):
         r = self._check_template(
             'home.marketplace', 'landings/mobile/marketplace.html')
         doc = pq(r.content)
-        eq_('marketplace',
-            doc('#search input[name="product"]')[0].attrib['value'])
         eq_('1', doc('#search input[name="w"]')[0].attrib['value'])
 
     def test_firefox_home_for_mobile(self):

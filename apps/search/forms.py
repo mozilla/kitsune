@@ -8,9 +8,11 @@ from tower import ugettext_lazy as _lazy
 
 import search as constants
 from forums.models import Forum as DiscussionForum
+from products.models import Product
 from sumo.form_fields import TypedMultipleChoiceField
 from sumo_locales import LOCALES
-from wiki.config import CATEGORIES, PRODUCTS
+from topics.models import Topic
+from wiki.config import CATEGORIES
 
 
 SEARCH_LANGUAGES = [(k, LOCALES[k].native) for
@@ -19,13 +21,15 @@ SEARCH_LANGUAGES = [(k, LOCALES[k].native) for
 
 class SearchForm(forms.Form):
     """Django form for handling display and validation"""
-    # TODO: Wrote this, but can't use it until we switch to product
-    # field in the index.
-    # def __init__(self, *args, **kwargs):
-    #     super(SearchForm, self).__init__(*args, **kwargs)
 
-    #     product_field = self.fields['product']
-    #     product_field.choices = Product.objects.values_list('id', 'title')
+    def __init__(self, *args, **kwargs):
+        super(SearchForm, self).__init__(*args, **kwargs)
+
+        product_field = self.fields['product']
+        product_field.choices = Product.objects.values_list('slug', 'title')
+
+        topics_field = self.fields['topics']
+        topics_field.choices = Topic.objects.values_list('slug', 'title')
 
     def clean(self):
         """Clean up data and set defaults"""
@@ -66,10 +70,10 @@ class SearchForm(forms.Form):
     a = forms.IntegerField(required=False, widget=forms.HiddenInput)
 
     # KB fields
-    tag_widget = forms.TextInput(attrs={'placeholder': _lazy('tag1, tag2'),
-                                        'class': 'auto-fill'})
-    tags = forms.CharField(required=False, widget=tag_widget,
-                           label=_lazy('Tags'))
+    topics = forms.MultipleChoiceField(
+        required=False,
+        widget=forms.CheckboxSelectMultiple(),
+        label=_lazy('Topics'))
 
     language = forms.ChoiceField(required=False, label=_lazy('Language'),
                                  choices=SEARCH_LANGUAGES)
@@ -81,7 +85,6 @@ class SearchForm(forms.Form):
     product = forms.MultipleChoiceField(
         required=False,
         label=_lazy('Relevant to'),
-        choices=PRODUCTS,
         widget=forms.CheckboxSelectMultiple())
 
     include_archived = forms.BooleanField(
@@ -147,5 +150,7 @@ class SearchForm(forms.Form):
         label=_lazy('Votes'), choices=constants.NUMBER_LIST)
     num_votes = forms.IntegerField(required=False)
 
+    tag_widget = forms.TextInput(attrs={'placeholder': _lazy('tag1, tag2'),
+                                        'class': 'auto-fill'})
     q_tags = forms.CharField(label=_lazy('Tags'), required=False,
                              widget=tag_widget)

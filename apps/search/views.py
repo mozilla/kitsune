@@ -143,12 +143,12 @@ def search(request, template=None):
         # Product filter
         products = cleaned['product']
         for p in products:
-            wiki_f &= F(document_tag=p)
+            wiki_f &= F(document_product=p)
 
-        # Tags filter
-        tags = [t.strip() for t in cleaned['tags'].split()]
-        for t in tags:
-            wiki_f &= F(document_tag=t)
+        # Topics filter
+        topics = cleaned['topics']
+        for t in topics:
+            wiki_f &= F(document_topic=t)
 
         # Archived bit
         if a == '0' and not cleaned['include_archived']:
