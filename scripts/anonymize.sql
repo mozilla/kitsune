@@ -26,3 +26,10 @@ SET SESSION FOREIGN_KEY_CHECKS = 1;
 UPDATE django_site SET
     domain = 'support-local.allizom.org',
     name = 'support-local.allizom.org';
+
+-- We don't pull images from production, clearing out the fields
+-- let's us see the default placeholders.
+UPDATE topics_topic SET
+	image = NULL;
+UPDATE products_product SET
+	image = NULL;
