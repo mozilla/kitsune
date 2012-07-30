@@ -968,6 +968,16 @@ class DocumentListTests(TestCaseBase):
         doc = pq(response.content)
         eq_(1, len(doc('#document-list ul.documents li')))
 
+    def test_topic_list_l10n(self):
+        """Verify the documents by topic list view for a locale."""
+        t = topic(save=True)
+        self.doc.topics.add(t)
+        response = self.client.get(
+            reverse('wiki.topic', locale='es', args=[t.slug]))
+        eq_(200, response.status_code)
+        doc = pq(response.content)
+        eq_(1, len(doc('#document-list ul.documents li')))
+
 
 class DocumentRevisionsTests(TestCaseBase):
     """Tests for the Document Revisions template"""
