@@ -1,4 +1,4 @@
-INSERT INTO `django_content_type` (`name`, `app_label`, `model`) VALUES ('redirect','inproduct','redirect');
+INSERT INTO `django_content_type` (`name`, `app_label`, `model`) VALUES ('redirect','inproduct','redirect') ON DUPLICATE KEY UPDATE `name`='redirect';
 
 SELECT (@id:=`id`) FROM `django_content_type` WHERE `name` = 'redirect';
 
