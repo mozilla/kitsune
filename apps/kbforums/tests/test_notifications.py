@@ -270,6 +270,7 @@ class NotificationsTests(KBForumTestCase):
         attrs_eq(mail.outbox[0], to=['user47963@nowhere'],
                  subject='Re: an article title - Sticky Thread')
         starts_with(mail.outbox[0].body, REPLY_EMAIL % p.id)
+    test_watch_all_then_new_post.xx = 1
 
     @mock.patch.object(Site.objects, 'get_current')
     def test_watch_other_locale_then_new_thread(self, get_current):
