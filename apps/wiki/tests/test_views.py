@@ -7,7 +7,7 @@ import mock
 from nose.tools import eq_
 from pyquery import PyQuery as pq
 
-from questions.tests import tags_eq
+from products.tests import product
 from sumo.tests import TestCase, LocalizingClient
 from sumo.urlresolvers import reverse
 from users.tests import user, add_permission
@@ -130,16 +130,27 @@ class DocumentEditingTests(TestCase):
     def test_changing_products(self):
         """Changing products works as expected."""
         d, r = doc_rev()
+        prod_desktop = product(title=u'desktop', save=True)
+        prod_mobile = product(title=u'mobile', save=True)
+
         data = new_document_data()
-        data.update({'product_tags': ['desktop', 'sync'],
+        data.update({'products': [prod_desktop.id, prod_mobile.id],
+                     'title': d.title,
+                     'slug': d.slug,
                      'form': 'doc'})
         self.client.post(reverse('wiki.edit_document', args=[d.slug]), data)
-        tags_eq(d, ['desktop', 'sync'])
-        data.update({'product_tags': ['mobile'],
+
+        eq_(sorted(Document.uncached.get(slug=d.slug).products.values_list(
+                    'id', flat=True)),
+            sorted([prod.id for prod in [prod_desktop, prod_mobile]]))
+
+        data.update({'products': [prod_desktop.id],
                      'form': 'doc'})
         self.client.post(reverse('wiki.edit_document', args=[data['slug']]),
                          data)
-        tags_eq(d, ['mobile'])
+        eq_(sorted(Document.uncached.get(slug=d.slug).products.values_list(
+                    'id', flat=True)),
+            sorted([prod.id for prod in [prod_desktop]]))
 
     @mock.patch.object(Site.objects, 'get_current')
     def test_invalid_slugs(self, get_current):
@@ -210,6 +221,7 @@ class DocumentEditingTests(TestCase):
 
         resp = self.client.get(url)
         assert 'first revision' in resp.content
+
 
 class AddRemoveContributorTests(TestCase):
     def setUp(self):
@@ -285,10 +297,10 @@ class VoteTests(TestCase):
         """
         vote = helpful_vote(save=True)
         too_long_comment = ('lorem ipsum' * 100) + 'bad data'
-        response = self.client.post(reverse('wiki.unhelpful_survey'),
-                                    {'vote_id': vote.id,
-                                     'button': 'Submit',
-                                     'comment': too_long_comment})
+        self.client.post(reverse('wiki.unhelpful_survey'),
+                         {'vote_id': vote.id,
+                          'button': 'Submit',
+                          'comment': too_long_comment})
         vote_meta = vote.metadata.all()[0]
         # Will fail if it is not proper json, ie: bad truncation happened.
         survey = json.loads(vote_meta.value)
