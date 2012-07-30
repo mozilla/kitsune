@@ -53,6 +53,16 @@ self-descriptive (e.g. very short strings). If you immediately precede the
 string with a comment that starts ``L10n:``, the comment will be added to the
 PO file, and visible to localizers.
 
+Example::
+
+    rev_data.append({
+                'x': 1000 * int(time.mktime(rdate.timetuple())),
+                # L10n: 'R' is the first letter of "Revision".
+                'title': _('R', 'revision_heading'),
+                'text': unicode(_('Revision %s')) % rev.created
+                #'url': 'http://www.google.com/'  # Not supported yet
+            })
+
 
 Adding Context with msgctxt
 ---------------------------
@@ -70,6 +80,14 @@ appropriate to add a context (like "button") to one of them.
 
 Generally, we should only add context if we are sure the strings aren't used in
 the same way, or if localizers ask us to.
+
+Example::
+
+    from tower import ugettext as _
+
+    ...
+
+    foo = _('Search', context='text for the search button on the form')
 
 
 Plurals
@@ -160,9 +178,11 @@ tag::
 Strings in Python
 -----------------
 
-*NB: Whenever you are adding a string in Python, ask yourself if it really
-needs to be there, or if it should be in the template. Keep logic and
-presentation separate!*
+.. Note::
+
+   Whenever you are adding a string in Python, ask yourself if it
+   really needs to be there, or if it should be in the template. Keep
+   logic and presentation separate!
 
 Strings in Python are more complex for two reasons:
 
