@@ -186,9 +186,8 @@ def list_documents(request, category=None, topic=None):
         if request.locale == default_lang:
             docs = docs.filter(topics=topic)
         else:
-            # blows up: docs = docs.filter(parent__tags__name=tagobj.name)
             parent_ids = Document.objects.filter(
-                locale=default_lang, topic=topic).values_list('id', flat=True)
+                locale=default_lang, topics=topic).values_list('id', flat=True)
             docs = docs.filter(parent__in=parent_ids)
 
     docs = paginate(request, docs, per_page=DOCUMENTS_PER_PAGE)
