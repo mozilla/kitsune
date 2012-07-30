@@ -32,12 +32,12 @@ def run():
 
     total_affected = 0
 
-    # For each tag, get the document and add a topic for it.
+    # For each tag, get the document and add a product for it.
     for tag in tags:
         for product_slug in tags_to_migrate[tag.slug]:
             product = Product.objects.get(slug=product_slug)
 
-            # Assign the topic to all the documents tagged with tag.
+            # Assign the product to all the documents tagged with tag.
             for doc in Document.objects.filter(tags__slug=tag.slug):
 
                 doc.products.add(product)
