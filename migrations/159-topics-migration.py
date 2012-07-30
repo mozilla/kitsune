@@ -56,7 +56,12 @@ def run():
 
     # For each tag, get the document and add a topic for it.
     for tag in tags:
-        destination_tag = Tag.objects.get(slug=tags_to_migrate[tag.slug])
+        try:
+            destination_tag = Tag.objects.get(slug=tags_to_migrate[tag.slug])
+        except Tag.DoesNotExist:
+            print 'Skipped tag %s' % tag
+            continue
+
         # Get or create the topic.
         topic, created = Topic.objects.get_or_create(
             title=destination_tag.name,
