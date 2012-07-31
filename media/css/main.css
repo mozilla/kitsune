@@ -210,7 +210,7 @@ h1.site-title mark {
     z-index: 60;
 }
 
-.menu-nav > ul > li:hover > a {
+.old-theme .menu-nav > ul > li:hover > a {
     background: none repeat scroll 0 0 #FFFFFF;
     border-color: #98B2C9 #98B2C9 #FFFFFF;
     box-shadow: 0 0 4px rgba(0, 0, 0, 0.4);
@@ -220,7 +220,7 @@ h1.site-title mark {
     display: block;
 }
 
-.menu-nav > ul > li:hover:after {
+.old-theme .menu-nav > ul > li:hover:after {
     background: none repeat scroll 0 0 #FFFFFF;
     content: "";
     height: 5px;
@@ -310,7 +310,7 @@ h1.site-title mark {
     visibility: hidden;
 }
 
-#aux-nav > ul > li:not(:first-child):before {
+.old-theme #aux-nav > ul > li:not(:first-child):before {
     background-attachment: scroll;
     background-clip: border-box;
     background-color: transparent;
@@ -350,7 +350,7 @@ h1.site-title mark {
     padding: 0 1em;
 }
 
-#aux-nav > ul > li > a:after {
+.old-theme #aux-nav > ul > li > a:after {
     -moz-border-bottom-colors: none;
     -moz-border-image: none;
     -moz-border-left-colors: none;
@@ -689,7 +689,7 @@ article.main > h1 {
     padding: 20px 60px 20px 0;
 }
 
-#support-search {
+.old-theme #support-search {
     float: left;
     padding: 15px 0 0;
     width: 310px;
@@ -699,7 +699,7 @@ article.main > h1 {
     float: right;
 }
 
-div.support-search form {
+.old-theme div.support-search form {
     background: #fff;
     border: solid 1px #98b2c9;
     border-radius: 5px;
@@ -710,7 +710,7 @@ div.support-search form {
     padding: 5px 7px 9px;
 }
 
-div.support-search input.text {
+.old-theme div.support-search input.text {
     background: #fff;
     border: solid 1px #d9d9d9;
     border-radius: 5px;
@@ -888,6 +888,7 @@ div.support-search input.btn-important {
 }
 
 #quick-links li.aaq a mark {
+    background: transparent;
     display: block;
     font-weight: bold;
 }
@@ -917,6 +918,7 @@ div.support-search input.btn-important {
 }
 
 .sd-module h1 mark {
+    background: transparent;
     font-family: MetaBlack, "Trebuchet MS", sans-serif;
     font-style: normal;
     text-transform: uppercase;

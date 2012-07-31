@@ -2,50 +2,75 @@
 
 {% macro search_box(settings, id=False, prefix=None, target=None,
                     params=None) %}
-  <div class="support-search"{% if id %} id="{{ id }}"{% endif %} role="search">
-    {% if prefix %}
-      {{ prefix }}
-    {% endif %}
-    <form action="{{ url('search') }}" method="get" {% if target %} target="{{ target }}"{% endif %}>
+  {% if waffle.flag('new-theme') %}
+    <form {% if id %}id="{{ id }}"{% endif %} action="{{ url('search') }}" method="get" {% if target %} target="{{ target }}"{% endif %}>
       {% if params %}
         {% for k, v in params.items() %}
           <input type="hidden" name="{{ k }}" value="{{ v }}" />
         {% endfor %}
       {% endif %}
-      <input type="text" class="text" name="q" required="required" />
-      <input type="submit" class="btn-important" title="{{ _('Search') }}" value="{{ _('Search Mozilla Support') }}" />
+      <input type="text" name="q" required="required" placeholder="{{ _('Search Mozilla Support') }}" />
+      <button type="submit" title="{{ _('Search') }}">{{ _('Search') }}</button>
     </form>
-  </div>
+  {% else %}
+    <div class="support-search"{% if id %} id="{{ id }}"{% endif %} role="search">
+      {% if prefix %}
+        {{ prefix }}
+      {% endif %}
+      <form action="{{ url('search') }}" method="get" {% if target %} target="{{ target }}"{% endif %}>
+        {% if params %}
+          {% for k, v in params.items() %}
+            <input type="hidden" name="{{ k }}" value="{{ v }}" />
+          {% endfor %}
+        {% endif %}
+        <input type="text" class="text" name="q" required="required" />
+        <input type="submit" class="btn-important" title="{{ _('Search') }}" value="{{ _('Search Mozilla Support') }}" />
+      </form>
+    </div>
+  {% endif %}
 {% endmacro %}
 
 {% macro aux_nav(user) %}
-  {% if not settings.READ_ONLY %}
+  {% if waffle.flag('new-theme') %}
+    <li><a href="{{ url('questions.views.aaq') }}">{{ _('Ask a question') }}</a></li>
     {% if user.is_authenticated() %}
-      <li class="account">
-        <a class="user" href="{{ profile_url(user) }}">{{ user }}</a>
-        <ul>
-          <li><a href="{{ profile_url(user) }}">{{ _('View Profile') }}</a></li>
-          <li><a href="{{ profile_url(user, edit=True) }}">{{ _('Edit Profile') }}</a></li>
-          <li><a href="{{ url('dashboards.default') }}">{{ _('Dashboard') }}</a></li>
-          <li><a href="{{ url('users.edit_settings') }}">{{ _('Settings') }}</a></li>
-          <li><a href="{{ url('users.logout') }}">{{ _('Sign Out') }}</a></li>
-        </ul>
-      </li>
-      <li class="nomenu">
-        <a href="{{ url('messages.inbox') }}">
-          {{ _('Inbox') }}
-          {% if unread_message_count > 0 %}
-            <span class="unread-message-count">{{ unread_message_count }}</span>
-          {% endif %}
-        </a>
-      </li>
+      <li><a href="{{ url('users.logout') }}">{{ _('Sign Out') }}</a></li>
     {% else %}
-      <li class="account anonymous nomenu logout">
+      <li>
         {% trans login_url=url('users.login'), register_url=url('users.register') %}
-          Want to contribute?
-          <a href="{{ login_url }}">Sign In</a> or <a href="{{ register_url }}">Register</a>
+          <a href="{{ login_url }}">Sign In</a> / <a href="{{ register_url }}">Register</a>
         {% endtrans %}
       </li>
+    {% endif %}
+  {% else %}
+    {% if not settings.READ_ONLY %}
+      {% if user.is_authenticated() %}
+        <li class="account">
+          <a class="user" href="{{ profile_url(user) }}">{{ user }}</a>
+          <ul>
+            <li><a href="{{ profile_url(user) }}">{{ _('View Profile') }}</a></li>
+            <li><a href="{{ profile_url(user, edit=True) }}">{{ _('Edit Profile') }}</a></li>
+            <li><a href="{{ url('dashboards.default') }}">{{ _('Dashboard') }}</a></li>
+            <li><a href="{{ url('users.edit_settings') }}">{{ _('Settings') }}</a></li>
+            <li><a href="{{ url('users.logout') }}">{{ _('Sign Out') }}</a></li>
+          </ul>
+        </li>
+        <li class="nomenu">
+          <a href="{{ url('messages.inbox') }}">
+            {{ _('Inbox') }}
+            {% if unread_message_count > 0 %}
+              <span class="unread-message-count">{{ unread_message_count }}</span>
+            {% endif %}
+          </a>
+        </li>
+      {% else %}
+        <li class="account anonymous nomenu logout">
+          {% trans login_url=url('users.login'), register_url=url('users.register') %}
+            Want to contribute?
+            <a href="{{ login_url }}">Sign In</a> or <a href="{{ register_url }}">Register</a>
+          {% endtrans %}
+        </li>
+      {% endif %}
     {% endif %}
   {% endif %}
 {% endmacro %}
