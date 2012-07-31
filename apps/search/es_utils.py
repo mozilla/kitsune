@@ -8,6 +8,7 @@ from django.db import reset_queries
 
 import elasticutils
 import pyes
+from elasticutils.contrib.django import S, F
 
 from search.utils import chunked
 
@@ -40,10 +41,7 @@ CHUNK_SIZE = 50000
 log = logging.getLogger('search.es')
 
 
-F = elasticutils.F
-
-
-class Sphilastic(elasticutils.S):
+class Sphilastic(S):
     """Shim around elasticutils' S which makes it look like oedipus.S
 
     It ignores or implements workalikes for our Sphinx-specific API
@@ -68,14 +66,14 @@ class Sphilastic(elasticutils.S):
     def print_query(self):
         pprint.pprint(self._build_query())
 
-    def get_index(self):
+    def get_indexes(self):
         # Sphilastic is a searcher and so it's _always_ used in a read
         # context. Therefore, we always return the READ_INDEX.
-        return READ_INDEX
+        return [READ_INDEX]
 
-    def get_doctype(self):
+    def get_doctypes(self):
         # SUMO uses a unified doctype, so this always returns that.
-        return SUMO_DOCTYPE
+        return [SUMO_DOCTYPE]
 
     # TODO: Remove this when we remove bucketed search. Need to fix
     # suggestions to specify query fields when we do this.
@@ -116,30 +114,6 @@ class Sphilastic(elasticutils.S):
             kws = dict(or_=dict(
                     (field, args[0]) for field in self._query_fields))
         return super(Sphilastic, self).query(**kws)
-
-
-def format_explanation(explanation, indent='   ', indent_level=0):
-    """Return explanation in an easier to read format
-
-    Easier to read for me, at least.
-
-    """
-    if not explanation:
-        return ''
-
-    # Note: This is probably a crap implementation, but it's an
-    # interesting starting point for a better formatter.
-    line = ('%s%s %2.4f' % ((indent * indent_level),
-                            explanation['description'],
-                            explanation['value']))
-
-    if 'details' in explanation:
-        details = '\n'.join(
-            [format_explanation(subtree, indent, indent_level + 1)
-             for subtree in explanation['details']])
-        return line + '\n' + details
-
-    return line
 
 
 class MappingMergeError(Exception):
