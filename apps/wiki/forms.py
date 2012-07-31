@@ -52,7 +52,6 @@ class DocumentForm(forms.ModelForm):
         # Quasi-kwargs:
         can_archive = kwargs.pop('can_archive', False)
         initial_title = kwargs.pop('initial_title', '')
-        initial_comment = kwargs.pop('initial_comment', '')
 
         super(DocumentForm, self).__init__(*args, **kwargs)
 
@@ -63,7 +62,6 @@ class DocumentForm(forms.ModelForm):
         slug_field.initial = slugify(initial_title)
 
         comment_field = self.fields['needs_change_comment']
-        comment_field.initial = initial_comment
 
         topics_field = self.fields['topics']
         topics_field.choices = Topic.objects.values_list('id', 'title')

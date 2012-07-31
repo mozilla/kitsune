@@ -201,9 +201,7 @@ def list_documents(request, category=None, topic=None):
 def new_document(request):
     """Create a new wiki document."""
     if request.method == 'GET':
-        doc_form = DocumentForm(
-            initial_title=request.GET.get('title'),
-            initial_comment='first revision')
+        doc_form = DocumentForm(initial_title=request.GET.get('title'))
         rev_form = RevisionForm()
         return jingo.render(request, 'wiki/new_document.html',
                             {'document_form': doc_form,
