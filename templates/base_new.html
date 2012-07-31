@@ -98,12 +98,12 @@
       {% if request.locale == 'en-US' %}
         <nav id="main-nav">
           <ul class="cf">
-            <li><a href="#">{{ _('Products & Services') }}</a></li>
-            <li><a href="#">{{ _('Help Articles') }}</a></li>
+            <li><a href="{{ url('home.products') }}">{{ _('Products & Services') }}</a></li>
+            <li><a href="{{ url('home.kb') }}">{{ _('Help Articles') }}</a></li>
             <li><a href="#">{{ _('Hot Topics') }}</a></li>
             <li><a href="#">{{ _('Mozilla News') }}</a></li>
-            <li><a href="#">{{ _('Help Other Users') }}</a></li>
-            <li><a href="#">{{ _('Suggestion Box') }}</a></li>
+            <li><a href="{{ url('home.participate') }}">{{ _('Help Other Users') }}</a></li>
+            <li><a href="{{ url('home.feedback') }}">{{ _('Suggestion Box') }}</a></li>
           </ul>
         </nav>
       {% endif %}
