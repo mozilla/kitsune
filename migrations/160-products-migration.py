@@ -27,9 +27,6 @@ def run():
     # Get all the tags to migrate.
     tags = list(Tag.objects.filter(slug__in=tags_to_migrate.keys()))
 
-    # Make sure I didn't typo anything.
-    assert_equals(len(tags), len(tags_to_migrate))
-
     total_affected = 0
 
     # For each tag, get the document and add a product for it.
