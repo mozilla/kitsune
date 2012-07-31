@@ -137,13 +137,9 @@ AjaxVote.prototype = {
             var feedback = $textbox.val();
             if (checked === undefined ||
                 ((checked === 'other' || checked === 'firefox-feedback') && !feedback)) {
-
-                console.log('disabling');
-                console.log(checked + ' ' + feedback);
                 $submit.prop('disabled', true);
                 $reason.fadeIn(600);
             } else {
-                console.log('enabling');
                 $submit.prop('disabled', false);
                 $reason.fadeOut(600);
             }
