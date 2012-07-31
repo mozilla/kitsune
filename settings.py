@@ -460,10 +460,16 @@ TOWER_ADD_HEADERS = True
 MINIFY_BUNDLES = {
     'css': {
         'common': (
-            'css/reset.css',
             'global/footer.css',
             'css/kbox.css',
             'css/main.css',
+        ),
+        'old-theme': (
+            'css/reset.css',
+        ),
+        'new-theme': (
+            'css/normalize.css',
+            'less/main.less',
         ),
         'print': (
             'css/print.css',

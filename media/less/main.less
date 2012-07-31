@@ -1,0 +1,257 @@
+@import 'colors.less';
+@import 'vendors.less';
+@import 'grid.less';
+
+@font-face {
+  font-family: 'OpenSans';
+  src: url('../fonts/OpenSans-Regular-webfont.eot'); /* IE9 Compat Modes */
+  src: url('../fonts/OpenSans-Regular-webfont.eot?#iefix') format('embedded-opentype'), /* IE6-IE8 */
+  url('../fonts/OpenSans-Regular-webfont.woff') format('woff'), /* Modern Browsers */
+  url('../fonts/OpenSans-Regular-webfont.ttf')  format('truetype'), /* Safari, Android, iOS */
+  url('../fonts/OpenSans-Regular-webfont.svg#svgFontName') format('svg'); /* Legacy iOS */
+}
+
+@font-face {
+  font-family: 'OpenSansLight';
+  src: url('../fonts/OpenSans-Light-webfont.eot'); /* IE9 Compat Modes */
+  src: url('../fonts/OpenSans-Light-webfont.eot?#iefix') format('embedded-opentype'), /* IE6-IE8 */
+  url('../fonts/OpenSans-Light-webfont.woff') format('woff'), /* Modern Browsers */
+  url('../fonts/OpenSans-Light-webfont.ttf')  format('truetype'), /* Safari, Android, iOS */
+  url('../fonts/OpenSans-Light-webfont.svg#svgFontName') format('svg'); /* Legacy iOS */
+}
+
+a,
+a:link,
+a:visited {
+  color: @textBlue;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+body {
+  border-top: 2px solid #686868;
+  font-family: 'OpenSans', Arial, Helvetica, sans-serif;
+  text-align: left;
+
+  &.en-US {
+    border-top-color: #fff;
+  }
+
+  &.html-rtl {
+    margin: 0;
+    padding: 0;
+    text-align: right;
+  }
+}
+
+body,
+html {
+  background: #eaeff2 url('../img/grain.png') 0 0 repeat;
+}
+
+footer {
+  background: #fff;
+  margin: 100px 0 0 0;
+  padding: 45px 0 110px 0;
+  text-align: left;
+
+  ul {
+    font-size: 13px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+
+    li {
+      margin-bottom: 8px;
+    }
+  }
+
+  .fineprint {
+    color: #bbb;
+    font-size: 12px;
+    line-height: 160%;
+  }
+}
+
+.html-rtl {
+  footer {
+    text-align: right;
+  }
+}
+
+header {
+  .linear-gradient-top(#d4dde4, #d9e8f6, 0%, #d4dde4, 80%, #c3cbd1, 100%, url('../img/grain.png'));
+  border-bottom: 1px solid #b3b8bc;
+  margin-bottom: 20px;
+  padding-bottom: 20px;
+
+  .logo {
+    float: left;
+    margin-top: 20px;
+  }
+
+  .mozilla-tab {
+    display: block;
+    float: right;
+    position: relative;
+    z-index: 999;
+  }
+}
+
+.html-rtl {
+  header {
+    .logo {
+      float: right;
+    }
+
+    .mozilla-tab {
+      float: left;
+    }
+  }
+}
+
+#aux-nav {
+  float: right;
+  font-size: 11px;
+  text-transform: uppercase;
+
+  > ul {
+    float: right;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+
+    > li {
+      color: @textGrey;
+      float: left;
+      height: 42px;
+      line-height: 40px;
+      padding: 0 20px 0 12px;
+
+      a,
+      a:visited {
+        color: @textGrey;
+        display: inline;
+        font-weight: normal;
+        padding: 0;
+        text-decoration: none;
+      }
+
+      a:hover {
+        text-decoration: underline;
+      }
+    }
+  }
+}
+
+.html-rtl {
+  #aux-nav {
+    float: left;
+
+    > ul {
+      > li {
+        float: right;
+        padding: 0 12px 0 20px;
+      }
+    }
+  }
+}
+
+#main-nav {
+  .linear-gradient-top(#d0d9e0, #d0d9e0, 0%, #cbd4db, 100%, url('../img/grain.png'));
+  border-color: #c7d0d6 #c7d0d6 #e6ebee #c7d0d6;
+  border-style: solid;
+  border-width: 1px;
+  margin: 20px 0 0 0;
+
+  &:after {
+    content: '';
+    display: block;
+    border-top: 1px solid #c7d0d6;
+  }
+
+  ul {
+    border: 2px solid rgba(0, 0, 0, 0.01);
+    list-style: none;
+    margin: 0;
+    padding: 2px 0;
+
+    li {
+      border-right: 1px dotted #b1b8bd;
+      color: @textBlue;
+      float: left;
+      height: 30px;
+      line-height: 30px;
+
+      &:last-child {
+        border-right: none;
+      }
+
+      a,
+      a:visited {
+        color: @textBlue;
+        font-size: 14px;
+        padding: 0 27px;
+        text-decoration: none;
+      }
+    }
+  }
+}
+
+.html-rtl {
+  #main-nav {
+    ul {
+      li {
+        float: right;
+      }
+    }
+  }
+}
+
+#support-search {
+  display: block;
+  float: right;
+  margin: 35px 0 0 0;
+  position: relative;
+
+  button {
+    background: url('../img/icons-sprite.png') -50px -50px no-repeat;
+    border: 0;
+    height: 17px;
+    position: absolute;
+    right: 12px;
+    text-indent: -9999px;
+    top: 6px;
+    width: 17px;
+  }
+
+  input {
+    .linear-gradient-top(#8b9195, #8b9195, 0%, #a6acb2, 100%, url('../img/grain.png'));
+    border: 0;
+    .border-radius(30px);
+    .box-shadow(inset 1px 1px 1px rgba(0, 0, 0, 0.5));
+    color: #fff;
+    font-size: 14px;
+    height: 18px;
+    padding: 6px 42px 6px 20px;
+    width: 238px;
+  }
+}
+
+.html-rtl {
+  #support-search {
+    float: left;
+
+    button {
+      left: 12px;
+      right: auto;
+    }
+
+    input {
+      padding: 6px 20px 6px 42px;
+    }
+  }
+}
