@@ -133,20 +133,6 @@
   {% block outer_side %}
     <div id="side">
       {% block side_top %}{% endblock %}
-      <nav id="quick-links">
-        <ul>
-          {% block quick_links %}
-            <li class="aaq">
-              {% if request.locale == settings.WIKI_DEFAULT_LANGUAGE %}
-                {% set ask_url = url('questions.aaq_step1') %}
-              {% else %}
-                {% set ask_url = url('wiki.document', 'ask') %}
-              {% endif %}
-              <a href="{{ ask_url }}">{{ _('Ask the community <mark>Support Forum</mark>') }}</a>
-            </li>
-          {% endblock %}
-        </ul>
-      </nav>
       {% block side %}{% endblock %}
       {{ for_contributors(request, user, settings.WIKI_DEFAULT_LANGUAGE) }}
       <div class="sd-module promos">

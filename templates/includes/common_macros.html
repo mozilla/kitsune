@@ -32,7 +32,12 @@
 
 {% macro aux_nav(user) %}
   {% if waffle.flag('new-theme') %}
-    <li><a href="{{ url('questions.views.aaq') }}">{{ _('Ask a question') }}</a></li>
+    {% if request.locale == settings.WIKI_DEFAULT_LANGUAGE %}
+      {% set ask_url = url('questions.aaq_step1') %}
+    {% else %}
+      {% set ask_url = url('wiki.document', 'ask') %}
+    {% endif %}
+    <li><a href="{{ ask_url }}">{{ _('Ask a question') }}</a></li>
     {% if user.is_authenticated() %}
       <li><a href="{{ url('users.logout') }}">{{ _('Sign Out') }}</a></li>
     {% else %}
