@@ -183,14 +183,20 @@
     function initSummaryCount() {
         var $summaryCount = $('#remaining-characters'),
             $summaryBox = $('#id_summary'),
+            // 160 characters is the maximum summary
+            // length of a Google result
+            warningCount = 160,
             maxCount = $summaryCount.text(),
             updateCount = function() {
                 var currentCount = $summaryBox.val().length;
-                if(maxCount - currentCount >= 0) {
-                    $summaryCount.text(maxCount - currentCount);
+                $summaryCount.text(warningCount - currentCount);
+                if(warningCount - currentCount >= 0) {
+                    $summaryCount.css("color", "black");
                 } else {
-                    $summaryCount.text(0);
-                    $summaryBox.val($summaryBox.val().substr(0, maxCount));
+                    $summaryCount.css("color", "red");
+                    if(currentCount >= maxCount) {
+                        $summaryBox.val($summaryBox.val().substr(0, maxCount));
+                    }
                 }
             };
         
