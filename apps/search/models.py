@@ -20,11 +20,14 @@ log = logging.getLogger('search.es')
 _search_models = {}
 
 
-def get_search_models():
+def get_search_models(models=None):
     """Returns a list of model classes"""
     # TODO: if we do weakrefs, then we should remove dead refs here.
 
-    values = _search_models.values()
+    if models is None:
+        values = _search_models.values()
+    else:
+        values = [_search_models[name] for name in models]
 
     # Sort to stabilize.
     values.sort(key=lambda cls: cls._meta.db_table)
