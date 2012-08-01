@@ -9,6 +9,7 @@ products = SortedDict([
         'subtitle': _lazy(u'Windows, Mac, or Linux'),
         'extra_fields': ['troubleshooting', 'ff_version', 'os', 'plugins'],
         'tags': ['desktop'],
+        'products': ['firefox'],
         'categories': SortedDict([
         ('d1', {
             'name': _lazy(u'Problems with certain web sites'),
@@ -167,6 +168,7 @@ products = SortedDict([
         'subtitle': _lazy(u'Android'),
         'extra_fields': ['ff_version', 'os', 'plugins'],
         'tags': ['mobile'],
+        'products': ['mobile'],
         'categories': SortedDict([
             ('m1', {
                 'name': _lazy(u"Websites don't work"),

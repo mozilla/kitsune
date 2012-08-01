@@ -113,17 +113,6 @@ GROUPED_OPERATING_SYSTEMS = (
 OPERATING_SYSTEMS = tuple(chain(*[options for label, options in
                                   GROUPED_OPERATING_SYSTEMS]))
 
-# Products supported
-# TODO: We can nix this once we finish the product changes in search.
-Product = namedtuple('Product', 'slug, name')  # slug is used for tag/topic
-PRODUCTS = (
-    Product('desktop', _lazy(u'Desktop')),
-    Product('mobile', _lazy(u'Mobile')),
-    Product('sync', _lazy(u'Sync')),
-    Product('FxHome', _lazy(u'Home')),
-    Product('marketplace', _lazy(u'Marketplace')))
-PRODUCT_TAGS = [p.slug for p in PRODUCTS]
-
 
 # Disruptiveness of edits to translated versions. Numerical magnitude indicate
 # the relative severity.

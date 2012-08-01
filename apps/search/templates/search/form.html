@@ -41,10 +41,9 @@
       </div>
 
       <div class="container">
-        {{ search_form.tags.label_tag()|safe }}
-        {{ search_form.tags|safe }}
-        <div class="search-tips-small">
-          {{ _('Note: Searching for "tag1, tag2" returns articles tagged with both tag1 and tag2') }}
+        {{ search_form.topics.label_tag()|safe }}
+        <div class="topics checkboxes">
+          {{ search_form.topics|safe }}
         </div>
       </div>
 

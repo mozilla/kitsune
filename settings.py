@@ -707,7 +707,7 @@ SESSION_EXISTS_COOKIE = 'sumo_session'
 # Connection information for Elastic
 ES_HOSTS = ['127.0.0.1:9200']
 # Indexes for reading
-ES_INDEXES = {'default': 'sumo-20120622'}
+ES_INDEXES = {'default': 'sumo-20120731'}
 # Indexes for indexing--set this to ES_INDEXES if you want to read to
 # and write to the same index.
 ES_WRITE_INDEXES = ES_INDEXES

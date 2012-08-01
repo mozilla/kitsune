@@ -494,6 +494,32 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
         from wiki.events import EditDocumentEvent
         return EditDocumentEvent.is_notifying(user, self)
 
+    def get_topics(self, uncached=False):
+        """Return the list of topics that apply to this document.
+
+        If the document has a parent, it inherits the parent's topics.
+        """
+        if self.parent:
+            return self.parent.get_topics()
+        if uncached:
+            q = Topic.uncached
+        else:
+            q = Topic.objects
+        return q.filter(document=self)
+
+    def get_products(self, uncached=False):
+        """Return the list of products that apply to this document.
+
+        If the document has a parent, it inherits the parent's products.
+        """
+        if self.parent:
+            return self.parent.get_products()
+        if uncached:
+            q = Product.uncached
+        else:
+            q = Product.objects
+        return q.filter(document=self)
+
     @classmethod
     def get_query_fields(cls):
         return ['document_title__text',
@@ -522,7 +548,8 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
             'document_is_archived': {'type': 'boolean'},
             'document_summary': {'type': 'string', 'analyzer': 'snowball'},
             'document_keywords': {'type': 'string', 'analyzer': 'snowball'},
-            'document_tag': {'type': 'string', 'index': 'not_analyzed'}}
+            'document_product': {'type': 'string', 'index': 'not_analyzed'},
+            'document_topic': {'type': 'string', 'index': 'not_analyzed'}}
 
     @classmethod
     def extract_document(cls, obj_id):
@@ -543,12 +570,9 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
         d['document_slug'] = obj.slug
         d['document_is_archived'] = obj.is_archived
 
-        if obj.parent is None:
-            tags = [tag['name'] for tag in obj.tags.values()]
-        else:
-            # Translations inherit tags from their parents.
-            tags = [tag['name'] for tag in obj.parent.tags.values()]
-        d['document_tag'] = tags
+        d['document_topic'] = [t.slug for t in obj.get_topics(True)]
+        d['document_product'] = [p.slug for p in obj.get_products(True)]
+
         if obj.current_revision:
             d['document_summary'] = obj.current_revision.summary
             d['document_keywords'] = obj.current_revision.keywords
@@ -593,11 +617,15 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
 
 register_for_indexing(Document, 'wiki')
 register_for_indexing(
-    TaggedItem,
+    Document.topics.through,
     'wiki',
-    instance_to_indexee=(
-        lambda i: i.content_object if isinstance(i.content_object, Document)
-                  else None))
+    instance_to_indexee=lambda i: i,
+    m2m=True)
+register_for_indexing(
+    Document.products.through,
+    'wiki',
+    instance_to_indexee=lambda i: i,
+    m2m=True)
 
 
 class Revision(ModelBase):
