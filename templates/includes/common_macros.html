@@ -31,24 +31,25 @@
 {% endmacro %}
 
 {% macro aux_nav(user) %}
-  {% if waffle.flag('new-theme') %}
-    {% if request.locale == settings.WIKI_DEFAULT_LANGUAGE %}
-      {% set ask_url = url('questions.aaq_step1') %}
+  {% if not settings.READ_ONLY %}
+    {% if waffle.flag('new-theme') %}
+      {% if request.locale == settings.WIKI_DEFAULT_LANGUAGE %}
+        {% set ask_url = url('questions.aaq_step1') %}
+      {% else %}
+        {% set ask_url = url('wiki.document', 'ask') %}
+      {% endif %}
+      <li><a href="{{ ask_url }}">{{ _('Ask a question') }}</a></li>
+      {% if user.is_authenticated() %}
+        <li><a href="{{ url('users.') }}">{{ user.username }}</a></li>
+        <li><a href="{{ 'd' }}">{{ _('Inbox') }}</a></li>
+      {% else %}
+        <li>
+          {% trans login_url=url('users.login'), register_url=url('users.register') %}
+            <a href="{{ login_url }}">Sign In</a> / <a href="{{ register_url }}">Register</a>
+          {% endtrans %}
+        </li>
+      {% endif %}
     {% else %}
-      {% set ask_url = url('wiki.document', 'ask') %}
-    {% endif %}
-    <li><a href="{{ ask_url }}">{{ _('Ask a question') }}</a></li>
-    {% if user.is_authenticated() %}
-      <li><a href="{{ url('users.logout') }}">{{ _('Sign Out') }}</a></li>
-    {% else %}
-      <li>
-        {% trans login_url=url('users.login'), register_url=url('users.register') %}
-          <a href="{{ login_url }}">Sign In</a> / <a href="{{ register_url }}">Register</a>
-        {% endtrans %}
-      </li>
-    {% endif %}
-  {% else %}
-    {% if not settings.READ_ONLY %}
       {% if user.is_authenticated() %}
         <li class="account">
           <a class="user" href="{{ profile_url(user) }}">{{ user }}</a>
