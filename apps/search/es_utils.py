@@ -245,7 +245,7 @@ def recreate_index(es=None):
     es.create_index(index, settings={'mappings': merged_mapping})
 
 
-def get_indexable(percent=100):
+def get_indexable(percent=100, search_models=None):
     """Returns a list of (class, iterable) for all the things to index
 
     :arg percent: Defaults to 100.  Allows you to specify how much of
@@ -255,7 +255,9 @@ def get_indexable(percent=100):
     """
     from search.models import get_search_models
 
-    search_models = get_search_models()
+    # Note: Passing in None will get all the models.
+    search_models = get_search_models(search_models)
+
     to_index = []
     percent = float(percent) / 100
     for cls in search_models:
@@ -290,11 +292,12 @@ def index_chunk(cls, chunk, reraise=False, es=None):
             log.exception('Unable to flush/refresh')
 
 
-def es_reindex_cmd(percent=100, delete=False):
+def es_reindex_cmd(percent=100, delete=False, models=None):
     """Rebuild ElasticSearch indexes
 
     :arg percent: 1 to 100--the percentage of the db to index
     :arg delete: whether or not to wipe the index before reindexing
+    :arg models: list of search model names to index
 
     """
     es = get_indexing_es()
@@ -310,9 +313,14 @@ def es_reindex_cmd(percent=100, delete=False):
         log.info('wiping and recreating %s....', WRITE_INDEX)
         recreate_index(es=es)
 
+    if models:
+        indexable = get_indexable(percent, models)
+    else:
+        indexable = get_indexable(percent)
+
     start_time = time.time()
 
-    for cls, indexable in get_indexable(percent):
+    for cls, indexable in indexable:
         cls_start_time = time.time()
         total = len(indexable)
 

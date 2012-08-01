@@ -80,6 +80,11 @@ def handle_reindex(request):
     # the index first.
     delete_index_first = bool(request.POST.get('delete_index'))
 
+    # Get the list of models to reindex.
+    models_to_index = [name.replace('check_', '')
+                       for name in request.POST.keys()
+                       if name.startswith('check_')]
+
     # TODO: If this gets fux0rd, then it's possible this could be
     # non-zero and we really want to just ignore it. Need the ability
     # to ignore it.
@@ -104,7 +109,7 @@ def handle_reindex(request):
     # Break up all the things we want to index into chunks. This
     # chunkifies by class then by chunk size.
     chunks = []
-    for cls, indexable in get_indexable():
+    for cls, indexable in get_indexable(search_models=models_to_index):
         chunks.extend(
             (cls, chunk) for chunk in chunked(indexable, CHUNK_SIZE))
 

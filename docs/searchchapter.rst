@@ -216,6 +216,14 @@ This indexes 50% of your data ordered by id::
 
 I use this when I'm fiddling with mappings and the indexing code.
 
+You can also specify which models to index::
+
+    $ ./manage.py esreindex --models questions_question,wiki_document
+
+See ``--help`` for more details::
+
+    $ ./manage.py esreindex --help
+
 
 .. Note::
 
