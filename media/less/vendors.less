@@ -206,6 +206,15 @@
   background-image: -o-linear-gradient(top, @color1 @stop1, @color2 @stop2);
   background-image: linear-gradient(top, @color1 @stop1, @color2 @stop2);
 }
+.linear-gradient-top(@default,@color1,@stop1,@color2,@stop2,@extra) {
+  background-color: @default;
+  background-image: @extra, -webkit-gradient(linear, left top, left bottom, color-stop(@stop1, @color1), color-stop(@stop2 @color2));
+  background-image: @extra, -webkit-linear-gradient(top, @color1 @stop1, @color2 @stop2);
+  background-image: @extra, -moz-linear-gradient(top, @color1 @stop1, @color2 @stop2);
+  background-image: @extra, -ms-linear-gradient(top, @color1 @stop1, @color2 @stop2);
+  background-image: @extra, -o-linear-gradient(top, @color1 @stop1, @color2 @stop2);
+  background-image: @extra, linear-gradient(top, @color1 @stop1, @color2 @stop2);
+}
 .linear-gradient-top(@default,@color1,@stop1,@color2,@stop2,@color3,@stop3) {
   background-color: @default;
   background-image: -webkit-gradient(linear, left top, left bottom, color-stop(@stop1, @color1), color-stop(@stop2 @color2), color-stop(@stop3 @color3));
@@ -215,6 +224,15 @@
   background-image: -o-linear-gradient(top, @color1 @stop1, @color2 @stop2, @color3 @stop3);
   background-image: linear-gradient(top, @color1 @stop1, @color2 @stop2, @color3 @stop3);
 }
+.linear-gradient-top(@default,@color1,@stop1,@color2,@stop2,@color3,@stop3,@extra) {
+  background-color: @default;
+  background-image: @extra, -webkit-gradient(linear, left top, left bottom, color-stop(@stop1, @color1), color-stop(@stop2 @color2), color-stop(@stop3 @color3));
+  background-image: @extra, -webkit-linear-gradient(top, @color1 @stop1, @color2 @stop2, @color3 @stop3);
+  background-image: @extra, -moz-linear-gradient(top, @color1 @stop1, @color2 @stop2, @color3 @stop3);
+  background-image: @extra, -ms-linear-gradient(top, @color1 @stop1, @color2 @stop2, @color3 @stop3);
+  background-image: @extra, -o-linear-gradient(top, @color1 @stop1, @color2 @stop2, @color3 @stop3);
+  background-image: @extra, linear-gradient(top, @color1 @stop1, @color2 @stop2, @color3 @stop3);
+}
 .linear-gradient-top(@default,@color1,@stop1,@color2,@stop2,@color3,@stop3,@color4,@stop4) {
   background-color: @default;
   background-image: -webkit-gradient(linear, left top, left bottom, color-stop(@stop1, @color1), color-stop(@stop2 @color2), color-stop(@stop3 @color3), color-stop(@stop4 @color4));
@@ -223,6 +241,15 @@
   background-image: -ms-linear-gradient(top, @color1 @stop1, @color2 @stop2, @color3 @stop3, @color4 @stop4);
   background-image: -o-linear-gradient(top, @color1 @stop1, @color2 @stop2, @color3 @stop3, @color4 @stop4);
   background-image: linear-gradient(top, @color1 @stop1, @color2 @stop2, @color3 @stop3, @color4 @stop4);
+}
+.linear-gradient-top(@default,@color1,@stop1,@color2,@stop2,@color3,@stop3,@color4,@stop4,@extra) {
+  background-color: @default;
+  background-image: @extra, -webkit-gradient(linear, left top, left bottom, color-stop(@stop1, @color1), color-stop(@stop2 @color2), color-stop(@stop3 @color3), color-stop(@stop4 @color4));
+  background-image: @extra, -webkit-linear-gradient(top, @color1 @stop1, @color2 @stop2, @color3 @stop3, @color4 @stop4);
+  background-image: @extra, -moz-linear-gradient(top, @color1 @stop1, @color2 @stop2, @color3 @stop3, @color4 @stop4);
+  background-image: @extra, -ms-linear-gradient(top, @color1 @stop1, @color2 @stop2, @color3 @stop3, @color4 @stop4);
+  background-image: @extra, -o-linear-gradient(top, @color1 @stop1, @color2 @stop2, @color3 @stop3, @color4 @stop4);
+  background-image: @extra, linear-gradient(top, @color1 @stop1, @color2 @stop2, @color3 @stop3, @color4 @stop4);
 }
 .linear-gradient-left(@default,@color1,@stop1,@color2,@stop2) {
   background-color: @default;
