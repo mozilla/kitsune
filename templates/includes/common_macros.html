@@ -40,8 +40,8 @@
       {% endif %}
       <li><a href="{{ ask_url }}">{{ _('Ask a question') }}</a></li>
       {% if user.is_authenticated() %}
-        <li><a href="{{ url('users.') }}">{{ user.username }}</a></li>
-        <li><a href="{{ 'd' }}">{{ _('Inbox') }}</a></li>
+        <li><a href="{{ profile_url(user) }}">{{ user }}</a></li>
+        <li><a href="{{ url('messages.inbox') }}">{{ _('Inbox') }}</a></li>
       {% else %}
         <li>
           {% trans login_url=url('users.login'), register_url=url('users.register') %}
