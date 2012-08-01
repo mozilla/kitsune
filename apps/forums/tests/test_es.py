@@ -1,4 +1,3 @@
-import elasticutils
 from nose.tools import eq_
 
 from forums.models import Thread
@@ -33,7 +32,7 @@ class TestPostUpdate(ElasticTestCase):
 
     def test_deleted(self):
         new_thread = thread()
-        eq_(elasticutils.S(Thread).count(), 0)
+        eq_(Thread.search().count(), 0)
 
         # Saving a new Thread does create a new document in the
         # index.

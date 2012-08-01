@@ -13,6 +13,7 @@ from django.views.decorators.cache import cache_page
 
 import jingo
 import jinja2
+from elasticutils.utils import format_explanation
 from mobility.decorators import mobile_template
 from statsd import statsd
 from tower import ugettext as _, ugettext_lazy as _lazy
@@ -23,7 +24,7 @@ from questions.models import Question
 import search as constants
 from search.forms import SearchForm
 from search.es_utils import (ESTimeoutError, ESMaxRetryError, ESException,
-                             Sphilastic, F, format_explanation)
+                             Sphilastic, F)
 from sumo.utils import paginate, smart_int
 from wiki.models import Document
 
@@ -260,17 +261,21 @@ def search(request, template=None):
         searcher = searcher.highlight(
             'question_title', 'question_content', 'question_answer_content',
             'discussion_content',
-            before_match='<b>',
-            after_match='</b>',
-            limit=settings.SEARCH_SUMMARY_LENGTH)
+            pre_tags=['<b>'],
+            post_tags=['</b>'],
+            fragment_size=settings.SEARCH_SUMMARY_LENGTH)
 
-        # Set up weights
-        searcher = searcher.weight(
-            question_title__text=4, question_content__text=3,
-            question_answer_content__text=3,
-            post_title__text=2, post_content__text=1,
-            document_title__text=6, document_content__text=1,
-            document_keywords__text=4, document_summary__text=2)
+        # Set up boosts
+        searcher = searcher.boost(
+            question_title=4.0,
+            question_content=3.0,
+            question_answer_content=3.0,
+            post_title=2.0,
+            post_content=1.0,
+            document_title=6.0,
+            document_content=1.0,
+            document_keywords=4.0,
+            document_summary=2.0)
 
         # Apply sortby, but only for advanced search for questions
         if a == '1' and cleaned['w'] & constants.WHERE_SUPPORT:
@@ -476,6 +481,6 @@ def _build_es_excerpt(result):
     """
     excerpt = EXCERPT_JOINER.join(
         [m.strip() for m in
-         chain(*result._highlighted.values()) if m])
+         chain(*result._highlight.values()) if m])
 
     return jinja2.Markup(clean_excerpt(excerpt))
