@@ -48,7 +48,7 @@ class AAQTests(ElasticTestCase):
         q.save()
 
         d = document(title=u'CupcakesKB cupcakes', category=10, save=True)
-        d.products.add(product(slug=u'desktop', save=True))
+        d.products.add(product(slug=u'firefox', save=True))
         d.save()
 
         rev = revision(document=d, is_approved=True)

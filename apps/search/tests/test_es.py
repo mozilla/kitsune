@@ -213,7 +213,7 @@ class ElasticSearchUnifiedViewTests(ElasticTestCase):
         # Create a question with an answer with an answervote that
         # marks the answer as helpful.  The question should have the
         # "desktop" tag.
-        product(slug=u'desktop', save=True)
+        product(title=u'firefox', slug=u'desktop', save=True)
         ques = question(title=u'audio', save=True)
         ques.tags.add(u'desktop')
         ans = answer(question=ques, content=u'volume', save=True)
@@ -257,7 +257,7 @@ class ElasticSearchUnifiedViewTests(ElasticTestCase):
 
         """
         doc = document(title=u'audio', locale=u'en-US', category=10, save=True)
-        doc.products.add(product(slug=u'desktop', save=True))
+        doc.products.add(product(title=u'firefox', slug=u'desktop', save=True))
         revision(document=doc, is_approved=True, save=True)
 
         self.refresh()
