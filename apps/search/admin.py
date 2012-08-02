@@ -80,10 +80,15 @@ def handle_reindex(request):
     # the index first.
     delete_index_first = bool(request.POST.get('delete_index'))
 
-    # Get the list of models to reindex.
-    models_to_index = [name.replace('check_', '')
-                       for name in request.POST.keys()
-                       if name.startswith('check_')]
+    if delete_index_first:
+        # Coming from the delete form, so we reindex all models.
+        models_to_index = None
+    else:
+        # Coming from the reindex form, so we reindex whatever we're
+        # told.
+        models_to_index = [name.replace('check_', '')
+                           for name in request.POST.keys()
+                           if name.startswith('check_')]
 
     # TODO: If this gets fux0rd, then it's possible this could be
     # non-zero and we really want to just ignore it. Need the ability
