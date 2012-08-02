@@ -3,8 +3,11 @@ from django.views.decorators.cache import never_cache
 import jingo
 from mobility.decorators import mobile_template
 
+from landings.utils import show_ia
+from products.models import Product
 from sumo.parser import get_object_fallback
 from sumo.views import redirect_to
+from topics.models import Topic
 from wiki.models import Document
 from wiki.views import SHOWFOR_DATA
 
@@ -107,8 +110,20 @@ def desktop_or_mobile(request):
     return redirect_to(request, url_name, permanent=False)
 
 
-@mobile_template('landings/{mobile/}home.html')
-def home(request, template=None):
+def home(request):
+    """The home page."""
+    if not show_ia(request):
+        return old_home(request)
+
+    products = Product.objects.filter(visible=True)
+    topics = Topic.objects.filter(visible=True)
+    return jingo.render(request, 'landings/home.html', {
+        'products': products,
+        'topics': topics})
+
+
+@mobile_template('landings/{mobile/}old-home.html')
+def old_home(request, template=None):
     docs = HOME_DOCS_FOR_MOBILE if request.MOBILE else HOME_DOCS
     return jingo.render(request, template,
                         _data(docs, request.locale, 'firefox', 'desktop'))

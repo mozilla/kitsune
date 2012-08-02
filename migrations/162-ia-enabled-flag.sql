@@ -1,0 +1,1 @@
+INSERT IGNORE INTO `waffle_flag` (`name`, `everyone`, `superusers`, `staff`, `authenticated`, `rollout`, `note`, `testing`, `created`, `modified`) VALUES ('ia-enabled', 0, 0, 0, 0, 0, '', 0, NOW(), NOW());

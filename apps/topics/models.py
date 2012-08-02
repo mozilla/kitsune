@@ -1,3 +1,5 @@
+import os
+
 from django.conf import settings
 from django.db import models
 
@@ -30,7 +32,7 @@ class Topic(ModelBase):
 
     @property
     def image_url(self):
-        if self.image is not None:
+        if self.image:
             return self.image.url
         return os.path.join(
             settings.STATIC_URL, 'img', 'topic_placeholder.png')

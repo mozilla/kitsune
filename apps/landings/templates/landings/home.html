@@ -1,9 +1,126 @@
 {# vim: set ts=2 et sts=2 sw=2: #}
-{% extends "landings/base.html" %}
-{% set classes = ('home desktop') %}
-{% set title = _('Firefox Support Home Page') %}
-{% set active_site_nav = 'desktop' %}
-{% set h1_text = _('Need Help With <mark>Firefox?</mark>') %}
+{% extends "base.html" %}
+{% set title = 'Mozilla Support' %}
+{# TODO: scripts and styles
+{% set styles = ('home',) %}
+{% set scripts = ('home',) %}
+#}
+
+{% block content %}
+  <section id="help-topics">
+    <h1>{{ _('Help Topics') }}</h1>
+    <ul>
+      {% for topic in topics[:6] %}
+        <li>
+          <a href="{# TODO: add reverse url to topic page when we have it #}#">
+            <img src="{{ topic.image_url }}" alt="" />
+            {{ topic.title }}
+          </a>
+        </li>
+      {% endfor %}
+    </ul>
+  </section>
+  <section id="hot-topics">
+    <h1>{{ _('Hot Topics') }}</h1>
+    {# TODO: Implement this for real #}
+    <ul>
+      <li>
+        <a href="#">Lorem ipsum Flash 11.3 dolor sit amet</a>
+      </li>
+      <li>
+        <a href="#">Lorem ipsum Toolbar dolor sit amet</a>
+      </li>
+      <li>
+        <a href="#">Lorem ipsum Java dolor sit amet</a>
+      </li>
+      <li>
+        <a href="#">Lorem ipsum Facebook dolor sit amet</a>
+      </li>
+    </ul>
+  </section>
+  <section id="products-and-services">
+    <h1>{{ _('Products and Services') }}</h1>
+    <ul>
+      {% for product in products %}
+        <li>
+          <a href="{# TODO: add reverse url to product page when we have it #}#">
+            <img src="{{ product.image_url }}" alt="" />
+            <span class="title">{{ product.title }}</span>
+            <span class="description">{{ product.description }}</span>
+          </a>
+        </li>
+      {% endfor %}
+    </ul>
+  </section>
+  <section id="mozilla-news">
+    <h1>{{ _('Mozilla News') }}</h1>
+    {# TODO: Implement this for real #}
+    <ul>
+      <li>
+        <a href="#">
+          Introducing "Lorem ipsum dolor sit amet"
+        </a>
+      </li>
+      <li>
+        <a href="#">
+          Introducing "Lorem ipsum dolor sit amet"
+        </a>
+      </li>
+      <li>
+        <a href="#">
+          Introducing "Lorem ipsum dolor sit amet"
+        </a>
+      </li>
+      <li>
+        <a href="#">
+          Introducing "Lorem ipsum dolor sit amet"
+        </a>
+      </li>
+      <li>
+        <a href="#">
+          Introducing "Lorem ipsum dolor sit amet"
+        </a>
+      </li>
+      <li>
+        <a href="#">
+          Introducing "Lorem ipsum dolor sit amet"
+        </a>
+      </li>
+    <ul>
+  </section>
+  <ul id="other">
+    <li>
+      <section>
+        <h1>{{ _('Help Other Users') }}</h1>
+        <p>
+          {% trans url=url('questions.questions') %}
+            Participate and help other users by
+            <a href="{{url}}">
+              answering their questions
+            </a>
+          {% endtrans %}
+        </p>
+      </section>
+    </li>
+    <li>
+      <section>
+        <h1>{{ _('Suggestion Box') }}</h1>
+        <p>
+          {# TODO: Fill in the url #}
+          {% trans url='#' %}
+            Your input helps make Mozilla better.
+            <a href="{{url}}">
+              Give us your feedback
+            </a>
+          {% endtrans %}
+        </p>
+      </section>
+    </li>
+  </ul>
+{% endblock %}
+
+{% block breadcrumbs %}
+{% endblock %}
 
 {% block footer_script %}
   {# Ethnio tracking - see bugs 683643 and 673544 #}
