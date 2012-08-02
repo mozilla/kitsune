@@ -11,8 +11,8 @@ Summary
 This chapter helps you get a minimal installation of Kitsune up and
 running so as to make it easier for contributing.
 
-If you're interested in setting up Kitsune for a production
-deployment, this is not the chapter for you---look no further!
+If you're setting Kitsune up for deployment, make sure you read all
+the way to the end and then read the additional sections.
 
 If you have any problems getting Kitsune running, let us know. See the
 :ref:`contact-us-chapter`.
@@ -43,8 +43,8 @@ so if you run into problems, let us know.
 Linux
 -----
 
-We know these work in Debian Testing (Wheezy) and will probably work
-in Debian derivatives like Ubuntu. It's likely that you'll encounter
+We know these work in Debian Testing (Wheezy) and Ubuntu 12.04 and
+will probably work in other distributions. It's likely that you'll encounter
 some steps that are slightly different. If you run into problems, let
 us know.
 
@@ -214,45 +214,6 @@ Now install LESS using::
 
 Ensure that lessc (might be located at /usr/lib/node_modules/less/bin) is
 accessible on your PATH.
-
-
-Running redis
--------------
-
-This script runs all three servers---one for each configuration.
-
-I (Will) put that in a script that creates the needed directories in
-``/var/redis/`` and kicks off the three redis servers::
-
-    #!/bin/bash
-
-    set -e
-
-    # Adjust these according to your setup!
-    REDISBIN=/usr/bin/redis-server
-    CONFFILE=/path/to/conf/files/
-
-    if test ! -e /var/redis/sumo/
-    then
-        echo "creating /var/redis/sumo/"
-        mkdir -p /var/redis/sumo/
-    fi
-
-    if test ! -e /var/redis/sumo-test/
-    then
-        echo "creating /var/redis/sumo-test/"
-        mkdir -p /var/redis/sumo-test/
-    fi
-
-    if test ! -e /var/redis/sumo-persistent/
-    then
-        echo "creating /var/redis/sumo-persistent/"
-        mkdir -p /var/redis/sumo-persistent/
-    fi
-
-    $REDISBIN $CONFFILE/redis-persistent.conf
-    $REDISBIN $CONFFILE/redis-test.conf
-    $REDISBIN $CONFFILE/redis-volatile.conf
 
 
 Database
