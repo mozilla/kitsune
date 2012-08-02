@@ -29,7 +29,7 @@ class Product(ModelBase):
 
     @property
     def image_url(self):
-        if self.image is not None:
+        if self.image:
             return self.image.url
         return os.path.join(
             settings.STATIC_URL, 'img', 'product_placeholder.png')
