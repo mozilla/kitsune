@@ -483,8 +483,7 @@ def es_search_cmd(query, pages=1):
     output.append('')
 
     data = {
-        'q': query,
-        'q_tags': 'desktop', 'product': 'desktop', 'format': 'json'
+        'q': query, 'format': 'json'
         }
     url = reverse('search')
 
