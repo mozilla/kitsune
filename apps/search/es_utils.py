@@ -6,7 +6,6 @@ import time
 from django.conf import settings
 from django.db import reset_queries
 
-import elasticutils
 import pyes
 from elasticutils.contrib.django import S, F
 
@@ -161,7 +160,7 @@ def get_doctype_stats(index):
     """
     from search.models import get_search_models
 
-    conn = elasticutils.get_es()
+    conn = get_indexing_es()
 
     stats = {}
     for cls in get_search_models():
