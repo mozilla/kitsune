@@ -1,7 +1,7 @@
 import json
 
 from django.conf import settings
-from django.contrib.auth.models import User, Permission
+from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
 
 from nose.tools import eq_
@@ -9,10 +9,10 @@ from nose.tools import eq_
 from sumo.tests import post, LocalizingClient, TestCase
 from upload.forms import MSG_IMAGE_LONG
 from upload.models import ImageAttachment
+from users.tests import user
 
 
 class UploadImageTestCase(TestCase):
-    fixtures = ['users.json', 'questions.json']
     client_class = LocalizingClient
 
     def setUp(self):
@@ -102,7 +102,7 @@ class UploadImageTestCase(TestCase):
 
     def test_delete_image_no_permission(self):
         """Can't delete an image without permission."""
-        u = User.objects.get(username='tagger')
+        u = user(username='tagger', save=True)
         assert not u.has_perm('upload.delete_imageattachment')
         self.test_upload_image()
         im = ImageAttachment.objects.all()[0]
@@ -123,7 +123,7 @@ class UploadImageTestCase(TestCase):
 
     def test_delete_image_with_permission(self):
         """Users with permission can delete images."""
-        u = User.objects.get(username='jsocol')
+        u = user(username='jsocol')
         ct = ContentType.objects.get_for_model(ImageAttachment)
         p = Permission.objects.get_or_create(
             codename='delete_imageattachment',
