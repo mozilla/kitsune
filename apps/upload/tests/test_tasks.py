@@ -1,19 +1,20 @@
 import os
 
 from django.conf import settings
-from django.contrib.auth.models import User
 from django.core.files import File
 from django.core.files.images import ImageFile
 
 import mock
 from nose.tools import eq_
 
-from questions.models import Question
+import upload.tasks
+
+from questions.tests import question
 from sumo.tests import TestCase
 from upload.models import ImageAttachment
-import upload.tasks
 from upload.tasks import (_scale_dimensions, _create_image_thumbnail,
                           compress_image, generate_thumbnail)
+from users.tests import user
 
 
 class ScaleDimensionsTestCase(TestCase):
@@ -86,12 +87,11 @@ class CreateThumbnailTestCase(TestCase):
 
 
 class GenerateThumbnail(TestCase):
-    fixtures = ['users.json', 'questions.json']
 
     def setUp(self):
         super(GenerateThumbnail, self).setUp()
-        self.user = User.objects.all()[0]
-        self.obj = Question.objects.all()[0]
+        self.user = user(save=True)
+        self.obj = question(save=True)
 
     def tearDown(self):
         ImageAttachment.objects.all().delete()
@@ -146,12 +146,11 @@ class GenerateThumbnail(TestCase):
 
 
 class CompressImageTestCase(TestCase):
-    fixtures = ['users.json', 'questions.json']
 
     def setUp(self):
         super(CompressImageTestCase, self).setUp()
-        self.user = User.objects.all()[0]
-        self.obj = Question.objects.all()[0]
+        self.user = user(save=True)
+        self.obj = question(save=True)
 
     def tearDown(self):
         ImageAttachment.objects.all().delete()

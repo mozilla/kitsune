@@ -4,19 +4,19 @@ from django.core.files import File
 
 from nose.tools import eq_
 
-from questions.models import Question
+from questions.tests import question
 from sumo.tests import TestCase
 from upload.models import ImageAttachment
 from upload.tasks import generate_thumbnail
+from users.tests import user
 
 
 class ImageAttachmentTestCase(TestCase):
-    fixtures = ['users.json', 'questions.json']
 
     def setUp(self):
         super(ImageAttachmentTestCase, self).setUp()
-        self.user = User.objects.all()[0]
-        self.obj = Question.objects.all()[0]
+        self.user = user(save=True)
+        self.obj = question(save=True)
         self.ct = ContentType.objects.get_for_model(self.obj)
 
     def tearDown(self):
