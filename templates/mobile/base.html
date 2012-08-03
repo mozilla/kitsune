@@ -96,7 +96,9 @@
     </section>
 
     <footer>
-      {% include "includes/lang_form.html" %}
+      {% with localizable_url=localizable_url %}
+        {% include "includes/lang_form.html" %}
+      {% endwith %}
       {% block footer %}
         {# TODO: make this work without JS #}
         <a class="desktop-link" href="{{ request.build_absolute_uri()|urlparams(desktop=1) }}">{{ _('View full site') }}</a>
