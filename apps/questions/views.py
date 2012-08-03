@@ -83,10 +83,13 @@ def questions(request):
 
     question_qs = Question.objects.select_related(
         'creator', 'last_answer', 'last_answer__creator')
-    question_qs = question_qs.extra(
-        {'_num_votes': 'SELECT COUNT(*) FROM questions_questionvote WHERE '
-                       'questions_questionvote.question_id = '
-                       'questions_question.id'})
+
+    if not waffle.switch_is_active('hide-total-question-votes'):
+        question_qs = question_qs.extra(
+            {'_num_votes': 'SELECT COUNT(*) FROM questions_questionvote WHERE '
+                           'questions_questionvote.question_id = '
+                           'questions_question.id'})
+
     question_qs = question_qs.filter(creator__is_active=1)
 
     if filter_ == 'no-replies':
@@ -241,7 +244,8 @@ def aaq(request, product_key=None, category_key=None, showform=False,
                 request,
                 search,
                 locale_or_default(request.locale),
-                product.get('tags'))
+                product.get('tags'),
+                product.get('products'))
             tried_search = True
         else:
             results = []
@@ -962,11 +966,14 @@ def marketplace_success(request, template=None):
     return jingo.render(request, template)
 
 
-def _search_suggestions(request, query, locale, category_tags):
+def _search_suggestions(request, query, locale, tags, product_slugs):
     """Return an iterable of the most relevant wiki pages and questions.
 
     query -- full text to search on
     locale -- locale to limit to
+    tags -- list of tags to filter questions on
+    product_slugs -- list of product slugs to filter articles on
+        (["desktop", "mobile", ...])
 
     Items are dicts of:
         {
@@ -989,10 +996,11 @@ def _search_suggestions(request, query, locale, category_tags):
     WIKI_RESULTS = QUESTIONS_RESULTS = 3
     default_categories = settings.SEARCH_DEFAULT_CATEGORIES
 
-    # Apply category filters
-    if category_tags:
-        question_s = question_s.filter(question_tag__in=category_tags)
-        wiki_s = wiki_s.filter(document_tag__in=category_tags)
+    # Apply product filters
+    if product_slugs:
+        wiki_s = wiki_s.filter(document_product__in=product_slugs)
+    if tags:
+        question_s = question_s.filter(question_tag__in=tags)
 
     try:
         raw_results = (

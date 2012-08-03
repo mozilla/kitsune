@@ -3,8 +3,11 @@ from django.views.decorators.cache import never_cache
 import jingo
 from mobility.decorators import mobile_template
 
+from landings.utils import show_ia
+from products.models import Product
 from sumo.parser import get_object_fallback
 from sumo.views import redirect_to
+from topics.models import Topic
 from wiki.models import Document
 from wiki.views import SHOWFOR_DATA
 
@@ -107,32 +110,44 @@ def desktop_or_mobile(request):
     return redirect_to(request, url_name, permanent=False)
 
 
-@mobile_template('landings/{mobile/}home.html')
-def home(request, template=None):
+def home(request):
+    """The home page."""
+    if not show_ia(request):
+        return old_home(request)
+
+    products = Product.objects.filter(visible=True)
+    topics = Topic.objects.filter(visible=True)
+    return jingo.render(request, 'landings/home.html', {
+        'products': products,
+        'topics': topics})
+
+
+@mobile_template('landings/{mobile/}old-home.html')
+def old_home(request, template=None):
     docs = HOME_DOCS_FOR_MOBILE if request.MOBILE else HOME_DOCS
     return jingo.render(request, template,
-                        _data(docs, request.locale, 'desktop'))
+                        _data(docs, request.locale, 'firefox', 'desktop'))
 
 
 @mobile_template('landings/{mobile/}mobile.html')
 def mobile(request, template=None):
     docs = MOBILE_DOCS_FOR_MOBILE if request.MOBILE else MOBILE_DOCS
     return jingo.render(request, template,
-                        _data(docs, request.locale, 'mobile'))
+                        _data(docs, request.locale, 'mobile', 'mobile'))
 
 
 @mobile_template('landings/{mobile/}sync.html')
 def sync(request, template=None):
     docs = SYNC_DOCS_FOR_MOBILE if request.MOBILE else SYNC_DOCS
     return jingo.render(request, template,
-                        _data(docs, request.locale, 'sync'))
+                        _data(docs, request.locale))
 
 
 @mobile_template('landings/{mobile/}fxhome.html')
 def fxhome(request, template=None):
     docs = FXHOME_DOCS_FOR_MOBILE if request.MOBILE else FXHOME_DOCS
     return jingo.render(request, template,
-                        _data(docs, request.locale, 'FxHome'))
+                        _data(docs, request.locale))
 
 
 @mobile_template('landings/{mobile/}marketplace.html')
@@ -141,14 +156,14 @@ def marketplace(request, template=None):
     # Marketplace search results should only be kb (zendesk is being
     # used for questions).
     return jingo.render(request, template,
-                        _data(docs, request.locale, 'marketplace', True))
+                        _data(docs, request.locale, only_kb=True))
 
 
 @mobile_template('landings/{mobile/}firefox.html')
 def firefox(request, template=None):
     docs = FIREFOX_DOCS_FOR_MOBILE if request.MOBILE else FIREFOX_DOCS
     return jingo.render(request, template,
-                        _data(docs, request.locale, 'desktop'))
+                        _data(docs, request.locale, 'firefox', 'desktop'))
 
 
 @mobile_template('landings/{mobile/}products.html')
@@ -195,7 +210,7 @@ def reminder(request):
     return jingo.render(request, 'landings/reminder.html')
 
 
-def _data(docs, locale, product=None, only_kb=False):
+def _data(docs, locale, product=None, q_tags=None, only_kb=False):
     """Add the documents and showfor data to the context data."""
     data = {}
     for side, title in docs.iteritems():
@@ -207,8 +222,8 @@ def _data(docs, locale, product=None, only_kb=False):
         data.update(search_params={'product': product})
 
     if only_kb:
-        data['search_params'].update(w=1)
-    elif product:
-        data['search_params'].update(q_tags=product)
+        data.setdefault('search_params', {}).update({'w': 1})
+    elif q_tags:
+        data['search_params'].update(q_tags=q_tags)
 
     return data

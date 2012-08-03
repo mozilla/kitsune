@@ -1,12 +1,12 @@
 .. _tests-chapter:
 
-======================
-The Kitsune Test Suite
-======================
+=================
+All about testing
+=================
 
 Kitsune has a fairly comprehensive Python test suite. Changes should not break
-tests--only change a test if there is a good reason to change the expected
-behavior--and new code should come with tests.
+tests---only change a test if there is a good reason to change the expected
+behavior---and new code should come with tests.
 
 
 Running the Test Suite
@@ -39,13 +39,21 @@ Some other helpful flags are:
   assertion.
 
 
-Running a Subset
-----------------
+Running a Subset of Tests
+-------------------------
 
 You can run part of the test suite by specifying the apps you want to run,
 like::
 
     ./manage.py test wiki search kbforums
+
+You can also specify modules::
+
+    ./manage.py test wiki.tests.test_views
+
+You can specify specific tests::
+
+    ./manage.py test wiki.tests.test_views:VersionGroupTests.test_version_groups
 
 You can also exclude tests that match a regular expression with ``-e``::
 
@@ -58,8 +66,10 @@ The Test Database
 -----------------
 
 The test suite will create a new database named ``test_%s`` where ``%s`` is
-whatever value you have for ``settings.DATABASES['default']['NAME']``. Make
-sure the user has ``ALL`` on the test database as well.
+whatever value you have for ``settings.DATABASES['default']['NAME']``.
+
+Make sure the user has ``ALL`` on the test database as well. This is
+covered in the installation chapter.
 
 When the schema changes, you may need to drop the test database. You can also
 run the test suite with ``FORCE_DB`` once to cause Django to drop and recreate
@@ -68,8 +78,8 @@ it::
     FORCE_DB=1 ./manage.py test -s --noinput --logging-clear-handlers
 
 
-Adding Tests
-============
+Writing New Tests
+=================
 
 Code should be written so it can be tested, and then there should be tests for
 it.
@@ -78,6 +88,18 @@ When adding code to an app, tests should be added in that app that cover the
 new functionality. All apps have a ``tests`` module where tests should go. They
 will be discovered automatically by the test runner as long as the look like a
 test.
+
+* Avoid naming test files ``test_utils.py``, since we use a library
+  with the same name. Use ``test__utils.py`` instead.
+
+* If you're expecting ``reverse`` to return locales in the URL, use
+  ``LocalizingClient`` instead of the default client for the
+  ``TestCase`` class.
+
+* Many models have "modelmakers" which are easier to work with for
+  some kinds of tests than fixtures. For example,
+  ``forums.tests.document`` is the model maker for
+  ``forums.models.Document``.
 
 
 Changing Tests
@@ -104,6 +126,7 @@ JavaScript Tests
 Frontend JavaScript is currently tested with QUnit_, a simple set of
 functions for test setup/teardown and assertions.
 
+
 Running JavaScript Tests
 ------------------------
 
@@ -118,6 +141,7 @@ file so it includes django-qunit::
         # ...
         'django_qunit',
     )
+
 
 Writing JavaScript Tests
 ------------------------

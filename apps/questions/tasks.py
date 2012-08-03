@@ -10,6 +10,8 @@ from statsd import statsd
 from activity.models import Action
 from questions import ANSWERS_PER_PAGE
 from questions.karma_actions import AnswerAction, FirstAnswerAction
+from search.es_utils import ESTimeoutError, ESMaxRetryError, ESException
+from search.tasks import index_task
 
 
 log = logging.getLogger('k.task')
@@ -28,7 +30,7 @@ def update_question_votes(question_id):
     try:
         q = Question.uncached.get(id=question_id)
         q.sync_num_votes_past_week()
-        q.save(no_update=True, force_update=True)
+        q.save(force_update=True)
     except Question.DoesNotExist:
         log.info('Question id=%s deleted before task.' % question_id)
 
@@ -73,19 +75,26 @@ def update_question_vote_chunk(data):
         # convert that directly to a dict.
         id_to_num = dict(cursor.fetchall())
 
-        # Fetch all the documents we need to update.
-        from questions.models import Question
-        from search import es_utils
-        es_docs = es_utils.get_documents(Question, data)
+        try:
+            # Fetch all the documents we need to update.
+            from questions.models import Question
+            from search import es_utils
+            es_docs = es_utils.get_documents(Question, data)
 
-        # For each document, update the data and stick it back in the
-        # index.
-        for doc in es_docs:
-            # Note: Need to keep this in sync with
-            # Question.extract_document.
-            doc[u'question_num_votes_past_week'] = id_to_num[int(doc[u'id'])]
+            # For each document, update the data and stick it back in the
+            # index.
+            for doc in es_docs:
+                # Note: Need to keep this in sync with
+                # Question.extract_document.
+                num = id_to_num[int(doc[u'id'])]
+                doc[u'question_num_votes_past_week'] = num
 
-            Question.index(doc, refresh=True)
+                Question.index(doc, refresh=True)
+        except (ESTimeoutError, ESMaxRetryError, ESException):
+            # Something happened with ES, so let's push index updating
+            # into an index_task which retries when it fails because
+            # of ES issues.
+            index_task.delay(Question, id_to_num.keys())
 
 
 @task(rate_limit='4/m')
@@ -96,7 +105,7 @@ def update_answer_pages(question):
     i = 0
     for answer in question.answers.using('default').order_by('created').all():
         answer.page = i / ANSWERS_PER_PAGE + 1
-        answer.save(no_update=True, no_notify=True)
+        answer.save(no_notify=True)
         i += 1
 
 

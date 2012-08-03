@@ -1,6 +1,5 @@
 {# vim: set ts=2 et sts=2 sw=2: #}
 {% extends "search/base.html" %}
-{% from "search/includes/macros.html" import search_engine with context %}
 {% if advanced != '0' %}
   {% set classes = 'advanced_search' %}
 {% endif %}
@@ -17,7 +16,6 @@
     </ul>
     <div id="tab-wrapper">
     <form id="kb" method="get">
-      {{ search_engine() }}
       <div class="container">
         <label for="kb_q">{{ _('Article contains') }}</label>
         <input name="q" class="auto-fill" id="kb_q" placeholder="{{ _('crashes on youtube') }}" value="{{ search_form.q.data or '' }}" type="text" />
@@ -43,10 +41,9 @@
       </div>
 
       <div class="container">
-        {{ search_form.tags.label_tag()|safe }}
-        {{ search_form.tags|safe }}
-        <div class="search-tips-small">
-          {{ _('Note: Searching for "tag1, tag2" returns articles tagged with both tag1 and tag2') }}
+        {{ search_form.topics.label_tag()|safe }}
+        <div class="topics checkboxes">
+          {{ search_form.topics|safe }}
         </div>
       </div>
 
@@ -67,7 +64,6 @@
       </div>
     </form>{# kb #}
     <form method="get" id="support">
-      {{ search_engine() }}
       <div class="container">
         <label for="support_q">{{ _('Post contains') }}</label>
         <input name="q" class="auto-fill" id="support_q" placeholder="{{ _('crashes on youtube') }}" value="{{ search_form.q.data or '' }}" type="text" />
@@ -154,7 +150,6 @@
       </div>
     </form>{# support #}
     <form method="get" id="discussion">
-      {{ search_engine() }}
       <div class="container">
         <label for="discussion_q">{{ _('Thread contains') }}</label>
         <input name="q" class="auto-fill" id="discussion_q" placeholder="{{ _('crashes on youtube') }}" value="{{ search_form.q.data or '' }}" type="text" />

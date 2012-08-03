@@ -200,8 +200,8 @@ class RegistrationManager(ConfirmationManager):
             msg = 'Key: {k}\nRequest:\n'.format(k=activation_key)
             reason = 'invalid key'
 
-        mail.mail_admins(u'User activation failure ({r})'.format(r=reason),
-                         msg + repr(request), fail_silently=True)
+        log.warning(u'User activation failure ({r}): {k}'.format(
+            r=reason, k=activation_key))
 
         return False
 

@@ -26,11 +26,11 @@ the case that we're not around. Please try pinging us again.
 
 Current primary developers:
 
-.. comment::
-
-   This is a slight repeat from AUTHORS. We just need to point out
-   people to contact if someone is having problems.
+.. This is a slight repeat from AUTHORS. We just need to point out
+.. people to contact if someone is having problems.
 
 * James Socol (jsocol)
 * Ricky Rosario (r1cky)
 * Will Kahn-Greene (willkg)
+* Rehan Dalal (rdalal)
+* Mike Cooper (mythmon)

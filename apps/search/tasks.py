@@ -81,7 +81,7 @@ def index_task(cls, ids, **kw):
     try:
         for id in cls.uncached.filter(id__in=ids).values_list('id', flat=True):
             cls.index(cls.extract_document(id), refresh=True)
-    except Exception, exc:
+    except Exception as exc:
         retries = index_task.request.retries
         index_task.retry(exc=exc, max_retries=MAX_RETRIES - 1,
                          countdown=RETRY_TIMES[retries])

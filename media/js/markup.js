@@ -25,7 +25,14 @@
 (function($, gettext, document){
 
 var Marky = {
-    createSimpleToolbar: function(toolbarSel, textareaSel, cannedResp) {
+    createSimpleToolbar: function(toolbarSel, textareaSel, options) {
+        var defaults = {
+            cannedResponses: false,
+            privateMessaging: false
+        };
+
+        var settings = $.extend({}, defaults, options);
+
         var SB = Marky.SimpleButton;
         var buttons = [
             new SB(gettext('Bold'), "'''", "'''", gettext('bold text'),
@@ -40,10 +47,15 @@ var Marky = {
             new SB(gettext('Bulleted List'), '* ', '',
                    gettext('Bulleted list item'), 'btn-ul', true)
         ];
-        if (cannedResp) {
+        if (settings.cannedResponses) {
             buttons.push(new Marky.Separator(),
                          new Marky.CannedResponsesButton());
         }
+        if(settings.privateMessaging) {
+            buttons.push(new Marky.Separator(),
+                         new Marky.QuoteButton());
+        }
+
         Marky.createCustomToolbar(toolbarSel, textareaSel, buttons);
     },
     createFullToolbar: function(toolbarSel, textareaSel) {
@@ -760,7 +772,7 @@ Marky.CannedResponsesButton.prototype = $.extend({}, Marky.SimpleButton.prototyp
                 '<div class="search">' +
                 '<label for="filter-responses-field">' + gettext('Search: ') +'</label>' +
                 '<input type="text" name="q" id="filter-responses-field" placeholder="' 
-                + gettext('Type here to filter the list of shown responses') + '" />' +
+                + gettext('Search for common responses') + '" />' +
                 '</div></div>' +
                 '<div class="area" id="responses-area">' +
                 '<h2 class="heading-label">' + gettext('Categories') + '</h2>' +
@@ -769,7 +781,7 @@ Marky.CannedResponsesButton.prototype = $.extend({}, Marky.SimpleButton.prototyp
                 '</ul></div>' +
                 '<div class="area" id="response-list-area">' +
                 '<h2 class="heading-label">' + gettext('Responses') + '</h2>' +
-                '<span class="nocat-label">' + gettext('Please select a category from the previous column.') + '</span>' +
+                '<span class="nocat-label">' + gettext('Please select a category from the previous column or start a search.') + '</span>' +
                 '<p class="response-list"/>' +
                 '</div>' +
                 '<div class="area" id="response-content-area">' +
@@ -882,15 +894,37 @@ Marky.CannedResponsesButton.prototype = $.extend({}, Marky.SimpleButton.prototyp
         }
 
         function searchResponses(term) {
-            var term = term.toLowerCase();
+            var term = term.toLowerCase().trim();
+            var $searchHeading = $html.find('#response-list-area .heading-label');
+            var $noCategorySelected = $html.find('.nocat-label');
+            var $responseLists = $html.find('.response-list ul');
             var $responses = $html.find('.response');
+            var $responseListArea = $html.find('#response-list-area');
+            var $responsesArea = $html.find('#responses-area');
+            
+            if(term === '') {
+                $searchHeading.text(gettext('Responses'));
+                $responseListArea.removeClass('filtered');
+                $responsesArea.removeClass('filtered');
+                $noCategorySelected.show();
+                $responses.show();
+                $responseLists.hide();
+                return;
+            }
+            
+            $responseListArea.addClass('filtered');
+            $responsesArea.addClass('filtered');
+            $searchHeading.text(gettext('Matching responses'));
+            $noCategorySelected.hide();
+            $responseLists.show();
+            
             $responses.each(function() {
                 var text = $(this).text().toLowerCase();
                 if(text.indexOf(term) === -1) {
-                    $(this).addClass('hide');
+                    $(this).hide();
                 }
                 else {
-                    $(this).removeClass('hide');
+                    $(this).show();
                 }
             });
         }
@@ -1051,6 +1085,23 @@ Marky.CannedResponsesButton.prototype = $.extend({}, Marky.SimpleButton.prototyp
         });
     }
 });
+
+/*
+ * The quote button helper
+ */
+Marky.QuoteButton = function() {
+    var name = gettext('Quote previous message...');
+    var previousContent = $('#read-message').attr('data-message-content');
+    var previousAuthor = $('.from a').text();
+    var previousAuthorLink = $('.from a').attr('href');
+    var quote = '[' + previousAuthorLink + ' ' + previousAuthor + ']' 
+                + gettext(' said') + '\r\n';
+    quote += '<blockquote>\r\n';
+    quote += previousContent + '\r\n';
+    quote += '</blockquote>\r\n';
+
+    return new Marky.SimpleButton(name, quote, '', '', 'btn-quote', true);
+}
 
 window.Marky = Marky;
 

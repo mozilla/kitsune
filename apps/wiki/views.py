@@ -19,14 +19,15 @@ from django.views.decorators.http import (require_GET, require_POST,
 import jingo
 from mobility.decorators import mobile_template
 from statsd import statsd
-from taggit.models import Tag
 from tower import ugettext_lazy as _lazy
 from tower import ugettext as _
 
 from access.decorators import permission_required, login_required
+from products.models import Product
 from sumo.helpers import urlparams
 from sumo.urlresolvers import reverse
-from sumo.utils import paginate, smart_int, get_next_url
+from sumo.utils import paginate, smart_int, get_next_url, truncated_json_dumps
+from topics.models import Topic
 from wiki import DOCUMENTS_PER_PAGE
 from wiki.events import (EditDocumentEvent, ReviewableRevisionInLocaleEvent,
                          ApproveRevisionInLocaleEvent, ApprovedOrReadyUnion,
@@ -36,7 +37,7 @@ from wiki.forms import (AddContributorForm, DocumentForm, RevisionForm,
 from wiki.models import Document, Revision, HelpfulVote, ImportantDate
 from wiki.config import (CATEGORIES, OPERATING_SYSTEMS,
                          GROUPED_OPERATING_SYSTEMS, FIREFOX_VERSIONS,
-                         GROUPED_FIREFOX_VERSIONS, PRODUCT_TAGS)
+                         GROUPED_FIREFOX_VERSIONS)
 from wiki.parser import wiki_to_html
 from wiki.tasks import (send_reviewed_notification, schedule_rebuild_kb,
                         send_contributor_notification)
@@ -165,7 +166,7 @@ def revision(request, document_slug, revision_id):
 
 
 @require_GET
-def list_documents(request, category=None, tag=None):
+def list_documents(request, category=None, topic=None):
     """List wiki documents."""
     docs = Document.objects.filter(locale=request.locale).order_by('title')
     if category:
@@ -179,31 +180,28 @@ def list_documents(request, category=None, tag=None):
         except KeyError:
             raise Http404
 
-    if tag:
-        tagobj = get_object_or_404(Tag, slug=tag)
+    if topic:
+        topic = get_object_or_404(Topic, slug=topic)
         default_lang = settings.WIKI_DEFAULT_LANGUAGE
         if request.locale == default_lang:
-            docs = docs.filter(tags__name=tagobj.name)
+            docs = docs.filter(topics=topic)
         else:
-            # blows up: docs = docs.filter(parent__tags__name=tagobj.name)
             parent_ids = Document.objects.filter(
-                locale=default_lang, tags__name=tagobj.name) \
-                .values_list('id', flat=True)
+                locale=default_lang, topics=topic).values_list('id', flat=True)
             docs = docs.filter(parent__in=parent_ids)
 
     docs = paginate(request, docs, per_page=DOCUMENTS_PER_PAGE)
     return jingo.render(request, 'wiki/list_documents.html',
                         {'documents': docs,
                          'category': category,
-                         'tag': tag})
+                         'topic': topic.title if topic else None})
 
 
 @login_required
 def new_document(request):
     """Create a new wiki document."""
     if request.method == 'GET':
-        doc_form = DocumentForm(
-            can_create_tags=request.user.has_perm('taggit.add_tag'))
+        doc_form = DocumentForm(initial_title=request.GET.get('title'))
         rev_form = RevisionForm()
         return jingo.render(request, 'wiki/new_document.html',
                             {'document_form': doc_form,
@@ -211,8 +209,7 @@ def new_document(request):
 
     post_data = request.POST.copy()
     post_data.update({'locale': request.locale})
-    doc_form = DocumentForm(post_data,
-        can_create_tags=request.user.has_perm('taggit.add_tag'))
+    doc_form = DocumentForm(post_data)
     rev_form = RevisionForm(post_data)
 
     if doc_form.is_valid() and rev_form.is_valid():
@@ -254,7 +251,6 @@ def edit_document(request, document_slug, revision_id=None):
     if doc.allows_editing_by(user):
         doc_form = DocumentForm(
             initial=_document_form_initial(doc),
-            can_create_tags=user.has_perm('taggit.add_tag'),
             can_archive=user.has_perm('wiki.archive_document'))
 
     if request.method == 'GET':
@@ -273,7 +269,6 @@ def edit_document(request, document_slug, revision_id=None):
                 doc_form = DocumentForm(
                     post_data,
                     instance=doc,
-                    can_create_tags=user.has_perm('taggit.add_tag'),
                     can_archive=user.has_perm('wiki.archive_document'))
                 if doc_form.is_valid():
                     # Get the possibly new slug for the imminent redirection:
@@ -520,8 +515,7 @@ def translate(request, document_slug, revision_id=None):
 
     if user_has_doc_perm:
         doc_initial = _document_form_initial(doc) if doc else None
-        doc_form = DocumentForm(initial=doc_initial,
-            can_create_tags=user.has_perm('taggit.add_tag'))
+        doc_form = DocumentForm(initial=doc_initial)
     if user_has_rev_perm:
         initial = {'based_on': based_on_rev.id, 'comment': ''}
         if revision_id:
@@ -551,8 +545,7 @@ def translate(request, document_slug, revision_id=None):
             disclose_description = True
             post_data = request.POST.copy()
             post_data.update({'locale': request.locale})
-            doc_form = DocumentForm(post_data, instance=doc,
-                can_create_tags=user.has_perm('taggit.add_tag'))
+            doc_form = DocumentForm(post_data, instance=doc)
             doc_form.instance.locale = request.locale
             doc_form.instance.parent = parent_doc
             if which_form == 'both':
@@ -769,8 +762,8 @@ def unhelpful_survey(request):
     survey.pop('vote_id')
     survey.pop('button')
 
-    # Save the survey in JSON format.
-    vote.add_metadata('survey', json.dumps(survey))
+    # Save the survey in JSON format, taking care not to exceed 1000 chars.
+    vote.add_metadata('survey', truncated_json_dumps(survey, 1000, 'comment'))
 
     return HttpResponse(
         json.dumps({'message': _('Thanks for making us better!')}))
@@ -1021,10 +1014,10 @@ def _document_form_initial(document):
             'category': document.category,
             'is_localizable': document.is_localizable,
             'is_archived': document.is_archived,
-            'tags': [t.name for t in document.tags.all()
-                     if t.name not in PRODUCT_TAGS],
-            'products': [t.name for t in document.tags.all()
-                         if t.name in PRODUCT_TAGS],
+            'topics': Topic.uncached.filter(
+                document=document).values_list('id', flat=True),
+            'products': Product.uncached.filter(
+                document=document).values_list('id', flat=True),
             'allow_discussion': document.allow_discussion,
             'needs_change': document.needs_change,
             'needs_change_comment': document.needs_change_comment}

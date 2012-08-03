@@ -80,7 +80,7 @@ class SearchClickthroughMeta(object):
 
 
 class SearchClickthroughResource(CachedResource):
-    """Clickthrough ratio for Sphinx or Elastic searches for one period
+    """Clickthrough ratio for searches over one period
 
     Represents a ratio of {clicks of results}/{total searches} for one engine.
 
@@ -155,13 +155,6 @@ class SearchClickthroughResource(CachedResource):
     def get_resource_uri(self, bundle_or_obj):
         """Return a fake answer; we don't care, for now."""
         return ''
-
-
-class SphinxClickthroughResource(SearchClickthroughResource):
-    engine = 'sphinx'
-
-    class Meta(SearchClickthroughMeta):
-        resource_name = 'sphinx-clickthrough-rate'
 
 
 class ElasticClickthroughResource(SearchClickthroughResource):
@@ -325,15 +318,6 @@ class L10nCoverageResource(CachedResource):
         allowed_methods = ['get']
 
 
-def _monthly_qs_for(model_cls):
-    """Return a queryset with the extra select for month and year."""
-    return model_cls.objects.filter(created__gte=_start_date()).extra(
-        select={
-            'month': 'extract( month from created )',
-            'year': 'extract( year from created )',
-        })
-
-
 def _daily_qs_for(model_cls):
     """Return the daily grouped queryset we need for model_cls."""
     # Limit to newer than 2011/1/1 and active creators.
@@ -349,8 +333,12 @@ def _daily_qs_for(model_cls):
 
 def _qs_for(model_cls):
     """Return the monthly grouped queryset we need for model_cls."""
-    return _monthly_qs_for(model_cls).values(
-        'year', 'month').annotate(count=Count('created'))
+    return model_cls.objects.filter(created__gte=date(2011, 1, 1)).extra(
+        select={
+            'day': 'extract( day from created )',
+            'month': 'extract( month from created )',
+            'year': 'extract( year from created )',
+        }).values('year', 'month', 'day').annotate(count=Count('created'))
 
 
 def _start_date():

@@ -7,7 +7,8 @@ from dashboards.readouts import (UnreviewedReadout, OutOfDateReadout,
                                  MostVisitedTranslationsReadout,
                                  UnreadyForLocalizationReadout,
                                  NeedsChangesReadout,
-                                 NavigationTranslationsReadout)
+                                 NavigationTranslationsReadout,
+                                 UntranslatedReadout)
 from sumo.tests import TestCase
 from wiki.config import (MAJOR_SIGNIFICANCE, MEDIUM_SIGNIFICANCE,
                          TYPO_SIGNIFICANCE)
@@ -520,3 +521,15 @@ class NeedsChangesTests(ReadoutTestCase):
         titles = self.titles()
         eq_(1, len(titles))
         assert document.title in titles
+
+
+class UntranslatedTests(ReadoutTestCase):
+    """Tests for the Untranslated readout"""
+    readout = UntranslatedReadout
+
+    def test_redirects_not_shown(self):
+        """Redirects shouldn't appear in Untranslated readout."""
+        revision(is_approved=True, is_ready_for_localization=True,
+                 content='REDIRECT [[Foo Bar]]', save=True)
+
+        eq_(0, len(self.titles()))

@@ -1,5 +1,5 @@
-import json
 import datetime
+import json
 
 import mock
 from django.conf import settings
@@ -12,16 +12,17 @@ from nose.tools import eq_
 from pyquery import PyQuery as pq
 from test_utils import TestCase
 
+import search as constants
 from forums.tests import forum, thread, post
+from products.tests import product
 from questions.tests import question, answer, answervote, questionvote
 from questions.models import Question
-import search as constants
 from search import es_utils
 from search.models import generate_tasks
 from sumo.tests import LocalizingClient
 from sumo.urlresolvers import reverse
+from topics.tests import topic
 from users.tests import user
-from waffle.models import Flag
 from wiki.tests import document, revision
 
 
@@ -113,7 +114,6 @@ class ElasticSearchTasksTests(ElasticTestCase):
     @mock.patch.object(Question, 'index')
     def test_tasks(self, index_fun):
         """Tests to make sure tasks are added and run"""
-
         q = question()
         # Don't call self.refresh here since that calls generate_tasks().
 
@@ -127,7 +127,6 @@ class ElasticSearchTasksTests(ElasticTestCase):
     @mock.patch.object(Question, 'index')
     def test_tasks_squashed(self, index_fun):
         """Tests to make sure tasks are squashed"""
-
         q = question()
         # Don't call self.refresh here since that calls generate_tasks().
 
@@ -170,344 +169,12 @@ class ElasticSearchViewPagingTests(ElasticTestCase):
         eq_('s', q['as'])
         eq_('0', q['r'])
 
-    def test_front_page_search_paging(self):
-        # Create 30 documents
-        for i in range(30):
-            doc = document(
-                title=u'How to fix your audio %d' % i,
-                locale=u'en-US',
-                category=10,
-                save=True)
-            doc.tags.add(u'desktop')
-            revision(document=doc, is_approved=True, save=True)
-
-        # Create 20 questions
-        for i in range(20):
-            ques = question(title=u'audio',  content=u'audio bad.', save=True)
-            ques.tags.add(u'desktop')
-            ans = answer(question=ques, save=True)
-            answervote(answer=ans, helpful=True, save=True)
-
-        self.refresh()
-
-        response = self.client.get(reverse('search'), {
-            'q_tags': 'desktop', 'product': 'desktop', 'q': 'audio',
-            'format': 'json'
-        })
-        eq_(200, response.status_code)
-        content = json.loads(response.content)
-
-        # Make sure there are 20 results.
-        eq_(content['total'], 20)
-
-        # Make sure only 10 of them are kb.
-        docs = [mem for mem in content['results']
-                if mem['type'] == 'document']
-        eq_(len(docs), 10)
-
-
-class ElasticSearchViewTests(ElasticTestCase):
-    client_class = LocalizingClient
-
-    def test_front_page_search_for_questions(self):
-        """This tests whether doing a search from the front page returns
-        question results.
-
-        Bug #709202.
-
-        """
-        # Create a question with an answer with an answervote that
-        # marks the answer as helpful.  The question should have the
-        # "desktop" tag.
-        ques = question(
-            title=u'audio fails',
-            content=u'my audio dont work.')
-        ques.save()
-
-        ques.tags.add(u'desktop')
-
-        ans = answer(
-            question=ques,
-            content=u'You need to turn your volume up.')
-        ans.save()
-
-        ansvote = answervote(
-            answer=ans,
-            helpful=True)
-        ansvote.save()
-
-        self.refresh()
-
-        # This is the search that you get when you start on the sumo
-        # homepage and do a search from the box with two differences:
-        # first, we do it in json since it's easier to deal with
-        # testing-wise and second, we search for 'audio' since we have
-        # data for that.
-        response = self.client.get(reverse('search'), {
-            'q_tags': 'desktop', 'product': 'desktop', 'q': 'audio',
-            'format': 'json'
-        })
-
-        eq_(200, response.status_code)
-
-        content = json.loads(response.content)
-        eq_(content['total'], 1)
-
-        # This is another search that picks up results based on the
-        # answer_content.  answer_content is in a string array, so
-        # this makes sure that works.
-        response = self.client.get(reverse('search'), {
-            'q_tags': 'desktop', 'product': 'desktop', 'q': 'volume',
-            'format': 'json'
-        })
-
-        eq_(200, response.status_code)
-
-        content = json.loads(response.content)
-        eq_(content['total'], 1)
-
-    def test_front_page_search_for_wiki(self):
-        """This tests whether doing a search from the front page returns
-        wiki document results.
-
-        Bug #709202.
-
-        """
-        doc = document(
-            title=u'How to fix your audio',
-            locale=u'en-US',
-            category=10)
-        doc.save()
-
-        doc.tags.add(u'desktop')
-
-        rev = revision(
-            document=doc,
-            summary=u'Volume.',
-            content=u'Turn up the volume.',
-            is_approved=True)
-        rev.save()
-
-        self.refresh()
-
-        # This is the search that you get when you start on the sumo
-        # homepage and do a search from the box with two differences:
-        # first, we do it in json since it's easier to deal with
-        # testing-wise and second, we search for 'audio' since we have
-        # data for that.
-        response = self.client.get(reverse('search'), {
-            'q_tags': 'desktop', 'product': 'desktop', 'q': 'audio',
-            'format': 'json'
-        })
-
-        eq_(200, response.status_code)
-
-        content = json.loads(response.content)
-        eq_(content['total'], 1)
-
-    def test_advanced_search_for_wiki_no_query(self):
-        """Tests advanced search with no query"""
-        doc = document(
-            title=u'How to fix your audio',
-            locale=u'en-US',
-            category=10)
-        doc.save()
-
-        doc.tags.add(u'desktop')
-
-        rev = revision(
-            document=doc,
-            summary=u'Volume.',
-            content=u'Turn up the volume.',
-            is_approved=True)
-        rev.save()
-
-        self.refresh()
-
-        # This is the search that you get when you start on the sumo
-        # homepage and do a search from the box with two differences:
-        # first, we do it in json since it's easier to deal with
-        # testing-wise and second, we search for 'audio' since we have
-        # data for that.
-        response = self.client.get(reverse('search'), {
-            'q': '', 'tags': 'desktop', 'w': '1', 'a': '1',
-            'format': 'json'
-        })
-
-        eq_(200, response.status_code)
-
-        content = json.loads(response.content)
-        eq_(content['total'], 1)
-
-    def test_advanced_search_questions_sortby(self):
-        """Tests advanced search for questions with a sortby"""
-        question(title=u'tags tags tags', save=True)
-
-        self.refresh()
-
-        # Advanced search for questions with sortby set to 3 which is
-        # '-replies' which is different between Sphinx and ES.
-        response = self.client.get(reverse('search'), {
-            'q': '', 'tags': 'desktop', 'w': '2', 'a': '1', 'sortby': '3',
-            'format': 'json'
-        })
-
-        eq_(200, response.status_code)
-
-        content = json.loads(response.content)
-        eq_(content['total'], 1)
-
-    def test_advanced_search_questions_num_votes(self):
-        """Tests advanced search for questions num_votes filter"""
-        q = question(title=u'tags tags tags', save=True)
-
-        # Add two question votes
-        questionvote(question=q, save=True)
-        questionvote(question=q, save=True)
-
-        self.refresh()
-
-        # Advanced search for questions with num_votes > 5. The above
-        # question should be not in this set.
-        response = self.client.get(reverse('search'), {
-            'q': '', 'tags': 'desktop', 'w': '2', 'a': '1',
-            'num_voted': 2, 'num_votes': 5,
-            'format': 'json'
-        })
-
-        eq_(200, response.status_code)
-
-        content = json.loads(response.content)
-        eq_(content['total'], 0)
-
-        # Advanced search for questions with num_votes < 1. The above
-        # question should be not in this set.
-        response = self.client.get(reverse('search'), {
-            'q': '', 'tags': 'desktop', 'w': '2', 'a': '1',
-            'num_voted': 1, 'num_votes': 1,
-            'format': 'json'
-        })
-
-        eq_(200, response.status_code)
-
-        content = json.loads(response.content)
-        eq_(content['total'], 0)
-
-    def test_num_voted_none(self):
-        q = question(save=True)
-        questionvote(question=q, save=True)
-
-        self.refresh()
-
-        qs = {'q': '', 'w': 2, 'a': 1, 'num_voted': 2, 'num_votes': ''}
-        response = self.client.get(reverse('search'), qs)
-        eq_(200, response.status_code)
-
-    def test_forums_search(self):
-        """This tests whether forum posts show up in searches."""
-        thread1 = thread(
-            title=u'Why don\'t we spell crash backwards?')
-        thread1.save()
-
-        post1 = post(
-            thread=thread1,
-            content=u'What, like hsarc?  That\'s silly.')
-        post1.save()
-
-        self.refresh()
-
-        response = self.client.get(reverse('search'), {
-            'author': '', 'created': '0', 'created_date': '',
-            'updated': '0', 'updated_date': '', 'sortby': '0',
-            'a': '1', 'w': '4', 'q': 'hsarc',
-            'format': 'json'
-        })
-
-        eq_(200, response.status_code)
-
-        content = json.loads(response.content)
-        eq_(content['total'], 1)
-
-    def test_forums_thread_created(self):
-        post_created_ds = datetime.datetime(2010, 1, 1, 12, 00)
-        thread1 = thread(
-            title=u'Why don\'t we spell crash backwards?',
-            created=post_created_ds)
-        thread1.save()
-
-        post1 = post(
-            thread=thread1,
-            content=u'What, like hsarc?  That\'s silly.',
-            created=(post_created_ds + datetime.timedelta(hours=1)))
-        post1.save()
-
-        self.refresh()
-
-        # The thread/post should not show up in results for items
-        # created AFTER 1/12/2010.
-        response = self.client.get(reverse('search'), {
-            'author': '', 'created': '2', 'created_date': '01/12/2010',
-            'updated': '0', 'updated_date': '', 'sortby': '0',
-            'a': '1', 'w': '4', 'q': 'hsarc',
-            'format': 'json'
-        })
-
-        eq_(200, response.status_code)
-
-        content = json.loads(response.content)
-        eq_(content['total'], 0)
-
-        # The thread/post should show up in results for items created
-        # AFTER 1/1/2010.
-        response = self.client.get(reverse('search'), {
-            'author': '', 'created': '2', 'created_date': '01/01/2010',
-            'updated': '0', 'updated_date': '', 'sortby': '0',
-            'a': '1', 'w': '4', 'q': 'hsarc',
-            'format': 'json'
-        })
-
-        eq_(200, response.status_code)
-
-        content = json.loads(response.content)
-        eq_(content['total'], 1)
-
-        # The thread/post should show up in results for items created
-        # BEFORE 1/12/2010.
-        response = self.client.get(reverse('search'), {
-            'author': '', 'created': '1', 'created_date': '01/12/2010',
-            'updated': '0', 'updated_date': '', 'sortby': '0',
-            'a': '1', 'w': '4', 'q': 'hsarc',
-            'format': 'json'
-        })
-
-        eq_(200, response.status_code)
-
-        content = json.loads(response.content)
-        eq_(content['total'], 1)
-
-        # The thread/post should NOT show up in results for items
-        # created BEFORE 12/31/2009.
-        response = self.client.get(reverse('search'), {
-            'author': '', 'created': '1', 'created_date': '12/31/2009',
-            'updated': '0', 'updated_date': '', 'sortby': '0',
-            'a': '1', 'w': '4', 'q': 'hsarc',
-            'format': 'json'
-        })
-
-        eq_(200, response.status_code)
-
-        content = json.loads(response.content)
-        eq_(content['total'], 0)
-
 
 class ElasticSearchUnifiedViewTests(ElasticTestCase):
     client_class = LocalizingClient
 
-    def setUp(self):
-        super(ElasticSearchUnifiedViewTests, self).setUp()
-        Flag.objects.create(name='esunified', everyone=True)
-
     def test_meta_tags(self):
+        """Tests that the search results page  has the right meta tags"""
         url_ = reverse('search')
         response = self.client.get(url_, {'q': 'contribute'})
 
@@ -523,6 +190,19 @@ class ElasticSearchUnifiedViewTests(ElasticTestCase):
         assert cookie in response.cookies
         eq_(urlquote(data['q']), response.cookies[cookie].value)
 
+    def test_empty_pages(self):
+        """Tests requesting a page that has no results"""
+        ques = question(title=u'audio', save=True)
+        ques.tags.add(u'desktop')
+        ans = answer(question=ques, content=u'volume', save=True)
+        answervote(answer=ans, helpful=True, save=True)
+
+        self.refresh()
+
+        qs = {'q': 'audio', 'page': 81}
+        response = self.client.get(reverse('search'), qs)
+        eq_(200, response.status_code)
+
     def test_front_page_search_for_questions(self):
         """This tests whether doing a search from the front page returns
         question results.
@@ -533,22 +213,11 @@ class ElasticSearchUnifiedViewTests(ElasticTestCase):
         # Create a question with an answer with an answervote that
         # marks the answer as helpful.  The question should have the
         # "desktop" tag.
-        ques = question(
-            title=u'audio fails',
-            content=u'my audio dont work.')
-        ques.save()
-
+        product(title=u'firefox', slug=u'desktop', save=True)
+        ques = question(title=u'audio', save=True)
         ques.tags.add(u'desktop')
-
-        ans = answer(
-            question=ques,
-            content=u'You need to turn your volume up.')
-        ans.save()
-
-        ansvote = answervote(
-            answer=ans,
-            helpful=True)
-        ansvote.save()
+        ans = answer(question=ques, content=u'volume', save=True)
+        answervote(answer=ans, helpful=True, save=True)
 
         self.refresh()
 
@@ -587,20 +256,9 @@ class ElasticSearchUnifiedViewTests(ElasticTestCase):
         Bug #709202.
 
         """
-        doc = document(
-            title=u'How to fix your audio',
-            locale=u'en-US',
-            category=10)
-        doc.save()
-
-        doc.tags.add(u'desktop')
-
-        rev = revision(
-            document=doc,
-            summary=u'Volume.',
-            content=u'Turn up the volume.',
-            is_approved=True)
-        rev.save()
+        doc = document(title=u'audio', locale=u'en-US', category=10, save=True)
+        doc.products.add(product(title=u'firefox', slug=u'desktop', save=True))
+        revision(document=doc, is_approved=True, save=True)
 
         self.refresh()
 
@@ -619,22 +277,45 @@ class ElasticSearchUnifiedViewTests(ElasticTestCase):
         content = json.loads(response.content)
         eq_(content['total'], 1)
 
+    def test_front_page_only_shows_wiki_and_questions(self):
+        """Tests that the front page doesn't show forums
+
+        This verifies that we're only showing documents of the type
+        that should be shown and that the filters on model are working
+        correctly.
+
+        Bug #767394
+
+        """
+        ques = question(title=u'audio', save=True)
+        ques.tags.add(u'desktop')
+        ans = answer(question=ques, content=u'volume', save=True)
+        answervote(answer=ans, helpful=True, save=True)
+
+        doc = document(title=u'audio', locale=u'en-US', category=10, save=True)
+        doc.products.add(product(slug=u'desktop', save=True))
+        revision(document=doc, is_approved=True, save=True)
+
+        thread1 = thread(title=u'audio', save=True)
+        post(thread=thread1, save=True)
+
+        self.refresh()
+
+        response = self.client.get(reverse('search'), {
+            'q_tags': 'desktop', 'product': 'desktop', 'q': 'audio',
+            'format': 'json'
+        })
+
+        eq_(200, response.status_code)
+
+        content = json.loads(response.content)
+        eq_(content['total'], 2)
+
     def test_advanced_search_for_wiki_no_query(self):
         """Tests advanced search with no query"""
-        doc = document(
-            title=u'How to fix your audio',
-            locale=u'en-US',
-            category=10)
-        doc.save()
-
+        doc = document(locale=u'en-US', category=10, save=True)
         doc.tags.add(u'desktop')
-
-        rev = revision(
-            document=doc,
-            summary=u'Volume.',
-            content=u'Turn up the volume.',
-            is_approved=True)
-        rev.save()
+        revision(document=doc, is_approved=True, save=True)
 
         self.refresh()
 
@@ -703,6 +384,7 @@ class ElasticSearchUnifiedViewTests(ElasticTestCase):
         eq_(content['total'], 0)
 
     def test_num_votes_none(self):
+        """Tests num_voted filtering where num_votes is ''"""
         q = question(save=True)
         questionvote(question=q, save=True)
 
@@ -713,22 +395,16 @@ class ElasticSearchUnifiedViewTests(ElasticTestCase):
         eq_(200, response.status_code)
 
     def test_forums_search(self):
-        """This tests whether forum posts show up in searches."""
-        thread1 = thread(
-            title=u'Why don\'t we spell crash backwards?')
-        thread1.save()
-
-        post1 = post(
-            thread=thread1,
-            content=u'What, like hsarc?  That\'s silly.')
-        post1.save()
+        """This tests whether forum posts show up in searches"""
+        thread1 = thread(title=u'crash', save=True)
+        post(thread=thread1, save=True)
 
         self.refresh()
 
         response = self.client.get(reverse('search'), {
             'author': '', 'created': '0', 'created_date': '',
             'updated': '0', 'updated_date': '', 'sortby': '0',
-            'a': '1', 'w': '4', 'q': 'hsarc',
+            'a': '1', 'w': '4', 'q': 'crash',
             'format': 'json'
         })
 
@@ -738,17 +414,12 @@ class ElasticSearchUnifiedViewTests(ElasticTestCase):
         eq_(content['total'], 1)
 
     def test_forums_thread_created(self):
+        """Tests created/created_date filtering for forums"""
         post_created_ds = datetime.datetime(2010, 1, 1, 12, 00)
-        thread1 = thread(
-            title=u'Why don\'t we spell crash backwards?',
-            created=post_created_ds)
-        thread1.save()
-
-        post1 = post(
-            thread=thread1,
-            content=u'What, like hsarc?  That\'s silly.',
-            created=(post_created_ds + datetime.timedelta(hours=1)))
-        post1.save()
+        thread1 = thread(title=u'crash', created=post_created_ds, save=True)
+        post(thread=thread1,
+             created=(post_created_ds + datetime.timedelta(hours=1)),
+             save=True)
 
         self.refresh()
 
@@ -757,7 +428,7 @@ class ElasticSearchUnifiedViewTests(ElasticTestCase):
         response = self.client.get(reverse('search'), {
             'author': '', 'created': '2', 'created_date': '01/12/2010',
             'updated': '0', 'updated_date': '', 'sortby': '0',
-            'a': '1', 'w': '4', 'q': 'hsarc',
+            'a': '1', 'w': '4', 'q': 'crash',
             'format': 'json'
         })
 
@@ -771,7 +442,7 @@ class ElasticSearchUnifiedViewTests(ElasticTestCase):
         response = self.client.get(reverse('search'), {
             'author': '', 'created': '2', 'created_date': '01/01/2010',
             'updated': '0', 'updated_date': '', 'sortby': '0',
-            'a': '1', 'w': '4', 'q': 'hsarc',
+            'a': '1', 'w': '4', 'q': 'crash',
             'format': 'json'
         })
 
@@ -785,7 +456,7 @@ class ElasticSearchUnifiedViewTests(ElasticTestCase):
         response = self.client.get(reverse('search'), {
             'author': '', 'created': '1', 'created_date': '01/12/2010',
             'updated': '0', 'updated_date': '', 'sortby': '0',
-            'a': '1', 'w': '4', 'q': 'hsarc',
+            'a': '1', 'w': '4', 'q': 'crash',
             'format': 'json'
         })
 
@@ -799,7 +470,7 @@ class ElasticSearchUnifiedViewTests(ElasticTestCase):
         response = self.client.get(reverse('search'), {
             'author': '', 'created': '1', 'created_date': '12/31/2009',
             'updated': '0', 'updated_date': '', 'sortby': '0',
-            'a': '1', 'w': '4', 'q': 'hsarc',
+            'a': '1', 'w': '4', 'q': 'crash',
             'format': 'json'
         })
 
@@ -807,6 +478,23 @@ class ElasticSearchUnifiedViewTests(ElasticTestCase):
 
         content = json.loads(response.content)
         eq_(content['total'], 0)
+
+    def test_multi_word_tag_search(self):
+        """Tests searching for tags with spaces in them"""
+        ques = question(title=u'audio', save=True)
+        ques.tags.add(u'Windows 7')
+
+        self.refresh()
+
+        response = self.client.get(reverse('search'), {
+            'q': 'audio', 'q_tags': 'Windows 7', 'w': '2', 'a': '1',
+            'sortby': '0', 'format': 'json'
+        })
+
+        eq_(200, response.status_code)
+
+        content = json.loads(response.content)
+        eq_(content['total'], 1)
 
     def test_category_invalid(self):
         """Tests passing an invalid category"""
@@ -938,32 +626,38 @@ class ElasticSearchUnifiedViewTests(ElasticTestCase):
 
     def test_wiki_tags(self):
         """Search for tags, includes multiple."""
-        for tags in ('extant', 'extant tagged'):
-            doc = document(locale=u'en-US', category=10, save=True)
-            for tag in tags.split(' '):
-                doc.tags.add(tag)
-            revision(document=doc, is_approved=True, save=True)
+        t1 = topic(slug='doesnotexist', save=True)
+        t2 = topic(slug='extant', save=True)
+        t3 = topic(slug='tagged', save=True)
+
+        doc = document(locale=u'en-US', category=10, save=True)
+        doc.topics.add(t2)
+        revision(document=doc, is_approved=True, save=True)
+
+        doc = document(locale=u'en-US', category=10, save=True)
+        doc.topics.add(t2)
+        doc.topics.add(t3)
+        revision(document=doc, is_approved=True, save=True)
 
         self.refresh()
 
-        qs = {'a': 1, 'w': 1, 'format': 'json'}
-        tags_vals = (
-            ('doesnotexist', 0),
-            ('extant', 2),
-            ('tagged', 1),
-            ('extant tagged', 1),  # two tags
+        topic_vals = (
+            (t1.slug, 0),
+            (t2.slug, 2),
+            (t3.slug, 1),
+            ([t2.slug, t3.slug], 1),
         )
 
-        for tags, number in tags_vals:
-            qs.update({'tags': tags})
+        qs = {'a': 1, 'w': 1, 'format': 'json'}
+        for topics, number in topic_vals:
+            qs.update({'topics': topics})
             response = self.client.get(reverse('search'), qs)
             eq_(number, json.loads(response.content)['total'])
 
-    def test_wiki_tags_inherit(self):
+    def test_wiki_topics_inherit(self):
         """Translations inherit tags from their parents."""
         doc = document(locale=u'en-US', category=10, save=True)
-        doc.tags.add(u'desktop')
-        doc.tags.add(u'extant')
+        doc.topics.add(topic(slug='extant', save=True))
         revision(document=doc, is_approved=True, save=True)
 
         translated = document(locale=u'es', parent=doc, category=10,
@@ -972,23 +666,23 @@ class ElasticSearchUnifiedViewTests(ElasticTestCase):
 
         self.refresh()
 
-        qs = {'a': 1, 'w': 1, 'format': 'json', 'tags': 'extant'}
+        qs = {'a': 1, 'w': 1, 'format': 'json', 'topics': 'extant'}
         response = self.client.get(reverse('search', locale='es'), qs)
         eq_(1, json.loads(response.content)['total'])
 
     def test_products(self):
         """Search for products."""
+
         prod_vals = (
-            ('mobile', 1),
-            ('desktop', 1),
-            ('sync', 2),
-            ('FxHome', 0),
+            (product(slug='b2g', save=True), 0),
+            (product(slug='mobile', save=True), 1),
+            (product(slug='desktop', save=True), 2),
         )
 
         for prod, total in prod_vals:
             for i in range(total):
                 doc = document(locale=u'en-US', category=10, save=True)
-                doc.tags.add(prod)
+                doc.products.add(prod)
                 revision(document=doc, is_approved=True, save=True)
 
         self.refresh()
@@ -996,14 +690,15 @@ class ElasticSearchUnifiedViewTests(ElasticTestCase):
         qs = {'a': 1, 'w': 1, 'format': 'json'}
 
         for prod, total in prod_vals:
-            qs.update({'product': prod})
+            qs.update({'product': prod.slug})
             response = self.client.get(reverse('search'), qs)
             eq_(total, json.loads(response.content)['total'])
 
     def test_products_inherit(self):
         """Translations inherit products from their parents."""
         doc = document(locale=u'en-US', category=10, save=True)
-        doc.tags.add(u'desktop')
+        p = product(title=u'Firefox', slug=u'desktop', save=True)
+        doc.products.add(p)
         revision(document=doc, is_approved=True, save=True)
 
         translated = document(locale=u'fr', parent=doc, category=10,
@@ -1012,7 +707,7 @@ class ElasticSearchUnifiedViewTests(ElasticTestCase):
 
         self.refresh()
 
-        qs = {'a': 1, 'w': 1, 'format': 'json', 'product': 'desktop'}
+        qs = {'a': 1, 'w': 1, 'format': 'json', 'product': p.slug}
         response = self.client.get(reverse('search', locale='fr'), qs)
         eq_(1, json.loads(response.content)['total'])
 

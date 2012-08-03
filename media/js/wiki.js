@@ -49,6 +49,7 @@
             initTitleAndSlugCheck();
             initPreValidation();
             initNeedsChange();
+            initSummaryCount();
 
             $('img.lazy').loadnow();
 
@@ -58,6 +59,7 @@
 
         initEditingTools();
 
+        initL10nTest();
         initDiffPicker();
         initDiffToggle();
 
@@ -176,6 +178,24 @@
                    .prepopulate($(field.dependency_ids.join(',')),
                                 field.maxLength);
         });
+    }
+    
+    function initSummaryCount() {
+        var $summaryCount = $('#remaining-characters'),
+            $summaryBox = $('#id_summary'),
+            maxCount = $summaryCount.text(),
+            updateCount = function() {
+                var currentCount = $summaryBox.val().length;
+                if(maxCount - currentCount >= 0) {
+                    $summaryCount.text(maxCount - currentCount);
+                } else {
+                    $summaryCount.text(0);
+                    $summaryBox.val($summaryBox.val().substr(0, maxCount));
+                }
+            };
+        
+        updateCount();
+        $summaryBox.bind("input", updateCount);
     }
 
     /*
@@ -391,6 +411,42 @@
             }
         });
     }
+
+    // Add ability to move translation next to the diff.
+    function initL10nTest($container) {
+        if (!$('body').is('.translate')) {
+            return;
+        }
+
+        $('table.diff', $container).each(function() {
+            var $table = $(this),
+                $l10n = $('#content-fields .localized'),
+                position = $table.position(),
+                $link = $table.before('<a class="toggle-l10n" style="float: right;" href="#"></a>').prev(),
+                moved = false;
+            $link.text(gettext('Toggle L10n'));
+
+            $link.click(function(ev){
+                var top;
+                ev.preventDefault();
+                if (moved) {
+                    $l10n.css({
+                        position: 'static'
+                    });
+                } else {
+                    $l10n.css({
+                        position: 'absolute',
+                        top: position.top - 110,
+                        left: position.left + $table.width() + 15
+                    });
+
+                    $l10n.find('textarea').height($table.height());
+                }
+                moved = !moved;
+            });
+        });
+    }
+
 
     function initReadyForL10n() {
         var $watchDiv = $("#revision-list div.l10n"),

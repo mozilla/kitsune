@@ -10,7 +10,7 @@ Requirements
 To run everything and make all the tests pass locally, you'll need the
 following things (in addition to Git, of course).
 
-* Python 2.6.
+* Python 2.6 or 2.7.
 
 * `setuptools <http://pypi.python.org/pypi/setuptools#downloads>`_
   or `pip <http://pip.openplans.org/>`_.
@@ -29,6 +29,8 @@ following things (in addition to Git, of course).
 
 * ``zlib`` and headers.
 
+* LESS
+
 * `Redis <http://redis.io>`_
 
 * Several Python packages. See `Installing the Packages`_.
@@ -38,16 +40,6 @@ following things (in addition to Git, of course).
 
 Installation for these is very system dependent. Using a package manager, like
 yum, aptitude, or brew, is encouraged.
-
-
-.. Note::
-
-   Make sure you have ``python26`` in your path.  If not, create a
-   symbollic link for it::
-
-       ln -s /usr/bin/python /usr/bin/python26
-
-   Or something along those lines depending on how your system is set up.
 
 
 Additional Requirements
@@ -153,7 +145,7 @@ For local development you will want to add the following settings::
             'ENGINE': 'django.db.backends.mysql',
             'HOST': 'localhost',
             'USER': 'kitsune',
-            'PASSWORD': 'password',
+            'PASSWORD': '<YOUR_PASSWORD>',
             'OPTIONS': {'init_command': 'SET storage_engine=InnoDB'},
             'TEST_CHARSET': 'utf8',
             'TEST_COLLATION': 'utf8_unicode_ci',
@@ -168,6 +160,8 @@ For local development you will want to add the following settings::
         }
 
     REDIS_BACKEND = REDIS_BACKENDS['default']
+
+    LESS_PREPROCESS = True
 
 
 Redis
@@ -234,7 +228,7 @@ settings. For example, using the settings above::
 To load the latest database schema, use ``scripts/schema.sql`` and
 ``schematic``::
 
-    $ mysql -u kitsune -p <YOUR_PASSWORD> < scripts/schema.sql
+    $ mysql -u kitsune -p kitsune < scripts/schema.sql
     $ ./vendor/src/schematic/schematic migrations/
 
 You'll now have an empty but up-to-date database!
@@ -258,6 +252,20 @@ files containing historical Firefox version data and write them within its
 package directory. To set this up, run this command to do the initial fetch::
 
     $ ./manage.py update_product_details
+
+
+LESS
+----
+
+To install LESS you will first need to `install Node.js and NPM
+<https://github.com/joyent/node/wiki/Installing-Node.js-via-package-manager>`_.
+
+Now install LESS using::
+
+    $ sudo npm install less
+
+Ensure that lessc (might be located at /usr/lib/node_modules/less/bin) is
+accessible on your PATH.
 
 
 Running redis

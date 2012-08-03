@@ -27,7 +27,7 @@ There's an installation guide on the Elastic Search site.
 
 http://www.elasticsearch.org/guide/reference/setup/installation.html
 
-We're currently using 0.17.something in production.
+We're currently using 0.17.x in production.
 
 The directory you install Elastic in will hereafter be referred to as
 ``ELASTICDIR``.
@@ -216,6 +216,14 @@ This indexes 50% of your data ordered by id::
 
 I use this when I'm fiddling with mappings and the indexing code.
 
+You can also specify which models to index::
+
+    $ ./manage.py esreindex --models questions_question,wiki_document
+
+See ``--help`` for more details::
+
+    $ ./manage.py esreindex --help
+
 
 .. Note::
 
@@ -291,58 +299,76 @@ Sub commands for ``manage.py`` are implemented in
 ``management/commands/``.
 
 
-Search Scoring
-==============
+Searching on the site
+=====================
 
-These are the defaults that apply to all searches:
+Scoring
+-------
 
-kb:
+These are the default weights that apply to all searches:
 
-    query fields: title, content, summary, keywords
+wiki (aka kb)::
 
-questions:
+    document_title__text           6
+    document_content__text         1
+    document_keywords__text        4
+    document_summary__text         2
 
-    query fields: title, question_content, answer_content
+questions (aka support forums)::
 
-forums:
+    question_title__text           4
+    question_content__text         3
+    question_answer_content__text  3
 
-    query fields: title, content
+forums (aka contributor forums)::
 
-
-.. Note::
-
-   We can do boosts/weights, but currently there is no
-   boosting/weighting done.
+    post_title__text               2
+    post_content__text             1
 
 
 Elastic Search is built on top of Lucene so the `Lucene documentation
-on scoring <http://lucene.apache.org/java/3_5_0/scoring.html>`_ covers
-how a document is scored in regards to the search query and its
+on scoring
+<http://lucene.apache.org/core/old_versioned_docs/versions/3_5_0/scoring.html>`_
+covers how a document is scored in regards to the search query and its
 contents. The weights modify that---they're query-level boosts.
 
-Additionally we use a series of filters on tags, q_tags, and other
-properties of the documents like has_helpful, is_locked, is_archived,
-etc, In Elastic Search, filters remove items from the result set, but
-don't otherwise affect the scoring.
+Additionally, `this blog post from 2006 <http://www.supermind.org/blog/378>`_
+is really helpful in terms of provind insight on the implications of
+the way things are scored.
 
 
-Front page search
------------------
+Filters
+-------
 
-A front page search is what happens when you start on the front page,
-enter in a search query in the search box, and click on the green
-arrow.
+We use a series of filters on document_tag, question_tag, and other
+properties of documents like `has_helpful`, `is_locked`, `is_archived`,
+etc.
 
-Front page search does the following:
+In ElasticSearch, filters remove items from the result set, but don't
+affect the scoring.
 
-1. searches only kb and questions
+We cannot apply weights to filtered fields.
+
+
+Regular search
+--------------
+
+A `regular` search is any search that doesn't start from the `Advanced
+Search` form.
+
+You could start a `regular` search from the front page or from the
+search form on any article page.
+
+Regular search does the following:
+
+1. searches only kb and support forums
 2. (filter) kb articles are tagged with the product (e.g. "desktop")
 3. (filter) kb articles must not be archived
 4. (filter) kb articles must be in Troubleshooting (10) and
    How-to (20) categories
-5. (filter) questions are tagged with the product (e.g. "desktop")
-6. (filter) questions must have an answer marked as helpful
-
+5. (filter) support forum posts tagged with the product
+   (e.g. "desktop")
+6. (filter) support forum posts must have an answer marked as helpful
 
 It scores as specified above.
 
@@ -350,7 +376,11 @@ It scores as specified above.
 Advanced search
 ---------------
 
-The advanced search form lines up with the filters applied.
+The `advanced` search is any search that starts from the `Advanced
+Search` form.
+
+The advanced search is defined by whatever you specify in the
+`Advanced Search` form.
 
 For example, if you search for knowledge base articles in the
 Troubleshooting category, then we add a filter where the result has to
@@ -360,13 +390,6 @@ be in the Troubleshooting category.
 Link to the Elastic Search code
 -------------------------------
 
-Here's a link to the search view in the master branch. This is what's
-on dev:
+Here's a link to the search view in the master branch:
 
 https://github.com/mozilla/kitsune/blob/master/apps/search/views.py
-
-
-Here's a link to the search view in the next branch. This is what's
-on staging:
-
-https://github.com/mozilla/kitsune/blob/next/apps/search/views.py

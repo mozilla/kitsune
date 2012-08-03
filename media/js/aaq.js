@@ -49,6 +49,7 @@ AAQSystemInfo.prototype = {
                 ['Windows Server 2003', /(Windows NT 5.2)/i],
                 ['Windows Vista', /(Windows NT 6.0)/i],
                 ['Windows 7', /(Windows NT 6.1)/i],
+                ['Windows 8', /(Windows NT 6.2)/i],
                 ['Windows NT 4.0', /(Windows NT 4.0)|(WinNT4.0)|(WinNT)|(Windows NT)/i],
                 ['Windows ME', /Windows ME/i],
                 ['Windows', /Windows/i],
@@ -105,12 +106,11 @@ AAQSystemInfo.prototype = {
     },
     isDesktopFF: function() {
         // Is the question for FF on the desktop?
-        return document.location.search.indexOf('product=beta') >= 0 ||
-               document.location.search.indexOf('product=desktop') >= 0;
+        return document.location.pathname.indexOf('desktop') >= 0;
     },
     isMobileFF: function() {
         // Is the question for FF on mobile?
-        return document.location.search.indexOf('product=mobile') >= 0;
+        return document.location.pathname.indexOf('mobile') >= 0;
     }
 };
 

@@ -144,6 +144,10 @@ def _filter_tweet(item, allow_links=False):
         statsd.incr('customercare.tweet.rejected.user')
         return None
 
+    # Exclude tweets that don't contain 'firefox' in the text
+    if 'firefox' not in item['text'].lower():
+       return None
+
     return item
 
 

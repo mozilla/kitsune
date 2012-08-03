@@ -27,14 +27,16 @@ VersionMetadata = namedtuple('VersionMetadata',
                              'is_default')
 GROUPED_FIREFOX_VERSIONS = (
     ((_lazy(u'Desktop:'), 'desktop'), (
+        VersionMetadata(25, _lazy(u'Firefox 15'),
+                        _lazy(u'Firefox 15'), 'fx15', 15.9999, True, False),
         VersionMetadata(23, _lazy(u'Firefox 14'),
-                        _lazy(u'Firefox 14'), 'fx14', 14.9999, True, False),
+                        _lazy(u'Firefox 14'), 'fx14', 14.9999, True, True),
         VersionMetadata(21, _lazy(u'Firefox 13'),
-                        _lazy(u'Firefox 13'), 'fx13', 13.9999, True, True),
+                        _lazy(u'Firefox 13'), 'fx13', 13.9999, True, False),
         VersionMetadata(19, _lazy(u'Firefox 12'),
                         _lazy(u'Firefox 12'), 'fx12', 12.9999, True, False),
         VersionMetadata(17, _lazy(u'Firefox 11'),
-                        _lazy(u'Firefox 11'), 'fx11', 11.9999, True, False),
+                        _lazy(u'Firefox 11'), 'fx11', 11.9999, False, False),
         VersionMetadata(15, _lazy(u'Firefox ESR'),
                         _lazy(u'Firefox ESR'), 'fx10', 10.9999, True, False),
         VersionMetadata(13, _lazy(u'Firefox 9'),
@@ -55,9 +57,12 @@ GROUPED_FIREFOX_VERSIONS = (
         VersionMetadata(3, _lazy(u'Firefox 3.0'),
                         _lazy(u'Firefox 3.0'), 'fx3', 3.4999, False, False))),
     ((_lazy(u'Mobile:'), 'mobile'), (
+        VersionMetadata(24, _lazy(u'Firefox 15'),
+                        _lazy(u'Firefox 15 for Mobile'), 'm15', 15.9999,
+                        True, False),
         VersionMetadata(22, _lazy(u'Firefox 14'),
                         _lazy(u'Firefox 14 for Mobile'), 'm14', 14.9999,
-                        True, False),
+                        True, True),
         # Firefox 13 for Mobile was skipped.
         VersionMetadata(20, _lazy(u'Firefox 12'),
                         _lazy(u'Firefox 12 for Mobile'), 'm12', 12.9999,
@@ -67,7 +72,7 @@ GROUPED_FIREFOX_VERSIONS = (
                         False, False),  # 11 and 12 for mobile were skipped.
         VersionMetadata(16, _lazy(u'Firefox 10'),
                         _lazy(u'Firefox 10 for Mobile'), 'm10', 10.9999,
-                        True, True),
+                        True, False),
         VersionMetadata(14, _lazy(u'Firefox 9'),
                         _lazy(u'Firefox 9 for Mobile'), 'm9', 9.9999,
                         False, False),
@@ -107,16 +112,6 @@ GROUPED_OPERATING_SYSTEMS = (
 # Flattened
 OPERATING_SYSTEMS = tuple(chain(*[options for label, options in
                                   GROUPED_OPERATING_SYSTEMS]))
-
-# Products supported
-Product = namedtuple('Product', 'slug, name')  # slug is used for tag/topic
-PRODUCTS = (
-    Product('desktop', _lazy(u'Desktop')),
-    Product('mobile', _lazy(u'Mobile')),
-    Product('sync', _lazy(u'Sync')),
-    Product('FxHome', _lazy(u'Home')),
-    Product('marketplace', _lazy(u'Marketplace')))
-PRODUCT_TAGS = [p.slug for p in PRODUCTS]
 
 
 # Disruptiveness of edits to translated versions. Numerical magnitude indicate

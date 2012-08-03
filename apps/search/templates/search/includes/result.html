@@ -28,5 +28,10 @@
         </span>
       </div>{# .thread-meta #}
     {% endif %}
+    {% if 'explain' in request.GET and request.GET['explain'] == '1' %}
+      <div class="explain">
+        Explanation:<br>{{ result.explanation|replace('\n', '<br>')|replace(' ', '&nbsp;')|safe }}
+      </div>
+    {% endif %}
   </div>{# .result #}
 {% endmacro %}

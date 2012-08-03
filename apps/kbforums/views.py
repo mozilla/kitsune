@@ -360,7 +360,8 @@ def watch_locale(request):
         NewPostInLocaleEvent.stop_notifying(request.user, locale=locale)
         NewThreadInLocaleEvent.stop_notifying(request.user, locale=locale)
 
-    return HttpResponseRedirect(get_next_url(request))
+    # If there is no next url, send the user to the home page.
+    return HttpResponseRedirect(get_next_url(request) or reverse('home'))
 
 
 @require_POST

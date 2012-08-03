@@ -6,8 +6,8 @@ import time
 from django.conf import settings
 from django.db import reset_queries
 
-import elasticutils
 import pyes
+from elasticutils.contrib.django import S, F
 
 from search.utils import chunked
 
@@ -40,22 +40,11 @@ CHUNK_SIZE = 50000
 log = logging.getLogger('search.es')
 
 
-F = elasticutils.F
+class Sphilastic(S):
+    """Shim around elasticutils.contrib.django.S.
 
-
-class Sphilastic(elasticutils.S):
-    """Shim around elasticutils' S which makes it look like oedipus.S
-
-    It ignores or implements workalikes for our Sphinx-specific API
-    deviations.
-
-    Use this when you're using ElasticSearch if your project is flipping
-    quickly between ElasticSearch and Sphinx.
-
-    .. Note::
-
-       Originally taken from oedipus and put here so I can stop
-       touching oedipus when I need to make changes.
+    Implements some Kitsune-specific behavior to make our lives
+    easier.
 
     """
     _query_fields = []
@@ -68,54 +57,17 @@ class Sphilastic(elasticutils.S):
     def print_query(self):
         pprint.pprint(self._build_query())
 
-    def get_index(self):
+    def get_indexes(self):
         # Sphilastic is a searcher and so it's _always_ used in a read
         # context. Therefore, we always return the READ_INDEX.
-        return READ_INDEX
+        return [READ_INDEX]
 
-    def get_doctype(self):
+    def get_doctypes(self):
         # SUMO uses a unified doctype, so this always returns that.
-        return SUMO_DOCTYPE
+        return [SUMO_DOCTYPE]
 
-    def object_ids(self):
-        """Returns a list of object IDs from Sphinx matches.
-
-        If there's a ``SphinxMeta.id_field``, then this will be the
-        values of that field in the results set.  Otherwise it's the
-        ids in the results set.
-
-        """
-        # We don't want object_ids() to bring back highlighted
-        # stuff ("Just the ids, ma'am."), so we gimp
-        # _build_highlight to do nothing, then do our self.raw(),
-        # then ungimp it. That prevents highlight-related bits
-        # from showing up in the query and results.
-
-        build_highlight = self._build_highlight
-        self._build_highlight = lambda: {}
-
-        hits = self.raw()['hits']['hits']
-
-        self._build_highlight = build_highlight
-
-        return [int(r['_id']) for r in hits]
-
-    def order_by(self, *fields):
-        """Change @rank to _score, which ES understands."""
-        transforms = {'@rank': '_score',
-                      '-@rank': '-_score'}
-        return super(Sphilastic, self).order_by(
-            *[transforms.get(f, f) for f in fields])
-
-    def group_by(self, *args, **kwargs):
-        """Do nothing.
-
-        In ES, we smoosh subentities into their parents and index them
-        as a single document, so making this a nop works out.
-
-        """
-        return self
-
+    # TODO: Remove this when we remove bucketed search. Need to fix
+    # suggestions to specify query fields when we do this.
     def query_fields(self, *fields):
         new = self._clone()
         new._query_fields = fields
@@ -208,7 +160,7 @@ def get_doctype_stats(index):
     """
     from search.models import get_search_models
 
-    conn = elasticutils.get_es()
+    conn = get_indexing_es()
 
     stats = {}
     for cls in get_search_models():
@@ -242,7 +194,7 @@ def get_indexing_es(**kwargs):
 
 
 def delete_index(index):
-    elasticutils.get_es().delete_index_if_exists(index)
+    get_indexing_es().delete_index_if_exists(index)
 
 
 def format_time(time_to_go):
@@ -265,7 +217,7 @@ def get_documents(cls, ids):
 def recreate_index(es=None):
     """Deletes index if it's there and creates a new one"""
     if es is None:
-        es = elasticutils.get_es()
+        es = get_indexing_es()
 
     from search.models import get_search_models
 
@@ -292,7 +244,7 @@ def recreate_index(es=None):
     es.create_index(index, settings={'mappings': merged_mapping})
 
 
-def get_indexable(percent=100):
+def get_indexable(percent=100, search_models=None):
     """Returns a list of (class, iterable) for all the things to index
 
     :arg percent: Defaults to 100.  Allows you to specify how much of
@@ -302,7 +254,9 @@ def get_indexable(percent=100):
     """
     from search.models import get_search_models
 
-    search_models = get_search_models()
+    # Note: Passing in None will get all the models.
+    search_models = get_search_models(search_models)
+
     to_index = []
     percent = float(percent) / 100
     for cls in search_models:
@@ -337,11 +291,12 @@ def index_chunk(cls, chunk, reraise=False, es=None):
             log.exception('Unable to flush/refresh')
 
 
-def es_reindex_cmd(percent=100, delete=False):
+def es_reindex_cmd(percent=100, delete=False, models=None):
     """Rebuild ElasticSearch indexes
 
     :arg percent: 1 to 100--the percentage of the db to index
     :arg delete: whether or not to wipe the index before reindexing
+    :arg models: list of search model names to index
 
     """
     es = get_indexing_es()
@@ -357,9 +312,14 @@ def es_reindex_cmd(percent=100, delete=False):
         log.info('wiping and recreating %s....', WRITE_INDEX)
         recreate_index(es=es)
 
+    if models:
+        indexable = get_indexable(percent, models)
+    else:
+        indexable = get_indexable(percent)
+
     start_time = time.time()
 
-    for cls, indexable in get_indexable(percent):
+    for cls, indexable in indexable:
         cls_start_time = time.time()
         total = len(indexable)
 
@@ -522,8 +482,7 @@ def es_search_cmd(query, pages=1):
     output.append('')
 
     data = {
-        'q': query,
-        'q_tags': 'desktop', 'product': 'desktop', 'format': 'json'
+        'q': query, 'format': 'json'
         }
     url = reverse('search')
 

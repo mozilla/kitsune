@@ -7,13 +7,14 @@ import mock
 from nose.tools import eq_
 from pyquery import PyQuery as pq
 
-from questions.tests import tags_eq
+from products.tests import product
 from sumo.tests import TestCase, LocalizingClient
 from sumo.urlresolvers import reverse
 from users.tests import user, add_permission
-from wiki.models import Document, HelpfulVote
+from wiki.models import Document
 from wiki.config import VersionMetadata
-from wiki.tests import doc_rev, document, new_document_data, revision
+from wiki.tests import (doc_rev, document, helpful_vote, new_document_data,
+                        revision)
 from wiki.views import _version_groups
 
 
@@ -129,16 +130,27 @@ class DocumentEditingTests(TestCase):
     def test_changing_products(self):
         """Changing products works as expected."""
         d, r = doc_rev()
+        prod_desktop = product(title=u'desktop', save=True)
+        prod_mobile = product(title=u'mobile', save=True)
+
         data = new_document_data()
-        data.update({'products': ['desktop', 'sync'],
+        data.update({'products': [prod_desktop.id, prod_mobile.id],
+                     'title': d.title,
+                     'slug': d.slug,
                      'form': 'doc'})
         self.client.post(reverse('wiki.edit_document', args=[d.slug]), data)
-        tags_eq(d, ['desktop', 'sync'])
-        data.update({'products': ['mobile'],
+
+        eq_(sorted(Document.uncached.get(slug=d.slug).products.values_list(
+                    'id', flat=True)),
+            sorted([prod.id for prod in [prod_desktop, prod_mobile]]))
+
+        data.update({'products': [prod_desktop.id],
                      'form': 'doc'})
         self.client.post(reverse('wiki.edit_document', args=[data['slug']]),
                          data)
-        tags_eq(d, ['mobile'])
+        eq_(sorted(Document.uncached.get(slug=d.slug).products.values_list(
+                    'id', flat=True)),
+            sorted([prod.id for prod in [prod_desktop]]))
 
     @mock.patch.object(Site.objects, 'get_current')
     def test_invalid_slugs(self, get_current):
@@ -205,6 +217,7 @@ class DocumentEditingTests(TestCase):
         eq_('', doc.needs_change_comment)
 
 
+
 class AddRemoveContributorTests(TestCase):
     def setUp(self):
         super(AddRemoveContributorTests, self).setUp()
@@ -252,8 +265,7 @@ class VoteTests(TestCase):
 
     def test_unhelpful_survey(self):
         """The unhelpful survey is stored as vote metadata"""
-        vote = HelpfulVote(revision=revision(save=True))
-        vote.save()
+        vote = helpful_vote(save=True)
         response = self.client.post(reverse('wiki.unhelpful_survey'),
                                     {'vote_id': vote.id,
                                      'button': 'Submit',
@@ -272,3 +284,20 @@ class VoteTests(TestCase):
         assert 'confusing' in survey
         assert 'too-long' in survey
         eq_('lorem ipsum dolor', survey['comment'])
+
+    def test_unhelpful_truncation(self):
+        """Give helpful_vote a survey that is too long.
+
+        It should be truncated safely, instead of generating bad JSON.
+        """
+        vote = helpful_vote(save=True)
+        too_long_comment = ('lorem ipsum' * 100) + 'bad data'
+        self.client.post(reverse('wiki.unhelpful_survey'),
+                         {'vote_id': vote.id,
+                          'button': 'Submit',
+                          'comment': too_long_comment})
+        vote_meta = vote.metadata.all()[0]
+        # Will fail if it is not proper json, ie: bad truncation happened.
+        survey = json.loads(vote_meta.value)
+        # Make sure the right value was truncated.
+        assert 'bad data' not in survey['comment']

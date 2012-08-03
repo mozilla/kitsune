@@ -25,7 +25,6 @@ from questions.question_config import products
 from questions.tasks import (update_question_votes, update_answer_pages,
                              log_answer)
 from search.models import SearchMixin, register_for_indexing
-from search.utils import crc32
 from sumo.helpers import urlparams
 from sumo.models import ModelBase
 from sumo.parser import wiki_to_html
@@ -76,14 +75,6 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
                  'Can change/remove the solution to a question'),
             )
 
-    class SphinxMeta(object):
-        index = 'questions'
-        filter_mapping = {
-            'tag': crc32,
-            'question_creator': crc32,
-            'answer_creator': crc32}
-        id_field = 'question_id'
-
     def __unicode__(self):
         return self.title
 
@@ -100,13 +91,13 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
     def clear_cached_contributors(self):
         cache.delete(self.contributors_cache_key % self.id)
 
-    def save(self, no_update=False, *args, **kwargs):
-        """Override save method to take care of updated."""
+    def save(self, update=False, *args, **kwargs):
+        """Override save method to take care of updated if requested."""
         new = not self.id
 
         if not new:
             self.clear_cached_html()
-            if not no_update:
+            if update:
                 self.updated = datetime.now()
 
         super(Question, self).save(*args, **kwargs)
@@ -476,7 +467,7 @@ class Answer(ActionMixin, ModelBase):
     def clear_cached_html(self):
         cache.delete(self.html_cache_key % self.id)
 
-    def save(self, no_update=False, no_notify=False, *args, **kwargs):
+    def save(self, update=True, no_notify=False, *args, **kwargs):
         """
         Override save method to update question info and take care of
         updated.
@@ -501,7 +492,7 @@ class Answer(ActionMixin, ModelBase):
             self.question.num_answers = Answer.uncached.filter(
                 question=self.question).count()
             self.question.last_answer = self
-            self.question.save(no_update)
+            self.question.save(update)
             self.question.clear_cached_contributors()
 
             if not no_notify:
@@ -741,3 +732,54 @@ def _content_parsed(obj):
         html = wiki_to_html(obj.content)
         cache.add(cache_key, html, CACHE_TIMEOUT)
     return html
+
+
+def user_num_questions(user):
+    """Count the number of questions a user has.
+
+    Unfortunately, we can't use the KarmaManager for this, since questions
+    don't effect karma, so this always counts objects in the database.
+    """
+    return Question.objects.filter(creator=user).count()
+
+
+def user_num_answers(user):
+    """Count the number of answers a user has.
+
+    If karma is enabled, and redis is working, this will query that (much
+    faster), otherwise it will just count objects in the database.
+    """
+    if waffle.switch_is_active('karma'):
+        try:
+            km = KarmaManager()
+            count = km.count(user=user, type=AnswerAction.action_type)
+            if count is not None:
+                return count
+        except RedisError as e:
+            statsd.incr('redis.errror')
+            log.error('Redis connection error: %s' % e)
+
+    return Answer.objects.filter(creator=user).count()
+
+
+def user_num_solutions(user):
+    """Count the number of solutions a user has.
+
+    This means the number of answers the user has submitted that are then
+    marked as the solution to the question they belong to.
+
+    If karma is enabled, and redis is working, this will query that (much
+    faster), otherwise it will just count objects in the database.
+    """
+    if waffle.switch_is_active('karma'):
+        try:
+            km = KarmaManager()
+            count = km.count(user=user, type=SolutionAction.action_type)
+            if count is not None:
+                return count
+        except RedisError as e:
+            statsd.incr('redis.errror')
+            log.error('Redis connection error: %s' % e)
+
+    return Question.objects.filter(solution__in=Answer.objects
+            .filter(creator=user)).count()

@@ -27,7 +27,7 @@ Update settings_local.py
 Set the following settings in settings_local.py::
 
     TWITTER_CONSUMER_KEY = <consumer key>
-    TWITTER_CONSUMER_SECRET = <consumer secret> 
+    TWITTER_CONSUMER_SECRET = <consumer secret>
     TWITTER_COOKIE_SECURE = False
 
 
@@ -40,3 +40,28 @@ To fetch tweets, run::
 
 
 You should now see tweets at /army-of-awesome.
+
+
+Common replies
+==============
+
+Common replies should be defined in a wiki article with slug
+'army-of-awesome-common-replies'. The format for the article
+content is::
+
+    =Category 1=
+
+    ==Reply 1==
+    Reply goes here http://example.com/kb-article
+
+    ==Reply 2==
+    Another reply here
+
+    =Category 2=
+    ==Reply 3==
+    And another reply
+
+Note that replies can't be over 140 characters long, including the
+@username and #fxhelp hash tag. Therefore, each reply defined here
+should not go over 125 characters. The reply must be plain text
+without any HTML or wiki syntax.

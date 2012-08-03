@@ -120,6 +120,7 @@ article.message-list span.user {
 
 article.message-list span.user a {
     color: #666;
+    font-weight: bold;
 }
 
 .message-list input[type="checkbox"] {
@@ -346,4 +347,9 @@ div.message a:hover {
 }
 article.message-list input[type=submit] {
     margin: 0 5px 15px 0;
+}
+
+.markup-toolbar-button.btn-quote {
+    background-image: url(../img/icon.quote.png);
+    background-position: 0 center;
 }

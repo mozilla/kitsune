@@ -2,17 +2,18 @@ import json
 import re
 
 from django import forms
+from django.template.defaultfilters import slugify
 from django.utils.encoding import smart_str
 from django.utils.safestring import mark_safe
 
 from tower import ugettext_lazy as _lazy
 
+from products.models import Product
 from sumo.form_fields import MultiUsernameField, StrippedCharField
-from tags import forms as tag_forms
+from topics.models import Topic
 from wiki.models import Document, Revision
 from wiki.config import (SIGNIFICANCES_HELP, GROUPED_FIREFOX_VERSIONS,
-                         SIGNIFICANCES, GROUPED_OPERATING_SYSTEMS, CATEGORIES,
-                         PRODUCTS, PRODUCT_TAGS)
+                         SIGNIFICANCES, GROUPED_OPERATING_SYSTEMS, CATEGORIES)
 
 
 TITLE_REQUIRED = _lazy(u'Please provide a title.')
@@ -49,14 +50,24 @@ class DocumentForm(forms.ModelForm):
     """Form to create/edit a document."""
     def __init__(self, *args, **kwargs):
         # Quasi-kwargs:
-        can_create_tags = kwargs.pop('can_create_tags', False)
         can_archive = kwargs.pop('can_archive', False)
+        initial_title = kwargs.pop('initial_title', '')
 
         super(DocumentForm, self).__init__(*args, **kwargs)
 
-        # Set up tags field, which is instantiated deep within taggit:
-        tags_field = self.fields['tags']
-        tags_field.widget.can_create_tags = can_create_tags
+        title_field = self.fields['title']
+        title_field.initial = initial_title
+
+        slug_field = self.fields['slug']
+        slug_field.initial = slugify(initial_title)
+
+        comment_field = self.fields['needs_change_comment']
+
+        topics_field = self.fields['topics']
+        topics_field.choices = Topic.objects.values_list('id', 'title')
+
+        products_field = self.fields['products']
+        products_field.choices = Product.objects.values_list('id', 'title')
 
         # If user hasn't permission to frob is_archived, remove the field. This
         # causes save() to skip it as well.
@@ -86,8 +97,6 @@ class DocumentForm(forms.ModelForm):
 
     products = forms.MultipleChoiceField(
         label=_lazy(u'Relevant to:'),
-        choices=PRODUCTS,
-        initial=[PRODUCTS[0][0]],
         required=False,
         widget=forms.CheckboxSelectMultiple())
 
@@ -113,11 +122,10 @@ class DocumentForm(forms.ModelForm):
         label=_lazy(u'Category:'),
         help_text=_lazy(u'Type of article'))
 
-    tags = tag_forms.TagField(
-        required=False,
+    topics = forms.MultipleChoiceField(
         label=_lazy(u'Topics:'),
-        help_text=_lazy(u'Popular articles in each topic are displayed on the '
-                         'front page'))
+        required=False,
+        widget=forms.CheckboxSelectMultiple())
 
     locale = forms.CharField(widget=forms.HiddenInput())
 
@@ -141,7 +149,7 @@ class DocumentForm(forms.ModelForm):
     class Meta:
         model = Document
         fields = ('title', 'slug', 'category', 'is_localizable', 'products',
-                  'tags', 'locale', 'is_archived', 'allow_discussion',
+                  'topics', 'locale', 'is_archived', 'allow_discussion',
                   'needs_change', 'needs_change_comment')
 
     def save(self, parent_doc, **kwargs):
@@ -154,15 +162,11 @@ class DocumentForm(forms.ModelForm):
             doc.needs_change_comment = ''
 
         doc.save()
-        self.save_m2m()  # not strictly necessary since we didn't change
-                         # any m2m data since we instantiated the doc
+        self.save_m2m()
 
-        if not parent_doc:
-            # Set the products as tags.
-            # products are not set on the translations.
-            prods = self.cleaned_data['products']
-            doc.tags.add(*prods)
-            doc.tags.remove(*[p for p in PRODUCT_TAGS if p not in prods])
+        if parent_doc:
+            # Products are not set on translations.
+            doc.products.remove(*[p for p in doc.products.all()])
 
         return doc
 

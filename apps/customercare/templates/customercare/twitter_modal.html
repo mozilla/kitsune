@@ -1,16 +1,37 @@
 {# vim: set ts=2 et sts=2 sw=2: #}
 <div id="twitter-modal" class="kbox" title="{{ _('Sign in with your Twitter account') }}" data-modal="true" data-authed="{{ authed }}" data-twitter-user="{{ twitter_user }}">
   <div class="inner-container">
-    <p>
-      {% trans %}
-        Before you join the Army of Awesome, you need to log in so you
-        can respond to tweets.
-        You will now be redirected to Twitter to log in.
-      {% endtrans %}
+    <p>{% trans %}
+      Before you join, you need to give Army of Awesome the permission to post
+      tweets on your behalf.{% endtrans %}
     </p>
-    <div>
-      <a href="#" class="cancel kbox-cancel">{{ _('Cancel') }}</a>
-      <a href="?twitter_auth_request=1" class="signin">{{ _('Sign in') }}</a>
-    </div>
+    <p>{% trans %}
+      You will always control every tweet you post. {% endtrans %}
+      <strong>{% trans %}
+        Army of Awesome will never tweet without your permission.{% endtrans %}
+      </strong>
+    </p>
+    <a href="?twitter_auth_request=1" class="btn-modal signin-twitter">
+      {{ _('Sign in') }}
+    </a>
+    {% if not user.is_authenticated() %}
+      <p>{% trans %}
+        If you’re registered with Mozilla Support, we will keep you logged into
+        Twitter, so you can use Army of Awesome instantly.{% endtrans %}
+      </p>
+      <p>{% trans %}
+        Are you registered with Mozilla Support?{% endtrans %}
+      </p>
+      <div>
+        <a href="{{ url('users.login') }}" class="btn-modal signin-sumo">
+          <span class="highlight">{{ _('Yes, I am.') }}</span>
+          {{ _('Click to sign in.') }}
+        </a>
+        <a href="{{ url('users.register') }}" class="btn-modal register">
+          <span class="highlight">{{ _("No, I'm not.") }}</span>
+          {{ _('Click to register.') }}
+        </a>
+      </div>
+    {% endif %}
   </div>
 </div>

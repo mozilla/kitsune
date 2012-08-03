@@ -114,8 +114,14 @@ AjaxVote.prototype = {
         }
     },
     showSurvey: function(survey, $container) {
-        var self = this,
-            $survey = $(survey);
+        var $survey = $(survey);
+        var $commentCount = $survey.find('#remaining-characters');
+        var $commentBox = $survey.find('textarea');
+        var maxCount = parseInt($commentCount.text());
+        var $radios = $survey.find('input[type=radio][name=unhelpful-reason]');
+        var $submit = $survey.find('input[type=submit]');
+        var $reason = $survey.find('.disabled-reason');
+        var $textbox = $survey.find('textarea');
 
         $container.after($survey);
 
@@ -123,6 +129,36 @@ AjaxVote.prototype = {
         if ($container.closest('#side').length) {
             $container.remove();
         }
+
+        $submit.prop('disabled', true);
+
+        function validate() {
+            var checked = $radios.filter(':checked').val()
+            var feedback = $textbox.val();
+            if (checked === undefined ||
+                ((checked === 'other' || checked === 'firefox-feedback') && !feedback)) {
+                $submit.prop('disabled', true);
+                $reason.fadeIn(600);
+            } else {
+                $submit.prop('disabled', false);
+                $reason.fadeOut(600);
+            }
+        }
+
+        $commentBox.bind("input", function() {
+            var currentCount = $commentBox.val().length;
+            var checked;
+
+            if (maxCount - currentCount >= 0) {
+                $commentCount.text(maxCount - currentCount);
+            } else {
+                $commentCount.text(0);
+                $commentBox.val($commentBox.val().substr(0, maxCount));
+            }
+            validate();
+        });
+
+        $radios.bind('change', validate);
 
         new k.AjaxVote($survey.find('form'), {
             replaceFormWithMessage: true

@@ -1,17 +1,9 @@
 {# vim: set ts=2 et sts=2 sw=2: #}
 
-{% macro search_engine() -%}
-  {# Must be imported with context #}
-  {% if 'esunified' in request.GET and request.GET['esunified'] %}
-    <input type="hidden" name="esunified" value="1" />
-  {% endif %}
-{%- endmacro %}
-
 {% macro basic_search_form(primary=False) -%}
   {# Must be imported with context #}
   <div {% if primary %}id="basic-search"{% endif %} class="search-refine">
     <form role="search" method="get" action="search">
-      {{ search_engine() }}
       {% for name, field in search_form.fields.items() if not name in ('q',) %}
         {% set list = request.GET.getlist(name) %}
         {% for value in list %}

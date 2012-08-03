@@ -16,13 +16,6 @@ DATE_LIST = (
     (INTERVAL_AFTER, _lazy(u'After')),
 )
 
-GROUPSORT = (
-    ('-@rank', '-updated'),  # default
-    '-updated',
-    '-created',
-    '-replies',
-)
-
 # For discussion forums
 # Integer values here map to tuples from SORT defined above
 SORTBY_FORUMS = (
@@ -58,14 +51,7 @@ NUMBER_LIST = (
 )
 
 SORT_QUESTIONS = (
-    ('-@rank', '-updated'),  # default
-    ('-updated',),
-    ('-created',),
-    ('-replies',)
-)
-
-SORT_QUESTIONS_ES = (
-    ('-@rank', '-updated'),  # default
+    ('-_score', '-updated'),  # default
     ('-updated',),
     ('-created',),
     ('-question_num_answers',)

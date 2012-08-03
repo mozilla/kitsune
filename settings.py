@@ -80,6 +80,7 @@ SUMO_LANGUAGES = (
     'ar',
     'as',
     'ast',
+    'be',
     'bg',
     'bn-BD',
     'bn-IN',
@@ -118,6 +119,7 @@ SUMO_LANGUAGES = (
     'km',
     'kn',
     'ko',
+    'lg',
     'lt',
     'mai',
     'mk',
@@ -130,6 +132,7 @@ SUMO_LANGUAGES = (
     'ne-NP',
     'nl',
     'no',
+    'nso',
     'pa-IN',
     'pl',
     'pt-BR',
@@ -141,6 +144,7 @@ SUMO_LANGUAGES = (
     'si',
     'sk',
     'sl',
+    'son',
     'sq',
     'sr-CYRL',
     'sr-LATN',
@@ -154,6 +158,7 @@ SUMO_LANGUAGES = (
     'vi',
     'zh-CN',
     'zh-TW',
+    'zu',
 )
 
 LANGUAGE_CHOICES = tuple([(i, LOCALES[i].native) for i in SUMO_LANGUAGES])
@@ -189,6 +194,16 @@ DB_LOCALIZE = {
         'Title': {
             'attrs': ['name'],
             'comments': ['This is a karma title.'],
+        }
+    },
+    'products': {
+        'Product': {
+            'attrs': ['title', 'description'],
+        }
+    },
+    'topics': {
+        'Topic': {
+            'attrs': ['title', 'description'],
         }
     },
 }
@@ -279,6 +294,7 @@ MIDDLEWARE_CLASSES = (
     'commonware.middleware.ScrubRequestOnException',
     'django_arecibo.middleware.AreciboMiddlewareCelery',
     'commonware.response.middleware.GraphiteRequestTimingMiddleware',
+    'waffle.middleware.WaffleMiddleware',
 )
 
 # Auth
@@ -355,10 +371,15 @@ INSTALLED_APPS = (
     'karma',
     'tags',
     'kpi',
+    'products',
+    'topics',
 
     # Extra apps for testing.
     'django_nose',
     'test_utils',
+
+    # Extra app for python migrations.
+    'django_extensions'
 )
 
 TEST_RUNNER = 'test_utils.runner.RadicalTestSuiteRunner'
@@ -439,10 +460,16 @@ TOWER_ADD_HEADERS = True
 MINIFY_BUNDLES = {
     'css': {
         'common': (
-            'css/reset.css',
             'global/footer.css',
             'css/kbox.css',
             'css/main.css',
+        ),
+        'old-theme': (
+            'css/reset.css',
+        ),
+        'new-theme': (
+            'css/normalize.css',
+            'less/main.less',
         ),
         'print': (
             'css/print.css',
@@ -665,6 +692,8 @@ MINIFY_BUNDLES = {
 
 JAVA_BIN = '/usr/bin/java'
 
+LESS_BIN = 'lessc'
+
 #
 # Sessions
 SESSION_COOKIE_AGE = 4 * 7 * 24 * 60 * 60  # 4 weeks
@@ -678,7 +707,7 @@ SESSION_EXISTS_COOKIE = 'sumo_session'
 # Connection information for Elastic
 ES_HOSTS = ['127.0.0.1:9200']
 # Indexes for reading
-ES_INDEXES = {'default': 'sumo-20120605'}
+ES_INDEXES = {'default': 'sumo-20120731'}
 # Indexes for indexing--set this to ES_INDEXES if you want to read to
 # and write to the same index.
 ES_WRITE_INDEXES = ES_INDEXES
@@ -737,6 +766,12 @@ IMAGE_UPLOAD_PATH = 'uploads/images/'
 # A string listing image mime types to accept, comma separated.
 # String must not contain double quotes!
 IMAGE_ALLOWED_MIMETYPES = 'image/jpeg,image/png,image/gif'
+
+# Topics
+TOPIC_IMAGE_PATH = 'uploads/topics/'
+
+# Products
+PRODUCT_IMAGE_PATH = 'uploads/products/'
 
 # Email
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
@@ -825,6 +860,7 @@ CC_TOP_CONTRIB_CACHE_KEY = 'sumo-cc-top-contrib-stats'
 CC_STATS_CACHE_TIMEOUT = 24 * 60 * 60  # 24 hours
 CC_STATS_WARNING = 30 * 60 * 60  # Warn if JSON data is older than 30 hours
 CC_IGNORE_USERS = ['fx4status']  # User names whose tweets to ignore.
+CC_REPLIES_GOAL = 175  # Goal # of replies in 24 hours.
 
 TWITTER_COOKIE_SECURE = True
 TWITTER_CONSUMER_KEY = ''

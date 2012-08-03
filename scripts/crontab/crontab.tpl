@@ -31,6 +31,7 @@ HOME = /tmp
 0 9 * * * {{ cron }} update_visitors_metric
 0 10 * * * {{ cron }} update_l10n_metric
 0 3 * * * {{ cron }} update_contributor_metrics
+0 4 * * * {{ cron }} auto_lock_old_questions
 
 # Twice per week.
 #05 01 * * 1,4 {{ cron }} update_weekly_votes

@@ -53,4 +53,4 @@ class Reply(ModelBase):
 
     def __unicode__(self):
         tweet = json.loads(self.raw_json)
-        return '@{u}: {t}'.format(u=self.twitter_username, t=tweet['text'])
+        return u'@{u}: {t}'.format(u=self.twitter_username, t=tweet['text'])

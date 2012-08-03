@@ -538,5 +538,15 @@
         "iso639_1": "ml",
         "english": "Malayalam",
         "native": "\u0d2e\u0d32\u0d2f\u0d3e\u0d33\u0d02"
+    },
+    "lg": {
+        "iso639_1": "lg",
+        "english": "Luganda",
+        "native": "Luganda"
+    },
+    "son": {
+        "iso639_1": null,
+        "english": "Songhay",
+        "native": "So\u014Bay"
     }
 }

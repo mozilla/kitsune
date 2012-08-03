@@ -123,4 +123,29 @@ test('no quotes', function() {
    equals(k.unquote(s), s);
 });
 
+module('k.safeString');
+
+test('escape html', function() {
+    var unsafeString = '<a href="foo&\'">',
+        safeString = '&lt;a href=&quot;foo&amp;&#39;&quot;&gt;';
+    equals(k.safeString(unsafeString), safeString);
+});
+
+module('k.safeInterpolate');
+
+test('interpolate positional user input', function() {
+    var html = "<div>%s</div> %s",
+        unsafe = ["<a>", "<script>"],
+        safe = "<div>&lt;a&gt;</div> &lt;script&gt;";
+    equals(k.safeInterpolate(html, unsafe, false), safe);
+});
+
+test('interpolate named user input', function() {
+    var html = "<div>%(display)s <span>(%(name)s)</span></div>",
+        unsafe = {"display": "<script>alert('xss');</script>",
+                  "name": "Jo&mdash;hn"},
+        safe = "<div>&lt;script&gt;alert(&#39;xss&#39;);&lt;/script&gt; <span>(Jo&amp;mdash;hn)</span></div>";
+    equals(k.safeInterpolate(html, unsafe, true), safe);
+});
+
 });

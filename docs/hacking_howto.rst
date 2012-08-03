@@ -11,8 +11,8 @@ Summary
 This chapter helps you get a minimal installation of Kitsune up and
 running so as to make it easier for contributing.
 
-If you're interested in setting up Kitsune for a production
-deployment, this is not the chapter for you---look no further!
+If you're setting Kitsune up for deployment, make sure you read all
+the way to the end and then read the additional sections.
 
 If you have any problems getting Kitsune running, let us know. See the
 :ref:`contact-us-chapter`.
@@ -43,8 +43,8 @@ so if you run into problems, let us know.
 Linux
 -----
 
-We know these work in Debian Testing (Wheezy) and will probably work
-in Debian derivatives like Ubuntu. It's likely that you'll encounter
+We know these work in Debian Testing (Wheezy) and Ubuntu 12.04 and
+will probably work in other distributions. It's likely that you'll encounter
 some steps that are slightly different. If you run into problems, let
 us know.
 
@@ -55,7 +55,7 @@ Requirements
 For the minimum installation, you'll need the following:
 
 * git
-* Python 2.6
+* Python 2.6 or 2.7
 * `pip <http://www.pip-installer.org/en/latest/>`_
 * MySQL server and client headers
 * Memcached Server
@@ -176,6 +176,8 @@ Start by creating a file named ``settings_local.py`` in the
 
     REDIS_BACKEND = REDIS_BACKENDS['default']
 
+    LESS_PREPROCESS = True
+
 Now you can copy and modify any settings from ``settings.py`` into
 ``settings_local.py`` and the value will override the default.
 
@@ -200,43 +202,18 @@ can start it and configure it to run on startup using::
    Assuming you have memcache configured to listen to 11211.
 
 
-Running redis
--------------
+LESS
+----
 
-This script runs all three servers---one for each configuration.
+To install LESS you will first need to `install Node.js and NPM
+<https://github.com/joyent/node/wiki/Installing-Node.js-via-package-manager>`_.
 
-I (Will) put that in a script that creates the needed directories in
-``/var/redis/`` and kicks off the three redis servers::
+Now install LESS using::
 
-    #!/bin/bash
+    $ sudo npm install less
 
-    set -e
-
-    # Adjust these according to your setup!
-    REDISBIN=/usr/bin/redis-server
-    CONFFILE=/path/to/conf/files/
-
-    if test ! -e /var/redis/sumo/
-    then
-        echo "creating /var/redis/sumo/"
-        mkdir -p /var/redis/sumo/
-    fi
-
-    if test ! -e /var/redis/sumo-test/
-    then
-        echo "creating /var/redis/sumo-test/"
-        mkdir -p /var/redis/sumo-test/
-    fi
-
-    if test ! -e /var/redis/sumo-persistent/
-    then
-        echo "creating /var/redis/sumo-persistent/"
-        mkdir -p /var/redis/sumo-persistent/
-    fi
-
-    $REDISBIN $CONFFILE/redis-persistent.conf
-    $REDISBIN $CONFFILE/redis-test.conf
-    $REDISBIN $CONFFILE/redis-volatile.conf
+Ensure that lessc (might be located at /usr/lib/node_modules/less/bin) is
+accessible on your PATH.
 
 
 Database
@@ -255,13 +232,12 @@ database settings. For example, using the settings above::
 
     $ mysql -u root -p
     mysql> CREATE DATABASE kitsune;
-    mysql> GRANT ALL ON kitsune.* TO kitsune@localhost IDENTIFIED BY \
-        'password';
+    mysql> GRANT ALL ON kitsune.* TO kitsune@localhost IDENTIFIED BY 'password';
 
 To load the latest database schema, use ``scripts/schema.sql`` and
 ``schematic``::
 
-    $ mysql -u kitsune -p <YOUR_PASSWORD> < scripts/schema.sql
+    $ mysql -u kitsune -p kitsune < scripts/schema.sql
     $ ./vendor/src/schematic/schematic migrations/
 
 You'll now have an empty but up-to-date database!
@@ -299,8 +275,8 @@ If everything's working, you should see a somewhat empty version of
 the SUMO home page!
 
 
-Running the tests
------------------
+Setting it up
+-------------
 
 A great way to check that everything really is working is to run the
 test suite. You'll need to add an extra grant in MySQL for your
@@ -314,6 +290,10 @@ database configuration.
 
 The test suite will create and use this database, to keep any data in
 your development database safe from tests.
+
+
+Running the tests
+-----------------
 
 Running the test suite is easy::
 

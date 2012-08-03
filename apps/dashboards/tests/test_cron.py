@@ -47,10 +47,10 @@ class TopUnhelpfulArticlesTests(TestCase):
 
         # Add 4 no votes 1.5 months ago
         for x in range(0, 4):
-            _add_vote_in_past(r, 0, 45)
+            _add_vote_in_past(r, 0, 10)
 
         # Add 1 yes vote 1.5 months ago
-        _add_vote_in_past(r, 1, 45)
+        _add_vote_in_past(r, 1, 10)
 
         result = _get_old_unhelpful()
         eq_(1, len(result))
@@ -65,9 +65,9 @@ class TopUnhelpfulArticlesTests(TestCase):
         r = _make_backdated_revision(90)
 
         for x in range(0, 4):
-            _add_vote_in_past(r, 1, 45)
+            _add_vote_in_past(r, 1, 10)
 
-        _add_vote_in_past(r, 0, 45)
+        _add_vote_in_past(r, 0, 10)
 
         result = _get_old_unhelpful()
         eq_(0, len(result))
@@ -80,10 +80,10 @@ class TopUnhelpfulArticlesTests(TestCase):
         r = _make_backdated_revision(90)
 
         for x in range(0, 3):
-            _add_vote_in_past(r, 0, 15)
+            _add_vote_in_past(r, 0, 3)
 
         for x in range(0, 2):
-            _add_vote_in_past(r, 1, 15)
+            _add_vote_in_past(r, 1, 3)
 
         old_data = {r.id: {'percentage': 0.2, 'total': 5.0}}
 
@@ -102,10 +102,10 @@ class TopUnhelpfulArticlesTests(TestCase):
         r = _make_backdated_revision(90)
 
         for x in range(0, 3):
-            _add_vote_in_past(r, 1, 15)
+            _add_vote_in_past(r, 1, 3)
 
         for x in range(0, 2):
-            _add_vote_in_past(r, 0, 15)
+            _add_vote_in_past(r, 0, 3)
 
         old_data = {r.id: {'percentage': 0.2, 'total': 5.0}}
 
@@ -119,10 +119,10 @@ class TopUnhelpfulArticlesTests(TestCase):
         r = _make_backdated_revision(90)
 
         for x in range(0, 3):
-            _add_vote_in_past(r, 0, 15)
+            _add_vote_in_past(r, 0, 3)
 
         for x in range(0, 2):
-            _add_vote_in_past(r, 1, 15)
+            _add_vote_in_past(r, 1, 3)
 
         old_data = {}
 
@@ -160,10 +160,10 @@ class TopUnhelpfulArticlesCronTests(TestCase):
         r = _make_backdated_revision(90)
 
         for x in range(0, 3):
-            _add_vote_in_past(r, 0, 15)
+            _add_vote_in_past(r, 0, 3)
 
         for x in range(0, 2):
-            _add_vote_in_past(r, 1, 15)
+            _add_vote_in_past(r, 1, 3)
 
         cache_most_unhelpful_kb_articles()
 
@@ -178,10 +178,10 @@ class TopUnhelpfulArticlesCronTests(TestCase):
         r = _make_backdated_revision(90)
 
         for x in range(0, 3):
-            _add_vote_in_past(r, 1, 15)
+            _add_vote_in_past(r, 1, 3)
 
         for x in range(0, 2):
-            _add_vote_in_past(r, 0, 15)
+            _add_vote_in_past(r, 0, 3)
 
         cache_most_unhelpful_kb_articles()
 
@@ -192,16 +192,16 @@ class TopUnhelpfulArticlesCronTests(TestCase):
         r = _make_backdated_revision(90)
 
         for x in range(0, 4):
-            _add_vote_in_past(r, 0, 45)
+            _add_vote_in_past(r, 0, 10)
 
         for x in range(0, 1):
-            _add_vote_in_past(r, 1, 45)
+            _add_vote_in_past(r, 1, 10)
 
         for x in range(0, 3):
-            _add_vote_in_past(r, 0, 15)
+            _add_vote_in_past(r, 0, 3)
 
         for x in range(0, 2):
-            _add_vote_in_past(r, 1, 15)
+            _add_vote_in_past(r, 1, 3)
 
         cache_most_unhelpful_kb_articles()
 
@@ -217,28 +217,28 @@ class TopUnhelpfulArticlesCronTests(TestCase):
         r = _make_backdated_revision(90)
 
         for x in range(0, 26):
-            _add_vote_in_past(r, 1, 15)
+            _add_vote_in_past(r, 1, 3)
 
         for x in range(0, 76):
-            _add_vote_in_past(r, 0, 15)
+            _add_vote_in_past(r, 0, 3)
 
         # This should be at the top.
         r2 = _make_backdated_revision(90)
 
         for x in range(0, 61):
-            _add_vote_in_past(r2, 1, 15)
+            _add_vote_in_past(r2, 1, 3)
 
         for x in range(0, 181):
-            _add_vote_in_past(r2, 0, 15)
+            _add_vote_in_past(r2, 0, 3)
 
         # This should be in the middle.
         r3 = _make_backdated_revision(90)
 
         for x in range(0, 31):
-            _add_vote_in_past(r3, 1, 15)
+            _add_vote_in_past(r3, 1, 3)
 
         for x in range(0, 91):
-            _add_vote_in_past(r3, 0, 15)
+            _add_vote_in_past(r3, 0, 3)
 
         cache_most_unhelpful_kb_articles()
 

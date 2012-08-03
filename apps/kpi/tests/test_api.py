@@ -27,10 +27,10 @@ from wiki.tests import document, revision, helpful_vote
 class KpiApiTests(TestCase):
     client_class = LocalizingClient
 
-    def _make_sphinx_metric_kinds(self):
-        click_kind = metric_kind(code='search clickthroughs:sphinx:clicks',
+    def _make_elastic_metric_kinds(self):
+        click_kind = metric_kind(code='search clickthroughs:elastic:clicks',
                                  save=True)
-        search_kind = metric_kind(code='search clickthroughs:sphinx:searches',
+        search_kind = metric_kind(code='search clickthroughs:elastic:searches',
                                   save=True)
         return click_kind, search_kind
 
@@ -176,9 +176,9 @@ class KpiApiTests(TestCase):
         eq_(r['objects'][0]['support_forum'], 1)
     test_asker_replies_arent_a_contribution.xx = 1
 
-    def test_sphinx_clickthrough_get(self):
-        """Test Sphinx clickthrough read API."""
-        click_kind, search_kind = self._make_sphinx_metric_kinds()
+    def test_elastic_clickthrough_get(self):
+        """Test elastic clickthrough read API."""
+        click_kind, search_kind = self._make_elastic_metric_kinds()
         metric(kind=click_kind,
                start=date(2000, 1, 1),
                value=1,
@@ -197,7 +197,7 @@ class KpiApiTests(TestCase):
                save=True)
 
         url = reverse('api_dispatch_list',
-                      kwargs={'resource_name': 'sphinx-clickthrough-rate',
+                      kwargs={'resource_name': 'elastic-clickthrough-rate',
                               'api_name': 'v1'})
         response = self.client.get(url + '?format=json')
         self.assertContains(  # Beware of dict order changes someday.
@@ -214,16 +214,16 @@ class KpiApiTests(TestCase):
             '"objects": [{"clicks": 2, "resource_uri": "", "searches": 20, '
                          '"start": "2000-01-09"}]')
 
-    def test_sphinx_clickthrough_post(self):
-        """Test Sphinx clickthrough write API."""
+    def test_elastic_clickthrough_post(self):
+        """Test elastic clickthrough write API."""
         u = user(save=True)
         add_permission(u, Metric, 'add_metric')
 
-        click_kind, search_kind = self._make_sphinx_metric_kinds()
+        click_kind, search_kind = self._make_elastic_metric_kinds()
 
         # POST the new object:
         url = reverse('api_dispatch_list',
-                      kwargs={'resource_name': 'sphinx-clickthrough-rate',
+                      kwargs={'resource_name': 'elastic-clickthrough-rate',
                               'api_name': 'v1'})
         auth = 'Basic ' + b64encode('%s:%s' % (u.username, 'testpass'))
         response = self.client.post(url,

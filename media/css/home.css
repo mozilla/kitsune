@@ -61,7 +61,7 @@ html[lang=ja] body div#featured {
     text-transform: uppercase;
 }
 
-#support-search {
+.old-theme #support-search {
     margin: 0;
     padding: 20px 0 0 2px;
     width: auto;

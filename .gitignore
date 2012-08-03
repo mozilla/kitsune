@@ -14,4 +14,5 @@ tmp
 locale
 docs/_build
 highstock.src.js
-static
+/static
+*.less.css

@@ -41,6 +41,41 @@
     margin: 15px 200px 0 0;
 }
 
+.progressbar {
+    background: #DDD;
+    background: -moz-linear-gradient(#DDD,#F8F8F8) repeat scroll 0 0 transparent;
+    background: -webkit-gradient(linear,left top,left bottom,from(#DDD),to(#F8F8F8));
+    border-radius: 12px;
+    height: 25px;
+    margin: 7px 0;
+    position: relative;
+}
+
+.progressbar > div {
+    background: #F09609;
+    background: -moz-linear-gradient(#FFC900,#F09609) repeat scroll 0 0 transparent;
+    background: -webkit-gradient(linear,left top,left bottom,from(#FFC900),to(#F09609));
+    border-radius: 12px;
+    color: #fff;
+    float: left;
+    font-size: 18px;
+    font-weight: bold;
+    height: 24px;
+    padding: 1px 0 0 0;
+    text-align: right;
+}
+
+.progressbar.complete > div {
+    background: #489615;
+    background: -moz-linear-gradient(#84C63C,#489615) repeat scroll 0 0 transparent;
+    background: -webkit-gradient(linear,left top,left bottom,from(#84C63C),to(#489615));
+    padding: 0;
+}
+
+.progressbar > div > span {
+    padding: 0 15px 0 0;
+}
+
 #speech-bubbles {
     background: transparent url(../img/customercare/bubbles.png) no-repeat 0 25px;
     min-height: 100px;
@@ -63,6 +98,24 @@
     font-size: 21px;
     font-style: normal;
     text-transform: uppercase;
+}
+
+#stats {
+    color: #aaa;
+    padding: 20px 40px 40px;
+}
+
+#stats strong {
+    color: #282828;
+}
+
+#stats > span {
+    float: right;
+    margin: 0 12px;
+}
+
+#stats > p {
+    padding: 0 12px;
 }
 
 #tweetcontainer {
@@ -582,8 +635,17 @@ a.header-button {
     margin-bottom: 5px;
 }
 
-#twitter-modal .cancel,
-#twitter-modal .signin {
+#twitter-modal p {
+    margin: 0 0 10px 0;
+}
+
+#twitter-modal .inner-container > div,
+.btn-modal {
+    height: 36px;
+}
+
+.btn-modal,
+.btn-modal:visited {
     background: -moz-linear-gradient(center top, #f1f1f1 15px, #eee 18px, #ddd, #ccc);
     background: -webkit-gradient(linear, center top, center bottom, color-stop(.417, #f1f1f1), color-stop(.5, #eee), color-stop(.75, #ddd), to(#ccc));
     border-radius: 6px;
@@ -592,25 +654,27 @@ a.header-button {
     color: #5a5a5a;
     display: block;
     float: left;
-    height: 36px;
     line-height: 35px;
     text-align: center;
     text-decoration: none;
     text-shadow: 1px 1px 0 rgba(255, 255, 255, 0.6);
-    width: 140px;
+    width: 200px;
 }
 
-#twitter-modal .cancel {
-    margin: 15px 15px 0px 48px;
+.btn-modal.register {
+    margin: 0 0 0 14px;
 }
 
-#twitter-modal .signin {
+.btn-modal.signin-twitter {
+    float: none;
+    margin: 15px auto;
+    width: 300px;
+}
+
+.btn-modal .highlight,
+.btn-modal.signin-twitter,
+.btn-modal.signin-twitter:visited {
     color: #10a2c6;
-    margin: 15px 0px 0px 0;
-}
-
-#twitter-modal .inner-container div {
-    height: 50px;
 }
 
 /*----------------------------------

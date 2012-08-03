@@ -319,11 +319,6 @@ window.KpiDashboard = Backbone.View.extend({
             url: $(this.el).data('active-contributors-url')
         });
 
-        this.sphinxCtrChart = new ChartModel([], {
-            url: $(this.el).data('sphinx-ctr-url')
-        });
-        this.sphinxCtrChart.name = 'Sphinx';
-
         this.elasticCtrChart = new ChartModel([], {
             url: $(this.el).data('elastic-ctr-url')
         });
@@ -372,18 +367,26 @@ window.KpiDashboard = Backbone.View.extend({
             }]
         });
 
-        this.voteChartView = new BasicChartView({
+        this.voteChartView = new StockChartView({
             model: this.voteChart,
             title: gettext('Helpful Votes'),
             percent: true,
             series: [{
                 name: gettext('Article Votes: % Helpful'),
                 numerator: 'kb_helpful',
-                denominator: 'kb_votes'
+                denominator: 'kb_votes',
+                tooltip: {
+                  ySuffix: '%',
+                  yDecimals: 1
+                }
             }, {
                 name: gettext('Answer Votes: % Helpful'),
                 numerator: 'ans_helpful',
-                denominator: 'ans_votes'
+                denominator: 'ans_votes',
+                tooltip: {
+                  ySuffix: '%',
+                  yDecimals: 1
+                }
             }/* TODO: Leave this out for now, it overlaps the article votes.
             , {
                 name: 'Total Votes: % Helpful',
@@ -435,7 +438,7 @@ window.KpiDashboard = Backbone.View.extend({
         });
 
         this.ctrView = new BasicChartView({
-            model: this.sphinxCtrChart,
+            model: this.elasticCtrChart,
             title: gettext('Search Clickthrough Rate'),
             percent: true,
             series: [{
@@ -447,7 +450,6 @@ window.KpiDashboard = Backbone.View.extend({
                 }
             }]
         });
-        this.ctrView.addModel(this.elasticCtrChart);
 
         this.visitorsView = new StockChartView({
             model: this.visitorsChart,
@@ -484,18 +486,22 @@ window.KpiDashboard = Backbone.View.extend({
         // Render the views.
         $(this.el)
             .append(this.questionsView.render().el)
+            .append($('#kpi-legend-questions'))
             .append(this.voteChartView.render().el)
+            .append($('#kpi-legend-vote'))
             .append(this.activeContributorsView.render().el)
+            .append($('#kpi-legend-active-contributors'))
             .append(this.ctrView.render().el)
+            .append($('#kpi-legend-ctr'))
             .append(this.visitorsView.render().el)
-            .append(this.l10nView.render().el);
+            .append(this.l10nView.render().el)
+            .append($('#kpi-legend-l10n'));
 
 
         // Load up the models.
         this.questionsChart.fetch();
         this.activeContributorsChart.fetch();
         this.voteChart.fetch();
-        this.sphinxCtrChart.fetch();
         this.elasticCtrChart.fetch();
         this.visitorsChart.fetch();
         this.l10nChart.fetch();

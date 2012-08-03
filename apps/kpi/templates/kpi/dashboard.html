@@ -10,12 +10,118 @@
     <div id="kpi-dash-app"
       data-questions-url="{{ url('api_dispatch_list', resource_name='kpi_questions', api_name='v1') }}"
       data-active-contributors-url="{{ url('api_dispatch_list', resource_name='kpi_active_contributors', api_name='v1') }}"
-      data-sphinx-ctr-url="{{ url('api_dispatch_list', resource_name='sphinx-clickthrough-rate', api_name='v1') }}"
       data-elastic-ctr-url="{{ url('api_dispatch_list', resource_name='elastic-clickthrough-rate', api_name='v1') }}"
       data-visitors-url="{{ url('api_dispatch_list', resource_name='kpi_visitors', api_name='v1') }}"
       data-l10n-coverage-url="{{ url('api_dispatch_list', resource_name='kpi_l10n_coverage', api_name='v1') }}"
       data-vote-url="{{ url('api_dispatch_list', resource_name='kpi_vote', api_name='v1') }}">
     </div>
+
+    <ul class="kpi-legend" id="kpi-legend-questions">
+      <li>
+        <p><strong>{% trans %}Questions solved{% endtrans %}</strong></p>
+        <p>{% trans %}
+          Definition: Percentage of threads that have answer marked as a
+          solution{% endtrans %}
+        </p>
+      </li>
+      <li>
+        <p><strong>{% trans %}
+          Questions responded to within 72 hours{% endtrans %}
+        </strong></p>
+        <p>{% trans %}
+          Definition: Percentage of questions that get an action within 72
+          hours{% endtrans %}
+        </p>
+      </li>
+    </ul>
+
+    <ul class="kpi-legend" id="kpi-legend-vote">
+      <li>
+        <p><strong>{% trans %}
+          Helpfulness of KB articles and Forum{% endtrans %}
+        </strong></p>
+        <p>{% trans %}
+          Definition: Ratio of “yes”/total votes for KB articles, forum
+          threads{% endtrans %}
+        </p>
+      </li>
+    </ul>
+
+    <ul class="kpi-legend" id="kpi-legend-active-contributors">
+      <li>
+        <p><strong>{% trans %}
+          Number of active contributors to the English KB{% endtrans %}
+        </strong></p>
+        <p>{% trans %}
+          Definition: The number of people who have contributed to the KB in the
+          last 30 days.{% endtrans %}
+        </p>
+        <p>{% trans %}
+          Definition of contribution: edited 1+ article or has reviewed 1+
+          article{% endtrans %}
+        </p>
+      </li>
+      <li>
+        <p><strong>{% trans %}
+          Number of active contributors to the non-English KB{% endtrans %}
+        </strong></p>
+        <p>{% trans %}
+          Definition: The number of people who have contributed to non English
+          KB versions in the last 30 days.{% endtrans %}
+        </p>
+        <p>{% trans %}
+          Definition of contribution: edited 1+ non English article or has
+          reviewed 1+ non English article.{% endtrans %}
+        </p>
+      </li>
+      <li>
+        <p><strong>{% trans %}
+          Number of active forum contributors{% endtrans %}
+        </strong></p>
+        <p>{% trans %}
+          Definition: The number of people who have contributed to the forums in
+          the last 30 days.{% endtrans %}
+        </p>
+        <p>{% trans %}
+          Definition of contribution: wrote 10+ posts{% endtrans %}
+        </p>
+      </li>
+      <li>
+        <p><strong>{% trans %}
+          Number of active Army of Awesome contributors{% endtrans %}
+        </strong></p>
+        <p>{% trans %}
+          Definition: The number of people who have contributed to the Army of
+          Awesome in the last 30 days.{% endtrans %}
+        </p>
+        <p>{% trans %}
+          Definition of contribution: replied to a tweet.{% endtrans %}
+        </p>
+      </li>
+    </ul>
+
+    <ul class="kpi-legend" id="kpi-legend-ctr">
+      <li>
+        <p><strong>{% trans %}
+          Clickthrough rate{% endtrans %}
+        </strong></p>
+        <p>{% trans %}
+          Definition: Percentage of people searching who click on an item on
+          the search results page.{% endtrans %}
+        </p>
+      </li>
+    </ul>
+
+    <ul class="kpi-legend" id="kpi-legend-l10n">
+      <li>
+        <p><strong>{% trans %}L10n coverage{% endtrans %}</strong></p>
+        <p>{% trans %}
+          Definition: L10n coverage is a measure of the amount of translations
+          of the English top 50 articles that are up to date, weighted by the
+          number of visits for each locale.{% endtrans %}
+        </p>
+      </li>
+    </ul>
 
     <!-- Backbone View Templates -->
     <script type="text/template" id="chart-template">

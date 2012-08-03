@@ -1,6 +1,8 @@
 from nose.tools import eq_
 
+from products.tests import product
 from search.tests.test_es import ElasticTestCase
+from topics.tests import topic
 from wiki.tests import document, revision
 from wiki.models import Document
 from wiki.config import REDIRECT_CONTENT
@@ -23,8 +25,9 @@ class TestPostUpdate(ElasticTestCase):
         doc1 = document(title=u'Audio too loud')
         doc1.save()
         revision(document=doc1, is_approved=True, save=True)
-        doc1.tags.add(u'desktop')
-        doc1.tags.add(u'windows')
+        doc1.topics.add(topic(slug='cookies', save=True))
+        doc1.topics.add(topic(slug='general', save=True))
+        doc1.products.add(product(slug='desktop', save=True))
 
         doc2 = document(title=u'Audio too loud bork bork',
                         parent=doc1)
@@ -34,34 +37,59 @@ class TestPostUpdate(ElasticTestCase):
 
         # Verify the parent has the right tags.
         doc_dict = Document.extract_document(doc1.id)
-        eq_(doc_dict['document_tag'], [u'desktop', u'windows'])
+        eq_(doc_dict['document_topic'], [u'cookies', u'general'])
+        eq_(doc_dict['document_product'], [u'desktop'])
 
         # Verify the translation has the parent's tags.
         doc_dict = Document.extract_document(doc2.id)
-        eq_(doc_dict['document_tag'], [u'desktop', u'windows'])
+        eq_(doc_dict['document_topic'], [u'cookies', u'general'])
+        eq_(doc_dict['document_product'], [u'desktop'])
 
-    def test_wiki_tags(self):
-        """Make sure that adding tags to a Document causes it to
+    def test_wiki_topics(self):
+        """Make sure that adding topics to a Document causes it to
         refresh the index.
 
         """
-        tag = u'hiphop'
-        eq_(Document.search().filter(document_tag=tag).count(), 0)
+        t = topic(slug=u'hiphop', save=True)
+        eq_(Document.search().filter(document_topic=t.slug).count(), 0)
         doc = document(save=True)
         revision(document=doc, is_approved=True, save=True)
         self.refresh()
-        eq_(Document.search().filter(document_tag=tag).count(), 0)
-        doc.tags.add(tag)
+        eq_(Document.search().filter(document_topic=t.slug).count(), 0)
+        doc.topics.add(t)
         self.refresh()
-        eq_(Document.search().filter(document_tag=tag).count(), 1)
-        doc.tags.remove(tag)
+        eq_(Document.search().filter(document_topic=t.slug).count(), 1)
+        doc.topics.clear()
         self.refresh()
 
         # Make sure the document itself is still there and that we didn't
         # accidentally delete it through screwed up signal handling:
         eq_(Document.search().filter().count(), 1)
 
-        eq_(Document.search().filter(document_tag=tag).count(), 0)
+        eq_(Document.search().filter(document_topic=t.slug).count(), 0)
+
+    def test_wiki_products(self):
+        """Make sure that adding products to a Document causes it to
+        refresh the index.
+
+        """
+        p = product(slug=u'desktop', save=True)
+        eq_(Document.search().filter(document_product=p.slug).count(), 0)
+        doc = document(save=True)
+        revision(document=doc, is_approved=True, save=True)
+        self.refresh()
+        eq_(Document.search().filter(document_product=p.slug).count(), 0)
+        doc.products.add(p)
+        self.refresh()
+        eq_(Document.search().filter(document_product=p.slug).count(), 1)
+        doc.products.remove(p)
+        self.refresh()
+
+        # Make sure the document itself is still there and that we didn't
+        # accidentally delete it through screwed up signal handling:
+        eq_(Document.search().filter().count(), 1)
+
+        eq_(Document.search().filter(document_product=p.slug).count(), 0)
 
     def test_wiki_no_revisions(self):
         """Don't index documents without approved revisions"""

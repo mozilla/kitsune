@@ -19,6 +19,7 @@ from search.models import Record, get_search_models
 from search.tasks import OUTSTANDING_INDEX_CHUNKS, index_chunk_task
 from search.utils import chunked, create_batch_id
 from sumo.redis_utils import redis_client, RedisError
+from wiki.models import Document
 
 
 log = logging.getLogger('k.es')
@@ -79,6 +80,16 @@ def handle_reindex(request):
     # the index first.
     delete_index_first = bool(request.POST.get('delete_index'))
 
+    if delete_index_first:
+        # Coming from the delete form, so we reindex all models.
+        models_to_index = None
+    else:
+        # Coming from the reindex form, so we reindex whatever we're
+        # told.
+        models_to_index = [name.replace('check_', '')
+                           for name in request.POST.keys()
+                           if name.startswith('check_')]
+
     # TODO: If this gets fux0rd, then it's possible this could be
     # non-zero and we really want to just ignore it. Need the ability
     # to ignore it.
@@ -103,7 +114,7 @@ def handle_reindex(request):
     # Break up all the things we want to index into chunks. This
     # chunkifies by class then by chunk size.
     chunks = []
-    for cls, indexable in get_indexable():
+    for cls, indexable in get_indexable(search_models=models_to_index):
         chunks.extend(
             (cls, chunk) for chunk in chunked(indexable, CHUNK_SIZE))
 
@@ -211,6 +222,7 @@ def search(request):
          'error_messages': error_messages,
          'recent_records': recent_records,
          'outstanding_chunks': outstanding_chunks,
+         'now': datetime.now(),
          },
         RequestContext(request, {}))
 
@@ -239,6 +251,10 @@ def index_view(request):
         [(cls._meta.db_table, cls) for cls in get_search_models()])
 
     if requested_bucket and requested_id:
+        # Nix whitespace because I keep accidentally picking up spaces
+        # when I copy and paste.
+        requested_id = requested_id.strip()
+
         # The user wants to see a specific item in the index, so we
         # attempt to fetch it from the index and show that
         # specifically.
@@ -303,3 +319,26 @@ def mapping_view(request):
 
 
 admin.site.register_view('mapping', mapping_view, 'Search - Mapping Browsing')
+
+
+def troubleshooting_view(request):
+    # Build a list of the most recently indexed 50 wiki documents.
+    last_50_indexed = _fix_value_dicts(Document.search()
+                                               .values_dict()
+                                               .order_by('-indexed_on')[:50])
+
+    last_50_reviewed = (Document.uncached
+                                .filter(current_revision__is_approved=True)
+                                .order_by('-current_revision__reviewed')[:50])
+
+    return render_to_response(
+        'search/admin/troubleshooting.html',
+        {'title': 'Index Troubleshooting',
+         'last_50_indexed': last_50_indexed,
+         'last_50_reviewed': last_50_reviewed
+         },
+        RequestContext(request, {}))
+
+
+admin.site.register_view('troubleshooting', troubleshooting_view,
+                         'Search - Index Troubleshooting')
