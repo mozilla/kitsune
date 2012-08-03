@@ -8,21 +8,23 @@ from nose.tools import eq_, raises
 from taggit.models import Tag
 import waffle
 
+import sumo.models
 from flagit.models import FlaggedObject
 from karma.manager import KarmaManager
-import sumo.models
 from sumo.redis_utils import RedisError, redis_client
 from questions.cron import auto_lock_old_questions
 from questions.events import QuestionReplyEvent
 from questions.karma_actions import SolutionAction, AnswerAction
 from questions.models import (Question, QuestionMetaData, Answer,
-                              _tenths_version, _has_beta)
+                              _tenths_version, _has_beta, user_num_questions,
+                              user_num_answers, user_num_solutions)
 from questions.tasks import update_answer_pages
 from questions.tests import (TestCaseBase, TaggingTestCaseBase, tags_eq,
                              question, answer)
 from questions.question_config import products
 from sumo.tests import TestCase
 from tags.utils import add_existing_tag
+from users.tests import user
 
 
 class TestAnswer(TestCaseBase):
@@ -397,3 +399,53 @@ class OldQuestionsLockTest(TestCase):
         locked_questions = list(Question.uncached.filter(is_locked=False))
         eq_(sorted([q.id for q in locked_questions]),
             [q1.id])
+
+
+class UserActionCounts(TestCase):
+    def test_user_num_questions(self):
+        """Answers are counted correctly on a user."""
+        u = user(save=True)
+
+        eq_(user_num_questions(u), 0)
+        q1 = question(creator=u, save=True)
+        eq_(user_num_questions(u), 1)
+        q2 = question(creator=u, save=True)
+        eq_(user_num_questions(u), 2)
+        q1.delete()
+        eq_(user_num_questions(u), 1)
+        q2.delete()
+        eq_(user_num_questions(u), 0)
+
+    def test_user_num_answers(self):
+        u = user(save=True)
+        q = question(save=True)
+
+        eq_(user_num_answers(u), 0)
+        a1 = answer(creator=u, question=q, save=True)
+        eq_(user_num_answers(u), 1)
+        a2 = answer(creator=u, question=q, save=True)
+        eq_(user_num_answers(u), 2)
+        a1.delete()
+        eq_(user_num_answers(u), 1)
+        a2.delete()
+        eq_(user_num_answers(u), 0)
+
+    def test_user_num_solutions(self):
+        u = user(save=True)
+        q1 = question(save=True)
+        q2 = question(save=True)
+        a1 = answer(creator=u, question=q1, save=True)
+        a2 = answer(creator=u, question=q2, save=True)
+
+        eq_(user_num_solutions(u), 0)
+        q1.solution = a1
+        q1.save()
+        eq_(user_num_solutions(u), 1)
+        q2.solution = a2
+        q2.save()
+        eq_(user_num_solutions(u), 2)
+        q1.solution = None
+        q1.save()
+        eq_(user_num_solutions(u), 1)
+        a2.delete()
+        eq_(user_num_solutions(u), 0)

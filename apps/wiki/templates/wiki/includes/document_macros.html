@@ -90,7 +90,7 @@
   {% set comma = joiner(', ') %}
   {% for topic in topics -%}
     {{ comma() }}
-    <a href="{{ url('wiki.tag', topic.slug) }}">{{ _(topic.name) }}</a>
+    <a href="{{ url('wiki.topic', topic.slug) }}">{{ _(topic.name) }}</a>
   {%- endfor %}
 {%- endmacro %}
 

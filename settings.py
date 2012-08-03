@@ -377,6 +377,9 @@ INSTALLED_APPS = (
     # Extra apps for testing.
     'django_nose',
     'test_utils',
+
+    # Extra app for python migrations.
+    'django_extensions'
 )
 
 TEST_RUNNER = 'test_utils.runner.RadicalTestSuiteRunner'
@@ -457,10 +460,16 @@ TOWER_ADD_HEADERS = True
 MINIFY_BUNDLES = {
     'css': {
         'common': (
-            'css/reset.css',
             'global/footer.css',
             'css/kbox.css',
             'css/main.css',
+        ),
+        'old-theme': (
+            'css/reset.css',
+        ),
+        'new-theme': (
+            'css/normalize.css',
+            'less/main.less',
         ),
         'print': (
             'css/print.css',
@@ -698,7 +707,7 @@ SESSION_EXISTS_COOKIE = 'sumo_session'
 # Connection information for Elastic
 ES_HOSTS = ['127.0.0.1:9200']
 # Indexes for reading
-ES_INDEXES = {'default': 'sumo-20120622'}
+ES_INDEXES = {'default': 'sumo-20120731'}
 # Indexes for indexing--set this to ES_INDEXES if you want to read to
 # and write to the same index.
 ES_WRITE_INDEXES = ES_INDEXES
@@ -760,6 +769,9 @@ IMAGE_ALLOWED_MIMETYPES = 'image/jpeg,image/png,image/gif'
 
 # Topics
 TOPIC_IMAGE_PATH = 'uploads/topics/'
+
+# Products
+PRODUCT_IMAGE_PATH = 'uploads/products/'
 
 # Email
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'

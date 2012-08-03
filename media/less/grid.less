@@ -1,0 +1,166 @@
+/*
+    LESS Grid System
+    Based on 960 Grid System - http://960.gs/
+
+    Licensed under GPL and MIT.
+*/
+
+// Modify these values to alter the grid
+@gridColumnWidth: 60px;
+@gridGutterWidth: 20px;
+@gridColumns: 12;
+
+/*
+  Forces backgrounds to span full width,
+  even if there is horizontal scrolling.
+  Increase this if your layout is wider.
+
+  Note: IE6 works fine without this fix.
+*/
+body {
+  min-width: (@gridColumnWidth + @gridGutterWidth) * @gridColumns;
+}
+
+/* Grid >> Global
+----------------------------------------------------------------------------------------------------*/
+
+[class*="grid_"] {
+  display: inline;
+  float: left;
+  position: relative;
+  margin-left: @gridGutterWidth / 2;
+  margin-right: @gridGutterWidth / 2;
+}
+
+[class*="push_"], [class*="pull_"] {
+  position: relative;
+}
+
+.html-rtl {
+  [class*="grid_"] {
+    float: right;
+  }
+}
+
+/* Grid >> Children (Alpha ~ First, Omega ~ Last)
+----------------------------------------------------------------------------------------------------*/
+
+.alpha {
+  margin-left: 0;
+}
+
+.omega {
+  margin-right: 0;
+}
+
+/* Grid >> Columns
+----------------------------------------------------------------------------------------------------*/
+
+#grid > .output();
+
+/* `Clear Floated Elements
+----------------------------------------------------------------------------------------------------*/
+
+/* http://sonspring.com/journal/clearing-floats */
+
+.clear {
+  clear: both;
+  display: block;
+  overflow: hidden;
+  visibility: hidden;
+  width: 0;
+  height: 0;
+}
+
+/* http://www.yuiblog.com/blog/2010/09/27/clearfix-reloaded-overflowhidden-demystified */
+
+.clearfix:before,
+.clearfix:after {
+  content: '\0020';
+  display: block;
+  overflow: hidden;
+  visibility: hidden;
+  width: 0;
+  height: 0;
+}
+
+.clearfix:after {
+  clear: both;
+}
+
+/*
+  The following zoom:1 rule is specifically for IE6 + IE7.
+  Move to separate stylesheet if invalid CSS is a problem.
+*/
+
+.clearfix {
+  zoom: 1;
+}
+
+#grid {
+  .output () {
+    (~".html-ltr .container_@{gridColumns}") {
+      margin-left: auto;
+      margin-right: auto;
+      padding: 0 20px;
+      width: (@gridColumnWidth + @gridGutterWidth) * @gridColumns;
+
+      .grids(@gridColumns);
+      .fix(@gridColumns - 1);
+    }
+
+    (~".html-rtl .container_@{gridColumns}") {
+      margin-left: auto;
+      margin-right: auto;
+      padding: 0 20px;
+      width: (@gridColumnWidth + @gridGutterWidth) * @gridColumns;
+
+      .grids(@gridColumns);
+      .fix-rtl(@gridColumns - 1);
+    }
+
+    .grids (@index) when (@index > 0) {
+      (~".grid_@{index}") { .grid(@index); }
+      .grids(@index - 1);
+    }
+    .grids (0) {}
+
+    .grid (@index) {
+      width: ((@gridColumnWidth + @gridGutterWidth) * @index) - @gridGutterWidth;
+    }
+
+    .fix (@index) when (@index > 0) {
+      (~".prefix_@{index}") { .prefix(@index); }
+      (~".suffix_@{index}") { .suffix(@index); }
+      (~".push_@{index}") { .push(@index); }
+      (~".pull_@{index}") { .pull(@index); }
+      .fix(@index - 1);
+    }
+    .fix (0) {}
+
+    .fix-rtl (@index) when (@index > 0) {
+      (~".prefix_@{index}") { .suffix(@index); }
+      (~".suffix_@{index}") { .prefix(@index); }
+      (~".push_@{index}") { .push(@index); }
+      (~".pull_@{index}") { .pull(@index); }
+      .fix-rtl(@index - 1);
+    }
+    .fix-rtl (0) {}
+
+    .prefix (@index) {
+      padding-left: (@gridColumnWidth + @gridGutterWidth) * @index;
+    }
+
+    .suffix (@index) {
+      padding-right: (@gridColumnWidth + @gridGutterWidth) * @index;
+    }
+
+    .push (@index) {
+      left: (@gridColumnWidth + @gridGutterWidth) * @index;
+    }
+
+    .pull (@index) {
+      left: -(@gridColumnWidth + @gridGutterWidth) * @index;
+    }
+  }
+}

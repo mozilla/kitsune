@@ -196,6 +196,10 @@
       </p>
       <form method="POST">
         {% csrf_token %}
+        {% for stats_name, stats_count in doctype_write_stats.items %}
+          <input id="check_{{ stats_name }}" type="checkbox" name="check_{{ stats_name }}" value="yes" checked>
+          <label for="check_{{ stats_name }}">{{ stats_name }}</label><br>
+        {% endfor %}
         <input type="submit" name="reindex"
                value="Reindex into {{ write_index }}"
                {% if outstanding_chunks %}disabled{% endif %}>

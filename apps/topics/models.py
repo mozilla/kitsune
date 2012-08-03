@@ -30,4 +30,7 @@ class Topic(ModelBase):
 
     @property
     def image_url(self):
-        return self.image.url
+        if self.image is not None:
+            return self.image.url
+        return os.path.join(
+            settings.STATIC_URL, 'img', 'topic_placeholder.png')

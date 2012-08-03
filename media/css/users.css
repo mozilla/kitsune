@@ -158,6 +158,10 @@ section#avatar-area {
     float: right;
 }
 
+#contributions-box ul {
+    padding-left: 25px;
+}
+
 #contact-box {
     -moz-border-radius: 10px;
     -webkit-border-radius: 10px;

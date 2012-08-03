@@ -5,7 +5,7 @@ from threading import local
 from django.conf import settings
 from django.core import signals
 from django.db import models
-from django.db.models.signals import pre_delete, post_save
+from django.db.models.signals import pre_delete, post_save, m2m_changed
 from django.dispatch import receiver
 
 from search.tasks import index_task, unindex_task
@@ -20,11 +20,14 @@ log = logging.getLogger('search.es')
 _search_models = {}
 
 
-def get_search_models():
+def get_search_models(models=None):
     """Returns a list of model classes"""
     # TODO: if we do weakrefs, then we should remove dead refs here.
 
-    values = _search_models.values()
+    if models is None:
+        values = _search_models.values()
+    else:
+        values = [_search_models[name] for name in models]
 
     # Sort to stabilize.
     values.sort(key=lambda cls: cls._meta.db_table)
@@ -172,7 +175,8 @@ _identity = lambda s: s
 
 def register_for_indexing(sender_class,
                           app,
-                          instance_to_indexee=_identity):
+                          instance_to_indexee=_identity,
+                          m2m=False):
     """Register a model whose changes might invalidate ElasticSearch
     indexes.
 
@@ -230,12 +234,17 @@ def register_for_indexing(sender_class,
         _search_models[sender_class._meta.db_table] = sender_class
 
     # Register signal listeners to keep indexes up to date:
-    indexing_receiver(post_save, 'post_save')(update)
-    indexing_receiver(pre_delete, 'pre_delete')(
-        # If it's the indexed instance that's been deleted, go ahead
-        # and delete it from the index. Otherwise, we just want to
-        # update whatever model it's related to.
-        delete if instance_to_indexee is _identity else update)
+    # TODO: Untangle this mess - Bug 778753
+    if m2m:
+        indexing_receiver(m2m_changed, 'm2m_changed')(update)
+    else:
+        indexing_receiver(post_save, 'post_save')(update)
+    
+        indexing_receiver(pre_delete, 'pre_delete')(
+            # If it's the indexed instance that's been deleted, go ahead
+            # and delete it from the index. Otherwise, we just want to
+            # update whatever model it's related to.
+            delete if instance_to_indexee is _identity else update)
 
 
 def generate_tasks(**kwargs):

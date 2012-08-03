@@ -45,6 +45,32 @@
       {% else %}
         {{ private_message(profile.user) }}
       {% endif %}
+      {% if num_answers or num_questions or num_solutions %}
+        <div id="contributions-box">
+        <h2>Contributions</h2>
+          <ul>
+            {% if num_questions %}
+              <li>
+                <a href="{{ url('search')|urlparams(asked_by=profile.user.username, sortby=1, a=1, w=2) }}">
+                  {{ ngettext('{0} question', '{0} questions', num_questions)|f(num_questions) }}
+                </a>
+              </li>
+            {% endif %}
+            {% if num_answers %}
+              <li>
+                <a href="{{ url('search')|urlparams(answered_by=profile.user.username, sortby=1, a=1, w=2) }}">
+                  {{ ngettext('{0} answer', '{0} answers', num_answers)|f(num_answers) }}
+                </a>
+              </li>
+            {% endif %}
+            {% if num_solutions %}
+              <li>
+                {{ ngettext('{0} solution', '{0} solutions', num_solutions)|f(num_solutions) }}
+              </li>
+            {% endif %}
+          </ul>
+        </div>
+      {% endif %}
       {% if profile.public_email or profile.website or profile.twitter or
             profile.facebook or profile.irc_handle or
             (profile.livechat_id and

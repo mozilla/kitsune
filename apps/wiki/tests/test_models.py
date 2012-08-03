@@ -5,8 +5,10 @@ from taggit.models import TaggedItem
 
 from django.core.exceptions import ValidationError
 
+from products.tests import product
 from sumo import ProgrammingError
 from sumo.tests import TestCase
+from topics.tests import topic
 from wiki.cron import calculate_related_documents
 from wiki.models import Document, RelatedDocument
 from wiki.config import (REDIRECT_SLUG, REDIRECT_TITLE, REDIRECT_HTML,
@@ -284,6 +286,30 @@ class DocumentTests(TestCase):
 
         eq_(redirect_to.document.get_absolute_url(),
             redirector.document.redirect_url())
+
+    def test_get_topics(self):
+        """Test the get_topics() method."""
+        en_us = document(save=True)
+        en_us.topics.add(topic(save=True))
+        en_us.topics.add(topic(save=True))
+
+        eq_(2, len(en_us.get_topics()))
+
+        # Localized document inherits parent's topics.
+        l10n = document(parent=en_us, save=True)
+        eq_(2, len(en_us.get_topics()))
+
+    def test_get_products(self):
+        """Test the get_products() method."""
+        en_us = document(save=True)
+        en_us.products.add(product(save=True))
+        en_us.products.add(product(save=True))
+
+        eq_(2, len(en_us.get_products()))
+
+        # Localized document inherits parent's topics.
+        l10n = document(parent=en_us, save=True)
+        eq_(2, len(en_us.get_products()))
 
 
 class LocalizableOrLatestRevisionTests(TestCase):

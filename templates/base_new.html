@@ -1,0 +1,224 @@
+{# vim: set ts=2 et sts=2 sw=2: #}
+{% from 'includes/common_macros.html' import search_box, aux_nav with context %}
+{% from 'includes/sidebar_modules.html' import for_contributors %}
+{% if not top_link %}
+  {% set top_link = url('home') %}
+{% endif %}
+<!DOCTYPE html>
+<html class="no-js" lang="{{ request.locale }}" {% if DIR %}dir="{{ DIR }}"{% endif %}>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+  <title>{{ title }} | {{ _('Firefox Help', 'site_title') }}</title>
+
+  <link rel="shortcut icon" type="image/x-icon" href="{{ MEDIA_URL }}img/favicon.ico"/>
+  <link rel="search" type="application/opensearchdescription+xml" title="{{ _('Firefox Help') }}" href="{{ url('search.plugin') }}"/>
+  {% if feeds %}
+    {% for feed in feeds %}
+      <link rel="alternate" type="application/atom+xml" href="{{ feed[0] }}" title="{{ feed[1] }}"/>
+    {% endfor %}
+  {% endif %}
+
+  {{ css('common') }}
+  {{ css('new-theme') }}
+  {{ css('print', 'print') }}
+  {% for style in styles %}
+    {{ css(style) }}
+  {% endfor %}
+
+  {% if request.locale == 'en-US' %}
+    {# tabzilla is en-US only for now #}
+    <link href="//www.mozilla.org/tabzilla/media/css/tabzilla.css" rel="stylesheet" />
+  {% endif %}
+
+  <!--[if lte IE 7]>
+{{ css('ie') }}
+<![endif]-->
+  <!--[if IE 8]>
+{{ css('ie8') }}
+<![endif]-->
+
+  {% if meta %}
+    {% for tag in meta %}
+      <meta name="{{ tag[0] }}" content="{{ tag[1] }}"/>
+    {% endfor %}
+  {% endif %}
+
+  {% if refresh %}
+    <meta http-equiv="refresh" content="{{ refresh[1] }};url={{ refresh[0] }}"/>
+  {% endif %}
+
+  {% if canonical_url %}
+    <link rel="canonical" href="{{ canonical_url }}" />
+  {% endif %}
+
+  <!--[if lt IE 9]>
+{# html5-shiv.js must be inside <head/> to work. #}
+<script src="{{ MEDIA_URL }}js/libs/html5-shiv.js"></script>
+<![endif]-->
+</head>
+<body class="html-{{ DIR }} {{ classes }} {{ request.locale }}"
+      data-readonly="{{ settings.READ_ONLY|json }}"
+      data-for-os="{{ for_os|json }}"
+      data-for-version="{{ for_version|json }}"
+      data-usernames-api="{{ url('users.api.usernames') }}"
+      data-media-url="{{ MEDIA_URL }}"
+{% if extra_body_attrs -%}
+{% for attr, val in extra_body_attrs.items() %}{{ attr }}="{{ val }}" {% endfor %}
+{%- endif %}>
+
+{% if settings.STAGE %}
+  <div id="stage-banner">
+    {{ _('This is a staging site. The production site is <a href="http://support.mozilla.org">here</a>.') }}
+  </div>
+{% endif %}
+
+<header>
+  <div class="container_12 cf">
+    <div class="grid_12">
+      {% if request.locale == 'en-US' %}
+        {# tabzilla is en-US only for now #}
+        <a href="http://www.mozilla.org/" id="tabzilla">mozilla</a>
+      {% else %}
+        <a class="mozilla-tab" href="http://mozilla.org/"><img src="{{ MEDIA_URL }}img/mozilla-tab.png" alt="mozilla.org"></a>
+      {% endif %}
+      <div class="cf">
+        <nav id="aux-nav" role="navigation">
+          <ul>
+            {{ aux_nav(user) }}
+            <li><a href="#">English</a></li>
+          </ul>
+        </nav>
+      </div>
+      <div class="cf">
+        {% if not hide_header_search %}
+          {{ search_box(settings, id='support-search') }}
+        {% endif %}
+        <img class="logo" alt="mozilla support" src="{{ MEDIA_URL }}img/mozilla-support.png" />
+      </div>
+      {% if request.locale == 'en-US' %}
+        <nav id="main-nav">
+          <ul class="cf">
+            <li><a href="{{ url('home.products') }}">{{ _('Products & Services') }}</a></li>
+            <li><a href="{{ url('home.kb') }}">{{ _('Help Articles') }}</a></li>
+            <li><a href="#">{{ _('Hot Topics') }}</a></li>
+            <li><a href="#">{{ _('Mozilla News') }}</a></li>
+            <li><a href="{{ url('home.participate') }}">{{ _('Help Other Users') }}</a></li>
+            <li><a href="{{ url('home.feedback') }}">{{ _('Suggestion Box') }}</a></li>
+          </ul>
+        </nav>
+      {% endif %}
+    </div>
+  </div>
+</header>
+
+<div id="content">
+  {% if messages %}
+    <ul class="user-messages">
+      {% for message in messages %}
+        <li {% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+
+  {% block breadcrumbs %}
+    {{ breadcrumbs(crumbs) }}
+  {% endblock %}
+
+  {% block above_main %}{% endblock %}
+
+  <div id="main" role="main">
+    {% block content %}{% endblock %}
+  </div>
+
+  {% block outer_side %}
+    <div id="side">
+      {% block side_top %}{% endblock %}
+      {% block side %}{% endblock %}
+      {{ for_contributors(request, user, settings.WIKI_DEFAULT_LANGUAGE) }}
+      <div class="sd-module promos">
+        {% block side_promos %}
+          {% if not hide_plugin_check %}
+            <section id="check-your-plugins">
+              <h1>{{ _('Check your <mark>plugins</mark>')|safe }}</h1>
+              <div class="img">
+                <a href="http://www.mozilla.com/plugincheck/">
+                  <img src="{{ settings.MEDIA_URL }}img/promo.plugins.png" alt="" />
+                </a>
+              </div>
+              <p>
+                {% trans %}
+                  What is a plugin? Why should I keep them updated? Answer these
+                  questions and run an instant check to see if you're up to date.
+                {% endtrans %}
+              </p>
+              <a href="http://www.mozilla.com/plugincheck/">{{ _('Find out more &raquo;')|safe }}</a>
+            </section>
+          {% endif %}
+        {% endblock %}
+      </div>
+      {% block side_bottom %}{% endblock %}
+    </div>
+  {% endblock %}
+
+</div>{# /#content #}
+
+<footer>
+  <div class="container_12 cf">
+    <div class="grid_2"><img src="{{ MEDIA_URL }}img/mozilla-logo.png" alt="Mozilla" /></div>
+    <div class="grid_4 suffix_1">
+      <div class="fineprint">
+        {% trans %}
+          Portions of this content are &copy;1998–2011
+          <br>by individual mozilla.org contributors. Content
+          <br>available under a Creative Commons license.
+        {% endtrans %}
+      </div>
+    </div>
+    <div class="grid_2">
+      <ul>
+        <li><a href="http://www.mozilla.org/about/contact.html">{{ _('Contact Us') }}</a></li>
+        <li><a href="http://www.mozilla.org/privacy-policy.html">{{ _('Privacy Policy') }}</a></li>
+        <li><a href="http://www.mozilla.org/about/legal.html">{{ _('Legal Notices') }}</a></li>
+        <li><a href="http://www.mozilla.org/legal/fraud-report/index.html">{{ _('Report Trademark Abuse') }}</a></li>
+      </ul>
+    </div>
+    <div class="grid_2 suffix_1">
+      <ul>
+        <li><a href="http://www.twitter.com/mozilla">{{ _('Twitter') }}</a></li>
+        <li><a href="http://www.facebook.com/mozilla">{{ _('Facebook') }}</a></li>
+        <li><a href="http://affiliates.mozilla.org/">{{ _('Firefox Affiliates') }}</a></li>
+      </ul>
+    </div>
+  </div>
+</footer>{# /#footer #}
+
+<script src="{{ url('jsi18n') }}build:{{ BUILD_ID_JS }}"></script>
+<script src="{{ url('wafflejs') }}"></script>
+{{ js('common') }}
+{% for script in scripts %}
+  {{ js(script) }}
+{% endfor %}
+
+{% if request.locale == 'en-US' %}
+  {# tabzilla is en-US only for now #}
+  <script src="//www.mozilla.org/tabzilla/media/js/tabzilla.js"></script>
+{% endif %}
+
+{# Webtrends Stats Tracking #}
+<script defer src="{{ MEDIA_URL }}js/webtrends.js"></script>
+<noscript>
+  <div><img alt="DCSIMG" id="DCSIMG" width="1" height="1" src="//statse.webtrendslive.com/dcsz45fp6vz5bdvu89oegdwp8_7u8z/njs.gif?dcsuri=/nojavascript&amp;WT.js=No&amp;WT.tv=9.4.0&amp;dcssip=www.support.mozilla.org"/></div>
+</noscript>
+{# End Webtrends #}
+
+{# Ethnio tracking - see bugs 683643 and 673544 #}
+{% if waffle.flag('ethnio-all') %}
+  <script type="text/javascript" language="javascript" src="//ethn.io/remotes/24561" async="true"></script>
+{% endif %}
+{# End Ethnio #}
+
+
+{% block footer_script %}
+{% endblock %}
+</body>
+</html>

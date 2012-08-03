@@ -2,8 +2,8 @@
 {% extends "wiki/base.html" %}
 {% if category %}
   {% set title = category %}
-{% elif tag %}
-  {% set title = _('Topic: {topic}')|f(topic=_(tag)) %}
+{% elif topic %}
+  {% set title = _('Topic: {topic}')|f(topic=_(topic)) %}
 {% else %}
   {% set title = _('All Articles') %}
 {% endif %}

@@ -216,6 +216,14 @@ This indexes 50% of your data ordered by id::
 
 I use this when I'm fiddling with mappings and the indexing code.
 
+You can also specify which models to index::
+
+    $ ./manage.py esreindex --models questions_question,wiki_document
+
+See ``--help`` for more details::
+
+    $ ./manage.py esreindex --help
+
 
 .. Note::
 
@@ -294,23 +302,6 @@ Sub commands for ``manage.py`` are implemented in
 Searching on the site
 =====================
 
-Unified vs. bucketed search results
------------------------------------
-
-We're in the process of switching from `bucketed` search results where
-the different kinds of results are shown in blocks (e.g. all the kb
-results, then all the support forum results, ...) to `unified` search
-results where all the results are mixed together and sorted by score.
-
-Unified search results aren't shown by default. To access unified
-search results, add ``esunified=1`` to the end of the url querystring.
-
-e.g.
-
-* `bucketed` https://support.mozilla.org/en-US/search?q=cookies
-* `unified` https://support.mozilla.org/en-US/search?q=cookies&esunified=1
-
-
 Scoring
 -------
 
@@ -349,8 +340,9 @@ the way things are scored.
 Filters
 -------
 
-We use a series of filters on tags, q_tags, and other properties of
-the documents like `has_helpful`, `is_locked`, `is_archived`, etc.
+We use a series of filters on document_tag, question_tag, and other
+properties of documents like `has_helpful`, `is_locked`, `is_archived`,
+etc.
 
 In ElasticSearch, filters remove items from the result set, but don't
 affect the scoring.

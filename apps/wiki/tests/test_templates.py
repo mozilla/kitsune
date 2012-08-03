@@ -13,13 +13,12 @@ import mock
 from nose import SkipTest
 from nose.tools import eq_
 from pyquery import PyQuery as pq
-from taggit.models import Tag
 from wikimarkup.parser import ALLOWED_TAGS, ALLOWED_ATTRIBUTES
 
-from questions.tests import tags_eq
 from sumo.helpers import urlparams
 from sumo.tests import post, get, attrs_eq, MobileTestCase
 from sumo.urlresolvers import reverse
+from topics.tests import topic
 from users.tests import user, add_permission
 from wiki.cron import calculate_related_documents
 from wiki.events import (EditDocumentEvent, ReadyRevisionEvent,
@@ -458,7 +457,10 @@ class NewDocumentTests(TestCaseBase):
         self.client.login(username='admin', password='testpass')
         response = self.client.get(reverse('wiki.new_document'))
         doc = pq(response.content)
-        eq_(1, len(doc('input[name="product_tags"][checked=checked]')))
+        # TODO: Do we want to re-implement the initial product
+        # checked? Maybe add a column to the table and use that to
+        # figure out which are initial?
+        # eq_(1, len(doc('input[name="products"][checked=checked]')))
         eq_(None, doc('input[name="tags"]').attr('required'))
         eq_('checked', doc('input#id_allow_discussion').attr('checked'))
         eq_(None, doc('input#id_allow_discussion').attr('required'))
@@ -470,8 +472,7 @@ class NewDocumentTests(TestCaseBase):
         get_current.return_value.domain = 'testserver'
 
         self.client.login(username='admin', password='testpass')
-        tags = ['tag1', 'tag2']
-        data = new_document_data(tags)
+        data = new_document_data()
         response = self.client.post(reverse('wiki.new_document'), data,
                                     follow=True)
         d = Document.objects.get(title=data['title'])
@@ -479,7 +480,6 @@ class NewDocumentTests(TestCaseBase):
             response.redirect_chain)
         eq_(settings.WIKI_DEFAULT_LANGUAGE, d.locale)
         eq_(data['category'], d.category)
-        tags_eq(d, tags + ['desktop'])
         r = d.revisions.all()[0]
         eq_(data['keywords'], r.keywords)
         eq_(data['summary'], r.summary)
@@ -498,7 +498,7 @@ class NewDocumentTests(TestCaseBase):
         get_current.return_value.domain = 'testserver'
 
         self.client.login(username='admin', password='testpass')
-        data = new_document_data(['tag1', 'tag2'])
+        data = new_document_data()
         locale = 'es'
         self.client.post(reverse('wiki.new_document', locale=locale),
                          data, follow=True)
@@ -509,7 +509,7 @@ class NewDocumentTests(TestCaseBase):
     def test_new_document_POST_empty_title(self):
         """Trigger required field validation for title."""
         self.client.login(username='admin', password='testpass')
-        data = new_document_data(['tag1', 'tag2'])
+        data = new_document_data()
         data['title'] = ''
         response = self.client.post(reverse('wiki.new_document'), data,
                                     follow=True)
@@ -521,7 +521,7 @@ class NewDocumentTests(TestCaseBase):
     def test_new_document_POST_empty_content(self):
         """Trigger required field validation for content."""
         self.client.login(username='admin', password='testpass')
-        data = new_document_data(['tag1', 'tag2'])
+        data = new_document_data()
         data['content'] = ''
         response = self.client.post(reverse('wiki.new_document'), data,
                                     follow=True)
@@ -533,7 +533,7 @@ class NewDocumentTests(TestCaseBase):
     def test_new_document_POST_invalid_category(self):
         """Try to create a new document with an invalid category value."""
         self.client.login(username='admin', password='testpass')
-        data = new_document_data(['tag1', 'tag2'])
+        data = new_document_data()
         data['category'] = 963
         response = self.client.post(reverse('wiki.new_document'), data,
                                     follow=True)
@@ -561,14 +561,14 @@ class NewDocumentTests(TestCaseBase):
     def test_new_document_POST_invalid_product(self):
         """Try to create a new document with an invalid product."""
         self.client.login(username='admin', password='testpass')
-        data = new_document_data(['tag1', 'tag2'])
-        data['product_tags'] = [1337]
+        data = new_document_data()
+        data['products'] = ['l337']
         response = self.client.post(reverse('wiki.new_document'), data,
                                     follow=True)
         doc = pq(response.content)
         ul = doc('#document-form > ul.errorlist')
         eq_(1, len(ul))
-        eq_('Select a valid choice. 1337 is not one of the available choices.',
+        eq_('Select a valid choice. l337 is not one of the available choices.',
             ul('li').text())
 
     def test_slug_collision_validation(self):
@@ -738,8 +738,7 @@ class NewRevisionTests(TestCaseBase):
 
         self.d.current_revision = None
         self.d.save()
-        tags = ['tag1', 'tag2', 'tag3']
-        data = new_document_data(tags)
+        data = new_document_data()
         data['form'] = 'rev'
         response = self.client.post(reverse('wiki.edit_document',
                                     args=[self.d.slug]), data)
@@ -752,20 +751,23 @@ class NewRevisionTests(TestCaseBase):
         assert edited_fire.called
         assert ready_fire.called
 
-    def test_new_revision_POST_removes_old_tags(self):
+    def test_edit_document_POST_removes_old_tags(self):
         """Changing the tags on a document removes the old tags from
         that document."""
         self.d.current_revision = None
         self.d.save()
-        tags = ['tag1', 'tag2', 'tag3']
-        self.d.tags.add(*tags)
-        tags_eq(self.d, tags)
-        tags = ['tag1', 'tag4']
-        data = new_document_data(tags)
+        topics = [topic(save=True), topic(save=True), topic(save=True)]
+        self.d.topics.add(*topics)
+        eq_(self.d.topics.count(), len(topics))
+        new_topics = [topics[0], topic(save=True)]
+        data = new_document_data([t.id for t in new_topics])
         data['form'] = 'doc'
         self.client.post(reverse('wiki.edit_document', args=[self.d.slug]),
                          data)
-        tags_eq(self.d, tags + ['desktop'])
+        topic_ids = self.d.topics.values_list('id', flat=True)
+        eq_(2, len(topic_ids))
+        assert new_topics[0].id in topic_ids
+        assert new_topics[1].id in topic_ids
 
     @mock.patch.object(Site.objects, 'get_current')
     def test_new_form_maintains_based_on_rev(self, get_current):
@@ -958,13 +960,22 @@ class DocumentListTests(TestCaseBase):
         eq_(Document.objects.filter(locale=self.locale).count(),
             len(doc('#document-list ul.documents li')))
 
-    def test_tag_list(self):
-        """Verify the tagged documents list view."""
-        tag = Tag(name='Test Tag', slug='test-tag')
-        tag.save()
-        self.doc.tags.add(tag)
-        response = self.client.get(reverse('wiki.tag',
-                                   args=[tag.slug]))
+    def test_topic_list(self):
+        """Verify the documents by topic list view."""
+        t = topic(save=True)
+        self.doc.topics.add(t)
+        response = self.client.get(
+            reverse('wiki.topic', args=[t.slug]))
+        eq_(200, response.status_code)
+        doc = pq(response.content)
+        eq_(1, len(doc('#document-list ul.documents li')))
+
+    def test_topic_list_l10n(self):
+        """Verify the documents by topic list view for a locale."""
+        t = topic(save=True)
+        self.doc.topics.add(t)
+        response = self.client.get(
+            reverse('wiki.topic', locale='es', args=[t.slug]))
         eq_(200, response.status_code)
         doc = pq(response.content)
         eq_(1, len(doc('#document-list ul.documents li')))
