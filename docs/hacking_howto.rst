@@ -231,9 +231,8 @@ Create the database and grant permissions to the user, based on your
 database settings. For example, using the settings above::
 
     $ mysql -u root -p
-    mysql> CREATE DATABASE kitsune;
-    mysql> GRANT ALL ON kitsune.* TO kitsune@localhost IDENTIFIED BY \
-        'password';
+    mysql> CREATE DATABASE kitsune IDENTIFIED BY 'password';
+    mysql> GRANT ALL ON kitsune.* TO kitsune@localhost;
 
 To load the latest database schema, use ``scripts/schema.sql`` and
 ``schematic``::
@@ -276,8 +275,8 @@ If everything's working, you should see a somewhat empty version of
 the SUMO home page!
 
 
-Running the tests
------------------
+Setting it up
+-------------
 
 A great way to check that everything really is working is to run the
 test suite. You'll need to add an extra grant in MySQL for your
@@ -291,6 +290,10 @@ database configuration.
 
 The test suite will create and use this database, to keep any data in
 your development database safe from tests.
+
+
+Running the tests
+-----------------
 
 Running the test suite is easy::
 
