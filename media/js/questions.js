@@ -96,6 +96,9 @@
     function initHaveThisProblemTooAjax() {
         var $container = $('#question div.me-too');
         initAjaxForm($container, 'form', '#vote-thanks');
+        $container.find('input').click(function() {
+            $(this).attr('disabled', 'disabled');
+        });
         $container.delegate('.kbox-close, .kbox-cancel', 'click', function(ev){
             ev.preventDefault();
             $container.unbind().remove();
