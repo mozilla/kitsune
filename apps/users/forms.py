@@ -106,6 +106,11 @@ class RegisterForm(forms.ModelForm):
         help_text=_lazy(u'Enter the same password as '
                          'above, for verification.'))
 
+    interested = forms.BooleanField(
+        label=_lazy(u'I am interested in volunteering to help other '
+                     'Mozilla users'),
+        required=False)
+
     class Meta(object):
         model = User
         fields = ('username', 'password', 'password2', 'email')

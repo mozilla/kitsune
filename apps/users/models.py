@@ -5,7 +5,7 @@ import random
 import re
 
 from django.conf import settings
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 from django.contrib.sites.models import Site
 from django.core import mail
 from django.db import models
@@ -208,7 +208,7 @@ class RegistrationManager(ConfirmationManager):
     def create_inactive_user(self, username, password, email,
                              locale=settings.LANGUAGE_CODE,
                              email_template=None, email_subject=None,
-                             email_data=None):
+                             email_data=None, volunteer_interest=False):
         """
         Create a new, inactive ``User`` and ``Profile``, generates a
         ``RegistrationProfile`` and email its activation key to the
@@ -223,6 +223,11 @@ class RegistrationManager(ConfirmationManager):
 
         self.send_confirmation_email(registration_profile, email_template,
                                      email_subject, email_data)
+
+        if volunteer_interest:
+            statsd.incr('user.registered-as-contributor')
+            group = Group.objects.get(name='Registered as contributor')
+            new_user.groups.add(group)
 
         return new_user
 

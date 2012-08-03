@@ -130,7 +130,7 @@
   <div id="register_form" class="slidebox">
 {# TODO: these may have regressed the layout, h2 -> h3. Check! #}
     <h3 class="slide">{{ _('Create an account') }}</h3>
-    {{ register_form(register, csrf=csrf, action='') }}
+    {{ register_form(register, csrf=csrf, action='', show_checkbox=False) }}
   </div>
 
   <div id="login_form" class="slidebox">
