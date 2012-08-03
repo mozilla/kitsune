@@ -15,7 +15,7 @@ from sumo.tests import TestCase, LocalizingClient, send_mail_raise_smtp
 from sumo.urlresolvers import reverse
 from users import ERROR_SEND_EMAIL
 from users.models import Profile, RegistrationProfile, EmailChange, Setting
-from users.tests import profile, user
+from users.tests import profile, user, group
 
 
 class RegisterTests(TestCase):
@@ -45,6 +45,9 @@ class RegisterTests(TestCase):
         assert mail.outbox[0].subject.find('Please confirm your') == 0
         key = RegistrationProfile.objects.all()[0].activation_key
         assert mail.outbox[0].body.find('activate/%s/%s' % (u.id, key)) > 0
+
+        # By default, users aren't added to any groups
+        eq_(0, len(u.groups.all()))
 
         # Now try to log in
         u.is_active = True
@@ -196,6 +199,24 @@ class RegisterTests(TestCase):
         eq_(200, response.status_code)
         user = User.objects.get(pk=user.pk)
         assert user.is_active
+
+    @mock.patch.object(Site.objects, 'get_current')
+    def test_new_contributor(self, get_current):
+        """Verify that interested contributors are added to group."""
+        get_current.return_value.domain = 'su.mo.com'
+        group_name = 'Registered as contributor'
+        group(name=group_name, save=True)
+        data = {
+            'username': 'newbie',
+            'email': 'newbie@example.com',
+            'password': 'foobar22',
+            'password2': 'foobar22',
+            'interested': 'yes'}
+        response = self.client.post(reverse('users.register', locale='en-US'),
+                                    data, follow=True)
+        eq_(200, response.status_code)
+        u = User.objects.get(username='newbie')
+        eq_(group_name, u.groups.all()[0].name)
 
 
 class ChangeEmailTestCase(TestCase):

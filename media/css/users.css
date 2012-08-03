@@ -42,6 +42,15 @@ article.main form label {
     text-align: left;
 }
 
+article.main form li.checkbox label {
+    padding: 0 5px 0 168px;
+    width: auto;
+}
+
+article.main form li.checkbox input {
+    margin: 0 7px 0 0;
+}
+
 article.main form li input {
     margin-top: -8px;
     width: 200px;

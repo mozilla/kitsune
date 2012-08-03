@@ -47,7 +47,8 @@ def handle_register(request, email_template=None, email_subject=None,
                 locale=request.locale,
                 email_template=email_template,
                 email_subject=email_subject,
-                email_data=email_data)
+                email_data=email_data,
+                volunteer_interest=form.cleaned_data['interested'])
             if not form.is_valid():
                 # Delete user if form is not valid, i.e. email was not sent.
                 # This is in a POST request and so always pinned to master,
