@@ -35,7 +35,7 @@ class MobileHomeTests(MobileTestCase):
         self._check_template('home.firefox', 'landings/mobile/firefox.html')
 
     def test_products_home_for_mobile(self):
-        self._check_template('home.products', 'landings/mobile/products.html')
+        self._check_template('products', 'landings/mobile/products.html')
 
     def test_kb_home_for_mobile(self):
         self._check_template('home.kb', 'landings/mobile/kb.html')

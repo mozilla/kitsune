@@ -1,0 +1,13 @@
+{# vim: set ts=2 et sts=2 sw=2: #}
+{% extends "base.html" %}
+{% from 'products/includes/product_macros.html' import product_list %}
+{% set title = _('Products and Services') %}
+{% set crumbs = [(None, title)] %}
+{# TODO: scripts and styles #}
+
+{% block content %}
+  <section id="products-and-services">
+    <h1>{{ title }}</h1>
+    {{ product_list(products) }}
+  </section>
+{% endblock %}

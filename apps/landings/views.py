@@ -167,7 +167,7 @@ def firefox(request, template=None):
 
 
 @mobile_template('landings/{mobile/}products.html')
-def products(request, template=None):
+def old_products(request, template=None):
     docs = PRODUCTS_DOCS_FOR_MOBILE if request.MOBILE else PRODUCTS_DOCS
     return jingo.render(request, template,
                         _data(docs, request.locale))

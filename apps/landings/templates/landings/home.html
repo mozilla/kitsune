@@ -1,6 +1,7 @@
 {# vim: set ts=2 et sts=2 sw=2: #}
 {% extends "base.html" %}
-{% set title = 'Mozilla Support' %}
+{% from 'products/includes/product_macros.html' import product_list %}
+{% set title = _('Mozilla Support') %}
 {# TODO: scripts and styles
 {% set styles = ('home',) %}
 {% set scripts = ('home',) %}
@@ -40,17 +41,7 @@
   </section>
   <section id="products-and-services">
     <h1>{{ _('Products and Services') }}</h1>
-    <ul>
-      {% for product in products %}
-        <li>
-          <a href="{# TODO: add reverse url to product page when we have it #}#">
-            <img src="{{ product.image_url }}" alt="" />
-            <span class="title">{{ product.title }}</span>
-            <span class="description">{{ product.description }}</span>
-          </a>
-        </li>
-      {% endfor %}
-    </ul>
+    {{ product_list(products) }}
   </section>
   <section id="mozilla-news">
     <h1>{{ _('Mozilla News') }}</h1>
