@@ -13,7 +13,7 @@
     <ul>
       {% for topic in topics[:6] %}
         <li>
-          <a href="{# TODO: add reverse url to topic page when we have it #}#">
+          <a href="{{ url('topics.topic', slug=topic.slug)|urlparams(selectproduct=1) }}">
             <img src="{{ topic.image_url }}" alt="" />
             {{ topic.title }}
           </a>

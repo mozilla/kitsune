@@ -1,0 +1,32 @@
+{# vim: set ts=2 et sts=2 sw=2: #}
+{% extends "base.html" %}
+{% from 'products/includes/product_macros.html' import product_list %}
+{% set title = _(topic.title) %}
+{% set crumbs = [(None, title)] %}
+{# TODO: scripts and styles #}
+
+{% block content %}
+  <h1>{{ title }}</h1>
+
+  {% if products %}
+    <h2>{{ _('Select a product') }}</h2>
+    <section id="products-and-services">
+      {{ product_list(products) }}
+    </section>
+  {% endif %}
+
+  {% if documents %}
+    <section id="topic-documents">
+      <ul>
+        {% for document in documents %}
+          <li>
+            <a href="{{ document['url'] }}">
+              {{ document['document_title'] }}
+            </a>
+          </li>
+        {% endfor %}
+    </section>
+  {% endif %}
+{% endblock %}
+
+{% block for_contributors %}{% endblock %}
