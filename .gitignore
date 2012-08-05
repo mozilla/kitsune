@@ -15,4 +15,5 @@ locale
 docs/_build
 highstock.src.js
 /static
+.DS_Store
 *.less.css

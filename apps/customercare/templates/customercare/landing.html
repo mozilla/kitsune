@@ -48,7 +48,7 @@
           <option value="{{ value }}">{{ content }}</option>
         {% endfor %}
       </select>
-      <img id="twitter-icon" src="{{ MEDIA_URL }}img/customercare/twitter-icon.png" /><h2 class="showhide_heading" id="Where_to_ask_your_question">{{ _('Choose a tweet to help') }}</h2>
+      <img id="twitter-icon" src="{{ MEDIA_URL }}img/customercare/twitter-icon.png" alt="twitter icon" /><h2 class="showhide_heading" id="Where_to_ask_your_question">{{ _('Choose a tweet to help') }}</h2>
       <a id="refresh-tweets" href="{{ url('customercare.more_tweets') }}" class="header-button">{{ _('Refresh') }}</a>
       {% if authed %}
         <form id="twitter-logout" action="" method="post">
@@ -59,7 +59,7 @@
       {% else %}
         <a id="signin-button" href="#" class="header-button">{{ _('Sign in') }}</a>
       {% endif %}
-      <img id="refresh-busy" src="{{ MEDIA_URL }}img/customercare/spinner.gif"/>
+      <img id="refresh-busy" src="{{ MEDIA_URL }}img/customercare/spinner.gif" alt="{{ _('Loading...') }}" />
     </div>
 
     <br style="clear:both; height: 1px" />
@@ -82,7 +82,7 @@
     </div>
 
     <div id="infinite-scroll">
-      <img id="scroll-busy" src="{{ MEDIA_URL }}img/customercare/spinner.gif"/>
+      <img id="scroll-busy" src="{{ MEDIA_URL }}img/customercare/spinner.gif" alt="{{ _('Loading...') }}" />
     </div>
   </div>
 
