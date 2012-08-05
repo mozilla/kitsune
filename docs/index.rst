@@ -30,6 +30,7 @@ Part 2: Developer's Guide
    localization
    searchchapter
    armyofawesome
+   karma
    vendor
    wikidocs
    licenses

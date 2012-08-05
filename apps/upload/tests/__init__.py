@@ -4,12 +4,13 @@ from django.core.files import File
 
 from nose.tools import eq_
 
-from questions.models import Question
+from questions.tests import question
 from sumo.tests import TestCase
 from upload.models import ImageAttachment
 from upload.storage import RenameFileStorage
 from upload.utils import (create_imageattachment, check_file_size,
                           FileTooLargeError)
+from users.tests import user
 
 
 def check_file_info(file_info, name, width, height, delete_url, url,
@@ -44,12 +45,11 @@ class CheckFileSizeTestCase(TestCase):
 
 
 class CreateImageAttachmentTestCase(TestCase):
-    fixtures = ['users.json', 'questions.json']
 
     def setUp(self):
         super(CreateImageAttachmentTestCase, self).setUp()
-        self.user = User.objects.all()[0]
-        self.obj = Question.objects.all()[0]
+        self.user = user(save=True)
+        self.obj = question(save=True)
 
     def tearDown(self):
         ImageAttachment.objects.all().delete()

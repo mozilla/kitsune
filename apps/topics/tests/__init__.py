@@ -13,7 +13,8 @@ from topics.models import Topic
 def topic(**kwargs):
     """Return a topic with enough stuff filled out that it can be saved."""
     defaults = {'title': u'đ' + str(datetime.now()),
-                'display_order': 1}
+                'display_order': 1,
+                'visible': True}
     defaults.update(kwargs)
     if 'slug' not in kwargs:
         defaults['slug'] = slugify(defaults['title'])

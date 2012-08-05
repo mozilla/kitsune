@@ -98,7 +98,7 @@
       {% if request.locale == 'en-US' %}
         <nav id="main-nav">
           <ul class="cf">
-            <li><a href="{{ url('home.products') }}">{{ _('Products & Services') }}</a></li>
+            <li><a href="{{ url('products') }}">{{ _('Products & Services') }}</a></li>
             <li><a href="{{ url('home.kb') }}">{{ _('Help Articles') }}</a></li>
             <li><a href="#">{{ _('Hot Topics') }}</a></li>
             <li><a href="#">{{ _('Mozilla News') }}</a></li>
@@ -127,6 +127,7 @@
   {% block above_main %}{% endblock %}
 
   <div id="main" role="main">
+    {{ for_contributors(request, user, settings.WIKI_DEFAULT_LANGUAGE) }}
     {% block content %}{% endblock %}
   </div>
 
@@ -134,28 +135,6 @@
     <div id="side">
       {% block side_top %}{% endblock %}
       {% block side %}{% endblock %}
-      {{ for_contributors(request, user, settings.WIKI_DEFAULT_LANGUAGE) }}
-      <div class="sd-module promos">
-        {% block side_promos %}
-          {% if not hide_plugin_check %}
-            <section id="check-your-plugins">
-              <h1>{{ _('Check your <mark>plugins</mark>')|safe }}</h1>
-              <div class="img">
-                <a href="http://www.mozilla.com/plugincheck/">
-                  <img src="{{ settings.MEDIA_URL }}img/promo.plugins.png" alt="" />
-                </a>
-              </div>
-              <p>
-                {% trans %}
-                  What is a plugin? Why should I keep them updated? Answer these
-                  questions and run an instant check to see if you're up to date.
-                {% endtrans %}
-              </p>
-              <a href="http://www.mozilla.com/plugincheck/">{{ _('Find out more &raquo;')|safe }}</a>
-            </section>
-          {% endif %}
-        {% endblock %}
-      </div>
       {% block side_bottom %}{% endblock %}
     </div>
   {% endblock %}

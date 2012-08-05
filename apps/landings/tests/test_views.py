@@ -7,7 +7,7 @@ from sumo.urlresolvers import reverse
 
 class MobileHomeTests(MobileTestCase):
     def test_desktop_home_for_mobile(self):
-        r = self._check_template('home', 'landings/mobile/home.html')
+        r = self._check_template('home', 'landings/mobile/old-home.html')
         doc = pq(r.content)
         eq_('desktop', doc('#search input[name="q_tags"]')[0].attrib['value'])
         eq_('firefox',
@@ -20,10 +20,10 @@ class MobileHomeTests(MobileTestCase):
         eq_('mobile', doc('#search input[name="product"]')[0].attrib['value'])
 
     def test_sync_home_for_mobile(self):
-        r = self._check_template('home.sync', 'landings/mobile/sync.html')
+        self._check_template('home.sync', 'landings/mobile/sync.html')
 
     def test_fxhome_home_for_mobile(self):
-        r = self._check_template('home.fxhome', 'landings/mobile/fxhome.html')
+        self._check_template('home.fxhome', 'landings/mobile/fxhome.html')
 
     def test_marketplace_home_for_mobile(self):
         r = self._check_template(
@@ -35,7 +35,7 @@ class MobileHomeTests(MobileTestCase):
         self._check_template('home.firefox', 'landings/mobile/firefox.html')
 
     def test_products_home_for_mobile(self):
-        self._check_template('home.products', 'landings/mobile/products.html')
+        self._check_template('products', 'landings/mobile/products.html')
 
     def test_kb_home_for_mobile(self):
         self._check_template('home.kb', 'landings/mobile/kb.html')
