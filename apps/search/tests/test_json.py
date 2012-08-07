@@ -60,24 +60,3 @@ class JSONTest(ElasticTestCase):
                 'format': 'json', 'a': a,
             })
             eq_(response['Content-Type'], 'application/json')
-
-
-class JSONTestNoSphinx(TestCase):
-    client_class = LocalizingClient
-
-    def test_json_down(self):
-        """When the Sphinx is down, return JSON and 503 status"""
-        # Test with flags for advanced search or not
-        callbacks = (
-            ('', 503, 'application/json'),
-            ('validCallback', 503, 'application/x-javascript'),
-            # Invalid callback does not search
-            ('eval("xss");a', 400, 'application/x-javascript'),
-        )
-        for callback, status, mimetype in callbacks:
-            response = self.client.get(reverse('search'), {
-                'q': 'json down', 'format': 'json',
-                'callback': callback,
-            })
-            eq_(response['Content-Type'], mimetype)
-            eq_(response.status_code, status)
