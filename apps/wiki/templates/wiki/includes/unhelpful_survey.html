@@ -4,11 +4,11 @@
         <input type="hidden" name="vote_id" value="{{ vote_id }}" />
         <p>{{ _('Sorry to hear that.') }}</p>
         <ul id="helpful-contents">
-            <li><input type="radio" name="unhelpful-reason" value="confusing" />{{ _('Confusing') }}</li>
-            <li><input type="radio" name="unhelpful-reason" value="didnt-work" />{{ _("Solution didn't work") }}</li>
-            <li><input type="radio" name="unhelpful-reason" value="too-long" />{{ _('Too long') }}</li>
-            <li><input type="radio" name="unhelpful-reason" value="other" />{{ _('Other') }}</li>
-            <li><input type="radio" name="unhelpful-reason" value="firefox-feedback" />{{ _('I have feedback about Firefox') }}</li>
+            <li><label><input type="radio" name="unhelpful-reason" value="confusing" />{{ _('Confusing') }}</label></li>
+            <li><label><input type="radio" name="unhelpful-reason" value="didnt-work" />{{ _("Solution didn't work") }}</label></li>
+            <li><label><input type="radio" name="unhelpful-reason" value="too-long" />{{ _('Too long') }}</label></li>
+            <li><label><input type="radio" name="unhelpful-reason" value="other" />{{ _('Other') }}</label></li>
+            <li><label><input type="radio" name="unhelpful-reason" value="firefox-feedback" />{{ _('I have feedback about Firefox') }}</label></li>
         </ul>
         <textarea name="comment" placeholder="{{ _('Tell us more.') }}"></textarea>
         <p class="character-counter">
