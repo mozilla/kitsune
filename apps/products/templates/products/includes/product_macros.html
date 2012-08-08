@@ -1,8 +1,13 @@
-{% macro product_list(products) -%}
+{% macro product_list(products, topic=None) -%}
   <ul>
     {% for product in products %}
       <li>
-        <a href="{# TODO: add reverse url to product page when we have it #}#">
+        {% if topic %}
+          {% set prod_url = '#' %}{# TODO #}
+        {% else %}
+          {% set prod_url = url('products.product', slug=product.slug) %}
+        {% endif %}
+        <a href="{{ prod_url }}">
           <img src="{{ product.image_url }}" alt="" />
           <span class="title">{{ product.title }}</span>
           <span class="description">{{ product.description }}</span>

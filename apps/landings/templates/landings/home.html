@@ -1,6 +1,7 @@
 {# vim: set ts=2 et sts=2 sw=2: #}
 {% extends "base.html" %}
 {% from 'products/includes/product_macros.html' import product_list %}
+{% from 'topics/includes/topic_macros.html' import hot_topics %}
 {% set title = _('Mozilla Support') %}
 {# TODO: scripts and styles
 {% set styles = ('home',) %}
@@ -21,24 +22,7 @@
       {% endfor %}
     </ul>
   </section>
-  <section id="hot-topics">
-    <h1>{{ _('Hot Topics') }}</h1>
-    {# TODO: Implement this for real #}
-    <ul>
-      <li>
-        <a href="#">Lorem ipsum Flash 11.3 dolor sit amet</a>
-      </li>
-      <li>
-        <a href="#">Lorem ipsum Toolbar dolor sit amet</a>
-      </li>
-      <li>
-        <a href="#">Lorem ipsum Java dolor sit amet</a>
-      </li>
-      <li>
-        <a href="#">Lorem ipsum Facebook dolor sit amet</a>
-      </li>
-    </ul>
-  </section>
+  {{ hot_topics() }}
   <section id="products-and-services">
     <h1>{{ _('Products and Services') }}</h1>
     {{ product_list(products) }}
