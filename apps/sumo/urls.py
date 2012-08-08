@@ -16,6 +16,8 @@ urlpatterns = patterns('',
     url(r'^robots.txt$', views.robots, name='robots.txt'),
     ('^services', include(services_patterns)),
 
+    url('^locales$', views.locales, name='sumo.locales'),
+
     # Shortcuts:
     url('^contribute/?$', redirect_to,
         {'url': '/kb/superheroes-wanted', 'permanent': False}),

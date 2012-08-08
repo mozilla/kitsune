@@ -1,0 +1,19 @@
+{# vim: set ts=2 et sts=2 sw=2: #}
+{% extends "base.html" %}
+{% set title = _('Switch language') %}
+{% set crumbs = [(None, title)] %}\
+
+{% block content %}
+  <section id="switch-locales">
+    <h1>{{ title }}</h1>
+    <ul>
+      {% for locale in settings.LANGUAGE_CHOICES %}
+        <li>
+          <a href="{{ next_url|urlparams(lang=locale[0]) }}">{{ locale[1] }}</a>
+        </li>
+      {% endfor %}
+    </ul>
+  </section>
+{% endblock %}
+
+{% block for_contributors %}{% endblock %}

@@ -8,7 +8,6 @@ from time import time
 import django
 from django.conf import settings
 from django.contrib.sites.models import Site
-from django.core.urlresolvers import reverse
 from django.http import (HttpResponsePermanentRedirect, HttpResponseRedirect,
                          HttpResponse, Http404)
 from django.views.decorators.cache import never_cache
@@ -24,10 +23,18 @@ from session_csrf import anonymous_csrf
 
 from sumo.redis_utils import redis_client, RedisError
 from sumo.urlresolvers import reverse
+from sumo.utils import get_next_url
 from users.forms import AuthenticationForm
 
 
 log = logging.getLogger('k.services')
+
+
+def locales(request):
+    """The locale switcher page."""
+
+    return jingo.render(request, 'sumo/locales.html', dict(
+        next_url=get_next_url(request) or reverse('home')))
 
 
 @anonymous_csrf
@@ -40,7 +47,8 @@ def handle403(request):
                       or referer.endswith(reverse('users.register')))
 
     return jingo.render(request, 'handlers/403.html',
-                        {'form': AuthenticationForm(), 'no_cookies': no_cookies},
+                        {'form': AuthenticationForm(),
+                         'no_cookies': no_cookies},
                         status=403)
 
 
