@@ -85,7 +85,11 @@
         <nav id="aux-nav" role="navigation">
           <ul>
             {{ aux_nav(user) }}
-            <li><a href="#">English</a></li>
+            {% set locale_url = url('sumo.locales') %}
+            {% if localizable_url %}
+              {% set locale_url = locale_url|urlparams(next=localizable_url) %}
+            {% endif %}
+            <li><a href="{{ locale_url }}">{{ settings.LANGUAGES[request.locale.lower()] }}</a></li>
           </ul>
         </nav>
       </div>
@@ -127,7 +131,9 @@
   {% block above_main %}{% endblock %}
 
   <div id="main" role="main">
-    {{ for_contributors(request, user, settings.WIKI_DEFAULT_LANGUAGE) }}
+    {% block for_contributors %}
+      {{ for_contributors(request, user, settings.WIKI_DEFAULT_LANGUAGE) }}
+    {% endblock %}
     {% block content %}{% endblock %}
   </div>
 
