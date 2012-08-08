@@ -1,0 +1,37 @@
+{# vim: set ts=2 et sts=2 sw=2: #}
+{% extends "base.html" %}
+{% from 'topics/includes/topic_macros.html' import hot_topics %}
+{% set title = _(product.title) %}
+{% set crumbs = [(None, title)] %}
+{# TODO: scripts and styles #}
+
+{% block content %}
+  <h1><img src="{{ product.image_url }}" alt="" />{{ title }}</h1>
+
+  {{ hot_topics() }}
+
+  <section id="help-topics">
+    <h1>{{ _('Help Topics') }}</h1>
+    {% for topic in topics[:6] %}
+      {% if loop.first %}<ul>{% endif %}
+      <li>
+        <a href="{# TODO #}#">
+          <img src="{{ topic.image_url }}" alt="" />
+          {{ topic.title }}
+        </a>
+      </li>
+      {% if loop.last %}</ul>{% endif %}
+    {% endfor %}
+    {% for topic in topics[6:] %}
+      {% if loop.first %}<ul>{% endif %}
+      <li>
+        <a href="{# TODO #}#">
+          {{ topic.title }}
+        </a>
+      </li>
+      {% if loop.last %}</ul>{% endif %}
+    {% endfor %}
+  </section>
+{% endblock %}
+
+{% block for_contributors %}{% endblock %}
