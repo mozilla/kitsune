@@ -3,6 +3,10 @@ from topics.models import Topic
 from wiki.models import Document
 
 
+# !!!!! TODO: !!!!!
+# Catch errors, add caching and redundancy and whatever to minimize
+# the chance of returning a server error or empty list due to ES
+# being down. See Bug 781402
 def products_for(topics):
     """Returns a list of products that apply to passed in topics.
 
