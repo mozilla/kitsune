@@ -225,6 +225,7 @@ class RegistrationManager(ConfirmationManager):
                                      email_subject, email_data)
 
         if volunteer_interest:
+            statsd.incr('user.registered-as-contributor')
             group = Group.objects.get(name='Registered as contributor')
             new_user.groups.add(group)
 
