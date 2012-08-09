@@ -70,7 +70,7 @@ def questionvote(**kwargs):
 
 @with_save
 def answer(**kwargs):
-    defaults = dict(created=datetime.now(), content='', upvotes=0)
+    defaults = dict(created=datetime.now(), content='')
     defaults.update(kwargs)
     if 'question' not in kwargs and 'question_id' not in kwargs:
         defaults['question'] = question(save=True)
