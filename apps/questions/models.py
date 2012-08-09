@@ -446,7 +446,6 @@ class Answer(ActionMixin, ModelBase):
     updated = models.DateTimeField(default=datetime.now, db_index=True)
     updated_by = models.ForeignKey(User, null=True,
                                    related_name='answers_updated')
-    upvotes = models.IntegerField(default=0, db_index=True)
     page = models.IntegerField(default=1)
 
     images = generic.GenericRelation(ImageAttachment)
