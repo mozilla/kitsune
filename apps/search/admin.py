@@ -364,8 +364,6 @@ def diff_it_for_realz(seq_a, seq_b):
 
             for ignore, i, j in sorted(section, reverse=1):
                 results.append((i, j))
-        else:
-            raise Exception('wat? %s' % tag)
 
     return results
 
