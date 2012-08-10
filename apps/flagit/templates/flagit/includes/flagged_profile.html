@@ -3,6 +3,8 @@
   <h2>{{ object.content_object }}</h2>
   {{ object.content_object.bio|wiki_to_html(nofollow=True) }}
 </div>
+<h3>{{ _('Flagged:') }}</h3>
+<p class="flagged">{{ _('{date} by {user}')|fe(user=object.creator, date=datetimeformat(object.created, format='longdatetime')) }}</p>
 <h3>{{ _('Take Action:') }}</h3>
 <div class="actions">
   <a href="{{ object.content_object.get_absolute_url() }}">View</a>
