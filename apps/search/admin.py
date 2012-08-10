@@ -384,8 +384,6 @@ def troubleshooting_view(request):
         'search/admin/troubleshooting.html',
         {'title': 'Index Troubleshooting',
          'diffs': diff_list,
-         'last_50_indexed': last_50_indexed,
-         'last_50_reviewed': last_50_reviewed
          },
         RequestContext(request, {}))
 
