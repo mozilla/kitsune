@@ -25,7 +25,7 @@
     {% for topic in topics[6:] %}
       {% if loop.first %}<ul>{% endif %}
       <li>
-        <a href="{# TODO #}#">
+        <a href="{{ url('products.documents', product_slug=product.slug, topic_slug=topic.slug) }}">
           {{ topic.title }}
         </a>
       </li>
