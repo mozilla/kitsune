@@ -8,6 +8,8 @@
   <h3>{{ _('Updated:') }}</h3>
   <p class="updated">{{ _('{date} by {user}')|fe(user=object.content_object.updated_by, date=datetimeformat(object.content_object.updated, format='longdatetime')) }}</p>
 {% endif %}
+<h3>{{ _('Flagged:') }}</h3>
+<p class="flagged">{{ _('{date} by {user}')|fe(user=object.creator, date=datetimeformat(object.created, format='longdatetime')) }}</p>
 <h3>{{ _('Take Action:') }}</h3>
 <div class="actions">
   <a href="{{ object.content_object.get_absolute_url() }}">View</a>
