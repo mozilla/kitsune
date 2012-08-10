@@ -3,7 +3,7 @@
     {% for product in products %}
       <li>
         {% if topic %}
-          {% set prod_url = '#' %}{# TODO #}
+          {% set prod_url = url('products.documents', product_slug=product.slug, topic_slug=topic.slug) %}
         {% else %}
           {% set prod_url = url('products.product', slug=product.slug) %}
         {% endif %}

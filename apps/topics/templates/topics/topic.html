@@ -11,12 +11,12 @@
   {% if products %}
     <h2>{{ _('Select a product') }}</h2>
     <section id="products-and-services">
-      {{ product_list(products) }}
+      {{ product_list(products, topic) }}
     </section>
   {% endif %}
 
   {% if documents %}
-    <section id="topic-documents">
+    <section id="document-list">
       <ul>
         {% for document in documents %}
           <li>

@@ -57,7 +57,8 @@ def documents_for(locale, topics, products=None):
         document_title
         url
     """
-    s = Document.search().values_dict('id', 'document_title', 'url')
+    s = Document.search().values_dict(
+        'id', 'document_title', 'url').filter(document_locale=locale)
     for topic in topics:
         s = s.filter(document_topic=topic.slug)
     for product in products or []:

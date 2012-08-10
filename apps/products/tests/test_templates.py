@@ -53,3 +53,28 @@ class ProductViewsTestCase(ElasticTestCase):
         eq_(200, r.status_code)
         doc = pq(r.content)
         eq_(10, len(doc('#help-topics li')))
+
+    @mock.patch.object(waffle, 'flag_is_active')
+    def test_document_listing(self, flag_is_active):
+        """Verify /products/<product slug>/<topic slug> renders articles."""
+        flag_is_active.return_value = True
+
+        # Create a topic and product
+        t = topic(save=True)
+        p = product(save=True)
+
+        # Create 3 documents with the topic and product and one without
+        for i in range(3):
+            doc = revision(is_approved=True, save=True).document
+            doc.topics.add(t)
+            doc.products.add(p)
+        doc = revision(is_approved=True, save=True).document
+
+        self.refresh()
+
+        # GET the page and verify the content
+        url = reverse('products.documents', args=[p.slug, t.slug])
+        r = self.client.get(url, follow=True)
+        eq_(200, r.status_code)
+        doc = pq(r.content)
+        eq_(3, len(doc('#document-list li')))

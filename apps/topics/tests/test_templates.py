@@ -62,4 +62,4 @@ class TopicViewsTestCase(ElasticTestCase):
         r = self.client.get(url, follow=True)
         eq_(200, r.status_code)
         doc = pq(r.content)
-        eq_(3, len(doc('#topic-documents li')))
+        eq_(3, len(doc('#document-list li')))

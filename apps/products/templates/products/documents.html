@@ -1,0 +1,26 @@
+{# vim: set ts=2 et sts=2 sw=2: #}
+{% extends "base.html" %}
+{% from 'topics/includes/topic_macros.html' import hot_topics %}
+{% set title = _(product.title) + ' - ' + _(topic.title) %}
+{% set crumbs = [(url('products.product', slug=product.slug), _(product.title)),
+                 (None, _(topic.title))] %}
+{# TODO: scripts and styles #}
+
+{% block content %}
+  <h1><img src="{{ product.image_url }}" alt="" />{{ _(product.title) }}</h1>
+
+  <section id="document-list">
+    <h1>{{ _(topic.title) }}</h1>
+    {% for document in documents %}
+      {% if loop.first %}<ul>{% endif %}
+      <li>
+        <a href="{{ document['url'] }}">
+          {{ document['document_title'] }}
+        </a>
+      </li>
+      {% if loop.last %}</ul>{% endif %}
+    {% endfor %}
+  </section>
+{% endblock %}
+
+{% block for_contributors %}{% endblock %}

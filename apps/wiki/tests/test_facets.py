@@ -83,6 +83,10 @@ class TestFacetHelpers(ElasticTestCase):
             locale='en-US', topics=[self.general, self.bookmarks])
         eq_(len(general_bookmarks_documents), 1)
 
+        general_bookmarks_documents = documents_for(
+            locale='es', topics=[self.general, self.bookmarks])
+        eq_(len(general_bookmarks_documents), 0)
+
         general_sync_documents = documents_for(
             locale='en-US', topics=[self.general, self.sync])
         eq_(len(general_sync_documents), 0)
