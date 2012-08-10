@@ -1,5 +1,6 @@
 import logging
 from datetime import datetime
+from difflib import SequenceMatcher
 from pprint import pformat
 
 from django.conf import settings
@@ -321,21 +322,68 @@ def mapping_view(request):
 admin.site.register_view('mapping', mapping_view, 'Search - Mapping Browsing')
 
 
+class HashableWrapper(object):
+    def __init__(self, hashcode, obj):
+        self.hashcode = hashcode
+        self.obj = obj
+
+    def __hash__(self):
+        return hash(self.hashcode)
+
+    def __eq__(self, obj):
+        return self.hashcode == obj.hashcode
+
+
+def diff_it_for_realz(seq_a, seq_b):
+    seq_a = [HashableWrapper(doc['id'], doc) for doc in seq_a]
+    seq_b = [HashableWrapper(doc.id, doc) for doc in seq_b]
+
+    opcodes = SequenceMatcher(None, seq_a, seq_b).get_opcodes()
+    results = []
+
+    for tag, i1, i2, j1, j2 in opcodes:
+        print tag, i1, i2, j1, j2
+        if tag == 'equal':
+            for i, j in zip(seq_a[i1:i2], seq_b[j1:j2]):
+                results.append((i.obj, j.obj))
+        elif tag == 'delete':
+            # seq_a is missing things that seq_b has
+            for j in seq_b[j1:j2]:
+                results.append((None, j.obj))
+        elif tag == 'insert':
+            # seq_a has things seq_b is missing
+            for i in seq_a[i1:i2]:
+                results.append((i.obj, None))
+        elif tag == 'replace':
+            # Sort the items in this section by the datetime stamp.
+            section = []
+            for i in seq_a[i1:i2]:
+                section.append((i.obj['indexed_on'], i.obj, None))
+            for j in seq_b[j1:j2]:
+                section.append((j.obj.current_revision.reviewed, None, j.obj))
+
+            for ignore, i, j in sorted(section, reverse=1):
+                results.append((i, j))
+
+    return results
+
+
 def troubleshooting_view(request):
     # Build a list of the most recently indexed 50 wiki documents.
-    last_50_indexed = _fix_value_dicts(Document.search()
-                                               .values_dict()
-                                               .order_by('-indexed_on')[:50])
+    last_50_indexed = list(_fix_value_dicts(Document.search()
+                                            .values_dict()
+                                            .order_by('-indexed_on')[:50]))
 
-    last_50_reviewed = (Document.uncached
-                                .filter(current_revision__is_approved=True)
-                                .order_by('-current_revision__reviewed')[:50])
+    last_50_reviewed = list(Document.uncached
+                            .filter(current_revision__is_approved=True)
+                            .order_by('-current_revision__reviewed')[:50])
+
+    diff_list = diff_it_for_realz(last_50_indexed, last_50_reviewed)
 
     return render_to_response(
         'search/admin/troubleshooting.html',
         {'title': 'Index Troubleshooting',
-         'last_50_indexed': last_50_indexed,
-         'last_50_reviewed': last_50_reviewed
+         'diffs': diff_list,
          },
         RequestContext(request, {}))
 
