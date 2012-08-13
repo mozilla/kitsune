@@ -333,10 +333,31 @@ class HashableWrapper(object):
     def __eq__(self, obj):
         return self.hashcode == obj.hashcode
 
+    def __unicode__(self):
+        return repr(self.hashcode)
+
+    __str__ = __unicode__
+    __repr__ = __unicode__
+
 
 def diff_it_for_realz(seq_a, seq_b):
-    seq_a = [HashableWrapper(doc['id'], doc) for doc in seq_a]
-    seq_b = [HashableWrapper(doc.id, doc) for doc in seq_b]
+    # In order to get a nice diff of the two lists that shows us what
+    # has been updated in the db and has not been indexed in an easy
+    # to parse way, we hash the items in each list on an (id, date)
+    # tuple. That's used to produce the diff.
+    #
+    # This gets us really close to something that looks good, though
+    # it'll probably have problems if it's changed in the db just
+    # before midnight and gets indexed just after midnight--the hashes
+    # won't match. It's close, though.
+    seq_a = [
+        HashableWrapper(
+            (doc['id'], datetime.date(doc['indexed_on'])), doc)
+        for doc in seq_a]
+    seq_b = [
+        HashableWrapper(
+            (doc.id, datetime.date(doc.current_revision.reviewed)), doc)
+        for doc in seq_b]
 
     opcodes = SequenceMatcher(None, seq_a, seq_b).get_opcodes()
     results = []
