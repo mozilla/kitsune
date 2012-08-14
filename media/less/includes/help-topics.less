@@ -1,0 +1,43 @@
+@import '../variables.less';
+
+.topic-icon {
+  background-position: 50% 50%;
+  background-repeat: no-repeat;
+  height: 72px;
+  width: 72px;
+}
+
+#help-topics {
+  .card-grid {
+    position: relative;
+
+    > li {
+      > a,
+      > a:visited {
+        color: @textGrey;
+        display: block;
+
+        &:after {
+          background: url('../img/icons-sprite.png') -50px -514px no-repeat;
+          bottom: 8px;
+          content: '';
+          height: 16px;
+          position: absolute;
+          right: 8px;
+          width: 16px;
+        }
+
+        .title {
+          display: block;
+          font-family: @OpenSansLight;
+          font-size: 16px;
+          margin-left: 86px;
+        }
+
+        .topic-icon {
+          float: left;
+        }
+      }
+    }
+  }
+}

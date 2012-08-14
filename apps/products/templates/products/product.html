@@ -1,6 +1,7 @@
 {# vim: set ts=2 et sts=2 sw=2: #}
 {% extends "base.html" %}
 {% from 'topics/includes/topic_macros.html' import hot_topics %}
+{% from 'topics/includes/topic_macros.html' import help_topics with context %}
 {% set title = _(product.title) %}
 {% set crumbs = [(url('products'), 'Products and Services'), (None, title)] %}
 {% set styles = ('products',) %}
@@ -26,19 +27,9 @@
   </aside>
   <div class="grid_9">
     {{ hot_topics() }}
-
+    {{ help_topics(topics[:6]) }}
     <section id="help-topics">
       <h1>{{ _('Help Topics') }}</h1>
-      {% for topic in topics[:6] %}
-        {% if loop.first %}<ul>{% endif %}
-        <li>
-          <a href="{{ url('products.documents', product_slug=product.slug, topic_slug=topic.slug) }}">
-            <img src="{{ topic.image_url }}" alt="" />
-            {{ topic.title }}
-          </a>
-        </li>
-        {% if loop.last %}</ul>{% endif %}
-      {% endfor %}
       {% for topic in topics[6:] %}
         {% if loop.first %}<ul>{% endif %}
         <li>

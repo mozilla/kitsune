@@ -8,7 +8,7 @@
           {% set prod_url = url('products.product', slug=product.slug) %}
         {% endif %}
         <a class="cf" href="{{ prod_url }}">
-          <img src="{{ MEDIA_URL }}img/blank.png" class="logo-sprite logo-{{ product.slug }}" alt="" />
+          <img src="{{ MEDIA_URL }}img/blank.png" class="logo-sprite" style="background-image: url('{{ product.image_url }}');" alt="" />
           <span class="title">{{ product.title }}</span>
           <span class="description">{{ product.description }}</span>
         </a>

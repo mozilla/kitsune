@@ -2,42 +2,7 @@
 @import 'vendors.less';
 
 @import 'includes/for-contributors-hot-topics.less';
-
-.topic-icon {
-  background: url('../img/topic-icons-sprite.png') 72px 72px no-repeat;
-  height: 72px;
-  width: 72px;
-
-  &.topic-icon-general {
-    background-position: -44px -44px;
-  }
-
-  &.topic-icon-browserid {
-    background-position: -44px -364px;
-  }
-
-  &.topic-icon-download {
-    background-position: -44px -202px;
-  }
-}
-
-#help-topics {
-  .card-grid {
-    position: relative;
-
-    > li {
-      &:after {
-        background: url('../img/icons-sprite.png') -50px -514px no-repeat;
-        bottom: 8px;
-        content: '';
-        height: 16px;
-        position: absolute;
-        right: 8px;
-        width: 16px;
-      }
-    }
-  }
-}
+@import 'includes/help-topics.less';
 
 #mozilla-news {
   > span {
