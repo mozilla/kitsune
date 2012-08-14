@@ -33,8 +33,11 @@ a:hover {
 
 body {
   border-top: 2px solid #686868;
+  color: @textGrey;
   font-family: 'OpenSans', Arial, Helvetica, sans-serif;
+  font-size: 14px;
   text-align: left;
+  min-width: 1000px;
 
   &.en-US {
     border-top-color: #fff;
@@ -82,6 +85,15 @@ footer {
   }
 }
 
+h1, h2, h3, h4, h5, h6 {
+  font-family: "OpenSansLight", Arial, Helvetica, sans-serif;
+  font-weight: normal;
+}
+
+h1 {
+  font-size: 30px;
+}
+
 header {
   .linear-gradient-top(#d4dde4, #d9e8f6, 0%, #d4dde4, 80%, #c3cbd1, 100%, url('../img/grain.png'));
   border-bottom: 1px solid #b3b8bc;
@@ -113,10 +125,201 @@ header {
   }
 }
 
+.breadcrumbs {
+  color: @textGrey;
+  font-size: 11px;
+  list-style: none;
+  margin: 0 0 20px 0;
+  padding: 0;
+  text-transform: uppercase;
+
+  > li {
+    float: left;
+    margin: 0 6px 0 0;
+
+    &:before {
+      content: ' \003E ';
+      margin: 0 6px 0 0;
+    }
+
+    &:first-of-type {
+      &:before {
+        content: '';
+        margin: 0;
+      }
+    }
+  }
+}
+
+.card-grid {
+  list-style: none;
+  margin: 0 -10px 20px -10px;
+  padding: 0;
+
+  > li {
+    .gradient(#ccc, #ddd, #bbb);
+    .border-radius(6px);
+    .box-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+    float: left;
+    margin: 0 10px 20px 10px;
+    padding: 21px;
+    position: relative;
+    width: 258px;
+    z-index: 1;
+
+    &:before {
+      background: #fff;
+      .border-radius(5px);
+      bottom: 1px;
+      content: '';
+      left: 1px;
+      position: absolute;
+      right: 1px;
+      top: 1px;
+      z-index: -1;
+    }
+  }
+}
+
+.no-generatedcontent {
+  .card-grid {
+    > li {
+      background: #ccc;
+      border: 1px solid #ccc;
+      padding: 20px;
+    }
+  }
+}
+
+.feature-box {
+  background: #e5eaed url('../img/grain.png');
+  border-color: #dbe0e3 #dbe0e3 #f9f9f9 #dbe0e3;
+  border-style: solid;
+  border-width: 1px;
+  margin: 0 0 20px 0;
+  padding: 20px 30px 21px 30px;
+  position: relative;
+  z-index: 1;
+
+  &:after {
+    background: #dbe0e3;
+    bottom: 0;
+    content: '';
+    height: 1px;
+    left: 0;
+    position: absolute;
+    right: 0;
+    z-index: -1;
+  }
+
+  &:before {
+    border: 2px solid rgba(0, 0, 0, 0.01);
+    bottom: 1px;
+    content: '';
+    left: 0;
+    position: absolute;
+    right: 0;
+    top: 0;
+    z-index: -1;
+  }
+
+  h1 {
+    font-size: 22px;
+    margin: 0 0 10px 0;
+
+    &:not(:first-of-type) {
+      border-top: 1px dotted @borderLightGrey;
+      margin-top: 20px;
+      padding: 10px 0 0 0;
+    }
+  }
+
+  p {
+    margin: 10px 0;
+  }
+}
+
+.rgba .feature-box {
+  @dark: rgba(0, 0, 0, 0.03);
+  @light: rgba(255, 255, 255, 0.7);
+  border-color: @dark @dark @light @dark;
+
+  &:after {
+    background: @dark;
+  }
+}
+
+.logo-sprite {
+  background-image: url('../img/logos-sprite.png');
+  background-repeat: no-repeat;
+  height: 80px;
+  width: 80px;
+
+  &.logo-firefox,
+  &.logo-mobile {
+    background-position: -50px -50px;
+  }
+
+  &.logo-thunderbird {
+    background-position: -50px -230px;
+  }
+
+  &.logo-home {
+    background-position: -50px -410px;
+  }
+
+  &.logo-persona {
+    background-position: -50px -590px;
+  }
+
+  &.logo-marketplace {
+    background-position: -48px -770px;
+    width: 84px;
+  }
+}
+
+.sidebar-nav {
+  font-family: 'OpenSansLight', Arial, Helvetica, sans-serif;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  text-transform: uppercase;
+
+  > li {
+    > a,
+    > a:visited {
+      background: #f0f4f6 url('../img/grain.png');
+      color: @textGrey;
+      display: block;
+      padding: 16px 20px;
+      text-decoration: none;
+    }
+
+    > a:hover {
+      background-color: #f8fafb;
+      color: @textBlue;
+      text-decoration: none;
+    }
+
+    &.selected {
+      > a,
+      > a:visited,
+      > a:hover {
+        background: transparent;
+        color: @textGrey;
+        font-family: 'OpenSans', Arial, Helvetica, sans-serif;
+        font-weight: bold;
+      }
+    }
+  }
+}
+
 #aux-nav {
   float: right;
   font-size: 11px;
+  position: relative;
   text-transform: uppercase;
+  z-index: 10;
 
   > ul {
     float: right;
@@ -127,21 +330,97 @@ header {
     > li {
       color: @textGrey;
       float: left;
-      height: 42px;
-      line-height: 40px;
-      padding: 0 20px 0 12px;
+      margin: 0 8px 0 0;
+      position: relative;
 
-      a,
-      a:visited {
+      &.dropdown {
+        > a:after {
+          -moz-border-bottom-colors: none;
+          -moz-border-image: none;
+          -moz-border-left-colors: none;
+          -moz-border-right-colors: none;
+          -moz-border-top-colors: none;
+          border-color: #666666 transparent transparent;
+          border-right: 4px solid transparent;
+          border-style: solid;
+          border-width: 4px;
+          content: " ";
+          display: inline-block;
+          height: 0;
+          left: 4px;
+          margin: 0 0 0 4px;
+          top: 12px;
+          vertical-align: middle;
+          width: 0;
+        }
+      }
+
+      > a,
+      > a:visited {
         color: @textGrey;
-        display: inline;
+        display: block;
         font-weight: normal;
-        padding: 0;
+        height: 42px;
+        line-height: 40px;
+        padding: 0 12px;
+        text-decoration: none;
+
+        &.locale-picker {
+          background-image: url('../img/icons-sprite.png');
+          background-position: -38px -153px;
+          background-repeat: no-repeat;
+          padding-left: 34px;
+        }
+      }
+
+      > a:hover {
+        background-color: #fff;
         text-decoration: none;
       }
 
-      a:hover {
-        text-decoration: underline;
+      > ul {
+        background: #fff;
+        border-bottom: 1px solid #ccc;
+        display: none;
+        left: 0;
+        list-style: none;
+        margin: 0;
+        padding: 0 12px;
+        position: absolute;
+        top: 42px;
+        width: 160px;
+
+        > li {
+          font-size: 12px;
+
+          > a,
+          > a:visited {
+            border-bottom: 1px dotted #d6d6d6;
+            color: @textGrey;
+            display: block;
+            padding: 10px 0;
+            text-decoration: none;
+          }
+
+          > a:hover {
+            color: @textBlue;
+            text-decoration: underline;
+          }
+
+          &:last-of-type {
+            > a {
+              border: 0;
+            }
+          }
+        }
+      }
+
+      &:hover {
+        background: #fff;
+
+        > ul {
+          display: block;
+        }
       }
     }
   }
