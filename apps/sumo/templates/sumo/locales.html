@@ -1,10 +1,11 @@
 {# vim: set ts=2 et sts=2 sw=2: #}
 {% extends "base.html" %}
 {% set title = _('Switch language') %}
-{% set crumbs = [(None, title)] %}\
+{% set crumbs = [(None, title)] %}
+{% set styles = ('locale-switcher',) %}
 
 {% block content %}
-  <section id="switch-locales">
+  <section id="switch-locales" class="grid_12">
     <h1>{{ title }}</h1>
     <ul>
       {% for locale in settings.LANGUAGE_CHOICES %}

@@ -565,6 +565,9 @@ MINIFY_BUNDLES = {
         'kpi.dashboard': (
             'css/kpi.dashboard.css',
         ),
+        'locale-switcher': (
+            'less/locale-switcher.less',
+        ),
     },
     'js': {
         'common': (

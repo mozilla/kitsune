@@ -1,0 +1,30 @@
+@import 'variables.less';
+
+#switch-locales {
+  ul {
+    list-style: none;
+    margin: 0 -22px;
+    padding: 0;
+  }
+
+  li {
+    border-top: 1px dotted @borderLightGrey;
+    float: left;
+    font-family: @OpenSansLight;
+    font-size: 18px;
+    height: 40px;
+    line-height: 40px;
+    margin: 12px 22px 0 22px;
+    padding: 12px 0 0 0;
+    width: 284px;
+
+    &:nth-of-type(-n+3) {
+      border: 0;
+      padding: 0;
+    }
+
+    > a {
+      display: block;
+    }
+  }
+}
