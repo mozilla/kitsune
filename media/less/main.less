@@ -145,9 +145,9 @@ header {
     .box-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
     float: left;
     margin: 0 10px 20px 10px;
-    padding: 21px;
+    padding: 1px;
     position: relative;
-    width: 258px;
+    width: 298px;
     z-index: 1;
 
     &:before {
@@ -161,6 +161,18 @@ header {
       top: 1px;
       z-index: -1;
     }
+
+    > a {
+      padding: 20px;
+    }
+  }
+}
+
+.grid_9 {
+  .card-grid {
+    li {
+      width: 218px;
+    }
   }
 }
 
@@ -169,7 +181,7 @@ header {
     > li {
       background: #ccc;
       border: 1px solid #ccc;
-      padding: 20px;
+      padding: 0;
     }
   }
 }

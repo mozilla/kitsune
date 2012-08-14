@@ -8,24 +8,42 @@
 }
 
 #help-topics {
+  > ul:not(.card-grid) {
+    list-style: none;
+    margin: 0 0 20px 0;
+    padding: 0;
+
+    > li {
+      color: @textBlue;
+      font-family: @OpenSansLight;
+      font-size: 18px;
+      margin: 0 0 8px 0;
+
+      &:after {
+        content: '\00BB';
+        margin: 0 0 0 6px;
+      }
+    }
+  }
+
   .card-grid {
     position: relative;
 
     > li {
+      &:after {
+        background: url('../img/icons-sprite.png') -50px -514px no-repeat;
+        bottom: 8px;
+        content: '';
+        height: 16px;
+        position: absolute;
+        right: 8px;
+        width: 16px;
+      }
+
       > a,
       > a:visited {
         color: @textGrey;
         display: block;
-
-        &:after {
-          background: url('../img/icons-sprite.png') -50px -514px no-repeat;
-          bottom: 8px;
-          content: '';
-          height: 16px;
-          position: absolute;
-          right: 8px;
-          width: 16px;
-        }
 
         .title {
           display: block;

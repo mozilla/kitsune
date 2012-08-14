@@ -8,7 +8,7 @@
 
 {% block content %}
   <div class="grid_12">
-    <h1 class="product-title cf"><img src="{{ MEDIA_URL }}img/blank.png" alt="" class="logo-sprite logo-{{ product.slug }}" />{{ title }}</h1>
+    <h1 class="product-title cf"><img src="{{ MEDIA_URL }}img/blank.png" alt="" class="logo-sprite" style="background-image: url('{{ product.image_url }}');" />{{ title }}</h1>
   </div>
   <aside class="grid_3">
     {# TODO: Implement this for real #}
@@ -27,9 +27,9 @@
   </aside>
   <div class="grid_9">
     {{ hot_topics() }}
-    {{ help_topics(topics[:6]) }}
     <section id="help-topics">
       <h1>{{ _('Help Topics') }}</h1>
+      {{ help_topics(topics[:6]) }}
       {% for topic in topics[6:] %}
         {% if loop.first %}<ul>{% endif %}
         <li>
