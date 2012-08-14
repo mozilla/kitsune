@@ -580,6 +580,7 @@ MINIFY_BUNDLES = {
         ),
         'new-theme': (
             'js/libs/modernizr-2.6.1.js',
+            'js/ui.js',
         ),
         'old-theme': (
             'js/libs/modernizr-1.7.js',
