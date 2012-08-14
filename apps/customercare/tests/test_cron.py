@@ -1,10 +1,12 @@
 import copy
+from datetime import datetime, timedelta
 
 from django.conf import settings
 
 from mock import patch
 from nose.tools import eq_
 
+from customercare.tests import tweet, reply
 from customercare.cron import _filter_tweet, _get_oldest_tweet, purge_tweets
 from customercare.models import Tweet
 from sumo.tests import TestCase
@@ -75,13 +77,33 @@ class TwitterCronTestCase(TestCase):
         self.tweet['text'] = 'My Firefox crashes :-( Any advice?'
         assert _filter_tweet(self.tweet) is not None
 
+
 class GetOldestTweetTestCase(TestCase):
-    fixtures = ['tweets.json']
+
+    def setUp(self):
+        tweet(
+            tweet_id=1,
+            locale='en',
+            created='2010-09-23 13:50:00',
+            save=True
+        )
+        tweet(
+            tweet_id=2,
+            locale='en',
+            created='2010-09-23 13:53:00',
+            save=True
+        )
+        tweet(
+            tweet_id=3,
+            created='2010-09-23 13:57:00',
+            locale='en',
+            save=True
+        )
 
     def test_get_oldest_tweet_exists(self):
-        eq_(25309157145, _get_oldest_tweet('en', 2).pk)
-        eq_(25309381333, _get_oldest_tweet('en', 0).pk)
-        eq_(25308851981, _get_oldest_tweet('en', 6).pk)
+        eq_(1, _get_oldest_tweet('en', 2).pk)
+        eq_(2, _get_oldest_tweet('en', 1).pk)
+        eq_(3, _get_oldest_tweet('en', 0).pk)
 
     def test_get_oldest_tweet_offset_too_big(self):
         eq_(None, _get_oldest_tweet('en', 100))
@@ -94,7 +116,21 @@ class GetOldestTweetTestCase(TestCase):
 
 class PurgeTweetsTestCase(TestCase):
     """Tweets are deleted for each locale."""
-    fixtures = ['tweets.json']
+
+    def setUp(self):
+        # 4 'en' and 2 'r'
+        created = datetime.now()
+        for i in range(0, 6):
+            if i >= 4:
+                locale = 'ro'
+            else:
+                locale = 'en'
+
+            tweet(
+                locale=locale,
+                created=datetime.now() - timedelta(hours=i),
+                save=True
+            )
 
     @patch.object(settings._wrapped, 'CC_MAX_TWEETS', 1)
     def test_purge_tweets_two_locales(self):

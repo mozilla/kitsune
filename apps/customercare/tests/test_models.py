@@ -12,8 +12,8 @@ class TweetTests(TestCase):
         """Test the latest() class method when there is a latest tweet."""
         NUM = 2
         for x in xrange(NUM):
-            tweet(save=True)
-        eq_(NUM, Tweet.latest().tweet_id)
+            last = tweet(save=True)
+        eq_(last.tweet_id, Tweet.latest().tweet_id)
 
     @raises(Tweet.DoesNotExist)
     def test_latest_does_not_exist(self):
