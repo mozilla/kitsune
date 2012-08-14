@@ -578,6 +578,10 @@ MINIFY_BUNDLES = {
             'js/main.js',
             'js/format.js',
         ),
+        'ie6-8': (
+            'js/libs/nwmatcher-1.2.5.js',
+            'js/libs/selectivizr-1.0.2.js',
+        ),
         'new-theme': (
             'js/libs/modernizr-2.6.1.js',
             'js/ui.js',

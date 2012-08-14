@@ -176,6 +176,9 @@
 <script src="{{ url('wafflejs') }}"></script>
 {{ js('common') }}
 {{ js('new-theme') }}
+<!--[if (gte IE 6)&(lte IE 8)]>
+  {{ js('ie6-8') }}
+<![endif]-->
 {% for script in scripts %}
   {{ js(script) }}
 {% endfor %}
