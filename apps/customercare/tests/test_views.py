@@ -18,7 +18,9 @@ from sumo.urlresolvers import reverse
 class TweetListTests(TestCase):
     """Tests for the customer care tweet list."""
 
-    fixtures = ['tweets.json']
+    def setUp(self):
+        for i in range(0, 11):
+            tweet(save=True)
 
     def test_limit(self):
         """Do not return more than LIMIT tweets."""
@@ -60,9 +62,10 @@ class TweetListTests(TestCase):
 
     def test_hide_tweets_with_replies(self):
         """Hiding tweets with replies is not allowed."""
-        tw = Tweet.objects.filter(reply_to=None)[0]
-        tw.reply_to_id = 25309168529
-        tw.save()
+        tw = tweet(save=True)
+        reply_tw = tweet(save=True)
+        reply_tw.reply_to_id = tw.tweet_id
+        reply_tw.save()
 
         r = self.client.post(
             reverse('customercare.hide_tweet', locale='en-US'),
