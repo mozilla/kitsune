@@ -253,28 +253,27 @@ header {
   background-image: url('../img/logos-sprite.png');
   background-repeat: no-repeat;
   height: 80px;
-  width: 80px;
+  width: 84px;
 
   &.logo-firefox,
   &.logo-mobile {
-    background-position: -50px -50px;
+    background-position: -48px -50px;
   }
 
   &.logo-thunderbird {
-    background-position: -50px -230px;
+    background-position: -48px -230px;
   }
 
   &.logo-home {
-    background-position: -50px -410px;
+    background-position: -48px -410px;
   }
 
   &.logo-persona {
-    background-position: -50px -590px;
+    background-position: -48px -590px;
   }
 
   &.logo-marketplace {
     background-position: -48px -770px;
-    width: 84px;
   }
 }
 
@@ -487,6 +486,32 @@ header {
         float: right;
       }
     }
+  }
+}
+
+#product-cards {
+  a,
+  a:visited {
+    color: @textGrey;
+    display: block;
+  }
+
+  .logo-sprite {
+    float: left;
+    margin: 8px 20px 8px 0;
+  }
+
+  .title {
+    display: block;
+    font-family: 'OpenSansLight', Arial, Helvetica, sans-serif;
+    font-size: 22px;
+    line-height: 22px;
+    margin: 0 0 12px 104px;
+  }
+
+  .description {
+    display: block;
+    margin: 0 0 0 104px;
   }
 }
 

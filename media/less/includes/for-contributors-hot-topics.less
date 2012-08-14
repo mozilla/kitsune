@@ -1,0 +1,55 @@
+#for-contributors,
+#hot-topics {
+  ul {
+    list-style: none;
+    margin: 10px 0;
+    padding: 0;
+
+    li {
+      margin: 0 12px 0 0;
+      padding: 4px 0 4px 12px;
+
+      &:after {
+        content: '\00BB';
+        margin: 0 0 0 6px;
+      }
+
+      &:before {
+        content: '\2022';
+        margin: 0 8px 0 -12px;
+      }
+
+      a,
+      a:visited {
+        color: @textGrey;
+      }
+
+      a:hover {
+        color: @textBlue;
+      }
+    }
+  }
+}
+
+#for-contributors {
+  ul {
+    li {
+      float: left;
+      width: 268px;
+    }
+  }
+}
+
+#hot-topics {
+  ul {
+    li {
+      border-bottom: 1px dotted @borderLightGrey;
+      margin: 0;
+      padding: 8px 0 8px 12px;
+
+      &:last-of-type {
+        border: 0;
+      }
+    }
+  }
+}

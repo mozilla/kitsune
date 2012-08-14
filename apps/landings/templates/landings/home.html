@@ -1,97 +1,77 @@
 {# vim: set ts=2 et sts=2 sw=2: #}
 {% extends "base.html" %}
-{% from 'products/includes/product_macros.html' import product_list %}
+{% from 'products/includes/product_macros.html' import product_list with context %}
 {% from 'topics/includes/topic_macros.html' import hot_topics %}
+{% from 'includes/common_macros.html' import for_contributors %}
 {% set title = _('Mozilla Support') %}
-{# TODO: scripts and styles
-{% set styles = ('home',) %}
-{% set scripts = ('home',) %}
-#}
+{% set styles = ('home-new',) %}
 
 {% block content %}
-  <section id="help-topics">
-    <h1>{{ _('Help Topics') }}</h1>
-    <ul>
-      {% for topic in topics[:6] %}
-        <li>
-          <a href="{{ url('topics.topic', slug=topic.slug)|urlparams(selectproduct=1) }}">
-            <img src="{{ topic.image_url }}" alt="" />
-            {{ topic.title }}
-          </a>
-        </li>
-      {% endfor %}
-    </ul>
-  </section>
-  {{ hot_topics() }}
-  <section id="products-and-services">
-    <h1>{{ _('Products and Services') }}</h1>
-    {{ product_list(products) }}
-  </section>
-  <section id="mozilla-news">
+  <div class="grid_12">
+    {% if user.is_authenticated() %}
+      {{ for_contributors(request, user, settings.WIKI_DEFAULT_LANGUAGE) }}
+    {% endif %}
+    <section id="help-topics">
+      <h1>{{ _('Help Topics') }}</h1>
+      <ul class="card-grid cf">
+        {% for topic in topics[:6] %}
+          <li>
+            <a href="{{ url('topics.topic', slug=topic.slug)|urlparams(selectproduct=1) }}">
+              <img src="{{ MEDIA_URL }}img/blank.png" class="topic-icon topic-icon-{{ topic.slug }}" alt="" />
+              {{ topic.description }}
+            </a>
+          </li>
+        {% endfor %}
+      </ul>
+    </section>
+    {{ hot_topics() }}
+    <section id="products-and-services">
+      <h1>{{ _('Products and Services') }}</h1>
+      {{ product_list(products) }}
+    </section>
+  </div>
+  <section id="mozilla-news" class="grid_8">
     <h1>{{ _('Mozilla News') }}</h1>
     {# TODO: Implement this for real #}
-    <ul>
-      <li>
-        <a href="#">
-          Introducing "Lorem ipsum dolor sit amet"
-        </a>
-      </li>
-      <li>
-        <a href="#">
-          Introducing "Lorem ipsum dolor sit amet"
-        </a>
-      </li>
-      <li>
-        <a href="#">
-          Introducing "Lorem ipsum dolor sit amet"
-        </a>
-      </li>
-      <li>
-        <a href="#">
-          Introducing "Lorem ipsum dolor sit amet"
-        </a>
-      </li>
-      <li>
-        <a href="#">
-          Introducing "Lorem ipsum dolor sit amet"
-        </a>
-      </li>
-      <li>
-        <a href="#">
-          Introducing "Lorem ipsum dolor sit amet"
-        </a>
-      </li>
-    <ul>
+    <ul class="grid_4 alpha">
+      <li><a href="#">Introducing "Lorem ipsum dolor sit amet"</a></li>
+      <li><a href="#">Introducing "Lorem ipsum dolor sit amet"</a></li>
+      <li><a href="#">Introducing "Lorem ipsum dolor sit amet"</a></li>
+    </ul>
+    <ul class="grid_4 omega">
+      <li><a href="#">Introducing "Lorem ipsum dolor sit amet"</a></li>
+      <li><a href="#">Introducing "Lorem ipsum dolor sit amet"</a></li>
+      <li><a href="#">Introducing "Lorem ipsum dolor sit amet"</a></li>
+    </ul>
+
+    <span class="cf"><a href="#">{{ _('See all news') }} &raquo;</a></span>
   </section>
-  <ul id="other">
-    <li>
-      <section>
-        <h1>{{ _('Help Other Users') }}</h1>
-        <p>
-          {% trans url=url('questions.questions') %}
-            Participate and help other users by
-            <a href="{{url}}">
-              answering their questions
-            </a>
-          {% endtrans %}
-        </p>
-      </section>
-    </li>
-    <li>
-      <section>
-        <h1>{{ _('Suggestion Box') }}</h1>
-        <p>
-          {# TODO: Fill in the url #}
-          {% trans url='#' %}
-            Your input helps make Mozilla better.
-            <a href="{{url}}">
-              Give us your feedback
-            </a>
-          {% endtrans %}
-        </p>
-      </section>
-    </li>
-  </ul>
+  <aside class="grid_4">
+    <div class="feature-box">
+      <h1>{{ _('Help Other Users') }}</h1>
+      <p>
+        {% trans url=url('questions.questions') %}
+          Participate and help other users by
+          <a href="{{url}}">
+            answering their questions
+          </a>
+        {% endtrans %}
+      </p>
+      <h1>{{ _('Suggestion Box') }}</h1>
+      <p>
+        {# TODO: Fill in the url #}
+        {% trans url='#' %}
+          Your input helps make Mozilla better.
+          <a href="{{url}}">
+            Give us your feedback
+          </a>
+        {% endtrans %}
+      </p>
+    </div>
+  </aside>
+{% endblock %}
+
+{% block outer_side %}
 {% endblock %}
 
 {% block breadcrumbs %}
