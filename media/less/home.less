@@ -1,0 +1,49 @@
+@import 'variables.less';
+@import 'vendors.less';
+
+@import 'includes/for-contributors-hot-topics.less';
+@import 'includes/help-topics.less';
+
+#mozilla-news {
+  > span {
+    clear: both;
+    display: block;
+
+    > a {
+      float: right;
+      font-size: 13px;
+    }
+  }
+
+  > ul {
+    font-family: @OpenSansLight;
+    font-size: 20px;
+    list-style: none;
+    margin-bottom: 0;
+    margin-top: 0;
+    padding: 0;
+
+    > li {
+      border-bottom: 1px dotted @borderLightGrey;
+      color: @textBlue;
+      margin: 0 0 20px 0;
+      padding: 0 0 20px 0;
+      position: relative;
+      width: 300px;
+
+      &:nth-of-type(n+4) {
+        margin-left: 320px;
+      }
+
+      &:nth-of-type(-n+3) {
+        clear: left;
+        float: left;
+      }
+
+      &:after {
+        content: '\00BB';
+        margin: 0 0 0 10px;
+      }
+    }
+  }
+}

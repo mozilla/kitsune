@@ -462,9 +462,9 @@ MINIFY_BUNDLES = {
         'common': (
             'global/footer.css',
             'css/kbox.css',
-            'css/main.css',
         ),
         'old-theme': (
+            'css/main.css',
             'css/reset.css',
         ),
         'new-theme': (
@@ -515,6 +515,9 @@ MINIFY_BUNDLES = {
             'css/wiki_syntax.css',
             'css/home.css',
         ),
+        'home-new': {
+            'less/home.less',
+        },
         'gallery': (
             'css/to-delete.css',
             'css/gallery.css',
@@ -547,6 +550,9 @@ MINIFY_BUNDLES = {
             'css/users.autocomplete.css',
             'css/messages.css',
         ),
+        'products': (
+            'less/products.less',
+        ),
         'groups': (
             'css/users.autocomplete.css',
             'css/users.list.css',
@@ -559,19 +565,32 @@ MINIFY_BUNDLES = {
         'kpi.dashboard': (
             'css/kpi.dashboard.css',
         ),
+        'locale-switcher': (
+            'less/locale-switcher.less',
+        ),
     },
     'js': {
         'common': (
             'js/i18n.js',
             'js/libs/underscore.js',
             'js/libs/jquery-1.7.1.min.js',
-            'js/libs/modernizr-1.7.js',
             'js/libs/jquery.cookie.js',
             'js/libs/jquery.placeholder.js',
             'js/browserdetect.js',
             'js/kbox.js',
             'js/main.js',
             'js/format.js',
+        ),
+        'ie6-8': (
+            'js/libs/nwmatcher-1.2.5.js',
+            'js/libs/selectivizr-1.0.2.js',
+        ),
+        'new-theme': (
+            'js/libs/modernizr-2.6.1.js',
+            'js/ui.js',
+        ),
+        'old-theme': (
+            'js/libs/modernizr-1.7.js',
         ),
         'libs/jqueryui': (
             'js/libs/jqueryui.min.js',
