@@ -1,5 +1,5 @@
 {% if breadcrumbs %}
-<ol class="breadcrumbs">
+<ol class="breadcrumbs cf">
   {% for target, label in breadcrumbs %}
     {% if target %}
       <li><a href="{{ target }}">{{ label|truncate(length=30) }}</a></li>

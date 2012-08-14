@@ -462,9 +462,9 @@ MINIFY_BUNDLES = {
         'common': (
             'global/footer.css',
             'css/kbox.css',
-            'css/main.css',
         ),
         'old-theme': (
+            'css/main.css',
             'css/reset.css',
         ),
         'new-theme': (
@@ -565,13 +565,18 @@ MINIFY_BUNDLES = {
             'js/i18n.js',
             'js/libs/underscore.js',
             'js/libs/jquery-1.7.1.min.js',
-            'js/libs/modernizr-1.7.js',
             'js/libs/jquery.cookie.js',
             'js/libs/jquery.placeholder.js',
             'js/browserdetect.js',
             'js/kbox.js',
             'js/main.js',
             'js/format.js',
+        ),
+        'new-theme': (
+            'js/libs/modernizr-2.6.1.js',
+        ),
+        'old-theme': (
+            'js/libs/modernizr-1.7.js',
         ),
         'libs/jqueryui': (
             'js/libs/jqueryui.min.js',

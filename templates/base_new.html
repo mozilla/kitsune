@@ -1,6 +1,5 @@
 {# vim: set ts=2 et sts=2 sw=2: #}
 {% from 'includes/common_macros.html' import search_box, aux_nav with context %}
-{% from 'includes/sidebar_modules.html' import for_contributors %}
 {% if not top_link %}
   {% set top_link = url('home') %}
 {% endif %}
@@ -63,7 +62,7 @@
       data-usernames-api="{{ url('users.api.usernames') }}"
       data-media-url="{{ MEDIA_URL }}"
 {% if extra_body_attrs -%}
-{% for attr, val in extra_body_attrs.items() %}{{ attr }}="{{ val }}" {% endfor %}
+  {% for attr, val in extra_body_attrs.items() %}{{ attr }}="{{ val }}" {% endfor %}
 {%- endif %}>
 
 {% if settings.STAGE %}
@@ -89,7 +88,7 @@
             {% if localizable_url %}
               {% set locale_url = locale_url|urlparams(next=localizable_url) %}
             {% endif %}
-            <li><a href="{{ locale_url }}">{{ settings.LANGUAGES[request.locale.lower()] }}</a></li>
+            <li><a href="{{ locale_url }}" class="locale-picker">{{ settings.LANGUAGES[request.locale.lower()] }}</a></li>
           </ul>
         </nav>
       </div>
@@ -97,7 +96,7 @@
         {% if not hide_header_search %}
           {{ search_box(settings, id='support-search') }}
         {% endif %}
-        <img class="logo" alt="mozilla support" src="{{ MEDIA_URL }}img/mozilla-support.png" />
+        <a href="{{ url('home') }}"><img class="logo" alt="mozilla support" src="{{ MEDIA_URL }}img/mozilla-support.png" /></a>
       </div>
       {% if request.locale == 'en-US' %}
         <nav id="main-nav">
@@ -115,37 +114,33 @@
   </div>
 </header>
 
-<div id="content">
-  {% if messages %}
-    <ul class="user-messages">
-      {% for message in messages %}
-        <li {% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-      {% endfor %}
-    </ul>
-  {% endif %}
+<div class="container_12 cf">
+  <div class="grid_12">
+    {% if messages %}
+      <ul class="user-messages">
+        {% for message in messages %}
+          <li {% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
 
-  {% block breadcrumbs %}
-    {{ breadcrumbs(crumbs) }}
-  {% endblock %}
-
-  {% block above_main %}{% endblock %}
-
-  <div id="main" role="main">
-    {% block for_contributors %}
-      {{ for_contributors(request, user, settings.WIKI_DEFAULT_LANGUAGE) }}
+    {% block breadcrumbs %}
+      {{ breadcrumbs(crumbs) }}
     {% endblock %}
-    {% block content %}{% endblock %}
+
+    {% block above_main %}{% endblock %}
   </div>
 
   {% block outer_side %}
-    <div id="side">
+    <aside class="grid_3">
       {% block side_top %}{% endblock %}
       {% block side %}{% endblock %}
       {% block side_bottom %}{% endblock %}
-    </div>
+    </aside>
   {% endblock %}
 
-</div>{# /#content #}
+  {% block content %}{% endblock %}
+</div>
 
 <footer>
   <div class="container_12 cf">
@@ -180,6 +175,7 @@
 <script src="{{ url('jsi18n') }}build:{{ BUILD_ID_JS }}"></script>
 <script src="{{ url('wafflejs') }}"></script>
 {{ js('common') }}
+{{ js('new-theme') }}
 {% for script in scripts %}
   {{ js(script) }}
 {% endfor %}
