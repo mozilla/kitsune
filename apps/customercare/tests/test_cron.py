@@ -134,7 +134,6 @@ class PurgeTweetsTestCase(TestCase):
 
     @patch.object(settings._wrapped, 'CC_MAX_TWEETS', 1)
     def test_purge_tweets_two_locales(self):
-        print('CC_MAX_TWEETS = %d' % settings.CC_MAX_TWEETS)
         purge_tweets()
         eq_(1, Tweet.objects.filter(locale='en').count())
         eq_(1, Tweet.objects.filter(locale='ro').count())
