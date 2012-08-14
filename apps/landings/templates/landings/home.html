@@ -1,6 +1,6 @@
 {# vim: set ts=2 et sts=2 sw=2: #}
 {% extends "base.html" %}
-{% from 'products/includes/product_macros.html' import product_list %}
+{% from 'products/includes/product_macros.html' import product_list with context %}
 {% from 'topics/includes/topic_macros.html' import hot_topics %}
 {% from 'includes/common_macros.html' import for_contributors %}
 {% set title = _('Mozilla Support') %}
@@ -17,8 +17,8 @@
         {% for topic in topics[:6] %}
           <li>
             <a href="{{ url('topics.topic', slug=topic.slug)|urlparams(selectproduct=1) }}">
-              <img src="{{ topic.image_url }}" alt="" />
-              {{ topic.title }}
+              <img src="{{ MEDIA_URL }}img/blank.png" class="topic-icon topic-icon-{{ topic.slug }}" alt="" />
+              {{ topic.description }}
             </a>
           </li>
         {% endfor %}
