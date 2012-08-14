@@ -59,7 +59,12 @@ a:hover {
     text-decoration: underline;
 }
 
-h1, h2, h3, h4, h5, h6 {
+.old-theme h1,
+.old-theme h2,
+.old-theme h3,
+.old-theme h4,
+.old-theme h5,
+.old-theme h6 {
     color: #282828;
     /* keep the header font Georgia, for now - and keep it normal weight */
     font-family: Georgia, serif;
@@ -572,42 +577,42 @@ ul.user-messages li.error {
     Breadcrumbs
 ----------------------------------*/
 
-.breadcrumbs {
+.old-theme .breadcrumbs {
     font-family: Verdana;
     margin: 0 0 15px;
     padding: 0 9px;
 }
 
-.breadcrumbs li {
+.old-theme .breadcrumbs li {
     display: inline;
     margin: 0;
     color: #4b4742;
     font-size: 83%;
 }
 
-.breadcrumbs li:before {
+.old-theme .breadcrumbs li:before {
     content: '/';
     padding: 0 4px;
     color: #807970;
     font-size: 110%;
 }
 
-.breadcrumbs li:first-child:before {
+.old-theme .breadcrumbs li:first-child:before {
     content: '';
     padding: 0;
 }
 
-.breadcrumbs a {
+.old-theme .breadcrumbs a {
     font-weight: bold;
     text-decoration: none;
 }
 
-.breadcrumbs a:hover,
-.breadcrumbs a:active {
+.old-theme .breadcrumbs a:hover,
+.old-theme .breadcrumbs a:active {
     text-decoration: underline;
 }
 
-.breadcrumbs a:visited {
+.old-theme .breadcrumbs a:visited {
     color: rgb(0, 81, 185);
 }
 
@@ -784,14 +789,14 @@ div.support-search input.btn-important {
     float: right;
 }
 
-#for-contributors h1 {
+.old-theme #for-contributors h1 {
     color: #333;
     font-size: 18px;
     font-style: italic;
     margin: 0 0 5px;
 }
 
-#for-contributors li {
+.old-theme #for-contributors li {
     list-style: none;
     padding: 3px 0;
 }
