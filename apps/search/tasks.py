@@ -81,7 +81,10 @@ def index_task(cls, ids, **kw):
             cls.index(cls.extract_document(id), refresh=True)
     except Exception as exc:
         retries = index_task.request.retries
-        index_task.retry(exc=exc, max_retries=MAX_RETRIES - 1,
+        if retries >= MAX_RETRIES:
+            raise
+
+        index_task.retry(exc=exc, max_retries=MAX_RETRIES,
                          countdown=RETRY_TIMES[retries])
 
 
@@ -92,7 +95,9 @@ def unindex_task(cls, ids, **kw):
     try:
         for id in ids:
             cls.unindex(id)
-    except Exception, exc:
+    except Exception as exc:
         retries = unindex_task.request.retries
-        unindex_task.retry(exc=exc, max_retries=MAX_RETRIES - 1,
+        if retries >= MAX_RETRIES:
+            raise
+        unindex_task.retry(exc=exc, max_retries=MAX_RETRIES,
                            countdown=RETRY_TIMES[retries])
