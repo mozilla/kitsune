@@ -550,6 +550,9 @@ MINIFY_BUNDLES = {
             'css/users.autocomplete.css',
             'css/messages.css',
         ),
+        'products': (
+            'less/products.less',
+        ),
         'groups': (
             'css/users.autocomplete.css',
             'css/users.list.css',
@@ -575,8 +578,13 @@ MINIFY_BUNDLES = {
             'js/main.js',
             'js/format.js',
         ),
+        'ie6-8': (
+            'js/libs/nwmatcher-1.2.5.js',
+            'js/libs/selectivizr-1.0.2.js',
+        ),
         'new-theme': (
             'js/libs/modernizr-2.6.1.js',
+            'js/ui.js',
         ),
         'old-theme': (
             'js/libs/modernizr-1.7.js',
