@@ -1,24 +1,7 @@
-@import 'colors.less';
+@import 'variables.less';
 @import 'vendors.less';
 @import 'grid.less';
-
-@font-face {
-  font-family: 'OpenSans';
-  src: url('../fonts/OpenSans-Regular-webfont.eot'); /* IE9 Compat Modes */
-  src: url('../fonts/OpenSans-Regular-webfont.eot?#iefix') format('embedded-opentype'), /* IE6-IE8 */
-  url('../fonts/OpenSans-Regular-webfont.woff') format('woff'), /* Modern Browsers */
-  url('../fonts/OpenSans-Regular-webfont.ttf')  format('truetype'), /* Safari, Android, iOS */
-  url('../fonts/OpenSans-Regular-webfont.svg#svgFontName') format('svg'); /* Legacy iOS */
-}
-
-@font-face {
-  font-family: 'OpenSansLight';
-  src: url('../fonts/OpenSans-Light-webfont.eot'); /* IE9 Compat Modes */
-  src: url('../fonts/OpenSans-Light-webfont.eot?#iefix') format('embedded-opentype'), /* IE6-IE8 */
-  url('../fonts/OpenSans-Light-webfont.woff') format('woff'), /* Modern Browsers */
-  url('../fonts/OpenSans-Light-webfont.ttf')  format('truetype'), /* Safari, Android, iOS */
-  url('../fonts/OpenSans-Light-webfont.svg#svgFontName') format('svg'); /* Legacy iOS */
-}
+@import 'fonts.less';
 
 a,
 a:link,
@@ -34,7 +17,7 @@ a:hover {
 body {
   border-top: 2px solid #686868;
   color: @textGrey;
-  font-family: 'OpenSans', Arial, Helvetica, sans-serif;
+  font-family: @OpenSans;
   font-size: 14px;
   text-align: left;
   min-width: 1000px;
@@ -86,7 +69,7 @@ footer {
 }
 
 h1, h2, h3, h4, h5, h6 {
-  font-family: "OpenSansLight", Arial, Helvetica, sans-serif;
+  font-family: @OpenSansLight;
   font-weight: normal;
 }
 
@@ -278,7 +261,7 @@ header {
 }
 
 .sidebar-nav {
-  font-family: 'OpenSansLight', Arial, Helvetica, sans-serif;
+  font-family: @OpenSansLight;
   list-style: none;
   margin: 0;
   padding: 0;
@@ -287,7 +270,7 @@ header {
   > li {
     > a,
     > a:visited {
-      background: #f0f4f6 url('../img/grain.png');
+      background: @sidebarBackground url('../img/grain.png');
       color: @textGrey;
       display: block;
       padding: 16px 20px;
@@ -295,7 +278,7 @@ header {
     }
 
     > a:hover {
-      background-color: #f8fafb;
+      background-color: @sidebarBackgroundHover;
       color: @textBlue;
       text-decoration: none;
     }
@@ -306,8 +289,63 @@ header {
       > a:hover {
         background: transparent;
         color: @textGrey;
-        font-family: 'OpenSans', Arial, Helvetica, sans-serif;
+        font-family: @OpenSans;
         font-weight: bold;
+      }
+    }
+  }
+
+  &.sidebar-folding {
+    > li {
+      border-bottom: 1px dotted @borderLightGrey;
+      position: relative;
+
+      &:after {
+        background: url('../img/icons-sprite.png') -50px -282px no-repeat;
+        content: '';
+        height: 16px;
+        position: absolute;
+        top: 18px;
+        right: 16px;
+        width: 16px;
+      }
+
+      &.selected {
+        &:after {
+          background-position: -50px -396px;
+          top: 16px;
+        }
+
+        > a,
+        > a:visited {
+          background: @sidebarBackground url('../img/grain.png');
+        }
+
+        > a:hover {
+          background-color: @sidebarBackgroundHover;
+        }
+      }
+
+      &:last-of-type {
+        border: 0;
+      }
+    }
+
+    .sidebar-nav {
+      a,
+      a:visited {
+        font-size: 12px;
+        padding: 10px 20px 10px 40px;
+      }
+
+      a:hover {
+        background: #fff;
+      }
+
+      .selected {
+        a:hover {
+          background: transparent;
+        }
       }
     }
   }
@@ -503,7 +541,7 @@ header {
 
   .title {
     display: block;
-    font-family: 'OpenSansLight', Arial, Helvetica, sans-serif;
+    font-family: @OpenSansLight;
     font-size: 22px;
     line-height: 22px;
     margin: 0 0 12px 104px;

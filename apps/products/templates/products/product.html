@@ -2,36 +2,57 @@
 {% extends "base.html" %}
 {% from 'topics/includes/topic_macros.html' import hot_topics %}
 {% set title = _(product.title) %}
-{% set crumbs = [(None, title)] %}
-{# TODO: scripts and styles #}
+{% set crumbs = [(url('products'), 'Products and Services'), (None, title)] %}
+{% set styles = ('products',) %}
 
 {% block content %}
-  <h1><img src="{{ product.image_url }}" alt="" />{{ title }}</h1>
-
-  {{ hot_topics() }}
-
-  <section id="help-topics">
-    <h1>{{ _('Help Topics') }}</h1>
-    {% for topic in topics[:6] %}
-      {% if loop.first %}<ul>{% endif %}
-      <li>
-        <a href="{{ url('products.documents', product_slug=product.slug, topic_slug=topic.slug) }}">
-          <img src="{{ topic.image_url }}" alt="" />
-          {{ topic.title }}
-        </a>
+  <div class="grid_12">
+    <h1 class="product-title cf"><img src="{{ MEDIA_URL }}img/blank.png" alt="" class="logo-sprite logo-{{ product.slug }}" />{{ title }}</h1>
+  </div>
+  <aside class="grid_3">
+    {# TODO: Implement this for real #}
+    <ul class="sidebar-nav sidebar-folding">
+      <li><a href="#">Lorem ipsum</a></li>
+      <li class="selected">
+        <a href="#">Lorem ipsum</a>
+        <ul class="sidebar-nav">
+          <li><a href="#">Dolor sit amet</a></li>
+          <li class="selected"><a href="#">Dolor sit amet</a></li>
+          <li><a href="#">Dolor sit amet</a></li>
+        </ul>
       </li>
-      {% if loop.last %}</ul>{% endif %}
-    {% endfor %}
-    {% for topic in topics[6:] %}
-      {% if loop.first %}<ul>{% endif %}
-      <li>
-        <a href="{{ url('products.documents', product_slug=product.slug, topic_slug=topic.slug) }}">
-          {{ topic.title }}
-        </a>
-      </li>
-      {% if loop.last %}</ul>{% endif %}
-    {% endfor %}
-  </section>
+      <li><a href="#">Lorem ipsum</a></li>
+    </ul>
+  </aside>
+  <div class="grid_9">
+    {{ hot_topics() }}
+
+    <section id="help-topics">
+      <h1>{{ _('Help Topics') }}</h1>
+      {% for topic in topics[:6] %}
+        {% if loop.first %}<ul>{% endif %}
+        <li>
+          <a href="{{ url('products.documents', product_slug=product.slug, topic_slug=topic.slug) }}">
+            <img src="{{ topic.image_url }}" alt="" />
+            {{ topic.title }}
+          </a>
+        </li>
+        {% if loop.last %}</ul>{% endif %}
+      {% endfor %}
+      {% for topic in topics[6:] %}
+        {% if loop.first %}<ul>{% endif %}
+        <li>
+          <a href="{{ url('products.documents', product_slug=product.slug, topic_slug=topic.slug) }}">
+            {{ topic.title }}
+          </a>
+        </li>
+        {% if loop.last %}</ul>{% endif %}
+      {% endfor %}
+    </section>
+  </div>
 {% endblock %}
 
 {% block for_contributors %}{% endblock %}
+
+{% block outer_side %}
+{% endblock %}
