@@ -1,7 +1,7 @@
 ;(function($) {
   $(document).ready(function() {
-    $('.sidebar-folding > li').click(function() {
-      $(this).toggleClass('selected');
+    $('.sidebar-folding > li > a').click(function() {
+      $(this).parent().toggleClass('selected');
       return false;
     });
   });
