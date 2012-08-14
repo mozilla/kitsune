@@ -68,8 +68,6 @@ RETRY_TIMES = (
     10 * 60,      # 10 minutes
     30 * 60,      # 30 minutes
     60 * 60,      # 60 minutes
-    2 * 60 * 60,  # 2 hours
-    6 * 60 * 60   # 6 hours
     )
 MAX_RETRIES = len(RETRY_TIMES)
 
