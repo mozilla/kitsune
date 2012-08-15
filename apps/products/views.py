@@ -7,7 +7,7 @@ from landings.utils import show_ia
 from landings.views import old_products
 from products.models import Product
 from sumo.urlresolvers import reverse
-from topics.models import Topic
+from topics.models import Topic, HOT_TOPIC_SLUG
 from wiki.facets import topics_for, documents_for
 
 
@@ -27,9 +27,14 @@ def product_landing(request, slug):
         return HttpResponseRedirect(reverse('products'))
 
     product = get_object_or_404(Product, slug=slug)
+    hot_docs = documents_for(
+        locale=request.locale,
+        topics=[Topic.objects.get(slug=HOT_TOPIC_SLUG)],
+        products=[product])
     return jingo.render(request, 'products/product.html', {
         'product': product,
-        'topics': topics_for(products=[product])})
+        'topics': topics_for(products=[product]),
+        'hot_docs': hot_docs})
 
 
 def document_listing(request, product_slug, topic_slug):
