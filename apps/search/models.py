@@ -160,10 +160,12 @@ class SearchMixin(object):
             es = es_utils.get_indexing_es()
 
         try:
-            # TODO: There is a race condition here if this gets called
-            # during reindexing.
             es.delete(es_utils.WRITE_INDEX, es_utils.SUMO_DOCTYPE,
                       cls.get_document_id(id_))
+
+            # Refresh after the delete, but only if the delete was
+            # successful.
+            es.refresh(es_utils.WRITE_INDEX, timesleep=0)
         except pyes.exceptions.NotFoundException:
             # Ignore the case where we try to delete something that's
             # not there.
@@ -239,7 +241,7 @@ def register_for_indexing(sender_class,
         indexing_receiver(m2m_changed, 'm2m_changed')(update)
     else:
         indexing_receiver(post_save, 'post_save')(update)
-    
+
         indexing_receiver(pre_delete, 'pre_delete')(
             # If it's the indexed instance that's been deleted, go ahead
             # and delete it from the index. Otherwise, we just want to
