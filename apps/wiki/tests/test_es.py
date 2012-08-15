@@ -120,3 +120,19 @@ class TestPostUpdate(ElasticTestCase):
                  save=True)
         self.refresh()
         eq_(Document.search().query('wool').count(), 0)
+
+    def test_wiki_keywords(self):
+        """Make sure updating keywords updates the index."""
+        # Create a document with a revision with no keywords. It
+        # shouldn't show up with a document_keywords term query for
+        # 'wool' since it has no keywords.
+        doc = document(title=u'wool hats')
+        doc.save()
+        revision(document=doc, is_approved=True, save=True)
+        self.refresh()
+        eq_(Document.search().query(document_keywords='wool').count(), 0)
+
+        revision(document=doc, is_approved=True, keywords='wool', save=True)
+        self.refresh()
+
+        eq_(Document.search().query(document_keywords='wool').count(), 1)

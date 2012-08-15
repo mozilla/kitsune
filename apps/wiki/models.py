@@ -552,7 +552,7 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
 
     @classmethod
     def extract_document(cls, obj_id):
-        obj = cls.objects.select_related(
+        obj = cls.uncached.select_related(
             'current_revision', 'parent').get(pk=obj_id)
 
         d = {}
@@ -572,7 +572,7 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
         d['document_topic'] = [t.slug for t in obj.get_topics(True)]
         d['document_product'] = [p.slug for p in obj.get_products(True)]
 
-        if obj.current_revision:
+        if obj.current_revision is not None:
             d['document_summary'] = obj.current_revision.summary
             d['document_keywords'] = obj.current_revision.keywords
             d['updated'] = int(time.mktime(
