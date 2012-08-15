@@ -515,9 +515,9 @@ MINIFY_BUNDLES = {
             'css/wiki_syntax.css',
             'css/home.css',
         ),
-        'home-new': {
+        'home-new': (
             'less/home.less',
-        },
+        ),
         'gallery': (
             'css/to-delete.css',
             'css/gallery.css',
