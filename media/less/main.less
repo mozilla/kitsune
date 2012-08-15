@@ -78,7 +78,7 @@ h1 {
 }
 
 header {
-  .linear-gradient-top(#d4dde4, #d9e8f6, 0%, #d4dde4, 80%, #c3cbd1, 100%, url('../img/grain.png'));
+  .linear-gradient-top(#dee7ee, #cae1f4, 0%, #dee7ee, 65%, #d4dce4, 100%, url('../img/grain.png'));
   border-bottom: 1px solid #b3b8bc;
   margin-bottom: 20px;
   padding-bottom: 20px;
@@ -109,27 +109,71 @@ header {
 }
 
 .breadcrumbs {
-  color: @textGrey;
-  font-size: 11px;
-  list-style: none;
-  margin: 0 0 20px 0;
-  padding: 0;
-  text-transform: uppercase;
+  background: #e5eaed url('../img/grain.png');
+  border-color: #dbe0e3 #dbe0e3 #f5f7f9 #dbe0e3;
+  border-style: solid;
+  border-width: 1px;
+  margin: -20px 0 20px 0;
+  padding: 4px 4px 5px 4px;
+  position: relative;
+  z-index: 1;
 
-  > li {
-    float: left;
-    margin: 0 6px 0 0;
+  &:after {
+    background: #dbe0e3;
+    bottom: 0;
+    content: '';
+    height: 1px;
+    left: 0;
+    position: absolute;
+    right: 0;
+    z-index: -1;
+  }
 
-    &:before {
-      content: ' \003E ';
+  &:before {
+    border: 2px solid rgba(0, 0, 0, 0.01);
+    bottom: 1px;
+    content: '';
+    left: 0;
+    position: absolute;
+    right: 0;
+    top: 0;
+    z-index: -1;
+  }
+
+  #breadcrumbs {
+    color: @textGrey;
+    font-size: 11px;
+    list-style: none;
+    padding: 0;
+    text-transform: uppercase;
+
+    > li {
+      float: left;
       margin: 0 6px 0 0;
-    }
 
-    &:first-of-type {
       &:before {
-        content: '';
-        margin: 0;
+        content: ' \003E ';
+        margin: 0 6px 0 0;
       }
+
+      &:first-of-type {
+        &:before {
+          content: '';
+          margin: 0;
+        }
+      }
+    }
+  }
+}
+
+.rgba {
+  .breadcrumbs {
+    @dark: rgba(0, 0, 0, 0.03);
+    @light: rgba(255, 255, 255, 0.5);
+    border-color: @dark @dark @light @dark;
+
+    &:after {
+      background: @dark;
     }
   }
 }
@@ -234,13 +278,15 @@ header {
   }
 }
 
-.rgba .feature-box {
-  @dark: rgba(0, 0, 0, 0.03);
-  @light: rgba(255, 255, 255, 0.7);
-  border-color: @dark @dark @light @dark;
+.rgba {
+  .feature-box {
+    @dark: rgba(0, 0, 0, 0.03);
+    @light: rgba(255, 255, 255, 0.7);
+    border-color: @dark @dark @light @dark;
 
-  &:after {
-    background: @dark;
+    &:after {
+      background: @dark;
+    }
   }
 }
 
@@ -474,8 +520,8 @@ header {
 }
 
 #main-nav {
-  .linear-gradient-top(#d0d9e0, #d0d9e0, 0%, #cbd4db, 100%, url('../img/grain.png'));
-  border-color: #c7d0d6 #c7d0d6 #e6ebee #c7d0d6;
+  .linear-gradient-top(#d8e1e8, #d8e1e8, 0%, #d1dbe2, 100%, url('../img/grain.png'));
+  border-color: #c8d2d8 #c8d2d8 #ebeff3 #c8d2d8;
   border-style: solid;
   border-width: 1px;
   margin: 20px 0 0 0;
@@ -487,7 +533,7 @@ header {
   }
 
   ul {
-    border: 2px solid rgba(0, 0, 0, 0.01);
+    border: 2px solid #cfd8df;
     list-style: none;
     margin: 0;
     padding: 2px 0;
@@ -524,6 +570,22 @@ header {
   }
 }
 
+.rgba {
+  #main-nav {
+    @dark: rgba(0, 0, 0, 0.03);
+    @light: rgba(255, 255, 255, 0.5);
+    border-color: @dark @dark @light @dark;
+
+    &:after {
+      border-color: @dark;
+    }
+
+    ul {
+      border: 2px solid rgba(0, 0, 0, 0.01);
+    }
+  }
+}
+
 #product-cards {
   a,
   a:visited {
@@ -550,6 +612,52 @@ header {
   }
 }
 
+#stage-banner {
+  background: rgba(0, 0, 0, 0.7);
+  border: 1px solid #000;
+  .border-radius(6px);
+  .box-shadow(0 0 8px rgba(0, 0, 0, 0.2));
+  color: #fff;
+  left: 32px;
+  padding: 12px 20px 12px 30px;
+  position: fixed;
+  text-shadow: 1px 1px 1px #000;
+  top: 32px;
+  z-index: 9999;
+
+  a,
+  a:visited {
+    color: #ffcc00;
+  }
+
+  .close-button {
+    background: #000;
+    border: 2px solid #fff;
+    .border-radius(15px);
+    .box-shadow(0 0 8px rgba(0, 0, 0, 0.2));
+    cursor: pointer;
+    height: 24px;
+    left: -8px;
+    position: absolute;
+    text-indent: -9999px;
+    top: -8px;
+    width: 24px;
+
+    &:before {
+      content: '\2715';
+      font-size: 22px;
+      height: 24px;
+      left: 0;
+      line-height: 22px;
+      position: absolute;
+      text-align: center;
+      text-indent: 0;
+      top: 0;
+      width: 24px;
+    }
+  }
+}
+
 #support-search {
   display: block;
   float: right;
@@ -568,7 +676,7 @@ header {
   }
 
   input {
-    .linear-gradient-top(#8b9195, #8b9195, 0%, #a6acb2, 100%, url('../img/grain.png'));
+    .linear-gradient-top(#8d969e, #8d969e, 0%, #a8b0b7, 100%, url('../img/grain.png'));
     border: 0;
     .border-radius(30px);
     .box-shadow(inset 1px 1px 1px rgba(0, 0, 0, 0.5));

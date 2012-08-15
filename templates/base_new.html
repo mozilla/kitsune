@@ -67,6 +67,7 @@
 
 {% if settings.STAGE %}
   <div id="stage-banner">
+    <div class="close-button">X</div>
     {{ _('This is a staging site. The production site is <a href="http://support.mozilla.org">here</a>.') }}
   </div>
 {% endif %}
@@ -114,6 +115,10 @@
   </div>
 </header>
 
+{% block breadcrumbs %}
+  {{ breadcrumbs(crumbs) }}
+{% endblock %}
+
 <div class="container_12 cf">
   <div class="grid_12">
     {% if messages %}
@@ -123,10 +128,6 @@
         {% endfor %}
       </ul>
     {% endif %}
-
-    {% block breadcrumbs %}
-      {{ breadcrumbs(crumbs) }}
-    {% endblock %}
 
     {% block above_main %}{% endblock %}
   </div>
