@@ -6,6 +6,9 @@ from django.db import models
 from sumo.models import ModelBase
 
 
+HOT_TOPIC_SLUG = 'hot'
+
+
 class Topic(ModelBase):
     title = models.CharField(max_length=255, db_index=True)
     slug = models.SlugField()

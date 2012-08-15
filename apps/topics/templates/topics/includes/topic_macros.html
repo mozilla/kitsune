@@ -1,22 +1,14 @@
-{% macro hot_topics() -%}
-  <section id="hot-topics" class="feature-box">
-    <h1>{{ _('Hot Topics') }}</h1>
-    {# TODO: Implement this for real #}
-    <ul class="cf">
-      <li>
-        <a href="#">Lorem ipsum Flash 11.3 dolor sit amet</a>
-      </li>
-      <li>
-        <a href="#">Lorem ipsum Toolbar dolor sit amet</a>
-      </li>
-      <li>
-        <a href="#">Lorem ipsum Java dolor sit amet</a>
-      </li>
-      <li>
-        <a href="#">Lorem ipsum Facebook dolor sit amet</a>
-      </li>
-    </ul>
-  </section>
+{% macro hot_topics(docs) -%}
+  {% if docs %}
+    <section id="hot-topics" class="feature-box">
+      <h1>{{ _('Hot Topics') }}</h1>
+      <ul class="cf">
+        {% for doc in docs %}
+          <li><a href="{{ doc['url'] }}">{{ doc['document_title'] }}</a></li>
+        {% endfor %}
+      </ul>
+    </section>
+  {% endif %}
 {%- endmacro %}
 
 {% macro help_topics(topics) -%}

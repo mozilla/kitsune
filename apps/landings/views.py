@@ -7,7 +7,8 @@ from landings.utils import show_ia
 from products.models import Product
 from sumo.parser import get_object_fallback
 from sumo.views import redirect_to
-from topics.models import Topic
+from topics.models import Topic, HOT_TOPIC_SLUG
+from wiki.facets import documents_for
 from wiki.models import Document
 from wiki.views import SHOWFOR_DATA
 
@@ -117,9 +118,13 @@ def home(request):
 
     products = Product.objects.filter(visible=True)
     topics = Topic.objects.filter(visible=True)
+    hot_docs = documents_for(
+        locale=request.locale,
+        topics=[Topic.objects.get(slug=HOT_TOPIC_SLUG)])
     return jingo.render(request, 'landings/home.html', {
         'products': products,
-        'topics': topics})
+        'topics': topics,
+        'hot_docs': hot_docs})
 
 
 @mobile_template('landings/{mobile/}old-home.html')
