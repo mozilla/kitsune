@@ -13,6 +13,7 @@ import waffle
 
 from search.es_utils import es_reindex_cmd
 from wiki import tasks
+from wiki.models import Document
 
 
 log = logging.getLogger('k.migratehelpful')
@@ -97,4 +98,4 @@ def get_highcharts():
 @cronjobs.register
 def reindex_kb():
     """Reindex wiki_document."""
-    es_reindex_cmd(models=['wiki_document'])
+    es_reindex_cmd(models=[Document.get_model_name()])
