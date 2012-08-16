@@ -22,10 +22,25 @@ class TweetListTests(TestCase):
         for i in range(0, 11):
             tweet(save=True)
 
+        now = datetime.now()
+
+        # Create a tweet older than CC_TWEETS_DAYS days
+        older = now - timedelta(days=settings.CC_TWEETS_DAYS)
+        tweet(save=True, created=older)
+
+        # Create a tweet on the last CC_TWEETS_DAYS day
+        last = now - timedelta(days=settings.CC_TWEETS_DAYS - 1)
+        tweet(save=True, created=last)
+
     def test_limit(self):
         """Do not return more than LIMIT tweets."""
         tweets = _get_tweets(limit=2)
         eq_(len(tweets), 2)
+
+    def test_newer_tweets_only(self):
+        """Ensure that only tweets from the last CC_TWEETS_DAYS are shown"""
+        tweets = _get_tweets()
+        eq_(len(tweets), 12)
 
     def test_max_id(self):
         """Ensure max_id offset works."""
