@@ -13,7 +13,7 @@ from search import es_utils
 
 from sumo.models import ModelBase
 
-log = logging.getLogger('search.es')
+log = logging.getLogger('k.search.es')
 
 
 # db_table name -> model Class for search models

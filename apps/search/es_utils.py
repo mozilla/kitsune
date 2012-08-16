@@ -37,7 +37,7 @@ SUMO_DOCTYPE = u'sumodoc'
 CHUNK_SIZE = 50000
 
 
-log = logging.getLogger('search.es')
+log = logging.getLogger('k.search.es')
 
 
 class Sphilastic(S):

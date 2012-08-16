@@ -1,9 +1,11 @@
+from datetime import datetime, timedelta
+
 from nose.tools import eq_
 
 from products.tests import product
 from search.tests.test_es import ElasticTestCase
 from topics.tests import topic
-from wiki.tests import document, revision
+from wiki.tests import document, revision, helpful_vote
 from wiki.models import Document
 from wiki.config import REDIRECT_CONTENT
 
@@ -136,3 +138,35 @@ class TestPostUpdate(ElasticTestCase):
         self.refresh()
 
         eq_(Document.search().query(document_keywords='wool').count(), 1)
+
+    def test_recent_helpful_votes(self):
+        """Recent helpful votes are indexed properly."""
+        # Create a document and verify it doesn't show up in a
+        # query for recent_helpful_votes__gt=0.
+        r = revision(is_approved=True, save=True)
+        self.refresh()
+        eq_(Document.search().filter(
+            document_recent_helpful_votes__gt=0).count(), 0)
+
+        # Add an unhelpful vote, it still shouldn't show up.
+        helpful_vote(revision=r, helpful=False, save=True)
+        r.document.save()  # Votes don't trigger a reindex.
+        self.refresh()
+        eq_(Document.search().filter(
+            document_recent_helpful_votes__gt=0).count(), 0)
+
+        # Add an helpful vote created 31 days ago, it still shouldn't show up.
+        created = datetime.now() - timedelta(days=31)
+        helpful_vote(revision=r, helpful=True, created=created, save=True)
+        r.document.save()  # Votes don't trigger a reindex.
+        self.refresh()
+        eq_(Document.search().filter(
+            document_recent_helpful_votes__gt=0).count(), 0)
+
+        # Add an helpful vote created 29 days ago, it should show up now.
+        created = datetime.now() - timedelta(days=29)
+        helpful_vote(revision=r, helpful=True, created=created, save=True)
+        r.document.save()  # Votes don't trigger a reindex.
+        self.refresh()
+        eq_(Document.search().filter(
+            document_recent_helpful_votes__gt=0).count(), 1)

@@ -11,6 +11,7 @@ from multidb.pinning import use_master
 from statsd import statsd
 import waffle
 
+from search.es_utils import es_reindex_cmd
 from wiki import tasks
 
 
@@ -91,3 +92,9 @@ def get_highcharts():
                         'd0bb87adac164/js/highstock.src.js')
     with open(localfilename, 'w') as f:
         f.write(u.read())
+
+
+@cronjobs.register
+def reindex_kb():
+    """Reindex wiki_document."""
+    es_reindex_cmd(models=['wiki_document'])
