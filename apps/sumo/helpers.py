@@ -2,6 +2,7 @@ import datetime
 import json as jsonlib
 import re
 import urlparse
+import waffle
 
 from django.conf import settings
 from django.core.urlresolvers import reverse as django_reverse
@@ -157,7 +158,13 @@ def breadcrumbs(context, items=list(), add_default=True):
             crumbs.append(items)
 
     c = {'breadcrumbs': crumbs}
-    t = env.get_template('layout/breadcrumbs.html').render(c)
+
+    if waffle.flag_is_active(context['request'], 'new-theme'):
+        layout = 'layout/breadcrumbs.html'
+    else:
+        layout = 'layout/breadcrumbs-old.html'
+
+    t = env.get_template(layout).render(c)
     return jinja2.Markup(t)
 
 
