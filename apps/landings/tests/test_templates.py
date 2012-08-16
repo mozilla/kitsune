@@ -30,7 +30,7 @@ class MobileHomeTestCase(TestCase):
             doc('#support-search input[name="product"]')[0].attrib['value'])
 
 
-class HomeTestCase(TestCase):
+class HomeTestCase(ElasticTestCase):
     @mock.patch.object(waffle, 'flag_is_active')
     def test_home(self, flag_is_active):
         """Verify that home page renders topics and products."""
@@ -50,8 +50,6 @@ class HomeTestCase(TestCase):
         eq_(6, len(doc('#help-topics li')))
         eq_(4, len(doc('#products-and-services li')))
 
-
-class HomeTestCaseES(ElasticTestCase):
     @mock.patch.object(waffle, 'flag_is_active')
     def test_hot_topics(self, flag_is_active):
         """Verifies the hot topics section."""
