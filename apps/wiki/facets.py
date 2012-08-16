@@ -64,4 +64,4 @@ def documents_for(locale, topics, products=None):
     for product in products or []:
         s = s.filter(document_product=product.slug)
 
-    return list(s.order_by('-document_recent_helpful_votes'))
+    return list(s.order_by('-document_recent_helpful_votes')[:100])
