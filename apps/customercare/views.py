@@ -80,10 +80,10 @@ def _get_tweets(locale=settings.LANGUAGE_CODE, limit=MAX_TWEETS, max_id=None,
     # filter:
 
     q = Tweet.uncached.filter(
-            locale=locale,
-            reply_to=reply_to,
-            created__gt=created_limit,
-    )
+        locale=locale,
+        reply_to=reply_to,
+        created__gt=created_limit)
+
     if max_id:
         q = q.filter(pk__lt=max_id)
 
