@@ -8,7 +8,7 @@ from search.tests.test_es import ElasticTestCase
 from sumo.urlresolvers import reverse
 from topics.models import HOT_TOPIC_SLUG
 from topics.tests import topic
-from wiki.tests import revision
+from wiki.tests import revision, helpful_vote
 
 
 class ProductViewsTestCase(ElasticTestCase):
@@ -80,6 +80,43 @@ class ProductViewsTestCase(ElasticTestCase):
         eq_(200, r.status_code)
         doc = pq(r.content)
         eq_(3, len(doc('#document-list li')))
+
+    @mock.patch.object(waffle, 'flag_is_active')
+    def test_document_listing_order(self, flag_is_active):
+        """Verify documents are listed in order of helpful votes."""
+        flag_is_active.return_value = True
+
+        # Create topic, product and documents.
+        t = topic(save=True)
+        p = product(save=True)
+        docs = []
+        for i in range(3):
+            doc = revision(is_approved=True, save=True).document
+            doc.topics.add(t)
+            doc.products.add(p)
+            docs.append(doc)
+
+        # Add a helpful vote to the second document. It should be first now.
+        rev = docs[1].current_revision
+        helpful_vote(revision=rev, helpful=True, save=True)
+        docs[1].save()  # Votes don't trigger a reindex.
+        self.refresh()
+        url = reverse('products.documents', args=[p.slug, t.slug])
+        r = self.client.get(url, follow=True)
+        eq_(200, r.status_code)
+        doc = pq(r.content)
+        eq_(doc('#document-list li:first').text(), docs[1].title)
+
+        # Add 2 helpful votes the third document. It should be first now.
+        rev = docs[2].current_revision
+        helpful_vote(revision=rev, helpful=True, save=True)
+        helpful_vote(revision=rev, helpful=True, save=True)
+        docs[2].save()  # Votes don't trigger a reindex.
+        self.refresh()
+        r = self.client.get(url, follow=True)
+        eq_(200, r.status_code)
+        doc = pq(r.content)
+        eq_(doc('#document-list li:first').text(), docs[2].title)
 
     @mock.patch.object(waffle, 'flag_is_active')
     def test_hot_topics(self, flag_is_active):

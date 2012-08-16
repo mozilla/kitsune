@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from urlparse import urlparse
 import time
 
@@ -519,6 +519,13 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
             q = Product.objects
         return q.filter(document=self)
 
+    @property
+    def recent_helpful_votes(self):
+        """Return the number of helpful votes in the last 30 days."""
+        start = datetime.now() - timedelta(days=30)
+        return HelpfulVote.objects.filter(
+            revision__document=self, created__gt=start, helpful=True).count()
+
     @classmethod
     def get_query_fields(cls):
         return ['document_title__text',
@@ -548,7 +555,8 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
             'document_summary': {'type': 'string', 'analyzer': 'snowball'},
             'document_keywords': {'type': 'string', 'analyzer': 'snowball'},
             'document_product': {'type': 'string', 'index': 'not_analyzed'},
-            'document_topic': {'type': 'string', 'index': 'not_analyzed'}}
+            'document_topic': {'type': 'string', 'index': 'not_analyzed'},
+            'document_recent_helpful_votes': {'type': 'integer'}}
 
     @classmethod
     def extract_document(cls, obj_id):
@@ -578,11 +586,13 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
             d['updated'] = int(time.mktime(
                     obj.current_revision.created.timetuple()))
             d['document_current_id'] = obj.current_revision.id
+            d['document_recent_helpful_votes'] = obj.recent_helpful_votes
         else:
             d['document_summary'] = None
             d['document_keywords'] = None
             d['updated'] = None
             d['document_current_id'] = None
+            d['document_recent_helpful_votes'] = 0
 
         return d
 
