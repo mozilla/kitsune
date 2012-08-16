@@ -36,7 +36,6 @@ FILTERS = SortedDict([('recent', _lazy('Most Recent')),
 def _tweet_for_template(tweet, https=False):
     """Return the dict needed for tweets.html to render a tweet + replies."""
     data = json.loads(tweet.raw_json)
-
     parsed_date = parsedate(data['created_at'])
     date = datetime(*parsed_date[0:6])
 
@@ -76,9 +75,15 @@ def _get_tweets(locale=settings.LANGUAGE_CODE, limit=MAX_TWEETS, max_id=None,
         filter: One of the keys from FILTERS
     """
     locale = settings.LOCALES[locale].iso639_1
+    created_limit = datetime.now() - timedelta(days=settings.CC_TWEETS_DAYS)
     # Uncached so we can immediately see our reply if we switch to the Answered
     # filter:
-    q = Tweet.uncached.filter(locale=locale, reply_to=reply_to)
+
+    q = Tweet.uncached.filter(
+            locale=locale,
+            reply_to=reply_to,
+            created__gt=created_limit,
+    )
     if max_id:
         q = q.filter(pk__lt=max_id)
 
