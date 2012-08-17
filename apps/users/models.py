@@ -27,6 +27,7 @@ log = logging.getLogger('k.users')
 
 
 SHA1_RE = re.compile('^[a-f0-9]{40}$')
+CONTRIBUTOR_GROUP = 'Registered as contributor'
 
 
 @auto_delete_files
@@ -188,6 +189,18 @@ class RegistrationManager(ConfirmationManager):
                     user = profile.user
                     user.is_active = True
                     user.save()
+
+                    # If user registered as contributor, send them the
+                    # welcome email.
+                    if user.groups.filter(name=CONTRIBUTOR_GROUP):
+                        self._send_email(
+                            confirmation_profile=profile,
+                            url=None,
+                            subject=_('Welcome to SUMO!'),
+                            email_template='users/email/contributor.ltxt',
+                            send_to=user.email,
+                            username=user.username)
+
                     return user
                 else:
                     statsd.incr('user.activate-error.expired')
@@ -226,7 +239,7 @@ class RegistrationManager(ConfirmationManager):
 
         if volunteer_interest:
             statsd.incr('user.registered-as-contributor')
-            group = Group.objects.get(name='Registered as contributor')
+            group = Group.objects.get(name=CONTRIBUTOR_GROUP)
             new_user.groups.add(group)
 
         return new_user
