@@ -218,6 +218,15 @@ class RegisterTests(TestCase):
         u = User.objects.get(username='newbie')
         eq_(group_name, u.groups.all()[0].name)
 
+        # Activate user and verify email is sent.
+        key = RegistrationProfile.objects.all()[0].activation_key
+        url = reverse('users.activate', args=[u.id, key])
+        response = self.client.get(url, follow=True)
+        eq_(200, response.status_code)
+        eq_(2, len(mail.outbox))
+        assert mail.outbox[1].subject.find('Welcome to') == 0
+        assert u.username in mail.outbox[1].body
+
 
 class ChangeEmailTestCase(TestCase):
     fixtures = ['users.json']

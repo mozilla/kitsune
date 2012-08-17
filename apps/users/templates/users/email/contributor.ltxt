@@ -1,0 +1,40 @@
+{% load i18n %}{# L10n: This is an email.  Whitespace matters! #}{% blocktrans %}
+Hi {{ username }},
+
+Thanks so much for your interest in helping users of Mozilla
+technologies!
+
+We would love to find a good place for your to help users,
+so please send us an email with your username and the area
+you would like to get involved. Please feel free to add all
+your skills, we will try to find the right use for them :)
+
+To help you find out where to help check this site:
+
+https://support.mozilla.org/en-US/kb/contributor-news-resources
+
+There are several ways in which you can get involved:
+
+Forum Contributor - Answer user support questions that are
+most-requested but have no replies:
+https://support.mozilla.org/en-US/questions?sort=requested&filter=no-replies
+
+Twitter Contributor - Respond to tweets about Firefox:
+https://support.mozilla.org/army-of-awesome
+
+KB Editor - Help to update knowledge base articles that
+need changes or write new articles.:
+https://support.mozilla.org/contributors/need-changes
+
+L10N Contributor - Help to translate Firefox Help content
+to your language:
+https://support.mozilla.org/en-US/kb/localize-firefox-help
+
+Let us know which of the above you would be interested in
+and we’ll help you get started. It’s great to have you onboard!
+
+Welcome to SUMO!
+
+Madalina & Rosana
+SUMO Community Managers
+{% endblocktrans %}
