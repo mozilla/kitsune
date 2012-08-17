@@ -1,4 +1,3 @@
-import logging
 from optparse import make_option
 
 from django.core.management.base import BaseCommand, CommandError
@@ -18,7 +17,6 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
-        logging.basicConfig(level=logging.INFO)
         percent = options['percent']
         delete = options['delete']
         models = options['models']
