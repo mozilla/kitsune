@@ -1,4 +1,3 @@
-import logging
 from optparse import make_option
 
 from django.core.management.base import BaseCommand, CommandError
@@ -13,7 +12,6 @@ class Command(BaseCommand):
                     help='Number of pages of results you want to see'),)
 
     def handle(self, *args, **options):
-        logging.basicConfig(level=logging.INFO)
         pages = options['pages']
         if not args:
             raise CommandError('You must specify the search query.')

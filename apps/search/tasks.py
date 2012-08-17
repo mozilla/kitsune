@@ -3,6 +3,7 @@ import logging
 import sys
 
 from celery.task import task
+from multidb.pinning import pin_this_thread, unpin_this_thread
 from statsd import statsd
 
 from search.es_utils import index_chunk
@@ -41,6 +42,9 @@ def index_chunk_task(write_index, batch_id, chunk):
     rec.save()
 
     try:
+        # Pin to master db to avoid replication lag issues and stale
+        # data.
+        pin_this_thread()
         index_chunk(cls, id_list, reraise=True)
 
     except Exception:
@@ -48,6 +52,7 @@ def index_chunk_task(write_index, batch_id, chunk):
                 rec.text, sys.exc_type, sys.exc_value))
         raise
     finally:
+        unpin_this_thread()
         rec.endtime = datetime.datetime.now()
         rec.save()
 
@@ -77,6 +82,9 @@ def index_task(cls, ids, **kw):
     """Index documents specified by cls and ids"""
     statsd.incr('search.tasks.index_task.%s' % cls.get_model_name())
     try:
+        # Pin to master db to avoid replication lag issues and stale
+        # data.
+        pin_this_thread()
         for id in cls.uncached.filter(id__in=ids).values_list('id', flat=True):
             cls.index(cls.extract_document(id), refresh=True)
     except Exception as exc:
@@ -90,6 +98,8 @@ def index_task(cls, ids, **kw):
 
         index_task.retry(exc=exc, max_retries=MAX_RETRIES,
                          countdown=RETRY_TIMES[retries])
+    finally:
+        unpin_this_thread()
 
 
 @task
@@ -97,6 +107,9 @@ def unindex_task(cls, ids, **kw):
     """Unindex documents specified by cls and ids"""
     statsd.incr('search.tasks.unindex_task.%s' % cls.get_model_name())
     try:
+        # Pin to master db to avoid replication lag issues and stale
+        # data.
+        pin_this_thread()
         for id in ids:
             cls.unindex(id)
     except Exception as exc:
@@ -110,3 +123,5 @@ def unindex_task(cls, ids, **kw):
 
         unindex_task.retry(exc=exc, max_retries=MAX_RETRIES,
                            countdown=RETRY_TIMES[retries])
+    finally:
+        unpin_this_thread()

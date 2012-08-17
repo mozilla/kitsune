@@ -1,4 +1,3 @@
-import logging
 from optparse import make_option
 
 from django.core.management.base import BaseCommand
@@ -13,6 +12,5 @@ class Command(BaseCommand):
                     help='Checks the index contents'),)
 
     def handle(self, *args, **options):
-        logging.basicConfig(level=logging.INFO)
         checkindex = options['checkindex']
         es_status_cmd(checkindex)
