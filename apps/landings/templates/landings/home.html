@@ -22,20 +22,13 @@
       {{ product_list(products) }}
     </section>
   </div>
-  <section id="mozilla-news" class="grid_8">
-    <h1>{{ _('Mozilla News') }}</h1>
-    {# TODO: Implement this for real #}
-    <ul class="cf">
-      <li><a href="#">Introducing "Lorem ipsum dolor sit amet"</a></li>
-      <li><a href="#">Introducing "Lorem ipsum dolor sit amet"</a></li>
-      <li><a href="#">Introducing "Lorem ipsum dolor sit amet"</a></li>
-      <li><a href="#">Introducing "Lorem ipsum dolor sit amet"</a></li>
-      <li><a href="#">Introducing "Lorem ipsum dolor sit amet"</a></li>
-      <li><a href="#">Introducing "Lorem ipsum dolor sit amet"</a></li>
-    </ul>
-
-    <span class="cf"><a href="#">{{ _('See all news') }} &raquo;</a></span>
-  </section>
+  {% if moz_news %}
+    <section id="mozilla-news" class="grid_8">
+      <h1>{{ _('Mozilla News') }}</h1>
+      {{ moz_news.html|safe }}
+      <span class="cf"><a href="{{ url('wiki.document', 'mozilla-news') }}">{{ _('See all news') }} &raquo;</a></span>
+    </section>
+  {% endif %}
   <aside class="grid_4">
     <div class="feature-box">
       <h1>{{ _('Help Other Users') }}</h1>
