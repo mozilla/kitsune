@@ -104,6 +104,10 @@ FEEDBACK_DOCS_FOR_MOBILE = {
     'top': 'Feedback home - Top'}
 
 
+# Docs for the new IA:
+MOZILLA_NEWS_DOC = 'Mozilla News'
+
+
 @never_cache
 def desktop_or_mobile(request):
     """Redirect mobile browsers to /mobile and others to /home."""
@@ -121,10 +125,13 @@ def home(request):
     hot_docs = documents_for(
         locale=request.locale,
         topics=[Topic.objects.get(slug=HOT_TOPIC_SLUG)])
+    moz_news = get_object_fallback(
+        Document, MOZILLA_NEWS_DOC, request.locale)
     return jingo.render(request, 'landings/home.html', {
         'products': products,
         'topics': topics,
-        'hot_docs': hot_docs})
+        'hot_docs': hot_docs,
+        'moz_news': moz_news})
 
 
 @mobile_template('landings/{mobile/}old-home.html')

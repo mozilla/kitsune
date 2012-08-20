@@ -9,7 +9,7 @@ from sumo.tests import TestCase
 from sumo.urlresolvers import reverse
 from topics.models import HOT_TOPIC_SLUG
 from topics.tests import topic
-from wiki.tests import revision
+from wiki.tests import document, revision
 
 
 class MobileHomeTestCase(TestCase):
@@ -73,3 +73,28 @@ class HomeTestCase(ElasticTestCase):
         eq_(200, r.status_code)
         doc = pq(r.content)
         eq_(3, len(doc('#hot-topics li')))
+
+    @mock.patch.object(waffle, 'flag_is_active')
+    def test_mozilla_news(self, flag_is_active):
+        """Verifies the Mozilla News section."""
+        flag_is_active.return_value = True
+
+        # If "Mozilla News" article doesn't exist, home page
+        # should still work and omit the section.
+        r = self.client.get(reverse('home'), follow=True)
+        eq_(200, r.status_code)
+        doc = pq(r.content)
+        eq_(len(doc('#mozilla-news')), 0)
+
+        # Create the "Mozilla News" article and verify it on home page.
+        d = document(title='Mozilla News', slug='mozilla-news', save=True)
+        rev = revision(
+            document=d, content='splendid', is_approved=True, save=True)
+        d.current_revision = rev
+        d.save()
+        r = self.client.get(reverse('home'), follow=True)
+        eq_(200, r.status_code)
+        doc = pq(r.content)
+        moz_news = doc('#mozilla-news')
+        eq_(len(moz_news), 1)
+        assert 'splendid' in moz_news.text()

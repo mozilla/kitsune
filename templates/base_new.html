@@ -105,8 +105,8 @@
             <li><a href="{{ url('products') }}">{{ _('Products &amp; Services') }}</a></li>
             <li><a href="#">{{ _('Help Articles') }}</a></li>
             <li><a href="{{ url('topics.topic', slug='hot') }}">{{ _('Hot Topics') }}</a></li>
-            <li><a href="#">{{ _('Mozilla News') }}</a></li>
-            <li><a href="#">{{ _('Help Other Users') }}</a></li>
+            <li><a href="{{ url('wiki.document', 'mozilla-news') }}">{{ _('Mozilla News') }}</a></li>
+            <li><a href="{{ url('wiki.document', 'superheroes-wanted') }}">{{ _('Help Other Users') }}</a></li>
             <li><a href="#">{{ _('Suggestion Box') }}</a></li>
           </ul>
         </nav>
