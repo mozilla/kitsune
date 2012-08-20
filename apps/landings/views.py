@@ -122,11 +122,17 @@ def home(request):
 
     products = Product.objects.filter(visible=True)
     topics = Topic.objects.filter(visible=True)
-    hot_docs = documents_for(
-        locale=request.locale,
-        topics=[Topic.objects.get(slug=HOT_TOPIC_SLUG)])
     moz_news = get_object_fallback(
         Document, MOZILLA_NEWS_DOC, request.locale)
+
+    try:
+        hot_docs = documents_for(
+            locale=request.locale,
+            topics=[Topic.objects.get(slug=HOT_TOPIC_SLUG)])
+    except Topic.DoesNotExist:
+        # "hot" topic doesn't exist, move on.
+        hot_docs = None
+
     return jingo.render(request, 'landings/home.html', {
         'products': products,
         'topics': topics,
