@@ -95,10 +95,10 @@ def _es_products_for(topics):
 
 def _db_products_for(topics):
     """DB implementation of products_for."""
-    qs = Product.objects
+    docs = Document.objects
     for topic in topics:
-        qs = qs.filter(document__topics=topic)
-    return qs.distinct()
+        docs = docs.filter(topics=topic)
+    return Product.objects.filter(document__in=docs).distinct()
 
 
 def _products_for_cache_key(topics):
@@ -124,10 +124,10 @@ def _es_topics_for(products):
 
 def _db_topics_for(products):
     """DB implementation of topics_for."""
-    qs = Topic.objects
+    docs = Document.objects
     for product in products:
-        qs = qs.filter(document__products=product)
-    return qs.distinct()
+        docs = docs.filter(products=product)
+    return Topic.objects.filter(document__in=docs).distinct()
 
 
 def _topics_for_cache_key(products):
@@ -147,12 +147,12 @@ def _es_documents_for(locale, topics, products):
     return list(s.order_by('-document_recent_helpful_votes')[:100])
 
 
-def _db_documents_for(locale, topics, products):
+def _db_documents_for(locale, topics, products=None):
     """DB implementation of topics_for."""
     qs = Document.objects.filter(locale=locale)
     for topic in topics:
         qs = qs.filter(topics=topic)
-    for product in products:
+    for product in products or []:
         qs = qs.filter(products=product)
 
     # Convert the results to a dicts to look like the ES results.
