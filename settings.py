@@ -744,6 +744,8 @@ ES_INDEXING_TIMEOUT = 30
 # Seconds between updating admin progress bar:
 ES_REINDEX_PROGRESS_BAR_INTERVAL = 5
 ES_FLUSH_BULK_EVERY = 100
+# Time to sleep after creating indexes for tests
+ES_TEST_SLEEP_DURATION = 0
 
 SEARCH_MAX_RESULTS = 1000
 SEARCH_RESULTS_PER_PAGE = 20

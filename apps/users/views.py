@@ -398,6 +398,7 @@ def password_reset_sent(request):
 
 
 @ssl_required
+@anonymous_csrf
 def password_reset_confirm(request, uidb36=None, token=None):
     """View that checks the hash in a password reset link and presents a
     form for entering a new password.
