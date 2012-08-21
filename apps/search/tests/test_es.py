@@ -67,6 +67,7 @@ class ElasticTestCase(TestCase):
 
         super(ElasticTestCase, self).setUp()
         self.setup_indexes()
+        self.refresh(settings.ES_TEST_SLEEP_DURATION)
 
     def tearDown(self):
         super(ElasticTestCase, self).tearDown()
