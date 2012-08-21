@@ -177,6 +177,13 @@ Other things you can change:
     documentation
     <http://elasticutils.readthedocs.org/en/latest/debugging.html#es-dump-curl>`_.
 
+``ES_TEST_SLEEP_DURATION``
+
+    This defaults to 0.
+
+    This setting is used to determine how long to sleep for after creating
+    indexes in the tests. You should set this to 1 or higher if you are
+    consistently get "No active shards" errors while running the tests.
 
 
 Using Elastic Search
