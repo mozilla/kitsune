@@ -111,5 +111,5 @@ class TestFacetHelpers(ElasticTestCase):
         self._test_documents_for(documents_for)
 
     def test_db_documents_for(self):
-        """Verify _db_documents_for() returns dcouments for passed topics."""
+        """Verify _db_documents_for() returns documents for passed topics."""
         self._test_documents_for(_db_documents_for)
