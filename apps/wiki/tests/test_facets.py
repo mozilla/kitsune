@@ -75,11 +75,11 @@ class TestFacetHelpers(ElasticTestCase):
         eq_(len(desktop_mobile_topics), 2)
 
     def test_topics_for_products(self):
-        """Verify topics_for() returns products for passed products."""
+        """Verify topics_for() returns topics for passed products."""
         self._test_topics_for_products(topics_for)
 
     def test_db_topics_for_products(self):
-        """Verify _db_topics_for() returns products for passed products."""
+        """Verify _db_topics_for() returns topics for passed products."""
         self._test_topics_for_products(_db_topics_for)
 
     def _test_documents_for(self, d_f):
@@ -107,9 +107,9 @@ class TestFacetHelpers(ElasticTestCase):
         eq_(len(general_sync_documents), 0)
 
     def test_documents_for(self):
-        """Verify topics_for() returns products for passed products."""
+        """Verify documents_for() returns documents for passed topics."""
         self._test_documents_for(documents_for)
 
     def test_db_documents_for(self):
-        """Verify _db_topics_for() returns products for passed products."""
+        """Verify _db_documents_for() returns dcouments for passed topics."""
         self._test_documents_for(_db_documents_for)
