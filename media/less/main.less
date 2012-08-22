@@ -685,6 +685,22 @@ header {
     height: 18px;
     padding: 6px 42px 6px 20px;
     width: 238px;
+
+    &:focus {
+      outline: none;
+
+      &::-webkit-input-placeholder {
+        color: rgba(255, 255, 255, 0);
+      }
+    }
+
+    &::-webkit-input-placeholder {
+      color: #fff;
+    }
+
+    &:-moz-placeholder {
+      color: #fff;
+    }
   }
 }
 
