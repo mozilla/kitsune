@@ -11,7 +11,7 @@ from multidb.pinning import use_master
 from statsd import statsd
 import waffle
 
-from search.es_utils import es_reindex_cmd
+from search.tasks import index_task
 from wiki import tasks
 from wiki.models import Document
 
@@ -98,4 +98,4 @@ def get_highcharts():
 @cronjobs.register
 def reindex_kb():
     """Reindex wiki_document."""
-    es_reindex_cmd(models=[Document.get_model_name()])
+    index_task.delay(Document, Document.get_indexable())
