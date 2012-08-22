@@ -64,6 +64,10 @@ def documents_for(locale, topics, products=None):
             _documents_for_cache_key(locale, topics, products), documents)
     except (ESMaxRetryError, ESTimeoutError, ESException):
         # Finally, hit the database (through cache machine)
+        # NOTE: The documents will be the same ones returned by ES
+        # but they won't be in the correct sort (by votes in the last
+        # 30 days). It is better to return them in the wrong order
+        # than not to return them at all.
         documents = _db_documents_for(locale, topics, products)
 
     return documents
