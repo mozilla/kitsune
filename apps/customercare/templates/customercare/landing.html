@@ -95,44 +95,27 @@
 {% block side_promos %}
   {% if activity_stats %}
     <section id="side-stats">
-      <h1>{{ _('Our army has responded to:') }}</h1>
-      <div class="bubble">
-        <div class="perc">
-          {{ _('<mark>{percent}%</mark> of tweets')|fe(percent=activity_stats[0][1]['perc']|round_percent) }}
-        </div>
-        <div class="numbers">
-          <div class="replies">
-            {{ _('<mark>{num_replies}</mark> replies')|fe(num_replies=activity_stats[0][1]['replies']) }}
-          </div>
-          <div class="separator">/</div>
-          <div class="tweets">
-            {{ _('<mark>{num_requests}</mark> tweets')|fe(num_requests=activity_stats[0][1]['requests']) }}
-          </div>
-        </div>
-
-        <select>
-          {% for act in activity_stats %}
-            <option value="{{ loop.index0 }}"
-                    data-perc ="{{ act[1]['perc']|round_percent }}"
-                    data-replies="{{ act[1]['replies'] }}"
-                    data-requests="{{ act[1]['requests'] }}">
-              {% if act[0] == 'Yesterday' %}
-                {{ _('Yesterday', 'army_stats') }}
-              {% elif act[0] == 'Last Week'%}
-                {{ _('Last Week', 'army_stats') }}
-              {% elif act[0] == 'Last Month'%}
-                {{ _('Last Month', 'army_stats') }}
-              {% elif act[0] == 'Overall'%}
-                {{ _('Overall', 'army_stats') }}
-              {% else %}
-                {{ act[0] }}
-              {% endif %}
-            </option>
-          {% endfor %}
-        </select>
-      </div>
-      <div class="speech"></div>
-
+      <h1>{{ _('Leaderboard:') }}</h1>
+      <select>
+        {% for act in activity_stats %}
+          <option value="{{ loop.index0 }}"
+                  data-perc ="{{ act[1]['perc']|round_percent }}"
+                  data-replies="{{ act[1]['replies'] }}"
+                  data-requests="{{ act[1]['requests'] }}">
+            {% if act[0] == 'Yesterday' %}
+              {{ _('Yesterday', 'army_stats') }}
+            {% elif act[0] == 'Last Week'%}
+              {{ _('Last Week', 'army_stats') }}
+            {% elif act[0] == 'Last Month'%}
+              {{ _('Last Month', 'army_stats') }}
+            {% elif act[0] == 'Overall'%}
+              {{ _('Overall', 'army_stats') }}
+            {% else %}
+              {{ act[0] }}
+            {% endif %}
+          </option>
+        {% endfor %}
+      </select>
       {% if contributor_stats %}
         <div class="contribs">
           {% for act in activity_stats %}

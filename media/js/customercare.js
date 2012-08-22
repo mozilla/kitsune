@@ -455,14 +455,9 @@
         $('#side-stats select').change(function(e) {
             var $this = $(this),
                 option = $this.children('option[value=' + $this.val() + ']'),
-                bubble = $('#side-stats .bubble'),
                 percent = interpolate(gettext('%s%'),
                                       [option.data('perc')]),
                 contribs = $('#side-stats .contribs');
-            // Update numbers
-            bubble.find('.perc mark').text(percent);
-            bubble.find('.replies mark').text(option.data('replies'));
-            bubble.find('.tweets mark').text(option.data('requests'));
 
             // Update contributors
             contribs.find('.contributors:visible').fadeOut('fast', function() {
