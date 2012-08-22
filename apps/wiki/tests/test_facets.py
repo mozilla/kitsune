@@ -2,16 +2,15 @@ from nose.tools import eq_
 
 from products.tests import product
 from search.tests.test_es import ElasticTestCase
+from sumo.tests import TestCase
 from topics.tests import topic
 from wiki.facets import (products_for, topics_for, documents_for,
-                         _db_products_for, _db_topics_for, _db_documents_for)
+                         _db_documents_for)
 from wiki.tests import revision
 
 
-class TestFacetHelpers(ElasticTestCase):
-    def setUp(self):
-        super(TestFacetHelpers, self).setUp()
-
+class TestFacetHelpersMixin(object):
+    def _setUp(self):
         # Create topics
         self.general = topic(slug='general', save=True)
         self.bookmarks = topic(slug='bookmarks', save=True)
@@ -33,54 +32,51 @@ class TestFacetHelpers(ElasticTestCase):
         doc2.products.add(self.desktop)
         doc2.products.add(self.mobile)
 
-        self.refresh()
 
-    def _test_products_for_topics(self, p_f):
-        general_prods = p_f(topics=[self.general])
+class TestFacetHelpers(TestCase, TestFacetHelpersMixin):
+    def setUp(self):
+        super(TestFacetHelpers, self).setUp()
+        self._setUp()
+
+    def test_products_for_topics(self):
+        """Verify products_for() returns products for passed topics."""
+        general_prods = products_for(topics=[self.general])
         eq_(len(general_prods), 1)
         eq_(general_prods[0].slug, self.desktop.slug)
 
-        bookmarks_prods = p_f(topics=[self.bookmarks])
+        bookmarks_prods = products_for(topics=[self.bookmarks])
         eq_(len(bookmarks_prods), 2)
 
-        bookmarks_sync_prods = p_f(
+        bookmarks_sync_prods = products_for(
             topics=[self.bookmarks, self.sync])
         eq_(len(bookmarks_sync_prods), 2)
 
-        bookmarks_general_prods = p_f(
+        bookmarks_general_prods = products_for(
             topics=[self.bookmarks, self.general])
         eq_(len(bookmarks_general_prods), 1)
         eq_(self.desktop.slug, bookmarks_general_prods[0].slug)
 
-        sync_general_prods = p_f(topics=[self.sync, self.general])
+        sync_general_prods = products_for(topics=[self.sync, self.general])
         eq_(len(sync_general_prods), 0)
-
-    def test_products_for_topics(self):
-        """Verify products_for() returns products for passed topics."""
-        self._test_products_for_topics(products_for)
-
-    def test_db_products_for_topics(self):
-        """Verify _db_products_for() returns products for passed topics."""
-        self._test_products_for_topics(_db_products_for)
-
-    def _test_topics_for_products(self, t_f):
-        desktop_topics = t_f(products=[self.desktop])
-        eq_(len(desktop_topics), 3)
-
-        mobile_topics = t_f(products=[self.mobile])
-        eq_(len(mobile_topics), 2)
-
-        desktop_mobile_topics = t_f(
-            products=[self.desktop, self.mobile])
-        eq_(len(desktop_mobile_topics), 2)
 
     def test_topics_for_products(self):
         """Verify topics_for() returns topics for passed products."""
-        self._test_topics_for_products(topics_for)
+        desktop_topics = topics_for(products=[self.desktop])
+        eq_(len(desktop_topics), 3)
 
-    def test_db_topics_for_products(self):
-        """Verify _db_topics_for() returns topics for passed products."""
-        self._test_topics_for_products(_db_topics_for)
+        mobile_topics = topics_for(products=[self.mobile])
+        eq_(len(mobile_topics), 2)
+
+        desktop_mobile_topics = topics_for(
+            products=[self.desktop, self.mobile])
+        eq_(len(desktop_mobile_topics), 2)
+
+
+class TestFacetHelpersES(ElasticTestCase, TestFacetHelpersMixin):
+    def setUp(self):
+        super(TestFacetHelpersES, self).setUp()
+        self._setUp()
+        self.refresh()
 
     def _test_documents_for(self, d_f):
         general_documents = d_f(
@@ -108,8 +104,8 @@ class TestFacetHelpers(ElasticTestCase):
 
     def test_documents_for(self):
         """Verify documents_for() returns documents for passed topics."""
+        # Test the default ES version
         self._test_documents_for(documents_for)
 
-    def test_db_documents_for(self):
-        """Verify _db_documents_for() returns documents for passed topics."""
+        # Test the DB version
         self._test_documents_for(_db_documents_for)

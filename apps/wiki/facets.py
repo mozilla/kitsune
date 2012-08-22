@@ -18,13 +18,8 @@ def products_for(topics):
     if products:
         return products
 
-    try:
-        # Then try ES
-        products = _es_products_for(topics)
-        cache.add(_products_for_cache_key(topics), products)
-    except (ESMaxRetryError, ESTimeoutError, ESException):
-        # Finally, hit the database (through cache machine)
-        products = _db_products_for(topics)
+    products = _db_products_for(topics)
+    cache.add(_products_for_cache_key(topics), products)
 
     return products
 
@@ -39,13 +34,8 @@ def topics_for(products):
     if topics:
         return topics
 
-    try:
-        # Then try ES
-        topics = _es_topics_for(products)
-        cache.add(_topics_for_cache_key(products), topics)
-    except (ESMaxRetryError, ESTimeoutError, ESException):
-        # Finally, hit the database (through cache machine)
-        topics = _db_products_for(products)
+    topics = _db_topics_for(products)
+    cache.add(_topics_for_cache_key(products), topics)
 
     return topics
 
@@ -88,22 +78,6 @@ def md5_result(func):
     return _md5
 
 
-def _es_products_for(topics):
-    """ES implementation of products_for."""
-    product_field = 'document_product'
-
-    s = Document.search().values_dict('id')
-    for topic in topics:
-        s = s.filter(document_topic=topic.slug)
-    s = s.facet(product_field, filtered=True)
-    facet_counts = s.facet_counts()[product_field]
-
-    products = Product.objects.filter(
-        slug__in=[f['term'] for f in facet_counts]).filter(visible=True)
-
-    return products
-
-
 def _db_products_for(topics):
     """DB implementation of products_for."""
     docs = Document.objects
@@ -116,22 +90,6 @@ def _db_products_for(topics):
 def _products_for_cache_key(topics):
     return 'products_for:{topics}'.format(
         topics=','.join(sorted([t.slug for t in topics])))
-
-
-def _es_topics_for(products):
-    """ES implementation of topics_for."""
-    topic_field = 'document_topic'
-
-    s = Document.search().values_dict('id')
-    for product in products:
-        s = s.filter(document_product=product.slug)
-    s = s.facet(topic_field, filtered=True)
-    facet_counts = s.facet_counts()[topic_field]
-
-    topics = Topic.objects.filter(
-        slug__in=[f['term'] for f in facet_counts]).filter(visible=True)
-
-    return topics
 
 
 def _db_topics_for(products):
