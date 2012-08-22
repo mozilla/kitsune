@@ -1,3 +1,5 @@
+import hashlib
+
 from django.core.cache import cache
 
 from products.models import Product
@@ -77,6 +79,15 @@ def documents_for(locale, topics, products=None):
     return documents
 
 
+def md5_result(func):
+    """A decorator that md5's the returned value."""
+    def _md5(*args, **kwargs):
+        m = hashlib.md5()
+        m.update(func(*args, **kwargs))
+        return m.hexdigest()
+    return _md5
+
+
 def _es_products_for(topics):
     """ES implementation of products_for."""
     product_field = 'document_product'
@@ -101,6 +112,7 @@ def _db_products_for(topics):
     return Product.objects.filter(document__in=docs).distinct()
 
 
+@md5_result
 def _products_for_cache_key(topics):
     return 'products_for:{topics}'.format(
         topics=','.join(sorted([t.slug for t in topics])))
@@ -130,6 +142,7 @@ def _db_topics_for(products):
     return Topic.objects.filter(document__in=docs).distinct()
 
 
+@md5_result
 def _topics_for_cache_key(products):
     return 'topics_for:{products}'.format(
         products=','.join(sorted([p.slug for p in products])))
@@ -163,6 +176,7 @@ def _db_documents_for(locale, topics, products=None):
     return doc_dicts
 
 
+@md5_result
 def _documents_for_cache_key(locale, topics, products):
     return 'documents_for:{locale}:{topics}:{products}'.format(
         locale=locale,
