@@ -92,8 +92,7 @@ def _db_products_for(topics):
 
 @md5_result
 def _products_for_cache_key(topics):
-    return 'products_for:{topics}'.format(
-        topics=','.join(sorted([t.slug for t in topics])))
+    return ','.join(sorted([t.slug for t in topics]))
 
 
 def _db_topics_for(products):
@@ -106,8 +105,7 @@ def _db_topics_for(products):
 
 @md5_result
 def _topics_for_cache_key(products):
-    return 'topics_for:{products}'.format(
-        products=','.join(sorted([p.slug for p in products])))
+    return ','.join(sorted([p.slug for p in products]))
 
 
 def _es_documents_for(locale, topics, products):
@@ -140,7 +138,7 @@ def _db_documents_for(locale, topics, products=None):
 
 @md5_result
 def _documents_for_cache_key(locale, topics, products):
-    return 'documents_for:{locale}:{topics}:{products}'.format(
+    return '{locale}:{topics}:{products}'.format(
         locale=locale,
         topics=','.join(sorted([t.slug for t in topics])),
         products=','.join(sorted([p.slug for p in products or []])))
