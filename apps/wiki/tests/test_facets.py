@@ -10,7 +10,7 @@ from wiki.tests import revision
 
 
 class TestFacetHelpersMixin(object):
-    def _setUp(self):
+    def facets_setUp(self):
         # Create topics
         self.general = topic(slug='general', save=True)
         self.bookmarks = topic(slug='bookmarks', save=True)
@@ -36,7 +36,7 @@ class TestFacetHelpersMixin(object):
 class TestFacetHelpers(TestCase, TestFacetHelpersMixin):
     def setUp(self):
         super(TestFacetHelpers, self).setUp()
-        self._setUp()
+        self.facets_setUp()
 
     def test_products_for_topics(self):
         """Verify products_for() returns products for passed topics."""
@@ -75,7 +75,7 @@ class TestFacetHelpers(TestCase, TestFacetHelpersMixin):
 class TestFacetHelpersES(ElasticTestCase, TestFacetHelpersMixin):
     def setUp(self):
         super(TestFacetHelpersES, self).setUp()
-        self._setUp()
+        self.facets_setUp()
         self.refresh()
 
     def _test_documents_for(self, d_f):

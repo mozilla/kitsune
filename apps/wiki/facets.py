@@ -78,7 +78,7 @@ def md5_result(func):
     def _md5(*args, **kwargs):
         m = hashlib.md5()
         m.update(func(*args, **kwargs))
-        return m.hexdigest()
+        return '%s:%s' % (func.__name__, m.hexdigest())
     return _md5
 
 
