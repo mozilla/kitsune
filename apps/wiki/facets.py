@@ -106,4 +106,4 @@ def _documents_for_cache_key(locale, topics, products):
         locale=locale,
         topics=','.join(sorted([t.slug for t in topics])),
         products=','.join(sorted([p.slug for p in products or []]))))
-    return 'documents_for:%s' % (m.hexdigest())
+    return 'documents_for:%s' % m.hexdigest()
