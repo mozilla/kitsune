@@ -1,6 +1,6 @@
 {# vim: set ts=2 et sts=2 sw=2: #}
 {% extends "base.html" %}
-{% from 'products/includes/product_macros.html' import product_list with context %}
+{% from 'products/includes/product_macros.html' import product_cards %}
 {% from 'topics/includes/topic_macros.html' import hot_topics %}
 {% from 'topics/includes/topic_macros.html' import help_topics with context %}
 {% from 'includes/common_macros.html' import for_contributors %}
@@ -19,7 +19,7 @@
     {{ hot_topics(hot_docs) }}
     <section id="products-and-services">
       <h1>{{ _('Products and Services') }}</h1>
-      {{ product_list(products) }}
+      {{ product_cards(products) }}
     </section>
   </div>
   {% if moz_news %}

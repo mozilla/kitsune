@@ -22,9 +22,21 @@
       {% endif %}
       <a href="{{ topic_url }}" class="cf">
         <img src="{{ MEDIA_URL }}img/blank.png" class="topic-icon" style="background-image: url('{{ topic.image_url }}')" alt="" />
-        <span class="title">{{ topic.title }}</span>
+        <span class="title">{{ _(topic.title) }}</span>
       </a>
     </li>
     {% if loop.last %}</ul>{% endif %}
   {% endfor %}
+{%- endmacro %}
+
+{% macro topic_sidebar(topics, product, selected_topic=None) -%}
+  <ul class="sidebar-nav topics">
+    {% for topic in topics %}
+      <li{% if selected_topic == topic %} class="selected"{% endif %}>
+        <a href="{{ url('products.documents', product_slug=product.slug, topic_slug=topic.slug) }}">
+          {{ _(topic.title) }}
+        </a>
+      </li>
+    {% endfor %}
+  </ul>
 {%- endmacro %}
