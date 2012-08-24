@@ -1,3 +1,7 @@
+import hashlib
+
+from django.core.cache import cache
+
 from statsd import statsd
 
 from products.models import Product
@@ -44,9 +48,17 @@ def documents_for(locale, topics, products=None):
         document_title
         url
     """
+    # First try to get the results from the cache
+    documents = cache.get(_documents_for_cache_key(locale, topics, products))
+    if documents:
+        statsd.incr('wiki.facets.documents_for.cache')
+        return documents
+
     try:
         # Then try ES
         documents = _es_documents_for(locale, topics, products)
+        cache.add(
+            _documents_for_cache_key(locale, topics, products), documents)
         statsd.incr('wiki.facets.documents_for.es')
     except (ESMaxRetryError, ESTimeoutError, ESException):
         # Finally, hit the database (through cache machine)
@@ -86,3 +98,12 @@ def _db_documents_for(locale, topics, products=None):
         doc_dicts.append(dict(
             id=d.id, document_title=d.title, url=d.get_absolute_url()))
     return doc_dicts
+
+
+def _documents_for_cache_key(locale, topics, products):
+    m = hashlib.md5()
+    m.update('{locale}:{topics}:{products}'.format(
+        locale=locale,
+        topics=','.join(sorted([t.slug for t in topics])),
+        products=','.join(sorted([p.slug for p in products or []]))))
+    return 'documents_for:%s' % (m.hexdigest())
