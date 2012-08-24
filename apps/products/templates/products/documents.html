@@ -1,26 +1,34 @@
 {# vim: set ts=2 et sts=2 sw=2: #}
 {% extends "base.html" %}
-{% from 'topics/includes/topic_macros.html' import hot_topics %}
+{% from 'includes/common_macros.html' import for_contributors_sidebar %}
+{% from 'topics/includes/topic_macros.html' import hot_topics, topic_sidebar %}
 {% set title = _(product.title) + ' - ' + _(topic.title) %}
 {% set crumbs = [(url('products.product', slug=product.slug), _(product.title)),
                  (None, _(topic.title))] %}
-{# TODO: scripts and styles #}
+{% set styles = ('products',) %}
 
 {% block content %}
-  <h1><img src="{{ product.image_url }}" alt="" />{{ _(product.title) }}</h1>
-
-  <section id="document-list">
-    <h1>{{ _(topic.title) }}</h1>
-    {% for document in documents %}
-      {% if loop.first %}<ul>{% endif %}
-      <li>
-        <a href="{{ document['url'] }}">
-          {{ document['document_title'] }}
-        </a>
-      </li>
-      {% if loop.last %}</ul>{% endif %}
-    {% endfor %}
-  </section>
+  <div class="grid_12">
+    <h1 class="product-title cf"><img src="{{ MEDIA_URL }}img/blank.png" alt="" class="logo-sprite" style="background-image: url('{{ product.image_url }}');" />{{ _(product.title) }}</h1>
+  </div>
+  <aside class="grid_3">
+    {{ for_contributors_sidebar(request, user, settings.WIKI_DEFAULT_LANGUAGE) }}
+    {{ topic_sidebar(topics, product, topic) }}
+  </aside>
+  <div class="grid_9">
+    <section id="document-list">
+      <h1>{{ _(topic.title) }}</h1>
+      {% for document in documents %}
+        {% if loop.first %}<ul>{% endif %}
+        <li>
+          <a href="{{ document['url'] }}">
+            {{ document['document_title'] }}
+          </a>
+        </li>
+        {% if loop.last %}</ul>{% endif %}
+      {% endfor %}
+    </section>
+  </div>
 {% endblock %}
 
 {% block for_contributors %}{% endblock %}

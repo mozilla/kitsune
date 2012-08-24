@@ -20,7 +20,7 @@ def products_for(topics):
     docs = Document.objects
     for topic in topics:
         docs = docs.filter(topics=topic)
-    return Product.objects.filter(document__in=docs).distinct()
+    return Product.objects.filter(visible=True, document__in=docs).distinct()
 
 
 def topics_for(products):
@@ -33,7 +33,7 @@ def topics_for(products):
     docs = Document.objects
     for product in products:
         docs = docs.filter(products=product)
-    return Topic.objects.filter(document__in=docs).distinct()
+    return Topic.objects.filter(visible=True, document__in=docs).distinct()
 
 
 def documents_for(locale, topics, products=None):

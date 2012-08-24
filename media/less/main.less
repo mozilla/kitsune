@@ -374,21 +374,28 @@ header {
 
     .sidebar-nav {
       display: none;
+    }
 
-      a,
-      a:visited {
-        font-size: 12px;
-        padding: 10px 20px 10px 40px;
-      }
+    + .products,
+    + .topics {
+      margin: 20px 0 0;
+    }
+  }
 
+  .sidebar-nav {
+    a,
+    a:visited {
+      font-size: 12px;
+      padding: 10px 20px 10px 40px;
+    }
+
+    a:hover {
+      background: #fff;
+    }
+
+    .selected {
       a:hover {
-        background: #fff;
-      }
-
-      .selected {
-        a:hover {
-          background: transparent;
-        }
+        background: transparent;
       }
     }
   }

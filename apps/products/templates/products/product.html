@@ -1,5 +1,7 @@
 {# vim: set ts=2 et sts=2 sw=2: #}
 {% extends "base.html" %}
+{% from 'includes/common_macros.html' import for_contributors_sidebar %}
+{% from 'products/includes/product_macros.html' import product_sidebar %}
 {% from 'topics/includes/topic_macros.html' import hot_topics %}
 {% from 'topics/includes/topic_macros.html' import help_topics with context %}
 {% set title = _(product.title) %}
@@ -11,19 +13,8 @@
     <h1 class="product-title cf"><img src="{{ MEDIA_URL }}img/blank.png" alt="" class="logo-sprite" style="background-image: url('{{ product.image_url }}');" />{{ title }}</h1>
   </div>
   <aside class="grid_3">
-    {# TODO: Implement this for real #}
-    <ul class="sidebar-nav sidebar-folding">
-      <li><a href="#">Lorem ipsum</a></li>
-      <li class="selected">
-        <a href="#">Lorem ipsum</a>
-        <ul class="sidebar-nav">
-          <li><a href="#">Dolor sit amet</a></li>
-          <li class="selected"><a href="#">Dolor sit amet</a></li>
-          <li><a href="#">Dolor sit amet</a></li>
-        </ul>
-      </li>
-      <li><a href="#">Lorem ipsum</a></li>
-    </ul>
+    {{ for_contributors_sidebar(request, user, settings.WIKI_DEFAULT_LANGUAGE) }}
+    {{ product_sidebar(products, product) }}
   </aside>
   <div class="grid_9">
     {{ hot_topics(hot_docs) }}

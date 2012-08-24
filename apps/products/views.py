@@ -33,6 +33,7 @@ def product_landing(request, slug):
         products=[product])
     return jingo.render(request, 'products/product.html', {
         'product': product,
+        'products': Product.objects.filter(visible=True),
         'topics': topics_for(products=[product]),
         'hot_docs': hot_docs})
 
@@ -49,4 +50,5 @@ def document_listing(request, product_slug, topic_slug):
     return jingo.render(request, 'products/documents.html', {
         'product': product,
         'topic': topic,
+        'topics': topics_for(products=[product]),
         'documents': documents})
