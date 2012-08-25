@@ -24,9 +24,7 @@
       <ul class="sidebar-nav">
         {% for product in products %}
           <li{% if selected_product == product %} class="selected"{% endif %}>
-            <a href="{{ url('products.product', slug=product.slug) }}">
-              {{ _(product.title) }}
-            </a>
+            <a href="{{ url('products.product', slug=product.slug) }}">{{ _(product.title) }}</a>
           </li>
         {% endfor %}
       </ul>

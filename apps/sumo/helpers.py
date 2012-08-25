@@ -146,7 +146,12 @@ def breadcrumbs(context, items=list(), add_default=True):
     Accepts: [(url, label)]
     """
     if add_default:
-        crumbs = [(reverse('home'), _lazy(u'Firefox Help'))]
+        if waffle.flag_is_active(context['request'], 'new-theme'):
+            first_crumb = u'Home'
+        else:
+            first_crumb = u'Firefox Help'
+
+        crumbs = [(reverse('home'), _lazy(first_crumb))]
     else:
         crumbs = []
 

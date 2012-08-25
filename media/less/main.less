@@ -11,6 +11,7 @@ a:visited {
 }
 
 a:hover {
+  color: @textDarkBlue;
   text-decoration: underline;
 }
 
@@ -35,7 +36,7 @@ body {
 
 body,
 html {
-  background: #eaeff2 url('../img/grain.png') 0 0 repeat;
+  background: @background url('../img/grain.png') 0 0 repeat;
 }
 
 footer {
@@ -305,6 +306,8 @@ header {
   text-transform: uppercase;
 
   > li {
+    position: relative;
+
     > a,
     > a:visited {
       background: @sidebarBackground url('../img/grain.png');
@@ -316,18 +319,45 @@ header {
 
     > a:hover {
       background-color: @sidebarBackgroundHover;
-      color: @textBlue;
+      color: @textDarkBlue;
       text-decoration: none;
     }
 
     &.selected {
+      border-bottom: 1px solid #f8f8f8;
+
       > a,
       > a:visited,
       > a:hover {
-        background: transparent;
+        background: @sidebarBackgroundSelected;
+        border-color: #e7e7e7;
+        border-style: solid;
+        border-width: 1px 0;
         color: @textGrey;
         font-family: @OpenSans;
         font-weight: bold;
+      }
+
+      &:after,
+      &:before {
+        content: '';
+        height: 30px;
+        left: 0;
+        margin-top: -15px;
+        position: absolute;
+        top: 50%;
+        width: 15px;
+
+      }
+
+      &:after {
+        background: url('../img/sidebar-arrow.gif') 0 3px no-repeat;
+        z-index: 2;
+      }
+
+      &:before {
+        background: url('../img/icons-sprite.png') -50px -623px no-repeat;
+        z-index: 1;
       }
     }
   }
@@ -341,10 +371,16 @@ header {
         background: url('../img/icons-sprite.png') -50px -282px no-repeat;
         content: '';
         height: 16px;
+        left: auto;
+        margin: 0;
         position: absolute;
         top: 18px;
         right: 16px;
         width: 16px;
+      }
+
+      &:before {
+        display: none;
       }
 
       &.selected {

@@ -3,7 +3,8 @@
 {% from 'includes/common_macros.html' import for_contributors_sidebar %}
 {% from 'topics/includes/topic_macros.html' import hot_topics, topic_sidebar %}
 {% set title = _(product.title) + ' - ' + _(topic.title) %}
-{% set crumbs = [(url('products.product', slug=product.slug), _(product.title)),
+{% set crumbs = [(url('products'), 'Products and Services'),
+                 (url('products.product', slug=product.slug), _(product.title)),
                  (None, _(topic.title))] %}
 {% set styles = ('products',) %}
 
@@ -19,11 +20,9 @@
     <section id="document-list">
       <h1>{{ _(topic.title) }}</h1>
       {% for document in documents %}
-        {% if loop.first %}<ul>{% endif %}
+        {% if loop.first %}<ul class="topic-list">{% endif %}
         <li>
-          <a href="{{ document['url'] }}">
-            {{ document['document_title'] }}
-          </a>
+          <a href="{{ document['url'] }}">{{ document['document_title'] }}</a>
         </li>
         {% if loop.last %}</ul>{% endif %}
       {% endfor %}
