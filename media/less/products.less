@@ -18,3 +18,27 @@ h1 {
     }
   }
 }
+
+.topic-list {
+  border-bottom: 1px dotted @borderLightGrey;
+  list-style: none;
+  padding: 0 0 20px 0;
+  margin: 0 0 24px 0;
+
+  &:last-of-type {
+    border: 0;
+    padding: 0;
+    margin: 0;
+  }
+
+  > li {
+    font-size: 16px;
+    margin: 0 0 6px 0;
+
+    &:after {
+      color: @textBlue;
+      content: '\00BB';
+      margin: 0 0 0 2px;
+    }
+  }
+}
