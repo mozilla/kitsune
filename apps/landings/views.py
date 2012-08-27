@@ -3,8 +3,8 @@ from django.views.decorators.cache import never_cache
 import jingo
 from mobility.decorators import mobile_template
 
-from landings.utils import show_ia
 from products.models import Product
+from sumo.helpers import show_new_sumo
 from sumo.parser import get_object_fallback
 from sumo.views import redirect_to
 from topics.models import Topic, HOT_TOPIC_SLUG
@@ -117,7 +117,7 @@ def desktop_or_mobile(request):
 
 def home(request):
     """The home page."""
-    if not show_ia(request):
+    if not show_new_sumo(request):
         return old_home(request)
 
     products = Product.objects.filter(visible=True)

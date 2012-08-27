@@ -3,9 +3,9 @@ from django.shortcuts import get_object_or_404
 
 import jingo
 
-from landings.utils import show_ia
 from landings.views import old_products
 from products.models import Product
+from sumo.helpers import show_new_sumo
 from sumo.urlresolvers import reverse
 from topics.models import Topic, HOT_TOPIC_SLUG
 from wiki.facets import topics_for, documents_for
@@ -13,7 +13,7 @@ from wiki.facets import topics_for, documents_for
 
 def product_list(request):
     """The product picker page."""
-    if not show_ia(request):
+    if not show_new_sumo(request):
         return old_products(request)
 
     products = Product.objects.filter(visible=True)
@@ -23,7 +23,7 @@ def product_list(request):
 
 def product_landing(request, slug):
     """The product landing page."""
-    if not show_ia(request):
+    if not show_new_sumo(request):
         return HttpResponseRedirect(reverse('products'))
 
     product = get_object_or_404(Product, slug=slug)
@@ -40,7 +40,7 @@ def product_landing(request, slug):
 
 def document_listing(request, product_slug, topic_slug):
     """The document listing page for a product + topic."""
-    if not show_ia(request):
+    if not show_new_sumo(request):
         return HttpResponseRedirect(reverse('products'))
 
     product = get_object_or_404(Product, slug=product_slug)

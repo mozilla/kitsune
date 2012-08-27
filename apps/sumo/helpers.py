@@ -159,7 +159,7 @@ def breadcrumbs(context, items=list(), add_default=True):
 
     c = {'breadcrumbs': crumbs}
 
-    if waffle.flag_is_active(context['request'], 'new-theme'):
+    if show_new_sumo(context['request']):
         layout = 'layout/breadcrumbs.html'
     else:
         layout = 'layout/breadcrumbs-old.html'
@@ -354,3 +354,14 @@ def yesno(boolean_value):
 def remove(list_, item):
     """Removes an item from a list."""
     return [i for i in list_ if i != item]
+
+
+@register.function
+def show_new_sumo(request):
+    """Return True if the new IA should be shown to the user."""
+    # Only show the IA to users that are not on mobile and have
+    # the waffle flag active.
+    if ((not hasattr(request, 'MOBILE') or not request.MOBILE) and
+        waffle.flag_is_active(request, 'new-theme')):
+        return True
+    return False

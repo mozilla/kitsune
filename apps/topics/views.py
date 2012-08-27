@@ -4,8 +4,8 @@ from django.shortcuts import get_object_or_404
 
 import jingo
 
-from landings.utils import show_ia
 from products.models import Product
+from sumo.helpers import show_new_sumo
 from sumo.urlresolvers import reverse
 from topics.models import Topic
 from wiki.facets import products_for, documents_for
@@ -18,7 +18,7 @@ def topic_landing(request, slug):
     If `selectproduct=1` query param is passed, shows the product picker.
     Else, shows the list of articles.
     """
-    if not show_ia(request):
+    if not show_new_sumo(request):
         # User should only be able to get here in new IA.
         # Redirect to home page
         return HttpResponseRedirect(reverse('home'))
