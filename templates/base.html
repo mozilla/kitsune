@@ -1,4 +1,4 @@
-{% if waffle.flag('new-theme') %}
+{% if show_new_sumo(request) %}
   {% extends "base_new.html" %}
 {% else %}
   {% extends "base_old.html" %}

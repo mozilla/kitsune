@@ -2,7 +2,7 @@
 
 {% macro search_box(settings, id=False, prefix=None, target=None,
                     params=None) %}
-  {% if waffle.flag('new-theme') %}
+  {% if show_new_sumo(request) %}
     <form {% if id %}id="{{ id }}"{% endif %} action="{{ url('search') }}" method="get" {% if target %} target="{{ target }}"{% endif %}>
       {% if params %}
         {% for k, v in params.items() %}
@@ -32,7 +32,7 @@
 
 {% macro aux_nav(user) %}
   {% if not settings.READ_ONLY %}
-    {% if waffle.flag('new-theme') %}
+    {% if show_new_sumo(request) %}
       {% if request.locale == settings.WIKI_DEFAULT_LANGUAGE %}
         {% set ask_url = url('questions.aaq_step1') %}
       {% else %}
