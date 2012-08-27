@@ -594,6 +594,17 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
             d['document_current_id'] = None
             d['document_recent_helpful_votes'] = 0
 
+        # Don't query for helpful votes if the document doesn't have a current
+        # revision, or is a template, or is a redirect, or is in Navigation
+        # category (50).
+        if (obj.current_revision and
+            not obj.is_template and
+            not obj.html.startswith(REDIRECT_HTML) and
+            not obj.category == 50):
+            d['document_recent_helpful_votes'] = obj.recent_helpful_votes
+        else:
+            d['document_recent_helpful_votes'] = 0
+
         return d
 
     @classmethod
@@ -837,7 +848,7 @@ class Revision(ModelBase):
 class HelpfulVote(ModelBase):
     """Helpful or Not Helpful vote on Revision."""
     revision = models.ForeignKey(Revision, related_name='poll_votes')
-    helpful = models.BooleanField(default=False)
+    helpful = models.BooleanField(default=False, db_index=True)
     created = models.DateTimeField(default=datetime.now, db_index=True)
     creator = models.ForeignKey(User, related_name='poll_votes', null=True)
     anonymous_id = models.CharField(max_length=40, db_index=True)
