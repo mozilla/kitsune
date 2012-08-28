@@ -568,7 +568,8 @@ class NewDocumentTests(TestCaseBase):
         doc = pq(response.content)
         ul = doc('#document-form > ul.errorlist')
         eq_(1, len(ul))
-        eq_('Select a valid choice. l337 is not one of the available choices.',
+        eq_('Select a valid choice. l337 is not one of the available choices. '
+            'Please select at least one product.',
             ul('li').text())
 
     def test_slug_collision_validation(self):

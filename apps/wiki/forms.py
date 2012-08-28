@@ -2,6 +2,7 @@ import json
 import re
 
 from django import forms
+from django.conf import settings
 from django.template.defaultfilters import slugify
 from django.utils.encoding import smart_str
 from django.utils.safestring import mark_safe
@@ -44,6 +45,8 @@ CONTENT_LONG = _lazy(u'Please keep the length of the content to '
 COMMENT_LONG = _lazy(u'Please keep the length of the comment to '
                      u'%(limit_value)s characters or less. It is currently '
                      u'%(show_value)s characters.')
+PRODUCT_REQUIRED = _lazy(u'Please select at least one product.')
+TOPIC_REQUIRED = _lazy(u'Please select at least one topic.')
 
 
 class DocumentForm(forms.ModelForm):
@@ -145,6 +148,24 @@ class DocumentForm(forms.ModelForm):
         if not re.compile(r'^[^/^\+^\?]+$').match(slug):
             raise forms.ValidationError(SLUG_INVALID)
         return slug
+
+    def clean(self):
+        c = super(DocumentForm, self).clean()
+        locale = c.get('locale')
+
+        # Products are required for en-US
+        products = c.get('products')
+        if (locale == settings.WIKI_DEFAULT_LANGUAGE and
+            (not products or len(products) < 1)):
+            raise forms.ValidationError(PRODUCT_REQUIRED)
+
+        # Topics are required for en-US
+        topics = c.get('topics')
+        if (locale == settings.WIKI_DEFAULT_LANGUAGE and
+            (not topics or len(topics) < 1)):
+            raise forms.ValidationError(TOPIC_REQUIRED)
+
+        return c
 
     class Meta:
         model = Document
