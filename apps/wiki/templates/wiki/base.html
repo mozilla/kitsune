@@ -2,7 +2,9 @@
 {% extends "base.html" %}
 {% from "wiki/includes/document_macros.html" import document_watch with context %}
 {% if not styles %}
-  {% set styles = ('wiki', 'jqueryui/jqueryui') %}
+  {% if not waffle.flag('new-theme') %}
+    {% set styles = ('wiki', 'jqueryui/jqueryui') %}
+  {% endif %}
 {% endif %}
 {% if not scripts %}
   {% set scripts = ('wiki', 'libs/jqueryui') %}

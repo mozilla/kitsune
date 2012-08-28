@@ -32,6 +32,37 @@ body {
     padding: 0;
     text-align: right;
   }
+
+  > header {
+    .linear-gradient-top(#dee7ee, #cae1f4, 0%, #dee7ee, 65%, #d4dce4, 100%, url('../img/grain.png'));
+    border-bottom: 1px solid #b3b8bc;
+    margin-bottom: 20px;
+    padding-bottom: 20px;
+
+    .logo {
+      float: left;
+      margin-top: 20px;
+    }
+
+    .mozilla-tab {
+      display: block;
+      float: right;
+      position: relative;
+      z-index: 999;
+    }
+  }
+
+  .html-rtl {
+    header {
+      .logo {
+        float: right;
+      }
+
+      .mozilla-tab {
+        float: left;
+      }
+    }
+  }
 }
 
 body,
@@ -76,37 +107,6 @@ h1, h2, h3, h4, h5, h6 {
 
 h1 {
   font-size: 30px;
-}
-
-header {
-  .linear-gradient-top(#dee7ee, #cae1f4, 0%, #dee7ee, 65%, #d4dce4, 100%, url('../img/grain.png'));
-  border-bottom: 1px solid #b3b8bc;
-  margin-bottom: 20px;
-  padding-bottom: 20px;
-
-  .logo {
-    float: left;
-    margin-top: 20px;
-  }
-
-  .mozilla-tab {
-    display: block;
-    float: right;
-    position: relative;
-    z-index: 999;
-  }
-}
-
-.html-rtl {
-  header {
-    .logo {
-      float: right;
-    }
-
-    .mozilla-tab {
-      float: left;
-    }
-  }
 }
 
 .breadcrumbs {
@@ -176,6 +176,38 @@ header {
     &:after {
       background: @dark;
     }
+  }
+}
+
+.btn {
+  background: #e8e8e8;
+  border: 1px solid #d0d0d0;
+  .border-radius(6px);
+  color: @textDarkGrey;
+  cursor: pointer;
+  display: -moz-inline-stack; /* FF2 */
+  display: inline-block;
+  font-size: 14px;
+  font-weight: bold;
+  margin: 0 2px;
+  padding: 1px 10px 4px 10px;
+  position: relative;
+  text-decoration: none;
+  z-index: 1;
+  zoom: 1;
+  *display: inline; /* Fix for IE6-7 */
+
+  &:before {
+    background: #fff;
+    bottom: 2px;
+    .border-radius(5px);
+    .box-shadow(inset 0 0 12px rgba(230, 230, 230, 0.2));
+    content: '';
+    left: 0;
+    position: absolute;
+    right: 0;
+    top: 0;
+    z-index: -1;
   }
 }
 
@@ -291,6 +323,50 @@ header {
   }
 }
 
+.folding-section {
+  background: #fff;
+
+  > header {
+    cursor: pointer;
+    padding: 16px 20px;
+    position: relative;
+    text-transform: uppercase;
+
+    &:after {
+      background: url('../img/icons-sprite.png') -50px -282px no-repeat;
+      content: '';
+      height: 16px;
+      left: auto;
+      margin: 0;
+      position: absolute;
+      top: 18px;
+      right: 16px;
+      width: 16px;
+    }
+
+    &:before {
+      display: none;
+    }
+  }
+
+  > section {
+    padding:0 20px 16px 20px;
+  }
+
+  &.collapsed {
+    > header {
+      &:after {
+        background-position: -50px -396px;
+        top: 16px;
+      }
+    }
+
+    > section {
+      display: none;
+    }
+  }
+}
+
 .logo-sprite {
   background-position: 50% 50%;
   background-repeat: no-repeat;
@@ -308,15 +384,18 @@ header {
   > li {
     position: relative;
 
+    > span,
     > a,
     > a:visited {
       background: @sidebarBackground url('../img/grain.png');
       color: @textGrey;
+      cursor: pointer;
       display: block;
       padding: 16px 20px;
       text-decoration: none;
     }
 
+    > span:hover,
     > a:hover {
       background-color: @sidebarBackgroundHover;
       color: @textDarkBlue;
@@ -326,6 +405,7 @@ header {
     &.selected {
       border-bottom: 1px solid #f8f8f8;
 
+      > span,
       > a,
       > a:visited,
       > a:hover {
@@ -389,11 +469,13 @@ header {
           top: 16px;
         }
 
+        > span,
         > a,
         > a:visited {
           background: @sidebarBackground url('../img/grain.png');
         }
 
+        > span:hover,
         > a:hover {
           background-color: @sidebarBackgroundHover;
         }
@@ -419,19 +501,21 @@ header {
   }
 
   .sidebar-nav {
+    span,
     a,
     a:visited {
       font-size: 12px;
       padding: 10px 20px 10px 40px;
     }
 
+    span:hover,
     a:hover {
       background: #fff;
     }
 
     .selected {
       a:hover {
-        background: transparent;
+        background-color: @sidebarBackgroundSelected;
       }
     }
   }

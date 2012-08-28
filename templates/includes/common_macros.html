@@ -115,16 +115,20 @@
   {% endif %}
 {%- endmacro %}
 
-{% macro for_contributors_sidebar(request, user, default_language) -%}
+{% macro for_contributors_sidebar(request, user, default_language, li_only=False) -%}
   {% if user.is_authenticated() %}
-    <ul class="sidebar-nav sidebar-folding">
+    {% if not li_only %}
+      <ul class="sidebar-nav sidebar-folding">
+    {% endif %}
       <li>
         <a href="{{ url('products') }}">{{ _('For Contributors') }}</a>
         <ul class="sidebar-nav">
           {{ _for_contributor_links(request, user, default_language) }}
         </ul>
       </li>
-    </ul>
+    {% if not li_only %}
+      </ul>
+    {% endif %}
   {% endif %}
 {%- endmacro %}
 

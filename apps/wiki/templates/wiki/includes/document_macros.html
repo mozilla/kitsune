@@ -1,14 +1,29 @@
 {# vim: set ts=2 et sts=2 sw=2: #}
 {% macro related_articles(related, document) -%}
-  {% if related %}
-    <section id="related-articles">
-      <h1>{{ _('Related Articles') }}</h1>
-      <ul>
-        {% for art in related %}
-          <li><a href="{{ art.get_absolute_url() }}">{{ art.title }}</a></li>
-        {% endfor %}
-      </ul>
-    </section>
+  {% if waffle.flag('new-theme') %}
+    {% if related %}
+      <aside id="doc-related" class="folding-section">
+        <header>{{ _('Related Articles') }}</header>
+        <section>
+          <ul>
+            {% for art in related %}
+              <li><a href="{{ art.get_absolute_url() }}">{{ art.title }}</a></li>
+            {% endfor %}
+          </ul>
+        </section>
+      </aside>
+    {% endif %}
+  {% else %}
+    {% if related %}
+      <section id="related-articles">
+        <h1>{{ _('Related Articles') }}</h1>
+        <ul>
+          {% for art in related %}
+            <li><a href="{{ art.get_absolute_url() }}">{{ art.title }}</a></li>
+          {% endfor %}
+        </ul>
+      </section>
+    {% endif %}
   {% endif %}
 {%- endmacro %}
 
@@ -248,8 +263,13 @@
         <p>
           <span>{{ header }}</span>
           <input type="hidden" name="revision_id" value="{{ document.current_revision.id }}" />
-          <input type="submit" class="btn" name="helpful" value="{{ _('Yes') }}" />
-          <input type="submit" class="btn" name="not-helpful" value="{{ _('No') }}" />
+          {% if waffle.flag('new-theme') %}
+            <span class="btn" data-type="submit" data-name="helpful">Yes</span>
+            <span class="btn" data-type="submit" data-name="not-helpful">No</span>
+          {% else %}
+            <input type="submit" class="btn" name="helpful" value="{{ _('Yes') }}" />
+            <input type="submit" class="btn" name="not-helpful" value="{{ _('No') }}" />
+          {% endif %}
           <img class="wait" src="{{ settings.MEDIA_URL }}img/customercare/spinner.gif" alt="{{ _('Please wait...') }}" />
         </p>
       </form>

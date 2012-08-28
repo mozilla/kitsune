@@ -53,6 +53,57 @@
   </nav>
 {%- endmacro %}
 
+{% macro editing_tools(document, parent, user, active, settings) -%}
+  {% if not parent %}
+    {% set parent = document %}
+  {% endif %}
+  <span>Editing Tools</span>
+  <ul class="sidebar-nav">
+    <li{% if active == 'article' %} class="active"{% endif %}>
+      {% if not active == 'article' and document %}
+        <a href="{{ url('wiki.document', document.slug) }}">{{ _('Article') }}</a>
+      {% endif %}
+    </li>
+    {% if document and document.allow_discussion %}
+      <li{% if active == 'discussion' %} class="active"{% endif %}>
+        <a href="{{ url('wiki.discuss.threads', document.slug) }}">{{ _('Discussion') }}</a>
+      </li>
+    {% endif %}
+    {% if document and not document.is_archived and (document.allows_revision_by(user) or document.allows_editing_by(user)) %}
+      <li class="edit{% if active == 'edit' %} active{% endif %}">
+        {% if active == 'edit' %}
+          <span>{{ _('Edit Article') }}</span>
+        {% else %}
+          <a href="{{ url('wiki.edit_document', document.slug) }}">{{ _('Edit Article') }}</a>
+        {% endif %}
+      </li>
+    {% endif %}
+    {% if document and not document.is_archived and document.is_localizable %}
+      <li{% if active == 'localize' %} class="active"{% endif %}>
+        {% if active == 'localize' %}
+          <span>{{ _('Translate Article') }}</span>
+        {% else %}
+          <a href="{{ url('wiki.select_locale', document.slug) }}">{{ _('Translate Article') }}</a>
+        {% endif %}
+      </li>
+    {% endif %}
+    {% if not document and not document.is_archived and parent and parent.is_localizable %}
+      <li{% if active == 'localize' %} class="active"{% endif %}>
+        {% if active == 'localize' %}
+          <span>{{ _('Translate Article') }}</span>
+        {% else %}
+          <a href="{{ url('wiki.translate', parent.slug) }}">{{ _('Translate Article') }}</a>
+        {% endif %}
+      </li>
+    {% endif %}
+    {% if document %}
+      <li{% if active == 'history' %} class="active"{% endif %}>
+        <a href="{% if document %}{{ url('wiki.document_revisions', document.slug) }}{% else %}{{ url('wiki.document_revisions', parent.slug, locale=settings.WIKI_DEFAULT_LANGUAGE) }}{% endif %}">{{ _('Show History') }}</a>
+      </li>
+    {% endif %}
+  </ul>
+{%- endmacro %}
+
 {% macro document_notifications(document, user) -%}
   {% if user.is_authenticated() %}
     <div id="doc-watch">

@@ -510,6 +510,9 @@ MINIFY_BUNDLES = {
             'css/screencast.css',
             'css/tags.css',
         ),
+        'wiki-new': (
+            'less/wiki.less',
+        ),
         'home': (
             'css/showfor.css',
             'css/wiki_syntax.css',

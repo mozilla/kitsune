@@ -21,7 +21,7 @@ AjaxVote.prototype = {
     init: function(form, options) {
         var self = this,
             $form = $(form),
-            $btns = $form.find('input[type="submit"]');
+            $btns = $form.find('input[type="submit"], .btn[data-type="submit"]');
 
         options = $.extend({
             positionMessage: false,
