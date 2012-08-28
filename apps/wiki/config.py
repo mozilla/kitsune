@@ -127,7 +127,7 @@ MAJOR_SIGNIFICANCE = 30
 
 SIGNIFICANCES = [
     (TYPO_SIGNIFICANCE,
-     _lazy(u'Minor details like punctuation and spelling errors')),
+     _lazy(u"Minor details that don't affect the instructions")),
     (MEDIUM_SIGNIFICANCE,
      _lazy(u"Content changes that don't require immediate translation")),
     (MAJOR_SIGNIFICANCE,
@@ -137,9 +137,8 @@ SIGNIFICANCES = [
 
 SIGNIFICANCES_HELP = {
     TYPO_SIGNIFICANCE:
-        _lazy(u'These changes are inconsequential to localizers: they will '
-              'not be notified of the change and it will not affect '
-              'translations of the article.'),
+        _lazy(u'These minor changes are not important for localizers and '
+               'they will not be notified.'),
     MEDIUM_SIGNIFICANCE:
         _lazy(u'This will notify localizers and translations will be marked '
               'as "needing updates" on dashboards. Most '
