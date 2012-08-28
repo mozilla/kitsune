@@ -848,7 +848,7 @@ class Revision(ModelBase):
 class HelpfulVote(ModelBase):
     """Helpful or Not Helpful vote on Revision."""
     revision = models.ForeignKey(Revision, related_name='poll_votes')
-    helpful = models.BooleanField(default=False, db_index=True)
+    helpful = models.BooleanField(default=False)
     created = models.DateTimeField(default=datetime.now, db_index=True)
     creator = models.ForeignKey(User, related_name='poll_votes', null=True)
     anonymous_id = models.CharField(max_length=40, db_index=True)
