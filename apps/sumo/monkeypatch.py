@@ -1,4 +1,5 @@
 from django.forms import fields
+from django.forms import widgets
 
 # Monkey patch preserves the old values, so we can pick up any changes
 # in CharField.widget_attrs and Field.widget_attrs
@@ -10,7 +11,9 @@ charfield_widget_attrs = fields.CharField.widget_attrs
 def required_field_attrs(self, widget):
     """This function is for use on the base Field class."""
     attrs = field_widget_attrs(self, widget)
-    if self.required and not 'required' in attrs:
+    # required="required" isn't supported for groups of checkboxes.
+    if (self.required and (not 'required' in attrs) and
+        not isinstance(widget, widgets.CheckboxSelectMultiple)):
         attrs['required'] = 'required'
     return attrs
 

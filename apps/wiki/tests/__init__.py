@@ -3,7 +3,9 @@ from datetime import datetime
 
 from django.template.defaultfilters import slugify
 
+from products.tests import product
 from sumo.tests import LocalizingClient, TestCase, with_save
+from topics.tests import topic
 from users.tests import user
 from wiki.models import Document, Revision, HelpfulVote
 from wiki.config import CATEGORIES, SIGNIFICANCES
@@ -89,8 +91,9 @@ def new_document_data(topic_ids=None, product_ids=None):
     return {
         'title': 'A Test Article',
         'slug': 'a-test-article',
-        'topics': topic_ids or [],
-        'products': product_ids or [],
+        'locale': 'en-US',
+        'topics': topic_ids or [topic(save=True).id],
+        'products': product_ids or [product(save=True).id],
         'category': CATEGORIES[0][0],
         'keywords': 'key1, key2',
         'summary': 'lipsum',
