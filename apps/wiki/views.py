@@ -32,6 +32,7 @@ from wiki import DOCUMENTS_PER_PAGE
 from wiki.events import (EditDocumentEvent, ReviewableRevisionInLocaleEvent,
                          ApproveRevisionInLocaleEvent, ApprovedOrReadyUnion,
                          ReadyRevisionEvent)
+from wiki.facets import topics_for
 from wiki.forms import (AddContributorForm, DocumentForm, RevisionForm,
                         ReviewForm)
 from wiki.models import Document, Revision, HelpfulVote, ImportantDate
@@ -148,10 +149,15 @@ def document(request, document_slug, template=None):
 
     contributors = doc.contributors.all()
 
+    topic = doc.topics.all()[0]
+    product = doc.products.all()[0]
+    topics = topics_for([product])
+
     data = {'document': doc, 'redirected_from': redirected_from,
             'related': related, 'contributors': contributors,
             'fallback_reason': fallback_reason,
-            'is_aoa_referral': request.GET.get('ref') == 'aoa'}
+            'is_aoa_referral': request.GET.get('ref') == 'aoa',
+            'topics': topics, 'product': product, 'topic': topic}
     data.update(SHOWFOR_DATA)
     return jingo.render(request, template, data)
 

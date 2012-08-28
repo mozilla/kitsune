@@ -1,0 +1,100 @@
+@import 'variables.less';
+@import 'vendors.less';
+
+.wait {
+  display: none;
+}
+
+.wiki-doc {
+  background: #fff;
+  padding: 30px;
+
+  h1 {
+    border-top: 1px dotted @borderLightGrey;
+    margin-top: 36px;
+    padding-top: 36px;
+
+    &:first-child {
+      border: 0;
+      margin-top: 0;
+      padding-top: 0;
+    }
+  }
+
+  ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+
+    li {
+      margin: 6px 0;
+      padding: 0 0 0 20px;
+
+      &:before {
+        content: '\2022';
+        margin: 0 14px 0 -20px;
+      }
+    }
+  }
+
+  .document-vote {
+    margin: 10px 0 0 0;
+  }
+
+  .note,
+  #toc {
+    background: #eef2f5;
+    border: 1px solid #e4ebee;
+    margin: 20px 0;
+    padding: 20px 30px;
+
+    h2 {
+      &:first-child {
+        margin-top: 0;
+      }
+    }
+  }
+
+  .warning {
+    background: url('../img/warning-stripes.png') top left repeat-x #ffe;
+    border: 1px solid #fffbe7;
+    margin: 20px 0 20px 0;
+    padding: 20px 30px 20px 30px;
+  }
+
+  #doc-content {
+    h1 {
+      font-size: 26px;
+    }
+  }
+
+  #doc-contributors {
+    color: @textLightGrey;
+    font-size: 12px;
+    padding: 6px 0;
+
+    a, a:visited, a:hover {
+      color: @textLightGrey;
+    }
+  }
+}
+
+#doc-related {
+  margin-bottom: 20px;
+
+  > section {
+    > ul {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+
+      > li {
+        padding: 10px 0;
+      }
+    }
+  }
+}
+
+#doc-tools {
+  margin-bottom: 20px;
+}

@@ -1,0 +1,74 @@
+{# vim: set ts=2 et sts=2 sw=2: #}
+{% extends "wiki/base.html" %}
+{% from "includes/common_macros.html" import for_contributors_sidebar %}
+{% from "wiki/includes/sidebar_modules.html" import editing_tools, document_notifications with context %}
+{% from 'topics/includes/topic_macros.html' import topic_sidebar %}
+{% from "wiki/includes/document_macros.html" import contributor_list, document_title, document_messages, document_content, topic_list %}
+{% from "wiki/includes/document_macros.html" import related_articles, show_for, vote_form, document_watch with context %}
+{# L10n: {t} is the title of the document. {c} is the category. #}
+{% set title = _('{t} | {c}')|f(t=document.title, c=document.get_category_display()) %}
+{% set classes = 'document' %}
+{% set canonical_url = document.get_absolute_url() %}
+{% set styles = ('wiki-new',) %}
+{% set scripts = ('wiki', 'readtracker') %}
+{% set extra_body_attrs = {'data-track-url': MEDIA_URL + 'img/pixel.gif', 'data-document-id': document.id} %}
+
+{% if document.parent %}
+  {# If there is a parent doc, use it's URL for switching locales. #}
+  {% set localizable_url = url('wiki.document', document.parent.slug, locale=settings.WIKI_DEFAULT_LANGUAGE) %}
+{% endif %}
+
+{% set meta = [] %}
+
+{% if document.is_template %}
+  {% set meta = meta + [('robots', 'noindex')] %}
+{% endif %}
+
+{% if document.current_revision and document.current_revision.summary %}
+  {% set meta = meta + [('description', document.current_revision.summary)] %}
+{% endif %}
+
+{% block content %}
+  <div class="grid_9">
+    <article class="wiki-doc">
+      {{ document_title(document) }}
+      {{ document_messages(document, redirected_from) }}
+      {{ document_content(document, fallback_reason, request, settings) }}
+      {{ contributor_list(contributors) }}
+
+      {% if not waffle.switch('hide-voting') %}
+        {{ vote_form(document) }}
+      {% endif %}
+    </article>
+  </div>
+{% endblock %}
+
+{% block side_top %}
+  {% if fallback_reason == 'no_translation' %}
+    {# If there is no translation, there is no document and the (future) parent is document. #}
+    {% set doc = None %}
+    {% set parent = document %}
+  {% else %}
+    {% set doc = document %}
+    {% set parent = doc.parent %}
+  {% endif %}
+  <nav id="doc-tools">
+    <ul class="sidebar-nav sidebar-folding">
+      <li>
+        {{ editing_tools(doc, parent, user, 'article', settings) }}
+        {{ for_contributors_sidebar(request, user, settings.WIKI_DEFAULT_LANGUAGE, True) }}
+      </li>
+    </ul>
+  </nav>
+  {{ related_articles(related, document) }}
+  {{ topic_sidebar(topics, product, topic) }}
+{% endblock %}
+
+{% block side_bottom %}
+  <div>
+    {{ show_for(header=_('Article is for:')) }}
+  </div>
+{% endblock %}
+
+{% block breadcrumbs %}
+{% endblock %}
