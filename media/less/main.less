@@ -179,7 +179,10 @@ h1 {
   }
 }
 
-.btn {
+.btn,
+.btn:link,
+.btn:visited,
+.btn:hover {
   background: #e8e8e8;
   border: 1px solid #d0d0d0;
   .border-radius(6px);
@@ -208,6 +211,69 @@ h1 {
     right: 0;
     top: 0;
     z-index: -1;
+  }
+}
+
+.btn-page,
+.btn-page:link,
+.btn-page:visited,
+.btn-page:hover {
+  background: url('../img/page-button-bg.png') top left repeat-x;
+  color: #fff;
+  cursor: pointer;
+  display: -moz-inline-stack; /* FF2 */
+  display: inline-block;
+  font-weight: bold;
+  height: 32px;
+  line-height: 27px;
+  margin: 0 7px;
+  padding: 0 9px;
+  position: relative;
+  text-decoration: none;
+  text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.4);
+  zoom: 1;
+  *display: inline; /* Fix for IE6-7 */
+
+  &:after {
+    background: url('../img/page-button-ends.png') -26px 0 no-repeat;
+    content: '';
+    height: 32px;
+    position: absolute;
+    right: -7px;
+    top: 0;
+    width: 7px;
+  }
+
+  &:before {
+    background: url('../img/page-button-ends.png') -34px 0 no-repeat;
+    content: '';
+    height: 32px;
+    left: -7px;
+    position: absolute;
+    top: 0;
+    width: 7px;
+  }
+
+  &.btn-page-next {
+    margin: 0 25px 0 7px;
+    padding: 0 20px 0 4px;
+
+    &:after {
+      background-position: -42px 0;
+      right: -25px;
+      width: 25px;
+    }
+  }
+
+  &.btn-page-prev {
+    margin: 0 7px 0 25px;
+    padding: 0 4px 0 20px;
+
+    &:before {
+      background-position: 0 0;
+      left: -25px;
+      width: 25px;
+    }
   }
 }
 
@@ -323,29 +389,52 @@ h1 {
   }
 }
 
-.folding-section {
-  background: #fff;
-
+.folding-section,
+[data-ui-type="folding-section"] {
   > header {
     cursor: pointer;
-    padding: 16px 20px;
     position: relative;
-    text-transform: uppercase;
 
     &:after {
       background: url('../img/icons-sprite.png') -50px -282px no-repeat;
       content: '';
       height: 16px;
       left: auto;
-      margin: 0;
+      margin: -8px 0 0 0;
       position: absolute;
-      top: 18px;
-      right: 16px;
+      right: 0;
+      top: 50%;
       width: 16px;
     }
+  }
 
-    &:before {
+  &.collapsed {
+    > header {
+      &:after {
+        background-position: -50px -396px;
+        margin-top: -10px;
+        top: 50%;
+      }
+    }
+
+    > section {
       display: none;
+    }
+  }
+}
+
+.folding-section {
+  background: #fff;
+
+  > header {
+    padding: 16px 20px;
+    text-transform: uppercase;
+
+    &:after {
+      left: auto;
+      margin: 0;
+      right: 16px;
+      top: 18px;
     }
   }
 
@@ -356,13 +445,9 @@ h1 {
   &.collapsed {
     > header {
       &:after {
-        background-position: -50px -396px;
+        margin: 0;
         top: 16px;
       }
-    }
-
-    > section {
-      display: none;
     }
   }
 }
@@ -372,6 +457,68 @@ h1 {
   background-repeat: no-repeat;
   height: 80px;
   width: 84px;
+}
+
+.nomargin {
+  margin: 0;
+}
+
+.progress-bar {
+  background: #e5eaed url('../img/grain.png');
+  border: 1px solid #dbe0e3;
+  .border-radius(12px);
+  color: #fff;
+  font-size: 20px;
+  font-weight: bold;
+  height: 24px;
+  line-height: 24px;
+  position: relative;
+  text-align: right;
+  z-index: 1;
+
+  &:after {
+    border-bottom: 1px solid #f9f9f9;
+    .border-radius(13px);
+    bottom: -2px;
+    content: '';
+    left: 0;
+    position: absolute;
+    right: 0;
+    top: 0;
+    z-index: -1;
+  }
+
+  &:before {
+    border: 2px solid rgba(0, 0, 0, 0.01);
+    .border-radius(12px);
+    bottom: 0;
+    content: '';
+    left: 0;
+    position: absolute;
+    right: 0;
+    top: 0;
+    z-index: -1;
+  }
+
+  > div {
+    .gradient(#ff9500, #ff9500, #ed7000);
+    .border-radius(12px);
+
+    > span {
+      margin-right: 10px;
+    }
+  }
+}
+
+.rgba {
+  .progress-bar {
+    @dark: rgba(0, 0, 0, 0.03);
+    border-color: @dark;
+
+    &:after {
+      background: @dark;
+    }
+  }
 }
 
 .sidebar-nav {
@@ -518,6 +665,20 @@ h1 {
         background-color: @sidebarBackgroundSelected;
       }
     }
+  }
+}
+
+.quick-paginator {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+
+  .prev {
+    float: left;
+  }
+
+  .next {
+    float: right;
   }
 }
 

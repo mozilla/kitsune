@@ -493,6 +493,9 @@ MINIFY_BUNDLES = {
             'css/reportabuse.css',
             'css/cannedresponses.css',
         ),
+        'questions-new': (
+            'less/questions.less',
+        ),
         'search': (
             'css/search.css',
             'css/search-advanced.css',

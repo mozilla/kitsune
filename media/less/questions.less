@@ -1,0 +1,136 @@
+@import 'variables.less';
+@import 'vendors.less';
+
+h1 {
+  font-size: 46px;
+}
+
+.questions {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+
+  > section {
+    background: #fff;
+    padding: 20px 30px;
+    position: relative;
+
+    h2 {
+      margin: 4px 0;
+    }
+
+    .content {
+      border-right: 1px dotted @borderLightGrey;
+      margin: 0 90px 0 0;
+      min-height: 130px;
+      padding: 0 20px 0 0;
+    }
+
+    .thread-meta {
+      background: #fff;
+      left: 0;
+      overflow: hidden;
+      padding: 0 6px;
+      position: absolute;
+      top: 0;
+      width: 18px;
+
+      &:hover {
+        border-bottom: 1px solid @borderLightGrey;
+        border-right: 1px solid @borderLightGrey;
+        width: auto;
+      }
+
+      > div {
+        background: url('../img/icons-sprite.png') 0 0 no-repeat;
+        color: #ccc;
+        font-size: 11px;
+        height: 18px;
+        line-height: 18px;
+        margin: 6px 0;
+        padding: 0 0 0 24px;
+        text-transform: uppercase;
+
+        &.highlighted {
+          color: @textGrey;
+        }
+
+        &.thread-contributed {
+          background-position: -48px -977px;
+
+          &.highlighted {
+            background-position: -48px -1093px;
+          }
+        }
+
+        &.thread-solved {
+          background-position: -49px -746px;
+
+          &.highlighted {
+            background-position: -49px -862px;
+          }
+        }
+      }
+    }
+
+    .question-meta {
+      float: right;
+      font-size: 11px;
+      width: 70px;
+      padding: 0 0 0 20px;
+      text-align: center;
+      text-transform: uppercase;
+
+      h4 {
+        font-size: 30px;
+        margin: 0;
+      }
+
+      &.urgent {
+        h4 {
+          color: #fe9300;
+        }
+      }
+    }
+  }
+
+  > aside {
+    font-size: 13px;
+    margin: 10px 30px 30px 30px;
+
+    .tag-list {
+      display: inline;
+      list-style: none;
+      margin: 0;
+      padding: 0;
+
+      > li {
+        display: inline;
+        font-style: italic;
+        margin: 0 0 0 10px;
+      }
+    }
+
+    .user-meta {
+      float: right;
+    }
+  }
+}
+
+#recent-stats {
+  font-size: 13px;
+  margin: 0 0 40px 0;
+
+  .no_reply {
+    margin: 0 6px;
+  }
+
+  .progress-bar {
+    margin-top: 10px;
+  }
+
+  .total {
+    float: right;
+    margin: 0 6px;
+  }
+}

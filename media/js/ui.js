@@ -38,7 +38,7 @@
       }
     });
 
-    $('.folding-section').each(function() {
+    $('.folding-section, [data-ui-type="folding-section"]').each(function() {
       var $this = $(this);
       $this.children('header').on('click', function() {
         $this.toggleClass('collapsed');
