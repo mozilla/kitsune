@@ -42,6 +42,11 @@ def simple_paginator(pager):
 
 
 @register.filter
+def quick_paginator(pager):
+    t = env.get_template('includes/quick_paginator.html')
+    return jinja2.Markup(t.render({'pager': pager}))
+
+@register.filter
 def mobile_paginator(pager):
     t = env.get_template('includes/mobile/paginator.html')
     return jinja2.Markup(t.render({'pager': pager}))

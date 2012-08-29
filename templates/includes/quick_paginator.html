@@ -1,0 +1,13 @@
+{# vim: set ts=2 et sts=2 sw=2: #}
+<ul class="quick-paginator cf">
+  {% if pager.has_previous() %}
+    <li class="prev">
+      <a class="btn-page btn-page-prev" href="{{ pager.url|urlparams(page=pager.previous_page_number()) }}">{{ _('Newer') }}</a>
+    </li>
+  {% endif %}
+  {% if pager.has_next() %}
+    <li class="next">
+      <a class="btn-page btn-page-next" href="{{ pager.url|urlparams(page=pager.next_page_number()) }}">{{ _('Older') }}</a>
+    </li>
+  {% endif %}
+</ul>
