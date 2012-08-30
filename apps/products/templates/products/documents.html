@@ -3,7 +3,7 @@
 {% from 'includes/common_macros.html' import for_contributors_sidebar %}
 {% from 'topics/includes/topic_macros.html' import hot_topics, topic_sidebar %}
 {% set title = _(product.title) + ' - ' + _(topic.title) %}
-{% set crumbs = [(url('products'), 'Products and Services'),
+{% set crumbs = [(url('products'), _('Products and Services')),
                  (url('products.product', slug=product.slug), _(product.title)),
                  (None, _(topic.title))] %}
 {% set styles = ('products',) %}
