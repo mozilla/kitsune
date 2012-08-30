@@ -25,7 +25,9 @@
           var value = $this.attr('data-value');
 
           if (name) {
-            var $input = $('<input type="hidden" name="' + name + '">');
+            var $input = $('<input type="hidden">');
+
+            $input.attr('name', name);
 
             if (value) {
               $input.val(value);
