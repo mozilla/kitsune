@@ -8,9 +8,11 @@ from django.db import models
 from django.db.models.signals import pre_delete, post_save, m2m_changed
 from django.dispatch import receiver
 
-from search.tasks import index_task, unindex_task
-from search import es_utils
+from elasticutils import MLT
 
+from search import es_utils
+from search.es_utils import ESTimeoutError, ESMaxRetryError, ESException
+from search.tasks import index_task, unindex_task
 from sumo.models import ModelBase
 
 log = logging.getLogger('k.search.es')
@@ -170,6 +172,20 @@ class SearchMixin(object):
             # Ignore the case where we try to delete something that's
             # not there.
             pass
+
+    @classmethod
+    def get_s(cls):
+        """Get an S."""
+        return es_utils.Sphilastic(object).values_dict()
+
+    @classmethod
+    def morelikethis(cls, id_, s, fields):
+        """morelikethis query."""
+        try:
+            return list(MLT(
+                id_, s=s, fields=fields, min_term_freq=1, min_doc_freq=1))
+        except (ESTimeoutError, ESMaxRetryError, ESException):
+            return []
 
 
 _identity = lambda s: s

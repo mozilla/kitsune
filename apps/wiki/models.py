@@ -72,13 +72,6 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
     parent = models.ForeignKey('self', related_name='translations',
                                null=True, blank=True)
 
-    # Related documents, based on tags in common.
-    # The RelatedDocument table is populated by
-    # wiki.cron.calculate_related_documents.
-    related_documents = models.ManyToManyField('self',
-                                               through='RelatedDocument',
-                                               symmetrical=False)
-
     # Cached HTML rendering of approved revision's wiki markup:
     html = models.TextField(editable=False)
 
@@ -526,6 +519,16 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
         return HelpfulVote.objects.filter(
             revision__document=self, created__gt=start, helpful=True).count()
 
+    @property
+    def related_documents(self):
+        """Return documents that are 'morelikethis' one."""
+        return self.morelikethis(
+            self.get_document_id(self.id),
+            s=self.get_s().filter(
+                model=self.get_model_name(),
+                document_locale=self.locale),
+            fields=['document_title', 'document_summary', 'document_content'])
+
     @classmethod
     def get_query_fields(cls):
         return ['document_title__text',
@@ -869,15 +872,6 @@ class ImportantDate(ModelBase):
     """Important date that shows up globally on metrics graphs."""
     text = models.CharField(max_length=100)
     date = models.DateField(db_index=True)
-
-
-class RelatedDocument(ModelBase):
-    document = models.ForeignKey(Document, related_name='related_from')
-    related = models.ForeignKey(Document, related_name='related_to')
-    in_common = models.IntegerField()
-
-    class Meta(object):
-        ordering = ['-in_common']
 
 
 def _doc_components_from_url(url, required_locale=None, check_host=True):

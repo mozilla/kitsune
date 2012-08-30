@@ -41,7 +41,6 @@ from wiki.config import (CATEGORIES, OPERATING_SYSTEMS,
 from wiki.parser import wiki_to_html
 from wiki.tasks import (send_reviewed_notification, schedule_rebuild_kb,
                         send_contributor_notification)
-from wiki.utils import find_related_documents
 
 
 log = logging.getLogger('k.wiki')
@@ -155,7 +154,7 @@ def document(request, document_slug, template=None):
         except Document.DoesNotExist:
             pass
 
-    related = find_related_documents(doc)
+    related = doc.related_documents[:5]
 
     contributors = doc.contributors.all()
 
