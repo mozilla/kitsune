@@ -6,7 +6,7 @@ from django.conf import settings
 from django.contrib.sites.models import Site
 from django.http import QueryDict
 from django.utils.http import urlquote
-from elasticutils import get_es
+from elasticutils.contrib.django import get_es
 from nose import SkipTest
 from nose.tools import eq_
 from pyquery import PyQuery as pq
