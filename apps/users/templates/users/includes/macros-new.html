@@ -1,0 +1,63 @@
+{# vim: set ts=2 et sts=2 sw=2: #}
+{% from "layout/errorlist.html" import errorlist %}
+{# csrf() is contextual, so we need to pass in its output #}
+{% macro login_form(form, csrf, next_url='', action=None,
+only_pwreset=False) -%}
+{{ errorlist(form) }}
+<form method="post" action="{{ action if action != None else url('users.login') }}">
+  {{ csrf|safe }}
+  <input type="hidden" name="next" value="{{ next_url }}" />
+  <fieldset>
+    <ul>
+      <li class="cf">
+        <label for="id_username">{{ _('Username:') }}</label>
+        {{ form.username|safe }}
+      </li>
+      <li class="cf">
+        <label for="id_password">{{ _('Password:') }}</label>
+        {{ form.password|safe }}
+      </li>
+    </ul>
+  </fieldset>
+  <div class="submit">
+    <span data-type="submit" data-name="login" class="btn btn-submit" data-progress="{{ _('Logging in...') }}" data-done="{{ _('Logged in!') }}" data-reset="{{ _('Log in') }}">{{ _('Log in') }}</span>
+  </div>
+</form>
+<div id="login-help">
+  {% if only_pwreset %}
+    <a id="reset_password" target="_blank" href="{{ url('users.pw_reset') }}">{{ _("My password isn't working.") }}</a>
+  {% else %}
+    <h3>{{ _('Login Problems?') }}</h3>
+    <ul>
+      <li><a href="{{ url('users.pw_reset') }}">{{ _("My password isn't working.") }}</a></li>
+      <li><a href="{{ url('users.forgot_username') }}">{{ _('I forgot my username.') }}</a></li>
+      <li><a href="{{ url('users.register') }}">{{ _("I don't have an account.") }} </a></li>
+      <li><a href="{{ url('users.resend_confirmation') }}">{{ _("I didn't get a confirmation email.") }}</a></li>
+    </ul>
+  {% endif %}
+</div>
+{%- endmacro %}
+
+{% macro register_form(form, csrf, action=None, show_checkbox=True) -%}
+{{ errorlist(form) }}
+<form method="post" action="{{ action if action != None else
+                                 url('users.register') }}">
+  {{ csrf|safe }}
+  <ul>
+    {% for field in form if field.name != 'interested' %}
+      <li class="cf">{{ field|label_with_help }} {{ field }}</li>
+    {% endfor %}
+    {% if show_checkbox %}
+      <li class="checkbox">
+        <label>
+          {{ form.interested }}
+          {{ form.interested.field.label }}
+        </label>
+      </li>
+    {% endif %}
+  </ul>
+  <div class="submit">
+    <span data-type="submit" data-name="register" class="btn btn-submit">{{ _('Register') }}</span>
+  </div>
+</form>
+{%- endmacro %}

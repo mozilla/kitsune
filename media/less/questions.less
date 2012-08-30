@@ -5,6 +5,28 @@ h1 {
   font-size: 46px;
 }
 
+h2 {
+  font-size: 28px;
+}
+
+.highlight-box {
+  h2 {
+    margin: 0;
+  }
+
+  .select-one {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+
+    li {
+      font-family: @OpenSansLight;
+      font-size: 20px;
+      margin: 10px 0;
+    }
+  }
+}
+
 .questions {
   list-style: none;
   margin: 0;
@@ -117,6 +139,115 @@ h1 {
   }
 }
 
+.search-results {
+  .result {
+    padding: 20px 0;
+
+    &.question {
+      .thread-meta {
+        span {
+          font-size: 13px;
+          font-style: italic;
+
+          &:before {
+            content: '|';
+            font-style: normal;
+          }
+
+          &:first-of-type {
+            &:before {
+              display: none;
+            }
+          }
+        }
+      }
+    }
+
+    a,
+    a:link,
+    a:visited,
+    a:hover {
+      color: @textGrey;
+    }
+
+    .title {
+      font-family: @OpenSansLight;
+      font-size: 17px;
+    }
+  }
+}
+
+#aaq_progress {
+  margin: 60px 78px;
+
+  .legend {
+    color: @textGrey;
+    font-size: 14px;
+    font-weight: normal;
+    list-style: none;
+    margin: 10px -78px;
+    padding: 0;
+    position: relative;
+    z-index: 0;
+
+    li {
+      float: left;
+      margin: 0 10px;
+      position: relative;
+      text-align: center;
+      width: 136px;
+
+      &.current {
+        font-weight: bold;
+      }
+
+      &:before {
+        border-left: 1px solid rgba(0, 0, 0, 0.1);
+        border-right: 1px solid rgba(255, 255, 255, 0.5);
+        content: '';
+        height: 24px;
+        left: 50%;
+        margin-left: -1px;
+        position: absolute;
+        top: -34px;
+        width: 0;
+      }
+
+      &:first-of-type,
+      &:last-of-type {
+        &:before {
+          display: none;
+        }
+      }
+    }
+  }
+
+  .progress-bar {
+    > div {
+      min-width: 12px;
+      padding-right: 12px;
+    }
+  }
+}
+
+#ask-search-form {
+  background: url('../img/grain.png') #eff2f4;
+  border: 1px solid #b9c9d1;
+  .border-radius(6px);
+  display: block;
+  padding: 12px;
+
+  .btn {
+    float: right;
+  }
+
+  .searchbox {
+    float: left;
+    margin: 10px 0 0 12px;
+    width: 724px;
+  }
+}
+
 #recent-stats {
   font-size: 13px;
   margin: 0 0 40px 0;
@@ -132,5 +263,175 @@ h1 {
   .total {
     float: right;
     margin: 0 6px;
+  }
+}
+
+#register-form,
+#login-form {
+  fieldset {
+    border: 0;
+    margin: 0;
+    padding: 0;
+  }
+
+  h2 {
+    text-align: center;
+  }
+
+  ul {
+    list-style: none;
+    margin: 10px 0;
+    padding: 0;
+    text-align: center;
+
+    input {
+      float: left;
+      width: 214px;
+    }
+
+    label {
+      float: left;
+      padding-right: 12px;
+      text-align: right;
+    }
+
+    li {
+      display: -moz-inline-stack;
+      display: inline-block;
+      margin: 2px 0;
+      zoom: 1;
+      *display: inline;
+    }
+  }
+
+  .submit {
+    text-align: center;
+
+    .btn {
+      margin-right: 121px;
+      width: 55px;
+    }
+  }
+}
+
+#login-form {
+  ul {
+    label {
+      width: 80px;
+    }
+  }
+
+  .submit {
+    .btn {
+      margin-left: 80px;
+    }
+  }
+}
+
+#question-form {
+  ol {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+
+    input {
+      width: 700px;
+    }
+
+    label {
+      float: left;
+      width: 120px;
+      padding-right: 20px;
+      text-align: right;
+
+      + input,
+      + textarea,
+      + div {
+        float: left;
+      }
+    }
+
+    li {
+      padding: 10px 0;
+
+      p {
+        clear: both;
+        margin: 0 0 0 140px;
+      }
+
+      &.details {
+        display: none;
+
+        input {
+          width: auto;
+        }
+      }
+
+      &.hide {
+        .show {
+          display: none;
+        }
+      }
+
+      &.show {
+        .hide {
+          display: none;
+        }
+      }
+    }
+
+    &.show-details {
+      li {
+        &.details {
+          display: block;
+        }
+      }
+    }
+
+    textarea {
+      width: 710px;
+    }
+
+    .editor-tools {
+      display: none;
+    }
+
+    .submit {
+      .btn {
+        margin-left: 140px;
+      }
+    }
+  }
+}
+
+#register-form {
+  ul {
+    label {
+      width: 130px;
+    }
+  }
+
+  .submit {
+    .btn {
+      margin-left: 130px;
+    }
+  }
+}
+
+#selected-category,
+#selected-product {
+  font-size: 20px;
+  margin-bottom: 10px;
+
+  a {
+    font-size: 14px;
+  }
+
+  label {
+    font-family: @OpenSansLight;
+  }
+
+  span {
+    font-weight: bold;
   }
 }

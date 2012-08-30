@@ -29,11 +29,14 @@
 
             if (value) {
               $input.val(value);
+            } else {
+              $input.val('1');
             }
 
             $form.append($input);
-            $form.submit();
           }
+
+          $form.submit();
         });
       }
     });
