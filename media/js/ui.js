@@ -25,14 +25,21 @@
           var value = $this.attr('data-value');
 
           if (name) {
-            var $input = $('<input type="hidden" name="' + name + '">');
+            var $input = $('<input type="hidden">');
+
+            $input.attr('name', name);
 
             if (value) {
               $input.val(value);
+            } else {
+              $input.val('1');
             }
 
             $form.append($input);
-            $form.submit();
+          }
+
+          if ($this.attr('data-nosubmit') !== '1') {
+            $form.trigger('submit');
           }
         });
       }

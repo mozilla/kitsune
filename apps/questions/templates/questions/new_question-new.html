@@ -1,0 +1,85 @@
+{# vim: set ts=2 et sts=2 sw=2: #}
+{% extends "questions/includes/question_editing_frame-new.html" %}
+{% from "questions/includes/aaq_macros-new.html" import select_category, current_articles_and_message, show_results %}
+{% from "questions/includes/aaq_macros-new.html" import select_product, aaq_search_form with context %}
+{% from "search/includes/result.html" import search_result with context %}
+{% set title = _('Ask a Question') %}
+{% set crumbs = [(url('questions.questions'), _('Support Forum')),
+                 (None, _('Ask a New Question'))] %}
+{% set can_edit_product = True %}
+{% set can_edit_category = True %}
+
+{% block headline %}{{ _('Ask a New Question') }}{% endblock %}
+
+{% block product %}
+  {% if not current_product %}
+    {{ select_product(products) }}
+  {% else %}
+    {{ super() }}
+  {% endif %}
+{% endblock %}
+
+{% block category %}
+  {% if current_product and not current_category and current_product.categories %}
+    {{ select_category(current_product) }}
+  {% else %}
+    {{ super() }}
+  {% endif %}
+{% endblock %}
+
+{% block articles_and_search_results %}
+  {% set form_header_set = False %}
+  {% if (current_articles or current_html) and not search_results and not form %}
+    {{ current_articles_and_message(current_articles, current_category, current_html) }}
+    {% if not form and not deadend %}
+      {% set form_header_set = True %}
+      <h2>
+        {% trans %}
+          If none of these solutions work, summarize your question in a
+          sentence
+        {% endtrans %}
+      </h2>
+    {% endif %}
+  {% endif %}
+
+  {% if current_category and ((current_articles or search_results or current_html)
+    or not (current_articles and search_results and current_html))
+    and not form and not deadend %}
+    {% if not form_header_set %}
+      <h2>
+        {% trans %}
+          Post a question in our Community Support Forum
+          <mark>(registration required)</mark>
+        {% endtrans %}
+      </h2>
+    {% endif %}
+    {{ aaq_search_form(current_product, current_category, settings, host, request) }}
+  {% endif %}
+
+  {% if tried_search and not form %}
+    {% if results %}
+      <div class="highlight-box">
+        {% set button_text = _('None of these solve my problem') %}
+        <div class="search-results">
+          {% for result in results %}
+            {{ search_result(result, as='aaq') }}
+          {% endfor %}
+        </div>{# .search-results #}
+      </div>
+      {% else %}{# No search results at all. #}
+      <h2 class="no-results">{{ _('This question has not been asked before.') }}</h2>
+      {% set button_text = _('Provide more details') %}
+    {% endif %}
+    <form action="{{ url('questions.aaq_step5', product_key=current_product.key, category_key=current_category.key) }}" method="get">
+      <input type="hidden" name="search" value="{{ request.GET.search }}" />
+      <button type="submit" data-type="submit" class="btn btn-submit big">{{ button_text }}</button>
+    </form>
+  {% endif %}
+
+{% endblock %}
+
+{% block major_detail_instructions %}
+  <h2>{{ _('Fill in the details of your question.') }}</h2>
+{% endblock %}
+
+{% block submit_button_value %}{{ _('Post Question') }}{% endblock %}

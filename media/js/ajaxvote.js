@@ -119,7 +119,7 @@ AjaxVote.prototype = {
         var $commentBox = $survey.find('textarea');
         var maxCount = parseInt($commentCount.text());
         var $radios = $survey.find('input[type=radio][name=unhelpful-reason]');
-        var $submit = $survey.find('input[type=submit]');
+        var $submit = $survey.find('input[type=submit], .btn[data-type=submit]');
         var $reason = $survey.find('.disabled-reason');
         var $textbox = $survey.find('textarea');
 

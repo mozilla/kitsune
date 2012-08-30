@@ -263,13 +263,8 @@
         <p>
           <span>{{ header }}</span>
           <input type="hidden" name="revision_id" value="{{ document.current_revision.id }}" />
-          {% if waffle.flag('new-theme') %}
-            <span class="btn" data-type="submit" data-name="helpful">Yes</span>
-            <span class="btn" data-type="submit" data-name="not-helpful">No</span>
-          {% else %}
-            <input type="submit" class="btn" name="helpful" value="{{ _('Yes') }}" />
-            <input type="submit" class="btn" name="not-helpful" value="{{ _('No') }}" />
-          {% endif %}
+          <input type="submit" class="btn" name="helpful" value="{{ _('Yes') }}" />
+          <input type="submit" class="btn" name="not-helpful" value="{{ _('No') }}" />
           <img class="wait" src="{{ settings.MEDIA_URL }}img/customercare/spinner.gif" alt="{{ _('Please wait...') }}" />
         </p>
       </form>
