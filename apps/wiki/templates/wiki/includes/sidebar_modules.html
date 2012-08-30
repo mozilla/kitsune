@@ -57,7 +57,7 @@
   {% if not parent %}
     {% set parent = document %}
   {% endif %}
-  <span>Editing Tools</span>
+  <span>{{ _('Editing Tools') }}</span>
   <ul class="sidebar-nav">
     <li{% if active == 'article' %} class="active"{% endif %}>
       {% if not active == 'article' and document %}

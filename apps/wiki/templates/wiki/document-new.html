@@ -89,10 +89,11 @@
     </ul>
   </nav>
   {{ related_articles(related, document) }}
+  {{ topic_sidebar(topics, product, topic) }}
 {% endblock %}
 
 {% block side_bottom %}
-  <div style="display: none;">
+  <div>
     {{ show_for(header=_('Article is for:')) }}
   </div>
 {% endblock %}

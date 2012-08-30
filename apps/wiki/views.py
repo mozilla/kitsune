@@ -148,10 +148,14 @@ def document(request, document_slug, template=None):
 
     contributors = doc.contributors.all()
 
+    topics = Topic.objects.all();
+
     data = {'document': doc, 'redirected_from': redirected_from,
             'related': related, 'contributors': contributors,
             'fallback_reason': fallback_reason,
-            'is_aoa_referral': request.GET.get('ref') == 'aoa'}
+            'is_aoa_referral': request.GET.get('ref') == 'aoa',
+            'topics': topics, 'product': doc.products.all()[0],
+            'topic': doc.topics.all()[0]}
     data.update(SHOWFOR_DATA)
     return jingo.render(request, template, data)
 
