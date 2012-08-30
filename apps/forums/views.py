@@ -27,7 +27,8 @@ log = logging.getLogger('k.forums')
 
 def forums(request):
     """View all the forums."""
-    qs = Forum.objects.select_related('last_post', 'last_post__author')
+    qs = Forum.objects.filter(is_listed=True)
+    qs = qs.select_related('last_post', 'last_post__author')
     qs = qs.extra(select={'thread_count': 'SELECT COUNT(*) FROM forums_thread '
                                           'WHERE forums_thread.forum_id = '
                                           'forums_forum.id'})
