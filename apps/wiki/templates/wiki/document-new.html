@@ -40,34 +40,6 @@
         {{ vote_form(document) }}
       {% endif %}
     </article>
-
-    {% if is_aoa_referral %}
-      <aside id="banner" class="top">
-        <div class="inner">
-          <span class="mascot"></span>
-          <div class="what">
-            <h1>{{ _("You've come to the right place for Firefox help!") }}</h1>
-            <p>
-              {% trans %}
-                This page should provide you with a solution to what you posted on Twitter.<br/>
-                If not, our community volunteers are ready to help.
-              {% endtrans %}
-            </p>
-          </div>
-          <div class="who">
-            <p>
-              {% trans url=url('customercare.landing') %}
-                You were sent here by one of our <br/>
-                volunteers from the <a href="{{ url }}">Army of Awesome</a>.
-              {% endtrans %}
-            </p>
-          </div>
-          <div class="bye">
-            <p><a class="close" href="#">&#x2716;</a></p>
-          </div>
-        </div>
-      </aside>
-    {% endif %}
   </div>
 {% endblock %}
 
