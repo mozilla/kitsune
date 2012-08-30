@@ -41,7 +41,14 @@ class Forum(NotificationsMixin, ModelBase):
     last_post = models.ForeignKey('Post', related_name='last_post_in_forum',
                                   null=True)
 
+    # Dictates the order in which forums are displayed in the forum list.
+    display_order = models.IntegerField(default=1, db_index=True)
+
+    # Whether or not this forum is visible in the forum list.
+    is_listed = models.BooleanField(default=True, db_index=True)
+
     class Meta(object):
+        ordering = ['display_order', 'id']
         permissions = (
                 ('view_in_forum',
                  'Can view restricted forums'),

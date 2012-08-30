@@ -321,6 +321,47 @@ class ForumsTemplateTests(ForumTestCase):
         eq_('/forums',
             pq(response.content)('link[rel="canonical"]')[0].attrib['href'])
 
+    def test_display_order(self):
+        """Verify the display_order is respected."""
+        forum1 = forum(display_order=1, save=True)
+        forum2 = forum(display_order=2, save=True)
+
+        # forum1 should be listed first
+        r = get(self.client, 'forums.forums')
+        eq_(200, r.status_code)
+        doc = pq(r.content)
+        eq_(forum1.name, doc('ol.forums > li a:first').text())
+
+        forum1.display_order = 3
+        forum1.save()
+
+        # forum2 should be listed first
+        r = get(self.client, 'forums.forums')
+        eq_(200, r.status_code)
+        doc = pq(r.content)
+        eq_(forum2.name, doc('ol.forums > li a:first').text())
+
+    def test_is_listed(self):
+        """Verify is_listed is respected."""
+        forum1 = forum(is_listed=True, save=True)
+        forum2 = forum(is_listed=True, save=True)
+
+        # Both forums should be listed.
+        r = get(self.client, 'forums.forums')
+        eq_(200, r.status_code)
+        doc = pq(r.content)
+        eq_(2, len(doc('ol.forums > li')))
+
+        forum1.is_listed = False
+        forum1.save()
+
+        # Only forum2 should be listed.
+        r = get(self.client, 'forums.forums')
+        eq_(200, r.status_code)
+        doc = pq(r.content)
+        eq_(1, len(doc('ol.forums > li')))
+        eq_(forum2.name, doc('ol.forums > li a').text())
+
 
 class NewThreadTemplateTests(ForumTestCase):
 
