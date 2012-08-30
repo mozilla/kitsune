@@ -17,12 +17,12 @@ import waffle
 from wikimarkup.parser import ALLOWED_TAGS, ALLOWED_ATTRIBUTES
 
 from products.tests import product
+from search.tests.test_es import ElasticTestCase
 from sumo.helpers import urlparams
 from sumo.tests import post, get, attrs_eq, MobileTestCase
 from sumo.urlresolvers import reverse
 from topics.tests import topic
 from users.tests import user, add_permission
-from wiki.cron import calculate_related_documents
 from wiki.events import (EditDocumentEvent, ReadyRevisionEvent,
                          ReviewableRevisionInLocaleEvent,
                          ApproveRevisionInLocaleEvent)
@@ -2045,24 +2045,44 @@ class SelectLocaleTests(TestCaseBase):
             len(doc('#select-locale ul.locales li')))
 
 
-class RelatedDocumentTestCase(TestCaseBase):
-    fixtures = ['users.json', 'wiki/documents.json']
-
+class RelatedDocumentTestCase(ElasticTestCase):
     def setUp(self):
         super(RelatedDocumentTestCase, self).setUp()
         product(save=True)
 
-    def test_related_order(self):
-        calculate_related_documents()
-        d = Document.uncached.get(pk=1)
-        response = self.client.get(d.get_absolute_url())
+    def test_related_documents(self):
+        # The document
+        d1 = document(title='lorem ipsum', save=True)
+        r1 = revision(document=d1, summary='lorem',
+                      content='lorem ipsum dolor',
+                      is_approved=True, save=True)
+        d1.current_revision = r1
+        d1.save()
+
+        # A document that is similar.
+        d2 = document(title='lorem ipsum sit', save=True)
+        r2 = revision(document=d2, summary='lorem',
+                      content='lorem ipsum dolor sit amet',
+                      is_approved=True, save=True)
+        d2.current_revision = r2
+        d2.save()
+
+        # A document that is similar but a different locale.
+        d3 = document(title='lorem ipsum sit', locale='es', save=True)
+        r3 = revision(document=d3, summary='lorem',
+                      content='lorem ipsum dolor sit amet',
+                      is_approved=True, save=True)
+        d3.current_revision = r3
+        d3.save()
+
+        self.refresh()
+
+        response = self.client.get(d1.get_absolute_url())
 
         doc = pq(response.content)
         related = doc('section#related-articles li a')
         eq_(1, len(related))
-
-        # If 'an article title 2' is first, the other must be second.
-        eq_('an article title 2', related[0].text)
+        eq_('lorem ipsum sit', related.text())
 
 
 class RevisionDeleteTestCase(TestCaseBase):
