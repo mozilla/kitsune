@@ -15,6 +15,7 @@ from nose.tools import eq_
 from pyquery import PyQuery as pq
 from wikimarkup.parser import ALLOWED_TAGS, ALLOWED_ATTRIBUTES
 
+from products.tests import product
 from sumo.helpers import urlparams
 from sumo.tests import post, get, attrs_eq, MobileTestCase
 from sumo.urlresolvers import reverse
@@ -95,6 +96,10 @@ https://testserver/en-US/unsubscribe/%(watcher)s?s=%(secret)s
 class DocumentTests(TestCaseBase):
     """Tests for the Document template"""
     fixtures = ['users.json']
+
+    def setUp(self):
+        super(DocumentTests, self).setUp()
+        product(save=True)
 
     def test_document_view(self):
         """Load the document view page and verify the title and content."""
@@ -292,6 +297,10 @@ class DocumentTests(TestCaseBase):
 
 
 class MobileArticleTemplate(MobileTestCase):
+    def setUp(self):
+        super(MobileArticleTemplate, self).setUp()
+        product(save=True)
+
     def test_document_view(self):
         """Verify mobile template doesn't 500."""
         r = revision(save=True, content='Some text.', is_approved=True)
@@ -305,6 +314,7 @@ class RevisionTests(TestCaseBase):
     fixtures = ['users.json']
 
     def setUp(self):
+        super(RevisionTests, self).setUp()
         self.client.logout()
 
     def test_revision_view(self):
@@ -1750,6 +1760,7 @@ class DocumentWatchTests(TestCaseBase):
         super(DocumentWatchTests, self).setUp()
         self.document = _create_document()
         self.client.login(username='rrosario', password='testpass')
+        product(save=True)
 
     def test_watch_GET_405(self):
         """Watch document with HTTP GET results in 405."""
@@ -1857,6 +1868,7 @@ class HelpfulVoteTests(TestCaseBase):
     def setUp(self):
         super(HelpfulVoteTests, self).setUp()
         self.document = _create_document()
+        product(save=True)
 
     def test_vote_yes(self):
         """Test voting helpful."""
@@ -2015,6 +2027,10 @@ class SelectLocaleTests(TestCaseBase):
 
 class RelatedDocumentTestCase(TestCaseBase):
     fixtures = ['users.json', 'wiki/documents.json']
+
+    def setUp(self):
+        super(RelatedDocumentTestCase, self).setUp()
+        product(save=True)
 
     def test_related_order(self):
         calculate_related_documents()

@@ -151,7 +151,7 @@ def document(request, document_slug, template=None):
 
     products = doc.get_products()
     if len(products) < 1:
-        product = Product.objects.all()[0]
+        product = Product.objects.filter(visible=True)[0]
     else:
         product = products[0]
 
