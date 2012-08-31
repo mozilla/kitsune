@@ -2,7 +2,6 @@
 {% extends "base.html" %}
 {% from 'includes/common_macros.html' import for_contributors_sidebar %}
 {% from 'products/includes/product_macros.html' import product_sidebar %}
-{% from 'topics/includes/topic_macros.html' import hot_topics %}
 {% from 'topics/includes/topic_macros.html' import help_topics with context %}
 {% set title = _('Help Articles') %}
 {% set crumbs = [(None, title)] %}
@@ -17,7 +16,6 @@
     {{ product_sidebar(products) }}
   </aside>
   <div class="grid_9">
-    {{ hot_topics(hot_docs) }}
     <section id="help-topics">
       {{ help_topics(topics[:6]) }}
       {% for topic in topics[6:] %}
