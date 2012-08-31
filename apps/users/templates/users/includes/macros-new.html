@@ -20,7 +20,7 @@ only_pwreset=False) -%}
     </ul>
   </fieldset>
   <div class="submit">
-    <span data-type="submit" data-name="login" class="btn btn-submit" data-progress="{{ _('Logging in...') }}" data-done="{{ _('Logged in!') }}" data-reset="{{ _('Log in') }}">{{ _('Log in') }}</span>
+    <button type="submit" data-type="submit" data-name="login" class="btn btn-submit" data-progress="{{ _('Logging in...') }}" data-done="{{ _('Logged in!') }}" data-reset="{{ _('Log in') }}">{{ _('Log in') }}</button>
   </div>
 </form>
 <div id="login-help">
@@ -57,7 +57,7 @@ only_pwreset=False) -%}
     {% endif %}
   </ul>
   <div class="submit">
-    <span data-type="submit" data-name="register" class="btn btn-submit">{{ _('Register') }}</span>
+    <button type="submit" data-type="submit" data-name="register" class="btn btn-submit">{{ _('Register') }}</button>
   </div>
 </form>
 {%- endmacro %}

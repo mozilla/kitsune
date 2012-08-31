@@ -194,13 +194,16 @@ textarea {
 .btn:link,
 .btn:visited,
 .btn:hover {
-  background: #e8e8e8;
-  border: 1px solid #d0d0d0;
+  background: #fff;
+  border: 0;
+  border-bottom: 2px solid #e8e8e8;
   .border-radius(6px);
+  .box-shadow(~"inset 0 0 12px rgba(230, 230, 230, 0.2), 0 0 0 1px #d0d0d0");
   color: @textDarkGrey;
   cursor: pointer;
   display: -moz-inline-stack; /* FF2 */
   display: inline-block;
+  font-family: @OpenSans;
   font-size: 14px;
   font-weight: bold;
   margin: 0 2px;
@@ -211,23 +214,15 @@ textarea {
   zoom: 1;
   *display: inline; /* Fix for IE6-7 */
 
-  &:before {
-    background: #fff;
-    bottom: 2px;
-    .border-radius(5px);
-    .box-shadow(inset 0 0 12px rgba(230, 230, 230, 0.2));
-    content: '';
-    left: 0;
-    position: absolute;
-    right: 0;
-    top: 0;
-    z-index: -1;
+  &:disabled {
+    opacity: 0.5;
   }
 
   &.btn-important,
   &.btn-submit {
     border: 0;
     border-bottom: 2px solid #bec0c2;
+    .box-shadow(none);
     color: #fff;
     font-family: @OpenSansLight;
     font-weight: normal;
@@ -236,7 +231,13 @@ textarea {
 
     &:before {
       bottom: 0;
-      .box-shadow(none);
+      .border-radius(5px);
+      content: '';
+      left: 0;
+      position: absolute;
+      right: 0;
+      top: 0;
+      z-index: -1;
     }
 
     &.big {

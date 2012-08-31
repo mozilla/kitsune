@@ -38,7 +38,9 @@
             $form.append($input);
           }
 
-          $form.submit();
+          if ($this.attr('data-nosubmit') !== '1') {
+            $form.trigger('submit');
+          }
         });
       }
     });
