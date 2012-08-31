@@ -49,6 +49,8 @@ document_patterns = patterns('wiki.views',
 )
 
 urlpatterns = patterns('wiki.views',
+    url(r'^$', 'landing', name='wiki.landing'),
+
     # (Un)subscribe to locale 'ready for review' notifications.
     url(r'^/watch-ready-for-review$', 'watch_locale',
         name='wiki.locale_watch'),

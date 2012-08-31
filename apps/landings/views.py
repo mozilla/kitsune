@@ -192,7 +192,7 @@ def old_products(request, template=None):
 
 
 @mobile_template('landings/{mobile/}kb.html')
-def kb(request, template=None):
+def old_kb(request, template=None):
     docs = KB_DOCS_FOR_MOBILE if request.MOBILE else KB_DOCS
     return jingo.render(request, template,
                         _data(docs, request.locale))

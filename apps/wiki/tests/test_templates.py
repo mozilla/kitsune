@@ -13,8 +13,10 @@ import mock
 from nose import SkipTest
 from nose.tools import eq_
 from pyquery import PyQuery as pq
+import waffle
 from wikimarkup.parser import ALLOWED_TAGS, ALLOWED_ATTRIBUTES
 
+from products.tests import product
 from sumo.helpers import urlparams
 from sumo.tests import post, get, attrs_eq, MobileTestCase
 from sumo.urlresolvers import reverse
@@ -90,6 +92,25 @@ Text of the new revision:
 Unsubscribe from these emails:
 https://testserver/en-US/unsubscribe/%(watcher)s?s=%(secret)s
 """)
+
+
+class LandingTests(TestCaseBase):
+    """Tests for the wiki landing page (/kb)."""
+    @mock.patch.object(waffle, 'flag_is_active')
+    def test_kb_landing_page(self, flag_is_active):
+        """Verify that /products page renders products."""
+        flag_is_active.return_value = True
+
+        product(save=True)
+        product(save=True)
+        topic(save=True)
+        topic(save=True)
+
+        r = self.client.get(reverse('wiki.landing'))
+        eq_(200, r.status_code)
+        doc = pq(r.content)
+        eq_(2, len(doc('#help-topics li')))
+        eq_(2, len(doc('.products ul li')))
 
 
 class DocumentTests(TestCaseBase):

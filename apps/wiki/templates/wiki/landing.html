@@ -1,0 +1,39 @@
+{# vim: set ts=2 et sts=2 sw=2: #}
+{% extends "base.html" %}
+{% from 'includes/common_macros.html' import for_contributors_sidebar %}
+{% from 'products/includes/product_macros.html' import product_sidebar %}
+{% from 'topics/includes/topic_macros.html' import hot_topics %}
+{% from 'topics/includes/topic_macros.html' import help_topics with context %}
+{% set title = _('Help Articles') %}
+{% set crumbs = [(None, title)] %}
+{% set styles = ('products',) %}
+
+{% block content %}
+  <div class="grid_12">
+    <h1 class="cf">{{ title }}</h1>
+  </div>
+  <aside class="grid_3">
+    {{ for_contributors_sidebar(request, user, settings.WIKI_DEFAULT_LANGUAGE) }}
+    {{ product_sidebar(products) }}
+  </aside>
+  <div class="grid_9">
+    {{ hot_topics(hot_docs) }}
+    <section id="help-topics">
+      {{ help_topics(topics[:6]) }}
+      {% for topic in topics[6:] %}
+        {% if loop.first %}<ul>{% endif %}
+        <li>
+          <a href="{{ '' }}">
+            {{ topic.title }}
+          </a>
+        </li>
+        {% if loop.last %}</ul>{% endif %}
+      {% endfor %}
+    </section>
+  </div>
+{% endblock %}
+
+{% block for_contributors %}{% endblock %}
+
+{% block outer_side %}
+{% endblock %}
