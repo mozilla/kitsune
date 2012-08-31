@@ -38,6 +38,10 @@ class RedirectTests(TestCase):
 
     fixtures = ['users.json']
 
+    def setUp(self):
+        super(RedirectTests, self).setUp()
+        product(save=True)
+
     def test_redirect_suppression(self):
         """The document view shouldn't redirect when passed redirect=no."""
         redirect, _ = doc_rev('REDIRECT [[http://smoo/]]')
@@ -52,6 +56,10 @@ class LocaleRedirectTests(TestCase):
     # Some of these may fail or be invalid if your WIKI_DEFAULT_LANGUAGE is de.
 
     fixtures = ['users.json']
+
+    def setUp(self):
+        super(LocaleRedirectTests, self).setUp()
+        product(save=True)
 
     def test_fallback_to_translation(self):
         """If a slug isn't found in the requested locale but is in the default
