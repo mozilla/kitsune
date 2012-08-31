@@ -27,6 +27,33 @@ h2 {
   }
 }
 
+.logo-sprite {
+  background-image: url('../img/logos.large.sprite.png');
+  background-repeat: no-repeat;
+  height: 110px;
+  width: 110px;
+
+  &.logo-desktop {
+    background-position: -20px -20px;
+  }
+
+  &.logo-mobile {
+    background-position: -20px -470px;
+  }
+
+  &.logo-home {
+    background-position: -20px -620px;
+  }
+
+  &.logo-sync {
+    background-position: -20px -320px;
+  }
+
+  &.logo-other {
+    background-position: -20px -170px;
+  }
+}
+
 .questions {
   list-style: none;
   margin: 0;
@@ -325,6 +352,30 @@ h2 {
   .submit {
     .btn {
       margin-left: 80px;
+    }
+  }
+}
+
+#product-picker {
+  > li {
+    > a,
+    > a:visited,
+    > a:hover {
+      color: @textGrey;
+
+      > img {
+        float: left;
+      }
+
+      > span {
+        display: block;
+        margin-left: 130px;
+
+        &.title {
+          font-family: @OpenSansLight;
+          font-size: 18px;
+        }
+      }
     }
   }
 }

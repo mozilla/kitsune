@@ -21,12 +21,13 @@
 {% macro select_product(products) -%}
   {{ aaq_progress() }}
   <h2>{{ _('Which product would you like to post a question about?') }}</h2>
-  <ul class="products select-one">
+  <ul id="product-picker" class="card-grid cf">
     {% for key, product in products.iteritems() %}
-      <li class="{{ key }}-icon {{ product.class }}">
-        <a href="{{ url('questions.aaq_step2', product_key=key) }}">
-          {{ product.name }}
-          <span>{{ product.subtitle }}</span>
+      <li>
+        <a class="cf" href="{{ url('questions.aaq_step2', product_key=key) }}">
+          <img src="{{ MEDIA_URL }}/img/blank.png" alt="" class="logo-sprite logo-{{ key }}">
+          <span class="title">{{ product.name }}</span>
+          <span class="description">{{ product.subtitle }}</span>
         </a>
       </li>
     {% endfor %}

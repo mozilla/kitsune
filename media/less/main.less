@@ -214,10 +214,6 @@ textarea {
   zoom: 1;
   *display: inline; /* Fix for IE6-7 */
 
-  &:disabled {
-    opacity: 0.5;
-  }
-
   &.btn-important,
   &.btn-submit {
     border: 0;
@@ -258,6 +254,12 @@ textarea {
       .gradient(#3c88cc, #3c88cc, #3173ae);
       border-bottom: 2px solid #2b659a;
     }
+  }
+}
+
+.btn {
+  &:disabled {
+    opacity: 0.5;
   }
 }
 
@@ -353,6 +355,7 @@ textarea {
     }
 
     > a {
+      display: block;
       padding: 20px;
     }
   }

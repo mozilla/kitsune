@@ -149,15 +149,19 @@ def document(request, document_slug, template=None):
 
     contributors = doc.contributors.all()
 
-    topic = doc.topics.all()[0]
-    product = doc.products.all()[0]
-    topics = topics_for([product])
+    products = doc.get_products()
+    if len(products) < 1:
+        product = Product.objects.all()[0]
+    else:
+        product = products[0]
+
+    topics = doc.get_topics()
 
     data = {'document': doc, 'redirected_from': redirected_from,
             'related': related, 'contributors': contributors,
             'fallback_reason': fallback_reason,
             'is_aoa_referral': request.GET.get('ref') == 'aoa',
-            'topics': topics, 'product': product, 'topic': topic}
+            'topics': topics, 'product': product}
     data.update(SHOWFOR_DATA)
     return jingo.render(request, template, data)
 
