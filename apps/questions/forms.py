@@ -21,7 +21,7 @@ TROUBLESHOOTING_LABEL = _lazy(u'Troubleshooting Information')
 TROUBLESHOOTING_HELP = _lazy(u'Copy and paste the information from '
                              u'<strong>Help &gt; Troubleshooting '
                              u'Information</strong>.')
-FREQUENCY_LABEL = _lazy(u'This happened')
+FREQUENCY_LABEL = _lazy(u'This happens')
 FREQUENCY_CHOICES = [(u'', u''),
                      (u'NOT_SURE', _lazy(u'Not sure how often')),
                      (u'ONCE_OR_TWICE', _lazy(u'Just once or twice')),
