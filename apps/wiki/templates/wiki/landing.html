@@ -23,7 +23,7 @@
       {% for topic in topics[6:] %}
         {% if loop.first %}<ul>{% endif %}
         <li>
-          <a href="{{ '' }}">
+          <a href="{{ url('topics.topic', slug=topic.slug)|urlparams(selectproduct=1) }}">
             {{ topic.title }}
           </a>
         </li>
