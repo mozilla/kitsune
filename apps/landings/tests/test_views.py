@@ -38,7 +38,7 @@ class MobileHomeTests(MobileTestCase):
         self._check_template('products', 'landings/mobile/products.html')
 
     def test_kb_home_for_mobile(self):
-        self._check_template('home.kb', 'landings/mobile/kb.html')
+        self._check_template('wiki.landing', 'landings/mobile/kb.html')
 
     def test_ask_home_for_mobile(self):
         self._check_template('home.ask', 'landings/mobile/ask.html')
