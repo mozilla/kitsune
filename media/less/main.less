@@ -109,6 +109,11 @@ h1 {
   font-size: 30px;
 }
 
+ul.errorlist {
+  color: red;
+  margin: 1em 3em;
+}
+
 input[type="text"],
 input[type="password"],
 input[type="email"],
@@ -240,7 +245,8 @@ input[type=button],
   z-index: 1;
   zoom: 1;
   *display: inline; /* Fix for IE6-7 */
-
+/* TODO: Fix this. Right now <input type="submit" class="btn-important" is
+         busted.
   &.btn-important,
   &.btn-submit {
     border: 0;
@@ -282,6 +288,7 @@ input[type=button],
       border-bottom: 2px solid #2b659a;
     }
   }
+*/
 }
 
 .btn {

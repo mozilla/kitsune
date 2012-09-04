@@ -124,7 +124,6 @@ article {
     a {
       font-weight: normal;
     }
-    
   }
 }
 
@@ -305,7 +304,7 @@ article {
     .date,
     .date-head {
       padding: 0 10px 0 0;
-    }    
+    }
   }
 }
 
@@ -355,4 +354,575 @@ article {
   font-family: Trebuchet MS, Helvetica, sans-serif;
   font-size: 13px;
   margin: 1px 0 10px;
+}
+
+/* Revision diffs */
+.revision-diff {
+  header {
+    margin: 20px 0 0;
+  }
+
+  h3 {
+    font-weight: bold;
+  }
+
+  h4 {
+    font-weight: bold;
+    margin: 10px 0 0;
+  }
+
+  div {
+    display: inline-block;
+    vertical-align: top;
+    width: 315px;
+  }
+
+  div.picker {
+    display: block;
+    padding: 0 10px 0 0;
+    text-align: right;
+    width: auto;
+  }
+
+  a.toggle-diff {
+    float: right;
+    margin: 0 10px 0 0;
+  }
+
+}
+
+table.diff {
+  background: #fff;
+  border: solid 1px #ccc;
+  clear: both;
+  font-family: Courier;
+  margin: 5px 0 15px;
+  text-align: left;
+  width: 98%;
+
+  &.full {
+    box-shadow: 0 2px 10px rgba(0,0,0,.25), inset -1px -1px 1px rgba(0,0,0,.125), inset 1px 0 1px rgba(255,255,255,.25);
+    -moz-box-shadow: 0 2px 10px rgba(0,0,0,.25), inset -1px -1px 1px rgba(0,0,0,.125), inset 1px 0 1px rgba(255,255,255,.25);
+    -webkit-box-shadow: 0 2px 10px rgba(0,0,0,.25), inset -1px -1px 1px rgba(0,0,0,.125), inset 1px 0 1px rgba(255,255,255,.25);
+    left: 1%;
+    position: absolute;
+
+    td.text {
+      display: table-cell;
+      width: auto;
+    }
+  }
+
+  colgroup {
+    border: none;
+  }
+
+  tbody {
+    border: none;
+  }
+
+  tr:nth-child(odd) {
+    background: #f0f0f0;
+  }
+
+  td.diff_next {
+    background: #ccc;
+    padding: 0 1px;
+  }
+
+  td.diff_header {
+    color: #999;
+    padding: 0 5px 0 1px;
+    text-align: right;
+  }
+
+  td.text {
+    display: inline-block;
+    padding: 1px 5px;
+    width: 300px;
+  }
+
+  .diff_add {
+    background: #aaffaa;
+  }
+
+  .diff_chg {
+    background: #ffff77;
+  }
+
+  .diff_sub {
+    background: #ffaaaa;
+  }
+}
+
+.html-rtl {
+  .revision-diff {
+    div.picker {
+      text-align: left;
+    }
+
+    a.toggle-diff {
+      float: left;
+      margin: 0 0 0 10px;
+    }
+  }
+
+  table.diff {
+    text-align: right;
+
+    td.diff_header {
+      padding: 0 1px 0 5px;
+      text-align: left;
+    }
+  }
+}
+
+#diff-picker-kbox {
+    width: 770px;
+}
+
+textarea {
+  width: 630px;
+}
+
+#doc-source {
+  textarea {
+    height: 400px;
+  }
+}
+
+/* New / Edit / Translate Document */
+#document-form {
+  form {
+    padding: 0 0 20px;
+  }
+}
+
+form {
+  ul {
+    margin: 0;
+    padding: 0;
+  }
+
+  > ul {
+    vertical-align: top;
+
+    > li {
+      clear: both;
+      list-style: none;
+      padding: 15px 0;
+
+      label {
+        color: #333;
+        display: block;
+        font-weight: bold;
+        margin: 0 0 5px;
+      }
+    }
+
+    li {
+      li {
+        display: inline-block;
+        padding: 0 10px 0 0;
+        vertical-align: top;
+        width: 45%;
+
+        label {
+          color: #666;
+          display: inline;
+        }
+      }
+    }
+  }
+
+  li.comment {
+    padding-top: 0;
+  }
+
+  input[type="text"] {
+    width: 630px;
+  }
+
+  label[for="id_is_localizable"],
+  label[for="id_is_archived"],
+  label[for="id_allow_discussion"],
+  label[for="id_needs_change"],
+  label[for="id_allow_discussion"] {
+    display: inline;
+  }
+
+  li {
+    > input[type="checkbox"] {
+      margin: 0 .5em;
+    }
+  }
+
+  input#id_comment {
+    width: 450px;
+  }
+}
+
+.html-rtl form > ul > li li {
+    padding: 0 0 0 10px;
+}
+
+textarea[name="content"] {
+    height: 500px;
+}
+
+.editor {
+    float: left;
+    padding: 0;
+    width: 711px;
+}
+
+.html-rtl {
+  .editor {
+    float: right;
+  }
+}
+
+#preview {
+  margin: 20px 0 0;
+  position: relative;
+
+  #support-for {
+    background: #fff;
+    border-radius: 10px;
+    -moz-border-radius: 10px;
+    -webkit-border-radius: 10px;
+    box-shadow: 0 4px 10px #999;
+    -moz-box-shadow: 0 4px 10px #999;
+    -webkit-box-shadow: 0 4px 10px #999;
+    margin: -90px 0 0;
+    padding: 15px;
+    position: fixed;
+    right: 100px;
+    top: 50%;
+    width: 165px;
+    z-index: 10;
+
+    h1 {
+      font-size: 20px;
+    }
+  }
+}
+
+#preview-bottom {
+  display: none;
+}
+
+#review-revision {
+  #support-for {
+    background: #fff;
+    border-radius: 10px;
+    -moz-border-radius: 10px;
+    -webkit-border-radius: 10px;
+    box-shadow: 0 4px 10px #999;
+    -moz-box-shadow: 0 4px 10px #999;
+    -webkit-box-shadow: 0 4px 10px #999;
+    display: none;
+    margin: -90px 0 0;
+    padding: 15px;
+    position: fixed;
+    right: 100px;
+    top: 50%;
+    width: 165px;
+    z-index: 10;
+  }
+
+  .open {
+    #support-for {
+      display: block;
+
+      h1 {
+        font-size: 20px;
+      }
+
+      input {
+        width: auto !important; /* temp hack workaround */
+      }
+    }
+  }
+}
+
+.html-rtl {
+  #preview,
+  #review-revision {
+    #support-for {
+      left: 100px;
+      right: auto;
+    }
+  }
+}
+
+/* Translate specific */
+ul.description {
+  li {
+    list-style: none;
+    padding: 15px 0;
+
+    &:first-child {
+      border: none;
+    }
+  }
+
+  h3 {
+    color: #333;
+    font-family: Verdana;
+    font-size: 13px;
+    margin: 0 0 5px;
+  }
+
+  input[type="text"] {
+      width: 300px;
+  }
+
+  textarea {
+    height: 100px;
+    padding: 2px;
+    width: 300px;
+  }
+}
+
+div.approved,
+div.localized {
+  display: inline-block;
+  vertical-align: top;
+  width: 49%;
+
+  p {
+    min-height: 35px;
+  }
+
+  .editor-tools {
+    height: 80px;
+  }
+}
+
+#content-fields {
+  padding: 15px 0;
+
+  h3 {
+    color: #333;
+    font-family: Verdana;
+    font-size: 13px;
+    margin: 0 0 5px;
+  }
+
+  div.val {
+    border: solid 1px #999;
+    height: 500px;
+    overflow: auto;
+    padding: 2px;
+    width: 400px;
+  }
+
+  textarea {
+    height: 500px;
+    padding: 2px;
+    width: 300px;
+  }
+
+  div.approved {
+    textarea {
+      margin: 96px 0 0;
+    }
+  }
+
+  .editor {
+    margin: 10px 0 0;
+    padding: 0;
+    width: 345px;
+  }
+}
+
+body.translate div.significance {
+  padding: 15px 0;
+}
+
+/* Review */
+#revision-content,
+#reision-html {
+    margin: 10px 0;
+
+  pre {
+    white-space: pre-wrap;
+  }
+}
+
+
+body.review {
+  #actions {
+    margin: 20px 0;
+  }
+
+  #content-fields {
+    textarea {
+      height: 250px;
+      margin: 5px 0 0;
+    }
+  }
+}
+
+#approve-modal {
+  p {
+    margin: 0 0 10px;
+
+    &.warning {
+      background: #FFF9DB url(../img/wiki/bkg.warning.png) repeat-y left top;
+      padding: .5em 1em .5em 2em;
+    }
+  }
+
+  label {
+    font-weight: normal;
+  }
+
+  li {
+    list-style: none;
+    padding: 5px;
+    position: relative;
+
+    div.help-text {
+      background: #fff;
+      border-radius: 0 0 10px 10px;
+      box-shadow: 0 10px 10px rgba(0,0,0,.25), inset -1px -1px 1px rgba(0,0,0,.125), inset 1px 0 1px rgba(255,255,255,.25);
+      color: #000;
+      display: none;
+      left: 23px;
+      padding: 10px 15px;
+      position: absolute;
+      top: 20px;
+      z-index: 999;
+    }
+
+    &:hover {
+      border-radius: 10px 10px 0 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,.25), inset -1px -1px 1px rgba(0,0,0,.125), inset 1px 0 1px rgba(255,255,255,.25);
+
+      label {
+        position: relative;
+        z-index: 1000;
+      }
+
+      div.help-text {
+        display: block;
+      }
+    }
+  }
+
+  div.message,
+  div.ready-for-l10n,
+  div.needs-change {
+    margin: 10px 0;
+  }
+
+  textarea {
+    height: 100px;
+    width: 350px;
+  }
+}
+
+.html-rtl {
+  #approve-modal {
+    p.warning {
+      padding: .5em 2em .5em 1em;
+    }
+
+    li {
+      div.help-text {
+        left: auto;
+        right: 23px;
+      }
+    }
+  }
+}
+
+#reject-modal {
+  div.message {
+    margin: 10px 0;
+  }
+
+  textarea {
+    height: 100px;
+    width: 350px;
+  }
+}
+
+.needs-change {
+  .comment {
+    margin: 0 0 0 17px;
+
+    label {
+      display: block;
+    }
+  }
+}
+
+/* Style video modal */
+div.video .kbox-container {
+    width: 680px;
+    height: 550px;
+    text-align: left;
+}
+
+.html-rtl div.video .kbox-container {
+    text-align: right;
+}
+
+/* Graceful fallback for <details> tags */
+/* from http://mathiasbynens.be/notes/html5-details-jquery */
+
+details, summary {
+    display: block;
+}
+
+details {
+    margin: 25px 0 0;
+}
+
+/* Headings aren't valid in <summary>s, and it makes me sad. */
+details.h2 > summary {
+    font-size: 20px;
+    margin: 21px 0 8px;
+}
+
+/* The .no-details styles will get applied only if JavaScript is enabled and <details> is not natively supported. */
+
+/* Add focus styles (for keyboard accessibility) */
+.no-details summary:focus {
+    outline: dotted 1px;
+}
+
+.no-details summary:hover {
+    background-color: #e6f1fb;
+}
+
+/* The following styles are not really needed, since the jQuery script takes care of hiding/displaying the elements. */
+/* However, we're still gonna use CSS as well to prevent FOUC in browsers that understand these selectors. */
+/* Remember: by default (and probably most of the time), the contents of the <details> element are hidden. */
+
+/* Hide all direct descendants of every <details> element */
+/* Note that IE6 doesn't support the child selector; we'll work around that using jQuery later */
+.no-details details > * {
+    display: none;
+}
+
+/* Make sure summary remains visible, and apply a pointer cursor upon hover to indicate it's a clickable element */
+.no-details details summary {
+    background: transparent url(../img/wiki/bkg.collapsibles.png) no-repeat 5px 5px;
+    border-bottom: solid 1px #cadaeb;
+    cursor: pointer;
+    display: block;
+    margin: 10px 0 30px;
+    padding: 0 0 0 30px;
+}
+
+.html-rtl .no-details details summary {
+    padding: 0 30px 0 0;
+}
+
+.no-details details.open summary {
+    background-position: 5px -45px;
 }
