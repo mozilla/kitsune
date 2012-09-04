@@ -179,7 +179,7 @@
                                 field.maxLength);
         });
     }
-    
+
     function initSummaryCount() {
         var $summaryCount = $('#remaining-characters'),
             $summaryBox = $('#id_summary'),
@@ -199,7 +199,7 @@
                     }
                 }
             };
-        
+
         updateCount();
         $summaryBox.bind("input", updateCount);
     }
@@ -315,7 +315,7 @@
             kbox = $modal.data('kbox');
         kbox.updateOptions({
             preOpen: function() {
-                var form = $('input.btn-submit').closest('form')[0];
+                var form = $('.btn-submit').closest('form')[0];
                 if (form.checkValidity && !form.checkValidity()) {
                     // If form isn't valid, click the modal submit button
                     // so the validation error is shown. (I couldn't find a

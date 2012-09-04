@@ -195,12 +195,12 @@
 
 {% macro submit_revision(form, buttons_only=False) -%}
   <div class="submit">
-    <input class="btn-important btn-submit" type="submit" value="{{ _('Submit for Review') }}" disabled="disabled" />
+    <button class="btn btn-important btn-submit" type="submit">{{ _('Submit for Review') }}</button>
     <input class="btn-preview" data-preview-url="{{ url('wiki.preview') }}" type="button" value="{{ _('Preview Content') }}" disabled="disabled" />
   </div>
   {% if not buttons_only %}
     <div>{# Dummy wrapper so modal doesn't get shown by details/summary code #}
-      <div id="submit-modal" class="kbox" title="{{ _('Submit Your Changes') }}" data-target="input.btn-submit" data-modal="true">
+      <div id="submit-modal" class="kbox" title="{{ _('Submit Your Changes') }}" data-target=".btn-submit" data-modal="true">
         <p>
           {% trans %}You rock! We'll send an email to let you know if your changes get approved. You
           can follow the discussion about this article by clicking the Discussion tab.{% endtrans %}
@@ -215,7 +215,7 @@
             {{ _('Notify me of any future changes to this page') }}
           </label>
         </div>
-        <input type="submit" value="{{ _('Submit') }}">
+        <button class="btn btn-important" type="submit">{{ _('Submit') }}</button>
         <a class="kbox-cancel" href="#cancel">{{ _('Cancel') }}</a>
       </div>
     </div>
