@@ -1,4 +1,4 @@
-{% if waffle.flag('new-theme') %}
+{% if show_new_sumo(request) %}
   {% extends "wiki/document-new.html" %}
 {% else %}
   {% extends "wiki/document-old.html" %}

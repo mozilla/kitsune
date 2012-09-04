@@ -32,7 +32,6 @@ from wiki import DOCUMENTS_PER_PAGE
 from wiki.events import (EditDocumentEvent, ReviewableRevisionInLocaleEvent,
                          ApproveRevisionInLocaleEvent, ApprovedOrReadyUnion,
                          ReadyRevisionEvent)
-from wiki.facets import topics_for
 from wiki.forms import (AddContributorForm, DocumentForm, RevisionForm,
                         ReviewForm)
 from wiki.models import Document, Revision, HelpfulVote, ImportantDate
@@ -325,7 +324,7 @@ def edit_document(request, document_slug, revision_id=None):
 
     show_revision_warning = _show_revision_warning(doc, rev)
 
-    return jingo.render(request, 'wiki/edit_document.html',
+    return jingo.render(request, 'wiki/edit.html',
                         {'revision_form': rev_form,
                          'document_form': doc_form,
                          'disclose_description': disclose_description,

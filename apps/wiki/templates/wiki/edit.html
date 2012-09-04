@@ -1,0 +1,5 @@
+{% if show_new_sumo(request) %}
+  {% extends "wiki/edit-new.html" %}
+{% else %}
+  {% extends "wiki/edit-old.html" %}
+{% endif %}
