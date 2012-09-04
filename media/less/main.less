@@ -109,6 +109,11 @@ h1 {
   font-size: 30px;
 }
 
+ul.errorlist {
+  color: red;
+  margin: 1em 3em;
+}
+
 input[type="text"],
 input[type="password"],
 input[type="email"],
@@ -118,6 +123,25 @@ textarea {
   .border-radius(5px);
   .box-shadow(0 0 0 1px #efefef);
   font-family: @OpenSans;
+}
+
+/* buttons styled to look like links */
+input[type="submit"].link-btn {
+    background: none;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    color: rgb(0, 81, 185);
+    cursor: pointer;
+    font-weight: normal;
+    padding: 0;
+    text-align: left;
+    white-space: normal;
+
+    &:hover {
+      box-shadow: none;
+      text-decoration: underline;
+    }
 }
 
 .breadcrumbs {
@@ -190,6 +214,8 @@ textarea {
   }
 }
 
+input[type=submit],
+input[type=button],
 .btn,
 .btn:link,
 .btn:visited,
@@ -1065,4 +1091,11 @@ input.searchbox {
       padding: 6px 20px 6px 42px;
     }
   }
+}
+
+.warning-box {
+  background: url('../img/warning-stripes.png') top left repeat-x #ffe;
+  border: 1px solid #fffbe7;
+  margin: 20px 0 20px 0;
+  padding: 20px 30px 20px 30px;
 }

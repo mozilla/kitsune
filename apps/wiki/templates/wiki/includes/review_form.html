@@ -7,8 +7,8 @@
   <div id="actions">
     <form action="" method="post">
       {{ csrf() }}
-      <input id="btn-approve" class="btn-important" type="submit" name="approve" value="{% if document.parent %}{{_('Approve Translation')  }}{% else %}{{ _('Approve Revision') }}{% endif %}" disabled="disabled">
-      <input id="btn-reject" type="submit" name="reject" value="{% if document.parent %}{{_('Defer Translation')  }}{% else %}{{ _('Defer Revision') }}{% endif %}" disabled="disabled">
+      <button id="btn-approve" class="btn btn-important" type="submit">{% if document.parent %}{{_('Approve Translation')  }}{% else %}{{ _('Approve Revision') }}{% endif %}</button>
+      <button class="btn" id="btn-reject" type="submit">{% if document.parent %}{{_('Defer Translation')  }}{% else %}{{ _('Defer Revision') }}{% endif %}</button>
       <a href="{{ url('wiki.document_revisions', document.slug) }}">{{ _('Cancel Review') }}</a>
     </form>
 
@@ -63,7 +63,7 @@
           </div>
         </div>
       {% endif %}
-      <input type="submit" name="approve" value="{{ _('Accept') }}">
+      <button class="btn btn-important" type="submit" data-type="submit" data-name="approve" data-value="1">{{ _('Accept') }}</button>
       <a class="kbox-cancel" href="{{ url('wiki.document_revisions', document.slug) }}">{{ _('Cancel') }}</a>
     </form>
 
@@ -84,7 +84,7 @@
           <textarea id="id-reject-comment" required name="comment">{% if form.initial %}{{ form.initial.comment }}{% else %}{{ form.comment.data }}{% endif %}</textarea>
         </div>
       {% endif %}
-      <input type="submit" name="reject" value="{{ _('Defer') }}">
+      <button class="btn" type="submit" data-type="submit" data-name="reject" data-value="1">{{ _('Defer') }}</button>
       <a class="kbox-cancel" href="{{ url('wiki.document_revisions', document.slug) }}">{{ _('Cancel') }}</a>
     </form>
   </div>

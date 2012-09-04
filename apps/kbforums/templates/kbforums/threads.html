@@ -3,11 +3,11 @@
 {% from "kbforums/includes/macros.html" import kbforums_warning with context %}
 {# L10n: {d} is the name of the document. #}
 {% set title = _('{d} Discussion | Knowledge Base')|f(d=document.title) %}
-{% set crumbs = [(url('wiki.category', document.category), document.get_category_display()),
-                 (document.get_absolute_url(), document.title),
+{% set crumbs = [(document.get_absolute_url(), document.title),
                  (None, _('Discuss'))] %}
 
 {% block content %}
+<div class="grid_9">
 <article id="threads" class="main">
   {{ kbforums_warning(document, user) }}
   <h1>{{ _('{d} Discussion')|f(d=document.title) }}</h1>
@@ -68,4 +68,5 @@
     <p>{{ _('There are no threads. Maybe you should create some!') }}</p>
   {% endif %}
 </article>
+</div>
 {% endblock %}

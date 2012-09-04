@@ -5,13 +5,13 @@
 {% from "kbforums/includes/macros.html" import kbforums_warning with context %}
 {# L10n: {t} is the title of the thread. {d} is the name of the document. #}
 {% set title = _('Edit a post | {t} | {d} Discussion | Knowledge Base')|f(t=thread.title, d=document.title) %}
-{% set crumbs = [(url('wiki.category', document.category), document.get_category_display()),
-                 (document.get_absolute_url(), document.title),
+{% set crumbs = [(document.get_absolute_url(), document.title),
                  (url('wiki.discuss.threads', document.slug), _('Discuss')),
                  (url('wiki.discuss.posts', document.slug, thread.id), thread.title),
                  (None, _('Edit a post'))] %}
 
 {% block content %}
+<div class="grid_9">
 <article id="edit-post" class="main">
   {{ kbforums_warning(document, user) }}
   <h1>{{ _('Edit a post') }}</h1>
@@ -41,4 +41,5 @@
     {% endif %}
   </div>
 </article>
+</div>
 {% endblock %}

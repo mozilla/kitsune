@@ -10,7 +10,7 @@
 {% block content %}
   <div class="grid_12">
     {% if user.is_authenticated() %}
-      {{ for_contributors(request, user, settings.WIKI_DEFAULT_LANGUAGE) }}
+      {{ for_contributors(user, settings.WIKI_DEFAULT_LANGUAGE) }}
     {% endif %}
     <section id="help-topics">
       <h1>{{ _('Help Topics') }}</h1>

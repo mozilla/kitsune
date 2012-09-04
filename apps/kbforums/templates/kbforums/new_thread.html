@@ -5,12 +5,12 @@
 {% from "kbforums/includes/macros.html" import kbforums_warning with context %}
 {# L10n: {d} is the name of the document. #}
 {% set title = _('Create a new thread | {d} | Knowledge Base')|f(d=document.title) %}
-{% set crumbs = [(url('wiki.category', document.category), document.get_category_display()),
-                 (document.get_absolute_url(), document.title),
+{% set crumbs = [(document.get_absolute_url(), document.title),
                  (url('wiki.discuss.threads', document.slug), _('Discuss')),
                  (None, _('Create a new thread'))] %}
 
 {% block content %}
+<div class="grid_9">
 <article id="new-thread" class="main">
   {{ kbforums_warning(document, user) }}
   <h1>{{ _('Create a new thread') }}</h1>
@@ -46,4 +46,5 @@
     </div>
   </form>
 </article>
+</div>
 {% endblock %}

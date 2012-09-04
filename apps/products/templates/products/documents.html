@@ -13,7 +13,7 @@
     <h1 class="product-title cf"><img src="{{ MEDIA_URL }}img/blank.png" alt="" class="logo-sprite" style="background-image: url('{{ product.image_url }}');" />{{ _(product.title) }}</h1>
   </div>
   <aside class="grid_3">
-    {{ for_contributors_sidebar(request, user, settings.WIKI_DEFAULT_LANGUAGE) }}
+    {{ for_contributors_sidebar(user, settings.WIKI_DEFAULT_LANGUAGE) }}
     {{ topic_sidebar(topics, product, topic) }}
   </aside>
   <div class="grid_9">

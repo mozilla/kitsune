@@ -104,18 +104,18 @@
 </li>
 {% endmacro %}
 
-{% macro for_contributors(request, user, default_language) -%}
+{% macro for_contributors(user, default_language) -%}
   {% if user.is_authenticated() %}
     <section id="for-contributors" class="feature-box">
       <h1>{{ _('For Contributors') }}</h1>
       <ul class="cf">
-        {{ _for_contributor_links(request, user, default_language) }}
+        {{ _for_contributor_links(user, default_language) }}
       </ul>
     </section>
   {% endif %}
 {%- endmacro %}
 
-{% macro for_contributors_sidebar(request, user, default_language, li_only=False) -%}
+{% macro for_contributors_sidebar(user, default_language, li_only=False) -%}
   {% if user.is_authenticated() %}
     {% if not li_only %}
       <ul class="sidebar-nav sidebar-folding">
@@ -123,7 +123,7 @@
       <li>
         <a href="{{ url('products') }}">{{ _('For Contributors') }}</a>
         <ul class="sidebar-nav">
-          {{ _for_contributor_links(request, user, default_language) }}
+          {{ _for_contributor_links(user, default_language) }}
         </ul>
       </li>
     {% if not li_only %}
@@ -132,7 +132,7 @@
   {% endif %}
 {%- endmacro %}
 
-{% macro _for_contributor_links(request, user, default_language) -%}
+{% macro _for_contributor_links(user, default_language) -%}
   <li><a href="{{ url('wiki.document', 'superheroes-wanted') }}">{{ _('Quickstart Guide') }}</a></li>
   <li><a href="{{ url('wiki.document', 'contributor-news-resources') }}">{{ _('News &amp; Resources') }}</a></li>
   <li><a href="{{ url('forums.forums') }}">{{ _('Contributor Forums') }}</a></li>

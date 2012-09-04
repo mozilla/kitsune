@@ -514,7 +514,10 @@ MINIFY_BUNDLES = {
             'css/tags.css',
         ),
         'wiki-new': (
+            'css/users.autocomplete.css',
+            'css/users.list.css',
             'less/wiki.less',
+            'css/screencast.css',
         ),
         'home': (
             'css/showfor.css',

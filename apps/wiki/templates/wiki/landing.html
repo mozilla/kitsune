@@ -12,7 +12,7 @@
     <h1 class="cf">{{ title }}</h1>
   </div>
   <aside class="grid_3">
-    {{ for_contributors_sidebar(request, user, settings.WIKI_DEFAULT_LANGUAGE) }}
+    {{ for_contributors_sidebar(user, settings.WIKI_DEFAULT_LANGUAGE) }}
     {{ product_sidebar(products) }}
   </aside>
   <div class="grid_9">
