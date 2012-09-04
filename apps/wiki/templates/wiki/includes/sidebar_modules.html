@@ -64,9 +64,11 @@
       <li{% if active != 'article' %} class="selected"{% endif %}>
         <span>{{ _('Editing Tools') }}</span>
         <ul class="sidebar-nav">
-          <li{% if active == 'article' %} class="selected"{% endif %}>
-            <a href="{{ url('wiki.document', document.slug) }}">{{ _('Article') }}</a>
-          </li>
+          {% if document %}
+            <li{% if active == 'article' %} class="selected"{% endif %}>
+              <a href="{{ url('wiki.document', document.slug) }}">{{ _('Article') }}</a>
+            </li>
+          {% endif %}
           {% if document and document.allow_discussion %}
             <li{% if active == 'discussion' %} class="selected"{% endif %}>
               <a href="{{ url('wiki.discuss.threads', document.slug) }}">{{ _('Discussion') }}</a>
