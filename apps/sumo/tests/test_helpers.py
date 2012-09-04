@@ -14,7 +14,8 @@ import test_utils
 
 from sumo.helpers import (datetimeformat, DateTimeFormatError,
                           collapse_linebreaks, url, json, timesince,
-                          label_with_help, urlparams, yesno, number, remove)
+                          label_with_help, urlparams, yesno, number, remove,
+                          is_idevice)
 from sumo.tests import TestCase
 from sumo.urlresolvers import reverse
 
@@ -197,6 +198,37 @@ class TestDateTimeFormat(TestCase):
     def test_json_helper(self):
         eq_('false', json(False))
         eq_('{"foo": "bar"}', json({'foo': 'bar'}))
+
+    def test_is_idevice_helper(self):
+        """Verify that is_idevice detects iphone/ipad/ipod UAs."""
+        request = Mock()
+        request.META = {}
+
+        # Detect iPad
+        request.META['HTTP_USER_AGENT'] = (
+            "Mozilla/5.0(iPad; U; CPU iPhone OS 3_2 like Mac OS X; en-us) "
+            "AppleWebKit/531.21.10 (KHTML, like Gecko) Version/4.0.4 "
+            "Mobile/7B314 Safari/531.21.10")
+        assert is_idevice(request)
+
+        # Detect iPhone
+        request.META['HTTP_USER_AGENT'] = (
+            "Mozilla/5.0 (iPhone; U; CPU iPhone OS 3_0 like Mac OS X; en-us) "
+            "AppleWebKit/528.18 (KHTML, like Gecko) Version/4.0 Mobile/7A341 "
+            "Safari/528.16")
+        assert is_idevice(request)
+
+        # Detect iPod
+        request.META['HTTP_USER_AGENT'] = (
+            "Mozilla/5.0 (iPod; U; CPU like Mac OS X; en) AppleWebKit/420.1 "
+            "(KHTML,like Gecko) Version/3.0 Mobile/3A100a Safari/419.3")
+        assert is_idevice(request)
+
+        # Don't detect Firefox OS
+        request.META['HTTP_USER_AGENT'] = (
+            "Firefox OS UA - Mozilla/5.0 (Mobile; rv:12.0) Gecko/12.0 "
+            "Firefox/12.0")
+        assert not is_idevice(request)
 
 
 class TestUrlHelper(TestCase):

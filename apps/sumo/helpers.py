@@ -46,6 +46,7 @@ def quick_paginator(pager):
     t = env.get_template('includes/quick_paginator.html')
     return jinja2.Markup(t.render({'pager': pager}))
 
+
 @register.filter
 def mobile_paginator(pager):
     t = env.get_template('includes/mobile/paginator.html')
@@ -374,4 +375,16 @@ def show_new_sumo(request):
     if ((not hasattr(request, 'MOBILE') or not request.MOBILE) and
         waffle.flag_is_active(request, 'new-theme')):
         return True
+    return False
+
+
+IDEVICE_USER_AGENTS = re.compile('iphone|ipad|ipod')
+
+
+@register.function
+def is_idevice(request):
+    """Return True if the user agent is detected to be an i{phone,pad,pod}."""
+    if hasattr(request, 'META'):
+        ua = request.META.get('HTTP_USER_AGENT', '').lower()
+        return IDEVICE_USER_AGENTS.search(ua)
     return False
