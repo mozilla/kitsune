@@ -17,33 +17,118 @@ article {
 
 .wiki-doc {
   h1 {
-    border-top: 1px dotted @borderLightGrey;
-    margin-top: 36px;
-    padding-top: 36px;
-
     &:first-child {
       border: 0;
     }
   }
 
-  ul {
-    list-style: none;
+  .document-vote {
+    margin: 10px 0 0 0;
+  }
+
+  #doc-contributors {
+    color: @textLightGrey;
+    font-size: 12px;
+    padding: 6px 0;
+
+    a, a:visited, a:hover {
+      color: @textLightGrey;
+    }
+  }
+}
+
+#doc-content {
+  h1 {
+    border-top: 1px dotted @borderLightGrey;
+    font-size: 26px;
+    margin-top: 36px;
+    padding-top: 36px;
+  }
+
+  #toc + h1 { /* h1 right after TOC: no border and less padding */
+    border: none;
+    padding-top: 5px;
+  }
+
+  h2 {
+    font-size: 19px;
+    margin: 21px 0 8px;
+  }
+
+  h3 {
+    font-size: 16px;
+    margin: 21px 0 8px;
+  }
+
+  h4,
+  h5,
+  h6 {
+    font-size: 14px;
+    margin: 21px 0 8px;
+  }
+
+  video,
+  img {
+    margin: 0;
+    max-width: 100%;
+  }
+
+  ul,
+  ol,
+  dl {
     margin: 0;
     padding: 0;
 
     li {
       margin: 6px 0;
       padding: 0 0 0 20px;
+      list-style-position: inside;
 
-      &:before {
-        content: '\2022';
-        margin: 0 14px 0 -20px;
+      p {
+        margin: 0;
+      }
+
+      ol,
+      ul,
+      dl {
+        margin: 0 0 0 6px;
       }
     }
   }
 
-  .document-vote {
-    margin: 10px 0 0 0;
+  .code {
+  }
+
+  .filepath {
+    font-style: italic;
+    white-space: nowrap;
+  }
+
+  .key,
+  .button {
+    background: #f0f0f0;
+    background: -moz-linear-gradient(top, #f0f0f0, #fcfcfc);
+    background: -webkit-gradient(linear, center top, center bottom, from(#f0f0f0), to(#fcfcfc));
+    border-radius: 3px;
+    color: #303030;
+    border: 1px solid #e0e0e0;
+    border-bottom-width: 2px;
+    white-space: nowrap;
+  }
+
+  .key {
+    font-family: monospace;
+    padding: 1px 6px;
+  }
+
+  .button {
+    padding: 1px 10px;
+  }
+
+  .menu {
+    background: #e8e8e8;
+    color: #303030;
+    padding: 2px 4px;
   }
 
   .note,
@@ -68,21 +153,47 @@ article {
     padding: 20px 30px 20px 30px;
   }
 
-  #doc-content {
-    h1 {
-      font-size: 26px;
-    }
-
-    /* TODO: Add missing styles from wiki_syntax.css */
+  .pref {
+    border: solid 1px #ddd;
+    color: #303030;
+    padding: 0 3px;
   }
 
-  #doc-contributors {
-    color: @textLightGrey;
-    font-size: 12px;
-    padding: 6px 0;
+  table {
+    border-spacing: 0;
+    width: 100%;
+  }
 
-    a, a:visited, a:hover {
-      color: @textLightGrey;
+  tr:nth-child(odd) {
+    background: #eee;
+  }
+
+  th {
+    font-weight: bold;
+    border-bottom: solid 2px #bbb;
+  }
+
+  th,
+  td {
+    padding: 5px 10px;
+  }
+
+}
+
+.html-rtl {
+  #doc-content {
+    ol,
+    ul,
+    dl {
+      li {
+        padding: 0 20px 0 0;
+
+        ol,
+        ul,
+        dl {
+          margin: 0 6px 0 0;
+        }
+      }
     }
   }
 }
