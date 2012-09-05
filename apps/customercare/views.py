@@ -228,6 +228,10 @@ def twitter_post(request):
         return HttpResponseBadRequest(_('Message is too long'))
 
     try:
+        username = request.twitter.api.auth.get_username()
+        if username in settings.CC_BANNED_USERS:
+            return jingo.render(request, 'customercare/tweets.html',
+                {'tweets': []})
         result = request.twitter.api.update_status(content, reply_to_id)
     except tweepy.TweepError, e:
         # L10n: {message} is an error coming from our twitter api library
