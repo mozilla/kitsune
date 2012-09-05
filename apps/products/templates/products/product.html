@@ -4,7 +4,7 @@
 {% from 'products/includes/product_macros.html' import product_sidebar %}
 {% from 'topics/includes/topic_macros.html' import hot_topics %}
 {% from 'topics/includes/topic_macros.html' import help_topics with context %}
-{% set title = _(product.title) %}
+{% set title = _(product.title, 'DB: products.Product.title') %}
 {% set crumbs = [(url('products'), 'Products and Services'), (None, title)] %}
 {% set styles = ('products',) %}
 
@@ -24,7 +24,7 @@
       {% for topic in topics[6:] %}
         {% if loop.first %}<ul>{% endif %}
         <li>
-          <a href="{{ url('products.documents', product_slug=product.slug, topic_slug=topic.slug) }}">{{ topic.title }}</a>
+          <a href="{{ url('products.documents', product_slug=product.slug, topic_slug=topic.slug) }}">{{ _(topic.title, 'DB: topics.Topic.title') }}</a>
         </li>
         {% if loop.last %}</ul>{% endif %}
       {% endfor %}
