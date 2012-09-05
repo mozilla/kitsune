@@ -109,7 +109,7 @@ article {
     background: #f0f0f0;
     background: -moz-linear-gradient(top, #f0f0f0, #fcfcfc);
     background: -webkit-gradient(linear, center top, center bottom, from(#f0f0f0), to(#fcfcfc));
-    border-radius: 3px;
+    .border-radius(3px);
     color: #303030;
     border: 1px solid #e0e0e0;
     border-bottom-width: 2px;
@@ -512,7 +512,7 @@ table.diff {
   width: 98%;
 
   &.full {
-    box-shadow: 0 2px 10px rgba(0,0,0,.25), inset -1px -1px 1px rgba(0,0,0,.125), inset 1px 0 1px rgba(255,255,255,.25);
+    .box-shadow(~"0 2px 10px rgba(0,0,0,0.25), inset -1px -1px 1px rgba(0,0,0,0.125), inset 1px 0 1px rgba(255,255,255,0.25)");
     left: 1%;
     position: absolute;
 
@@ -697,8 +697,8 @@ textarea[name="content"] {
 
   #support-for {
     background: #fff;
-    border-radius: 10px;
-    box-shadow: 0 4px 10px #999;
+    .border-radius(10px);
+    .box-shadow(0 4px 10px #999);
     margin: -90px 0 0;
     padding: 15px;
     position: fixed;
@@ -720,8 +720,8 @@ textarea[name="content"] {
 #review-revision {
   #support-for {
     background: #fff;
-    border-radius: 10px;
-    box-shadow: 0 4px 10px #999;
+    .border-radius(10px);
+    .box-shadow(0 4px 10px #999);
     display: none;
     margin: -90px 0 0;
     padding: 15px;
@@ -887,8 +887,8 @@ body.review {
 
     div.help-text {
       background: #fff;
-      border-radius: 0 0 10px 10px;
-      box-shadow: 0 10px 10px rgba(0,0,0,.25), inset -1px -1px 1px rgba(0,0,0,.125), inset 1px 0 1px rgba(255,255,255,.25);
+      .border-radius(0 0 10px 10px);
+      .box-shadow(~"0 10px 10px rgba(0,0,0,0.25), inset -1px -1px 1px rgba(0,0,0,0.125), inset 1px 0 1px rgba(255,255,255,0.25)");
       color: #000;
       display: none;
       left: 23px;
@@ -899,8 +899,8 @@ body.review {
     }
 
     &:hover {
-      border-radius: 10px 10px 0 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,.25), inset -1px -1px 1px rgba(0,0,0,.125), inset 1px 0 1px rgba(255,255,255,.25);
+      .border-radius(10px 10px 0 10px);
+      .box-shadow(~"0 0 10px rgba(0,0,0,0.25), inset -1px -1px 1px rgba(0,0,0,0.125), inset 1px 0 1px rgba(255,255,255,0.25)");
 
       label {
         position: relative;
@@ -970,6 +970,117 @@ div.video .kbox-container {
 
 .html-rtl div.video .kbox-container {
     text-align: right;
+}
+
+/* document vote form */
+.vote-wrap {
+  display: inline-block;
+  position: relative;
+}
+.document-vote {
+  display: inline-block;
+  vertical-align: top;
+
+  input.active {
+    background: #bbb;
+    color: #fff;
+  }
+
+  form.busy {
+    .wait {
+      display: inline;
+      margin: 0 0 0 15px;
+      position: relative;
+      top: 3px;
+    }
+  }
+}
+
+.html-rtl {
+  .document-vote {
+    form.busy {
+      .wait {
+        margin: 0 15px 0 0;
+      }
+    }
+  }
+}
+
+/* Unhelpful vote survey */
+#unhelpful-survey {
+  background: #fff;
+  border: solid 1px #ccc;
+  .box-shadow(0 1px 2px rgba(0,0,0,0.3));
+  display: inline-block;
+  margin: 15px 0 0 20px;
+  position: absolute;
+  right: -315px;
+  top: 0;
+  width: 300px;
+  z-index: 1;
+
+  &:after {
+    background: #fff;
+    .box-shadow(-2px 2px 2px rgba(0,0,0,0.3));
+    content: '';
+    display: block;
+    height: 10px;
+    left: -5px;
+    position: absolute;
+    top: 15px;
+    .transform(rotate(45deg));
+    width: 10px;
+    z-index: 1;
+  }
+
+  p {
+    margin: 8px 12px;
+
+    &.sorry {
+      font-size: 20px;
+    }
+  }
+
+  ul {
+    list-style: none;
+  }
+
+  li {
+    color: #fff;
+    cursor: pointer;
+    padding: 2px 0 2px 12px;
+    position: relative;
+
+    input {
+      margin: 0 6px 3px 0;
+    }
+
+    label {
+      font-weight: normal;
+      margin: 0;
+    }
+  }
+
+  textarea {
+    height: 65px;
+    margin: 6px 0 2px 12px;
+    resize: vertical;
+    width: 275px;
+  }
+
+  .btn-submit {
+    margin: 6px 14px;
+    float: left;
+  }
+
+  .character-counter {
+    font-size: 12px;
+  }
+
+  .disabled-reason {
+    font-size: 12px;
+    padding-top: 5px;
+  }
 }
 
 /* Graceful fallback for <details> tags */

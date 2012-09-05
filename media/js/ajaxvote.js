@@ -78,7 +78,7 @@ AjaxVote.prototype = {
     showMessage: function(message, $showAbove, $form) {
         // TODO: Tweak KBox to handle this case.
         var self = this,
-            $html = $('<div class="ajax-vote-box"><p></p></div>'),
+            $html = $('<div class="ajax-vote-box"><p class="msg"></p></div>'),
             offset = $showAbove.offset();
         $html.find('p').html(message);
 
@@ -145,7 +145,7 @@ AjaxVote.prototype = {
             }
         }
 
-        $commentBox.bind("input", function() {
+        $commentBox.bind('input', function() {
             var currentCount = $commentBox.val().length;
             var checked;
 
