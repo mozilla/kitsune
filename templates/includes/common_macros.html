@@ -38,7 +38,7 @@
       {% else %}
         {% set ask_url = url('wiki.document', 'ask') %}
       {% endif %}
-      <li><a href="{{ ask_url }}">{{ _('Ask a question') }}</a></li>
+      <li><a href="{{ ask_url }}" class="ask">{{ _('Ask a question') }}</a></li>
       {% if user.is_authenticated() %}
         <li class="dropdown"><a href="{{ profile_url(user) }}">{{ user }}</a>
           <ul>
@@ -46,13 +46,13 @@
             <li><a href="{{ profile_url(user, edit=True) }}">{{ _('Edit Profile') }}</a></li>
             <li><a href="{{ url('dashboards.default') }}">{{ _('Dashboard') }}</a></li>
             <li><a href="{{ url('users.edit_settings') }}">{{ _('Settings') }}</a></li>
-            <li><a href="{{ url('users.logout') }}">{{ _('Sign Out') }}</a></li>
+            <li><a href="{{ url('users.logout') }}" class="sign-out">{{ _('Sign Out') }}</a></li>
           </ul>
         </li>
         <li><a href="{{ url('messages.inbox') }}">{{ _('Inbox') }}</a></li>
       {% else %}
-        <li><a href="{{ url('users.login') }}">{{ _('Sign In') }}</a></li>
-        <li><a href="{{ url('users.register') }}">{{ _('Register') }}</a></li>
+        <li><a href="{{ url('users.login') }}" class="sign-in">{{ _('Sign In') }}</a></li>
+        <li><a href="{{ url('users.register') }}" class="register">{{ _('Register') }}</a></li>
       {% endif %}
     {% else %}
       {% if user.is_authenticated() %}
