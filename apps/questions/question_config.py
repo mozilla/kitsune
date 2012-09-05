@@ -9,6 +9,7 @@ products = SortedDict([
         'subtitle': _lazy(u'Windows, Mac, or Linux'),
         'extra_fields': ['troubleshooting', 'ff_version', 'os', 'plugins'],
         'tags': ['desktop'],
+        'products': ['firefox'],
         'categories': SortedDict([
         ('d1', {
             'name': _lazy(u'Problems with certain web sites'),
@@ -164,9 +165,10 @@ products = SortedDict([
     }),
     ('mobile', {
         'name': _lazy(u'Firefox for Mobile'),
-        'subtitle': _lazy(u'Android or Maemo systems'),
+        'subtitle': _lazy(u'Android'),
         'extra_fields': ['ff_version', 'os', 'plugins'],
         'tags': ['mobile'],
+        'products': ['mobile'],
         'categories': SortedDict([
             ('m1', {
                 'name': _lazy(u"Websites don't work"),
@@ -255,6 +257,9 @@ products = SortedDict([
                      'url': '/kb/find-and-install-add-ons'},
                     {'title': 'How do I sync Firefox between my desktop and '
                               'mobile?',
+                     'url': '/kb/sync-firefox-between-desktop-and-mobile'},
+                    {'title': "Firefox for mobile doesn't support Flash",
+                     'url': '/kb/firefox-mobile-doesnt-support-flash'},
                     {'title': 'How can I use Youtube in Firefox for Mobile?',
                      'url': '/kb/firefox-mobile-doesnt-support-flash'},
                 ],
@@ -272,7 +277,7 @@ products = SortedDict([
     }),
     ('home', {
         'name': _lazy(u'Firefox Home'),
-        'subtitle':  _lazy(u'App for iPhone'),
+        'subtitle':  _lazy(u'iPhone and iPad'),
         'tags': ['FxHome'],
         'categories': SortedDict([
             ('i1', {
