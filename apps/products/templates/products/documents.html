@@ -2,15 +2,15 @@
 {% extends "base.html" %}
 {% from 'includes/common_macros.html' import for_contributors_sidebar %}
 {% from 'topics/includes/topic_macros.html' import hot_topics, topic_sidebar %}
-{% set title = _(product.title) + ' - ' + _(topic.title) %}
+{% set title = _(product.title, 'DB: products.Product.title') + ' - ' + _(topic.title, 'DB: topics.Topic.title') %}
 {% set crumbs = [(url('products'), _('Products and Services')),
-                 (url('products.product', slug=product.slug), _(product.title)),
-                 (None, _(topic.title))] %}
+                 (url('products.product', slug=product.slug), _(product.title, 'DB: products.Product.title')),
+                 (None, _(topic.title, 'DB: topics.Topic.title'))] %}
 {% set styles = ('products',) %}
 
 {% block content %}
   <div class="grid_12">
-    <h1 class="product-title cf"><img src="{{ MEDIA_URL }}img/blank.png" alt="" class="logo-sprite" style="background-image: url('{{ product.image_url }}');" />{{ _(product.title) }}</h1>
+    <h1 class="product-title cf"><img src="{{ MEDIA_URL }}img/blank.png" alt="" class="logo-sprite" style="background-image: url('{{ product.image_url }}');" />{{ _(product.title, 'DB: products.Product.title') }}</h1>
   </div>
   <aside class="grid_3">
     {{ for_contributors_sidebar(user, settings.WIKI_DEFAULT_LANGUAGE) }}
@@ -18,7 +18,7 @@
   </aside>
   <div class="grid_9">
     <section id="document-list">
-      <h1>{{ _(topic.title) }}</h1>
+      <h1>{{ _(topic.title, 'DB: topics.Topic.title') }}</h1>
       {% for document in documents %}
         {% if loop.first %}<ul class="topic-list">{% endif %}
         <li>

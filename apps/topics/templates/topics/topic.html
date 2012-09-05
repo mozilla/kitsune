@@ -1,7 +1,7 @@
 {# vim: set ts=2 et sts=2 sw=2: #}
 {% extends "base.html" %}
 {% from 'products/includes/product_macros.html' import product_cards with context %}
-{% set title = _(topic.title) %}
+{% set title = _(topic.title, 'DB: topics.Topic.title') %}
 {% set crumbs = [(None, title)] %}
 {# TODO: scripts and styles #}
 
