@@ -9,7 +9,6 @@ products = SortedDict([
         'subtitle': _lazy(u'Windows, Mac, or Linux'),
         'extra_fields': ['troubleshooting', 'ff_version', 'os', 'plugins'],
         'tags': ['desktop'],
-        'products': ['firefox'],
         'categories': SortedDict([
         ('d1', {
             'name': _lazy(u'Problems with certain web sites'),
@@ -165,10 +164,9 @@ products = SortedDict([
     }),
     ('mobile', {
         'name': _lazy(u'Firefox for Mobile'),
-        'subtitle': _lazy(u'Android'),
+        'subtitle': _lazy(u'Android or Maemo systems'),
         'extra_fields': ['ff_version', 'os', 'plugins'],
         'tags': ['mobile'],
-        'products': ['mobile'],
         'categories': SortedDict([
             ('m1', {
                 'name': _lazy(u"Websites don't work"),
@@ -178,8 +176,6 @@ products = SortedDict([
                         'of the following:',
                 'articles': [
                     {'title': 'How can I use Youtube in Firefox for Mobile?',
-                     'url': '/kb/firefox-mobile-doesnt-support-flash'},
-                    {'title': "Firefox for mobile doesn't support Flash",
                      'url': '/kb/firefox-mobile-doesnt-support-flash'},
                     {'title': 'How do I find and install Add-ons?',
                      'url': '/kb/find-and-install-add-ons'},
@@ -196,6 +192,8 @@ products = SortedDict([
                      'url': '/kb/will-firefox-work-my-mobile-device'},
                     {'title': 'How do I install Firefox on a mobile device?',
                      'url': '/kb/install-firefox-mobile'},
+                    {'title': 'How does Firefox for Android use the permissions it requests?',
+                     'url': '/kb/how-firefox-android-use-permissions-it-requests'},
                 ],
                 'tags': ['install'],
             }),
@@ -225,10 +223,10 @@ products = SortedDict([
                 'name': _lazy(u'Plugins, add-ons or extensions'),
                 'extra_fields': ['addon'],
                 'articles': [
-                    {'title': "Firefox for mobile doesn't support Flash",
-                     'url': '/kb/firefox-mobile-doesnt-support-flash'},
                     {'title': 'How do I find and install Add-ons?',
                      'url': '/kb/find-and-install-add-ons'},
+                    {'title': 'Search and Find tools in Firefox for Android',
+                     'url': '/kb/search-and-find-tools-firefox-android'},
                 ],
                 'tags': ['addon'],
             }),
@@ -257,9 +255,6 @@ products = SortedDict([
                      'url': '/kb/find-and-install-add-ons'},
                     {'title': 'How do I sync Firefox between my desktop and '
                               'mobile?',
-                     'url': '/kb/sync-firefox-between-desktop-and-mobile'},
-                    {'title': "Firefox for mobile doesn't support Flash",
-                     'url': '/kb/firefox-mobile-doesnt-support-flash'},
                     {'title': 'How can I use Youtube in Firefox for Mobile?',
                      'url': '/kb/firefox-mobile-doesnt-support-flash'},
                 ],
@@ -277,7 +272,7 @@ products = SortedDict([
     }),
     ('home', {
         'name': _lazy(u'Firefox Home'),
-        'subtitle':  _lazy(u'iPhone and iPad'),
+        'subtitle':  _lazy(u'App for iPhone'),
         'tags': ['FxHome'],
         'categories': SortedDict([
             ('i1', {
