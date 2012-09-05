@@ -389,8 +389,12 @@ input[type=button],
 
 .grid_9 {
   .card-grid {
-    li {
+    > li {
       width: 218px;
+
+      > a {
+        padding: 20px 15px;
+      }
     }
   }
 }
@@ -964,20 +968,21 @@ input[type=button],
 
   .logo-sprite {
     float: left;
-    margin: 8px 20px 8px 0;
+    margin: 8px 15px 8px 0;
   }
 
   .title {
     display: block;
     font-family: @OpenSansLight;
     font-size: 22px;
+    letter-spacing: -1px;
     line-height: 22px;
-    margin: 0 0 12px 104px;
+    margin: 0 0 12px 99px;
   }
 
   .description {
     display: block;
-    margin: 0 0 0 104px;
+    margin: 0 0 0 99px;
   }
 }
 
