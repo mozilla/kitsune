@@ -75,6 +75,8 @@ _("""Firefox""", "DB: products.Product.title")
 _("""Web browser for Windows, Mac and Linux""", "DB: products.Product.description")
 _("""Firefox for mobile""", "DB: products.Product.title")
 _("""Web browser for Android smartphones and tablets""", "DB: products.Product.description")
+_("""Firefox OS""", "DB: products.Product.title")
+_("""Firefox OS""", "DB: products.Product.description")
 _("""Mozilla Persona""", "DB: products.Product.title")
 _("""Mozilla Persona""", "DB: products.Product.description")
 # This is a karma title.
