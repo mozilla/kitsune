@@ -129,8 +129,8 @@ textarea {
 input[type="submit"].link-btn {
     background: none;
     border: none;
-    border-radius: 0;
-    box-shadow: none;
+    .border-radius(0);
+    .box-shadow(none);
     color: rgb(0, 81, 185);
     cursor: pointer;
     font-weight: normal;
@@ -139,7 +139,7 @@ input[type="submit"].link-btn {
     white-space: normal;
 
     &:hover {
-      box-shadow: none;
+      .box-shadow(none);
       text-decoration: underline;
     }
 }
@@ -360,7 +360,7 @@ input[type=button],
   > li {
     .gradient(#ccc, #ddd, #bbb);
     .border-radius(6px);
-    .box-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+    .box-shadow(~"0 2px 4px rgba(0, 0, 0, 0.1)");
     float: left;
     margin: 0 10px 20px 10px;
     padding: 1px;
@@ -990,7 +990,7 @@ input[type=button],
   background: rgba(0, 0, 0, 0.7);
   border: 1px solid #000;
   .border-radius(6px);
-  .box-shadow(0 0 8px rgba(0, 0, 0, 0.2));
+  .box-shadow(~"0 0 8px rgba(0, 0, 0, 0.2)");
   color: #fff;
   left: 32px;
   padding: 12px 20px 12px 30px;
@@ -1008,7 +1008,7 @@ input[type=button],
     background: #000;
     border: 2px solid #fff;
     .border-radius(15px);
-    .box-shadow(0 0 8px rgba(0, 0, 0, 0.2));
+    .box-shadow(~"0 0 8px rgba(0, 0, 0, 0.2)");
     cursor: pointer;
     height: 24px;
     left: -8px;
@@ -1060,7 +1060,7 @@ input.searchbox {
   .linear-gradient-top(#8d969e, #8d969e, 0%, #a8b0b7, 100%, url('../img/grain.png'));
   border: 0;
   .border-radius(30px);
-  .box-shadow(inset 1px 1px 1px rgba(0, 0, 0, 0.5));
+  .box-shadow(~"inset 1px 1px 1px rgba(0, 0, 0, 0.5)");
   color: #fff;
   font-size: 14px;
   height: 18px;
@@ -1103,4 +1103,46 @@ input.searchbox {
   border: 1px solid #fffbe7;
   margin: 20px 0 20px 0;
   padding: 20px 30px 20px 30px;
+}
+
+/* Vote response message box */
+.ajax-vote-box {
+  background: #fff;
+  border: solid 1px #ccc;
+  .box-shadow(~"0 1px 2px rgba(0,0,0,.3)");
+  font-family: Georgia;
+  font-size: 14px;
+  left: 0;
+  padding: 7px 20px;
+  position: absolute;
+  top: 0;
+
+  &:after {
+    background: #fff;
+    .box-shadow(~"2px 2px 2px rgba(0,0,0,.3)");
+    content: '';
+    display: block;
+    height: 20px;
+    left: 50%;
+    margin-left: -20px;
+    position: absolute;
+    top: 20px;
+    -moz-transform:rotate(45deg);
+    -webkit-transform:rotate(45deg);
+    width: 20px;
+    z-index: 1;
+  }
+
+  p {
+    margin: 0;
+    position: relative;
+    z-index: 2;
+  }
+}
+
+.html-rtl {
+  .ajax-vote-box {
+    left: auto;
+    right: 0;
+  }
 }

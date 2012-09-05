@@ -2,7 +2,7 @@
 <div id="unhelpful-survey">
     <form action="{{ url('wiki.unhelpful_survey') }}" method="post">
         <input type="hidden" name="vote_id" value="{{ vote_id }}" />
-        <p>{{ _('Sorry to hear that.') }}</p>
+        <p class="sorry">{{ _('Sorry to hear that.') }}</p>
         <ul id="helpful-contents">
             <li><label><input type="radio" name="unhelpful-reason" value="confusing" />{{ _('Confusing') }}</label></li>
             <li><label><input type="radio" name="unhelpful-reason" value="didnt-work" />{{ _("Solution didn't work") }}</label></li>
@@ -14,7 +14,8 @@
         <p class="character-counter">
           <span id="remaining-characters">600</span> {{_('characters remaining.') }}
         </p>
-        <input type="submit" name="button" value="{{ _('Submit') }}" />
+        <input type="hidden" name="button" value="todo-delete-me" />
+        <button class="btn btn-submit" type="submit" data-type="submit">{{ _('Submit') }}</button>
         <p class="disabled-reason">
           {{ _('Please provide more details') }}
         </p>
