@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 
@@ -27,15 +28,23 @@ def product_landing(request, slug):
         return HttpResponseRedirect(reverse('products'))
 
     product = get_object_or_404(Product, slug=slug)
-    hot_docs = documents_for(
-        locale=request.locale,
-        topics=[Topic.objects.get(slug=HOT_TOPIC_SLUG)],
-        products=[product])
+
+    try:
+        hot_docs, fallback_hot_docs = documents_for(
+            locale=request.locale,
+            topics=[Topic.objects.get(slug=HOT_TOPIC_SLUG)],
+            products=[product])
+    except Topic.DoesNotExist:
+        # "hot" topic doesn't exist, move on.
+        hot_docs = fallback_hot_docs = None
+    
+
     return jingo.render(request, 'products/product.html', {
         'product': product,
         'products': Product.objects.filter(visible=True),
         'topics': topics_for(products=[product]),
-        'hot_docs': hot_docs})
+        'hot_docs': hot_docs,
+        'fallback_hot_docs': fallback_hot_docs})
 
 
 def document_listing(request, product_slug, topic_slug):
@@ -45,10 +54,12 @@ def document_listing(request, product_slug, topic_slug):
 
     product = get_object_or_404(Product, slug=product_slug)
     topic = get_object_or_404(Topic, slug=topic_slug)
-    documents = documents_for(
+    documents, fallback_documents = documents_for(
         locale=request.locale, products=[product], topics=[topic])
+
     return jingo.render(request, 'products/documents.html', {
         'product': product,
         'topic': topic,
         'topics': topics_for(products=[product]),
-        'documents': documents})
+        'documents': documents,
+        'fallback_documents': fallback_documents})

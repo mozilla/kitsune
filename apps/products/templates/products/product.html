@@ -17,7 +17,7 @@
     {{ product_sidebar(products, product) }}
   </aside>
   <div class="grid_9">
-    {{ hot_topics(hot_docs) }}
+    {{ hot_topics(hot_docs, fallback_hot_docs) }}
     <section id="help-topics">
       <h1>{{ _('Help Topics') }}</h1>
       {{ help_topics(topics[:6]) }}

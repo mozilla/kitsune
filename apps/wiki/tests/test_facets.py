@@ -5,7 +5,7 @@ from search.tests.test_es import ElasticTestCase
 from sumo.tests import TestCase
 from topics.tests import topic
 from wiki.facets import (products_for, topics_for, documents_for,
-                         _db_documents_for)
+                         _documents_for, _db_documents_for)
 from wiki.tests import revision
 
 
@@ -122,7 +122,14 @@ class TestFacetHelpersES(ElasticTestCase, TestFacetHelpersMixin):
     def test_documents_for(self):
         """Verify documents_for() returns documents for passed topics."""
         # Test the default ES version
-        self._test_documents_for(documents_for)
+        self._test_documents_for(_documents_for)
 
         # Test the DB version
         self._test_documents_for(_db_documents_for)
+
+    def test_documents_for_fallback(self):
+        """Verify the fallback in documents_for."""
+        general_bookmarks_documents, fallback = documents_for(
+            locale='es', topics=[self.general, self.bookmarks])
+        eq_(len(general_bookmarks_documents), 0)
+        eq_(len(fallback), 1)

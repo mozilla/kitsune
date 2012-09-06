@@ -24,12 +24,14 @@ def topic_landing(request, slug):
         return HttpResponseRedirect(reverse('home'))
 
     topic = get_object_or_404(Topic, slug=slug)
+    topics = Topic.objects.filter(visible=True)
 
-    data = dict(topic=topic)
+    data = dict(topic=topic, topics=topics)
     if request.GET.get('selectproduct') == '1':
         data.update(products=products_for(topics=[topic]))
-    else: 
-        data.update(documents=documents_for(
-            locale=request.locale, topics=[topic]))
+    else:
+        docs, fallback = documents=documents_for(
+            locale=request.locale, topics=[topic])
+        data.update(documents=docs, fallback_documents=fallback)
 
     return jingo.render(request, 'topics/topic.html', data)

@@ -38,7 +38,12 @@ def topics_for(products):
 
 
 def documents_for(locale, topics, products=None):
-    """Returns a list of articles that apply to passed in topics and products.
+    """Returns a tuple of lists of articles that apply to topics and products.
+
+    The first item in the tuple is the list of articles for the locale
+    specified. The second item is the list of fallback articles in en-US
+    that aren't localized to the specified locale. If the specified locale
+    is en-US, the second item will be None.
 
     :arg locale: the locale
     :arg topics: a list of Topic instances
@@ -48,6 +53,30 @@ def documents_for(locale, topics, products=None):
         id
         document_title
         url
+        document_parent_id
+    """
+    documents = _documents_for(locale, topics, products)
+
+    # For locales that aren't en-US, get the en-US documents
+    # to fill in for untranslated articles.
+    if locale != settings.WIKI_DEFAULT_LANGUAGE:
+        l10n_document_ids = [d['document_parent_id'] for d in documents if
+                             'document_parent_id' in d]
+        en_documents = _documents_for(
+            locale=settings.WIKI_DEFAULT_LANGUAGE,
+            products=products,
+            topics=topics)
+        fallback_documents = [d for d in en_documents if 
+                              d['id'] not in l10n_document_ids]
+    else:
+        fallback_documents = None
+
+    return documents, fallback_documents
+
+
+def _documents_for(locale, topics, products=None):
+    """Returns a list of articles that apply to passed in topics and products.
+
     """
     # First try to get the results from the cache
     documents = cache.get(_documents_for_cache_key(locale, topics, products))
@@ -73,10 +102,10 @@ def documents_for(locale, topics, products=None):
     return documents
 
 
-def _es_documents_for(locale, topics, products):
+def _es_documents_for(locale, topics, products=None):
     """ES implementation of documents_for."""
     s = (Document.search()
-        .values_dict('id', 'document_title', 'url')
+        .values_dict('id', 'document_title', 'url', 'document_parent_id')
         .filter(document_locale=locale, document_is_archived=False,
                 document_category__in=settings.IA_DEFAULT_CATEGORIES))
 
@@ -102,7 +131,10 @@ def _db_documents_for(locale, topics, products=None):
     doc_dicts = []
     for d in qs.distinct():
         doc_dicts.append(dict(
-            id=d.id, document_title=d.title, url=d.get_absolute_url()))
+            id=d.id,
+            document_title=d.title,
+            url=d.get_absolute_url(),
+            document_parent_id=d.parent_id))
     return doc_dicts
 
 

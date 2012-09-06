@@ -27,6 +27,21 @@
       a:hover {
         color: @textDarkBlue;
       }
+
+      &.fallback {
+        border: none;
+        font-size: 16px;
+        margin: 10px 0 0;
+        padding: 0;
+
+        &:after {
+          content: none;
+        }
+
+        &:before {
+          content: none;
+        }
+      }
     }
   }
 }
