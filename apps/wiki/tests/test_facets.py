@@ -32,6 +32,23 @@ class TestFacetHelpersMixin(object):
         doc2.products.add(self.desktop)
         doc2.products.add(self.mobile)
 
+        # An archived article shouldn't show up
+        doc3 = revision(is_approved=True, save=True).document
+        doc3.is_archived = True
+        doc3.save()
+        doc3.topics.add(self.general)
+        doc3.topics.add(self.bookmarks)
+        doc3.products.add(self.desktop)
+
+        # A template article shouldn't show up either
+        doc4 = revision(is_approved=True, save=True).document
+        doc4.category = 60
+        doc4.title = 'Template: Test'
+        doc4.save()
+        doc4.topics.add(self.general)
+        doc4.topics.add(self.bookmarks)
+        doc4.products.add(self.desktop)
+
 
 class TestFacetHelpers(TestCase, TestFacetHelpersMixin):
     def setUp(self):
