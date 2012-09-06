@@ -109,6 +109,10 @@ h1 {
   font-size: 30px;
 }
 
+h3 {
+  font-size: 20px;
+}
+
 ul.errorlist {
   color: red;
   margin: 1em 3em;
@@ -126,7 +130,8 @@ textarea {
 }
 
 /* buttons styled to look like links */
-input[type="submit"].link-btn {
+input[type="submit"]{
+  &.link-btn {
     background: none;
     border: none;
     .border-radius(0);
@@ -142,6 +147,7 @@ input[type="submit"].link-btn {
       .box-shadow(none);
       text-decoration: underline;
     }
+  }
 }
 
 .breadcrumbs {
@@ -239,6 +245,13 @@ input[type=button],
   z-index: 1;
   zoom: 1;
   *display: inline; /* Fix for IE6-7 */
+
+  &.big {
+    font-family: @OpenSansLight;
+    font-size: 24px;
+    font-weight: normal;
+    padding: 3px 20px 7px 20px;
+  }
 
   &.btn-important,
   &.btn-submit {
@@ -546,7 +559,11 @@ input[type=button],
 }
 
 .nomargin {
-  margin: 0;
+  margin: 0 !important;
+}
+
+.nopadding {
+  padding: 0 !important;
 }
 
 .progress-bar {
@@ -732,6 +749,17 @@ input[type=button],
     }
   }
 
+  &.tight {
+    > li {
+      span,
+      a,
+      a:visited {
+        font-size: 12px;
+        padding: 12px 20px;
+      }
+    }
+  }
+
   .sidebar-nav {
     span,
     a,
@@ -750,6 +778,23 @@ input[type=button],
         background-color: @sidebarBackgroundSelected;
       }
     }
+  }
+}
+
+.sidebox {
+  background: @sidebarBackground url('../img/grain.png');
+  color: @textGrey;
+  padding: 16px 20px;
+
+  &.tight {
+    font-size: 12px;
+    padding: 12px 20px;
+  }
+
+  .title {
+    display: block;
+    margin-bottom: 12px;
+    text-transform: uppercase;
   }
 }
 
