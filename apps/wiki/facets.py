@@ -1,5 +1,6 @@
 import hashlib
 
+from django.conf import settings
 from django.core.cache import cache
 
 from statsd import statsd
@@ -74,8 +75,11 @@ def documents_for(locale, topics, products=None):
 
 def _es_documents_for(locale, topics, products):
     """ES implementation of documents_for."""
-    s = Document.search().values_dict(
-        'id', 'document_title', 'url').filter(document_locale=locale)
+    s = (Document.search()
+        .values_dict('id', 'document_title', 'url')
+        .filter(document_locale=locale, document_is_archived=False,
+                document_category__in=settings.IA_DEFAULT_CATEGORIES))
+
     for topic in topics:
         s = s.filter(document_topic=topic.slug)
     for product in products or []:
@@ -86,7 +90,9 @@ def _es_documents_for(locale, topics, products):
 
 def _db_documents_for(locale, topics, products=None):
     """DB implementation of topics_for."""
-    qs = Document.objects.filter(locale=locale)
+    qs = (Document.objects
+        .filter(locale=locale, is_archived=False,
+                category__in=settings.IA_DEFAULT_CATEGORIES))
     for topic in topics:
         qs = qs.filter(topics=topic)
     for product in products or []:
