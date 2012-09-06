@@ -760,7 +760,6 @@ SEARCH_MAX_RESULTS = 1000
 SEARCH_RESULTS_PER_PAGE = 20
 
 # Search default settings
-# comma-separated tuple of included category IDs. Negative IDs are excluded.
 SEARCH_DEFAULT_CATEGORIES = (10, 20,)
 SEARCH_SUMMARY_LENGTH = 275
 
