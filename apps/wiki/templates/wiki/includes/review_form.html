@@ -63,7 +63,8 @@
           </div>
         </div>
       {% endif %}
-      <button class="btn btn-important" type="submit" data-type="submit" data-name="approve" data-value="1">{{ _('Accept') }}</button>
+      <input type="hidden" name="approve" value="1" />
+      <button class="btn btn-important" type="submit" data-type="submit">{{ _('Accept') }}</button>
       <a class="kbox-cancel" href="{{ url('wiki.document_revisions', document.slug) }}">{{ _('Cancel') }}</a>
     </form>
 
@@ -84,7 +85,8 @@
           <textarea id="id-reject-comment" required name="comment">{% if form.initial %}{{ form.initial.comment }}{% else %}{{ form.comment.data }}{% endif %}</textarea>
         </div>
       {% endif %}
-      <button class="btn" type="submit" data-type="submit" data-name="reject" data-value="1">{{ _('Defer') }}</button>
+      <input type="hidden" name="reject" value="1" />
+      <button class="btn" type="submit" data-type="submit">{{ _('Defer') }}</button>
       <a class="kbox-cancel" href="{{ url('wiki.document_revisions', document.slug) }}">{{ _('Cancel') }}</a>
     </form>
   </div>
