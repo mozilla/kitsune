@@ -15,11 +15,15 @@
       }
     });
 
-    $('.btn').each(function() {
+    $('.btn, a').each(function() {
       var $this = $(this);
       var $form = $this.closest('form');
 
       if ($this.attr('data-type') === 'submit') {
+        if ($this.attr('data-form')) {
+          $form = $('#' + $this.attr('data-form'));
+        }
+
         $this.on('click', function() {
           var name = $this.attr('data-name');
           var value = $this.attr('data-value');

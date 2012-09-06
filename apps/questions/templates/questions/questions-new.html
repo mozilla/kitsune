@@ -112,15 +112,14 @@
             </div>
 
             <div class="thread-meta">
+              <div class="thread-solved {% if question.is_solved %}highlighted{% endif %}">
+                {{ _('Solved') }}
+              </div>
+              <div class="thread-contributed {% if question.is_contributor(user) %}highlighted{% endif %}">
+                {{ _('Contributed') }}
+              </div>
               {% if question.is_locked %}
                 <div class="thread-locked">{{ _('Locked') }}</div>
-              {% else %}
-                <div class="thread-solved {% if question.is_solved %}highlighted{% endif %}">
-                  {{ _('Solved') }}
-                </div>
-                <div class="thread-contributed {% if question.is_contributor(user) %}highlighted{% endif %}">
-                  {{ _('Contributed') }}
-                </div>
               {% endif %}
             </div>
           </section>

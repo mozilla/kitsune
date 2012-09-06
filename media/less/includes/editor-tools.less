@@ -1,0 +1,87 @@
+div.editor-tools {
+  background: #daedf6;
+  .gradient(#e7f6fd, #e7f6fd, #daedf6);
+  height: 40px;
+  line-height: 30px;
+  padding: 5px 5px 0;
+  width: 98%;
+
+  a.markup-toolbar-link {
+    padding: 0 6px;
+  }
+
+  button {
+    &:first-child {
+      margin-left: 0;
+    }
+  }
+
+  span.separator {
+    border-left: solid 1px #ddd;
+    font-size: 24px;
+    margin: 0 8px 0 6px;
+    position: relative;
+    top: 4px;
+  }
+}
+
+&.html-rtl {
+  button {
+    &:first-child {
+      margin-left: 2px;
+      margin-right: 0;
+    }
+  }
+
+  div.editor-tools {
+    span.separator {
+      border: none;
+      border-right: solid 1px #ddd;
+      margin: 0 6px 0 8px;
+    }
+  }
+}
+
+button {
+  &.markup-toolbar-button {
+    border: 0;
+    background: url(../img/markup.png) no-repeat 0 0;
+    cursor: pointer;
+    height: 34px;
+    margin: 0 2px;
+    text-indent: -9999px;
+    width: 36px;
+  }
+
+  &.btn-h2 {
+    background-position: -44px 0px;
+  }
+
+  &.btn-h3 {
+    background-position: -88px 0px;
+  }
+
+  &.btn-bold {
+    background-position: -132px 0px;
+  }
+
+  &.btn-italic {
+    background-position: -176px 0px;
+  }
+
+  &.btn-media {
+    background-position: -220px 0px;
+  }
+
+  &.btn-link {
+    background-position: -264px 0px;
+  }
+
+  &.btn-ol {
+    background-position: -308px 0px;
+  }
+
+  &.btn-ul {
+    background-position: -352px 0px;
+  }
+}
