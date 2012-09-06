@@ -1,11 +1,17 @@
-{% macro hot_topics(docs) -%}
-  {% if docs %}
+{% macro hot_topics(docs, fallback_docs) -%}
+  {% if docs or fallback_docs %}
     <section id="hot-topics" class="feature-box">
       <h1>{{ _('Hot Topics') }}</h1>
       <ul class="cf">
         {% for doc in docs %}
           <li><a href="{{ doc['url'] }}">{{ doc['document_title'] }}</a></li>
         {% endfor %}
+        {% if fallback_docs %}
+          <li class="fallback">{{ _('In English') }}</li>
+          {% for doc in fallback_docs %}
+            <li><a href="{{ doc['url'] }}">{{ doc['document_title'] }}</a></li>
+          {% endfor %}
+        {% endif %}
       </ul>
     </section>
   {% endif %}
@@ -42,8 +48,13 @@
 {% macro topic_sidebar(topics, product, selected_topic=None) -%}
   <ul class="sidebar-nav topics">
     {% for topic in topics %}
+      {% if product %}
+        {% set topic_url = url('products.documents', product_slug=product.slug, topic_slug=topic.slug) %}
+      {% else %}
+        {% set topic_url = url('topics.topic', slug=topic.slug) %}
+      {% endif %}
       <li{% if selected_topic == topic %} class="selected"{% endif %}>
-        <a href="{{ url('products.documents', product_slug=product.slug, topic_slug=topic.slug) }}">
+        <a href="{{ topic_url }}">
           {{ _(topic.title, 'DB: topics.Topic.title') }}
         </a>
       </li>

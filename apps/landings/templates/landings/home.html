@@ -16,7 +16,7 @@
       <h1>{{ _('Help Topics') }}</h1>
       {{ help_topics(topics[:5], show_community_support=True) }}
     </section>
-    {{ hot_topics(hot_docs) }}
+    {{ hot_topics(hot_docs, fallback_hot_docs) }}
     <section id="products-and-services">
       <h1>{{ _('Products and Services') }}</h1>
       {{ product_cards(products, show_thunderbird=True) }}
