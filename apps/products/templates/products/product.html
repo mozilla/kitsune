@@ -5,7 +5,7 @@
 {% from 'topics/includes/topic_macros.html' import hot_topics %}
 {% from 'topics/includes/topic_macros.html' import help_topics with context %}
 {% set title = _(product.title, 'DB: products.Product.title') %}
-{% set crumbs = [(url('products'), 'Products and Services'), (None, title)] %}
+{% set crumbs = [(url('products'), _('Products and Services')), (None, title)] %}
 {% set styles = ('products',) %}
 
 {% block content %}
