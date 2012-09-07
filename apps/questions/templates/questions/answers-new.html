@@ -49,11 +49,13 @@
             have this problem
           {% endtrans %}
         </li>
-        <li>
-          <a href="{{ question.last_answer.get_absolute_url() }}">
-            {{ _('Last reply by {user}')|f(user=question.last_answer.creator.username) }}
-          </a> {{ question.last_answer.created|utctimesince }}
-        </li>
+        {% if question.last_answer %}
+          <li>
+            <a href="{{ question.last_answer.get_absolute_url() }}">
+              {{ _('Last reply by {user}')|f(user=question.last_answer.creator.username) }}
+            </a> {{ question.last_answer.created|utctimesince }}
+          </li>
+        {% endif %}
       </ul>
     </div>
 
@@ -274,19 +276,19 @@
   {% endif %}
 
   <div class="grid_9 suffix_3">
-    <div class="answer-tools nopadding">
-      <h3>{{ _('Post a Reply') }}</h3>
-      {% if not user.is_authenticated() %}
-        <p>
-          {{ _('You must <a href="{url}">log in to your account</a> to reply to posts.')|fe(url=url('users.login')) }}
-        </p>
-        <p>
-          {{ _("Don't have an account? You can <a href='{url}'>create a free account</a> now.")|fe(url=url('users.register')) }}
-        </p>
-      {% endif %}
-    </div>
-
     {% if not question.is_locked %}
+      <div class="answer-tools nopadding">
+        <h3>{{ _('Post a Reply') }}</h3>
+        {% if not user.is_authenticated() %}
+          <p>
+            {{ _('You must <a href="{url}">log in to your account</a> to reply to posts.')|fe(url=url('users.login')) }}
+          </p>
+          <p>
+            {{ _("Don't have an account? You can <a href='{url}'>create a free account</a> now.")|fe(url=url('users.register')) }}
+          </p>
+        {% endif %}
+      </div>
+
       {% if user.is_authenticated() %}
         <form action="{{ url('questions.reply', question_id=question.id) }}#question-reply" method="post" enctype="multipart/form-data">
           {{ csrf() }}
