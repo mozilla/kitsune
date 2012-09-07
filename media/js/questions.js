@@ -94,7 +94,7 @@
      * Ajaxify the "I have this problem too" form
      */
     function initHaveThisProblemTooAjax() {
-        var $container = $('.question-tools div.me-too');
+        var $container = $('#question div.me-too, .question-tools div.me-too');
         initAjaxForm($container, 'form', '#vote-thanks');
         $container.find('input').click(function() {
             $(this).attr('disabled', 'disabled');
@@ -109,7 +109,7 @@
      * Ajaxify email subscribe
      */
     function initEmailSubscribeAjax() {
-        var $container = $('.sidebar-nav li.email'),
+        var $container = $('#question div.me-too, .sidebar-nav li.email'),
             $link = $('#email-subscribe-link');
         if ($link.length > 0) {
             initAjaxForm($container, 'form', '#email-subscribe');
@@ -120,8 +120,7 @@
      * Ajaxify the Helpful/Not Helpful form
      */
     function initHelpfulVote() {
-        var $container;
-        $('.answer-tools').each(function() {
+        $('li.answer div.side-section, .answer-tools').each(function() {
             new k.AjaxVote($(this).find('form.helpful'), {
                 positionMessage: true,
                 removeForm: true
