@@ -18,7 +18,7 @@
         {% if waffle.switch('karma') and user.has_perm('users.view_karma_points') %}
           {% with pts = answer.creator_num_points %}
             {% if pts != None %}
-              <span class="points">{{ pts }}</span>
+              <span class="points">{{ pts }} {{ _('karma') }}</span>
             {% endif %}
           {% endwith %}
         {% endif %}
