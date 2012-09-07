@@ -15,13 +15,6 @@ else
     BUILD_NAME=$1
 fi
 
-if [ -z $2 ]; then
-    echo "Warning: You should provide a unique Sphinx port for this build."
-    SPHINX_PORT=3381
-else
-    SPHINX_PORT=$2
-fi
-
 
 # Clean up after last time.
 find . -name '*.pyc' -delete;
@@ -62,8 +55,6 @@ DATABASES['default']['USER'] = 'hudson'
 DATABASES['default']['TEST_NAME'] = 'test_kitsune_$BUILD_NAME'
 DATABASES['default']['TEST_CHARSET'] = 'utf8'
 DATABASES['default']['TEST_COLLATION'] = 'utf8_general_ci'
-TEST_SPHINX_PORT = $SPHINX_PORT
-TEST_SPHINXQL_PORT = TEST_SPHINX_PORT + 1
 CELERY_ALWAYS_EAGER = True
 CACHE_BACKEND = 'caching.backends.locmem://'
 SETTINGS
