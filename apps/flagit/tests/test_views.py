@@ -5,15 +5,19 @@ from nose.tools import eq_
 from flagit.tests import TestCaseBase
 from flagit.models import FlaggedObject
 from questions.models import Question
+from questions.tests import question
 from sumo.tests import post
+from users.tests import user
 
 
 class FlagTestCase(TestCaseBase):
     """Test the flag view."""
     def setUp(self):
         super(FlagTestCase, self).setUp()
-        self.client.login(username='jsocol', password='testpass')
-        self.question = Question.objects.all()[0]
+        self.user = user(save=True)
+        self.question = question(creator=self.user, save=True)
+
+        self.client.login(username=self.user.username, password='testpass')
 
     def tearDown(self):
         super(FlagTestCase, self).tearDown()
@@ -29,6 +33,6 @@ class FlagTestCase(TestCaseBase):
         eq_(1, FlaggedObject.objects.count())
 
         flag = FlaggedObject.objects.all()[0]
-        eq_('jsocol', flag.creator.username)
+        eq_(self.user.username, flag.creator.username)
         eq_('spam', flag.reason)
         eq_(self.question, flag.content_object)
