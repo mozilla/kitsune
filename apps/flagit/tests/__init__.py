@@ -3,13 +3,14 @@ from datetime import datetime
 from django.conf import settings
 from django.template.defaultfilters import slugify
 
+from questions.tests import question
 from sumo.tests import LocalizingClient, TestCase
+from users.tests import user
 
 
 class TestCaseBase(TestCase):
     """Base TestCase for the flagit app test cases."""
 
-    fixtures = ['users.json', 'questions.json']
     client_class = LocalizingClient
 
     def setUp(self):
@@ -18,6 +19,12 @@ class TestCaseBase(TestCase):
         self.orig_cache_prefix = getattr(settings, 'CACHE_PREFIX', None)
         settings.CACHE_PREFIX = self.orig_cache_prefix or '' + 'test' + \
                                 slugify(datetime.now())
+
+        user(username='admin',
+             is_superuser=True,
+             is_staff=True,
+             is_active=True,
+             save=True)
 
     def tearDown(self):
         settings.CACHE_PREFIX = self.orig_cache_prefix

@@ -4,13 +4,21 @@ from pyquery import PyQuery as pq
 from flagit.tests import TestCaseBase
 from flagit.models import FlaggedObject
 from questions.models import Answer
+from questions.tests import question, answer
 from sumo.tests import post, get
+from users.tests import user
 
 
 class FlaggedQueueTestCase(TestCaseBase):
     """Test the flagit queue."""
     def setUp(self):
         super(FlaggedQueueTestCase, self).setUp()
+        q = question(creator=user(save=True), save=True)
+        self.flagger = user(save=True)
+        self.answer = answer(question=q,
+                             creator=user(save=True),
+                             save=True)
+
         self.client.login(username='admin', password='testpass')
 
     def tearDown(self):
@@ -22,7 +30,7 @@ class FlaggedQueueTestCase(TestCaseBase):
         num_answers = Answer.objects.count()
         for a in Answer.objects.all():
             f = FlaggedObject(content_object=a, reason='spam',
-                                 creator_id=118577)
+                                 creator_id=self.flagger.id)
             f.save()
 
         # Verify number of flagged objects
