@@ -1,6 +1,8 @@
 {# vim: set ts=2 et sts=2 sw=2: #}
 {% extends "base.html" %}
-{% set title = _('Search') %}
+{% if not title %}
+  {% set title = _('Search') %}
+{% endif %}
 {% set crumbs = [(None, title)] %}
 {% if not styles %}
   {% set styles = ('search',) %}

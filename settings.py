@@ -501,6 +501,9 @@ MINIFY_BUNDLES = {
             'css/search-advanced.css',
             'css/questions-meta.css',
         ),
+        'search-new': (
+            'less/search.less',
+        ),
         'wiki': (
             'css/users.autocomplete.css',
             'css/users.list.css',
