@@ -465,7 +465,7 @@
             $("#ready-for-l10n-modal span.revtime").html("("+$check.data("revdate")+")");
         });
 
-        $("#ready-for-l10n-modal input[type=submit]").click(function() {
+        $("#ready-for-l10n-modal input[type=submit], #ready-for-l10n-modal button[type=submit]").click(function() {
             var csrf = $("#ready-for-l10n-modal input[name=csrfmiddlewaretoken]").val(),
             kbox = $("#ready-for-l10n-modal").data("kbox");
             if(post_url != undefined && checkbox_id != undefined) {
