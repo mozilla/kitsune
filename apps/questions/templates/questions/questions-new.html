@@ -49,38 +49,53 @@
     {% endif %}
   </div>
   <div class="grid_7">
-    <div class="feature-box collapsed" data-ui-type="folding-section" id="filters">
+    <div class="feature-box{% if not filter and not sort %} collapsed{% endif %}" data-ui-type="folding-section" id="filters">
       <header><h2 class="nomargin">{{ _('Sort and Filter') }}</h2></header>
-      <section>
-        {{ _('Sort:') }}
-        <ul>
-          <li{% if not sort %} class="active"{% endif %}>
-            <a href="{{ url('questions.questions')|urlparams(filter=filter, tagged=tagged) }}">{{ _('Most Recent') }}</a>
-          </li>
-          <li{% if sort == 'requested' %} class="active"{% endif %}>
-            <a href="{{ url('questions.questions')|urlparams(sort='requested', filter=filter, tagged=tagged) }}">{{ _('Most Requested') }}</a>
-          </li>
-        </ul>
-        {{ _('Show:') }}
-        <ul>
-          <li{% if not filter %} class="active"{% endif %}>
-            <a href="{{ url('questions.questions')|urlparams(sort=sort, tagged=tagged) }}">{{ _('All') }}</a>
-          </li>
-          <li{% if filter == 'unsolved' %} class="active"{% endif %}>
-            <a href="{{ url('questions.questions')|urlparams(filter='unsolved', sort=sort, tagged=tagged) }}">{{ _('Unsolved') }}</a>
-          </li>
-          <li{% if filter == 'solved' %} class="active"{% endif %}>
-            <a href="{{ url('questions.questions')|urlparams(filter='solved', sort=sort, tagged=tagged) }}">{{ _('Solved') }}</a>
-          </li>
-          <li{% if filter == 'no-replies' %} class="active"{% endif %}>
-            <a href="{{ url('questions.questions')|urlparams(filter='no-replies', sort=sort, tagged=tagged) }}">{{ _('No Replies') }}</a>
-          </li>
-          {% if user.is_authenticated() %}
-            <li{% if filter == 'my-contributions' %} class="active"{% endif %}>
-              <a href="{{ url('questions.questions')|urlparams(filter='my-contributions', sort=sort, tagged=tagged) }}">{{ _('My Contributions') }}</a>
+      <section class="cf">
+        <div class="grid_2">
+          <h3>{{ _('Sort by') }}</h3>
+          <ul>
+            <li{% if not sort %} class="active"{% endif %}>
+              <a href="{{ url('questions.questions')|urlparams(filter=filter, tagged=tagged) }}">{{ _('Most Recent') }}</a>
             </li>
-          {% endif %}
-        </ul>
+            <li{% if sort == 'requested' %} class="active"{% endif %}>
+              <a href="{{ url('questions.questions')|urlparams(sort='requested', filter=filter, tagged=tagged) }}">{{ _('Most Requested') }}</a>
+            </li>
+          </ul>
+        </div>
+        <div class="grid_2">
+          <h3>{{ _('Show') }}</h3>
+          <ul>
+            <li{% if not filter %} class="active"{% endif %}>
+              <a href="{{ url('questions.questions')|urlparams(sort=sort, tagged=tagged) }}">{{ _('All') }}</a>
+            </li>
+            <li{% if filter == 'unsolved' %} class="active"{% endif %}>
+              <a href="{{ url('questions.questions')|urlparams(filter='unsolved', sort=sort, tagged=tagged) }}">{{ _('Unsolved') }}</a>
+            </li>
+            <li{% if filter == 'solved' %} class="active"{% endif %}>
+              <a href="{{ url('questions.questions')|urlparams(filter='solved', sort=sort, tagged=tagged) }}">{{ _('Solved') }}</a>
+            </li>
+            <li{% if filter == 'no-replies' %} class="active"{% endif %}>
+              <a href="{{ url('questions.questions')|urlparams(filter='no-replies', sort=sort, tagged=tagged) }}">{{ _('No Replies') }}</a>
+            </li>
+            {% if user.is_authenticated() %}
+              <li{% if filter == 'my-contributions' %} class="active"{% endif %}>
+                <a href="{{ url('questions.questions')|urlparams(filter='my-contributions', sort=sort, tagged=tagged) }}">{{ _('My Contributions') }}</a>
+              </li>
+            {% endif %}
+          </ul>
+        </div>
+        <div class="grid_2">
+          <section id="tag-filter">
+            <h3>{{ _('Filter') }}</h3>
+            <p>{{ _('Enter a tag. For example: "Firefox 14.0", "Windows 7", "crash"') }}</p>
+            <form action="" method="get">
+              <input type="hidden" class="current-tagged" value="{{ tagged }}"/>
+              <input class="searchbox" type="text" name="tagged" value="" data-vocabulary="{{ tag_vocab() }}" required="required"/>
+              <button type="submit" class="btn">{{ _('Filter Tag') }}</button>
+            </form>
+          </section>
+        </div>
       </section>
     </div>
   </div>
