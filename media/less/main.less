@@ -1238,3 +1238,58 @@ input.searchbox {
     right: 0;
   }
 }
+
+/* Pagination styles */
+/* TODO: replace this with proper LESS for new pagination styles */
+ol.pagination {
+  border-top: solid 1px #9ACCF7;
+  font-family: Verdana;
+  margin: 20px 0;
+  padding: 20px 0;
+}
+
+ol.pagination li {
+  float: left;
+  list-style: none;
+  padding: 0 2px;
+}
+
+ol.pagination li.prev {
+  padding-left: 0;
+}
+
+.html-rtl ol.pagination li.prev {
+  padding-left: 2px;
+  padding-right: 0;
+}
+
+ol.pagination li a {
+  float: left;
+  padding: 3px 8px 5px;
+}
+
+ol.pagination li a:hover {
+  text-decoration: underline;
+}
+
+ol.pagination li.prev a {
+  padding-left: 0;
+}
+
+.html-rtl ol.pagination li.prev a {
+  padding-left: 8px;
+  padding-right: 0;
+}
+
+ol.pagination li.selected a {
+  background: rgb(0, 81, 185);
+  border-radius: 5px;
+  -moz-border-radius: 5px;
+  -webkit-border-radius: 5px;
+  color: #fff;
+  cursor: default;
+}
+
+ol.pagination li.selected a:hover {
+  text-decoration:none;
+}
