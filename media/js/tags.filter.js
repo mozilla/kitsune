@@ -9,7 +9,7 @@
 function init($container) {
     var $form = $container ? $container.find('form') : $('#tag-filter form'),
         $tags = $form.find('input[type="text"]'),
-        $btn = $form.find('input[type="submit"]'),
+        $btn = $form.find('input[type="submit"], button'),
         $hidden = $('<input type="hidden"/>'),
         vocab = $tags.data('vocabulary'),
         lowerVocab = {};

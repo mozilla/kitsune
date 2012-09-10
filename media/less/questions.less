@@ -4,6 +4,7 @@
 
 h1 {
   font-size: 46px;
+  margin-top: 0;
 }
 
 h2 {
@@ -440,6 +441,88 @@ h2 {
 
     .user-meta {
       float: right;
+    }
+  }
+
+  .feature-box {
+    padding: 13px 30px 15px;
+
+    h2 {
+      font-size: 21px;
+    }
+  }
+
+  #filters {
+    h3 {
+      margin: 5px 0;
+    }
+
+    > section {
+      border-top: 1px dotted @borderLightGrey;
+      margin: 10px 0;
+      padding: 10px 0;
+    }
+
+    p {
+      font-size: 12px;
+      margin-top: 0;
+    }
+
+    .grid_2 {
+      margin-left: 0;
+    }
+
+    ul {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+
+      li {
+        a {
+          color: @textLightGrey;
+        }
+
+        &.active {
+          a {
+            color: @textGrey;
+            font-weight: bold;
+          }
+        }
+      }
+    }
+
+    input[type=text] {
+      margin: 0 0 10px;
+      width: 130px;
+    }
+  }
+
+  #top-contributors {
+    ol {
+      display: inline-block;
+      width: 35%;
+
+      li {
+        margin: 5px 0;
+      }
+    }
+
+    .inner-wrap {
+      display: none;
+    }
+
+    &:hover {
+      position: relative;
+
+      .inner-wrap {
+        display:block;
+      }
+
+      .feature-box {
+        background: #fff;
+        position: absolute;
+        width: 318px;
+      }
     }
   }
 }

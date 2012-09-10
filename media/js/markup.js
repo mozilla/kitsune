@@ -266,7 +266,7 @@ Marky.ShowForButton.prototype = $.extend({}, Marky.SimpleButton.prototype, {
             // TODO: look at using a js template solution (jquery-tmpl?)
             $html = $('<section class="marky">' +
                        '<div class="placeholder"/>' +
-                       '<div class="submit"><button type="button"></button>' +
+                       '<div class="submit"><button type="button" class="btn btn-important"></button>' +
                        '<a href="#cancel" class="kbox-cancel"></a></div>' +
                        '</section>'),
             $placeholder = $html.find('div.placeholder'),
@@ -379,7 +379,7 @@ Marky.LinkButton.prototype = $.extend({}, Marky.SimpleButton.prototype, {
                 gettext('External link:') + '</label> ' +
                 '<input type="text" name="external" placeholder="' +
                 gettext('Enter the URL of the external link') + '" /></li>' +
-                '</ol><div class="submit"><button type="button"></button>' +
+                '</ol><div class="submit"><button type="button" class="btn btn-important"></button>' +
                 '<a href="#cancel" class="kbox-cancel">' + gettext('Cancel') +
                 '</a></div></section>' // whew, yuck!?
             ),
@@ -395,9 +395,9 @@ Marky.LinkButton.prototype = $.extend({}, Marky.SimpleButton.prototype, {
         var performSectionSearch = function(request) {
             return (request.term.indexOf("#") == request.term.length - 1);
         }
-        
+
         var results = [];
-        
+
         //Get the article URL by providing the article name:
         var getArticleURL = function(name) {
             for(var i = 0; i < results.length; i++) {
@@ -431,7 +431,7 @@ Marky.LinkButton.prototype = $.extend({}, Marky.SimpleButton.prototype, {
                 }
             });
         }
-        
+
         var sectionSearch = function(request, response) {
             var articleName = request.term.split("#")[0];
             var articleURL = getArticleURL(articleName);
@@ -472,7 +472,7 @@ Marky.LinkButton.prototype = $.extend({}, Marky.SimpleButton.prototype, {
                 }
             });
         }
-        
+
         $html.find('input[name="internal"]').autocomplete({
             source: function(request, response) {
                 if(performSectionSearch(request)) {
@@ -614,9 +614,9 @@ Marky.MediaButton.prototype = $.extend({}, Marky.SimpleButton.prototype, {
                 '<ol><li data-type="image" class="selected">' + gettext('Images') + '</li>' +
                 '<li data-type="video">' + gettext('Videos') + '</li></ol></div>' +
                 '<div class="search"><input type="text" name="q" />' +
-                '<button>' + gettext('Search Gallery') + '</button></div></div>' +
+                '<button class="btn btn-important">' + gettext('Search Gallery') + '</button></div></div>' +
                 '<div class="placeholder" /><div class="submit">' +
-                '<button>' + gettext('Insert Media') + '</button>' +
+                '<button class="btn btn-important">' + gettext('Insert Media') + '</button>' +
                 '<a href="' + galleryUrl + '#upload" class="upload" target="_blank">' +
                 gettext('Upload Media') + '</a>' +
                 '<a href="#cancel" class="kbox-cancel">' + gettext('Cancel') + '</a></div>' +
@@ -753,9 +753,9 @@ Marky.CannedResponsesButton.prototype = $.extend({}, Marky.SimpleButton.prototyp
         $btn.click(function(e) {
              me.openModal(e);
         });
-        
+
         me.getPermissionBits();
-        
+
         return $btn[0];
     },
     reset: function() {
@@ -771,7 +771,7 @@ Marky.CannedResponsesButton.prototype = $.extend({}, Marky.SimpleButton.prototyp
                 '<section class="marky">' +
                 '<div class="search">' +
                 '<label for="filter-responses-field">' + gettext('Search: ') +'</label>' +
-                '<input type="text" name="q" id="filter-responses-field" placeholder="' 
+                '<input type="text" name="q" id="filter-responses-field" placeholder="'
                 + gettext('Search for common responses') + '" />' +
                 '</div></div>' +
                 '<div class="area" id="responses-area">' +
@@ -786,7 +786,7 @@ Marky.CannedResponsesButton.prototype = $.extend({}, Marky.SimpleButton.prototyp
                 '</div>' +
                 '<div class="area" id="response-content-area">' +
                 '<h2 class="heading-label preview-label">' + gettext('Response editor') + '</h2>' +
-                '<button class="toggle-view">' + gettext('Switch to preview mode') + '</button>' +
+                '<button class="toggle-view btn">' + gettext('Switch to preview mode') + '</button>' +
                 '<p class="response-preview">' +
                 '<textarea id="response-content">' +
                 '</textarea></p>' +
@@ -794,23 +794,23 @@ Marky.CannedResponsesButton.prototype = $.extend({}, Marky.SimpleButton.prototyp
                 '</div>' +
                 '</div>' +
                 '<div class="placeholder" /><div class="submit" id="response-submit-area">' +
-                '<button id="insert-response">' + gettext('Insert Response') + '</button>' +
+                '<button id="insert-response" class="btn btn-important">' + gettext('Insert Response') + '</button>' +
                 '<a href="#cancel" class="kbox-cancel">' + gettext('Cancel') + '</a>' +
                 '</div>' +
                 '</section>'
             ),
             selectedText = me.getSelectedText(),
             kbox;
-            
+
         const cannedResponsesUrl = '/kb/common-forum-responses';
         const previewUrl = 'answer-preview-async';
-        
+
         function updatePreview() {
             var response = $('#response-content').val();
             var token = $('[name=csrfmiddlewaretoken]').attr('value');
-            
+
             toggleThrobber(true);
-            
+
             $.ajax({
                 type: 'POST',
                 url: previewUrl,
@@ -829,17 +829,17 @@ Marky.CannedResponsesButton.prototype = $.extend({}, Marky.SimpleButton.prototyp
                 }
             });
         }
-        
+
         function getContent(articleUrl) {
             // If the article doesn't exist, it has /new in its URL
             // Don't query nonexisting articles
             if(!articleUrl || articleUrl.indexOf('/new') !== -1) {
                 return;
             }
-            
+
             articleUrl += '/edit';
             toggleThrobber(true);
-            
+
             $.ajax({
                 url: articleUrl,
                 dataType: 'html',
@@ -847,7 +847,7 @@ Marky.CannedResponsesButton.prototype = $.extend({}, Marky.SimpleButton.prototyp
                     var article_src = $('#id_content', data).val();
                     var $textbox = $('#response-content');
                     $textbox.val(article_src);
-                        
+
                     updatePreview();
                 },
                 complete: function() {
@@ -855,7 +855,7 @@ Marky.CannedResponsesButton.prototype = $.extend({}, Marky.SimpleButton.prototyp
                 }
             });
         }
-        
+
         function toggleThrobber(busy) {
             var $previewLabel = $('.preview-label');
             if(busy) {
@@ -865,13 +865,13 @@ Marky.CannedResponsesButton.prototype = $.extend({}, Marky.SimpleButton.prototyp
                 $previewLabel.removeClass('busy');
             }
         }
-                
+
         function isAllowedToUseResponse(response_target) {
             if(response_target.indexOf('#') === -1) {
                 //No permission markers: Everyone's allowed
                 return true;
             }
-            
+
             var articleUrl = response_target.split("#")[0];
             var permBits = response_target.split('#')[1];
             response_target = articleUrl;
@@ -889,7 +889,7 @@ Marky.CannedResponsesButton.prototype = $.extend({}, Marky.SimpleButton.prototyp
             var sourceContent = $('#response-content').val();
             var $responseTextbox = $('#id_content');
             var targetContent = $responseTextbox.val();
-            
+
             $responseTextbox.val(targetContent + sourceContent);
         }
 
@@ -901,7 +901,7 @@ Marky.CannedResponsesButton.prototype = $.extend({}, Marky.SimpleButton.prototyp
             var $responses = $html.find('.response');
             var $responseListArea = $html.find('#response-list-area');
             var $responsesArea = $html.find('#responses-area');
-            
+
             if(term === '') {
                 $searchHeading.text(gettext('Responses'));
                 $responseListArea.removeClass('filtered');
@@ -911,13 +911,13 @@ Marky.CannedResponsesButton.prototype = $.extend({}, Marky.SimpleButton.prototyp
                 $responseLists.hide();
                 return;
             }
-            
+
             $responseListArea.addClass('filtered');
             $responsesArea.addClass('filtered');
             $searchHeading.text(gettext('Matching responses'));
             $noCategorySelected.hide();
             $responseLists.show();
-            
+
             $responses.each(function() {
                 var text = $(this).text().toLowerCase();
                 if(text.indexOf(term) === -1) {
@@ -928,11 +928,11 @@ Marky.CannedResponsesButton.prototype = $.extend({}, Marky.SimpleButton.prototyp
                 }
             });
         }
-        
+
         function loadCannedResponses() {
             var siteLanguage = window.location.pathname.split('/')[1];
             var targetUrl = "/" + siteLanguage + cannedResponsesUrl;
-            
+
             $.ajax({
                 url: targetUrl,
                 type: 'GET',
@@ -978,14 +978,14 @@ Marky.CannedResponsesButton.prototype = $.extend({}, Marky.SimpleButton.prototyp
                                 $noCatLabel.hide();
                                 $otherResponses = $responsesList.find('ul').not($responses);
                                 $otherResponses.hide();
-                                
+
                                 $otherHeadings = $categoryList.find('.response-heading').not($headingItem);
                                 $otherHeadings.removeClass('selected');
-                            
+
                                 $(this).addClass('selected');
                                 $responses.show();
                         });
-                            
+
                         $categoryList.append($headingItem);
                         $responsesList.append($responses);
                     });
@@ -996,7 +996,7 @@ Marky.CannedResponsesButton.prototype = $.extend({}, Marky.SimpleButton.prototyp
                     statusIndicator.text(gettext('There was an error checking for canned responses.'));
                 }
             });
-            
+
             // return true so that the kbox actually opens:
             return true;
         }
@@ -1010,19 +1010,19 @@ Marky.CannedResponsesButton.prototype = $.extend({}, Marky.SimpleButton.prototyp
             position: 'none',
             preOpen: loadCannedResponses
         });
-        
+
         kbox.open();
-                    
+
         $html.find('#insert-response').click(function() {
             insertResponse();
             kbox.close();
         });
-        
+
         $html.find('#filter-responses-field').keyup(function() {
             var term = $(this).val();
             searchResponses(term);
         });
-        
+
         var $previewLabel = $html.find('.preview-label');
         var $contentArea = $html.find('.response-preview');
         var $renderedPreview = $html.find('.response-preview-rendered');
@@ -1032,7 +1032,7 @@ Marky.CannedResponsesButton.prototype = $.extend({}, Marky.SimpleButton.prototyp
                 updatePreview();
                 $previewLabel.text(gettext('Response preview'));
                 $(this).text(gettext('Switch to edit mode'));
-            
+
                 $contentArea.hide();
                 $renderedPreview.show();
             },
@@ -1045,19 +1045,18 @@ Marky.CannedResponsesButton.prototype = $.extend({}, Marky.SimpleButton.prototyp
             });
 
         e.preventDefault();
-        return false;    
+        return false;
     },
-    
+
     permissionBits: [],
-    
+
     getPermissionBits: function() {
-        var 
-        profile_link = $('#aux-nav .user').attr('href'),
-        me = this;
+        var profile_link = $('#aux-nav .user').attr('href'),
+            me = this;
         if(!profile_link || profile_link === "")  {
             return;
         }
-        
+
         $.ajax({
             url: profile_link,
             dataType: 'html',
@@ -1065,17 +1064,17 @@ Marky.CannedResponsesButton.prototype = $.extend({}, Marky.SimpleButton.prototyp
                 var userGroups = $('#groups li', data);
                 userGroups.each(function() {
                     var group = $(this).text();
-                        
+
                     // Contributors:
                     if(group === 'Contributors') {
                         me.permissionBits.push('c');
                     }
-                    
+
                     // Moderators:
                     if(group === 'Forum Moderators') {
                         me.permissionBits.push('m');
                     }
-                    
+
                     // Administrators:
                     if(group === 'Administrators') {
                         me.permissionBits.push('a');
@@ -1094,7 +1093,7 @@ Marky.QuoteButton = function() {
     var previousContent = $('#read-message').attr('data-message-content');
     var previousAuthor = $('.from a').text();
     var previousAuthorLink = $('.from a').attr('href');
-    var quote = '[' + previousAuthorLink + ' ' + previousAuthor + ']' 
+    var quote = '[' + previousAuthorLink + ' ' + previousAuthor + ']'
                 + gettext(' said') + '\r\n';
     quote += '<blockquote>\r\n';
     quote += previousContent + '\r\n';

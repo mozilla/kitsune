@@ -85,3 +85,277 @@ button {
     background-position: -352px 0px;
   }
 }
+
+/* Modals */
+
+#showfor-modal,
+#link-modal,
+#media-modal {
+  text-align: left;
+  width: 480px;
+
+  h2 {
+    font-size: 16px;
+    margin: 10px 0 0;
+  }
+}
+
+#showfor-modal {
+  label {
+    padding: 0 15px 0 0;
+  }
+
+  input[type="checkbox"] {
+    margin: 0 5px 0 0;
+  }
+}
+
+section.marky {
+  div.submit {
+    clear: both;
+    padding: 20px 0 0;
+
+    a,
+    button {
+      margin: 0 15px 0 0;
+    }
+  }
+}
+
+#link-modal {
+  width: 600px;
+
+  label {
+    clear: both;
+    float: left;
+    padding: 5px 15px 20px 0;
+    text-align: right;
+    width: 75px;
+   }
+
+  ol {
+    float: left;
+    padding: 0;
+    width: 415px;
+  }
+
+  li {
+    list-style: none;
+    padding: 0 0 10px;
+
+    label {
+      float: none;
+      padding: 0;
+      text-align: left;
+      width: auto;
+    }
+  }
+
+  input[type=text] {
+    width: 400px;
+  }
+}
+
+#media-modal {
+  height: 80%;
+  left: 50%;
+  margin-left: -380px;
+  max-height: 510px;
+  max-height: -moz-calc(100%); /* let it continue to grow in FF4 */
+  min-height: 400px;
+  min-height: -moz-calc(0%); /* let it continue to shrink in FF4 */
+  position: fixed;
+  top: 7%;
+  width: 760px;
+
+  div.placeholder {
+    height: 65%;
+    height: -moz-calc(100% - 150px);
+    left: 15px;
+    position: absolute;
+    top: 100px;
+  }
+
+  &.processing {
+    div.placeholder {
+      background: transparent url(../img/customercare/spinner.gif) no-repeat center center;
+    }
+
+    #media-list {
+      visibility: hidden;
+    }
+  }
+
+  #media-list {
+    height: 80%;
+    height: -moz-calc(100% - 50px);
+    overflow: auto;
+
+    li {
+      border: solid 1px #fff;
+      cursor: pointer;
+      list-style: none;
+      display: inline-block;
+      height: 120px;
+      overflow: hidden;
+      padding: 5px;
+      text-align: center;
+      vertical-align: top;
+      width: 120px;
+
+      &:hover {
+        background: #f0f0f0;
+        border: solid 1px #9ACCF7;
+      }
+
+      &.selected {
+        background: #DAEDF6;
+        border: solid 1px #9ACCF7;
+      }
+
+      img {
+        max-width: 120px;
+        max-height: 120px;
+      }
+    }
+  }
+
+  div.filter {
+    border-bottom: 1px solid #9ACCF7;
+    border-top: 1px solid #9ACCF7;
+    display: block;
+    padding: 7px 15px;
+
+    input[type="text"] {
+      background: url("../img/icon.searchloupe.png") no-repeat scroll 7px center #FFFFFF;
+      margin: 0 7px 0 0;
+      padding-left: 33px;
+      width: 300px;
+    }
+
+    div.type {
+      color: #929292;
+      float: right;
+      margin-top: 0.5em;
+
+      ol {
+        float: left;
+        list-style-type: none;
+
+        li {
+          border-left: 2px solid #929292;
+          color: rgb(0, 81, 185);
+          cursor: pointer;
+          float: left;
+          font-weight: bold;
+          padding: 0 0.5em;
+
+          &.selected {
+            color: #565656;
+            cursor: default;
+          }
+
+          &:first-child {
+            border: none;
+          }
+        }
+      }
+
+      span {
+        float: left;
+      }
+    }
+  }
+
+  ol.pagination {
+    margin: 7px 0;
+    padding: 7px 0;
+  }
+
+  div.submit {
+    bottom: 15px;
+    left: 15px;
+    position: absolute;
+  }
+}
+
+.html-rtl {
+  #showfor-modal,
+  #link-modal,
+  #media-modal {
+    text-align: right;
+  }
+
+  #showfor-modal {
+    label {
+      padding: 0 0 0 15px;
+    }
+
+    input[type="checkbox"] {
+      margin: 0 0 0 5px;
+    }
+  }
+
+  section.marky {
+    div.submit {
+      a,
+      button {
+        margin: 0 0 0 15px;
+      }
+    }
+  }
+
+
+  #link-modal {
+    label {
+      float: right;
+      padding: 5px 0 20px 15px;
+      text-align: left;
+    }
+
+    ol {
+      float: right;
+    }
+
+    li {
+      label {
+        text-align: right;
+      }
+    }
+  }
+
+  #media-modal {
+    div.placeholder {
+      left: auto;
+      right: 15px;
+    }
+
+    div.filter input[type="text"] {
+      padding-left: 5px;
+      padding-right: 33px;
+    }
+
+    div.type {
+      float: left;
+
+      ol {
+        float: right;
+
+        li {
+          border: none;
+          border-right: 2px solid #929292;
+          float: right;
+        }
+      }
+
+      span {
+        float: right;
+      }
+
+      div.submit {
+        left: auto;
+        right: 15px;
+      }
+    }
+  }
+}
