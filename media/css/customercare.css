@@ -27,7 +27,7 @@
     font-style: italic;
 }
 
-.feature-contents h1 mark {
+.feature-contents h1 strong {
     display: block;
     font-family: MetaBlack,"Trebuchet MS",sans-serif;
     font-size: 64px;
@@ -92,7 +92,7 @@
     width: 200px;
 }
 
-#speech-bubbles li mark {
+#speech-bubbles li strong {
     display: block;
     font-family: MetaBlack,"Trebuchet MS",sans-serif;
     font-size: 21px;
@@ -724,8 +724,8 @@ a.header-button {
     padding: 10px 0 0;
 }
 
-#side-stats .perc mark,
-#side-stats .numbers mark {
+#side-stats .perc strong,
+#side-stats .numbers strong {
     color: #666;
     font-family: Georgia, freeserif, serif;
     font-size: 28px;
@@ -736,7 +736,7 @@ a.header-button {
 #side-stats .numbers {
     font-size: 13px;
 }
-#side-stats .numbers mark {
+#side-stats .numbers strong {
     display: block;
     font-size: 20px;
 }

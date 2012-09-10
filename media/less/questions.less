@@ -225,7 +225,7 @@ h2 {
     }
   }
 
-  #system-details {
+  .system-details {
     text-transform: uppercase;
 
     ul {
@@ -283,6 +283,82 @@ h2 {
       display: block;
       margin-bottom: 12px;
       width: 140px;
+    }
+  }
+
+  #vote-thanks-kbox {
+    text-align: left;
+  }
+
+  #more-system-details-kbox {
+    width: 600px;
+
+    h1 {
+      display: none;
+    }
+
+    h2 {
+      font-size: 14px;
+      font-weight: normal;
+      margin: 15px 0 5px;
+    }
+
+    p,
+    li {
+      color: #898378;
+      list-style: none;
+    }
+
+    ul.system {
+      li {
+        display: inline-block;
+        padding-right: 40px;
+      }
+    }
+
+    div.plugins {
+      li {
+        background: transparent url(../img/questions/icon.plugin.gif) no-repeat 0 4px;
+        padding: 2px 0 2px 25px;
+      }
+    }
+
+    .bottom-close {
+      margin: 10px 0 0;
+      text-align: right;
+    }
+  }
+
+  #email-subscribe-kbox {
+    left: -130px;
+    text-transform: none;
+    top: 20px;
+    width: 300px;
+
+    ul.errorlist {
+      margin: 0;
+      padding: 0;
+
+      li {
+        margin: 0;
+        padding: 0;
+      }
+    }
+
+    a {
+      padding: 0;
+    }
+
+    input#id_email {
+      width: 230px;
+    }
+
+    form {
+      ul {
+        list-style: none;
+        margin: 0;
+        padding: 10px 0;
+      }
     }
   }
 }

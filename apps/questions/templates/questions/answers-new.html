@@ -147,9 +147,9 @@
       {% endif %}
       <li class="email">
         {% if is_watching_question %}
-          <form class="unwatch" action="{{ url('questions.unwatch', question.id) }}" method="post">
+          <a data-form="unwatch-form" data-type="submit">{{ _('Stop email updates') }}</a>
+          <form id="unwatch-form" class="unwatch" action="{{ url('questions.unwatch', question.id) }}" method="post">
             {{ csrf() }}
-            <input type="submit" class="stop link-btn" value="{{ _('Stop email updates') }}" />
           </form>
         {% else %}
           <a id="email-subscribe-link" href="#email-subscribe">{{ _('Get email updates') }}</a>
@@ -174,8 +174,8 @@
             <li class="ff">Firefox {{ question.metadata.ff_version }}</li>
           {% endif %}
         </ul>
-        <div><a id="show-more-details" href="#more-system-details">{{ _('More system details') }}</a></div>
       {% endblock %}
+      <div><a id="show-more-details" href="#more-system-details">{{ _('More system details') }}</a></div>
     </div>
 
     <section id="more-system-details" class="kbox" title="{{ _('Additional System Details') }}" data-target="#show-more-details" data-modal="true" data-id="more-system-details-kbox" data-close-on-out-click="true">
