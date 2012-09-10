@@ -2,6 +2,7 @@
 {% extends "search/base.html" %}
 {% from 'includes/common_macros.html' import for_contributors_sidebar %}
 {% if advanced != '0' %}
+  {% set title = _('Advanced Search') %}
   {% set classes = 'advanced_search' %}
   {% set styles = ('search-new',) %}
 {% endif %}
