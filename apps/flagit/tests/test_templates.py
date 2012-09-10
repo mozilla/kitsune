@@ -1,12 +1,12 @@
 from nose.tools import eq_
 from pyquery import PyQuery as pq
 
-from flagit.tests import TestCaseBase
 from flagit.models import FlaggedObject
+from flagit.tests import TestCaseBase
 from questions.models import Answer
 from questions.tests import question, answer
 from sumo.tests import post, get
-from users.tests import user
+from users.tests import user,add_permission
 
 
 class FlaggedQueueTestCase(TestCaseBase):
@@ -14,12 +14,15 @@ class FlaggedQueueTestCase(TestCaseBase):
     def setUp(self):
         super(FlaggedQueueTestCase, self).setUp()
         q = question(creator=user(save=True), save=True)
-        self.flagger = user(save=True)
         self.answer = answer(question=q,
                              creator=user(save=True),
                              save=True)
 
-        self.client.login(username='admin', password='testpass')
+        self.flagger = user(save=True)
+        u = user(save=True)
+        add_permission(u, FlaggedObject, 'can_moderate')
+
+        self.client.login(username=u.username, password='testpass')
 
     def tearDown(self):
         super(FlaggedQueueTestCase, self).tearDown()
@@ -30,7 +33,7 @@ class FlaggedQueueTestCase(TestCaseBase):
         num_answers = Answer.objects.count()
         for a in Answer.objects.all():
             f = FlaggedObject(content_object=a, reason='spam',
-                                 creator_id=self.flagger.id)
+                              creator_id=self.flagger.id)
             f.save()
 
         # Verify number of flagged objects

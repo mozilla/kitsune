@@ -1,8 +1,9 @@
 from nose.tools import eq_
 
+from flagit.models import FlaggedObject
 from flagit.tests import TestCaseBase
 from sumo.urlresolvers import reverse
-from users.tests import user
+from users.tests import user, add_permission
 
 
 class FlagitTestPermissions(TestCaseBase):
@@ -20,6 +21,7 @@ class FlagitTestPermissions(TestCaseBase):
         resp = self.client.get(url)
         eq_(403, resp.status_code)
 
-        self.client.login(username='admin', password='testpass')
+
+        add_permission(self.user, FlaggedObject, 'can_moderate')
         resp = self.client.get(url)
         eq_(200, resp.status_code)

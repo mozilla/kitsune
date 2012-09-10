@@ -20,11 +20,5 @@ class TestCaseBase(TestCase):
         settings.CACHE_PREFIX = self.orig_cache_prefix or '' + 'test' + \
                                 slugify(datetime.now())
 
-        user(username='admin',
-             is_superuser=True,
-             is_staff=True,
-             is_active=True,
-             save=True)
-
     def tearDown(self):
         settings.CACHE_PREFIX = self.orig_cache_prefix
