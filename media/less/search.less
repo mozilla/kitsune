@@ -1,0 +1,118 @@
+@import 'variables.less';
+@import 'vendors.less';
+
+#advanced-search {
+  #advanced-search-tabs {
+    margin: 25px 0;
+
+    > li {
+      width: 33.33%;
+    }
+  }
+
+  #tab-wrapper {
+    > form {
+      > .container {
+        margin-bottom: 20px;
+
+        > label {
+          float: left;
+          margin-right: 20px;
+          text-align: right;
+          width: 110px;
+
+          + div,
+          + input,
+          + select {
+            float: left;
+          }
+
+          + div {
+            width: 510px;
+          }
+
+          + input {
+            width: 500px;
+          }
+        }
+
+        ul {
+          list-style: none;
+          margin: 0;
+          padding: 0;
+
+          > li {
+            margin-bottom: 5px;
+          }
+        }
+      }
+
+      .category,
+      .product,
+      .radios,
+      .thread-type,
+      .topics {
+        li {
+          float: left;
+          padding-left: 24px;
+          padding-right: 10px;
+          position: relative;
+
+          input {
+            left: 0;
+            position: absolute;
+            top: 3px;
+          }
+        }
+      }
+
+      .category,
+      .product,
+      .radios {
+        li {
+          width: 136px;
+        }
+      }
+
+      .thread-type,
+      .topics {
+        li {
+          width: 221px;
+
+          &:nth-of-type(2n - 1) {
+            clear: left;
+          }
+        }
+      }
+    }
+  }
+
+  .search-tips-small {
+    color: @textLightGrey;
+    float: left;
+    font-size: 12px;
+    margin: 6px 0 0 130px;
+    width: 510px;
+  }
+
+  .showhide-input {
+    select {
+      + input {
+        margin-left: 10px;
+      }
+    }
+  }
+
+  .submit-search {
+    float: right;
+
+    .btn {
+      float: left;
+      margin-left: 20px;
+
+      + .btn {
+        margin-top: 12px;
+      }
+    }
+  }
+}
