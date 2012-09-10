@@ -100,9 +100,44 @@
     </div>
   </div>
   <div class="grid_5">
-    <div class="feature-box">
-      <h2 class="nomargin">Top Contributors</h2>
-    </div>
+    <section id="top-contributors">
+      <div class="feature-box">
+        <h2 class="nomargin">{{ _('Top Contributors') }}</h2>
+        <div class="inner-wrap">
+          {% if karma_top %}
+            <ol>
+              {% for u in karma_top[:5] %}
+                <li{% if u == user %} class="me"{% endif %}>{{ u.username }}</li>
+              {% endfor %}
+            </ol>
+            <ol start="6">
+              {% for u in karma_top[5:] %}
+                <li{% if u == user %} class="me"{% endif %}>{{ u.username }}</li>
+              {% endfor %}
+            </ol>
+            {% if karma_ranking and karma_ranking > 10 %}
+              <ol start="{{ karma_ranking }}">
+                <li class="me">{{ user.username }}</li>
+              </ol>
+            {% endif %}
+          {% else %}
+            {# TODO: Remove this once we enable karma for everybody #}
+            {% if top_contributors %}
+              <ol>
+                {% for user in top_contributors[:5] %}
+                  <li>{{ user }}</li>
+                {% endfor %}
+              </ol>
+              <ol start="6">
+                {% for user in top_contributors[5:] %}
+                  <li>{{ user }}</li>
+                {% endfor %}
+              </ol>
+            {% endif %}
+          {% endif %}
+        </div>
+      </div>
+    </section>
   </div>
   <div class="grid_12">
     {% if questions.object_list %}
