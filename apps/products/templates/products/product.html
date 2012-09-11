@@ -2,8 +2,7 @@
 {% extends "base.html" %}
 {% from 'includes/common_macros.html' import for_contributors_sidebar %}
 {% from 'products/includes/product_macros.html' import product_sidebar %}
-{% from 'topics/includes/topic_macros.html' import hot_topics %}
-{% from 'topics/includes/topic_macros.html' import help_topics with context %}
+{% from 'topics/includes/topic_macros.html' import hot_topics, help_topics with context %}
 {% set crumbs = [(url('products'), _('Products and Services')), (None, title)] %}
 {% set styles = ('products',) %}
 
