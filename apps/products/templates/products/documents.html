@@ -2,11 +2,12 @@
 {% extends "base.html" %}
 {% from 'includes/common_macros.html' import for_contributors_sidebar %}
 {% from 'topics/includes/topic_macros.html' import hot_topics, topic_sidebar %}
-{% set title = _(product.title, 'DB: products.Product.title') + ' - ' + _(topic.title, 'DB: topics.Topic.title') %}
 {% set crumbs = [(url('products'), _('Products and Services')),
                  (url('products.product', slug=product.slug), _(product.title, 'DB: products.Product.title')),
                  (None, _(topic.title, 'DB: topics.Topic.title'))] %}
 {% set styles = ('products',) %}
+
+{% block title %}{{ _(topic.title, 'DB: topics.Topic.title') }} | {{ _('{product} Help')|f(product=_(product.title, 'DB: products.Product.title')) }}{% endblock %}
 
 {% block content %}
   <div class="grid_12">
