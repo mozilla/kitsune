@@ -1,0 +1,68 @@
+.kbox {
+  display: none;
+}
+
+.kbox-container {
+  background: #fff;
+  border-radius: 7px;
+  .box-shadow(1px 2px 15px #aaa);
+  display: none;
+  font-size: 14px;
+  position: absolute;
+  width: 500px;
+  z-index: 1000;
+}
+
+.kbox-open {
+  display: block;
+
+  .kbox {
+    display: block;
+  }
+}
+
+.kbox-close {
+  font-size: 22px !important;
+  position: absolute;
+  right: 8px;
+  top: 5px;
+
+  &:link,
+  &:visited,
+  &:active,
+  &:hover {
+    color: @textLightGrey;
+    text-decoration: none;
+  }
+}
+
+.html-rtl {
+  .kbox-close {
+    left: 8px;
+    right: auto;
+  }
+}
+
+.kbox-title {
+  display: block;
+  font-family: @OpenSansLight;
+  font-size: 30px;
+  margin: 0;
+  padding: 10px 25px 0;
+}
+
+.kbox-wrap {
+  padding: 10px 25px;
+}
+
+#kbox-overlay {
+  background: #000;
+  height: 100%;
+  opacity: 0.3;
+  filter: alpha(opacity=30);
+  left: 0;
+  position: fixed;
+  top: 0;
+  width: 100%;
+  z-index: 999;
+}
