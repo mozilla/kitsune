@@ -56,7 +56,7 @@ class ProductViewsTestCase(ElasticTestCase):
         r = self.client.get(url, follow=True)
         eq_(200, r.status_code)
         doc = pq(r.content)
-        eq_(10, len(doc('#help-topics li')))
+        eq_(11, len(doc('#help-topics li')))
 
     @mock.patch.object(waffle, 'flag_is_active')
     def test_document_listing(self, flag_is_active):
