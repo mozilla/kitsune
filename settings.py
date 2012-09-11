@@ -769,7 +769,7 @@ SEARCH_DEFAULT_CATEGORIES = (10, 20,)
 SEARCH_SUMMARY_LENGTH = 275
 
 # IA default settings
-IA_DEFAULT_CATEGORIES = (10, 20, 30, 40,)
+IA_DEFAULT_CATEGORIES = (10, 20,)
 
 # The length for which we would like the user to cache search forms and
 # results, in minutes.
