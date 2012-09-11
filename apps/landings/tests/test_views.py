@@ -22,9 +22,6 @@ class MobileHomeTests(MobileTestCase):
     def test_sync_home_for_mobile(self):
         self._check_template('home.sync', 'landings/mobile/sync.html')
 
-    def test_fxhome_home_for_mobile(self):
-        self._check_template('home.fxhome', 'landings/mobile/fxhome.html')
-
     def test_marketplace_home_for_mobile(self):
         r = self._check_template(
             'home.marketplace', 'landings/mobile/marketplace.html')

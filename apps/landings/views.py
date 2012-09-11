@@ -28,11 +28,6 @@ SYNC_DOCS = {
     'explore': 'Sync home - Explore',
     'nav': 'Sync home - IA Nav',
     'top': 'Sync home - Top'}
-FXHOME_DOCS = {
-    'quick': 'FxHome home - Quick',
-    'explore': 'FxHome home - Explore',
-    'nav': 'FxHome home - IA Nav',
-    'top': 'FxHome home - Top'}
 MARKETPLACE_DOCS = {
     'quick': 'Marketplace home - Quick',
     'explore': 'Marketplace home - Explore',
@@ -78,9 +73,6 @@ MOBILE_DOCS_FOR_MOBILE = {
 SYNC_DOCS_FOR_MOBILE = {
     'common': 'Sync home for mobile - Common Questions',
     'top': 'Sync home - Top'}
-FXHOME_DOCS_FOR_MOBILE = {
-    'common': 'FxHome home for mobile - Common Questions',
-    'top': 'FxHome home - Top'}
 MARKETPLACE_DOCS_FOR_MOBILE = {
     'common': 'Marketplace home for mobile - Common Questions',
     'top': 'Marketplace home - Top'}
@@ -158,13 +150,6 @@ def mobile(request, template=None):
 @mobile_template('landings/{mobile/}sync.html')
 def sync(request, template=None):
     docs = SYNC_DOCS_FOR_MOBILE if request.MOBILE else SYNC_DOCS
-    return jingo.render(request, template,
-                        _data(docs, request.locale))
-
-
-@mobile_template('landings/{mobile/}fxhome.html')
-def fxhome(request, template=None):
-    docs = FXHOME_DOCS_FOR_MOBILE if request.MOBILE else FXHOME_DOCS
     return jingo.render(request, template,
                         _data(docs, request.locale))
 
