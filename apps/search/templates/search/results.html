@@ -1,40 +1,5 @@
-{# vim: set ts=2 et sts=2 sw=2: #}
-{% extends "search/base.html" %}
-{% from "search/includes/result.html" import search_result with context %}
-{% from "search/includes/macros.html" import basic_search_form with context %}
-{% set meta = (('WT.oss', q),
-               ('WT.oss_r', num_results)) %}
-
-{% block content %}
-<article id="search-results" class="main">
-  {{ basic_search_form(True) }}
-
-  <div class="search-count">
-    {# L10n: {n} is the number of search results, {q} is the search query, {l} is the language searched. #}
-    {{ ngettext('Found <strong>{n}</strong> result for <strong>{q}</strong> in <strong>{l}</strong>',
-                'Found <strong>{n}</strong> results for <strong>{q}</strong> in <strong>{l}</strong>',
-                num_results)|fe(n=num_results, q=q, l=lang_name) }}
-  </div>
-
-  <div class="search-results">
-
-    {% for doc in results %}
-      {{ search_result(doc, s=q, r=doc.rank) }}
-    {% endfor %}
-
-    {{ pages|paginator }}
-
-    {% if num_results > 3 %}
-      {{ basic_search_form() }}
-    {% endif %}
-
-  </div>
-
-  {% if request.locale == settings.WIKI_DEFAULT_LANGUAGE %}
-    {% set aaq_url = url('questions.aaq_step1') %}
-  {% else %}
-    {% set aaq_url = url('wiki.document', 'ask') %}
-  {% endif %}
-  <p class="aaq">{{ _("Can't find what you're looking for? <a href='{0}'>Ask a question on our community support forum.</a>")|fe(aaq_url) }}</p>
-</article>
-{% endblock %}
+{% if show_new_sumo(request) %}
+  {% extends "search/results-new.html" %}
+{% else %}
+  {% extends "search/results-old.html" %}
+{% endif %}

@@ -1,0 +1,44 @@
+{# vim: set ts=2 et sts=2 sw=2: #}
+{% extends "search/base.html" %}
+{% from "search/includes/result-new.html" import search_result with context %}
+{% from "search/includes/macros.html" import basic_search_form with context %}
+{% set meta = (('WT.oss', q),
+('WT.oss_r', num_results)) %}
+{% set styles = ('search-new',) %}
+
+{% block content %}
+  <div id="search-results">
+    <div class="grid_12">
+      {{ basic_search_form(True) }}
+    </div>
+    <div class="grid_3">
+      <ul class="sidebar-nav">
+        <li class="selected"><a href="#">Show Everything</a></li>
+        <li><a href="#">Help Articles Only</a></li>
+        <li><a href="#">Community Discussion Only</a></li>
+      </ul>
+    </div>
+
+    <div class="grid_9">
+      <h2>
+        {# L10n: {n} is the number of search results, {q} is the search query, {l} is the language searched. #}
+        {{ ngettext('Found <strong>{n}</strong> result for <strong>{q}</strong> in <strong>{l}</strong>',
+                'Found <strong>{n}</strong> results for <strong>{q}</strong> in <strong>{l}</strong>',
+                num_results)|fe(n=num_results, q=q, l=lang_name) }}
+      </h2>
+
+      <div class="content-box">
+          {% for doc in results %}
+            {{ search_result(doc, s=q, r=doc.rank) }}
+          {% endfor %}
+      </div>
+
+      {{ pages|paginator }}
+    </div>
+    <div class="grid_12">
+      {% if num_results > 3 %}
+        {{ basic_search_form() }}
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

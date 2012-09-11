@@ -116,3 +116,47 @@
     }
   }
 }
+
+#search-results {
+  .search-form {
+    margin-bottom: 40px;
+
+    .btn {
+      float: right;
+    }
+
+    .searchbox {
+      float: left;
+      margin: 10px 0 0 12px;
+      width: 606px;
+    }
+  }
+
+  .result {
+    margin: 40px 0;
+
+    &:first-of-type {
+      margin-top: 0;
+    }
+
+    &:last-of-type {
+      margin-bottom: 0;
+    }
+
+    a,
+    a:visited,
+    a:hover {
+      color: @textGrey;
+    }
+
+    h3 {
+      margin: 0 0 4px 0;
+    }
+
+    &.question + .document,
+    &.document + .question {
+      border-top: 1px dotted @borderLightGrey;
+      padding-top: 40px
+    }
+  }
+}

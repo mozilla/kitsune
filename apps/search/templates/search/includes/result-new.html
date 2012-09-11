@@ -1,0 +1,12 @@
+{% macro search_result(result, s=None, as='s', r=None) %}
+  <div class="result {{ result.type }}">
+    {% set url =  result.url|urlparams(s=s, as=as, r=r) %}
+    <h3><a class="title" href="{{ url }}">{{ result.title }}</a></h3>
+    <a tabindex="-1" href="{{ url }}">{{ result.search_summary|safe }}</a>
+    {% if 'explain' in request.GET and request.GET['explain'] == '1' %}
+      <div class="explain">
+        Explanation:<br>{{ result.explanation|replace('\n', '<br>')|replace(' ', '&nbsp;')|safe }}
+      </div>
+    {% endif %}
+  </div>{# .result #}
+{% endmacro %}
