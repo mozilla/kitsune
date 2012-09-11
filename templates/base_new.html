@@ -99,18 +99,16 @@
         {% endif %}
         <a href="{{ url('home') }}"><img class="logo" alt="mozilla support" src="{{ MEDIA_URL }}img/mozilla-support.png" /></a>
       </div>
-      {% if request.locale == 'en-US' %}
-        <nav id="main-nav">
-          <ul class="cf">
-            <li><a href="{{ url('products') }}">{{ _('Products &amp; Services') }}</a></li>
-            <li><a href="{{ url('wiki.landing') }}">{{ _('Help Articles') }}</a></li>
-            <li><a href="{{ url('topics.topic', slug='hot') }}">{{ _('Hot Topics') }}</a></li>
-            <li><a href="{{ url('wiki.document', 'mozilla-news') }}">{{ _('Mozilla News') }}</a></li>
-            <li><a href="{{ url('wiki.document', 'superheroes-wanted') }}">{{ _('Help Other Users') }}</a></li>
-            <li><a href="{{ url('wiki.document', 'suggestion-box') }}">{{ _('Suggestion Box') }}</a></li>
-          </ul>
-        </nav>
-      {% endif %}
+      <nav id="main-nav">
+        <ul class="cf">
+          <li><a href="{{ url('products') }}">{{ _('Products &amp; Services') }}</a></li>
+          <li><a href="{{ url('wiki.landing') }}">{{ _('Help Articles') }}</a></li>
+          <li><a href="{{ url('topics.topic', slug='hot') }}">{{ _('Hot Topics') }}</a></li>
+          <li><a href="{{ url('wiki.document', 'mozilla-news') }}">{{ _('Mozilla News') }}</a></li>
+          <li><a href="{{ url('wiki.document', 'superheroes-wanted') }}">{{ _('Help Other Users') }}</a></li>
+          <li><a href="{{ url('wiki.document', 'suggestion-box') }}">{{ _('Suggestion Box') }}</a></li>
+        </ul>
+      </nav>
     </div>
   </div>
 </header>
