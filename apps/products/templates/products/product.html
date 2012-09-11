@@ -3,14 +3,14 @@
 {% from 'includes/common_macros.html' import for_contributors_sidebar %}
 {% from 'products/includes/product_macros.html' import product_sidebar %}
 {% from 'topics/includes/topic_macros.html' import hot_topics, help_topics with context %}
-{% set crumbs = [(url('products'), _('Products and Services')), (None, title)] %}
+{% set crumbs = [(url('products'), _('Products and Services')), (None, _(product.title, 'DB: products.Product.title'))] %}
 {% set styles = ('products',) %}
 
 {% block title %}{{ _('{product} Help')|f(product=_(product.title, 'DB: products.Product.title')) }}{% endblock %}
 
 {% block content %}
   <div class="grid_12">
-    <h1 class="product-title cf"><img src="{{ MEDIA_URL }}img/blank.png" alt="" class="logo-sprite" style="background-image: url('{{ product.image_url }}');" />{{ title }}</h1>
+    <h1 class="product-title cf"><img src="{{ MEDIA_URL }}img/blank.png" alt="" class="logo-sprite" style="background-image: url('{{ product.image_url }}');" />{{ _(product.title, 'DB: products.Product.title') }}</h1>
   </div>
   <aside class="grid_3">
     {{ for_contributors_sidebar(user, settings.WIKI_DEFAULT_LANGUAGE) }}
