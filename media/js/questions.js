@@ -109,7 +109,7 @@
      * Ajaxify email subscribe
      */
     function initEmailSubscribeAjax() {
-        var $container = $('#question div.me-too, .sidebar-nav li.email'),
+        var $container = $('#question li.email, .sidebar-nav li.email'),
             $link = $('#email-subscribe-link');
         if ($link.length > 0) {
             initAjaxForm($container, 'form', '#email-subscribe');
