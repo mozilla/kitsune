@@ -21,7 +21,7 @@
     {{ hot_topics(hot_docs, fallback_hot_docs) }}
     <section id="help-topics">
       <h1>{{ _('Help Topics') }}</h1>
-      {{ help_topics(topics[:6]) }}
+      {{ help_topics(topics[:5], show_community_support=True) }}
       {% for topic in topics[6:] %}
         {% if loop.first %}<ul>{% endif %}
         <li>
