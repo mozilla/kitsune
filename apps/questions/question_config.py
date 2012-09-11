@@ -275,42 +275,6 @@ products = SortedDict([
             }),
         ])
     }),
-    ('home', {
-        'name': _lazy(u'Firefox Home'),
-        'subtitle':  _lazy(u'iPhone and iPad'),
-        'tags': ['FxHome'],
-        'categories': SortedDict([
-            ('i1', {
-                'name': _lazy(u"Setting up Firefox Home on my iPhone"),
-                'html': 'We have lots of helpful articles on <em>setting up '
-                        'Firefox Home</em> and hundreds of questions in our '
-                        'database. Try the following:',
-                'articles': [
-                    {'title': 'How to set up Firefox Home on your iPhone',
-                     'url': '/kb/How+to+set+up+Firefox+Home+on+your+iPhone'},
-                ],
-                'tags': ['iphone'],
-            }),
-            ('i2', {
-                'name': _lazy(u'Not all my data is syncing between Firefox '
-                          'and Firefox Home or other problems'),
-                'html': 'We have lots of helpful articles on <em>Firefox Home '
-                        'issues</em> and hundreds of questions in our '
-                        'database. Try one of the following:',
-                'articles': [
-                    {'title': 'Firefox Home does not work ',
-                     'url': '/kb/Firefox+Home+does+not+work'},
-                    {'title': 'Cannot log in to Firefox Home App ',
-                     'url': '/kb/Cannot+log+in+to+Firefox+Home+App'},
-                    {'title': 'Replace your Sync information',
-                     'url': '/kb/Replace+your+Sync+information'},
-                    {'title': 'Firefox Sync is not working',
-                     'url': '/kb/Firefox%20Sync%20is%20not%20working'}
-                ],
-                'tags': ['other'],
-            }),
-        ])
-    }),
     ('sync', {
         'name': _lazy(u'Firefox Sync'),
         'tags': ['sync'],

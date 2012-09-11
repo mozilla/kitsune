@@ -81,9 +81,6 @@
           {% if not is_mobile_page %}
             {{ list_view_item(url('home.mobile'), _('Firefox for Mobile'), 'mobile-icon') }}
           {% endif %}
-          {% if not is_fxhome_page %}
-            {{ list_view_item(url('home.fxhome'), _('Firefox Home'), 'home-icon') }}
-          {% endif %}
           {% if not is_sync_page %}
             {{ list_view_item(url('home.sync'), _('Firefox Sync'), 'sync-icon') }}
           {% endif %}

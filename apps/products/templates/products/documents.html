@@ -15,7 +15,7 @@
   </div>
   <aside class="grid_3">
     {{ for_contributors_sidebar(user, settings.WIKI_DEFAULT_LANGUAGE) }}
-    {{ topic_sidebar(topics, product, topic) }}
+    {{ topic_sidebar(topics[:10], product, topic) }}
   </aside>
   <div class="grid_9">
     <section id="document-list">

@@ -26,7 +26,7 @@
         "pk": 5,
         "model": "inproduct.redirect",
         "fields": {
-            "target": "firefox-home",
+            "target": "home",
             "platform": "iPhone"
         }
     },
@@ -34,7 +34,7 @@
         "pk": 6,
         "model": "inproduct.redirect",
         "fields": {
-            "target": "firefox-home",
+            "target": "home",
             "product": "mobile",
             "platform": "Android",
             "topic": "foo"

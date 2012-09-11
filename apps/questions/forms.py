@@ -238,7 +238,9 @@ class WatchQuestionForm(forms.Form):
         ('solution', 'when a solution is found.'),
     )
 
-    email = forms.EmailField(required=False)
+    email = forms.EmailField(
+      required=False,
+      widget=forms.TextInput(attrs={'placeholder': EMAIL_PLACEHOLDER}))
     event_type = forms.ChoiceField(choices=EVENT_TYPE_CHOICES,
                                    widget=forms.RadioSelect)
 
