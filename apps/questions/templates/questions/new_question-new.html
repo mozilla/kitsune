@@ -29,7 +29,7 @@
 
 {% block articles_and_search_results %}
   {% set form_header_set = False %}
-  {% if (current_articles or current_html) and not search_results and not form %}
+  {% if (current_articles or current_html) and not tried_search and not form %}
     {{ current_articles_and_message(current_articles, current_category, current_html) }}
     {% if not form and not deadend %}
       {% set form_header_set = True %}
@@ -42,16 +42,11 @@
     {% endif %}
   {% endif %}
 
-  {% if current_category and ((current_articles or search_results or current_html)
-    or not (current_articles and search_results and current_html))
+  {% if current_category and ((current_articles or tried_search or current_html)
+    or not (current_articles and tried_search and current_html))
     and not form and not deadend %}
     {% if not form_header_set %}
-      <h2>
-        {% trans %}
-          Post a question in our Community Support Forum
-          <mark>(registration required)</mark>
-        {% endtrans %}
-      </h2>
+      <h2 id="summarize-question">{{ _('Summarize your question in a sentence') }}</h2>
     {% endif %}
     {{ aaq_search_form(current_product, current_category, settings, host, request) }}
   {% endif %}
