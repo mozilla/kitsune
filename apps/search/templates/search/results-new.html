@@ -1,5 +1,6 @@
 {# vim: set ts=2 et sts=2 sw=2: #}
 {% extends "search/base.html" %}
+{% from 'includes/common_macros.html' import for_contributors_sidebar %}
 {% from "search/includes/result-new.html" import search_result with context %}
 {% from "search/includes/macros.html" import basic_search_form with context %}
 {% set meta = (('WT.oss', q),
@@ -17,7 +18,7 @@
         <li><a href="#">Help Articles Only</a></li>
         <li><a href="#">Community Discussion Only</a></li>
       </ul> #}
-      {{ for_contributors_sidebar(user, settings.WIKI_DEFAULT_LANGUAGE }}
+      {{ for_contributors_sidebar(user, settings.WIKI_DEFAULT_LANGUAGE) }}
       <br />
     </div>
 
