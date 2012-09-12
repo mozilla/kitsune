@@ -582,9 +582,9 @@ MINIFY_BUNDLES = {
         'locale-switcher': (
             'less/locale-switcher.less',
         ),
-        'kbdashboards': {
+        'kbdashboards': (
             'less/kbdashboards.less',
-        },
+        ),
     },
     'js': {
         'common': (
