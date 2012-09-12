@@ -331,10 +331,11 @@
     position: relative;
 
     table {
-      background: #32559b;
+      background: #fff;
       border: none;
       border-collapse: separate;
-      border-radius: 10px;
+      .border-radius(7px);
+      .box-shadow(1px 2px 15px #AAAAAA);
       font-size: 13px;
       left: 0;
       padding: 10px;
@@ -343,17 +344,17 @@
       z-index: 1000;
 
       &:before {
-        background: #32559b;
+        background: #fff;
         content: '';
         display: block;
-        position: relative;
-        .transform(rotate(45deg));
-        z-index: 1;
         height: 15px;
-        width: 15px;
         left: 58px;
-        top: -18px;
         margin-bottom: -13px;
+        position: relative;
+        .transform(rotate(45deg));        
+        top: -18px;
+        width: 15px;
+        z-index: 1;
       }
     }
   }
@@ -374,7 +375,6 @@
 
   th,
   td {
-    color: #fff;
     padding: 0.1em 0.4em;
     text-align: center;
     vertical-align: baseline;
