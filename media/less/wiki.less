@@ -1,6 +1,7 @@
 @import 'variables.less';
 @import 'vendors.less';
 @import 'includes/editor-tools.less';
+@import 'includes/details.less';
 
 .wait {
   display: none;
@@ -462,7 +463,6 @@ article {
   color: #447BC4;
   cursor: pointer;
   float: right;
-  font-family: Trebuchet MS, Helvetica, sans-serif;
   font-size: 13px;
   margin: 1px 0 10px;
 }
@@ -768,7 +768,6 @@ ul.description {
 
   h3 {
     color: #333;
-    font-family: Verdana;
     font-size: 13px;
     margin: 0 0 5px;
   }
@@ -804,7 +803,6 @@ div.localized {
 
   h3 {
     color: #333;
-    font-family: Verdana;
     font-size: 13px;
     margin: 0 0 5px;
   }
@@ -1079,60 +1077,4 @@ div.video .kbox-container {
     font-size: 12px;
     padding-top: 5px;
   }
-}
-
-/* Graceful fallback for <details> tags */
-/* from http://mathiasbynens.be/notes/html5-details-jquery */
-
-details, summary {
-    display: block;
-}
-
-details {
-    margin: 25px 0 0;
-}
-
-/* Headings aren't valid in <summary>s, and it makes me sad. */
-details.h2 > summary {
-    font-size: 20px;
-    margin: 21px 0 8px;
-}
-
-/* The .no-details styles will get applied only if JavaScript is enabled and <details> is not natively supported. */
-
-/* Add focus styles (for keyboard accessibility) */
-.no-details summary:focus {
-    outline: dotted 1px;
-}
-
-.no-details summary:hover {
-    background-color: #e6f1fb;
-}
-
-/* The following styles are not really needed, since the jQuery script takes care of hiding/displaying the elements. */
-/* However, we're still gonna use CSS as well to prevent FOUC in browsers that understand these selectors. */
-/* Remember: by default (and probably most of the time), the contents of the <details> element are hidden. */
-
-/* Hide all direct descendants of every <details> element */
-/* Note that IE6 doesn't support the child selector; we'll work around that using jQuery later */
-.no-details details > * {
-    display: none;
-}
-
-/* Make sure summary remains visible, and apply a pointer cursor upon hover to indicate it's a clickable element */
-.no-details details summary {
-    background: transparent url(../img/wiki/bkg.collapsibles.png) no-repeat 5px 5px;
-    border-bottom: solid 1px #cadaeb;
-    cursor: pointer;
-    display: block;
-    margin: 10px 0 30px;
-    padding: 0 0 0 30px;
-}
-
-.html-rtl .no-details details summary {
-    padding: 0 30px 0 0;
-}
-
-.no-details details.open summary {
-    background-position: 5px -45px;
 }

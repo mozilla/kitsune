@@ -53,7 +53,7 @@ def _kb_detail(request, readout_slug, readouts, main_view_name,
 def contributors_detail(request, readout_slug):
     """Show all the rows for the given contributor dashboard table."""
     return _kb_detail(request, readout_slug, CONTRIBUTOR_READOUTS,
-                      'dashboards.contributors', _('Contributor Dashboard'),
+                      'dashboards.contributors', _('Knowledge Base Dashboard'),
                       locale=settings.WIKI_DEFAULT_LANGUAGE)
 
 
