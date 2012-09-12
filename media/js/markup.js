@@ -770,27 +770,28 @@ Marky.CannedResponsesButton.prototype = $.extend({}, Marky.SimpleButton.prototyp
             $html = $(
                 '<section class="marky">' +
                 '<div class="search">' +
-                '<label for="filter-responses-field">' + gettext('Search: ') +'</label>' +
                 '<input type="text" name="q" id="filter-responses-field" placeholder="'
-                + gettext('Search for common responses') + '" />' +
+                + gettext('Search for common responses') + '" class="searchbox"/>' +
                 '</div></div>' +
-                '<div class="area" id="responses-area">' +
+                '<div class="area">' +
+                '<div id="responses-area">' +
                 '<h2 class="heading-label">' + gettext('Categories') + '</h2>' +
-                '<ul class="category-list">' +
+                '<ul class="category-list sidebar-nav">' +
                 '<li class="status-indicator busy">' + gettext('Loading...') + '</li>' +
                 '</ul></div>' +
-                '<div class="area" id="response-list-area">' +
+                '<div id="response-list-area">' +
                 '<h2 class="heading-label">' + gettext('Responses') + '</h2>' +
-                '<span class="nocat-label">' + gettext('Please select a category from the previous column or start a search.') + '</span>' +
+                '<h4 class="nocat-label">' + gettext('Please select a category from the previous column or start a search.') + '</h4>' +
                 '<p class="response-list"/>' +
                 '</div>' +
-                '<div class="area" id="response-content-area">' +
+                '<div id="response-content-area">' +
                 '<h2 class="heading-label preview-label">' + gettext('Response editor') + '</h2>' +
                 '<button class="toggle-view btn">' + gettext('Switch to preview mode') + '</button>' +
                 '<p class="response-preview">' +
                 '<textarea id="response-content">' +
                 '</textarea></p>' +
                 '<p class="response-preview-rendered"></p>' +
+                '</div>' +
                 '</div>' +
                 '</div>' +
                 '<div class="placeholder" /><div class="submit" id="response-submit-area">' +
@@ -821,7 +822,7 @@ Marky.CannedResponsesButton.prototype = $.extend({}, Marky.SimpleButton.prototyp
                 dataType: 'html',
                 success: function(html) {
                     var $container = $('.response-preview-rendered');
-                    var $response_preview = $(html).find('.content');
+                    var $response_preview = $(html).find('.main-content');
                     $container.html($response_preview);
                 },
                 complete: function() {
@@ -948,15 +949,14 @@ Marky.CannedResponsesButton.prototype = $.extend({}, Marky.SimpleButton.prototyp
                     $categories.each(function(el, i) {
                         var label = $(this).text(),
                             $headingItem = $(document.createElement('li')),
-                            $responses = $(document.createElement('ul')).hide(),
+                            $responses = $(document.createElement('ul')).addClass('sidebar-nav').hide(),
                             $catResponses = $(this).nextUntil('[id^=w_]').find('a'),
                             $noCatLabel = $html.find('.nocat-label'),
                             $otherResponses,
                             $otherHeadings;
 
                         $catResponses.each(function(el, i) {
-                            var $response = $(document.createElement('li')).addClass('response'),
-                                $response_link = $(document.createElement('a')).text($(this).text()),
+                            var $response = $(document.createElement('li')).addClass('response').text($(this).text()),
                                 response_target = $(this).attr('href'),
                                 canUseResponse = isAllowedToUseResponse(response_target),
                                 response_target = response_target.split('#')[0];
@@ -968,7 +968,6 @@ Marky.CannedResponsesButton.prototype = $.extend({}, Marky.SimpleButton.prototyp
                                     getContent(response_target);
                                 });
 
-                                $response.append($response_link);
                                 $responses.append($response);
                             }
                         });
