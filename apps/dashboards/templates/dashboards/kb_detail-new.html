@@ -1,0 +1,31 @@
+{# vim: set ts=2 et sts=2 sw=2: #}
+{% extends "base.html" %}
+{% from "includes/common_macros.html" import for_contributors_sidebar %}
+{% set title = readout.title %}
+{% set scripts = ('wiki',) %}
+{% set styles = ('kbdashboards',) %}
+{% set crumbs = [(url(main_dash_view), main_dash_title), (None, title)] %}
+{# TODO: Move required dashboard scripts out of wiki.js into their own #}
+
+{% block content %}
+  <div class="grid_9">
+    <article class="main dashboards dashboards-detail">
+      <h1>{{ readout.title }}</h1>
+      <ul class="readout-modes" data-slug="{{ readout.slug }}">
+        {% for key, name in readout.modes %}
+          <li class="mode{% if key == readout.default_mode %} active{% endif %}" data-url="{{ url('dashboards.wiki_rows', readout.slug)|urlparams(mode=key, locale=locale) }}">
+            <a href="#">{{ name }}</a>
+          </li>
+        {% endfor %}
+      </ul>
+
+      <table class="documents" id="{{ readout.slug }}-table">
+        {{ readout.render()|safe }}
+      </table>
+    </article>
+  </div>
+{% endblock %}
+
+{% block side_top %}
+  {{ for_contributors_sidebar(user, settings.WIKI_DEFAULT_LANGUAGE, active='kbdashboard') }}
+{% endblock %}

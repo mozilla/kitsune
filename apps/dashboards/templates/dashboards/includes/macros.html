@@ -75,7 +75,7 @@
     <div id="overview-options" class="choice-list">
       <label>{{ _('More options:') }}</label>
       <ul>
-        {% for slug, readout in readouts.iteritems() %}
+        {% for slug, readout in readouts.iteritems() if readout.short_title %}
           <li><a href="#{{ slug }}">{{ readout.short_title }}</a></li>
         {% endfor %}
       </ul>
