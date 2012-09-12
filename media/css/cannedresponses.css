@@ -2,17 +2,15 @@
     background-image: url(../img/icon.magic-hat.png);
 }
 
+#responses-area,
 #response-list-area {
-    border-right: 1px dashed silver;
     float: left;
-    margin-left: 21.5%;
     text-align: center;
-    width: 27%;
+    width: 25%;
 }
 
 #response-list-area.filtered {
-    margin-left: -15px;
-    width: 51%;
+    width: 50%;
 }
 
 .category-list,
@@ -21,28 +19,26 @@
     height: 88%;
     overflow-y: auto;
 }
+.response-list {
+    margin: 0;
+}
+.response-list .sidebar-nav {
+    margin-bottom: 0;
+}
 
 #responses-area {
-    border-right: 1px dashed silver;
-    margin-left: -15px;
+    border-right: 1px dotted silver;
     padding-right: 0.2em;
-    text-align: center;
-    width: 23%;
 }
 
 #responses-area.filtered {
     display: none;
 }
 
-.category-list {
-    font-size: 12px;
-}
-
 #response-list-area .heading-label,
 #responses-area .heading-label {
     margin-bottom: 5px;
     margin-top: 0;
-    text-align: center;
 }
 
 .preview-label {
@@ -51,7 +47,14 @@
 }
 
 .search {
-    text-align: center;
+    position: relative;
+    right: 1em;
+    text-align: right;
+    top: -3em;
+}
+
+#filter-responses-field {
+    width: 20em;
 }
 
 .status-indicator {
@@ -61,33 +64,41 @@
 
 .area {
     bottom: 3.5em;
+    left: 0;
+    overflow-y: hidden;
     position: absolute;
-    top: 6.5em;
+    top: 4.5em;
+    width: 100%;
+}
+
+.area > div {
+    height: 100%;
 }
 
 #response-content-area {
     float: right;
-    left: 52%;
-    width: 48%;
+    width: 49%;
+}
+
+.response-preview,
+.response-preview-rendered {
+    height: 88%;
 }
 
 .response-preview {
-    height: 88%;
-}
-.response-preview-rendered {
-    display: none;
-    height: 95%;
-    margin-top: 0.5em;
+    text-align: center;
 }
 
-.response-preview-rendered .content {
-    background-color: white;
-    border: 1px solid #CCCCCC;
-    border-radius: 10px;
+.response-preview-rendered {
+    display: none;
+    margin-top: 0.5em;
+    overflow: auto;
+}
+
+.response-preview-rendered .main-content {
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    color: #666666;
+    margin: 0.5em 1em;
     padding: 1em 2em;
-    width: 82%;
 }
 
 #response-content {
@@ -96,6 +107,7 @@
 }
 
 .status-indicator {
+    text-transform: none;
     padding-left: 18px;
 }
 
@@ -107,11 +119,8 @@
 
 .response-heading,
 .response {
-    border-radius: 0 5px 5px 0;
-    color: #0051B9;
     cursor: pointer;
     font-size: 12px;
-    list-style: none;
     margin-bottom: 5px;
     padding: 3px;
 }
@@ -122,31 +131,7 @@
     color: white;
 }
 
-.response {
-    cursor: pointer;
-    font-size: 12px;
-    list-style: none;
-    margin-bottom: .5em;
-}
-
-.response a:hover {
-    text-decoration: none;
-}
-
-#response-submit-area {
-    width: 99%;
-}
-
-#response-submit-area button,
-#response-submit-area .kbox-cancel {
-    float: right;
-}
-
-#response-submit-area .kbox-cancel {
-    margin-top: 0.5em;
-}
-
 #response-content-area .toggle-view {
     float: right;
-    margin: -0.5em 0.5em 0.5em 0;
+    margin: 0.1em 1em;
 }
