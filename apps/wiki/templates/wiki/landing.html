@@ -22,7 +22,7 @@
         {% if loop.first %}<ul>{% endif %}
         <li>
           <a href="{{ url('topics.topic', slug=topic.slug)|urlparams(selectproduct=1) }}">
-            {{ topic.title }}
+            {{ _(topic.title, 'DB: topics.Topic.title') }}
           </a>
         </li>
         {% if loop.last %}</ul>{% endif %}
