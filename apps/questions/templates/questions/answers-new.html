@@ -53,7 +53,7 @@
           <li>
             <a href="{{ question.last_answer.get_absolute_url() }}">
               {{ _('Last reply by {user}')|f(user=question.last_answer.creator.username) }}
-            </a> {{ question.last_answer.created|utctimesince }}
+            </a> {{ question.last_answer.created|timesince }}
           </li>
         {% endif %}
       </ul>
