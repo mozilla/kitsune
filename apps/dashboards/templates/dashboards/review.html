@@ -5,6 +5,7 @@
 {% set dashboard_id = 'forums-dashboard' %}
 {% set active_tab  = 'review' %}
 {% set styles = ('wiki', 'forums') %}
+{% set crumbs = [(None, title)] %}
 
 {% block dashboard_content %}
   {% include 'dashboards/includes/announcement_list.html' %}

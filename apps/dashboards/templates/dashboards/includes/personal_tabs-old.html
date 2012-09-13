@@ -1,0 +1,27 @@
+{# vim: set ts=2 et sts=2 sw=2: #}
+<nav id="doc-tabs">
+  <ul>
+    {% if user.groups.filter(name='Contributors').exists() %}
+      <li{% if active_tab == 'review' %} class="active"{% endif %}>
+        <a href="{{ url('dashboards.review') }}">{{ _('Review', 'dashboard') }}</a>
+      </li>
+    {% else %}
+      <li{% if active_tab == 'welcome' %} class="active"{% endif %}>
+        <a href="{{ url('dashboards.welcome') }}">{{ _('Welcome', 'dashboard') }}</a>
+      </li>
+    {% endif %}
+    {% if user.is_authenticated() %}
+      <li{% if active_tab == 'my-profile' %} class="active"{% endif %}>
+        <a href="{{ profile_url(user) }}">{{ _('My profile') }}</a>
+      </li>
+      <li{% if active_tab == 'edit-profile' %} class="active"{% endif %}>
+        <a href="{{ url('users.edit_profile') }}">{{ _('Edit my profile') }}</a>
+      </li>
+    {% endif %}
+    {% for dash in dashboards %}
+      <li{% if dash.group.id == active_tab %} class="active"{% endif %}>
+        <a href="{{ url('dashboards.group', dash.group.id) }}">{{ _(dash.group.name) }}</a>
+      </li>
+    {% endfor %}
+  </ul>
+</nav>
