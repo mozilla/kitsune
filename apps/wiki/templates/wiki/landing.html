@@ -17,8 +17,8 @@
   </aside>
   <div class="grid_9">
     <section id="help-topics">
-      {{ help_topics(topics[:6]) }}
-      {% for topic in topics[6:] %}
+      {{ help_topics(topics[:5]) }}
+      {% for topic in topics[5:10] %}
         {% if loop.first %}<ul>{% endif %}
         <li>
           <a href="{{ url('topics.topic', slug=topic.slug)|urlparams(selectproduct=1) }}">
