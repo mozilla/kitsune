@@ -93,6 +93,7 @@
     display: none;
     margin-top: 0.5em;
     overflow: auto;
+    width: 100%;
 }
 
 .response-preview-rendered .main-content {
