@@ -2,26 +2,29 @@
 {% extends "dashboards/base.html" %}
 {% from "dashboards/includes/macros.html" import print_readout, overview_section with context %}
 {% set title = _('{locale} | Group Dashboard')|fe(locale=settings.LOCALES[current_locale].native) %}
+{% set crumbs = [(None, title)] %}
 
 {% block content %}
-  <article id="localize" class="main dashboards">
-    <h1>{{ _('Group dashboard') }}</h1>
-    <h2 class="subtitle">{{ settings.LOCALES[current_locale].native }}</h2>
+  <div class="grid_9">
+    <article id="localize" class="main dashboards">
+      <h1>{{ _('Group dashboard') }}</h1>
+      <h2 class="subtitle">{{ settings.LOCALES[current_locale].native }}</h2>
 
-    {% include 'dashboards/includes/announcement_list.html' %}
+      {% include 'dashboards/includes/announcement_list.html' %}
 
-    {% if current_locale != settings.WIKI_DEFAULT_LANGUAGE %}
-      {% set rows = overview_rows() %}
-      {{ overview_section(readouts, ((rows['most-visited'], True),
-                                     (rows['all'], False))) }}
-    {% endif %}
+      {% if current_locale != settings.WIKI_DEFAULT_LANGUAGE %}
+        {% set rows = overview_rows() %}
+        {{ overview_section(readouts, ((rows['most-visited'], True),
+                                       (rows['all'], False))) }}
+      {% endif %}
 
-    {% for readout in readouts.itervalues() %}
-      {{ print_readout(readout,
-                       locale=current_locale,
-                       max_rows=20 if readout.slug == 'most-visited-translations' else 10) }}
-    {% endfor %}
+      {% for readout in readouts.itervalues() %}
+        {{ print_readout(readout,
+                         locale=current_locale,
+                         max_rows=20 if readout.slug == 'most-visited-translations' else 10) }}
+      {% endfor %}
 
-    <a class="full-dash" href="{{ url('dashboards.localization', locale=current_locale) }}">{{ _('See full dashboard') }}</a>
-  </article>
+      <a class="full-dash" href="{{ url('dashboards.localization', locale=current_locale) }}">{{ _('See full dashboard') }}</a>
+    </article>
+  </div>
 {% endblock %}

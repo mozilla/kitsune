@@ -1,0 +1,22 @@
+{# vim: set ts=2 et sts=2 sw=2: #}
+{% extends "base.html" %}
+{% set scripts = ('wiki',) %}
+{% if not styles %}
+  {% set styles = ('wiki',) %}
+{% endif %}
+
+{% block content %}
+  <article id="{{ dashboard_id }}" class="main dashboards">
+    <h1>{{ title }}</h1>
+    {% block dashboard_content %}
+
+    {% endblock %}
+  </article>
+{% endblock %}
+
+{% block side_top %}
+  {{ personal_dashboard_tabs(active_tab) }}
+{% endblock %}
+
+{% block breadcrumbs %}
+{% endblock %}

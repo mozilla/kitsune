@@ -3,41 +3,45 @@
 {% set title = _('Edit Profile') %}
 {% set classes = 'profile' %}
 {% set active = 'edit-profile' %}
+{% set crumbs = [(profile_url(profile.user), profile.user.username),
+                 (None, title)] %}
 
 {% block content %}
-  <article id="edit-profile" class="main">
-    <h1>{{ title }}</h1>
-    <form method="post" action="">
-      {{ csrf() }}
-      <ul>
-        <li id="edit-profile-avatar">
-          <label>{{ _('Avatar:') }}</label>
-          <img src="{{ profile_avatar(profile.user) }}">
-          <ul>
-            <li>
-              <a href="{{ url('users.edit_avatar') }}">{{ _('Change', 'avatar') }}</a>
-            </li>
-            {% if profile.avatar %}
+  <div class="grid_9">
+    <article id="edit-profile" class="main">
+      <h1>{{ title }}</h1>
+      <form method="post" action="">
+        {{ csrf() }}
+        <ul>
+          <li id="edit-profile-avatar">
+            <label>{{ _('Avatar:') }}</label>
+            <img src="{{ profile_avatar(profile.user) }}">
+            <ul>
               <li>
-                <a href="{{ url('users.delete_avatar') }}">{{ _('Delete', 'avatar') }}</a>
+                <a href="{{ url('users.edit_avatar') }}">{{ _('Change', 'avatar') }}</a>
               </li>
-            {% endif %}
-          </ul>
-        </li>
-        <li>
-          <label>{{ _('Password:') }}</label>
-          <a href="{{ url('users.pw_change') }}">{{ _('Change') }}</a>
-        </li>
-        <li>
-          <label>{{ _('Email:') }}</label>
-          {{ user.email }}
-          <a href="{{ url('users.change_email') }}">{{ _('Change') }}</a>
-        </li>
-        {{ form.as_ul()|safe }}
-      </ul>
-      <div class="submit">
-        <input type="submit" value="{{ _('Update') }}" />
-      </div>
-    </form>
-  </article>
+              {% if profile.avatar %}
+                <li>
+                  <a href="{{ url('users.delete_avatar') }}">{{ _('Delete', 'avatar') }}</a>
+                </li>
+              {% endif %}
+            </ul>
+          </li>
+          <li>
+            <label>{{ _('Password:') }}</label>
+            <a href="{{ url('users.pw_change') }}">{{ _('Change') }}</a>
+          </li>
+          <li>
+            <label>{{ _('Email:') }}</label>
+            {{ user.email }}
+            <a href="{{ url('users.change_email') }}">{{ _('Change') }}</a>
+          </li>
+          {{ form.as_ul()|safe }}
+        </ul>
+        <div class="submit">
+          <input type="submit" value="{{ _('Update') }}" />
+        </div>
+      </form>
+    </article>
+  </div>
 {% endblock %}

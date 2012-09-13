@@ -1,0 +1,134 @@
+{# vim: set ts=2 et sts=2 sw=2: #}
+{% extends "users/base.html" %}
+{% set title = _('{user} | Profile')|f(user=profile.user.username) %}
+{% set classes = 'profile' %}
+{% set canonical_url = unlocalized_url('users.profile', profile.user.pk) %}
+{% set active = 'my-profile' %}
+{% set crumbs = [(None, profile.user.username)] %}
+
+{% block content %}
+  <div class="grid_9">
+    <article id="profile" class="cf">
+      <div class="avatar">
+        <img src="{{ profile_avatar(profile.user) }}" alt="">
+      </div>
+      {% if user.is_staff and user.has_perm('users.change_profile') %}
+        <div id="admin-actions">
+          <a class="edit" href="{{ url('admin:users_profile_change', profile.user.id) }}">{{ _('Edit user profile') }}</a>
+        </div>
+      {% endif %}
+      {% if request.user.is_authenticated and request.user != profile.user %}
+        <section class="marky" id="flag">
+          <form action="{{ url('users.flag', object_id=profile.pk) }}" method="POST">
+            <input type="hidden" name="next" value="{{ request.get_full_path() }}" />
+            <button name="reason" type="submit" value="abuse">{{ _('Report Abuse') }}</button>
+            {{ csrf() }}
+          </form>
+        </section>
+      {% endif %}
+      <h1 class="user">{{ display_name(profile.user) }}
+          {% if profile.name %}
+            <span class="username">({{ profile.user.username }})</span>
+          {% endif %}
+      </h1>
+      <h2 class="location">
+        {% if profile.city and profile.country %}
+          {{ _('{city}, {country}')|f(city=profile.city,
+                                      country=profile.country) }}
+        {% elif profile.city %}
+          {{ profile.city }}
+        {% elif profile.country %}
+          {{ profile.country }}
+        {% endif %}
+      </h2>
+      <div class="pm-or-signout">
+        {% if profile.user == user %}
+          <a href="{{ url('users.logout') }}">{{ _('Sign Out') }}</a>
+        {% else %}
+          {{ private_message(profile.user) }}
+        {% endif %}
+      </div>
+      {% if num_answers or num_questions or num_solutions %}
+        <section class="contributions">
+          <h2>Contributions</h2>
+          <ul>
+            {% if num_questions %}
+              <li>
+                <a href="{{ url('search')|urlparams(asked_by=profile.user.username, sortby=1, a=1, w=2) }}">
+                  {{ ngettext('{0} question', '{0} questions', num_questions)|f(num_questions) }}
+                </a>
+              </li>
+            {% endif %}
+            {% if num_answers %}
+              <li>
+                <a href="{{ url('search')|urlparams(answered_by=profile.user.username, sortby=1, a=1, w=2) }}">
+                  {{ ngettext('{0} answer', '{0} answers', num_answers)|f(num_answers) }}
+                </a>
+              </li>
+            {% endif %}
+            {% if num_solutions %}
+              <li>
+                {{ ngettext('{0} solution', '{0} solutions', num_solutions)|f(num_solutions) }}
+              </li>
+            {% endif %}
+          </ul>
+        </section>
+      {% endif %}
+      {% if profile.public_email or profile.website or profile.twitter or
+            profile.facebook or profile.irc_handle or
+            (profile.livechat_id and
+             profile.livechat_id|lower != profile.user.username|lower) %}
+        <section class="contact">
+          <ul>
+            {% if profile.public_email and request.user.is_authenticated() %}
+              <li>
+                <label>{{ _('Email') }}</label>
+                {{ profile.user.email|public_email }}
+              </li>
+            {% endif %}
+            {% if profile.website %}
+              <li>
+                <label>{{ _('Website') }}</label>
+                <a rel="nofollow" href="{{ profile.website }}">{{ profile.website }}</a>
+              </li>
+            {% endif %}
+            {% if profile.twitter %}
+              <li>
+                <label>{{ _('Twitter') }}</label>
+                <a rel="nofollow" href="{{ profile.twitter }}">{{ profile.twitter }}</a>
+              </li>
+            {% endif %}
+            {% if profile.facebook %}
+              <li>
+                <label>{{ _('Facebook') }}</label>
+                <a rel="nofollow" href="{{ profile.facebook }}">{{ profile.facebook }}</a>
+              </li>
+            {% endif %}
+            {% if profile.irc_handle %}
+              <li>
+                <label>{{ _('IRC') }}</label>
+                {{ profile.irc_handle }}
+              </li>
+            {% endif %}
+          </ul>
+        </section>
+      {% endif %}
+      {% if profile.bio %}
+        <section class="bio">
+          <h2>{{ _('About {user}')|f(user=display_name(profile.user)) }}</h2>
+          {{ profile.bio|wiki_to_html(nofollow=True) }}
+        </section>
+      {% endif %}
+      {% if groups %}
+        <section class="groups">
+          <h2>{{ _("{user}'s Groups")|f(user=display_name(profile.user)) }}</h2>
+          <ul>
+            {% for g in groups %}
+              <li>{{ group_link(g) }}</li>
+            {% endfor %}
+          </ul>
+        </section>
+      {% endif %}
+    </article>
+  </div>
+{% endblock %}

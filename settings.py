@@ -552,6 +552,9 @@ MINIFY_BUNDLES = {
         'users': (
             'css/users.css',
         ),
+        'users-new': (
+            'less/users.less',
+        ),
         'monitor': (
             'css/monitor.css',
         ),
