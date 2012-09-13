@@ -16,7 +16,7 @@
     </section>
   {% endif %}
 
-  {% if documents %}
+  {% if documents or fallback_documents %}
     <aside class="grid_3">
       {{ for_contributors_sidebar(user, settings.WIKI_DEFAULT_LANGUAGE) }}
       {{ topic_sidebar(topics, None, topic) }}
@@ -39,7 +39,7 @@
           {% for document in fallback_documents %}
             {% if loop.first %}<ul class="topic-list">{% endif %}
             <li>
-              <a href="{{ document['url'] }}">{{ document['document_title'] }}</a>
+              <a href="{{ document['url']|replace('/'+ settings.WIKI_DEFAULT_LANGUAGE +'/', '/' + request.locale + '/') }}">{{ document['document_title'] }}</a>
             </li>
             {% if loop.last %}</ul>{% endif %}
           {% endfor %}
