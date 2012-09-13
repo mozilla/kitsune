@@ -27,7 +27,7 @@ class ProductViewsTestCase(ElasticTestCase):
         r = self.client.get(reverse('products'), follow=True)
         eq_(200, r.status_code)
         doc = pq(r.content)
-        eq_(3, len(doc('#products-and-services li')))
+        eq_(4, len(doc('#products-and-services li')))
 
     @mock.patch.object(waffle, 'flag_is_active')
     def test_product_landing(self, flag_is_active):
