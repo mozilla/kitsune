@@ -930,3 +930,184 @@ h2 {
     font-weight: bold;
   }
 }
+
+
+.attachments-upload {
+  margin: 1.5em 0 1.5em 128px;
+
+  label {
+    display: block;
+    margin: .5em 0;
+  }
+
+  .adding-attachment {
+    display: none;
+    line-height: 4em;
+  }
+
+  .empty,
+  .upload-progress {
+    display: none;
+  }
+
+  .attachments {
+    a:hover {
+      img {
+        border: 1px solid #eee;
+      }
+    }
+  }
+
+  .attachment {
+    display: inline-block;
+    position: relative;
+
+    .overlay {
+      background: #ccc url('../img/wait-trans.gif') no-repeat center;
+      bottom: 5px;
+      left: 5px;
+      opacity: .5;
+      position: absolute;
+      right: 5px;
+      top: 5px;
+    }
+
+    img {
+      background: url('../img/wait-trans.gif') no-repeat center;
+      border: 1px solid #ccc;
+      margin: 5px;
+      text-align: center;
+      vertical-align: top;
+    }
+
+    input.delete {
+      background: #000;
+      border: 2px solid #fff;
+      .border-radius(1em);
+      color: #fff;
+      cursor: pointer;
+      display: none;
+      font-family: Verdana;
+      font-weight: bold;
+      opacity: .5;
+      padding: 0 .2em;
+      position: absolute;
+      right: 10px;
+      top: 10px;
+
+      &:hover {
+        opacity: 1;
+      }
+    }
+
+    &:hover input.delete {
+      display: block;
+    }
+  }
+
+  .upload-progress {
+    background: url('../img/wait-trans.gif') no-repeat center;
+    border: 1px solid #ccc;
+    margin: 5px;
+    text-align: center;
+    vertical-align: top;
+
+    &.show {
+      display: inline-block;
+    }
+  }
+
+  .add-attachment {
+    noscript {
+      input {
+        margin-left: 1em;
+      }
+    }
+  }
+
+  input.image-delete {
+    margin-top: 1em;
+  }
+
+  img {
+    max-height: 120px;
+    max-width: 120px;
+  }
+}
+
+div.ans-attachments {
+  padding: 10px 15px 0 10px;
+
+  a:hover {
+    img {
+      border: 1px solid #eee;
+    }
+  }
+
+  .attachment {
+    display: inline-block;
+    position: relative;
+
+    .overlay {
+      background: #ccc url('../img/wait-trans.gif') no-repeat center;
+      bottom: 5px;
+      left: 5px;
+      opacity: .5;
+      position: absolute;
+      right: 5px;
+      top: 5px;
+    }
+
+    img {
+      background: url('../img/wait-trans.gif') no-repeat center;
+      border: 1px solid #ccc;
+      margin: 5px;
+      text-align: center;
+      vertical-align: top;
+    }
+
+    input.delete {
+      background: #000;
+      border: 2px solid #fff;
+      .border-radius(1em);
+      color: #fff;
+      cursor: pointer;
+      display: none;
+      font-family: Verdana;
+      font-weight: bold;
+      opacity: .5;
+      padding: 0 .2em;
+      position: absolute;
+      right: 10px;
+      top: 10px;
+
+      &:hover {
+        opacity: 1;
+      }
+    }
+
+    &:hover input.delete {
+      display: block;
+    }
+  }
+
+  img {
+    max-height: 120px;
+    max-width: 120px;
+  }
+}
+
+
+#image-attachment-kbox {
+  img {
+    max-width: 100%;
+
+    &.loading {
+      background: transparent url(../img/wait-trans.gif) no-repeat center center;
+      display: block;
+      height: 32px;
+      margin: auto;
+      width: 32px;
+    }
+  }
+}

@@ -298,6 +298,8 @@
             {{ content_editor(form.content) }}
           </div>
 
+          {{ attachments_form('questions.Question', question.pk, images, settings, user) }}
+
           <div class="answer-tools nopadding">
             <button type="submit" class="btn btn-submit big">{{ _('Post Reply') }}</button>
             <input type="submit" id="preview" name="preview" value="{{ _('Preview Reply') }}"
