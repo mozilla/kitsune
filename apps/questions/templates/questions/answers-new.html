@@ -273,6 +273,7 @@
     {% for answer in answers.object_list %}
       {% include "questions/includes/answer-new.html" %}
     {% endfor %}
+    {{ answers|paginator }}
   {% endif %}
 
   <div class="grid_9 suffix_3">
