@@ -59,6 +59,8 @@ AAQSystemInfo.prototype = {
                 ['Mac OS X 10.4', /(Mac OS X 10.4)/i],
                 ['Mac OS X 10.5', /(Mac OS X 10.5)/i],
                 ['Mac OS X 10.6', /(Mac OS X 10.6)/i],
+                ['Mac OS X 10.7', /(Mac OS X 10.7)/i],
+                ['Mac OS X 10.8', /(Mac OS X 10.8)/i],
                 ['Mac OS', /(Mac_PowerPC)|(Macintosh)/i],
                 ['QNX', /QNX/i],
                 ['BeOS', /BeOS/i],

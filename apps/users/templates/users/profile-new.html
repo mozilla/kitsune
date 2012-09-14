@@ -18,10 +18,10 @@
         </div>
       {% endif %}
       {% if request.user.is_authenticated and request.user != profile.user %}
-        <section class="marky" id="flag">
+        <section id="flag">
           <form action="{{ url('users.flag', object_id=profile.pk) }}" method="POST">
             <input type="hidden" name="next" value="{{ request.get_full_path() }}" />
-            <button name="reason" type="submit" value="abuse">{{ _('Report Abuse') }}</button>
+            <button class="link-btn" name="reason" type="submit" value="abuse">{{ _('Report Abuse') }}</button>
             {{ csrf() }}
           </form>
         </section>

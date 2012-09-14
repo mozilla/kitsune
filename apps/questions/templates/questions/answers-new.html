@@ -53,7 +53,7 @@
           <li>
             <a href="{{ question.last_answer.get_absolute_url() }}">
               {{ _('Last reply by {user}')|f(user=question.last_answer.creator.username) }}
-            </a> {{ question.last_answer.created|utctimesince }}
+            </a> {{ question.last_answer.created|timesince }}
           </li>
         {% endif %}
       </ul>
@@ -273,6 +273,7 @@
     {% for answer in answers.object_list %}
       {% include "questions/includes/answer-new.html" %}
     {% endfor %}
+    {{ answers|paginator }}
   {% endif %}
 
   <div class="grid_9 suffix_3">
@@ -297,6 +298,8 @@
           <div class="main-content" id="question-reply">
             {{ content_editor(form.content) }}
           </div>
+
+          {{ attachments_form('questions.Question', question.pk, images, settings, user) }}
 
           <div class="answer-tools nopadding">
             <button type="submit" class="btn btn-submit big">{{ _('Post Reply') }}</button>

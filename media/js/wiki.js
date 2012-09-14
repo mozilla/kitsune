@@ -328,6 +328,12 @@
                 // because the modal hasn't been displayed yet.
                 $modal.find('#id_comment').attr('required', true);
                 return true;
+            },
+            preClose: function() {
+                // Remove the required attribute so validation doesn't
+                // fail after clicking cancel.
+                $modal.find('#id_comment').removeAttr('required');
+                return true;
             }
         });
     }
