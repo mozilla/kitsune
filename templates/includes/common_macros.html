@@ -106,11 +106,15 @@
 
 {% macro for_contributors(user, default_language) -%}
   {% if user.is_authenticated() %}
-    <section id="for-contributors" class="feature-box">
-      <h1>{{ _('For Contributors') }}</h1>
-      <ul class="cf">
-        {{ _for_contributor_links(user, default_language) }}
-      </ul>
+    <section id="for-contributors" class="feature-box collapsed" data-ui-type="folding-section">
+      <header>
+        <h1 class="nomargin">{{ _('For Contributors') }}</h1>
+      </header>
+      <section>
+        <ul class="cf">
+          {{ _for_contributor_links(user, default_language) }}
+        </ul>
+      </section>
     </section>
   {% endif %}
 {%- endmacro %}
@@ -120,7 +124,7 @@
     {% if not li_only %}
       <ul class="sidebar-nav sidebar-folding">
     {% endif %}
-      <li{% if active %} class="selected"{% endif %}>
+      <li id="for-contributors"{% if active %} class="selected"{% endif %}>
         <a href="{{ url('products') }}">{{ _('For Contributors') }}</a>
         <ul class="sidebar-nav">
           {{ _for_contributor_links(user, default_language, active) }}

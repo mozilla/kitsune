@@ -1,5 +1,6 @@
 {# vim: set ts=2 et sts=2 sw=2: #}
 {% extends "questions/base.html" %}
+{% from "includes/common_macros.html" import for_contributors %}
 {% set title = _('Firefox Support Forum') %}
 {% set classes = 'questions' %}
 {% set crumbs = [(None, _('Support Forum'))] %}
@@ -46,6 +47,9 @@
         {%- endfor %}
         <a class="show-all" href="{{ url('questions.questions')|urlparams(filter=filter, sort=sort) }}">{{ _('Show all questions') }}</a>
       </div>
+    {% endif %}
+    {% if user.is_authenticated() %}
+      {{ for_contributors(user, settings.WIKI_DEFAULT_LANGUAGE) }}
     {% endif %}
   </div>
   <div class="grid_7">
