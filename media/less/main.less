@@ -134,13 +134,14 @@ textarea {
 }
 
 /* buttons styled to look like links */
+button[type="submit"],
 input[type="submit"]{
   &.link-btn {
     background: none;
     border: none;
     .border-radius(0);
     .box-shadow(none);
-    color: rgb(0, 81, 185);
+    color: @textBlue;
     cursor: pointer;
     font-weight: normal;
     padding: 0;
