@@ -49,7 +49,14 @@
             <li><a href="{{ url('users.logout') }}" class="sign-out">{{ _('Sign Out') }}</a></li>
           </ul>
         </li>
-        <li><a href="{{ url('messages.inbox') }}">{{ _('Inbox') }}</a></li>
+        <li>
+          <a href="{{ url('messages.inbox') }}">
+            {{ _('Inbox') }}
+            {% if unread_message_count > 0 %}
+              <span class="unread-message-count">{{ unread_message_count }}</span>
+            {% endif %}
+          </a>
+        </li>
       {% else %}
         <li><a href="{{ url('users.login') }}" class="sign-in">{{ _('Sign In') }}</a></li>
         <li><a href="{{ url('users.register') }}" class="register">{{ _('Register') }}</a></li>

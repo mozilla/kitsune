@@ -6,8 +6,10 @@
                  (None, title)] %}
 
 {% block content %}
-  <article id="read-message" class="main message-view">
-    <h1>{{ title }}</h1>
-    {{ outbox_message(message) }}
-  </article>
+  <div class="grid_9">
+    <article id="read-message" class="main message-view">
+      <h1>{{ title }}</h1>
+      {{ outbox_message(message) }}
+    </article>
+  </div>
 {% endblock %}

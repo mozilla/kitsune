@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% from "messages/includes/macros.html" import message_tabs %}
+{% from 'includes/common_macros.html' import for_contributors_sidebar %}
+{% set styles = ('messages-new',) %}
+{% set scripts = ('messages',) %}
+
+{% block side_top %}
+  {{ message_tabs(active_tab) }}
+  {{ for_contributors_sidebar(user, settings.WIKI_DEFAULT_LANGUAGE) }}
+{% endblock %}
