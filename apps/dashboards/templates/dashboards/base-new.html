@@ -1,5 +1,6 @@
 {# vim: set ts=2 et sts=2 sw=2: #}
 {% extends "base.html" %}
+{% from 'includes/common_macros.html' import for_contributors_sidebar %}
 {% set scripts = ('wiki',) %}
 {% if not styles %}
   {% set styles = ('kbdashboards',) %}
@@ -18,4 +19,5 @@
 
 {% block side_top %}
   {{ personal_dashboard_tabs(active_tab) }}
+  {{ for_contributors_sidebar(user, settings.WIKI_DEFAULT_LANGUAGE) }}
 {% endblock %}
