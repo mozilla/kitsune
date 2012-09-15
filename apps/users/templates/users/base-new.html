@@ -1,5 +1,6 @@
 {# vim: set ts=2 et sts=2 sw=2: #}
 {% extends "base.html" %}
+{% from 'includes/common_macros.html' import for_contributors_sidebar %}
 {% set styles = ('users-new',) %}
 {% set scripts = ('users',) %}
 
@@ -21,4 +22,5 @@
       </ul>
     {% endif %}
   {% endif %}
+  {{ for_contributors_sidebar(user, settings.WIKI_DEFAULT_LANGUAGE) }}
 {% endblock %}
