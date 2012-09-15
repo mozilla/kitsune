@@ -567,6 +567,10 @@ MINIFY_BUNDLES = {
             'css/users.autocomplete.css',
             'css/messages.css',
         ),
+        'messages-new': (
+            'css/users.autocomplete.css',
+            'less/messages.less',
+        ),
         'products': (
             'less/products.less',
         ),

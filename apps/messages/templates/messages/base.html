@@ -1,8 +1,5 @@
-{% extends "base.html" %}
-{% from "messages/includes/macros.html" import message_tabs %}
-{% set styles = ('messages',) %}
-{% set scripts = ('messages',) %}
-
-{% block side_top %}
-  {{ message_tabs(active_tab) }}
-{% endblock %}
+{% if show_new_sumo(request) %}
+  {% extends "messages/base-new.html" %}
+{% else %}
+  {% extends "messages/base-old.html" %}
+{% endif %}

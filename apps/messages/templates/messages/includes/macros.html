@@ -17,6 +17,20 @@
 {%- endmacro %}
 
 {% macro message_tabs(active_tab) -%}
+  <ul class="sidebar-nav">
+    <li{% if active_tab == 'inbox' %} class="selected"{% endif %}>
+      <a href="{{ url('messages.inbox') }}">{{ _('Inbox') }}</a>
+    </li>
+    <li{% if active_tab == 'outbox' %} class="selected"{% endif %}>
+      <a href="{{ url('messages.outbox') }}">{{ _('Sent Messages') }}</a>
+    </li>
+    <li{% if active_tab == 'new' %} class="selected"{% endif %}>
+      <a href="{{ url('messages.new') }}">{{ _('New Message') }}</a>
+    </li>
+  </ul>
+{%- endmacro %}
+
+{% macro message_tabs_old(active_tab) -%}
   <nav id="doc-tabs">
     <ul>
       <li{% if active_tab == 'inbox' %} class="active"{% endif %}>
