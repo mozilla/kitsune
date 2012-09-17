@@ -1,5 +1,5 @@
 {# vim: set ts=2 et sts=2 sw=2: #}
-<ul class="sidebar-nav">
+<ul id="user-nav" class="sidebar-nav">
   {% if user.groups.filter(name='Contributors').exists() %}
     <li{% if active_tab == 'review' %} class="selected"{% endif %}>
       <a href="{{ url('dashboards.review') }}">{{ _('Review', 'dashboard') }}</a>

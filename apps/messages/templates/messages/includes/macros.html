@@ -17,7 +17,7 @@
 {%- endmacro %}
 
 {% macro message_tabs(active_tab) -%}
-  <ul class="sidebar-nav">
+  <ul id="pm-nav" class="sidebar-nav">
     <li{% if active_tab == 'inbox' %} class="selected"{% endif %}>
       <a href="{{ url('messages.inbox') }}">{{ _('Inbox') }}</a>
     </li>
