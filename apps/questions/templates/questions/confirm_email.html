@@ -1,25 +1,33 @@
 {# vim: set ts=2 et sts=2 sw=2: #}
 {% extends "questions/base.html" %}
-{% from "questions/includes/aaq_macros.html" import aaq_progress %}
+
 {% set title = _('Please Confirm Your Email Address') %}
 {% set classes = 'questions' %}
+{% if show_new_sumo(request) %}
+  {% from "questions/includes/aaq_macros-new.html" import aaq_progress %}
+  {% set styles = ('questions-new',) %}
+{% else %}
+  {% from "questions/includes/aaq_macros.html" import aaq_progress %}
+{% endif %}
 
 {% block content %}
-  <article class="main">
-    <div class="confirm-question">
-      {{ aaq_progress(4) }}
-      <h1>{{ _('Please confirm your email address.') }}</h1>
-      <p>
-        {% trans %}
-          Thank you! Your question will appear on the site as soon as you confirm
-          your email address. You should receive an email shortly with a link to
-          confirm.
-        {% endtrans %}
-      </p>
-      <p>{{ _('An email has been sent to the address below:') }}</p>
-      <p><strong>{{ question.creator.email }}</strong></p>
-    </div>
-  </article>
+  <div class="grid_12">
+    <article class="main">
+      <div class="confirm-question highlight-box">
+        {{ aaq_progress(4) }}
+        <h1>{{ _('Please confirm your email address.') }}</h1>
+        <p>
+          {% trans %}
+            Thank you! Your question will appear on the site as soon as you confirm
+            your email address. You should receive an email shortly with a link to
+            confirm.
+          {% endtrans %}
+        </p>
+        <p>{{ _('An email has been sent to the address below:') }}</p>
+        <p><strong>{{ question.creator.email }}</strong></p>
+      </div>
+    </article>
+  </div>
 {% endblock %}
 
 {% block side %}
