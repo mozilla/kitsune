@@ -24,7 +24,7 @@ from tower import ugettext as _
 
 from access.decorators import permission_required, login_required
 from products.models import Product
-from sumo.helpers import urlparams, show_new_sumo
+from sumo.helpers import urlparams
 from sumo.urlresolvers import reverse
 from sumo.utils import paginate, smart_int, get_next_url, truncated_json_dumps
 from topics.models import Topic
@@ -95,10 +95,6 @@ def landing(request, template='wiki/landing.html'):
 
     Lists topics and products.
     """
-    if not show_new_sumo(request):
-        from landings.views import old_kb
-        return old_kb(request)
-
     return jingo.render(request, template, {
         'products': Product.objects.filter(visible=True),
         'topics': Topic.objects.filter(visible=True)})

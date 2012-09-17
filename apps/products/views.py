@@ -6,7 +6,6 @@ import jingo
 
 from landings.views import old_products
 from products.models import Product
-from sumo.helpers import show_new_sumo
 from sumo.urlresolvers import reverse
 from topics.models import Topic, HOT_TOPIC_SLUG
 from wiki.facets import topics_for, documents_for
@@ -14,9 +13,6 @@ from wiki.facets import topics_for, documents_for
 
 def product_list(request):
     """The product picker page."""
-    if not show_new_sumo(request):
-        return old_products(request)
-
     products = Product.objects.filter(visible=True)
     return jingo.render(request, 'products/products.html', {
         'products': products})
@@ -24,9 +20,6 @@ def product_list(request):
 
 def product_landing(request, slug):
     """The product landing page."""
-    if not show_new_sumo(request):
-        return HttpResponseRedirect(reverse('products'))
-
     product = get_object_or_404(Product, slug=slug)
 
     try:
@@ -49,9 +42,6 @@ def product_landing(request, slug):
 
 def document_listing(request, product_slug, topic_slug):
     """The document listing page for a product + topic."""
-    if not show_new_sumo(request):
-        return HttpResponseRedirect(reverse('products'))
-
     product = get_object_or_404(Product, slug=product_slug)
     topic = get_object_or_404(Topic, slug=topic_slug)
     documents, fallback_documents = documents_for(

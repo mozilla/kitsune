@@ -31,12 +31,6 @@ class MobileHomeTests(MobileTestCase):
     def test_firefox_home_for_mobile(self):
         self._check_template('home.firefox', 'landings/mobile/firefox.html')
 
-    def test_products_home_for_mobile(self):
-        self._check_template('products', 'landings/mobile/products.html')
-
-    def test_kb_home_for_mobile(self):
-        self._check_template('wiki.landing', 'landings/mobile/kb.html')
-
     def test_ask_home_for_mobile(self):
         self._check_template('home.ask', 'landings/mobile/ask.html')
 
