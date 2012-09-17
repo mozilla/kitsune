@@ -27,6 +27,8 @@ VersionMetadata = namedtuple('VersionMetadata',
                              'is_default')
 GROUPED_FIREFOX_VERSIONS = (
     ((_lazy(u'Desktop:'), 'desktop'), (
+        VersionMetadata(29, _lazy(u'Firefox 17'),
+                        _lazy(u'Firefox 17'), 'fx17', 17.9999, True, False),   
         VersionMetadata(27, _lazy(u'Firefox 16'),
                         _lazy(u'Firefox 16'), 'fx16', 16.9999, True, False),        
         VersionMetadata(25, _lazy(u'Firefox 15'),
@@ -34,7 +36,7 @@ GROUPED_FIREFOX_VERSIONS = (
         VersionMetadata(23, _lazy(u'Firefox 14'),
                         _lazy(u'Firefox 14'), 'fx14', 14.9999, True, False),
         VersionMetadata(21, _lazy(u'Firefox 13'),
-                        _lazy(u'Firefox 13'), 'fx13', 13.9999, True, False),
+                        _lazy(u'Firefox 13'), 'fx13', 13.9999, False, False),
         VersionMetadata(19, _lazy(u'Firefox 12'),
                         _lazy(u'Firefox 12'), 'fx12', 12.9999, False, False),
         VersionMetadata(17, _lazy(u'Firefox 11'),
@@ -59,6 +61,9 @@ GROUPED_FIREFOX_VERSIONS = (
         VersionMetadata(3, _lazy(u'Firefox 3.0'),
                         _lazy(u'Firefox 3.0'), 'fx3', 3.4999, False, False))),
     ((_lazy(u'Mobile:'), 'mobile'), (
+        VersionMetadata(28, _lazy(u'Firefox 17'),
+                        _lazy(u'Firefox 17 for Mobile'), 'm17', 17.9999,
+                        True, False),
         VersionMetadata(26, _lazy(u'Firefox 16'),
                         _lazy(u'Firefox 16 for Mobile'), 'm16', 16.9999,
                         True, False),
@@ -77,7 +82,7 @@ GROUPED_FIREFOX_VERSIONS = (
                         False, False),  # 11 and 12 for mobile were skipped.
         VersionMetadata(16, _lazy(u'Firefox 10'),
                         _lazy(u'Firefox 10 for Mobile'), 'm10', 10.9999,
-                        True, False),
+                        False, False),
         VersionMetadata(14, _lazy(u'Firefox 9'),
                         _lazy(u'Firefox 9 for Mobile'), 'm9', 9.9999,
                         False, False),
