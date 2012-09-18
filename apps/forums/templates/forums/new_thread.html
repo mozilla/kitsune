@@ -1,46 +1,5 @@
-{# vim: set ts=2 et sts=2 sw=2: #}
-{% extends "forums/base.html" %}
-{% from "layout/errorlist.html" import errorlist %}
-{% from "includes/common_macros.html" import content_editor %}
-{# L10n: {f} if the name of the forum. #}
-{% set title = _('Create a new thread | {f} | Forums')|f(f=forum.name) %}
-{% set crumbs = [(url('forums.forums'), _('Forums')),
-                 (url('forums.threads', forum.slug), forum.name),
-                 (None, _('Create a new thread'))] %}
-
-{% block content %}
-<article id="new-thread" class="main">
-  <h1>{{ _('Create a new thread') }}</h1>
-
-  <form action="{{ url('forums.new_thread', forum.slug) }}" method="post" class="new-thread">
-    {{ csrf() }}
-    {{ errorlist(form) }}
-
-    {% for field in form %}
-      <div class="form-widget{% if field.errors %} invalid{% endif %}">
-        {{ field.label_tag()|safe }}
-        {% if field.name == 'content' %}
-          {{ content_editor(field) }}
-        {% else %}
-          {{ field|safe }}
-        {% endif %}
-      </div>
-    {% endfor %}
-
-    <div class="form-widget submit">
-      <input type="submit" class="btn-important" value="{{ _('Post') }}" />
-      <input type="submit" id="preview" name="preview" value="{{ _('Preview') }}"
-          data-preview-url="{{ url('forums.post_preview_async') }}"
-          data-preview-container-id="post-preview"
-          data-preview-content-id="id_content" />
-      <a href="{{ url('forums.threads', forum.slug) }}">{{ _('Cancel') }}</a>
-    </div>
-
-    <div id="post-preview">
-      {% if post_preview %}
-        {% include "forums/includes/post_preview.html" %}
-      {% endif %}
-    </div>
-  </form>
-</article>
-{% endblock %}
+{% if show_new_sumo(request) %}
+  {% extends "forums/new_thread-new.html" %}
+{% else %}
+  {% extends "forums/new_thread-old.html" %}
+{% endif %}

@@ -74,6 +74,36 @@
   }
 }
 
+#new-thread,
+#edit-thread {
+  label {
+    display: block;
+    font-family: @OpenSansLight;
+    font-size: 20px;
+    margin: 30px 0 10px 0;
+  }
+
+  textarea {
+    background: #fff;
+    border: 0;
+    .border-radius(0);
+    .box-shadow(none);
+    margin-top: 10px;
+    outline: none;
+    padding: 0;
+    width: 880px;
+  }
+
+  .editor-tools {
+    background: transparent;
+  }
+
+  .submit {
+    margin-top: 20px;
+  }
+}
+
+#new-thread,
 #posts {
   .editor-actions {
     margin: 20px 0 0 130px;
@@ -145,7 +175,7 @@
   }
 
   #post-preview {
-    margin: 80px 0 0 130px;
+    margin: 80px 0 0 0;
 
     h3 {
       margin: 0 0 20px 0;
@@ -187,6 +217,12 @@
 
   #thread-reply-title {
     margin: 60px 0 20px 130px;
+  }
+}
+
+#posts {
+  #post-preview {
+    margin-left: 130px;
   }
 }
 
