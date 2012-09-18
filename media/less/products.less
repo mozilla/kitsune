@@ -11,16 +11,22 @@ h1 {
     height: 80px;
     line-height: 78px;
     margin: 0 0 20px 0;
-
-    .logo-sprite {
-      float: left;
-      margin: 0 8px 0 0;
-    }
   }
+
+  &.topic-title {
+    margin-top: 0;
+    padding: 10px 0 0;
+  }
+}
+
+.logo-sprite {
+  float: left;
+  margin: 0 8px 0 0;
 }
 
 .topic-list {
   border-bottom: 1px dotted @borderLightGrey;
+  clear: both;
   list-style: none;
   padding: 0 0 20px 0;
   margin: 0 0 24px 0;
@@ -39,6 +45,32 @@ h1 {
       color: @textBlue;
       content: '\00BB';
       margin: 0 0 0 2px;
+    }
+  }
+}
+
+#focus-and-refine {
+  ul {
+    list-style: none;
+    margin: 10px 0 0;
+    padding: 0;
+
+    li {
+      float: left;
+      margin: 5px 0 0;
+      width: 50%;
+
+      &.selected {
+        font-weight: bold;
+
+        a {
+          color: @textGrey;
+        }
+      }
+
+      &:nth-child(2n+1) {
+        clear: left;
+      }
     }
   }
 }
