@@ -483,6 +483,9 @@ MINIFY_BUNDLES = {
             'css/forums.css',
             'css/reportabuse.css',
         ),
+        'forums-new': (
+            'less/forums.less',
+        ),
         'questions': (
             'css/to-delete.css',
             'css/questions.css',
