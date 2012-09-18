@@ -1,0 +1,32 @@
+{# vim: set ts=2 et sts=2 sw=2: #}
+{% macro thread_list(threads, forum=None) -%}
+  <ol class="threads">
+  {% for thread in threads.object_list %}
+    {% if forum %}
+      {% set _forum = forum %}
+    {% else %}
+      {% set _forum = thread.forum %}
+    {% endif %}
+    <li class="cf">
+      <div class="type">
+        {% if thread.is_locked %}
+          <img src="{{ MEDIA_URL }}img/blank.png" alt="{{ _('Locked', 'thread_type') }}" title="{{ _('Locked', 'thread_type') }}" class="icon-locked" />
+        {% endif %}
+        {% if thread.is_sticky %}
+          <img src="{{ MEDIA_URL }}img/blank.png" alt="{{ _('Sticky', 'thread_type') }}" title="{{ _('Sticky', 'thread_type') }}" class="icon-sticky" />
+        {% endif %}
+      </div>
+      <div class="title"><a href="{{ url('forums.posts', forum_slug=_forum.slug, thread_id=thread.id)|urlparams(last=thread.last_post.id) }}">{{ thread.title }}</a></div>
+      <div class="author"><a class="username" href="{{ profile_url(thread.creator) }}">{{ thread.creator.username }}</a></div>
+      <div class="replies">{{ thread.replies }}</div>
+      <div class="last-post">
+        <a href="{{ thread.get_last_post_url() }}">
+          {{ datetimeformat(thread.last_post.created) }}
+        </a><br/>
+        {{ _('by <a class="username" href="{profile_url}">{username}</a>')|fe(profile_url=profile_url(thread.last_post.author), username=thread.last_post.author.username) }}
+      </div>
+    </li>
+  {% endfor %}
+  </ol>
+  {{ threads|paginator }}
+{%- endmacro %}
