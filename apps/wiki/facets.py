@@ -2,6 +2,7 @@ import hashlib
 
 from django.conf import settings
 from django.core.cache import cache
+from django.db.models import Count
 
 from statsd import statsd
 
@@ -18,23 +19,39 @@ def products_for(topics):
     """
     statsd.incr('wiki.facets.products_for.db')
 
-    docs = Document.objects
+    docs = Document.objects.filter(
+        locale=settings.WIKI_DEFAULT_LANGUAGE,
+        is_archived=False,
+        category__in=settings.IA_DEFAULT_CATEGORIES)
+
     for topic in topics:
         docs = docs.filter(topics=topic)
+
     return Product.objects.filter(visible=True, document__in=docs).distinct()
 
 
-def topics_for(products):
-    """Returns a list of topics that apply to passed in products.
+def topics_for(products, topics=None):
+    """Returns a list of topics that apply to passed in products and topics.
 
     :arg products: a list of Product instances
+    :arg topics: an optional list of Topic instances
     """
     statsd.incr('wiki.facets.topics_for.db')
 
-    docs = Document.objects
+    docs = Document.objects.filter(
+        locale=settings.WIKI_DEFAULT_LANGUAGE,
+        is_archived=False,
+        category__in=settings.IA_DEFAULT_CATEGORIES)
+
     for product in products:
         docs = docs.filter(products=product)
-    return Topic.objects.filter(visible=True, document__in=docs).distinct()
+    for topic in topics or []:
+        docs = docs.filter(topics=topic)
+
+    return (Topic.objects
+                 .filter(visible=True, document__in=docs)
+                 .annotate(num_docs=Count('document'))
+                 .distinct())
 
 
 def documents_for(locale, topics, products=None):
@@ -66,7 +83,7 @@ def documents_for(locale, topics, products=None):
             locale=settings.WIKI_DEFAULT_LANGUAGE,
             products=products,
             topics=topics)
-        fallback_documents = [d for d in en_documents if 
+        fallback_documents = [d for d in en_documents if
                               d['id'] not in l10n_document_ids]
     else:
         fallback_documents = None

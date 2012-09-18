@@ -88,6 +88,20 @@ class TestFacetHelpers(TestCase, TestFacetHelpersMixin):
             products=[self.desktop, self.mobile])
         eq_(len(desktop_mobile_topics), 2)
 
+    def test_topics_for_products_and_topics(self):
+        """Verify topics_for() returns topics for passed products."""
+        desktop_bookmarks_topics = topics_for(
+            products=[self.desktop], topics=[self.bookmarks])
+        eq_(len(desktop_bookmarks_topics), 3)
+
+        desktop_sync_topics = topics_for(
+            products=[self.desktop], topics=[self.sync])
+        eq_(len(desktop_sync_topics), 2)
+
+        desktop_sync_general_topics = topics_for(
+            products=[self.desktop], topics=[self.sync, self.general])
+        eq_(len(desktop_sync_general_topics), 0)
+
 
 class TestFacetHelpersES(ElasticTestCase, TestFacetHelpersMixin):
     def setUp(self):
