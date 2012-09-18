@@ -109,7 +109,10 @@ def posts(request, forum_slug, thread_id, form=None, post_preview=None,
 
     posts_ = thread.post_set.all()
     count = posts_.count()
-    last_post = posts_[count - 1]
+    if count:
+        last_post = posts_[count - 1]
+    else:
+        last_post = None
     posts_ = posts_.select_related('author', 'updated_by')
     posts_ = posts_.extra(
         select={'author_post_count': 'SELECT COUNT(*) FROM forums_post WHERE '

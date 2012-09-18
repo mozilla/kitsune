@@ -22,7 +22,7 @@
     <h1 class="nomargin">{{ thread.title }}</h1>
     <ul class="cf" id="thread-meta">
       {% if posts %}<li>{{ count }} {{ _('Replies') }}</li>{% endif %}
-      {% if posts %}<li>{{ _('Last reply by') }} {{ last_post.author }}</li>{% endif %}
+      {% if last_post %}<li>{{ _('Last reply by') }} {{ last_post.author }}</li>{% endif %}
       {% if thread.is_sticky %}<li>{{ _('Sticky') }}</li>{% endif %}
       {% if thread.is_locked %}<li>{{ _('Locked') }}</li>{% endif %}
     </ul>
