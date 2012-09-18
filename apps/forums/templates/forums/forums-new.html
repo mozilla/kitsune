@@ -11,7 +11,7 @@
 
 {% block content %}
   <div class="grid_3">
-    {{ for_contributors_sidebar(user, settings.WIKI_DEFAULT_LANGUAGE) }}
+    {{ for_contributors_sidebar(user, settings.WIKI_DEFAULT_LANGUAGE, active='forums') }}
     <br />
   </div>
   <div class="grid_9">
