@@ -17,7 +17,7 @@ from forums.events import NewPostEvent, NewThreadEvent
 from forums.feeds import ThreadsFeed, PostsFeed
 from forums.forms import ReplyForm, NewThreadForm, EditThreadForm, EditPostForm
 from forums.models import Forum, Thread, Post
-from sumo.helpers import urlparams
+from sumo.helpers import urlparams, show_new_sumo
 from sumo.urlresolvers import reverse
 from sumo.utils import paginate
 from users.models import Setting
@@ -109,6 +109,10 @@ def posts(request, forum_slug, thread_id, form=None, post_preview=None,
 
     posts_ = thread.post_set.all()
     count = posts_.count()
+    if count:
+        last_post = posts_[count - 1]
+    else:
+        last_post = None
     posts_ = posts_.select_related('author', 'updated_by')
     posts_ = posts_.extra(
         select={'author_post_count': 'SELECT COUNT(*) FROM forums_post WHERE '
@@ -128,6 +132,8 @@ def posts(request, forum_slug, thread_id, form=None, post_preview=None,
     return jingo.render(request, 'forums/posts.html',
                         {'forum': forum, 'thread': thread,
                          'posts': posts_, 'form': form,
+                         'count': count,
+                         'last_post': last_post,
                          'post_preview': post_preview,
                          'is_watching_thread': is_watching_thread,
                          'feeds': feed_urls,
@@ -466,5 +472,9 @@ def post_preview_async(request):
     statsd.incr('forums.preview')
     post = Post(author=request.user, content=request.POST.get('content', ''))
     post.author_post_count = 1
-    return jingo.render(request, 'forums/includes/post_preview.html',
-                        {'post_preview': post})
+    if show_new_sumo(request):
+        template = 'forums/includes/post_preview-new.html'
+    else:
+        template = 'forums/includes/post_preview.html'
+
+    return jingo.render(request, template, {'post_preview': post})

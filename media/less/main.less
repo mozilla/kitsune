@@ -561,6 +561,18 @@ input[type=button],
   padding: 30px;
 }
 
+.icon-locked {
+  background: url('../img/icons-sprite.png') -51px -1327px no-repeat;
+  height: 14px;
+  width: 14px;
+}
+
+.icon-sticky {
+  background: url('../img/icons-sprite.png') -51px -1443px no-repeat;
+  height: 14px;
+  width: 14px;
+}
+
 .logo-sprite {
   background-position: 50% 50%;
   background-repeat: no-repeat;
@@ -574,6 +586,24 @@ input[type=button],
 
 .nopadding {
   padding: 0 !important;
+}
+
+.pagination {
+  list-style: none;
+  margin: 20px 0 0 0;
+  padding: 0;
+
+  li {
+    float: left;
+    height: 32px;
+    line-height: 32px;
+    margin-right: 10px;
+    padding: 0 4px;
+
+    &.selected {
+      padding: 0;
+    }
+  }
 }
 
 .progress-bar {
@@ -1264,76 +1294,4 @@ input.searchbox {
     left: auto;
     right: 0;
   }
-}
-
-/* Global user messages and warnings */
-/* TODO: make this prettier (*hint Rehan*) */
-ul.user-messages {
-  background: #f6f6f6;
-  font-size: 16px;
-  list-style: none;
-  margin: 20px 0 0;
-  padding: 10px 0;
-  position: relative;
-  text-align: center;
-  top: -25px;
-  width: 100%;
-
-  li.error {
-    color: #ff0000;
-  }
-}
-
-/* Pagination styles */
-/* TODO: replace this with proper LESS for new pagination styles */
-ol.pagination {
-  clear: both;
-  margin: 20px 0;
-  padding: 20px 0;
-}
-
-ol.pagination li {
-  float: left;
-  list-style: none;
-  padding: 0 2px;
-}
-
-ol.pagination li.prev {
-  padding-left: 0;
-}
-
-.html-rtl ol.pagination li.prev {
-  padding-left: 2px;
-  padding-right: 0;
-}
-
-ol.pagination li a {
-  float: left;
-  padding: 3px 8px 5px;
-}
-
-ol.pagination li a:hover {
-  text-decoration: underline;
-}
-
-ol.pagination li.prev a {
-  padding-left: 0;
-}
-
-.html-rtl ol.pagination li.prev a {
-  padding-left: 8px;
-  padding-right: 0;
-}
-
-ol.pagination li.selected a {
-  background: rgb(0, 81, 185);
-  border-radius: 5px;
-  -moz-border-radius: 5px;
-  -webkit-border-radius: 5px;
-  color: #fff;
-  cursor: default;
-}
-
-ol.pagination li.selected a:hover {
-  text-decoration:none;
 }

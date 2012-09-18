@@ -1,6 +1,12 @@
 {# vim: set ts=2 et sts=2 sw=2: #}
 {% extends "base.html" %}
-{% set styles = ('forums',) %}
+{% if not styles %}
+  {% if show_new_sumo(request) %}
+    {% set styles = ('forums-new',) %}
+  {% else %}
+    {% set styles = ('forums',) %}
+  {% endif %}
+{% endif %}
 {% set scripts = ('forums',) %}
 
 {# If we are in an Aurora forum ('aurora' in the slug), we need to tweak the template. #}
