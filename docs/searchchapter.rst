@@ -27,7 +27,14 @@ There's an installation guide on the Elastic Search site.
 
 http://www.elasticsearch.org/guide/reference/setup/installation.html
 
-We're currently using 0.17.x in production.
+We're currently using 0.17.x in production. Most of us use 0.17.10
+or 0.19.8.
+
+.. Note::
+
+   **Don't** install 0.19.9 or later. They've changed bits of the API in
+   a way that doesn't yet work with Kitsune.
+
 
 The directory you install Elastic in will hereafter be referred to as
 ``ELASTICDIR``.
