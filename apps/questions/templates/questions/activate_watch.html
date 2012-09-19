@@ -7,33 +7,40 @@
 {% endif %}
 {% set classes = 'questions notifications' %}
 {% set crumbs = [(url('questions.questions'), _('Forum')), (question.get_absolute_url(), question.title), (None, _('Email updates'))] %}
+{% if show_new_sumo(request) %}
+  {% set styles = ('questions-new',) %}
+{% endif %}
 
 {% block content %}
-  <article class="main">
-    <div class="activate-watch">
-      <h1>{{ question.title }}</h1>
-      {% if is_active %}
-        <h2>
-            {{ _('You will now receive updates via email.') }}
-        </h2>
-        <ul>
-          <li>
-            <a href="{{ question.get_absolute_url() }}" id="activate-watch">
-              {{ _('Go back to the question.') }}
-            </a>
-          </li>
-          <li>
-            <a id="remove-watch" href="{{ unsubscribe_url }}">
-              {{ _('Stop receiving updates via email for this question.') }}
-            </a>
-          </li>
-        </ul>
-      {% else %}
-        <h2>{{ title }}</h2>
-        <a href="{{ question.get_absolute_url() }}" id="activate-watch">
-          {{ _('Go back to the question and try again.') }}
-        </a>
-      {% endif %}
-    </div>
-  </article>
+  <div class="grid_12">
+    <article class="main">
+      <div class="activate-watch highlight-box">
+        <h1>{{ question.title }}</h1>
+        {% if is_active %}
+          <h2>
+              {{ _('You will now receive updates via email.') }}
+          </h2>
+          <ul>
+            <li>
+              <a href="{{ question.get_absolute_url() }}" id="activate-watch">
+                {{ _('Go back to the question.') }}
+              </a>
+            </li>
+            <li>
+              <a id="remove-watch" href="{{ unsubscribe_url }}">
+                {{ _('Stop receiving updates via email for this question.') }}
+              </a>
+            </li>
+          </ul>
+        {% else %}
+          <h2>{{ title }}</h2>
+          <a href="{{ question.get_absolute_url() }}" id="activate-watch">
+            {{ _('Go back to the question and try again.') }}
+          </a>
+        {% endif %}
+      </div>
+    </article>
+  </div>
 {% endblock %}
+
+{% block side %}{% endblock %}

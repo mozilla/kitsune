@@ -1,14 +1,18 @@
 {# vim: set ts=2 et sts=2 sw=2: #}
-{% extends "questions/includes/question_editing_frame.html" %}
+{% if show_new_sumo(request) %}
+  {% extends "questions/includes/question_editing_frame-new.html" %}
+{% else %}
+  {% extends "questions/includes/question_editing_frame.html" %}
+{% endif %}
 {% set title = _('Edit a Question') %}
 {% set crumbs = [(url('questions.questions'), _('Forum')),
                  (url('questions.answers', question.id), question.title),
-                 (None, _('Edit a question'))] %}
+                 (None, _('Edit the question'))] %}
 
 {% block headline %}{{ _('Edit a Question') }}{% endblock %}
 
 {% block major_detail_instructions %}
-  <h2>{{ _('Edit your question.') }}</h2>
+  <h2>{{ _('Edit the question.') }}</h2>
 {% endblock %}
 
 {% block submit_button_value %}{{ _('Save Question') }}{% endblock %}

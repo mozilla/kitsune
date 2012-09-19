@@ -28,6 +28,11 @@
 <div class="content-raw">{{ post.content }}</div>
 <div class="info">
   <div>
+    {% if post.id and user.is_authenticated() and not thread.is_locked and forum.allows_posting_by(user) %}
+    <span class="post-action">
+      <a class="reply" data-post="{{ post.id }}" href="#thread-reply">{{ _('Reply') }}</a>
+    </span>
+  {% endif %}
     {{ datetimeformat(post.created, format='longdatetime') }}
     <a href="#post-{{ post.id }}" class="permalink" title="{{ _('Link to this post.') }}">#</a>
   </div>
