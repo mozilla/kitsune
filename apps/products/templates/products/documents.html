@@ -19,7 +19,23 @@
   </aside>
   <div class="grid_9">
     <section id="document-list">
-      <h1>{{ _(topic.title, 'DB: topics.Topic.title') }}</h1>
+      {% if topic.image %}<img src="{{ MEDIA_URL }}img/blank.png" alt="" class="logo-sprite" style="background-image: url('{{ topic.image_url }}');" />{% endif %}
+      <h1 class="topic-title cf">{{ _(topic.title, 'DB: topics.Topic.title') }}</h1>
+
+      <div id="focus-and-refine" class="feature-box{% if not refine %} collapsed{% endif %}" data-ui-type="folding-section">
+        <header>
+          <h2 class="nomargin">{{ _('Refine and Focus') }}</h2>
+        </header>
+        <section class="cf">
+          <ul>
+            <li {{ refine|class_selected(None) }}><a href="{{ request.path }}">{{ _('All') }}</a></li>
+            {% for topic_ in refine_topics if topic_ != topic %}
+              <li {{ refine|class_selected(topic_) }}><a href="?refine={{ _(topic_.slug) }}">{{ _(topic_.title, 'DB: topics.Topic.title') }} ({{ topic_.num_docs }})</a></li>
+            {% endfor %}
+          </ul>
+        </section>
+      </div>
+
       {% for document in documents %}
         {% if loop.first %}<ul class="topic-list">{% endif %}
         <li>

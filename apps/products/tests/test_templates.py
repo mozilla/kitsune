@@ -7,6 +7,7 @@ from pyquery import PyQuery as pq
 
 from products.tests import product
 from search.tests.test_es import ElasticTestCase
+from sumo.helpers import urlparams
 from sumo.urlresolvers import reverse
 from topics.models import HOT_TOPIC_SLUG
 from topics.tests import topic
@@ -64,24 +65,36 @@ class ProductViewsTestCase(ElasticTestCase):
         flag_is_active.return_value = True
 
         # Create a topic and product.
-        t = topic(save=True)
+        t1 = topic(save=True)
+        t2 = topic(save=True)
         p = product(save=True)
 
         # Create 3 documents with the topic and product and one without.
         for i in range(3):
             doc = revision(is_approved=True, save=True).document
-            doc.topics.add(t)
+            doc.topics.add(t1)
             doc.products.add(p)
+            if i == 1:  # nly one document with t2
+                doc.topics.add(t2)
+
         doc = revision(is_approved=True, save=True).document
 
         self.refresh()
 
         # GET the page and verify the content.
-        url = reverse('products.documents', args=[p.slug, t.slug])
+        url = reverse('products.documents', args=[p.slug, t1.slug])
         r = self.client.get(url, follow=True)
         eq_(200, r.status_code)
         doc = pq(r.content)
-        eq_(3, len(doc('#document-list li')))
+        eq_(3, len(doc('#document-list > ul > li')))
+
+        # GET the page with refine topic and verify the content.
+        url = reverse('products.documents', args=[p.slug, t1.slug])
+        url = urlparams(url, refine=t2.slug)
+        r = self.client.get(url, follow=True)
+        eq_(200, r.status_code)
+        doc = pq(r.content)
+        eq_(1, len(doc('#document-list > ul > li')))
 
     @mock.patch.object(waffle, 'flag_is_active')
     def test_document_listing_order(self, flag_is_active):
@@ -107,7 +120,7 @@ class ProductViewsTestCase(ElasticTestCase):
         r = self.client.get(url, follow=True)
         eq_(200, r.status_code)
         doc = pq(r.content)
-        eq_(doc('#document-list li:first').text(), docs[1].title)
+        eq_(doc('#document-list > ul > li:first').text(), docs[1].title)
 
         # Add 2 helpful votes the third document. It should be first now.
         rev = docs[2].current_revision
@@ -119,7 +132,7 @@ class ProductViewsTestCase(ElasticTestCase):
         r = self.client.get(url, follow=True)
         eq_(200, r.status_code)
         doc = pq(r.content)
-        eq_(doc('#document-list li:first').text(), docs[2].title)
+        eq_(doc('#document-list > ul > li:first').text(), docs[2].title)
 
     @mock.patch.object(waffle, 'flag_is_active')
     def test_hot_topics(self, flag_is_active):
