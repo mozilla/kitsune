@@ -45,8 +45,6 @@ _("""Firefox""", "DB: topics.Topic.title")
 _("""Web browser for Windows, Mac and Linux""", "DB: topics.Topic.description")
 _("""Firefox for Android""", "DB: topics.Topic.title")
 _("""Firefox for Android""", "DB: topics.Topic.description")
-_("""Firefox Home for iOS""", "DB: topics.Topic.title")
-_("""Firefox Home for iOS""", "DB: topics.Topic.description")
 _("""Firefox Sync""", "DB: topics.Topic.title")
 _("""Firefox Sync""", "DB: topics.Topic.description")
 _("""Flash""", "DB: topics.Topic.title")
@@ -81,6 +79,18 @@ _("""Mozilla Persona""", "DB: products.Product.title")
 _("""Mozilla Persona""", "DB: products.Product.description")
 # This is a karma title.
 _("""Administrator""", "DB: karma.Title.name")
+# This is a karma title.
+_("""Cadet/Soldier""", "DB: karma.Title.name")
+# This is a karma title.
+_("""Captain/Major""", "DB: karma.Title.name")
+# This is a karma title.
+_("""Chief Commander""", "DB: karma.Title.name")
+# This is a karma title.
+_("""Colonel""", "DB: karma.Title.name")
+# This is a karma title.
+_("""Drill Instructor""", "DB: karma.Title.name")
+# This is a karma title.
+_("""Lieutenant""", "DB: karma.Title.name")
 # This is a karma title.
 _("""Moderator""", "DB: karma.Title.name")
 # This is a karma title.
