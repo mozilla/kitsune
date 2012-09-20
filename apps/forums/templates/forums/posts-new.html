@@ -18,6 +18,51 @@
 {% endblock %}
 
 {% block content %}
+  <div class="grid_3">
+    <ul id="thread-actions" class="sidebar-nav">
+      {% if not thread.is_locked and
+        has_perm_or_owns('forums_forum.thread_edit_forum', thread, forum) %}
+        <li><a href="{{ url('forums.edit_thread', forum.slug, thread.id) }}">{{ _('Edit this thread') }}</a></li>
+      {% endif %}
+      {% if has_perm('forums_forum.thread_delete_forum', forum) %}
+        <li><a href="{{ url('forums.delete_thread', forum.slug, thread.id) }}">{{ _('Delete this thread') }}</a></li>
+      {% endif %}
+      {% if has_perm('forums_forum.thread_locked_forum', forum) %}
+        <li>
+          <form id="thread-lock-form" action="{{ url('forums.lock_thread', forum.slug, thread.id) }}" method="post">
+            {{ csrf() }}
+          </form>
+          <a data-type="submit" data-form="thread-lock-form">{% if thread.is_locked %}{{ _('Unlock this thread') }}{% else %}{{ _('Lock this thread') }}{% endif %}</a>
+        </li>
+      {% endif %}
+      {% if has_perm('forums_forum.thread_sticky_forum', forum) %}
+        <li>
+          <form id="thread-sticky-form" action="{{ url('forums.sticky_thread', forum.slug, thread.id) }}" method="post">
+            {{ csrf() }}
+          </form>
+          <a data-type="submit" data-form="thread-sticky-form">{% if thread.is_sticky %}{{ _('Unsticky this thread') }}{% else %}{{ _('Sticky this thread') }}{% endif %}</a>
+        </li>
+      {% endif %}
+    </ul>
+
+    {% if has_perm('forums_forum.thread_move_forum', forum) %}
+      <form id="move-thread-form" action="{{ url('forums.move_thread', forum.slug, thread.id) }}" method="post">
+        {{ csrf() }}
+        <select name="forum">
+          {% for f in forums %}
+            {% if has_perm('forums_forum.thread_move_forum', f) %}
+              <option value="{{ f.id }}" {% if f == forum %}selected="selected"{% endif %}>{{ f.name }}</option>
+            {% endif %}
+          {% endfor %}
+        </select>
+        <input type="submit" value="Move Thread" />
+      </form>
+    {% endif %}
+
+    {{ for_contributors_sidebar(user, settings.WIKI_DEFAULT_LANGUAGE, active='forums') }}
+    <br />
+  </div>
+
   <div id="posts" class="grid_9">
     <h1 class="nomargin">{{ thread.title }}</h1>
     <ul class="cf" id="thread-meta">
@@ -92,49 +137,5 @@
         {% include "forums/includes/post_preview.html" %}
       {% endif %}
     </div>
-  </div>
-  <div class="grid_3">
-    <ul id="thread-actions" class="sidebar-nav">
-      {% if not thread.is_locked and
-        has_perm_or_owns('forums_forum.thread_edit_forum', thread, forum) %}
-        <li><a href="{{ url('forums.edit_thread', forum.slug, thread.id) }}">{{ _('Edit this thread') }}</a></li>
-      {% endif %}
-      {% if has_perm('forums_forum.thread_delete_forum', forum) %}
-        <li><a href="{{ url('forums.delete_thread', forum.slug, thread.id) }}">{{ _('Delete this thread') }}</a></li>
-      {% endif %}
-      {% if has_perm('forums_forum.thread_locked_forum', forum) %}
-        <li>
-          <form id="thread-lock-form" action="{{ url('forums.lock_thread', forum.slug, thread.id) }}" method="post">
-            {{ csrf() }}
-          </form>
-          <a data-type="submit" data-form="thread-lock-form">{% if thread.is_locked %}{{ _('Unlock this thread') }}{% else %}{{ _('Lock this thread') }}{% endif %}</a>
-        </li>
-      {% endif %}
-      {% if has_perm('forums_forum.thread_sticky_forum', forum) %}
-        <li>
-          <form id="thread-sticky-form" action="{{ url('forums.sticky_thread', forum.slug, thread.id) }}" method="post">
-            {{ csrf() }}
-          </form>
-          <a data-type="submit" data-form="thread-sticky-form">{% if thread.is_sticky %}{{ _('Unsticky this thread') }}{% else %}{{ _('Sticky this thread') }}{% endif %}</a>
-        </li>
-      {% endif %}
-    </ul>
-
-    {% if has_perm('forums_forum.thread_move_forum', forum) %}
-      <form id="move-thread-form" action="{{ url('forums.move_thread', forum.slug, thread.id) }}" method="post">
-        {{ csrf() }}
-        <select name="forum">
-          {% for f in forums %}
-            {% if has_perm('forums_forum.thread_move_forum', f) %}
-              <option value="{{ f.id }}" {% if f == forum %}selected="selected"{% endif %}>{{ f.name }}</option>
-            {% endif %}
-          {% endfor %}
-        </select>
-        <input type="submit" value="Move Thread" />
-      </form>
-    {% endif %}
-
-    {{ for_contributors_sidebar(user, settings.WIKI_DEFAULT_LANGUAGE, active='forums') }}
-    <br />
   </div>
 {% endblock %}
