@@ -74,7 +74,7 @@ class ProductViewsTestCase(ElasticTestCase):
             doc = revision(is_approved=True, save=True).document
             doc.topics.add(t1)
             doc.products.add(p)
-            if i == 1:  # nly one document with t2
+            if i == 1:  # Only one document with t2
                 doc.topics.add(t2)
 
         doc = revision(is_approved=True, save=True).document
