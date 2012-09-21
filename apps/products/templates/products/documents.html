@@ -18,7 +18,7 @@
     {{ topic_sidebar(topics[:10], product, topic) }}
   </aside>
   <div class="grid_9">
-    <section id="document-list">
+    <article id="document-list">
       {% if topic.image %}<img src="{{ MEDIA_URL }}img/blank.png" alt="" class="logo-sprite" style="background-image: url('{{ topic.image_url }}');" />{% endif %}
       <h1 class="topic-title cf">{{ _(topic.title, 'DB: topics.Topic.title') }}</h1>
 
@@ -54,7 +54,7 @@
           {% if loop.last %}</ul>{% endif %}
         {% endfor %}
       {% endif %}
-    </section>
+    </article>
   </div>
 {% endblock %}
 

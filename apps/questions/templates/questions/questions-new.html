@@ -145,7 +145,7 @@
   </div>
   <div class="grid_12">
     {% if questions.object_list %}
-      <div class="questions">
+      <article class="questions">
         {% for question in questions.object_list %}
           <section id="question-{{ question.id }}" class="cf">
             <div class="question-meta {% if not question.num_answers %}urgent{% endif %}">
@@ -200,7 +200,7 @@
             {% endif %}
           </aside>
         {% endfor %}
-      </div>
+      </article>
       {{ questions|quick_paginator }}
     {% else %}
       {# Not localized because it's not worth localizers time. #}
