@@ -4,6 +4,7 @@ import time
 
 from django.conf import settings
 from django.contrib.auth.models import User
+from django.core.cache import cache
 from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from django.core.urlresolvers import resolve
 from django.db import models
@@ -15,6 +16,7 @@ from tidings.models import NotificationsMixin
 from tower import ugettext_lazy as _lazy, ugettext as _
 
 from products.models import Product
+from search.es_utils import ESTimeoutError, ESMaxRetryError, ESException
 from search.models import SearchMixin, register_for_indexing
 from sumo import ProgrammingError
 from sumo.models import ModelBase, LocaleField
@@ -71,13 +73,6 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
     # settings.WIKI_DEFAULT_LANGUAGE.
     parent = models.ForeignKey('self', related_name='translations',
                                null=True, blank=True)
-
-    # Related documents, based on tags in common.
-    # The RelatedDocument table is populated by
-    # wiki.cron.calculate_related_documents.
-    related_documents = models.ManyToManyField('self',
-                                               through='RelatedDocument',
-                                               symmetrical=False)
 
     # Cached HTML rendering of approved revision's wiki markup:
     html = models.TextField(editable=False)
@@ -526,6 +521,31 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
         return HelpfulVote.objects.filter(
             revision__document=self, created__gt=start, helpful=True).count()
 
+    @property
+    def related_documents(self):
+        """Return documents that are 'morelikethis' one."""
+        # First try to get the results from the cache
+        key = 'wiki_document:related_docs:%s' % self.id
+        documents = cache.get(key)
+        if documents:
+            return documents
+
+        try:
+            documents = self.morelikethis(
+                self.get_document_id(self.id),
+                s=self.get_s().filter(
+                    model=self.get_model_name(),
+                    document_locale=self.locale),
+                fields=[
+                    'document_title',
+                    'document_summary',
+                    'document_content'])
+            cache.add(key, documents)
+        except (ESTimeoutError, ESMaxRetryError, ESException):
+            documents = []
+
+        return documents
+
     @classmethod
     def get_query_fields(cls):
         return ['document_title__text',
@@ -869,15 +889,6 @@ class ImportantDate(ModelBase):
     """Important date that shows up globally on metrics graphs."""
     text = models.CharField(max_length=100)
     date = models.DateField(db_index=True)
-
-
-class RelatedDocument(ModelBase):
-    document = models.ForeignKey(Document, related_name='related_from')
-    related = models.ForeignKey(Document, related_name='related_to')
-    in_common = models.IntegerField()
-
-    class Meta(object):
-        ordering = ['-in_common']
 
 
 def _doc_components_from_url(url, required_locale=None, check_host=True):

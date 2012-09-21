@@ -7,7 +7,7 @@
         <section>
           <ul>
             {% for art in related %}
-              <li><a href="{{ art.get_absolute_url() }}">{{ art.title }}</a></li>
+              <li><a href="{{ art['url'] }}">{{ art['document_title'] }}</a></li>
             {% endfor %}
           </ul>
         </section>
@@ -19,7 +19,7 @@
         <h1>{{ _('Related Articles') }}</h1>
         <ul>
           {% for art in related %}
-            <li><a href="{{ art.get_absolute_url() }}">{{ art.title }}</a></li>
+            <li><a href="{{ art['url'] }}">{{ art['document_title'] }}</a></li>
           {% endfor %}
         </ul>
       </section>
