@@ -4,6 +4,7 @@ import time
 
 from django.conf import settings
 from django.contrib.auth.models import User
+from django.core.cache import cache
 from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from django.core.urlresolvers import resolve
 from django.db import models
@@ -15,6 +16,7 @@ from tidings.models import NotificationsMixin
 from tower import ugettext_lazy as _lazy, ugettext as _
 
 from products.models import Product
+from search.es_utils import ESTimeoutError, ESMaxRetryError, ESException
 from search.models import SearchMixin, register_for_indexing
 from sumo import ProgrammingError
 from sumo.models import ModelBase, LocaleField
@@ -522,12 +524,27 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
     @property
     def related_documents(self):
         """Return documents that are 'morelikethis' one."""
-        return self.morelikethis(
-            self.get_document_id(self.id),
-            s=self.get_s().filter(
-                model=self.get_model_name(),
-                document_locale=self.locale),
-            fields=['document_title', 'document_summary', 'document_content'])
+        # First try to get the results from the cache
+        key = 'related_docs:%s' % self.id
+        documents = cache.get(key)
+        if documents:
+            return documents
+
+        try:
+            documents = self.morelikethis(
+                self.get_document_id(self.id),
+                s=self.get_s().filter(
+                    model=self.get_model_name(),
+                    document_locale=self.locale),
+                fields=[
+                    'document_title',
+                    'document_summary',
+                    'document_content'])
+            cache.add(key, documents)
+        except (ESTimeoutError, ESMaxRetryError, ESException):
+            documents = []
+
+        return documents
 
     @classmethod
     def get_query_fields(cls):

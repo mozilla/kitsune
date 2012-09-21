@@ -11,7 +11,6 @@ from django.dispatch import receiver
 from elasticutils import MLT
 
 from search import es_utils
-from search.es_utils import ESTimeoutError, ESMaxRetryError, ESException
 from search.tasks import index_task, unindex_task
 from sumo.models import ModelBase
 
@@ -181,11 +180,8 @@ class SearchMixin(object):
     @classmethod
     def morelikethis(cls, id_, s, fields):
         """morelikethis query."""
-        try:
-            return list(MLT(
-                id_, s=s, fields=fields, min_term_freq=1, min_doc_freq=1))
-        except (ESTimeoutError, ESMaxRetryError, ESException):
-            return []
+        return list(MLT(
+            id_, s=s, fields=fields, min_term_freq=1, min_doc_freq=1))
 
 
 _identity = lambda s: s
