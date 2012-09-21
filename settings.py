@@ -148,7 +148,7 @@ SUMO_LANGUAGES = (
     'sq',
     'sr-CYRL',
     'sr-LATN',
-    'sv-SE',
+    'sv',
     'ta-LK',
     'ta',
     'te',
@@ -177,6 +177,7 @@ NON_SUPPORTED_LOCALES = {
     'nn-NO': 'no',
     'oc': 'fr',
     'sr': 'sr-CYRL',  # Override the tendency to go sr->sr-LATN.
+    'sv-SE': 'sv',
 }
 
 TEXT_DOMAIN = 'messages'
