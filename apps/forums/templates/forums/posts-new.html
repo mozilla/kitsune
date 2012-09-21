@@ -63,7 +63,7 @@
     <br />
   </div>
 
-  <div id="posts" class="grid_9">
+  <article id="posts" class="grid_9">
     <h1 class="nomargin">{{ thread.title }}</h1>
     <ul class="cf" id="thread-meta">
       {% if posts %}<li>{{ count }} {{ _('Replies') }}</li>{% endif %}
@@ -137,5 +137,5 @@
         {% include "forums/includes/post_preview.html" %}
       {% endif %}
     </div>
-  </div>
+  </article>
 {% endblock %}
