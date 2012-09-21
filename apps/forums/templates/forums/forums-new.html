@@ -14,7 +14,7 @@
     {{ for_contributors_sidebar(user, settings.WIKI_DEFAULT_LANGUAGE, active='forums') }}
     <br />
   </div>
-  <div class="grid_9">
+  <article class="grid_9">
     <div id="forums" class="content-box">
       <h1>{{ title }}</h1>
 
@@ -52,6 +52,6 @@
         {# Not localized because it's not worth localizers time. #}
         <p>There are no forums. You should create some!</p>
       {% endif %}
-    </div>
+    </article>
   </div>
 {% endblock %}
