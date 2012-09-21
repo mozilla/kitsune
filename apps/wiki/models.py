@@ -525,7 +525,7 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
     def related_documents(self):
         """Return documents that are 'morelikethis' one."""
         # First try to get the results from the cache
-        key = 'related_docs:%s' % self.id
+        key = 'wiki_document:related_docs:%s' % self.id
         documents = cache.get(key)
         if documents:
             return documents
