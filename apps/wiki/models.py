@@ -535,7 +535,8 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
                 self.get_document_id(self.id),
                 s=self.get_s().filter(
                     model=self.get_model_name(),
-                    document_locale=self.locale),
+                    document_locale=self.locale,
+                    document_is_archived=False),
                 fields=[
                     'document_title',
                     'document_summary',

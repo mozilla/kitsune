@@ -2075,6 +2075,15 @@ class RelatedDocumentTestCase(ElasticTestCase):
         d3.current_revision = r3
         d3.save()
 
+        # A document that is similar but archived.
+        d4 = document(title='lorem ipsum sit amet', save=True)
+        r4 = revision(document=d4, summary='lorem',
+                      content='lorem ipsum dolor sit amet',
+                      is_approved=True, save=True)
+        d4.current_revision = r4
+        d4.is_archived = True
+        d4.save()
+
         self.refresh()
 
         response = self.client.get(d1.get_absolute_url())
