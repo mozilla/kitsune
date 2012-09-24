@@ -30,6 +30,7 @@ from users.forms import AuthenticationForm
 log = logging.getLogger('k.services')
 
 
+@never_cache
 def locales(request):
     """The locale switcher page."""
 
