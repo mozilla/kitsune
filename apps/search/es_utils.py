@@ -492,15 +492,18 @@ def es_search_cmd(query, pages=1):
         pageno = pageno + 1
         data['page'] = pageno
         resp = client.get(url, data)
-        assert resp.status_code == 200
+        if resp.status_code != 200:
+            output.append('ERROR: %s' % resp.content)
+            break
 
-        content = json.loads(resp.content)
-        results = content[u'results']
+        else:
+            content = json.loads(resp.content)
+            results = content[u'results']
 
-        for mem in results:
-            output.append(u'%4d  %5.2f  %-10s  %-20s' % (
-                    mem['rank'], mem['score'], mem['type'], mem['title']))
+            for mem in results:
+                output.append(u'%4d  %5.2f  %-10s  %-20s' % (
+                        mem['rank'], mem['score'], mem['type'], mem['title']))
 
-        output.append('')
+            output.append('')
 
-    print '\n'.join(output)
+    print '\n'.join([line.encode('ascii', 'ignore') for line in output])
