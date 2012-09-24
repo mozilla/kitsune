@@ -84,16 +84,6 @@
         <button type="submit" title="{{ watch }}" class="btn" id="watch-thread-toggle"><img src="{{ MEDIA_URL }}img/blank.png" alt="" /> {{ watch }}</button>
       </form>
     {% endif %}
-    <div class="thread-actions">
-
-    </div>
-
-    <div class="thread-watch">
-      {% if user.is_authenticated() %}
-      {% endif %}
-    </div>
-
-    {{ posts|paginator }}
 
     {% if posts %}
       <ol class="posts">

@@ -92,7 +92,6 @@
     margin-top: 10px;
     outline: none;
     padding: 0;
-    width: 880px;
   }
 
   .editor-tools {
@@ -102,6 +101,14 @@
   .submit {
     margin-top: 20px;
   }
+}
+
+.grid_12 textarea {
+  width: 880px;
+}
+
+.grid_9 textarea {
+  width: 645px;
 }
 
 #new-thread,
@@ -258,13 +265,14 @@
       padding-top: 6px;
     }
 
+    .watch,
     .type,
     .title,
     .author,
     .replies,
     .last-post {
       min-height: 1px;
-      padding-right: 20px;
+      padding-right: 17px;
       float: left;
     }
 
@@ -297,6 +305,10 @@
     .title {
       width: 220px;
     }
+
+    .watch {
+      width: 40px;
+    }
   }
 
   .threads-columns {
@@ -321,4 +333,27 @@
     height: 9px;
     width: 16px;
   }
+}
+
+.watch-form {
+  a {
+    background: transparent url(../img/icons-sprite.png) no-repeat scroll;
+    cursor: pointer;
+    display: inline-block;
+    height: 12px;
+    width: 12px;
+    margin: 10px 20px;
+
+    &.yes {
+      background-position: -51px -1676px;
+    }
+
+    &.no {
+      background-position: -51px -1560px;
+    }
+  }
+}
+
+.warning-box {
+  margin-top: 0;
 }

@@ -10,25 +10,23 @@
                  (None, _('Edit thread'))] %}
 
 {% block content %}
-<div class="grid_9">
-<article id="edit-thread" class="main">
-  {{ kbforums_warning(document, user) }}
-  <h1>{{ _('Edit thread "{t}"')|f(t=thread.title) }}</h1>
+  <article id="edit-thread" class="grid_9">
+    {{ kbforums_warning(document, user) }}
+    <h1>{{ _('Edit thread "{t}"')|f(t=thread.title) }}</h1>
 
-  <form action="{{ url('wiki.discuss.edit_thread', document.slug, thread.id) }}" method="post" class="edit-thread">
-    {{ csrf() }}
-    {{ errorlist(form) }}
+    <form action="{{ url('wiki.discuss.edit_thread', document.slug, thread.id) }}" method="post" class="edit-thread">
+      {{ csrf() }}
+      {{ errorlist(form) }}
 
-    <div class="form-widget{% if form.title.errors %} invalid{% endif %}">
-      {{ form.title.label_tag()|safe }}
-      {{ form.title|safe }}
-    </div>
+      <div class="form-widget{% if form.title.errors %} invalid{% endif %}">
+        {{ form.title.label_tag()|safe }}
+        {{ form.title|safe }}
+      </div>
 
-    <div class="form-widget submit">
-      <input type="submit" value="{{ _('Update thread') }}" />
-      <a href="{{ url('wiki.discuss.posts', document.slug, thread.id) }}">{{ _('Cancel') }}</a>
-    </div>
-  </form>
-</article>
-</div>
+      <div class="form-widget submit">
+        <button type="submit" class="btn btn-submit big">{{ _('Update thread') }}</button>
+        <a class="btn" href="{{ url('wiki.discuss.posts', document.slug, thread.id) }}">{{ _('Cancel') }}</a>
+      </div>
+    </form>
+  </article>
 {% endblock %}

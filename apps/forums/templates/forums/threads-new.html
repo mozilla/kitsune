@@ -19,8 +19,6 @@
   <div class="grid_9">
     <article id="threads" class="content-box">
       <h1>{{ forum.name }}</h1>
-      <div class="badges">
-      </div>
       <div class="forum-actions">
         {% if not user.is_authenticated() or forum.allows_posting_by(user) %}
           <a id="new-thread" class="btn btn-submit" href="{{ url('forums.new_thread', forum_slug=forum.slug) }}">{{ _('Post a new thread') }}</a>

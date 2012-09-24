@@ -128,11 +128,11 @@ class PostsTemplateTests(KBForumTestCase):
         t = Thread.objects.filter()[0]
         response = post(self.client, 'wiki.discuss.watch_thread',
                         {'watch': 'yes'}, args=[t.document.slug, t.id])
-        self.assertContains(response, 'Watching')
+        self.assertContains(response, 'Stop')
 
         response = post(self.client, 'wiki.discuss.watch_thread',
                         {'watch': 'no'}, args=[t.document.slug, t.id])
-        self.assertNotContains(response, 'Watching')
+        self.assertNotContains(response, 'Stop')
 
     def test_links_nofollow(self):
         """Links posted should have rel=nofollow."""
@@ -222,11 +222,11 @@ class ThreadsTemplateTests(KBForumTestCase):
         d = Document.objects.all()[0]
         response = post(self.client, 'wiki.discuss.watch_forum',
                         {'watch': 'yes'}, args=[d.slug])
-        self.assertContains(response, 'Watching')
+        self.assertContains(response, 'Stop')
 
         response = post(self.client, 'wiki.discuss.watch_forum',
                         {'watch': 'no'}, args=[d.slug])
-        self.assertNotContains(response, 'Watching')
+        self.assertNotContains(response, 'Stop')
 
     def test_watch_locale(self):
         """Watch and unwatch a locale."""
