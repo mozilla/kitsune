@@ -225,11 +225,13 @@
 {% macro show_for(header=None) -%}
   {# This macro needs to be imported with context to access oses, oses_json,
      browsers, browsers_json and version_group_json variables. #}
-  {% if not header %}
+  {% if header == None %}
     {% set header = _('Help with:') %}
   {% endif %}
   <section id="support-for">
-    <h1>{{ header }}</h1>
+    {% if header %}
+      <h1>{{ header }}</h1>
+    {% endif %}
     <div>
       <select id="os" data-oses="{{ oses_json }}" class="enable-if-js" disabled="disabled">
         {% for label, options in oses %}

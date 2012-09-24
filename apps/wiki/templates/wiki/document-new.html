@@ -27,6 +27,10 @@
   {% set meta = meta + [('description', document.current_revision.summary)] %}
 {% endif %}
 
+{% block above_main %}
+  <h1 class="product-title cf"><img src="{{ MEDIA_URL }}img/blank.png" alt="" class="logo-sprite" style="background-image: url('{{ product.image_url }}');" />{{ product.title }} {{ show_for(header=False) }}</h1>
+{% endblock %}
+
 {% block content %}
   <div class="grid_9">
     <article class="wiki-doc">
@@ -57,12 +61,6 @@
   {{ document_tools(doc, parent, user, 'article', settings) }}
   {{ related_articles(related, document) }}
   {{ topic_sidebar(topics, product) }}
-{% endblock %}
-
-{% block side_bottom %}
-  <div>
-    {{ show_for(header=_('Article is for:')) }}
-  </div>
 {% endblock %}
 
 {% block breadcrumbs %}
