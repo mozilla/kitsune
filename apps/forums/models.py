@@ -184,7 +184,7 @@ class Thread(NotificationsMixin, ModelBase, SearchMixin):
 
     @classmethod
     def get_query_fields(cls):
-        return ['post_title__text', 'post_content__text']
+        return ['post_title', 'post_content']
 
     @classmethod
     def get_mapping(cls):
@@ -254,9 +254,7 @@ class Thread(NotificationsMixin, ModelBase, SearchMixin):
 
     @classmethod
     def search(cls):
-        s = super(Thread, cls).search()
-        return (s.query_fields('post_title__text', 'post_content__text')
-                 .order_by('created'))
+        return super(Thread, cls).search().order_by('created')
 
 
 register_for_indexing(Thread, 'forums')

@@ -10,18 +10,27 @@ class QuestionUpdateTests(ElasticTestCase):
         # Create a question--that adds one document to the index.
         q = question(title=u'Does this test work?', save=True)
         self.refresh()
-        eq_(Question.search().query('test').count(), 1)
+        eq_(Question.search().query(
+                or_=dict(('%s__text' % field, 'test')
+                         for field in Question.get_query_fields())).count(),
+            1)
 
         # Create an answer for the question. It shouldn't be searchable
         # until the answer is saved.
         a = answer(content=u'There\'s only one way to find out!',
                    question=q)
         self.refresh()
-        eq_(Question.search().query('only').count(), 0)
+        eq_(Question.search().query(
+                or_=dict(('%s__text' % field, 'only')
+                         for field in Question.get_query_fields())).count(),
+            0)
 
         a.save()
         self.refresh()
-        eq_(Question.search().query('only').count(), 1)
+        eq_(Question.search().query(
+                or_=dict(('%s__text' % field, 'only')
+                         for field in Question.get_query_fields())).count(),
+            1)
 
         # Make sure that there's only one question document in the
         # index--creating an answer should have updated the existing
@@ -31,11 +40,11 @@ class QuestionUpdateTests(ElasticTestCase):
     def test_question_no_answers_deleted(self):
         q = question(title=u'Does this work?', save=True)
         self.refresh()
-        eq_(Question.search().query('work').count(), 1)
+        eq_(Question.search().query(question_title__text='work').count(), 1)
 
         q.delete()
         self.refresh()
-        eq_(Question.search().query('work').count(), 0)
+        eq_(Question.search().query(question_title__text='work').count(), 0)
 
     def test_question_one_answer_deleted(self):
         q = question(title=u'are model makers the new pink?', save=True)
@@ -44,19 +53,19 @@ class QuestionUpdateTests(ElasticTestCase):
 
         # Question and its answers are a single document--so the
         # index count should be only 1.
-        eq_(Question.search().query('pink').count(), 1)
+        eq_(Question.search().query(question_title__text='pink').count(), 1)
 
         # After deleting the answer, the question document should
         # remain.
         a.delete()
         self.refresh()
-        eq_(Question.search().query('pink').count(), 1)
+        eq_(Question.search().query(question_title__text='pink').count(), 1)
 
         # Delete the question and it should be removed from the
         # index.
         q.delete()
         self.refresh()
-        eq_(Question.search().query('pink').count(), 0)
+        eq_(Question.search().query(question_title__text='pink').count(), 0)
 
     def test_question_questionvote(self):
         # Create a question and verify it doesn't show up in a
@@ -99,5 +108,6 @@ class QuestionSearchTests(ElasticTestCase):
                           save=True),
             helpful=True).save()
         self.refresh()
-        result = Question.search().query('LOLRUS')
+        result = Question.search().query(question_title__text='LOLRUS',
+                                         question_content__text='LOLRUS')
         assert result.count() > 0

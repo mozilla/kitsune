@@ -548,10 +548,10 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
 
     @classmethod
     def get_query_fields(cls):
-        return ['document_title__text',
-                'document_content__text',
-                'document_summary__text',
-                'document_keywords__text']
+        return ['document_title',
+                'document_content',
+                'document_summary',
+                'document_keywords']
 
     @classmethod
     def get_mapping(cls):
@@ -647,14 +647,6 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
             return
 
         super(cls, cls).index(document, **kwargs)
-
-    @classmethod
-    def search(cls):
-        s = super(Document, cls).search()
-        return (s.query_fields('document_title__text',
-                               'document_content__text',
-                               'document_summary__text',
-                               'document_keywords__text'))
 
 
 register_for_indexing(Document, 'wiki')

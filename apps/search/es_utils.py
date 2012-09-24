@@ -47,13 +47,6 @@ class Sphilastic(S):
     easier.
 
     """
-    _query_fields = []
-
-    def _clone(self, next_step=None):
-        new = super(Sphilastic, self)._clone(next_step)
-        new._query_fields = list(self._query_fields)
-        return new
-
     def print_query(self):
         pprint.pprint(self._build_query())
 
@@ -65,46 +58,6 @@ class Sphilastic(S):
     def get_doctypes(self):
         # SUMO uses a unified doctype, so this always returns that.
         return [SUMO_DOCTYPE]
-
-    # TODO: Remove this when we remove bucketed search. Need to fix
-    # suggestions to specify query fields when we do this.
-    def query_fields(self, *fields):
-        new = self._clone()
-        new._query_fields = fields
-        return new
-
-    def query(self, *args, **kws):
-        """Sets up a query
-
-        You can specify the query one of two ways:
-
-        1. Call query_fields() with the fields you want to query
-           BEFORE you call query. Then query will run that query
-           with the specified fields.
-
-           Example::
-
-               S(Foo).query_fields('content__text', 'title__text', 'author')
-                     .query('tabs')
-
-           Note that we only search one value at a time.
-
-        2. Call query with keyword arguments. This works just like in
-           elasticutils documentation.
-
-           Example::
-
-               S(Foo).query(or_=dict(content__text='tabs',
-                                     title__text='tabs',
-                                     author='tabs'))
-
-        """
-        assert bool(args) != bool(kws)
-        if args:
-            # Note: We only look at the first arg. The rest we ignore.
-            kws = dict(or_=dict(
-                    (field, args[0]) for field in self._query_fields))
-        return super(Sphilastic, self).query(**kws)
 
 
 class MappingMergeError(Exception):
