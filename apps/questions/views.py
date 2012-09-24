@@ -349,7 +349,8 @@ def aaq(request, product_key=None, category_key=None, showform=False,
 
         if request.user.is_active:
             messages.add_message(request, messages.SUCCESS,
-                _('Done! Your question is now posted on the Mozilla community support forum.'))
+                _('Done! Your question is now posted on the Mozilla community '
+                  'support forum.'))
             url = reverse('questions.answers',
                           kwargs={'question_id': question.id})
             return HttpResponseRedirect(url)
@@ -376,12 +377,14 @@ def aaq_step2(request, product_key):
 
 def aaq_step3(request, product_key, category_key):
     """Step 3: The product and category is selected."""
-    return aaq(request, product_key=product_key, category_key=category_key, step=1)
+    return aaq(request, product_key=product_key, category_key=category_key,
+               step=1)
 
 
 def aaq_step4(request, product_key, category_key):
     """Step 4: Search query entered."""
-    return aaq(request, product_key=product_key, category_key=category_key, step=1)
+    return aaq(request, product_key=product_key, category_key=category_key,
+               step=1)
 
 
 def aaq_step5(request, product_key, category_key):
@@ -971,16 +974,17 @@ def marketplace_success(request, template=None):
     return jingo.render(request, template)
 
 
-def _search_suggestions(request, query, locale, tags, product_slugs):
+def _search_suggestions(request, text, locale, tags, product_slugs):
     """Return an iterable of the most relevant wiki pages and questions.
 
-    query -- full text to search on
-    locale -- locale to limit to
-    tags -- list of tags to filter questions on
-    product_slugs -- list of product slugs to filter articles on
+    :arg text: full text to search on
+    :arg locale: locale to limit to
+    :arg tags: list of tags to filter questions on
+    :arg product_slugs: list of product slugs to filter articles on
         (["desktop", "mobile", ...])
 
-    Items are dicts of:
+    Items are dicts of::
+
         {
             'type':
             'search_summary':
@@ -989,7 +993,7 @@ def _search_suggestions(request, query, locale, tags, product_slugs):
             'object':
         }
 
-    Returns up to 3 wiki pages, then up to 3 questions.
+    :returns: up to 3 wiki pages, then up to 3 questions.
 
     """
     # TODO: this can be reworked to pull data from ES rather than
@@ -1007,14 +1011,15 @@ def _search_suggestions(request, query, locale, tags, product_slugs):
     if tags:
         question_s = question_s.filter(question_tag__in=tags)
 
+    results = []
     try:
+        query = dict(('%s__text' % field, text)
+                      for field in Document.get_query_fields())
         raw_results = (
             wiki_s.filter(document_locale=locale,
                           document_category__in=default_categories)
-                  .query(query)
+                  .query(or_=query)
                   .values_dict('id')[:WIKI_RESULTS])
-
-        results = []
         for r in raw_results:
             try:
                 doc = (Document.objects.select_related('current_revision')
@@ -1031,9 +1036,10 @@ def _search_suggestions(request, query, locale, tags, product_slugs):
                 pass
 
         # Note: Questions app is en-US only.
-        raw_results = (question_s.query(query)
+        query = dict(('%s__text' % field, text)
+                      for field in Question.get_query_fields())
+        raw_results = (question_s.query(or_=query)
                                  .values_dict('id')[:QUESTIONS_RESULTS])
-
         for r in raw_results:
             try:
                 q = Question.objects.get(pk=r['id'])
@@ -1051,15 +1057,14 @@ def _search_suggestions(request, query, locale, tags, product_slugs):
             except Question.DoesNotExist:
                 pass
 
-    except (ESTimeoutError, ESMaxRetryError, ESException), exc:
+    except (ESTimeoutError, ESMaxRetryError, ESException) as exc:
         if isinstance(exc, ESTimeoutError):
             statsd.incr('questions.suggestions.timeouterror')
         elif isinstance(exc, ESMaxRetryError):
             statsd.incr('questions.suggestions.maxretryerror')
         elif isinstance(exc, ESException):
             statsd.incr('questions.suggestions.elasticsearchexception')
-
-        return []
+        log.debug(exc)
 
     return results
 
