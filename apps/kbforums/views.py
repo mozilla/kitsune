@@ -88,8 +88,13 @@ def posts(request, document_slug, thread_id, form=None, post_preview=None):
 
     thread = get_object_or_404(Thread, pk=thread_id, document=doc)
 
-    posts_ = paginate(request, thread.post_set.all(),
-                      kbforums.POSTS_PER_PAGE)
+    posts_ = thread.post_set.all()
+    count = posts_.count()
+    if count:
+        last_post = posts_[count - 1]
+    else:
+        last_post = None
+    posts_ = paginate(request, posts_, kbforums.POSTS_PER_PAGE)
 
     if not form:
         form = ReplyForm()
@@ -104,6 +109,8 @@ def posts(request, document_slug, thread_id, form=None, post_preview=None):
     return jingo.render(request, 'kbforums/posts.html',
                         {'document': doc, 'thread': thread,
                          'posts': posts_, 'form': form,
+                         'count': count,
+                         'last_post': last_post,
                          'post_preview': post_preview,
                          'is_watching_thread': is_watching_thread,
                          'feeds': feed_urls})

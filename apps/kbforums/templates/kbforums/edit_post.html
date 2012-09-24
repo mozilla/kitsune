@@ -11,35 +11,36 @@
                  (None, _('Edit a post'))] %}
 
 {% block content %}
-<div class="grid_9">
-<article id="edit-post" class="main">
-  {{ kbforums_warning(document, user) }}
-  <h1>{{ _('Edit a post') }}</h1>
+  <article id="edit-post" class="grid_9">
+    {{ kbforums_warning(document, user) }}
+    <h1>{{ _('Edit a post') }}</h1>
 
-  <form action="{{ url('wiki.discuss.edit_post', document.slug, thread.id, post.id) }}" method="post" class="edit-post">
-    {{ csrf() }}
-    {{ errorlist(form) }}
+    <form action="{{ url('wiki.discuss.edit_post', document.slug, thread.id, post.id) }}" method="post" class="edit-post">
+      {{ csrf() }}
+      {{ errorlist(form) }}
 
-    <div class="form-widget{% if form.content.errors %} invalid{% endif %}">
-      {{ form.content.label_tag()|safe }}
-      {{ content_editor(form.content) }}
+      <div class="form-widget{% if form.content.errors %} invalid{% endif %}">
+        {{ form.content.label_tag()|safe }}
+        <div class="content-box">
+          {{ content_editor(form.content) }}
+        </div>
+      </div>
+
+      <div class="form-widget submit">
+        <button type="submit" class="btn btn-submit big">{{ _('Update post') }}</button>
+        <button type="submit" id="preview" name="preview" class="btn"
+            data-preview-url="{{ url('wiki.discuss.post_preview_async', document.slug) }}"
+            data-preview-container-id="post-preview"
+            data-preview-content-id="id_content">{{ _('Preview') }}
+        </button>
+        <a class="btn" href="{{ url('wiki.discuss.posts', document.slug, thread.id) }}">{{ _('Cancel') }}</a>
+      </div>
+    </form>
+
+    <div id="post-preview">
+      {% if post_preview %}
+        {% include "kbforums/includes/post_preview.html" %}
+      {% endif %}
     </div>
-
-    <div class="form-widget submit">
-      <input type="submit" class="btn-important" value="{{ _('Update post') }}" />
-      <input type="submit" id="preview" name="preview" value="{{ _('Preview') }}"
-          data-preview-url="{{ url('wiki.discuss.post_preview_async', document.slug) }}"
-          data-preview-container-id="post-preview"
-          data-preview-content-id="id_content" />
-      <a href="{{ url('wiki.discuss.posts', document.slug, thread.id) }}">{{ _('Cancel') }}</a>
-    </div>
-  </form>
-
-  <div id="post-preview">
-    {% if post_preview %}
-      {% include "kbforums/includes/post_preview.html" %}
-    {% endif %}
-  </div>
-</article>
-</div>
+  </article>
 {% endblock %}

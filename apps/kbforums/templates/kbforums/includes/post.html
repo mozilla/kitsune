@@ -1,27 +1,29 @@
 <div class="author">
-  <a href="{{ profile_url(post.creator, request.user == post.creator) }}">
+  <a class="avatar" href="{{ profile_url(post.creator, request.user == post.creator) }}">
     <img src="{{ profile_avatar(post.creator) }}" height="45" width="45" alt=""/>
   </a>
   <a class="author-name" href="{{ profile_url(post.creator, request.user == post.creator) }}">{{ post.creator }}</a>
-  {{ private_message(post.creator) }}
+
+  <ul>
+    <li>{{ private_message(post.creator) }}</li>
+    {% if post.id and (perms.kbforums.change_post or (post.creator == request.user and not thread.is_locked)) %}
+      <li><a href="{{ url('wiki.discuss.edit_post', document.slug, thread.id, post.id) }}">{{ _('Edit this post') }}</a></li>
+    {% endif %}
+    {% if post.id and perms.kbforums.delete_post %}
+      <li><a href="{{ url('wiki.discuss.delete_post', document.slug, thread.id, post.id) }}">{{ _('Delete this post') }}</a></li>
+    {% endif %}
+  </ul>
+
   {% with count = post.creator.post_set.count() %}
     {# L10n: {0} is the number of posts. #}
     <span class="posts">{{ ngettext('1 post', '{0} posts', count)|f(count) }}</span>
   {% endwith %}
   <div class="post-actions">
-    {% if post.id and (perms.kbforums.change_post or (post.creator == request.user and not thread.is_locked)) %}
-      <a href="{{ url('wiki.discuss.edit_post', document.slug, thread.id, post.id) }}"><img src="{{ MEDIA_URL }}img/forums/edit.png" alt="{{ _('Edit') }}" title="{{ _('Edit') }}"/></a>
+    {% if document and document.slug and post.id %}
+      <form class="report" action="{{ url('wiki.discuss.flag_post', document.slug, post.id) }}" method="post">
+       {% include 'wiki/includes/flag_form.html' %}
+      </form>
     {% endif %}
-    {% if post.id and perms.kbforums.delete_post %}
-    <a href="{{ url('wiki.discuss.delete_post', document.slug, thread.id, post.id) }}">
-      <img src="{{ MEDIA_URL }}img/forums/delete.png" alt="{{ _('Delete') }}" title="{{ _('Delete') }}">
-    </a>
-  {% endif %}
-  {% if document and document.slug and post.id %}
-    <form class="report" action="{{ url('wiki.discuss.flag_post', document.slug, post.id) }}" method="post">
-     {% include 'wiki/includes/flag_form.html' %}
-    </form>
-  {% endif %}
   </div>
 </div>
 <div class="content">
