@@ -275,7 +275,12 @@ def search(request, template=None):
             document_title=6.0,
             document_content=1.0,
             document_keywords=4.0,
-            document_summary=2.0)
+            document_summary=2.0,
+
+            # Text phrases in document titles and content get an extra
+            # boost.
+            document_title__text_phrase=10.0,
+            document_content__text_phrase=8.0)
 
         # Apply sortby, but only for advanced search for questions
         if a == '1' and cleaned['w'] & constants.WHERE_SUPPORT:
@@ -293,7 +298,11 @@ def search(request, template=None):
             query_fields = chain(*[cls.get_query_fields()
                                    for cls in get_search_models()])
 
-            query = dict((field, cleaned_q) for field in query_fields)
+            query = {}
+            for field in query_fields:
+                for query_type in ['text', 'text_phrase']:
+                # for query_type in ['text']:
+                    query['%s__%s' % (field, query_type)] = cleaned_q
 
             searcher = searcher.query(or_=query)
 
@@ -428,16 +437,20 @@ def suggestions(request):
     site = Site.objects.get_current()
     locale = locale_or_default(request.locale)
     try:
-        # FIXME - switch this to not depend on .query_fields.
+        query = dict(('%s__text' % field, term)
+                     for field in Document.get_query_fields())
         wiki_s = (Document.search()
                   .filter(document_is_archived=False)
                   .filter(document_locale=locale)
                   .values_dict('document_title', 'url')
-                  .query(term)[:5])
+                  .query(or_=query)[:5])
+
+        query = dict(('%s__text' % field, term)
+                     for field in Question.get_query_fields())
         question_s = (Question.search()
                       .filter(question_has_helpful=True)
                       .values_dict('question_title', 'url')
-                      .query(term)[:5])
+                      .query(or_=query)[:5])
 
         results = list(chain(question_s, wiki_s))
     except (ESTimeoutError, ESMaxRetryError, ESException):

@@ -289,9 +289,9 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
 
     @classmethod
     def get_query_fields(cls):
-        return ['question_title__text',
-                'question_content__text',
-                'question_answer_content__text']
+        return ['question_title',
+                'question_content',
+                'question_answer_content']
 
     @classmethod
     def get_mapping(cls):
@@ -388,13 +388,6 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
                 question=obj_id).filter(votes__helpful=True).exists()
 
         return d
-
-    @classmethod
-    def search(cls):
-        s = super(Question, cls).search()
-        return (s.query_fields('question_title__text',
-                               'question_content__text',
-                               'question_answer_content__text'))
 
     @classmethod
     def recent_asked_count(cls):
