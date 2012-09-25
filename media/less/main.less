@@ -1057,16 +1057,20 @@ input[type=button],
 
   ul {
     border: 2px solid #cfd8df;
+    display: table;
     list-style: none;
     margin: 0;
     padding: 2px 0;
+    width: 100%;
 
     li {
       border-right: 1px dotted #b1b8bd;
       color: @textBlue;
-      float: left;
+      display: table-cell;
       height: 30px;
       line-height: 30px;
+      padding: 0 10px;
+      text-align: center;
 
       &:last-child {
         border-right: none;
@@ -1076,7 +1080,6 @@ input[type=button],
       a:visited {
         color: @textBlue;
         font-size: 14px;
-        padding: 0 27px;
         text-decoration: none;
       }
     }
