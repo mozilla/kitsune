@@ -60,7 +60,7 @@
   {% endif %}
   {{ document_tools(doc, parent, user, 'article', settings) }}
   {{ related_articles(related, document) }}
-  {{ topic_sidebar(topics, product) }}
+  {{ topic_sidebar(topics[:10], product) }}
 {% endblock %}
 
 {% block breadcrumbs %}
