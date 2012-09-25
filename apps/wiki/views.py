@@ -164,7 +164,7 @@ def document(request, document_slug, template=None):
     else:
         product = products[0]
 
-    topics = doc.get_topics()
+    topics = Topic.objects.filter(visible=True)
 
     data = {'document': doc, 'redirected_from': redirected_from,
             'related': related, 'contributors': contributors,
