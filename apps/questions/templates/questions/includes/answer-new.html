@@ -1,6 +1,6 @@
 {% from "upload/attachments.html" import attachment %}
 {% from "karma/includes/karma_macros.html" import titles %}
-<div class="grid_9" {% if answer.id %}id="answer-{{ answer.id }}"{% endif %}>
+<div class="answer grid_9" {% if answer.id %}id="answer-{{ answer.id }}"{% endif %}>
   <div class="user-meta">
     <div class="avatar">
       <a href="{{ profile_url(answer.creator) }}">

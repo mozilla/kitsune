@@ -1,6 +1,5 @@
 {# vim: set ts=2 et sts=2 sw=2: #}
 {% macro related_articles(related, document) -%}
-  {% if waffle.flag('new-theme') %}
     {% if related %}
       <aside id="doc-related" class="folding-section">
         <header>{{ _('Related Articles') }}</header>
@@ -13,18 +12,6 @@
         </section>
       </aside>
     {% endif %}
-  {% else %}
-    {% if related %}
-      <section id="related-articles">
-        <h1>{{ _('Related Articles') }}</h1>
-        <ul>
-          {% for art in related %}
-            <li><a href="{{ art['url'] }}">{{ art['document_title'] }}</a></li>
-          {% endfor %}
-        </ul>
-      </section>
-    {% endif %}
-  {% endif %}
 {%- endmacro %}
 
 {% macro contributor_list(contributors) -%}

@@ -319,9 +319,9 @@ class ViewProfileTests(TestCaseBase):
         eq_(200, r.status_code)
         doc = pq(r.content)
         eq_(0, doc('#edit-profile-link').length)
-        eq_('pcraciunoiu', doc('#main-area h1').text())
+        eq_('pcraciunoiu', doc('h1.user').text())
         # No name set and livechat_id is not different => no optional fields.
-        eq_(0, doc('#contact-box').length)
+        eq_(0, doc('.contact').length)
         # Check canonical url
         eq_('/user/47963', doc('link[rel="canonical"]')[0].attrib['href'])
 
@@ -331,7 +331,7 @@ class ViewProfileTests(TestCaseBase):
         r = self.client.get(reverse('users.profile', args=[47963]))
         eq_(200, r.status_code)
         doc = pq(r.content)
-        eq_('Edit my profile', doc('#doc-tabs li:last').text())
+        eq_('Edit settings', doc('#user-nav li:last').text())
         self.client.logout()
 
     def test_bio_links_nofollow(self):
@@ -341,7 +341,7 @@ class ViewProfileTests(TestCaseBase):
         r = self.client.get(reverse('users.profile', args=[47963]))
         eq_(200, r.status_code)
         doc = pq(r.content)
-        eq_(2, len(doc('#bio a[rel="nofollow"]')))
+        eq_(2, len(doc('.bio a[rel="nofollow"]')))
 
 
 class PasswordChangeTests(TestCaseBase):

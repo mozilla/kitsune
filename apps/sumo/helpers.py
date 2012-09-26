@@ -2,7 +2,6 @@ import datetime
 import json as jsonlib
 import re
 import urlparse
-import waffle
 
 from django.conf import settings
 from django.core.urlresolvers import reverse as django_reverse
@@ -152,10 +151,7 @@ def breadcrumbs(context, items=list(), add_default=True):
     Accepts: [(url, label)]
     """
     if add_default:
-        if waffle.flag_is_active(context['request'], 'new-theme'):
-            first_crumb = u'Home'
-        else:
-            first_crumb = u'Firefox Help'
+        first_crumb = u'Home'
 
         crumbs = [(reverse('home'), _lazy(first_crumb))]
     else:

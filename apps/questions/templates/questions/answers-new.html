@@ -27,7 +27,7 @@
     {% endif %}
   </div>
   <article>
-    <div class="grid_9">
+    <div class="question grid_9">
       {% if question.is_locked %}
         <div class="notice">
           {{ _('This thread was closed.') }}
@@ -47,7 +47,7 @@
               {{ _('No replies') }}
             {% endif %}
           </li>
-          <li>
+          <li class="have-problem">
             {{ question.num_votes }}
             {% trans count=question.num_votes %}
               has this problem

@@ -1,5 +1,6 @@
 {# vim: set ts=2 et sts=2 sw=2: #}
 {% from "includes/common_macros.html" import for_contributors_sidebar %}
+{% from "wiki/includes/document_macros.html" import document_watch with context %}
 
 {% macro document_tabs(document, parent, user, active, settings) -%}
   {% if not parent %}
@@ -98,6 +99,7 @@
         {{ for_contributors_sidebar(user, settings.WIKI_DEFAULT_LANGUAGE, True) }}
       </li>
     </ul>
+    <div class="email">{{ document_watch(document, user) }}</div>
   </nav>
 {%- endmacro %}
 

@@ -312,7 +312,7 @@ class ChangeEmailTestCase(TestCase):
         eq_(200, response.status_code)
         doc = pq(response.content)
         eq_('Unable to change email for user rrosario',
-            doc('#main h1').text())
+            doc('article h1').text())
         u = User.objects.get(username='rrosario')
         eq_(old_email, u.email)
 

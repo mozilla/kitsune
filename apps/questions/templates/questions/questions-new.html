@@ -58,7 +58,7 @@
       <section class="cf">
         <div class="grid_2">
           <h3>{{ _('Sort by') }}</h3>
-          <ul>
+          <ul class="sort-by">
             <li{% if not sort %} class="active"{% endif %}>
               <a href="{{ url('questions.questions')|urlparams(filter=filter, tagged=tagged) }}">{{ _('Most Recent') }}</a>
             </li>
@@ -69,7 +69,7 @@
         </div>
         <div class="grid_2">
           <h3>{{ _('Show') }}</h3>
-          <ul>
+          <ul class="show">
             <li{% if not filter %} class="active"{% endif %}>
               <a href="{{ url('questions.questions')|urlparams(sort=sort, tagged=tagged) }}">{{ _('All') }}</a>
             </li>
