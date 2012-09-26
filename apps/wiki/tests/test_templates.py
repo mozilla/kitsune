@@ -128,7 +128,7 @@ class DocumentTests(TestCaseBase):
         response = self.client.get(r.document.get_absolute_url())
         eq_(200, response.status_code)
         doc = pq(response.content)
-        eq_(r.document.title, doc('#main h1.title').text())
+        eq_(r.document.title, doc('article h1.title').text())
         eq_(pq(r.document.html)('div').text(), doc('#doc-content div').text())
         # There's a canonical URL in the <head>.
         eq_(r.document.get_absolute_url(),
@@ -142,7 +142,7 @@ class DocumentTests(TestCaseBase):
         response = self.client.get(r.document.get_absolute_url())
         eq_(200, response.status_code)
         doc = pq(response.content)
-        eq_(r.document.title, doc('#main h1.title').text())
+        eq_(r.document.title, doc('article h1.title').text())
         eq_("This article doesn't have approved content yet.",
             doc('#doc-content').text())
 
@@ -155,7 +155,7 @@ class DocumentTests(TestCaseBase):
         response = self.client.get(d2.get_absolute_url())
         eq_(200, response.status_code)
         doc = pq(response.content)
-        eq_(d2.title, doc('#main h1.title').text())
+        eq_(d2.title, doc('article h1.title').text())
         # Avoid depending on localization, assert just that there is only text
         # d.html would definitely have a <p> in it, at least.
         eq_(doc('#doc-content').html().strip(), doc('#doc-content').text())
@@ -169,7 +169,7 @@ class DocumentTests(TestCaseBase):
         url = reverse('wiki.document', args=[d2.slug], locale='fr')
         response = self.client.get(url)
         doc = pq(response.content)
-        eq_(d2.title, doc('#main h1.title').text())
+        eq_(d2.title, doc('article h1.title').text())
 
         # Fallback message is shown.
         eq_(1, len(doc('#doc-pending-fallback')))
@@ -204,7 +204,7 @@ class DocumentTests(TestCaseBase):
         url = reverse('wiki.document', args=[r.document.slug], locale='fr')
         response = self.client.get(url)
         doc = pq(response.content)
-        eq_(r.document.title, doc('#main h1.title').text())
+        eq_(r.document.title, doc('article h1.title').text())
 
         # Fallback message is shown.
         eq_(1, len(doc('#doc-pending-fallback')))
@@ -213,8 +213,6 @@ class DocumentTests(TestCaseBase):
         doc('#doc-pending-fallback').remove()
         # Included content is English.
         eq_(pq(r.document.html)('div').text(), doc('#doc-content div').text())
-        # Only two document tabs show (Article,Translate)
-        eq_(2, len(doc('#doc-tabs li')))
 
     def test_redirect(self):
         """Make sure documents with REDIRECT directives redirect properly.
@@ -263,14 +261,14 @@ class DocumentTests(TestCaseBase):
         d = document(is_localizable=True, save=True)
         resp = self.client.get(d.get_absolute_url())
         doc = pq(resp.content)
-        assert 'Translate' in doc('#doc-tabs li').text()
+        assert 'Translate' in doc('#doc-tools li').text()
 
         # Make it non-localizable
         d.is_localizable = False
         d.save()
         resp = self.client.get(d.get_absolute_url())
         doc = pq(resp.content)
-        assert 'Localize' not in doc('#doc-tabs li').text()
+        assert 'Localize' not in doc('#doc-tools li').text()
 
     def test_obsolete_hide_edit(self):
         """Make sure Edit sidebar link is hidden for obsolete articles."""
@@ -349,14 +347,14 @@ class RevisionTests(TestCaseBase):
         eq_(200, response.status_code)
         doc = pq(response.content)
         eq_('Revision id: %s' % r.id,
-            doc('#wiki-doc div.revision-info li:first').text())
-        eq_(d.title, doc('#wiki-doc h1.title').text())
+            doc('div.revision-info li:first').text())
+        eq_(d.title, doc('h1.title').text())
         eq_(pq(r.content_parsed)('div').text(),
             doc('#doc-content div').text())
-        eq_('Created:Jan 1, 2011 12:00:00 AM',
-            doc('#wiki-doc div.revision-info li')[1].text_content().strip())
-        eq_('Reviewed:Jan 2, 2011 12:00:00 AM',
-            doc('#wiki-doc div.revision-info li')[5].text_content().strip())
+        eq_('Created:\n              Jan 1, 2011 12:00:00 AM',
+            doc('.revision-info li')[1].text_content().strip())
+        eq_('Reviewed:\n                Jan 2, 2011 12:00:00 AM',
+            doc('.revision-info li')[5].text_content().strip())
         # is reviewed?
         eq_('Yes', doc('.revision-info li').eq(3).find('span').text())
         # is current revision?
@@ -2089,7 +2087,7 @@ class RelatedDocumentTestCase(ElasticTestCase):
         response = self.client.get(d1.get_absolute_url())
 
         doc = pq(response.content)
-        related = doc('section#related-articles li a')
+        related = doc('#doc-related li a')
         eq_(1, len(related))
         eq_('lorem ipsum sit', related.text())
 

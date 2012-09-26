@@ -134,8 +134,8 @@ class AnswersTemplateTestCase(TestCaseBase):
                         args=[self.question.id, answer.id])
         doc = pq(response.content)
         eq_(1, len(doc('div.solution')))
-        li = doc('span.solved')[0].getparent().getparent().getparent()
-        eq_('answer-%s' % answer.id, li.attrib['id'])
+        div = doc('h3.is-solution')[0].getparent().getparent()
+        eq_('answer-%s' % answer.id, div.attrib['id'])
         q = Question.uncached.get(pk=self.question.id)
         eq_(q.solution, answer)
         # Unsolve and verify
@@ -197,7 +197,7 @@ class AnswersTemplateTestCase(TestCaseBase):
         response = get(self.client, 'questions.answers',
                        args=[self.question.id])
         doc = pq(response.content)
-        eq_('0 people', doc('div.have-problem mark')[0].text)
+        assert '0\n' in doc('.have-problem')[0].text
         eq_(1, len(doc('div.me-too form')))
 
         # Vote
@@ -209,7 +209,7 @@ class AnswersTemplateTestCase(TestCaseBase):
         response = get(self.client, 'questions.answers',
                        args=[self.question.id])
         doc = pq(response.content)
-        eq_('1 person', doc('div.have-problem mark')[0].text)
+        assert '1\n' in doc('.have-problem')[0].text
         eq_(0, len(doc('div.me-too form')))
         # Verify user agent
         vote_meta = VoteMetadata.objects.all()[0]
@@ -221,7 +221,7 @@ class AnswersTemplateTestCase(TestCaseBase):
         response = get(self.client, 'questions.answers',
                        args=[self.question.id])
         doc = pq(response.content)
-        eq_('1 person', doc('div.have-problem mark')[0].text)
+        assert '1\n' in doc('.have-problem')[0].text
 
     def test_question_authenticated_vote(self):
         """Authenticated user vote."""
@@ -255,20 +255,12 @@ class AnswersTemplateTestCase(TestCaseBase):
                        args=[self.question.id])
         doc = pq(response.content)
 
-        eq_('1 out of 1 person found this reply helpful',
-            doc('#answer-1 span.helpful')[0].text.strip())
+        eq_(1, len(doc('#answer-1 h3.is-helpful')))
         eq_(0, len(doc('form.helpful input[name="helpful"]')))
         # Verify user agent
         vote_meta = VoteMetadata.objects.all()[0]
         eq_('ua', vote_meta.key)
         eq_(ua, vote_meta.value)
-
-        # Voting again (same user) should not increment vote count
-        post(self.client, 'questions.answer_vote', {'helpful': 'y'},
-             args=[self.question.id, self.answer.id])
-        doc = pq(response.content)
-        eq_('1 out of 1 person found this reply helpful',
-            doc('#answer-1 span.helpful')[0].text.strip())
 
     def test_answer_authenticated_vote(self):
         """Authenticated user answer vote."""
@@ -423,7 +415,7 @@ class AnswersTemplateTestCase(TestCaseBase):
         response = get(self.client, 'questions.answers',
                        args=[self.question.id])
         doc = pq(response.content)
-        eq_(1, len(doc('ol.answers li.edit')))
+        eq_(2, len(doc('li.edit')))
 
         answer = self.question.last_answer
         response = get(self.client, 'questions.edit_answer',
@@ -452,9 +444,9 @@ class AnswersTemplateTestCase(TestCaseBase):
                         {'content': content},
                         args=[self.question.id])
         doc = pq(response.content)
-        eq_(1, len(doc('ol.answers li.edit')))
+        eq_(1, len(doc('li.edit')))
         new_answer = self.question.answers.order_by('-created')[0]
-        eq_(1, len(doc('#answer-%s li.edit' % new_answer.id)))
+        eq_(1, len(doc('#answer-%s + div li.edit' % new_answer.id)))
 
         # Make sure it can be edited
         content = 'New content for answer'
@@ -663,7 +655,7 @@ class AnswersTemplateTestCase(TestCaseBase):
                         args=[self.question.id])
         eq_(200, response.status_code)
         doc = pq(response.content)
-        eq_(content, doc('#answer-preview div.content').text())
+        eq_(content, doc('#answer-preview div.main-content').text())
         eq_(num_answers, self.question.answers.count())
 
     def test_preview_answer_as_admin(self):
@@ -686,8 +678,8 @@ class AnswersTemplateTestCase(TestCaseBase):
         response = get(self.client, 'questions.answers',
                        args=[self.question.id])
         doc = pq(response.content)
-        eq_('nofollow', doc('#question div.content a')[0].attrib['rel'])
-        eq_('nofollow', doc('li.answer div.content a')[0].attrib['rel'])
+        eq_('nofollow', doc('.question .main-content a')[0].attrib['rel'])
+        eq_('nofollow', doc('.answer .main-content a')[0].attrib['rel'])
 
     def test_robots_noindex(self):
         """Verify noindex on unanswered questions over 30 days old."""
@@ -932,8 +924,8 @@ class QuestionsTemplateTestCase(TestCaseBase):
     def test_all_filter_highlight(self):
         response = get(self.client, 'questions.questions')
         doc = pq(response.content)
-        eq_('active', doc('div#filter ul li')[2].attrib['class'])
-        eq_('question-1', doc('ol.questions li')[0].attrib['id'])
+        eq_('active', doc('ul.show li')[0].attrib['class'])
+        eq_('question-1', doc('.questions > section')[0].attrib['id'])
 
     def test_no_reply_filter(self):
         url_ = urlparams(reverse('questions.questions'),
@@ -941,8 +933,8 @@ class QuestionsTemplateTestCase(TestCaseBase):
         q = question(save=True)
         response = self.client.get(url_)
         doc = pq(response.content)
-        eq_('active', doc('div#filter ul li')[-1].attrib['class'])
-        eq_('question-%s' % q.id, doc('ol.questions li')[0].attrib['id'])
+        eq_('active', doc('ul.show li')[-1].attrib['class'])
+        eq_('question-%s' % q.id, doc('.questions > section')[0].attrib['id'])
         eq_('/questions?filter=no-replies',
             doc('link[rel="canonical"]')[0].attrib['href'])
 
@@ -952,7 +944,7 @@ class QuestionsTemplateTestCase(TestCaseBase):
                          filter='solved')
         response = self.client.get(url_)
         doc = pq(response.content)
-        eq_('active', doc('div#filter ul li')[4].attrib['class'])
+        eq_('active', doc('ul.show li')[2].attrib['class'])
         eq_(0, len(doc('ol.questions li')))
         eq_('/questions?filter=solved',
             doc('link[rel="canonical"]')[0].attrib['href'])
@@ -963,9 +955,9 @@ class QuestionsTemplateTestCase(TestCaseBase):
         answer.question.save()
         response = self.client.get(url_)
         doc = pq(response.content)
-        eq_(1, len(doc('ol.questions li')))
+        eq_(1, len(doc('.questions > section')))
         eq_('question-%s' % answer.question.id,
-            doc('ol.questions li')[0].attrib['id'])
+            doc('.questions > section')[0].attrib['id'])
 
     def test_unsolved_filter(self):
         # initially there should be 2 unsolved answers
@@ -973,8 +965,8 @@ class QuestionsTemplateTestCase(TestCaseBase):
                          filter='unsolved')
         response = self.client.get(url_)
         doc = pq(response.content)
-        eq_('active', doc('div#filter ul li')[3].attrib['class'])
-        eq_(2, len(doc('ol.questions li')))
+        eq_('active', doc('ul.show li')[1].attrib['class'])
+        eq_(2, len(doc('.questions > section')))
 
         # solve one question then verify that it doesn't show up
         answer = Answer.objects.all()[0]
@@ -982,8 +974,8 @@ class QuestionsTemplateTestCase(TestCaseBase):
         answer.question.save()
         response = self.client.get(url_)
         doc = pq(response.content)
-        eq_(1, len(doc('ol.questions li')))
-        eq_(0, len(doc('ol.questions li#question-%s' % answer.question.id)))
+        eq_(1, len(doc('.questions > section')))
+        eq_(0, len(doc('.questions #question-%s' % answer.question.id)))
         eq_('/questions?filter=unsolved',
             doc('link[rel="canonical"]')[0].attrib['href'])
 
@@ -993,8 +985,8 @@ class QuestionsTemplateTestCase(TestCaseBase):
         self.client.login(username=username, password="testpass")
         response = self.client.get(url_)
         doc = pq(response.content)
-        eq_('active', doc('div#filter ul li')[6].attrib['class'])
-        eq_(expected_qty, len(doc('ol.questions li')))
+        eq_('active', doc('ul.show li')[-1].attrib['class'])
+        eq_(expected_qty, len(doc('.questions > section')))
         eq_('/questions?filter=my-contributions',
             doc('link[rel="canonical"]')[0].attrib['href'])
 
@@ -1013,8 +1005,8 @@ class QuestionsTemplateTestCase(TestCaseBase):
         self.client.login(username='pcraciunoiu', password="testpass")
         response = get(self.client, 'questions.questions')
         doc = pq(response.content)
-        eq_(1, len(doc('li#question-1 span.contributed')))
-        eq_(0, len(doc('li#question-2 span.contributed')))
+        eq_(1, len(doc('#question-1 .thread-contributed.highlighted')))
+        eq_(0, len(doc('#question-2 .thread-contributed.highlighted')))
 
     def test_sort(self):
         # This test fails occasionally and needs to be rewritten. So for now
@@ -1093,7 +1085,7 @@ class QuestionsTemplateTestCase(TestCaseBase):
         # Now there should be 1 question tagged 'mobile'
         response = self.client.get(tagged)
         doc = pq(response.content)
-        eq_(1, len(doc('ol.questions > li')))
+        eq_(1, len(doc('.questions > section')))
         eq_('/questions?tagged=mobile',
             doc('link[rel="canonical"]')[0].attrib['href'])
 
@@ -1111,7 +1103,7 @@ class QuestionsTemplateTestCaseNoFixtures(TestCase):
         url = urlparams(url, filter='no-replies')
         response = self.client.get(url)
         doc = pq(response.content)
-        eq_(2, len(doc('ol.questions li')))
+        eq_(2, len(doc('article.questions > section')))
 
 
 class QuestionEditingTests(TestCaseBase):
@@ -1214,7 +1206,7 @@ class AAQTemplateTestCase(TestCaseBase):
         # Make sure question is in questions list
         response = get(self.client, 'questions.questions')
         doc = pq(response.content)
-        eq_(1, len(doc('li#question-%s' % question.id)))
+        eq_(1, len(doc('#question-%s' % question.id)))
         # And no email was sent
         eq_(0, len(mail.outbox))
 

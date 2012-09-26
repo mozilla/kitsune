@@ -216,10 +216,10 @@ class GroupLocaleDashTests(TestCase):
         eq_(200, response.status_code)
         doc = pq(response.content)
         # The locale dash tab shows up.
-        eq_(4, len(doc('#doc-tabs li')))
+        eq_(5, len(doc('#user-nav li')))
         # The locale dash tabs shows up and is active
-        eq_(u'A group', doc('#doc-tabs li.active').text())
+        eq_(u'A group', doc('#user-nav li.selected').text())
         # The subtitle shows French.
-        eq_(u'Deutsch', doc('#main h2.subtitle').text())
+        eq_(u'Deutsch', doc('article h2.subtitle').text())
         # The correct announcement shows up.
         self.assertContains(response, content)
