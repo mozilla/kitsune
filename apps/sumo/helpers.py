@@ -370,10 +370,8 @@ def remove(list_, item):
 @register.function
 def show_new_sumo(request):
     """Return True if the new IA should be shown to the user."""
-    # Only show the IA if the waffle flag active.
-    if (waffle.flag_is_active(request, 'new-theme')):
-        return True
-    return False
+    # Show it to everybody!!!! \o/
+    return True
 
 
 IDEVICE_USER_AGENTS = re.compile('iphone|ipad|ipod')
