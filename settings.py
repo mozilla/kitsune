@@ -380,7 +380,10 @@ INSTALLED_APPS = (
     'test_utils',
 
     # Extra app for python migrations.
-    'django_extensions'
+    'django_extensions',
+
+    # App for sample data
+    'eadred',
 )
 
 TEST_RUNNER = 'test_utils.runner.RadicalTestSuiteRunner'

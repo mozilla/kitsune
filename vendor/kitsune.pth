@@ -77,3 +77,4 @@ src/elasticutils
 src/django-tastypie
 src/zendesk
 packages/ordereddict
+src/django-eadred
