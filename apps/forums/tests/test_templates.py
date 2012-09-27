@@ -174,6 +174,22 @@ class PostsTemplateTests(ForumTestCase):
         doc = pq(response.content)
         eq_('nofollow', doc('ol.posts div.content a')[0].attrib['rel'])
 
+    def test_num_replies(self):
+        """Verify the number of replies label."""
+        t = forum_post(save=True).thread
+
+        response = get(self.client, 'forums.posts', args=[t.forum.slug, t.id])
+        eq_(200, response.status_code)
+        assert '0 Replies' in response.content
+
+        forum_post(thread=t, save=True)
+        forum_post(thread=t, save=True)
+
+        response = get(self.client, 'forums.posts', args=[t.forum.slug, t.id])
+        eq_(200, response.status_code)
+        assert '2 Replies' in response.content
+
+
 
 class ThreadsTemplateTests(ForumTestCase):
 
