@@ -42,7 +42,7 @@
       {{ kbforums_warning(document, user) }}
       <h1>{{ thread.title }}</h1>
       <ul class="cf" id="thread-meta">
-        {% if posts %}<li>{{ count }} {{ _('Replies') }}</li>{% endif %}
+        {% if count %}<li>{{ count - 1 }} {{ _('Replies') }}</li>{% endif %}
         {% if last_post %}<li>{{ _('Last reply by') }} {{ last_post.creator }}</li>{% endif %}
         {% if thread.is_sticky %}<li>{{ _('Sticky') }}</li>{% endif %}
         {% if thread.is_locked %}<li>{{ _('Locked') }}</li>{% endif %}
