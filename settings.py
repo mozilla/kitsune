@@ -538,8 +538,7 @@ MINIFY_BUNDLES = {
             'less/home.less',
         ),
         'gallery': (
-            'css/to-delete.css',
-            'css/gallery.css',
+            'less/gallery.less',
         ),
         'ie': (
             'css/ie.css',
