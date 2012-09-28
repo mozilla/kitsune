@@ -1,0 +1,277 @@
+@import 'variables.less';
+
+h1 {
+  font-size: 46px;
+  margin: 0 0 20px 0;
+}
+
+.submit {
+  margin-top: 20px;
+}
+
+#btn-upload {
+  float: right;
+  margin: 16px 0 0 0;
+}
+
+#gallery-search {
+  .searchbox {
+    width: 275px;
+  }
+}
+
+#locale-filter {
+  margin-right: 20px;
+
+  select {
+    width: 140px;
+  }
+}
+
+.no-js {
+  #locale-filter {
+    select {
+      width: 100px;
+    }
+  }
+}
+
+#locale-filter,
+#media-type-filter {
+  display: inline;
+
+  form {
+    display: inline;
+  }
+}
+
+#media-list {
+  list-style: none;
+  margin: 20px 0;
+  padding: 0;
+
+  li {
+    background: #fff;
+    float: left;
+    height: 140px;
+    line-height: 140px;
+    margin: 10px;
+    overflow: hidden;
+    text-align: center;
+    width: 140px;
+
+    img {
+      vertical-align: middle;
+    }
+  }
+}
+
+#media-metainfo {
+  ul {
+    list-style: none;
+    margin: 0 0 10px 0;
+    padding: 0;
+
+    li {
+      border-right: 1px dotted @borderLightGrey;
+      float: left;
+      margin: 0 10px 0 0;
+      padding: 0 10px 0 0;
+
+      &:last-of-type {
+        border-right: 0;
+      }
+    }
+  }
+}
+
+#media-object-edit {
+  label {
+    display: block;
+    margin-bottom: 10px;
+  }
+
+  input {
+    margin-bottom: 20px;
+  }
+}
+
+.no-js {
+  #media-type-filter {
+    select {
+      display: none;
+    }
+  }
+}
+
+#media-view {
+  margin: 20px 0;
+
+  img {
+    width: 100%;
+  }
+}
+
+/* Upload media - modal window */
+#upload-kbox {
+  left: 50%;
+  margin-left: -290px;
+  top: 150px;
+  width: 580px;
+}
+
+#gallery-upload-image, #gallery-upload-video {
+  padding-top: 20px;
+}
+
+#gallery-upload-video.off {
+  display: none;
+}
+
+#gallery-upload-image.off {
+  display: none;
+}
+
+#gallery-upload-type .row-right ul {
+  list-style-type: none;
+}
+
+#gallery-upload-type .row-right li {
+  float: left;
+}
+
+.html-rtl #gallery-upload-type .row-right li {
+  float: right;
+}
+
+#gallery-upload-type .row-right li:first-child {
+  margin: 0 2em 0 0;
+}
+
+.html-rtl #gallery-upload-type .row-right li:first-child {
+  margin: 0 0 0 2em;
+}
+
+#gallery-upload-modal {
+  display: none;
+}
+
+.kbox-wrap #gallery-upload-modal {
+  display: block;
+}
+
+#gallery-upload-modal .row-left {
+  float: left;
+  font-weight: bold;
+  width: 130px;
+}
+
+.html-rtl #gallery-upload-modal .row-left {
+  float: right;
+}
+
+#gallery-upload-modal .row-right {
+  margin: 0 0 15px 140px;
+  min-height: 42px;
+}
+
+.html-rt #gallery-upload-modal .row-right {
+  margin: 0 140px 15px 0;
+}
+
+#gallery-upload-type div.row-right {
+  min-height: 20px;
+  margin-bottom: 0;
+}
+
+#gallery-upload-modal div.upload-action {
+  border-top: 1px solid #9ACCF7;
+  clear: left;
+  padding-top: 10px;
+}
+
+.html-rtl #gallery-upload-modal div.upload-action {
+  clear: right;
+}
+
+#gallery-upload-type input {
+  margin: 0 3px 0 0;
+}
+
+.html-rtl #gallery-upload-type input {
+  margin: 0 0 0 3px;
+}
+
+#gallery-upload-modal .row-right .details {
+  font-size: 80%;
+  margin-top: 3px;
+}
+
+#gallery-upload-modal textarea,
+#gallery-upload-modal input[type="text"] {
+  width: 370px;
+}
+
+#gallery-upload-modal textarea {
+  height: 4em;
+}
+
+div.error {
+  color: #f00;
+}
+
+#gallery-upload-modal form.inline {
+  display: inline;
+}
+
+article.main #gallery-upload-modal input[name="cancel"] {
+  display: inline;
+  margin: 0;
+}
+
+.off {
+  opacity: 0;
+  position: relative;
+  -moz-transition: opacity .5s ease-in-out;
+  -webkit-transition: opacity .5s ease-in-out;
+  transition: opacity .5s ease-in-out;
+  z-index: 0;
+}
+
+.on {
+  opacity: 1;
+  position: relative;
+  -moz-transition: opacity .5s ease-in-out;
+  -webkit-transition: opacity .5s ease-in-out;
+  transition: opacity .5s ease-in-out;
+  z-index: 100;
+}
+
+#gallery-upload-modal .upload-media {
+  position: relative;
+}
+
+#gallery-upload-modal .progress {
+  margin-bottom: -42px;
+  position: relative;
+  top: -57px;
+}
+
+#gallery-upload-modal .preview {
+  margin-bottom: -42px;
+  position: relative;
+  top: -57px;
+}
+
+#gallery-upload-modal .progress a {
+  padding: 0 0 0 5px;
+}
+
+.html-rtl #gallery-upload-modal .progress a {
+  padding: 0 5px 0 0;
+}
+
+#gallery-upload-modal .preview img {
+  max-width: 120px;
+  max-height: 120px;
+}

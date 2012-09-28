@@ -169,6 +169,6 @@ class MediaPageCase(TestCase):
         response = self.client.get(img.get_absolute_url(), follow=True)
         eq_(200, response.status_code)
         doc = pq(response.content)
-        eq_(img.title, doc('#media-object h1').text())
+        eq_(img.title, doc('h1').text())
         eq_(img.description, doc('#media-object div.description').text())
         eq_(img.file.url, doc('#media-view img')[0].attrib['src'])

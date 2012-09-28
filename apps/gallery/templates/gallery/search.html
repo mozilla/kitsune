@@ -6,49 +6,48 @@
 {% set crumbs = [(url('gallery.gallery', media_type), _('Media Gallery')),
                  (None, _('Search'))] %}
 
+{% block above_main %}
+  <h1>{{ _('Media Gallery') }}</h1>
+{% endblock %}
+
 {% block content %}
   <article id="gallery-list" class="main">
-    <h1>{{ _('Media Gallery') }}</h1>
-    <div id="locale-filter">
-      <form action="" method="get">
-        <label for="select-locale">{{ _('Show media for:') }}</label>
-        <select id="select-locale" name="lang" class="autosubmit">
-          {% for lang in settings.LANGUAGE_CHOICES %}
-            <option value="{{ lang[0] }}" {% if lang[0] == request.locale %}selected="selected"{% endif %}>{{ lang[1] }} ({{ lang[0] }})</option>
-          {% endfor %}
-        </select>
-        <noscript>
-          <input type="submit" value="{{ _('Go') }}">
-        </noscript>
-      </form>
-    </div>
-    <div id="search-filter">
-      <div id="media-type-filter">
-        <span>{{ _("Show:") }}</span>
-        <ol>
-        <li>
-          {% if media_type == 'image' %}
-            <span>{{ _('Images') }}</span>
-          {% else %}
-            <a href="{{ url('gallery.search', 'image')|urlparams(q=q) }}">{{ _('Images') }}</a>
-          {% endif %}
-        </li>
-        <li>
-          {% if media_type == 'video' %}
-            <span>{{ _('Videos') }}</span>
-          {% else %}
-            <a href="{{ url('gallery.search', 'video')|urlparams(q=q) }}">{{ _('Videos') }}</a>
-          {% endif %}
-        </li>
-        </ol>
-      </div>
-      <div id="gallery-search">
+    <div class="cf">
+      <div id="gallery-search" class="grid_6">
         <form action="{{ url('gallery.search', media_type) }}" method="get">
-          <input type="text" name="q" value="{{ q }}" required="required" />
+          <input class="searchbox" type="text" name="q" value="{{ q }}" required="required" />
           <input type="submit" value="{{ _('Search Gallery') }}">
         </form>
       </div>
+
+      <div class="grid_6">
+        <div id="locale-filter">
+          <form action="" method="get">
+            <label for="select-locale">{{ _('Show media for:') }}</label>
+            <select id="select-locale" name="lang" class="autosubmit">
+              {% for lang in settings.LANGUAGE_CHOICES %}
+                <option value="{{ lang[0] }}" {% if lang[0] == request.locale %}selected="selected"{% endif %}>{{ lang[1] }} ({{ lang[0] }})</option>
+              {% endfor %}
+            </select>
+            <noscript>
+              <input type="submit" value="{{ _('Go') }}">
+            </noscript>
+          </form>
+        </div>
+        <div id="media-type-filter">
+          <span>{{ _("Show:") }}</span>
+          <select id="media-type-select">
+            <option {% if media_type == 'image' %}selected="selected"{% endif %} value="{{ url('gallery.search', 'image')|urlparams(q=q) }}">{{ _('Images') }}</option>
+            <option {% if media_type == 'video' %}selected="selected"{% endif %} value="{{ url('gallery.search', 'video')|urlparams(q=q) }}">{{ _('Videos') }}</option>
+          </select>
+          <noscript>
+            <a href="{{ url('gallery.search', 'image')|urlparams(q=q) }}">{{ _('Images') }}</a> |
+            <a href="{{ url('gallery.search', 'video')|urlparams(q=q) }}">{{ _('Videos') }}</a>
+          </noscript>
+        </div>
+      </div>
     </div>
+
     {% with media_list=media %}
       {% include 'gallery/includes/media_list.html' %}
     {% endwith %}
