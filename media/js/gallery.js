@@ -1,5 +1,12 @@
 (function($) {
     "use strict";
+
+    $(document).ready(function() {
+      $('#media-type-select').on('change', function() {
+        window.location = $(this).val();
+      });
+    });
+
     var CONSTANTS = {
             maxFilenameLength: 70,  // truncated on display, if longer
             // the remainder are set by input name, not file type
