@@ -16,9 +16,6 @@ urlpatterns = patterns('landings.views',
     url(r'^participate$', 'participate', name='home.participate'),
     url(r'^feedback$', 'feedback', name='home.feedback'),
 
-    # Special landing page for MozCamp
-    url(r'^reminder$', 'reminder', name='home.reminder'),
-
     # A static page for downloading FirefoxIntegrityCheck.exe
     url(r'^download-firefox-integrity-check$', 'integrity_check',
         name='download.integrity-check'),

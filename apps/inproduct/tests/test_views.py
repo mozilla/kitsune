@@ -9,7 +9,7 @@ class RedirectTestCase(TestCase):
     fixtures = ['inproduct/redirects.json']
     test_urls = (
         ('firefox/3.6.12/WINNT/en-US/', '/en-US/home'),
-        ('mobile/4.0/Android/en-US/', '/en-US/mobile'),
+        ('mobile/4.0/Android/en-US/', '/en-US/products/mobile'),
         ('firefox/3.6.12/MACOSX/en-US', '/en-US/home'),
         ('firefox/3.6.12/WINNT/fr/', '/fr/home'),
         ('firefox/3.6.12/WINNT/fr-FR/', '/fr/home'),
@@ -26,7 +26,7 @@ class RedirectTestCase(TestCase):
 
     test_eu_urls = (
         ('firefox/3.6.12/WINNT/en-US/eu/', '/en-US/home'),
-        ('mobile/4.0/Android/en-US/eu/', '/en-US/mobile'),
+        ('mobile/4.0/Android/en-US/eu/', '/en-US/products/mobile'),
         ('firefox/3.6.12/MACOSX/en-US/eu', '/en-US/home'),
         ('firefox/3.6.12/WINNT/fr/eu/', '/fr/home'),
         ('firefox/3.6.12/WINNT/fr-FR/eu/', '/fr/home'),
