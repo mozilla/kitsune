@@ -1,0 +1,15 @@
+Flash 11.3 crashes more frequently than previous versions of Flash. Updating to the latest version of Flash should fix this issue for most people.
+
+__TOC__
+
+=Solution 1: Update Flash =
+lorem ipsum dolor
+
+=Solution 2: Downgrade to Flash 10.3=
+sit amet
+
+== Step 1: Uninstall Flash ==
+lorem ipsum dolor
+
+== Step 2: Install Flash 10.3 ==
+sit amet

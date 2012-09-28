@@ -1,0 +1,11 @@
+=Ask a question in the community support forum=
+Ask a question in the support forum using the link below. You will be taken through a series of pages to determine the product and topic of your question, so our team of expert contributors can get the right person to help you. Note that you'll need to register on the site at the end of the series of pages, but it will all be worth it!<br>
+
+[/en-US/questions/new Ask a Question]
+
+=Additional resources=
+You might want to refer to the following additional resources before asking a question in the support forum. Most questions already have been solved by our knowledge base or our team of expert contributors.
+*[/questions?filter=solved&sort=requested Frequently asked questions about Mozilla software]
+*[https://wiki.mozilla.org Look for an answer in the Mozilla wiki]
+*[http://www.mozilla.org/about/forums/ Mozilla support newsgroups]
+*[http://forums.mozillazine.org MozillaZine forums]
