@@ -19,7 +19,7 @@
         "model": "inproduct.redirect",
         "fields": {
             "product": "mobile",
-            "target": "/mobile"
+            "target": "/products/mobile"
         }
     },
     {

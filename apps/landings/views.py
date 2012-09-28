@@ -12,56 +12,6 @@ from wiki.models import Document
 from wiki.views import SHOWFOR_DATA
 
 
-HOME_DOCS = {
-    'quick': 'Home page - Quick',
-    'explore': 'Home page - Explore',
-    'nav': 'Home page - IA Nav',
-    'top': 'Home page - Top'}
-MOBILE_DOCS = {
-    'quick': 'Mobile home - Quick',
-    'explore': 'Mobile home - Explore',
-    'nav': 'Mobile home - IA Nav',
-    'top': 'Mobile home - Top'}
-SYNC_DOCS = {
-    'quick': 'Sync home - Quick',
-    'explore': 'Sync home - Explore',
-    'nav': 'Sync home - IA Nav',
-    'top': 'Sync home - Top'}
-MARKETPLACE_DOCS = {
-    'quick': 'Marketplace home - Quick',
-    'explore': 'Marketplace home - Explore',
-    'nav': 'Marketplace home - IA Nav',
-    'top': 'Marketplace home - Top'}
-FIREFOX_DOCS = {
-    'quick': 'Firefox home - Quick',
-    'explore': 'Firefox home - Explore',
-    'nav': 'Firefox home - IA Nav',
-    'top': 'Firefox home - Top'}
-PRODUCTS_DOCS = {
-    'quick': 'Products home - Quick',
-    'explore': 'Products home - Explore',
-    'nav': 'Products home - IA Nav',
-    'top': 'Products home - Top'}
-KB_DOCS = {
-    'quick': 'KB home - Quick',
-    'explore': 'KB home - Explore',
-    'nav': 'KB home - IA Nav',
-    'top': 'KB home - Top'}
-ASK_DOCS = {
-    'quick': 'Ask home - Quick',
-    'explore': 'Ask home - Explore',
-    'nav': 'Ask home - IA Nav',
-    'top': 'Ask home - Top'}
-PARTICIPATE_DOCS = {
-    'quick': 'Participate home - Quick',
-    'explore': 'Participate home - Explore',
-    'nav': 'Participate home - IA Nav',
-    'top': 'Participate home - Top'}
-FEEDBACK_DOCS = {
-    'quick': 'Feedback home - Quick',
-    'explore': 'Feedback home - Explore',
-    'nav': 'Feedback home - IA Nav',
-    'top': 'Feedback home - Top'}
 # Docs for the mobile optimized templates:
 HOME_DOCS_FOR_MOBILE = {
     'common': 'Desktop home for mobile - Common Questions',
@@ -134,28 +84,38 @@ def home(request):
 
 @mobile_template('landings/{mobile/}old-home.html')
 def old_home(request, template=None):
-    docs = HOME_DOCS_FOR_MOBILE if request.MOBILE else HOME_DOCS
+    docs = HOME_DOCS_FOR_MOBILE
     return jingo.render(request, template,
                         _data(docs, request.locale, 'firefox', 'desktop'))
 
 
 @mobile_template('landings/{mobile/}mobile.html')
 def mobile(request, template=None):
-    docs = MOBILE_DOCS_FOR_MOBILE if request.MOBILE else MOBILE_DOCS
+    if not request.MOBILE:
+        return redirect_to(
+            request, 'products.product', slug='mobile', permanent=False)
+
+    docs = MOBILE_DOCS_FOR_MOBILE
     return jingo.render(request, template,
                         _data(docs, request.locale, 'mobile', 'mobile'))
 
 
 @mobile_template('landings/{mobile/}sync.html')
 def sync(request, template=None):
-    docs = SYNC_DOCS_FOR_MOBILE if request.MOBILE else SYNC_DOCS
+    if not request.MOBILE:
+        return redirect_to(request, 'home', permanent=False)
+
+    docs = SYNC_DOCS_FOR_MOBILE
     return jingo.render(request, template,
                         _data(docs, request.locale))
 
 
 @mobile_template('landings/{mobile/}marketplace.html')
 def marketplace(request, template=None):
-    docs = MARKETPLACE_DOCS_FOR_MOBILE if request.MOBILE else MARKETPLACE_DOCS
+    if not request.MOBILE:
+        return redirect_to(request, 'home', permanent=False)
+
+    docs = MARKETPLACE_DOCS_FOR_MOBILE
     # Marketplace search results should only be kb (zendesk is being
     # used for questions).
     return jingo.render(request, template,
@@ -164,53 +124,73 @@ def marketplace(request, template=None):
 
 @mobile_template('landings/{mobile/}firefox.html')
 def firefox(request, template=None):
-    docs = FIREFOX_DOCS_FOR_MOBILE if request.MOBILE else FIREFOX_DOCS
+    if not request.MOBILE:
+        return redirect_to(
+            request, 'products.product', slug='firefox', permanent=False)
+
+    docs = FIREFOX_DOCS_FOR_MOBILE
     return jingo.render(request, template,
                         _data(docs, request.locale, 'firefox', 'desktop'))
 
 
 @mobile_template('landings/{mobile/}products.html')
 def old_products(request, template=None):
-    docs = PRODUCTS_DOCS_FOR_MOBILE if request.MOBILE else PRODUCTS_DOCS
+    docs = PRODUCTS_DOCS_FOR_MOBILE
     return jingo.render(request, template,
                         _data(docs, request.locale))
 
 
 @mobile_template('landings/{mobile/}kb.html')
 def old_kb(request, template=None):
-    docs = KB_DOCS_FOR_MOBILE if request.MOBILE else KB_DOCS
+    docs = KB_DOCS_FOR_MOBILE
     return jingo.render(request, template,
                         _data(docs, request.locale))
 
 
 @mobile_template('landings/{mobile/}ask.html')
 def ask(request, template=None):
-    docs = ASK_DOCS_FOR_MOBILE if request.MOBILE else ASK_DOCS
+    if not request.MOBILE:
+        return redirect_to(
+            request,
+            'wiki.document',
+            document_slug='get-community-support',
+            permanent=False)
+
+    docs = ASK_DOCS_FOR_MOBILE
     return jingo.render(request, template,
                         _data(docs, request.locale))
 
 
 @mobile_template('landings/{mobile/}participate.html')
 def participate(request, template=None):
-    docs = PARTICIPATE_DOCS_FOR_MOBILE if request.MOBILE else PARTICIPATE_DOCS
+    if not request.MOBILE:
+        return redirect_to(
+            request,
+            'wiki.document',
+            document_slug='superheroes-wanted',
+            permanent=False)
+
+    docs = PARTICIPATE_DOCS_FOR_MOBILE
     return jingo.render(request, template,
                         _data(docs, request.locale))
 
 
 @mobile_template('landings/{mobile/}feedback.html')
 def feedback(request, template=None):
-    docs = FEEDBACK_DOCS_FOR_MOBILE if request.MOBILE else FEEDBACK_DOCS
+    if not request.MOBILE:
+        return redirect_to(
+            request,
+            'wiki.document',
+            document_slug='suggestion-box',
+            permanent=False)
+
+    docs = FEEDBACK_DOCS_FOR_MOBILE
     return jingo.render(request, template,
                         _data(docs, request.locale))
 
 
 def integrity_check(request):
     return jingo.render(request, 'landings/integrity-check.html')
-
-
-def reminder(request):
-    """MozCamp landing page for people to sign up to contribute."""
-    return jingo.render(request, 'landings/reminder.html')
 
 
 def _data(docs, locale, product=None, q_tags=None, only_kb=False):
