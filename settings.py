@@ -1,8 +1,11 @@
 # Django settings for kitsune project.
 from datetime import date
 import logging
+import logging.handlers
 import os
 import platform
+
+import celery
 
 from sumo_locales import LOCALES
 
@@ -10,8 +13,45 @@ DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 STAGE = False
 
-LOG_LEVEL = logging.INFO
 SYSLOG_TAG = 'http_sumo_app'
+
+# This logging configuration can be modified in settings_local.py
+# Format documentation: http://docs.python.org/library/logging.config.html
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': True,
+    'formatters': {
+        'default': {
+            'format': '{0}: %(asctime)s %(name)s:%(levelname)s %(message)s: '
+                      '%(pathname)s:%(lineno)s'.format(SYSLOG_TAG),
+            'datefmt': '%H:%M:%S' if DEBUG else None,
+        }
+    },
+    'handlers': {
+        'syslog': {
+            'class': 'logging.handlers.SysLogHandler',
+            'formatter': 'default',
+            'facility': logging.handlers.SysLogHandler.LOG_LOCAL7,
+        },
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'default',
+        },
+    },
+    'loggers': {
+        'k': {
+            'handlers': ['console' if DEBUG else 'syslog'],
+            'propogate': True,
+            'level': logging.INFO,
+        }
+    },
+}
+
+if not DEBUG:
+    task_log = logging.getLogger('k.celery')
+    task_proxy = celery.log.LoggingProxy(task_log)
+    celery.conf.CELERYD_LOG_FILE = task_proxy
+    celery.conf.CELERYD_LOG_COLOR = False
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 path = lambda *a: os.path.join(ROOT, *a)
