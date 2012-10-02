@@ -504,11 +504,6 @@ MINIFY_BUNDLES = {
             'css/reportabuse.css',
         ),
         'search': (
-            'css/search.css',
-            'css/search-advanced.css',
-            'css/questions-meta.css',
-        ),
-        'search-new': (
             'less/search.less',
         ),
         'wiki': (
