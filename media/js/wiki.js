@@ -320,7 +320,7 @@
                     // If form isn't valid, click the modal submit button
                     // so the validation error is shown. (I couldn't find a
                     // better way to trigger this.)
-                    $modal.find('input[type="submit"]').click();
+                    $modal.find('button[type="submit"]').click();
                     return false;
                 }
                 // Add this here because the "Submit for Review" button is
