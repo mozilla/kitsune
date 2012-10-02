@@ -49,9 +49,6 @@ setup_environ(settings)
 import session_csrf
 session_csrf.monkeypatch()
 
-# Import for side-effect: configures our logging handlers.
-import log_settings
-
 
 if __name__ == "__main__":
     execute_manager(settings)
