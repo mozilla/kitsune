@@ -13,7 +13,6 @@ DEBUG = True
 TEMPLATE_DEBUG = logging.INFO
 STAGE = False
 
-LOG_LEVEL = logging.DEBUG
 SYSLOG_TAG = 'http_sumo_app'
 
 # This logging configuration can be modified in settings_local.py
@@ -43,7 +42,7 @@ LOGGING = {
         'k': {
             'handlers': ['console' if DEBUG else 'sysog'],
             'propogate': True,
-            'level': LOG_LEVEL,
+            'level': logging.INFO,
         }
     },
 }
