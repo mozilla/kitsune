@@ -1,5 +1,26 @@
-{% if show_new_sumo(request) %}
-  {% extends "users/base-new.html" %}
-{% else %}
-  {% extends "users/base-old.html" %}
-{% endif %}
+{# vim: set ts=2 et sts=2 sw=2: #}
+{% extends "base.html" %}
+{% from 'includes/common_macros.html' import for_contributors_sidebar %}
+{% set styles = ('users',) %}
+{% set scripts = ('users',) %}
+
+{% block side_top %}
+  {% if not profile and user.is_authenticated() %}
+    {% set profile = user.get_profile() %}
+  {% endif %}
+  {% if profile %}
+    {% if request.user == profile.user %}
+      {{ personal_dashboard_tabs(active) }}
+    {% else %}
+      {# If we are viewing another user's profile, don't show the dashboard tabs #}
+      <ul class="sidebar-nav">
+        <li class="active">
+          <a href="{{ profile_url(profile.user) }}">
+            {{ display_name(profile.user) }}
+          </a>
+        </li>
+      </ul>
+    {% endif %}
+  {% endif %}
+  {{ for_contributors_sidebar(user, settings.WIKI_DEFAULT_LANGUAGE) }}
+{% endblock %}

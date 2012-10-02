@@ -549,9 +549,6 @@ MINIFY_BUNDLES = {
             'css/chat.css',
         ),
         'users': (
-            'css/users.css',
-        ),
-        'users-new': (
             'less/users.less',
         ),
         'monitor': (
