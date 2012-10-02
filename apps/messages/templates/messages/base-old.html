@@ -1,8 +1,0 @@
-{% extends "base.html" %}
-{% from "messages/includes/macros.html" import message_tabs_old %}
-{% set styles = ('messages',) %}
-{% set scripts = ('messages',) %}
-
-{% block side_top %}
-  {{ message_tabs_old(active_tab) }}
-{% endblock %}

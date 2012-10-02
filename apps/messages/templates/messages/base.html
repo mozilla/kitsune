@@ -1,5 +1,10 @@
-{% if show_new_sumo(request) %}
-  {% extends "messages/base-new.html" %}
-{% else %}
-  {% extends "messages/base-old.html" %}
-{% endif %}
+{% extends "base.html" %}
+{% from "messages/includes/macros.html" import message_tabs %}
+{% from 'includes/common_macros.html' import for_contributors_sidebar %}
+{% set styles = ('messages',) %}
+{% set scripts = ('messages',) %}
+
+{% block side_top %}
+  {{ message_tabs(active_tab) }}
+  {{ for_contributors_sidebar(user, settings.WIKI_DEFAULT_LANGUAGE) }}
+{% endblock %}
