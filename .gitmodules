@@ -130,3 +130,6 @@
 [submodule "vendor/src/zendesk"]
 	path = vendor/src/zendesk
 	url = git://github.com/eventbrite/zendesk.git
+[submodule "vendor/src/django-eadred"]
+	path = vendor/src/django-eadred
+	url = git://github.com/willkg/django-eadred.git
