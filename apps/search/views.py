@@ -302,7 +302,9 @@ def search(request, template=None):
             # Create text and text_phrase queries for every field
             # we want to search.
             for field in query_fields:
-                for query_type in ['text', 'text_phrase']:
+                # Note: Commenting this out for a week to watch CTR.
+                # for query_type in ['text', 'text_phrase']:
+                for query_type in ['text']:
                     query['%s__%s' % (field, query_type)] = cleaned_q
 
             searcher = searcher.query(or_=query)
