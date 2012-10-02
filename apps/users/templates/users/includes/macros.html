@@ -1,26 +1,25 @@
 {# vim: set ts=2 et sts=2 sw=2: #}
 {% from "layout/errorlist.html" import errorlist %}
 {# csrf() is contextual, so we need to pass in its output #}
-{% macro login_form(form, csrf, next_url='', action=None,
-                    only_pwreset=False) -%}
+{% macro login_form(form, csrf, next_url='', action=None, only_pwreset=False) -%}
   {{ errorlist(form) }}
   <form method="post" action="{{ action if action != None else url('users.login') }}">
     {{ csrf|safe }}
     <input type="hidden" name="next" value="{{ next_url }}" />
     <fieldset>
       <ul>
-        <li>
+        <li class="cf">
           <label for="id_username">{{ _('Username:') }}</label>
           {{ form.username|safe }}
         </li>
-        <li>
+        <li class="cf">
           <label for="id_password">{{ _('Password:') }}</label>
           {{ form.password|safe }}
         </li>
       </ul>
     </fieldset>
     <div class="submit">
-      <input type="submit" name="login" class="btn" value="{{ _('Log in') }}" data-progress="{{ _('Logging in...') }}" data-done="{{ _('Logged in!') }}" data-reset="{{ _('Log in') }}" />
+      <button type="submit" data-type="submit" data-name="login" class="btn btn-submit" data-progress="{{ _('Logging in...') }}" data-done="{{ _('Logged in!') }}" data-reset="{{ _('Log in') }}">{{ _('Log in') }}</button>
     </div>
   </form>
   <div id="login-help">
@@ -41,11 +40,11 @@
 {% macro register_form(form, csrf, action=None, show_checkbox=True) -%}
   {{ errorlist(form) }}
   <form method="post" action="{{ action if action != None else
-                                 url('users.register') }}">
+                                   url('users.register') }}">
     {{ csrf|safe }}
     <ul>
       {% for field in form if field.name != 'interested' %}
-        <li>{{ field|label_with_help }} {{ field }}</li>
+        <li class="cf">{{ field|label_with_help }} {{ field }}</li>
       {% endfor %}
       {% if show_checkbox %}
         <li class="checkbox">
@@ -57,7 +56,7 @@
       {% endif %}
     </ul>
     <div class="submit">
-      <input type="submit" name="register" class="btn" value="{{ _('Register') }}" />
+      <button type="submit" data-type="submit" data-name="register" class="btn btn-submit">{{ _('Register') }}</button>
     </div>
   </form>
 {%- endmacro %}
