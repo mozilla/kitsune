@@ -23,8 +23,10 @@
             confirm.
           {% endtrans %}
         </p>
-        <p>{{ _('An email has been sent to the address below:') }}</p>
-        <p><strong>{{ question.creator.email }}</strong></p>
+        {% if email %}
+          <p>{{ _('An email has been sent to the address below:') }}</p>
+          <p><strong>{{ email }}</strong></p>
+        {% endif %}
       </div>
     </article>
   </div>

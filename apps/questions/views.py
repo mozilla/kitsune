@@ -314,10 +314,11 @@ def aaq(request, product_key=None, category_key=None, showform=False,
             return jingo.render(request, 'handlers/400.html',
                             {'message': message}, status=400)
         if request.user.is_authenticated():
-            # Redirect to GET the current URL.
-            # This is required for the csrf middleware to set the auth'd tokens
-            # appropriately.
-            return HttpResponseRedirect(request.get_full_path())
+            # Redirect to GET the current URL replacing the step parameter.
+            # This is also required for the csrf middleware to set the auth'd
+            # tokens appropriately.
+            url = urlparams(request.get_full_path(), step='aaq-question')
+            return HttpResponseRedirect(url)
         else:
             return jingo.render(request, login_t,
                                 {'product': product, 'category': category,
@@ -355,12 +356,7 @@ def aaq(request, product_key=None, category_key=None, showform=False,
                           kwargs={'question_id': question.id})
             return HttpResponseRedirect(url)
 
-        auth.logout(request)
-        statsd.incr('questions.user.logout')
-        confirm_t = ('questions/mobile/confirm_email.html' if request.MOBILE
-                     else 'questions/confirm_email.html')
-        return jingo.render(request, confirm_t,
-                            {'question': question})
+        return HttpResponseRedirect(reverse('questions.aaq_confirm'))
 
     statsd.incr('questions.aaq.details-form-error')
     return jingo.render(request, template,
@@ -391,6 +387,20 @@ def aaq_step5(request, product_key, category_key):
     """Step 5: Show full question form."""
     return aaq(request, product_key=product_key, category_key=category_key,
                showform=True, step=3)
+
+
+def aaq_confirm(request):
+    """AAQ confirm email step for new users."""
+    if request.user.is_authenticated():
+        email = request.user.email
+        auth.logout(request)
+        statsd.incr('questions.user.logout')
+    else:
+        email = None
+
+    confirm_t = ('questions/mobile/confirm_email.html' if request.MOBILE
+                     else 'questions/confirm_email.html')
+    return jingo.render(request, confirm_t, {'email': email})
 
 
 @require_http_methods(['GET', 'POST'])
