@@ -24,7 +24,8 @@ from questions.karma_actions import (AnswerAction, FirstAnswerAction,
 from questions.question_config import products
 from questions.tasks import (update_question_votes, update_answer_pages,
                              log_answer)
-from search.models import SearchMixin, register_for_indexing
+from search.models import (SearchMixin, register_for_indexing,
+                           register_for_unified_search)
 from sumo.helpers import urlparams
 from sumo.models import ModelBase
 from sumo.parser import wiki_to_html
@@ -41,6 +42,7 @@ log = logging.getLogger('k.questions')
 CACHE_TIMEOUT = 10800  # 3 hours
 
 
+@register_for_unified_search
 class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
     """A support question."""
     title = models.CharField(max_length=255)
@@ -408,10 +410,10 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
         return qs.count()
 
 
-register_for_indexing(Question, 'questions')
+register_for_indexing('questions', Question)
 register_for_indexing(
-    TaggedItem,
     'questions',
+    TaggedItem,
     instance_to_indexee=(
         lambda i: i.content_object if isinstance(i.content_object, Question)
                   else None))
@@ -626,9 +628,8 @@ post_save.connect(answer_connector, sender=Answer,
                   dispatch_uid='question_answer_activity')
 
 
-register_for_indexing(Answer,
-                      'questions',
-                      instance_to_indexee=lambda a: a.question)
+register_for_indexing(
+    'questions', Answer, instance_to_indexee=lambda a: a.question)
 
 
 class QuestionVote(ModelBase):
@@ -645,7 +646,7 @@ class QuestionVote(ModelBase):
 
 
 register_for_indexing(
-    QuestionVote, 'questions', instance_to_indexee=lambda v: v.question)
+    'questions', QuestionVote, instance_to_indexee=lambda v: v.question)
 
 
 class AnswerVote(ModelBase):
@@ -666,7 +667,7 @@ class AnswerVote(ModelBase):
 # they're marked as helpful, then update the index.  Look into
 # this.
 register_for_indexing(
-    AnswerVote, 'questions', instance_to_indexee=lambda v: v.answer.question)
+    'questions', AnswerVote, instance_to_indexee=lambda v: v.answer.question)
 
 
 class VoteMetadata(ModelBase):

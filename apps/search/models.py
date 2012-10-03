@@ -187,30 +187,53 @@ class SearchMixin(object):
 _identity = lambda s: s
 
 
-def register_for_indexing(sender_class,
-                          app,
+def register_for_indexing(app,
+                          sender_class,
                           instance_to_indexee=_identity,
                           m2m=False):
-    """Register a model whose changes might invalidate ElasticSearch
-    indexes.
+    """Registers a model for signal-based live-indexing.
 
-    Specifically, each time an instance of this model is saved or
-    deleted, the index might need to be updated. Registers the model
-    as participating in full indexing, statistics gathering, and live
-    indexing, as appropriate.
+    As data changes in the database, we need to update the relevant
+    documents in the index. This function registers Django model
+    classes with the appropriate signals and update/delete routines
+    such that our index stays up-to-date.
 
-    :arg sender_class: The class to listen for saves and deletes on
     :arg app: A bit of UID we use to build the signal handlers'
         dispatch_uids.  This is prepended to the ``sender_class``
         model name, "elastic", and the signal name, so it should
         combine with those to make something unique. For this reason,
         the app name is usually a good choice, yielding something like
         "wiki.TaggedItem.elastic.post_save".
+    :arg sender_class: The class to listen for saves and deletes on.
     :arg instance_to_indexee: A callable which takes the signalling
         instance and returns the model instance to be indexed. The
         returned instance should be a subclass of SearchMixin. If the
-        callable returns None, no indexing is performed. Default: a
-        callable which returns the sender itself.
+        callable returns None, no indexing is performed.
+
+        Default: a callable which returns the sender itself.
+    :arg m2m: True if this is a m2m model and False otherwise.
+
+    Examples::
+
+        # Registers MyModel for indexing. post_save creates new
+        # documents in the index. pre_delete removes documents
+        # from the index.
+        register_for_indexing(MyModel, 'some_app')
+
+        # Registers RelatedModel for indexing. RelatedModel is related
+        # to some model in the sense that the document in the index is
+        # composed of data from some model and it's related
+        # RelatedModel instance. Because of that when we update
+        # RelatedModel instances, we need to update the associated
+        # document in the index for the related model.
+        #
+        # This registers the RelatedModel for indexing. post_save and
+        # pre_delete update the associated document in the index for
+        # the related model. The related model instance is determined
+        # by the instance_to_indexee function.
+        register_for_indexing(RelatedModel, 'some_app',
+                              instance_to_indexee=lambda r: r.my_model)
+
 
     """
     def maybe_call_method(instance, is_raw, method_name):
@@ -241,16 +264,11 @@ def register_for_indexing(sender_class,
                              (app, sender_class.__name__, signal_name),
                 weak=False)
 
-    # Register a model as participating in full reindexing and statistics
-    # gathering. TODO: Fix this to use weakrefs.
-    if instance_to_indexee is _identity:
-        # Register only the model that "is" the ES doc, not related ones:
-        _search_models[sender_class._meta.db_table] = sender_class
-
-    # Register signal listeners to keep indexes up to date:
-    # TODO: Untangle this mess - Bug 778753
     if m2m:
+        # This is an m2m model, so we regstier m2m_chaned and it
+        # updates the existing document in the index.
         indexing_receiver(m2m_changed, 'm2m_changed')(update)
+
     else:
         indexing_receiver(post_save, 'post_save')(update)
 
@@ -259,6 +277,12 @@ def register_for_indexing(sender_class,
             # and delete it from the index. Otherwise, we just want to
             # update whatever model it's related to.
             delete if instance_to_indexee is _identity else update)
+
+
+def register_for_unified_search(model_cls):
+    """Class decorator for registering models for unified search."""
+    _search_models[model_cls._meta.db_table] = model_cls
+    return model_cls
 
 
 def generate_tasks(**kwargs):
