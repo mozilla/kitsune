@@ -1,0 +1,67 @@
+.result {
+  margin: 40px 0;
+  padding-left: 80px;
+  position: relative;
+
+  &:before {
+    background: url('../img/search-icons-sprite.png') 0 0 no-repeat;
+    content: '';
+    height: 56px;
+    left: 0;
+    position: absolute;
+    top: 0;
+    width: 56px;
+  }
+
+  &:first-of-type {
+    margin-top: 0;
+  }
+
+  &:last-of-type {
+    margin-bottom: 0;
+  }
+
+  a,
+  a:hover {
+    color: @textGrey;
+  }
+
+  a:visited {
+    color: @textPurple;
+  }
+
+  h3 {
+    margin: 0 0 4px 0;
+  }
+
+  &.document {
+    &:before {
+      background-position: -46px -46px;
+    }
+  }
+
+  &.question {
+    &:before {
+      background-position: -46px -194px;
+    }
+  }
+
+  .thread-meta {
+    list-style: none;
+    margin: 12px 0 0 0;
+    padding: 0;
+
+    li {
+      border-left: 1px solid @borderLightGrey;
+      float: left;
+      margin-left: 10px;
+      padding-left: 10px;
+
+      &:first-of-type {
+        border: 0;
+        margin: 0;
+        padding: 0;
+      }
+    }
+  }
+}

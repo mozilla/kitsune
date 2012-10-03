@@ -2,6 +2,7 @@
 @import 'vendors.less';
 @import 'includes/editor-tools.less';
 @import 'includes/for-contributors-hot-topics.less';
+@import 'includes/search-result.less';
 
 h1 {
   font-size: 46px;
@@ -605,44 +606,6 @@ h2 {
         position: absolute;
         width: 318px;
       }
-    }
-  }
-}
-
-.search-results {
-  .result {
-    padding: 20px 0;
-
-    &.question {
-      .thread-meta {
-        span {
-          font-size: 13px;
-          font-style: italic;
-
-          &:before {
-            content: '|';
-            font-style: normal;
-          }
-
-          &:first-of-type {
-            &:before {
-              display: none;
-            }
-          }
-        }
-      }
-    }
-
-    a,
-    a:link,
-    a:visited,
-    a:hover {
-      color: @textGrey;
-    }
-
-    .title {
-      font-family: @OpenSansLight;
-      font-size: 17px;
     }
   }
 }
