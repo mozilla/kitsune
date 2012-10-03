@@ -132,8 +132,9 @@ def _rebuild_kb_chunk(data):
                 not document.redirect_document()):
                 log.error('Invalid redirect document: %d' % pk)
 
-            document.html = document.current_revision.content_parsed
-            document.save()
+            html = document.current_revision.content_parsed
+            if document.html != html:
+                Document.objects.filter(pk=pk).update(html=html)
         except Document.DoesNotExist:
             message = 'Missing document: %d' % pk
         except ValidationError as e:
