@@ -1,11 +1,7 @@
 {# vim: set ts=2 et sts=2 sw=2: #}
-<header>
-  <h1>{{ _('Reply Preview') }}</h1>
-</header>
-<ol class="answers">
-  <li class="answer">
-    {% set answer = answer_preview %}
-    {% set is_preview = True %}
-    {% include "questions/includes/answer.html" %}
-  </li>
-</ol>
+<div class="answer-tools nopadding">
+  <h3>{{ _('Reply Preview') }}</h3>
+</div>
+{% set answer = answer_preview %}
+{% set is_preview = True %}
+{% include "questions/includes/answer.html" %}
