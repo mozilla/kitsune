@@ -13,14 +13,15 @@ from django.http import (HttpResponsePermanentRedirect, HttpResponseRedirect,
 from django.views.decorators.cache import never_cache
 from django.views.decorators.http import require_GET
 
-from celery.messaging import establish_connection
-from commonware.decorators import xframe_allow
 import django_qunit.views
 import jingo
-from jinja2 import Markup
+import pyes
+from celery.messaging import establish_connection
+from commonware.decorators import xframe_allow
 from PIL import Image
 from session_csrf import anonymous_csrf
 
+from search import es_utils
 from sumo.redis_utils import redis_client, RedisError
 from sumo.urlresolvers import reverse
 from sumo.utils import get_next_url
@@ -92,62 +93,88 @@ def robots(request):
     return HttpResponse(template, mimetype='text/plain')
 
 
+def test_memcached(host, port):
+    """Connect to memcached.
+
+    :returns: True if test passed, False if test failed.
+
+    """
+    try:
+        s = socket.socket()
+        s.connect((host, port))
+        return True
+    except Exception as exc:
+        log.critical('Failed to connect to memcached (%r): %s' %
+                     ((host, port), exc))
+        return False
+    finally:
+        s.close()
+
+
+ERROR = 'ERROR'
+INFO = 'INFO'
+
+
 @never_cache
 def monitor(request):
+    """View for services monitor."""
+    status = {}
 
-    # For each check, a boolean pass/fail to show in the template.
-    status_summary = {}
-    status = 200
+    # Note: To add a new component to the services monitor, do your
+    # testing and then add a name -> list of output tuples map to
+    # status.
 
-    # Check all memcached servers.
+    # Check memcached.
     memcache_results = []
-    status_summary['memcache'] = True
-    for cache_name, cache_props in settings.CACHES.items():
-        result = True
-        backend = cache_props['BACKEND']
-        location = cache_props['LOCATION']
+    try:
+        for cache_name, cache_props in settings.CACHES.items():
+            result = True
+            backend = cache_props['BACKEND']
+            location = cache_props['LOCATION']
 
-        # LOCATION can be a string or a list of strings
-        if isinstance(location, basestring):
-            location = location.split(';')
+            # LOCATION can be a string or a list of strings
+            if isinstance(location, basestring):
+                location = location.split(';')
 
-        if 'memcache' in backend:
-            for loc in location:
-                # TODO: this doesn't handle unix: variant
-                ip, port = loc.split(':')
-                try:
-                    s = socket.socket()
-                    s.connect((ip, int(port)))
-                except Exception, e:
-                    result = False
-                    status_summary['memcache'] = False
-                    log.critical('Failed to connect to memcached (%s): %s' %
-                                 (location, e))
-                finally:
-                    s.close()
+            if 'memcache' in backend:
+                for loc in location:
+                    # TODO: this doesn't handle unix: variant
+                    ip, port = loc.split(':')
+                    result = test_memcached(ip, int(port))
+                    memcache_results.append(
+                        (INFO, '%s:%s %s' % (ip, port, result)))
 
-                memcache_results.append((ip, port, result))
+        if not memcache_results:
+            memcache_results.append((ERROR, 'memcache is not configured.'))
 
-        if len(memcache_results) < 2:
-            status_summary['memcache'] = False
-            log.warning('You should have 2+ memcache servers.  You have %s.' %
-                        len(memcache_results))
+        elif len(memcache_results) < 2:
+            memcache_results.append(
+                (ERROR, ('You should have at least 2 memcache servers. '
+                         'You have %s.' % len(memcache_results))))
 
-    if not memcache_results:
-        status_summary['memcache'] = False
-        log.warning('Memcache is not configured.')
+        else:
+            memcache_results.append((INFO, 'memcached servers look good.'))
+
+    except Exception as exc:
+        memcache_results.append(
+            (ERROR, 'Exception while looking at memcached: %s' % str(exc)))
+
+    status['memcached'] = memcache_results
 
     # Check Libraries and versions
     libraries_results = []
-    status_summary['libraries'] = True
     try:
         Image.new('RGB', (16, 16)).save(StringIO.StringIO(), 'JPEG')
-        libraries_results.append(('PIL+JPEG', True, 'Got it!'))
-    except Exception, e:
-        status_summary['libraries'] = False
-        msg = "Failed to create a jpeg image: %s" % e
-        libraries_results.append(('PIL+JPEG', False, msg))
+        libraries_results.append((INFO, 'PIL+JPEG: Got it!'))
+    except Exception as exc:
+        libraries_results.append(
+            (ERROR,
+             'PIL+JPEG: Probably missing: '
+             'Failed to create a jpeg image: %s' % exc))
 
+    status['libraries'] = libraries_results
+
+    # Check file paths.
     msg = 'We want read + write.'
     filepaths = (
         (settings.USER_AVATAR_PATH, os.R_OK | os.W_OK, msg),
@@ -161,28 +188,57 @@ def monitor(request):
     )
 
     filepath_results = []
-    filepath_status = True
     for path, perms, notes in filepaths:
         path = os.path.join(settings.MEDIA_ROOT, path)
         path_exists = os.path.isdir(path)
         path_perms = os.access(path, perms)
-        filepath_status = filepath_status and path_exists and path_perms
-        filepath_results.append((path, path_exists, path_perms, notes))
 
-    status_summary['filepaths'] = filepath_status
+        if path_exists and path_perms:
+            filepath_results.append(
+                (INFO, '%s: %s %s %s' % (path, path_exists, path_perms,
+                                         notes)))
+
+    status['filepaths'] = filepath_results
 
     # Check RabbitMQ.
-    rabbitmq_status = True
-    rabbitmq_results = ''
-    rabbit_conn = establish_connection(connect_timeout=2)
+    rabbitmq_results = []
     try:
+        rabbit_conn = establish_connection(connect_timeout=2)
         rabbit_conn.connect()
-        rabbitmq_results = 'Successfully connected to RabbitMQ.'
-    except (socket.error, IOError), e:
-        rabbitmq_results = Markup('There was an error connecting to RabbitMQ!'
-                                  '<br/>%s' % str(e))
-        rabbitmq_status = False
-    status_summary['rabbitmq'] = rabbitmq_status
+        rabbitmq_results.append(
+            (INFO, 'Successfully connected to RabbitMQ.'))
+
+    except (socket.error, IOError) as exc:
+        rabbitmq_results.append(
+            (ERROR, 'Error connecting to RabbitMQ: %s' % str(exc)))
+
+    except Exception as exc:
+        rabbitmq_results.append(
+            (ERROR, 'Exception while looking at RabbitMQ: %s' % str(exc)))
+
+    status['RabbitMQ'] = rabbitmq_results
+
+    # Check ES.
+    es_results = []
+    try:
+        es_utils.get_doctype_stats(es_utils.READ_INDEX)
+        es_results.append(
+            (INFO, ('Successfully connected to ElasticSearch and index '
+                    'exists.')))
+
+    except pyes.urllib3.MaxRetryError as exc:
+        es_results.append(
+            (ERROR, 'Cannot connect to ElasticSearch: %s' % str(exc)))
+
+    except pyes.exceptions.IndexMissingException:
+        es_results.append(
+            (ERROR, 'Index "%s" missing.' % es_utils.READ_INDEX))
+
+    except Exception as exc:
+        es_results.append(
+            (ERROR, 'Exception while looking at ElasticSearch: %s' % str(exc)))
+
+    status['ElasticSearch'] = es_results
 
     # Check Celery.
     # start = time.time()
@@ -191,27 +247,30 @@ def monitor(request):
     # status_summary['rabbit'] = pong == 'pong' and r['duration'] < 1
 
     # Check Redis.
-    redis_results = {}
+    redis_results = []
     if hasattr(settings, 'REDIS_BACKENDS'):
         for backend in settings.REDIS_BACKENDS:
             try:
-                c = redis_client(backend)
-                redis_results[backend] = c.info()
+                redis_client(backend)
+                redis_results.append((INFO, '%s: Pass!' % backend))
             except RedisError:
-                redis_results[backend] = False
-    status_summary['redis'] = all(redis_results.values())
+                redis_results.append((ERROR, '%s: Fail!' % backend))
+    status['Redis'] = redis_results
 
-    if not all(status_summary.values()):
-        status = 500
+    status_code = 200
+
+    status_summary = {}
+    for component, output in status.items():
+        if ERROR in [item[0] for item in output]:
+            status_code = 500
+            status_summary[component] = False
+        else:
+            status_summary[component] = True
 
     return jingo.render(request, 'services/monitor.html',
-                        {'memcache_results': memcache_results,
-                         'libraries_results': libraries_results,
-                         'filepath_results': filepath_results,
-                         'rabbitmq_results': rabbitmq_results,
-                         'redis_results': redis_results,
+                        {'component_status': status,
                          'status_summary': status_summary},
-                         status=status)
+                        status=status_code)
 
 
 @never_cache

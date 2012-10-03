@@ -9,97 +9,19 @@
 {% endmacro %}
 
 {% block content %}
-
 <article id="services-monitor" class="main">
-
   <h1>{{ title }}</h1>
-
-  <div class="notification-box {{ status(status_summary.memcache) }}">
-    <h2>[Memcache] Connection Tests</h2>
-    <ul>
-    {% for ip, port, result in memcache_results %}
-      <li>{{ ip }}:{{ port }}
-      {% if result %}
-        Success
-      {% else %}
-        <strong>Failed</strong>
-      {% endif %}
-      </li>
-    {% else %}
-      <li>There are no memcache servers!</li>
-    {% endfor %}
-    </ul>
-    <p>There must be a minimum of 2 working servers.</p>
-  </div>
-
-  <div class="notification-box {{ status(status_summary.libraries) }}">
-    <h2>[libs] Libraries and Versions</h2>
-    <dl>
-    {% for lib, result, msg in libraries_results %}
-      <dt>{{ lib }}</dt>
-      <dd>
-      {% if success %}
-        {{ msg }}
-      {% else %}
-        <strong>{{ msg }}</strong>
-      {% endif %}
-      </dd>
-    {% endfor %}
-    </dl>
-  </div>
-  <div class="notification-box {{ status(status_summary.filepaths) }}">
-    <h2>[Paths] Paths and Permissions</h2>
-    <dl>
-    {% for path, exists, permissions, extra in filepath_results %}
-      <dt>{{ path }}</dt>
-      <dd>
-      {% if exists %}
-        Exists...
-      {% else %}
-        <strong>Does not exist</strong>
-      {% endif %}
-
-      {% if permissions %}
-        with proper permissions.
-      {% else %}
-        <strong>and does not have the permissions we expect.</strong>
-      {% endif %}
-      {% if extra %}
-        ({{ extra }})
-      {% endif %}
-      </dd>
-    {% endfor %}
-    </dl>
-  </div>
-
-  <div class="notification-box {{ status(status_summary.rabbitmq) }}">
-    <h2>[RabbitMQ] Message Broker Connection</h2>
-    <p>{{ rabbitmq_results }}</p>
-  </div>
-
-  {#
-  <div class="notification-box {{ status(status_summary.rabbit) }}">
-    <h2>[RabbitMQ] celeryd connection</h2>
-    <p>Processed a task in {{ rabbit_results.duration|round(4) }} seconds.</p>
-  </div>
-  #}
-
-  <div class="notification-box {{ status(status_summary.redis) }}">
-    <h2>[Redis] Redis Servers</h2>
-    {% if redis_results %}
-      <dl>
-        {% for backend in redis_results %}
-          <dt>{{ backend }}</dt>
-          <dd>{% if redis_results[backend] %}OK{% else %}<strong>Connection Failed</strong>{% endif %}</dd>
+  {% for component, output in component_status|dictsort %}
+    <div class="notification-box {{ status(status_summary[component]) }}">
+      <h2>{{ component }}</h2>
+      <ul>
+        {% for kind, text in output %}
+          <li>{{ kind }}: {{ text }}</li>
         {% endfor %}
-      </dl>
-    {% else %}
-      <strong>Warning!</strong> No Redis connections defined!
-    {% endif %}
-  </div>
-
+      </ul>
+    </div>
+  {% endfor %}
 </article>
-
 {% endblock content %}
 
 {% block outer_side %}{% endblock %}
