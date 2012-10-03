@@ -19,7 +19,7 @@ import waffle
 from sumo.urlresolvers import reverse
 from sumo.utils import chunked
 from wiki.models import (Document, points_to_document_view, SlugCollision,
-                         TitleCollision)
+                         TitleCollision, Revision)
 
 
 log = logging.getLogger('k.task')
@@ -132,10 +132,18 @@ def _rebuild_kb_chunk(data):
                 not document.redirect_document()):
                 log.error('Invalid redirect document: %d' % pk)
 
-            document.html = document.current_revision.content_parsed
-            document.save()
+            html = Revision.objects.get(
+                id=document.current_revision_id).content_parsed
+            if document.html != html:
+                # We are calling update here to so we only update the html
+                # column instead of all of them. This bypasses post_save
+                # signal handlers like the one that triggers reindexing.
+                # See bug 797038 and bug 797352.
+                Document.objects.filter(pk=pk).update(html=html)
         except Document.DoesNotExist:
             message = 'Missing document: %d' % pk
+        except Revision.DoesNotExist:
+            message = 'Missing revision for document: %d' % pk
         except ValidationError as e:
             message = 'ValidationError for %d: %s' % (pk, e.messages[0])
         except SlugCollision:
