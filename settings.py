@@ -10,7 +10,7 @@ import celery
 from sumo_locales import LOCALES
 
 DEBUG = True
-TEMPLATE_DEBUG = logging.INFO
+TEMPLATE_DEBUG = DEBUG
 STAGE = False
 
 SYSLOG_TAG = 'http_sumo_app'
@@ -40,7 +40,7 @@ LOGGING = {
     },
     'loggers': {
         'k': {
-            'handlers': ['console' if DEBUG else 'sysog'],
+            'handlers': ['console' if DEBUG else 'syslog'],
             'propogate': True,
             'level': logging.INFO,
         }
