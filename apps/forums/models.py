@@ -12,7 +12,8 @@ import forums
 from sumo.helpers import urlparams, wiki_to_html
 from sumo.urlresolvers import reverse
 from sumo.models import ModelBase
-from search.models import SearchMixin, register_for_indexing
+from search.models import (SearchMixin, register_for_indexing,
+                           register_for_unified_search)
 
 
 def _last_post_from(posts, exclude_post=None):
@@ -96,6 +97,7 @@ class Forum(NotificationsMixin, ModelBase):
         self.last_post = _last_post_from(posts, exclude_post=exclude_post)
 
 
+@register_for_unified_search
 class Thread(NotificationsMixin, ModelBase, SearchMixin):
     title = models.CharField(max_length=255)
     forum = models.ForeignKey('Forum')
@@ -257,7 +259,7 @@ class Thread(NotificationsMixin, ModelBase, SearchMixin):
         return super(Thread, cls).search().order_by('created')
 
 
-register_for_indexing(Thread, 'forums')
+register_for_indexing('forums', Thread)
 
 
 class Post(ActionMixin, ModelBase):
@@ -338,4 +340,4 @@ class Post(ActionMixin, ModelBase):
         return wiki_to_html(self.content)
 
 
-register_for_indexing(Post, 'forums', instance_to_indexee=lambda p: p.thread)
+register_for_indexing('forums', Post, instance_to_indexee=lambda p: p.thread)

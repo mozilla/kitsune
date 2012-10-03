@@ -17,7 +17,8 @@ from tower import ugettext_lazy as _lazy, ugettext as _
 
 from products.models import Product
 from search.es_utils import ESTimeoutError, ESMaxRetryError, ESException
-from search.models import SearchMixin, register_for_indexing
+from search.models import (SearchMixin, register_for_indexing,
+                           register_for_unified_search)
 from sumo import ProgrammingError
 from sumo.models import ModelBase, LocaleField
 from sumo.urlresolvers import reverse, split_path
@@ -42,6 +43,7 @@ class _NotDocumentView(Exception):
     """A URL not pointing to the document view was passed to from_url()."""
 
 
+@register_for_unified_search
 class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
                SearchMixin):
     """A localized knowledgebase document, not revision-specific."""
@@ -650,16 +652,14 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
         super(cls, cls).index(document, **kwargs)
 
 
-register_for_indexing(Document, 'wiki')
+register_for_indexing('wiki', Document)
 register_for_indexing(
-    Document.topics.through,
     'wiki',
-    instance_to_indexee=lambda i: i,
+    Document.topics.through,
     m2m=True)
 register_for_indexing(
-    Document.products.through,
     'wiki',
-    instance_to_indexee=lambda i: i,
+    Document.products.through,
     m2m=True)
 
 
