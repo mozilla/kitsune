@@ -1,6 +1,6 @@
 {# vim: set ts=2 et sts=2 sw=2: #}
 {% extends "questions/includes/question_editing_frame-new.html" %}
-{% from "questions/includes/aaq_macros-new.html" import select_category, current_articles_and_message, show_results %}
+{% from "questions/includes/aaq_macros-new.html" import select_category, current_articles_and_message %}
 {% from "questions/includes/aaq_macros-new.html" import select_product, aaq_search_form with context %}
 {% from "search/includes/result.html" import search_result with context %}
 {% set title = _('Ask a Question') %}
@@ -67,6 +67,7 @@
     {% endif %}
     <form action="{{ url('questions.aaq_step5', product_key=current_product.key, category_key=current_category.key) }}" method="get">
       <input type="hidden" name="search" value="{{ request.GET.search }}" />
+      <input type="hidden" name="step" value="{% if user.is_authenticated() %}aaq-question{% else %}aaq-register{% endif %}" />
       <button type="submit" data-type="submit" class="btn btn-submit big">{{ button_text }}</button>
     </form>
   {% endif %}
