@@ -918,11 +918,7 @@ def answer_preview_async(request):
     statsd.incr('questions.preview')
     answer = Answer(creator=request.user,
                     content=request.POST.get('content', ''))
-
-    if show_new_sumo(request):
-        template = 'questions/includes/answer_preview-new.html'
-    else:
-        template = 'questions/includes/answer_preview.html'
+    template = 'questions/includes/answer_preview.html'
 
     return jingo.render(request, template, {'answer_preview': answer})
 

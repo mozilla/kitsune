@@ -5,9 +5,6 @@
 {% set crumbs = [(url('questions.questions'), _('Forum')),
                  (url('questions.answers', answer.question.id), answer.question.title),
                  (None, _('Delete answer'))] %}
-{% if show_new_sumo(request) %}
-  {% set styles = ('questions-new',) %}
-{% endif %}
 
 {% block content %}
   <div class="grid_12">

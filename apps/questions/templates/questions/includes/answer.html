@@ -1,104 +1,112 @@
 {% from "upload/attachments.html" import attachment %}
 {% from "karma/includes/karma_macros.html" import titles %}
-<div class="user-section">
-  <div class="avatar{% if user == answer.creator %} self{% endif %}{% if answer.id and question.creator == answer.creator %} owner{% endif %}">
-    <a href="{{ profile_url(answer.creator) }}">
-      <img src="{{ profile_avatar(answer.creator) }}" height="48" width="48" alt="{{ answer.creator }}"/>
-      {% if user == answer.creator %}
-        <span>{{ _('You') }}</span>
-      {% elif question.creator == answer.creator %}
-        <span>{{ _('Owner') }}</span>
+<div class="answer grid_9" {% if answer.id %}id="answer-{{ answer.id }}"{% endif %}>
+  <div class="user-meta">
+    <div class="avatar">
+      <a href="{{ profile_url(answer.creator) }}">
+        <img src="{{ profile_avatar(answer.creator) }}" height="48" width="48" alt="{{ answer.creator }}"/>
+      </a>
+    </div>
+    <div class="asked-by">
+      <a href="{{ profile_url(answer.creator) }}">{{ answer.creator }}</a>
+      {% if waffle.switch('karma') and waffle.flag('karma') %}
+        {{ titles(answer.creator) }}
       {% endif %}
-    </a>
-  </div>
-  <div class="asked-by">
-    <a href="{{ profile_url(answer.creator) }}">{{ answer.creator }}</a>
-    {% if waffle.switch('karma') and waffle.flag('karma') %}
-      {{ titles(answer.creator) }}
-    {% endif %}
-    {% if answer.id and question.creator != answer.creator %}
-      <span class="solutions">{{ _('{num} solutions')|f(num=answer.creator_num_solutions) }}</span>
-      <span class="answers">{{ _('{num} answers')|f(num=answer.creator_num_answers) }}</span>
-      {% if waffle.switch('karma') and user.has_perm('users.view_karma_points') %}
-        {% with pts = answer.creator_num_points %}
-          {% if pts != None %}
-            <span class="points">{{ pts }}</span>
-          {% endif %}
-        {% endwith %}
+      {% if answer.id and question.creator != answer.creator %}
+        <span class="solutions">{{ _('{num} solutions')|f(num=answer.creator_num_solutions) }}</span>
+        <span class="answers">{{ _('{num} answers')|f(num=answer.creator_num_answers) }}</span>
+        {% if waffle.switch('karma') and user.has_perm('users.view_karma_points') %}
+          {% with pts = answer.creator_num_points %}
+            {% if pts != None %}
+              <span class="points">{{ pts }} {{ _('karma') }}</span>
+            {% endif %}
+          {% endwith %}
+        {% endif %}
       {% endif %}
+    </div>
+    {% if answer.id %}
+      <div class="asked-on">
+        {{ _('Posted') }}<br>
+        {{ answer.created|timesince }}
+      </div>
     {% endif %}
   </div>
-  <div class="asked-on">
-    {{ answer.created|timesince }}
-  </div>
-</div>
-<div class="main-section">
-  <div class="content">
+  <div class="main-content">
+    {% if answer.id and question.solution == answer %}
+      <h3 class="is-solution">Chosen Solution</h3>
+    {% elif answer.id and answer in question.helpful_replies %}
+      <h3 class="is-helpful">Helpful Solution</h3>
+    {% elif answer.id and answer.creator == question.creator %}
+      <h3 class="is-owner">Question owner</h3>
+    {% endif %}
     {% if is_preview %}
       {# Don't use cached content_parsed #}
       {{ answer.content|wiki_to_html }}
     {% else %}
       {{ answer.content_parsed|safe }}
     {% endif %}
-    <div class="stem"></div>{# for the speech bubble arrow #}
-  </div>
-  <div class="ans-attachments attachments-list">
-    {% for image in answer.images.all() %}
-      {{ attachment(image, user) }}
-    {% endfor %}
-  </div>
-  {% if answer.updated_by %}
-    <p class="edited">
-      {{ _('Modified {datetime} by {name}')|fe(name=answer.updated_by.username, datetime=datetimeformat(answer.updated, format='longdatetime')) }}
-    </p>
-  {% endif %}
-  <div class="meta">
-    {% if answer.id and question.solution == answer %}
-      <span class="solved">{{ _('Solution chosen') }}</span>
-      {% if user == question.creator or user.has_perm('questions.change_solution') %}
-        <form class="unsolve" action="{{ url('questions.unsolve', question_id=question.id, answer_id=answer.id) }}" method="post">
-          {{ csrf() }}
-          <input type="submit" name="unsolve" value="{{ _('Undo') }}" />
-        </form>
-      {% endif %}
-    {% endif %}
-    {% if answer.num_votes != 0 %}
-      <span class="helpful">
-        {{ ngettext('{count} out of 1 person found this reply helpful',
-                    '{count} out of {total} people found this reply helpful',
-                    answer.num_votes)|f(count=answer.num_helpful_votes, total=answer.num_votes) }}
-      </span>
-    {% endif %}
-    {% if answer.id and not question.is_locked %}
-      <a class="reply" href="#question-reply">{{ _('Reply') }}</a>
+
+    <div class="ans-attachments attachments-list">
+      {% for image in answer.images.all() %}
+        {{ attachment(image, user) }}
+      {% endfor %}
+    </div>
+    {% if answer.updated_by %}
+      <p class="edited">
+        {{ _('Modified {datetime} by {name}')|fe(name=answer.updated_by.username, datetime=datetimeformat(answer.updated, format='longdatetime')) }}
+      </p>
     {% endif %}
   </div>
-</div>
-<div class="side-section">
-  {% if answer.id %}{# answer.id is None when previewing #}
-    {% if not question.is_locked %}
+  {% if answer.id and not question.is_locked %}
+    <div class="answer-tools cf">
       {% if user != answer.creator and not answer.has_voted(request) %}
         <form class="helpful" action="{{ url('questions.answer_vote', question_id=question.id, answer_id=answer.id) }}" method="post">
-          <h4>{{ _('Was this reply helpful?') }}</h4>
-          <input type="submit" class="btn" name="helpful" value="{{ _('Helpful') }}" />
-          <input type="submit" class="btn" name="not-helpful" value="{{ _('Not Helpful') }}" />
-        </form>
-      {% endif %}
-      {% if not question.solution and (user == question.creator or user.has_perm('questions.change_solution')) %}
-        <form class="solution" action="{{ url('questions.solve', question_id=question.id, answer_id=answer.id) }}" method="post">
-          {{ csrf() }}
-          {% if user == question.creator %}
-            <h4>{{ _('Did this solve your problem?') }}</h4>
-            <input type="submit" class="btn" name="solution" value="{{ _('Solved It') }}" />
-          {% else %}
-            <h4>{{ _('Does this solve the problem?') }}</h4>
-            <input type="submit" class="btn" name="solution" value="{{ _('Solves It') }}" />
+          {{ _('Was this helpful to you?') }}
+          <input type="submit" class="btn" name="helpful" value="{{ _('Yes') }}" />
+          <input type="submit" class="btn" name="not-helpful" value="{{ _('No') }}" />
+          {% if answer.num_votes != 0 %}
+            <span class="helpful-count">
+              {{ answer.num_helpful_votes }}
+            </span>
           {% endif %}
         </form>
       {% endif %}
+      <a class="reply" href="#question-reply">{{ _('Reply') }}</a>
+    </div>
+  {% endif %}
+</div>
+<div class="grid_3">
+  {% if answer.id %}{# answer.id is None when previewing #}
+    {% if not question.is_locked %}
+      {% if not question.solution and (user == question.creator or user.has_perm('questions.change_solution')) %}
+        <div class="sidebox tight">
+          <form class="solution" action="{{ url('questions.solve', question_id=question.id, answer_id=answer.id) }}" method="post">
+            {{ csrf() }}
+            {% if user == question.creator %}
+              <span class="title">{{ _('Did this reply solve your problem?') }}</span>
+              <input type="submit" class="btn" name="solution" value="{{ _('Solved the problem') }}" />
+            {% else %}
+              <span class="title">{{ _('Does this reply solve the problem?') }}</span>
+              <input type="submit" class="btn" name="solution" value="{{ _('Solves the problem') }}" />
+            {% endif %}
+          </form>
+        </div>
+      {% endif %}
+
+      {% if answer.id and question.solution == answer %}
+        <div class="sidebox tight">
+          <span class="title">{{ _('Solution chosen') }}</span>
+          {% if user == question.creator or user.has_perm('questions.change_solution') %}
+            <form class="unsolve" action="{{ url('questions.unsolve', question_id=question.id, answer_id=answer.id) }}" method="post">
+              {{ csrf() }}
+              <input type="submit" name="unsolve" value="{{ _('Undo') }}" />
+            </form>
+          {% endif %}
+        </div>
+      {% endif %}
     {% endif %}
 
-    <ul class="actions">
+    <ul class="sidebar-nav tight">
       {% if answer.id and not question.is_locked and has_perm_or_owns('questions.change_answer', answer, answer) %}
         <li class="edit">
           <a href="{{ url('questions.edit_answer', question.id, answer.id) }}">{{ _('Edit this post') }}</a>

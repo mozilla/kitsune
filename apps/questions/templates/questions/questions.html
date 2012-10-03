@@ -1,5 +1,212 @@
-{% if show_new_sumo(request) %}
-  {% extends "questions/questions-new.html" %}
-{% else %}
-  {% extends "questions/questions-old.html" %}
+{# vim: set ts=2 et sts=2 sw=2: #}
+{% extends "questions/base.html" %}
+{% from "includes/common_macros.html" import for_contributors %}
+{% set title = _('Firefox Support Forum') %}
+{% set classes = 'questions' %}
+{% set crumbs = [(None, _('Support Forum'))] %}
+{% set canonical_url = unlocalized_url('questions.questions')|urlparams(filter=filter, sort=sort, tagged=tagged) %}
+{% if questions.number > 1 %}
+  {% set canonical_url = canonical_url|urlparams(page=questions.number) %}
 {% endif %}
+
+{% block content %}
+  <div class="grid_12">
+    <h1>{{ _('Support Forum') }}</h1>
+    <div id="recent-stats" class="cf">
+      <span class="total">
+        {{ _('Total questions: <strong>{num}</strong>')|fe(num=recent_asked_count) }}
+      </span>
+      <span class="no-reply">
+        {% if recent_unanswered_count > 0 %}
+          {% trans recent_unanswered_count,
+            url=url('questions.questions')|urlparams(filter='recent-unanswered') %}
+            <strong>{{recent_unanswered_count}}</strong> question in the last <strong>3 days</strong> has no reply.
+            <a href="{{url}}">Help solve it!</a>
+            {% pluralize recent_unanswered_count %}
+            <strong>{{recent_unanswered_count}}</strong> questions in the last <strong>3 days</strong> have no reply.
+            <a href="{{url}}">Help solve them!</a>
+          {% endtrans %}
+        {% else %}
+          {% trans %}
+            <strong>0</strong> questions in the last <strong>3 days</strong> have no reply. <strong>Good job!</strong>
+          {% endtrans %}
+        {% endif %}
+      </span>
+      <div class="progress-bar {% if recent_answered_percent == 100 %} complete{% endif %}">
+        <div style="width: {{ recent_answered_percent }}%;">
+          <span>{{ recent_answered_percent }}%</span>
+        </div>
+      </div>
+    </div>
+    {% if tags %}
+      <div id="tagged">
+        {{ _('Showing questions tagged:') }}
+        {% for tag in tags -%}
+        <a class="tag" href="{{ url('questions.questions')|urlparams(tagged=tags_to_text(tags|remove(tag)), filter=filter, sort=sort) }}">{{ tag.name }}</a>
+        {%- endfor %}
+        <a class="show-all" href="{{ url('questions.questions')|urlparams(filter=filter, sort=sort) }}">{{ _('Show all questions') }}</a>
+      </div>
+    {% endif %}
+    {% if user.is_authenticated() %}
+      {{ for_contributors(user, settings.WIKI_DEFAULT_LANGUAGE) }}
+    {% endif %}
+  </div>
+  <div class="grid_7">
+    <div class="feature-box{% if not filter and not sort %} collapsed{% endif %}" data-ui-type="folding-section" id="filters">
+      <header><h2 class="nomargin">{{ _('Sort and Filter') }}</h2></header>
+      <section class="cf">
+        <div class="grid_2">
+          <h3>{{ _('Sort by') }}</h3>
+          <ul class="sort-by">
+            <li{% if not sort %} class="active"{% endif %}>
+              <a href="{{ url('questions.questions')|urlparams(filter=filter, tagged=tagged) }}">{{ _('Most Recent') }}</a>
+            </li>
+            <li{% if sort == 'requested' %} class="active"{% endif %}>
+              <a href="{{ url('questions.questions')|urlparams(sort='requested', filter=filter, tagged=tagged) }}">{{ _('Most Requested') }}</a>
+            </li>
+          </ul>
+        </div>
+        <div class="grid_2">
+          <h3>{{ _('Show') }}</h3>
+          <ul class="show">
+            <li{% if not filter %} class="active"{% endif %}>
+              <a href="{{ url('questions.questions')|urlparams(sort=sort, tagged=tagged) }}">{{ _('All') }}</a>
+            </li>
+            <li{% if filter == 'unsolved' %} class="active"{% endif %}>
+              <a href="{{ url('questions.questions')|urlparams(filter='unsolved', sort=sort, tagged=tagged) }}">{{ _('Unsolved') }}</a>
+            </li>
+            <li{% if filter == 'solved' %} class="active"{% endif %}>
+              <a href="{{ url('questions.questions')|urlparams(filter='solved', sort=sort, tagged=tagged) }}">{{ _('Solved') }}</a>
+            </li>
+            <li{% if filter == 'no-replies' %} class="active"{% endif %}>
+              <a href="{{ url('questions.questions')|urlparams(filter='no-replies', sort=sort, tagged=tagged) }}">{{ _('No Replies') }}</a>
+            </li>
+            {% if user.is_authenticated() %}
+              <li{% if filter == 'my-contributions' %} class="active"{% endif %}>
+                <a href="{{ url('questions.questions')|urlparams(filter='my-contributions', sort=sort, tagged=tagged) }}">{{ _('My Contributions') }}</a>
+              </li>
+            {% endif %}
+          </ul>
+        </div>
+        <div class="grid_2">
+          <section id="tag-filter">
+            <h3>{{ _('Filter') }}</h3>
+            <p>{{ _('Enter a tag. For example: "Firefox 14.0", "Windows 7", "crash"') }}</p>
+            <form action="" method="get">
+              <input type="hidden" class="current-tagged" value="{{ tagged }}"/>
+              <input class="searchbox" type="text" name="tagged" value="" data-vocabulary="{{ tag_vocab() }}" required="required"/>
+              <button type="submit" class="btn">{{ _('Filter Tag') }}</button>
+            </form>
+          </section>
+        </div>
+      </section>
+    </div>
+  </div>
+  <div class="grid_5">
+    <section id="top-contributors">
+      <div class="feature-box">
+        <h2 class="nomargin">{{ _('Top Contributors') }}</h2>
+        <div class="inner-wrap">
+          {% if karma_top %}
+            <ol>
+              {% for u in karma_top[:5] %}
+                <li{% if u == user %} class="me"{% endif %}>{{ u.username }}</li>
+              {% endfor %}
+            </ol>
+            <ol start="6">
+              {% for u in karma_top[5:] %}
+                <li{% if u == user %} class="me"{% endif %}>{{ u.username }}</li>
+              {% endfor %}
+            </ol>
+            {% if karma_ranking and karma_ranking > 10 %}
+              <ol start="{{ karma_ranking }}">
+                <li class="me">{{ user.username }}</li>
+              </ol>
+            {% endif %}
+          {% else %}
+            {# TODO: Remove this once we enable karma for everybody #}
+            {% if top_contributors %}
+              <ol>
+                {% for user in top_contributors[:5] %}
+                  <li>{{ user }}</li>
+                {% endfor %}
+              </ol>
+              <ol start="6">
+                {% for user in top_contributors[5:] %}
+                  <li>{{ user }}</li>
+                {% endfor %}
+              </ol>
+            {% endif %}
+          {% endif %}
+        </div>
+      </div>
+    </section>
+  </div>
+  <div class="grid_12">
+    {% if questions.object_list %}
+      <article class="questions">
+        {% for question in questions.object_list %}
+          <section id="question-{{ question.id }}" class="cf">
+            <div class="question-meta {% if not question.num_answers %}urgent{% endif %}">
+              <div class="replies">
+                <h4>{{ question.num_answers }}</h4>
+                {% trans count=question.num_answers %}
+                  reply
+                  {% pluralize %}
+                  replies
+                {% endtrans %}
+              </div>
+              {% include 'questions/includes/have_problem.html' %}
+            </div>
+
+            <div class="content">
+              <h2><a href="{{ question.get_absolute_url() }}">{{ question.title }}</a></h2>
+              <p>{{ question.content_parsed|striptags()|truncate(170) }}</p>
+            </div>
+
+            <div class="thread-meta">
+              <div class="thread-solved {% if question.is_solved %}highlighted{% endif %}">
+                {{ _('Solved') }}
+              </div>
+              <div class="thread-contributed {% if question.is_contributor(user) %}highlighted{% endif %}">
+                {{ _('Contributed') }}
+              </div>
+              {% if question.is_locked %}
+                <div class="thread-locked">{{ _('Locked') }}</div>
+              {% endif %}
+            </div>
+          </section>
+          <aside>
+            <div class="user-meta">
+              {{ _('Posted by {user}')|f(user=question.creator) }}
+              {{ _('on') }} {{ datetimeformat(question.created, format='datetime') }}
+            </div>
+            {% if question.num_answers > 0 and question.last_answer %}
+              <div>
+                <a href="{{ question.last_answer.get_absolute_url() }}">
+                  {{ _('Last reply by {user}')|f(user=question.last_answer.creator.username) }}
+                </a> {{ _('on') }} {{ datetimeformat(question.last_answer.created, format='datetime') }}
+              </div>
+            {% endif %}
+            {% set tags = question.my_tags %}
+            {% if tags %}
+              {{ _('Tags') }}
+              <ul class="tag-list">
+                {% for tag in tags %}
+                  <li><a class="tag-name" href="{{ url('questions.questions')|urlparams(tagged=tag.slug, filter=filter, sort=sort) }}">{{ tag }}</a></li>
+                {% endfor %}
+              </ul>
+            {% endif %}
+          </aside>
+        {% endfor %}
+      </article>
+      {{ questions|quick_paginator }}
+    {% else %}
+      {# Not localized because it's not worth localizers time. #}
+      <p>There are no questions that match the current filter settings.</p>
+    {% endif %}
+  </div>
+{% endblock %}
+
+{% block side %}
+{% endblock %}

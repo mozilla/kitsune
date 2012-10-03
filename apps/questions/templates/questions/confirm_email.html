@@ -3,12 +3,7 @@
 
 {% set title = _('Please Confirm Your Email Address') %}
 {% set classes = 'questions' %}
-{% if show_new_sumo(request) %}
-  {% from "questions/includes/aaq_macros-new.html" import aaq_progress %}
-  {% set styles = ('questions-new',) %}
-{% else %}
-  {% from "questions/includes/aaq_macros.html" import aaq_progress %}
-{% endif %}
+{% from "questions/includes/aaq_macros-new.html" import aaq_progress %}
 
 {% block content %}
   <div class="grid_12">

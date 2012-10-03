@@ -1,5 +1,13 @@
-{% if show_new_sumo(request) %}
-  {% extends "questions/new_question_login-new.html" %}
-{% else %}
-  {% extends "questions/new_question_login-old.html" %}
-{% endif %}
+{# vim: set ts=2 et sts=2 sw=2: #}
+{% extends "questions/includes/question_editing_frame.html" %}
+{% from "layout/errorlist.html" import errorlist %}
+{% from "questions/includes/aaq_macros-new.html" import register_login_forms %}
+{% set title = _('Ask a Question') %}
+
+{% block headline %}{{ _('Ask a New Question') }}{% endblock %}
+
+{% block articles_and_search_results %}
+  {{ register_login_forms(register_form, login_form, csrf()) }}
+{% endblock %}
+
+{% block submit_button_value %}{{ _('Post Question') }}{% endblock %}

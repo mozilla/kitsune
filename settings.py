@@ -492,16 +492,6 @@ MINIFY_BUNDLES = {
             'css/reportabuse.css',
         ),
         'questions': (
-            'css/to-delete.css',
-            'css/questions.css',
-            'css/questions-meta.css',
-            'css/tags.css',
-            'css/search.css',
-            'css/users.autocomplete.css',
-            'css/reportabuse.css',
-            'css/cannedresponses.css',
-        ),
-        'questions-new': (
             'less/questions.less',
             'css/cannedresponses.css',
             'css/reportabuse.css',
