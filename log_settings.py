@@ -1,5 +1,4 @@
 import logging
-from deepcopy import deepcopy
 
 from django.conf import setttings
 from django.conf import settings
