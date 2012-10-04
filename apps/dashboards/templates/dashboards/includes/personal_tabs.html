@@ -1,5 +1,28 @@
-{% if show_new_sumo(request) %}
-  {% extends "dashboards/includes/personal_tabs-new.html" %}
-{% else %}
-  {% extends "dashboards/includes/personal_tabs-old.html" %}
-{% endif %}
+{# vim: set ts=2 et sts=2 sw=2: #}
+<ul id="user-nav" class="sidebar-nav">
+  {% if user.groups.filter(name='Contributors').exists() %}
+    <li{% if active_tab == 'review' %} class="selected"{% endif %}>
+      <a href="{{ url('dashboards.review') }}">{{ _('Review', 'dashboard') }}</a>
+    </li>
+  {% else %}
+    <li{% if active_tab == 'welcome' %} class="selected"{% endif %}>
+      <a href="{{ url('dashboards.welcome') }}">{{ _('Welcome', 'dashboard') }}</a>
+    </li>
+  {% endif %}
+  {% if user.is_authenticated() %}
+    <li{% if active_tab == 'my-profile' %} class="selected"{% endif %}>
+      <a href="{{ profile_url(user) }}">{{ _('My profile') }}</a>
+    </li>
+    <li{% if active_tab == 'edit-profile' %} class="selected"{% endif %}>
+      <a href="{{ url('users.edit_profile') }}">{{ _('Edit my profile') }}</a>
+    </li>
+    <li{% if active_tab == 'edit-settings' %} class="selected"{% endif %}>
+      <a href="{{ url('users.edit_settings') }}">{{ _('Edit settings') }}</a>
+    </li>
+  {% endif %}
+  {% for dash in dashboards %}
+    <li{% if dash.group.id == active_tab %} class="selected"{% endif %}>
+      <a href="{{ url('dashboards.group', dash.group.id) }}">{{ _(dash.group.name) }}</a>
+    </li>
+  {% endfor %}
+</ul>
