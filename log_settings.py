@@ -1,6 +1,5 @@
 import logging
 
-from django.conf import setttings
 from django.conf import settings
 
 import celery.conf
@@ -51,4 +50,4 @@ else:
     celery.conf.CELERYD_LOG_FILE = task_proxy
     celery.conf.CELERYD_LOG_COLOR = False
 
-dictconfig.dictConfig(config)
+logging.config.dictConfig(config)
