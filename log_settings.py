@@ -1,36 +1,53 @@
 import logging
-import logging.handlers
 
 from django.conf import settings
 
 import celery.conf
 import celery.log
 
-
-# Loggers created under the "z" namespace, e.g. "z.caching", will inherit the
-# configuration from the base z logger.
-log = logging.getLogger('k')
-
-fmt = ('%s: %%(asctime)s %%(name)s:%%(levelname)s %%(message)s '
-       ':%%(pathname)s:%%(lineno)s' % settings.SYSLOG_TAG)
-fmt = getattr(settings, 'LOG_FORMAT', fmt)
-level = settings.LOG_LEVEL
+config = {
+    'version': 1,
+    'disable_existing_loggers': True,
+    'formatters': {
+        'default': {
+            'format': '{0}: %(asctime)s %(name)s:%(levelname)s %(message)s: '
+                      '%(pathname)s:%(lineno)s'.format(settings.SYSLOG_TAG),
+        }
+    },
+    'handlers': {
+        'syslog': {
+            'class': 'logging.handlers.SysLogHandler',
+            'formatter': 'default',
+            'facility': logging.handlers.SysLogHandler.LOG_LOCAL7,
+            'level': settings.LOG_LEVEL,
+        },
+        'mail_admins': {
+            'class': 'django.utils.log.AdminEmailHandler',
+            'level': logging.ERROR,
+        },
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'default',
+            'level': settings.LOG_LEVEL,
+        },
+    },
+    'loggers': {
+        'k': {
+            'handlers': ['syslog', 'mail_admins'],
+            'propogate': True,
+            # Use the most permissive setting. It is filtered in the handlers.
+            'level': logging.DEBUG,
+        }
+    },
+}
 
 if settings.DEBUG:
-    handler = logging.StreamHandler()
-    formatter = logging.Formatter(fmt, datefmt='%H:%M:%S')
+    config['formatters']['default']['datefmt'] = '%H:%M:%S'
+    config['loggers']['k']['handlers'] = ['console']
 else:
-    SysLogger = logging.handlers.SysLogHandler
-    handler = SysLogger(facility=SysLogger.LOG_LOCAL7)
-    formatter = logging.Formatter(fmt)
-
-log.setLevel(level)
-handler.setLevel(level)
-handler.setFormatter(formatter)
-log.addHandler(handler)
-
-if not settings.DEBUG:
     task_log = logging.getLogger('k.celery')
     task_proxy = celery.log.LoggingProxy(task_log)
     celery.conf.CELERYD_LOG_FILE = task_proxy
     celery.conf.CELERYD_LOG_COLOR = False
+
+logging.config.dictConfig(config)
