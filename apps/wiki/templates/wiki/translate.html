@@ -85,10 +85,24 @@
               {{ csrf() }}
               <input type="hidden" name="form" value="rev" />
           {% endif %}
+          {% if recent_approved_revs %}
+            <h3>{{ _('Recently approved updates') }}:</h3>
+            <ul class="recent-revisions">
+              {% for rev in recent_approved_revs %}
+                <li>
+                  <a href="{{ url('wiki.revision', parent.slug, rev.id, locale=parent.locale) }}" rel="nofollow, noindex">{{ datetimeformat(rev.created, format='date') }}</a>:
+                  [<a href="{{ profile_url(rev.creator) }}">{{ rev.creator }}</a>]
+                  {{ rev.comment }}
+                </li>
+              {% endfor %}
+            </ul>
+          {% endif %}
+
+          <h3>{{ _('Differences') }}:</h3>
           <ul class="description">
             <li>
               <div class="approved">
-                <h3>{{ _('Keywords:') }}</h3>
+                <h3><label>{{ _('Keywords:') }}</label></h3>
                 <div class="val">{{ based_on.keywords }}</div>
               </div>
               <div class="localized">
@@ -98,7 +112,7 @@
             </li>
             <li>
               <div class="approved">
-                <h3>{{ _('Search result summary:') }}</h3>
+                <h3><label>{{ _('Search result summary:') }}</label></h3>
                 <div class="val">{{ based_on.summary }}</div>
               </div>
               <div class="localized">
@@ -117,7 +131,6 @@
             <p>{{ _('Note: There are no approved translations for this article.') }}</p>
           {% endif %}
           <div id="content-fields">
-            <ul>
             <div class="approved">
               <h3>{{ _('Approved {default_locale} version:')|f(default_locale=settings.LANGUAGES[settings.WIKI_DEFAULT_LANGUAGE.lower()]) }}</h3>
               <textarea readonly="readonly">{{ based_on.content }}</textarea>

@@ -602,12 +602,21 @@ def translate(request, document_slug, revision_id=None):
 
     show_revision_warning = _show_revision_warning(doc, base_rev)
 
+    # A list of the revisions that have been approved since the last
+    # translation.
+    recent_approved_revs = parent_doc.revisions.filter(
+        is_approved=True, id__lte=based_on_rev.id)
+    if doc and doc.current_revision and doc.current_revision.based_on_id:
+        recent_approved_revs = recent_approved_revs.filter(
+            id__gt=doc.current_revision.based_on_id)
+
     return jingo.render(request, 'wiki/translate.html',
                         {'parent': parent_doc, 'document': doc,
                          'document_form': doc_form, 'revision_form': rev_form,
                          'locale': request.locale, 'based_on': based_on_rev,
                          'disclose_description': disclose_description,
-                         'show_revision_warning': show_revision_warning})
+                         'show_revision_warning': show_revision_warning,
+                         'recent_approved_revs': recent_approved_revs})
 
 
 @require_POST
