@@ -124,7 +124,10 @@
                                  show_default_waiting=True,
                                  show_default_approved=True) %}
   <div id="doc-watch">
-    <div class="popup-trigger">{{ _('Email me when revisions are...', 'l10n dashboard') }}</div>
+    <button class="btn btn-submit popup-trigger" type="submit">
+      <img src="{{ MEDIA_URL }}img/blank.png" alt="" />
+      {{ _('Email me when revisions are...', 'l10n dashboard') }}
+    </button>
     <form class="popup-menu" action="" method="POST">
       {{ csrf() }}
       <table>

@@ -27,6 +27,17 @@
         </div>
       {% endif %}
 
+      {% if not user.is_anonymous() %}
+        {{ print_subscription_menu(default_locale_name,
+                                   request_locale_name,
+                                   on_default_locale,
+                                   is_watching_default_locale,
+                                   is_watching_other_locale,
+                                   is_watching_default_approved,
+                                   is_watching_other_approved,
+                                   settings.WIKI_DEFAULT_LANGUAGE) }}
+      {% endif %}
+
       {% for readout in readouts.itervalues() %}
         {{ print_readout(readout, locale=default_locale) }}
       {% endfor %}
@@ -37,16 +48,5 @@
 {% endblock %}
 
 {% block side_top %}
-  {% if not user.is_anonymous() %}
-    {{ print_subscription_menu(default_locale_name,
-                               request_locale_name,
-                               on_default_locale,
-                               is_watching_default_locale,
-                               is_watching_other_locale,
-                               is_watching_default_approved,
-                               is_watching_other_approved,
-                               settings.WIKI_DEFAULT_LANGUAGE) }}
-  {% endif %}
-
   {{ for_contributors_sidebar(user, settings.WIKI_DEFAULT_LANGUAGE, active='kbdashboard') }}
 {% endblock %}
