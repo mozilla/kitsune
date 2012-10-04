@@ -1,5 +1,23 @@
-{% if show_new_sumo(request) %}
-  {% extends "dashboards/base-new.html" %}
-{% else %}
-  {% extends "dashboards/base-old.html" %}
+{# vim: set ts=2 et sts=2 sw=2: #}
+{% extends "base.html" %}
+{% from 'includes/common_macros.html' import for_contributors_sidebar %}
+{% set scripts = ('wiki',) %}
+{% if not styles %}
+  {% set styles = ('kbdashboards',) %}
 {% endif %}
+
+{% block content %}
+  <div class="grid_9">
+    <article id="{{ dashboard_id }}" class="dashboards">
+      <h1>{{ title }}</h1>
+      {% block dashboard_content %}
+
+      {% endblock %}
+    </article>
+  </div>
+{% endblock %}
+
+{% block side_top %}
+  {{ personal_dashboard_tabs(active_tab) }}
+  {{ for_contributors_sidebar(user, settings.WIKI_DEFAULT_LANGUAGE) }}
+{% endblock %}
