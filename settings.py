@@ -512,18 +512,6 @@ MINIFY_BUNDLES = {
         'wiki': (
             'css/users.autocomplete.css',
             'css/users.list.css',
-            'css/showfor.css',
-            'css/wiki.css',
-            'css/wiki_syntax.css',
-            # The dashboard app uses the wiki bundle because only the wiki app
-            # has the new theme at the moment.
-            'css/dashboards.css',
-            'css/screencast.css',
-            'css/tags.css',
-        ),
-        'wiki-new': (
-            'css/users.autocomplete.css',
-            'css/users.list.css',
             'less/wiki.less',
             'css/screencast.css',
         ),

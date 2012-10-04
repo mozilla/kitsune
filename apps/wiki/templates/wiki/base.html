@@ -1,21 +1,8 @@
 {# vim: set ts=2 et sts=2 sw=2: #}
 {% extends "base.html" %}
-{% from "wiki/includes/document_macros.html" import document_watch with context %}
 {% if not scripts %}
   {% set scripts = ('wiki', 'libs/jqueryui') %}
 {% endif %}
-
-{% if request.COOKIES.get('show-editing-tools') %}
-  {% set classes = (classes or '') + ' show-editing-tools' %}
+{% if not styles %}
+  {% set styles = ('wiki',) %}
 {% endif %}
-
-{% block quick_links %}
-  <li class="edit">
-    <a class="show" href="#doc-tabs">{{ _('Show editing tools') }}</a>
-    <a class="hide" href="#doc-tabs">{{ _('Hide editing tools') }}</a>
-  </li>
-  {{ super() }}
-  {% if user.is_authenticated() and (not fallback_reason or fallback_reason != 'no_translation') %}
-    <li class="email">{{ document_watch(document, user) }}</li>
-  {% endif %}
-{% endblock %}
