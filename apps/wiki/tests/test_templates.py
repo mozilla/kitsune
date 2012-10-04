@@ -354,11 +354,11 @@ class RevisionTests(TestCaseBase):
         eq_('Created:\n              Jan 1, 2011 12:00:00 AM',
             doc('.revision-info li')[1].text_content().strip())
         eq_('Reviewed:\n                Jan 2, 2011 12:00:00 AM',
-            doc('.revision-info li')[5].text_content().strip())
+            doc('.revision-info li')[6].text_content().strip())
         # is reviewed?
-        eq_('Yes', doc('.revision-info li').eq(3).find('span').text())
+        eq_('Yes', doc('.revision-info li').eq(4).find('span').text())
         # is current revision?
-        eq_('Yes', doc('.revision-info li').eq(7).find('span').text())
+        eq_('Yes', doc('.revision-info li').eq(8).find('span').text())
 
     @mock.patch.object(ReadyRevisionEvent, 'fire')
     def test_mark_as_ready_POST(self, fire):
@@ -1595,6 +1595,7 @@ class TranslateTests(TestCaseBase):
         doc = pq(response.content)
         eq_(rev_es.content, doc('#id_content').text())
         eq_(rev_enUS.content, doc('#content-fields textarea[readonly]').text())
+        eq_(2, len(doc('.recent-revisions li')))
 
         # Post the translation and verify
         data = _translation_data()
