@@ -1,5 +1,66 @@
-{% if show_new_sumo(request) %}
-  {% extends "wiki/document-new.html" %}
-{% else %}
-  {% extends "wiki/document-old.html" %}
+{# vim: set ts=2 et sts=2 sw=2: #}
+{% extends "wiki/base.html" %}
+{% from "wiki/includes/sidebar_modules.html" import document_tools, document_notifications with context %}
+{% from 'topics/includes/topic_macros.html' import topic_sidebar %}
+{% from "wiki/includes/document_macros.html" import contributor_list, document_title, document_messages, document_content, topic_list %}
+{% from "wiki/includes/document_macros.html" import related_articles, show_for, vote_form, document_watch with context %}
+{% set classes = 'document' %}
+{% set canonical_url = document.get_absolute_url() %}
+{% set scripts = ('wiki', 'readtracker') %}
+{% set extra_body_attrs = {'data-track-url': MEDIA_URL + 'img/pixel.gif', 'data-document-id': document.id} %}
+
+{% block title %}{{ document.title }} | {% if not products or products|count > 1 %}{{ _('Mozilla Support', 'site_title') }}{% else %}{{ _('{product} Help')|f(product=_(product.title, 'DB: products.Product.title')) }}{% endif %}{% endblock %}
+
+{% if document.parent %}
+  {# If there is a parent doc, use it's URL for switching locales. #}
+  {% set localizable_url = url('wiki.document', document.parent.slug, locale=settings.WIKI_DEFAULT_LANGUAGE) %}
 {% endif %}
+
+{% set meta = [] %}
+
+{% if document.is_template %}
+  {% set meta = meta + [('robots', 'noindex')] %}
+{% endif %}
+
+{% if document.current_revision and document.current_revision.summary %}
+  {% set meta = meta + [('description', document.current_revision.summary)] %}
+{% endif %}
+
+{% block above_main %}
+  <h1 class="product-title cf"><img src="{{ MEDIA_URL }}img/blank.png" alt="" class="logo-sprite" style="background-image: url('{{ product.image_url }}');" />{{ product.title }} {{ show_for(header=False) }}</h1>
+{% endblock %}
+
+{% block content %}
+  <div class="grid_9">
+    <article class="wiki-doc">
+      {{ document_title(document) }}
+      {{ document_messages(document, redirected_from) }}
+      {{ document_content(document, fallback_reason, request, settings) }}
+      {{ contributor_list(contributors) }}
+
+      {% if not waffle.switch('hide-voting') %}
+        <div class="vote-wrap">
+        {# this extra div is to make the js compatible with old theme. TODO: Remove and fix js. #}
+          {{ vote_form(document) }}
+        </div>
+      {% endif %}
+    </article>
+  </div>
+{% endblock %}
+
+{% block side_top %}
+  {% if fallback_reason == 'no_translation' %}
+    {# If there is no translation, there is no document and the (future) parent is document. #}
+    {% set doc = None %}
+    {% set parent = document %}
+  {% else %}
+    {% set doc = document %}
+    {% set parent = doc.parent %}
+  {% endif %}
+  {{ document_tools(doc, parent, user, 'article', settings) }}
+  {{ related_articles(related, document) }}
+  {{ topic_sidebar(topics[:10], product) }}
+{% endblock %}
+
+{% block breadcrumbs %}
+{% endblock %}
