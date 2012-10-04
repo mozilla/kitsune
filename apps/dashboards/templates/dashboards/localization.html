@@ -13,6 +13,7 @@
     <article id="localize" class="dashboards">
       <h1>{{ title }}</h1>
 
+      
       <div class="choice-list">
         <label>{{ _('Show information for:') }}</label>
         <ul>
@@ -24,6 +25,17 @@
           </li>
         </ul>
       </div>
+
+      {% if not user.is_anonymous() %}
+        {{ print_subscription_menu(default_locale_name,
+                                   current_locale_name,
+                                   on_default_locale,
+                                   is_watching_default_locale,
+                                   is_watching_other_locale,
+                                   is_watching_default_approved,
+                                   is_watching_other_approved,
+                                   settings.WIKI_DEFAULT_LANGUAGE) }}
+      {% endif %}
 
       {% set rows = overview_rows() %}
       {{ overview_section(readouts, ((rows['most-visited'], True),
@@ -39,16 +51,5 @@
 {% endblock %}
 
 {% block side_top %}
-  {% if not user.is_anonymous() %}
-    {{ print_subscription_menu(default_locale_name,
-                               current_locale_name,
-                               on_default_locale,
-                               is_watching_default_locale,
-                               is_watching_other_locale,
-                               is_watching_default_approved,
-                               is_watching_other_approved,
-                               settings.WIKI_DEFAULT_LANGUAGE) }}
-  {% endif %}
-
   {{ for_contributors_sidebar(user, settings.WIKI_DEFAULT_LANGUAGE, active='kbdashboard') }}
 {% endblock %}
