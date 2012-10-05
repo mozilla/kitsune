@@ -292,13 +292,13 @@
                 .filter(function isMe() {
                     return $(this).text() == me; })
                 .closest('div.replies')  // Walk up to parent.
-                .closest('li.tweet')
+                .closest('.tweet')
                 .each(function() {
                     update_reply_indicator($('#tweet-' + $(this).attr('data-tweet-id'))); });
         }
         mark_my_replies();
 
-        $('.tweet-contents').live('click', function(e) {
+        $('.reply-button').live('click', function(e) {
             // Do not open tweet window if clicked on link.
             if ($(e.target).is('a') || $(e.target).parentsUntil('div.tweet-contents').is('a')) {
                 return;
@@ -314,7 +314,7 @@
                 return;
             }
 
-            var t = new Tweet($(this).closest('li'));
+            var t = new Tweet($(this).closest('.tweet'));
 
             if (!signin.authed) {
                 signin.open(t);
@@ -341,7 +341,7 @@
         });
 
         /** Signin button */
-        $('#signin-button').click(function(e) {
+        $('#signin-button, #steps-signin-button').click(function(e) {
             signin.open(null);
             e.preventDefault();
         });
@@ -379,27 +379,22 @@
         });
 
         /* Show/hide replies */
-        $('#tweets a.reply_count').live('click', function(e) {
-            var to_show = !$(this).hasClass('opened'),
-                tweet_id = $(this).closest('li').attr('data-tweet-id'),
+        $('#tweets .reply-count').live('click', function(e) {
+            var tweet_id = $(this).closest('.tweet').attr('data-tweet-id'),
                 replies = $('#replies_' + tweet_id);
-            if (to_show) {
-                replies.slideDown();
-            } else {
-                replies.slideUp();
-            }
-            $(this).toggleClass('opened');
+
+            replies.toggle();
 
             $(this).blur();
             e.preventDefault();
         });
 
         /* Remove tweet functionality */
-        $('#tweets a.remove_tweet').live('click', function(e) {
+        $('#tweets a.remove-tweet').live('click', function(e) {
             if ($(this).hasClass('clicked')) return false;
             $(this).addClass('clicked');
 
-            var tweet = $(this).closest('li'),
+            var tweet = $(this).closest('.tweet'),
                 tweet_id = tweet.attr('data-tweet-id');
             $.ajax({
                 url: $(this).attr('href'),
@@ -432,7 +427,7 @@
             }
             $('#scroll-busy').show();
 
-            var max_id = $('#tweets > li:last').attr('data-tweet-id');
+            var max_id = $('#tweets > .tweet:last').attr('data-tweet-id');
             if (!max_id) return;
 
             $.get(

@@ -11,7 +11,7 @@
         Army of Awesome will never tweet without your permission.{% endtrans %}
       </strong>
     </p>
-    <a href="?twitter_auth_request=1" class="btn-modal signin-twitter">
+    <a href="?twitter_auth_request=1" class="btn btn-submit btn-modal signin-twitter">
       {{ _('Sign in') }}
     </a>
     {% if not user.is_authenticated() %}
@@ -23,11 +23,11 @@
         Are you registered with Mozilla Support?{% endtrans %}
       </p>
       <div>
-        <a href="{{ url('users.login') }}" class="btn-modal signin-sumo">
+        <a href="{{ url('users.login') }}" class="btn btn-submit btn-modal signin-sumo">
           <span class="highlight">{{ _('Yes, I am.') }}</span>
           {{ _('Click to sign in.') }}
         </a>
-        <a href="{{ url('users.register') }}" class="btn-modal register">
+        <a href="{{ url('users.register') }}" class="btn btn-submit btn-modal register">
           <span class="highlight">{{ _("No, I'm not.") }}</span>
           {{ _('Click to register.') }}
         </a>

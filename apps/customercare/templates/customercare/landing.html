@@ -8,62 +8,64 @@
 
 {% block content %}
 <article class="main">
-  <div class="feature-contents">
-    <h1>{{ _('Join our <strong>Army of Awesome</strong>')|safe }}</h1>
-    <h2>
-      {% trans %}
-        Love Firefox and have a few moments to help?<br />
-        Help other Firefox users on Twitter.
-        Good things will come to those who tweet!
-      {% endtrans %}
-    </h2>
-  </div>
 
-  <div id="speech-bubbles">
-    <ol>
-      <li class="choose">{{ _('Choose a <strong>tweet below</strong>')|safe }}</li>
-      <li class="signin">{{ _('Sign in with <strong>Twitter</strong>')|safe }}</li>
-      <li class="respond">{{ _('Respond to <strong>the tweet!</strong>')|safe }}</li>
-    </ol>
+  <div class="cf">
+    <div class="grid_6">
+      <h1>{{ _('Join our Army of Awesome')|safe }}</h1>
+      <h2>
+        {% trans %}
+          Love Firefox and have a few moments to help?<br />
+          Help other Firefox users on Twitter.
+          Good things will come to those who tweet!
+        {% endtrans %}
+      </h2>
+    </div>
+
+    <div id="steps">
+      <ol>
+        <li class="grid_2"><a {% if not authed %}id="steps-signin-button"{% endif %} href="#" class="btn btn-submit">{{ _('Sign in with Twitter') }}</a></li>
+        <li class="grid_2">{{ _('Choose a tweet below') }}</li>
+        <li class="grid_2">{{ _('Respond to the tweet!') }}</li>
+      </ol>
+    </div>
   </div>
 
   {% set percent = recent_replied_count * 100 / goal %}
-  <div id="stats">
+  <div id="stats" class="grid_12">
     <span>{{ _('Total tweets to answer') }}: <strong>{{ goal }}</strong></span>
     <p>
-      <strong>{{ recent_replied_count }}</strong> {{ _('tweets in the last') }}
+      {% trans %}<strong>{{ recent_replied_count }} tweets</strong> in the last{% endtrans %}
       <strong>{{ _('24 hours') }}</strong> {{ _('have replies') }}
     </p>
-    <div class="progressbar {% if percent >= 100 %}complete{% endif %}">
+    <div class="progress-bar {% if percent >= 100 %}complete{% endif %}">
       <div style="width: {{ percent|int|max(100) }}%;">
         <span>{{ percent|int|max(100) }}%</span>
       </div>
     </div>
   </div>
 
-  <div id="tweetcontainer">
-    <div class="tweets-header">
+  <div class="grid_12 cf">
+    <div id="tweet-tools">
+      <img id="refresh-busy" src="{{ MEDIA_URL }}img/customercare/spinner.gif"/>
       <select id="show">
         {% for value, content in filters.iteritems() %}
           <option value="{{ value }}">{{ content }}</option>
         {% endfor %}
       </select>
-      <img id="twitter-icon" src="{{ MEDIA_URL }}img/customercare/twitter-icon.png" /><h2 class="showhide_heading" id="Where_to_ask_your_question">{{ _('Choose a tweet to help') }}</h2>
-      <a id="refresh-tweets" href="{{ url('customercare.more_tweets') }}" class="header-button">{{ _('Refresh') }}</a>
+      <a id="refresh-tweets" href="{{ url('customercare.more_tweets') }}" class="btn">{{ _('Refresh') }}</a>
       {% if authed %}
         <form id="twitter-logout" action="" method="post">
           {{ csrf() }}
           <input type="hidden" name="twitter_delete_auth" value="1">
-          <input type="submit" class="header-button" value="{{ _('Sign out') }}">
+          <button type="submit" class="btn btn-submit">{{ _('Sign out') }}</button>
         </form>
       {% else %}
-        <a id="signin-button" href="#" class="header-button">{{ _('Sign in') }}</a>
+        <a id="signin-button" href="#" class="btn btn-submit">{{ _('Sign in') }}</a>
       {% endif %}
-      <img id="refresh-busy" src="{{ MEDIA_URL }}img/customercare/spinner.gif"/>
     </div>
+  </div>
 
-    <br style="clear:both; height: 1px" />
-
+  <div id="tweetcontainer" class="grid_12">
     <div id="tweets-wrap">
       {{ csrf() }}{# CSRF token for AJAX actions. #}
       {% if not tweets %}
@@ -76,9 +78,9 @@
           {% endtrans %}
         </div>
       {% endif %}
-      <ul id="tweets">
+      <div id="tweets">
         {% include 'customercare/tweets.html' %}
-      </ul>
+      </div>
     </div>
 
     <div id="infinite-scroll">
@@ -90,62 +92,4 @@
 
   {% include 'customercare/twitter_modal.html' %}
 </article>
-{% endblock %}
-
-{% block side_promos %}
-  {% if activity_stats %}
-    <section id="side-stats">
-      <h1>{{ _('Leaderboard:') }}</h1>
-      <select>
-        {% for act in activity_stats %}
-          <option value="{{ loop.index0 }}"
-                  data-perc ="{{ act[1]['perc']|round_percent }}"
-                  data-replies="{{ act[1]['replies'] }}"
-                  data-requests="{{ act[1]['requests'] }}">
-            {% if act[0] == 'Yesterday' %}
-              {{ _('Yesterday', 'army_stats') }}
-            {% elif act[0] == 'Last Week'%}
-              {{ _('Last Week', 'army_stats') }}
-            {% elif act[0] == 'Last Month'%}
-              {{ _('Last Month', 'army_stats') }}
-            {% elif act[0] == 'Overall'%}
-              {{ _('Overall', 'army_stats') }}
-            {% else %}
-              {{ act[0] }}
-            {% endif %}
-          </option>
-        {% endfor %}
-      </select>
-      {% if contributor_stats %}
-        <div class="contribs">
-          {% for act in activity_stats %}
-            {% set period = act[0] %}
-            <div class="contributors period{{ loop.index0 }}"
-                 data-period="{{ period }}">
-              {% for contrib in contributor_stats.get(period, []) %}
-                <a href="https://twitter.com/{{ contrib['username'] }}" target="_blank">
-                  <img src="{{ contrib['avatar'] }}" alt="{{ contrib['username'] }}"
-                       title="{{ contrib['name']}}: {{ contrib['count'] }} replies"
-                       class="avatar" />
-                </a>
-              {% endfor %}
-            </div>
-          {% endfor %}
-        </div>
-      {% endif %}
-    </section>
-  {% endif %}
-  <section id="next-level">
-    <h1>{{ _('Take it to the <strong>next level!</strong>')|safe }}</h1>
-    <div class="img">
-      <img src="{{ settings.MEDIA_URL }}img/promo.sumo.png" alt="" />
-    </div>
-    <p>
-      {% trans join_url=url('wiki.document', 'superheroes-wanted') %}
-        Want to go beyond 140 characters?
-        <a href="{{ join_url }}">Join the support community</a>
-        and help many more Firefox users.
-      {% endtrans %}
-    </p>
-  </section>
 {% endblock %}
