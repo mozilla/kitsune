@@ -546,7 +546,7 @@ MINIFY_BUNDLES = {
             'css/ie8.css',
         ),
         'customercare': (
-            'css/customercare.css',
+            'less/customercare.less',
         ),
         'chat': (
             'css/chat.css',
