@@ -171,7 +171,7 @@
                 return this.$textarea.val();
             });
             this.__defineSetter__('content', function(val) {
-                val = '@'+ this._tweet.username.text +' '+ val +' #fxhelp';
+                val = this._tweet.username.text +' '+ val +' #fxhelp';
                 this.$textarea.val(val);
                 // trigger keydown so the character counter updates
                 this.$textarea.trigger('keydown');
