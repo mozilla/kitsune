@@ -4,7 +4,8 @@
   <div id="basic-search" class="search-empty">
   {{ _('Enter your terms in the form below and click <strong>Search</strong>')|safe }}
     <form role="search" method="get" action="{{ url('search') }}">
-      <input type="text" class="search-query search-empty-query" value="{{ q }}" name="q">
+       <input type="hidden" name="esab" value="{% if waffle.flag('search-ab') %}a{% else %}b{% endif %}">
+       <input type="text" class="search-query search-empty-query" value="{{ q }}" name="q">
       <input type="submit" class="search-empty-submit btn-large" value="{{ _('Search', 'button') }}">
     </form>
   </div>
@@ -17,6 +18,7 @@
         <input type="hidden" name="{{ k }}" value="{{ v }}" />
       {% endfor %}
     {% endif %}
+    <input type="hidden" name="esab" value="{% if waffle.flag('search-ab') %}a{% else %}b{% endif %}">
     <input name="q" placeholder="{{ _('Search') }}" required="required" type="search" value="{{ q }}">
     <button type="submit" value="">
       <svg width="22" height="23"><polygon fill="#ffffff" points="22,12 11,23 8,20 14,14 0,14 0,10 14,10 8,4 11,1"/></svg>

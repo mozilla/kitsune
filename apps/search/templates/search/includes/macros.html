@@ -5,6 +5,7 @@
   {% if show_new_sumo(request) %}
     <div {% if primary %}id="basic-search"{% endif %} class="search-refine">
       <form class="search-form cf" role="search" method="get" action="search">
+        <input type="hidden" name="esab" value="{% if waffle.flag('search-ab') %}a{% else %}b{% endif %}">
         {% for name, field in search_form.fields.items() if not name in ('q',) %}
           {% set list = request.GET.getlist(name) %}
           {% for value in list %}
@@ -18,6 +19,7 @@
   {% else %}
     <div {% if primary %}id="basic-search"{% endif %} class="search-refine">
       <form role="search" method="get" action="search">
+        <input type="hidden" name="esab" value="{% if waffle.flag('search-ab') %}a{% else %}b{% endif %}">
         {% for name, field in search_form.fields.items() if not name in ('q',) %}
           {% set list = request.GET.getlist(name) %}
           {% for value in list %}
