@@ -130,7 +130,7 @@ def _rebuild_kb_chunk(data):
             url = document.redirect_url()
             if (url and points_to_document_view(url) and
                 not document.redirect_document()):
-                log.error('Invalid redirect document: %d' % pk)
+                log.warn('Invalid redirect document: %d' % pk)
 
             html = Revision.objects.get(
                 id=document.current_revision_id).content_parsed
