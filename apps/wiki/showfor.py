@@ -20,23 +20,23 @@ def _split_browser_slug(slug):
 
 # TODO: This is a mess but should be taken care of in bug 768244.
 ALL_OS_JSON = json.dumps(
-    dict([(o.slug, True) for o in OPERATING_SYSTEMS]))
+    dict((o.slug, True) for o in OPERATING_SYSTEMS))
 ALL_BROWSER_JSON = json.dumps(
-    dict([(v.slug, {'product': _split_browser_slug(v.slug)[0],
-                    'maxFloatVersion': v.max_version})
-          for v in FIREFOX_VERSIONS]))
+    dict((v.slug, {'product': _split_browser_slug(v.slug)[0],
+                   'maxFloatVersion': v.max_version})
+         for v in FIREFOX_VERSIONS))
 MOBILE_OS_JSON = json.dumps(
-    dict([(o.slug, True) for o in MOBILE_OPERATING_SYSTEMS]))
+    dict((o.slug, True) for o in MOBILE_OPERATING_SYSTEMS))
 MOBILE_BROWSER_JSON = json.dumps(
-    dict([(v.slug, {'product': _split_browser_slug(v.slug)[0],
-                    'maxFloatVersion': v.max_version})
-          for v in MOBILE_FIREFOX_VERSIONS]))
+    dict((v.slug, {'product': _split_browser_slug(v.slug)[0],
+                   'maxFloatVersion': v.max_version})
+         for v in MOBILE_FIREFOX_VERSIONS))
 DESKTOP_OS_JSON = json.dumps(
-    dict([(o.slug, True) for o in DESKTOP_OPERATING_SYSTEMS]))
+    dict((o.slug, True) for o in DESKTOP_OPERATING_SYSTEMS))
 DESKTOP_BROWSER_JSON = json.dumps(
-    dict([(v.slug, {'product': _split_browser_slug(v.slug)[0],
-                    'maxFloatVersion': v.max_version})
-          for v in DESKTOP_FIREFOX_VERSIONS]))
+    dict((v.slug, {'product': _split_browser_slug(v.slug)[0],
+                   'maxFloatVersion': v.max_version})
+         for v in DESKTOP_FIREFOX_VERSIONS))
 
 def _version_groups(versions):
     """Group versions so browser+version pairs can be mapped to {for} slugs.
@@ -68,7 +68,7 @@ def showfor_data(products=None):
     (mobile + desktop).
     """
     if products is None:
-        slugs = ['firefix', 'mobile']
+        slugs = ['firefox', 'mobile']
     else:
         slugs = [p.slug for p in products]
 
