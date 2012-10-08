@@ -259,11 +259,11 @@ def search(request, template=None):
 
         # Set up the highlights
         searcher = searcher.highlight(
-            'question_title', 'question_content', 'question_answer_content',
-            'discussion_content',
+            'question_content', 'discussion_content',
             pre_tags=['<b>'],
             post_tags=['</b>'],
-            fragment_size=settings.SEARCH_SUMMARY_LENGTH)
+            number_of_fragments=settings.SEARCH_FRAGMENTS,
+            fragment_size=settings.SEARCH_FRAGMENT_LENGTH)
 
         # Set up boosts
         searcher = searcher.boost(
@@ -349,6 +349,15 @@ def search(request, template=None):
 
             elif doc['model'] == 'questions_question':
                 summary = _build_es_excerpt(doc)
+                if not summary:
+                    # We're excerpting only question_content, so if
+                    # the query matched question_title or
+                    # question_answer_content, then there won't be any
+                    # question_content excerpts. In that case, just
+                    # show the question--but only the first 500
+                    # characters.
+                    summary = doc['question_content'][:500]
+
                 result = {
                     'title': doc['question_title'],
                     'type': 'question',
