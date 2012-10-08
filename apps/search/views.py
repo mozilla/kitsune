@@ -354,8 +354,10 @@ def search(request, template=None):
                     # the query matched question_title or
                     # question_answer_content, then there won't be any
                     # question_content excerpts. In that case, just
-                    # show the question.
-                    summary = doc['question_content']
+                    # show the question--but only the first 500
+                    # characters.
+                    summary = doc['question_content'][:500]
+
                 result = {
                     'title': doc['question_title'],
                     'type': 'question',
