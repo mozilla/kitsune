@@ -1,6 +1,11 @@
 {% macro search_result(result, s=None, as='s', r=None) %}
   <div class="result {{ result.type }}">
-    {% set url =  result.url|urlparams(s=s, as=as, r=r) %}
+    {% if waffle.flag('search-ab') %}
+      {% set esab = 'a' %}
+    {% else %}
+      {% set esab = 'b' %}
+    {% endif %}
+    {% set url =  result.url|urlparams(s=s, as=as, r=r, esab=esab) %}
     <h3><a class="title" href="{{ url }}">{{ result.title }}</a></h3>
     <a tabindex="-1" href="{{ url }}">{{ result.search_summary|safe }}</a>
     {% if result.type == 'question' %}

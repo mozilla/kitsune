@@ -2,8 +2,14 @@
 
 {% macro search_box(settings, id=False, prefix=None, target=None,
                     params=None) %}
+  {% if waffle.flag('search-ab') %}
+    {% set esab = 'a' %}
+  {% else %}
+    {% set esab = 'b' %}
+  {% endif %}
   {% if show_new_sumo(request) %}
     <form {% if id %}id="{{ id }}"{% endif %} action="{{ url('search') }}" method="get" {% if target %} target="{{ target }}"{% endif %}>
+      <input type="hidden" name="esab" value="{{ esab }}">
       {% if params %}
         {% for k, v in params.items() %}
           <input type="hidden" name="{{ k }}" value="{{ v }}" />
@@ -18,6 +24,7 @@
         {{ prefix }}
       {% endif %}
       <form action="{{ url('search') }}" method="get" {% if target %} target="{{ target }}"{% endif %}>
+        <input type="hidden" name="esab" value="{{ esab }}">
         {% if params %}
           {% for k, v in params.items() %}
             <input type="hidden" name="{{ k }}" value="{{ v }}" />
