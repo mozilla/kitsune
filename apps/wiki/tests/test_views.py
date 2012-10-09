@@ -15,7 +15,7 @@ from wiki.models import Document
 from wiki.config import VersionMetadata
 from wiki.tests import (doc_rev, document, helpful_vote, new_document_data,
                         revision)
-from wiki.showfor import _version_groups
+from wiki.views import _version_groups
 
 
 class VersionGroupTests(TestCase):

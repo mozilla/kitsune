@@ -1,6 +1,7 @@
 from datetime import datetime
 import json
 import logging
+from string import ascii_letters
 import time
 
 from django.conf import settings
@@ -34,14 +35,57 @@ from wiki.events import (EditDocumentEvent, ReviewableRevisionInLocaleEvent,
 from wiki.forms import (AddContributorForm, DocumentForm, RevisionForm,
                         ReviewForm)
 from wiki.models import Document, Revision, HelpfulVote, ImportantDate
-from wiki.config import CATEGORIES
+from wiki.config import (CATEGORIES, OPERATING_SYSTEMS,
+                         GROUPED_OPERATING_SYSTEMS, FIREFOX_VERSIONS,
+                         GROUPED_FIREFOX_VERSIONS)
 from wiki.parser import wiki_to_html
-from wiki.showfor import showfor_data
 from wiki.tasks import (send_reviewed_notification, schedule_rebuild_kb,
                         send_contributor_notification)
 
 
 log = logging.getLogger('k.wiki')
+
+
+def _split_browser_slug(slug):
+    """Given something like fx35, split it into an alphabetic prefix and a
+    suffix, returning a 2-tuple like ('fx', '35')."""
+    right = slug.lstrip(ascii_letters)
+    left_len = len(slug) - len(right)
+    return slug[:left_len], slug[left_len:]
+
+
+OS_ABBR_JSON = json.dumps(dict([(o.slug, True)
+                                for o in OPERATING_SYSTEMS]))
+BROWSER_ABBR_JSON = json.dumps(
+    dict([(v.slug, {'product': _split_browser_slug(v.slug)[0],
+                    'maxFloatVersion': v.max_version})
+          for v in FIREFOX_VERSIONS]))
+
+
+def _version_groups(versions):
+    """Group versions so browser+version pairs can be mapped to {for} slugs.
+
+    See test_version_groups for an example.
+
+    """
+    slug_groups = {}
+    for v in versions:
+        left, right = _split_browser_slug(v.slug)
+        slug_groups.setdefault(left, []).append((v.max_version, right))
+    for g in slug_groups.itervalues():
+        g.sort()
+    return slug_groups
+
+
+VERSION_GROUP_JSON = json.dumps(_version_groups(FIREFOX_VERSIONS))
+
+SHOWFOR_DATA = {
+    'oses': GROUPED_OPERATING_SYSTEMS,
+    'oses_json': OS_ABBR_JSON,
+    'browsers': GROUPED_FIREFOX_VERSIONS,
+    'browsers_json': BROWSER_ABBR_JSON,
+    'version_group_json': VERSION_GROUP_JSON,
+}
 
 
 @require_GET
@@ -127,7 +171,7 @@ def document(request, document_slug, template=None):
             'fallback_reason': fallback_reason,
             'is_aoa_referral': request.GET.get('ref') == 'aoa',
             'topics': topics, 'product': product, 'products': products}
-    data.update(showfor_data(products))
+    data.update(SHOWFOR_DATA)
     return jingo.render(request, template, data)
 
 
@@ -136,7 +180,7 @@ def revision(request, document_slug, revision_id):
     rev = get_object_or_404(Revision, pk=revision_id,
                             document__slug=document_slug)
     data = {'document': rev.document, 'revision': rev}
-    data.update(showfor_data())
+    data.update(SHOWFOR_DATA)
     return jingo.render(request, 'wiki/revision.html', data)
 
 
@@ -291,7 +335,7 @@ def preview_revision(request):
     statsd.incr('wiki.preview')
     # TODO: Get doc ID from JSON.
     data = {'content': wiki_to_html(wiki_content, request.locale)}
-    data.update(showfor_data())
+    data.update(SHOWFOR_DATA)
     return jingo.render(request, 'wiki/preview.html', data)
 
 
@@ -402,7 +446,7 @@ def review_revision(request, document_slug, revision_id):
             'parent_revision': parent_revision,
             'revision_contributors': list(revision_contributors),
             'should_ask_significance': should_ask_significance}
-    data.update(showfor_data())
+    data.update(SHOWFOR_DATA)
     return jingo.render(request, template, data)
 
 
