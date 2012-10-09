@@ -102,14 +102,14 @@ var ShowFor = {
             $origBrowserOptions = $browserMenu.find('option').clone();
         }
 
-        if (OSES[osUsed] && notListed(osUsed, $osMenu)) {
+        if (notListed(osUsed, $osMenu)) {
             // If the OS used is not "officially" supported (shown in UI
             // by default) and is an OS we support in our backend, then
             // add it to the OS selections.
             ShowFor.addOsToSelect($osMenu, osUsed);
         }
 
-        if (OSES[hash.os] && notListed(hash.os, $osMenu)) {
+        if (notListed(hash.os, $osMenu)) {
             // An OS can be forced to show up by using the hash params.
             ShowFor.addOsToSelect($osMenu, hash.os);
         }
