@@ -106,7 +106,7 @@ def rebuild_kb():
         _rebuild_kb_chunk.apply_async(args=[chunk])
 
 
-@task(rate_limit='10/m')
+@task(rate_limit='20/m')
 def _rebuild_kb_chunk(data):
     """Re-render a chunk of documents.
 
