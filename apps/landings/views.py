@@ -103,11 +103,7 @@ def mobile(request, template=None):
 @mobile_template('landings/{mobile/}sync.html')
 def sync(request, template=None):
     if not request.MOBILE:
-        return redirect_to(
-            request, 'products.documents',
-            product_slug='firefox',
-            topic_slug='sync',
-            permanent=False)
+        return redirect_to(request, 'home', permanent=False)
 
     docs = SYNC_DOCS_FOR_MOBILE
     return jingo.render(request, template,
