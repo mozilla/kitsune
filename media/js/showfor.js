@@ -327,23 +327,9 @@ var ShowFor = {
         }
 
         //Handle OS->Browser dependencies
-        function handleDependencies(evt, noRedirect) {
+        function handleDependencies(evt) {
             var currentDependency = getCurrentDependency(),
                 currentBrowser, newBrowser, availableBrowsers;
-
-            if (!noRedirect && $body.is('.mobile, .desktop') &&
-                !$body.is('.' + currentDependency)) {
-                // If we are on the mobile page and select a desktop OS,
-                // redirect to the desktop home page. And vice-versa.
-                // TODO: maybe use data-* attrs for the URLs?
-                persistSelection();
-                var url = document.location.href;
-                if ($body.is('.mobile')) {
-                    document.location = url.replace('/mobile', '/home');
-                } else {
-                    document.location = url.replace('/home', '/mobile');
-                }
-            }
 
             currentBrowser = $browserMenu.val();
             availableBrowsers = $origBrowserOptions.filter(
@@ -433,7 +419,7 @@ var ShowFor = {
         isSetManually |= checkSelectorValues();
 
         // Possibly change the settings based on dependency rules:
-        handleDependencies(null, true);
+        handleDependencies(null);
 
         if (isSetManually) {
             updateHashFragment();
