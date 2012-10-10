@@ -190,8 +190,8 @@ var ShowFor = {
                     browserConditions = [];
 
                 // Return whether the given browser slug matches any of the
-                // given conditions. Passing an unknown slug results in
-                // undefined behavior.
+                // given conditions. Passing a falsey slug results in false.
+                // Passing an unknown slug results in undefined behavior. 
                 // TODO: Implement with a generic any() instead--maybe underscore's.
                 function meetsAnyOfConditions(slug, conditions) {
                     // Return whether a slug (like 'fx4' or 'fx35') meets a condition like
