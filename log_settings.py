@@ -38,13 +38,20 @@ config = {
             'propogate': True,
             # Use the most permissive setting. It is filtered in the handlers.
             'level': logging.DEBUG,
-        }
+        },
+        'django.request': {
+            'handlers': ['syslog', 'mail_admins'],
+            'propogate': True,
+            # Use the most permissive setting. It is filtered in the handlers.
+            'level': logging.DEBUG,
+        },
     },
 }
 
 if settings.DEBUG:
     config['formatters']['default']['datefmt'] = '%H:%M:%S'
     config['loggers']['k']['handlers'] = ['console']
+    config['loggers']['django.request']['handlers'] = ['console']
 else:
     task_log = logging.getLogger('k.celery')
     task_proxy = celery.log.LoggingProxy(task_log)
