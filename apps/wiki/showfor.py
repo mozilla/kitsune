@@ -93,10 +93,10 @@ def showfor_data(products=None):
     else:
         # Use DESKTOP_*
         return {
-            'oses': (((_lazy(u'Mobile:'), 'mobile'),
+            'oses': (((_lazy(u'Desktop:'), 'desktop'),
                      DESKTOP_OPERATING_SYSTEMS),),
             'oses_json': DESKTOP_OS_JSON,
-            'browsers': (((_lazy(u'Mobile:'), 'mobile'),
+            'browsers': (((_lazy(u'Desktop:'), 'desktop'),
                          DESKTOP_FIREFOX_VERSIONS),),
             'browsers_json': DESKTOP_BROWSER_JSON,
             'version_group_json': DESKTOP_VERSION_GROUP_JSON}
