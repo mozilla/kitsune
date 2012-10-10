@@ -8,6 +8,7 @@ from kpi.cron import update_visitors_metric, update_l10n_metric, Webtrends
 from kpi.models import Metric, VISITORS_METRIC_CODE, L10N_METRIC_CODE
 from kpi.tests import metric_kind
 from sumo.tests import TestCase
+from wiki.config import MEDIUM_SIGNIFICANCE, TYPO_SIGNIFICANCE
 from wiki.tests import document, revision
 
 
@@ -38,6 +39,16 @@ class UpdateVisitorsTests(TestCase):
         doc = document(save=True)
         rev = revision(
             document=doc,
+            significance=MEDIUM_SIGNIFICANCE,
+            is_approved=True,
+            is_ready_for_localization=True,
+            save=True)
+
+        # Create a new revision with TYPO_SIGNIFICANCE. It shouldn't
+        # affect the results.
+        revision(
+            document=doc,
+            significance=TYPO_SIGNIFICANCE,
             is_approved=True,
             is_ready_for_localization=True,
             save=True)
