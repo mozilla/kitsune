@@ -230,15 +230,15 @@
     </div>
     <div>
       <select id="browser" data-browsers="{{ browsers_json }}" data-version-groups="{{ version_group_json }}" class="enable-if-js" disabled="disabled">
-        {% set default_is_set = False %}
+        {% set selected_added = False %}
         {% for label, options in browsers %}
           <optgroup label="{{ label[0] }}">
             {% for option in options if option.show_in_ui %}
               <option value="{{ option.slug }}" data-dependency="{{ label[1] }}"
                 {% if option.is_default %}
                   data-default="true"
-                  {% if not default_is_set %}
-                    {% set default_is_set = True %}
+                  {% if not selected_added %}
+                    {% set selected_added = True %}
                     selected="selected"
                   {% endif %}
                 {% endif %}>{{ option.name }}</option>
