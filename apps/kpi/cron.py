@@ -16,6 +16,7 @@ from kpi.models import (Metric, MetricKind,
                         VISITORS_METRIC_CODE)
 from questions.models import Answer
 from sumo.webtrends import Webtrends
+from wiki.config import TYPO_SIGNIFICANCE
 from wiki.models import Revision
 
 
@@ -96,9 +97,26 @@ def update_l10n_metric():
             num_docs += 1
             cur_rev_id = doc.latest_localizable_revision_id
             translation = doc.translated_to(locale)
-            if (translation and translation.current_revision_id and
-                translation.current_revision_id >= cur_rev_id):
+
+            if not translation or not translation.current_revision_id:
+                continue
+
+            if translation.current_revision.based_on_id >= cur_rev_id:
+                # The latest translation is based on the latest revision
+                # that is ready for localization or a newer one.
                 up_to_date_docs += 1
+            else:
+                # Check if the approved revisions that happened between
+                # the last approved translation and the latest revision
+                # that is ready for localization are all minor (significance =
+                # TYPO_SIGNIFICANCE). If so, the translation is still
+                # considered up to date.
+                revs = doc.revisions.filter(
+                    id__gt=translation.current_revision.based_on_id,
+                    is_approved=True,
+                    id__lte=cur_rev_id).exclude(significance=TYPO_SIGNIFICANCE)
+                if not revs.exists():
+                    up_to_date_docs += 1
 
         if num_docs and total_visits:
             coverage += ((float(up_to_date_docs) / num_docs) *
