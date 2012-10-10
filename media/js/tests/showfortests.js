@@ -133,4 +133,93 @@ test('fx3', function() {
     equals($select.find('option')[length].value, 'fx3');
 });
 
+
+var showforMobileOnlyFixture = {
+    setup: function() {
+        var $sandbox = tests.createSandbox('#showfor-mobile-only');
+            options = {
+                osSelector: 'select.os',
+                browserSelector: 'select.browser'
+            },
+            $b = $sandbox.find(options.browserSelector),
+            $o = $sandbox.find(options.osSelector);
+        ShowFor.initForTags(options, $sandbox);
+        this.$sandbox = $sandbox;
+        this.$b = $b;
+        this.$o = $o;
+    },
+    teardown: function() {
+        this.$sandbox.remove();
+    }
+};
+
+module('showforMobileOnly', showforMobileOnlyFixture);
+
+test('android m15', function() {
+    $('#_input_android').click();
+    $('#_input_m15').click();
+    equals(this.$o.val(), 'android', 'Android is now selected');
+    equals(this.$b.val(), 'm15', 'Firefox 15 is now selected');
+    assertNotHidden(this.$sandbox, ['android', 'm15']);
+    assertNotVisible(this.$sandbox, ['m16', 'maemo']);
+});
+
+test('android m16', function() {
+    $('#_input_android').click();
+    $('#_input_m16').click();
+    equals(this.$o.val(), 'android', 'Android is now selected');
+    equals(this.$b.val(), 'm16', 'Firefox 16 is now selected');
+    assertNotHidden(this.$sandbox, ['android', 'm15', 'm16']);
+    assertNotVisible(this.$sandbox, ['maemo']);
+});
+
+
+var showforDesktopOnlyFixture = {
+    setup: function() {
+        var $sandbox = tests.createSandbox('#showfor-desktop-only');
+            options = {
+                osSelector: 'select.os',
+                browserSelector: 'select.browser'
+            },
+            $b = $sandbox.find(options.browserSelector),
+            $o = $sandbox.find(options.osSelector);
+        ShowFor.initForTags(options, $sandbox);
+        this.$sandbox = $sandbox;
+        this.$b = $b;
+        this.$o = $o;
+    },
+    teardown: function() {
+        this.$sandbox.remove();
+    }
+};
+
+module('showforDesktopOnly', showforDesktopOnlyFixture);
+
+test('win fx15', function() {
+    $('#_input_win').click();
+    $('#_input_fx15').click();
+    equals(this.$o.val(), 'win', 'Windows is now selected');
+    equals(this.$b.val(), 'fx15', 'Firefox 15 is now selected');
+    assertNotHidden(this.$sandbox, ['win', 'fx15']);
+    assertNotVisible(this.$sandbox, ['fx16', 'fx17', 'mac', 'linux']);
+});
+
+test('mac fx16', function() {
+    $('#_input_mac').click();
+    $('#_input_fx16').click();
+    equals(this.$o.val(), 'mac', 'Mac is now selected');
+    equals(this.$b.val(), 'fx16', 'Firefox 16 is now selected');
+    assertNotHidden(this.$sandbox, ['mac', 'fx15', 'fx16']);
+    assertNotVisible(this.$sandbox, ['fx17', 'win', 'linux']);
+});
+
+test('linux fx17', function() {
+    $('#_input_linux').click();
+    $('#_input_fx17').click();
+    equals(this.$o.val(), 'linux', 'Linux is now selected');
+    equals(this.$b.val(), 'fx17', 'Firefox 17 is now selected');
+    assertNotHidden(this.$sandbox, ['linux', 'fx17', 'fx16', 'fx15']);
+    assertNotVisible(this.$sandbox, ['win', 'mac']);
+});
+
 });
