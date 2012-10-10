@@ -9,7 +9,7 @@ from sumo.views import redirect_to
 from topics.models import Topic, HOT_TOPIC_SLUG
 from wiki.facets import documents_for
 from wiki.models import Document
-from wiki.views import SHOWFOR_DATA
+from wiki.views import showfor_data
 
 
 # Docs for the mobile optimized templates:
@@ -203,7 +203,7 @@ def _data(docs, locale, product=None, q_tags=None, only_kb=False):
     for side, title in docs.iteritems():
         data[side] = get_object_fallback(Document, title, locale)
 
-    data.update(SHOWFOR_DATA)
+    data.update(showfor_data())
 
     if product:
         data.update(search_params={'product': product})

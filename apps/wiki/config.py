@@ -25,82 +25,71 @@ from tower import ugettext_lazy as _lazy
 VersionMetadata = namedtuple('VersionMetadata',
                              'id, name, long, slug, max_version, show_in_ui, '
                              'is_default')
+DESKTOP_FIREFOX_VERSIONS = (
+    VersionMetadata(29, _lazy(u'Firefox 17'),
+                    _lazy(u'Firefox 17'), 'fx17', 17.9999, True, False),   
+    VersionMetadata(27, _lazy(u'Firefox 16'),
+                    _lazy(u'Firefox 16'), 'fx16', 16.9999, True, False),        
+    VersionMetadata(25, _lazy(u'Firefox 15'),
+                    _lazy(u'Firefox 15'), 'fx15', 15.9999, True, True),
+    VersionMetadata(23, _lazy(u'Firefox 14'),
+                    _lazy(u'Firefox 14'), 'fx14', 14.9999, True, False),
+    VersionMetadata(21, _lazy(u'Firefox 13'),
+                    _lazy(u'Firefox 13'), 'fx13', 13.9999, False, False),
+    VersionMetadata(19, _lazy(u'Firefox 12'),
+                    _lazy(u'Firefox 12'), 'fx12', 12.9999, False, False),
+    VersionMetadata(17, _lazy(u'Firefox 11'),
+                    _lazy(u'Firefox 11'), 'fx11', 11.9999, False, False),
+    VersionMetadata(15, _lazy(u'Firefox ESR'),
+                    _lazy(u'Firefox ESR'), 'fx10', 10.9999, True, False),
+    VersionMetadata(13, _lazy(u'Firefox 9'),
+                    _lazy(u'Firefox 9'), 'fx9', 9.9999, False, False),
+    VersionMetadata(11, _lazy(u'Firefox 8'),
+                    _lazy(u'Firefox 8'), 'fx8', 8.9999, False, False),
+    VersionMetadata(9, _lazy(u'Firefox 7'),
+                    _lazy(u'Firefox 7'), 'fx7', 7.9999, False, False),
+    VersionMetadata(6, _lazy(u'Firefox 6'),
+                    _lazy(u'Firefox 6'), 'fx6', 6.9999, False, False),
+    VersionMetadata(5, _lazy(u'Firefox 5'),
+                    _lazy(u'Firefox 5'), 'fx5', 5.9999, False, False),
+    VersionMetadata(1, _lazy(u'Firefox 4'),
+                    _lazy(u'Firefox 4'), 'fx4', 4.9999, False, False),
+    VersionMetadata(2, _lazy(u'Firefox 3.5-3.6'),
+                    _lazy(u'Firefox 3.5-3.6'), 'fx35', 3.9999, False,
+                    False),
+    VersionMetadata(3, _lazy(u'Firefox 3.0'),
+                    _lazy(u'Firefox 3.0'), 'fx3', 3.4999, False, False))
+MOBILE_FIREFOX_VERSIONS = (
+    VersionMetadata(28, _lazy(u'Firefox 17'), _lazy(u'Firefox 17 for Mobile'),
+                    'm17', 17.9999, True, False),
+    VersionMetadata(26, _lazy(u'Firefox 16'), _lazy(u'Firefox 16 for Mobile'),
+                    'm16', 16.9999, True, False),
+    VersionMetadata(24, _lazy(u'Firefox 15'), _lazy(u'Firefox 15 for Mobile'),
+                    'm15', 15.9999, True, True),
+    VersionMetadata(22, _lazy(u'Firefox 14'), _lazy(u'Firefox 14 for Mobile'),
+                    'm14', 14.9999, True, False),
+    # Firefox 13 for Mobile was skipped.
+    VersionMetadata(20, _lazy(u'Firefox 12'), _lazy(u'Firefox 12 for Mobile'),
+                    'm12', 12.9999, False, False),  # 11 and 12 for mobile were skipped.
+    VersionMetadata(18, _lazy(u'Firefox 11'), _lazy(u'Firefox 11 for Mobile'),
+                    'm11', 11.9999, False, False),  # 11 and 12 for mobile were skipped.
+    VersionMetadata(16, _lazy(u'Firefox 10'), _lazy(u'Firefox 10 for Mobile'),
+                    'm10', 10.9999, False, False),
+    VersionMetadata(14, _lazy(u'Firefox 9'), _lazy(u'Firefox 9 for Mobile'),
+                    'm9', 9.9999, False, False),
+    VersionMetadata(12, _lazy(u'Firefox 8'), _lazy(u'Firefox 8 for Mobile'),
+                    'm8', 8.9999, False, False),
+    VersionMetadata(10, _lazy(u'Firefox 7'), _lazy(u'Firefox 7 for Mobile'),
+                    'm7', 7.9999, False, False),
+    VersionMetadata(8, _lazy(u'Firefox 6'), _lazy(u'Firefox 6 for Mobile'),
+                    'm6', 6.9999, False, False),
+    VersionMetadata(7, _lazy(u'Firefox 5'), _lazy(u'Firefox 5 for Mobile'),
+                    'm5', 5.9999, False, False),
+    VersionMetadata(4, _lazy(u'Firefox 4'), _lazy(u'Firefox 4 for Mobile'),
+                    'm4', 4.9999, False, False))
 GROUPED_FIREFOX_VERSIONS = (
-    ((_lazy(u'Desktop:'), 'desktop'), (
-        VersionMetadata(29, _lazy(u'Firefox 17'),
-                        _lazy(u'Firefox 17'), 'fx17', 17.9999, True, False),   
-        VersionMetadata(27, _lazy(u'Firefox 16'),
-                        _lazy(u'Firefox 16'), 'fx16', 16.9999, True, False),        
-        VersionMetadata(25, _lazy(u'Firefox 15'),
-                        _lazy(u'Firefox 15'), 'fx15', 15.9999, True, True),
-        VersionMetadata(23, _lazy(u'Firefox 14'),
-                        _lazy(u'Firefox 14'), 'fx14', 14.9999, True, False),
-        VersionMetadata(21, _lazy(u'Firefox 13'),
-                        _lazy(u'Firefox 13'), 'fx13', 13.9999, False, False),
-        VersionMetadata(19, _lazy(u'Firefox 12'),
-                        _lazy(u'Firefox 12'), 'fx12', 12.9999, False, False),
-        VersionMetadata(17, _lazy(u'Firefox 11'),
-                        _lazy(u'Firefox 11'), 'fx11', 11.9999, False, False),
-        VersionMetadata(15, _lazy(u'Firefox ESR'),
-                        _lazy(u'Firefox ESR'), 'fx10', 10.9999, True, False),
-        VersionMetadata(13, _lazy(u'Firefox 9'),
-                        _lazy(u'Firefox 9'), 'fx9', 9.9999, False, False),
-        VersionMetadata(11, _lazy(u'Firefox 8'),
-                        _lazy(u'Firefox 8'), 'fx8', 8.9999, False, False),
-        VersionMetadata(9, _lazy(u'Firefox 7'),
-                        _lazy(u'Firefox 7'), 'fx7', 7.9999, False, False),
-        VersionMetadata(6, _lazy(u'Firefox 6'),
-                        _lazy(u'Firefox 6'), 'fx6', 6.9999, False, False),
-        VersionMetadata(5, _lazy(u'Firefox 5'),
-                        _lazy(u'Firefox 5'), 'fx5', 5.9999, False, False),
-        VersionMetadata(1, _lazy(u'Firefox 4'),
-                        _lazy(u'Firefox 4'), 'fx4', 4.9999, False, False),
-        VersionMetadata(2, _lazy(u'Firefox 3.5-3.6'),
-                        _lazy(u'Firefox 3.5-3.6'), 'fx35', 3.9999, False,
-                        False),
-        VersionMetadata(3, _lazy(u'Firefox 3.0'),
-                        _lazy(u'Firefox 3.0'), 'fx3', 3.4999, False, False))),
-    ((_lazy(u'Mobile:'), 'mobile'), (
-        VersionMetadata(28, _lazy(u'Firefox 17'),
-                        _lazy(u'Firefox 17 for Mobile'), 'm17', 17.9999,
-                        True, False),
-        VersionMetadata(26, _lazy(u'Firefox 16'),
-                        _lazy(u'Firefox 16 for Mobile'), 'm16', 16.9999,
-                        True, False),
-        VersionMetadata(24, _lazy(u'Firefox 15'),
-                        _lazy(u'Firefox 15 for Mobile'), 'm15', 15.9999,
-                        True, True),
-        VersionMetadata(22, _lazy(u'Firefox 14'),
-                        _lazy(u'Firefox 14 for Mobile'), 'm14', 14.9999,
-                        True, False),
-        # Firefox 13 for Mobile was skipped.
-        VersionMetadata(20, _lazy(u'Firefox 12'),
-                        _lazy(u'Firefox 12 for Mobile'), 'm12', 12.9999,
-                        False, False),  # 11 and 12 for mobile were skipped.
-        VersionMetadata(18, _lazy(u'Firefox 11'),
-                        _lazy(u'Firefox 11 for Mobile'), 'm11', 11.9999,
-                        False, False),  # 11 and 12 for mobile were skipped.
-        VersionMetadata(16, _lazy(u'Firefox 10'),
-                        _lazy(u'Firefox 10 for Mobile'), 'm10', 10.9999,
-                        False, False),
-        VersionMetadata(14, _lazy(u'Firefox 9'),
-                        _lazy(u'Firefox 9 for Mobile'), 'm9', 9.9999,
-                        False, False),
-        VersionMetadata(12, _lazy(u'Firefox 8'),
-                        _lazy(u'Firefox 8 for Mobile'), 'm8', 8.9999,
-                        False, False),
-        VersionMetadata(10, _lazy(u'Firefox 7'),
-                        _lazy(u'Firefox 7 for Mobile'), 'm7', 7.9999,
-                        False, False),
-        VersionMetadata(8, _lazy(u'Firefox 6'),
-                        _lazy(u'Firefox 6 for Mobile'), 'm6', 6.9999,
-                        False, False),
-        VersionMetadata(7, _lazy(u'Firefox 5'),
-                        _lazy(u'Firefox 5 for Mobile'), 'm5', 5.9999,
-                        False, False),
-        VersionMetadata(4, _lazy(u'Firefox 4'),
-                        _lazy(u'Firefox 4 for Mobile'), 'm4', 4.9999,
-                        False, False),)))
+    ((_lazy(u'Desktop:'), 'desktop'), DESKTOP_FIREFOX_VERSIONS),
+    ((_lazy(u'Mobile:'), 'mobile'), MOBILE_FIREFOX_VERSIONS))
 
 # Flattened:
 # TODO: Perhaps use optgroups everywhere instead.
@@ -110,14 +99,16 @@ FIREFOX_VERSIONS = tuple(chain(*[options for label, options in
 # OSes used to filter articles and declare {for} sections:
 OsMetaData = namedtuple('OsMetaData', 'id, name, slug, show_in_ui, '
                         'is_default')
+DESKTOP_OPERATING_SYSTEMS = (
+    OsMetaData(1, _lazy(u'Windows'), 'win', True, True),
+    OsMetaData(2, _lazy(u'Mac OS X'), 'mac', True, False),
+    OsMetaData(3, _lazy(u'Linux'), 'linux', True, False))
+MOBILE_OPERATING_SYSTEMS = (
+    OsMetaData(5, _lazy(u'Android'), 'android', True, True),
+    OsMetaData(4, _lazy(u'Maemo'), 'maemo', False, False))
 GROUPED_OPERATING_SYSTEMS = (
-    ((_lazy(u'Desktop OS:'), 'desktop'), (
-        OsMetaData(1, _lazy(u'Windows'), 'win', True, True),
-        OsMetaData(2, _lazy(u'Mac OS X'), 'mac', True, False),
-        OsMetaData(3, _lazy(u'Linux'), 'linux', True, False))),
-    ((_lazy(u'Mobile OS:'), 'mobile'), (
-        OsMetaData(5, _lazy(u'Android'), 'android', True, True),
-        OsMetaData(4, _lazy(u'Maemo'), 'maemo', False, False))))
+    ((_lazy(u'Desktop OS:'), 'desktop'), DESKTOP_OPERATING_SYSTEMS),
+    ((_lazy(u'Mobile OS:'), 'mobile'), MOBILE_OPERATING_SYSTEMS))
 
 # Flattened
 OPERATING_SYSTEMS = tuple(chain(*[options for label, options in
