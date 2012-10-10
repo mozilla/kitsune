@@ -198,7 +198,7 @@ var ShowFor = {
                     // {comparator: '>' product: 'm', version: 4.9999}.
                     function meets(slug, condition) {
                         var browser = BROWSERS[slug];
-                        if (browser.product != condition.product) {
+                        if (!slug || browser.product != condition.product) {
                             return false;
                         }
                         switch (condition.comparator) {
