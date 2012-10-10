@@ -1,6 +1,5 @@
 $(document).ready(function(){
 
-// TODO: get this working:
 "use strict";
 
 var showforFixture = {
