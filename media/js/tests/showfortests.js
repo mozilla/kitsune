@@ -1,11 +1,11 @@
 $(document).ready(function(){
 
 // TODO: get this working:
-//"use strict";
+"use strict";
 
 var showforFixture = {
     setup: function() {
-        var $sandbox = tests.createSandbox('#showfor');
+        var $sandbox = tests.createSandbox('#showfor'),
             options = {
                 osSelector: 'select.os',
                 browserSelector: 'select.browser'
@@ -136,7 +136,7 @@ test('fx3', function() {
 
 var showforMobileOnlyFixture = {
     setup: function() {
-        var $sandbox = tests.createSandbox('#showfor-mobile-only');
+        var $sandbox = tests.createSandbox('#showfor-mobile-only'),
             options = {
                 osSelector: 'select.os',
                 browserSelector: 'select.browser'
@@ -152,7 +152,7 @@ var showforMobileOnlyFixture = {
         this.$sandbox.remove();
     }
 };
-/*
+
 module('showforMobileOnly', showforMobileOnlyFixture);
 
 test('android m15', function() {
@@ -176,7 +176,7 @@ test('android m16', function() {
 
 var showforDesktopOnlyFixture = {
     setup: function() {
-        var $sandbox = tests.createSandbox('#showfor-desktop-only');
+        var $sandbox = tests.createSandbox('#showfor-desktop-only'),
             options = {
                 osSelector: 'select.os',
                 browserSelector: 'select.browser'
@@ -221,5 +221,5 @@ test('linux fx17', function() {
     assertNotHidden(this.$sandbox, ['linux', 'fx17', 'fx16', 'fx15']);
     assertNotVisible(this.$sandbox, ['win', 'mac']);
 });
-*/
+
 });
