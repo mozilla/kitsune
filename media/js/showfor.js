@@ -343,7 +343,7 @@ var ShowFor = {
             var version = currentBrowser.replace(/^\D+/,'');
             $browserMenu.find('option').each(function() {
                 var $this = $(this);
-                if ($this.val().replace(/^\D+/,'') == version) {
+                if ($this.val().replace(/^\D+/,'') === version) {
                     $browserMenu.val($this.val());
                 }
             });
@@ -356,7 +356,8 @@ var ShowFor = {
         // selected manually: that is, via a cookie or a hash fragment.
         function setSelectorValue(cookieName, hashName, hash, detector, $menu) {
             var initial = hash[hashName],
-                isManual = true;
+                isManual = true,
+                before;
             if (!initial) {
                 initial = $.cookie(cookieName);
                 if (!initial) {
@@ -365,7 +366,14 @@ var ShowFor = {
                 }
             }
             if (initial) {
+                before = $menu.val();
                 $menu.val(initial);  // does not fire change event
+
+                // If setting to the initial failed, set it back to the previous
+                // value. Otherwise, IE leaves the value as undefined.
+                if ($menu.val() != initial) {
+                    $menu.val(before);
+                }
                 updateShowforSelectors();
             }
             return isManual;
