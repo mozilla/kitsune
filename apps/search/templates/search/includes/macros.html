@@ -2,33 +2,17 @@
 
 {% macro basic_search_form(primary=False) -%}
   {# Must be imported with context #}
-  {% if show_new_sumo(request) %}
-    <div {% if primary %}id="basic-search"{% endif %} class="search-refine">
-      <form class="search-form cf" role="search" method="get" action="search">
-        <input type="hidden" name="esab" value="{% if waffle.flag('search-ab') %}a{% else %}b{% endif %}">
-        {% for name, field in search_form.fields.items() if not name in ('q',) %}
-          {% set list = request.GET.getlist(name) %}
-          {% for value in list %}
-            <input type="hidden" name="{{ name }}" value="{{ value }}" />
-          {% endfor %}
+  <div {% if primary %}id="basic-search"{% endif %} class="search-refine">
+    <form class="search-form cf" role="search" method="get" action="search">
+      <input type="hidden" name="esab" value="{% if waffle.flag('search-ab') %}a{% else %}b{% endif %}">
+      {% for name, field in search_form.fields.items() if not name in ('q',) %}
+        {% set list = request.GET.getlist(name) %}
+        {% for value in list %}
+          <input type="hidden" name="{{ name }}" value="{{ value }}" />
         {% endfor %}
-        <input type="text" class="searchbox" value="{{ q }}" name="q">
-        <button type="submit" class="btn btn-important big">{{ _('Search Mozilla Support') }}</button>
-      </form>
-    </div>
-  {% else %}
-    <div {% if primary %}id="basic-search"{% endif %} class="search-refine">
-      <form role="search" method="get" action="search">
-        <input type="hidden" name="esab" value="{% if waffle.flag('search-ab') %}a{% else %}b{% endif %}">
-        {% for name, field in search_form.fields.items() if not name in ('q',) %}
-          {% set list = request.GET.getlist(name) %}
-          {% for value in list %}
-            <input type="hidden" name="{{ name }}" value="{{ value }}" />
-          {% endfor %}
-        {% endfor %}
-        <input type="text" class="search-query search-refine-query" value="{{ q }}" name="q">
-        <input type="submit" class="search-refine-submit btn-large" value="{{ _('Search Mozilla Support') }}">
-      </form>
-    </div>
-  {% endif %}
+      {% endfor %}
+      <input type="text" class="searchbox" value="{{ q }}" name="q">
+      <button type="submit" class="btn btn-important big">{{ _('Search Mozilla Support') }}</button>
+    </form>
+  </div>
 {%- endmacro %}

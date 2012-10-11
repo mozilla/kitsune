@@ -17,7 +17,7 @@ from forums.events import NewPostEvent, NewThreadEvent
 from forums.feeds import ThreadsFeed, PostsFeed
 from forums.forms import ReplyForm, NewThreadForm, EditThreadForm, EditPostForm
 from forums.models import Forum, Thread, Post
-from sumo.helpers import urlparams, show_new_sumo
+from sumo.helpers import urlparams
 from sumo.urlresolvers import reverse
 from sumo.utils import paginate
 from users.models import Setting
@@ -472,9 +472,6 @@ def post_preview_async(request):
     statsd.incr('forums.preview')
     post = Post(author=request.user, content=request.POST.get('content', ''))
     post.author_post_count = 1
-    if show_new_sumo(request):
-        template = 'forums/includes/post_preview-new.html'
-    else:
-        template = 'forums/includes/post_preview.html'
 
-    return jingo.render(request, template, {'post_preview': post})
+    return jingo.render(
+        request, 'forums/includes/post_preview.html', {'post_preview': post})

@@ -1,11 +1,7 @@
 {# vim: set ts=2 et sts=2 sw=2: #}
 {% extends "base.html" %}
 {% if not styles %}
-  {% if show_new_sumo(request) %}
-    {% set styles = ('forums-new',) %}
-  {% else %}
-    {% set styles = ('forums',) %}
-  {% endif %}
+  {% set styles = ('forums',) %}
 {% endif %}
 {% set scripts = ('forums',) %}
 

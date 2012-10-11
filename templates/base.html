@@ -1,5 +1,213 @@
-{% if show_new_sumo(request) %}
-  {% extends "base_new.html" %}
-{% else %}
-  {% extends "base_old.html" %}
+{# vim: set ts=2 et sts=2 sw=2: #}
+{% from 'includes/common_macros.html' import search_box, aux_nav with context %}
+{% if not top_link %}
+  {% set top_link = url('home') %}
 {% endif %}
+<!DOCTYPE html>
+<html class="no-js" lang="{{ request.locale }}" {% if DIR %}dir="{{ DIR }}"{% endif %}>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+  <title>{% block title %}{% if title %}{{ title }} | {% endif %}{{ _('Mozilla Support', 'site_title') }}{% endblock %}</title>
+
+  <link rel="shortcut icon" type="image/x-icon" href="{{ MEDIA_URL }}img/favicon.ico"/>
+  <link rel="search" type="application/opensearchdescription+xml" title="{{ _('Firefox Help') }}" href="{{ url('search.plugin') }}"/>
+  {% if feeds %}
+    {% for feed in feeds %}
+      <link rel="alternate" type="application/atom+xml" href="{{ feed[0] }}" title="{{ feed[1] }}"/>
+    {% endfor %}
+  {% endif %}
+
+  {{ css('common') }}
+  {{ css('print', 'print') }}
+  {% for style in styles %}
+    {{ css(style) }}
+  {% endfor %}
+
+  {% if request.locale == 'en-US' %}
+    {# tabzilla is en-US only for now #}
+    <link href="//www.mozilla.org/tabzilla/media/css/tabzilla.css" rel="stylesheet" />
+  {% endif %}
+
+  <!--[if lte IE 7]>
+{{ css('ie') }}
+<![endif]-->
+  <!--[if IE 8]>
+{{ css('ie8') }}
+<![endif]-->
+
+  {% if meta %}
+    {% for tag in meta %}
+      <meta name="{{ tag[0] }}" content="{{ tag[1] }}"/>
+    {% endfor %}
+  {% endif %}
+
+  {% if refresh %}
+    <meta http-equiv="refresh" content="{{ refresh[1] }};url={{ refresh[0] }}"/>
+  {% endif %}
+
+  {% if canonical_url %}
+    <link rel="canonical" href="{{ canonical_url }}" />
+  {% endif %}
+
+  <!--[if lt IE 9]>
+{# html5-shiv.js must be inside <head/> to work. #}
+<script src="{{ MEDIA_URL }}js/libs/html5-shiv.js"></script>
+<![endif]-->
+</head>
+<body class="html-{{ DIR }} {{ classes }} {{ request.locale }}"
+      data-readonly="{{ settings.READ_ONLY|json }}"
+      data-for-os="{{ for_os|json }}"
+      data-for-version="{{ for_version|json }}"
+      data-usernames-api="{{ url('users.api.usernames') }}"
+      data-media-url="{{ MEDIA_URL }}"
+{% if extra_body_attrs -%}
+  {% for attr, val in extra_body_attrs.items() %}{{ attr }}="{{ val }}" {% endfor %}
+{%- endif %}>
+
+{% if settings.STAGE %}
+  <div id="stage-banner">
+    <div class="close-button">X</div>
+    {{ _('This is a staging site. The production site is <a href="http://support.mozilla.org">here</a>.') }}
+  </div>
+{% endif %}
+
+<header>
+  <div class="container_12 cf">
+    <div class="grid_12">
+      {% if request.locale == 'en-US' %}
+        {# tabzilla is en-US only for now #}
+        <a href="http://www.mozilla.org/" id="tabzilla">mozilla</a>
+      {% else %}
+        <a class="mozilla-tab" href="http://mozilla.org/"><img src="{{ MEDIA_URL }}img/mozilla-tab.png" alt="mozilla.org"></a>
+      {% endif %}
+      <div class="cf">
+        <nav id="aux-nav" role="navigation">
+          <ul>
+            {{ aux_nav(user) }}
+            {% set locale_url = url('sumo.locales') %}
+            {% if localizable_url %}
+              {% set locale_url = locale_url|urlparams(next=localizable_url) %}
+            {% endif %}
+            <li><a href="{{ locale_url }}" class="locale-picker">{{ settings.LANGUAGES[request.locale.lower()] }}</a></li>
+          </ul>
+        </nav>
+      </div>
+      <div class="cf">
+        {% if not hide_header_search %}
+          {{ search_box(settings, id='support-search') }}
+        {% endif %}
+        <a href="{{ url('home') }}"><img class="logo" alt="mozilla support" src="{{ MEDIA_URL }}img/mozilla-support.png" /></a>
+      </div>
+      <nav id="main-nav">
+        <ul class="cf">
+          <li><a href="{{ url('products') }}">{{ _('Products &amp; Services') }}</a></li>
+          <li><a href="{{ url('wiki.landing') }}">{{ _('Help Articles') }}</a></li>
+          <li><a href="{{ url('topics.topic', slug='hot') }}">{{ _('Hot Topics') }}</a></li>
+          <li><a href="{{ url('wiki.document', 'mozilla-news') }}">{{ _('Mozilla News') }}</a></li>
+          <li><a href="{{ url('wiki.document', 'superheroes-wanted') }}">{{ _('Help Other Users') }}</a></li>
+          <li><a href="{{ url('wiki.document', 'suggestion-box') }}">{{ _('Suggestion Box') }}</a></li>
+        </ul>
+      </nav>
+    </div>
+  </div>
+</header>
+
+{% block breadcrumbs %}
+  {{ breadcrumbs(crumbs) }}
+{% endblock %}
+
+<div class="container_12 cf">
+  <div class="grid_12">
+    {% if messages %}
+      <ul class="user-messages">
+        {% for message in messages %}
+          <li {% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+
+    {% block above_main %}{% endblock %}
+  </div>
+
+  {% block outer_side %}
+    <aside class="grid_3">
+      {% block side_top %}{% endblock %}
+      {% block side %}{% endblock %}
+      {% block side_bottom %}{% endblock %}
+    </aside>
+  {% endblock %}
+
+  {% block content %}{% endblock %}
+</div>
+
+<footer>
+  <div class="container_12 cf">
+    <div class="grid_2"><img src="{{ MEDIA_URL }}img/mozilla-logo.png" alt="Mozilla" /></div>
+    <div class="grid_4 suffix_1">
+      <div class="fineprint">
+        {% trans %}
+          Portions of this content are &copy;1998–2012
+          <br>by individual mozilla.org contributors. Content
+          <br>available under a Creative Commons license.
+        {% endtrans %}
+      </div>
+    </div>
+    <div class="grid_2">
+      <ul>
+        <li><a href="http://www.mozilla.org/about/contact.html">{{ _('Contact Us') }}</a></li>
+        <li><a href="http://www.mozilla.org/privacy-policy.html">{{ _('Privacy Policy') }}</a></li>
+        <li><a href="http://www.mozilla.org/about/legal.html">{{ _('Legal Notices') }}</a></li>
+        <li><a href="http://www.mozilla.org/legal/fraud-report/index.html">{{ _('Report Trademark Abuse') }}</a></li>
+      </ul>
+    </div>
+    <div class="grid_2 suffix_1">
+      <ul>
+        <li><a href="http://www.twitter.com/mozilla">{{ _('Twitter') }}</a></li>
+        <li><a href="http://www.facebook.com/mozilla">{{ _('Facebook') }}</a></li>
+        <li><a href="http://affiliates.mozilla.org/">{{ _('Firefox Affiliates') }}</a></li>
+      </ul>
+    </div>
+  </div>
+</footer>{# /#footer #}
+
+<script src="{{ url('jsi18n') }}build:{{ BUILD_ID_JS }}"></script>
+<script src="{{ url('wafflejs') }}"></script>
+{{ js('common') }}
+<!--[if (gte IE 6)&(lte IE 8)]>
+  {{ js('ie6-8') }}
+<![endif]-->
+{% for script in scripts %}
+  {{ js(script) }}
+{% endfor %}
+
+{% if request.locale == 'en-US' %}
+  {# tabzilla is en-US only for now #}
+  <script src="//www.mozilla.org/tabzilla/media/js/tabzilla.js"></script>
+{% endif %}
+
+{# Webtrends Stats Tracking #}
+<script src="{{ MEDIA_URL }}js/webtrends.js"></script>
+<noscript>
+  <div><img alt="DCSIMG" id="DCSIMG" width="1" height="1" src="//statse.webtrendslive.com/dcsz45fp6vz5bdvu89oegdwp8_7u8z/njs.gif?dcsuri=/nojavascript&amp;WT.js=No&amp;WT.tv=9.4.0&amp;dcssip=www.support.mozilla.org"/></div>
+</noscript>
+{# End Webtrends #}
+
+{# Ethnio tracking - see bugs 683643 and 673544 #}
+{% if waffle.flag('ethnio-all') %}
+  <script type="text/javascript" language="javascript" src="//ethn.io/remotes/24561" async="true"></script>
+{% endif %}
+{# End Ethnio #}
+
+{# SurveyGizmo survey - Bug 782809 #}
+{# TODO: This script is generated and it isn't pretty.
+   We should look into putting it into it's own file and cleaning it up.
+ #}
+{% if request.locale == settings.WIKI_DEFAULT_LANGUAGE and waffle.flag('surveygizmo') %}
+  <script type="text/javascript">window.addEventListener("load",function(e) {if (!readCookie("hasSurveyed")) {launchWindow(document.getElementById("sg_div"));createCookie("hasSurveyed", 1, 365);}});function launchWindow(){var sg_div = document.createElement("div");sg_div.innerHTML = "<h1>You have been selected for a survey</h1><p>We appreciate your feedback!</p><p><a href=\"http://www.surveygizmo.com/s3/popup/1002970/46488f9ad4eb\">Please click here start it now.</a> </p> <a href=\"#\" onclick=\"document.getElementById('sg-popup').style.display = 'none';return false;\">No, thank you.</a> ";sg_div.id = "sg-popup";sg_div.style.position = "absolute";sg_div.style.width = "500px";sg_div.style.top = "100px";sg_div.style.left = "400px";sg_div.style.backgroundColor = "#ffffff";sg_div.style.borderColor = "#000000";sg_div.style.borderStyle = "solid";sg_div.style.padding = "20px";sg_div.style.fontSize = "16px";sg_div.style.zIndex = "1000";document.body.appendChild(sg_div);}function createCookie(name,value,days) {if (days) {var date = new Date();date.setTime(date.getTime()+(days*24*60*60*1000));var expires = "; expires="+date.toGMTString();}else var expires = "";document.cookie = name+"="+value+expires+"; path=/";}function readCookie(name) {var nameEQ = name + "=";var ca = document.cookie.split(";");for(var i=0;i < ca.length;i++) {var c = ca[i];while (c.charAt(0)==" ") c = c.substring(1,c.length);if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);}return null;}</script>
+{% endif %}
+{# End SurveyGizmo #}
+
+{% block footer_script %}
+{% endblock %}
+</body>
+</html>

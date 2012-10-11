@@ -7,13 +7,13 @@
     {% else %}
       {% set _forum = thread.forum %}
     {% endif %}
-    <li>
+    <li class="cf">
       <div class="type">
         {% if thread.is_locked %}
-          <img src="{{ MEDIA_URL }}img/forums/type/locked.png" alt="{{ _('Locked', 'thread_type') }}" title="{{ _('Locked', 'thread_type') }}"/>
+          <img src="{{ MEDIA_URL }}img/blank.png" alt="{{ _('Locked', 'thread_type') }}" title="{{ _('Locked', 'thread_type') }}" class="icon-locked" />
         {% endif %}
         {% if thread.is_sticky %}
-          <img src="{{ MEDIA_URL }}img/forums/type/sticky.png" alt="{{ _('Sticky', 'thread_type') }}" title="{{ _('Sticky', 'thread_type') }}"/>
+          <img src="{{ MEDIA_URL }}img/blank.png" alt="{{ _('Sticky', 'thread_type') }}" title="{{ _('Sticky', 'thread_type') }}" class="icon-sticky" />
         {% endif %}
       </div>
       <div class="title"><a href="{{ url('forums.posts', forum_slug=_forum.slug, thread_id=thread.id)|urlparams(last=thread.last_post.id) }}">{{ thread.title }}</a></div>
@@ -25,7 +25,6 @@
         </a><br/>
         {{ _('by <a class="username" href="{profile_url}">{username}</a>')|fe(profile_url=profile_url(thread.last_post.author), username=thread.last_post.author.username) }}
       </div>
-    <hr/>
     </li>
   {% endfor %}
   </ol>
