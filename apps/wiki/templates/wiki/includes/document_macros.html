@@ -277,3 +277,16 @@
     {{ _('Leave a message for {rest} and {last}:')|fe(rest=', '.join(contributors[:-1]), last=contributors[-1]) }}
   {% endif %}
 {%- endmacro %}
+
+{% macro document_lock_warning() -%}
+  {% if locked %}
+    <div id="locked-warning" class="warning-box">
+      <h2>{% trans user=locked_by.username %}
+        Warning! This page is also being edited by {{ user }}!
+      {% endtrans %}</h2>
+      <p>{{ _('If you know what you are doing, you can edit the document anyways.') }}</p>
+
+      <a href="#" id="unlock-button" class="btn btn-warning">{{ _('Edit anyways') }}</a>
+    </div>
+  {% endif %}
+{%- endmacro %}

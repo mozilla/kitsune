@@ -13,6 +13,14 @@ article {
     margin-top: 0;
     padding-top: 0;
   }
+
+  &.locked > * {
+    opacity: 0.3;
+  }
+
+  > * {
+    .transition(opacity 1s);
+  }
 }
 
 .product-title {

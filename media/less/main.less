@@ -268,7 +268,8 @@ input[type=button],
   }
 
   &.btn-important,
-  &.btn-submit {
+  &.btn-submit,
+  &.btn-warning {
     border: 0;
     border-bottom: 2px solid #bec0c2;
     .box-shadow(none);
@@ -306,6 +307,13 @@ input[type=button],
     &:before {
       .gradient(#3c88cc, #3c88cc, #3173ae);
       border-bottom: 2px solid #2b659a;
+    }
+  }
+
+  &.btn-warning {
+    &:before {
+      .gradient(#d15646, #d15646, #a64030);
+      border-bottom: 2px solid #9f2519;
     }
   }
 }
@@ -1265,6 +1273,7 @@ input.searchbox {
   border: 1px solid #fffbe7;
   margin: 20px 0 20px 0;
   padding: 20px 30px 20px 30px;
+  box-shadow: 0 0 4px rgba(100, 0, 0, 0.2);
 }
 
 /* Vote response message box */

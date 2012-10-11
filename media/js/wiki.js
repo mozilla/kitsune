@@ -50,6 +50,7 @@
             initPreValidation();
             initNeedsChange();
             initSummaryCount();
+            initFormLock();
 
             $('img.lazy').loadnow();
 
@@ -553,6 +554,31 @@
             } else {
                 $.cookie('show-editing-tools', null, {path: '/'});
             }
+        });
+    }
+
+    function initFormLock() {
+        var $doc = $('#edit-document');
+        if (!$doc.length) {
+            $doc = $('#localize-document');
+        }
+        if ($doc.is('.locked')) {
+            var $inputs = $doc.find('input:enabled, textarea:enabled')
+                .prop('disabled', true);
+        }
+        $('#unlock-button').on('click', function () {
+            $inputs.prop('disabled', false);
+            $doc.removeClass('locked');
+            $('#locked-warning').slideUp(500);
+
+            var doc_slug = $doc.data('slug');
+            var url = window.location.toString();
+            // Modify the current url, so we get the right locale.
+            url = url.replace(/edit/, 'steal_lock');
+
+            $.ajax({
+                url: url
+            });
         });
     }
 

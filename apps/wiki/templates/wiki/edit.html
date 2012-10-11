@@ -5,6 +5,7 @@
 {% from "includes/common_macros.html" import content_editor %}
 {% from "wiki/includes/document_macros.html" import edit_messages, submit_revision %}
 {% from "wiki/includes/document_macros.html" import document_watch with context %}
+{% from "wiki/includes/document_macros.html" import document_lock_warning with context %}
 {% set title = _('Edit Article | {document}')|f(document=document.title) %}
 {# TODO: Change KB url to landing page when we have one #}
 {% set crumbs = [(document.get_absolute_url(), document.title),
@@ -13,7 +14,9 @@
 
 {% block content %}
   <div class="grid_9">
-    <article id="edit-document">
+    {{ document_lock_warning() }}
+
+    <article id="edit-document" {% if locked %}class="locked"{% endif %} data-slug="{{ document.slug }}">
       <h1>{{ _('<em>Editing</em> {title}')|fe(title=document.title) }}</h1>
       {{ edit_messages(document, show_revision_warning) }}
       {% if document_form %}
