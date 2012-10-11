@@ -1,8 +1,5 @@
 {# vim: set ts=2 et sts=2 sw=2: #}
 {% extends "base.html" %}
-{% if not for_contributors %}
-  {% from 'includes/sidebar_modules.html' import for_contributors %}
-{% endif %}
 {% if not styles %}
   {% set styles = ('questions', 'jqueryui/jqueryui') %}
 {% endif %}

@@ -166,12 +166,7 @@ def breadcrumbs(context, items=list(), add_default=True):
 
     c = {'breadcrumbs': crumbs}
 
-    if show_new_sumo(context['request']):
-        layout = 'layout/breadcrumbs.html'
-    else:
-        layout = 'layout/breadcrumbs-old.html'
-
-    t = env.get_template(layout).render(c)
+    t = env.get_template('layout/breadcrumbs.html').render(c)
     return jinja2.Markup(t)
 
 
@@ -361,13 +356,6 @@ def yesno(boolean_value):
 def remove(list_, item):
     """Removes an item from a list."""
     return [i for i in list_ if i != item]
-
-
-@register.function
-def show_new_sumo(request):
-    """Return True if the new IA should be shown to the user."""
-    # Show it to everybody!!!! \o/
-    return True
 
 
 IDEVICE_USER_AGENTS = re.compile('iphone|ipad|ipod')

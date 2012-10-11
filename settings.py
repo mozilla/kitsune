@@ -464,14 +464,6 @@ TOWER_ADD_HEADERS = True
 MINIFY_BUNDLES = {
     'css': {
         'common': (
-            'global/footer.css',
-            'css/kbox.css',
-        ),
-        'old-theme': (
-            'css/main.css',
-            'css/reset.css',
-        ),
-        'new-theme': (
             'css/normalize.css',
             'less/main.less',
         ),
@@ -483,11 +475,6 @@ MINIFY_BUNDLES = {
             'css/jqueryui/jqueryui.css',
         ),
         'forums': (
-            'css/jqueryui/jqueryui.css',
-            'css/forums.css',
-            'css/reportabuse.css',
-        ),
-        'forums-new': (
             'less/forums.less',
             'css/reportabuse.css',
         ),
@@ -506,11 +493,6 @@ MINIFY_BUNDLES = {
             'css/screencast.css',
         ),
         'home': (
-            'css/showfor.css',
-            'css/wiki_syntax.css',
-            'css/home.css',
-        ),
-        'home-new': (
             'less/home.less',
         ),
         'gallery': (
@@ -577,17 +559,12 @@ MINIFY_BUNDLES = {
             'js/kbox.js',
             'js/main.js',
             'js/format.js',
+            'js/libs/modernizr-2.6.1.js',
+            'js/ui.js',
         ),
         'ie6-8': (
             'js/libs/nwmatcher-1.2.5.js',
             'js/libs/selectivizr-1.0.2.js',
-        ),
-        'new-theme': (
-            'js/libs/modernizr-2.6.1.js',
-            'js/ui.js',
-        ),
-        'old-theme': (
-            'js/libs/modernizr-1.7.js',
         ),
         'libs/jqueryui': (
             'js/libs/jqueryui.min.js',

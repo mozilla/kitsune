@@ -1,21 +1,25 @@
-<div class="author">
-  <a href="{{ profile_url(post.author, request.user == post.author) }}">
-    <img src="{{ profile_avatar(post.author) }}" height="45" width="45" alt=""/>
+<div class="author" xmlns="http://www.w3.org/1999/html"
+     xmlns="http://www.w3.org/1999/html" xmlns="http://www.w3.org/1999/html">
+  <a class="avatar" href="{{ profile_url(post.author, request.user == post.author) }}">
+    <img src="{{ profile_avatar(post.author) }}" height="45" width="45" alt="{{ post.author }}"/>
   </a>
   <a class="author-name" href="{{ profile_url(post.author, request.user == post.author) }}">{{ post.author }}</a>
-  {{ private_message(post.author) }}
+
+  <ul>
+    <li>{{ private_message(post.author) }}</li>
+    {% if post.id and not thread.is_locked and
+      has_perm_or_owns('forums_forum.post_edit_forum', post, forum, 'author') %}
+      <li><a href="{{ url('forums.edit_post', forum.slug, thread.id, post.id) }}">{{ _('Edit this post') }}</a></li>
+    {% endif %}
+    {% if post.id and has_perm('forums_forum.post_delete_forum', forum) %}
+      <li><a href="{{ url('forums.delete_post', forum.slug, thread.id, post.id) }}">{{ _('Delete this post') }}</a></li>
+    {% endif %}
+  </ul>
+
   {# L10n: {0} is the number of posts. #}
   <span class="posts">{{ ngettext('1 post', '{0} posts', post.author_post_count)|f(post.author_post_count) }}</span>
   <div class="post-actions">
-  {% if post.id and not thread.is_locked and
-         has_perm_or_owns('forums_forum.post_edit_forum', post, forum, 'author') %}
-    <a href="{{ url('forums.edit_post', forum.slug, thread.id, post.id) }}"><img src="{{ MEDIA_URL }}img/forums/edit.png" alt="{{ _('Edit') }}" title="{{ _('Edit') }}"/></a>
-  {% endif %}
-  {% if post.id and has_perm('forums_forum.post_delete_forum', forum) %}
-    <a href="{{ url('forums.delete_post', forum.slug, thread.id, post.id) }}">
-      <img src="{{ MEDIA_URL }}img/forums/delete.png" alt="{{ _('Delete') }}" title="{{ _('Delete') }}">
-    </a>
-  {% endif %}
+
   </div>
 </div>
 <div class="content">
@@ -23,16 +27,16 @@
 </div>
 <div class="content-raw">{{ post.content }}</div>
 <div class="info">
-  {{ datetimeformat(post.created, format='longdatetime') }}
-  <a href="#post-{{ post.id }}" class="permalink" title="{{ _('Link to this post.') }}">#</a>
-  {% if post.id and user.is_authenticated() and not thread.is_locked and forum.allows_posting_by(user) %}
+  <div>
+    {% if post.id and user.is_authenticated() and not thread.is_locked and forum.allows_posting_by(user) %}
     <span class="post-action">
       <a class="reply" data-post="{{ post.id }}" href="#thread-reply">{{ _('Reply') }}</a>
     </span>
   {% endif %}
+    {{ datetimeformat(post.created, format='longdatetime') }}
+    <a href="#post-{{ post.id }}" class="permalink" title="{{ _('Link to this post.') }}">#</a>
+  </div>
   {% if post.id and post.created != post.updated %}
-    <span class="post-modified">
-      {{ _('Modified by {name} on {datetime}')|fe(name=post.updated_by.username, datetime=datetimeformat(post.updated, format='longdatetime')) }}
-    </span>
+    {{ _('Modified by {name} on {datetime}')|fe(name=post.updated_by.username, datetime=datetimeformat(post.updated, format='longdatetime')) }}
   {% endif %}
 </div>

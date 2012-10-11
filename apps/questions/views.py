@@ -47,7 +47,7 @@ from questions.models import Question, Answer, QuestionVote, AnswerVote
 from questions.question_config import products
 from search.utils import locale_or_default, clean_excerpt
 from search.es_utils import ESTimeoutError, ESMaxRetryError, ESException
-from sumo.helpers import urlparams, show_new_sumo
+from sumo.helpers import urlparams
 from sumo.urlresolvers import reverse
 from sumo.utils import paginate, simple_paginate, build_paged_url
 from tags.utils import add_existing_tag
