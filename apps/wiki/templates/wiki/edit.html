@@ -13,7 +13,18 @@
 
 {% block content %}
   <div class="grid_9">
-    <article id="edit-document">
+    {% if locked %}
+      <div id="locked-warning" class="warning-box">
+        <h2>{% trans user=locked_by.username %}
+          Warning! This page is also being edited by {{ user }}!
+        {% endtrans %}</h2>
+        <p>{{ _('If you know what you are doing, you can edit the document anyways.') }}</p>
+
+        <a href="#" id="unlock-button" class="btn btn-warning">{{ _('Edit anyways') }}</a>
+      </div>
+    {% endif %}
+
+    <article id="edit-document" {% if locked %}class="locked"{% endif %} data-slug="{{ document.slug }}">
       <h1>{{ _('<em>Editing</em> {title}')|fe(title=document.title) }}</h1>
       {{ edit_messages(document, show_revision_warning) }}
       {% if document_form %}

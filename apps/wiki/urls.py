@@ -46,6 +46,8 @@ document_patterns = patterns('wiki.views',
     url(r'^/remove-contributor/(?P<user_id>\d+)$', 'remove_contributor',
         name='wiki.remove_contributor'),
 
+    # Ajax view to indicate a user is ignoring a lock and editing a document.
+    url(r'^/steal_lock$', 'steal_lock', name='wiki.steal_lock'),
 )
 
 urlpatterns = patterns('wiki.views',

@@ -12,7 +12,16 @@
 {% block content %}
   {% set language = settings.LANGUAGES[locale.lower()] %}
   <div class="grid_9">
-    <article id="localize-document" class="main form-page">
+    {% if locked %}
+      <div id="locked-warning" class="warning-box">
+        <h2>Warning! This page is also being edited by {{ locked_by.username }}!</h2>
+        <p>If you know what you are doing, click the button.</p>
+
+        <a href="#" id="unlock-button" class="btn btn-warning">Edit anyways</a>
+      </div>
+    {% endif %}
+
+    <article id="localize-document" class="main form-page{% if locked %} locked{% endif %}" data-slug="{{ parent.slug }}">>
       <h1>{{ _('Translating {title}')|f(title=parent.title) }}</h1>
       <div class="change-locale">
         <p>

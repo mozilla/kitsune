@@ -25,6 +25,7 @@ from tower import ugettext as _
 from access.decorators import permission_required, login_required
 from products.models import Product
 from sumo.helpers import urlparams
+from sumo.redis_utils import redis_client, RedisError
 from sumo.urlresolvers import reverse
 from sumo.utils import paginate, smart_int, get_next_url, truncated_json_dumps
 from topics.models import Topic
@@ -242,6 +243,81 @@ def new_document(request):
                          'revision_form': rev_form})
 
 
+_document_lock_key = 'sumo::wiki::document::{slug}::{locale}::lock'
+
+
+def _document_lock_check(document_slug, locale):
+    """Check for a lock on a document.
+
+    Returns the user who has the page locked, or None if no user has a lock.
+    """
+    try:
+        redis = redis_client(name='default')
+        key = _document_lock_key.format(slug=document_slug, locale=locale)
+        locked_by = redis.get(key)
+        return locked_by
+    except RedisError as e:
+        statsd.incr('redis.errror')
+        log.error('Redis error: %s' % e)
+        return None
+
+
+def _document_lock_steal(document_slug, locale, user_name, expire_time=60 * 15):
+    """Lock a document for a user.
+
+    Note that this does not check if the page is already locked, and simply
+    sets the lock on the page.
+    """
+    try:
+        redis = redis_client(name='default')
+        key = _document_lock_key.format(slug=document_slug, locale=locale)
+        it_worked = redis.set(key, user_name)
+        redis.expire(key, expire_time)
+        return it_worked
+    except RedisError as e:
+        statsd.incr('redis.errror')
+        log.error('Redis error: %s' % e)
+        return False
+
+
+def _document_lock_clear(document_slug, locale, user_name):
+    """Remove a lock from a document.
+
+    This would be used to indicate the given user no longer wants the page
+    locked, so the lock should be cleared.
+
+    If the `user` parameter does not match the current lock, the lock remains
+    in place.
+
+    Returns true if the lock was removed, false otherwise.
+    """
+    try:
+        redis = redis_client(name='default')
+        key = _document_lock_key.format(slug=document_slug, locale=locale)
+        locked_by = redis.get(key)
+        if locked_by == user_name:
+            return redis.delete(key)
+        else:
+            return False
+    except RedisError as e:
+        statsd.incr('redis.errror')
+        log.error('Redis error: %s' % e)
+        return False
+
+
+@login_required
+def steal_lock(request, document_slug, revision_id=None):
+    doc = get_object_or_404(Document, locale=request.locale, slug=document_slug)
+    user = request.user
+
+    # Get the original document, in default language.
+    while doc.parent:
+        doc = doc.parent
+
+    ok = _document_lock_steal(doc.slug, request.locale, user.username)
+    return HttpResponse("", status=200 if ok else 400)
+
+
 @require_http_methods(['GET', 'POST'])
 @login_required  # TODO: Stop repeating this knowledge here and in
                  # Document.allows_editing_by.
@@ -276,10 +352,13 @@ def edit_document(request, document_slug, revision_id=None):
         if not (rev_form or doc_form):
             # You can't do anything on this page, so get lost.
             raise PermissionDenied
+
     else:  # POST
         # Comparing against localized names for the Save button bothers me, so
         # I embedded a hidden input:
         which_form = request.POST.get('form')
+
+        _document_lock_clear(doc.slug, request.locale, user.username)
 
         if which_form == 'doc':
             if doc.allows_editing_by(user):
@@ -308,9 +387,10 @@ def edit_document(request, document_slug, revision_id=None):
                 rev_form = RevisionForm(request.POST)
                 rev_form.instance.document = doc  # for rev_form.clean()
                 if rev_form.is_valid():
-                    _save_rev_and_notify(rev_form, user, doc)
+                    new_rev = _save_rev_and_notify(rev_form, user, doc)
                     if 'notify-future-changes' in request.POST:
                         EditDocumentEvent.notify(request.user, doc)
+
                     return HttpResponseRedirect(
                         reverse('wiki.document_revisions',
                                 args=[document_slug]))
@@ -319,12 +399,25 @@ def edit_document(request, document_slug, revision_id=None):
 
     show_revision_warning = _show_revision_warning(doc, rev)
 
+    locked_by = _document_lock_check(doc.slug, request.locale)
+    if locked_by == user.username:
+        locked = False
+    if locked_by:
+        locked = not (locked_by == user.username)
+        locked_by = User.objects.get(username=locked_by)
+    else:
+        locked_by = user.username
+        locked = False
+        _document_lock_steal(doc.slug, request.locale, user.username)
+
     return jingo.render(request, 'wiki/edit.html',
                         {'revision_form': rev_form,
                          'document_form': doc_form,
                          'disclose_description': disclose_description,
                          'document': doc,
-                         'show_revision_warning': show_revision_warning})
+                         'show_revision_warning': show_revision_warning,
+                         'locked': locked,
+                         'locked_by': locked_by})
 
 
 @login_required
@@ -560,6 +653,11 @@ def translate(request, document_slug, revision_id=None):
         which_form = request.POST.get('form', 'both')
         doc_form_invalid = False
 
+        orig = doc
+        while orig.parent:
+            orig = orig.parent
+        _document_lock_clear(orig.slug, request.locale, user.username)
+
         if user_has_doc_perm and which_form in ['doc', 'both']:
             disclose_description = True
             post_data = request.POST.copy()
@@ -595,19 +693,36 @@ def translate(request, document_slug, revision_id=None):
             rev_form = RevisionForm(request.POST)
             rev_form.instance.document = doc  # for rev_form.clean()
             if rev_form.is_valid() and not doc_form_invalid:
-                _save_rev_and_notify(rev_form, request.user, doc)
+                new_rev = _save_rev_and_notify(rev_form, request.user, doc)
                 url = reverse('wiki.document_revisions',
                               args=[doc_slug])
+
                 return HttpResponseRedirect(url)
 
     show_revision_warning = _show_revision_warning(doc, base_rev)
+
+    orig = doc
+    while orig.parent:
+        orig = orig.parent
+    locked_by = _document_lock_check(orig.slug, request.locale)
+    if locked_by == user.username:
+        locked = False
+    if locked_by:
+        locked = not (locked_by == user.username)
+        locked_by = User.objects.get(username=locked_by)
+    else:
+        locked_by = user.username
+        locked = False
+        _document_lock_steal(orig.slug, request.locale, user.username)
 
     return jingo.render(request, 'wiki/translate.html',
                         {'parent': parent_doc, 'document': doc,
                          'document_form': doc_form, 'revision_form': rev_form,
                          'locale': request.locale, 'based_on': based_on_rev,
                          'disclose_description': disclose_description,
-                         'show_revision_warning': show_revision_warning})
+                         'show_revision_warning': show_revision_warning,
+                         'locked': locked,
+                         'locked_by': locked_by})
 
 
 @require_POST
@@ -1050,6 +1165,9 @@ def _save_rev_and_notify(rev_form, creator, document):
     # Enqueue notifications
     ReviewableRevisionInLocaleEvent(new_rev).fire(exclude=new_rev.creator)
     EditDocumentEvent(new_rev).fire(exclude=new_rev.creator)
+
+    # In case someone wants to use this.
+    return new_rev
 
 
 def _maybe_schedule_rebuild(form):
