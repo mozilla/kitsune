@@ -130,7 +130,7 @@ Marky.SimpleButton.prototype = {
     // Renders the html.
     render: function() {
         var $out = $(this.html).attr({
-            title: this.name,
+            title: this.name
         }).html(this.name);
         $out.addClass(this.classes);
         return $out;
@@ -803,8 +803,8 @@ Marky.CannedResponsesButton.prototype = $.extend({}, Marky.SimpleButton.prototyp
             selectedText = me.getSelectedText(),
             kbox;
 
-        const cannedResponsesUrl = '/kb/common-forum-responses';
-        const previewUrl = 'answer-preview-async';
+        var cannedResponsesUrl = '/kb/common-forum-responses';
+        var previewUrl = 'answer-preview-async';
 
         function updatePreview() {
             var response = $('#response-content').val();
