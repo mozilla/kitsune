@@ -152,8 +152,6 @@ var showforMobileOnlyFixture = {
     }
 };
 
-/* TODO: Adding this makes jenkins unstable in random ways.
-
 module('showforMobileOnly', showforMobileOnlyFixture);
 
 test('android m15', function() {
@@ -222,5 +220,5 @@ test('linux fx17', function() {
     assertNotHidden(this.$sandbox, ['linux', 'fx17', 'fx16', 'fx15']);
     assertNotVisible(this.$sandbox, ['win', 'mac']);
 });
-*/
+
 });
