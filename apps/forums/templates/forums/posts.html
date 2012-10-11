@@ -7,7 +7,6 @@
 {% set crumbs = [(url('forums.forums'), _('Contributor Forums')),
 (url('forums.threads', forum.slug), forum.name),
 (None, thread.title)] %}
-{% set styles = ('forums-new',) %}
 {% set canonical_url = unlocalized_url('forums.posts', forum.slug, thread.id) %}
 {% if posts.number > 1 %}
   {% set canonical_url = canonical_url|urlparams(page=posts.number) %}
