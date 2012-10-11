@@ -88,7 +88,7 @@ var ShowFor = {
                 $select.find('option[value=' + optionValue + ']').length === 0;
         }
 
-        if (notListed(browserUsed, $browserMenu)) {
+        if (BROWSERS[browserUsed] && notListed(browserUsed, $browserMenu)) {
             // If the browser used is not "officially" supported (shown in UI
             // by default) and is a browser we support in our backend, then
             // add it to the browser selections.
@@ -96,7 +96,7 @@ var ShowFor = {
             $origBrowserOptions = $browserMenu.find('option').clone();
         }
 
-        if (notListed(hash.browser, $browserMenu)) {
+        if (BROWSERS[hash.browser] && notListed(hash.browser, $browserMenu)) {
             // A browser can be forced to show up by using the hash params.
             ShowFor.addBrowserToSelect($browserMenu, hash.browser);
             $origBrowserOptions = $browserMenu.find('option').clone();
