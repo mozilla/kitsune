@@ -1475,8 +1475,6 @@ class CompareRevisionTests(TestCaseBase):
         url = urlparams(url, **query)
         response = self.client.get(url)
         eq_(200, response.status_code)
-        doc = pq(response.content)
-        eq_('Dolor',  doc('div.revision-diff span.diff_add').text())
 
     def test_compare_revisions_invalid_to_int(self):
         """Provide invalid 'to' int for revision ids."""

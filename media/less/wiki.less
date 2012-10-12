@@ -541,7 +541,7 @@ article {
     margin: 10px 0 0;
   }
 
-  div {
+  div.col {
     display: inline-block;
     vertical-align: top;
     width: 315px;
@@ -561,68 +561,6 @@ article {
 
 }
 
-table.diff {
-  background: #fff;
-  border: solid 1px #ccc;
-  clear: both;
-  font-family: Courier;
-  margin: 5px 0 15px;
-  text-align: left;
-  width: 98%;
-
-  &.full {
-    .box-shadow(~"0 2px 10px rgba(0,0,0,0.25), inset -1px -1px 1px rgba(0,0,0,0.125), inset 1px 0 1px rgba(255,255,255,0.25)");
-    left: 1%;
-    position: absolute;
-
-    td.text {
-      display: table-cell;
-      width: auto;
-    }
-  }
-
-  colgroup {
-    border: none;
-  }
-
-  tbody {
-    border: none;
-  }
-
-  tr:nth-child(odd) {
-    background: #f0f0f0;
-  }
-
-  td.diff_next {
-    background: #ccc;
-    padding: 0 1px;
-  }
-
-  td.diff_header {
-    color: #999;
-    padding: 0 5px 0 1px;
-    text-align: right;
-  }
-
-  td.text {
-    display: inline-block;
-    padding: 1px 5px;
-    width: 300px;
-  }
-
-  .diff_add {
-    background: #aaffaa;
-  }
-
-  .diff_chg {
-    background: #ffff77;
-  }
-
-  .diff_sub {
-    background: #ffaaaa;
-  }
-}
-
 .html-rtl {
   .revision-diff {
     div.picker {
@@ -632,15 +570,6 @@ table.diff {
     a.toggle-diff {
       float: left;
       margin: 0 0 0 10px;
-    }
-  }
-
-  table.diff {
-    text-align: right;
-
-    td.diff_header {
-      padding: 0 1px 0 5px;
-      text-align: left;
     }
   }
 }
@@ -1157,4 +1086,61 @@ div.video .kbox-container {
 
 #doc-watch {
   padding: 20px;
+}
+
+/* New Diffs */
+.diff-this {
+  margin: 15px 0;
+
+  p {
+    margin: 0;
+  }
+
+  table {
+    border: 1px solid #ddd;
+    width: 100%;
+  }
+
+  .from,
+  .to {
+    display: none;
+  }
+
+  .output {
+    color: #333;
+    font-size: 13px;
+  }
+
+  .fromLine {
+    background: #ffdddd;
+  }
+
+  .toLine {
+    background: #ddffdd;
+  }
+
+  .num {
+    background: #ececec;
+    border-right: 1px solid #ddd;
+    color: #aaa;
+    padding: 0 4px 0 6px;
+    text-align: right;
+  }
+
+  .mark {
+    font-family: Courier;
+    padding: 0 6px;
+  }
+
+  ins {
+    background: #aaffaa;
+    color: #000;
+    text-decoration: none;
+  }
+
+  del {
+    background: #ffaaaa;
+    color: #000;
+    text-decoration: none;
+  }
 }

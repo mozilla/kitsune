@@ -119,7 +119,7 @@
             <a href="{{ url('wiki.document_revisions', revision_from.document.slug)|urlparams(locale=revision_from.document.locale) }}">{{ _('Change Revisions') }}</a>
           </div>
         {% endif %}
-        <div>
+        <div class="col">
           <h3>
             {% if revision_from_header %}
               {{ revision_from_header}}
@@ -131,7 +131,7 @@
           </h3>
           <p>{{ _('Revision {id} by {user} on {date}')|fe(id=revision_from.id, user=revision_from.creator, date=datetimeformat(revision_from.created, format='longdatetime')) }}</p>
         </div>
-        <div>
+        <div class="col">
           <h3>
             {% if revision_to_header %}
               {{ revision_to_header}}
@@ -145,21 +145,24 @@
         </div>
       </header>
       <h4>{{ _('Keywords:') }}</h4>
-      <div>
+      <div class="col">
         <p>{{ revision_from.keywords }}</p>
       </div>
-      <div>
+      <div class="col">
         <p>{{ revision_to.keywords }}</p>
       </div>
       <h4>{{ _('Search results summary:') }}</h4>
-      <div>
-        <p>{{ revision_from.summary }}</p>
-      </div>
-      <div>
-        <p>{{ revision_to.summary }}</p>
+      <div class="diff-this">
+        <div class="from">{{ revision_from.summary }}</div>
+        <div class="to">{{ revision_to.summary }}</div>
+        <div class="output"></div>
       </div>
       <h4>{{ _('Content:') }}</h4>
-      {{ diff_table(revision_from.content, revision_to.content) }}
+      <div class="diff-this">
+        <div class="from">{{ revision_from.content }}</div>
+        <div class="to">{{ revision_to.content }}</div>
+        <div class="output"></div>
+      </div>
     </div>
   {% endif %}
 {%- endmacro %}
@@ -182,10 +185,13 @@
   {% endif %}
 {%- endmacro %}
 
-{% macro submit_revision(form, buttons_only=False, show_no_update_checkbox=False) -%}
+{% macro submit_revision(form, buttons_only=False, show_no_update_checkbox=False, include_diff=False) -%}
   <div class="submit">
     <button class="btn btn-important btn-submit" type="submit">{{ _('Submit for Review') }}</button>
-    <input class="btn-preview" data-preview-url="{{ url('wiki.preview') }}" type="button" value="{{ _('Preview Content') }}" disabled="disabled" />
+    <button class="btn btn-preview" data-preview-url="{{ url('wiki.preview') }}" type="button">{{ _('Preview Content') }}</button>
+    {% if include_diff %}
+      <button class="btn btn-diff" type="button">{{ _('Preview Changes') }}</button>
+    {% endif %}
   </div>
   {% if not buttons_only %}
     <div>{# Dummy wrapper so modal doesn't get shown by details/summary code #}

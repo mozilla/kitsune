@@ -6,6 +6,7 @@
 {% set crumbs = [(document.get_absolute_url(), document.title),
                  (None, _('Compare Revisions'))] %}
 {% set classes = 'compare' %}
+{% set scripts = ('wiki', 'wiki.diff') %}
 
 {% block content %}
   <div class="grid_9">
