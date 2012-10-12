@@ -3,11 +3,13 @@ Tests for the search view that aren't search system specific
 """
 import json
 
-import jingo
-from nose.tools import eq_
-
 from django.conf import settings
 
+import jingo
+from nose.tools import eq_
+from pyquery import PyQuery as pq
+
+from questions.tests import question, answer, answervote
 from search.tests.test_es import ElasticTestCase
 from sumo.tests import LocalizingClient
 from sumo.urlresolvers import reverse
@@ -70,3 +72,18 @@ class SearchTest(ElasticTestCase):
                 })
         eq_(200, response.status_code)
         eq_(1, json.loads(response.content)['total'])
+
+    def test_clean_excerpt(self):
+        """Ensure we clean html out of excerpts."""
+        q = question(title='audio',
+                     content='<script>alert("hacked");</script>', save=True)
+        a = answer(question=q, save=True)
+        answervote(answer=a, helpful=True, save=True)
+
+        self.refresh()
+
+        response = self.client.get(reverse('search'), {'q': 'audio'})
+        eq_(200, response.status_code)
+
+        doc = pq(response.content)
+        assert 'script' not in doc('div.result').text()
