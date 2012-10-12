@@ -11,6 +11,7 @@ from django.utils.html import escape
 from django.utils.http import urlquote
 from django.views.decorators.cache import cache_page
 
+import bleach
 import jingo
 import jinja2
 import waffle
@@ -373,7 +374,8 @@ def search(request, template=None):
                     # question_content excerpts. In that case, just
                     # show the question--but only the first 500
                     # characters.
-                    summary = doc['question_content'][:500]
+                    summary = bleach.clean(
+                        doc['question_content'], strip=True)[:500]
 
                 result = {
                     'title': doc['question_title'],
