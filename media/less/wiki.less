@@ -541,7 +541,7 @@ article {
     margin: 10px 0 0;
   }
 
-  div {
+  div.col {
     display: inline-block;
     vertical-align: top;
     width: 315px;
@@ -1157,4 +1157,65 @@ div.video .kbox-container {
 
 #doc-watch {
   padding: 20px;
+}
+
+/* New Diffs */
+.diff-this {
+  margin: 15px 0;
+
+  p {
+    margin: 0;
+  }
+
+  table {
+    border: 1px solid #ddd;
+    width: 100%;
+  }
+
+  .from,
+  .to {
+    display: none;
+  }
+
+  .output {
+    color: #333;
+    font-size: 13px;
+  }
+
+  .diff-html {
+  }
+
+  .fromLine {
+    background: #ffdddd;
+  }
+
+  .toLine {
+    background: #ddffdd;
+  }
+
+  .num {
+    background: #ececec;
+    border-right: 1px solid #ddd;
+    color: #aaa;
+    min-width: 20px;
+    padding: 0 4px 0 6px;
+    text-align: right;
+  }
+
+  .mark {
+    font-family: Courier;
+    padding: 0 6px;
+  }
+
+  ins {
+    background: #aaffaa;
+    color: #000;
+    text-decoration: none;
+  }
+
+  del {
+    background: #ffaaaa;
+    color: #000;
+    text-decoration: none;
+  }
 }

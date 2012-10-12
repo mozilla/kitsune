@@ -5,6 +5,7 @@
 {% set title = _('Review Translation {id} | {document}')|f(document=document.parent.title, id=revision.id) %}
 {% set crumbs = [(document.get_absolute_url(), document.title), (None, 'Review Translation')] %}
 {% set classes = 'review' %}
+{% set scripts = ('wiki', 'wiki.diff') %}
 
 {% block content %}
   <div class="grid_9">

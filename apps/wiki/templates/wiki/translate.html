@@ -9,6 +9,7 @@
 {% set crumbs = [(parent.get_absolute_url(), parent.title),
                  (None, _('Translate Article'))] %}
 {% set classes = 'translate' %}
+{% set scripts = ('wiki', 'wiki.diff') %}
 
 {% block content %}
   {% set language = settings.LANGUAGES[locale.lower()] %}
@@ -102,6 +103,14 @@
           {% endif %}
 
           <h3>{{ _('Differences') }}:</h3>
+          {% if document.current_revision and document.current_revision.based_on and parent.latest_localizable_revision %}
+            {# Diff between the English version the current translation is based on and the most recent ready-to-localize English version. #}
+            {{ revision_diff(document.current_revision.based_on, parent.latest_localizable_revision, show_picker=True) }}
+          {% elif not parent.latest_localizable_revision %}
+            <p>{{ _('Note: This article has no revisions ready for localization.') }}</p>
+          {% else %}
+            <p>{{ _('Note: There are no approved translations for this article.') }}</p>
+          {% endif %}
           <ul class="description">
             <li>
               <div class="approved">
@@ -125,14 +134,6 @@
               </div>
             </li>
           </ul>
-          {% if document.current_revision and document.current_revision.based_on and parent.latest_localizable_revision %}
-            {# Diff between the English version the current translation is based on and the most recent ready-to-localize English version. #}
-            {{ revision_diff(document.current_revision.based_on, parent.latest_localizable_revision, show_picker=True) }}
-          {% elif not parent.latest_localizable_revision %}
-            <p>{{ _('Note: This article has no revisions ready for localization.') }}</p>
-          {% else %}
-            <p>{{ _('Note: There are no approved translations for this article.') }}</p>
-          {% endif %}
           <div id="content-fields">
             <div class="approved">
               <h3>{{ _('Approved {default_locale} version:')|f(default_locale=settings.LANGUAGES[settings.WIKI_DEFAULT_LANGUAGE.lower()]) }}</h3>
@@ -148,10 +149,15 @@
             {# If the document has been created and has a current revision,
                we allow the localizer to keep the translation out of date
                with this new revision. #}
-            {{ submit_revision(revision_form, show_no_update_checkbox=(document and document.current_revision)) }}
+            {{ submit_revision(revision_form, show_no_update_checkbox=(document and document.current_revision), include_diff=True) }}
             <div id="preview"></div>
+            <div id="preview-diff">
+                <div class="from">{{ revision_form.content.value() }}</div>
+                <div class="to"></div>
+                <div class="output"></div>
+              </div>
             <div class="submit" id="preview-bottom">
-              {{ submit_revision(revision_form, buttons_only=True) }}
+              {{ submit_revision(revision_form, buttons_only=True, include_diff=True) }}
             </div>
           </div>
           {% if document %}

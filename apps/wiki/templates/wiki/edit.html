@@ -11,6 +11,7 @@
 {% set crumbs = [(document.get_absolute_url(), document.title),
                  (None, _('Edit Article'))] %}
 {% set classes = 'edit' %}
+{% set scripts = ('wiki', 'wiki.diff') %}
 
 {% block content %}
   <div class="grid_9">
@@ -73,10 +74,15 @@
               </ul>
               {{ revision_form.hidden_fields()|join|safe }}
               <input type="hidden" name="form" value="rev" />
-              {{ submit_revision(revision_form) }}
+              {{ submit_revision(revision_form, include_diff=True) }}
               <div id="preview"></div>
+              <div id="preview-diff">
+                <div class="from">{{ revision_form.content.value() }}</div>
+                <div class="to"></div>
+                <div class="output"></div>
+              </div>
               <div class="submit" id="preview-bottom">
-                {{ submit_revision(revision_form, buttons_only=True) }}
+                {{ submit_revision(revision_form, buttons_only=True, include_diff=True) }}
               </div>
             </form>
           </details>

@@ -639,6 +639,10 @@ MINIFY_BUNDLES = {
         'wiki.history': (
             'js/historycharts.js',
         ),
+        'wiki.diff': (
+            'js/libs/diff_match_patch_uncompressed.js',
+            'js/diff.js',
+        ),
         'dashboard.helpful': (
             'js/helpfuldashcharts.js',
         ),

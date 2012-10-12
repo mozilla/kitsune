@@ -46,6 +46,7 @@
             });
 
             initArticlePreview();
+            initPreviewDiff();
             initTitleAndSlugCheck();
             initPreValidation();
             initNeedsChange();
@@ -62,7 +63,6 @@
 
         initL10nTest();
         initDiffPicker();
-        initDiffToggle();
 
         Marky.createFullToolbar('.editor-tools', '#id_content');
 
@@ -222,7 +222,22 @@
                 $preview.find('select.enable-if-js').removeAttr('disabled');
                 $preview.find('.kbox').kbox();
                 k.initVideo();
+                $('#preview-diff .output').empty();
             }
+        });
+    }
+
+    // Diff Preview of edits
+    function initPreviewDiff() {
+        var $diff = $('#preview-diff'),
+            $previewBottom = $('#preview-bottom'),
+            $diffButton = $('.btn-diff');
+        $diff.addClass('diff-this');
+        $diffButton.click(function() {
+            $diff.find('.to').html($('#id_content').val());
+            k.initDiff($diff.parent());
+            $previewBottom.show();
+            $('#preview').empty()
         });
     }
 
@@ -382,46 +397,9 @@
                     kbox.close();
                     $diff.replaceWith(html);
                     initDiffPicker();
-                    initDiffToggle($container);
+                    k.initDiff()
                 }
             });
-        });
-    }
-
-    // Add ability to switch the diff to full screen + fluid.
-    function initDiffToggle($container) {
-        $('table.diff', $container).each(function() {
-            var $table = $(this),
-                $link = $table.before('<a class="toggle-diff" href="#"></a>').prev(),
-                fullWidth = false, // Are we full width?
-                $clone, // A clone of the table.
-                $placeholder; // A placeholder that fills in height behind
-                              // overlayed table.
-            $link.text(gettext('Toggle Diff'));
-
-            $link.click(function(ev){
-                var top;
-                ev.preventDefault();
-                if (fullWidth) {
-                    $placeholder.remove();
-                    $table.show();
-                    $clone.remove();
-                    $(window).unbind('resize', syncHeight);
-                } else {
-                    top = $table.offset().top;
-                    $clone = $table.clone().addClass('full');
-                    $clone.css('top', top + 'px');
-                    $('body').append($clone);
-                    $placeholder = $table.before('<section/>').prev();
-                    syncHeight();
-                    $table.hide();
-                    $(window).resize(syncHeight);
-                }
-                fullWidth = !fullWidth;
-            });
-            function syncHeight() {
-                $placeholder.height($clone.outerHeight() + 40);
-            }
         });
     }
 
