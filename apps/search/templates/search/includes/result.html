@@ -7,7 +7,7 @@
     {% endif %}
     {% set url =  result.url|urlparams(s=s, as=as, r=r, esab=esab) %}
     <h3><a class="title" href="{{ url }}">{{ result.title }}</a></h3>
-    <a tabindex="-1" href="{{ url }}">{{ result.search_summary|safe }}</a>
+    <a tabindex="-1" href="{{ url }}">{{ result.search_summary }}</a>
     {% if result.type == 'question' %}
       <ul class="thread-meta cf">
         {% if result.is_solved %}
