@@ -148,7 +148,6 @@ Start by creating a file named ``settings_local.py`` in the
             }
         }
 
-    CACHE_MACHINE_USE_REDIS = True
     CACHE_MIDDLEWARE_ALIAS = 'default'
     CACHE_MIDDLEWARE_KEY_PREFIX = ''
     CACHE_MIDDLEWARE_SECONDS = 600

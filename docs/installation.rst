@@ -132,7 +132,6 @@ For local development you will want to add the following settings::
         }
 
     CACHE_BACKEND = 'caching.backends.memcached://localhost:11211'
-    CACHE_MACHINE_USE_REDIS = True
     CACHE_MIDDLEWARE_ALIAS = 'default'
     CACHE_MIDDLEWARE_KEY_PREFIX = ''
     CACHE_MIDDLEWARE_SECONDS = 600
