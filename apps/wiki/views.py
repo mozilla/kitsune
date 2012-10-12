@@ -243,17 +243,17 @@ def new_document(request):
                          'revision_form': rev_form})
 
 
-_document_lock_key = 'sumo::wiki::document::{slug}::{locale}::lock'
+_document_lock_key = 'sumo::wiki::document::{id}::lock'
 
 
-def _document_lock_check(document_slug, locale):
+def _document_lock_check(document_id):
     """Check for a lock on a document.
 
     Returns the user who has the page locked, or None if no user has a lock.
     """
     try:
         redis = redis_client(name='default')
-        key = _document_lock_key.format(slug=document_slug, locale=locale)
+        key = _document_lock_key.format(id=document_id)
         locked_by = redis.get(key)
         return locked_by
     except RedisError as e:
@@ -262,7 +262,7 @@ def _document_lock_check(document_slug, locale):
         return None
 
 
-def _document_lock_steal(document_slug, locale, user_name, expire_time=60 * 15):
+def _document_lock_steal(document_id, user_name, expire_time=60 * 15):
     """Lock a document for a user.
 
     Note that this does not check if the page is already locked, and simply
@@ -270,7 +270,7 @@ def _document_lock_steal(document_slug, locale, user_name, expire_time=60 * 15):
     """
     try:
         redis = redis_client(name='default')
-        key = _document_lock_key.format(slug=document_slug, locale=locale)
+        key = _document_lock_key.format(id=document_id)
         it_worked = redis.set(key, user_name)
         redis.expire(key, expire_time)
         return it_worked
@@ -280,7 +280,7 @@ def _document_lock_steal(document_slug, locale, user_name, expire_time=60 * 15):
         return False
 
 
-def _document_lock_clear(document_slug, locale, user_name):
+def _document_lock_clear(document_id, user_name):
     """Remove a lock from a document.
 
     This would be used to indicate the given user no longer wants the page
@@ -293,7 +293,7 @@ def _document_lock_clear(document_slug, locale, user_name):
     """
     try:
         redis = redis_client(name='default')
-        key = _document_lock_key.format(slug=document_slug, locale=locale)
+        key = _document_lock_key.format(id=document_id)
         locked_by = redis.get(key)
         if locked_by == user_name:
             return redis.delete(key)
@@ -314,7 +314,7 @@ def steal_lock(request, document_slug, revision_id=None):
     while doc.parent:
         doc = doc.parent
 
-    ok = _document_lock_steal(doc.slug, request.locale, user.username)
+    ok = _document_lock_steal(doc.id, user.username)
     return HttpResponse("", status=200 if ok else 400)
 
 
@@ -358,7 +358,7 @@ def edit_document(request, document_slug, revision_id=None):
         # I embedded a hidden input:
         which_form = request.POST.get('form')
 
-        _document_lock_clear(doc.slug, request.locale, user.username)
+        _document_lock_clear(doc.id, user.username)
 
         if which_form == 'doc':
             if doc.allows_editing_by(user):
@@ -387,7 +387,7 @@ def edit_document(request, document_slug, revision_id=None):
                 rev_form = RevisionForm(request.POST)
                 rev_form.instance.document = doc  # for rev_form.clean()
                 if rev_form.is_valid():
-                    new_rev = _save_rev_and_notify(rev_form, user, doc)
+                    _save_rev_and_notify(rev_form, user, doc)
                     if 'notify-future-changes' in request.POST:
                         EditDocumentEvent.notify(request.user, doc)
 
@@ -399,16 +399,21 @@ def edit_document(request, document_slug, revision_id=None):
 
     show_revision_warning = _show_revision_warning(doc, rev)
 
-    locked_by = _document_lock_check(doc.slug, request.locale)
+    locked_by = _document_lock_check(doc.id)
     if locked_by == user.username:
         locked = False
     if locked_by:
-        locked = not (locked_by == user.username)
-        locked_by = User.objects.get(username=locked_by)
+        try:
+            locked = not (locked_by == user.username)
+            locked_by = User.objects.get(username=locked_by)
+        except User.DoesNotExist:
+            # If the user doesn't exist, they shouldn't be able to enforce a lock.
+            locked = False
+            locked_by = None
     else:
         locked_by = user.username
         locked = False
-        _document_lock_steal(doc.slug, request.locale, user.username)
+        _document_lock_steal(doc.id, user.username)
 
     return jingo.render(request, 'wiki/edit.html',
                         {'revision_form': rev_form,
@@ -653,10 +658,8 @@ def translate(request, document_slug, revision_id=None):
         which_form = request.POST.get('form', 'both')
         doc_form_invalid = False
 
-        orig = doc
-        while orig.parent:
-            orig = orig.parent
-        _document_lock_clear(orig.slug, request.locale, user.username)
+        if doc is not None:
+            _document_lock_clear(doc.id, user.username)
 
         if user_has_doc_perm and which_form in ['doc', 'both']:
             disclose_description = True
@@ -693,7 +696,7 @@ def translate(request, document_slug, revision_id=None):
             rev_form = RevisionForm(request.POST)
             rev_form.instance.document = doc  # for rev_form.clean()
             if rev_form.is_valid() and not doc_form_invalid:
-                new_rev = _save_rev_and_notify(rev_form, request.user, doc)
+                _save_rev_and_notify(rev_form, request.user, doc)
                 url = reverse('wiki.document_revisions',
                               args=[doc_slug])
 
@@ -701,19 +704,21 @@ def translate(request, document_slug, revision_id=None):
 
     show_revision_warning = _show_revision_warning(doc, base_rev)
 
-    orig = doc
-    while orig.parent:
-        orig = orig.parent
-    locked_by = _document_lock_check(orig.slug, request.locale)
-    if locked_by == user.username:
-        locked = False
-    if locked_by:
-        locked = not (locked_by == user.username)
-        locked_by = User.objects.get(username=locked_by)
+    if doc:
+        locked_by = _document_lock_check(doc.id)
+
+        if locked_by == user.username:
+            locked = False
+        if locked_by:
+            locked = not (locked_by == user.username)
+            locked_by = User.objects.get(username=locked_by)
+        else:
+            locked_by = user.username
+            locked = False
+            _document_lock_steal(doc.id, user.username)
     else:
-        locked_by = user.username
         locked = False
-        _document_lock_steal(orig.slug, request.locale, user.username)
+        locked_by = None
 
     return jingo.render(request, 'wiki/translate.html',
                         {'parent': parent_doc, 'document': doc,

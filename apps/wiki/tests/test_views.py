@@ -5,6 +5,7 @@ from django.contrib.sites.models import Site
 
 import mock
 from nose.tools import eq_
+from nose import SkipTest
 from pyquery import PyQuery as pq
 
 from products.tests import product
@@ -15,7 +16,10 @@ from wiki.models import Document
 from wiki.config import VersionMetadata
 from wiki.tests import (doc_rev, document, helpful_vote, new_document_data,
                         revision)
-from wiki.views import _version_groups
+from wiki.views import (_version_groups, _document_lock_check,
+                        _document_lock_clear, _document_lock_steal)
+
+from sumo.redis_utils import redis_client, RedisError
 
 
 class VersionGroupTests(TestCase):
@@ -225,7 +229,6 @@ class DocumentEditingTests(TestCase):
         eq_('', doc.needs_change_comment)
 
 
-
 class AddRemoveContributorTests(TestCase):
     def setUp(self):
         super(AddRemoveContributorTests, self).setUp()
@@ -309,3 +312,53 @@ class VoteTests(TestCase):
         survey = json.loads(vote_meta.value)
         # Make sure the right value was truncated.
         assert 'bad data' not in survey['comment']
+
+
+class TestDocumentLocking(TestCase):
+    client_class = LocalizingClient
+
+    def setUp(self):
+        super(TestDocumentLocking, self).setUp()
+        try:
+            self.redis = redis_client('default')
+            self.redis.flushdb()
+        except RedisError:
+            raise SkipTest
+
+    def _test_lock_helpers(self, doc):
+        u1 = user(save=True)
+        u2 = user(save=True)
+
+        # No one has the document locked yet.
+        eq_(_document_lock_check(doc.id), None)
+        # u1 should be able to lock the doc
+        eq_(_document_lock_steal(doc.id, u1.username), True)
+        eq_(_document_lock_check(doc.id), u1.username)
+        # u2 should be able to steal the lock
+        eq_(_document_lock_steal(doc.id, u2.username), True)
+        eq_(_document_lock_check(doc.id), u2.username)
+        # u1 can't release the lock, because u2 stole it
+        eq_(_document_lock_clear(doc.id, u1.username), False)
+        eq_(_document_lock_check(doc.id), u2.username)
+        # u2 can release the lock
+        eq_(_document_lock_clear(doc.id, u2.username), True)
+        eq_(_document_lock_check(doc.id), None)
+
+    def test_lock_helpers_doc(self):
+        doc = document(save=True)
+        self._test_lock_helpers(doc)
+
+    def test_lock_helpers_translation(self):
+        doc_en = document(save=True)
+        doc_de = document(parent=doc_en, locale='de', save=True)
+        self._test_lock_helpers(doc_de)
+
+    def _create_en_and_de_docs(self):
+        en = settings.WIKI_DEFAULT_LANGUAGE
+        en_doc = document(locale=en, slug='english-slug')
+        en_doc.save()
+        de_doc = document(locale='de', parent=en_doc)
+        de_doc.save()
+        de_rev = revision(document=de_doc, is_approved=True)
+        de_rev.save()
+        return en_doc, de_doc
