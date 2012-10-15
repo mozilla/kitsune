@@ -15,7 +15,7 @@
         {# Don't show basic filtering to advanced search users #}
         <ul id="search-filter" class="sidebar-nav">
           <li {{ w|class_selected(3) }}><a href="{{ url('search')|urlparams(q=q) }}">{{ _('Show Everything') }}</a></li>
-          <li {{ w|class_selected(1) }}><a href="{{ url('search')|urlparams(q=q, w=1) }}">{{ ('Help Articles Only') }}</a></li>
+          <li {{ w|class_selected(1) }}><a href="{{ url('search')|urlparams(q=q, w=1) }}">{{ _('Help Articles Only') }}</a></li>
           <li {{ w|class_selected(2) }}><a href="{{ url('search')|urlparams(q=q, w=2) }}">{{ _('Community Discussion Only') }}</a></li>
         </ul>
       {% endif %}
