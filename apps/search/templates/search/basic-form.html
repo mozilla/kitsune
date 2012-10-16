@@ -25,3 +25,16 @@
     </button>
   </form>
 {%- endmacro %}
+
+{% macro mobile_nav_form(q='', params=None) %}
+  <form id="search" action="{{ url('search') }}">
+    {% if params %}
+      {% for k, v in params.items() %}
+        <input type="hidden" name="{{ k }}" value="{{ v }}" />
+      {% endfor %}
+    {% endif %}
+    <input type="hidden" name="esab" value="{% if waffle.flag('search-ab') %}a{% else %}b{% endif %}">
+    <input name="q" placeholder="{{ _('Search Mozilla Support') }}" required="required" type="search" value="{{ q }}">
+    <button class="icon-sprite" type="submit">{{ _('Search') }}</button>
+  </form>
+{% endmacro %}
