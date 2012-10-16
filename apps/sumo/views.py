@@ -18,6 +18,7 @@ import jingo
 import pyes
 from celery.messaging import establish_connection
 from commonware.decorators import xframe_allow
+from mobility.decorators import mobile_template
 from PIL import Image
 from session_csrf import anonymous_csrf
 
@@ -32,10 +33,11 @@ log = logging.getLogger('k.services')
 
 
 @never_cache
-def locales(request):
+@mobile_template('sumo/{mobile/}locales.html')
+def locales(request, template):
     """The locale switcher page."""
 
-    return jingo.render(request, 'sumo/locales.html', dict(
+    return jingo.render(request, template, dict(
         next_url=get_next_url(request) or reverse('home')))
 
 

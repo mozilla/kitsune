@@ -551,6 +551,9 @@ MINIFY_BUNDLES = {
         'locale-switcher': (
             'less/locale-switcher.less',
         ),
+        'locale-switcher-mobile': (
+            'less/mobile/locales.less',
+        ),
         'kbdashboards': (
             'less/kbdashboards.less',
         ),
