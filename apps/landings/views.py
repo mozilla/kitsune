@@ -1,6 +1,7 @@
 from django.views.decorators.cache import never_cache
 
 import jingo
+import waffle
 from mobility.decorators import mobile_template
 
 from products.models import Product
@@ -52,7 +53,11 @@ MOZILLA_NEWS_DOC = 'Mozilla News'
 @never_cache
 def desktop_or_mobile(request):
     """Redirect mobile browsers to /mobile and others to /home."""
-    url_name = 'home.mobile' if request.MOBILE else 'home'
+    if waffle.flag_is_active(request, 'new-theme'):
+        mobile = 'products'
+    else:
+        mobile = 'home.mobile'
+    url_name = mobile if request.MOBILE else 'home'
     return redirect_to(request, url_name, permanent=False)
 
 
@@ -84,9 +89,12 @@ def home(request):
 
 @mobile_template('landings/{mobile/}old-home.html')
 def old_home(request, template=None):
-    docs = HOME_DOCS_FOR_MOBILE
-    return jingo.render(request, template,
-                        _data(docs, request.locale, 'firefox', 'desktop'))
+    if waffle.flag_is_active(request, 'new-theme'):
+        return redirect_to(request, 'products', permanent=False)
+    else:
+        docs = HOME_DOCS_FOR_MOBILE
+        return jingo.render(request, template,
+                            _data(docs, request.locale, 'firefox', 'desktop'))
 
 
 @mobile_template('landings/{mobile/}mobile.html')

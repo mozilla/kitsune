@@ -5,16 +5,18 @@ from django.shortcuts import get_object_or_404
 import jingo
 
 from landings.views import old_products
+from mobility.decorators import mobile_template
 from products.models import Product
 from sumo.urlresolvers import reverse
 from topics.models import Topic, HOT_TOPIC_SLUG
 from wiki.facets import topics_for, documents_for
 
 
-def product_list(request):
+@mobile_template('products/{mobile/}products.html')
+def product_list(request, template):
     """The product picker page."""
     products = Product.objects.filter(visible=True)
-    return jingo.render(request, 'products/products.html', {
+    return jingo.render(request, template, {
         'products': products})
 
 

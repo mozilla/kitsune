@@ -1,0 +1,19 @@
+{% extends 'mobile/base.html' %}
+
+{% set title = _('Products and Services') %}
+{% set headline = title %}
+{% set styles = ('products-mobile',) %}
+
+{% block content %}
+  <ul id="products">
+    {% for product in products %}
+      <li>
+        <a class="cf" href="{{ url('products.product', slug=product.slug) }}">
+          <img src="{{ MEDIA_URL }}img/blank.png" class="logo-sprite" alt="">
+          <span class="title">{{ product.title }}</span>
+          {{ product.description }}
+        </a>
+      </li>
+    {% endfor %}
+  </ul>
+{% endblock %}
