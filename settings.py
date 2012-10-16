@@ -533,6 +533,9 @@ MINIFY_BUNDLES = {
         'products': (
             'less/products.less',
         ),
+        'products-mobile': (
+            'less/mobile/products.less',
+        ),
         'groups': (
             'css/users.autocomplete.css',
             'css/users.list.css',
