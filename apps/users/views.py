@@ -74,13 +74,23 @@ def logout(request):
 @logout_required
 @require_http_methods(['GET', 'POST'])
 @anonymous_csrf
-def register(request):
-    """Register a new user."""
+def register(request, contributor=False):
+    """Register a new user.
+
+    :param contributor: If True, this is for registering a new contributor.
+
+    """
     form = handle_register(request)
     if form.is_valid():
         return jingo.render(request, 'users/register_done.html')
     return jingo.render(request, 'users/register.html',
-                        {'form': form})
+                        {'form': form,
+                         'contributor': contributor})
+
+
+def register_contributor(request):
+    """Register a new user from the superheroes page."""
+    return register(request, contributor=True)
 
 
 @anonymous_csrf  # This view renders a login form

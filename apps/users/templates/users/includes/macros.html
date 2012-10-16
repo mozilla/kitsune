@@ -37,23 +37,16 @@
   </div>
 {%- endmacro %}
 
-{% macro register_form(form, csrf, action=None, show_checkbox=True) -%}
+{% macro register_form(form, csrf, action=None, contributor=False) -%}
   {{ errorlist(form) }}
   <form method="post" action="{{ action if action != None else
                                    url('users.register') }}">
     {{ csrf|safe }}
+    <input type="hidden" name="interested" id="id_for_interested" value="{{ 'yes' if contributor else 'no' }}">
     <ul>
       {% for field in form if field.name != 'interested' %}
         <li class="cf">{{ field|label_with_help }} {{ field }}</li>
       {% endfor %}
-      {% if show_checkbox %}
-        <li class="checkbox">
-          <label>
-            {{ form.interested }}
-            {{ form.interested.field.label }}
-          </label>
-        </li>
-      {% endif %}
     </ul>
     <div class="submit">
       <button type="submit" data-type="submit" data-name="register" class="btn btn-submit">{{ _('Register') }}</button>
