@@ -522,6 +522,10 @@ MINIFY_BUNDLES = {
             'css/mobile.css',
             'css/wiki_syntax.css',
         ),
+        'mobile-new': (
+            'css/normalize.css',
+            'less/mobile/main.less',
+        ),
         'messages': (
             'css/users.autocomplete.css',
             'less/messages.less',
@@ -647,6 +651,10 @@ MINIFY_BUNDLES = {
             'js/ajaxvote.js',
             'js/aaq.js',
             'js/mobile.js',
+        ),
+        'mobile-new': (
+            'js/libs/jquery-1.7.1.min.js',
+            'js/mobile/ui.js',
         ),
         'messages': (
             'js/markup.js',
