@@ -8,6 +8,7 @@
 {% block content %}
   <article id="register" class="main">
     <h1>{{ _('Register') }}</h1>
-    {{ register_form(form, csrf=csrf()) }}
+    {% set action = url('users.register_contributor') if contributor else url('users.register') %}
+    {{ register_form(form, csrf=csrf(), action=action, contributor=contributor) }}
   </article>
 {% endblock %}
