@@ -120,6 +120,49 @@ body {
   }
 }
 
+.overlay {
+  background: rgba(40, 40, 40, 0.98) url('../../img/grain.png') 0 0 repeat;
+  bottom: 0;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+  z-index: 100;
+
+  > header {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.25);
+    .box-shadow(0 0 10px 0 rgba(0, 0, 0, 0.5));
+    color: #fff;
+    cursor: pointer;
+    height: 50px;
+    left: 0;
+    line-height: 50px;
+    padding: 0 30px;
+    position: absolute;
+    right: 0;
+    top: 0;
+  }
+
+  .wrapper {
+    bottom: 0;
+    left: 0;
+    overflow: auto;
+    -webkit-overflow-scrolling: touch;
+    position: absolute;
+    right: 0;
+    top: 51px;
+  }
+}
+
+.return-button {
+  background-position: -56px -299px;
+  float: left;
+  height: 24px;
+  margin: 13px 12px 13px 4px;
+  text-indent: -9999px;
+  width: 12px;
+}
+
 .topic-sprite {
   background: url('../../img/mobile/topics-sprite.png') -50px -494px no-repeat;
   height: 48px;
@@ -200,13 +243,14 @@ body {
   float: right;
   height: 24px;
   margin: 13px;
+  text-indent: -9999px;
   width: 24px;
 }
 
 @media only screen and (-webkit-min-device-pixel-ratio: 2), only screen and (min-device-pixel-ratio: 2) {
   .icon-sprite {
     background-image: url('../../img/mobile/icons-sprite-2x.png');
-    .background-size(124px 248px);
+    .background-size(124px 372px);
   }
 
   .logo-sprite {

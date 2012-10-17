@@ -43,7 +43,8 @@ def product_landing(request, template, slug):
         'fallback_hot_docs': fallback_hot_docs})
 
 
-def document_listing(request, product_slug, topic_slug):
+@mobile_template('products/{mobile/}documents.html')
+def document_listing(request, template, product_slug, topic_slug):
     """The document listing page for a product + topic."""
     product = get_object_or_404(Product, slug=product_slug)
     topic = get_object_or_404(Topic, slug=topic_slug)
@@ -57,7 +58,7 @@ def document_listing(request, product_slug, topic_slug):
     documents, fallback_documents = documents_for(
         locale=request.locale, products=[product], topics=topics)
 
-    return jingo.render(request, 'products/documents.html', {
+    return jingo.render(request, template, {
         'product': product,
         'topic': topic,
         'topics': topics_for(products=[product]),

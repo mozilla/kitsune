@@ -1,0 +1,47 @@
+{% extends 'mobile/base.html' %}
+
+{% set styles = ('products-mobile',) %}
+{% set classes = 'documents' %}
+{% set scripts = ('products-mobile',) %}
+
+{% block title %}{{ _(topic.title, 'DB: topics.Topic.title') }} | {{ _('{product} Help')|f(product=_(product.title, 'DB: products.Product.title')) }}{% endblock %}
+
+{% block header %}
+  <a href="{{ url('products.product', slug=product.slug) }}" class="return-button icon-sprite">Back</a>
+  <h1>{{ topic.title }}</h1>
+{% endblock %}
+
+{% block content %}
+  <div class="filter-bar">
+    <span>{{ _('Showing') }}</span>
+    <div class="filter" id="select-filter">
+      {% if refine %}
+        {{ refine }}
+      {% else %}
+        {{ _('All articles') }}
+      {% endif %}
+    </div>
+  </div>
+
+  <ul id="documents">
+    {% for document in documents %}
+      <li>
+        <a class="cf" href="{{ document['url'] }}">{{ document['document_title'] }}</a>
+      </li>
+    {% endfor %}
+  </ul>
+{% endblock %}
+
+{% block after_main %}
+  <div id="filter-overlay" class="overlay" style="display: none;">
+    <header>Showing</header>
+    <div class="wrapper">
+      <ul>
+        <li {{ refine|class_selected(None) }}><a href="{{ request.path }}">{{ _('All') }}</a></li>
+        {% for topic_ in refine_topics if topic_ != topic %}
+          <li {{ refine|class_selected(topic_) }}><a href="?refine={{ _(topic_.slug) }}">{{ _(topic_.title, 'DB: topics.Topic.title') }} ({{ topic_.num_docs }})</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+{% endblock %}

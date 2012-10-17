@@ -2,8 +2,8 @@
     $(function() {
         // Menu toggling
         $('#menu-button').on('click', function() {
-            $page = $('#page');
-            $nav = $('body > nav');
+            var $page = $('#page');
+            var $nav = $('body > nav');
 
             var animation = {};
 
@@ -22,6 +22,10 @@
             }
 
             $page.animate(animation);
+        });
+
+        $('.overlay > header').on('click', function() {
+            $(this).closest('.overlay').hide();
         });
 
         // iOS Standalone Web App Fix

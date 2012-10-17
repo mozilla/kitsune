@@ -694,6 +694,9 @@ MINIFY_BUNDLES = {
             'js/libs/backbone.js',
             'js/kpi.dashboard.js',
         ),
+        'products-mobile': (
+            'js/mobile/products.js',
+        ),
     },
 }
 
