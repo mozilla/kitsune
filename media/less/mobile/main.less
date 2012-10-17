@@ -120,6 +120,36 @@ body {
   }
 }
 
+.topic-sprite {
+  background: url('../../img/mobile/topics-sprite.png') -50px -494px no-repeat;
+  height: 48px;
+  width: 48px;
+
+  &.topic-get-started {
+    background-position: -50px -50px;
+  }
+
+  &.topic-download-and-install {
+    background-position: -50px -198px;
+  }
+
+  &.topic-privacy-and-security {
+    background-position: -50px -346px;
+  }
+
+  &.topic-customize {
+    background-position: -50px -494px;
+  }
+
+  &.topic-fix-problems {
+    background-position:  -50px -642px;
+  }
+
+  &.topic-get-community-support {
+    background-position: -50px -790px;
+  }
+}
+
 #page {
   background: #fff;
   bottom: 0;
@@ -182,5 +212,10 @@ body {
   .logo-sprite {
     background-image: url('../../img/mobile/logos-sprite-2x.png');
     .background-size(148px 148px)
+  }
+
+  .topic-sprite {
+    background-image: url('../../img/mobile/topics-sprite-2x.png');
+    .background-size(148px 888px);
   }
 }
