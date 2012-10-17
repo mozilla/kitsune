@@ -353,12 +353,79 @@ class TestDocumentLocking(TestCase):
         doc_de = document(parent=doc_en, locale='de', save=True)
         self._test_lock_helpers(doc_de)
 
-    def _create_en_and_de_docs(self):
-        en = settings.WIKI_DEFAULT_LANGUAGE
-        en_doc = document(locale=en, slug='english-slug')
-        en_doc.save()
-        de_doc = document(locale='de', parent=en_doc)
-        de_doc.save()
-        de_rev = revision(document=de_doc, is_approved=True)
-        de_rev.save()
-        return en_doc, de_doc
+    def _lock_workflow(self, doc, edit_url):
+        """This is a big end to end feature test of document locking.
+
+        This tests that when a user starts editing a page, it gets locked,
+        users can steal locks, and that when a user submits the edit page, the
+        lock is cleared.
+        """
+        _login = lambda u: self.client.login(username=u.username, password='testpass')
+        assert_is_locked = lambda r: self.assertContains(r, 'id="unlock-button"')
+        assert_not_locked = lambda r: self.assertNotContains(r, 'id="unlock-button"')
+
+        u1 = user(save=True, password='testpass')
+        u2 = user(save=True, password='testpass')
+
+        # With u1, edit the document. No lock should be found.
+        _login(u1)
+        r = self.client.get(edit_url)
+        # Now load it again, the page should not show as being locked (since u1 has the lock)
+        r = self.client.get(edit_url)
+        assert_not_locked(r)
+
+        # With u2, edit the document. It should be locked.
+        _login(u2)
+        r = self.client.get(edit_url)
+        assert_is_locked(r)
+        # Simulate stealing the lock by clicking the button.
+        _document_lock_steal(doc.id, u2.username)
+        r = self.client.get(edit_url)
+        assert_not_locked(r)
+
+        # Now u1 should see the page as locked.
+        _login(u1)
+        r = self.client.get(edit_url)
+        assert_is_locked(r)
+
+        # Now u2 submits the page, clearing the held lock.
+        _login(u2)
+        r = self.client.post(edit_url)
+
+        data = new_document_data()
+        data.update({'title': doc.title, 'slug': doc.slug, 'form': 'doc'})
+        self.client.post(edit_url, data)
+
+        # And u1 should not see a lock warning.
+        _login(u1)
+        r = self.client.get(edit_url)
+        assert_not_locked(r)
+
+    def test_doc_lock_workflow(self):
+        """End to end test of locking on an english document."""
+        doc, rev = doc_rev()
+        url = reverse('wiki.edit_document', args=[doc.slug], locale='en-US')
+        self._lock_workflow(doc, url)
+
+    def test_trans_lock_workflow(self):
+        """End to end test of locking on a translated document."""
+        doc, _ = doc_rev()
+        u = user(save=True, password='testpass')
+
+        # Create a new translation of doc() using the translation view
+        self.client.login(username=u.username, password='testpass')
+        trans_url = reverse('wiki.translate', locale='es', args=[doc.slug])
+        data = {
+            'title': 'Un Test Articulo',
+            'slug': 'un-test-articulo',
+            'keywords': 'keyUno, keyDos, keyTres',
+            'summary': 'lipsumo',
+            'content': 'loremo ipsumo doloro sito ameto'}
+        r = self.client.post(trans_url, data)
+        eq_(r.status_code, 302)
+
+        # Now run the test.
+        edit_url = reverse('wiki.edit_document', locale='es', args=[data['slug']])
+        es_doc = Document.objects.get(slug=data['slug'])
+        eq_(es_doc.locale, 'es')
+        self._lock_workflow(es_doc, edit_url)
