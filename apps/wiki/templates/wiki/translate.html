@@ -15,7 +15,7 @@
   <div class="grid_9">
     {{ document_lock_warning() }}
 
-    <article id="localize-document" class="main form-page{% if locked %} locked{% endif %}" data-slug="{{ parent.slug }}">>
+    <article id="localize-document" class="main form-page{% if locked %} locked{% endif %}" data-slug="{{ parent.slug }}">
       <h1>{{ _('Translating {title}')|f(title=parent.title) }}</h1>
       <div class="change-locale">
         <p>

@@ -331,9 +331,6 @@ def steal_lock(request, document_slug, revision_id=None):
     doc = get_object_or_404(Document, locale=request.locale, slug=document_slug)
     user = request.user
 
-    # Get the original document, in default language.
-    doc = doc.parent if doc.parent else doc
-
     ok = _document_lock_steal(doc.id, user.username)
     return HttpResponse("", status=200 if ok else 400)
 
