@@ -4,6 +4,7 @@
 {% from "wiki/includes/sidebar_modules.html" import document_tools %}
 {% from "includes/common_macros.html" import content_editor %}
 {% from "wiki/includes/document_macros.html" import revision_diff, submit_revision, edit_messages with context %}
+{% from "wiki/includes/document_macros.html" import document_lock_warning with context %}
 {% set title = _('Translate Article | {document}')|f(document=parent.title) %}
 {% set crumbs = [(parent.get_absolute_url(), parent.title),
                  (None, _('Translate Article'))] %}
@@ -12,14 +13,7 @@
 {% block content %}
   {% set language = settings.LANGUAGES[locale.lower()] %}
   <div class="grid_9">
-    {% if locked %}
-      <div id="locked-warning" class="warning-box">
-        <h2>Warning! This page is also being edited by {{ locked_by.username }}!</h2>
-        <p>If you know what you are doing, click the button.</p>
-
-        <a href="#" id="unlock-button" class="btn btn-warning">Edit anyways</a>
-      </div>
-    {% endif %}
+    {{ document_lock_warning() }}
 
     <article id="localize-document" class="main form-page{% if locked %} locked{% endif %}" data-slug="{{ parent.slug }}">>
       <h1>{{ _('Translating {title}')|f(title=parent.title) }}</h1>

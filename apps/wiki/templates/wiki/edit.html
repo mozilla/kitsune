@@ -5,6 +5,7 @@
 {% from "includes/common_macros.html" import content_editor %}
 {% from "wiki/includes/document_macros.html" import edit_messages, submit_revision %}
 {% from "wiki/includes/document_macros.html" import document_watch with context %}
+{% from "wiki/includes/document_macros.html" import document_lock_warning with context %}
 {% set title = _('Edit Article | {document}')|f(document=document.title) %}
 {# TODO: Change KB url to landing page when we have one #}
 {% set crumbs = [(document.get_absolute_url(), document.title),
@@ -13,16 +14,7 @@
 
 {% block content %}
   <div class="grid_9">
-    {% if locked %}
-      <div id="locked-warning" class="warning-box">
-        <h2>{% trans user=locked_by.username %}
-          Warning! This page is also being edited by {{ user }}!
-        {% endtrans %}</h2>
-        <p>{{ _('If you know what you are doing, you can edit the document anyways.') }}</p>
-
-        <a href="#" id="unlock-button" class="btn btn-warning">{{ _('Edit anyways') }}</a>
-      </div>
-    {% endif %}
+    {{ document_lock_warning() }}
 
     <article id="edit-document" {% if locked %}class="locked"{% endif %} data-slug="{{ document.slug }}">
       <h1>{{ _('<em>Editing</em> {title}')|fe(title=document.title) }}</h1>
