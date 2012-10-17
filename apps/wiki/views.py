@@ -249,13 +249,13 @@ _document_lock_key = 'sumo::wiki::document::{id}::lock'
 def _document_lock_check(document_id):
     """Check for a lock on a document.
 
-    Returns the user who has the page locked, or None if no user has a lock.
+    Returns the username of the user that has the page locked, or ``None`` if
+    no user has a lock.
     """
     try:
         redis = redis_client(name='default')
         key = _document_lock_key.format(id=document_id)
-        locked_by = redis.get(key)
-        return locked_by
+        return redis.get(key)
     except RedisError as e:
         statsd.incr('redis.errror')
         log.error('Redis error: %s' % e)
@@ -305,14 +305,34 @@ def _document_lock_clear(document_id, user_name):
         return False
 
 
+def _document_lock(doc_id, username):
+    """If there is no lock, take one. Return the current state of the lock."""
+    locked_by = _document_lock_check(doc_id)
+    if locked_by == username:
+        locked = False
+    if locked_by:
+        try:
+            locked = not (locked_by == username)
+            locked_by = User.objects.get(username=locked_by)
+        except User.DoesNotExist:
+            # If the user doesn't exist, they shouldn't be able to enforce a lock.
+            locked = False
+            locked_by = None
+    else:
+        locked_by = username
+        locked = False
+        _document_lock_steal(doc_id, username)
+
+    return locked, locked_by
+
+
 @login_required
 def steal_lock(request, document_slug, revision_id=None):
     doc = get_object_or_404(Document, locale=request.locale, slug=document_slug)
     user = request.user
 
     # Get the original document, in default language.
-    while doc.parent:
-        doc = doc.parent
+    doc = doc.parent if doc.parent else doc
 
     ok = _document_lock_steal(doc.id, user.username)
     return HttpResponse("", status=200 if ok else 400)
@@ -399,21 +419,7 @@ def edit_document(request, document_slug, revision_id=None):
 
     show_revision_warning = _show_revision_warning(doc, rev)
 
-    locked_by = _document_lock_check(doc.id)
-    if locked_by == user.username:
-        locked = False
-    if locked_by:
-        try:
-            locked = not (locked_by == user.username)
-            locked_by = User.objects.get(username=locked_by)
-        except User.DoesNotExist:
-            # If the user doesn't exist, they shouldn't be able to enforce a lock.
-            locked = False
-            locked_by = None
-    else:
-        locked_by = user.username
-        locked = False
-        _document_lock_steal(doc.id, user.username)
+    locked, locked_by = _document_lock(doc.id, user.username)
 
     return jingo.render(request, 'wiki/edit.html',
                         {'revision_form': rev_form,
@@ -705,20 +711,9 @@ def translate(request, document_slug, revision_id=None):
     show_revision_warning = _show_revision_warning(doc, base_rev)
 
     if doc:
-        locked_by = _document_lock_check(doc.id)
-
-        if locked_by == user.username:
-            locked = False
-        if locked_by:
-            locked = not (locked_by == user.username)
-            locked_by = User.objects.get(username=locked_by)
-        else:
-            locked_by = user.username
-            locked = False
-            _document_lock_steal(doc.id, user.username)
+        locked, locked_by = _document_lock(doc.id, user.username)
     else:
-        locked = False
-        locked_by = None
+        locked, locked_by = False, None
 
     return jingo.render(request, 'wiki/translate.html',
                         {'parent': parent_doc, 'document': doc,
@@ -1170,9 +1165,6 @@ def _save_rev_and_notify(rev_form, creator, document):
     # Enqueue notifications
     ReviewableRevisionInLocaleEvent(new_rev).fire(exclude=new_rev.creator)
     EditDocumentEvent(new_rev).fire(exclude=new_rev.creator)
-
-    # In case someone wants to use this.
-    return new_rev
 
 
 def _maybe_schedule_rebuild(form):
