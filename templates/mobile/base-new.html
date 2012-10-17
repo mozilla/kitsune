@@ -41,6 +41,8 @@
   <div id="search-bar">
     {{ mobile_nav_form(q, search_params) }}
   </div>
+
+  <a href="{{ url('products') }}">Home</a>
   <a href="{{ url('wiki.document', 'ask') }}">{{ _('Ask a question') }}</a>
 
   <header>{{ _('Navigation') }}</header>

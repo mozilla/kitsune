@@ -8,7 +8,7 @@
 
 {% block header %}
   <a href="{{ url('products.product', slug=product.slug) }}" class="return-button icon-sprite">Back</a>
-  <h1>{{ topic.title }}</h1>
+  <h1>{{ _(topic.title, 'DB: topics.Topic.title') }}</h1>
 {% endblock %}
 
 {% block content %}
@@ -34,7 +34,7 @@
 
 {% block after_main %}
   <div id="filter-overlay" class="overlay" style="display: none;">
-    <header>Showing</header>
+    <header>{{ _('Showing') }}</header>
     <div class="wrapper">
       <ul>
         <li {{ refine|class_selected(None) }}><a href="{{ request.path }}">{{ _('All') }}</a></li>
