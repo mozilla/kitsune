@@ -1,7 +1,7 @@
 {% extends 'mobile/base.html' %}
 
 {% set headline = product.title %}
-{% set styles = ('products-mobile',) %}
+{% set styles = ('mobile/products',) %}
 
 {% block title %}{{ _('{product} Help')|f(product=_(product.title, 'DB: products.Product.title')) }}{% endblock %}
 
