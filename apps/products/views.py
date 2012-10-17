@@ -20,7 +20,8 @@ def product_list(request, template):
         'products': products})
 
 
-def product_landing(request, slug):
+@mobile_template('products/{mobile/}product.html')
+def product_landing(request, template, slug):
     """The product landing page."""
     product = get_object_or_404(Product, slug=slug)
 
@@ -34,7 +35,7 @@ def product_landing(request, slug):
         hot_docs = fallback_hot_docs = None
     
 
-    return jingo.render(request, 'products/product.html', {
+    return jingo.render(request, template, {
         'product': product,
         'products': Product.objects.filter(visible=True),
         'topics': topics_for(products=[product]),
