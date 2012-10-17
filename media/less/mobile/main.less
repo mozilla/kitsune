@@ -103,6 +103,10 @@ body {
     #page {
       left: auto;
       right: 0;
+
+      &.exposed {
+        right: 270px;
+      }
     }
   }
 }
@@ -202,8 +206,14 @@ body {
   overflow: hidden;
   position: absolute;
   top: 0;
+  .transition-property(~'left, right');
+  .transition-duration(0.5s);
   z-index: 10;
   width: 100%;
+
+  &.exposed {
+    left: 270px;
+  }
 
   > header {
     .gradient(#cd6723, #cd6723, #bb482d);
