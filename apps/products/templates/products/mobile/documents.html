@@ -23,13 +23,24 @@
     </div>
   </div>
 
-  <ul id="documents">
+  <ul class="document-list">
     {% for document in documents %}
       <li>
         <a class="cf" href="{{ document['url'] }}">{{ document['document_title'] }}</a>
       </li>
     {% endfor %}
   </ul>
+
+  {% if fallback_documents %}
+    <h2>{{ _('In English') }}</h2>
+    {% for document in fallback_documents %}
+      {% if loop.first %}<ul class="document-list">{% endif %}
+      <li>
+        <a href="{{ document['url']|replace('/'+ settings.WIKI_DEFAULT_LANGUAGE +'/', '/' + request.locale + '/') }}">{{ document['document_title'] }}</a>
+      </li>
+      {% if loop.last %}</ul>{% endif %}
+    {% endfor %}
+  {% endif %}
 {% endblock %}
 
 {% block after_main %}
