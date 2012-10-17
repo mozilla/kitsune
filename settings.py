@@ -522,7 +522,7 @@ MINIFY_BUNDLES = {
             'css/mobile.css',
             'css/wiki_syntax.css',
         ),
-        'mobile-new': (
+        'mobile/new': (
             'css/normalize.css',
             'less/mobile/main.less',
         ),
@@ -533,7 +533,7 @@ MINIFY_BUNDLES = {
         'products': (
             'less/products.less',
         ),
-        'products-mobile': (
+        'mobile/products': (
             'less/mobile/products.less',
         ),
         'groups': (
@@ -551,7 +551,7 @@ MINIFY_BUNDLES = {
         'locale-switcher': (
             'less/locale-switcher.less',
         ),
-        'locale-switcher-mobile': (
+        'mobile/locale-switcher': (
             'less/mobile/locales.less',
         ),
         'kbdashboards': (
