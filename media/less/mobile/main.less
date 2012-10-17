@@ -23,6 +23,7 @@ body {
     color: #fff;
     left: 0;
     overflow: auto;
+    -webkit-overflow-scrolling: touch;
     position: absolute;
     top: 0;
     width: 270px;
@@ -102,6 +103,10 @@ body {
     #page {
       left: auto;
       right: 0;
+
+      &.exposed {
+        right: 270px;
+      }
     }
   }
 }
@@ -118,6 +123,49 @@ body {
   &.logo-firefox {
     background-position: -50px -50px;
   }
+}
+
+.overlay {
+  background: rgba(40, 40, 40, 0.98) url('../../img/grain.png') 0 0 repeat;
+  bottom: 0;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+  z-index: 100;
+
+  > header {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.25);
+    .box-shadow(0 0 10px 0 rgba(0, 0, 0, 0.5));
+    color: #fff;
+    cursor: pointer;
+    height: 50px;
+    left: 0;
+    line-height: 50px;
+    padding: 0 30px;
+    position: absolute;
+    right: 0;
+    top: 0;
+  }
+
+  .wrapper {
+    bottom: 0;
+    left: 0;
+    overflow: auto;
+    -webkit-overflow-scrolling: touch;
+    position: absolute;
+    right: 0;
+    top: 51px;
+  }
+}
+
+.return-button {
+  background-position: -56px -299px;
+  float: left;
+  height: 24px;
+  margin: 13px 12px 13px 4px;
+  text-indent: -9999px;
+  width: 12px;
 }
 
 .topic-sprite {
@@ -158,8 +206,14 @@ body {
   overflow: hidden;
   position: absolute;
   top: 0;
+  .transition-property(~'left, right');
+  .transition-duration(0.5s);
   z-index: 10;
   width: 100%;
+
+  &.exposed {
+    left: 270px;
+  }
 
   > header {
     .gradient(#cd6723, #cd6723, #bb482d);
@@ -200,13 +254,14 @@ body {
   float: right;
   height: 24px;
   margin: 13px;
+  text-indent: -9999px;
   width: 24px;
 }
 
 @media only screen and (-webkit-min-device-pixel-ratio: 2), only screen and (min-device-pixel-ratio: 2) {
   .icon-sprite {
     background-image: url('../../img/mobile/icons-sprite-2x.png');
-    .background-size(124px 248px);
+    .background-size(124px 372px);
   }
 
   .logo-sprite {

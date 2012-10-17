@@ -10,8 +10,8 @@
       <li>
         <a class="cf" href="{{ url('products.product', slug=product.slug) }}">
           <img src="{{ MEDIA_URL }}img/blank.png" class="logo-sprite" alt="">
-          <span class="title">{{ product.title }}</span>
-          {{ product.description }}
+          <span class="title">{{ _(product.title, 'DB: products.Product.title') }}</span>
+          {{ _(product.description, 'DB: products.Product.description') }}
         </a>
       </li>
     {% endfor %}

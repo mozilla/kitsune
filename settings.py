@@ -659,7 +659,7 @@ MINIFY_BUNDLES = {
             'js/mobile.js',
         ),
         'mobile-new': (
-            'js/libs/jquery-1.7.1.min.js',
+            'js/libs/jquery-1.8.2.min.js',
             'js/mobile/ui.js',
         ),
         'messages': (
@@ -693,6 +693,9 @@ MINIFY_BUNDLES = {
         'kpi.dashboard': (
             'js/libs/backbone.js',
             'js/kpi.dashboard.js',
+        ),
+        'products-mobile': (
+            'js/mobile/products.js',
         ),
     },
 }

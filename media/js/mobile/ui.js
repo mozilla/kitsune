@@ -2,26 +2,11 @@
     $(function() {
         // Menu toggling
         $('#menu-button').on('click', function() {
-            $page = $('#page');
-            $nav = $('body > nav');
+            $('#page').toggleClass('exposed');
+        });
 
-            var animation = {};
-
-            if ($('body').data('orientation') === 'right') {
-                if ($page.css('right') === '0px') {
-                    animation.right = $nav.outerWidth();
-                } else {
-                    animation.right = 0;
-                }
-            } else {
-                if ($page.css('left') === '0px') {
-                    animation.left = $nav.outerWidth();
-                } else {
-                    animation.left = 0;
-                }
-            }
-
-            $page.animate(animation);
+        $('.overlay > header').on('click', function() {
+            $(this).closest('.overlay').hide();
         });
 
         // iOS Standalone Web App Fix
