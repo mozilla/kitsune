@@ -1,3 +1,5 @@
+/*jshint*/
+/*globals tests:true, ShowFor:true, module:true, equals:true, test:true, $:true */
 $(document).ready(function(){
 
 "use strict";
@@ -52,6 +54,23 @@ test('windows fx4', function() {
     assertNotVisible(this.$sandbox, ['mac,linux', 'maemo', 'fx3', 'fx5', 'fx6']);
 });
 
+test('windows versions', function() {
+    $('#_input_winxp').click();
+    equals(this.$o.val(), 'winxp', 'Windows XP is now selected');
+    assertNotHidden(this.$sandbox, ['win', 'winxp']);
+    assertNotVisible(this.$sandbox, ['win8', 'win7', 'mac', 'linux']);
+
+    $('#_input_win7').click();
+    equals(this.$o.val(), 'win7', 'Windows 7/Vista is now selected');
+    assertNotHidden(this.$sandbox, ['win', 'win7']);
+    assertNotVisible(this.$sandbox, ['win8', 'winxp', 'mac', 'linux']);
+
+    $('#_input_win8').click();
+    equals(this.$o.val(), 'win8', 'Windows 8 is now selected');
+    assertNotHidden(this.$sandbox, ['win', 'win8']);
+    assertNotVisible(this.$sandbox, ['winxp', 'win7', 'mac', 'linux']);
+});
+
 test('linux fx35', function() {
     $('#_input_linux').click();
     $('#_input_fx35').click();
@@ -84,8 +103,8 @@ test('android m4', function() {
     $('#_input_m4').click();
     equals(this.$o.val(), 'android', 'Android is now selected');
     equals(this.$b.val(), 'm4', 'Firefox 4 is now selected');
-    assertNotHidden(this.$sandbox, ['win', 'not mac', 'android', 'm4', 'fx35,fx4', 'fx4', 'fx5']);
-    assertNotVisible(this.$sandbox, ['mac,linux', 'maemo', 'fx3', 'm5', 'fx6']);
+    assertNotHidden(this.$sandbox, ['win', 'win7', 'not mac', 'android', 'm4', 'fx35,fx4', 'fx4', 'fx5']);
+    assertNotVisible(this.$sandbox, ['mac,linux', 'maemo', 'fx3', 'm5', 'fx6', 'winxp', 'win8']);
 });
 
 test('maemo m5', function() {

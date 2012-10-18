@@ -27,7 +27,11 @@ var BrowserDetect = {
 
             // Check if all subStrings are in the dataString.
             matchedAll = _.reduce(data[i].subStrings, function(memo, sub) {
-                return memo && (dataString.indexOf(sub) !== -1);
+                if (sub instanceof RegExp) {
+                    return memo && sub.exec(dataString);
+                } else {
+                    return memo && (dataString.indexOf(sub) !== -1);
+                }
             }, true);
 
             if (matchedAll) {
@@ -67,6 +71,22 @@ var BrowserDetect = {
     ],
     dataOS : [
         {
+            string: navigator.userAgent,
+            subStrings: ["Windows NT 6.2"],
+            identity: "win8"
+        },
+        {   // 6.0 is Vista, 6.1 is Windows 7. We lump them together here.
+            string: navigator.userAgent,
+            subStrings: [/Windows NT 6\.[01]/],
+            identity: "win7"
+        },
+        {   // This lumps together Windows 2000 and Windows XP
+            string: navigator.userAgent,
+            subStrings: [/Windows NT 5\./],
+            identity: "winxp"
+        },
+        {   // If we can't figure out what version, fallback.
+            // This probably means they are running something like Windows ME.
             string: navigator.platform,
             subStrings: ["Win"],
             identity: "win"

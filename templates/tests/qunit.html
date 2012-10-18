@@ -45,8 +45,11 @@
 
     <div id="showfor">
       <div class="help-with-selects">
-        <select class="os" data-oses="{&#34;maemo&#34;: true, &#34;win&#34;: true, &#34;mac&#34;: true, &#34;android&#34;: true, &#34;linux&#34;: true}">
-          <option value="win" data-dependency="desktop" data-default="true">Windows</option>
+        <select class="os" data-oses="{&#34;maemo&#34;: true, &#34;win&#34;: true, &#34;winxp&#34;: true, &#34;win7&#34;: true, &#34;win8&#34;: true, &#34;mac&#34;: true, &#34;android&#34;: true, &#34;linux&#34;: true}">
+          <option value="win" data-dependency="desktop">Windows</option>
+          <option value="winxp" data-dependency="desktop">Windows XP</option>
+          <option value="win7" data-dependency="desktop" data-default="true">Windows 7/Vista</option>
+          <option value="win8" data-dependency="desktop">Windows 8</option>
           <option value="mac" data-dependency="desktop">Mac OS X</option>
           <option value="linux" data-dependency="desktop">Linux</option>
           <option value="android" data-dependency="mobile" data-default="true">Android</option>
@@ -67,6 +70,9 @@
       </div>
       <div class="content">
         <span class="for" data-for="win">win</span>
+        <span class="for" data-for="winxp">winxp</span>
+        <span class="for" data-for="win7">win7/vista</span>
+        <span class="for" data-for="win8">win8</span>
         <span class="for" data-for="mac,linux">mac, linux</span>
         <span class="for" data-for="not mac">not mac</span>
         <div class="for" data-for="android">android</div>
@@ -111,8 +117,11 @@
 
     <div id="showfor-desktop-only">
       <div class="help-with-selects">
-        <select class="os" data-oses="{&#34;win&#34;: true, &#34;mac&#34;: true, &#34;linux&#34;: true}" class="enable-if-js" disabled="disabled">
+        <select class="os" data-oses="{&#34;winxp&#34;: true, &#34;win7&#34;: true, &#34;win8&#34;: true, &#34;win&#34;: true, &#34;mac&#34;: true, &#34;linux&#34;: true}" class="enable-if-js" disabled="disabled">
           <option value="win" data-dependency="desktop" selected="selected" data-default="true">Windows</option>
+          <option value="winxp" data-dependency="desktop">Windows XP</option>
+          <option value="win7" data-dependency="desktop">Windows 7/Vista</option>
+          <option value="win8" data-dependency="desktop">Windows 8</option>
           <option value="mac" data-dependency="desktop">Mac OS X</option>
           <option value="linux" data-dependency="desktop">Linux</option>
         </select>
@@ -128,6 +137,9 @@
       </div>
       <div class="content">
         <div class="for" data-for="win">win</div>
+        <div class="for" data-for="winxp">winxp</div>
+        <div class="for" data-for="win7">win7</div>
+        <div class="for" data-for="win8">win8</div>
         <div class="for" data-for="mac">mac</div>
         <div class="for" data-for="linux">linux</div>
         <span class="for" data-for="fx15">m15</span>
