@@ -238,7 +238,7 @@
                 <li class="tag">{# -#}
                   <a class="tag-name" href="{{ url('questions.questions')|urlparams(tagged=tag.slug) }}">{{ tag }}</a>
                   {%- if can_tag -%}
-                    <button type="submit" data-type="submit" data-name="remove-tag-{{ tag }}">&#xd7;</button>
+                    <button type="submit" class="remover" data-type="submit" data-name="remove-tag-{{ tag }}">&#xd7;</button>
                   {%- endif -%}
                 </li>
               {% endfor %}
