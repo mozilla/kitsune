@@ -99,11 +99,13 @@
 {% macro edit_messages(document, show_revision_warning) -%}
   {% if show_revision_warning %}
     <div class="warning-box">
-      {% trans url=url('wiki.document_revisions', document.slug) %}
-        Warning: There are newer unreviewed revisions of this article.
-        See <a href="{{url}}">the history</a> to base your edit on an
-        existing unreviewed revision.
-      {% endtrans %}
+      <h2>{{ _('Warning: There are newer unreviewed revisions of this article.') }}</h2>
+      <p>
+        {% trans url=url('wiki.document_revisions', document.slug) %}
+          See <a href="{{url}}">the history</a> to base your edit on an
+          existing unreviewed revision.
+        {% endtrans %}
+      </p>
     </div>
   {% endif %}
 {%- endmacro %}
@@ -282,7 +284,7 @@
   {% if locked %}
     <div id="locked-warning" class="warning-box">
       <h2>{% trans user=locked_by.username %}
-        Warning! This page is also being edited by {{ user }}!
+        Warning: This page is also being edited by {{ user }}!
       {% endtrans %}</h2>
       <p>{{ _('If you know what you are doing, you can edit the document anyways.') }}</p>
 

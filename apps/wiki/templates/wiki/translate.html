@@ -13,6 +13,7 @@
 {% block content %}
   {% set language = settings.LANGUAGES[locale.lower()] %}
   <div class="grid_9">
+    {{ edit_messages(document, show_revision_warning) }}
     {{ document_lock_warning() }}
 
     <article id="localize-document" class="main form-page{% if locked %} locked{% endif %}" data-slug="{{ parent.slug }}">
@@ -27,7 +28,6 @@
           </div>
         {% endif %}
       </div>
-      {{ edit_messages() }}
       {% if not document %}
         {# If this is the first translation to this locale, we use 1 big form. #}
         <form action="" method="post" data-json-url="{{ url('wiki.json') }}">
