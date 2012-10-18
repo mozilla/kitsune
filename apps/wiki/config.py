@@ -27,9 +27,9 @@ VersionMetadata = namedtuple('VersionMetadata',
                              'is_default')
 DESKTOP_FIREFOX_VERSIONS = (
     VersionMetadata(29, _lazy(u'Firefox 17'),
-                    _lazy(u'Firefox 17'), 'fx17', 17.9999, True, False),   
+                    _lazy(u'Firefox 17'), 'fx17', 17.9999, True, False),
     VersionMetadata(27, _lazy(u'Firefox 16'),
-                    _lazy(u'Firefox 16'), 'fx16', 16.9999, True, True),        
+                    _lazy(u'Firefox 16'), 'fx16', 16.9999, True, True),
     VersionMetadata(25, _lazy(u'Firefox 15'),
                     _lazy(u'Firefox 15'), 'fx15', 15.9999, True, False),
     VersionMetadata(23, _lazy(u'Firefox 14'),
@@ -100,7 +100,10 @@ FIREFOX_VERSIONS = tuple(chain(*[options for label, options in
 OsMetaData = namedtuple('OsMetaData', 'id, name, slug, show_in_ui, '
                         'is_default')
 DESKTOP_OPERATING_SYSTEMS = (
-    OsMetaData(1, _lazy(u'Windows'), 'win', True, True),
+    OsMetaData(1, _lazy(u'Windows'), 'win', False, True),
+    OsMetaData(6, _lazy(u'Windows XP'), 'winxp', True, True),
+    OsMetaData(7, _lazy(u'Windows 7/Vista'), 'win7', True, True),
+    OsMetaData(8, _lazy(u'Windows 8'), 'win8', True, True),
     OsMetaData(2, _lazy(u'Mac OS X'), 'mac', True, False),
     OsMetaData(3, _lazy(u'Linux'), 'linux', True, False))
 MOBILE_OPERATING_SYSTEMS = (

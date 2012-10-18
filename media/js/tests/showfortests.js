@@ -1,3 +1,5 @@
+/*jshint*/
+/*globals tests:true, ShowFor:true, module:true, equals:true, test:true, $:true */
 $(document).ready(function(){
 
 "use strict";
@@ -50,6 +52,23 @@ test('windows fx4', function() {
     equals(this.$b.val(), 'fx4', 'Firefox 4 is now selected');
     assertNotHidden(this.$sandbox, ['win', 'not mac', 'android', 'fx35,fx4', 'fx4', 'm4', 'm5']);
     assertNotVisible(this.$sandbox, ['mac,linux', 'maemo', 'fx3', 'fx5', 'fx6']);
+});
+
+test('windows versions', function() {
+    $('#_input_winxp').click();
+    equals(this.$o.val(), 'winxp', 'Windows XP is now selected');
+    assertNotHidden(this.$sandbox, ['win', 'winxp']);
+    assertNotVisible(this.$sandbox, ['win8', 'win7', 'mac', 'linux']);
+
+    $('#_input_win7').click();
+    equals(this.$o.val(), 'win7', 'Windows 7/Vista is now selected');
+    assertNotHidden(this.$sandbox, ['win', 'win7']);
+    assertNotVisible(this.$sandbox, ['win8', 'winxp', 'mac', 'linux']);
+
+    $('#_input_win8').click();
+    equals(this.$o.val(), 'win8', 'Windows 8 is now selected');
+    assertNotHidden(this.$sandbox, ['win', 'win8']);
+    assertNotVisible(this.$sandbox, ['winxp', 'win7', 'mac', 'linux']);
 });
 
 test('linux fx35', function() {

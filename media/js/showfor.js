@@ -1,3 +1,5 @@
+/*jshint*/
+/*global BrowserDetect:false, gettext:false */
 /*
  * Scripts for the showfor browser/os detection.
  *
@@ -191,7 +193,7 @@ var ShowFor = {
 
                 // Return whether the given browser slug matches any of the
                 // given conditions. Passing a falsey slug results in false.
-                // Passing an unknown slug results in undefined behavior. 
+                // Passing an unknown slug results in undefined behavior.
                 // TODO: Implement with a generic any() instead--maybe underscore's.
                 function meetsAnyOfConditions(slug, conditions) {
                     // Return whether a slug (like 'fx4' or 'fx35') meets a condition like
@@ -247,6 +249,16 @@ var ShowFor = {
                     }
                 });
 
+                // If the showfor data for this element is any sort of windows, also show it when os=win.
+                if (os === 'win') {
+                    for (var key in osAttrs) {
+                        if (key.substring(0, 3) === 'win') {
+                            osAttrs['win'] = true;
+                            break;
+                        }
+                    }
+                }
+
                 shouldHide = ((foundAnyOses && osAttrs[os] === undefined) ||
                               (foundAnyBrowsers && !meetsAnyOfConditions(browser, browserConditions))) &&
                              // Special cases:
@@ -267,7 +279,9 @@ var ShowFor = {
                              // * Show the default desktop browser if no OS was specified or
                              //   the default desktop OS was also specified.
                              !(meetsAnyOfConditions(defaults.desktop.browser, browserConditions) && platform === 'mobile' &&
-                                (osAttrs[defaults.desktop.os] || !foundAnyOses));
+                                (osAttrs[defaults.desktop.os] || !foundAnyOses)) &&
+                             // If any windows version is selected, also show {showfor win} items.
+                             !(osAttrs['win'] && os.substring(0, 3) === 'win');
 
                 if (shouldHide != isInverted) {
                     $(this).hide();  // saves original visibility, which is nice but not necessary
@@ -519,7 +533,7 @@ var ShowFor = {
             platform = 'mobile';
             sliceIndex = 1;
         }
-        version = parseInt(browser.slice(sliceIndex));
+        version = parseInt(browser.slice(sliceIndex), 10);
         $option.attr('data-dependency', platform);
         $option.text('Firefox ' + version);
 
@@ -527,9 +541,9 @@ var ShowFor = {
         // A little hacky, given fx35 is Firefox 3.5/3.6 and not Firefox 35.
         selector = 'option[data-dependency="' + platform + '"]';
         highestVersion = $select.find(selector + ':first').val();
-        highestVersion = parseInt(highestVersion.slice(sliceIndex));
+        highestVersion = parseInt(highestVersion.slice(sliceIndex), 10);
         lowestVersion = $select.find(selector + ':last').val();
-        lowestVersion = parseInt(lowestVersion.slice(sliceIndex));
+        lowestVersion = parseInt(lowestVersion.slice(sliceIndex), 10);
         if (lowestVersion === 35) {
             lowestVersion = 3.5;
         }
