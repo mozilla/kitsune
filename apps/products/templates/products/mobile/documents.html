@@ -16,7 +16,7 @@
     <span>{{ _('Showing') }}</span>
     <div class="filter" id="select-filter">
       {% if refine %}
-        {{ refine }}
+        {{ _(refine.title, 'DB: topics.Topic.title') }}
       {% else %}
         {{ _('All articles') }}
       {% endif %}
