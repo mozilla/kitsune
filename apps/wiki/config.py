@@ -100,10 +100,10 @@ FIREFOX_VERSIONS = tuple(chain(*[options for label, options in
 OsMetaData = namedtuple('OsMetaData', 'id, name, slug, show_in_ui, '
                         'is_default')
 DESKTOP_OPERATING_SYSTEMS = (
-    OsMetaData(1, _lazy(u'Windows'), 'win', False, True),
-    OsMetaData(6, _lazy(u'Windows XP'), 'winxp', True, True),
+    OsMetaData(1, _lazy(u'Windows'), 'win', False, False),
+    OsMetaData(6, _lazy(u'Windows XP'), 'winxp', True, False),
     OsMetaData(7, _lazy(u'Windows 7/Vista'), 'win7', True, True),
-    OsMetaData(8, _lazy(u'Windows 8'), 'win8', True, True),
+    OsMetaData(8, _lazy(u'Windows 8'), 'win8', True, False),
     OsMetaData(2, _lazy(u'Mac OS X'), 'mac', True, False),
     OsMetaData(3, _lazy(u'Linux'), 'linux', True, False))
 MOBILE_OPERATING_SYSTEMS = (

@@ -1,3 +1,6 @@
+/*jshint*/
+/*globals tests:true, ShowFor:true, module:true, equals:true, test:true, $:true,
+          BrowserDetect:true */
 $(document).ready(function(){
 
 "use strict";
@@ -37,6 +40,25 @@ test('Firefox 12', function() {
 
     equals(BrowserDetect.searchString(BrowserDetect.dataBrowser, ua), 'fx');
     equals(BrowserDetect.searchVersion(ua), 12);
+});
+
+test('Windows versions', function() {
+    var ua;
+
+    ua = 'Mozilla/5.0 (Windows NT 5.0; WOW64; rv:12.0) Gecko/20100101 Firefox/12.0';
+    equals(BrowserDetect.searchString(BrowserDetect.dataOS, ua), 'winxp');
+    ua = 'Mozilla/5.0 (Windows NT 5.01; WOW64; rv:12.0) Gecko/20100101 Firefox/13.0';
+    equals(BrowserDetect.searchString(BrowserDetect.dataOS, ua), 'winxp');
+    ua = 'Mozilla/5.0 (Windows NT 5.1; WOW64; rv:12.0) Gecko/20100101 Firefox/14.0';
+    equals(BrowserDetect.searchString(BrowserDetect.dataOS, ua), 'winxp');
+    ua = 'Mozilla/5.0 (Windows NT 6.0; WOW64; rv:12.0) Gecko/20100101 Firefox/15.0';
+    equals(BrowserDetect.searchString(BrowserDetect.dataOS, ua), 'win7');
+    ua = 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:12.0) Gecko/20100101 Firefox/16.0';
+    equals(BrowserDetect.searchString(BrowserDetect.dataOS, ua), 'win7');
+    ua = 'Mozilla/5.0 (Windows NT 6.2; WOW64; rv:12.0) Gecko/20100101 Firefox/17.0';
+    equals(BrowserDetect.searchString(BrowserDetect.dataOS, ua), 'win8');
+    ua = 'Mozilla/5.0 (Windows NT 4.0; WOW64; rv:12.0) Gecko/20100101 Firefox/4.0';
+    equals(BrowserDetect.searchString(BrowserDetect.dataOS, ua), 'win');
 });
 
 });
