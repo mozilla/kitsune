@@ -276,6 +276,8 @@ var ShowFor = {
                              //   the default desktop browser was also specified.
                              !(osAttrs[defaults.desktop.os] && platform === 'mobile' &&
                                 (meetsAnyOfConditions(defaults.desktop.browser, browserConditions) || !foundAnyBrowsers)) &&
+                             !(osAttrs['win'] && platform === 'mobile' &&
+                                (meetsAnyOfConditions('win', browserConditions) || !foundAnyBrowsers)) &&
                              // * Show the default desktop browser if no OS was specified or
                              //   the default desktop OS was also specified.
                              !(meetsAnyOfConditions(defaults.desktop.browser, browserConditions) && platform === 'mobile' &&

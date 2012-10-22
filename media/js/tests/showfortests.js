@@ -103,8 +103,8 @@ test('android m4', function() {
     $('#_input_m4').click();
     equals(this.$o.val(), 'android', 'Android is now selected');
     equals(this.$b.val(), 'm4', 'Firefox 4 is now selected');
-    assertNotHidden(this.$sandbox, ['win', 'not mac', 'android', 'm4', 'fx35,fx4', 'fx4', 'fx5']);
-    assertNotVisible(this.$sandbox, ['mac,linux', 'maemo', 'fx3', 'm5', 'fx6']);
+    assertNotHidden(this.$sandbox, ['win', 'win7', 'not mac', 'android', 'm4', 'fx35,fx4', 'fx4', 'fx5']);
+    assertNotVisible(this.$sandbox, ['mac,linux', 'maemo', 'fx3', 'm5', 'fx6', 'winxp', 'win8']);
 });
 
 test('maemo m5', function() {
