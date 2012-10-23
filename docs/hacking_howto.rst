@@ -231,7 +231,7 @@ database settings. For example, using the settings above::
 
     $ mysql -u root -p
     mysql> CREATE DATABASE kitsune;
-    mysql> GRANT ALL ON kitsune.* TO kitsune@localhost IDENTIFIED BY 'password';
+    mysql> GRANT ALL ON kitsune.* TO kitsune@localhost IDENTIFIED BY '<YOUR_PASSWORD>';
 
 To load the latest database schema, use ``scripts/schema.sql`` and
 ``schematic``::
