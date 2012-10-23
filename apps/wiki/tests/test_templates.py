@@ -1608,7 +1608,8 @@ class TranslateTests(TestCaseBase):
         rev_enUS = Revision(summary="lipsum",
                        content='lorem ipsum dolor sit amet new',
                        significance=SIGNIFICANCES[0][0], keywords='kw1 kw2',
-                       document=self.d, creator_id=118577, is_approved=True)
+                       document=self.d, creator_id=118577,
+                       is_ready_for_localization=True, is_approved=True)
         rev_enUS.save()
 
         # Verify the form renders with correct content
@@ -1765,6 +1766,41 @@ class TranslateTests(TestCaseBase):
         # Get the link to the rev on the right side of the diff:
         to_link = pq(response.content)('.revision-diff h3 a')[1].attrib['href']
         assert to_link.endswith('/%s' % ready.pk)
+
+    def test_translate_no_update_based_on(self):
+        """Test translating based on a non-current revision."""
+        # Set up the base es revision
+        base_es_rev = self._create_and_approve_first_translation()
+        es_doc = base_es_rev.document
+        enUS_doc = es_doc.parent
+        base_es_rev.based_on = enUS_doc.current_revision
+        base_es_rev.save()
+
+        # Create a new current revision on the parent document.
+        r = revision(
+            document=es_doc.parent,
+            is_ready_for_localization=True,
+            is_approved=True,
+            save=True)
+
+        url = reverse('wiki.edit_document', locale='es', args=[es_doc.slug])
+        data = _translation_data()
+        data['form'] = 'rev'
+        data['based_on'] = enUS_doc.current_revision_id
+
+        # Passing no-update will create a new revision based on the same one
+        # as the older revision.
+        data['no-update'] = 'Yes'
+        self.client.post(url, data)
+        new_es_rev = es_doc.revisions.order_by('-id')[0]
+        eq_(base_es_rev.based_on_id, new_es_rev.based_on_id)
+
+        # Not passing no-update will create a new revision based on the latest
+        # approved and ready for l10n en-US revision.
+        del data['no-update']
+        self.client.post(url, data)
+        new_es_rev = es_doc.revisions.order_by('-id')[0]
+        eq_(r.id, new_es_rev.based_on_id)
 
 
 def _test_form_maintains_based_on_rev(client, doc, view, post_data,
@@ -2310,6 +2346,7 @@ def _create_document(title='Test Document', parent=None,
     r = Revision(document=d, keywords='key1, key2', summary='lipsum',
                  content='<div>Lorem Ipsum</div>', creator_id=118577,
                  significance=SIGNIFICANCES[0][0], is_approved=True,
+                 is_ready_for_localization=True,
                  comment="Good job!")
     r.created = r.created - timedelta(days=10)
     r.save()

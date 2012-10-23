@@ -182,7 +182,7 @@
   {% endif %}
 {%- endmacro %}
 
-{% macro submit_revision(form, buttons_only=False) -%}
+{% macro submit_revision(form, buttons_only=False, show_no_update_checkbox=False) -%}
   <div class="submit">
     <button class="btn btn-important btn-submit" type="submit">{{ _('Submit for Review') }}</button>
     <input class="btn-preview" data-preview-url="{{ url('wiki.preview') }}" type="button" value="{{ _('Preview Content') }}" disabled="disabled" />
@@ -198,6 +198,14 @@
           <label for="id_comment">{{ _('Briefly describe your changes:') }}</label>
           {{ form.comment|safe }}
         </div>
+        {% if show_no_update_checkbox %}
+          <div class="no-update">
+            <label>
+              <input type="checkbox" name="no-update" value="Yes" />
+              {{ _('This edit does not make this article up to date. The English differences should not change on the next edit.') }}
+            </label>
+          </div>
+        {% endif %}
         <div class="notifications">
           <label>
             <input type="checkbox" name="notify-future-changes" value="Yes" />
