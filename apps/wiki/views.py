@@ -656,6 +656,10 @@ def translate(request, document_slug, revision_id=None):
             rev_form.instance.document = doc  # for rev_form.clean()
             if rev_form.is_valid() and not doc_form_invalid:
                 _save_rev_and_notify(rev_form, request.user, doc)
+
+                if 'notify-future-changes' in request.POST:
+                    EditDocumentEvent.notify(request.user, doc)
+
                 url = reverse('wiki.document_revisions',
                               args=[doc_slug])
 
