@@ -493,7 +493,8 @@ def review_revision(request, document_slug, revision_id):
     if doc.parent:  # A translation
         # For diffing the based_on revision against, to help the user see if he
         # translated all the recent changes:
-        parent_revision = doc.parent.localizable_or_latest_revision()
+        parent_revision = (rev.based_on or
+                           doc.parent.localizable_or_latest_revision())
         template = 'wiki/review_translation.html'
     else:
         parent_revision = None
@@ -654,8 +655,16 @@ def translate(request, document_slug, revision_id=None):
         if doc and user_has_rev_perm and which_form in ['rev', 'both']:
             rev_form = RevisionForm(request.POST)
             rev_form.instance.document = doc  # for rev_form.clean()
+
             if rev_form.is_valid() and not doc_form_invalid:
-                _save_rev_and_notify(rev_form, request.user, doc)
+                if 'no-update' in request.POST:
+                    # Keep the old based_on.
+                    based_on_id = base_rev.based_on_id
+                else:
+                    # Keep what was in the form.
+                    based_on_id = None
+
+                _save_rev_and_notify(rev_form, request.user, doc, based_on_id)
 
                 if 'notify-future-changes' in request.POST:
                     EditDocumentEvent.notify(request.user, doc)
@@ -1123,9 +1132,9 @@ def _document_form_initial(document):
             'needs_change_comment': document.needs_change_comment}
 
 
-def _save_rev_and_notify(rev_form, creator, document):
+def _save_rev_and_notify(rev_form, creator, document, based_on_id=None):
     """Save the given RevisionForm and send notifications."""
-    new_rev = rev_form.save(creator, document)
+    new_rev = rev_form.save(creator, document, based_on_id)
     statsd.incr('wiki.revision')
 
     # Enqueue notifications

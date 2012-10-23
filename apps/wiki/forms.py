@@ -232,7 +232,7 @@ class RevisionForm(forms.ModelForm):
         super(RevisionForm, self).__init__(*args, **kwargs)
         self.fields['based_on'].widget = forms.HiddenInput()
 
-    def save(self, creator, document, **kwargs):
+    def save(self, creator, document, based_on_id=None, **kwargs):
         """Persist me, and return the saved Revision.
 
         Take several other necessary pieces of data that aren't from the
@@ -244,6 +244,8 @@ class RevisionForm(forms.ModelForm):
 
         new_rev.document = document
         new_rev.creator = creator
+        if based_on_id:
+            new_rev.based_on_id = based_on_id
         new_rev.save()
         return new_rev
 

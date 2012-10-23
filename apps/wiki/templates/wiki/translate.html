@@ -145,7 +145,10 @@
           </div>
           {{ revision_form.hidden_fields()|join|safe }}
           <div class="buttons-and-preview">
-            {{ submit_revision(revision_form) }}
+            {# If the document has been created and has a current revision,
+               we allow the localizer to keep the translation out of date
+               with this new revision. #}
+            {{ submit_revision(revision_form, show_no_update_checkbox=(document and document.current_revision)) }}
             <div id="preview"></div>
             <div class="submit" id="preview-bottom">
               {{ submit_revision(revision_form, buttons_only=True) }}
