@@ -901,6 +901,7 @@ WEBTRENDS_EPOCH = date(2010, 8, 1)  # When WebTrends started gathering stats on
                                     # the KB
 
 MOBILE_COOKIE = 'msumo'
+MOBILE_USER_AGENTS = 'android|fennec|mobile|iphone|opera (?:mini|mobi)'
 
 # Directory of JavaScript test files for django_qunit to run
 QUNIT_TEST_DIRECTORY = os.path.join(MEDIA_ROOT, 'js', 'tests')
