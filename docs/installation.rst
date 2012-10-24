@@ -162,6 +162,8 @@ For local development you will want to add the following settings::
 
     LESS_PREPROCESS = True
 
+    LESS_BIN = '/path/to/kitsune/node_modules/less/bin/lessc'
+
 
 Redis
 -----
@@ -260,10 +262,9 @@ To install LESS you will first need to `install Node.js and NPM
 
 Now install LESS using::
 
-    $ sudo npm install less
+    $ npm install less
 
-Ensure that lessc (might be located at /usr/lib/node_modules/less/bin) is
-accessible on your PATH.
+Ensure that LESS_BIN was configured correctly in your local settings.
 
 
 Running redis

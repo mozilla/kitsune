@@ -177,6 +177,8 @@ Start by creating a file named ``settings_local.py`` in the
 
     LESS_PREPROCESS = True
 
+    LESS_BIN = '/path/to/kitsune/node_modules/less/bin/lessc'
+
 Now you can copy and modify any settings from ``settings.py`` into
 ``settings_local.py`` and the value will override the default.
 
@@ -209,10 +211,9 @@ To install LESS you will first need to `install Node.js and NPM
 
 Now install LESS using::
 
-    $ sudo npm install less
+    $ npm install less
 
-Ensure that lessc (might be located at /usr/lib/node_modules/less/bin) is
-accessible on your PATH.
+Ensure that LESS_BIN was configured correctly in your local settings.
 
 
 Database
