@@ -261,27 +261,13 @@ def search(request, template=None):
         cleaned_q = cleaned['q']
 
         # Set up the highlights
-        #
-        # A/B testing excerpts. See bug #790425
-        #
-        # * True/a - first 500 characters.
-        # * False/b - 3 fragments like the old days.
-        if waffle.flag_is_active(request, 'search-ab'):
-            # First 500 characters of content in one big fragment
-            searcher = searcher.highlight(
-                'question_content', 'discussion_content',
-                pre_tags=['<b>'],
-                post_tags=['</b>'],
-                number_of_fragments=0,
-                fragment_size=500)
-        else:
-            # Show 3 fragments of as long as 275 characters.
-            searcher = searcher.highlight(
-                'question_content', 'discussion_content',
-                pre_tags=['<b>'],
-                post_tags=['</b>'],
-                number_of_fragments=settings.SEARCH_FRAGMENTS,
-                fragment_size=settings.SEARCH_FRAGMENT_LENGTH)
+        # First 500 characters of content in one big fragment
+        searcher = searcher.highlight(
+            'question_content', 'discussion_content',
+            pre_tags=['<b>'],
+            post_tags=['</b>'],
+            number_of_fragments=0,
+            fragment_size=500)
 
         # Set up boosts
         searcher = searcher.boost(
