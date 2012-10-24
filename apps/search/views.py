@@ -269,7 +269,7 @@ def search(request, template=None):
         if waffle.flag_is_active(request, 'search-ab'):
             # First 500 characters of content in one big fragment
             searcher = searcher.highlight(
-                'question_content', 'discussion_content',
+                'question_content', 'discussion_content', 'document_summary',
                 pre_tags=['<b>'],
                 post_tags=['</b>'],
                 number_of_fragments=0,
@@ -277,7 +277,7 @@ def search(request, template=None):
         else:
             # Show 3 fragments of as long as 275 characters.
             searcher = searcher.highlight(
-                'question_content', 'discussion_content',
+                'question_content', 'discussion_content', 'document_summary',
                 pre_tags=['<b>'],
                 post_tags=['</b>'],
                 number_of_fragments=settings.SEARCH_FRAGMENTS,
@@ -360,7 +360,9 @@ def search(request, template=None):
             rank = i + offset
 
             if doc['model'] == 'wiki_document':
-                summary = doc['document_summary']
+                summary = _build_es_excerpt(doc)
+                if not summary:
+                    summary = doc['document_summary']
                 result = {
                     'title': doc['document_title'],
                     'type': 'document'}
