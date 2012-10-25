@@ -67,6 +67,7 @@ class Thread(NotificationsMixin, ModelBase):
 
     def get_absolute_url(self):
         return reverse('wiki.discuss.posts',
+                       locale=self.document.locale,
                        kwargs={'document_slug': self.document.slug,
                                'thread_id': self.id})
 
@@ -143,6 +144,7 @@ class Post(ModelBase):
             query['page'] = self.page
 
         url_ = reverse('wiki.discuss.posts',
+                       locale=self.thread.document.locale,
                        kwargs={'document_slug': self.thread.document.slug,
                                'thread_id': self.thread.id})
         return urlparams(url_, hash='post-%s' % self.id, **query)

@@ -16,18 +16,21 @@ class KBForumModelTestCase(KBForumTestCase):
 
     def test_thread_absolute_url(self):
         t = Thread.objects.get(pk=1)
-        exp_ = reverse('wiki.discuss.posts', args=[t.document.slug, t.id])
+        exp_ = reverse('wiki.discuss.posts', locale=t.document.locale,
+                       args=[t.document.slug, t.id])
         eq_(exp_, t.get_absolute_url())
 
     def test_post_absolute_url(self):
         p = Post.objects.get(pk=1)
         url_ = reverse('wiki.discuss.posts',
+                       locale=p.thread.document.locale,
                        args=[p.thread.document.slug, p.thread.id])
         exp_ = urlparams(url_, hash='post-%s' % p.id)
         eq_(exp_, p.get_absolute_url())
 
         p = Post.objects.get(pk=24)
         url_ = reverse('wiki.discuss.posts',
+                       locale=p.thread.document.locale,
                        args=[p.thread.document.slug, p.thread.id])
         exp_ = urlparams(url_, hash='post-%s' % p.id, page=2)
         eq_(exp_, p.get_absolute_url())
