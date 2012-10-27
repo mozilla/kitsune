@@ -2,6 +2,7 @@
 
 {% set headline = product.title %}
 {% set styles = ('mobile/products',) %}
+{% set return_url = url('products') %}
 
 {% block title %}{{ _('{product} Help')|f(product=_(product.title, 'DB: products.Product.title')) }}{% endblock %}
 

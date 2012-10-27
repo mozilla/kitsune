@@ -5,7 +5,17 @@
 .fonts('../../fonts');
 
 html, body {
+  font-size: 15px;
   height: 100%;
+}
+
+a {
+  color: @mobileHyperlink;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: hover;
 }
 
 body {
@@ -111,6 +121,78 @@ body {
   }
 }
 
+fieldset {
+  border: 0;
+  margin: 0;
+  outline: none;
+  padding: 0;
+}
+
+input[type='text'],
+input[type='password'],
+input[type='email'] {
+  border: 1px solid @mobileInputBorder;
+  .border-radius(3px);
+  .box-shadow(0 1px 2px 0 rgba(0, 0, 0, 0.1) inset);
+  .box-sizing(border-box);
+  display: block;
+  font-family: @Moz;
+  font-size: 14px;
+  outline: none;
+  margin: 0 0 12px 0;
+  padding: 10px 12px;
+  width: 100%;
+}
+
+.btn,
+.btn:visited {
+  .gradient(#e3e3e3, #fafafa, #cdcdcd);
+  border: 1px solid #ababab;
+  .border-radius(2px);
+  .box-sizing(border-box);
+  color: @textDarkGrey;
+  display: block;
+  font-family: @Moz;
+  font-size: 16px;
+  font-weight: bold;
+  outline: none;
+  margin: 0 0 6px 0;
+  padding: 4px 0;
+  text-align: center;
+  text-decoration: none;
+  text-shadow: 1px 1px 0 rgba(255, 255, 255, 0.3);
+  width: 100%;
+
+  &.btn-submit {
+    .gradient(#00caf2, #00caf2, #00aacd);
+    border: 0;
+    font-size: 17px;
+    padding: 8px 0;
+  }
+}
+
+.btn:hover {
+  text-decoration: none;
+}
+
+.errorlist {
+  list-style: none;
+  margin: 0 0 12px 0;
+  padding: 0;
+
+  li {
+    color: @textDarkOrange;
+    margin-bottom: 6px;
+
+    a,
+    a:visited,
+    a:hover {
+      color: @textDarkOrange;
+      text-decoration: none;
+    }
+  }
+}
+
 .icon-sprite {
   background: url('../../img/mobile/icons-sprite.png') 0 0 no-repeat;
 }
@@ -160,10 +242,13 @@ body {
 }
 
 .return-button {
-  background-position: -56px -299px;
+  background-position: -54px -286px;
+  border-right: 1px solid @mobileHeaderBorder;
+  .box-shadow(0 0 0 1px rgba(255, 255, 255, 0.3));
   float: left;
   height: 24px;
-  margin: 13px 12px 13px 4px;
+  margin: 0 8px 0 0;
+  padding: 13px 4px 13px 2px;
   text-indent: -9999px;
   width: 12px;
 }
@@ -217,7 +302,7 @@ body {
 
   > header {
     .gradient(#cd6723, #cd6723, #bb482d);
-    border-bottom: 1px solid #992f21;
+    border-bottom: 1px solid @mobileHeaderBorder;
     .box-shadow(0 0 4px 0 rgba(0, 0, 0, 0.75));
     color: #fff;
     height: 50px;
@@ -234,6 +319,7 @@ body {
       font-weight: normal;
       line-height: 50px;
       margin: 0 16px;
+      text-overflow: ellipsis;
     }
   }
 
@@ -249,11 +335,13 @@ body {
 }
 
 #menu-button {
-  background-position: -50px -50px;
+  background-position: -37px -37px;
+  border-left: 1px solid rgba(255, 255, 255, 0.3);
+  .box-shadow(0 0 0 1px @mobileHeaderBorder);
   cursor: pointer;
   float: right;
   height: 24px;
-  margin: 13px;
+  padding: 13px;
   text-indent: -9999px;
   width: 24px;
 }

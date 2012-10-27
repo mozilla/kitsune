@@ -35,11 +35,13 @@ from users.models import (Profile, RegistrationProfile,
                           EmailChange)
 from users.utils import (handle_login, handle_register,
                          try_send_email_with_form)
+from mobility.decorators import mobile_template
 
 
 @ssl_required
 @anonymous_csrf
-def login(request):
+@mobile_template('users/{mobile/}login.html')
+def login(request, template):
     """Try to log the user in."""
     next_url = get_next_url(request) or reverse('home')
     form = handle_login(request)
@@ -54,7 +56,7 @@ def login(request):
                        max_age=max_age)
         return res
 
-    return jingo.render(request, 'users/login.html',
+    return jingo.render(request, template,
                         {'form': form, 'next_url': next_url})
 
 
@@ -74,18 +76,21 @@ def logout(request):
 @logout_required
 @require_http_methods(['GET', 'POST'])
 @anonymous_csrf
-def register(request, contributor=False):
+@mobile_template('users/{mobile/}')
+def register(request, template, contributor=False):
     """Register a new user.
 
     :param contributor: If True, this is for registering a new contributor.
 
     """
+    next_url = get_next_url(request) or reverse('home')
     form = handle_register(request)
     if form.is_valid():
-        return jingo.render(request, 'users/register_done.html')
-    return jingo.render(request, 'users/register.html',
+        return jingo.render(request, template + 'register_done.html')
+    return jingo.render(request, template + 'register.html',
                         {'form': form,
-                         'contributor': contributor})
+                         'contributor': contributor,
+                         'next_url': next_url})
 
 
 def register_contributor(request):
