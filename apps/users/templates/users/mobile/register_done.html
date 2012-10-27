@@ -1,0 +1,19 @@
+{% extends 'mobile/base.html' %}
+
+{% from 'users/mobile/includes/macros.html' import register_form %}
+
+{% set styles = ('mobile/users',) %}
+{% set classes = 'register' %}
+{% set title = _('Register or sign in') %}
+{% set headline = title %}
+{% set return_url = url('users.login') %}
+
+{% block content %}
+  <div class="top-section">
+    <h2>{{ _('Thank you for registering!') }}</h2>
+    <p>{% trans %}Thank you for being awesome!{% endtrans %}</p>
+    <p>{% trans %}Before you can log in, you need to confirm your email
+      address. We've sent you an email with a confirmation link in it. Just
+      click the link and you'll be ready to go!{% endtrans %}</p>
+  </div>
+{% endblock %}

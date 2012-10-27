@@ -1,0 +1,46 @@
+{% from "layout/errorlist.html" import errorlist %}
+
+{% macro login_form(form, csrf, next_url='', action=None) -%}
+  <form method="post" action="{{ action if action != None else url('users.login') }}">
+    {{ errorlist(form) }}
+    {{ csrf|safe }}
+    <input type="hidden" name="next" value="{{ next_url }}" />
+    <fieldset>
+      <div>
+        <label>{{ _('Username') }}</label>
+        {{ form.username|safe }}
+      </div>
+      <div>
+        <label>{{ _('Password') }}</label>
+        {{ form.password|safe }}
+      </div>
+    </fieldset>
+    <div class="submit">
+      <button type="submit" data-type="submit" data-name="login" class="btn btn-submit" data-progress="{{ _('Signing in...') }}" data-done="{{ _('Signed in!') }}" data-reset="{{ _('Sign in') }}">{{ _('Sign in') }}</button>
+      <a class="btn" href="{{ url('users.register') }}">{{ _("Don't have an account? Register") }} </a>
+    </div>
+    <ul class="login-help">
+      <li><a href="{{ url('users.pw_reset') }}">{{ _("My password isn't working.") }}</a></li>
+      <li><a href="{{ url('users.forgot_username') }}">{{ _('I forgot my username.') }}</a></li>
+      <li><a href="{{ url('users.resend_confirmation') }}">{{ _("I didn't get a confirmation email.") }}</a></li>
+    </ul>
+  </form>
+{%- endmacro %}
+
+{% macro register_form(form, csrf, action=None, contributor=False) -%}
+  <form method="post" action="{{ action if action != None else
+                                   url('users.register') }}">
+    {{ errorlist(form) }}
+    {{ csrf|safe }}
+    <input type="hidden" name="interested" id="id_for_interested" value="{{ 'yes' if contributor else 'no' }}">
+    <fieldset>
+      {% for field in form if field.name != 'interested' %}
+        <div>{{ field|label_with_help }}{{ field }}</div>
+      {% endfor %}
+    </fieldset>
+    <div class="submit">
+      <button type="submit" data-type="submit" data-name="register" class="btn btn-submit">{{ _('Create a new support account') }}</button>
+      <a class="btn" href="{{ url('users.login') }}">{{ _('Already have an account? Sign in') }}</a>
+    </div>
+  </form>
+{%- endmacro %}

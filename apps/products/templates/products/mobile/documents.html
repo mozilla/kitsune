@@ -3,13 +3,10 @@
 {% set styles = ('mobile/products',) %}
 {% set classes = 'documents' %}
 {% set scripts = ('products-mobile',) %}
+{% set headline = _(topic.title, 'DB: topics.Topic.title') %}
+{% set return_url = url('products.product', slug=product.slug) %}
 
 {% block title %}{{ _(topic.title, 'DB: topics.Topic.title') }} | {{ _('{product} Help')|f(product=_(product.title, 'DB: products.Product.title')) }}{% endblock %}
-
-{% block header %}
-  <a href="{{ url('products.product', slug=product.slug) }}" class="return-button icon-sprite">Back</a>
-  <h1>{{ _(topic.title, 'DB: topics.Topic.title') }}</h1>
-{% endblock %}
 
 {% block content %}
   <div class="filter-bar">
