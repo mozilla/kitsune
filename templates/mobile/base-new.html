@@ -79,6 +79,9 @@
 <div id="page">
   <header>
     <div id="menu-button" class="icon-sprite"></div>
+    {% if return_url %}
+      <a href="{{ return_url }}" class="return-button icon-sprite">Back</a>
+    {% endif %}
     {% block header %}
       <h1>{% if headline %}{{ headline }}{% else %}{{ _('Mozilla Support') }}{% endif %}</h1>
     {% endblock %}
