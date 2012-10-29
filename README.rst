@@ -9,3 +9,5 @@ It is a Django_ application. There is documentation_ online.
 .. _Firefox Help: https://support.mozilla.com/
 .. _Django: http://www.djangoproject.com/
 .. _documentation: http://kitsune.readthedocs.org/en/latest/
+
+Trivial change to test leeroy.
