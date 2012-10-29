@@ -259,7 +259,9 @@ var ShowFor = {
                     }
                 }
 
-                shouldHide = ((foundAnyOses && osAttrs[os] === undefined) ||
+                shouldHide = ((foundAnyOses && (osAttrs[os] === undefined &&
+                              // If any windows version is selected, also show {for win} items.
+                              (osAttrs['win'] === undefined || os.substring(0, 3) !== 'win'))) ||
                               (foundAnyBrowsers && !meetsAnyOfConditions(browser, browserConditions))) &&
                              // Special cases:
                              // If the current selection is desktop:
@@ -277,13 +279,11 @@ var ShowFor = {
                              !(osAttrs[defaults.desktop.os] && platform === 'mobile' &&
                                 (meetsAnyOfConditions(defaults.desktop.browser, browserConditions) || !foundAnyBrowsers)) &&
                              !(osAttrs['win'] && platform === 'mobile' &&
-                                (meetsAnyOfConditions('win', browserConditions) || !foundAnyBrowsers)) &&
+                                (meetsAnyOfConditions(defaults.desktop.browser, browserConditions) || !foundAnyBrowsers)) &&
                              // * Show the default desktop browser if no OS was specified or
                              //   the default desktop OS was also specified.
                              !(meetsAnyOfConditions(defaults.desktop.browser, browserConditions) && platform === 'mobile' &&
-                                (osAttrs[defaults.desktop.os] || !foundAnyOses)) &&
-                             // If any windows version is selected, also show {showfor win} items.
-                             !(osAttrs['win'] && os.substring(0, 3) === 'win');
+                                (osAttrs[defaults.desktop.os] || !foundAnyOses));
 
                 if (shouldHide != isInverted) {
                     $(this).hide();  // saves original visibility, which is nice but not necessary
