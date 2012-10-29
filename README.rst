@@ -10,4 +10,4 @@ It is a Django_ application. There is documentation_ online.
 .. _Django: http://www.djangoproject.com/
 .. _documentation: http://kitsune.readthedocs.org/en/latest/
 
-Trivial change to test leeroy.
+Trivial change to test leeroy. and another.
