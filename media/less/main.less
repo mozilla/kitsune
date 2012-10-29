@@ -168,6 +168,7 @@ input[type="submit"]{
   border-color: #dbe0e3 #dbe0e3 #f5f7f9 #dbe0e3;
   border-style: solid;
   border-width: 1px;
+  font-weight: 600;
   margin: -20px 0 20px 0;
   padding: 4px 4px 5px 4px;
   position: relative;
@@ -196,8 +197,8 @@ input[type="submit"]{
   }
 
   #breadcrumbs {
-    color: @textGrey;
-    font-size: 11px;
+    color: @textDarkGrey;
+    font-size: 12px;
     list-style: none;
     padding: 0;
     text-transform: uppercase;
@@ -250,7 +251,7 @@ input[type=button],
   display: inline-block;
   font-family: @OpenSans;
   font-size: 14px;
-  font-weight: bold;
+  font-weight: normal;
   margin: 0 2px;
   padding: 1px 10px 4px 10px;
   position: relative;
@@ -450,7 +451,7 @@ input[type=button],
 }
 
 .feature-box {
-  background: #e5eaed url('../img/grain.png');
+  background: #e0e5e8 url('../img/grain.png');
   border-color: #dbe0e3 #dbe0e3 #f9f9f9 #dbe0e3;
   border-style: solid;
   border-width: 1px;
@@ -689,7 +690,8 @@ input[type=button],
 }
 
 .sidebar-nav {
-  font-family: @OpenSansLight;
+  font-family: @OpenSans;
+  font-size: 13px;
   list-style: none;
   margin: 0;
   padding: 0;
@@ -702,7 +704,7 @@ input[type=button],
     > a,
     > a:visited {
       background: @sidebarBackground url('../img/grain.png');
-      color: @textGrey;
+      color: @textDarkGrey;
       cursor: pointer;
       display: block;
       padding: 16px 20px;
@@ -717,7 +719,7 @@ input[type=button],
     }
 
     &.selected {
-      border-bottom: 1px solid #f8f8f8;
+      border-bottom: 1px solid #fff;
 
       > span,
       > a,
@@ -727,13 +729,12 @@ input[type=button],
         border-color: #e7e7e7;
         border-style: solid;
         border-width: 1px 0;
-        color: @textGrey;
+        color: @textDarkGrey;
         font-family: @OpenSans;
         font-weight: bold;
       }
 
-      &:after,
-      &:before {
+      &:after {
         content: '';
         height: 30px;
         left: 0;
@@ -746,12 +747,6 @@ input[type=button],
 
       &:after {
         background: url('../img/sidebar-arrow.gif') 0 3px no-repeat;
-        z-index: 2;
-      }
-
-      &:before {
-        background: url('../img/icons-sprite.png') -50px -623px no-repeat;
-        z-index: 1;
       }
     }
   }
@@ -848,7 +843,7 @@ input[type=button],
 
 .sidebox {
   background: @sidebarBackground url('../img/grain.png');
-  color: @textGrey;
+  color: @textDarkGrey;
   padding: 16px 20px;
 
   &.tight {
@@ -914,7 +909,8 @@ input[type=button],
 
 #aux-nav {
   float: right;
-  font-size: 11px;
+  font-size: 12px;
+  font-weight: 600;
   position: relative;
   text-transform: uppercase;
   z-index: 10;
@@ -955,7 +951,7 @@ input[type=button],
 
       > a,
       > a:visited {
-        color: @textGrey;
+        color: @textDarkGrey;
         display: block;
         font-weight: normal;
         height: 42px;
