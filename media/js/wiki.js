@@ -234,7 +234,7 @@
             $diffButton = $('.btn-diff');
         $diff.addClass('diff-this');
         $diffButton.click(function() {
-            $diff.find('.to').html($('#id_content').val());
+            $diff.find('.to').text($('#id_content').val());
             k.initDiff($diff.parent());
             $previewBottom.show();
             $('#preview').empty()
