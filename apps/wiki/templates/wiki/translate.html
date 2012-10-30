@@ -9,7 +9,7 @@
 {% set crumbs = [(parent.get_absolute_url(), parent.title),
                  (None, _('Translate Article'))] %}
 {% set classes = 'translate' %}
-{% set scripts = ('wiki', 'wiki.diff') %}
+{% set scripts = ('wiki', 'wiki.diff', 'wiki.editor') %}
 
 {% block content %}
   {% set language = settings.LANGUAGES[locale.lower()] %}

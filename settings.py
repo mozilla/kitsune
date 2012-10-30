@@ -643,6 +643,10 @@ MINIFY_BUNDLES = {
             'js/libs/diff_match_patch_uncompressed.js',
             'js/diff.js',
         ),
+        'wiki.editor': (
+            'js/libs/ace/src-min/ace.js',
+            'js/libs/ace.mode-sumo.js',
+        ),
         'dashboard.helpful': (
             'js/helpfuldashcharts.js',
         ),
