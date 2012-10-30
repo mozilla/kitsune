@@ -86,7 +86,7 @@ test('mac fx5', function() {
     equals(this.$o.val(), 'mac', 'Mac is now selected');
     equals(this.$b.val(), 'fx5', 'Firefox 5 is now selected');
     assertNotHidden(this.$sandbox, ['mac,linux', 'android', 'm4', 'fx35,fx4', 'fx4', 'fx5', 'm5']);
-    assertNotVisible(this.$sandbox, ['not mac', 'win', 'maemo', 'fx3', 'fx6''win,fx4', 'win,fx35']);
+    assertNotVisible(this.$sandbox, ['not mac', 'win', 'maemo', 'fx3', 'fx6', 'win,fx4', 'win,fx35']);
 });
 
 test('windows fx6', function() {
@@ -95,7 +95,7 @@ test('windows fx6', function() {
     equals(this.$o.val(), 'win', 'Windows is now selected');
     equals(this.$b.val(), 'fx6', 'Firefox 6 is now selected');
     assertNotHidden(this.$sandbox, ['win', 'not mac', 'android', 'fx35,fx4', 'fx4', 'fx5', 'fx6', 'm4', 'm5', 'win,fx4']);
-    assertNotVisible(this.$sandbox, ['mac,linux', 'maemo', 'fx3''win,fx35']);
+    assertNotVisible(this.$sandbox, ['mac,linux', 'maemo', 'fx3', 'win,fx35']);
 });
 
 test('android m4', function() {
