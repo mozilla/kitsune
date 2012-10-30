@@ -52,6 +52,7 @@
             initNeedsChange();
             initSummaryCount();
             initFormLock();
+            initAceEditor();
 
             $('img.lazy').loadnow();
 
@@ -533,6 +534,61 @@
                 $.cookie('show-editing-tools', null, {path: '/'});
             }
         });
+    }
+    
+    function initAceEditor() {
+        window.highlighting = {};
+        
+        var editor = $("<div id='editor'></div>");
+        var editor_wrapper = $("<div id='editor_wrapper'></div>");
+
+        var updateHighlightingEditor = function() {
+            var session = window.highlighting.session;
+            if(!session)
+                return;
+
+            var content = $("#id_content").val();
+            session.setValue(content);
+        };
+        window.highlighting.updateEditor = updateHighlightingEditor;
+
+        var switch_link = $("<a></a>")
+            .text(gettext("Toggle syntax highlighting"))
+            .css({cssFloat: "right", cursor: "pointer"})
+            .toggle(function() {
+                editor_wrapper.css("display", "none");
+                $("#id_content").css("display", "block");
+            }, function() {
+                updateHighlightingEditor();
+                editor_wrapper.css("display", "block");
+                $("#id_content").css("display", "none");
+            });
+
+        var highlightingEnabled = function() {
+            return editor_wrapper.css("display") == 'block';
+        };
+        window.highlighting.isEnabled = highlightingEnabled;
+
+        editor_wrapper.append(editor);
+        $("#id_content").after(switch_link).after(editor_wrapper).hide();
+        
+        window.addEventListener("load", function() {
+            var ace_editor = ace.edit("editor");
+            window.highlighting.editor = ace_editor;
+            var session = ace_editor.getSession();
+            window.highlighting.session = session;
+            session.setMode("ace/mode/sumo");
+            session.setUseWrapMode(true);
+            
+            $("#id_content").bind("keyup", updateHighlightingEditor);
+            updateHighlightingEditor();
+
+            session.on('change', function(e) {
+                if(!highlightingEnabled())
+                    return;
+                $("#id_content").val(session.getValue());
+            });
+        }, false);
     }
 
     function initFormLock() {

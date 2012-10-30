@@ -133,3 +133,6 @@
 [submodule "vendor/src/django-eadred"]
 	path = vendor/src/django-eadred
 	url = git://github.com/willkg/django-eadred.git
+[submodule "media/js/libs/ace"]
+	path = media/js/libs/ace
+	url = git://github.com/ajaxorg/ace-builds.git
