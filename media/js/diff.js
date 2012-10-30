@@ -285,7 +285,7 @@ function initDiff($container) {
     $container = $container || $('body');
     $container.find('.diff-this').each(function() {
         var $this = $(this);
-        var diff = new Diff($this.find('.from').text(), $this.find('.to').text(), $this.find('.output'));
+        var diff = new Diff($this.find('.from').html(), $this.find('.to').html(), $this.find('.output'));
     });
 }
 
