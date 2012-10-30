@@ -1,0 +1,124 @@
+@import '../variables.less';
+
+.document {
+  article {
+    font-family: @OpenSans;
+    font-size: 14px;
+    padding: 10px 16px;
+  }
+
+  .title-bar {
+    background: @mobileSubheaderBackground;
+    color: #fff;
+    padding: 10px 16px;
+
+    h1 {
+      font-family: @OpenSans;
+      font-size: 18px;
+      font-weight: normal;
+      margin: 0;
+    }
+  }
+
+  .vote-bar {
+    background: @mobileFormBackground;
+    padding: 10px 16px;
+
+    .btn {
+      float: left;
+      margin: 0 1%;
+      width: 48%;
+    }
+
+    .wait {
+      display: none;
+    }
+  }
+
+  #doc-content {
+    h1, h2 {
+      font-family: @OpenSans;
+      font-weight: normal;
+    }
+
+    h1 {
+      font-size: 18px;
+    }
+
+    h2 {
+      font-size: 16px;
+    }
+
+    .note,
+    #toc {
+      background: #eef2f5;
+      border: 1px solid #e4ebee;
+      margin: 20px 0;
+      padding: 10px 12px;
+
+      h2 {
+        font-size: 16px;
+        font-weight: normal;
+        margin: 0;
+
+        &:first-child {
+          margin-top: 0;
+        }
+      }
+
+      ul {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+
+        > li {
+          ul {
+            padding-left: 16px;
+          }
+        }
+      }
+    }
+
+    .warning,
+    .warning-box {
+      background: url('../../img/warning-stripes.png') top left repeat-x #ffe;
+      border: 1px solid #fffbe7;
+      margin: 20px 0 20px 0;
+      padding: 20px 30px 20px 30px;
+    }
+  }
+
+  #doc-contributors {
+    color: @textLightGrey;
+    font-size: 13px;
+  }
+
+  #doc-related {
+    background: #eef2f5;
+    border: 1px solid #e4ebee;
+    margin: 20px 0;
+    padding: 10px 12px;
+
+    header {
+      font-size: 16px;
+      font-weight: normal;
+      margin: 0;
+
+      &:first-child {
+        margin-top: 0;
+      }
+    }
+
+    ul {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+
+      > li {
+        ul {
+          padding-left: 16px;
+        }
+      }
+    }
+  }
+}
