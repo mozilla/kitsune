@@ -4,7 +4,7 @@
 
 (function($) {
 
-"use strict";
+'use strict';
 
 function Diff(from, to, outputContainer) {
     /* Args:
@@ -196,7 +196,7 @@ Diff.prototype = {
             }
         });
 
-        html.push('</td>', '</tr>');
+        html.push('</td></tr>');
         html.push('</tbody></table>');
 
         if (self.from === self.to) {
@@ -234,11 +234,10 @@ Diff.prototype = {
             } else if (op === DIFF_DELETE) {
                 html.push('<del>' + part[1] + '</del>');
             } else if (op === DIFF_EQUAL) {
-                html.push('<span>' + part[1] + '</span>');
+                html.push(part[1]);
             }
         });
-        html.push('</td>');
-        html.push('</tr>');
+        html.push('</td></tr>');
     },
     _scFromRow: function(line, html) {
         // Render a changed from line.
@@ -254,11 +253,10 @@ Diff.prototype = {
             if (op === DIFF_DELETE) {
                 html.push('<del>' + part[1] + '</del>');
             } else if (op === DIFF_EQUAL) {
-                html.push('<span>' + part[1] + '</span>');
+                html.push(part[1]);
             }
         });
-        html.push('</td>');
-        html.push('</tr>');
+        html.push('</td></tr>');
     },
     _scToRow: function(line, html) {
         // Render a changed to line.
@@ -274,22 +272,20 @@ Diff.prototype = {
             if (op === DIFF_INSERT) {
                 html.push('<ins>' + part[1] + '</ins>');
             } else if (op === DIFF_EQUAL) {
-                html.push('<span>' + part[1] + '</span>');
+                html.push(part[1]);
             }
         });
-        html.push('</td>');
-        html.push('</tr>');
+        html.push('</td></tr>');
     }
 };
 
-// By apply diffs automatically to '.diff-this' elements using children
-// '.from', '.to' amd '.output' as the parameters.
+// Apply diffs automatically to '.diff-this' elements using children
+// '.from', '.to' and '.output' as the parameters.
 function initDiff($container) {
     $container = $container || $('body');
     $container.find('.diff-this').each(function() {
         var $this = $(this);
         var diff = new Diff($this.find('.from').text(), $this.find('.to').text(), $this.find('.output'));
-        $this.data('diff', diff);
     });
 }
 
