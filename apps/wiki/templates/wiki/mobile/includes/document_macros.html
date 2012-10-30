@@ -1,0 +1,20 @@
+{% macro vote_form(document, header=None) -%}
+  {% if not header %}
+    {% set header = _('Was this article helpful?') %}
+  {% endif %}
+  {% if document.allows_vote(request) %}
+    <div class="document-vote">
+      <form class="helpful" action="{{ url('wiki.document_vote', document_slug=document.slug) }}" method="post">
+        <p>
+          <span>{{ header }}</span>
+          <input type="hidden" name="revision_id" value="{{ document.current_revision.id }}" />
+          <div class="cf">
+            <input type="submit" class="btn" name="helpful" value="{{ _('Yes') }}" />
+            <input type="submit" class="btn" name="not-helpful" value="{{ _('No') }}" />
+          </div>
+          <img class="wait" src="{{ settings.MEDIA_URL }}img/customercare/spinner.gif" alt="{{ _('Please wait...') }}" />
+        </p>
+      </form>
+    </div>
+  {% endif %}
+{%- endmacro %}

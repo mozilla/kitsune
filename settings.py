@@ -492,6 +492,9 @@ MINIFY_BUNDLES = {
             'less/wiki.less',
             'css/screencast.css',
         ),
+        'mobile/wiki': (
+            'less/mobile/wiki.less',
+        ),
         'home': (
             'less/home.less',
         ),
@@ -625,6 +628,13 @@ MINIFY_BUNDLES = {
             'js/tags.js',
             'js/dashboards.js',
             'js/editable.js',
+        ),
+        'mobile/wiki': (
+            'js/libs/underscore.js',
+            'js/libs/jquery.cookie.js',
+            'js/browserdetect.js',
+            'js/showfor.js',
+            'js/mobile/wiki.js'
         ),
         'wiki.history': (
             'js/historycharts.js',

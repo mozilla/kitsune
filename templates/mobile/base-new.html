@@ -90,6 +90,10 @@
   <div class="wrapper">
     <section id="content">
       {% block content %}{% endblock %}
+
+      {% if include_showfor %}
+        {{ show_for() }}
+      {% endif %}
     </section>
 
     <footer>
