@@ -12,7 +12,7 @@ from tower import ugettext_lazy as _lazy
 from products.models import Product
 from sumo.form_fields import MultiUsernameField, StrippedCharField
 from topics.models import Topic
-from wiki.models import Document, Revision
+from wiki.models import Document, Revision, MAX_REVISION_COMMENT_LENGTH
 from wiki.config import (SIGNIFICANCES_HELP, GROUPED_FIREFOX_VERSIONS,
                          SIGNIFICANCES, GROUPED_OPERATING_SYSTEMS, CATEGORIES)
 
@@ -63,8 +63,6 @@ class DocumentForm(forms.ModelForm):
 
         slug_field = self.fields['slug']
         slug_field.initial = slugify(initial_title)
-
-        comment_field = self.fields['needs_change_comment']
 
         topics_field = self.fields['topics']
         topics_field.choices = Topic.objects.values_list('id', 'title')
@@ -231,6 +229,8 @@ class RevisionForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(RevisionForm, self).__init__(*args, **kwargs)
         self.fields['based_on'].widget = forms.HiddenInput()
+        self.fields['comment'].widget = forms.TextInput(
+            attrs={'maxlength': MAX_REVISION_COMMENT_LENGTH})
 
     def save(self, creator, document, based_on_id=None, **kwargs):
         """Persist me, and return the saved Revision.

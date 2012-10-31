@@ -663,6 +663,9 @@ register_for_indexing(
     m2m=True)
 
 
+MAX_REVISION_COMMENT_LENGTH = 255
+
+
 class Revision(ModelBase):
     """A revision of a localized knowledgebase document"""
     document = models.ForeignKey(Document, related_name='revisions')
@@ -680,7 +683,7 @@ class Revision(ModelBase):
     # The significance of the initial revision of a document is NULL.
     significance = models.IntegerField(choices=SIGNIFICANCES, null=True)
 
-    comment = models.CharField(max_length=255)
+    comment = models.CharField(max_length=MAX_REVISION_COMMENT_LENGTH)
     reviewer = models.ForeignKey(User, related_name='reviewed_revisions',
                                  null=True)
     creator = models.ForeignKey(User, related_name='created_revisions')

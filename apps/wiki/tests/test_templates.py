@@ -666,7 +666,9 @@ class NewRevisionTests(TestCaseBase):
         eq_(200, response.status_code)
         doc = pq(response.content)
         eq_(1, len(doc('#revision-form textarea[name="content"]')))
-        assert 'value' not in doc('#id_comment')[0].attrib
+        comment = doc('#id_comment')[0]
+        assert 'value' not in comment.attrib
+        eq_('255', comment.attrib['maxlength'])
 
     def test_new_revision_GET_based_on(self):
         """HTTP GET to new revision URL based on another revision.
