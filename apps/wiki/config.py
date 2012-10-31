@@ -151,13 +151,20 @@ SIGNIFICANCES_HELP = {
               'instructions are completely unusable.'),
 }
 
+TROUBLESHOOTING_CATEGORY = 10
+HOW_TO_CATEGORY = 20
+HOW_TO_CONTRIBUTE_CATEGORY = 30
+ADMINISTRATION_CATEGORY = 40
+NAVIGATION_CATEGORY = 50
+TEMPLATES_CATEGORY = 60
+
 CATEGORIES = (
-    (10, _lazy(u'Troubleshooting')),
-    (20, _lazy(u'How to')),
-    (30, _lazy(u'How to contribute')),
-    (40, _lazy(u'Administration')),
-    (50, _lazy(u'Navigation')),
-    (60, _lazy(u'Templates')),
+    (TROUBLESHOOTING_CATEGORY, _lazy(u'Troubleshooting')),
+    (HOW_TO_CATEGORY, _lazy(u'How to')),
+    (HOW_TO_CONTRIBUTE_CATEGORY, _lazy(u'How to contribute')),
+    (ADMINISTRATION_CATEGORY, _lazy(u'Administration')),
+    (NAVIGATION_CATEGORY, _lazy(u'Navigation')),
+    (TEMPLATES_CATEGORY, _lazy(u'Templates')),
 )
 
 REDIRECT_HTML = '<p>REDIRECT <a '  # how a redirect looks as rendered HTML

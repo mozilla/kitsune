@@ -526,6 +526,10 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
     @property
     def related_documents(self):
         """Return documents that are 'morelikethis' one."""
+        # Only documents in default IA categories have related.
+        if self.category not in settings.IA_DEFAULT_CATEGORIES:
+            return []
+
         # First try to get the results from the cache
         key = 'wiki_document:related_docs:%s' % self.id
         documents = cache.get(key)
@@ -538,7 +542,8 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
                 s=self.get_s().filter(
                     model=self.get_model_name(),
                     document_locale=self.locale,
-                    document_is_archived=False),
+                    document_is_archived=False,
+                    document_category__in=settings.IA_DEFAULT_CATEGORIES),
                 fields=[
                     'document_title',
                     'document_summary',
