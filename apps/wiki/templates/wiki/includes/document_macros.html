@@ -145,11 +145,10 @@
         </div>
       </header>
       <h4>{{ _('Keywords:') }}</h4>
-      <div class="col">
-        <p>{{ revision_from.keywords }}</p>
-      </div>
-      <div class="col">
-        <p>{{ revision_to.keywords }}</p>
+      <div class="diff-this">
+        <div class="from">{{ revision_from.keywords }}</div>
+        <div class="to">{{ revision_to.keywords }}</div>
+        <div class="output"></div>
       </div>
       <h4>{{ _('Search results summary:') }}</h4>
       <div class="diff-this">
