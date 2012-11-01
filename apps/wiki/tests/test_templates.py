@@ -27,7 +27,9 @@ from wiki.events import (EditDocumentEvent, ReadyRevisionEvent,
                          ReviewableRevisionInLocaleEvent,
                          ApproveRevisionInLocaleEvent)
 from wiki.models import Document, Revision, HelpfulVote, HelpfulVoteMetadata
-from wiki.config import SIGNIFICANCES, MEDIUM_SIGNIFICANCE
+from wiki.config import (SIGNIFICANCES, MEDIUM_SIGNIFICANCE,
+                         ADMINISTRATION_CATEGORY, TROUBLESHOOTING_CATEGORY,
+                         TEMPLATES_CATEGORY)
 from wiki.tasks import send_reviewed_notification
 from wiki.tests import (TestCaseBase, document, revision, new_document_data,
                         translated_revision)
@@ -2140,8 +2142,8 @@ class RelatedDocumentTestCase(ElasticTestCase):
         d4.save()
 
         # A document that is similar but a template.
-        d5 = document(title='Template:lorem ipsum sit amet', category=60,
-                      save=True)
+        d5 = document(title='Template:lorem ipsum sit amet',
+                      category=TEMPLATES_CATEGORY, save=True)
         r5 = revision(document=d5, summary='lorem',
                       content='lorem ipsum dolor sit amet',
                       is_approved=True, save=True)
@@ -2149,8 +2151,8 @@ class RelatedDocumentTestCase(ElasticTestCase):
         d5.save()
 
         # An administration document that is similar.
-        d6 = document(title='admin lorem ipsum sit amet', category=40,
-                      save=True)
+        d6 = document(title='admin lorem ipsum sit amet',
+                      category=ADMINISTRATION_CATEGORY, save=True)
         r6 = revision(document=d6, summary='lorem',
                       content='lorem ipsum dolor sit amet',
                       is_approved=True, save=True)
@@ -2360,8 +2362,8 @@ class DocumentDeleteTestCase(TestCaseBase):
 def _create_document(title='Test Document', parent=None,
                      locale=settings.WIKI_DEFAULT_LANGUAGE):
     d = document(title=title, html='<div>Lorem Ipsum</div>',
-                 category=10, locale=locale, parent=parent,
-                 is_localizable=True)
+                 category=TROUBLESHOOTING_CATEGORY, locale=locale,
+                 parent=parent, is_localizable=True)
     d.save()
     r = Revision(document=d, keywords='key1, key2', summary='lipsum',
                  content='<div>Lorem Ipsum</div>', creator_id=118577,
