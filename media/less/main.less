@@ -134,11 +134,17 @@ input[type="password"],
 input[type="email"],
 input[type="url"],
 textarea {
-  background: #fafafa;
-  border: 2px solid #f7f7f7;
+  background: #fff;
+  border: 1px solid #b2b2b2;
   .border-radius(5px);
   .box-shadow(0 0 0 1px #efefef);
   font-family: @OpenSans;
+  transition: all linear .1s;
+
+  &:focus {
+    border-color: #42a4e0;
+    .box-shadow(0 0 2px rgba(73,173,227,0.4));
+  }
 }
 
 /* buttons styled to look like links */
