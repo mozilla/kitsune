@@ -1,0 +1,26 @@
+Metadata-Version: 1.0
+Name: python-memcached
+Version: 1.48
+Summary: Pure python memcached client
+Home-page: http://www.tummy.com/Community/software/python-memcached/
+Author: Sean Reifschneider
+Author-email: jafo@tummy.com
+License: UNKNOWN
+Download-URL: ftp://ftp.tummy.com/pub/python-memcached/
+Description: This software is a 100% Python interface to the memcached memory cache
+        daemon.  It is the client side software which allows storing values in one
+        or more, possibly remote, memcached servers.  Search google for memcached
+        for more information.
+        
+        This package was originally written by Evan Martin of Danga.
+        Please do not contact Evan about maintenance.
+        Sean Reifschneider of tummy.com, ltd. has taken over maintenance of it.
+        
+Platform: UNKNOWN
+Classifier: Development Status :: 5 - Production/Stable
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: Python Software Foundation License
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python
+Classifier: Topic :: Internet
+Classifier: Topic :: Software Development :: Libraries :: Python Modules
