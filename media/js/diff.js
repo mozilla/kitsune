@@ -163,10 +163,10 @@ Diff.prototype = {
                 }
             }
         });
-        if (fromLine.hasFrom) {
+        if (fromLine && fromLine.hasFrom) {
             fromLine.fromLineNum = fromLineNum++;
         }
-        if (toLine.hasTo) {
+        if (toLine && toLine.hasTo) {
             toLine.toLineNum = toLineNum++;
         }
 
