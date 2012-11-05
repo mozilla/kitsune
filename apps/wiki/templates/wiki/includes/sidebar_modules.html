@@ -62,7 +62,7 @@
   {% endif %}
   <nav id="doc-tools">
     <ul class="sidebar-nav sidebar-folding">
-      <li{% if active != 'article' %} class="selected"{% endif %}>
+      <li id="editing-tools-sidebar" {% if active != 'article' %} class="selected"{% endif %}>
         <span>{{ _('Editing Tools') }}</span>
         <ul class="sidebar-nav">
           {% if document %}

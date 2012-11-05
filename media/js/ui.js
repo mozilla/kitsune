@@ -1,11 +1,9 @@
 ;(function($) {
   "use strict";
-  $(document).ready(function() {
-    $('.sidebar-folding > li > a, .sidebar-folding > li > span').click(function() {
-      $(this).parent().toggleClass('selected');
-      return false;
-    });
 
+  initFolding();
+
+  $(document).ready(function() {
     $('.close-button').click(function() {
       var $this = $(this);
       if ($this.data('close-id')) {
@@ -57,3 +55,36 @@
     });
   });
 })(jQuery);
+
+
+function initFolding() {
+  $('.sidebar-folding > li > a, .sidebar-folding > li > span').click(function() {
+    var $parent = $(this).parent();
+    $parent.toggleClass('selected');
+
+    if (Modernizr.localstorage) {
+      var id = $parent.attr('id');
+      var folded = $parent.hasClass('selected');
+      if (id) {
+        localStorage.setItem(id + '.folded', folded);
+      }
+    }
+
+    return false;
+  });
+
+  if (Modernizr.localstorage) {
+    $('.sidebar-folding > li').each(function() {
+      var $this = $(this);
+      var id = $this.attr('id');
+      if (id) {
+        var folded = localStorage.getItem(id + '.folded');
+        if (folded === 'true') {
+          $this.addClass('selected');
+        } else if (folded === 'false') {
+          $this.removeClass('selected');
+        }
+      }
+    });
+  }
+}
