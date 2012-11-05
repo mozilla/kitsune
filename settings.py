@@ -632,6 +632,7 @@ MINIFY_BUNDLES = {
         'mobile/wiki': (
             'js/libs/underscore.js',
             'js/libs/jquery.cookie.js',
+            'js/libs/jquery.lazyload.js',
             'js/browserdetect.js',
             'js/showfor.js',
             'js/mobile/wiki.js'
