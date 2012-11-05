@@ -1,9 +1,11 @@
+/*jshint*/
+/*global Modernizr*/
 ;(function($) {
   "use strict";
 
-  initFolding();
-
   $(document).ready(function() {
+    initFolding();
+
     $('.close-button').click(function() {
       var $this = $(this);
       if ($this.data('close-id')) {
@@ -54,37 +56,43 @@
       });
     });
   });
-})(jQuery);
 
-
-function initFolding() {
-  $('.sidebar-folding > li > a, .sidebar-folding > li > span').click(function() {
-    var $parent = $(this).parent();
-    $parent.toggleClass('selected');
-
-    if (Modernizr.localstorage) {
-      var id = $parent.attr('id');
-      var folded = $parent.hasClass('selected');
-      if (id) {
-        localStorage.setItem(id + '.folded', folded);
-      }
-    }
-
-    return false;
-  });
-
-  if (Modernizr.localstorage) {
-    $('.sidebar-folding > li').each(function() {
-      var $this = $(this);
-      var id = $this.attr('id');
-      if (id) {
-        var folded = localStorage.getItem(id + '.folded');
-        if (folded === 'true') {
-          $this.addClass('selected');
-        } else if (folded === 'false') {
-          $this.removeClass('selected');
+  function initFolding() {
+    var $folders = $('.sidebar-folding > li');
+    // When a header is clicked, expand/contract the menu items.
+    $folders.find('a, span').click(function() {
+      var $parent = $(this).parent();
+      $parent.toggleClass('selected');
+      // If local storage is available, store this for future page loads.
+      if (Modernizr.localstorage) {
+        var id = $parent.attr('id');
+        var folded = $parent.hasClass('selected');
+        if (id) {
+          localStorage.setItem(id + '.folded', folded);
         }
       }
+      // prevent default
+      return false;
     });
+
+    // If local storage is available, load the folded/unfolded state of the
+    // menus from local storage and apply it.
+    if (Modernizr.localstorage) {
+      $folders.each(function() {
+        var $this = $(this);
+        var id = $this.attr('id');
+
+        if (id) {
+          var folded = localStorage.getItem(id + '.folded');
+
+          if (folded === 'true') {
+            $this.addClass('selected');
+          } else if (folded === 'false') {
+            $this.removeClass('selected');
+          }
+        }
+      });
+    }
   }
-}
+
+})(jQuery);
