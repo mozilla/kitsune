@@ -3,4 +3,6 @@
         // Set up showfor
         ShowFor.initForTags();
     }
+
+    $('img.lazy').lazyload();
 })(jQuery)
