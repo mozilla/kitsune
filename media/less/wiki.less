@@ -1146,3 +1146,66 @@ div.video .kbox-container {
     text-decoration: none;
   }
 }
+
+/* Ace syntax custom CSS */
+#editor {
+  border: 2px solid #F7F7F7;
+  border-radius: 5px;
+  bottom: 0;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+}
+
+#editor_wrapper {
+  height: 500px;
+  position: relative;
+}
+
+.ace_quote {
+  background-color: black;
+  color: white;
+}
+
+.ace_variable,
+.ace_tag {
+  color:  #d98484 !important;
+}
+
+.ace_other.ace_link {
+  color: #5757c2 !important; 
+}
+
+/* Variable font-spacing support rules */
+/* Un-comment the following rules
+   when https://github.com/ajaxorg/ace/issues/460 is fixed: */
+/*
+.ace_variable,
+.ace_tag {
+  font-family: 'Monaco','Menlo','Ubuntu Mono','Droid Sans Mono','Consolas',monospace;
+}
+
+.ace_tag {
+  font-weight: bold;
+}
+
+.ace_editor {
+ font-family: 'OpenSans', Arial, Helvetica, sans-serif !important;
+}
+*/
+/* Remove the following rules 
+   when https://github.com/ajaxorg/ace/issues/460 is fixed: */
+.ace_bold {
+  font-weight: normal !important;
+}
+
+.ace_strikethrough {
+  text-decoration: line-through;
+}
+
+.ace_editor .ace_identifier,
+.ace_editor .ace_italic,
+.ace_editor .ace_underline {
+  color: #666666 !important;
+}

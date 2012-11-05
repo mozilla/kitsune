@@ -147,6 +147,11 @@ Marky.SimpleButton.prototype = {
     // Get selected text
     getSelectedText: function() {
         var selText = '';
+        if(window.ace && window.highlighting.isEnabled()) {
+            var editor = window.highlighting.editor;
+            return window.highlighting.session.getTextRange(editor.getSelectionRange());
+        }
+
         if(document.selection && document.selection.createRange) {
             // IE/Opera
             selText = document.selection.createRange().text;
@@ -160,9 +165,38 @@ Marky.SimpleButton.prototype = {
     },
     // Handles the button click.
     handleClick: function(e) {
-        var selText, selStart, selEnd, splitText, range,
+        var selText, selRange, selStart, selEnd, splitText, range,
+            selStartColumn,
             textarea = this.textarea,
-            scrollTop = $(textarea).scrollTop();
+            scrollTop = $(textarea).scrollTop(),
+            session = window.highlighting.session,
+            editor = window.highlighting.editor;
+            
+        if(window.ace && window.highlighting.isEnabled()) {
+            selRange = editor.getSelectionRange();
+            selText = session.getTextRange(selRange);
+            selStartColumn = selRange.start.column + this.openTag.length;
+            if(!selText.length) {
+                selText = this.defaultText;
+            }
+            editor.insert(this.openTag + selText + this.closeTag);
+            if(selText == this.defaultText) {
+                session.selection.setSelectionRange({
+                    start: {
+                        row: selRange.start.row,
+                        column: selStartColumn, 
+                    },
+                    end: {
+                        row: selRange.end.row,
+                        column: selStartColumn + selText.length
+                    }
+                });
+            }
+            editor.focus();
+            e.preventDefault();
+            return false;
+        }
+        
         textarea.focus();
 
         if (document.selection && document.selection.createRange) {
