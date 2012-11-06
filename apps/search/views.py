@@ -14,7 +14,6 @@ from django.views.decorators.cache import cache_page
 import bleach
 import jingo
 import jinja2
-import waffle
 from elasticutils.utils import format_explanation
 from mobility.decorators import mobile_template
 from statsd import statsd
@@ -228,6 +227,12 @@ def search(request, template=None):
 
             discussion_f &= F(**after)
             question_f &= F(**after)
+
+    # In basic search, we limit questions from the last
+    # SEARCH_DEFAULT_MAX_QUESTION_AGE seconds.
+    if a == '0':
+        start_date = unix_now - settings.SEARCH_DEFAULT_MAX_QUESTION_AGE
+        question_f &= F(created__gte=start_date)
 
     # Note: num_voted (with a d) is a different field than num_votes
     # (with an s). The former is a dropdown and the latter is an

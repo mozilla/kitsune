@@ -767,6 +767,7 @@ SEARCH_RESULTS_PER_PAGE = 20
 
 # Search default settings
 SEARCH_DEFAULT_CATEGORIES = (10, 20,)
+SEARCH_DEFAULT_MAX_QUESTION_AGE = 180 * 24 * 60 * 60  # seconds
 
 # IA default settings
 IA_DEFAULT_CATEGORIES = (10, 20,)

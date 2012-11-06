@@ -549,6 +549,31 @@ class ElasticSearchUnifiedViewTests(ElasticTestCase):
         results = json.loads(response.content)['results']
         eq_([q2.get_absolute_url()], [r['url'] for r in results])
 
+    def test_created_default(self):
+        """Questions older than 180 days aren't returned by default."""
+        max_age_days = settings.SEARCH_DEFAULT_MAX_QUESTION_AGE / 60 / 60 / 24
+        # Older than max_age_days:
+        created = datetime.now() - timedelta(days=max_age_days + 1)
+        q1 = question(title=u'q1 audio', created=created, save=True)
+        q1.tags.add(u'desktop')
+        ans = answer(question=q1, save=True)
+        answervote(answer=ans, helpful=True, save=True)
+
+        # Younger than max_age_days:
+        created = datetime.now() - timedelta(days=max_age_days - 1)
+        q2 = question(title=u'q2 audio', created=created, save=True)
+        q2.tags.add(u'desktop')
+        ans = answer(question=q2, save=True)
+        answervote(answer=ans, helpful=True, save=True)
+
+        self.refresh()
+
+        qs = {'format': 'json', 'q': 'audio'}
+
+        response = self.client.get(reverse('search'), qs)
+        results = json.loads(response.content)['results']
+        eq_([q2.get_absolute_url()], [r['url'] for r in results])
+
     def test_sortby_invalid(self):
         """Invalid created_date is ignored."""
         qs = {'a': 1, 'w': 4, 'format': 'json', 'sortby': ''}
