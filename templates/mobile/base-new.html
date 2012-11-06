@@ -6,7 +6,7 @@
   {% set site_title = _('Firefox Help <span>for Mobile</span>')|safe %}
 {% endif %}
 <!DOCTYPE html>
-<html lang="{{ request.locale }}" {% if dir %}dir="{{ dir }}"{% endif %}>
+<html lang="{{ request.locale }}" {% if dir %}dir="{{ dir }}"{% endif %} class="no-js">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
@@ -31,7 +31,7 @@
     <link rel="canonical" href="{{ canonical_url }}" />
   {% endif %}
 </head>
-<body class="no-js {{ classes }}"
+<body class="{{ classes }}"
       data-readonly="{{ settings.READ_ONLY|json }}"
       data-for-os="{{ for_os|json }}"
       data-for-version="{{ for_version|json }}"

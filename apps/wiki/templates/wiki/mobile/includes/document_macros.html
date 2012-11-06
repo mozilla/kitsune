@@ -3,10 +3,10 @@
     {% set header = _('Was this article helpful?') %}
   {% endif %}
   {% if document.allows_vote(request) %}
-    <div class="document-vote">
+    <div class="vote-bar">
+      <header>{{ header }}</header>
       <form class="helpful" action="{{ url('wiki.document_vote', document_slug=document.slug) }}" method="post">
         <p>
-          <span>{{ header }}</span>
           <input type="hidden" name="revision_id" value="{{ document.current_revision.id }}" />
           <div class="cf">
             <input type="submit" class="btn" name="helpful" value="{{ _('Yes') }}" />

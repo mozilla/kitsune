@@ -635,6 +635,7 @@ MINIFY_BUNDLES = {
             'js/libs/jquery.lazyload.js',
             'js/browserdetect.js',
             'js/showfor.js',
+            'js/ajaxvote.js',
             'js/mobile/wiki.js'
         ),
         'wiki.history': (
@@ -683,6 +684,7 @@ MINIFY_BUNDLES = {
         'mobile-new': (
             'js/libs/jquery-1.8.2.min.js',
             'js/mobile/ui.js',
+            'js/libs/modernizr-2.6.1.js',
         ),
         'messages': (
             'js/markup.js',

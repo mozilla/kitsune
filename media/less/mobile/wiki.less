@@ -1,4 +1,5 @@
 @import '../variables.less';
+@import '../vendors.less';
 
 .document {
   article {
@@ -21,17 +22,108 @@
   }
 
   .vote-bar {
-    background: @mobileFormBackground;
-    padding: 10px 16px;
+    border-top: 1px solid @mobileInputBorder;
+    font-size: 16px;
+    margin: 10px 16px;
+    padding: 16px 0;
 
-    .btn {
-      float: left;
-      margin: 0 1%;
-      width: 48%;
+    form {
+      &.voted {
+        display: none;
+      }
+    }
+
+    header {
+      margin-bottom: 6px;
+    }
+
+    .helpful {
+      .btn {
+        float: left;
+        margin: 0 1%;
+        width: 48%;
+      }
     }
 
     .wait {
       display: none;
+    }
+
+    #unhelpful-survey {
+      textarea {
+        .box-sizing(border-box);
+        width: 100%;
+      }
+
+      ul {
+        color: @mobileInputBorder;
+        list-style: none;
+        margin: 0 0 10px 0;
+        padding: 0;
+
+        > li {
+          border: 1px solid @mobileInputBorder;
+          border-bottom-width: 0;
+
+          &:first-of-type {
+            .border-radius(6px 6px 0 0);
+          }
+
+          &:last-of-type {
+            border-bottom-width: 1px;
+            .border-radius(0 0 6px 6px);
+          }
+
+          &:hover {
+            background: #008aaa;
+            border-color: #008aaa;
+            color: #fff;
+
+            + li {
+              border-top-color: #008aaa;
+            }
+          }
+
+          label {
+            cursor: pointer;
+            display: block;
+            padding: 10px;
+
+            input {
+              display: none;
+            }
+          }
+
+          &.checked {
+            color: #000;
+
+            &:hover {
+              color: #fff;
+            }
+
+            label {
+              &:after {
+                content: '\2713';
+                float: right;
+              }
+            }
+          }
+        }
+      }
+
+      .character-counter {
+        color: @textLightGrey;
+        font-size: 12px;
+        margin-top: 0;
+
+        &.too-long {
+          color: @textDarkOrange;
+        }
+      }
+
+      .disabled-reason {
+        display: none;
+      }
     }
   }
 
@@ -117,6 +209,24 @@
       > li {
         ul {
           padding-left: 16px;
+        }
+      }
+    }
+  }
+}
+
+.no-js {
+  .document {
+    .vote-bar {
+      #unhelpful-survey {
+        ul {
+          > li {
+            label {
+              input {
+                display: inline;
+              }
+            }
+          }
         }
       }
     }
