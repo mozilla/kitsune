@@ -60,7 +60,7 @@
   function initFolding() {
     var $folders = $('.sidebar-folding > li');
     // When a header is clicked, expand/contract the menu items.
-    $folders.find('a, span').click(function() {
+    $folders.children('a, span').click(function() {
       var $parent = $(this).parent();
       $parent.toggleClass('selected');
       // If local storage is available, store this for future page loads.
