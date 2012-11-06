@@ -228,6 +228,12 @@ def search(request, template=None):
 
             discussion_f &= F(**after)
             question_f &= F(**after)
+        else:
+            # By default, we limit questions from the last 180 days.
+            start_date = unix_now - settings.SEARCH_DEFAULT_MAX_QUESTION_AGE
+            after = {filter_name + '__gte': start_date,
+                     filter_name + '__lte': unix_now}
+            question_f &= F(**after)
 
     # Note: num_voted (with a d) is a different field than num_votes
     # (with an s). The former is a dropdown and the latter is an
