@@ -229,7 +229,8 @@ def search(request, template=None):
             discussion_f &= F(**after)
             question_f &= F(**after)
         else:
-            # By default, we limit questions from the last 180 days.
+            # By default, we limit questions from the last
+            # SEARCH_DEFAULT_MAX_QUESTION_AGE seconds.
             start_date = unix_now - settings.SEARCH_DEFAULT_MAX_QUESTION_AGE
             after = {filter_name + '__gte': start_date,
                      filter_name + '__lte': unix_now}

@@ -551,15 +551,16 @@ class ElasticSearchUnifiedViewTests(ElasticTestCase):
 
     def test_created_default(self):
         """Questions older than 180 days aren't returned by default."""
-        # Older than 180 days:
-        created = datetime.now() - timedelta(days=181)
+        days = settings.SEARCH_DEFAULT_MAX_QUESTION_AGE / 60 / 60 / 24
+        # Older than days:
+        created = datetime.now() - timedelta(days=days + 1)
         q1 = question(title=u'q1 audio', created=created, save=True)
         q1.tags.add(u'desktop')
         ans = answer(question=q1, save=True)
         answervote(answer=ans, helpful=True, save=True)
 
-        # Younger than 180 days:
-        created = datetime.now() - timedelta(days=179)
+        # Younger than days:
+        created = datetime.now() - timedelta(days=days - 1)
         q2 = question(title=u'q2 audio', created=created, save=True)
         q2.tags.add(u'desktop')
         ans = answer(question=q2, save=True)
