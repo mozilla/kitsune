@@ -169,10 +169,10 @@ Marky.SimpleButton.prototype = {
             selStartColumn,
             textarea = this.textarea,
             scrollTop = $(textarea).scrollTop(),
-            session = window.highlighting.session,
-            editor = window.highlighting.editor;
+            session = window.highlighting && window.highlighting.session,
+            editor = window.highlighting && window.highlighting.editor;
             
-        if(window.ace && window.highlighting.isEnabled()) {
+        if(window.ace && window.highlighting && window.highlighting.isEnabled()) {
             selRange = editor.getSelectionRange();
             selText = session.getTextRange(selRange);
             selStartColumn = selRange.start.column + this.openTag.length;
