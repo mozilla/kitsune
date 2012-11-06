@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime, timedelta
 import json
 
 import mock
@@ -416,10 +416,10 @@ class ElasticSearchUnifiedViewTests(ElasticTestCase):
 
     def test_forums_thread_created(self):
         """Tests created/created_date filtering for forums"""
-        post_created_ds = datetime.datetime(2010, 1, 1, 12, 00)
+        post_created_ds = datetime(2010, 1, 1, 12, 00)
         thread1 = thread(title=u'crash', created=post_created_ds, save=True)
         post(thread=thread1,
-             created=(post_created_ds + datetime.timedelta(hours=1)),
+             created=(post_created_ds + timedelta(hours=1)),
              save=True)
 
         self.refresh()
@@ -518,7 +518,7 @@ class ElasticSearchUnifiedViewTests(ElasticTestCase):
 
     def test_created(self):
         """Basic functionality of created filter."""
-        created_ds = datetime.datetime(2010, 6, 19, 12, 00)
+        created_ds = datetime(2010, 6, 19, 12, 00)
 
         # on 6/19/2010
         q1 = question(title=u'q1 audio', created=created_ds, save=True)
@@ -528,7 +528,7 @@ class ElasticSearchUnifiedViewTests(ElasticTestCase):
 
         # on 6/21/2010
         q2 = question(title=u'q2 audio',
-                      created=(created_ds + datetime.timedelta(days=2)),
+                      created=(created_ds + timedelta(days=2)),
                       save=True)
         q2.tags.add(u'desktop')
         ans = answer(question=q2, save=True)
@@ -776,14 +776,14 @@ class ElasticSearchUnifiedViewTests(ElasticTestCase):
 
     def test_forums_filter_updated(self):
         """Filter for updated date."""
-        post_updated_ds = datetime.datetime(2010, 5, 3, 12, 00)
+        post_updated_ds = datetime(2010, 5, 3, 12, 00)
 
         thread1 = thread(title=u't1 audio', save=True)
         post(thread=thread1, created=post_updated_ds, save=True)
 
         thread2 = thread(title=u't2 audio', save=True)
         post(thread=thread2,
-             created=(post_updated_ds + datetime.timedelta(days=2)),
+             created=(post_updated_ds + timedelta(days=2)),
              save=True)
 
         self.refresh()
