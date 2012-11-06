@@ -577,6 +577,7 @@ MINIFY_BUNDLES = {
             'js/format.js',
             'js/libs/modernizr-2.6.1.js',
             'js/ui.js',
+            'js/analytics.js',
         ),
         'ie6-8': (
             'js/libs/nwmatcher-1.2.5.js',
@@ -680,11 +681,13 @@ MINIFY_BUNDLES = {
             'js/ajaxvote.js',
             'js/aaq.js',
             'js/mobile.js',
+            'js/analytics.js',
         ),
         'mobile-new': (
             'js/libs/jquery-1.8.2.min.js',
             'js/mobile/ui.js',
             'js/libs/modernizr-2.6.1.js',
+            'js/analytics.js',
         ),
         'messages': (
             'js/markup.js',
