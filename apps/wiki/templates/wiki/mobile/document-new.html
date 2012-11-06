@@ -26,9 +26,7 @@
     {{ contributor_list(contributors) }}
     {{ related_articles(related, document) }}
   </article>
-  <div class="vote-bar">
-    {% if not waffle.switch('hide-voting') %}
-      {{ vote_form(document) }}
-    {% endif %}
-  </div>
+  {% if not waffle.switch('hide-voting') %}
+    {{ vote_form(document) }}
+  {% endif %}
 {% endblock %}
