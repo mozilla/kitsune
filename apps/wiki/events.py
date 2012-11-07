@@ -79,7 +79,9 @@ def context_dict(revision, ready_for_l10n=False, revision_approved=False):
         'creator': revision.creator,
         'host': Site.objects.get_current().domain,
         'diff': diff,
-        'fulltext': clean(revision.content, ALLOWED_TAGS, ALLOWED_ATTRIBUTES)}
+        'summary': clean(revision.summary, ALLOWED_TAGS, ALLOWED_ATTRIBUTES),
+        'fulltext': clean(revision.content, ALLOWED_TAGS, ALLOWED_ATTRIBUTES),
+    }
 
 
 def notification_mails(revision, subject, template, url, users_and_watches):

@@ -5,4 +5,12 @@ To view this document's history, click the following
 link, or paste it into your browser's location bar:
 {% endblocktrans %}
 https://{{ host }}{{ url }}
+
+--
+{{ _('Summary:') }}
+{{ summary|safe }}
+
+--
+{{ _('Changes:') }}
+{{ diff|safe }}
 {% unsubscribe_instructions watch %}

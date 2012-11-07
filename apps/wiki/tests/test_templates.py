@@ -37,41 +37,48 @@ from wiki.tests import (TestCaseBase, document, revision, new_document_data,
 
 READY_FOR_REVIEW_EMAIL_CONTENT = (
 """admin submitted a new revision to the document
-%s.
+%(title)s.
 
 To review this revision, click the following
 link, or paste it into your browser's location bar:
 
-https://testserver/en-US/kb/%s/review/%s
+https://testserver/en-US/kb/%(slug)s/review/%(new_id)s
+
+--
+Summary:
+%(summary)s
 
 --
 Changes:
-%s
-
-
---
-Text of the new revision:
-%s
-
+%(diff)s
 
 --
 Unsubscribe from these emails:
-https://testserver/en-US/unsubscribe/%s?s=%s
+https://testserver/en-US/unsubscribe/%(watcher)s?s=%(secret)s
 """)
 
 
 DOCUMENT_EDITED_EMAIL_CONTENT = (
 """admin created a new revision to the document
-%s.
+%(title)s.
 
 To view this document's history, click the following
 link, or paste it into your browser's location bar:
 
-https://testserver/en-US/kb/%s/history
+https://testserver/en-US/kb/%(slug)s/history
+
+--
+Summary:
+%(summary)s
+
+--
+Changes:
+%(diff)s
 
 --
 Unsubscribe from these emails:
-https://testserver/en-US/unsubscribe/%s?s=%s""")
+https://testserver/en-US/unsubscribe/%(watcher)s?s=%(secret)s
+""")
 
 
 APPROVED_EMAIL_CONTENT = (
@@ -82,13 +89,12 @@ To view the updated document, click the following link, or paste it into your br
 https://testserver/en-US/kb/%(document_slug)s
 
 --
-Changes:
-%(diff)s
-
+Summary:
+%(summary)s
 
 --
-Text of the new revision:
-%(content)s
+Changes:
+%(diff)s
 
 --
 Unsubscribe from these emails:
@@ -743,17 +749,27 @@ class NewRevisionTests(TestCaseBase):
         attrs_eq(mail.outbox[0],
                  subject=u'%s is ready for review (%s)' % (self.d.title,
                                                            new_rev.creator),
-                 body=READY_FOR_REVIEW_EMAIL_CONTENT %
-                    (self.d.title, self.d.slug, new_rev.id, diff,
-                     new_rev.content, reviewable_watch.pk,
-                     reviewable_watch.secret),
+                 body=READY_FOR_REVIEW_EMAIL_CONTENT % {
+                        'title': self.d.title,
+                        'slug': self.d.slug,
+                        'new_id': new_rev.id,
+                        'summary': new_rev.summary,
+                        'diff': diff,
+                        'watcher': reviewable_watch.pk,
+                        'secret': reviewable_watch.secret
+                    },
                  to=['joe@example.com'])
         attrs_eq(mail.outbox[1],
                  subject=u'%s was edited by %s' % (self.d.title,
                                                    new_rev.creator),
-                 body=DOCUMENT_EDITED_EMAIL_CONTENT %
-                    (self.d.title, self.d.slug, edit_watch.pk,
-                     edit_watch.secret),
+                 body=DOCUMENT_EDITED_EMAIL_CONTENT % {
+                        'title': self.d.title,
+                        'slug': self.d.slug,
+                        'watcher': edit_watch.pk,
+                        'secret': edit_watch.secret,
+                        'summary': new_rev.summary,
+                        'diff': diff,
+                    },
                  to=['sam@example.com'])
 
     @mock.patch.object(ReviewableRevisionInLocaleEvent, 'fire')
@@ -1212,14 +1228,16 @@ class ReviewRevisionTests(TestCaseBase):
                     ),
                 ALLOWED_TAGS, ALLOWED_ATTRIBUTES)
 
-        expected_body = (APPROVED_EMAIL_CONTENT %
-                         {'reviewer': r.reviewer.username,
-                          'document_title': self.document.title,
-                          'document_slug': self.document.slug,
-                          'watcher': watch.pk,
-                          'secret': watch.secret,
-                          'diff': diff,
-                          'content': r.content})
+        expected_body = (APPROVED_EMAIL_CONTENT % {
+                'reviewer': r.reviewer.username,
+                'document_title': self.document.title,
+                'document_slug': self.document.slug,
+                'watcher': watch.pk,
+                'secret': watch.secret,
+                'summary': approved_rev.summary,
+                'diff': diff,
+                'content': r.content,
+            })
 
         eq_(1, len(mail.outbox))
         attrs_eq(mail.outbox[0],

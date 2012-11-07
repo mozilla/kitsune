@@ -6,13 +6,11 @@ link, or paste it into your browser's location bar:
 {% endblocktrans %}
 https://{{ host }}{{ url }}
 
-{% if diff %}--
-{% blocktrans %}Changes:{% endblocktrans %}
-{{ diff|safe }}
-
-{% endif %}
 --
-{% blocktrans %}Text of the new revision:{% endblocktrans %}
-{{ fulltext|safe }}
+{{ _('Summary:') }}
+{{ summary|safe }}
 
+--
+{{ _('Changes:') }}
+{{ diff|safe }}
 {% unsubscribe_instructions watch %}
