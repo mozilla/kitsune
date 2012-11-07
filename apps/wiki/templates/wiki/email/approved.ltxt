@@ -4,12 +4,11 @@ To view the updated document, click the following link, or paste it into your br
 {% endblocktrans %}
 https://{{ host }}{{ url }}
 
-{% if diff %}--
+--
+{% trans "Summary:" %}
+{{ summary|safe }}
+
+--
 {% blocktrans %}Changes:{% endblocktrans %}
 {{ diff|safe }}
-
-{% endif %}
---
-{% blocktrans %}Text of the new revision:{% endblocktrans %}
-{{ fulltext|safe }}
 {% unsubscribe_instructions watch %}
