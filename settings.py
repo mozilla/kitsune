@@ -577,6 +577,7 @@ MINIFY_BUNDLES = {
             'js/format.js',
             'js/libs/modernizr-2.6.1.js',
             'js/ui.js',
+            'js/analytics.js',
         ),
         'ie6-8': (
             'js/libs/nwmatcher-1.2.5.js',
