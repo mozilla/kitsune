@@ -687,6 +687,7 @@ MINIFY_BUNDLES = {
             'js/libs/jquery-1.8.2.min.js',
             'js/mobile/ui.js',
             'js/libs/modernizr-2.6.1.js',
+            'js/analytics.js',
         ),
         'messages': (
             'js/markup.js',
