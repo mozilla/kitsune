@@ -170,6 +170,7 @@ LANGUAGE_URL_MAP = dict([(i.lower(), i) for i in SUMO_LANGUAGES])
 # an optional fallback locale, or None, to use the LANGUAGE_CODE.
 NON_SUPPORTED_LOCALES = {
     'af': None,
+    'an': 'es',
     'br': 'fr',
     'csb': 'pl',
     'lij': 'it',
