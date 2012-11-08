@@ -543,8 +543,9 @@ article {
 
   div.col {
     display: inline-block;
+    padding-right: 1%;
     vertical-align: top;
-    width: 315px;
+    width: 48%;
   }
 
   div.picker {
@@ -774,17 +775,18 @@ ul.description {
   h3 {
     color: #333;
     font-size: 13px;
+    font-weight: bold;
     margin: 0 0 5px;
   }
 
   input[type="text"] {
-      width: 300px;
+    width: 98%;
   }
 
   textarea {
     height: 100px;
     padding: 2px;
-    width: 300px;
+    width: 98%;
   }
 }
 
@@ -809,6 +811,7 @@ div.localized {
   h3 {
     color: #333;
     font-size: 13px;
+    font-weight: bold;
     margin: 0 0 5px;
   }
 
@@ -817,30 +820,63 @@ div.localized {
     height: 500px;
     overflow: auto;
     padding: 2px;
-    width: 400px;
+    width: 100%;
   }
 
   textarea {
-    height: 500px;
+    height: 495px;
+    margin: 0 0 15px;
     padding: 2px;
-    width: 300px;
+    width: 98%;
   }
 
-  div.approved {
+  .approved {
     textarea {
-      margin: 96px 0 0;
+      resize: none;
     }
   }
 
   .editor {
     margin: 10px 0 0;
     padding: 0;
-    width: 345px;
+    width: 100%;
+  }
+
+  #content-or-diff {
+    margin-top: 96px;
+
+    &.content {
+      .diff-this {
+        display: none;
+      }
+    }
+
+    &.diff {
+      textarea {
+        display: none;
+      }
+    }
+
+    a {
+      cursor: pointer;
+      float: right;
+      margin: 0 0 15px;
+    }
+  }
+
+  .diff-this {
+    height: 500px;
+    overflow: auto;
+    width: 99%;
   }
 }
 
-body.translate div.significance {
-  padding: 15px 0;
+body.translate {
+  /* Override the translate page to have fluid width */
+  .container_12 {
+    margin: 0 25px;
+    width: auto;
+  }
 }
 
 /* Review */
@@ -1160,6 +1196,7 @@ div.video .kbox-container {
 
 #editor_wrapper {
   height: 500px;
+  margin: 0 0 15px;
   position: relative;
 }
 
@@ -1174,7 +1211,7 @@ div.video .kbox-container {
 }
 
 .ace_other.ace_link {
-  color: #5757c2 !important; 
+  color: #5757c2 !important;
 }
 
 /* Variable font-spacing support rules */
@@ -1194,7 +1231,7 @@ div.video .kbox-container {
  font-family: 'OpenSans', Arial, Helvetica, sans-serif !important;
 }
 */
-/* Remove the following rules 
+/* Remove the following rules
    when https://github.com/ajaxorg/ace/issues/460 is fixed: */
 .ace_bold {
   font-weight: normal !important;

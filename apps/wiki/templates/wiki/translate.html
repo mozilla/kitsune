@@ -13,7 +13,9 @@
 
 {% block content %}
   {% set language = settings.LANGUAGES[locale.lower()] %}
-  <div class="grid_9">
+  <div>
+    {{ document_tools(document, parent, user, 'edit', settings) }}
+
     {{ edit_messages(document, show_revision_warning) }}
     {{ document_lock_warning() }}
 
@@ -137,7 +139,9 @@
           <div id="content-fields">
             <div class="approved">
               <h3>{{ _('Approved {default_locale} version:')|f(default_locale=settings.LANGUAGES[settings.WIKI_DEFAULT_LANGUAGE.lower()]) }}</h3>
-              <textarea readonly="readonly">{{ based_on.content }}</textarea>
+              <div id="content-or-diff" class="content">
+                <textarea readonly="readonly">{{ based_on.content }}</textarea>
+              </div>
             </div>
             <div class="localized">
               <h3>{{ _('{locale} translation:')|f(locale=language) }}</h3>
@@ -170,10 +174,6 @@
       {% endif %}
     </article>
   </div>
-{% endblock %}
-
-{% block side_top %}
-  {{ document_tools(document, parent, user, 'localize', settings) }}
 {% endblock %}
 
 {% block side_promos %}{% endblock %}
