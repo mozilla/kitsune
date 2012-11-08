@@ -5,7 +5,7 @@ To view the updated document, click the following link, or paste it into your br
 https://{{ host }}{{ url }}
 
 --
-{{ _('Summary:') }}
+{% trans "Summary:" %}
 {{ summary|safe }}
 
 --

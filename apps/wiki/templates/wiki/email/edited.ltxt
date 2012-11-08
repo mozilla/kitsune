@@ -7,10 +7,10 @@ link, or paste it into your browser's location bar:
 https://{{ host }}{{ url }}
 
 --
-{{ _('Summary:') }}
+{% trans "Summary:" %}
 {{ summary|safe }}
 
 --
-{{ _('Changes:') }}
+{% trans "Changes:" %}
 {{ diff|safe }}
 {% unsubscribe_instructions watch %}
