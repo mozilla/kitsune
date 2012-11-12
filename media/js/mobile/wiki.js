@@ -13,12 +13,23 @@
         var formDataArray = $form.serializeArray();
         var data = {};
 
-        $buttons.attr('disabled', 'disabled');
-
         for (i = 0, l = formDataArray.length; i < l; i++) {
             data[formDataArray[i].name] = formDataArray[i].value;
         }
         data[$this.attr('name')] = $this.val();
+
+        if ($form.data('required')) {
+            var required = $form.data('required').split(',');
+            for (var r in required) {
+                if (!data[required[r]]) {
+                    $form.addClass('invalid');
+                    return false;
+                }
+            }
+        }
+
+        $form.removeClass('invalid');
+        $buttons.attr('disabled', 'disabled');
 
         $.ajax({
             url: $form.attr('action'),

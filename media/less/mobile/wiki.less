@@ -74,16 +74,6 @@
             .border-radius(0 0 6px 6px);
           }
 
-          &:hover {
-            background: #008aaa;
-            border-color: #008aaa;
-            color: #fff;
-
-            + li {
-              border-top-color: #008aaa;
-            }
-          }
-
           label {
             cursor: pointer;
             display: block;
@@ -96,10 +86,6 @@
 
           &.checked {
             color: #000;
-
-            &:hover {
-              color: #fff;
-            }
 
             label {
               &:after {
@@ -123,6 +109,13 @@
 
       .disabled-reason {
         display: none;
+      }
+
+      .invalid {
+        .disabled-reason {
+          color: @textDarkOrange;
+          display: block;
+        }
       }
     }
   }
