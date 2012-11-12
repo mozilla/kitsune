@@ -75,7 +75,7 @@
         </div>
         <div class="asked-on">
           {{ _('Posted') }}<br>
-          {{ question.created|timesince }}
+          {{ datetimeformat(question.created) }}
         </div>
       </div>
 

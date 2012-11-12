@@ -27,7 +27,7 @@
     {% if answer.id %}
       <div class="asked-on">
         {{ _('Posted') }}<br>
-        {{ answer.created|timesince }}
+        {{ datetimeformat(answer.created) }}
       </div>
     {% endif %}
   </div>
