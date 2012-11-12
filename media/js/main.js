@@ -141,25 +141,27 @@ k = {};
     function disableFormsOnSubmit() {
         $('form').submit(function(ev) {
             var $this = $(this);
-            if ($this.data('disabled')) {
-                ev.preventDefault();
-            } else {
-                $this.data('disabled', true).addClass('disabled');
+            if ($this.attr('method').toLowerCase() === 'post') {
+                if ($this.data('disabled')) {
+                    ev.preventDefault();
+                } else {
+                    $this.data('disabled', true).addClass('disabled');
+                }
+
+                function enableForm() {
+                    $this.data('disabled', false).removeClass('disabled');
+                }
+
+                $this.ajaxComplete(function(){
+                    enableForm();
+                    $this.unbind('ajaxComplete');
+                });
+
+                // Re-enable the form when users leave the page in case they come back.
+                $(window).unload(enableForm);
+                // Re-enable the form after 5 seconds in case something else went wrong.
+                setTimeout(enableForm, 5000);
             }
-
-            function enableForm() {
-                $this.data('disabled', false).removeClass('disabled');
-            }
-
-            $this.ajaxComplete(function(){
-                enableForm();
-                $this.unbind('ajaxComplete');
-            });
-
-            // Re-enable the form when users leave the page in case they come back.
-            $(window).unload(enableForm);
-            // Re-enable the form after 5 seconds in case something else went wrong.
-            setTimeout(enableForm, 5000);
         });
     }
 
