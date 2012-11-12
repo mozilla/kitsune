@@ -148,6 +148,10 @@
         {% for question in questions.object_list %}
           <section id="question-{{ question.id }}" class="cf">
             <div class="question-meta {% if not question.num_answers %}urgent{% endif %}">
+              <div class="have-problem-this-week">
+                <h4>{{ question.num_votes_past_week }}</h4>
+                {{ _('new this week') }}
+              </div>
               <div class="replies">
                 <h4>{{ question.num_answers }}</h4>
                 {% trans count=question.num_answers %}

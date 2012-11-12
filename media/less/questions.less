@@ -435,7 +435,7 @@ h2 {
 
     .content {
       border-right: 1px dotted @borderLightGrey;
-      margin: 0 90px 0 0;
+      margin: 0 190px 0 0;
       min-height: 130px;
       padding: 0 20px 0 0;
     }
@@ -490,10 +490,25 @@ h2 {
     .question-meta {
       float: right;
       font-size: 11px;
-      width: 70px;
       padding: 0 0 0 20px;
       text-align: center;
       text-transform: uppercase;
+      width: 170px;
+
+      > div {
+        width: 70px;
+
+        &.have-problem-this-week {
+          float: right;
+          font-size: 13px;
+          margin-top: 16px;
+          width: 80px;
+
+          h4 {
+            font-size: 40px;
+          }
+        }
+      }
 
       h4 {
         font-size: 30px;
