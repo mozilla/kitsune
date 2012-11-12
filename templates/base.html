@@ -65,8 +65,10 @@
       data-for-version="{{ for_version|json }}"
       data-usernames-api="{{ url('users.api.usernames') }}"
       data-media-url="{{ MEDIA_URL }}"
-      {% if SURVEYGIZMOS %}
+      {% if SURVEY_GIZMOS %}
         data-survey-gizmos="{{ SURVEY_GIZMOS|json }}"
+      {% else %}
+        data-survey-gizmos="[]"
       {% endif %}
 {% if extra_body_attrs -%}
   {% for attr, val in extra_body_attrs.items() %}{{ attr }}="{{ val }}" {% endfor %}
