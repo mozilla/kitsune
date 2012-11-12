@@ -13,9 +13,9 @@
     };
 
     $(function() {
-        var survey_list = $('body').data('survey-gizmos');
-        for (var i = 0; i < survey_list.length; i++) {
-            survey = surveys[survey_list[i]];
+        var surveyList = $('body').data('survey-gizmos');
+        for (var i = 0; i < surveyList.length; i++) {
+            survey = surveys[surveyList[i]];
             if (survey) {
                 survey();
             }
