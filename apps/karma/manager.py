@@ -178,7 +178,7 @@ class KarmaManager(object):
 
     # Getters:
     @_handle_redis_errors
-    def top_users(self, daterange='all', type='points', count=10, offset=0):
+    def top_users(self, daterange='3m', type='points', count=10, offset=0):
         """Get a list of users sorted for the specified range and type."""
         ids = self.top_users_ids(daterange, type, count, offset)
         users = list(User.objects.filter(id__in=ids))

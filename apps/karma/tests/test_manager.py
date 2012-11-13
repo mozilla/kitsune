@@ -69,7 +69,8 @@ class KarmaManagerTests(TestCase):
         switch_is_active.return_value = True
         self.mgr.update_top()
         u1, u2, u3 = self.user1, self.user2, self.user3
-        eq_([u2, u3, u1], self.mgr.top_users())
+        # Default range is 3m
+        eq_([u3, u1, u2], self.mgr.top_users())
         eq_([u3, u1, u2], self.mgr.top_users(type=TestAction1.action_type))
         eq_([u3, u1, u2], self.mgr.top_users(type=TestAction1.action_type))
         eq_([u1], self.mgr.top_users(type=TestAction1.action_type,
