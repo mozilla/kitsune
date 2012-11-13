@@ -25,7 +25,7 @@
     };
 
     $(function() {
-        var surveyList = $('body').data('survey-gizmos');
+        var surveyList = $('body').data('survey-gizmos') || [];
         for (var i = 0; i < surveyList.length; i++) {
             survey = surveys[surveyList[i]];
             if (survey) {
