@@ -60,7 +60,7 @@ def karma(request):
 
     kmgr = KarmaManager()
     top_alltime = [_user_karma_alltime(u, kmgr) for
-                   u in kmgr.top_users() or []]
+                   u in kmgr.top_users('all') or []]
     top_week = [_user_karma_week(u, kmgr) for
                 u in kmgr.top_users(daterange='1w') or []]
 

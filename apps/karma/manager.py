@@ -128,10 +128,10 @@ class KarmaManager(object):
         for userid in self.user_ids():
             if daterange == 'all':
                 # '*:all' is always up to date
-                count = self.count(userid, daterange='all', type=type)
+                count = self.count('all', userid, type=type)
             else:
                 # Needs recalculating
-                count = self._count(userid, daterange=daterange, type=type)
+                count = self._count(daterange, userid, type=type)
                 self._set_or_del_hash(userid, hash_field_key, count)
 
             if count:
@@ -178,21 +178,21 @@ class KarmaManager(object):
 
     # Getters:
     @_handle_redis_errors
-    def top_users(self, daterange='all', type='points', count=10, offset=0):
+    def top_users(self, daterange, type='points', count=10, offset=0):
         """Get a list of users sorted for the specified range and type."""
         ids = self.top_users_ids(daterange, type, count, offset)
         users = list(User.objects.filter(id__in=ids))
         users.sort(key=lambda user: ids.index(str(user.id)))
         return users
 
-    def top_users_ids(self, daterange='all', type='points', count=10,
+    def top_users_ids(self, daterange, type='points', count=10,
                       offset=0):
         """Get a list of user ids sorted for the specified range and type."""
         return self.redis.zrevrange('{p}:{t}:{s}'.format(
             p=KEY_PREFIX, t=type, s=daterange), offset, offset + count - 1)
 
     @_handle_redis_errors
-    def ranking(self, user, daterange='all', type='points'):
+    def ranking(self, daterange, user, type='points'):
         """The user's ranking for the given range and type."""
         if self.count(user=user, daterange=daterange, type=type):
             rank = self.redis.zrevrank('{p}:{t}:{r}'.format(
@@ -202,17 +202,20 @@ class KarmaManager(object):
         return None
 
     @_handle_redis_errors
-    def count(self, user='overview', daterange='all', type='points'):
+    def count(self, daterange='all', user='overview', type='points'):
         """The user's count for the given range and type.
 
-        The default "user" is 'overview' which is an aggregate count
-        over all users.
+        The default daterange is all time, and the default "user" is 'overview'
+        which is an aggregate count over all users.
+
+        There is a default for daterange, unlike elsewhere in this class, so
+        that this count() method behaves like a normal Django ORM count method.
         """
         count = self.redis.hget(hash_key(user),
                                 '{t}:{r}'.format(t=type, r=daterange))
         return int(count) if count else 0
 
-    def daily_counts(self, user='overview', daterange='1y', type='points',
+    def daily_counts(self, daterange, user='overview', type='points',
                      *arg, **kwargs):
         """Return a list of counts per day for the give range and type.
 
@@ -237,7 +240,7 @@ class KarmaManager(object):
             hash_key(user), '{t}:{d}'.format(d=count_date, t=type))
         return int(count) if count else 0
 
-    def monthly_counts(self, userid=None, daterange=None, type='points',
+    def monthly_counts(self, daterange, userid=None, type='points',
                        *arg, **kwargs):
         daterange = daterange or '1y'
         month_ranges = {'1m': 1, '3m': 3, '6m': 6, '1y': 12}
@@ -286,7 +289,7 @@ class KarmaManager(object):
         """Return the user ids of all users with karma activity."""
         return self.redis.smembers('{p}:users'.format(p=KEY_PREFIX))
 
-    def _count(self, user, daterange, type='points'):
+    def _count(self, daterange, user, type='points'):
         """Calculates a user's count for range and type from daily counts."""
         daily_counts, days = self.daily_counts(user=user, daterange=daterange,
                                          type=type)
