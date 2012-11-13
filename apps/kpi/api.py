@@ -1,6 +1,7 @@
 from operator import itemgetter
 from datetime import date, timedelta
 
+from django.conf import settings
 from django.db import connections, router
 from django.db.models import Count, F
 
@@ -226,6 +227,41 @@ class VoteResource(CachedResource):
     class Meta(object):
         cache = SimpleCache()
         resource_name = 'kpi_vote'
+        allowed_methods = ['get']
+
+
+class KBVoteResource(CachedResource):
+    """Returns the number helpful votes for KB Articles."""
+    date = fields.DateField('date')
+    kb_helpful = fields.IntegerField('kb_helpful', default=0)
+    kb_votes = fields.IntegerField('kb_votes', default=0)
+
+    def get_object_list(self, request):
+        # Set up the queries for the data we need
+
+        # For now, we only care about the default locale.
+        locale = settings.WIKI_DEFAULT_LANGUAGE
+
+        qs_kb_votes = (HelpfulVote.objects
+            .filter(revision__document__locale=locale)
+            .filter(created__gte=date(2011, 1, 1)).extra(
+                select={
+                    'day': 'extract( day from wiki_helpfulvote.created )',
+                    'month': 'extract( month from wiki_helpfulvote.created )',
+                    'year': 'extract( year from wiki_helpfulvote.created )',
+                })
+            .values('year', 'month', 'day')
+            .annotate(count=Count('created')))
+
+        # Filter on helpful
+        qs_kb_helpful_votes = qs_kb_votes.filter(helpful=True)
+
+        return merge_results(
+            kb_votes=qs_kb_votes, kb_helpful=qs_kb_helpful_votes)
+
+    class Meta(object):
+        cache = SimpleCache()
+        resource_name = 'kpi_kb_vote'
         allowed_methods = ['get']
 
 
