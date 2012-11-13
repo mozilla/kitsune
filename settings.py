@@ -653,7 +653,10 @@ MINIFY_BUNDLES = {
             'js/libs/ace/src-min/ace.js',
             'js/libs/ace.mode-sumo.js',
         ),
-        'dashboard.helpful': (
+        'wiki.dashboard': (
+            'js/libs/backbone.js',
+            'js/charts.js',
+            'js/wiki.dashboard.js',
             'js/helpfuldashcharts.js',
         ),
         'highcharts': (
@@ -723,6 +726,7 @@ MINIFY_BUNDLES = {
         ),
         'kpi.dashboard': (
             'js/libs/backbone.js',
+            'js/charts.js',
             'js/kpi.dashboard.js',
         ),
         'products-mobile': (

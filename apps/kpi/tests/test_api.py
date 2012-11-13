@@ -107,6 +107,20 @@ class KpiApiTests(TestCase):
         eq_(r['objects'][0]['ans_helpful'], 2)
         eq_(r['objects'][0]['ans_votes'], 3)
 
+    def test_kb_vote(self):
+        """Test vote API call."""
+        r1 = revision(document=document(locale='en-US', save=True), save=True)
+        r2 = revision(document=document(locale='es', save=True), save=True)
+        for r in [r1, r2]:
+            helpful_vote(revision=r, save=True)
+            helpful_vote(revision=r, save=True)
+            helpful_vote(revision=r, helpful=True, save=True)
+
+        # Only the votes for r1 (locale=en-US) should be counted.
+        r = self._get_api_result('kpi_kb_vote')
+        eq_(r['objects'][0]['kb_helpful'], 1)
+        eq_(r['objects'][0]['kb_votes'], 3)
+
     def test_active_contributors(self):
         """Test active contributors API call."""
         # 2 en-US revisions by 2 contributors:
