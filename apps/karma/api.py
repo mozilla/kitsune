@@ -34,7 +34,7 @@ def users(request):
     pagesize = form.cleaned_data.get('pagesize') or 100
 
     mgr = KarmaManager()
-    users = mgr.top_users(daterange=daterange, type=sort, count=pagesize,
+    users = mgr.top_users(daterange, type=sort, count=pagesize,
                           offset=(page - 1) * pagesize) or []
 
     now = datetime.now()
@@ -45,9 +45,9 @@ def users(request):
         user = [u.id, u.username]
         last_activity = Answer.last_activity_for(u)
         user.append((now - last_activity).days if last_activity else None)
-        user.append(mgr.count(u, daterange=daterange, type='points'))
+        user.append(mgr.count(daterange, u, type='points'))
         for t in action_types:
-            user.append(mgr.count(u, daterange=daterange, type=t))
+            user.append(mgr.count(daterange, u, type=t))
         user_list.append(user)
 
     return {
@@ -76,7 +76,7 @@ def overview(request):
     mgr = KarmaManager()
     overview = {}
     for t in KarmaManager.action_types.keys():
-        overview[t] = mgr.count(daterange=daterange, type=t)
+        overview[t] = mgr.count(daterange, type=t)
 
     # TODO: Maybe have a karma action not assigned to a user for this?
     num_days = KarmaManager.date_ranges[daterange]
@@ -109,7 +109,7 @@ def details(request):
     if daterange == '1w':
         count_func = mgr.daily_counts
     for t in KarmaManager.action_types.keys():
-        counts[t], time_units = count_func(type=t, **form.cleaned_data)
+        counts[t], time_units = count_func(daterange, type=t, **form.cleaned_data)
 
     return {
         'success': True,
