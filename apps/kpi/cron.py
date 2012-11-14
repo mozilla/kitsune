@@ -16,7 +16,7 @@ from kpi.models import (Metric, MetricKind,
                         VISITORS_METRIC_CODE)
 from questions.models import Answer
 from sumo.webtrends import Webtrends
-from wiki.config import TYPO_SIGNIFICANCE
+from wiki.config import TYPO_SIGNIFICANCE, MEDIUM_SIGNIFICANCE
 from wiki.models import Revision
 
 
@@ -75,7 +75,8 @@ def update_l10n_metric():
     locale_visits = Webtrends.visits_by_locale(start, end)
 
     # Discard en-US.
-    locale_visits.pop('en-US')
+    if 'en-US' in locale_visits:
+        locale_visits.pop('en-US')
 
     # Total non en-US visits.
     total_visits = sum(locale_visits.itervalues())
@@ -117,6 +118,11 @@ def update_l10n_metric():
                     id__lte=cur_rev_id).exclude(significance=TYPO_SIGNIFICANCE)
                 if not revs.exists():
                     up_to_date_docs += 1
+                # If there is only 1 revision of MEDIUM_SIGNIFICANCE, then we
+                # count that as half-up-to-date (see bug 790797).
+                elif (len(revs) == 1 and
+                      revs[0].significance == MEDIUM_SIGNIFICANCE):
+                    up_to_date_docs += 0.5
 
         if num_docs and total_visits:
             coverage += ((float(up_to_date_docs) / num_docs) *

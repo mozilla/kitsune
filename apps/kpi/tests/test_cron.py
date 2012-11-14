@@ -8,11 +8,12 @@ from kpi.cron import update_visitors_metric, update_l10n_metric, Webtrends
 from kpi.models import Metric, VISITORS_METRIC_CODE, L10N_METRIC_CODE
 from kpi.tests import metric_kind
 from sumo.tests import TestCase
-from wiki.config import MEDIUM_SIGNIFICANCE, TYPO_SIGNIFICANCE
+from wiki.config import (MAJOR_SIGNIFICANCE, MEDIUM_SIGNIFICANCE,
+                         TYPO_SIGNIFICANCE)
 from wiki.tests import document, revision
 
 
-class UpdateVisitorsTests(TestCase):
+class CronJobTests(TestCase):
     @patch.object(Webtrends, 'visits')
     def test_update_visitors_cron(self, visits):
         """Verify the cron job inserts the right rows."""
@@ -23,7 +24,7 @@ class UpdateVisitorsTests(TestCase):
 
         update_visitors_metric()
 
-        metrics = Metric.objects.filter(kind=visitor_kind)
+        metrics = Metric.objects.filter(kind=visitor_kind).order_by('start')
         eq_(3, len(metrics))
         eq_(42, metrics[0].value)
         eq_(193, metrics[1].value)
@@ -40,15 +41,6 @@ class UpdateVisitorsTests(TestCase):
         rev = revision(
             document=doc,
             significance=MEDIUM_SIGNIFICANCE,
-            is_approved=True,
-            is_ready_for_localization=True,
-            save=True)
-
-        # Create a new revision with TYPO_SIGNIFICANCE. It shouldn't
-        # affect the results.
-        revision(
-            document=doc,
-            significance=TYPO_SIGNIFICANCE,
             is_approved=True,
             is_ready_for_localization=True,
             save=True)
@@ -78,3 +70,61 @@ class UpdateVisitorsTests(TestCase):
         metrics = Metric.objects.filter(kind=l10n_kind)
         eq_(1, len(metrics))
         eq_(25, metrics[0].value)
+
+        # Create a new revision with TYPO_SIGNIFICANCE. It shouldn't
+        # affect the results.
+        revision(
+            document=doc,
+            significance=TYPO_SIGNIFICANCE,
+            is_approved=True,
+            is_ready_for_localization=True,
+            save=True)
+        Metric.objects.all().delete()
+        update_l10n_metric()
+        metrics = Metric.objects.filter(kind=l10n_kind)
+        eq_(1, len(metrics))
+        eq_(25, metrics[0].value)
+
+        # Create a new revision with MEDIUM_SIGNIFICANCE. The coverage
+        # should now be half.
+        m1 = revision(
+            document=doc,
+            significance=MEDIUM_SIGNIFICANCE,
+            is_approved=True,
+            is_ready_for_localization=True,
+            save=True)
+        Metric.objects.all().delete()
+        update_l10n_metric()
+        metrics = Metric.objects.filter(kind=l10n_kind)
+        eq_(1, len(metrics))
+        eq_(25 / 2, metrics[0].value)
+
+        # And another new revision with MEDIUM_SIGNIFICANCE makes the
+        # coverage 0.
+        m2 = revision(
+            document=doc,
+            significance=MEDIUM_SIGNIFICANCE,
+            is_approved=True,
+            is_ready_for_localization=True,
+            save=True)
+        Metric.objects.all().delete()
+        update_l10n_metric()
+        metrics = Metric.objects.filter(kind=l10n_kind)
+        eq_(1, len(metrics))
+        eq_(0, metrics[0].value)
+
+        # If we remove the two MEDIUM_SIGNIFICANCE revisions and add a
+        # MAJOR_SIGNIFICANCE revision, the coverage is 0 as well.
+        m1.delete()
+        m2.delete()
+        revision(
+            document=doc,
+            significance=MAJOR_SIGNIFICANCE,
+            is_approved=True,
+            is_ready_for_localization=True,
+            save=True)
+        Metric.objects.all().delete()
+        update_l10n_metric()
+        metrics = Metric.objects.filter(kind=l10n_kind)
+        eq_(1, len(metrics))
+        eq_(0, metrics[0].value)
