@@ -58,18 +58,19 @@ class CronJobTests(TestCase):
 
         # Mock some calls.
         visits_by_locale.return_value = {
-            'en-US': 100,
+            'en-US': 50,
             'de': 20,
-            'es': 10,
-            'fr': 10,
+            'es': 25,
+            'fr': 5,
         }
         _get_top_docs.return_value = [doc]
 
-        # Run it and verify results. Values sould be 25% (1/1 * 10/40).
+        # Run it and verify results.
+        # Value should be 75% (1/1 * 25/100 + 1/1 * 50/100)
         update_l10n_metric()
         metrics = Metric.objects.filter(kind=l10n_kind)
         eq_(1, len(metrics))
-        eq_(25, metrics[0].value)
+        eq_(75, metrics[0].value)
 
         # Create a new revision with TYPO_SIGNIFICANCE. It shouldn't
         # affect the results.
@@ -83,10 +84,10 @@ class CronJobTests(TestCase):
         update_l10n_metric()
         metrics = Metric.objects.filter(kind=l10n_kind)
         eq_(1, len(metrics))
-        eq_(25, metrics[0].value)
+        eq_(75, metrics[0].value)
 
         # Create a new revision with MEDIUM_SIGNIFICANCE. The coverage
-        # should now be half.
+        # should now be 62% (0.5/1 * 25/100 + 1/1 * 50/100)
         m1 = revision(
             document=doc,
             significance=MEDIUM_SIGNIFICANCE,
@@ -97,10 +98,10 @@ class CronJobTests(TestCase):
         update_l10n_metric()
         metrics = Metric.objects.filter(kind=l10n_kind)
         eq_(1, len(metrics))
-        eq_(25 / 2, metrics[0].value)
+        eq_(62, metrics[0].value)
 
         # And another new revision with MEDIUM_SIGNIFICANCE makes the
-        # coverage 0.
+        # coverage 50% (1/1 * 50/100).
         m2 = revision(
             document=doc,
             significance=MEDIUM_SIGNIFICANCE,
@@ -111,10 +112,10 @@ class CronJobTests(TestCase):
         update_l10n_metric()
         metrics = Metric.objects.filter(kind=l10n_kind)
         eq_(1, len(metrics))
-        eq_(0, metrics[0].value)
+        eq_(50, metrics[0].value)
 
         # If we remove the two MEDIUM_SIGNIFICANCE revisions and add a
-        # MAJOR_SIGNIFICANCE revision, the coverage is 0 as well.
+        # MAJOR_SIGNIFICANCE revision, the coverage is 50% as well.
         m1.delete()
         m2.delete()
         revision(
@@ -127,4 +128,4 @@ class CronJobTests(TestCase):
         update_l10n_metric()
         metrics = Metric.objects.filter(kind=l10n_kind)
         eq_(1, len(metrics))
-        eq_(0, metrics[0].value)
+        eq_(50, metrics[0].value)
