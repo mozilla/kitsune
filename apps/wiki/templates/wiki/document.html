@@ -36,7 +36,6 @@
       {{ document_title(document) }}
       {{ document_messages(document, redirected_from) }}
       {{ document_content(document, fallback_reason, request, settings) }}
-      {{ contributor_list(contributors) }}
 
       {% if not waffle.switch('hide-voting') %}
         <div class="vote-wrap">
@@ -44,7 +43,9 @@
           {{ vote_form(document) }}
         </div>
       {% endif %}
-    </article>
+
+      {{ contributor_list(contributors) }}
+   </article>
   </div>
 {% endblock %}
 
