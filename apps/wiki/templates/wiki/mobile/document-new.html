@@ -23,10 +23,13 @@
   <article id="wiki-doc">
     {{ document_messages(document, redirected_from) }}
     {{ document_content(document, fallback_reason, request, settings) }}
-    {{ contributor_list(contributors) }}
+
     {{ related_articles(related, document) }}
+
+    {% if not waffle.switch('hide-voting') %}
+      {{ vote_form(document) }}
+    {% endif %}
+
+    {{ contributor_list(contributors) }}
   </article>
-  {% if not waffle.switch('hide-voting') %}
-    {{ vote_form(document) }}
-  {% endif %}
 {% endblock %}
