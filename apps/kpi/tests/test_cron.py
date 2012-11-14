@@ -8,11 +8,12 @@ from kpi.cron import update_visitors_metric, update_l10n_metric, Webtrends
 from kpi.models import Metric, VISITORS_METRIC_CODE, L10N_METRIC_CODE
 from kpi.tests import metric_kind
 from sumo.tests import TestCase
-from wiki.config import MEDIUM_SIGNIFICANCE, TYPO_SIGNIFICANCE
+from wiki.config import (MAJOR_SIGNIFICANCE, MEDIUM_SIGNIFICANCE,
+                         TYPO_SIGNIFICANCE)
 from wiki.tests import document, revision
 
 
-class UpdateVisitorsTests(TestCase):
+class CronJobTests(TestCase):
     @patch.object(Webtrends, 'visits')
     def test_update_visitors_cron(self, visits):
         """Verify the cron job inserts the right rows."""
@@ -23,7 +24,7 @@ class UpdateVisitorsTests(TestCase):
 
         update_visitors_metric()
 
-        metrics = Metric.objects.filter(kind=visitor_kind)
+        metrics = Metric.objects.filter(kind=visitor_kind).order_by('start')
         eq_(3, len(metrics))
         eq_(42, metrics[0].value)
         eq_(193, metrics[1].value)
@@ -44,15 +45,6 @@ class UpdateVisitorsTests(TestCase):
             is_ready_for_localization=True,
             save=True)
 
-        # Create a new revision with TYPO_SIGNIFICANCE. It shouldn't
-        # affect the results.
-        revision(
-            document=doc,
-            significance=TYPO_SIGNIFICANCE,
-            is_approved=True,
-            is_ready_for_localization=True,
-            save=True)
-
         # Create an es translation that is up to date.
         es_doc = document(parent=doc, locale='es', save=True)
         revision(
@@ -66,15 +58,74 @@ class UpdateVisitorsTests(TestCase):
 
         # Mock some calls.
         visits_by_locale.return_value = {
-            'en-US': 100,
+            'en-US': 50,
             'de': 20,
-            'es': 10,
-            'fr': 10,
+            'es': 25,
+            'fr': 5,
         }
         _get_top_docs.return_value = [doc]
 
-        # Run it and verify results. Values sould be 25% (1/1 * 10/40).
+        # Run it and verify results.
+        # Value should be 75% (1/1 * 25/100 + 1/1 * 50/100)
         update_l10n_metric()
         metrics = Metric.objects.filter(kind=l10n_kind)
         eq_(1, len(metrics))
-        eq_(25, metrics[0].value)
+        eq_(75, metrics[0].value)
+
+        # Create a new revision with TYPO_SIGNIFICANCE. It shouldn't
+        # affect the results.
+        revision(
+            document=doc,
+            significance=TYPO_SIGNIFICANCE,
+            is_approved=True,
+            is_ready_for_localization=True,
+            save=True)
+        Metric.objects.all().delete()
+        update_l10n_metric()
+        metrics = Metric.objects.filter(kind=l10n_kind)
+        eq_(1, len(metrics))
+        eq_(75, metrics[0].value)
+
+        # Create a new revision with MEDIUM_SIGNIFICANCE. The coverage
+        # should now be 62% (0.5/1 * 25/100 + 1/1 * 50/100)
+        m1 = revision(
+            document=doc,
+            significance=MEDIUM_SIGNIFICANCE,
+            is_approved=True,
+            is_ready_for_localization=True,
+            save=True)
+        Metric.objects.all().delete()
+        update_l10n_metric()
+        metrics = Metric.objects.filter(kind=l10n_kind)
+        eq_(1, len(metrics))
+        eq_(62, metrics[0].value)
+
+        # And another new revision with MEDIUM_SIGNIFICANCE makes the
+        # coverage 50% (1/1 * 50/100).
+        m2 = revision(
+            document=doc,
+            significance=MEDIUM_SIGNIFICANCE,
+            is_approved=True,
+            is_ready_for_localization=True,
+            save=True)
+        Metric.objects.all().delete()
+        update_l10n_metric()
+        metrics = Metric.objects.filter(kind=l10n_kind)
+        eq_(1, len(metrics))
+        eq_(50, metrics[0].value)
+
+        # If we remove the two MEDIUM_SIGNIFICANCE revisions and add a
+        # MAJOR_SIGNIFICANCE revision, the coverage is 50% as well.
+        m1.delete()
+        m2.delete()
+        revision(
+            document=doc,
+            significance=MAJOR_SIGNIFICANCE,
+            is_approved=True,
+            is_ready_for_localization=True,
+            save=True)
+        Metric.objects.all().delete()
+        update_l10n_metric()
+        metrics = Metric.objects.filter(kind=l10n_kind)
+        eq_(1, len(metrics))
+        eq_(50, metrics[0].value)

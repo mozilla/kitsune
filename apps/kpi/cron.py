@@ -1,5 +1,6 @@
 from datetime import datetime, date, timedelta
 
+from django.conf import settings
 from django.db.models import Count, F
 
 import cronjobs
@@ -16,7 +17,7 @@ from kpi.models import (Metric, MetricKind,
                         VISITORS_METRIC_CODE)
 from questions.models import Answer
 from sumo.webtrends import Webtrends
-from wiki.config import TYPO_SIGNIFICANCE
+from wiki.config import TYPO_SIGNIFICANCE, MEDIUM_SIGNIFICANCE
 from wiki.models import Revision
 
 
@@ -48,6 +49,9 @@ def update_visitors_metric():
             value=visits)
 
 
+MAX_DOCS_UP_TO_DATE = 50
+
+
 @cronjobs.register
 def update_l10n_metric():
     """Calculate new l10n coverage numbers and save.
@@ -59,11 +63,17 @@ def update_l10n_metric():
     SUMO visits = Total non-en-US SUMO visits for the last 3 months;
     Total translated = 0;
 
-    For each locale different to en-US {
-        Total translated = Total Translated +
-            ((Number of updated articles from the en-US top 50 visited)/50 ) *
+    For each locale {
+        Total up to date = Total up to date +
+            ((Number of up to date articles from the en-US top 50 visited)/50 ) *
              (Visitors for that locale / SUMO visits));
     }
+
+    An up to date article is any of the following:
+    * An en-US article (by definition it is always up to date)
+    * The latest en-US revision has been translated
+    * There are only new revisions with TYPO_SIGNIFICANCE not translated
+    * There is only one revision of MEDIUM_SIGNIFICANCE not translated
     """
     # Get the top 60 visited articles. We will only use the top 50
     # but a handful aren't localizable so we get some extras.
@@ -74,49 +84,18 @@ def update_l10n_metric():
     start = end - timedelta(days=90)
     locale_visits = Webtrends.visits_by_locale(start, end)
 
-    # Discard en-US.
-    locale_visits.pop('en-US')
-
     # Total non en-US visits.
     total_visits = sum(locale_visits.itervalues())
 
     # Calculate the coverage.
     coverage = 0
     for locale, visits in locale_visits.iteritems():
-        up_to_date_docs = 0
-        num_docs = 0
-        for doc in top_60_docs:
-            if num_docs == 50:
-                # Stop at 50 documents.
-                break
-
-            if not doc.is_localizable:
-                # Skip non localizable documents.
-                continue
-
-            num_docs += 1
-            cur_rev_id = doc.latest_localizable_revision_id
-            translation = doc.translated_to(locale)
-
-            if not translation or not translation.current_revision_id:
-                continue
-
-            if translation.current_revision.based_on_id >= cur_rev_id:
-                # The latest translation is based on the latest revision
-                # that is ready for localization or a newer one.
-                up_to_date_docs += 1
-            else:
-                # Check if the approved revisions that happened between
-                # the last approved translation and the latest revision
-                # that is ready for localization are all minor (significance =
-                # TYPO_SIGNIFICANCE). If so, the translation is still
-                # considered up to date.
-                revs = doc.revisions.filter(
-                    id__gt=translation.current_revision.based_on_id,
-                    is_approved=True,
-                    id__lte=cur_rev_id).exclude(significance=TYPO_SIGNIFICANCE)
-                if not revs.exists():
-                    up_to_date_docs += 1
+        if locale == settings.WIKI_DEFAULT_LANGUAGE:
+            num_docs = MAX_DOCS_UP_TO_DATE
+            up_to_date_docs = MAX_DOCS_UP_TO_DATE
+        else:
+            up_to_date_docs, num_docs = _get_up_to_date_count(
+                top_60_docs, locale)
 
         if num_docs and total_visits:
             coverage += ((float(up_to_date_docs) / num_docs) *
@@ -310,3 +289,47 @@ def _get_top_docs(count):
     top_qs = WikiDocumentVisits.objects.select_related('document').filter(
         period=LAST_90_DAYS).order_by('-visits')[:count]
     return [v.document for v in top_qs]
+
+
+def _get_up_to_date_count(top_60_docs, locale):
+    up_to_date_docs = 0
+    num_docs = 0
+
+    for doc in top_60_docs:
+        if num_docs == MAX_DOCS_UP_TO_DATE:
+            break
+
+        if not doc.is_localizable:
+            # Skip non localizable documents.
+            continue
+
+        num_docs += 1
+        cur_rev_id = doc.latest_localizable_revision_id
+        translation = doc.translated_to(locale)
+
+        if not translation or not translation.current_revision_id:
+            continue
+
+        if translation.current_revision.based_on_id >= cur_rev_id:
+            # The latest translation is based on the latest revision
+            # that is ready for localization or a newer one.
+            up_to_date_docs += 1
+        else:
+            # Check if the approved revisions that happened between
+            # the last approved translation and the latest revision
+            # that is ready for localization are all minor (significance =
+            # TYPO_SIGNIFICANCE). If so, the translation is still
+            # considered up to date.
+            revs = doc.revisions.filter(
+                id__gt=translation.current_revision.based_on_id,
+                is_approved=True,
+                id__lte=cur_rev_id).exclude(significance=TYPO_SIGNIFICANCE)
+            if not revs.exists():
+                up_to_date_docs += 1
+            # If there is only 1 revision of MEDIUM_SIGNIFICANCE, then we
+            # count that as half-up-to-date (see bug 790797).
+            elif (len(revs) == 1 and
+                  revs[0].significance == MEDIUM_SIGNIFICANCE):
+                up_to_date_docs += 0.5
+
+    return up_to_date_docs, num_docs
