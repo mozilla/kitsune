@@ -76,13 +76,13 @@
     {% if html %}
       <h2>{{ html|safe }}</h2>
     {% else %}
-      <h2>{{ _('Try some solutions') }}</h2>
+      <h2>{{ _('Try one of these articles:') }}</h2>
     {% endif %}
     {% if articles %}
       <ul class="articles select-one">
-        {% for article in articles %}
+        {% for article in articles[:5] %}
           <li>
-            <a href="{{ article.url }}" target="_blank">{{ article.title }}</a>
+            <a href="{{ article.url }}" target="_blank">{{ article.document_title }}</a>
           </li>
         {% endfor %}
       </ul>
