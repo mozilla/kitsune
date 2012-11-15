@@ -263,7 +263,6 @@ have time.
     python manage.py test  # Make sure tests still pass.
     git push -f origin my-feature-branch
 
-If you don't have commit access, someone will need to check this in for you.
 You're done! Congratulations, soon you'll have code running on one of the
 biggest sites in the world!
 
