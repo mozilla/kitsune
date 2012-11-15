@@ -33,7 +33,6 @@ def product_landing(request, template, slug):
     except Topic.DoesNotExist:
         # "hot" topic doesn't exist, move on.
         hot_docs = fallback_hot_docs = None
-    
 
     return jingo.render(request, template, {
         'product': product,
