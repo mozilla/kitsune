@@ -13,6 +13,7 @@ from search.tests.test_es import ElasticTestCase
 from sumo.helpers import urlparams
 from sumo.tests import MobileTestCase, LocalizingClient, TestCase
 from sumo.urlresolvers import reverse
+from topics.tests import topic
 from users.tests import user
 from wiki.tests import document, revision
 
@@ -43,6 +44,8 @@ class AAQTests(ElasticTestCase):
 
     def test_search_suggestions(self):
         """Verifies the view doesn't kick up an HTTP 500"""
+        topic(title='Fix problems', slug='fix-problems', save=True)
+
         q = question(title=u'CupcakesQuestion cupcakes', save=True)
         q.tags.add(u'desktop')
         q.save()
@@ -51,13 +54,12 @@ class AAQTests(ElasticTestCase):
         d.products.add(product(slug=u'firefox', save=True))
         d.save()
 
-        rev = revision(document=d, is_approved=True)
-        rev.save()
+        rev = revision(document=d, is_approved=True, save=True)
 
         self.refresh()
 
         url = urlparams(
-            reverse('questions.aaq_step4', args=['desktop', 'd1']),
+            reverse('questions.aaq_step4', args=['desktop', 'fix-problems']),
             search='cupcakes')
 
         response = self.client.get(url, follow=True)
@@ -82,8 +84,9 @@ class MobileAAQTests(MobileTestCase):
 
     def _new_question(self, post_it=False):
         """Post a new question and return the response."""
+        topic(title='Fix problems', slug='fix-problems', save=True)
         url = urlparams(
-            reverse('questions.aaq_step5', args=['desktop', 'd1']),
+            reverse('questions.aaq_step5', args=['desktop', 'fix-problems']),
             search='A test question')
         if post_it:
             return self.client.post(url, self.data, follow=True)

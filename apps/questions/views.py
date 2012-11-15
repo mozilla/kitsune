@@ -33,6 +33,7 @@ import waffle
 from access.decorators import (has_perm_or_owns_or_403, permission_required,
                                login_required)
 from karma.manager import KarmaManager
+from products.models import Product
 import questions as constants
 from questions.events import QuestionReplyEvent, QuestionSolvedEvent
 from questions.feeds import QuestionsFeed, AnswersFeed, TaggedQuestionsFeed
@@ -51,12 +52,14 @@ from sumo.helpers import urlparams
 from sumo.urlresolvers import reverse
 from sumo.utils import paginate, simple_paginate, build_paged_url
 from tags.utils import add_existing_tag
+from topics.models import Topic
 from upload.models import ImageAttachment
 from upload.views import upload_imageattachment
 from users.forms import RegisterForm
 from users.models import Setting
 from users.utils import handle_login, handle_register
 from wiki.models import Document
+from wiki.facets import documents_for
 
 
 log = logging.getLogger('k.questions')
@@ -219,10 +222,21 @@ def aaq(request, product_key=None, category_key=None, showform=False,
     if product and category_key:
         category = product['categories'].get(category_key)
         if not category:
-            raise Http404
+            # If we get an invalid category, redirect to previous step.
+            return HttpResponseRedirect(
+                reverse('questions.aaq_step2', args=[product_key]))
         deadend = category.get('deadend', False)
-        html = category.get('html')
-        articles = category.get('articles')
+        topic = category.get('topic')
+        if topic:
+            html = None
+            articles, fallback = documents_for(
+                locale=settings.WIKI_DEFAULT_LANGUAGE,  # en-US only for now.
+                products=Product.objects.filter(
+                    slug__in=product.get('products')),
+                topics=[Topic.objects.get(slug=topic)])
+        else:
+            html = category.get('html')
+            articles = category.get('articles')
     else:
         category = None
         deadend = product.get('deadend', False) if product else False

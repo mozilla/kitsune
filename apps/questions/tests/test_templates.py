@@ -22,6 +22,7 @@ from sumo.helpers import urlparams
 from sumo.tests import (get, post, attrs_eq, emailmessage_raise_smtp, TestCase,
                         LocalizingClient)
 from sumo.urlresolvers import reverse
+from topics.tests import topic
 from upload.models import ImageAttachment
 from users.models import RegistrationProfile
 from users.tests import user, add_permission
@@ -1190,8 +1191,9 @@ class AAQTemplateTestCase(TestCaseBase):
 
     def _post_new_question(self):
         """Post a new question and return the response."""
+        topic(title='Fix problems', slug='fix-problems', save=True)
         url = urlparams(
-            reverse('questions.aaq_step5', args=['desktop', 'd1']),
+            reverse('questions.aaq_step5', args=['desktop', 'fix-problems']),
             search='A test question')
         return self.client.post(url, self.data, follow=True)
 
@@ -1230,10 +1232,11 @@ class AAQTemplateTestCase(TestCaseBase):
 
     def test_invalid_type(self):
         """Providing an invalid type returns 400."""
+        topic(title='Fix problems', slug='fix-problems', save=True)
         self.client.logout()
 
         url = urlparams(
-            reverse('questions.aaq_step5', args=['desktop', 'd1']),
+            reverse('questions.aaq_step5', args=['desktop', 'fix-problems']),
             search='A test question')
         # Register before asking question
         data = {'username': 'testaaq',
@@ -1248,10 +1251,11 @@ class AAQTemplateTestCase(TestCaseBase):
     def test_register_through_aaq(self, get_current):
         """Registering through AAQ form sends confirmation email."""
         get_current.return_value.domain = 'testserver'
+        topic(title='Fix problems', slug='fix-problems', save=True)
         self.client.logout()
         title = 'A test question'
         url = urlparams(
-            reverse('questions.aaq_step5', args=['desktop', 'd1']),
+            reverse('questions.aaq_step5', args=['desktop', 'fix-problems']),
             search=title)
         # Register before asking question
         data = {'register': 'Register', 'username': 'testaaq',
@@ -1283,7 +1287,7 @@ class AAQTemplateTestCase(TestCaseBase):
         response = self.client.get(url)
         eq_(404, response.status_code)
 
-    def test_invalid_category_404(self):
+    def test_invalid_category_302(self):
         url = reverse('questions.aaq_step3', args=['desktop', 'lipsum'])
         response = self.client.get(url)
-        eq_(404, response.status_code)
+        eq_(302, response.status_code)

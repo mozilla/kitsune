@@ -218,8 +218,9 @@ class TestQuestionMetadata(TestCaseBase):
     def test_category_property(self):
         """Test question.category property."""
         self.question.add_metadata(product='desktop')
-        self.question.add_metadata(category='d1')
-        eq_(products['desktop']['categories']['d1'], self.question.category)
+        self.question.add_metadata(category='fix-problems')
+        eq_(products['desktop']['categories']['fix-problems'],
+            self.question.category)
 
     def test_clear_mutable_metadata(self):
         """Make sure it works and clears the internal cache.
@@ -229,25 +230,28 @@ class TestQuestionMetadata(TestCaseBase):
 
         """
         q = self.question
-        q.add_metadata(product='desktop', category='d1', useragent='Fyerfocks',
-                       crash_id='7')
+        q.add_metadata(product='desktop', category='fix-problems',
+                       useragent='Fyerfocks', crash_id='7')
 
         q.metadata
         q.clear_mutable_metadata()
         md = q.metadata
         assert 'crash_id' not in md, \
             "clear_mutable_metadata() didn't clear the cached metadata."
-        eq_(dict(product='desktop', category='d1', useragent='Fyerfocks'), md)
+        eq_(dict(product='desktop', category='fix-problems',
+                 useragent='Fyerfocks'),
+            md)
 
     def test_auto_tagging(self):
         """Make sure tags get applied based on metadata on first save."""
         Tag.objects.create(slug='green', name='green')
+        Tag.objects.create(slug='Fix problems', name='fix-problems')
         q = self.question
-        q.add_metadata(product='desktop', category='d1', ff_version='3.6.8',
-                       os='GREen')
+        q.add_metadata(product='desktop', category='fix-problems',
+                       ff_version='3.6.8', os='GREen')
         q.save()
         q.auto_tag()
-        tags_eq(q, ['desktop', 'websites', 'Firefox 3.6.8', 'Firefox 3.6',
+        tags_eq(q, ['desktop', 'fix-problems', 'Firefox 3.6.8', 'Firefox 3.6',
                     'green'])
 
     def test_auto_tagging_restraint(self):
