@@ -637,7 +637,7 @@ MINIFY_BUNDLES = {
             'js/libs/jquery.lazyload.js',
             'js/browserdetect.js',
             'js/showfor.js',
-            'js/ajaxvote.js',
+            'js/ajaxform.js',
             'js/mobile/wiki.js'
         ),
         'wiki.history': (

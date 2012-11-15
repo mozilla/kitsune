@@ -1,4 +1,4 @@
-(function($){
+(function($) {
     var $body = $('body');
 
     if ($('#support-for').length > 0) {
@@ -6,61 +6,26 @@
         ShowFor.initForTags();
     }
 
-    function handleSubmit() {
-        var $this = $(this);
-        var $form = $this.closest('form');
-        var $buttons = $form.find('input[type="submit"], .btn[data-type="submit"]');
-        var formDataArray = $form.serializeArray();
-        var data = {};
-
-        for (i = 0, l = formDataArray.length; i < l; i++) {
-            data[formDataArray[i].name] = formDataArray[i].value;
-        }
-        data[$this.attr('name')] = $this.val();
-
-        if ($form.data('required')) {
-            var required = $form.data('required').split(',');
-            for (var r in required) {
-                if (!data[required[r]]) {
-                    $form.addClass('invalid');
-                    return false;
-                }
-            }
-        }
-
-        $form.removeClass('invalid');
-        $buttons.attr('disabled', 'disabled');
-
-        $.ajax({
-            url: $form.attr('action'),
-            type: 'POST',
-            data: data,
-            dataType: 'json',
-            success: function(data) {
-                if (data.survey) {
-                    $form.after(data.survey);
-                } else {
-                    $form.after($('<p></p>').html(data.message));
-                }
-                $form.remove();
-                $buttons.removeAttr('disabled');
-            },
-            error: function() {
-                var msg = gettext('There was an error submitting your vote.');
-                $form.after($('<p></p>').html(msg));
-                $buttons.removeAttr('disabled');
-                $form.removeClass('busy');
-            }
-        });
-
-        return false;
-    }
-
     if ($body.is('.document')) {
         var $voteForm = $('.vote-bar form');
         var $voteButtons = $voteForm.find('input[type="submit"], .btn[data-type="submit"]');
 
-        $voteButtons.on('click', handleSubmit);
+        window.k.AjaxForm($voteForm, {
+            removeForm: true,
+            afterComplete: function() {
+                window.k.AjaxForm($('.vote-bar form'), {
+                    removeForm: true,
+                    validate: function(data) {
+                        if (data['unhelpful-reason'] === 'other') {
+                            if (data['comment'].length < 1) {
+                                return false;
+                            }
+                        }
+                        return true;
+                    }
+                });
+            }
+        });
 
         $('.vote-bar').on('change', 'input[type="radio"]', function() {
             var $ul = $(this).closest('ul');
@@ -92,8 +57,6 @@
                 $counter.removeClass('too-long');
             }
         });
-
-        $('.vote-bar').on('click', '#unhelpful-survey input[type="submit"], #unhelpful-survey .btn[data-type="submit"]', handleSubmit);
     }
 
     $('img.lazy').lazyload();
