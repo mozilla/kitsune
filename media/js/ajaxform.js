@@ -13,7 +13,7 @@
             var defaults = {
                 bindTo: 'input[type="submit"], .btn[data-type="submit"]',
                 disableButtons: true,
-                errorText: 'An error occured.',
+                errorText: gettext('An error occured.'),
                 removeForm: false
             };
 
@@ -83,7 +83,7 @@
                         }
                     },
                     error: function() {
-                        var msg = gettext(self.options.errorText);
+                        var msg = self.options.errorText;
                         $form.after($('<p></p>').html(msg));
 
                         if (self.options.disableButtons) {
