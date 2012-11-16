@@ -84,7 +84,7 @@ def update_l10n_metric():
     start = end - timedelta(days=90)
     locale_visits = Webtrends.visits_by_locale(start, end)
 
-    # Total non en-US visits.
+    # Total visits.
     total_visits = sum(locale_visits.itervalues())
 
     # Calculate the coverage.
