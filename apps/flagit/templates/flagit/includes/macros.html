@@ -1,0 +1,5 @@
+{% macro date_by_user(date, user) -%}
+  {% trans date=datetimeformat(date, format='longdatetime'), user=user.username, url=profile_url(user) %}
+    {{date}} by <a href="{{url}}">{{user}}</a>
+  {% endtrans %}
+{%- endmacro %}
