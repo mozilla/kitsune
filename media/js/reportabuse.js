@@ -24,7 +24,7 @@ k.ReportAbuse = {
                 $html = $(html),
                 $ul = $html.find('ul'),
                 kbox = new KBox($html, {
-                    title: gettext('Report this post'),
+                    title: $form.attr('title') || gettext('Report this post'),
                     position: 'none',
                     container: $form,
                     closeOnOutClick: true

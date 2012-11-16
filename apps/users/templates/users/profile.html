@@ -19,10 +19,15 @@
       {% endif %}
       {% if request.user.is_authenticated and request.user != profile.user %}
         <section id="flag">
-          <form action="{{ url('users.flag', object_id=profile.pk) }}" method="POST">
-            <input type="hidden" name="next" value="{{ request.get_full_path() }}" />
-            <button class="link-btn" name="reason" type="submit" value="abuse">{{ _('Report Abuse') }}</button>
+          <form class="report" title="{{ _('Report this profile') }}" action="{{ url('users.flag', object_id=profile.pk) }}" method="post">
             {{ csrf() }}
+            <select name="reason">
+              <option value="spam">{{ _('Spam or other unrelated content') }}</option>
+              <option value="language">{{ _('Inappropriate language/dialog') }}</option>
+              <option value="other">{{ _('Other (please specify)') }}</option>
+            </select>
+            <input type="text" class="text" name="other" />
+            <input type="submit" class="link-btn" value="{{ _('Report Abuse') }}" />
           </form>
         </section>
       {% endif %}

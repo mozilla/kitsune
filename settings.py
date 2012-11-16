@@ -517,6 +517,7 @@ MINIFY_BUNDLES = {
         ),
         'users': (
             'less/users.less',
+            'css/reportabuse.css',
         ),
         'mobile/users': (
             'less/mobile/users.less',
@@ -670,6 +671,7 @@ MINIFY_BUNDLES = {
         ),
         'users': (
             'js/users.js',
+            'js/reportabuse.js',
         ),
         'mobile': (
             'js/libs/underscore.js',
