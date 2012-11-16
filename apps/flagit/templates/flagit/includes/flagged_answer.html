@@ -1,13 +1,20 @@
+{% from 'flagit/includes/macros.html' import date_by_user with context %}
 <h3>{{ _('Content:') }}</h3>
 <div class="content">{{ object.content_object.content_parsed }}</div>
 <h3>{{ _('Created:') }}</h3>
-<p class="created">{{ _('{date} by {user}')|fe(user=object.content_object.creator, date=datetimeformat(object.content_object.created, format='longdatetime')) }}</p>
+<p class="created">
+  {{ date_by_user(object.content_object.created, object.content_object.creator) }}
+</p>
 {% if object.content_object.updated_by %}
   <h3>{{ _('Updated:') }}</h3>
-  <p class="updated">{{ _('{date} by {user}')|fe(user=object.content_object.updated_by, date=datetimeformat(object.content_object.updated, format='longdatetime')) }}</p>
+  <p class="updated">
+    {{ date_by_user(object.content_object.updated, object.content_object.updated_by) }}
+  </p>
 {% endif %}
 <h3>{{ _('Flagged:') }}</h3>
-<p class="flagged">{{ _('{date} by {user}')|fe(user=object.creator, date=datetimeformat(object.created, format='longdatetime')) }}</p>
+<p class="flagged">
+  {{ date_by_user(object.created, object.creator) }}
+</p>
 <h3>{{ _('Take Action:') }}</h3>
 <div class="actions">
   <a href="{{ object.content_object.get_absolute_url() }}">View</a>
