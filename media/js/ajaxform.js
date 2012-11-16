@@ -1,5 +1,7 @@
 (function($) {
 
+    "use strict";
+
     function AjaxForm(form, options) {
         AjaxForm.prototype.init.call(this, form, options);
     }
@@ -26,7 +28,7 @@
                 var data = {};
 
                 // Collect form data (including the submit button)
-                for (i = 0, l = formDataArray.length; i < l; i++) {
+                for (var i = 0, l = formDataArray.length; i < l; i++) {
                     data[formDataArray[i].name] = formDataArray[i].value;
                 }
                 data[$this.attr('name')] = $this.val();
