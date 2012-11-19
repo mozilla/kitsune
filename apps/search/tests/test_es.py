@@ -348,8 +348,8 @@ class ElasticSearchUnifiedViewTests(ElasticTestCase):
         content = json.loads(response.content)
         eq_(content['total'], 1)
 
-    def test_advanced_search_sortby_documents(self):
-        """Tests advanced search with a sortby_documents"""
+    def test_advanced_search_sortby_documents_helpful(self):
+        """Tests advanced search with a sortby_documents by helpful"""
         r1 = revision(is_approved=True, save=True)
         r2 = revision(is_approved=True, save=True)
         helpful_vote(revision=r2, helpful=True, save=True)

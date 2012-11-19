@@ -70,7 +70,7 @@ SORT_DOCUMENTS = {
     'helpful': ('-document_recent_helpful_votes',),
 }
 
-SORTBY_DOCUMENTS = (
+SORTBY_DOCUMENTS_CHOICES = (
     ('relevance', _lazy(u'Relevance')),
     ('helpful', _lazy(u'Helpful votes')),
 )

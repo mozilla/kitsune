@@ -91,8 +91,10 @@ class SearchForm(forms.Form):
         required=False, label=_lazy('Include obsolete articles?'))
 
     sortby_documents = forms.TypedChoiceField(
-        required=False, empty_value=constants.SORTBY_DOCUMENTS[0][0],
-        label=_lazy('Sort results by'), choices=constants.SORTBY_DOCUMENTS)
+        required=False,
+        empty_value=constants.SORTBY_DOCUMENTS_CHOICES[0][0],
+        label=_lazy('Sort results by'),
+        choices=constants.SORTBY_DOCUMENTS_CHOICES)
 
     # Support questions and discussion forums fields
     created = forms.TypedChoiceField(
