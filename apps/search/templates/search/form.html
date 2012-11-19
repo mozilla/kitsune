@@ -61,6 +61,11 @@
                 </div>
               </div>
 
+              <div class="container cf">
+                {{ search_form.sortby_documents.label_tag()|safe }}
+                {{ search_form.sortby_documents|safe }}
+              </div>
+
               {% for hidden in search_form.hidden_fields() if not hidden.name == 'w' %}
                 {{ hidden|safe }}
               {% endfor %}
