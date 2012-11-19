@@ -63,3 +63,14 @@ SORTBY_QUESTIONS = (
     (2, _lazy(u'Question date')),
     (3, _lazy(u'Number of answers')),
 )
+
+
+SORT_DOCUMENTS = {
+    'relevance': ('-_score',),
+    'helpful': ('-document_recent_helpful_votes',),
+}
+
+SORTBY_DOCUMENTS = (
+    ('relevance', _lazy(u'Relevance')),
+    ('helpful', _lazy(u'Helpful votes')),
+)

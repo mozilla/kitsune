@@ -291,12 +291,23 @@ def search(request, template=None):
             document_title__text_phrase=10.0,
             document_content__text_phrase=8.0)
 
-        # Apply sortby, but only for advanced search for questions
-        if a == '1' and cleaned['w'] & constants.WHERE_SUPPORT:
-            sortby = smart_int(request.GET.get('sortby'))
+        # Apply sortby for advanced search of questions
+        if cleaned['w'] == constants.WHERE_SUPPORT:
+            sortby = cleaned['sortby']
             try:
                 searcher = searcher.order_by(
                     *constants.SORT_QUESTIONS[sortby])
+            except IndexError:
+                # Skip index errors because they imply the user is
+                # sending us sortby values that aren't valid.
+                pass
+
+        # Apply sortby for advanced search of kb documents
+        if cleaned['w'] == constants.WHERE_WIKI:
+            sortby = cleaned['sortby_documents']
+            try:
+                searcher = searcher.order_by(
+                    *constants.SORT_DOCUMENTS[sortby])
             except IndexError:
                 # Skip index errors because they imply the user is
                 # sending us sortby values that aren't valid.

@@ -23,7 +23,7 @@ from sumo.tests import LocalizingClient
 from sumo.urlresolvers import reverse
 from topics.tests import topic
 from users.tests import user
-from wiki.tests import document, revision
+from wiki.tests import document, revision, helpful_vote
 
 
 class ElasticTestCase(TestCase):
@@ -347,6 +347,37 @@ class ElasticSearchUnifiedViewTests(ElasticTestCase):
 
         content = json.loads(response.content)
         eq_(content['total'], 1)
+
+    def test_advanced_search_sortby_documents(self):
+        """Tests advanced search with a sortby_documents"""
+        r1 = revision(is_approved=True, save=True)
+        r2 = revision(is_approved=True, save=True)
+        helpful_vote(revision=r2, helpful=True, save=True)
+
+        # r2.document should come first with 1 vote.
+        self.setup_indexes()
+        self.refresh()
+        response = self.client.get(reverse('search'), {
+            'w': '1', 'a': '1', 'sortby_documents': 'helpful',
+            'format': 'json'})
+        eq_(200, response.status_code)
+
+        content = json.loads(response.content)
+        eq_(r2.document.title, content['results'][0]['title'])
+
+        # Vote twice on r1, now it should come first.
+        helpful_vote(revision=r1, helpful=True, save=True)
+        helpful_vote(revision=r1, helpful=True, save=True)
+
+        self.setup_indexes()
+        self.refresh()
+        response = self.client.get(reverse('search'), {
+            'w': '1', 'a': '1', 'sortby_documents': 'helpful',
+            'format': 'json'})
+        eq_(200, response.status_code)
+
+        content = json.loads(response.content)
+        eq_(r1.document.title, content['results'][0]['title'])
 
     def test_advanced_search_questions_num_votes(self):
         """Tests advanced search for questions num_votes filter"""

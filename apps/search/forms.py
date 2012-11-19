@@ -90,6 +90,10 @@ class SearchForm(forms.Form):
     include_archived = forms.BooleanField(
         required=False, label=_lazy('Include obsolete articles?'))
 
+    sortby_documents = forms.TypedChoiceField(
+        required=False, empty_value=constants.SORTBY_DOCUMENTS[0][0],
+        label=_lazy('Sort results by'), choices=constants.SORTBY_DOCUMENTS)
+
     # Support questions and discussion forums fields
     created = forms.TypedChoiceField(
         required=False, coerce=int, empty_value=0,
