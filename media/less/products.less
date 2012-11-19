@@ -10,6 +10,77 @@
   margin: 0 8px 0 0;
 }
 
+.download-button {
+  position: absolute;
+  top: 0;
+  right: 0;
+
+  a.button {
+    position: relative;
+    top: 0;
+    display: block;
+    .gradient(#81BC2E, #81BC2E, #659324);
+    color: #fff;
+    padding: 3px 15px;
+    transition: top 0s;
+    transition: all 0.5s;
+    .border-radius(5px);
+    .box-shadow(~"0 2px 0 0 rgba(0, 0, 0, 0.1), 0 -2px 0 0 rgba(0, 0, 0, 0.3) inset");
+
+    h2 {
+      display: inline;
+      font-family: 'MetaMedium', Arial, Helvetica, sans-serif;
+      font-size: 2.5em;
+    }
+
+    span {
+      display: inline-block;
+      font-size: 0.8em;
+      color: #DDD;
+      margin-left: 15px;
+      line-height: 1.1em;
+    }
+
+    i.down-arrow {
+      display: inline-block;
+      width: 32px;
+      height: 32px;
+      background: url('../img/icons-sprite.png') -42px -1897px no-repeat;
+      position: absolute;
+      top: 6px;
+      right: 12px;
+    }
+
+    &:hover {
+      text-decoration: none;
+      .box-shadow(~"0 2px 0 0 rgba(0, 0, 0, 0.1), 0 -2px 0 0 rgba(0, 0, 0, 0.2) inset, 0 12px 24px 2px #83C822 inset");
+    }
+
+    &:active {
+      top: 1px;
+      .box-shadow(~"0 2px 0 0 rgba(0, 0, 0, 0.1), 0 -1px 0 0 rgba(0, 0, 0, 0.3) inset, 0 12px 24px 2px #83C822 inset");
+    }
+  }
+
+  ul.info {
+    font-size: 0.7em;
+    margin: 0;
+    padding: 0;
+    font-family: 'Moz', Arial, Helvetica, sans-serif;
+
+    li {
+      list-style: none;
+      display: inline;
+
+      &:not(:first-child):before {
+        content: "|";
+        color: #AAA;
+        padding-right: 3px;
+      }
+    }
+  }
+}
+
 .topic-list {
   border-bottom: 1px dotted @borderLightGrey;
   clear: both;

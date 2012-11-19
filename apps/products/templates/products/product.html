@@ -10,7 +10,27 @@
 
 {% block content %}
   <div class="grid_12">
-    <h1 class="product-title cf"><img src="{{ MEDIA_URL }}img/blank.png" alt="" class="logo-sprite" style="background-image: url('{{ product.image_url }}');" />{{ _(product.title, 'DB: products.Product.title') }}</h1>
+    <h1 class="product-title cf">
+      <img src="{{ MEDIA_URL }}img/blank.png" alt="" class="logo-sprite"
+        style="background-image: url('{{ product.image_url }}');" />
+      {{ _(product.title, 'DB: products.Product.title') }}
+    </h1>
+
+    {% if product.slug == 'firefox' %}
+      <div class="download-button">
+        <a href="http://www.mozilla.org/firefox#desktop" class="button">
+          <h2>{{ _('Firefox') }}</h2>
+          {# L10n: The <br/> is wholely visual. It would be good to include a <br/> about half way through the translation. #}
+          <span>{{ _('Free<br/> Download') }}</span>
+          <i class="down-arrow"></i>
+        </a>
+        <ul class="info">
+          <li><a href="http://www.mozilla.org/legal/privacy/firefox">Privacy Policy</a></li>
+          <li><a href="http://www.mozilla.org/en-US/firefox/notes">What's New</a></li>
+          <li><a href="http://www.mozilla.org/firefox/all.html">Systems and Languages</a></li>
+        </ul>
+      </div>
+    {% endif %}
   </div>
   <aside class="grid_3">
     {{ for_contributors_sidebar(user, settings.WIKI_DEFAULT_LANGUAGE) }}
