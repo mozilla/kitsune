@@ -113,7 +113,8 @@ class ReviewMailTestCase(TestCaseBase):
         msg = 'great work!'
         self._approve_and_send(rev, User.objects.get(username='admin'), msg)
 
-        eq_(1, len(mail.outbox))
+        # Two emails will be sent, one each for the reviewer and the reviewed.
+        eq_(2, len(mail.outbox))
         eq_('Your revision has been approved: %s' % doc.title,
             mail.outbox[0].subject)
         eq_([rev.creator.email], mail.outbox[0].to)
@@ -141,6 +142,7 @@ class ReviewMailTestCase(TestCaseBase):
         msg = 'foo'
         self._approve_and_send(rev, User.objects.get(username='admin'), msg)
 
-        eq_(1, len(mail.outbox))
+        # Two emails will be sent, one each for the reviewer and the reviewed.
+        eq_(2, len(mail.outbox))
         eq_('Your revision has been approved: %s' % doc.title,
             mail.outbox[0].subject)
