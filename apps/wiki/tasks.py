@@ -49,7 +49,7 @@ def send_reviewed_notification(revision, document, message):
                                 'url': url,
                                 'host': Site.objects.get_current().domain}))
     send_mail(subject, content, settings.TIDINGS_FROM_ADDRESS,
-              [revision.creator.email])
+              [revision.creator.email, revision.reviewer.email])
 
 
 @task
