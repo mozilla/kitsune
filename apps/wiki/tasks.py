@@ -5,7 +5,7 @@ from django.conf import settings
 from django.contrib.sites.models import Site
 from django.core.cache import cache
 from django.core.exceptions import ValidationError
-from django.core.mail import send_mail, mail_admins
+from django.core.mail import send_mail, mail_admins, send_mass_mail
 from django.db import transaction
 from django.template import Context, loader
 
@@ -48,8 +48,9 @@ def send_reviewed_notification(revision, document, message):
                                 'message': message,
                                 'url': url,
                                 'host': Site.objects.get_current().domain}))
-    send_mail(subject, content, settings.TIDINGS_FROM_ADDRESS,
-              [revision.creator.email, revision.reviewer.email])
+    send_mass_mail(
+        ((subject, content, settings.TIDINGS_FROM_ADDRESS, [who.email])
+                    for who in [revision.creator, revision.reviewer]))
 
 
 @task

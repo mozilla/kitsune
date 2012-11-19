@@ -68,7 +68,8 @@ class ReviewTests(TestCaseBase):
         notification and Approved watchers an Approved one."""
         _set_up_ready_watcher()
         self._review_revision(is_ready=True)
-        eq_(3, len(mail.outbox))  # 1 mail to each watcher, + 1 to creator
+        # 1 mail to each watcher, 1 to the creator, and one to the reviewer
+        eq_(4, len(mail.outbox))
         _assert_ready_mail(mail.outbox[0])
         _assert_approved_mail(mail.outbox[1])
         _assert_creator_mail(mail.outbox[2])
@@ -78,7 +79,8 @@ class ReviewTests(TestCaseBase):
         watchers an Approved notification."""
         _set_up_ready_watcher()
         self._review_revision(is_ready=False)
-        eq_(2, len(mail.outbox))  # 1 mail to Approved watcher, 1 to creator
+        # 1 mail to Approved watcher, 1 to creator, 1 for reviewer
+        eq_(3, len(mail.outbox))
         assert 'new approved revision' in mail.outbox[0].subject
         assert 'Your revision has been approved' in mail.outbox[1].subject
 
@@ -97,17 +99,19 @@ class ReviewTests(TestCaseBase):
                      save=True)
         eq_(0, len(mail.outbox))
         self._review_revision(r=r2)
-        eq_(3, len(mail.outbox))
+        # 1 mail for each watcher, 1 for creator, and one for reviewer.
+        eq_(4, len(mail.outbox))
         assert 'has a new approved revision' in mail.outbox[0].subject
         assert 'Your revision has been approved' in mail.outbox[1].subject
-        assert 'A revision you contributed to has' in mail.outbox[2].subject
+        assert 'Your revision has been approved' in mail.outbox[2].subject
+        assert 'A revision you contributed to has' in mail.outbox[3].subject
 
     def test_neither(self):
         """Show that neither an Approved nor a Ready mail is sent if a rev is
         rejected."""
         _set_up_ready_watcher()
         self._review_revision(is_approved=False)
-        eq_(1, len(mail.outbox))  # 1 mail to creator
+        eq_(2, len(mail.outbox))  # 1 mail to creator, one to the reviewer.
         assert mail.outbox[0].subject.startswith(
             'Your revision has been reviewed')
 
@@ -119,7 +123,8 @@ class ReviewTests(TestCaseBase):
         ReadyRevisionEvent.notify(self.approved_watcher)
 
         self._review_revision(is_ready=True)
-        eq_(2, len(mail.outbox))  # 1 mail to watcher, 1 to creator
+        # 1 mail to watcher, 1 to creator, 1 to reviewer
+        eq_(3, len(mail.outbox))
         _assert_ready_mail(mail.outbox[0])
         _assert_creator_mail(mail.outbox[1])
 
