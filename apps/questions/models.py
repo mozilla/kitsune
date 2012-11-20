@@ -555,8 +555,8 @@ class Answer(ActionMixin, ModelBase):
         # the number of answers. Fallback to database.
         if waffle.switch_is_active('karma'):
             try:
-                count = KarmaManager().count('all', user=self.creator,
-                    type=AnswerAction.action_type)
+                count = KarmaManager().count(
+                    'all', user=self.creator, type=AnswerAction.action_type)
                 if count != None:
                     return count
             except RedisError as e:
@@ -571,8 +571,8 @@ class Answer(ActionMixin, ModelBase):
         # the number of solutions. Fallback to database.
         if waffle.switch_is_active('karma'):
             try:
-                count = KarmaManager().count('all', user=self.creator,
-                    type=SolutionAction.action_type)
+                count = KarmaManager().count(
+                    'all', user=self.creator, type=SolutionAction.action_type)
                 if count != None:
                     return count
             except RedisError as e:
@@ -585,7 +585,8 @@ class Answer(ActionMixin, ModelBase):
     @property
     def creator_num_points(self):
         try:
-            return KarmaManager().count(self.creator, type='points')
+            return KarmaManager().count(
+                'all', user=self.creator, type='points')
         except RedisError as e:
             statsd.incr('redis.errror')
             log.error('Redis connection error: %s' % e)
