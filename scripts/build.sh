@@ -57,6 +57,7 @@ DATABASES['default']['TEST_CHARSET'] = 'utf8'
 DATABASES['default']['TEST_COLLATION'] = 'utf8_general_ci'
 CELERY_ALWAYS_EAGER = True
 CACHE_BACKEND = 'caching.backends.locmem://'
+ES_INDEX_PREFIX = 'sumo_$BUILD_NAME'
 SETTINGS
 
 echo "Starting tests..." `date`
