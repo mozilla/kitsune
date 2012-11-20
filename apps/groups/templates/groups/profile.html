@@ -59,6 +59,14 @@
           <a class="edit" href="#group-members">{{ _('Edit group members') }}</a>
         {% endif %}
         <h2>{{ _('Group Members') }}</h2>
+        {% if user_can_edit %}
+          <form id="add-member-form" class="edit-mode" action="{{ url('groups.add_member', profile.slug) }}" method="POST">
+            {{ csrf() }}
+            {{ errorlist(member_form) }}
+            {{ member_form.users|safe }}
+            <input type="submit" value="{{ _('Add Member') }}" />
+          </form>
+        {% endif %}
         <ul class="users members">
           {% for user in members %}
             <li>
@@ -71,14 +79,6 @@
             </li>
           {% endfor %}
         </ul>
-        {% if user_can_edit %}
-          <form id="add-member-form" class="edit-mode" action="{{ url('groups.add_member', profile.slug) }}" method="POST">
-            {{ csrf() }}
-            {{ errorlist(member_form) }}
-            {{ member_form.users|safe }}
-            <input type="submit" value="{{ _('Add Member') }}" />
-          </form>
-        {% endif %}
       </div>
     </section>
   </article>
