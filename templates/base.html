@@ -208,6 +208,11 @@
 {% endif %}
 {# End Ethnio #}
 
+{# Temporary Pontoon testing - bug 812176 #}
+{% if settings.STAGE %}
+  <script src="https://pontoon-dev.mozillalabs.com/pontoon.js"></script>
+{% endif %}
+
 {% block footer_script %}
 {% endblock %}
 </body>
