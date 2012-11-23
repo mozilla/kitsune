@@ -4,8 +4,9 @@
 Email from Kitsune
 ==================
 
-The default settings for Kitsune *do not send email*. If you want to get email,
-you should double check one thing first: are there any rows in the
+The default settings for Kitsune *do not send email*. However, outgoing email
+is printed to the the command line. If you want to get email, you should
+double check one thing first: are there any rows in the
 ``notifications_eventwatch`` table? If there are, you may be sending email to
 **real users**. The script in ``scripts/anonymize.sql`` will truncate this
 table. Simply run it against your Kitsune database::
