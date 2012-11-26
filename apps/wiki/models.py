@@ -895,9 +895,12 @@ class ImportantDate(ModelBase):
 class Locale(ModelBase):
     """A locale supported in the KB."""
     locale = models.CharField(max_length=7, db_index=True)
-    leaders = models.ManyToManyField(User, related_name='locales_leader')
-    reviewers = models.ManyToManyField(User, related_name='locales_reviewer')
-    editors = models.ManyToManyField(User, related_name='locales_editor')
+    leaders = models.ManyToManyField(
+        User, blank=True, related_name='locales_leader')
+    reviewers = models.ManyToManyField(
+        User, blank=True, related_name='locales_reviewer')
+    editors = models.ManyToManyField(
+        User, blank=True, related_name='locales_editor')
 
     class Meta:
         ordering = ['locale']
