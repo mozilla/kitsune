@@ -892,6 +892,17 @@ class ImportantDate(ModelBase):
     date = models.DateField(db_index=True)
 
 
+class Locale(ModelBase):
+    """A locale supported in the KB."""
+    locale = models.CharField(max_length=7, db_index=True)
+    leaders = models.ManyToManyField(User, related_name='locales_leader')
+    reviewers = models.ManyToManyField(User, related_name='locales_reviewer')
+    editors = models.ManyToManyField(User, related_name='locales_editor')
+
+    class Meta:
+        ordering = ['locale']
+
+
 def _doc_components_from_url(url, required_locale=None, check_host=True):
     """Return (locale, path, slug) if URL is a Document, False otherwise.
 
