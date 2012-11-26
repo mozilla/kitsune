@@ -342,11 +342,16 @@ should delete these, never commit them::
 Adding a New Locale
 -------------------
 
-Adding a new locale is even easier than updating the templates. Say you wanted
-to add ``fa-IR``::
+Say you wanted to add ``fa-IR``::
 
     $ mkdir -p locale/fa-IR/LC_MESSAGES
     $ python manage.py merge
+
+Then add 'fa-IR' to SUMO_LANGUAGES in settings.py.
+
+And finally, add a migration with::
+
+    INSERT INTO `wiki_locale` (`locale`) VALUES ('fa-IR');
 
 Done!
 

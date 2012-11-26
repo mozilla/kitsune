@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from wiki.models import Document, ImportantDate
+from wiki.models import Document, ImportantDate, Locale
 
 
 class DocumentAdmin(admin.ModelAdmin):
@@ -75,3 +75,23 @@ class ImportantDateAdmin(admin.ModelAdmin):
 
 
 admin.site.register(ImportantDate, ImportantDateAdmin)
+
+
+class LocaleAdmin(admin.ModelAdmin):
+    list_display = ('locale',)
+    list_display_links = ('locale',)
+    raw_id_fields = ('leaders', 'reviewers', 'editors')
+    readonly_fields = ('locale',)
+    search_fields = ('locale',)
+
+    # Disable adding and deleting new locales from the admin.
+    # Use migrations instead.
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_delete_permission(self, request, *args, **kwargs):
+        return False
+
+
+admin.site.register(Locale, LocaleAdmin)
