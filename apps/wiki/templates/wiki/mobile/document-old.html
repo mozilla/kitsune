@@ -10,7 +10,7 @@
 {% set is_mobile_page = True %} {# TODO: set based on showfor selection or...? #}
 {% set classes = 'document' %}
 {% set canonical_url = document.get_absolute_url() %}
-{% if document.is_template %}
+{% if document.is_template or document.is_archived %}
   {% set meta = (('robots', 'noindex'),) %}
 {% endif %}
 
