@@ -33,6 +33,7 @@ import waffle
 from access.decorators import (has_perm_or_owns_or_403, permission_required,
                                login_required)
 from karma.manager import KarmaManager
+from mobility.decorators import mobile_template
 from products.models import Product
 import questions as constants
 from questions.events import QuestionReplyEvent, QuestionSolvedEvent
@@ -68,8 +69,8 @@ log = logging.getLogger('k.questions')
 UNAPPROVED_TAG = _lazy(u'That tag does not exist.')
 NO_TAG = _lazy(u'Please provide a tag.')
 
-
-def questions(request):
+@mobile_template('questions/{mobile/}questions.html')
+def questions(request, template):
     """View the questions."""
 
     filter_ = request.GET.get('filter')
@@ -180,7 +181,7 @@ def questions(request):
         data.update(top_contributors=_get_top_contributors())
 
     with statsd.timer('questions.view.render'):
-        return jingo.render(request, 'questions/questions.html', data)
+        return jingo.render(request, template, data)
 
 
 @anonymous_csrf  # Need this so the anon csrf gets set for watch forms.

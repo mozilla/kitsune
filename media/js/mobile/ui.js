@@ -5,8 +5,19 @@
             $('#page').toggleClass('exposed');
         });
 
-        $('.overlay > header').on('click', function() {
+        $(document).on('click', '.overlay > header', function() {
             $(this).closest('.overlay').hide();
+        });
+
+        $(document).on('click', '.pulldown-menu .pulldown-handle', function() {
+            $(this).closest('.pulldown-menu').toggleClass('open');
+        });
+
+        $(document).on('click', '.select-box', function() {
+            var overlay = $(this).data('overlay');
+            if (overlay) {
+                $('#' + overlay).show();
+            }
         });
 
         // iOS Standalone Web App Fix

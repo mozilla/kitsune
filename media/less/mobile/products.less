@@ -28,55 +28,6 @@
     }
   }
 
-  #filter-overlay {
-    ul {
-      font-size: 24px;
-      list-style: none;
-      margin: 0 24px;
-      padding: 0;
-
-      > li {
-        > a,
-        > a:visited,
-        > a:hover {
-          border-bottom: 1px solid #000;
-          border-top: 1px solid rgba(255, 255, 255, 0.25);
-          color: #fff;
-          display: block;
-          padding: 16px 28px 16px 6px;
-          position: relative;
-          text-decoration: none;
-        }
-
-        &.selected {
-          > a,
-          > a:visited,
-          > a:hover {
-            color: #00a5c5;
-
-            &:before {
-              content: '\2713';
-              position: absolute;
-              right: 0;
-            }
-          }
-        }
-
-        &:first-of-type {
-          > a {
-            border-top: 0;
-          }
-        }
-
-        &:last-of-type {
-          > a {
-            border-bottom: 0;
-          }
-        }
-      }
-    }
-  }
-
   #page {
     > header {
       h1 {
@@ -101,31 +52,9 @@
       float: left;
     }
 
-    .filter {
-      background: #e7e7e7;
-      border: 1px solid rgba(0, 0, 0, 0.35);
-      .border-radius(2px);
-      color: #333;
-      cursor: pointer;
-      float: left;
-      height: 38px;
-      line-height: 38px;
+    .select-box {
       margin: 0 10px;
-      overflow: hidden;
-      padding: 0 14px;
-      position: relative;
-      text-decoration: none;
       width: 180px;
-
-      &:after {
-        border-color: transparent #333 transparent transparent;
-        border-style: solid;
-        border-width: 10px 10px 0 0;
-        bottom: 3px;
-        content: '';
-        position: absolute;
-        right: 3px;
-      }
     }
   }
 }

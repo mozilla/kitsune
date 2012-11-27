@@ -2,7 +2,6 @@
 
 {% set styles = ('mobile/products',) %}
 {% set classes = 'documents' %}
-{% set scripts = ('products-mobile',) %}
 {% set headline = _(topic.title, 'DB: topics.Topic.title') %}
 {% set return_url = url('products.product', slug=product.slug) %}
 
@@ -11,7 +10,7 @@
 {% block content %}
   <div class="filter-bar">
     <span>{{ _('Showing') }}</span>
-    <div class="filter" id="select-filter">
+    <div class="select-box" data-overlay="filter-overlay">
       {% if refine %}
         {{ _(refine.title, 'DB: topics.Topic.title') }}
       {% else %}
@@ -44,7 +43,7 @@
   <div id="filter-overlay" class="overlay" style="display: none;">
     <header>{{ _('Showing') }}</header>
     <div class="wrapper">
-      <ul>
+      <ul class="select-list">
         <li {{ refine|class_selected(None) }}><a href="{{ request.path }}">{{ _('All') }}</a></li>
         {% for topic_ in refine_topics if topic_ != topic %}
           <li {{ refine|class_selected(topic_) }}><a href="?refine={{ _(topic_.slug) }}">{{ _(topic_.title, 'DB: topics.Topic.title') }} ({{ topic_.num_docs }})</a></li>

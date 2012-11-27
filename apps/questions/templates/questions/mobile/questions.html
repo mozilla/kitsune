@@ -1,0 +1,136 @@
+{% extends 'mobile/base.html' %}
+
+{% set styles = ('mobile/questions',) %}
+{% set classes = 'questions' %}
+{% set title = _('Support Forum') %}
+{% set headline = title %}
+
+{% block after_header %}
+  <div class="pulldown-menu">
+    <div class="pulldown-handle"></div>
+    <div class="pulldown-panel">
+      {% if top_contributors %}
+      <section id="top-contributors">
+        <strong>{{ _('Top contributors') }}</strong>
+        <ol>
+          {% for user in top_contributors %}
+            <li>{{ user }}</li>
+          {% endfor %}
+        </ol>
+      </section>
+      {% endif %}
+      <section id="question-stats">
+        {% trans recent_unanswered_count,
+          url=url('questions.questions')|urlparams(filter='recent-unanswered') %}
+          <strong>{{recent_unanswered_count}} question</strong> has no reply.
+          {% pluralize recent_unanswered_count %}
+          <strong>{{recent_unanswered_count}} questions</strong> have no reply.
+        {% endtrans %}
+        <span class="total">
+          {{ _('Total:') }} <strong>{{ recent_asked_count }}</strong>
+        </span>
+        <div class="progress-bar {% if recent_answered_percent == 100 %} complete{% endif %}">
+          <div style="width: {{ recent_answered_percent }}%;">
+            <span>{{ recent_answered_percent }}%</span>
+          </div>
+        </div>
+      </section>
+      <section class="cf">
+        <div class="select-box" data-overlay="sort-overlay">{{ _('Sort by') }}</div>
+        <div class="select-box" data-overlay="show-overlay">{{ _('Show') }}</div>
+        <div class="select-box" data-overlay="filter-overlay">{{ _('Filter') }}</div>
+      </section>
+    </div>
+  </div>
+{% endblock %}
+
+{% block content %}
+  <ul class="questions-list">
+    {% if questions.object_list %}
+      {% for question in questions.object_list %}
+        <li>
+          <a href="{{ question.get_absolute_url() }}">
+            <span class="title">{{ question.title }}</span>
+            <span>
+              <strong class="replies">
+                {{ question.num_answers }}
+                {% trans count=question.num_answers %}
+                  reply
+                {% pluralize %}
+                  replies
+                {% endtrans %}
+              </strong>
+              {% if question.is_solved %}
+                <strong class="solved">{{ _('solved') }}</strong>
+              {% elif question.num_answers == 0 %}
+                <strong class="unanswered">{{ _('needs attention') }}</strong>
+              {% elif question.is_contributor(user) %}
+                <strong class="contributed">{{ _('contributed') }}</strong>
+              {% endif %}
+            </span>
+            {{ question.content_parsed|striptags()|truncate(170) }}
+          </a>
+        </li>
+      {% endfor %}
+    {% else %}
+      {# Not localized because it's not worth localizers time. #}
+      <p class="no-questions">
+        There are no questions that match the current filter settings.
+      </p>
+    {% endif %}
+  </ul>
+  {{ questions|quick_paginator }}
+{% endblock %}
+
+{% block after_main %}
+  <div id="sort-overlay" class="overlay" style="display: none;">
+    <header>{{ _('Sort by') }}</header>
+    <div class="wrapper">
+      <ul class="select-list">
+        <li{% if not sort %} class="selected"{% endif %}>
+          <a href="{{ url('questions.questions')|urlparams(filter=filter, tagged=tagged) }}">{{ _('Most Recent') }}</a>
+        </li>
+        <li{% if sort == 'requested' %} class="selected"{% endif %}>
+          <a href="{{ url('questions.questions')|urlparams(sort='requested', filter=filter, tagged=tagged) }}">{{ _('Most Requested') }}</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <div id="show-overlay" class="overlay" style="display: none;">
+    <header>{{ _('Show') }}</header>
+    <div class="wrapper">
+      <ul class="select-list">
+        <li{% if not filter %} class="selected"{% endif %}>
+          <a href="{{ url('questions.questions')|urlparams(sort=sort, tagged=tagged) }}">{{ _('All') }}</a>
+        </li>
+        <li{% if filter == 'unsolved' %} class="selected"{% endif %}>
+          <a href="{{ url('questions.questions')|urlparams(filter='unsolved', sort=sort, tagged=tagged) }}">{{ _('Unsolved') }}</a>
+        </li>
+        <li{% if filter == 'solved' %} class="selected"{% endif %}>
+          <a href="{{ url('questions.questions')|urlparams(filter='solved', sort=sort, tagged=tagged) }}">{{ _('Solved') }}</a>
+        </li>
+        <li{% if filter == 'no-replies' %} class="selected"{% endif %}>
+          <a href="{{ url('questions.questions')|urlparams(filter='no-replies', sort=sort, tagged=tagged) }}">{{ _('No Replies') }}</a>
+        </li>
+        {% if user.is_authenticated() %}
+          <li{% if filter == 'my-contributions' %} class="selected"{% endif %}>
+            <a href="{{ url('questions.questions')|urlparams(filter='my-contributions', sort=sort, tagged=tagged) }}">{{ _('My Contributions') }}</a>
+          </li>
+        {% endif %}
+      </ul>
+    </div>
+  </div>
+
+  <div id="filter-overlay" class="overlay" style="display: none;">
+    <header>{{ _('Filter') }}</header>
+    <div class="wrapper padded">
+      <p>{{ _('Enter a tag. For example: "Firefox 14.0", "Windows 7", "crash"') }}</p>
+      <form action="" method="get">
+        <input type="hidden" class="current-tagged" value="{{ tagged }}"/>
+        <input class="searchbox" type="text" name="tagged" value="" data-vocabulary="{{ tag_vocab() }}" required="required"/>
+        <button type="submit" class="btn">{{ _('Filter Tag') }}</button>
+      </form>
+    </div>
+  </div>
+{% endblock %}
