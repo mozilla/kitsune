@@ -68,8 +68,8 @@ log = logging.getLogger('k.questions')
 UNAPPROVED_TAG = _lazy(u'That tag does not exist.')
 NO_TAG = _lazy(u'Please provide a tag.')
 
-
-def questions(request):
+@mobile_template('questions/{mobile/}questions.html')
+def questions(request, template):
     """View the questions."""
 
     filter_ = request.GET.get('filter')
@@ -180,11 +180,12 @@ def questions(request):
         data.update(top_contributors=_get_top_contributors())
 
     with statsd.timer('questions.view.render'):
-        return jingo.render(request, 'questions/questions.html', data)
+        return jingo.render(request, template, data)
 
 
+@mobile_template('questions/{mobile/}answers.html')
 @anonymous_csrf  # Need this so the anon csrf gets set for watch forms.
-def answers(request, question_id, form=None, watch_form=None,
+def answers(request, template, question_id, form=None, watch_form=None,
             answer_preview=None, **extra_kwargs):
     """View the answers to a question."""
     ans_ = _answers_data(request, question_id, form, watch_form,
@@ -197,11 +198,12 @@ def answers(request, question_id, form=None, watch_form=None,
     extra_kwargs.update(ans_)
 
     # Add noindex to questions without answers that are > 30 days old.
-    no_answers = ans_['answers'].paginator.count == 0
-    if no_answers and question.created < datetime.now() - timedelta(days=30):
-        extra_kwargs.update(robots_noindex=True)
+    if not request.MOBILE:
+        no_answers = ans_['answers'].paginator.count == 0
+        if no_answers and question.created < datetime.now() - timedelta(days=30):
+            extra_kwargs.update(robots_noindex=True)
 
-    return jingo.render(request, 'questions/answers.html', extra_kwargs)
+    return jingo.render(request, template, extra_kwargs)
 
 
 @mobile_template('questions/{mobile/}new_question.html')
@@ -477,12 +479,12 @@ def reply(request, question_id):
         for image_id in request.POST.getlist('delete_image'):
             ImageAttachment.objects.get(pk=image_id).delete()
 
-        return answers(request, question_id, form)
+        return answers(request, question_id=question_id, form=form)
 
     # NOJS: upload image
     if 'upload_image' in request.POST:
         upload_imageattachment(request, question)
-        return answers(request, question_id, form)
+        return answers(request, question_id=question_id, form=form)
 
     if form.is_valid():
         answer = Answer(question=question, creator=request.user,
@@ -504,7 +506,7 @@ def reply(request, question_id):
 
             return HttpResponseRedirect(answer.get_absolute_url())
 
-    return answers(request, question_id, form, answer_preview=answer_preview)
+    return answers(request, question_id=question_id, form=form, answer_preview=answer_preview)
 
 
 def solve(request, question_id, answer_id):
@@ -1093,8 +1095,10 @@ def _answers_data(request, question_id, form=None, watch_form=None,
                   answer_preview=None):
     """Return a map of the minimal info necessary to draw an answers page."""
     question = get_object_or_404(Question, pk=question_id)
-    answers_ = paginate(request, question.answers.all(),
-                        per_page=constants.ANSWERS_PER_PAGE)
+    answers_ = question.answers.all()
+    if not request.MOBILE:
+        answers_ = paginate(request, answers_,
+                            per_page=constants.ANSWERS_PER_PAGE)
     feed_urls = ((reverse('questions.answers.feed',
                           kwargs={'question_id': question_id}),
                   AnswersFeed().title(question)),)

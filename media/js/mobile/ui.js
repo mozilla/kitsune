@@ -5,8 +5,23 @@
             $('#page').toggleClass('exposed');
         });
 
-        $('.overlay > header').on('click', function() {
+        $(document).on('click', '.overlay > header', function() {
             $(this).closest('.overlay').hide();
+        });
+
+        $(document).on('click', '.pulldown-menu .pulldown-handle', function() {
+            $(this).closest('.pulldown-menu').toggleClass('open');
+        });
+
+        $(document).on('click', '.select-box', function() {
+            var overlay = $(this).data('overlay');
+            if (overlay) {
+                $('#' + overlay).show();
+            }
+        });
+
+        $(document).on('click', '.collapsable .toggle', function() {
+            $(this).closest('.collapsable').toggleClass('expanded');
         });
 
         // iOS Standalone Web App Fix

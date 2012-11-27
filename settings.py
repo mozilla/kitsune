@@ -484,6 +484,9 @@ MINIFY_BUNDLES = {
             'css/cannedresponses.css',
             'css/reportabuse.css',
         ),
+        'mobile/questions': (
+            'less/mobile/questions.less',
+        ),
         'search': (
             'less/search.less',
         ),
@@ -601,6 +604,9 @@ MINIFY_BUNDLES = {
             'js/tags.filter.js',
             'js/tags.js',
             'js/reportabuse.js',
+        ),
+        'mobile/questions': (
+            'js/mobile/questions.js',
         ),
         'search': (
             'js/search.js',
@@ -728,9 +734,6 @@ MINIFY_BUNDLES = {
             'js/libs/backbone.js',
             'js/charts.js',
             'js/kpi.dashboard.js',
-        ),
-        'products-mobile': (
-            'js/mobile/products.js',
         ),
     },
 }

@@ -28,7 +28,7 @@ body {
   }
 
   > nav {
-    background: #323c3e url('../../img/grain.png') 0 0 repeat;
+    background: @mobileNavBackground url('../../img/grain.png') 0 0 repeat;
     bottom: 0;
     color: #fff;
     left: 0;
@@ -175,6 +175,39 @@ input[type='email'] {
   text-decoration: none;
 }
 
+.collapsable {
+  article {
+    display: none;
+  }
+
+  .toggle {
+    color: @mobileHyperlink;
+    cursor: pointer;
+
+    > span {
+      &.alt {
+        display: none;
+      }
+    }
+  }
+
+  &.expanded {
+    article {
+      display: block;
+    }
+
+    .toggle {
+      > span {
+        display: none;
+
+        &.alt {
+          display: inline;
+        }
+      }
+    }
+  }
+}
+
 .errorlist {
   list-style: none;
   margin: 0 0 12px 0;
@@ -230,14 +263,166 @@ input[type='email'] {
     top: 0;
   }
 
+  .select-list {
+    font-size: 24px;
+    list-style: none;
+    margin: 0 24px;
+    padding: 0;
+
+    > li {
+      > a,
+      > a:visited,
+      > a:hover {
+        border-bottom: 1px solid #000;
+        border-top: 1px solid rgba(255, 255, 255, 0.25);
+        color: #fff;
+        display: block;
+        padding: 16px 28px 16px 6px;
+        position: relative;
+        text-decoration: none;
+      }
+
+      &.selected {
+        > a,
+        > a:visited,
+        > a:hover {
+          color: #00a5c5;
+
+          &:before {
+            content: '\2713';
+            position: absolute;
+            right: 0;
+          }
+        }
+      }
+
+      &:first-of-type {
+        > a {
+          border-top: 0;
+        }
+      }
+
+      &:last-of-type {
+        > a {
+          border-bottom: 0;
+        }
+      }
+    }
+  }
+
   .wrapper {
     bottom: 0;
+    color: #fff;
+    font-size: 24px;
     left: 0;
     overflow: auto;
     -webkit-overflow-scrolling: touch;
     position: absolute;
     right: 0;
     top: 51px;
+
+    &.padded {
+      padding: 0 24px;
+    }
+  }
+}
+
+.progress-bar {
+  background: rgba(0, 0, 0, 0.1) url('../img/grain.png');
+  border: 1px solid rgba(0, 0, 0, 0.03);
+  .border-radius(12px);
+  color: #fff;
+  font-size: 20px;
+  font-weight: bold;
+  height: 24px;
+  line-height: 24px;
+  position: relative;
+  text-align: right;
+  z-index: 1;
+
+  &:after {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+    .border-radius(13px);
+    bottom: -2px;
+    content: '';
+    left: 0;
+    position: absolute;
+    right: 0;
+    top: 0;
+    z-index: -1;
+  }
+
+  &:before {
+    border: 2px solid rgba(0, 0, 0, 0.01);
+    .border-radius(12px);
+    bottom: 0;
+    content: '';
+    left: 0;
+    position: absolute;
+    right: 0;
+    top: 0;
+    z-index: -1;
+  }
+
+  > div {
+    .gradient(#ff9500, #ff9500, #ed7000);
+    .border-radius(12px);
+    height: 24px;
+    position: relative;
+    z-index: 5;
+
+    > span {
+      margin-right: 10px;
+    }
+  }
+}
+
+.pulldown-menu {
+  background: @mobileNavBackground url('../../img/grain.png');
+  .box-shadow(0 0 5px rgba(0, 0, 0, 0.6));
+  left: 0;
+  margin-top: 51px;
+  position: absolute;
+  right: 0;
+  z-index: 8;
+
+  .pulldown-panel {
+    max-height: 0;
+    overflow: hidden;
+    .transition-property(max-height);
+    .transition-duration(0.5s);
+
+    > section {
+      border-bottom: 1px solid #2f393b;
+      border-top: 1px solid #484d54;
+      padding: 10px 16px;
+
+      &:first-of-type {
+        border-top: 0;
+      }
+
+      &:last-of-type {
+        border-bottom: 0;
+      }
+    }
+  }
+
+  &.open {
+    .pulldown-panel {
+      max-height: 800px;
+      .transition-duration(1.55s)
+    }
+  }
+
+  .pulldown-handle {
+    background: url('../../img/mobile/handle.png') 0 0 no-repeat;
+    bottom: -19px;
+    cursor: pointer;
+    height: 19px;
+    left: 50%;
+    margin-left: -42px;
+    position: absolute;
+    width: 85px;
   }
 }
 
@@ -251,6 +436,31 @@ input[type='email'] {
   padding: 13px 4px 13px 2px;
   text-indent: -9999px;
   width: 12px;
+}
+
+.select-box {
+  background: #e7e7e7;
+  border: 1px solid rgba(0, 0, 0, 0.35);
+  .border-radius(2px);
+  color: #333;
+  cursor: pointer;
+  float: left;
+  height: 38px;
+  line-height: 38px;
+  overflow: hidden;
+  padding: 0 14px;
+  position: relative;
+  text-decoration: none;
+
+  &:after {
+    border-color: transparent #333 transparent transparent;
+    border-style: solid;
+    border-width: 10px 10px 0 0;
+    bottom: 3px;
+    content: '';
+    position: absolute;
+    right: 3px;
+  }
 }
 
 .topic-sprite {
@@ -364,5 +574,12 @@ input[type='email'] {
   .topic-sprite {
     background-image: url('../../img/mobile/topics-sprite-2x.png');
     .background-size(148px 888px);
+  }
+
+  .pulldown-menu {
+    .pulldown-handle {
+      background-image: url('../../img/mobile/handle-2x.png');
+      .background-size(85px 19px);
+    }
   }
 }

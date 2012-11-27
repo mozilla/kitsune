@@ -1,0 +1,84 @@
+{% extends 'mobile/base.html' %}
+
+{% set styles = ('mobile/questions',) %}
+{% set classes = 'answers' %}
+{% set scripts = ('mobile/questions',) %}
+{% set title = _('Question') %}
+{% set headline = title %}
+{% set return_url = url('questions.questions') %}
+
+{% block content %}
+  <section class="collapsable" id="question">
+    <header>
+      {{ question.title }}
+    </header>
+    <article>
+      {{ question.content_parsed|safe }}
+    </article>
+    <div class="toggle">
+      <span>&darr; {{ _('Show more') }}</span>
+      <span class="alt">&uarr; {{ _('Show less') }}</span>
+    </div>
+  </section>
+
+  <div class="answer-bar">
+    <ul class="answer-tabs cf">
+      <li class="selected">{{ _('All posts') }}</li>
+      <li data-class="only-helpful">{{ _('Helpful Solutions') }}</li>
+    </ul>
+    <div class="answer-nav">
+      <ul>
+        {% for answer in answers %}
+          {% if answer.id and question.solution == answer %}
+            {% set class = 'solution is-helpful' %}
+          {% elif answer.id and answer in question.helpful_replies %}
+            {% set class = 'helpful is-helpful' %}
+          {% elif answer.id and answer.creator == question.creator %}
+            {% set class = 'creator' %}
+          {% else %}
+            {% set class = '' %}
+          {% endif %}
+          <li data-id="{{ answer.id }}" class="{{ class }} {% if loop.first %}selected{% endif %}">
+            {% if answer.id and question.solution == answer %}
+              {{ _('solution') }}
+            {% elif answer.id and answer in question.helpful_replies %}
+              {{ _('helpful') }}
+            {% elif answer.id and answer.creator == question.creator %}
+              {{ _('owner') }}
+            {% else %}
+              {{ _('post') }}
+            {% endif %}
+          </li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+
+  <ul id="answers">
+    {% for answer in answers %}
+      <li id="answer-{{ answer.id }}" class="{% if loop.first %}active{% endif %}">
+        <header>
+          <a href="{{ profile_url(answer.creator) }}">{{ answer.creator }}</a>
+          {{ answer.created|timesince }}
+        </header>
+        <article>{{ answer.content_parsed|safe }}</article>
+        <footer class="cf">
+          {% if answer.id and not question.is_locked %}
+            {% if user != answer.creator and not answer.has_voted(request) %}
+              <form class="helpful" action="{{ url('questions.answer_vote', question_id=question.id, answer_id=answer.id) }}" method="post">
+                <input type="submit" class="btn" name="helpful" value="{{ _('Helpful') }}" />
+                <input type="submit" class="btn" name="not-helpful" value="{{ _('Not Helpful') }}" />
+              </form>
+            {% endif %}
+          {% endif %}
+          {% if answer.num_votes != 0 %}
+            <span class="helpful-count">{{ answer.num_helpful_votes }}</span>
+          {% endif %}
+          {% if answer.id and not question.is_locked %}
+            <a class="reply btn" href="#question-reply">{{ _('Reply') }}</a>
+          {% endif %}
+        </footer>
+      </li>
+    {% endfor %}
+  </ul>
+{% endblock %}
