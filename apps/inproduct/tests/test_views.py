@@ -43,11 +43,11 @@ class RedirectTestCase(TestCase):
 
     def test_target(self):
         """Test that we can vary on any parameter and targets work."""
-        self._targets(self.test_urls, 'as=u')
+        self._targets(self.test_urls, 'as=u&utm_source=inproduct')
 
     def test_eu_target(self):
         """Test that all URLs work with the extra 'eu'."""
-        self._targets(self.test_eu_urls, 'eu=1&as=u')
+        self._targets(self.test_eu_urls, 'eu=1&as=u&utm_source=inproduct')
 
     def _targets(self, urls, querystring):
         for input, output in urls:
