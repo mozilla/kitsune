@@ -175,6 +175,39 @@ input[type='email'] {
   text-decoration: none;
 }
 
+.collapsable {
+  article {
+    display: none;
+  }
+
+  .toggle {
+    color: @mobileHyperlink;
+    cursor: pointer;
+
+    > span {
+      &.alt {
+        display: none;
+      }
+    }
+  }
+
+  &.expanded {
+    article {
+      display: block;
+    }
+
+    .toggle {
+      > span {
+        display: none;
+
+        &.alt {
+          display: inline;
+        }
+      }
+    }
+  }
+}
+
 .errorlist {
   list-style: none;
   margin: 0 0 12px 0;

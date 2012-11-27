@@ -20,6 +20,10 @@
             }
         });
 
+        $(document).on('click', '.collapsable .toggle', function() {
+            $(this).closest('.collapsable').toggleClass('expanded');
+        });
+
         // iOS Standalone Web App Fix
         if (("standalone" in window.navigator) && window.navigator.standalone) {
             $(document).on('click', 'a', function(event) {

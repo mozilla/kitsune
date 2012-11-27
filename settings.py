@@ -605,6 +605,9 @@ MINIFY_BUNDLES = {
             'js/tags.js',
             'js/reportabuse.js',
         ),
+        'mobile/questions': (
+            'js/mobile/questions.js',
+        ),
         'search': (
             'js/search.js',
         ),
