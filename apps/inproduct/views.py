@@ -83,7 +83,9 @@ def redirect(request, product, version, platform, locale, topic=None):
     if destination.target.startswith('http'):
         target = destination.target
     else:
-        params = {'as': 'u'}
+        params = {
+            'as': 'u',
+            'utm_source': 'inproduct'}
         if hasattr(request, 'eu_build'):
             params['eu'] = 1
         target = u'/%s/%s' % (locale, destination.target.lstrip('/'))
