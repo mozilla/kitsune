@@ -1,6 +1,188 @@
 @import '../variables.less';
 @import '../vendors.less';
 
+.answers {
+  .answer-bar {
+    background: @mobileNavBackground url('../../img/grain.png');
+    .box-shadow(0 0 4px rgba(0, 0, 0, 0.5));
+
+    .answer-nav {
+      border-top: 1px solid rgba(0, 0, 0, 0.3);
+      .box-shadow(0 1px 0 rgba(255, 255, 255, 0.2) inset);
+      overflow: auto;
+      -webkit-overflow-scrolling: touch;
+      margin: 6px 0 0 0;
+      padding: 7px 0;
+
+      > ul {
+        height: 64px;
+        list-style: none;
+        margin: 0;
+        overflow: hidden;
+        padding: 0 5px;
+
+        > li {
+          background: url('../../img/mobile/answers-sprite.png') -43px -52px no-repeat;
+          border-bottom: 1px solid transparent;
+          border-top: 1px solid transparent;
+          color: rgba(255, 255, 255, 0.3);
+          cursor: pointer;
+          float: left;
+          font-size: 12px;
+          height: 20px;
+          margin: 0 3px;
+          padding: 44px 0 0 0;
+          text-align: center;
+          width: 64px;
+
+          &.selected {
+            background-color: rgba(0, 0, 0, 0.3);
+            border-bottom-color: rgba(255, 255, 255, 0.2);
+            .border-radius(6px);
+            .box-shadow(0 0 10px 0 rgba(0, 0, 0, 0.2) inset);
+            color: #fff;
+          }
+
+          &.creator {
+            background-position: -42px -502px;
+          }
+
+          &.helpful {
+            background-position: -42px -352px;
+          }
+
+          &.solution {
+            background-position: -42px -202px;
+          }
+        }
+      }
+    }
+
+    &.only-helpful {
+      .answer-nav {
+        > ul {
+          > li {
+            display: none;
+
+            &.is-helpful {
+              display: block;
+            }
+          }
+        }
+      }
+    }
+
+    .answer-tabs {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+
+      li {
+        border-left: 1px solid rgba(255, 255, 255, 0.2);
+        border-right: 1px solid rgba(0, 0, 0, 0.4);
+        .box-sizing(border-box);
+        color: rgba(255, 255, 255, 0.3);
+        cursor: pointer;
+        float: left;
+        font-weight: bold;
+        height: 40px;
+        line-height: 40px;
+        text-align: center;
+        width: 50%;
+
+        &:first-of-type {
+          border-left: 0;
+        }
+
+        &:last-of-type {
+          border-right: 0;
+        }
+
+        &.selected {
+          .gradient(transparent, rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0));
+          color: #fff;
+        }
+      }
+    }
+  }
+
+  #answers {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+
+    > li {
+      display: none;
+
+      &.active {
+        display: block;
+      }
+
+      > article {
+        padding: 16px;
+      }
+
+      > header, > footer {
+        background: @mobileFormBackground;
+        padding: 0 16px;
+      }
+
+      > header {
+        color: #000;
+        font-size: 12px;
+        height: 50px;
+        line-height: 50px;
+
+        > a {
+          color: #000;
+          font-size: 15px;
+          margin-right: 10px;
+        }
+      }
+
+      > footer {
+        height: 50px;
+        line-height: 50px;
+
+        .btn {
+          display: inline-block;
+          line-height: normal;
+          margin-top: 8px;
+          padding-left: 10px;
+          padding-right: 10px;
+          width: auto;
+        }
+
+        > .helpful {
+          display: inline;
+        }
+
+        > .helpful-count {
+          margin-left: 5px;
+
+          &:before {
+            content: '\2665';
+            font-size: 20px;
+            margin-right: 3px;
+          }
+        }
+
+        > .reply {
+          float: right;
+        }
+      }
+    }
+  }
+
+  #question {
+    padding: 16px;
+
+    header {
+      font-size: 18px;
+    }
+  }
+}
+
 .questions {
   .no-questions {
     padding: 10px 16px;
@@ -22,7 +204,7 @@
     color: #888;
 
     strong {
-      color: @textBlue;
+      color: @mobileHyperlink;
     }
 
     .progress-bar {
@@ -104,5 +286,20 @@
 
   .unanswered {
     color: @textOrange;
+  }
+}
+
+@media only screen and (-webkit-min-device-pixel-ratio: 2), only screen and (min-device-pixel-ratio: 2) {
+  .answers {
+    .answer-bar {
+      .answer-nav {
+        > ul {
+          > li {
+            background-image: url('../../img/mobile/answers-sprite-2x.png');
+            .background-size(150px 600px);
+          }
+        }
+      }
+    }
   }
 }
