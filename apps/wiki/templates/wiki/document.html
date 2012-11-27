@@ -18,7 +18,7 @@
 
 {% set meta = [] %}
 
-{% if document.is_template %}
+{% if document.is_template or document.is_archived %}
   {% set meta = meta + [('robots', 'noindex')] %}
 {% endif %}
 
