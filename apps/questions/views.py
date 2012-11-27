@@ -479,12 +479,12 @@ def reply(request, question_id):
         for image_id in request.POST.getlist('delete_image'):
             ImageAttachment.objects.get(pk=image_id).delete()
 
-        return answers(request, question_id, form)
+        return answers(request, question_id=question_id, form=form)
 
     # NOJS: upload image
     if 'upload_image' in request.POST:
         upload_imageattachment(request, question)
-        return answers(request, question_id, form)
+        return answers(request, question_id=question_id, form=form)
 
     if form.is_valid():
         answer = Answer(question=question, creator=request.user,
@@ -506,7 +506,7 @@ def reply(request, question_id):
 
             return HttpResponseRedirect(answer.get_absolute_url())
 
-    return answers(request, question_id, form, answer_preview=answer_preview)
+    return answers(request, question_id=question_id, form=form, answer_preview=answer_preview)
 
 
 def solve(request, question_id, answer_id):
