@@ -1,11 +1,20 @@
 (function($) {
     $(function() {
-        var width = 0;
-        $('.answer-nav > ul > li').each(function() {
-            width += $(this).outerWidth();
-            width += parseInt($(this).css('marginLeft'));
-            width += parseInt($(this).css('marginRight'));
+        function refreshAnswers() {
+            var width = 0;
+            $('.answer-nav > ul > li').each(function() {
+                if ($(this).is(':visible')) {
+                    width += $(this).outerWidth();
+                    width += parseInt($(this).css('marginLeft'));
+                    width += parseInt($(this).css('marginRight'));
+                }
+            });
+            $('.answer-nav > ul').css({width: width + 'px'});
+        }
 
+        refreshAnswers();
+
+        $('.answer-nav > ul > li').each(function() {
             $(this).on('click', function() {
                 $('.answer-nav > ul > li').removeClass('selected');
                 $(this).addClass('selected');
@@ -14,7 +23,6 @@
                 $('#answer-' + $(this).data('id')).addClass('active');
             });
         });
-        $('.answer-nav > ul').css({width: width + 'px'});
 
         $('.answer-tabs > li').each(function(){
             $(this).on('click', function(){
@@ -29,6 +37,7 @@
                     $(this).closest('.answer-bar').addClass(className);
                 }
                 $(this).addClass('selected');
+                refreshAnswers();
             });
         });
     });

@@ -72,9 +72,7 @@
             {% endif %}
           {% endif %}
           {% if answer.num_votes != 0 %}
-            <span class="helpful-count">
-              {{ answer.num_helpful_votes }}
-            </span>
+            <span class="helpful-count">{{ answer.num_helpful_votes }}</span>
           {% endif %}
           {% if answer.id and not question.is_locked %}
             <a class="reply btn" href="#question-reply">{{ _('Reply') }}</a>
