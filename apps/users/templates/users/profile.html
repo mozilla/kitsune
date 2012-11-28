@@ -1,5 +1,7 @@
 {# vim: set ts=2 et sts=2 sw=2: #}
 {% extends "users/base.html" %}
+{% from "wiki/includes/flag_form.html" import flag_form with context %}
+
 {% set title = _('{user} | Profile')|f(user=profile.user.username) %}
 {% set classes = 'profile' %}
 {% set canonical_url = unlocalized_url('users.profile', profile.user.pk) %}
@@ -18,18 +20,7 @@
         </div>
       {% endif %}
       {% if request.user.is_authenticated and request.user != profile.user %}
-        <section id="flag">
-          <form class="report" title="{{ _('Report this profile') }}" action="{{ url('users.flag', object_id=profile.pk) }}" method="post">
-            {{ csrf() }}
-            <select name="reason">
-              <option value="spam">{{ _('Spam or other unrelated content') }}</option>
-              <option value="language">{{ _('Inappropriate language/dialog') }}</option>
-              <option value="other">{{ _('Other (please specify)') }}</option>
-            </select>
-            <input type="text" class="text" name="other" />
-            <input type="submit" class="link-btn" value="{{ _('Report Abuse') }}" />
-          </form>
-        </section>
+        {{ flag_form(url('users.flag', object_id=profile.pk), False) }}
       {% endif %}
       <h1 class="user">{{ display_name(profile.user) }}
           {% if profile.name %}

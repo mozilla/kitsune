@@ -1,3 +1,5 @@
+{% from "wiki/includes/flag_form.html" import flag_form %}
+
 <div class="author">
   <a class="avatar" href="{{ profile_url(post.creator, request.user == post.creator) }}">
     <img src="{{ profile_avatar(post.creator) }}" height="45" width="45" alt=""/>
@@ -20,9 +22,7 @@
   {% endwith %}
   <div class="post-actions">
     {% if document and document.slug and post.id %}
-      <form class="report" action="{{ url('wiki.discuss.flag_post', document.slug, post.id) }}" method="post">
-       {% include 'wiki/includes/flag_form.html' %}
-      </form>
+      {{ flag_form(url('wiki.discuss.flag_post', document.slug, post.id)) }}
     {% endif %}
   </div>
 </div>

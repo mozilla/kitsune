@@ -3,6 +3,8 @@
 {% from "layout/errorlist.html" import errorlist %}
 {% from "upload/attachments.html" import attachments_form %}
 {% from "includes/common_macros.html" import content_editor, for_contributors %}
+{% from "wiki/includes/flag_form.html" import flag_form with context %}
+
 {# L10n: {q} is the title of the question. #}
 {% set title = _('{q} | Firefox Support Forum')|f(q=question.title) %}
 {% set classes = 'answers' %}
@@ -268,9 +270,7 @@
       {% endif %}
 
       {% if user.is_authenticated() and user != question.creator and not question.is_locked %}
-        <form class="report" action="{{ url('questions.flag', question.id) }}" method="post">
-          {% include 'questions/includes/flag_form.html' %}
-        </form>
+        {{ flag_form(url('questions.flag', question.id)) }}
       {% endif %}
     </div>
 
