@@ -1,5 +1,7 @@
 {% from "upload/attachments.html" import attachment %}
 {% from "karma/includes/karma_macros.html" import titles %}
+{% from "wiki/includes/flag_form.html" import flag_form with context %}
+
 <div class="answer grid_9" {% if answer.id %}id="answer-{{ answer.id }}"{% endif %}>
   <div class="user-meta">
     <div class="avatar">
@@ -120,9 +122,7 @@
     </ul>
 
     {% if user.is_authenticated() and user != answer.creator and not question.is_locked  %}
-      <form class="report" action="{{ url('questions.answer_flag', question.id, answer.id) }}" method="post">
-        {% include 'questions/includes/flag_form.html' %}
-      </form>
+      {{ flag_form(url('questions.answer_flag', question.id, answer.id)) }}
     {% endif %}
   {% endif %}
 </div>
