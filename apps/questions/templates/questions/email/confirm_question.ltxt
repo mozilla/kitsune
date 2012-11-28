@@ -7,7 +7,7 @@ Before your Firefox Help question ({{ email_data }})
 can be seen by our support community, you need to confirm the
 account you just created by clicking on the link below:
 
-https://{{ domain }}{{ activate_url }}
+https://{{ domain }}{{ activate_url }}?reg=aaq
 
 If you did not ask a question or changed your mind, simply delete
 or ignore this email; you will not receive any more email from
