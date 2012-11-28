@@ -168,6 +168,28 @@
         </li>
       </ul>
 
+      {% set products = question.products.all() %}
+      {% if products %}
+        <div class="sidebox tight">
+          <span class="title">{{ _('Product') }}</span>
+          {% for p in products %}
+            {{ p.title }}
+          {% endfor %}
+          </span>
+        </div>
+      {% endif %}
+
+      {% set topics = question.topics.all() %}
+      {% if topics %}
+        <div class="sidebox tight">
+          <span class="title">{{ _('Topic') }}</span>
+          {% for t in topics %}
+            {{ t.title }}
+          {% endfor %}
+        </div>
+      {% endif %}
+
+
       <div class="sidebox tight" id="system-details">
         <span class="title">{{ _('System Details') }}</span>
         {% block system_info %}

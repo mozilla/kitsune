@@ -1,7 +1,7 @@
-from datetime import datetime, timedelta
 import logging
 import re
 import time
+from datetime import datetime, timedelta
 
 from django.contrib.auth.models import User
 from django.contrib.contenttypes import generic
@@ -10,15 +10,16 @@ from django.core.cache import cache
 from django.db import models, connection
 from django.db.models.signals import post_save
 
+import waffle
 from product_details import product_details
 from statsd import statsd
 from taggit.models import Tag, TaggedItem
-import waffle
 
+import questions as constants
 from activity.models import ActionMixin
 from flagit.models import FlaggedObject
 from karma.manager import KarmaManager
-import questions as constants
+from products.models import Product
 from questions.karma_actions import (AnswerAction, FirstAnswerAction,
                                      SolutionAction)
 from questions.question_config import products
@@ -33,6 +34,7 @@ from sumo.redis_utils import RedisError
 from sumo.urlresolvers import reverse
 from tags.models import BigVocabTaggableMixin
 from tags.utils import add_existing_tag
+from topics.models import Topic
 from upload.models import ImageAttachment
 
 
@@ -63,6 +65,12 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
 
     images = generic.GenericRelation(ImageAttachment)
     flags = generic.GenericRelation(FlaggedObject)
+
+    # List of products this question applies to.
+    products = models.ManyToManyField(Product)
+
+    # List of topics this question applies to.
+    topics = models.ManyToManyField(Topic)
 
     html_cache_key = u'question:html:%s'
     tags_cache_key = u'question:tags:%s'
