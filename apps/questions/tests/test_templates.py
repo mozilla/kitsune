@@ -12,6 +12,7 @@ from nose.tools import eq_
 from pyquery import PyQuery as pq
 from tidings.models import Watch
 
+from products.tests import product
 from questions.events import QuestionReplyEvent, QuestionSolvedEvent
 from questions.models import Question, Answer, VoteMetadata
 from questions.tests import (TestCaseBase, TaggingTestCaseBase, tags_eq,
@@ -1192,6 +1193,7 @@ class AAQTemplateTestCase(TestCaseBase):
     def _post_new_question(self):
         """Post a new question and return the response."""
         topic(title='Fix problems', slug='fix-problems', save=True)
+        product(title='Firefox', slug='firefox', save=True)
         url = urlparams(
             reverse('questions.aaq_step5', args=['desktop', 'fix-problems']),
             search='A test question')
@@ -1211,6 +1213,14 @@ class AAQTemplateTestCase(TestCaseBase):
         eq_(1, len(doc('#question-%s' % question.id)))
         # And no email was sent
         eq_(0, len(mail.outbox))
+
+        # Verify product and topic assigned to question.
+        topics = question.topics.all()
+        eq_(1, len(topics))
+        eq_('fix-problems', topics[0].slug)
+        products = question.products.all()
+        eq_(1, len(products))
+        eq_('firefox', products[0].slug)
 
     def test_full_workflow_inactive(self):
         u = User.objects.get(username='jsocol')

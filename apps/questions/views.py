@@ -354,9 +354,21 @@ def aaq(request, product_key=None, category_key=None, showform=False,
         statsd.incr('questions.new')
         question.add_metadata(**form.cleaned_metadata)
         if product:
+            # TODO: This add_metadata call should be removed once we are
+            # fully IA-driven (sync isn't special case anymore).
             question.add_metadata(product=product['key'])
+
+            for p in Product.objects.filter(slug__in=product.get('products')):
+                question.products.add(p)
+
             if category:
+                # TODO: This add_metadata call should be removed once we are
+                # fully IA-driven (sync isn't special case anymore).
                 question.add_metadata(category=category['key'])
+
+                t = category.get('topic')
+                if t:
+                    question.topics.add(Topic.objects.get(slug=t))
 
         # The first time a question is saved, automatically apply some tags:
         question.auto_tag()
