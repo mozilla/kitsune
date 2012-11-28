@@ -42,7 +42,9 @@
   <form method="post" action="{{ action if action != None else
                                    url('users.register') }}">
     {{ csrf|safe }}
-    <input type="hidden" name="interested" id="id_for_interested" value="{{ 'yes' if contributor else 'no' }}">
+    {% if contributor %}
+      <input type="hidden" name="interested" id="id_for_interested" value="yes" />
+    {% endif %}
     <ul>
       {% for field in form if field.name != 'interested' %}
         <li class="cf">{{ field|label_with_help }} {{ field }}</li>
