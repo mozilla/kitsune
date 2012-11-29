@@ -1,5 +1,5 @@
 /*jshint*/
-/*global KBox, k, gettext, _ */
+/*global gettext, _ */
 /*
  * Report abuse UI.
  */
