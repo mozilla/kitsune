@@ -15,6 +15,7 @@ from django.template.loader import render_to_string
 from django.utils.http import base36_to_int
 
 import jingo
+from mobility.decorators import mobile_template
 from session_csrf import anonymous_csrf
 from statsd import statsd
 from tidings.tasks import claim_watches
@@ -35,7 +36,6 @@ from users.models import (Profile, RegistrationProfile,
                           EmailChange)
 from users.utils import (handle_login, handle_register,
                          try_send_email_with_form)
-from mobility.decorators import mobile_template
 
 
 @ssl_required
