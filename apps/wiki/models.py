@@ -944,3 +944,15 @@ def points_to_document_view(url, required_locale=None):
             url, required_locale=required_locale)
     except _NotDocumentView:
         return False
+
+
+def user_num_documents(user):
+    """Count the number of documents a user has contributed to. """
+    return Document.objects.filter(
+        revisions__creator=user).distinct().count()
+
+
+def user_documents(user):
+    """Return the documents a user has contributed to."""
+    return Document.objects.filter(
+        revisions__creator=user).distinct()

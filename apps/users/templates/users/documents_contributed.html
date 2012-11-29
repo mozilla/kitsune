@@ -1,0 +1,37 @@
+{# vim: set ts=2 et sts=2 sw=2: #}
+{% extends "users/base.html" %}
+{% set title = _('{user} | Documents')|f(user=profile.user.username) %}
+{% set classes = 'profile' %}
+{% set canonical_url = unlocalized_url('users.profile', profile.user.pk) %}
+{% set crumbs = [(profile_url(user), user.username),
+                 (None, _('Documents'))] %}
+
+{% block content %}
+  <div class="grid_9">
+    <article id="profile" class="cf">
+      <div class="avatar">
+        <img src="{{ profile_avatar(profile.user) }}" alt="">
+      </div>
+      <h1 class="user">{{ display_name(profile.user) }}
+        {% if profile.name %}
+          <span class="username">({{ profile.user.username }})</span>
+        {% endif %}
+      </h1>
+      <section class="documents-contributed">
+        <h1>{{ _('Documents edited or translated') }}</h1>
+        {% for group in documents|groupby('locale') %}
+          {% if loop.first %}<ul>{% endif %}
+          <li>[{{ group.grouper }}] {{ settings.LANGUAGES[group.grouper.lower()] }} ({{ group.list|length }})<ul>
+          {% for d in group.list %}
+            <li>
+              <a href="{{ d.get_absolute_url() }}">
+                {{ d.title }}
+              </a>
+            </li>
+          {% endfor %}</ul></li>
+          {% if loop.last %}</ul>{% endif %}
+        {% endfor %}
+      </section>
+    </article>
+  </div>
+{% endblock %}

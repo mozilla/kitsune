@@ -16,6 +16,7 @@ api_patterns = patterns('',
 # These will all start with /user/<user_id>/
 detail_patterns = patterns('',
     url(r'^$', views.profile, name='users.profile'),
+    url(r'^/documents$', views.documents_contributed, name='users.documents'),
 # TODO:
 #    url('^abuse', views.report_abuse, name='users.abuse'),
 )

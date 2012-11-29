@@ -44,7 +44,7 @@
           {{ private_message(profile.user) }}
         {% endif %}
       </div>
-      {% if num_answers or num_questions or num_solutions %}
+      {% if num_answers or num_questions or num_solutions or num_documents %}
         <section class="contributions">
           <h2>Contributions</h2>
           <ul>
@@ -65,6 +65,13 @@
             {% if num_solutions %}
               <li>
                 {{ ngettext('{0} solution', '{0} solutions', num_solutions)|f(num_solutions) }}
+              </li>
+            {% endif %}
+            {% if num_documents %}
+              <li>
+                <a href="{{ url('users.documents', profile.user.id) }}">
+                  {{ ngettext('{0} documents', '{0} documents', num_documents)|f(num_documents) }}
+                </a>
               </li>
             {% endif %}
           </ul>
