@@ -36,6 +36,7 @@ from users.models import (Profile, RegistrationProfile,
                           EmailChange)
 from users.utils import (handle_login, handle_register,
                          try_send_email_with_form)
+from wiki.models import user_num_documents, user_documents
 
 
 @ssl_required
@@ -235,8 +236,8 @@ def confirm_change_email(request, activation_key):
 
 @require_GET
 def profile(request, user_id):
-    user_profile = get_object_or_404(Profile, user__id=user_id,
-                                     user__is_active=True)
+    user_profile = get_object_or_404(
+        Profile, user__id=user_id, user__is_active=True)
 
     groups = user_profile.user.groups.all()
     return jingo.render(request, 'users/profile.html', {
@@ -244,8 +245,18 @@ def profile(request, user_id):
         'groups': groups,
         'num_questions': user_num_questions(user_profile.user),
         'num_answers': user_num_answers(user_profile.user),
-        'num_solutions': user_num_solutions(user_profile.user)
-    })
+        'num_solutions': user_num_solutions(user_profile.user),
+        'num_documents': user_num_documents(user_profile.user),})
+
+
+@require_GET
+def documents_contributed(request, user_id):
+    user_profile = get_object_or_404(
+        Profile, user__id=user_id, user__is_active=True)
+
+    return jingo.render(request, 'users/documents_contributed.html', {
+        'profile': user_profile,
+        'documents': user_documents(user_profile.user),})
 
 
 @login_required

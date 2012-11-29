@@ -22,7 +22,8 @@ from sumo.helpers import urlparams
 from sumo.tests import post, get
 from users import ERROR_SEND_EMAIL
 from users.models import Profile, RegistrationProfile, RegistrationManager
-from users.tests import TestCaseBase, user, add_permission
+from users.tests import TestCaseBase, user, add_permission, profile
+from wiki.tests import revision
 
 
 class LoginTests(TestCaseBase):
@@ -342,6 +343,16 @@ class ViewProfileTests(TestCaseBase):
         eq_(200, r.status_code)
         doc = pq(r.content)
         eq_(2, len(doc('.bio a[rel="nofollow"]')))
+
+    def test_num_documents(self):
+        """Verify the number of documents contributed by user."""
+        u = profile().user
+        revision(creator=u, save=True)
+        revision(creator=u, save=True)
+
+        r = self.client.get(reverse('users.profile', args=[u.id]))
+        eq_(200, r.status_code)
+        assert '2 documents' in r.content
 
 
 class PasswordChangeTests(TestCaseBase):
