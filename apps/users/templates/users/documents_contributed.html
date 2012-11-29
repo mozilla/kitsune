@@ -3,7 +3,7 @@
 {% set title = _('{user} | Documents')|f(user=profile.user.username) %}
 {% set classes = 'profile' %}
 {% set canonical_url = unlocalized_url('users.profile', profile.user.pk) %}
-{% set crumbs = [(profile_url(user), user.username),
+{% set crumbs = [(profile_url(profile.user), profile.user.username),
                  (None, _('Documents'))] %}
 
 {% block content %}
