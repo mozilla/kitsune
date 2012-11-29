@@ -1,4 +1,4 @@
-{% from "wiki/includes/flag_form.html" import flag_form %}
+{% from "wiki/includes/flag_form.html" import flag_form with context %}
 
 <div class="author">
   <a class="avatar" href="{{ profile_url(post.creator, request.user == post.creator) }}">
