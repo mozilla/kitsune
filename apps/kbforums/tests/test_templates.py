@@ -1,15 +1,14 @@
+import time
+
 from nose.tools import eq_
 from pyquery import PyQuery as pq
 
-from django.contrib.auth.models import User
-
 from flagit.models import FlaggedObject
-from kbforums.models import Thread, Post
-from kbforums.tests import KBForumTestCase
+from kbforums.models import Post
+from kbforums.tests import KBForumTestCase, thread, post as post_
 from sumo.urlresolvers import reverse
 from sumo.tests import get, post
 from users.tests import user, add_permission
-from wiki.models import Document
 from wiki.tests import document, revision
 
 
@@ -17,10 +16,11 @@ class PostsTemplateTests(KBForumTestCase):
 
     def test_empty_reply_errors(self):
         """Posting an empty reply shows errors."""
-        self.client.login(username='jsocol', password='testpass')
+        u = user(save=True)
+        self.client.login(username=u.username, password='testpass')
 
-        d = Document.objects.all()[0]
-        t = d.thread_set.all()[0]
+        d = document(save=True)
+        t = thread(document=d, save=True)
         response = post(self.client, 'wiki.discuss.reply', {'content': ''},
                         args=[d.slug, t.id])
 
@@ -30,14 +30,14 @@ class PostsTemplateTests(KBForumTestCase):
 
     def test_edit_post_errors(self):
         """Changing post content works."""
-        self.client.login(username='jsocol', password='testpass')
+        u = user(save=True)
+        self.client.login(username=u.username, password='testpass')
 
-        d = Document.objects.all()[0]
-        t = d.thread_set.all()[0]
-        p_author = User.objects.get(username='jsocol')
-        p = t.post_set.filter(creator=p_author)[0]
+        t = thread(creator=u, is_locked=False, save=True)
+        p = t.new_post(creator=u, content='foo')
         response = post(self.client, 'wiki.discuss.edit_post',
-                        {'content': 'wha?'}, args=[d.slug, t.id, p.id])
+                        {'content': 'wha?'},
+                        args=[t.document.slug, t.id, p.id])
 
         doc = pq(response.content)
         errors = doc('ul.errorlist li a')
@@ -47,10 +47,11 @@ class PostsTemplateTests(KBForumTestCase):
 
     def test_edit_thread_template(self):
         """The edit-post template should render."""
-        self.client.login(username='jsocol', password='testpass')
+        u = user(save=True)
+        self.client.login(username=u.username, password='testpass')
 
-        u = User.objects.get(username='jsocol')
-        p = Post.objects.filter(creator=u, thread__is_locked=False)[0]
+        t = thread(creator=u, is_locked=False, save=True)
+        p = t.new_post(creator=u, content='foo')
         res = get(self.client, 'wiki.discuss.edit_post',
                   args=[p.thread.document.slug, p.thread.id, p.id])
 
@@ -59,12 +60,12 @@ class PostsTemplateTests(KBForumTestCase):
 
     def test_edit_post(self):
         """Changing post content works."""
-        self.client.login(username='jsocol', password='testpass')
+        u = user(save=True)
+        self.client.login(username=u.username, password='testpass')
 
-        d = Document.objects.all()[0]
-        t = d.thread_set.all()[0]
-        p_author = User.objects.get(username='jsocol')
-        p = t.post_set.filter(creator=p_author)[0]
+        d = document(save=True)
+        t = thread(document=d, save=True)
+        p = t.new_post(creator=u, content='foo')
         post(self.client, 'wiki.discuss.edit_post',
              {'content': 'Some new content'},
              args=[d.slug, t.id, p.id])
@@ -74,17 +75,21 @@ class PostsTemplateTests(KBForumTestCase):
 
     def test_long_title_truncated_in_crumbs(self):
         """A very long thread title gets truncated in the breadcrumbs"""
-        d = Document.objects.get(pk=1)
-        response = get(self.client, 'wiki.discuss.posts', args=[d.slug, 4])
+        d = document(save=True)
+        t = thread(title='A thread with a very very very' * 5, document=d,
+                   save=True)
+        response = get(self.client, 'wiki.discuss.posts', args=[d.slug, t.id])
         doc = pq(response.content)
         crumb = doc('#breadcrumbs li:last-child')
         eq_(crumb.text(), 'A thread with a very very ...')
 
     def test_edit_post_moderator(self):
         """Editing post as a moderator works."""
-        self.client.login(username='pcraciunoiu', password='testpass')
+        u = user(save=True)
+        add_permission(u, Post, 'change_post')
+        self.client.login(username=u.username, password='testpass')
 
-        p = Post.objects.get(pk=4)
+        p = post_(save=True)
         t = p.thread
         d = t.document
 
@@ -97,9 +102,11 @@ class PostsTemplateTests(KBForumTestCase):
 
     def test_preview_reply(self):
         """Preview a reply."""
-        self.client.login(username='rrosario', password='testpass')
-        d = Document.objects.all()[0]
-        t = d.thread_set.all()[0]
+        u = user(save=True)
+        self.client.login(username=u.username, password='testpass')
+
+        d = document(save=True)
+        t = thread(document=d, save=True)
         num_posts = t.post_set.count()
         content = 'Full of awesome.'
         response = post(self.client, 'wiki.discuss.reply',
@@ -112,8 +119,10 @@ class PostsTemplateTests(KBForumTestCase):
 
     def test_preview_async(self):
         """Preview a reply."""
-        self.client.login(username='rrosario', password='testpass')
-        d = Document.objects.all()[0]
+        u = user(save=True)
+        self.client.login(username=u.username, password='testpass')
+
+        d = document(save=True)
         content = 'Full of awesome.'
         response = post(self.client, 'wiki.discuss.post_preview_async',
                         {'content': content}, args=[d.slug])
@@ -123,9 +132,10 @@ class PostsTemplateTests(KBForumTestCase):
 
     def test_watch_thread(self):
         """Watch and unwatch a thread."""
-        self.client.login(username='rrosario', password='testpass')
+        u = user(save=True)
+        self.client.login(username=u.username, password='testpass')
 
-        t = Thread.objects.filter()[0]
+        t = thread(save=True)
         response = post(self.client, 'wiki.discuss.watch_thread',
                         {'watch': 'yes'}, args=[t.document.slug, t.id])
         self.assertContains(response, 'Stop')
@@ -136,10 +146,9 @@ class PostsTemplateTests(KBForumTestCase):
 
     def test_links_nofollow(self):
         """Links posted should have rel=nofollow."""
-        t = Thread.objects.filter()[0]
-        p = t.post_set.all()[0]
-        p.content = 'linking http://test.org'
-        p.save()
+        u = user(save=True)
+        t = thread(save=True)
+        t.new_post(creator=u, content='linking http://test.org')
         response = get(self.client, 'wiki.discuss.posts',
                        args=[t.document.slug, t.pk])
         doc = pq(response.content)
@@ -150,18 +159,23 @@ class ThreadsTemplateTests(KBForumTestCase):
 
     def test_last_thread_post_link_has_post_id(self):
         """Make sure the last post url links to the last post (#post-<id>)."""
+        u = user(save=True)
+        t = thread(save=True)
+        t.new_post(creator=u, content='foo')
+        p2 = t.new_post(creator=u, content='bar')
         response = get(self.client, 'wiki.discuss.threads',
-                       args=['article-title'])
+                       args=[t.document.slug])
         doc = pq(response.content)
         last_post_link = doc('ol.threads div.last-post a:not(.username)')[0]
         href = last_post_link.attrib['href']
-        eq_(href.split('#')[1], 'post-4')
+        eq_(href.split('#')[1], 'post-%d' % p2.id)
 
     def test_empty_thread_errors(self):
         """Posting an empty thread shows errors."""
-        self.client.login(username='jsocol', password='testpass')
+        u = user(save=True)
+        self.client.login(username=u.username, password='testpass')
 
-        d = Document.objects.all()[0]
+        d = document(save=True)
         response = post(self.client, 'wiki.discuss.new_thread',
                         {'title': '', 'content': ''}, args=[d.slug])
 
@@ -172,9 +186,10 @@ class ThreadsTemplateTests(KBForumTestCase):
 
     def test_new_short_thread_errors(self):
         """Posting a short new thread shows errors."""
-        self.client.login(username='jsocol', password='testpass')
+        u = user(save=True)
+        self.client.login(username=u.username, password='testpass')
 
-        d = Document.objects.all()[0]
+        d = document(save=True)
         response = post(self.client, 'wiki.discuss.new_thread',
                         {'title': 'wha?', 'content': 'wha?'}, args=[d.slug])
 
@@ -189,11 +204,11 @@ class ThreadsTemplateTests(KBForumTestCase):
 
     def test_edit_thread_errors(self):
         """Editing thread with too short of a title shows errors."""
-        self.client.login(username='jsocol', password='testpass')
+        u = user(save=True)
+        self.client.login(username=u.username, password='testpass')
 
-        d = Document.objects.all()[0]
-        t_creator = User.objects.get(username='jsocol')
-        t = d.thread_set.filter(creator=t_creator)[0]
+        d = document(save=True)
+        t = thread(document=d, creator=u, save=True)
         response = post(self.client, 'wiki.discuss.edit_thread',
                         {'title': 'wha?'}, args=[d.slug, t.id])
 
@@ -205,21 +220,22 @@ class ThreadsTemplateTests(KBForumTestCase):
 
     def test_edit_thread_template(self):
         """The edit-thread template should render."""
-        self.client.login(username='jsocol', password='testpass')
+        u = user(save=True)
+        self.client.login(username=u.username, password='testpass')
 
-        u = User.objects.get(username='jsocol')
-        t = Thread.objects.filter(creator=u, is_locked=False)[0]
+        t = thread(creator=u, is_locked=False, save=True)
         res = get(self.client, 'wiki.discuss.edit_thread',
-                 args=[t.document.slug, t.id])
+                  args=[t.document.slug, t.id])
 
         doc = pq(res.content)
         eq_(len(doc('form.edit-thread')), 1)
 
     def test_watch_forum(self):
         """Watch and unwatch a forum."""
-        self.client.login(username='rrosario', password='testpass')
+        u = user(save=True)
+        self.client.login(username=u.username, password='testpass')
 
-        d = Document.objects.all()[0]
+        d = document(save=True)
         response = post(self.client, 'wiki.discuss.watch_forum',
                         {'watch': 'yes'}, args=[d.slug])
         self.assertContains(response, 'Stop')
@@ -230,9 +246,10 @@ class ThreadsTemplateTests(KBForumTestCase):
 
     def test_watch_locale(self):
         """Watch and unwatch a locale."""
-        self.client.login(username='rrosario', password='testpass')
+        u = user(save=True)
+        self.client.login(username=u.username, password='testpass')
 
-        d = Document.objects.all()[0]
+        d = document(save=True)
         next_url = reverse('wiki.discuss.threads', args=[d.slug])
         response = post(self.client, 'wiki.discuss.watch_locale',
                         {'watch': 'yes', 'next': next_url})
@@ -255,7 +272,8 @@ class ThreadsTemplateTests(KBForumTestCase):
 
     def test_all_locale_discussions(self):
         """Start or stop watching all discussions in a locale."""
-        self.client.login(username='rrosario', password='testpass')
+        u = user(save=True)
+        self.client.login(username=u.username, password='testpass')
         next_url = reverse('wiki.locale_discussions')
         # Watch locale.
         response = post(self.client, 'wiki.discuss.watch_locale',
@@ -268,7 +286,17 @@ class ThreadsTemplateTests(KBForumTestCase):
 
     def test_locale_discussions_ignores_sticky(self):
         """Sticky flag is ignored in locale discussions view"""
-        self.client.login(username='rrosario', password='testpass')
+        u = user(save=True)
+        d = document(save=True)
+        t = thread(title='Sticky Thread', is_sticky=True, document=d,
+                   save=True)
+        t.new_post(creator=u, content='foo')
+        t2 = thread(title='A thread with a very very long',
+                    is_sticky=False, document=d, save=True)
+        t2.new_post(creator=u, content='bar')
+        time.sleep(1)
+        t2.new_post(creator=u, content='last')
+        self.client.login(username=u.username, password='testpass')
         response = post(self.client, 'wiki.locale_discussions')
         eq_(200, response.status_code)
         doc = pq(response.content)
@@ -280,8 +308,9 @@ class NewThreadTemplateTests(KBForumTestCase):
 
     def test_preview(self):
         """Preview the thread post."""
-        self.client.login(username='rrosario', password='testpass')
-        d = Document.objects.all()[0]
+        u = user(save=True)
+        self.client.login(username=u.username, password='testpass')
+        d = document(save=True)
         num_threads = d.thread_set.count()
         content = 'Full of awesome.'
         response = post(self.client, 'wiki.discuss.new_thread',
@@ -295,13 +324,15 @@ class NewThreadTemplateTests(KBForumTestCase):
 
 class FlaggedPostTests(KBForumTestCase):
     def test_flag_kbforum_post(self):
-        p = Post.objects.all()[0]
-        f = FlaggedObject(content_object=p, reason='spam', creator_id=118577)
+        u = user(save=True)
+        t = thread(save=True)
+        p = t.new_post(creator=u, content='foo')
+        f = FlaggedObject(content_object=p, reason='spam', creator_id=u.id)
         f.save()
         # Make sure flagit queue page works
-        u = user(save=True)
-        add_permission(u, FlaggedObject, 'can_moderate')
-        self.client.login(username=u.username, password='testpass')
+        u2 = user(save=True)
+        add_permission(u2, FlaggedObject, 'can_moderate')
+        self.client.login(username=u2.username, password='testpass')
         response = get(self.client, 'flagit.queue')
         eq_(200, response.status_code)
         doc = pq(response.content)

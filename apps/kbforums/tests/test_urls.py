@@ -1,8 +1,9 @@
 from nose.tools import eq_
 
-from kbforums.tests import KBForumTestCase
+from kbforums.tests import KBForumTestCase, thread
 from sumo.tests import get, post
-from wiki.models import Document
+from users.tests import user, add_permission
+from wiki.tests import document
 
 
 class KBBelongsTestCase(KBForumTestCase):
@@ -12,13 +13,20 @@ class KBBelongsTestCase(KBForumTestCase):
 
     def setUp(self):
         super(KBBelongsTestCase, self).setUp()
-        self.doc = Document.objects.all()[0]
-        self.doc_2 = Document.objects.all()[1]
-        self.thread = self.doc.thread_set.filter(is_locked=False)[0]
-        self.thread_2 = self.doc.thread_set.filter(is_locked=False)[1]
-        self.post = self.thread.post_set.all()[0]
-        # Login for testing 403s
-        self.client.login(username='admin', password='testpass')
+        u = user(save=True)
+        self.doc = document(title='spam', save=True)
+        self.doc_2 = document(title='eggs', save=True)
+        self.thread = thread(creator=u, document=self.doc, is_locked=False,
+                             save=True)
+        self.thread_2 = thread(creator=u, document=self.doc_2, is_locked=False,
+                               save=True)
+        permissions = ('sticky_thread', 'lock_thread', 'delete_thread',
+                       'delete_post')
+        for permission in permissions:
+            add_permission(u, self.thread, permission)
+        self.post = self.thread.new_post(creator=self.thread.creator,
+                                         content='foo')
+        self.client.login(username=u.username, password='testpass')
 
     def test_posts_thread_belongs_to_document(self):
         """Posts view - thread belongs to document."""
