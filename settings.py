@@ -477,12 +477,12 @@ MINIFY_BUNDLES = {
         ),
         'forums': (
             'less/forums.less',
-            'css/reportabuse.css',
+            'less/reportabuse.less',
         ),
         'questions': (
             'less/questions.less',
             'css/cannedresponses.css',
-            'css/reportabuse.css',
+            'less/reportabuse.less',
         ),
         'mobile/questions': (
             'less/mobile/questions.less',
@@ -520,7 +520,7 @@ MINIFY_BUNDLES = {
         ),
         'users': (
             'less/users.less',
-            'css/reportabuse.css',
+            'less/reportabuse.less',
         ),
         'mobile/users': (
             'less/mobile/users.less',
