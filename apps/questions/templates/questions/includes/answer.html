@@ -122,7 +122,7 @@
     </ul>
 
     {% if user.is_authenticated() and user != answer.creator and not question.is_locked  %}
-      {% flag_form(url('questions.answer_flag', question.id, answer.id)) %}
+      {{ flag_form(url('questions.answer_flag', question.id, answer.id)) }}
     {% endif %}
   {% endif %}
 </div>
