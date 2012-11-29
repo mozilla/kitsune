@@ -21,7 +21,7 @@
         <h1>{{ _('Documents edited or translated') }}</h1>
         {% for group in documents|groupby('locale') %}
           {% if loop.first %}<ul>{% endif %}
-          <li>{{ group.grouper }} ({{ group.list|length }})<ul>
+          <li>[{{ group.grouper }}] {{ settings.LANGUAGES[group.grouper.lower()] }} ({{ group.list|length }})<ul>
           {% for d in group.list %}
             <li>
               <a href="{{ d.get_absolute_url() }}">
