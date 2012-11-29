@@ -376,6 +376,9 @@ INSTALLED_APPS = (
     'products',
     'topics',
 
+    # App for Sentry:
+    'raven.contrib.django',
+
     # Extra apps for testing.
     'django_nose',
     'test_utils',

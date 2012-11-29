@@ -136,3 +136,6 @@
 [submodule "media/js/libs/ace"]
 	path = media/js/libs/ace
 	url = git://github.com/ajaxorg/ace-builds.git
+[submodule "vendor/src/raven-python"]
+	path = vendor/src/raven-python
+	url = git://github.com/getsentry/raven-python.git
