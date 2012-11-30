@@ -9,6 +9,10 @@ import celery.log
 config = {
     'version': 1,
     'disable_existing_loggers': True,
+    'root': {
+        'level': logging.ERROR,
+        'handlers': ['syslog', 'mail_admins', 'sentry'],
+    },
     'formatters': {
         'default': {
             'format': '{0}: %(asctime)s %(name)s:%(levelname)s %(message)s: '
@@ -26,6 +30,10 @@ config = {
             'class': 'django.utils.log.AdminEmailHandler',
             'level': logging.ERROR,
         },
+        'sentry': {
+            'class': 'raven.contrib.django.handlers.SentryHandler',
+            'level': logging.ERROR,
+        },
         'console': {
             'class': 'logging.StreamHandler',
             'formatter': 'default',
@@ -34,16 +42,26 @@ config = {
     },
     'loggers': {
         'k': {
-            'handlers': ['syslog', 'mail_admins'],
+            'handlers': ['syslog', 'mail_admins', 'sentry'],
             'propogate': True,
             # Use the most permissive setting. It is filtered in the handlers.
             'level': logging.DEBUG,
         },
         'django.request': {
-            'handlers': ['syslog', 'mail_admins'],
+            'handlers': ['syslog', 'mail_admins', 'sentry'],
             'propogate': True,
             # Use the most permissive setting. It is filtered in the handlers.
             'level': logging.DEBUG,
+        },
+        'raven': {
+            'level': logging.ERROR,
+            'handlers': ['syslog', 'mail_admins'],
+            'propagate': False,
+        },
+        'sentry.errors': {
+            'level': logging.ERROR,
+            'handlers': ['syslog', 'mail_admins'],
+            'propagate': False,
         },
     },
 }
