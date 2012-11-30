@@ -1,9 +1,5 @@
 {# vim: set ts=2 et sts=2 sw=2: #}
 
-{% if request.locale == settings.WIKI_DEFAULT_LANGUAGE and waffle.flag('register_survey') %}
-  {% set SURVEY_GIZMOS = (SURVEY_GIZMOS or []) + ['register_survey'] %}
-{% endif %}
-
 {% extends "users/base.html" %}
 {% from "layout/errorlist.html" import errorlist %}
 {% from "users/includes/macros.html" import register_form %}
