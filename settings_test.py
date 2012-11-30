@@ -10,8 +10,6 @@ CELERY_ALWAYS_EAGER = True
 ES_INDEXES = {'default': 'sumo_test' + settings.ES_INDEX_PREFIX}
 ES_WRITE_INDEXES = ES_INDEXES
 
-print ES_INDEXES
-
 # This makes sure we only turn on ES stuff when we're testing ES
 # stuff.
 ES_LIVE_INDEXING = False
