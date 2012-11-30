@@ -11,7 +11,7 @@ config = {
     'disable_existing_loggers': True,
     'root': {
         'level': logging.ERROR,
-        'handlers': ['syslog', 'mail_admins', 'sentry'],
+        'handlers': ['sentry'],
     },
     'formatters': {
         'default': {
@@ -42,13 +42,13 @@ config = {
     },
     'loggers': {
         'k': {
-            'handlers': ['syslog', 'mail_admins', 'sentry'],
+            'handlers': ['syslog', 'mail_admins'],
             'propogate': True,
             # Use the most permissive setting. It is filtered in the handlers.
             'level': logging.DEBUG,
         },
         'django.request': {
-            'handlers': ['syslog', 'mail_admins', 'sentry'],
+            'handlers': ['syslog', 'mail_admins'],
             'propogate': True,
             # Use the most permissive setting. It is filtered in the handlers.
             'level': logging.DEBUG,
