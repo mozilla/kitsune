@@ -1,3 +1,4 @@
+from django.conf import settings
 # The test system uses this to override settings in settings.py and
 # settings_local.py with settings appropriate for testing.
 
@@ -6,7 +7,7 @@ CELERY_ALWAYS_EAGER = True
 
 # Make sure the doctypes (the keys) match the doctypes in ES_INDEXES
 # in settings.py and settings_local.py.
-ES_INDEXES = {'default': 'sumo_test'}
+ES_INDEXES = {'default': 'sumo_test' + settings.ES_INDEX_PREFIX}
 ES_WRITE_INDEXES = ES_INDEXES
 
 # This makes sure we only turn on ES stuff when we're testing ES
