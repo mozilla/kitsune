@@ -10,45 +10,49 @@
   margin: 0 8px 0 0;
 }
 
-.download-button {
+.download-firefox {
   position: absolute;
   top: 0;
   right: 0;
+  font-family: 'Open Sans', sans-serif;
 
-  a.button {
-    position: relative;
-    top: 0;
+  .download-button {
+    height: 48px;
     display: block;
     .gradient(#81BC2E, #81BC2E, #659324);
-    color: #fff;
-    padding: 3px 15px;
-    transition: top 0s;
-    transition: all 0.5s;
     .border-radius(5px);
     .box-shadow(~"0 2px 0 0 rgba(0, 0, 0, 0.1), 0 -2px 0 0 rgba(0, 0, 0, 0.3) inset");
+    line-height: 40px;
+    text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
+    transition: top 0s;
+    transition: all 0.5s;
 
-    h2 {
-      display: inline;
-      font-family: 'MetaMedium', Arial, Helvetica, sans-serif;
-      font-size: 2.5em;
-    }
+    .download-content {
+      display: block;
+      background: url('../img/icons/firefox-small.png') left top no-repeat;
+      height: 52px;
+      margin-left: -25px;
+      padding: 0 20px 0 65px;
+      color: #B5E786;
 
-    span {
-      display: inline-block;
-      font-size: 0.8em;
-      color: #DDD;
-      margin-left: 15px;
-      line-height: 1.1em;
-    }
+      .download-title {
+        display: inline-block;
+        font-family: georgia,"Bitstream Charter",serif;
+        font-size: 24px;
+        position: relative;
+        padding-right: 25px;
+        color: #fff;
 
-    i.down-arrow {
-      display: inline-block;
-      width: 32px;
-      height: 32px;
-      background: url('../img/icons-sprite.png') -42px -1897px no-repeat;
-      position: absolute;
-      top: 6px;
-      right: 12px;
+        &:after {
+          width: 32px;
+          height: 32px;
+          content: "";
+          background: url('../img/icons-sprite.png') -42px -1897px no-repeat;
+          position: absolute;
+          top: 5px;
+          right: -6px;
+        }
+      }
     }
 
     &:hover {
@@ -57,24 +61,27 @@
     }
 
     &:active {
-      top: 1px;
       .box-shadow(~"0 2px 0 0 rgba(0, 0, 0, 0.1), 0 -1px 0 0 rgba(0, 0, 0, 0.3) inset, 0 12px 24px 2px #83C822 inset");
     }
   }
 
   ul.info {
     font-size: 0.7em;
-    margin: 0;
+    margin: 4px 0 0 0;
     padding: 0;
-    font-family: 'Moz', Arial, Helvetica, sans-serif;
+    text-align: right;
 
     li {
       list-style: none;
       display: inline;
 
+      a {
+        color: #999;
+      }
+
       &:not(:first-child):before {
         content: "|";
-        color: #AAA;
+        color: #999;
         padding-right: 3px;
       }
     }
