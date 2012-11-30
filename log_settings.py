@@ -26,6 +26,10 @@ config = {
             'class': 'django.utils.log.AdminEmailHandler',
             'level': logging.ERROR,
         },
+        'sentry': {
+            'class': 'raven.contrib.django.handlers.SentryHandler',
+            'level': logging.ERROR,
+        },
         'console': {
             'class': 'logging.StreamHandler',
             'formatter': 'default',
@@ -34,13 +38,13 @@ config = {
     },
     'loggers': {
         'k': {
-            'handlers': ['syslog', 'mail_admins'],
+            'handlers': ['syslog', 'mail_admins', 'sentry'],
             'propogate': True,
             # Use the most permissive setting. It is filtered in the handlers.
             'level': logging.DEBUG,
         },
         'django.request': {
-            'handlers': ['syslog', 'mail_admins'],
+            'handlers': ['syslog', 'mail_admins', 'sentry'],
             'propogate': True,
             # Use the most permissive setting. It is filtered in the handlers.
             'level': logging.DEBUG,
