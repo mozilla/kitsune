@@ -258,7 +258,7 @@
                     method="POST"
                     class="tag-adder">
                 {{ csrf() }}
-                <input type="text" name="tag-name" size="12"
+                <input type="text" name="tag-name" size="12" maxlength="100"
                        class="searchbox autocomplete-tags {% if tag_adding_error %} invalid{% endif %}"
                        value="{{ tag_adding_value }}" />
 
