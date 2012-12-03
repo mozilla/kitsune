@@ -24,7 +24,8 @@ def profile_avatar(user):
         profile = user.get_profile()
     except (Profile.DoesNotExist, AttributeError):
         return settings.DEFAULT_AVATAR
-    return profile.avatar.url if profile.avatar else settings.DEFAULT_AVATAR
+    return (profile.avatar.url if profile and profile.avatar else
+            settings.DEFAULT_AVATAR)
 
 
 @register.function
@@ -34,7 +35,7 @@ def display_name(user):
         profile = user.get_profile()
     except Profile.DoesNotExist:
         return user.username
-    return profile.name if profile.name else user.username
+    return profile.name if profile and profile.name else user.username
 
 
 @register.filter

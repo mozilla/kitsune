@@ -1,5 +1,7 @@
 from django.conf.urls.defaults import patterns, url, include
 
+from wiki import locale_views
+
 
 # These patterns inherit (?P<document_slug>[^\/]).
 document_patterns = patterns('wiki.views',
@@ -50,8 +52,24 @@ document_patterns = patterns('wiki.views',
     url(r'^/steal_lock$', 'steal_lock', name='wiki.steal_lock'),
 )
 
+locale_patterns = patterns('wiki.locale_views',
+    url(r'^$', 'locale_details', name='wiki.locale_details'),
+    url(r'/add-leader$', 'add_leader', name='wiki.add_locale_leader'),
+    url(r'^/remove-leader/(?P<user_id>\d+)$', 'remove_leader',
+        name='wiki.remove_locale_leader'),
+    url(r'/add-reviewer$', 'add_reviewer', name='wiki.add_locale_reviewer'),
+    url(r'^/remove-reviewer/(?P<user_id>\d+)$', 'remove_reviewer',
+        name='wiki.remove_locale_reviewer'),
+    url(r'/add-editor$', 'add_editor', name='wiki.add_locale_editor'),
+    url(r'^/remove-editor/(?P<user_id>\d+)$', 'remove_editor',
+        name='wiki.remove_locale_editor'),
+)
+
 urlpatterns = patterns('wiki.views',
     url(r'^$', 'landing', name='wiki.landing'),
+
+    url(r'^/locales$', locale_views.locale_list, name='wiki.locales'),
+    url(r'^/locales/(?P<locale_code>[^/]+)', include(locale_patterns)),
 
     # (Un)subscribe to locale 'ready for review' notifications.
     url(r'^/watch-ready-for-review$', 'watch_locale',

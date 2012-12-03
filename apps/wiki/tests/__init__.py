@@ -7,7 +7,7 @@ from products.tests import product
 from sumo.tests import LocalizingClient, TestCase, with_save
 from topics.tests import topic
 from users.tests import user
-from wiki.models import Document, Revision, HelpfulVote
+from wiki.models import Document, Revision, HelpfulVote, Locale
 from wiki.config import CATEGORIES, SIGNIFICANCES
 
 
@@ -61,6 +61,13 @@ def helpful_vote(**kwargs):
     defaults = {'created': datetime.now(), 'helpful': False, 'revision': r}
     defaults.update(kwargs)
     return HelpfulVote(**defaults)
+
+
+@with_save
+def locale(**kwargs):
+    defaults = {'locale': 'en-US'}
+    defaults.update(kwargs)
+    return Locale(**defaults)
 
 
 def translated_revision(locale='de', save=False, **kwargs):

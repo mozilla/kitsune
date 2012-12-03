@@ -284,7 +284,8 @@ def _document_lock(doc_id, username):
 
 @login_required
 def steal_lock(request, document_slug, revision_id=None):
-    doc = get_object_or_404(Document, locale=request.locale, slug=document_slug)
+    doc = get_object_or_404(
+        Document, locale=request.locale, slug=document_slug)
     user = request.user
 
     ok = _document_lock_steal(doc.id, user.username)
