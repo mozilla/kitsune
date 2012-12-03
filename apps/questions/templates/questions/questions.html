@@ -14,23 +14,25 @@
     <h1>{{ _('Support Forum') }}</h1>
     <div id="recent-stats" class="cf">
       <span class="total">
-        {{ _('Total questions: <strong>{num}</strong>')|fe(num=recent_asked_count) }}
+        <h3>{{ _('Total questions: <strong>{num}</strong>')|fe(num=recent_asked_count) }}</h3>
       </span>
       <span class="no-reply">
-        {% if recent_unanswered_count > 0 %}
-          {% trans recent_unanswered_count,
-            url=url('questions.questions')|urlparams(filter='recent-unanswered') %}
-            <strong>{{recent_unanswered_count}}</strong> question in the last <strong>3 days</strong> has no reply.
-            <a href="{{url}}">Help solve it!</a>
-            {% pluralize recent_unanswered_count %}
-            <strong>{{recent_unanswered_count}}</strong> questions in the last <strong>3 days</strong> have no reply.
-            <a href="{{url}}">Help solve them!</a>
-          {% endtrans %}
-        {% else %}
-          {% trans %}
-            <strong>0</strong> questions in the last <strong>3 days</strong> have no reply. <strong>Good job!</strong>
-          {% endtrans %}
-        {% endif %}
+        <h3>
+          {% if recent_unanswered_count > 0 %}
+            {% trans recent_unanswered_count,
+              url=url('questions.questions')|urlparams(filter='recent-unanswered') %}
+              <strong>{{recent_unanswered_count}}</strong> question in the last <strong>3 days</strong> has no reply.
+              <a href="{{url}}">Help solve it!</a>
+              {% pluralize recent_unanswered_count %}
+              <strong>{{recent_unanswered_count}}</strong> questions in the last <strong>3 days</strong> have no reply.
+              <a href="{{url}}">Help solve them!</a>
+            {% endtrans %}
+          {% else %}
+            {% trans %}
+              <strong>0</strong> questions in the last <strong>3 days</strong> have no reply. <strong>Good job!</strong>
+            {% endtrans %}
+          {% endif %}
+        </h3>
       </span>
       <div class="progress-bar {% if recent_answered_percent == 100 %} complete{% endif %}">
         <div style="width: {{ recent_answered_percent }}%;">
