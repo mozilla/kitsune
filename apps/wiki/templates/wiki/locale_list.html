@@ -1,0 +1,30 @@
+{# vim: set ts=2 et sts=2 sw=2: #}
+{% extends "wiki/base.html" %}
+{% from "includes/common_macros.html" import for_contributors_sidebar %}
+{% set title = _('Locales | Knowledge Base') %}
+{% set crumbs = [(None, _('Locales'))] %}
+
+{% block content %}
+  <div class="grid_9">
+    <article id="locale-listing">
+      <h1>{{ _('Locales') }}</h1>
+      <ul>
+        {% for locale in locales %}
+          <li>
+            <a href="{{ url('wiki.locale_details', locale.locale) }}">
+              [{{ locale.locale }}] {{ settings.LANGUAGES[locale.locale.lower()] }}
+            </a>
+          </li>
+        {% endfor %}
+      </ul>
+    </article>
+  </div>
+{% endblock %}
+
+{% block side_top %}
+  <nav id="doc-tools">
+    <ul class="sidebar-nav sidebar-folding">
+      {{ for_contributors_sidebar(user, settings.WIKI_DEFAULT_LANGUAGE, True) }}
+    </ul>
+  </nav>
+{% endblock %}
