@@ -40,7 +40,7 @@
       {% if not waffle.switch('hide-voting') %}
         <div class="vote-wrap">
         {# this extra div is to make the js compatible with old theme. TODO: Remove and fix js. #}
-          {{ vote_form(document) }}
+          {{ vote_form(document, 'footer') }}
         </div>
       {% endif %}
 
@@ -61,6 +61,7 @@
   {{ document_tools(doc, parent, user, 'article', settings) }}
   {{ related_articles(related, document) }}
   {{ topic_sidebar(topics[:10], product) }}
+  {{ vote_form(document, 'sidebar') }}
 {% endblock %}
 
 {% block breadcrumbs %}

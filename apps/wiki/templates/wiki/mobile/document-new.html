@@ -27,7 +27,7 @@
     {{ related_articles(related, document) }}
 
     {% if not waffle.switch('hide-voting') %}
-      {{ vote_form(document) }}
+      {{ vote_form(document, 'footer') }}
     {% endif %}
 
     {{ contributor_list(contributors) }}

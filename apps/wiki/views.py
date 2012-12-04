@@ -819,6 +819,7 @@ def helpful_vote(request, document_slug):
 
     if not revision.has_voted(request):
         ua = request.META.get('HTTP_USER_AGENT', '')[:1000]  # 1000 max_length
+        source = request.POST.get('source')
         vote = HelpfulVote(revision=revision, user_agent=ua)
 
         if 'helpful' in request.POST:
@@ -842,7 +843,7 @@ def helpful_vote(request, document_slug):
                 {'vote_id': vote.id})
 
         # Save vote metadata: referrer and search query (if available)
-        for name in ['referrer', 'query']:
+        for name in ['referrer', 'query', 'source']:
             val = request.POST.get(name)
             if val:
                 vote.add_metadata(name, val)
