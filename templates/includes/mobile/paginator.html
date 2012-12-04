@@ -1,20 +1,20 @@
 {# vim: set ts=2 et sts=2 sw=2: #}
-<ul class="paginator">
-  <li class="prev">
+<ul class="paginator cf">
+  <li class="prev {% if not pager.has_previous() %}disabled{% endif %}">
     {% if pager.has_previous() %}
-      <a href="{{ pager.url|urlparams(page=pager.previous_page_number()) }}">{{ _('Prev') }}</a>
+      <a class="btn" href="{{ pager.url|urlparams(page=pager.previous_page_number()) }}">{{ _('Newer') }}</a>
     {% else %}
-      <a>{{ _('Prev') }}</a>
+      <span class="btn">{{ _('Newer') }}</span>
     {% endif %}
   </li>
   <li class="page">
-    {{ ngettext('Page {n}', 'Page {n}', pager.number)|f(n=pager.number) }}
+    <div class="select-box">{{ ngettext('Page {n}', 'Page {n}', pager.number)|f(n=pager.number) }}</div>
   </li>
-  <li class="next">
+  <li class="next {% if not pager.has_next() %}disabled{% endif %}">
     {% if pager.has_next() %}
-      <a href="{{ pager.url|urlparams(page=pager.next_page_number()) }}">{{ _('Next') }}</a>
+      <a class="btn" href="{{ pager.url|urlparams(page=pager.next_page_number()) }}">{{ _('Older') }}</a>
     {% else %}
-      <a>{{ _('Next') }}</a>
+      <span class="btn">{{ _('Older') }}</span>
     {% endif %}
   </li>
 </ul>

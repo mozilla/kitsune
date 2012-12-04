@@ -110,6 +110,9 @@ def search(request, template=None):
 
     cleaned = search_form.cleaned_data
 
+    if request.MOBILE and cleaned['w'] == constants.WHERE_BASIC:
+        cleaned['w'] = constants.WHERE_WIKI
+
     page = max(smart_int(request.GET.get('page')), 1)
     offset = (page - 1) * settings.SEARCH_RESULTS_PER_PAGE
 

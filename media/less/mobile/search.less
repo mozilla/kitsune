@@ -1,0 +1,107 @@
+@import '../variables.less';
+@import '../vendors.less';
+
+.results {
+  ol {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+
+    li {
+      border-bottom: 1px solid @borderLightGrey;
+
+      > a {
+        color: @textGrey;
+        display: block;
+        padding: 10px 16px;
+
+        b {
+          background: @mobileFormBackground;
+        }
+
+        .title {
+          display: block;
+          font-size: 18px;
+        }
+      }
+    }
+  }
+
+  .search-bar {
+    background: @mobileFormBackground;
+    height: 26px;
+    left: 0;
+    padding: 5px 16px;
+    position: absolute;
+    right: 0;
+    top: 51px;
+    z-index: 12;
+
+    button {
+      background: transparent;
+      border: 0;
+      float: right;
+      font-weight: bold;
+      line-height: 26px;
+      padding: 0;
+      text-align: right;
+      width: 80px;
+    }
+
+    input {
+      border: 1px solid #666;
+      .box-sizing(border-box);
+      float: left;
+      height: 26px;
+      width: calc(~'100% -80px');
+      width: -moz-calc(~'100% - 80px');
+    }
+  }
+
+  .search-filters {
+    background: @mobileSubheaderBackground;
+    .box-shadow(0 0 4px 0 rgba(0, 0, 0, 0.75));
+    height: 24px;
+    left: 0;
+    padding: 5px 0;
+    position: absolute;
+    right: 0;
+    top: 87px;
+    z-index: 10;
+
+    ul {
+      list-style: none;
+      margin: 0;
+      padding: 0 16px;
+
+      li {
+        background: url('../../img/mobile/search-sprite.png') -23px -25px no-repeat;
+        .box-sizing(border-box);
+        float: left;
+        height: 24px;
+        opacity: 0.5;
+        padding-left: 34px;
+        width: 50%;
+
+        &:last-of-type {
+          background-position: -23px -99px;
+        }
+
+        &.enabled {
+          opacity: 1;
+        }
+
+        > a {
+          color: #fff;
+          line-height: 24px;
+        }
+      }
+    }
+  }
+
+  #page {
+    .wrapper {
+      top: 121px;
+    }
+  }
+}
