@@ -493,6 +493,9 @@ MINIFY_BUNDLES = {
         'search': (
             'less/search.less',
         ),
+        'mobile/search': (
+            'less/mobile/search.less',
+        ),
         'wiki': (
             'css/users.autocomplete.css',
             'css/users.list.css',

@@ -327,6 +327,36 @@ input[type='email'] {
   }
 }
 
+.paginator {
+  list-style: none;
+  margin: 0;
+  padding: 10px 16px;
+
+  li {
+    .box-sizing(border-box);
+    float: left;
+    width: 27.5%;
+
+    &.disabled {
+      opacity: 0.5;
+    }
+
+    &.page {
+      padding: 0 16px;
+      width: 45%;
+
+      .select-box {
+        float: none;
+        margin: 0;
+      }
+    }
+
+    .btn {
+      margin-top: 4px;
+    }
+  }
+}
+
 .progress-bar {
   background: rgba(0, 0, 0, 0.1) url('../img/grain.png');
   border: 1px solid rgba(0, 0, 0, 0.03);
