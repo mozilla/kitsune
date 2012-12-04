@@ -1,3 +1,4 @@
+/*global gettext, k*/
 /*
  * Voting form ajaxified.
  */
@@ -60,6 +61,8 @@ AjaxVote.prototype = {
                         $btns.removeAttr('disabled');
                         $form.removeClass('busy');
                         self.voted = true;
+                        // Hide other forms
+                        self.$form.filter(function() { return this !== $form; }).remove();
                     },
                     error: function() {
                         var msg = gettext('There was an error submitting your vote.');
@@ -117,7 +120,7 @@ AjaxVote.prototype = {
         var $survey = $(survey);
         var $commentCount = $survey.find('#remaining-characters');
         var $commentBox = $survey.find('textarea');
-        var maxCount = parseInt($commentCount.text());
+        var maxCount = parseInt($commentCount.text(), 10);
         var $radios = $survey.find('input[type=radio][name=unhelpful-reason]');
         var $submit = $survey.find('input[type=submit], .btn[data-type=submit]');
         var $reason = $survey.find('.disabled-reason');
@@ -126,14 +129,14 @@ AjaxVote.prototype = {
         $container.after($survey);
 
         // If we are in the sidebar, remove the vote form container.
-        if ($container.closest('#side').length) {
+        if ($container.closest('aside').length) {
             $container.remove();
         }
 
         $submit.prop('disabled', true);
 
         function validate() {
-            var checked = $radios.filter(':checked').val()
+            var checked = $radios.filter(':checked').val();
             var feedback = $textbox.val();
             if (checked === undefined ||
                 ((checked === 'other' || checked === 'firefox-feedback') && !feedback)) {

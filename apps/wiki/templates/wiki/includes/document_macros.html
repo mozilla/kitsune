@@ -265,7 +265,7 @@
   </section>
 {%- endmacro %}
 
-{% macro vote_form(document, header=None) -%}
+{% macro vote_form(document, source=None) -%}
   {% if not header %}
     {% set header = _('Was this article helpful?') %}
   {% endif %}
@@ -275,6 +275,9 @@
         <p>
           <span>{{ header }}</span>
           <input type="hidden" name="revision_id" value="{{ document.current_revision.id }}" />
+          {% if source %}
+            <input type="hidden" name="source" value="{{ source }}" />
+          {% endif %}
           <input type="submit" class="btn" name="helpful" value="{{ _('Yes') }}" />
           <input type="submit" class="btn" name="not-helpful" value="{{ _('No') }}" />
           <img class="wait" src="{{ settings.MEDIA_URL }}img/customercare/spinner.gif" alt="{{ _('Please wait...') }}" />

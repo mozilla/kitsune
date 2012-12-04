@@ -19,6 +19,7 @@ from wiki.tests import (doc_rev, document, helpful_vote, new_document_data,
 from wiki.showfor import _version_groups
 from wiki.views import (_document_lock_check, _document_lock_clear,
                         _document_lock_steal)
+from wiki.models import HelpfulVoteMetadata
 
 from sumo.redis_utils import redis_client, RedisError
 
@@ -313,6 +314,20 @@ class VoteTests(TestCase):
         survey = json.loads(vote_meta.value)
         # Make sure the right value was truncated.
         assert 'bad data' not in survey['comment']
+
+    def test_source(self):
+        """Test that the source metadata field works."""
+        rev = revision(save=True)
+        url = reverse('wiki.document_vote', kwargs={
+            'document_slug': rev.document.slug
+            })
+        self.client.post(url, {
+                'revision_id': rev.id,
+                'helpful': True,
+                'source': 'test',
+            })
+
+        eq_(HelpfulVoteMetadata.objects.filter(key='source').count(), 1)
 
 
 class TestDocumentLocking(TestCase):
