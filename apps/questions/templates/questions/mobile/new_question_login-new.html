@@ -1,15 +1,14 @@
 {# vim: set ts=2 et sts=2 sw=2: #}
 {% extends "mobile/base.html" %}
-{% from "layout/errorlist.html" import errorlist %}
-{% from "questions/includes/aaq_macros-new.html" import mobile_register_forms %}
-{% set loginform = login_form %}
-{% from "users/includes/macros.html" import login_form %}
 {% set title = _('Ask A Question') %}
+{% set headline = title %}
 {% set classes = 'aaq login-register' %}
 {% set styles = ('mobile/aaq',) %}
 {% set hide_extra_content = True %}
-
-{% block headline %}{{ _('Ask A Question') }}{% endblock %}
+{% set loginform = login_form %}
+{% from "layout/errorlist.html" import errorlist %}
+{% from "questions/includes/aaq_macros-new.html" import mobile_register_forms %}
+{% from "users/includes/macros.html" import login_form %}
 
 {% block content %}
   {{ mobile_register_forms(register_form, csrf()) }}

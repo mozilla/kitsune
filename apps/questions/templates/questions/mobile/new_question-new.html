@@ -5,7 +5,6 @@
 {% from "questions/includes/aaq_macros-new.html" import aaq_search_form with context %}
 {% set title = _('Ask A Question') %}
 {% set headline = title %}
-{{ _('Post Question') }}
 {% set classes = 'aaq' %}
 {% if not current_category %}
   {% set classes = classes + ' has-pulldown' %}
@@ -54,14 +53,16 @@
 
   {% if not tried_search and (current_articles or current_html) and not search_results and not form %}
     {{ current_articles_and_message(current_articles, current_category, current_html, True) }}
-    <div class="try_or_post cf">
+    <div class="try_or_post {% if deadend %}deadend{% endif %} cf">
       <a class="btn" href="{{ url('questions.aaq_step2', product_key=current_product.key) }}">{{ _('Try another topic') }}</a>
 
-      <form action="{{ url('questions.aaq_step5', product_key=current_product.key, category_key=current_category.key) }}" method="get">
-        <input type="hidden" name="search" value="" />
-        <input type="hidden" name="step" value="{% if user.is_authenticated() %}aaq-question{% else %}aaq-register{% endif %}" />
-        <button type="submit" class="btn">{{ _('Post a question') }}</button>
-      </form>
+      {% if not deadend %}
+        <form action="{{ url('questions.aaq_step5', product_key=current_product.key, category_key=current_category.key) }}" method="get">
+          <input type="hidden" name="search" value="" />
+          <input type="hidden" name="step" value="{% if user.is_authenticated() %}aaq-question{% else %}aaq-register{% endif %}" />
+          <button type="submit" class="btn">{{ _('Post a question') }}</button>
+        </form>
+      {% endif %}
     </div>
   {% endif %}
 
