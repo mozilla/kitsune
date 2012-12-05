@@ -1,4 +1,4 @@
-{% macro vote_form(document, header=None) -%}
+{% macro vote_form(document, source=None) -%}
   {% if not header %}
     {% set header = _('Was this article helpful?') %}
   {% endif %}
@@ -8,6 +8,9 @@
       <form class="helpful" action="{{ url('wiki.document_vote', document_slug=document.slug) }}" method="post">
         <p>
           <input type="hidden" name="revision_id" value="{{ document.current_revision.id }}" />
+          {% if source %}
+            <input type="hidden" name="source" value="{{ source }}" />
+          {% endif %}
           <div class="cf">
             <input type="submit" class="btn" name="helpful" value="{{ _('Yes') }}" />
             <input type="submit" class="btn" name="not-helpful" value="{{ _('No') }}" />
