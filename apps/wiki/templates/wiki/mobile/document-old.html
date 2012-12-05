@@ -23,6 +23,6 @@
     {{ related_articles(related, document) }}
   </article>
   {% if not waffle.switch('hide-voting') %}
-    {{ vote_form(document, 'footer') }}
+    {{ vote_form(document, source='mobile') }}
   {% endif %}
 {% endblock %}
