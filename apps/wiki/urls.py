@@ -1,6 +1,7 @@
 from django.conf.urls.defaults import patterns, url, include
 
 from wiki import locale_views
+from wiki.locale_views import LEADER, REVIEWER, EDITOR
 
 
 # These patterns inherit (?P<document_slug>[^\/]).
@@ -54,15 +55,18 @@ document_patterns = patterns('wiki.views',
 
 locale_patterns = patterns('wiki.locale_views',
     url(r'^$', 'locale_details', name='wiki.locale_details'),
-    url(r'/add-leader$', 'add_leader', name='wiki.add_locale_leader'),
-    url(r'^/remove-leader/(?P<user_id>\d+)$', 'remove_leader',
-        name='wiki.remove_locale_leader'),
-    url(r'/add-reviewer$', 'add_reviewer', name='wiki.add_locale_reviewer'),
-    url(r'^/remove-reviewer/(?P<user_id>\d+)$', 'remove_reviewer',
-        name='wiki.remove_locale_reviewer'),
-    url(r'/add-editor$', 'add_editor', name='wiki.add_locale_editor'),
-    url(r'^/remove-editor/(?P<user_id>\d+)$', 'remove_editor',
-        name='wiki.remove_locale_editor'),
+    url(r'/add-leader$', 'add_to_locale',
+        {'role': LEADER}, name='wiki.add_locale_leader'),
+    url(r'^/remove-leader/(?P<user_id>\d+)$', 'remove_from_locale',
+        {'role': LEADER}, name='wiki.remove_locale_leader'),
+    url(r'/add-reviewer$', 'add_to_locale',
+        {'role': REVIEWER}, name='wiki.add_locale_reviewer'),
+    url(r'^/remove-reviewer/(?P<user_id>\d+)$', 'remove_from_locale',
+        {'role': REVIEWER}, name='wiki.remove_locale_reviewer'),
+    url(r'/add-editor$', 'add_to_locale',
+        {'role': EDITOR}, name='wiki.add_locale_editor'),
+    url(r'^/remove-editor/(?P<user_id>\d+)$', 'remove_from_locale',
+        {'role': EDITOR}, name='wiki.remove_locale_editor'),
 )
 
 urlpatterns = patterns('wiki.views',

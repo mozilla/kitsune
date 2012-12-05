@@ -11,11 +11,11 @@
       <h1>[{{ locale.locale }}] {{ settings.LANGUAGES[locale.locale.lower()] }}</h1>
 
       <div id="locale-leaders" class="editable">
-        {% if user_can_manage_leaders %}
+        {% if user_can_edit %}
           <a class="edit" href="#group-leaders">{{ _('Edit locale leaders') }}</a>
         {% endif %}
         <h2>{{ _('Locale Leaders') }}</h2>
-        {% if user_can_manage_leaders %}
+        {% if user_can_edit %}
           <form id="add-leader-form" class="edit-mode" action="{{ url('wiki.add_locale_leader', locale.locale) }}" method="POST">
             {{ csrf() }}
             {{ errorlist(leader_form) }}
@@ -27,7 +27,7 @@
           {% for user in leaders %}
             <li>
               {{ user_row(user) }}
-              {% if user_can_manage_leaders %}
+              {% if user_can_edit %}
                 <div class="remove edit-mode">
                   <a href="{{ url('wiki.remove_locale_leader', locale.locale, user.id) }}" title="{{ _('Remove user from locale leaders') }}">&#x2716;</a>
                 </div>
