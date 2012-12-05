@@ -71,7 +71,7 @@
   </div>
 {%- endmacro %}
 
-{% macro current_articles_and_message(articles, category, html=None) -%}
+{% macro current_articles_and_message(articles, category, html=None, all_articles=False) -%}
   <div class="highlight-box">
     {% if html %}
       <h2>{{ html|safe }}</h2>
@@ -80,7 +80,10 @@
     {% endif %}
     {% if articles %}
       <ul class="articles select-one">
-        {% for article in articles[:5] %}
+        {% if not all_articles %}
+          {% set articles = articles[:5] %}
+        {% endif %}
+        {% for article in articles %}
           <li>
             <a href="{{ article.url }}" target="_blank">{{ article.document_title }}</a>
           </li>
@@ -141,6 +144,19 @@
       <h2>{{ _('I already have an account') }}</h3>
       {{ login_form(login, csrf=csrf, action='', only_pwreset=True) }}
     </div>
+  </div>
+{%- endmacro %}
+
+{% macro mobile_register_forms(register, csrf) -%}
+  <h2>{{ _('To post your question, please create a support account') }}</h2>
+  <p>
+    {{ _('A support account lets us alert you when people respond to your question.') }}
+    <span class="btn btn-login" data-overlay="login-overlay">{{ _('Already have an account? Sign in') }}</span>
+  </p>
+  <div id="register-form" class="grid_6 alpha">
+    <h2>{{ _('Create a support account') }}</h3>
+    {{ register_form(register, csrf=csrf, action='') }}
+    <span class="btn btn-login" data-overlay="login-overlay">{{ _('Already have an account? Sign in') }}</span>
   </div>
 {%- endmacro %}
 

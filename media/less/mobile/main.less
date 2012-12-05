@@ -130,7 +130,8 @@ fieldset {
 
 input[type='text'],
 input[type='password'],
-input[type='email'] {
+input[type='email'],
+textarea {
   border: 1px solid @mobileInputBorder;
   .border-radius(3px);
   .box-shadow(0 1px 2px 0 rgba(0, 0, 0, 0.1) inset);
@@ -151,6 +152,7 @@ input[type='email'] {
   .border-radius(2px);
   .box-sizing(border-box);
   color: @textDarkGrey;
+  cursor: pointer;
   display: block;
   font-family: @Moz;
   font-size: 16px;
@@ -491,6 +493,11 @@ input[type='email'] {
     position: absolute;
     right: 3px;
   }
+}
+
+.swipeable {
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .topic-sprite {

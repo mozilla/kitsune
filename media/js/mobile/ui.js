@@ -13,7 +13,7 @@
             $(this).closest('.pulldown-menu').toggleClass('open');
         });
 
-        $(document).on('click', '.select-box', function() {
+        $(document).on('click', '[data-overlay]', function() {
             var overlay = $(this).data('overlay');
             if (overlay) {
                 $('#' + overlay).show();
@@ -22,6 +22,15 @@
 
         $(document).on('click', '.collapsable .toggle', function() {
             $(this).closest('.collapsable').toggleClass('expanded');
+        });
+
+        //Swipeable lists
+        $('.swipeable').each(function() {
+            var width = 0;
+            $(this).children('ul').find('li').each(function() {
+                width += $(this).outerWidth() + parseInt($(this).css('marginLeft')) + parseInt($(this).css('marginRight'));
+            });
+            $(this).children('ul').css('width', width + 'px');
         });
 
         // iOS Standalone Web App Fix

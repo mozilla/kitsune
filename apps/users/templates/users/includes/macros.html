@@ -19,6 +19,7 @@
       </ul>
     </fieldset>
     <div class="submit">
+      <input type="hidden" name="login" value="1">
       <button type="submit" data-type="submit" data-name="login" class="btn btn-submit" data-progress="{{ _('Logging in...') }}" data-done="{{ _('Logged in!') }}" data-reset="{{ _('Log in') }}">{{ _('Log in') }}</button>
     </div>
   </form>
@@ -51,6 +52,7 @@
       {% endfor %}
     </ul>
     <div class="submit">
+      <input type="hidden" name="register" value="1">
       <button type="submit" data-type="submit" data-name="register" class="btn btn-submit">{{ _('Register') }}</button>
     </div>
   </form>

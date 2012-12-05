@@ -1,0 +1,88 @@
+{# vim: set ts=2 et sts=2 sw=2: #}
+{% extends "mobile/base.html" %}
+{% from "layout/errorlist.html" import errorlist %}
+{% from "questions/includes/aaq_macros-new.html" import select_product, selected_product, select_category, selected_category, current_articles_and_message, show_results %}
+{% from "questions/includes/aaq_macros-new.html" import aaq_search_form with context %}
+{% set title = _('Ask A Question') %}
+{% set headline = title %}
+{{ _('Post Question') }}
+{% set classes = 'aaq' %}
+{% if not current_category %}
+  {% set classes = classes + ' has-pulldown' %}
+{% endif %}
+{% if form %}
+  {% set classes = classes + ' question-form' %}
+  {% set return_url = url('questions.aaq_step3', product_key=current_product.key, category_key=current_category.key) %}
+{% endif %}
+{% if not tried_search and (current_articles or current_html) and not search_results and not form %}
+  {% set return_url = url('questions.aaq_step2', product_key=current_product.key) %}
+{% endif %}
+{% set styles = ('mobile/aaq',) %}
+
+{% block after_header %}
+  {% if not current_category %}
+    <div class="pulldown-menu">
+      <div class="pulldown-handle"></div>
+      <div class="pulldown-panel">
+        <section>
+          <h2>{{ _('Products and services') }}</h2>
+          <div id="product-switcher" class="swipeable">
+            <ul>
+              {% for key, product in products.iteritems() %}
+                <li class="{% if product == current_product %}selected{% endif %}">
+                  <a class="icon-{{ key }}" href="{{ url('questions.aaq_step2', product_key=key) }}">
+                    {{ product.name }}
+                  </a>
+                </li>
+              {% endfor %}
+            </ul>
+          </div>
+        </section>
+      </div>
+    </div>
+  {% endif %}
+{% endblock %}
+
+{% block content %}
+  {% if not current_product %}
+    {{ select_product(products) }}
+  {% endif %}
+
+  {% if current_product and not current_category and current_product.categories %}
+    {{ select_category(current_product) }}
+  {% endif %}
+
+  {% if not tried_search and (current_articles or current_html) and not search_results and not form %}
+    {{ current_articles_and_message(current_articles, current_category, current_html, True) }}
+    <div class="try_or_post cf">
+      <a class="btn" href="{{ url('questions.aaq_step2', product_key=current_product.key) }}">{{ _('Try another topic') }}</a>
+
+      <form action="{{ url('questions.aaq_step5', product_key=current_product.key, category_key=current_category.key) }}" method="get">
+        <input type="hidden" name="search" value="" />
+        <input type="hidden" name="step" value="{% if user.is_authenticated() %}aaq-question{% else %}aaq-register{% endif %}" />
+        <button type="submit" class="btn">{{ _('Post a question') }}</button>
+      </form>
+    </div>
+  {% endif %}
+
+  {% if form %}
+    <form id="question-form" action="" method="post">
+      {{ csrf() }}
+      {{ errorlist(form) }}
+      {% for field in form.hidden_fields() %}
+        {{ field|safe }}
+      {% endfor %}
+      <ol>
+        {% for field in form.visible_fields() %}
+          <li class="field-{{ field.name }} {% if field.errors %}invalid{% endif %}">
+            {{ field.label_tag()|safe }}
+            {{ field|safe }}
+          </li>
+        {% endfor %}
+        <li class="submit">
+          <button type="submit" class="btn btn-submit">{{ _('Next') }}</button>
+        </li>
+      </ol>
+    </form>
+  {% endif %}
+{% endblock %}

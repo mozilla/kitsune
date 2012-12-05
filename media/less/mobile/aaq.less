@@ -1,0 +1,201 @@
+@import '../variables.less';
+@import '../vendors.less';
+
+.aaq {
+  &.has-pulldown {
+    .wrapper {
+      h2 {
+        padding-top: 20px;
+      }
+    }
+  }
+
+  .pulldown-panel {
+    h2 {
+      color: #fff;
+      font-size: 16px;
+      margin: 0;
+    }
+  }
+
+  .try_or_post {
+    padding: 10px 8px;
+
+    .btn {
+      .box-sizing(border-box);
+      float: left;
+      font-size: 14px;
+      margin: 0 8px;
+      width: calc(~'50% - 16px');
+      width: -webkit-calc(~'50% - 16px');
+    }
+  }
+
+  .wrapper {
+    h2 {
+      font-size: 18px;
+      margin: 0;
+      padding: 10px 16px 10px 16px;
+    }
+
+    .select-one {
+      border-top: 1px solid @borderLightGrey;
+      list-style: none;
+      margin: 0;
+      padding: 0;
+
+      li {
+        border-bottom: 1px solid @borderLightGrey;
+
+        > a {
+          color: @textGrey;
+          display: block;
+          padding: 10px 16px;
+        }
+      }
+    }
+  }
+
+  #product-switcher {
+    ul {
+      list-style: none;
+      margin: 10px 0 0 0;
+      padding: 0;
+
+      li {
+        float: left;
+        margin-right: 16px;
+        position: relative;
+        text-align: center;
+
+        &:last-of-type {
+          margin-right: 0;
+        }
+
+        a {
+          color: rgba(255, 255, 255, 0.4);
+          display: block;
+          padding: 70px 10px 0 10px;
+          position: relative;
+          width: 90px;
+          z-index: 1;
+
+          &:before {
+            background: url('../../img/mobile/logos-sprite.png') -50px -50px no-repeat;
+            content: '';
+            height: 48px;
+            left: 50%;
+            margin-left: -24px;
+            position: absolute;
+            top: 10px;
+            width: 48px;
+          }
+
+          &.icon-other {
+            &:before {
+              background-position: -50px -198px;
+            }
+          }
+        }
+
+        &.selected {
+          &:before {
+            background: rgba(0, 0, 0, 0.3);
+            .border-radius(6px);
+            .box-shadow(0 0 10px 0 rgba(0, 0, 0, 0.2) inset);
+            content: '';
+            height: 68px;
+            left: 50%;
+            margin-left: -34px;
+            position: absolute;
+            top: 0;
+            width: 68px;
+            z-index: 0;
+          }
+
+          a {
+            color: #fff;
+          }
+        }
+      }
+    }
+  }
+
+  #question-form {
+    background: @mobileFormBackground;
+    padding: 10px 16px;
+
+    ol {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+
+      li {
+        display: none;
+
+        &.submit, &.field-title, &.field-content {
+          display: block;
+        }
+
+        label {
+          display: block;
+          text-transform: uppercase;
+        }
+      }
+    }
+  }
+}
+
+.question-form {
+  .wrapper {
+    background: @mobileFormBackground;
+  }
+}
+
+.login-register {
+  .wrapper {
+    #content {
+      > p {
+        margin: 0;
+        padding: 0 16px;
+
+        .btn {
+          margin-top: 10px;
+        }
+      }
+    }
+  }
+
+  #register-form {
+    background: @mobileFormBackground;
+    margin-top: 16px;
+    padding: 10px 16px;
+
+    h2 {
+      padding: 10px 0;
+    }
+
+    ul {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+
+      label {
+        display: block;
+        text-transform: uppercase;
+      }
+    }
+  }
+
+  #login-overlay {
+    .wrapper {
+      padding: 10px 30px;
+
+      ul {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+      }
+    }
+  }
+}
