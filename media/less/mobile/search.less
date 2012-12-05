@@ -93,6 +93,7 @@
 
         > a {
           color: #fff;
+          display: block;
           line-height: 24px;
         }
       }
@@ -102,6 +103,17 @@
   #page {
     .wrapper {
       top: 121px;
+    }
+  }
+}
+
+@media only screen and (-webkit-min-device-pixel-ratio: 2), only screen and (min-device-pixel-ratio: 2) {
+  .results {
+    .search-filters {
+      li {
+        background-image: url('../../img/mobile/search-sprite-2x.png');
+        .background-size(148px 296px);
+      }
     }
   }
 }
