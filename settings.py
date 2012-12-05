@@ -490,6 +490,9 @@ MINIFY_BUNDLES = {
         'mobile/questions': (
             'less/mobile/questions.less',
         ),
+        'mobile/aaq': (
+            'less/mobile/aaq.less',
+        ),
         'search': (
             'less/search.less',
         ),
