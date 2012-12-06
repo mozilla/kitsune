@@ -72,8 +72,8 @@ class LoginTests(TestCaseBase):
         next = '/kb/new'
 
         # Verify that next parameter is set in form hidden field.
-        response = self.client.get(urlparams(reverse('users.login'),
-                                             next=next))
+        response = self.client.get(urlparams(reverse('users.login'), next=next),
+            follow=True)
         eq_(200, response.status_code)
         doc = pq(response.content)
         eq_(next, doc('input[name="next"]')[0].attrib['value'])
@@ -94,8 +94,8 @@ class LoginTests(TestCaseBase):
         valid_next = reverse('home', locale=settings.LANGUAGE_CODE)
 
         # Verify that _valid_ next parameter is set in form hidden field.
-        response = self.client.get(urlparams(reverse('users.login'),
-                                             next=invalid_next))
+        url = urlparams(reverse('users.login'), next=invalid_next)
+        response = self.client.get(url, follow=True)
         eq_(200, response.status_code)
         doc = pq(response.content)
         eq_(valid_next, doc('input[name="next"]')[0].attrib['value'])

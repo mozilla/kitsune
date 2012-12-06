@@ -5,6 +5,7 @@ from django.contrib.sites.models import Site
 
 import mock
 from nose.tools import eq_
+from pyquery import PyQuery as pq
 
 from products.tests import product
 from questions.models import Question
@@ -133,6 +134,17 @@ class MobileAAQTests(MobileTestCase):
         eq_(200, response.status_code)
         self.assertTemplateUsed(response,
                                 'questions/mobile/confirm_email.html')
+
+    def test_aaq_login_form(self):
+        """The AAQ authentication forms contain the identifying fields.
+
+        Added this test because it is hard to debug what happened when this
+        fields somehow go missing.
+        """
+        res = self._new_question()
+        doc = pq(res.content)
+        eq_(1, len(doc('#login_form input[name=login]')))
+        eq_(1, len(doc('#register_form input[name=register]')))
 
 
 class TestQuestionUpdates(TestCase):

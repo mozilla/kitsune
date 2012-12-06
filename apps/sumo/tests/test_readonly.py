@@ -10,6 +10,7 @@ from nose.tools import assert_raises, eq_
 from pyquery import PyQuery as pq
 
 from questions.models import Question
+from users.tests import user
 from sumo.urlresolvers import reverse
 
 
@@ -17,6 +18,9 @@ class ReadOnlyModeTest(test_utils.TestCase):
     extra = ('sumo.middleware.ReadOnlyMiddleware',)
 
     def setUp(self):
+        # This has to be done before the db goes into read only mode.
+        self.user = user(save=True, password='testpass')
+
         models.signals.pre_save.connect(self.db_error)
         models.signals.pre_delete.connect(self.db_error)
         self.old_settings = copy.copy(settings._wrapped.__dict__)
@@ -39,7 +43,10 @@ class ReadOnlyModeTest(test_utils.TestCase):
     def test_login_error(self):
         # This tries to do a db write.
         url = reverse('users.login', locale='en-US')
-        r = self.client.get(url, follow=True)
+        r = self.client.post(url, {
+            'username': self.user.username,
+            'password': 'testpass',
+        }, follow=True)
         eq_(r.status_code, 503)
         title = pq(r.content)('title').text()
         assert title.startswith('Maintenance in progress'), title

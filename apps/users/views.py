@@ -8,7 +8,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.sites.models import Site
 from django.core import mail
-from django.http import HttpResponseRedirect, Http404
+from django.http import HttpResponsePermanentRedirect, HttpResponseRedirect, Http404
 from django.views.decorators.http import require_http_methods, require_GET
 from django.shortcuts import get_object_or_404
 from django.template.loader import render_to_string
@@ -25,13 +25,15 @@ from access.decorators import logout_required, login_required
 from questions.models import (Question, user_num_answers, user_num_questions,
                               user_num_solutions)
 from sumo.decorators import ssl_required
+from sumo.helpers import urlparams
 from sumo.urlresolvers import reverse
 from sumo.utils import get_next_url
 from upload.tasks import _create_image_thumbnail
 from users.backends import Sha256Backend  # Monkey patch User.set_password.
 from users.forms import (ProfileForm, AvatarForm, EmailConfirmationForm,
                          AuthenticationForm, EmailChangeForm, SetPasswordForm,
-                         PasswordChangeForm, SettingsForm, ForgotUsernameForm)
+                         PasswordChangeForm, SettingsForm, ForgotUsernameForm,
+                         RegisterForm)
 from users.models import (Profile, RegistrationProfile,
                           EmailChange)
 from users.utils import (handle_login, handle_register,
@@ -41,9 +43,38 @@ from wiki.models import user_num_documents, user_documents
 
 @ssl_required
 @anonymous_csrf
+@require_http_methods(['GET', 'POST'])
+def user_auth(request, contributor=False, register_form=None,
+        login_form=None):
+    """Try to log the user in, or register a user.
+
+    POSTs from these forms do not come back to this view, but instead go to the
+    login and register views, which may redirect back to this in case of error.
+    """
+    next_url = get_next_url(request) or reverse('home')
+
+    if login_form == None:
+        login_form = AuthenticationForm()
+    if register_form == None:
+        register_form = RegisterForm()
+
+    return jingo.render(request, 'users/auth.html', {
+        'login_form': login_form,
+        'register_form': register_form,
+        'contributor': contributor,
+        'next_url': next_url
+    })
+
+
+@ssl_required
+@anonymous_csrf
 @mobile_template('users/{mobile/}login.html')
 def login(request, template):
     """Try to log the user in."""
+    if request.method == 'GET' and not request.MOBILE:
+        url = reverse('users.auth') + '?' + request.GET.urlencode()
+        return HttpResponsePermanentRedirect(url)
+
     next_url = get_next_url(request) or reverse('home')
     form = handle_login(request)
 
@@ -57,8 +88,7 @@ def login(request, template):
                        max_age=max_age)
         return res
 
-    return jingo.render(request, template,
-                        {'form': form, 'next_url': next_url})
+    return user_auth(request, login_form=form)
 
 
 @ssl_required
@@ -84,15 +114,15 @@ def register(request, template, contributor=False):
     :param contributor: If True, this is for registering a new contributor.
 
     """
-    next_url = get_next_url(request) or reverse('home')
+    if request.method == 'GET' and not request.MOBILE:
+        url = reverse('users.auth') + '?' + request.GET.urlencode()
+        return HttpResponsePermanentRedirect(url)
+
     form = handle_register(request)
     if form.is_valid():
         return jingo.render(request, template + 'register_done.html')
-    return jingo.render(request, template + 'register.html',
-                        {'form': form,
-                         'contributor': contributor,
-                         'next_url': next_url})
 
+    return user_auth(request, register_form=form)
 
 def register_contributor(request):
     """Register a new user from the superheroes page."""
