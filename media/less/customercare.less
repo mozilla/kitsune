@@ -78,7 +78,7 @@
   .tweet {
     background: #fff;
     padding: 20px;
-    margin: 20px 0;
+    margin-bottom: 20px;
 
     .avatar {
       float: left;
@@ -129,6 +129,62 @@
         color: @textGrey;
         font-family: @OpenSansLight;
         font-size: 20px;
+      }
+    }
+  }
+}
+
+#top-aoa-contributors {
+  background: white;
+  padding: 10px 15px;
+
+  h2 {
+    margin: 0 0 5px 0;
+  }
+
+  .aoa-contributor {
+    margin-bottom: 15px;
+    position: relative;
+
+    .avatar {
+      float: left;
+      position: relative;
+      top: 8px;
+      width: 48px;
+      height: 48px;
+      background: #fff;
+      margin-right: 8px;
+      .box-shadow(0px 0px 2px 1px rgba(0, 0, 0, 0.2));
+    }
+
+    .user-meta {
+      display: block;
+      padding-left: 60px;
+
+      .twittername {
+        color: @textGrey;
+        font-family: @OpenSansLight;
+        font-size: 20px;
+        display: block;
+      }
+    }
+
+    .stat {
+      display: inline-block;
+      margin: 3px;
+      font-weight: bold;
+      color: #333;
+
+      .count {
+        font-size: 1.1en;
+        display: block;
+        margin-top: -4px;
+      }
+      .timeperiod {
+        font-size: 0.7em;
+        text-transform: uppercase;
+        display: block;
+        margin-top: -3px;
       }
     }
   }

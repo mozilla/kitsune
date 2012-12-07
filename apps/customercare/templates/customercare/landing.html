@@ -1,13 +1,14 @@
 {# vim: set ts=2 et sts=2 sw=2: #}
 {% extends "customercare/base.html" %}
 {% from 'includes/common_macros.html' import search_box with context %}
+{% from 'customercare/includes/aoa_macros.html' import aoa_contributor %}
 {% set title = _('Join our Army of Awesome') %}
 {% set hide_plugin_check = True %}
 
 {% block breadcrumbs %}{% endblock %}
 
 {% block content %}
-<article class="main">
+<article class="main aoa">
 
   <div class="cf">
     <div class="grid_6">
@@ -65,7 +66,7 @@
     </div>
   </div>
 
-  <div id="tweetcontainer" class="grid_12">
+  <div id="tweetcontainer" class="grid_8">
     <div id="tweets-wrap">
       {{ csrf() }}{# CSRF token for AJAX actions. #}
       {% if not tweets %}
@@ -85,6 +86,16 @@
 
     <div id="infinite-scroll">
       <img id="scroll-busy" src="{{ MEDIA_URL }}img/customercare/spinner.gif"/>
+    </div>
+  </div>
+
+  <div class="grid_4">
+    <div id="top-aoa-contributors">
+      <h2>{{ _('Top Contributors This Week') }}</h2>
+      {# contributor_stats is sorted #}
+      {% for contributor in contributor_stats[:10] %}
+        {{ aoa_contributor(contributor) }}
+      {% endfor %}
     </div>
   </div>
 

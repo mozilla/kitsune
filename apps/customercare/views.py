@@ -181,6 +181,23 @@ def landing(request):
         statsd.incr('customercare.stats.contributors.miss')
         contributor_stats = {}
 
+    # reformat stats to be more useful.
+    new_contrib_stats = {}
+    for time_period, contributors in contributor_stats.items():
+        for contributor in contributors:
+            username = contributor['username']
+            if contributor['username'] not in new_contrib_stats:
+                new_contrib_stats[contributor['username']] = {
+                    'username': username,
+                    'name': contributor['name'],
+                    'avatar': contributor['avatar'],
+                }
+            assert time_period not in new_contrib_stats[username]
+            new_contrib_stats[username][time_period] = contributor['count']
+
+    contributor_stats = sorted(new_contrib_stats.values(), reverse=True,
+        key=lambda c: c.get('Last Week', 0))
+
     try:
         twitter_user = (request.twitter.api.auth.get_username() if
                         request.twitter.authed else None)
