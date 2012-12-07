@@ -1,0 +1,26 @@
+{% macro aoa_contributor(contributor) %}
+  <div class="aoa-contributor">
+    <a href="https://twitter.com/{{ contributor.username }}" target="_blank" class="avatar">
+      <img src="{{ contributor.avatar }}" />
+    </a>
+    <div class="user-meta">
+      <a href="https://twitter.com/{{ contributor.username }}" target="_blank">
+        <span class="twittername">@{{ contributor.username }}</span>
+      </a>
+
+      {{ aoa_stat(_('Overall'), contributor['Overall']) }}
+      {{ aoa_stat(_('Yesterday'), contributor['Yesterday']) }}
+      {{ aoa_stat(_('Last Week'), contributor['Last Week']) }}
+    </div>
+  </div>
+{% endmacro %}
+
+{% macro aoa_stat(name, value) %}
+  {% if not value %}
+    {% set value = 0 %}
+  {% endif %}
+  <div class="stat">
+    <span class="count">{{ value }}</span>
+    <span class="timeperiod">{{ name }}</span>
+  </div>
+{% endmacro %}
