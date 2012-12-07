@@ -102,6 +102,7 @@ k = {};
     });
 
     $(document).ready(function() {
+        layoutTweaks();
         /* Focus form field when clicking on error message. */
         $('#content ul.errorlist a').click(function () {
                 $($(this).attr('href')).focus();
@@ -229,4 +230,19 @@ k = {};
         }
     }
     $(document).ready(removeMessagesList);
+
+    function layoutTweaks() {
+        // Adjust the height of cards to be consistent within a group.
+        $('.card-grid').each(function() {
+            var $cards = $(this).children('li');
+            var max = 0;
+            $cards.each(function() {
+                var h = $(this).height();
+                if (h > max) {
+                    max = h;
+                }
+            });
+            $cards.height(max);
+        });
+    }
 })();
