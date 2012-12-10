@@ -42,7 +42,7 @@
             {{ csrf() }}
             {{ form.content|safe }}
             <button type="submit" class="btn">{{ _('Post Reply') }}</button>
-            <button type="reset" class="btn" data-hide="reply-form-main" data-show="reply-bar">Cancel</button>
+            <button type="reset" class="btn" data-hide="reply-form-main" data-show="reply-bar">{{ _('Cancel') }}</button>
           </form>
         {% endif %}
       </article>
