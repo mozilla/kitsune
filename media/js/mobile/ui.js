@@ -21,7 +21,7 @@
         });
 
         $(document).on('click', '[data-show]', function() {
-            $('#' + $(this).data('show')).show();
+            $('#' + $(this).data('show')).css('display', '');
         });
 
         $(document).on('click', '[data-hide]', function() {
