@@ -103,7 +103,7 @@
             {% if answer.num_votes != 0 %}
               <span class="helpful-count">{{ answer.num_helpful_votes }}</span>
             {% endif %}
-            {% if answer.id and not question.is_locked %}
+            {% if answer.id and not question.is_locked and  user.is_authenticated() %}
               <a class="reply btn" data-show="reply-form-main" data-hide="reply-bar" data-expand="question" href="#reply-form-main">{{ _('Reply') }}</a>
             {% endif %}
           </footer>
