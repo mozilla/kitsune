@@ -18,12 +18,10 @@ class AuthenticationFormTests(TestCaseBase):
         # create active and inactive users
         self.active_user = user(save=True,
                                 username='activeuser',
-                                password='testpass',
                                 is_active=True)
 
         self.inactive_user = user(save=True,
                                   username='inactiveuser',
-                                  password='testpass',
                                   is_active=False)
 
     def test_only_active(self):
