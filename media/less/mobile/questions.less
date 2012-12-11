@@ -106,6 +106,10 @@
     }
   }
 
+  .btn {
+    font-size: 13px;
+  }
+
   #answers {
     list-style: none;
     margin: 0;
@@ -136,6 +140,7 @@
         > a {
           color: #000;
           font-size: 15px;
+          font-weight: bold;
           margin-right: 10px;
         }
       }
@@ -147,7 +152,7 @@
         .btn {
           display: inline-block;
           line-height: normal;
-          margin-top: 8px;
+          margin-top: 12px;
           padding-left: 10px;
           padding-right: 10px;
           width: auto;
@@ -175,10 +180,71 @@
   }
 
   #question {
-    padding: 16px;
+    article,
+    header,
+    .toggle {
+      padding-left: 16px;
+      padding-right: 16px;
+    }
 
     header {
       font-size: 18px;
+      margin-top: 16px;
+    }
+
+    .user-bar {
+      background: @mobileFormBackground;
+      color: #000;
+      font-size: 12px;
+      height: 50px;
+      line-height: 50px;
+
+      > a {
+        color: #000;
+        font-size: 15px;
+        font-weight: bold;
+        margin-right: 10px;
+      }
+    }
+
+    .reply-bar {
+      background: @mobileFormBackground;
+      padding: 10px 16px;
+
+      #problem-too {
+        float: left;
+      }
+
+      .btn {
+        padding-left: 10px;
+        padding-right: 10px;
+
+        &.reply {
+          float: right;
+          width: auto;
+        }
+      }
+    }
+
+    .toggle {
+      margin-bottom: 16px;
+    }
+  }
+
+  #reply-form-main {
+    textarea {
+      height: 100px;
+    }
+
+    .btn {
+      float: left;
+      width: calc(~'50% - 8px');
+      width: -moz-calc(~'50% - 8px');
+      width: -webkit-calc(~'50% - 8px');
+
+      &:first-of-type {
+        margin-right: 16px;
+      }
     }
   }
 }
