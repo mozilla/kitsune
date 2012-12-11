@@ -13,41 +13,39 @@ from users.tests import TestCaseBase, user
 
 class AuthenticationFormTests(TestCaseBase):
     """AuthenticationForm tests."""
-    fixtures = ['users.json']
+
+    def setUp(self):
+        # create active and inactive users
+        self.active_user = user(save=True,
+                                username='activeuser',
+                                is_active=True)
+
+        self.inactive_user = user(save=True,
+                                  username='inactiveuser',
+                                  is_active=False)
 
     def test_only_active(self):
         # Verify with active user
-        u = User.objects.get(username='rrosario')
-        assert u.is_active
-        form = AuthenticationForm(data={'username': 'rrosario',
+        form = AuthenticationForm(data={'username': self.active_user.username,
                                         'password': 'testpass'})
         assert form.is_valid()
 
         # Verify with inactive user
-        u.is_active = False
-        u.save()
-        u = User.objects.get(username='rrosario')
-        assert not u.is_active
-        form = AuthenticationForm(data={'username': 'rrosario',
-                                        'password': 'testpass'})
+        form = AuthenticationForm(data={
+                'username': self.inactive_user.username,
+                'password': 'testpass'})
         assert not form.is_valid()
 
     def test_allow_inactive(self):
         # Verify with active user
-        u = User.objects.get(username='rrosario')
-        assert u.is_active
         form = AuthenticationForm(only_active=False,
-                                  data={'username': 'rrosario',
+                                  data={'username': self.active_user.username,
                                         'password': 'testpass'})
         assert form.is_valid()
 
         # Verify with inactive user
-        u.is_active = False
-        u.save()
-        u = User.objects.get(username='rrosario')
-        assert not u.is_active
         form = AuthenticationForm(only_active=False,
-                                  data={'username': 'rrosario',
+                                  data={'username': self.inactive_user.username,
                                         'password': 'testpass'})
         assert form.is_valid()
 
@@ -70,7 +68,6 @@ TWITTER_URLS = (
 
 
 class ProfileFormTestCase(TestCaseBase):
-    fixtures = ['users.json']
     form = ProfileForm()
 
     def setUp(self):
