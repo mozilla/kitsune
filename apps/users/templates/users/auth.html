@@ -9,7 +9,7 @@
 
 {% block content %}
 <div class="grid_12 login-question-prompt">
-  <h1><a href="#">Would you like to ask a question in the community support forum?</a></h1>
+  <h1><a href="{{ url('questions.aaq_step1') }}">Would you like to ask a question in the community support forum?</a></h1>
 </div>
 <div class="grid_6">
   <article id="login" class="main">
@@ -20,7 +20,7 @@
 <div class="grid_6">
   <article id="register" class="main">
     <h1>{{ _('Register to be a Contributor') }}</h1>
-    <span>You don't need to register to <a href="#">ask a question</a>.</span>
+    <span>You don't need to register to <a href="{{ url('questions.aaq_step1') }}">ask a question</a>.</span>
     {% set action = url('users.auth_contributor') if contributor else url('users.auth') %}
     {{ render_register(register_form, csrf=csrf(), action=action, contributor=contributor) }}
   </article>
