@@ -10,21 +10,20 @@ from nose.tools import eq_
 from sumo.tests import TestCase
 from users.models import RegistrationProfile, Setting
 from users.forms import SettingsForm
-from users.tests import profile
+from users.tests import user, profile
 
 
 log = logging.getLogger('k.users')
 
 
 class ProfileTests(TestCase):
-    fixtures = ['users.json']
 
     def test_user_get_profile(self):
         """user.get_profile() returns what you'd expect."""
-        user = User.objects.all()[0]
-        p = profile(user=user)
+        u = user(save=True)
+        p = profile(user=u)
 
-        eq_(p, user.get_profile())
+        eq_(p, u.get_profile())
 
 
 class RegistrationProfileTests(TestCase):
@@ -68,20 +67,20 @@ class RegistrationProfileTests(TestCase):
 
 
 class UserSettingsTests(TestCase):
-    fixtures = ['users.json']
+
+    def setUp(self):
+        self.u = user(save=True)
 
     def test_non_existant_setting(self):
-        user = User.objects.all()[0]
         form = SettingsForm()
         bad_setting = 'doesnt_exist'
         assert bad_setting not in form.fields.keys()
         with self.assertRaises(KeyError):
-            Setting.get_for_user(user, bad_setting)
+            Setting.get_for_user(self.u, bad_setting)
 
     def test_default_values(self):
         eq_(0, Setting.objects.count())
-        user = User.objects.get(username='timw')
         keys = SettingsForm.base_fields.keys()
         for setting in keys:
             field = SettingsForm.base_fields[setting]
-            eq_(field.initial, Setting.get_for_user(user, setting))
+            eq_(field.initial, Setting.get_for_user(self.u, setting))

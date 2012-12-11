@@ -28,12 +28,12 @@ from wiki.tests import revision
 
 class LoginTests(TestCaseBase):
     """Login tests."""
-    fixtures = ['users.json']
 
     def setUp(self):
         super(LoginTests, self).setUp()
         self.orig_debug = settings.DEBUG
         settings.DEBUG = True
+        self.u = user(save=True)
 
     def tearDown(self):
         super(LoginTests, self).tearDown()
@@ -42,7 +42,7 @@ class LoginTests(TestCaseBase):
     def test_login_bad_password(self):
         '''Test login with a good username and bad password.'''
         response = post(self.client, 'users.login',
-                        {'username': 'rrosario', 'password': 'foobar'})
+                        {'username': self.u.username, 'password': 'foobar'})
         eq_(200, response.status_code)
         doc = pq(response.content)
         eq_('Please enter a correct username and password. Note that both '
@@ -60,11 +60,11 @@ class LoginTests(TestCaseBase):
     def test_login(self):
         '''Test a valid login.'''
         response = self.client.post(reverse('users.login'),
-                                    {'username': 'rrosario',
+                                    {'username': self.u.username,
                                      'password': 'testpass'})
         eq_(302, response.status_code)
         eq_('http://testserver' +
-                reverse('home', locale=settings.LANGUAGE_CODE),
+            reverse('home', locale=settings.LANGUAGE_CODE),
             response['location'])
 
     def test_login_next_parameter(self):
@@ -73,14 +73,14 @@ class LoginTests(TestCaseBase):
 
         # Verify that next parameter is set in form hidden field.
         response = self.client.get(urlparams(reverse('users.login'), next=next),
-            follow=True)
+                                   follow=True)
         eq_(200, response.status_code)
         doc = pq(response.content)
         eq_(next, doc('input[name="next"]')[0].attrib['value'])
 
         # Verify that it gets used on form POST.
         response = self.client.post(reverse('users.login'),
-                                    {'username': 'rrosario',
+                                    {'username': self.u.username,
                                      'password': 'testpass',
                                      'next': next})
         eq_(302, response.status_code)
@@ -102,7 +102,7 @@ class LoginTests(TestCaseBase):
 
         # Verify that it gets used on form POST.
         response = self.client.post(reverse('users.login'),
-                                    {'username': 'rrosario',
+                                    {'username': self.u.username,
                                      'password': 'testpass',
                                      'next': invalid_next})
         eq_(302, response.status_code)
@@ -113,35 +113,31 @@ class LoginTests(TestCaseBase):
         legacypw = 'legacypass'
 
         # Set the user's password to an md5
-        u = User.objects.get(username='rrosario')
-        u.password = hashlib.md5(legacypw).hexdigest()
-        u.save()
+        self.u.password = hashlib.md5(legacypw).hexdigest()
+        self.u.save()
 
         # Log in and verify that it's updated to a SHA-256
         response = self.client.post(reverse('users.login'),
-                                    {'username': 'rrosario',
+                                    {'username': self.u.username,
                                      'password': legacypw})
         eq_(302, response.status_code)
-        u = User.objects.get(username='rrosario')
+        u = User.objects.get(username=self.u.username)
         assert u.password.startswith('sha256$')
 
         # Try to log in again.
         response = self.client.post(reverse('users.login'),
-                                    {'username': 'rrosario',
+                                    {'username': self.u.username,
                                      'password': legacypw})
         eq_(302, response.status_code)
 
 
 class PasswordResetTests(TestCaseBase):
-    fixtures = ['users.json']
 
     def setUp(self):
         super(PasswordResetTests, self).setUp()
-        self.user = User.objects.get(username='rrosario')
-        self.user.email = 'valid@email.com'
-        self.user.save()
-        self.uidb36 = int_to_base36(self.user.id)
-        self.token = default_token_generator.make_token(self.user)
+        self.u = user(email="valid@email.com", save=True)
+        self.uidb36 = int_to_base36(self.u.id)
+        self.token = default_token_generator.make_token(self.u)
         self.orig_debug = settings.DEBUG
         settings.DEBUG = True
 
@@ -160,7 +156,7 @@ class PasswordResetTests(TestCaseBase):
     def test_success(self, get_current):
         get_current.return_value.domain = 'testserver.com'
         r = self.client.post(reverse('users.pw_reset'),
-                             {'email': self.user.email})
+                             {'email': self.u.email})
         eq_(302, r.status_code)
         eq_('http://testserver/en-US/users/pwresetsent', r['location'])
         eq_(1, len(mail.outbox))
@@ -170,10 +166,10 @@ class PasswordResetTests(TestCaseBase):
     @mock.patch.object(PasswordResetForm, 'save')
     def test_smtp_error(self, pwform_save):
         def raise_smtp(*a, **kw):
-            raise SMTPRecipientsRefused(recipients=[self.user.email])
+            raise SMTPRecipientsRefused(recipients=[self.u.email])
         pwform_save.side_effect = raise_smtp
         r = self.client.post(reverse('users.pw_reset'),
-                             {'email': self.user.email})
+                             {'email': self.u.email})
         self.assertContains(r, unicode(ERROR_SEND_EMAIL))
 
     def _get_reset_url(self):
@@ -207,22 +203,22 @@ class PasswordResetTests(TestCaseBase):
     def test_reset_success(self):
         url = self._get_reset_url()
         new_pw = 'fjdka387fvstrongpassword!'
-        assert self.user.check_password(new_pw) is False
+        assert self.u.check_password(new_pw) is False
 
         r = self.client.post(url, {'new_password1': new_pw,
-                               'new_password2': new_pw})
+                                   'new_password2': new_pw})
         eq_(302, r.status_code)
         eq_('http://testserver/en-US/users/pwresetcomplete', r['location'])
-        self.user = User.objects.get(username='rrosario')
-        assert self.user.check_password(new_pw)
+        self.u = User.objects.get(username=self.u.username)
+        assert self.u.check_password(new_pw)
 
 
 class EditProfileTests(TestCaseBase):
-    fixtures = ['users.json']
 
     def test_edit_profile(self):
+        u = user(save=True)
         url = reverse('users.edit_profile')
-        self.client.login(username='rrosario', password='testpass')
+        self.client.login(username=u.username, password='testpass')
         data = {'name': 'John Doe',
                 'public_email': True,
                 'bio': 'my bio',
@@ -236,7 +232,7 @@ class EditProfileTests(TestCaseBase):
                 'locale': 'en-US'}
         r = self.client.post(url, data)
         eq_(302, r.status_code)
-        profile = User.objects.get(username='rrosario').get_profile()
+        profile = User.objects.get(username=u.username).get_profile()
         for key in data:
             if key != 'timezone':
                 eq_(data[key], getattr(profile, key))
@@ -244,15 +240,16 @@ class EditProfileTests(TestCaseBase):
 
 
 class EditAvatarTests(TestCaseBase):
-    fixtures = ['users.json']
 
     def setUp(self):
         super(EditAvatarTests, self).setUp()
         self.old_settings = copy(settings._wrapped.__dict__)
+        self.u = user(save=True)
+        profile(user=self.u)
 
     def tearDown(self):
         settings._wrapped.__dict__ = self.old_settings
-        user_profile = Profile.objects.get(user__username='rrosario')
+        user_profile = Profile.objects.get(user__username=self.u.username)
         if user_profile.avatar:
             user_profile.avatar.delete()
         super(EditAvatarTests, self).tearDown()
@@ -260,7 +257,7 @@ class EditAvatarTests(TestCaseBase):
     def test_large_avatar(self):
         settings.MAX_AVATAR_FILE_SIZE = 1024
         url = reverse('users.edit_avatar')
-        self.client.login(username='rrosario', password='testpass')
+        self.client.login(username=self.u.username, password='testpass')
         with open('apps/upload/tests/media/test.jpg') as f:
             r = self.client.post(url, {'avatar': f})
         eq_(200, r.status_code)
@@ -270,7 +267,7 @@ class EditAvatarTests(TestCaseBase):
 
     def test_avatar_extensions(self):
         url = reverse('users.edit_avatar')
-        self.client.login(username='rrosario', password='testpass')
+        self.client.login(username=self.u.username, password='testpass')
         with open('apps/upload/tests/media/test_invalid.ext') as f:
             r = self.client.post(url, {'avatar': f})
         eq_(200, r.status_code)
@@ -280,7 +277,7 @@ class EditAvatarTests(TestCaseBase):
 
     def test_upload_avatar(self):
         """Upload a valid avatar."""
-        user_profile = Profile.uncached.get(user__username='rrosario')
+        user_profile = Profile.uncached.get(user__username=self.u.username)
         with open('apps/upload/tests/media/test.jpg') as f:
             user_profile.avatar.save('test_old.jpg', File(f), save=True)
         assert user_profile.avatar.name.endswith('92b516.jpg')
@@ -288,7 +285,7 @@ class EditAvatarTests(TestCaseBase):
         assert os.path.exists(old_path), 'Old avatar is not in place.'
 
         url = reverse('users.edit_avatar')
-        self.client.login(username='rrosario', password='testpass')
+        self.client.login(username=self.u.username, password='testpass')
         with open('apps/upload/tests/media/test.jpg') as f:
             r = self.client.post(url, {'avatar': f})
 
@@ -302,10 +299,10 @@ class EditAvatarTests(TestCaseBase):
         self.test_upload_avatar()
 
         url = reverse('users.delete_avatar')
-        self.client.login(username='rrosario', password='testpass')
+        self.client.login(username=self.u.username, password='testpass')
         r = self.client.post(url)
 
-        user_profile = Profile.objects.get(user__username='rrosario')
+        user_profile = Profile.objects.get(user__username=self.u.username)
         eq_(302, r.status_code)
         eq_('http://testserver/en-US' + reverse('users.edit_profile'),
             r['location'])
@@ -315,31 +312,35 @@ class EditAvatarTests(TestCaseBase):
 class ViewProfileTests(TestCaseBase):
     fixtures = ['users.json']
 
+    def setUp(self):
+        self.u = user(save=True)
+        self.profile = profile(name='', website='', user=self.u)
+
     def test_view_profile(self):
-        r = self.client.get(reverse('users.profile', args=[47963]))
+        r = self.client.get(reverse('users.profile', args=[self.u.id]))
         eq_(200, r.status_code)
         doc = pq(r.content)
         eq_(0, doc('#edit-profile-link').length)
-        eq_('pcraciunoiu', doc('h1.user').text())
+        eq_(self.u.username, doc('h1.user').text())
         # No name set and livechat_id is not different => no optional fields.
         eq_(0, doc('.contact').length)
         # Check canonical url
-        eq_('/user/47963', doc('link[rel="canonical"]')[0].attrib['href'])
+        eq_('/user/%d' % self.u.id,
+            doc('link[rel="canonical"]')[0].attrib['href'])
 
     def test_view_profile_mine(self):
         """Logged in, on my profile, I see an edit link."""
-        self.client.login(username='pcraciunoiu', password='testpass')
-        r = self.client.get(reverse('users.profile', args=[47963]))
+        self.client.login(username=self.u.username, password='testpass')
+        r = self.client.get(reverse('users.profile', args=[self.u.id]))
         eq_(200, r.status_code)
         doc = pq(r.content)
         eq_('Edit settings', doc('#user-nav li:last').text())
         self.client.logout()
 
     def test_bio_links_nofollow(self):
-        profile = Profile.objects.get(user__id=47963)
-        profile.bio = 'http://getseo.com, [http://getseo.com]'
-        profile.save()
-        r = self.client.get(reverse('users.profile', args=[47963]))
+        self.profile.bio = 'http://getseo.com, [http://getseo.com]'
+        self.profile.save()
+        r = self.client.get(reverse('users.profile', args=[self.u.id]))
         eq_(200, r.status_code)
         doc = pq(r.content)
         eq_(2, len(doc('.bio a[rel="nofollow"]')))
@@ -356,25 +357,25 @@ class ViewProfileTests(TestCaseBase):
 
 
 class PasswordChangeTests(TestCaseBase):
-    fixtures = ['users.json']
 
     def setUp(self):
         super(PasswordChangeTests, self).setUp()
-        self.user = User.objects.get(username='rrosario')
+        self.u = user(save=True)
+        profile(user=self.u)
         self.url = reverse('users.pw_change')
         self.new_pw = 'fjdka387fvstrongpassword!'
-        self.client.login(username='rrosario', password='testpass')
+        self.client.login(username=self.u.username, password='testpass')
 
     def test_change_password(self):
-        assert self.user.check_password(self.new_pw) is False
+        assert self.u.check_password(self.new_pw) is False
 
         r = self.client.post(self.url, {'old_password': 'testpass',
                                         'new_password1': self.new_pw,
                                         'new_password2': self.new_pw})
         eq_(302, r.status_code)
         eq_('http://testserver/en-US/users/pwchangecomplete', r['location'])
-        self.user = User.objects.get(username='rrosario')
-        assert self.user.check_password(self.new_pw)
+        self.u = User.objects.get(username=self.u.username)
+        assert self.u.check_password(self.new_pw)
 
     def test_bad_old_password(self):
         r = self.client.post(self.url, {'old_password': 'testpqss',
@@ -428,12 +429,14 @@ class ResendConfirmationTests(TestCaseBase):
 
 
 class FlagProfileTests(TestCaseBase):
-    fixtures = ['users.json']
 
     def test_flagged_and_deleted_profile(self):
+        u = user(save=True)
+        p = profile(user=u)
+        flag_user = user(save=True)
         # Flag a profile and delete it
-        p = User.objects.get(id=47963).get_profile()
-        f = FlaggedObject(content_object=p, reason='spam', creator_id=118577)
+        f = FlaggedObject(content_object=p,
+                          reason='spam', creator_id=flag_user.id)
         f.save()
         p.delete()
 

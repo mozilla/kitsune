@@ -7,6 +7,8 @@ from sumo.helpers import urlparams
 from sumo.tests import TestCase
 from sumo.urlresolvers import reverse
 
+from users.tests import user
+
 
 class UsernamesTests(TestCase):
     """Test the usernames API method."""
@@ -14,7 +16,8 @@ class UsernamesTests(TestCase):
     url = reverse('users.api.usernames', locale='en-US')
 
     def setUp(self):
-        self.client.login(username='jsocol', password='testpass')
+        self.u = user(save=True)
+        self.client.login(username=self.u.username, password='testpass')
 
     def tearDown(self):
         self.client.logout()
@@ -31,7 +34,7 @@ class UsernamesTests(TestCase):
         eq_(0, len(data))
 
     def test_query_current(self):
-        res = self.client.get(urlparams(self.url, term='j'))
+        res = self.client.get(urlparams(self.url, term=self.u.username[0]))
         eq_(200, res.status_code)
         data = json.loads(res.content)
         eq_(1, len(data))

@@ -8,7 +8,7 @@ from pyquery import PyQuery as pq
 from sumo.tests import TestCase
 from users.helpers import (profile_url, profile_avatar, public_email,
                            display_name, user_list)
-from users.models import Profile
+from users.tests import profile, user
 
 
 class HelperTestCase(TestCase):
@@ -17,19 +17,17 @@ class HelperTestCase(TestCase):
         self.u = User.objects.create(pk=500000, username=u'testuser')
 
     def test_profile_url(self):
-        eq_(u'/user/500000', profile_url(self.u))
+        eq_(u'/user/%d' % self.u.id, profile_url(self.u))
 
     def test_profile_avatar_default(self):
-        Profile.objects.create(user=self.u)
+        profile(user=self.u)
         eq_(settings.DEFAULT_AVATAR, profile_avatar(self.u))
 
     def test_profile_avatar_anonymous(self):
         eq_(settings.DEFAULT_AVATAR, profile_avatar(AnonymousUser()))
 
     def test_profile_avatar(self):
-        profile = Profile(user=self.u)
-        profile.avatar = 'images/foo.png'
-        profile.save()
+        profile(user=self.u, avatar='images/foo.png')
         eq_('%simages/foo.png' % settings.MEDIA_URL, profile_avatar(self.u))
 
     def test_public_email(self):
@@ -42,9 +40,7 @@ class HelperTestCase(TestCase):
 
     def test_display_name(self):
         eq_(u'testuser', display_name(self.u))
-        p = Profile(user=self.u)
-        p.name = u'Test User'
-        p.save()
+        p = profile(user=self.u, name=u'Test User')
         eq_(u'Test User', display_name(self.u))
 
     def test_user_list(self):

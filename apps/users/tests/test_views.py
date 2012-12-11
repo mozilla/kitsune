@@ -19,7 +19,6 @@ from users.tests import profile, user, group
 
 
 class RegisterTests(TestCase):
-    fixtures = ['users.json']
 
     def setUp(self):
         self.old_debug = settings.DEBUG
@@ -146,28 +145,31 @@ class RegisterTests(TestCase):
         assert q.get_absolute_url() in response.content
 
     def test_duplicate_username(self):
+        u = user(save=True)
         response = self.client.post(reverse('users.register', locale='en-US'),
-                                    {'username': 'jsocol',
+                                    {'username': u.username,
                                      'email': 'newbie@example.com',
                                      'password': 'foo',
                                      'password2': 'foo'}, follow=True)
         self.assertContains(response, 'already exists')
 
     def test_duplicate_email(self):
+        u = user(email='noob@example.com', save=True)
         User.objects.create(username='noob', email='noob@example.com').save()
         response = self.client.post(reverse('users.register', locale='en-US'),
                                     {'username': 'newbie',
-                                     'email': 'noob@example.com',
+                                     'email': u.email,
                                      'password': 'foo',
                                      'password2': 'foo'}, follow=True)
         self.assertContains(response, 'already exists')
 
     def test_no_match_passwords(self):
+        u = user(save=True)
         response = self.client.post(reverse('users.register', locale='en-US'),
-                                    {'username': 'newbie',
-                                     'email': 'newbie@example.com',
-                                     'password': 'foo',
-                                     'password2': 'bar'}, follow=True)
+                                    {'username': u.username,
+                                     'email': u.email,
+                                     'password': 'testpass',
+                                     'password2': 'testbus'}, follow=True)
         self.assertContains(response, 'must match')
 
     @mock.patch.object(Site.objects, 'get_current')
@@ -229,8 +231,12 @@ class RegisterTests(TestCase):
 
 
 class ChangeEmailTestCase(TestCase):
-    fixtures = ['users.json']
     client_class = LocalizingClient
+
+    def setUp(self):
+        self.u = user(save=True)
+        profile(user=self.u)
+        self.client.login(username=self.u.username, password='testpass')
 
     def test_redirect(self):
         """Test our redirect from old url to new one."""
@@ -244,7 +250,6 @@ class ChangeEmailTestCase(TestCase):
         """Send email to change user's email and then change it."""
         get_current.return_value.domain = 'su.mo.com'
 
-        self.client.login(username='pcraciunoiu', password='testpass')
         # Attempt to change email.
         response = self.client.post(reverse('users.change_email'),
                                     {'email': 'paulc@trololololololo.com'},
@@ -262,28 +267,24 @@ class ChangeEmailTestCase(TestCase):
         response = self.client.get(reverse('users.confirm_email',
                                            args=[ec.activation_key]))
         eq_(200, response.status_code)
-        u = User.objects.get(username='pcraciunoiu')
+        u = User.objects.get(username=self.u.username)
         eq_('paulc@trololololololo.com', u.email)
 
     def test_user_change_email_same(self):
         """Changing to same email shows validation error."""
-        self.client.login(username='rrosario', password='testpass')
-        user = User.objects.get(username='rrosario')
-        user.email = 'valid@email.com'
-        user.save()
+        self.u.email = 'valid@email.com'
+        self.u.save()
         response = self.client.post(reverse('users.change_email'),
-                                    {'email': user.email})
+                                    {'email': self.u.email})
         eq_(200, response.status_code)
         doc = pq(response.content)
         eq_('This is your current email.', doc('ul.errorlist').text())
 
     def test_user_change_email_duplicate(self):
         """Changing to same email shows validation error."""
-        self.client.login(username='rrosario', password='testpass')
-        email = 'newvalid@email.com'
-        User.objects.filter(username='pcraciunoiu').update(email=email)
+        u = user(email='newvalid@email.com', save=True)
         response = self.client.post(reverse('users.change_email'),
-                                    {'email': email})
+                                    {'email': u.email})
         eq_(200, response.status_code)
         doc = pq(response.content)
         eq_('A user with that email address already exists.',
@@ -294,8 +295,7 @@ class ChangeEmailTestCase(TestCase):
         """If we detect a duplicate email when confirming an email change,
         don't change it and notify the user."""
         get_current.return_value.domain = 'su.mo.com'
-        self.client.login(username='rrosario', password='testpass')
-        old_email = User.objects.get(username='rrosario').email
+        old_email = self.u.email
         new_email = 'newvalid@email.com'
         response = self.client.post(reverse('users.change_email'),
                                     {'email': new_email})
@@ -304,23 +304,22 @@ class ChangeEmailTestCase(TestCase):
         ec = EmailChange.objects.all()[0]
 
         # Before new email is confirmed, give the same email to a user
-        User.objects.filter(username='pcraciunoiu').update(email=new_email)
+        u = user(email=new_email, save=True)
 
         # Visit confirmation link and verify email wasn't changed.
         response = self.client.get(reverse('users.confirm_email',
                                            args=[ec.activation_key]))
         eq_(200, response.status_code)
         doc = pq(response.content)
-        eq_('Unable to change email for user rrosario',
+        eq_('Unable to change email for user %s' % self.u.username,
             doc('article h1').text())
-        u = User.objects.get(username='rrosario')
+        u = User.objects.get(username=self.u.username)
         eq_(old_email, u.email)
 
 
 class AvatarTests(TestCase):
     def setUp(self):
-        self.u = user()
-        self.u.save()
+        self.u = user(save=True)
         self.p = profile(user=self.u)
         self.client.login(username=self.u.username, password='testpass')
 
@@ -361,8 +360,7 @@ class SessionTests(TestCase):
     client_class = LocalizingClient
 
     def setUp(self):
-        self.u = user()
-        self.u.save()
+        self.u = user(save=True)
         self.client.logout()
 
     # Need to set DEBUG = True for @ssl_required to not freak out.
@@ -412,38 +410,36 @@ class SessionTests(TestCase):
 
 class UserSettingsTests(TestCase):
     def setUp(self):
-        self.user = user()
-        self.user.save()
-        self.p = profile(user=self.user)
-        self.client.login(username=self.user.username, password='testpass')
+        self.u = user(save=True)
+        self.p = profile(user=self.u)
+        self.client.login(username=self.u.username, password='testpass')
 
     def test_create_setting(self):
         url = reverse('users.edit_settings', locale='en-US')
-        eq_(Setting.objects.filter(user=self.user).count(), 0)  # No settings
+        eq_(Setting.objects.filter(user=self.u).count(), 0)  # No settings
         res = self.client.get(url, follow=True)
         eq_(200, res.status_code)
         res = self.client.post(url, {'forums_watch_new_thread': True},
                                follow=True)
         eq_(200, res.status_code)
-        assert Setting.get_for_user(self.user, 'forums_watch_new_thread')
+        assert Setting.get_for_user(self.u, 'forums_watch_new_thread')
 
 
 class UserProfileTests(TestCase):
     def setUp(self):
-        self.user = user()
-        self.user.save()
-        self.profile = profile(user=self.user)
-        self.url = reverse('users.profile', args=[self.user.pk],
+        self.u = user(save=True)
+        self.profile = profile(user=self.u)
+        self.url = reverse('users.profile', args=[self.u.pk],
                            locale='en-US')
 
     def test_profile(self):
         res = self.client.get(self.url)
-        self.assertContains(res, self.user.username)
+        self.assertContains(res, self.u.username)
 
     def test_profile_inactive(self):
         """Inactive users don't have a public profile."""
-        self.user.is_active = False
-        self.user.save()
+        self.u.is_active = False
+        self.u.save()
         res = self.client.get(self.url)
         eq_(404, res.status_code)
 
