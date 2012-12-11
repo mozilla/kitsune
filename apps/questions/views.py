@@ -68,6 +68,7 @@ log = logging.getLogger('k.questions')
 UNAPPROVED_TAG = _lazy(u'That tag does not exist.')
 NO_TAG = _lazy(u'Please provide a tag.')
 
+
 @mobile_template('questions/{mobile/}questions.html')
 def questions(request, template):
     """View the questions."""
@@ -200,7 +201,8 @@ def answers(request, template, question_id, form=None, watch_form=None,
     # Add noindex to questions without answers that are > 30 days old.
     if not request.MOBILE:
         no_answers = ans_['answers'].paginator.count == 0
-        if no_answers and question.created < datetime.now() - timedelta(days=30):
+        if (no_answers and
+            question.created < datetime.now() - timedelta(days=30)):
             extra_kwargs.update(robots_noindex=True)
 
     return jingo.render(request, template, extra_kwargs)
@@ -360,8 +362,9 @@ def aaq(request, product_key=None, category_key=None, showform=False,
             # fully IA-driven (sync isn't special case anymore).
             question.add_metadata(product=product['key'])
 
-            for p in Product.objects.filter(slug__in=product.get('products')):
-                question.products.add(p)
+            if product.get('products'):
+                for p in Product.objects.filter(slug__in=product['products']):
+                    question.products.add(p)
 
             if category:
                 # TODO: This add_metadata call should be removed once we are
@@ -520,7 +523,8 @@ def reply(request, question_id):
 
             return HttpResponseRedirect(answer.get_absolute_url())
 
-    return answers(request, question_id=question_id, form=form, answer_preview=answer_preview)
+    return answers(request, question_id=question_id, form=form,
+                   answer_preview=answer_preview)
 
 
 def solve(request, question_id, answer_id):
