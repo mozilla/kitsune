@@ -22,11 +22,16 @@ detail_patterns = patterns('',
 )
 
 users_patterns = patterns('',
+    url(r'^/auth$', views.user_auth, name='users.auth'),
+    url(r'^/authcontributor$', views.user_auth, {'contributor': True},
+        name='users.auth_contributor'),
+
     url(r'^/login$', views.login, name='users.login'),
     url(r'^/logout$', views.logout, name='users.logout'),
     url(r'^/register$', views.register, name='users.register'),
-    url(r'^/registercontributor$', views.register_contributor,
-        name='users.register_contributor'),
+    url(r'^/registercontributor$', views.register, {'contributor': True},
+        name='users.registercontributor'),
+
     url(r'^/activate/(?P<activation_key>\w+)$', views.activate,
         name='users.old_activate'),
     url(r'^/activate/(?P<user_id>\d+)/(?P<activation_key>\w+)$',

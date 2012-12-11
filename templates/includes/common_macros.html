@@ -46,8 +46,9 @@
         </a>
       </li>
     {% else %}
-      <li><a href="{{ url('users.login') }}" class="sign-in">{{ _('Sign In') }}</a></li>
-      <li><a href="{{ url('users.register') }}" class="register">{{ _('Register') }}</a></li>
+      <li><a href="{{ url('users.auth') }}" class="sign-in register">
+        {{ _('Sign In / Register') }}
+      </a></li>
     {% endif %}
   {% endif %}
 {% endmacro %}
