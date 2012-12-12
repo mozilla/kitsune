@@ -3,12 +3,12 @@ import re
 import urllib
 
 from django.core.urlresolvers import is_valid_path
+from django.db.utils import DatabaseError
 from django.http import HttpResponseRedirect, HttpResponsePermanentRedirect
 from django.http import HttpResponseForbidden
 from django.utils.encoding import iri_to_uri, smart_str, smart_unicode
 
 import jingo
-import MySQLdb as mysql
 import tower
 
 from sumo.helpers import urlparams
@@ -119,7 +119,7 @@ class ReadOnlyMiddleware(object):
             return jingo.render(request, 'sumo/read-only.html', status=503)
 
     def process_exception(self, request, exception):
-        if isinstance(exception, mysql.OperationalError):
+        if isinstance(exception, DatabaseError):
             return jingo.render(request, 'sumo/read-only.html', status=503)
 
 

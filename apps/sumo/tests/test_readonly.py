@@ -2,9 +2,9 @@ import copy
 
 from django.conf import settings
 from django.db import models
+from django.db.utils import DatabaseError
 from django.utils import importlib
 
-import MySQLdb as mysql
 import test_utils
 from nose.tools import assert_raises, eq_
 from pyquery import PyQuery as pq
@@ -35,10 +35,10 @@ class ReadOnlyModeTest(test_utils.TestCase):
         models.signals.pre_delete.disconnect(self.db_error)
 
     def db_error(self, *args, **kwargs):
-        raise mysql.OperationalError("You can't do this in read-only mode.")
+        raise DatabaseError("You can't do this in read-only mode.")
 
     def test_db_error(self):
-        assert_raises(mysql.OperationalError, Question.objects.create, id=12)
+        assert_raises(DatabaseError, Question.objects.create, id=12)
 
     def test_login_error(self):
         # This tries to do a db write.
