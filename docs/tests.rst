@@ -13,7 +13,7 @@ Running the Test Suite
 ======================
 
 If you followed the steps in :ref:`the installation docs
-<installation-chapter>`, then all you should need to do to run the
+<hacking-howto-chapter>`, then all you should need to do to run the
 test suite is::
 
     ./manage.py test

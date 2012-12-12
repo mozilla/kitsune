@@ -19,12 +19,12 @@ Part 2: Developer's Guide
 .. toctree::
    :maxdepth: 2
 
-   installation
    conventions
    patching
    development
    tests
    celery
+   redis
    wsgi
    email
    localization

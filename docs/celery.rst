@@ -1,31 +1,34 @@
+.. _celery-chapter:
+
 =================
 Celery and Rabbit
 =================
 
-Kitsune uses `Celery <http://celeryproject.org/>`_ to enable offline task
-processing for long-running jobs like sending email notifications and
-re-rendering the Knowledge Base.
+Kitsune uses `Celery <http://celeryproject.org/>`_ to enable offline
+task processing for long-running jobs like sending email notifications
+and re-rendering the Knowledge Base.
 
-Though Celery supports multiple message backends, we use, and recommend that
-you use, `RabbitMQ <http://www.rabbitmq.com/>`_. RabbitMQ is an AMQP message
-broker written in Erlang.
+Though Celery supports multiple message backends, we use, and
+recommend that you use, `RabbitMQ
+<http://www.rabbitmq.com/>`_. RabbitMQ is an AMQP message broker
+written in Erlang.
 
 
 When is Celery Appropriate
 ==========================
 
-You can use Celery to do any processing that doesn't need to happen in the
-current request-response cycle. Examples are generating thumbnails, sending out
-notification emails, updating content that isn't about to be displayed to the
-user, and others.
+You can use Celery to do any processing that doesn't need to happen in
+the current request-response cycle. Examples are generating
+thumbnails, sending out notification emails, updating content that
+isn't about to be displayed to the user, and others.
 
-Ask yourself the question: "Is the user going to need this data on the page I'm
-about to send them?" If not, using a Celery task may be a good choice.
+Ask yourself the question: "Is the user going to need this data on the
+page I'm about to send them?" If not, using a Celery task may be a
+good choice.
 
 
 RabbitMQ
 ========
-
 
 Installing
 ----------

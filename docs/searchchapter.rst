@@ -32,24 +32,26 @@ or 0.19.8.
 
 .. Note::
 
-   **Don't** install 0.19.9 or later. They've changed bits of the API in
-   a way that doesn't yet work with Kitsune.
+   **Don't** install 0.19.9 or 0.19.10. They have bugs that don't work
+   in Kitsune.
 
 
-The directory you install Elastic in will hereafter be referred to as
-``ELASTICDIR``.
+The directory you install Elastic Search in will hereafter be referred
+to as ``ELASTICDIR``.
 
 You can configure Elastic Search with the configuration file at
 ``ELASTICDIR/config/elasticsearch.yml``.
 
 Elastic Search uses several settings in ``settings.py`` that you
-should override in ``settings_local.py``::
+need to override in ``settings_local.py``. Here's an example::
 
     # Connection information for Elastic
     ES_HOSTS = ['127.0.0.1:9200']
     ES_INDEXES = {'default': 'sumo_dev'}
     ES_WRITE_INDEXES = ES_INDEXES
 
+
+These settings explained:
 
 ``ES_HOSTS``
 
@@ -284,7 +286,6 @@ You can use the search admin to delete the index.
 On the command line, you can do::
 
     $ ./manage.py esdelete <index-name>
-
 
 
 Tools

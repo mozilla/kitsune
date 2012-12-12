@@ -8,7 +8,7 @@ Running Kitsune with mod_wsgi
 Requirements
 ============
 
-* See :ref:`the installation docs <installation-chapter>`.
+* See :ref:`the installation docs <hacking-howto-chapter>`.
 * `Apache HTTP server <http://httpd.apache.org/>`_
 * mod_rewrite
 * mod_headers
@@ -20,9 +20,10 @@ Requirements
 Overview
 ========
 
-Setting up Kitsune to run as a WSGI application is fairly straightforward. You
-will need to install the requirements and clone the vendor repo as described in
-:ref:`the installation chapter <installation-chapter>`.
+Setting up Kitsune to run as a WSGI application is fairly
+straightforward. You will need to install the requirements and clone
+the vendor repo as described in :ref:`the installation chapter
+<hacking-howto-chapter>`.
 
 There are 3 steps once Kitsune is installed:
 
@@ -35,9 +36,10 @@ There are 3 steps once Kitsune is installed:
 Apache Modules
 --------------
 
-Most of the Apache modules are part of a default Apache install, but may need
-to be activated. If they aren't installed, all of them, including ``mod_wsgi``
-should be installable via your favorite package manager.
+Most of the Apache modules are part of a default Apache install, but
+may need to be activated. If they aren't installed, all of them,
+including ``mod_wsgi`` should be installable via your favorite package
+manager.
 
 
 WSGI Configuration

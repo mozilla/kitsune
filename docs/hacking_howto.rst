@@ -44,25 +44,31 @@ Linux
 -----
 
 We know these work in Debian Testing (Wheezy) and Ubuntu 12.04 and
-will probably work in other distributions. It's likely that you'll encounter
-some steps that are slightly different. If you run into problems, let
-us know.
+will probably work in other distributions. It's likely that you'll
+encounter some steps that are slightly different. If you run into
+problems, let us know.
 
 
 Requirements
 ============
 
-For the minimum installation, you'll need the following:
+These are required for the minimum installation:
 
 * git
 * Python 2.6 or 2.7
-* `pip <http://www.pip-installer.org/en/latest/>`_
+* pip: `<http://www.pip-installer.org/en/latest/>`_
 * MySQL server and client headers
 * Memcached Server
 * libxml and headers
 * libxslt and headers
 * libjpeg and headers
 * zlib and headers
+
+These are optional:
+
+* Redis
+* LESS
+* ElasticSearch: :ref:`search-chapter`
 
 Installation for these is very system dependent. Using a package
 manager, like yum, aptitude, or brew, is encouraged.
@@ -78,7 +84,7 @@ Grab the source from Github using::
 
 .. Note::
 
-   If you forgot to add ``--recursive``, you can get all the
+   If you forgot to add ``--recursive``, you can still get all the
    submodules with::
 
        $ git submodule update --init --recursive
@@ -144,13 +150,10 @@ Start by creating a file named ``settings_local.py`` in the
     CACHES = {
         'default': {
             'BACKEND': 'caching.backends.memcached.CacheClass',
-            'LOCATION': 'localhost:11211'
+            'LOCATION': 'localhost:11211',
+            'PREFIX': 'sumo:',
             }
         }
-
-    CACHE_MIDDLEWARE_ALIAS = 'default'
-    CACHE_MIDDLEWARE_KEY_PREFIX = ''
-    CACHE_MIDDLEWARE_SECONDS = 600
 
     # Basic database configuration for development.
     DATABASES = {
@@ -166,18 +169,10 @@ Start by creating a file named ``settings_local.py`` in the
             },
         }
 
-    REDIS_BACKENDS = {
-            'default': 'redis://localhost:6379?socket_timeout=0.5&db=0',
-            'karma': 'redis://localhost:6381?socket_timeout=0.5&db=0',
-            'helpfulvotes': 'redis://localhost:6379?socket_timeout=0.\
-                5&db=1',
-        }
-
-    REDIS_BACKEND = REDIS_BACKENDS['default']
-
     LESS_PREPROCESS = True
-
     LESS_BIN = '/path/to/kitsune/node_modules/less/bin/lessc'
+
+Don't forget to change ``<YOUR_PASSWORD>``!
 
 Now you can copy and modify any settings from ``settings.py`` into
 ``settings_local.py`` and the value will override the default.
@@ -186,8 +181,8 @@ Now you can copy and modify any settings from ``settings.py`` into
 memcached
 ---------
 
-If you are running Red Hat/CentOS/Fedora, once you have installed memcached you
-can start it and configure it to run on startup using::
+If you are running RedHat/CentOS/Fedora, once you have installed
+memcached you can start it and configure it to run on startup using::
 
     $ chkconfig memcached on
     $ /etc/init.d/memcached start
@@ -213,7 +208,8 @@ Now install LESS using::
 
     $ npm install less
 
-Ensure that LESS_BIN was configured correctly in your local settings.
+Ensure that `LESS_BIN` was configured correctly in your local
+settings.
 
 
 Database
@@ -306,15 +302,15 @@ For more information, see the :ref:`test documentation
 Advanced install
 ================
 
-This page covers a minimal install. This minimal install lets you run
-Kitsune and work on many parts of Kitsune. However, it's missing some
-components.
+The above covers a minimal install which will let you run most of
+Kitsune. In order to get everything working, you'll need to install
+some additional bits.
 
-The following aren't installed in this guide:
+See the following chapters for installing those additional bits:
 
-* Redis
-* RabbitMQ
-* Elastic Search
+* Redis: :ref:`redis-chapter`
+* RabbitMQ: :ref:`celery-chapter`
+* Elastic Search: :ref:`search-chapter`
 
-For installing and configuring those components, you should look at
-the more comprehensive :ref:`installation-chapter`.
+If you want to install Kitsune on an Apache server in a mod_wsgi
+environment, see :ref:`wsgi-chapter`.

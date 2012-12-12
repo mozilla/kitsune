@@ -16,7 +16,7 @@ fairly straight-forward workflow in git for submitting patches. This is
 outlined below.
 
 You should run the tests before submitting a pull request. You can find help
-for getting set up in the :ref:`installation docs <installation-chapter>`.
+for getting set up in the :ref:`installation docs <hacking-howto-chapter>`.
 
 If you ever find yourself stuck, come look for us in `#sumodev
 <ircs://irc.mozilla.org/sumodev>`_ on Mozilla's IRC network. We're happy to
