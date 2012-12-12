@@ -71,7 +71,6 @@ src/redis-py
 src/django-ratelimit
 src/django-recaptcha
 src/python-recaptcha
-src/django-arecibo
 src/oedipus
 src/elasticutils
 src/django-tastypie
