@@ -9,15 +9,21 @@
   <div class="pulldown-menu">
     <div class="pulldown-handle"></div>
     <div class="pulldown-panel">
-      {% if top_contributors %}
-      <section id="top-contributors">
-        <strong>{{ _('Top contributors') }}</strong>
-        <ol>
-          {% for user in top_contributors %}
-            <li>{{ user }}</li>
-          {% endfor %}
-        </ol>
-      </section>
+      {% if karma_top or top_contributors %}
+        <section id="top-contributors">
+          <strong>{{ _('Top contributors') }}</strong>
+          <ol>
+            {% if karma_top %}
+              {% for user in karma_top %}
+                <li>{{ user.username }}</li>
+              {% endfor %}
+            {% elif top_contributors %}
+              {% for user in top_contributors %}
+                <li>{{ user }}</li>
+              {% endfor %}
+            {% endif %}
+          </ol>
+        </section>
       {% endif %}
       <section id="question-stats">
         {% trans recent_unanswered_count,
