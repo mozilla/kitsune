@@ -118,9 +118,6 @@
 [submodule "vendor/src/python-recaptcha"]
 	path = vendor/src/python-recaptcha
 	url = https://github.com/bltravis/python-recaptcha.git
-[submodule "vendor/src/django-arecibo"]
-	path = vendor/src/django-arecibo
-	url = https://github.com/andymckay/django-arecibo.git
 [submodule "vendor/src/elasticutils"]
 	path = vendor/src/elasticutils
 	url = git://github.com/mozilla/elasticutils.git
