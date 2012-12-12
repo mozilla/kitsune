@@ -4,6 +4,9 @@
 Hacking HOWTO for Contributors
 ==============================
 
+.. contents::
+   :local:
+
 
 Summary
 =======
