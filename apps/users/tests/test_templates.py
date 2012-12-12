@@ -57,6 +57,15 @@ class LoginTests(TestCaseBase):
         eq_('Please enter a correct username and password. Note that both '
             'fields are case-sensitive.', doc('ul.errorlist li').text())
 
+    def test_login_password_disabled(self):
+        """Test logging in as a user with PASSWORD_DISABLED doesn't 500."""
+        self.u.password = 'PASSWORD_DISABLED'
+        self.u.save()
+        response = self.client.post(reverse('users.login'),
+                                    {'username': self.u.username,
+                                     'password': 'testpass'})
+        eq_(200, response.status_code)
+
     def test_login(self):
         '''Test a valid login.'''
         response = self.client.post(reverse('users.login'),
@@ -72,8 +81,8 @@ class LoginTests(TestCaseBase):
         next = '/kb/new'
 
         # Verify that next parameter is set in form hidden field.
-        response = self.client.get(urlparams(reverse('users.login'), next=next),
-                                   follow=True)
+        response = self.client.get(
+            urlparams(reverse('users.login'), next=next), follow=True)
         eq_(200, response.status_code)
         doc = pq(response.content)
         eq_(next, doc('input[name="next"]')[0].attrib['value'])
