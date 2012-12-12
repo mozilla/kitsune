@@ -217,7 +217,7 @@ def aaq(request, product_key=None, category_key=None, showform=False,
     if product_key is None:
         product_key = request.GET.get('product')
         if request.MOBILE and product_key is None:
-            product_key = 'desktop'
+            product_key = 'mobile'
     product = products.get(product_key)
     if product_key and not product:
         raise Http404
