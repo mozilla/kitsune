@@ -31,3 +31,24 @@ class SHA256PasswordHasher(BasePasswordHasher):
             (_('salt'), mask_hash(salt, show=2)),
             (_('hash'), mask_hash(hash)),
         ])
+
+class PasswordDisabledHasher(BasePasswordHasher):
+    """The SHA256 password hashing algorithm.
+
+    We "expire" user passwords by setting them to "PASSWORD_DISABLED".
+    This fake hasher handles them without blowing up.
+    """
+    algorithm = "PASSWORD_DISABLED"
+
+    def encode(self, password, salt):
+        return self.algorithm
+
+    def verify(self, password, encoded):
+        return False
+
+    def safe_summary(self, encoded):
+        return SortedDict([
+            (_('algorithm'), self.algorithm),
+            (_('salt'), ''),
+            (_('hash'), ''),
+        ])
