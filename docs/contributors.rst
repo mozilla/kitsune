@@ -21,8 +21,7 @@ with their Firefox issues, but is also the front line in helping drive
 Firefox development.
 
 For more information on this, see the `quickstart guide
-<https://support.mozilla.org/en-US/kb/superheroes-wanted>`_ on the
-SUMO site.
+<https://support.mozilla.org/en-US/get-involved>`_ on the SUMO site.
 
 
 Help with hacking!

@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+
+{% set crumbs = [(url('landings.get_involved'), _('Help Other Users')), (none, _('Answer questions in the forum'))] %}
+{% set styles = ('landings/get-involved',) %}
+
+{% block content %}
+  <div class="grid_12">
+    <div class="hero-bar secondary kb cf">
+      <div class="column">
+        <h1>{{ _('Help us write help articles!') }}</h1>
+        <h2>{{ _('Share your wisdom with the world.') }}</h2>
+        <p>
+          {% trans %}
+            If you like writing and teaching then the Knowledge Base is the
+            place for you. We need contributors that can write, edit or proof
+            read articles. Thousands of people are accessing our Knowledge Base
+            every week. Imagine how many will be helped by you!
+          {% endtrans %}
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <div class="row cf">
+    <div class="grid_12">
+      <div class="content-box button-wrapper cf">
+        <a class="btn btn-submit" href="{{ url('users.auth_contributor') }}">{{ _('Sign me up') }} &raquo;</a>
+        <h3>{{ _('Sign up as a volunteer') }}</h3>
+      </div>
+    </div>
+  </div>
+
+  <div class="row cf pick-a-way">
+    <div class="grid_12">
+      <h3>{{ _('How it works') }}</h3>
+    </div>
+    <div class="grid_6">
+      <span class="bullet">1</span>
+      <div><a href="{{ url('users.auth_contributor') }}">{{ _('Sign up as a volunteer') }}</a></div>
+
+      <span class="bullet">2</span>
+      <div>
+        <a href="{{ url('forums.posts', 'contributors', 708942) }}">
+          {{ _('Introduce yourself') }}
+        </a>
+      </div>
+
+      <span class="bullet">3</span>
+      <div>
+        <a href="{{ url('wiki.document', 'improve-knowledge-base') }}">
+          {{ _('Watch our videos and check our documentation') }}
+        </a>
+      </div>
+    </div>
+    <div class="grid_6">
+      <img src="{{ MEDIA_URL }}/img/gi-visual-kb.png" alt="">
+    </div>
+  </div>
+
+  <div class="row cf pick-a-way">
+    <div class="grid_3">
+      <h3>{{ _('Other ways to get involved') }}</h3>
+    </div>
+    <div class="grid_3">
+      <div class="get-involved-icon aoa"></div>
+      <a href="{{ url('landings.get_involved_aoa') }}">
+        {{ _('Army of Awesome: help users on Twitter') }} &raquo;
+      </a>
+    </div>
+    <div class="grid_3">
+      <div class="get-involved-icon questions"></div>
+      <a href="{{ url('landings.get_involved_questions') }}">
+        {{ _('Answer questions in the support forum') }} &raquo;
+      </a>
+    </div>
+    <div class="grid_3">
+      <div class="get-involved-icon localize"></div>
+      <a href="{{ url('landings.get_involved_l10n') }}">
+        {{ _('Translate help to your languages') }} &raquo;
+      </a>
+    </div>
+  </div>
+{% endblock %}

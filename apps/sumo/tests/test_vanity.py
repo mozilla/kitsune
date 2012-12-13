@@ -14,4 +14,4 @@ class TestVanityURLs(TestCase):
     def test_contribute(self):
         response = self.client.get('/en-US/contribute', follow=False)
         eq_(302, response.status_code)
-        assert 'superheroes-wanted' in response['location']
+        assert 'get-involved' in response['location']

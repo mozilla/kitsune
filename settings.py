@@ -611,6 +611,9 @@ MINIFY_BUNDLES = {
         'kbdashboards': (
             'less/kbdashboards.less',
         ),
+        'landings/get-involved': (
+            'less/landings/get-involved.less',
+        ),
     },
     'js': {
         'common': (
