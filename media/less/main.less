@@ -1318,3 +1318,48 @@ input.searchbox {
     right: 0;
   }
 }
+
+@media only screen and (max-device-width: 800px) {
+  .mobile-banner {
+    position: relative;
+    width: 82vw;
+    font-size: 3vh;
+    background: #363636;
+    color: #fff;
+    text-align: center;
+    padding: 3vh 10vw;
+
+    .close-button {
+      background: #000;
+      border: 0.2vmax solid #fff;
+      .border-radius(50%);
+      .box-shadow(0 0 0.5vmax rgba(0, 0, 0, 0.2));
+      cursor: pointer;
+      height: 6vmin;
+      width: 6vmin;
+      position: absolute;
+      left: 1vw;
+      bottom: 1vh;
+      font-size: 0;
+
+      &:before {
+        content: '\2715';
+        font-size: 5vmin;
+        height: 6vmin;
+        width: 6vmin;
+        line-height: 5vmin;
+        text-align: center;
+        text-indent: 0;
+        position: absolute;
+        top: 0.2vh;
+        left: 0;
+      }
+    }
+  }
+}
+
+@media only screen and (min-device-width: 801px) {
+  .mobile-banner {
+    display: none;
+  }
+}

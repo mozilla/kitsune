@@ -81,6 +81,25 @@
   </div>
 {% endif %}
 
+<div class="media-test"></div>
+
+{# These will only be shown on small-ish screens, by media queries. #}
+{% if request.MOBILE %}
+  <div class="mobile-banner">
+    <div class="close-button">X</div>
+    <a href="javascript: history.back();">
+      This page doesn't have a mobile optimized version. Tap here to go back.
+    <a/>
+  </div>
+{% else %}
+  <div class="mobile-banner">
+    <div class="close-button">X</div>
+    <a href="?mobile=1">
+      Tap here to go to the mobile version of the site.
+    </a>
+  </div>
+{% endif %}
+
 <header>
   <div class="container_12 cf">
     <div class="grid_12">

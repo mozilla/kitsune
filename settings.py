@@ -279,6 +279,7 @@ MIDDLEWARE_CLASSES = (
     # Mobile detection should happen in Zeus.
     'mobility.middleware.DetectMobileMiddleware',
     'mobility.middleware.XMobileMiddleware',
+    'sumo.middleware.MobileSwitchMiddleware',
 
     'sumo.middleware.Forbidden403Middleware',
     'django.middleware.common.CommonMiddleware',
