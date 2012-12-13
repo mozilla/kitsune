@@ -300,52 +300,54 @@
       {% for answer in answers.object_list %}
         {% include "questions/includes/answer.html" %}
       {% endfor %}
-      {{ answers|paginator }}
+      <div class="grid_12">
+        {{ answers|paginator }}
+      </div>
+    {% endif %}
+  </article>
+  <div class="grid_9 suffix_3">
+    {% if not question.is_locked %}
+      <div class="answer-tools nopadding">
+        <h3>{{ _('Post a Reply') }}</h3>
+        {% if not user.is_authenticated() %}
+          <p>
+            {{ _('You must <a href="{url}">log in to your account</a> to reply to posts.')|fe(url=url('users.login')) }}
+          </p>
+          <p>
+            {{ _("Don't have an account? You can <a href='{url}'>create a free account</a> now.")|fe(url=url('users.register')) }}
+          </p>
+        {% endif %}
+      </div>
+
+      {% if user.is_authenticated() %}
+        <form action="{{ url('questions.reply', question_id=question.id) }}#question-reply" method="post" enctype="multipart/form-data">
+          {{ csrf() }}
+          {{ errorlist(form) }}
+
+          <div class="main-content" id="question-reply">
+            {{ content_editor(form.content) }}
+          </div>
+
+          {{ attachments_form('questions.Question', question.pk, images, settings, user) }}
+
+          <div class="answer-tools nopadding">
+            <button type="submit" class="btn btn-submit big">{{ _('Post Reply') }}</button>
+            <input type="submit" id="preview" name="preview" value="{{ _('Preview Reply') }}"
+              data-preview-url="{{ url('questions.answer_preview_async') }}"
+              data-preview-container-id="answer-preview"
+              data-preview-content-id="id_content" />
+          </div>
+        </form>
+      {% endif %}
     {% endif %}
 
-    <div class="grid_9 suffix_3">
-      {% if not question.is_locked %}
-        <div class="answer-tools nopadding">
-          <h3>{{ _('Post a Reply') }}</h3>
-          {% if not user.is_authenticated() %}
-            <p>
-              {{ _('You must <a href="{url}">log in to your account</a> to reply to posts.')|fe(url=url('users.login')) }}
-            </p>
-            <p>
-              {{ _("Don't have an account? You can <a href='{url}'>create a free account</a> now.")|fe(url=url('users.register')) }}
-            </p>
-          {% endif %}
-        </div>
-
-        {% if user.is_authenticated() %}
-          <form action="{{ url('questions.reply', question_id=question.id) }}#question-reply" method="post" enctype="multipart/form-data">
-            {{ csrf() }}
-            {{ errorlist(form) }}
-
-            <div class="main-content" id="question-reply">
-              {{ content_editor(form.content) }}
-            </div>
-
-            {{ attachments_form('questions.Question', question.pk, images, settings, user) }}
-
-            <div class="answer-tools nopadding">
-              <button type="submit" class="btn btn-submit big">{{ _('Post Reply') }}</button>
-              <input type="submit" id="preview" name="preview" value="{{ _('Preview Reply') }}"
-                data-preview-url="{{ url('questions.answer_preview_async') }}"
-                data-preview-container-id="answer-preview"
-                data-preview-content-id="id_content" />
-            </div>
-          </form>
-        {% endif %}
+    <section id="answer-preview">
+      {% if answer_preview %}
+        {% include "questions/includes/answer_preview.html" %}
       {% endif %}
+    </section>
+  </div>
 
-      <section id="answer-preview">
-        {% if answer_preview %}
-          {% include "questions/includes/answer_preview.html" %}
-        {% endif %}
-      </section>
-    </div>
-  </article>
 {% endblock %}
 
 {% block side %}
