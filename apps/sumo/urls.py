@@ -22,7 +22,7 @@ urlpatterns = patterns('',
     url('^contribute/?$', redirect_to,
         {'url': '/kb/superheroes-wanted', 'permanent': False}),
     url(r'^windows7-support(?:\\/)?$', redirect_to,
-        {'url': '/home/?as=u', 'permanent': False})
+        {'url': '/home/?as=u', 'permanent': False}),
 )
 
 

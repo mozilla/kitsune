@@ -1,9 +1,10 @@
 from django.http import HttpResponsePermanentRedirect
 
+import mobility
 from nose.tools import eq_
 from test_utils import RequestFactory
 
-from sumo.middleware import PlusToSpaceMiddleware
+from sumo.middleware import PlusToSpaceMiddleware, MobileSwitchMiddleware
 from sumo.tests import TestCase
 
 
@@ -65,3 +66,20 @@ class PlusToSpaceTestCase(TestCase):
         request.META['QUERY_STRING'] = 's=\xe3\x82\xa2'
         response = self.ptsm.process_request(request)
         eq_('/ja/pa%20th?s=%E3%82%A2', response['location'])
+
+
+class MobileSwitchTestCase(TestCase):
+
+    def test_mobile_0(self):
+        response = self.client.get(u'/en-US/home?mobile=0')
+        eq_(response.status_code, 200)
+        # Make sure a mobile template was not used.
+        assert not any('mobile' in t.name for t in response.templates)
+        eq_(self.client.cookies.get(mobility.middleware.COOKIE).value, 'off')
+
+    def test_mobile_1(self):
+        response = self.client.get(u'/en-US/home?mobile=1')
+        eq_(response.status_code, 200)
+        # Make sure a mobile template was used
+        assert any('mobile' in t.name for t in response.templates)
+        eq_(self.client.cookies.get(mobility.middleware.COOKIE).value, 'on')

@@ -8,6 +8,7 @@ from django.http import HttpResponseRedirect, HttpResponsePermanentRedirect
 from django.http import HttpResponseForbidden
 from django.utils.encoding import iri_to_uri, smart_str, smart_unicode
 
+import mobility
 import jingo
 import tower
 
@@ -169,3 +170,26 @@ def safe_query_string(request):
         yield
     finally:
         request.META['QUERY_STRING'] = qs
+
+
+class MobileSwitchMiddleware(object):
+    """
+    Looks for query string parameters to switch to the mobile site.
+    """
+    def process_request(self, request):
+        mobile = request.GET.get('mobile')
+
+        if mobile == '0':
+            request.MOBILE = False
+        elif mobile == '1':
+            request.MOBILE = True
+
+    def process_response(self, request, response):
+        mobile = request.GET.get('mobile')
+
+        if mobile == '0':
+            response.set_cookie(mobility.middleware.COOKIE, 'off')
+        elif mobile == '1':
+            response.set_cookie(mobility.middleware.COOKIE, 'on')
+
+        return response
