@@ -49,6 +49,7 @@ DATABASES['default']['TEST_CHARSET'] = 'utf8'
 DATABASES['default']['TEST_COLLATION'] = 'utf8_general_ci'
 CACHE_BACKEND = 'caching.backends.locmem://'
 CELERY_ALWAYS_EAGER = True
+ES_INDEX_PREFIX = 'sumo_$BUILD_NAME'
 
 # Activate Qunit:
 INSTALLED_APPS += (
