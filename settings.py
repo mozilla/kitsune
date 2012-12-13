@@ -210,6 +210,10 @@ DB_LOCALIZE = {
     },
 }
 
+LOCALE_PATHS = (
+    path('locale'),
+)
+
 # Use the real robots.txt?
 ENGAGE_ROBOTS = False
 
