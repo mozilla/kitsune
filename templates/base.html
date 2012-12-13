@@ -132,7 +132,7 @@
           <li><a href="{{ url('wiki.landing') }}">{{ _('Help Articles') }}</a></li>
           <li><a href="{{ url('topics.topic', slug='hot') }}">{{ _('Hot Topics') }}</a></li>
           <li><a href="{{ url('wiki.document', 'mozilla-news') }}">{{ _('Mozilla News') }}</a></li>
-          <li><a href="{{ url('wiki.document', 'superheroes-wanted') }}">{{ _('Help Other Users') }}</a></li>
+          <li><a href="{{ url('landings.get_involved') }}">{{ _('Help Other Users') }}</a></li>
           <li><a href="{{ url('wiki.document', 'suggestion-box') }}">{{ _('Suggestion Box') }}</a></li>
         </ul>
       </nav>
@@ -158,7 +158,7 @@
   </div>
 
   {% block outer_side %}
-    <aside class="grid_3">
+    <aside class="grid_3 no-min">
       {% block side_top %}{% endblock %}
       {% block side %}{% endblock %}
       {% block side_bottom %}{% endblock %}

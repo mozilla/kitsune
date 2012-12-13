@@ -30,6 +30,11 @@ body {
   position: relative;
   margin-left: @gridGutterWidth / 2;
   margin-right: @gridGutterWidth / 2;
+  min-height: 1px;
+
+  &.no-min {
+    min-height: 0;
+  }
 }
 
 [class*="push_"], [class*="pull_"] {

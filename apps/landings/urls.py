@@ -14,4 +14,8 @@ urlpatterns = patterns('landings.views',
     # A static page for downloading FirefoxIntegrityCheck.exe
     url(r'^download-firefox-integrity-check$', 'integrity_check',
         name='download.integrity-check'),
+
+    url(r'^get-involved/army-of-awesome$', 'get_involved_aoa', name='landings.get_involved_aoa'),
+    url(r'^get-involved/questions$', 'get_involved_questions', name='landings.get_involved_questions'),
+    url(r'^get-involved$', 'get_involved', name='landings.get_involved'),
 )

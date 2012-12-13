@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+
+{% set crumbs = [(None, _('Help Other Users'))] %}
+{% set styles = ('landings/get-involved',) %}
+
+{% block content %}
+  <div class="grid_12 headlines">
+    <h1>{{ _('Save the world') }}</h1>
+    <h2>{{ _('from the comfort of your couch') }}</h2>
+  </div>
+
+  <div class="row cf">
+    <div class="grid_4"><div class="placeholder"></div></div>
+    <div class="grid_4">
+      <h3>{{ _('We need your help!') }}</h3>
+      {% trans %}
+        Used by more than 400 million people, Firefox support is fully powered by
+        volunteers, and it’s more important than ever. This is where you come in.
+      {% endtrans %}
+    </div>
+    <div class="grid_4">
+      <h3>{{ _('Why should I help?') }}</h3>
+      {% trans %}
+        Help millions of Firefox users get the most out of their favourite
+        browser. Your contributions will reach millions of users worldwide, and
+        you can do it from the comfort of your couch! Help millions of Firefox
+        users get the most out of their favourite browser. Your contributions
+        will reach millions of users worldwide, and you can do it from the
+        comfort of your couch!
+      {% endtrans %}
+    </div>
+  </div>
+
+  <div class="row cf">
+    <div class="grid_4">
+      <h3>{{ _('About Us') }}</h3>
+      {% trans %}
+        Mozilla Support is a community of enthusiastic volunteers and employees
+        trying to support our users around the globe. Join us for an incredible
+        adventure!
+      {% endtrans %}
+    </div>
+    <div class="grid_8"><div class="placeholder"></div></div>
+  </div>
+
+  <div class="row cf pick-a-way">
+    <div class="grid_12">
+      <h3>{{ _('Pick a way to get involved') }}</h3>
+    </div>
+    <div class="grid_3">
+      <div class="placeholder"></div>
+      <a href="{{ url('landings.get_involved_aoa') }}">
+        {{ _('Army of Awesome: help users on Twitter') }} &raquo;
+      </a>
+    </div>
+    <div class="grid_3">
+      <div class="placeholder"></div>
+      <a href="{{ url('landings.get_involved_questions') }}">
+        {{ _('Answer questions in the support forum') }} &raquo;
+      </a>
+    </div>
+    <div class="grid_3">
+      <div class="placeholder"></div>
+      <a href="{{ url('wiki.document', 'improve-knowledge-base') }}">
+        {{ _('Write help articles') }} &raquo;
+      </a>
+    </div>
+    <div class="grid_3">
+      <div class="placeholder"></div>
+      <a href="{{ url('wiki.document', 'localize-firefox-help') }}">
+        {{ _('Translate help to your languages') }} &raquo;
+      </a>
+    </div>
+  </div>
+
+  <div class="row cf">
+    <div class="grid_12">
+      <div class="content-box button-wrapper cf">
+        <a class="btn btn-submit" href="{{ url('users.auth') }}">{{ _('Sign me up') }} &raquo;</a>
+        <h3>{{ _('Sign up as a volunteer') }}</h3>
+      </div>
+    </div>
+  </div>
+{% endblock %}

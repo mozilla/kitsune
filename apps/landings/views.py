@@ -48,5 +48,17 @@ def home(request):
         'moz_news': moz_news})
 
 
+def get_involved(request):
+    return jingo.render(request, 'landings/get-involved.html')
+
+
+def get_involved_aoa(request):
+    return jingo.render(request, 'landings/get-involved-aoa.html')
+
+
+def get_involved_questions(request):
+    return jingo.render(request, 'landings/get-involved-questions.html')
+
+
 def integrity_check(request):
     return jingo.render(request, 'landings/integrity-check.html')

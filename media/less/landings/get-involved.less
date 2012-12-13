@@ -1,0 +1,73 @@
+@import '../variables.less';
+@import '../vendors.less';
+
+h1 {
+  font-size: 108px;
+  line-height: 118px;
+  margin: 0;
+}
+
+h2 {
+  font-size: 48px;
+  line-height: 58px;
+  margin: 0 0 40px 0;
+}
+
+h3 {
+  font-size: 30px;
+  margin: 0 0 8px 0;
+}
+
+.bullet {
+  background: #fff;
+  .border-radius(50%);
+  float: left;
+  height: 32px;
+  line-height: 32px;
+  text-align: center;
+  width: 32px;
+
+  + div {
+    clear: both;
+  }
+}
+
+.button-wrapper {
+  .btn,
+  .btn:hover {
+    float: right;
+    font-size: 24px;
+  }
+}
+
+.content-box {
+  padding-bottom: 20px;
+  padding-top: 20px;
+}
+
+.headlines {
+  text-align: center;
+}
+
+.pick-a-way {
+  font-family: @OpenSansLight;
+  font-size: 23px;
+
+  a {
+    display: block;
+    margin-top: 5px;
+  }
+}
+
+.row {
+  margin-bottom: 20px;
+}
+
+/* TODO: Delete this placeholder style once placeholders are removed. */
+.placeholder {
+  background: none repeat scroll 0 0 rgba(0, 0, 0, 0.03);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  .border-radius(6px);
+  .box-shadow(0 1px 0 0 rgba(255, 255, 255, 0.5));
+  height: 200px;
+}

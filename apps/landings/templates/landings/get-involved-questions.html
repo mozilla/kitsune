@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+
+{% set crumbs = [(url('landings.get_involved'), _('Help Other Users')), (none, _('Answer questions in the forum'))] %}
+{% set styles = ('landings/get-involved',) %}
+
+{% block content %}
+  <div class="grid_12">
+    <h2>{{ _('Answer questions in the forum') }}</h2>
+  </div>
+
+  <div class="row cf">
+    <div class="grid_6"><div class="placeholder"></div></div>
+    <div class="grid_6">
+      <h3>{{ _('Where all the action happens') }}</h3>
+      <p>
+        {% trans %}
+          From hardcore web developers to "how do I install Firefox" first time
+          users, everybody needs your help in the forum! Share your Firefox
+          knowledge by pointing people to the right help articles and providing
+          troubleshooting steps for their individual questions.
+        {% endtrans %}
+      </p>
+    </div>
+  </div>
+
+  <div class="row cf">
+    <div class="grid_12">
+      <div class="content-box button-wrapper cf">
+        <a class="btn btn-submit" href="{{ url('users.auth') }}">{{ _('Sign me up') }} &raquo;</a>
+        <h3>{{ _('Sign up as a volunteer') }}</h3>
+      </div>
+    </div>
+  </div>
+
+  <div class="row cf pick-a-way">
+    <div class="grid_12">
+      <h3>{{ _('How it works') }}</h3>
+    </div>
+    <div class="grid_3">
+      <span class="bullet">1</span>
+      <div><a href="{{ url('users.auth') }}">{{ _('Sign up as a volunteer') }}</a></div>
+    </div>
+    <div class="grid_3">
+      <span class="bullet">2</span>
+      <div>
+        <a href="{{ url('questions.questions') }}">
+          {% trans %}
+            Go to our support forum and choose a question to answer
+          {% endtrans %}
+        </a>
+      </div>
+    </div>
+    <div class="grid_3">
+      <span class="bullet">3</span>
+      <div>{{ _('Start answering!') }}</div>
+      <div>
+        <a href="{{ url('wiki.document', 'answering-questions-support-forum') }}">
+          {{ _('Read this for some help to get started') }}
+        </a>
+      </div>
+    </div>
+    <div class="grid_3"><div class="placeholder"></div></div>
+  </div>
+
+  <div class="row cf pick-a-way">
+    <div class="grid_3">
+      <h3>{{ _('Other ways to get involved') }}</h3>
+    </div>
+    <div class="grid_3">
+      <div class="placeholder"></div>
+      <a href="{{ url('landings.get_involved_aoa') }}">
+        {{ _('Army of Awesome: help users on Twitter') }} &raquo;
+      </a>
+    </div>
+    <div class="grid_3">
+      <div class="placeholder"></div>
+      <a href="{{ url('wiki.document', 'improve-knowledge-base') }}">
+        {{ _('Write help articles') }} &raquo;
+      </a>
+    </div>
+    <div class="grid_3">
+      <div class="placeholder"></div>
+      <a href="{{ url('wiki.document', 'localize-firefox-help') }}">
+        {{ _('Translate help to your languages') }} &raquo;
+      </a>
+    </div>
+  </div>
+{% endblock %}
