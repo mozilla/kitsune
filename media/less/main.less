@@ -1322,36 +1322,37 @@ input.searchbox {
 @media only screen and (max-device-width: 800px) {
   .mobile-banner {
     position: relative;
-    width: 82vw;
-    font-size: 3vh;
+    width: 100%;
+    font-size: 36pt;
     background: #363636;
     color: #fff;
     text-align: center;
-    padding: 3vh 10vw;
+    padding: 10pt 0;
 
+    @close_button_size: 40pt;
     .close-button {
       background: #000;
-      border: 0.2vmax solid #fff;
+      border: 0.5pt solid #fff;
       .border-radius(50%);
-      .box-shadow(0 0 0.5vmax rgba(0, 0, 0, 0.2));
+      .box-shadow(0 0 3pt rgba(0, 0, 0, 0.2));
       cursor: pointer;
-      height: 6vmin;
-      width: 6vmin;
+      height: @close_button_size;
+      width: @close_button_size;
       position: absolute;
-      left: 1vw;
-      bottom: 1vh;
+      left: 16pt;
+      bottom: 12pt;
       font-size: 0;
 
       &:before {
         content: '\2715';
-        font-size: 5vmin;
-        height: 6vmin;
-        width: 6vmin;
-        line-height: 5vmin;
+        font-size: 36pt;
+        line-height: @close_button_size;
+        height: @close_button_size;
+        width: @close_button_size;
         text-align: center;
         text-indent: 0;
         position: absolute;
-        top: 0.2vh;
+        top: 1pt;
         left: 0;
       }
     }
