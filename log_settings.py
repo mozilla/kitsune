@@ -70,6 +70,7 @@ if settings.DEBUG:
     config['formatters']['default']['datefmt'] = '%H:%M:%S'
     config['loggers']['k']['handlers'] = ['console']
     config['loggers']['django.request']['handlers'] = ['console']
+    config['root']['handlers'] = ['console']
 else:
     task_log = logging.getLogger('k.celery')
     task_proxy = celery.log.LoggingProxy(task_log)

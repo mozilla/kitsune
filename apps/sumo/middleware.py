@@ -177,21 +177,19 @@ class MobileSwitchMiddleware(object):
     Looks for query string parameters to switch to the mobile site.
     """
     def process_request(self, request):
-        if 'mobile' in request.GET:
-            mobile = request.GET['mobile']
+        mobile = request.GET.get('mobile')
 
-            if mobile == '0':
-                request.MOBILE = False
-            elif mobile == '1':
-                request.MOBILE = True
+        if mobile == '0':
+            request.MOBILE = False
+        elif mobile == '1':
+            request.MOBILE = True
 
     def process_response(self, request, response):
-        if 'mobile' in request.GET:
-            mobile = request.GET['mobile']
+        mobile = request.GET.get('mobile')
 
-            if mobile == '0':
-                response.set_cookie(mobility.middleware.COOKIE, 'off')
-            elif mobile == '1':
-                response.set_cookie(mobility.middleware.COOKIE, 'on')
+        if mobile == '0':
+            response.set_cookie(mobility.middleware.COOKIE, 'off')
+        elif mobile == '1':
+            response.set_cookie(mobility.middleware.COOKIE, 'on')
 
         return response
