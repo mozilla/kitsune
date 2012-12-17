@@ -43,7 +43,12 @@
   </div>
 
   <a href="{{ url('products') }}">{{ _('Home') }}</a>
-  <a href="{{ url('questions.aaq_step1') }}">{{ _('Ask a question') }}</a>
+  {% if request.locale == settings.WIKI_DEFAULT_LANGUAGE %}
+    {% set ask_url = url('questions.aaq_step1') %}
+  {% else %}
+    {% set ask_url = url('wiki.document', 'get-community-support') %}
+  {% endif %}
+  <a href="{{ ask_url }}">{{ _('Ask a question') }}</a>
 
   <header>{{ _('Navigation') }}</header>
   <a href="{{ url('topics.topic', slug='hot') }}">{{ _('Hot topics') }}</a>
