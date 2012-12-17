@@ -91,11 +91,15 @@
 
   <div class="grid_4">
     <div id="top-aoa-contributors">
-      <h2>{{ _('Top Contributors This Week') }}</h2>
-      {# contributor_stats is sorted #}
-      {% for contributor in contributor_stats[:10] %}
-        {{ aoa_contributor(contributor) }}
-      {% endfor %}
+      {% if contributor_stats %}
+        <h2>{{ _('Top Contributors Last Week') }}</h2>
+        {# contributor_stats is the sorted top 10 #}
+        {% for contributor in contributor_stats %}
+          {{ aoa_contributor(contributor) }}
+        {% endfor %}
+      {% else %}
+        <h2>{{ _('No recent contributions') }}</h2>
+      {% endif %}
     </div>
   </div>
 

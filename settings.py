@@ -917,10 +917,10 @@ CC_TWEETS_PERPAGE = 100  # How many tweets to collect in one go. Max: 100.
 CC_SHOW_REPLIES = True  # Show replies to tweets?
 CC_ALLOW_REMOVE = True  # Allow users to hide tweets?
 
-CC_TWEET_ACTIVITY_URL = 'https://metrics.mozilla.com/stats/twitter/armyOfAwesomeKillRate.json'  # Tweet activity stats
-CC_TOP_CONTRIB_URL = 'https://metrics.mozilla.com/stats/twitter/armyOfAwesomeTopSoldiers.json'  # Top contributor stats
-CC_TWEET_ACTIVITY_CACHE_KEY = 'sumo-cc-tweet-stats'
 CC_TOP_CONTRIB_CACHE_KEY = 'sumo-cc-top-contrib-stats'
+CC_TOP_CONTRIB_SORT = '1w'
+CC_TOP_CONTRIB_LIMIT = 10
+
 CC_STATS_CACHE_TIMEOUT = 24 * 60 * 60  # 24 hours
 CC_STATS_WARNING = 30 * 60 * 60  # Warn if JSON data is older than 30 hours
 CC_IGNORE_USERS = ['fx4status']  # User names whose tweets to ignore.

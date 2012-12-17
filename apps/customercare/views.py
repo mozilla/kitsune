@@ -137,66 +137,13 @@ def landing(request):
     except RedisError as e:
         statsd.incr('redis.errror')
         log.error('Redis error: %s' % e)
-    # Stats. See customercare.cron.get_customercare_stats.
-    activity = redis and redis.get(settings.CC_TWEET_ACTIVITY_CACHE_KEY)
-    if activity:
-        activity = json.loads(activity)
-    if activity and 'resultset' in activity:
-        statsd.incr('customercare.stats.activity.hit')
-        activity_stats = []
-        for act in activity['resultset']:
-            if act is None:  # Sometimes we get bad data here.
-                continue
-            activity_stats.append((act[0], {
-                'requests': format_number(act[1], locale='en_US'),
-                'replies': format_number(act[2], locale='en_US'),
-                'perc': act[3] * 100,
-            }))
-    else:
-        statsd.incr('customercare.stats.activity.miss')
-        activity_stats = []
 
-    contributors = redis and redis.get(settings.CC_TOP_CONTRIB_CACHE_KEY)
-    if contributors:
-        contributors = json.loads(contributors)
-    if contributors and 'resultset' in contributors:
+    contributor_stats = redis and redis.get(settings.CC_TOP_CONTRIB_CACHE_KEY)
+    if contributor_stats:
+        contributor_stats = json.loads(contributor_stats)
         statsd.incr('customercare.stats.contributors.hit')
-        contributor_stats = {}
-        for contrib in contributors['resultset']:
-            # Create one list per time period
-            period = contrib[1]
-            if not contributor_stats.get(period):
-                contributor_stats[period] = []
-            elif len(contributor_stats[period]) == 16:
-                # Show a max. of 16 people.
-                continue
-
-            contributor_stats[period].append({
-                'name': contrib[2],
-                'username': contrib[3],
-                'count': contrib[4],
-                'avatar': contributors['avatars'].get(contrib[3]),
-            })
     else:
         statsd.incr('customercare.stats.contributors.miss')
-        contributor_stats = {}
-
-    # reformat stats to be more useful.
-    new_contrib_stats = {}
-    for time_period, contributors in contributor_stats.items():
-        for contributor in contributors:
-            username = contributor['username']
-            if contributor['username'] not in new_contrib_stats:
-                new_contrib_stats[contributor['username']] = {
-                    'username': username,
-                    'name': contributor['name'],
-                    'avatar': contributor['avatar'],
-                }
-            assert time_period not in new_contrib_stats[username]
-            new_contrib_stats[username][time_period] = contributor['count']
-
-    contributor_stats = sorted(new_contrib_stats.values(), reverse=True,
-        key=lambda c: c.get('Last Week', 0))
 
     try:
         twitter_user = (request.twitter.api.auth.get_username() if
@@ -211,7 +158,6 @@ def landing(request):
     recent_replied_count = _count_answered_tweets(since=yesterday)
 
     return jingo.render(request, 'customercare/landing.html', {
-        'activity_stats': activity_stats,
         'contributor_stats': contributor_stats,
         'canned_responses': get_common_replies(request.locale),
         'tweets': _get_tweets(locale=request.locale,

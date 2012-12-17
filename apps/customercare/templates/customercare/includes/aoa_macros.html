@@ -4,13 +4,13 @@
       <img src="{{ contributor.avatar }}" />
     </a>
     <div class="user-meta">
-      <a href="https://twitter.com/{{ contributor.username }}" target="_blank">
-        <span class="twittername">@{{ contributor.username }}</span>
+      <a href="https://twitter.com/{{ contributor.twitter_username }}" target="_blank">
+        <span class="twittername">@{{ contributor.twitter_username }}</span>
       </a>
 
-      {{ aoa_stat(_('Overall'), contributor['Overall']) }}
-      {{ aoa_stat(_('Yesterday'), contributor['Yesterday']) }}
-      {{ aoa_stat(_('Last Week'), contributor['Last Week']) }}
+      {{ aoa_stat(_('Last Week'), contributor['1w']) }}
+      {{ aoa_stat(_('Yesterday'), contributor['1d']) }}
+      {{ aoa_stat(_('Overall'), contributor['all']) }}
     </div>
   </div>
 {% endmacro %}

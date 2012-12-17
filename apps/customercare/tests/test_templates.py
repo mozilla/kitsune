@@ -130,39 +130,15 @@ class TweetListTestCase(TestCase):
 class StatsTests(TestCase):
     """Tests for the activity and contributors stats."""
 
-    def setUp(self):
-        super(StatsTests, self).setUp()
-        with open('apps/customercare/tests/stats.json') as f:
-            self.json_data = json.load(f)
-
-    def tearDown(self):
-        cache.delete(settings.CC_TWEET_ACTIVITY_CACHE_KEY)
-        cache.delete(settings.CC_TOP_CONTRIB_CACHE_KEY)
-        super(StatsTests, self).tearDown()
-
-    def test_activity_contributors(self):
-        """Activity and contributors stats are both set."""
-        cache.set(settings.CC_TWEET_ACTIVITY_CACHE_KEY,
-                  self.json_data['activity'],
-                  settings.CC_STATS_CACHE_TIMEOUT)
-        cache.set(settings.CC_TOP_CONTRIB_CACHE_KEY,
-                  self.json_data['contributors'],
-                  settings.CC_STATS_CACHE_TIMEOUT)
-        r = self.client.get(reverse('customercare.landing'), follow=True)
-        eq_(200, r.status_code)
-
-    def test_activity_only(self):
-        """Only activity stats are set."""
-        cache.set(settings.CC_TWEET_ACTIVITY_CACHE_KEY,
-                  self.json_data['activity'],
-                  settings.CC_STATS_CACHE_TIMEOUT)
-        r = self.client.get(reverse('customercare.landing'), follow=True)
-        eq_(200, r.status_code)
-
-    def test_contributors_only(self):
+    def test_contributors(self):
         """Only contributors stats are set."""
+        with open('apps/customercare/tests/stats.json') as f:
+            json_data = json.load(f)
+
         cache.set(settings.CC_TOP_CONTRIB_CACHE_KEY,
-                  self.json_data['contributors'],
+                  json_data['contributors'],
                   settings.CC_STATS_CACHE_TIMEOUT)
         r = self.client.get(reverse('customercare.landing'), follow=True)
         eq_(200, r.status_code)
+
+        cache.delete(settings.CC_TOP_CONTRIB_CACHE_KEY)
