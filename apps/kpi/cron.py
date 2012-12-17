@@ -79,9 +79,9 @@ def update_l10n_metric():
     # but a handful aren't localizable so we get some extras.
     top_60_docs = _get_top_docs(60)
 
-    # Get the visits to each locale in the last 90 days.
+    # Get the visits to each locale in the last 30 days.
     end = date.today() - timedelta(days=1)  # yesterday
-    start = end - timedelta(days=90)
+    start = end - timedelta(days=30)
     locale_visits = Webtrends.visits_by_locale(start, end)
 
     # Total visits.
