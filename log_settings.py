@@ -42,13 +42,13 @@ config = {
     },
     'loggers': {
         'k': {
-            'handlers': ['syslog', 'mail_admins'],
+            'handlers': ['syslog'],
             'propogate': True,
             # Use the most permissive setting. It is filtered in the handlers.
             'level': logging.DEBUG,
         },
         'django.request': {
-            'handlers': ['syslog', 'mail_admins'],
+            'handlers': ['syslog'],
             'propogate': True,
             # Use the most permissive setting. It is filtered in the handlers.
             'level': logging.DEBUG,
