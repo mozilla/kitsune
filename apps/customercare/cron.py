@@ -17,7 +17,7 @@ import tweepy
 from sumo.redis_utils import redis_client, RedisError
 from statsd import statsd
 
-from customercare.models import Tweet
+from customercare.models import Tweet, Reply
 
 
 SEARCH_URL = 'http://search.twitter.com/search.json'
@@ -154,66 +154,66 @@ def _filter_tweet(item, allow_links=False):
 @cronjobs.register
 def get_customercare_stats():
     """
-    Fetch Customer Care stats from Mozilla Metrics.
+    Generate customer care stats from the Replies table.
 
-    Example Activity Stats data:
-        {"resultset": [["Yesterday",1234,123,0.0154],
-                       ["Last Week",12345,1234,0.0240], ...]
-         "metadata": [...]}
+    This gets cached in Redis as a sorted list of contributors, stored as JSON.
 
     Example Top Contributor data:
-        {"resultset": [[1,"Overall","John Doe","johndoe",840],
-                       [2,"Overall","Jane Doe","janedoe",435], ...],
-         "metadata": [...]}
+
+    [
+        {
+            'twitter_username': 'username1',
+            'avatar': 'http://twitter.com/path/to/the/avatar.png',
+            'avatar_https': 'https://twitter.com/path/to/the/avatar.png',
+            'all': 5211,
+            '1m': 230,
+            '1w': 33,
+            '1d': 3,
+        },
+        { ... },
+        { ... },
+    ]
     """
 
-    stats_sources = {
-        settings.CC_TWEET_ACTIVITY_URL: settings.CC_TWEET_ACTIVITY_CACHE_KEY,
-        settings.CC_TOP_CONTRIB_URL: settings.CC_TOP_CONTRIB_CACHE_KEY,
-    }
-    for url, cache_key in stats_sources.items():
-        log.debug('Updating %s from %s' % (cache_key, url))
-        try:
-            json_resource = urllib2.urlopen(url)
-            json_data = json.load(json_resource)
-            if not json_data['resultset']:
-                raise KeyError('[%s] Result set was empty.' % cache_key)
-        except Exception, e:
-            log.error('Error updating %s: %s' % (cache_key, e))
-            raise
+    contributor_stats = {}
 
-        # Make sure the file is not outdated.
-        headers = json_resource.info()
-        lastmod = datetime.fromtimestamp(time.mktime(
-            rfc822.parsedate(headers['Last-Modified'])))
-        if ((datetime.now() - lastmod) > timedelta(
-            seconds=settings.CC_STATS_WARNING)):
-            log.warning('Resource %s is outdated. Last update: %s' % (
-                cache_key, lastmod))
+    now = datetime.now()
+    one_month_ago = now - timedelta(days=30)
+    one_week_ago = now - timedelta(days=7)
+    yesterday = now - timedelta(days=1)
 
-        # Grab top contributors' avatar URLs from the public twitter API.
-        if cache_key == settings.CC_TOP_CONTRIB_CACHE_KEY:
-            twitter = tweepy.API()
-            avatars = {}
-            for contrib in json_data['resultset']:
-                username = contrib[3]
+    for reply in Reply.objects.all():
+        raw = json.loads(reply.raw_json)
+        user = reply.twitter_username
+        if user not in contributor_stats:
+            contributor_stats[user] = {
+                'twitter_username': user,
+                'avatar': raw['profile_image_url'],
+                'avatar_https': raw['profile_image_url_https'],
+                'all': 0, '1m': 0, '1w': 0, '1d': 0,
+            }
+        contributor = contributor_stats[reply.twitter_username]
 
-                if avatars.get(username):
-                    continue
+        contributor['all'] += 1
+        if reply.created > one_month_ago:
+            contributor['1m'] += 1
+            if reply.created > one_week_ago:
+                contributor['1w'] += 1
+                if reply.created > yesterday:
+                    contributor['1d'] += 1
 
-                try:
-                    user = twitter.get_user(username)
-                except tweepy.TweepError, e:
-                    log.warning('Error grabbing avatar of user %s: %s' % (
-                        username, e))
-                else:
-                    avatars[username] = user.profile_image_url
-            json_data['avatars'] = avatars
+    sort_key = settings.CC_TOP_CONTRIB_SORT
+    limit = settings.CC_TOP_CONTRIB_LIMIT
+    # Sort by whatever is in settings, break ties with 'all'
+    contributor_stats = sorted(contributor_stats.values(),
+        key=lambda c: (c[sort_key], c['all']), reverse=True)[:limit]
 
-        # Store the stats in redis.
-        try:
-            redis = redis_client(name='default')
-            redis.set(cache_key, json.dumps(json_data))
-        except RedisError as e:
-            statsd.incr('redis.errror')
-            log.error('Redis error: %s' % e)
+    try:
+        redis = redis_client(name='default')
+        key = settings.CC_TOP_CONTRIB_CACHE_KEY
+        redis.set(key, json.dumps(contributor_stats))
+    except RedisError as e:
+        statsd.incr('redis.error')
+        log.error('Redis error: %s' % e)
+
+    return contributor_stats

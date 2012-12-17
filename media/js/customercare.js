@@ -445,22 +445,5 @@
                 }
             );
         }).bullseye();
-
-        /* Statistics */
-        $('#side-stats select').change(function(e) {
-            var $this = $(this),
-                option = $this.children('option[value=' + $this.val() + ']'),
-                percent = interpolate(gettext('%s%'),
-                                      [option.data('perc')]),
-                contribs = $('#side-stats .contribs');
-
-            // Update contributors
-            contribs.find('.contributors:visible').fadeOut('fast', function() {
-                contribs.find('.contributors.period' + $this.val()).fadeIn('fast');
-            });
-
-            $this.blur();
-            e.preventDefault();
-        }).val('0');
     });
 }(jQuery));

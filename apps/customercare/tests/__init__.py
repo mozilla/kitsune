@@ -1,4 +1,6 @@
+import json
 from datetime import datetime
+
 from customercare.models import Tweet, Reply
 from sumo.tests import with_save
 
@@ -48,16 +50,23 @@ def reply(**kwargs):
         'twitter_username': 'r1cky',
         'tweet_id': 12345,
         'reply_to_tweet_id': 123456,
-        'raw_json':
-        '{"iso_language_code": "en", "text": "%s", '
-        '"created_at": "Thu, 23 Sep 2010 13:58:06 +0000", '
-        '"profile_image_url": '
-        '"http://a1.twimg.com/profile_images/1117809237/cool_cat_normal.jpg", '
-        '"source": "&lt;a href=&quot;http://www.tweetdeck.com&quot; '
-            'rel=&quot;nofollow&quot;&gt;TweetDeck&lt;/a&gt;", '
-            '"from_user": "__jimcasey__", "from_user_id": 142651388, '
-            '"to_user_id": null, "geo": null, "id": 25309168521, '
-            '"metadata": {"result_type": "recent"}}' %
-            kwargs.pop('text', 'Hey #Firefox')}  # TODO: Escape quotes and such
+        'raw_json': json.dumps({
+            'iso_language_code': 'en',
+            'text': kwargs.pop('text', 'Hey #Firefox'),
+            'created_at': 'Thu, 23 Sep 2010 13:58:06 +0000',
+            'profile_image_url':
+                'http://a1.twimg.com/profile_images/1117809237/cool_cat_normal.jpg',
+            'profile_image_url_https':
+                'http://si0.twimg.com/profile_images/1117809237/cool_cat_normal.jpg',
+            'source': '&lt;a href=&quot;http://www.tweetdeck.com&quot; '
+                'rel=&quot;nofollow&quot;&gt;TweetDeck&lt;/a&gt;',
+            'from_user': '__jimcasey__',
+            'from_user_id': 142651388,
+            'to_user_id': None,
+            'geo': None,
+            'id': 25309168521,
+            'metadata': {'result_type': 'recent'}
+        })
+    }
     defaults.update(kwargs)
     return Reply(**defaults)
