@@ -1,6 +1,7 @@
 {% extends 'mobile/base.html' %}
 
-{% set headline = product.title %}
+{% set title = _(product.title, 'DB: products.Product.title') %}
+{% set headline = title %}
 {% set styles = ('mobile/products',) %}
 {% set return_url = url('products') %}
 
