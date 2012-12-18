@@ -19,6 +19,7 @@ from mobility.decorators import mobile_template
 from statsd import statsd
 from tower import ugettext as _, ugettext_lazy as _lazy
 
+from products.models import Product
 from search.models import get_search_models
 from search.utils import locale_or_default, clean_excerpt, ComposedList
 from questions.models import Question
@@ -350,6 +351,9 @@ def search(request, template=None):
         results_per_page = settings.SEARCH_RESULTS_PER_PAGE
         pages = paginate(request, documents, results_per_page)
 
+        # Facets
+        product_facets = {}
+
         # If we know there aren't any results, let's cheat and in
         # doing that, not hit ES again.
         if num_results == 0:
@@ -367,6 +371,13 @@ def search(request, template=None):
             else:
                 bounds = documents[0][1]
                 searcher = searcher.values_dict()[bounds[0]:bounds[1]]
+
+                # If we are doing basic search, we show product facets.
+                if a == '0':
+                    pfc = searcher.facet(
+                        'product', filtered=True).facet_counts()
+                    product_facets = dict(
+                        [(p['term'], p['count']) for p in pfc['product']])
 
         results = []
         for i, doc in enumerate(searcher):
@@ -456,10 +467,17 @@ def search(request, template=None):
 
         return HttpResponse(json_data, mimetype=mimetype)
 
-    results_ = jingo.render(request, template,
-        {'num_results': num_results, 'results': results, 'q': cleaned['q'],
-         'pages': pages, 'w': cleaned['w'],
-         'search_form': search_form, 'lang_name': lang_name, })
+    results_ = jingo.render(request, template, {
+        'num_results': num_results,
+        'results': results,
+        'q': cleaned['q'],
+        'w': cleaned['w'],
+        'product': cleaned['product'],
+        'products': Product.objects.filter(visible=True),
+        'product_facets': product_facets,
+        'pages': pages,
+        'search_form': search_form,
+        'lang_name': lang_name, })
     results_['Cache-Control'] = 'max-age=%s' % \
                                 (settings.SEARCH_CACHE_PERIOD * 60)
     results_['Expires'] = (datetime.utcnow() +
