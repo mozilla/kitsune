@@ -12,11 +12,59 @@
     </div>
     <div class="grid_3">
       {% if not request.GET.get('a') %}
-        {# Don't show basic filtering to advanced search users #}
-        <ul id="search-filter" class="sidebar-nav">
-          <li {{ w|class_selected(3) }}><a href="{{ url('search')|urlparams(q=q) }}">{{ _('Show Everything') }}</a></li>
-          <li {{ w|class_selected(1) }}><a href="{{ url('search')|urlparams(q=q, w=1) }}">{{ _('Help Articles Only') }}</a></li>
-          <li {{ w|class_selected(2) }}><a href="{{ url('search')|urlparams(q=q, w=2) }}">{{ _('Community Discussion Only') }}</a></li>
+        {# Don't show filtering to advanced search users #}
+
+        {% if waffle.flag('search-ab') %}
+          {% set esab = 'a' %}
+        {% else %}
+          {% set esab = 'b' %}
+        {% endif %}
+        {% set base_url = url('search')|urlparams(q=q, esab=esab) %}
+
+        {% if product %}
+          {# In basic search, you can only filter one product at a time. #}
+          {% set product = product[0] %}
+        {% endif %}
+
+        {% set base_doctype_url = base_url %}
+        {% if product %}
+          {% set base_doctype_url = base_doctype_url|urlparams(product=product) %}
+        {% endif %}
+        <ul id="doctype-filter" class="search-filter sidebar-nav">
+          <li {{ w|class_selected(3) }}>
+            <a href="{{ base_doctype_url }}">
+              {{ _('Show Everything') }}
+            </a>
+          </li>
+          <li {{ w|class_selected(1) }}>
+            <a href="{{ base_doctype_url|urlparams(w=1) }}">
+              {{ _('Help Articles Only') }}
+            </a>
+          </li>
+          <li {{ w|class_selected(2) }}>
+            <a href="{{ base_doctype_url|urlparams(w=2) }}">
+              {{ _('Community Discussion Only') }}
+            </a>
+          </li>
+        </ul>
+
+        {% set base_product_url = base_url %}
+        {% if w != 3 %}
+          {% set base_product_url = base_product_url|urlparams(w=w) %}
+        {% endif %}
+        <ul id="product-filter" class="search-filter sidebar-nav">
+          <li {{ product|class_selected([]) }}>
+            <a href="{{ base_product_url }}">
+              {{ _('All Products') }}
+            </a>
+          </li>
+          {% for p in products %}
+            <li {{ product|class_selected(p.slug) }}>
+              <a href="{{ base_product_url|urlparams(product=p.slug) }}">
+                {{ _(p.title, 'DB: products.Product.title') }} ({{ product_facets.get(p.slug, 0) }})
+              </a>
+            </li>
+          {% endfor %}
         </ul>
       {% endif %}
       {{ for_contributors_sidebar(user, settings.WIKI_DEFAULT_LANGUAGE) }}
