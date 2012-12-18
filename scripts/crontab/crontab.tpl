@@ -11,11 +11,11 @@ HOME = /tmp
 
 # Every hour.
 42 * * * * {{ django }} cleanup
+30 * * * * {{ cron }} get_customercare_stats
 
 # Every 6 hours.
 0 */6 * * * {{ django }} update_product_details -q > /dev/null
 10 */6 * * * {{ cron }} rebuild_kb
-30 */6 * * * {{ cron }} get_customercare_stats
 40 */6 * * * {{ cron }} purge_tweets
 50 */6 * * * {{ cron }} cache_top_contributors
 
