@@ -99,7 +99,7 @@ def old_home(request, template=None):
 
 @mobile_template('landings/{mobile/}mobile.html')
 def mobile(request, template=None):
-    if not request.MOBILE:
+    if not request.MOBILE or waffle.flag_is_active(request, 'new-theme'):
         return redirect_to(
             request, 'products.product', slug='mobile', permanent=False)
 
