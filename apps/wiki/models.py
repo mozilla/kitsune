@@ -570,6 +570,9 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
             'indexed_on': {'type': 'integer'},
             'updated': {'type': 'integer'},
 
+            'product': {'type': 'string', 'index': 'not_analyzed'},
+            'topic': {'type': 'string', 'index': 'not_analyzed'},
+
             'document_title': {'type': 'string', 'analyzer': 'snowball'},
             'document_locale': {'type': 'string', 'index': 'not_analyzed'},
             'document_current_id': {'type': 'integer'},
@@ -582,8 +585,6 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
             'document_is_archived': {'type': 'boolean'},
             'document_summary': {'type': 'string', 'analyzer': 'snowball'},
             'document_keywords': {'type': 'string', 'analyzer': 'snowball'},
-            'document_product': {'type': 'string', 'index': 'not_analyzed'},
-            'document_topic': {'type': 'string', 'index': 'not_analyzed'},
             'document_recent_helpful_votes': {'type': 'integer'}}
 
     @classmethod
@@ -597,6 +598,9 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
         d['url'] = obj.get_absolute_url()
         d['indexed_on'] = int(time.time())
 
+        d['topic'] = [t.slug for t in obj.get_topics(True)]
+        d['product'] = [p.slug for p in obj.get_products(True)]
+
         d['document_title'] = obj.title
         d['document_locale'] = obj.locale
         d['document_parent_id'] = obj.parent.id if obj.parent else None
@@ -604,9 +608,6 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
         d['document_category'] = obj.category
         d['document_slug'] = obj.slug
         d['document_is_archived'] = obj.is_archived
-
-        d['document_topic'] = [t.slug for t in obj.get_topics(True)]
-        d['document_product'] = [p.slug for p in obj.get_products(True)]
 
         if obj.current_revision is not None:
             d['document_summary'] = obj.current_revision.summary

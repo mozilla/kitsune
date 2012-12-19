@@ -313,6 +313,9 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
             'created': {'type': 'integer'},
             'updated': {'type': 'integer'},
 
+            'product': {'type': 'string', 'index': 'not_analyzed'},
+            'topic': {'type': 'string', 'index': 'not_analyzed'},
+
             'question_title': {'type': 'string', 'analyzer': 'snowball'},
             'question_content':
                 {'type': 'string', 'analyzer': 'snowball',
@@ -366,6 +369,11 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
         # switch them to dates.
         d['created'] = int(time.mktime(obj['created'].timetuple()))
         d['updated'] = int(time.mktime(obj['updated'].timetuple()))
+
+        topics = Topic.uncached.filter(question__id=obj['id'])
+        products = Product.uncached.filter(question__id=obj['id'])
+        d['topic'] = [t.slug for t in topics]
+        d['product'] = [p.slug for p in products]
 
         d['question_title'] = obj['title']
         d['question_content'] = obj['content']
