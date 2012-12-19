@@ -1047,7 +1047,7 @@ def _search_suggestions(request, text, locale, tags, product_slugs):
 
     # Apply product filters
     if product_slugs:
-        wiki_s = wiki_s.filter(document_product__in=product_slugs)
+        wiki_s = wiki_s.filter(product__in=product_slugs)
     if tags:
         question_s = question_s.filter(question_tag__in=tags)
 

@@ -136,6 +136,20 @@
                 </div>
               </div>
 
+              <div class="container cf">
+                {{ search_form.product.label_tag()|safe }}
+                <div class="product checkboxes">
+                  {{ search_form.product|safe }}
+                </div>
+              </div>
+
+              <div class="container cf">
+                {{ search_form.topics.label_tag()|safe }}
+                <div class="topics checkboxes">
+                  {{ search_form.topics|safe }}
+                </div>
+              </div>
+
               <div class="container cf showhide-input">
                 {{ search_form.created.label_tag()|safe }}
                 {{ search_form.created|safe }}

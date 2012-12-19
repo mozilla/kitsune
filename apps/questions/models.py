@@ -433,6 +433,14 @@ register_for_indexing(
     instance_to_indexee=(
         lambda i: i.content_object if isinstance(i.content_object, Question)
                   else None))
+register_for_indexing(
+    'questions',
+    Question.topics.through,
+    m2m=True)
+register_for_indexing(
+    'questions',
+    Question.products.through,
+    m2m=True)
 
 
 class QuestionMetaData(ModelBase):
