@@ -31,7 +31,8 @@ Message from the reviewer:
 To view the history of this document, click the following
 link, or paste it into your browser's location bar:
 
-https://testserver/en-US/kb/%s/history"""
+https://testserver/en-US/kb/%s/history
+"""
 
 
 class RebuildTestCase(TestCase):
@@ -162,3 +163,5 @@ class ReviewMailTestCase(TestCaseBase):
         eq_('Your revision has been approved: %s' % doc.title,
             mail.outbox[0].subject)
         assert '&quot;' not in mail.outbox[0].body
+        assert '"All about quotes"' in mail.outbox[0].body
+        assert 'foo & "bar"' in mail.outbox[0].body
