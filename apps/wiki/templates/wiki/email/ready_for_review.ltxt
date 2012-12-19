@@ -1,4 +1,4 @@
-{% load i18n %}{% load unsubscribe_instructions %}{# L10n: This is an email. Whitespace matters! #}{% blocktrans %}{{ creator }} submitted a new revision to the document
+{% autoescape off %}{% load i18n %}{% load unsubscribe_instructions %}{# L10n: This is an email. Whitespace matters! #}{% blocktrans %}{{ creator }} submitted a new revision to the document
 {{ document_title }}.
 
 To review this revision, click the following
@@ -13,4 +13,4 @@ https://{{ host }}{{ url }}
 --
 {% trans "Changes:" %}
 {{ diff|safe }}
-{% unsubscribe_instructions watch %}
+{% unsubscribe_instructions watch %}{% endautoescape %}

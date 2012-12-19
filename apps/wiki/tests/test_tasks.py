@@ -31,7 +31,8 @@ Message from the reviewer:
 To view the history of this document, click the following
 link, or paste it into your browser's location bar:
 
-https://testserver/en-US/kb/%s/history"""
+https://testserver/en-US/kb/%s/history
+"""
 
 
 class RebuildTestCase(TestCase):
@@ -146,3 +147,21 @@ class ReviewMailTestCase(TestCaseBase):
         eq_(2, len(mail.outbox))
         eq_('Your revision has been approved: %s' % doc.title,
             mail.outbox[0].subject)
+
+    @mock.patch.object(Site.objects, 'get_current')
+    def test_escaping(self, get_current):
+        get_current.return_value.domain = 'testserver'
+
+        rev = revision()
+        doc = rev.document
+        doc.title = '"All about quotes"'
+        msg = 'foo & "bar"'
+        self._approve_and_send(rev, User.objects.get(username='admin'), msg)
+
+        # Two emails will be sent, one each for the reviewer and the reviewed.
+        eq_(2, len(mail.outbox))
+        eq_('Your revision has been approved: %s' % doc.title,
+            mail.outbox[0].subject)
+        assert '&quot;' not in mail.outbox[0].body
+        assert '"All about quotes"' in mail.outbox[0].body
+        assert 'foo & "bar"' in mail.outbox[0].body
