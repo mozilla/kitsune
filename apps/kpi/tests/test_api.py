@@ -188,7 +188,6 @@ class KpiApiTests(TestCase):
 
         r = self._get_api_result('kpi_active_contributors')
         eq_(r['objects'][0]['support_forum'], 1)
-    test_asker_replies_arent_a_contribution.xx = 1
 
     def test_elastic_clickthrough_get(self):
         """Test elastic clickthrough read API."""
