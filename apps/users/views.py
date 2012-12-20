@@ -87,6 +87,11 @@ def login(request, template):
                        max_age=max_age)
         return res
 
+    if request.MOBILE:
+        return jingo.render(request, template, {
+            'form': form,
+        })
+
     return user_auth(request, login_form=form)
 
 
@@ -120,6 +125,11 @@ def register(request, template, contributor=False):
     form = handle_register(request)
     if form.is_valid():
         return jingo.render(request, template + 'register_done.html')
+
+    if request.MOBILE:
+        return jingo.render(request, template + 'register.html', {
+            'form': form,
+        })
 
     return user_auth(request, register_form=form)
 
