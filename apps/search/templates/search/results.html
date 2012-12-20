@@ -61,7 +61,7 @@
           {% for p in products %}
             <li {{ product|class_selected(p.slug) }}>
               <a href="{{ base_product_url|urlparams(product=p.slug) }}">
-                {{ p.title }} ({{ product_facets.get(p.slug, 0) }})
+                {{ _(p.title, 'DB: products.Product.title') }} ({{ product_facets.get(p.slug, 0) }})
               </a>
             </li>
           {% endfor %}
