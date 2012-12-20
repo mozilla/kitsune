@@ -204,8 +204,8 @@ class ElasticSearchUnifiedViewTests(ElasticTestCase):
         response = self.client.get(reverse('search'), qs)
         eq_(200, response.status_code)
 
-    def test_front_page_search_for_questions(self):
-        """This tests whether doing a search from the front page returns
+    def test_default_search_for_questions(self):
+        """This tests whether doing a default search returns
         question results.
 
         Bug #709202.
@@ -214,9 +214,9 @@ class ElasticSearchUnifiedViewTests(ElasticTestCase):
         # Create a question with an answer with an answervote that
         # marks the answer as helpful.  The question should have the
         # "desktop" tag.
-        product(title=u'firefox', slug=u'desktop', save=True)
+        p = product(title=u'firefox', slug=u'desktop', save=True)
         ques = question(title=u'audio', save=True)
-        ques.tags.add(u'desktop')
+        ques.products.add(p)
         ans = answer(question=ques, content=u'volume', save=True)
         answervote(answer=ans, helpful=True, save=True)
 
@@ -228,9 +228,7 @@ class ElasticSearchUnifiedViewTests(ElasticTestCase):
         # testing-wise and second, we search for 'audio' since we have
         # data for that.
         response = self.client.get(reverse('search'), {
-            'q_tags': 'desktop', 'product': 'desktop', 'q': 'audio',
-            'format': 'json'
-        })
+            'q': 'audio', 'format': 'json'})
 
         eq_(200, response.status_code)
 
@@ -241,18 +239,16 @@ class ElasticSearchUnifiedViewTests(ElasticTestCase):
         # answer_content.  answer_content is in a string array, so
         # this makes sure that works.
         response = self.client.get(reverse('search'), {
-            'q_tags': 'desktop', 'product': 'desktop', 'q': 'volume',
-            'format': 'json'
-        })
+            'q': 'volume', 'format': 'json'})
 
         eq_(200, response.status_code)
 
         content = json.loads(response.content)
         eq_(content['total'], 1)
 
-    def test_front_page_search_for_wiki(self):
-        """This tests whether doing a search from the front page returns
-        wiki document results.
+    def test_default_search_for_wiki(self):
+        """This tests whether doing a default search returns wiki document
+        results.
 
         Bug #709202.
 
@@ -269,17 +265,15 @@ class ElasticSearchUnifiedViewTests(ElasticTestCase):
         # testing-wise and second, we search for 'audio' since we have
         # data for that.
         response = self.client.get(reverse('search'), {
-            'q_tags': 'desktop', 'product': 'desktop', 'q': 'audio',
-            'format': 'json'
-        })
+            'q': 'audio', 'format': 'json'})
 
         eq_(200, response.status_code)
 
         content = json.loads(response.content)
         eq_(content['total'], 1)
 
-    def test_front_page_only_shows_wiki_and_questions(self):
-        """Tests that the front page doesn't show forums
+    def test_default_only_shows_wiki_and_questions(self):
+        """Tests that the default search doesn't show forums
 
         This verifies that we're only showing documents of the type
         that should be shown and that the filters on model are working
@@ -288,13 +282,14 @@ class ElasticSearchUnifiedViewTests(ElasticTestCase):
         Bug #767394
 
         """
+        p = product(slug=u'desktop', save=True)
         ques = question(title=u'audio', save=True)
-        ques.tags.add(u'desktop')
+        ques.products.add(p)
         ans = answer(question=ques, content=u'volume', save=True)
         answervote(answer=ans, helpful=True, save=True)
 
         doc = document(title=u'audio', locale=u'en-US', category=10, save=True)
-        doc.products.add(product(slug=u'desktop', save=True))
+        doc.products.add(p)
         revision(document=doc, is_approved=True, save=True)
 
         thread1 = thread(title=u'audio', save=True)
@@ -303,9 +298,7 @@ class ElasticSearchUnifiedViewTests(ElasticTestCase):
         self.refresh()
 
         response = self.client.get(reverse('search'), {
-            'q_tags': 'desktop', 'product': 'desktop', 'q': 'audio',
-            'format': 'json'
-        })
+            'q': 'audio', 'format': 'json'})
 
         eq_(200, response.status_code)
 
@@ -681,8 +674,35 @@ class ElasticSearchUnifiedViewTests(ElasticTestCase):
             response = self.client.get(reverse('search'), qs)
             eq_(total, json.loads(response.content)['total'])
 
-    def test_wiki_tags(self):
-        """Search for tags, includes multiple."""
+    def test_question_topics(self):
+        """Search questions for topics."""
+        t1 = topic(slug='doesnotexist', save=True)
+        t2 = topic(slug='cookies', save=True)
+        t3 = topic(slug='sync', save=True)
+
+        q = question(save=True)
+        q.topics.add(t2)
+        q = question(save=True)
+        q.topics.add(t2)
+        q.topics.add(t3)
+
+        self.refresh()
+
+        topic_vals = (
+            (t1.slug, 0),
+            (t2.slug, 2),
+            (t3.slug, 1),
+            ([t2.slug, t3.slug], 1),
+        )
+
+        qs = {'a': 1, 'w': 2, 'format': 'json'}
+        for topics, number in topic_vals:
+            qs.update({'topics': topics})
+            response = self.client.get(reverse('search'), qs)
+            eq_(number, json.loads(response.content)['total'])
+
+    def test_wiki_topics(self):
+        """Search wiki for topics, includes multiple."""
         t1 = topic(slug='doesnotexist', save=True)
         t2 = topic(slug='extant', save=True)
         t3 = topic(slug='tagged', save=True)
@@ -712,7 +732,7 @@ class ElasticSearchUnifiedViewTests(ElasticTestCase):
             eq_(number, json.loads(response.content)['total'])
 
     def test_wiki_topics_inherit(self):
-        """Translations inherit tags from their parents."""
+        """Translations inherit topics from their parents."""
         doc = document(locale=u'en-US', category=10, save=True)
         doc.topics.add(topic(slug='extant', save=True))
         revision(document=doc, is_approved=True, save=True)
@@ -727,8 +747,35 @@ class ElasticSearchUnifiedViewTests(ElasticTestCase):
         response = self.client.get(reverse('search', locale='es'), qs)
         eq_(1, json.loads(response.content)['total'])
 
-    def test_products(self):
-        """Search for products."""
+    def test_question_products(self):
+        """Search questions for products."""
+        p1 = product(slug='b2g', save=True)
+        p2 = product(slug='mobile', save=True)
+        p3 = product(slug='desktop', save=True)
+
+        q = question(save=True)
+        q.products.add(p2)
+        q = question(save=True)
+        q.products.add(p2)
+        q.products.add(p3)
+
+        self.refresh()
+
+        product_vals = (
+            (p1.slug, 0),
+            (p2.slug, 2),
+            (p3.slug, 1),
+            ([p2.slug, p3.slug], 1),
+        )
+
+        qs = {'a': 1, 'w': 2, 'format': 'json'}
+        for products, number in product_vals:
+            qs.update({'product': products})
+            response = self.client.get(reverse('search'), qs)
+            eq_(number, json.loads(response.content)['total'])
+
+    def test_wiki_products(self):
+        """Search wiki for products."""
 
         prod_vals = (
             (product(slug='b2g', save=True), 0),
@@ -751,7 +798,7 @@ class ElasticSearchUnifiedViewTests(ElasticTestCase):
             response = self.client.get(reverse('search'), qs)
             eq_(total, json.loads(response.content)['total'])
 
-    def test_products_inherit(self):
+    def test_wiki_products_inherit(self):
         """Translations inherit products from their parents."""
         doc = document(locale=u'en-US', category=10, save=True)
         p = product(title=u'Firefox', slug=u'desktop', save=True)

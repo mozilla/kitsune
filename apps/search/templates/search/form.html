@@ -29,45 +29,45 @@
               </div>
 
               <div class="container cf">
-                {{ search_form.language.label_tag()|safe }}
-                {{ search_form.language|safe }}
+                {{ search_form.language.label_tag() }}
+                {{ search_form.language }}
               </div>
 
               <div class="container cf">
-                {{ search_form.category.label_tag()|safe }}
+                {{ search_form.category.label_tag() }}
                 <div class="category checkboxes">
-                  {{ search_form.category|safe }}
+                  {{ search_form.category }}
                 </div>
               </div>
 
               <div class="container cf">
-                {{ search_form.product.label_tag()|safe }}
+                {{ search_form.product.label_tag() }}
                 <div class="product checkboxes">
-                  {{ search_form.product|safe }}
+                  {{ search_form.product }}
                 </div>
               </div>
 
               <div class="container cf">
-                {{ search_form.topics.label_tag()|safe }}
+                {{ search_form.topics.label_tag() }}
                 <div class="topics checkboxes">
-                  {{ search_form.topics|safe }}
+                  {{ search_form.topics }}
                 </div>
               </div>
 
               <div class="container cf">
-                {{ search_form.include_archived.label_tag()|safe }}
+                {{ search_form.include_archived.label_tag() }}
                 <div class="include_archived radios">
-                  {{ search_form.include_archived|safe }}
+                  {{ search_form.include_archived }}
                 </div>
               </div>
 
               <div class="container cf">
-                {{ search_form.sortby_documents.label_tag()|safe }}
-                {{ search_form.sortby_documents|safe }}
+                {{ search_form.sortby_documents.label_tag() }}
+                {{ search_form.sortby_documents }}
               </div>
 
               {% for hidden in search_form.hidden_fields() if not hidden.name == 'w' %}
-                {{ hidden|safe }}
+                {{ hidden }}
               {% endfor %}
               <input type="hidden" value="1" name="w" />
 
@@ -83,78 +83,92 @@
               </div>
 
               <div class="container cf">
-                {{ search_form.is_locked.label_tag()|safe }}
+                {{ search_form.is_locked.label_tag() }}
                 <div class="is_locked radios">
-                  {{ search_form.is_locked|safe }}
+                  {{ search_form.is_locked }}
                 </div>
               </div>
 
               <div class="container cf">
-                {{ search_form.is_solved.label_tag()|safe }}
+                {{ search_form.is_solved.label_tag() }}
                 <div class="is_solved radios">
-                  {{ search_form.is_solved|safe }}
+                  {{ search_form.is_solved }}
                 </div>
               </div>
 
               <div class="container cf">
-                {{ search_form.has_answers.label_tag()|safe }}
+                {{ search_form.has_answers.label_tag() }}
                 <div class="has_answer radios">
-                  {{ search_form.has_answers|safe }}
+                  {{ search_form.has_answers }}
                 </div>
               </div>
 
               <div class="container cf">
-                {{ search_form.has_helpful.label_tag()|safe }}
+                {{ search_form.has_helpful.label_tag() }}
                 <div class="has_helpful radios">
-                  {{ search_form.has_helpful|safe }}
+                  {{ search_form.has_helpful }}
                 </div>
               </div>
 
               <div class="container cf showhide-input">
-                {{ search_form.num_voted.label_tag()|safe }}
-                {{ search_form.num_voted|safe }}
+                {{ search_form.num_voted.label_tag() }}
+                {{ search_form.num_voted }}
                 <input name="num_votes" class="numeric" type="text"
                        value="{{ search_form.num_votes.data or '' }}"
                        title="{{ _('Number of votes. Must be an integer.') }}" />
               </div>
 
               <div class="container cf">
-                {{ search_form.asked_by.label_tag()|safe }}
-                {{ search_form.asked_by|safe }}
+                {{ search_form.asked_by.label_tag() }}
+                {{ search_form.asked_by }}
               </div>
 
               <div class="container cf">
-                {{ search_form.answered_by.label_tag()|safe }}
-                {{ search_form.answered_by|safe }}
+                {{ search_form.answered_by.label_tag() }}
+                {{ search_form.answered_by }}
               </div>
 
               <div class="container cf">
-                {{ search_form.q_tags.label_tag()|safe }}
-                {{ search_form.q_tags|safe }}
+                {{ search_form.q_tags.label_tag() }}
+                {{ search_form.q_tags }}
                 <div class="search-tips-small">
                   {{ _('Note: Searching for "tag1, tag2" returns questions tagged with both tag1 and tag2') }}
                 </div>
               </div>
 
+              <div class="container cf">
+                {{ search_form.product.label_tag() }}
+                <div class="product checkboxes">
+                  {{ search_form.product }}
+                </div>
+              </div>
+
+              <div class="container cf">
+                {{ search_form.topics.label_tag() }}
+                <div class="topics checkboxes">
+                  {{ search_form.topics }}
+                </div>
+              </div>
+
               <div class="container cf showhide-input">
-                {{ search_form.created.label_tag()|safe }}
-                {{ search_form.created|safe }}
+                {{ search_form.created.label_tag() }}
+                {{ search_form.created }}
                 <input name="created_date" type="text" value="{{ search_form.created_date.data or '' }}" class="datepicker" title="{{ _('Created date. Format: mm/dd/yy') }}" />
               </div>
 
               <div class="container cf showhide-input">
-                {{ search_form.updated.label_tag()|safe }}
-                {{ search_form.updated|safe }}
+                {{ search_form.updated.label_tag() }}
+                {{ search_form.updated }}
                 <input name="updated_date" type="text" value="{{ search_form.updated_date.data or '' }}" class="datepicker" title="{{ _('Updated date. Format: mm/dd/yy') }}" />
               </div>
 
               <div class="container cf">
-                {{ search_form.sortby.label_tag()|safe }}
-                {{ search_form.sortby|safe }}
+                {{ search_form.sortby.label_tag() }}
+                {{ search_form.sortby }}
               </div>
 
               {% for hidden in search_form.hidden_fields() if not hidden.name == 'w' %}
-                {{ hidden|safe }}
+                {{ hidden }}
               {% endfor %}
               <input type="hidden" value="2" name="w" />
 
@@ -170,41 +184,41 @@
               </div>
 
               <div class="container cf">
-                {{ search_form.thread_type.label_tag()|safe }}
+                {{ search_form.thread_type.label_tag() }}
                 <div class="thread-type checkboxes">
-                  {{ search_form.thread_type|safe }}
+                  {{ search_form.thread_type }}
                 </div>
               </div>
 
               <div class="container cf">
-                {{ search_form.author.label_tag()|safe }}
-                {{ search_form.author|safe }}
+                {{ search_form.author.label_tag() }}
+                {{ search_form.author }}
               </div>
 
               <div class="container cf showhide-input">
-                {{ search_form.created.label_tag()|safe }}
-                {{ search_form.created|safe }}
+                {{ search_form.created.label_tag() }}
+                {{ search_form.created }}
                 <input name="created_date" type="text" value="{{ search_form.created_date.data or '' }}" class="datepicker" title="{{ _('Created date. Format: mm/dd/yy') }}" />
               </div>
 
               <div class="container cf showhide-input">
-                {{ search_form.updated.label_tag()|safe }}
-                {{ search_form.updated|safe }}
+                {{ search_form.updated.label_tag() }}
+                {{ search_form.updated }}
                 <input name="updated_date" type="text" value="{{ search_form.updated_date.data or '' }}" class="datepicker" title="{{ _('Updated date. Format: mm/dd/yy') }}" />
               </div>
 
               <div class="container cf">
-                {{ search_form.sortby.label_tag()|safe }}
-                {{ search_form.sortby|safe }}
+                {{ search_form.sortby.label_tag() }}
+                {{ search_form.sortby }}
               </div>
 
               <div class="container cf">
-                {{ search_form.forum.label_tag()|safe }}
-                {{ search_form.forum|safe }}
+                {{ search_form.forum.label_tag() }}
+                {{ search_form.forum }}
               </div>
 
               {% for hidden in search_form.hidden_fields() if not hidden.name == 'w' %}
-                {{ hidden|safe }}
+                {{ hidden }}
               {% endfor %}
               <input type="hidden" value="4" name="w" />
 

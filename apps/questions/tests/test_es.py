@@ -1,8 +1,10 @@
 from nose.tools import eq_
 
+from products.tests import product
 from questions.models import Question
 from questions.tests import question, answer, answervote, questionvote
 from search.tests.test_es import ElasticTestCase
+from topics.tests import topic
 
 
 class QuestionUpdateTests(ElasticTestCase):
@@ -95,6 +97,50 @@ class QuestionUpdateTests(ElasticTestCase):
         q.tags.remove(tag)
         self.refresh()
         eq_(Question.search().filter(question_tag=tag).count(), 0)
+
+    def test_question_topics(self):
+        """Make sure that adding topics to a Question causes it to
+        refresh the index.
+
+        """
+        t = topic(slug=u'hiphop', save=True)
+        eq_(Question.search().filter(topic=t.slug).count(), 0)
+        q = question(save=True)
+        self.refresh()
+        eq_(Question.search().filter(topic=t.slug).count(), 0)
+        q.topics.add(t)
+        self.refresh()
+        eq_(Question.search().filter(topic=t.slug).count(), 1)
+        q.topics.clear()
+        self.refresh()
+
+        # Make sure the question itself is still there and that we didn't
+        # accidentally delete it through screwed up signal handling:
+        eq_(Question.search().filter().count(), 1)
+
+        eq_(Question.search().filter(topic=t.slug).count(), 0)
+
+    def test_question_products(self):
+        """Make sure that adding products to a Question causes it to
+        refresh the index.
+
+        """
+        p = product(slug=u'desktop', save=True)
+        eq_(Question.search().filter(product=p.slug).count(), 0)
+        q = question(save=True)
+        self.refresh()
+        eq_(Question.search().filter(product=p.slug).count(), 0)
+        q.products.add(p)
+        self.refresh()
+        eq_(Question.search().filter(product=p.slug).count(), 1)
+        q.products.remove(p)
+        self.refresh()
+
+        # Make sure the question itself is still there and that we didn't
+        # accidentally delete it through screwed up signal handling:
+        eq_(Question.search().filter().count(), 1)
+
+        eq_(Question.search().filter(product=p.slug).count(), 0)
 
 
 class QuestionSearchTests(ElasticTestCase):

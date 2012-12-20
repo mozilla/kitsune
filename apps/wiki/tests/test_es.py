@@ -39,13 +39,13 @@ class TestPostUpdate(ElasticTestCase):
 
         # Verify the parent has the right tags.
         doc_dict = Document.extract_document(doc1.id)
-        eq_(doc_dict['document_topic'], [u'cookies', u'general'])
-        eq_(doc_dict['document_product'], [u'desktop'])
+        eq_(doc_dict['topic'], [u'cookies', u'general'])
+        eq_(doc_dict['product'], [u'desktop'])
 
         # Verify the translation has the parent's tags.
         doc_dict = Document.extract_document(doc2.id)
-        eq_(doc_dict['document_topic'], [u'cookies', u'general'])
-        eq_(doc_dict['document_product'], [u'desktop'])
+        eq_(doc_dict['topic'], [u'cookies', u'general'])
+        eq_(doc_dict['product'], [u'desktop'])
 
     def test_wiki_topics(self):
         """Make sure that adding topics to a Document causes it to
@@ -53,14 +53,14 @@ class TestPostUpdate(ElasticTestCase):
 
         """
         t = topic(slug=u'hiphop', save=True)
-        eq_(Document.search().filter(document_topic=t.slug).count(), 0)
+        eq_(Document.search().filter(topic=t.slug).count(), 0)
         doc = document(save=True)
         revision(document=doc, is_approved=True, save=True)
         self.refresh()
-        eq_(Document.search().filter(document_topic=t.slug).count(), 0)
+        eq_(Document.search().filter(topic=t.slug).count(), 0)
         doc.topics.add(t)
         self.refresh()
-        eq_(Document.search().filter(document_topic=t.slug).count(), 1)
+        eq_(Document.search().filter(topic=t.slug).count(), 1)
         doc.topics.clear()
         self.refresh()
 
@@ -68,7 +68,7 @@ class TestPostUpdate(ElasticTestCase):
         # accidentally delete it through screwed up signal handling:
         eq_(Document.search().filter().count(), 1)
 
-        eq_(Document.search().filter(document_topic=t.slug).count(), 0)
+        eq_(Document.search().filter(topic=t.slug).count(), 0)
 
     def test_wiki_products(self):
         """Make sure that adding products to a Document causes it to
@@ -76,14 +76,14 @@ class TestPostUpdate(ElasticTestCase):
 
         """
         p = product(slug=u'desktop', save=True)
-        eq_(Document.search().filter(document_product=p.slug).count(), 0)
+        eq_(Document.search().filter(product=p.slug).count(), 0)
         doc = document(save=True)
         revision(document=doc, is_approved=True, save=True)
         self.refresh()
-        eq_(Document.search().filter(document_product=p.slug).count(), 0)
+        eq_(Document.search().filter(product=p.slug).count(), 0)
         doc.products.add(p)
         self.refresh()
-        eq_(Document.search().filter(document_product=p.slug).count(), 1)
+        eq_(Document.search().filter(product=p.slug).count(), 1)
         doc.products.remove(p)
         self.refresh()
 
@@ -91,7 +91,7 @@ class TestPostUpdate(ElasticTestCase):
         # accidentally delete it through screwed up signal handling:
         eq_(Document.search().filter().count(), 1)
 
-        eq_(Document.search().filter(document_product=p.slug).count(), 0)
+        eq_(Document.search().filter(product=p.slug).count(), 0)
 
     def test_wiki_no_revisions(self):
         """Don't index documents without approved revisions"""

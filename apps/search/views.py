@@ -148,12 +148,12 @@ def search(request, template=None):
         # Product filter
         products = cleaned['product']
         for p in products:
-            wiki_f &= F(document_product=p)
+            wiki_f &= F(product=p)
 
         # Topics filter
         topics = cleaned['topics']
         for t in topics:
-            wiki_f &= F(document_topic=t)
+            wiki_f &= F(topic=t)
 
         # Archived bit
         if a == '0' and not cleaned['include_archived']:
@@ -191,6 +191,16 @@ def search(request, template=None):
         for t in q_tags:
             if t:
                 question_f &= F(question_tag=t)
+
+        # Product filter
+        products = cleaned['product']
+        for p in products:
+            question_f &= F(product=p)
+
+        # Topics filter
+        topics = cleaned['topics']
+        for t in topics:
+            question_f &= F(topic=t)
 
     # End - support questions filters
 

@@ -127,9 +127,9 @@ def _es_documents_for(locale, topics, products=None):
                 document_category__in=settings.IA_DEFAULT_CATEGORIES))
 
     for topic in topics:
-        s = s.filter(document_topic=topic.slug)
+        s = s.filter(topic=topic.slug)
     for product in products or []:
-        s = s.filter(document_product=product.slug)
+        s = s.filter(product=product.slug)
 
     return list(s.order_by('-document_recent_helpful_votes')[:100])
 
