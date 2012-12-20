@@ -46,14 +46,12 @@ class AAQTests(ElasticTestCase):
     def test_search_suggestions(self):
         """Verifies the view doesn't kick up an HTTP 500"""
         topic(title='Fix problems', slug='fix-problems', save=True)
-
+        p = product(slug=u'firefox', save=True)
         q = question(title=u'CupcakesQuestion cupcakes', save=True)
-        q.tags.add(u'desktop')
-        q.save()
+        q.products.add(p)
 
         d = document(title=u'CupcakesKB cupcakes', category=10, save=True)
-        d.products.add(product(slug=u'firefox', save=True))
-        d.save()
+        d.products.add(p)
 
         rev = revision(document=d, is_approved=True, save=True)
 

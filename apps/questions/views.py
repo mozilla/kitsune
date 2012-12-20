@@ -264,7 +264,6 @@ def aaq(request, product_key=None, category_key=None, showform=False,
                 request,
                 search,
                 locale_or_default(request.locale),
-                product.get('tags'),
                 product.get('products'))
             tried_search = True
         else:
@@ -1014,12 +1013,11 @@ def marketplace_success(request, template=None):
     return jingo.render(request, template)
 
 
-def _search_suggestions(request, text, locale, tags, product_slugs):
+def _search_suggestions(request, text, locale, product_slugs):
     """Return an iterable of the most relevant wiki pages and questions.
 
     :arg text: full text to search on
     :arg locale: locale to limit to
-    :arg tags: list of tags to filter questions on
     :arg product_slugs: list of product slugs to filter articles on
         (["desktop", "mobile", ...])
 
@@ -1048,8 +1046,7 @@ def _search_suggestions(request, text, locale, tags, product_slugs):
     # Apply product filters
     if product_slugs:
         wiki_s = wiki_s.filter(product__in=product_slugs)
-    if tags:
-        question_s = question_s.filter(question_tag__in=tags)
+        question_s = question_s.filter(product__in=product_slugs)
 
     results = []
     try:
