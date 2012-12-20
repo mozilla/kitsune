@@ -69,7 +69,7 @@ def localization(request):
     """Render aggregate data about articles in a non-default locale."""
     if request.locale == settings.WIKI_DEFAULT_LANGUAGE:
         return HttpResponseRedirect(reverse('dashboards.contributors'))
-    data = {'overview_rows': partial(overview_rows, request.locale)}
+    data = {'overview_rows': overview_rows(request.locale)}
     return render_readouts(request, L10N_READOUTS, 'localization.html',
                            extra_data=data)
 

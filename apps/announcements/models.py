@@ -5,8 +5,6 @@ from django.db import models
 from django.db.models import Q
 from django.db.models.signals import post_save
 
-from tower import ugettext as _
-
 from sumo.models import ModelBase
 from wiki.parser import wiki_to_html
 
@@ -51,11 +49,6 @@ class Announcement(ModelBase):
     @classmethod
     def get_site_wide(cls):
         return cls._group_query_filter(group=None)
-
-    @classmethod
-    def get_for_group_name(cls, group_name):
-        """Returns visible announcements for a given group name."""
-        return cls._group_query_filter(group__name=group_name)
 
     @classmethod
     def get_for_group_id(cls, group_id):

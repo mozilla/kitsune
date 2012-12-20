@@ -39,17 +39,6 @@ class AnnouncementModelTests(TestCase):
         announcement(group=self.group).save()
         eq_(0, Announcement.get_site_wide().count())
 
-    def test_get_for_group_name(self):
-        """Announcements for a specific group are shown."""
-        # Site-wide announcement
-        announcement().save()
-        # Announcement in a group.
-        a = announcement(group=self.group, save=True)
-
-        group_ann = Announcement.get_for_group_name(self.group.name)
-        eq_(1, group_ann.count())
-        eq_(a, group_ann[0])
-
     def test_get_for_group_id(self):
         """If no groups are passed, nothing is returned."""
         # Site-wide announcement

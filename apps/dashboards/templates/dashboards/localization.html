@@ -37,11 +37,10 @@
                                    settings.WIKI_DEFAULT_LANGUAGE) }}
       {% endif %}
 
-      {% set rows = overview_rows() %}
-      {{ overview_section(readouts, ((rows['most-visited'], True),
-                                     (rows['templates'], True),
-                                     (rows['navigation'], True),
-                                     (rows['all'], False))) }}
+      {{ overview_section(readouts, ((overview_rows['most-visited'], True),
+                                     (overview_rows['templates'], True),
+                                     (overview_rows['navigation'], True),
+                                     (overview_rows['all'], False))) }}
 
       {% for readout in readouts.itervalues() %}
         {{ print_readout(readout, max_rows=20 if readout.slug == 'most-visited-translations' else 10) }}
