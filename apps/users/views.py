@@ -87,6 +87,11 @@ def login(request, template):
                        max_age=max_age)
         return res
 
+    if request.MOBILE:
+        return jingo.render(request, template, {
+            'form': form,
+        })
+    
     return user_auth(request, login_form=form)
 
 
