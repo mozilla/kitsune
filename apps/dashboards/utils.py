@@ -53,7 +53,8 @@ def render_readouts(request, readouts, template, locale=None, extra_data=None):
                     request.user, locale=request.locale),
             'is_watching_default_ready':
                 ReadyRevisionEvent.is_notifying(request.user),
-             'on_default_locale': on_default_locale}
+            'on_default_locale': on_default_locale,
+        }
     if extra_data:
         data.update(extra_data)
     return jingo.render(request, 'dashboards/' + template, data)
