@@ -909,6 +909,9 @@ class Locale(ModelBase):
     def get_absolute_url(self):
         return reverse('wiki.locale_details', args=[self.locale])
 
+    def __unicode__(self):
+        return self.locale
+
 
 def _doc_components_from_url(url, required_locale=None, check_host=True):
     """Return (locale, path, slug) if URL is a Document, False otherwise.

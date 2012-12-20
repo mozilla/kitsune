@@ -4,6 +4,7 @@ from django.utils.datastructures import SortedDict
 
 import jingo
 
+from announcements.models import Announcement
 from dashboards import ACTIONS_PER_PAGE
 from sumo_locales import LOCALES
 from sumo.utils import paginate
@@ -54,6 +55,7 @@ def render_readouts(request, readouts, template, locale=None, extra_data=None):
             'is_watching_default_ready':
                 ReadyRevisionEvent.is_notifying(request.user),
             'on_default_locale': on_default_locale,
+            'announcements': Announcement.get_for_locale_name(current_locale),
         }
     if extra_data:
         data.update(extra_data)

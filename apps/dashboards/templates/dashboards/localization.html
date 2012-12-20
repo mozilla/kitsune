@@ -13,7 +13,17 @@
     <article id="localize" class="dashboards">
       <h1>{{ title }}</h1>
 
-      
+      {% if announcements %}
+        <ul class="announcements">
+          {% for a in announcements %}
+            <li>
+              {{ a.content|wiki_to_html }}
+              <p>{{ datetimeformat(a.show_after) }}</p>
+            </li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+
       <div class="choice-list">
         <label>{{ _('Show information for:') }}</label>
         <ul>
