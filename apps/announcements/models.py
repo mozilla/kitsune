@@ -6,6 +6,7 @@ from django.db.models import Q
 from django.db.models.signals import post_save
 
 from sumo.models import ModelBase
+from wiki.models import Locale
 from wiki.parser import wiki_to_html
 
 
@@ -27,6 +28,7 @@ class Announcement(ModelBase):
         help_text=("Use wiki syntax or HTML. It will display similar to a "
                     "document's content."))
     group = models.ForeignKey(Group, null=True, blank=True)
+    locale = models.ForeignKey(Locale, null=True, blank=True)
 
     def __unicode__(self):
         excerpt = self.content[:50]
@@ -48,7 +50,7 @@ class Announcement(ModelBase):
 
     @classmethod
     def get_site_wide(cls):
-        return cls._group_query_filter(group=None)
+        return cls._group_query_filter(group=None, locale=None)
 
     @classmethod
     def get_for_group_id(cls, group_id):
@@ -56,8 +58,22 @@ class Announcement(ModelBase):
         return cls._group_query_filter(group__id=group_id)
 
     @classmethod
+    def get_for_locale_name(cls, locale_name):
+        """Returns visible announcements for a given locale name."""
+        return cls._locale_query_filter(locale__locale=locale_name)
+
+    @classmethod
     def _group_query_filter(cls, **query_kwargs):
         """Return visible announcements given a group query."""
+        return Announcement.objects.filter(
+            # Show if interval is specified and current or show_until is None
+            Q(show_after__lt=datetime.now()) &
+            (Q(show_until__gt=datetime.now()) | Q(show_until__isnull=True)),
+            **query_kwargs)
+
+    @classmethod
+    def _locale_query_filter(cls, **query_kwargs):
+        """Return visible announcements given a locale query."""
         return Announcement.objects.filter(
             # Show if interval is specified and current or show_until is None
             Q(show_after__lt=datetime.now()) &

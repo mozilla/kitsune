@@ -319,6 +319,8 @@
 
 /* Email notifications */
 #doc-watch {
+  display: inline;
+
   .popup-trigger {
     font-weight: bold;
     padding-left: 10px;
@@ -461,5 +463,20 @@
 
   .placeholder {
     z-index: 1;
+  }
+}
+
+.announcements {
+  background: url('../img/warning-stripes.png') top left repeat-x #ffe;
+  border: 1px solid #fffbe7;
+  margin: 20px 0;
+  padding: 10px 15px;
+
+  li {
+    list-style: none;
+
+    &:not(:first-child) {
+      border-top: 1px solid rgb(193, 197, 200);
+    }
   }
 }
