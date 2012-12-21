@@ -74,12 +74,12 @@
   {% for attr, val in extra_body_attrs.items() %}{{ attr }}="{{ val }}" {% endfor %}
 {%- endif %}>
 
-{% if settings.STAGE %}
+{#% if settings.STAGE %#}
   <div id="stage-banner">
     <div class="close-button">X</div>
-    {{ _('This is a staging site. The production site is <a href="http://support.mozilla.org">here</a>.') }}
+    {{ _('This is a staging site, the content gets overwritten on the 1st of every month.<br>The production site is <a href="http://support.mozilla.org">here</a>.') }}
   </div>
-{% endif %}
+{#% endif %#}
 
 <div class="media-test"></div>
 
