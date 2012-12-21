@@ -264,6 +264,15 @@ the initial fetch::
     $ ./manage.py update_product_details
 
 
+Install Sample Data
+-------------------
+
+We include some sample data to get you started. You can install it by
+running this command::
+
+    $ ./manage.py generatedata
+
+
 Testing it out
 ==============
 
