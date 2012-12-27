@@ -17,6 +17,7 @@ log = logging.getLogger(__name__)
 BZ_URL = 'http://bugzilla.mozilla.org/xmlrpc.cgi'
 SESSION_COOKIES_CACHE_KEY = 'bugzilla-session-cookies'
 
+PRODUCTS = ['support.mozilla.org']
 BZ_RESOLUTIONS = ['', 'FIXED', 'INVALID', 'WONTFIX', 'DUPLICATE',
                   'WORKSFORME', 'INCOMPLETE', 'SUPPORT', 'EXPIRED',
                   'MOVED']
@@ -190,7 +191,7 @@ def print_bugzilla_stats(year):
 
     # created in year
     bugs = bugzilla.get_bugs(
-        product=['support.mozilla.org'],
+        product=PRODUCTS,
         creation_time='%s-01-01' % year,
         include_fields=['id', 'creator', 'creation_time'],
         history=False,
@@ -215,7 +216,7 @@ def print_bugzilla_stats(year):
 
     # resolved in year
     bugs = bugzilla.get_bugs(
-        product=['support.mozilla.org'],
+        product=PRODUCTS,
         last_change_time='%s-01-01' % year,
         include_fields=['id', 'creator', 'last_change_time', 'resolution'],
         status=['RESOLVED', 'VERIFIED', 'CLOSED'],
