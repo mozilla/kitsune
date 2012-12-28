@@ -3,6 +3,7 @@
         initReadoutModes();
         initWatchMenu();
         initNeedsChange();
+        initAnnouncements();
     }
 
     // Hook up readout mode links (like "This Week" and "All Time") to swap
@@ -78,7 +79,68 @@
             if(!$(e.target).is('a')) {
                 $(this).toggleClass('active');
             }
-        })
+        });
+    }
+
+    function initAnnouncements() {
+        var $form = $('#create-announcement form');
+        $form.find('button.btn-submit').on('click', function(ev) {
+            ev.preventDefault();
+
+            var $kbox = $('#create-announcement .kbox');
+
+            $form.addClass('wait');
+            $form.find('.error').remove();
+
+            $.ajax({
+                type: 'POST',
+                url: $form.prop('action'),
+                data: $form.serialize(),
+                statusCode: {
+                    200: function(data) {
+                        $form.removeClass('wait');
+                        $kbox.hide(200, function() {
+                            $kbox.data('kbox').close();
+                            $kbox.show();
+                        });
+                        var $success = $('#create-announcement').children('.success')
+                            .show().css({ opacity: 1});
+
+                        setTimeout(function() {
+                            $success.animate({opacity: 0}, 1000);
+                        }, 4000);
+                    },
+                    400: function(jxr) {
+                        var data, field;
+                        $form.removeClass('wait');
+                        try {
+                            data = JSON.parse(jxr.responseText);
+                        } catch(e) {
+                            data = {};
+                        }
+                        for (field in data) {
+                            $form.find('[name=' + field + ']').parent()
+                                .after('<li class="error">' + data[field] + '</li>');
+                        }
+                    }
+                }
+            });
+        });
+
+        $('.announcements li a.delete').on('click', function(ev) {
+            ev.preventDefault();
+            var $this = $(this);
+            $.ajax({
+                type: 'POST',
+                url: $this.prop('href'),
+                data: {
+                    'csrfmiddlewaretoken': $("input[name=csrfmiddlewaretoken]").val()
+                },
+                success: function() {
+                    $this.closest('li').remove();
+                }
+            });
+        });
     }
 
     $(document).ready(init);

@@ -1,5 +1,4 @@
 import colorsys
-from functools import partial
 import json
 import logging
 import math
@@ -13,6 +12,7 @@ import jingo
 from tower import ugettext as _
 
 from access.decorators import login_required
+from announcements.views import user_can_announce
 from announcements.models import Announcement
 from dashboards.personal import GROUP_DASHBOARDS
 from dashboards.readouts import (overview_rows, READOUTS, L10N_READOUTS,
@@ -23,6 +23,7 @@ from forums.models import Thread
 from sumo.redis_utils import redis_client, RedisError
 from sumo.urlresolvers import reverse
 from sumo.utils import paginate, smart_int
+from wiki.models import Locale
 
 
 log = logging.getLogger('k.dashboards')
@@ -69,7 +70,16 @@ def localization(request):
     """Render aggregate data about articles in a non-default locale."""
     if request.locale == settings.WIKI_DEFAULT_LANGUAGE:
         return HttpResponseRedirect(reverse('dashboards.contributors'))
-    data = {'overview_rows': overview_rows(request.locale)}
+    locales = Locale.objects.filter(locale=request.locale)
+    if locales:
+        permission = user_can_announce(request.user, locales[0])
+    else:
+        permission = False
+
+    data = {
+      'overview_rows': overview_rows(request.locale),
+      'user_can_announce': permission
+    }
     return render_readouts(request, L10N_READOUTS, 'localization.html',
                            extra_data=data)
 
