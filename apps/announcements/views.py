@@ -25,7 +25,8 @@ def create_for_locale(request):
     if form.is_valid():
         a = Announcement(creator=user, locale=locale, **form.cleaned_data)
         a.save()
-        return HttpResponse(json.dumps({'id': a.id}))
+        return HttpResponse(json.dumps({'id': a.id}),
+            content_type="application/json")
     else:
         return HttpResponse(json.dumps(form.errors), status=400,
             content_type="application/json")
@@ -50,4 +51,5 @@ def delete(request, announcement_id):
 def user_can_announce(user, locale):
     if user.is_anonymous():
         return False
-    return user.has_perm('announce.create') or user in locale.leaders.all()
+    return (user.has_perm('announcements.add_announcement') or
+            user in locale.leaders.all())
