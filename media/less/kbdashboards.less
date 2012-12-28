@@ -480,3 +480,83 @@
     }
   }
 }
+
+#create-announcement {
+  .btn {
+    img {
+      background: transparent url("../img/icons-sprite.png") no-repeat -50px -978px;
+      height: 14px;
+      width: 14px;
+      display: inline-block;
+      position: relative;
+      left: -2px;
+      top: 2px;
+    }
+  }
+
+  .success {
+    display: none;
+    padding: 3px;
+    border-radius: 5px;
+    background: #c1e58f;
+  }
+
+  .kbox-container {
+    position: relative;
+    top: 4px;
+
+    &:before {
+      background: #fff;
+      content: '';
+      display: block;
+      height: 15px;
+      left: 58px;
+      margin-bottom: -13px;
+      position: relative;
+      top: -8px;
+      .box-shadow(-1px -1px 1px rgba(0, 0, 0, 0.2));
+      .transform(rotate(45deg));
+      width: 15px;
+      z-index: 1;
+    }
+
+    form {
+      ul {
+        padding: 0;
+        li {
+          list-style: none;
+          margin-bottom: 10px;
+
+          label {
+            width: 100px;
+            text-align: right;
+            display: inline-block;
+            margin-right: 5px;
+          }
+
+          textarea {
+            width: 335px;
+          }
+        }
+      }
+
+      .btn-submit {
+        margin-left: 105px;
+      }
+
+      .error {
+        color: #f00;
+        margin-bottom: 25px;
+      }
+
+      .spinner {
+        opacity: 0;
+        vertical-align: bottom;
+        transition: opacity 0.1s;
+      }
+      &.wait .spinner {
+        opacity: 1;
+      }
+    }
+  }
+}
