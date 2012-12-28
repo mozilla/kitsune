@@ -18,10 +18,41 @@
           {% for a in announcements %}
             <li>
               {{ a.content|wiki_to_html }}
-              <p>{{ datetimeformat(a.show_after) }}</p>
+              <p>
+                {{ datetimeformat(a.show_after, 'date') }}
+                {% if user_can_announce %}
+                  <a href="{{ url('announcements.delete', a.id) }}" class="delete">
+                    {{ _('Delete') }}
+                  </a>
+                {% endif %}
+              </p>
             </li>
           {% endfor %}
         </ul>
+      {% endif %}
+
+      {% if user_can_announce %}
+        <div id="create-announcement">
+          <button class="btn">
+            <img src="{{ MEDIA_URL }}img/blank.png" />
+            {{ _('Create announcement') }}
+          </button>
+          <span class="success">{{ _('Created successfully') }}</span>
+          <div class="kbox" data-target="#create-announcement > .btn" data-position="none" data-close-on-out-click="true">
+            <form action="{{ url('announcements.create_for_locale') }}" method="POST">
+              {{ csrf() }}
+              <ul>
+                {{ announce_form.as_ul() }}
+                <li>
+                  <button type="submit" class="btn btn-submit" value="Submit">
+                    {{ _('Create') }}
+                  </button>
+                  <img src="{{ MEDIA_URL }}img/wait-trans.gif" class="spinner" />
+                </i>
+              </ul>
+            </form>
+          </div>
+        </div>
       {% endif %}
 
       <div class="choice-list">

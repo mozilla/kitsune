@@ -115,6 +115,7 @@ KBox.prototype = {
         self.rendered = false; // did we render out yet?
         self.$ph = false; // placeholder used if we need to move self.$el in the DOM.
         self.$kbox = $();
+        self.isOpen = false;
 
         // Make the instance accessible from the DOM element.
         self.$el.data('kbox', self);
@@ -176,6 +177,10 @@ KBox.prototype = {
             // we don't open anything.
             return;
         }
+        if (self.isOpen) {
+            return;
+        }
+        self.isOpen = true;
         self.rendered || self.render();
         self.$kbox.addClass('kbox-open');
         self.setPosition();
@@ -249,6 +254,10 @@ KBox.prototype = {
             // we don't open anything.
             return;
         }
+        if (!self.isOpen) {
+            return;
+        }
+        self.isOpen = false;
         self.$kbox.removeClass('kbox-open');
         self.options.modal && self.destroyOverlay();
         self.options.destroy && self.destroy();

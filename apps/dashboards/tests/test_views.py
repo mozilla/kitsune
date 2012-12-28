@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import timedelta, datetime
 import json
 
 from django.conf import settings
@@ -6,6 +6,7 @@ from django.conf import settings
 from nose import SkipTest
 from nose.tools import eq_
 
+from announcements.tests import announcement
 from dashboards.cron import cache_most_unhelpful_kb_articles
 from dashboards.readouts import CONTRIBUTOR_READOUTS
 from sumo.tests import TestCase
@@ -13,7 +14,7 @@ from sumo.urlresolvers import reverse
 from sumo.redis_utils import redis_client, RedisError
 from users.tests import user, group
 from wiki.models import HelpfulVote
-from wiki.tests import revision
+from wiki.tests import revision, locale
 
 
 class LocalizationDashTests(TestCase):
@@ -24,6 +25,45 @@ class LocalizationDashTests(TestCase):
                                    follow=True)
         self.assertRedirects(response, reverse('dashboards.contributors',
                                                locale='en-US'))
+
+
+def LocalizationDashAnnouncementsTests(TestCase):
+
+    def setUp(self):
+        self.locale1 = locale(save=True, locale='es')
+
+        self.u1 = user(save=True)
+        self.u2 = user(save=True)
+        self.u3 = user(save=True)
+
+        self.u1.is_superuser = 1
+        self.u1.save()
+
+        self.locale1.leaders.add(self.u2)
+        self.locale1.save()
+
+        self.announcement = announcement(save=True, creator=self.u2,
+            locale=self.locale1, content="Look at me!",
+            show_after=datetime(2012, 01, 01, 0, 0, 0))
+
+    def test_show_create(self):
+        self.client.login(username=self.u1.username, password='testpass')
+        resp = self.client.get(reverse('dashboards.localization'))
+        self.assertContains(resp, 'id="create-announcement"')
+
+    def test_show_for_authed(self):
+        self.client.login(username=self.u2.username, password='testpass')
+        resp = self.client.get(reverse('dashboards.localization'))
+        self.assertContains(resp, 'id="create-announcement"')
+
+    def test_hide_for_not_authed(self):
+        self.client.login(username=self.u3.username, password='testpass')
+        resp = self.client.get(reverse('dashboards.localization'))
+        self.assertNotContains(resp, 'id="create-announcement"')
+
+    def test_hide_for_anon(self):
+        resp = self.client.get(reverse('dashboards.localization'))
+        self.assertNotContains(resp, 'id="create-announcement"')
 
 
 class ContributorDashTests(TestCase):
