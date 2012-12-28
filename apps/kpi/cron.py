@@ -60,7 +60,7 @@ def update_l10n_metric():
     up to date, weighted by the number of visits for each locale.
 
     The "algorithm" (see Bug 727084):
-    SUMO visits = Total non-en-US SUMO visits for the last 3 months;
+    SUMO visits = Total SUMO visits for the last 30 days;
     Total translated = 0;
 
     For each locale {
