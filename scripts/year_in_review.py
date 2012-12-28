@@ -218,7 +218,7 @@ def print_bugzilla_stats(year):
     bugs = bugzilla.get_bugs(
         product=PRODUCTS,
         last_change_time='%s-01-01' % year,
-        include_fields=['id', 'creator', 'last_change_time', 'resolution'],
+        include_fields=['id', 'assigned_to', 'last_change_time', 'resolution'],
         status=['RESOLVED', 'VERIFIED', 'CLOSED'],
         history=True,
         comments=False)
@@ -244,13 +244,27 @@ def print_bugzilla_stats(year):
                     continue
 
                 total += 1
-                peeps[hist['who']] = peeps.get(hist['who'], 0) + 1
+
+                # If the bug is marked FIXED, we assume that whoever
+                # it was assigned to should get the "credit". If it
+                # wasn't marked FIXED, then it's probably someone
+                # doing triage and so whoever changed the resolution
+                # should get "credit".
+                if (change['added'] == 'FIXED'
+                    and not 'nobody' in bug['assigned_to']):
+                    person = bug['assigned_to']
+                else:
+                    person = hist['who']
+
+                peeps_dict = peeps.setdefault(person, {})
+                key = change['added']
+                peeps_dict[key] = peeps_dict.get(key, 0) + 1
 
                 resolutions[change['added']] = resolutions.get(
                     change['added'], 0) + 1
 
     peeps = peeps.items()
-    peeps.sort(key=lambda item: item[1])
+    peeps.sort(key=lambda item: sum(item[1].values()))
     peeps.reverse()
 
     stats['resolved'] = total
@@ -263,17 +277,21 @@ def print_bugzilla_stats(year):
     print 'Bugs created:', stats['created']
     print ''
     for mem in stats['created_by']:
-        print '  %30s : %s' % (mem[0], mem[1])
+        person = mem[0].split('@')[0]
+        print '  %20s : %s' % (person, mem[1])
 
     print ''
     print 'Bugs resolved:', stats['resolved']
     print ''
     for mem in stats['resolved_people']:
-        print '  %30s : %s' % (mem[0], mem[1])
+        person = mem[0].split('@')[0]
+        print '  %20s : %d' % (person, sum(mem[1].values()))
+        for res, count in mem[1].items():
+            print '  %20s : %10s %d' % ('', res, count)
 
     print ''
     for mem in stats['resolved_resolutions']:
-        print '  %30s : %s' % (mem[0], mem[1])
+        print '  %20s : %s' % (mem[0], mem[1])
 
 
 def print_git_stats(year):
@@ -282,7 +300,7 @@ def print_git_stats(year):
         ['git', 'log',
          '--after=%s-01-01' % year,
          '--before=%s-01-01' % (int(year) + 1),
-         '--format="%an"'])
+         '--format=%an'])
     commits = commits.splitlines()
 
     stats['commits'] = len(commits)
@@ -298,7 +316,7 @@ def print_git_stats(year):
     print 'Total commits:', stats['commits']
     print ''
     for mem in stats['committers']:
-        print '  %30s : %s' % (mem[0], mem[1])
+        print '  %20s : %s' % (mem[0], mem[1])
 
 
 def print_header(text):
