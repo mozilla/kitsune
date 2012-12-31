@@ -37,7 +37,7 @@
       {{ document_messages(document, redirected_from) }}
       {{ document_content(document, fallback_reason, request, settings) }}
 
-      {% if not waffle.switch('hide-voting') %}
+      {% if not waffle.switch('hide-voting') and not hide_voting %}
         <div class="vote-wrap">
         {# this extra div is to make the js compatible with old theme. TODO: Remove and fix js. #}
           {{ vote_form(document, 'footer') }}
