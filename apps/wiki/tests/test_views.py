@@ -13,7 +13,7 @@ from sumo.tests import TestCase, LocalizingClient
 from sumo.urlresolvers import reverse
 from users.tests import user, add_permission
 from wiki.models import Document
-from wiki.config import VersionMetadata
+from wiki.config import VersionMetadata, TEMPLATES_CATEGORY
 from wiki.tests import (doc_rev, document, helpful_vote, new_document_data,
                         revision)
 from wiki.showfor import _version_groups
@@ -274,6 +274,14 @@ class VoteTests(TestCase):
         """Throw helpful_vote a POST without an ID and see if it 400s."""
         response = self.client.post(reverse('wiki.document_vote', args=['hi']),
                                     {})
+        eq_(400, response.status_code)
+
+    def test_vote_on_template(self):
+        """Throw helpful_vote a document that is a template and see if it 400s."""
+        d = document(save=True, slug="somedoc", category=TEMPLATES_CATEGORY)
+        r = revision(save=True, document=d)
+        response = self.client.post(reverse('wiki.document_vote', args=['hi']),
+                                    {'revision_id': r.id})
         eq_(400, response.status_code)
 
     def test_unhelpful_survey(self):

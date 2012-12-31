@@ -35,7 +35,7 @@ from wiki.events import (EditDocumentEvent, ReviewableRevisionInLocaleEvent,
 from wiki.forms import (AddContributorForm, DocumentForm, RevisionForm,
                         ReviewForm)
 from wiki.models import Document, Revision, HelpfulVote, ImportantDate
-from wiki.config import CATEGORIES
+from wiki.config import CATEGORIES, TEMPLATES_CATEGORY
 from wiki.parser import wiki_to_html
 from wiki.showfor import showfor_data
 from wiki.tasks import (send_reviewed_notification, schedule_rebuild_kb,
@@ -123,11 +123,15 @@ def document(request, document_slug, template=None):
 
     topics = Topic.objects.filter(visible=True)
 
+    hide_voting = False
+    if doc.category == TEMPLATES_CATEGORY:
+        hide_voting = True
     data = {'document': doc, 'redirected_from': redirected_from,
             'related': related, 'contributors': contributors,
             'fallback_reason': fallback_reason,
             'is_aoa_referral': request.GET.get('ref') == 'aoa',
-            'topics': topics, 'product': product, 'products': products}
+            'topics': topics, 'product': product, 'products': products, 
+            'hide_voting': hide_voting}
     data.update(showfor_data(products))
     return jingo.render(request, template, data)
 
@@ -817,6 +821,9 @@ def helpful_vote(request, document_slug):
     revision = get_object_or_404(
         Revision, id=smart_int(request.POST['revision_id']))
     survey = None
+
+    if revision.document.category == TEMPLATES_CATEGORY:
+        return HttpResponseBadRequest()
 
     if not revision.has_voted(request):
         ua = request.META.get('HTTP_USER_AGENT', '')[:1000]  # 1000 max_length
