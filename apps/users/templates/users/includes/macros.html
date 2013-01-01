@@ -48,7 +48,11 @@
     {% endif %}
     <ul>
       {% for field in form if field.name != 'interested' %}
-        <li class="cf">{{ field|label_with_help }} {{ field }}</li>
+        <li class="cf">{{ field|label_with_help }} {{ field }}
+          {% if field.name == "password"  %}
+            <p id="password-rules">{{ _("Password should be at least 8 characters long and contain at least 1 number.") }}</p>
+          {% endif %}
+        </li>
       {% endfor %}
     </ul>
     <div class="submit">
