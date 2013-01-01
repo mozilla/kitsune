@@ -21,6 +21,8 @@
   <article id="register" class="main">
     <h1>{{ _('Register to be a Contributor') }}</h1>
     <span>You don't need to register to <a href="{{ url('questions.aaq_step1') }}">ask a question</a>.</span>
+    <br /><br />
+    <span>Password must be at least 8 characters and contain at least 1 english character and 1 number.</span>
     {% set action = url('users.registercontributor') if contributor else url('users.register') %}
     {{ render_register(register_form, csrf=csrf(), action=action, contributor=contributor) }}
   </article>
