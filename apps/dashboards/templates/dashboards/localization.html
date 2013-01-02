@@ -1,9 +1,9 @@
 {# vim: set ts=2 et sts=2 sw=2: #}
 {% extends "base.html" %}
 {% from "includes/common_macros.html" import for_contributors_sidebar %}
-{% from "dashboards/includes/macros.html" import print_readout, overview_section, print_subscription_menu with context %}
+{% from "dashboards/includes/macros.html" import print_readout, overview_section, product_selector, print_subscription_menu with context %}
 {% set title = _('Localization Dashboard') %}
-{% set scripts = ('wiki',) %}
+{% set scripts = ('wiki', 'wiki.dashboard') %}
 {% set styles = ('kbdashboards',) %}
 {% set crumbs = [(None, title)] %}
 {# TODO: Move required dashboard scripts out of wiki.js into their own or refactor up? #}
@@ -11,6 +11,8 @@
 {% block content %}
   <div class="grid_9">
     <article id="localize" class="dashboards">
+      {{ product_selector(products, product) }}
+
       <h1>{{ title }}</h1>
 
       {% if announcements %}
@@ -84,7 +86,7 @@
                                      (overview_rows['all'], False))) }}
 
       {% for readout in readouts.itervalues() %}
-        {{ print_readout(readout, max_rows=20 if readout.slug == 'most-visited-translations' else 10) }}
+        {{ print_readout(readout, max_rows=20 if readout.slug == 'most-visited-translations' else 10, product=product) }}
       {% endfor %}
     </article>
   </div>

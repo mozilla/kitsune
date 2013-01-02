@@ -1,13 +1,16 @@
 {# vim: set ts=2 et sts=2 sw=2: #}
 {% extends "base.html" %}
 {% from "includes/common_macros.html" import for_contributors_sidebar %}
+{% from "dashboards/includes/macros.html" import product_selector %}
 {% set title = readout.title %}
-{% set scripts = ('wiki',) %}
+{% set scripts = ('wiki', 'wiki.dashboard') %}
 {% set styles = ('kbdashboards',) %}
 {% set crumbs = [(url(main_dash_view), main_dash_title), (None, title)] %}
 {# TODO: Move required dashboard scripts out of wiki.js into their own #}
 
 {% block content %}
+  {{ product_selector(products, product) }}
+
   <div class="grid_9">
     <article class="main dashboards dashboards-detail">
       <h1>{{ readout.title }}</h1>

@@ -1,5 +1,5 @@
 {# vim: set ts=2 et sts=2 sw=2: #}
-{% macro print_readout(readout, locale=None, max_rows=10) %}
+{% macro print_readout(readout, locale=None, max_rows=10, product=None) %}
   {% if not readout.hide_readout %}
     <details class="h2" open="open">
       <summary class="with-mode-selectors">
@@ -21,7 +21,7 @@
         {{ readout.render(max_rows=max_rows)|safe }}
       </table>
       <div class="table-footer">
-        <a href="{{ readout.get_absolute_url(request.locale) }}">{{ readout.details_link_text }}</a>
+        <a href="{{ readout.get_absolute_url(request.locale, product) }}">{{ readout.details_link_text }}</a>
       </div>
     </details>
   {% endif %}
@@ -143,5 +143,18 @@
         {{ print_checkbox_row(_('Ready for localization'), on_default_locale, is_watching_default_ready, False, 'wiki.ready_watch', 'wiki.ready_unwatch', default_locale, show_other=False) }}
       </table>
     </form>
+  </div>
+{% endmacro %}
+
+{% macro product_selector(products, current) %}
+  <div id="product-selector">
+    <select>
+      <option value="">{{ _('All Products') }}</option>
+      {% for p in products %}
+        <option value="{{ p.slug }}" {% if current == p %}selected="selected"{% endif %}>
+          {{ _(p.title, 'DB: products.Product.title') }}
+        </option>
+      {% endfor %}
+    </select>
   </div>
 {% endmacro %}

@@ -7,6 +7,7 @@ import jingo
 from announcements.models import Announcement
 from announcements.forms import AnnouncementForm
 from dashboards import ACTIONS_PER_PAGE
+from products.models import Product
 from sumo_locales import LOCALES
 from sumo.utils import paginate
 from wiki.events import (ApproveRevisionInLocaleEvent, ReadyRevisionEvent,
@@ -20,7 +21,8 @@ def model_actions(model_class, request):
     return paginate(request, actions, per_page=ACTIONS_PER_PAGE)
 
 
-def render_readouts(request, readouts, template, locale=None, extra_data=None):
+def render_readouts(request, readouts, template, locale=None, extra_data=None,
+                    product=None):
     """Render a readouts, possibly with overview page.
 
     Use the given template, pass the template the given readouts, limit the
@@ -30,7 +32,8 @@ def render_readouts(request, readouts, template, locale=None, extra_data=None):
     """
     current_locale = locale or request.locale
     on_default_locale = request.locale == settings.WIKI_DEFAULT_LANGUAGE
-    data = {'readouts': SortedDict((slug, class_(request, locale=locale))
+    data = {'readouts': SortedDict((slug, class_(request, locale=locale,
+                                                 product=product))
                                    for slug, class_ in readouts.iteritems()
                                    if class_.should_show_to(request.user)),
             'default_locale': settings.WIKI_DEFAULT_LANGUAGE,
@@ -58,6 +61,8 @@ def render_readouts(request, readouts, template, locale=None, extra_data=None):
             'on_default_locale': on_default_locale,
             'announce_form': AnnouncementForm(),
             'announcements': Announcement.get_for_locale_name(current_locale),
+            'product': product,
+            'products': Product.objects.filter(visible=True),
         }
     if extra_data:
         data.update(extra_data)

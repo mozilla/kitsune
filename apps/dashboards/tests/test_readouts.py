@@ -1,15 +1,19 @@
 from datetime import datetime
 
+from django.conf import settings
+
 from nose.tools import eq_
 
 from dashboards.readouts import (UnreviewedReadout, OutOfDateReadout,
                                  TemplateTranslationsReadout, overview_rows,
+                                 MostVisitedDefaultLanguageReadout,
                                  MostVisitedTranslationsReadout,
                                  UnreadyForLocalizationReadout,
                                  NeedsChangesReadout,
                                  NavigationTranslationsReadout,
                                  UntranslatedReadout)
 from sumo.tests import TestCase
+from products.tests import product
 from wiki.config import (MAJOR_SIGNIFICANCE, MEDIUM_SIGNIFICANCE,
                          TYPO_SIGNIFICANCE)
 from wiki.tests import revision, translated_revision, document
@@ -22,14 +26,19 @@ class MockRequest(object):
 class ReadoutTestCase(TestCase):
     """Test case for one readout. Provides some convenience methods."""
 
-    def row(self):
-        """Return first row shown by the readout this class tests."""
-        return self.readout(MockRequest()).rows()[0]
+    def rows(self, locale=None, product=None):
+        """Return the rows show by tthe readout this class tests."""
+        return self.readout(
+            MockRequest(), locale=locale, product=product).rows()
 
-    def titles(self):
+    def row(self, locale=None, product=None):
+        """Return first row shown by the readout this class tests."""
+        return self.rows(locale=locale, product=product)[0]
+
+    def titles(self, locale=None, product=None):
         """Return the titles shown by the Unreviewed Changes readout."""
-        return [row['title'] for row in
-                self.readout(MockRequest()).rows()]
+        return [row['title'] for row in self.readout(
+                    MockRequest(), locale=locale, product=product).rows()]
 
 
 class OverviewTests(TestCase):
@@ -198,6 +207,19 @@ class OverviewTests(TestCase):
         eq_(0, overview['most-visited']['numerator'])
         eq_(0, overview['all']['numerator'])
 
+    def test_by_product(self):
+        """Test the product filtering of the overview."""
+        p = product(title='Firefox', slug='firefox', save=True)
+        t = translated_revision(is_approved=True, save=True)
+
+        eq_(0, overview_rows('de', product=p)['all']['numerator'])
+        eq_(0, overview_rows('de', product=p)['all']['denominator'])
+
+        t.document.parent.products.add(p)
+
+        eq_(1, overview_rows('de', product=p)['all']['numerator'])
+        eq_(1, overview_rows('de', product=p)['all']['denominator'])
+
 
 class UnreviewedChangesTests(ReadoutTestCase):
     """Tests for the Unreviewed Changes readout
@@ -227,6 +249,37 @@ class UnreviewedChangesTests(ReadoutTestCase):
         than the current_revision, don't show them."""
         rejected = translated_revision(reviewed=datetime.now(), save=True)
         assert rejected.document.title not in self.titles()
+
+    def test_by_product(self):
+        """Test the product filtering of the readout."""
+        p = product(title='Firefox', slug='firefox', save=True)
+        unreviewed = translated_revision(save=True)
+
+        # There shouldn't be any rows yet.
+        eq_(0, len(self.rows(product=p)))
+
+        # Add the product to the parent document, and verify it shows up.
+        unreviewed.document.parent.products.add(p)
+        eq_(self.row(product=p)['title'], unreviewed.document.title)
+
+
+class MostVisitedDefaultLanguageTests(ReadoutTestCase):
+    """Tests for the Most Visited Default Language readout."""
+    readout = MostVisitedDefaultLanguageReadout
+
+    def test_by_product(self):
+        """Test the product filtering of the readout."""
+        locale = settings.WIKI_DEFAULT_LANGUAGE
+        p = product(title='Firefox', slug='firefox', save=True)
+        d = document(save=True)
+        r = revision(document=d, is_approved=True, save=True)
+
+        # There shouldn't be any rows yet.
+        eq_(0, len(self.rows(locale=locale, product=p)))
+
+        # Add the product to the document, and verify it shows up.
+        d.products.add(p)
+        eq_(self.row(locale=locale, product=p)['title'], d.title)
 
 
 class MostVisitedTranslationsTests(ReadoutTestCase):
@@ -346,6 +399,19 @@ class MostVisitedTranslationsTests(ReadoutTestCase):
         # major significance is unapproved:
         eq_(unicode(row['status']), 'Update Needed')
 
+    def test_by_product(self):
+        """Test the product filtering of the readout."""
+        p = product(title='Firefox', slug='firefox', save=True)
+        r = translated_revision(is_approved=True, save=True)
+        d = r.document
+
+        # There shouldn't be any rows yet.
+        eq_(0, len(self.rows(product=p)))
+
+        # Add the product to the parent document, and verify it shows up.
+        d.parent.products.add(p)
+        eq_(self.row(product=p)['title'], d.title)
+
 
 class OutOfDateTests(ReadoutTestCase):
     """Tests for OutOfDateReadout and, by dint of factoring,
@@ -370,6 +436,28 @@ class OutOfDateTests(ReadoutTestCase):
                  save=True)
         eq_([translation.document.title], self.titles())
 
+    def test_by_product(self):
+        """Test the product filtering of the readout."""
+        p = product(title='Firefox', slug='firefox', save=True)
+        translation = translated_revision(is_approved=True, save=True)
+        revision(document=translation.document.parent,
+                 is_approved=True,
+                 is_ready_for_localization=False,  # should still count
+                 significance=MAJOR_SIGNIFICANCE,
+                 save=True)
+        revision(document=translation.document.parent,
+                 is_approved=True,
+                 is_ready_for_localization=True,
+                 significance=MEDIUM_SIGNIFICANCE,
+                 save=True)
+
+        # There shouldn't be any rows yet.
+        eq_(0, len(self.rows(product=p)))
+
+        # Add the product to the document, and verify it shows up.
+        translation.document.parent.products.add(p)
+        eq_(self.row(product=p)['title'], translation.document.title)
+
 
 class TemplateTranslationsTests(ReadoutTestCase):
     """Tests for the Template Translations readout"""
@@ -391,6 +479,22 @@ class TemplateTranslationsTests(ReadoutTestCase):
         row = self.row()
         eq_(row['title'], untranslated.document.title)
         eq_(unicode(row['status']), 'Translation Needed')
+
+    def test_by_product(self):
+        """Test the product filtering of the readout."""
+        p = product(title='Firefox', slug='firefox', save=True)
+        d = document(title='Template:test', save=True)
+        untranslated = revision(is_approved=True,
+                                is_ready_for_localization=True,
+                                document=d,
+                                save=True)
+
+        # There shouldn't be any rows yet.
+        eq_(0, len(self.rows(product=p)))
+
+        # Add the product to the document, and verify it shows up.
+        d.products.add(p)
+        eq_(self.row(product=p)['title'], d.title)
 
 
 class NavigationTranslationsTests(ReadoutTestCase):
@@ -432,6 +536,22 @@ class NavigationTranslationsTests(ReadoutTestCase):
         row = self.row()
         eq_(row['title'], untranslated.document.title)
         eq_(unicode(row['status']), u'Translation Needed')
+
+    def test_by_product(self):
+        """Test the product filtering of the readout."""
+        p = product(title='Firefox', slug='firefox', save=True)
+        d = document(title='Foo', category=50, save=True)
+        untranslated = revision(is_approved=True,
+                                is_ready_for_localization=True,
+                                document=d,
+                                save=True)
+
+        # There shouldn't be any rows yet.
+        eq_(0, len(self.rows(product=p)))
+
+        # Add the product to the document, and verify it shows up.
+        d.products.add(p)
+        eq_(self.row(product=p)['title'], d.title)
 
 
 class UnreadyTests(ReadoutTestCase):
@@ -507,6 +627,25 @@ class UnreadyTests(ReadoutTestCase):
                                save=True)
         eq_([ready.document.title], self.titles())
 
+    def test_by_product(self):
+        """Test the product filtering of the readout."""
+        p = product(title='Firefox', slug='firefox', save=True)
+        ready = revision(is_approved=True,
+                         is_ready_for_localization=True,
+                         save=True)
+        significant = revision(document=ready.document,
+                               is_approved=True,
+                               is_ready_for_localization=False,
+                               significance=MEDIUM_SIGNIFICANCE,
+                               save=True)
+
+        # There shouldn't be any rows yet.
+        eq_(0, len(self.rows(product=p)))
+
+        # Add the product to the document, and verify it shows up.
+        ready.document.products.add(p)
+        eq_(self.row(product=p)['title'], ready.document.title)
+
 
 class NeedsChangesTests(ReadoutTestCase):
     """Tests for the Needs Changes readout."""
@@ -522,6 +661,21 @@ class NeedsChangesTests(ReadoutTestCase):
         eq_(1, len(titles))
         assert document.title in titles
 
+    def test_by_product(self):
+        """Test the product filtering of the readout."""
+        p = product(title='Firefox', slug='firefox', save=True)
+        d = revision(save=True).document
+        d.needs_change = True
+        d.needs_change_comment = "Please update for Firefox.next"
+        d.save()
+
+        # There shouldn't be any rows yet.
+        eq_(0, len(self.rows(product=p)))
+
+        # Add the product to the document, and verify it shows up.
+        d.products.add(p)
+        eq_(self.row(product=p)['title'], d.title)
+
 
 class UntranslatedTests(ReadoutTestCase):
     """Tests for the Untranslated readout"""
@@ -533,3 +687,19 @@ class UntranslatedTests(ReadoutTestCase):
                  content='REDIRECT [[Foo Bar]]', save=True)
 
         eq_(0, len(self.titles()))
+
+    def test_by_product(self):
+        """Test the product filtering of the readout."""
+        p = product(title='Firefox', slug='firefox', save=True)
+        d = document(title='Foo', save=True)
+        untranslated = revision(is_approved=True,
+                                is_ready_for_localization=True,
+                                document=d,
+                                save=True)
+
+        # There shouldn't be any rows yet.
+        eq_(0, len(self.rows(product=p)))
+
+        # Add the product to the document, and verify it shows up.
+        d.products.add(p)
+        eq_(self.row(product=p)['title'], d.title)
