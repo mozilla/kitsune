@@ -16,6 +16,7 @@ from django.views.decorators.http import (require_GET, require_POST,
                                           require_http_methods)
 
 import jingo
+import waffle
 from mobility.decorators import mobile_template
 from statsd import statsd
 from tower import ugettext_lazy as _lazy
@@ -124,13 +125,14 @@ def document(request, document_slug, template=None):
     topics = Topic.objects.filter(visible=True)
 
     hide_voting = False
-    if doc.category == TEMPLATES_CATEGORY:
+    if (doc.category == TEMPLATES_CATEGORY or
+        waffle.switch_is_active('hide-voting')):
         hide_voting = True
     data = {'document': doc, 'redirected_from': redirected_from,
             'related': related, 'contributors': contributors,
             'fallback_reason': fallback_reason,
             'is_aoa_referral': request.GET.get('ref') == 'aoa',
-            'topics': topics, 'product': product, 'products': products, 
+            'topics': topics, 'product': product, 'products': products,
             'hide_voting': hide_voting}
     data.update(showfor_data(products))
     return jingo.render(request, template, data)
