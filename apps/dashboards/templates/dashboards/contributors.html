@@ -1,16 +1,19 @@
 {# vim: set ts=2 et sts=2 sw=2: #}
 {% extends "base.html" %}
 {% from "includes/common_macros.html" import for_contributors_sidebar %}
-{% from "dashboards/includes/macros.html" import print_readout, print_subscription_menu with context %}
+{% from "dashboards/includes/macros.html" import print_readout, product_selector, print_subscription_menu with context %}
 {% set title = _('Knowledge Base Dashboard') %}
 {% set scripts = ('wiki', 'highcharts', 'wiki.dashboard', ) %}
 {% set styles = ('kbdashboards',) %}
 {% set crumbs = [(None, title)] %}
+{% set classes = 'contributor-dashboard' %}
 {# TODO: Move required dashboard scripts out of wiki.js into their own #}
 
 {% block content %}
   <div class="grid_9">
     <article id="localize" class="dashboards">
+      {{ product_selector(products, product) }}
+
       <h1>{{ title }}</h1>
 
       {% if default_locale_name != request_locale_name %}
@@ -39,7 +42,7 @@
       {% endif %}
 
       {% for readout in readouts.itervalues() %}
-        {{ print_readout(readout, locale=default_locale) }}
+        {{ print_readout(readout, locale=default_locale, product=product) }}
       {% endfor %}
 
       <div id="kb-helpfulness-chart"

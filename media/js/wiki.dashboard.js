@@ -44,9 +44,24 @@ window.KbDashboard = Backbone.View.extend({
 
 
 $(document).ready(function() {
-    // Kick off the application
-    window.App = new KbDashboard({
-        el: document.getElementById('kb-helpfulness-chart')
+    if ($('body').is('contributor-dashboard')) {
+        // Create the dashboard chart.
+        window.App = new KbDashboard({
+            el: document.getElementById('kb-helpfulness-chart')
+        });
+    }
+
+    // product selector page reloading
+    $('#product-selector select').change(function() {
+        var val = $(this).val();
+        var queryParams = k.getQueryParamsAsDict(document.location.toString());
+
+        if (val === '') {
+            delete queryParams['product'];
+        } else {
+            queryParams['product'] = val;
+        }
+        document.location = document.location.pathname + '?' + $.param(queryParams);
     });
 });
 
