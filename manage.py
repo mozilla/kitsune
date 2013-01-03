@@ -22,9 +22,6 @@ for item in list(sys.path):
 sys.path[:0] = new_sys_path
 
 # Now we can import from third-party libraries.
-# Monkey patch for Bug 663236: Make |safe less necessary for form fields
-from lib import safe_django_forms
-safe_django_forms.monkeypatch()
 
 from django.core.management import execute_manager, setup_environ
 
@@ -43,10 +40,6 @@ except ImportError:
 # The first thing execute_manager does is call `setup_environ`.  Logging config
 # needs to access settings, so we'll setup the environ early.
 setup_environ(settings)
-
-# Monkey patch django's csrf
-import session_csrf
-session_csrf.monkeypatch()
 
 # Import for side-effect: configures our logging handlers.
 import log_settings

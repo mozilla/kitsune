@@ -72,3 +72,13 @@ def _collect(self, objs, source_attr=None, **kwargs):
         self.protected.update(e.protected_objects)
 
 util.NestedObjects.collect = _collect
+
+
+# Monkey patch for Bug 663236: Make |safe less necessary for form fields
+from lib import safe_django_forms
+safe_django_forms.monkeypatch()
+
+
+# Monkey patch django's csrf
+import session_csrf
+session_csrf.monkeypatch()
