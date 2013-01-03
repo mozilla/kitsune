@@ -55,6 +55,7 @@ fields.EmailField.widget = EmailWidget
 # Workaround until https://code.djangoproject.com/ticket/16920 gets fixed.
 from django.contrib.admin import util
 from django.contrib.admin.util import NestedObjects
+from django.db import models
 
 def _collect(self, objs, source_attr=None, **kwargs):
     for obj in objs:
@@ -67,7 +68,7 @@ def _collect(self, objs, source_attr=None, **kwargs):
     try:
         return super(NestedObjects, self).collect(
             objs, source_attr=source_attr, **kwargs)
-    except models.ProtectedError, e:
+    except models.ProtectedError as e:
         self.protected.update(e.protected_objects)
 
 util.NestedObjects.collect = _collect
