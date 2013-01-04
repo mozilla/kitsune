@@ -32,6 +32,20 @@
         }
 
         Marky.createSimpleToolbar('.editor-tools', '#reply-content, #id_content', {cannedResponses: !$body.is('.new-question')});
+
+        // product selector page reloading
+        $('#product-selector select').change(function() {
+            var val = $(this).val();
+            var queryParams = k.getQueryParamsAsDict(document.location.toString());
+
+            if (val === '') {
+                delete queryParams['product'];
+            } else {
+                queryParams['product'] = val;
+            }
+            document.location = document.location.pathname + '?' + $.param(queryParams);
+        });
+
     }
 
     /*

@@ -77,6 +77,7 @@ def questions(request, template):
     tagged = request.GET.get('tagged')
     tags = None
     sort_ = request.GET.get('sort', None)
+    product_slug = request.GET.get('product')
 
     if sort_ == 'requested':
         order = '-num_votes_past_week'
@@ -84,6 +85,11 @@ def questions(request, template):
         order = '-created'
     else:
         order = '-updated'
+
+    if product_slug:
+        product = get_object_or_404(Product, slug=product_slug)
+    else:
+        product = None
 
     question_qs = Question.objects.select_related(
         'creator', 'last_answer', 'last_answer__creator')
@@ -135,6 +141,12 @@ def questions(request, template):
     oldest_date = date.today() - timedelta(days=90)
     question_qs = question_qs.exclude(created__lt=oldest_date, num_answers=0)
 
+    # Filter by product.
+    if product:
+        # This filter will match if any of the products on a question have the
+        # correct id.
+        question_qs = question_qs.filter(products__id__exact=product.id)
+
     # Set the order.
     question_qs = question_qs.order_by(order)
 
@@ -159,6 +171,9 @@ def questions(request, template):
     else:
         recent_answered_percent = 0
 
+    # List of products to fill the selector.
+    product_list = Product.objects.filter(visible=True)
+
     data = {'questions': questions_page,
             'feeds': feed_urls,
             'filter': filter_,
@@ -167,7 +182,9 @@ def questions(request, template):
             'tagged': tagged,
             'recent_asked_count': recent_asked_count,
             'recent_unanswered_count': recent_unanswered_count,
-            'recent_answered_percent': recent_answered_percent}
+            'recent_answered_percent': recent_answered_percent,
+            'product_list': product_list,
+            'product': product}
 
     if (waffle.flag_is_active(request, 'karma') and
         waffle.switch_is_active('karma')):
