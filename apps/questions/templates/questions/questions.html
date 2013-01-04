@@ -1,17 +1,27 @@
 {# vim: set ts=2 et sts=2 sw=2: #}
 {% extends "questions/base.html" %}
 {% from "includes/common_macros.html" import for_contributors %}
+{% from "dashboards/includes/macros.html" import product_selector %}
 {% set title = _('Firefox Support Forum') %}
 {% set classes = 'questions' %}
 {% set crumbs = [(None, _('Support Forum'))] %}
-{% set canonical_url = unlocalized_url('questions.questions')|urlparams(filter=filter, sort=sort, tagged=tagged) %}
+{% set canonical_url = unlocalized_url('questions.questions')|urlparams(None, request.GET) %}
 {% if questions.number > 1 %}
   {% set canonical_url = canonical_url|urlparams(page=questions.number) %}
 {% endif %}
 
+{# This takes kwargs, even though it doesn't say so, because it uses them.
+   It's a Jinja Magic thing. #}
+{% macro questions_url() %}
+  {{ url('questions.questions')|urlparams(None, request.GET, **kwargs) }}
+{% endmacro %}
+
 {% block content %}
   <div class="grid_12">
+    {{ product_selector(product_list, product) }}
+
     <h1>{{ _('Support Forum') }}</h1>
+
     <div id="recent-stats" class="cf">
       <span class="total">
         <h3>{{ _('Total questions: <strong>{num}</strong>')|fe(num=recent_asked_count) }}</h3>
@@ -19,8 +29,7 @@
       <span class="no-reply">
         <h3>
           {% if recent_unanswered_count > 0 %}
-            {% trans recent_unanswered_count,
-              url=url('questions.questions')|urlparams(filter='recent-unanswered') %}
+            {% trans recent_unanswered_count, url=questions_url(filter='recent-unanswered') %}
               <strong>{{recent_unanswered_count}}</strong> question in the last <strong>3 days</strong> has no reply.
               <a href="{{url}}">Help solve it!</a>
               {% pluralize recent_unanswered_count %}
@@ -44,9 +53,9 @@
       <div id="tagged">
         {{ _('Showing questions tagged:') }}
         {% for tag in tags -%}
-        <a class="tag" href="{{ url('questions.questions')|urlparams(tagged=tags_to_text(tags|remove(tag)), filter=filter, sort=sort) }}">{{ tag.name }}</a>
+        <a class="tag" href="{{ questions_url(tagged=tags_to_text(tags|remove(tag))) }}">{{ tag.name }}</a>
         {%- endfor %}
-        <a class="show-all" href="{{ url('questions.questions')|urlparams(filter=filter, sort=sort) }}">{{ _('Show all questions') }}</a>
+        <a class="show-all" href="{{ questions_url(tagged=None) }}">{{ _('Show all questions') }}</a>
       </div>
     {% endif %}
     {% if user.is_authenticated() %}
@@ -61,10 +70,10 @@
           <h3>{{ _('Sort by') }}</h3>
           <ul class="sort-by">
             <li{% if not sort %} class="active"{% endif %}>
-              <a href="{{ url('questions.questions')|urlparams(filter=filter, tagged=tagged) }}">{{ _('Most Recent') }}</a>
+              <a href="{{ questions_url(sort=None) }}">{{ _('Most Recent') }}</a>
             </li>
             <li{% if sort == 'requested' %} class="active"{% endif %}>
-              <a href="{{ url('questions.questions')|urlparams(sort='requested', filter=filter, tagged=tagged) }}">{{ _('Most Requested') }}</a>
+              <a href="{{ questions_url(sort='requested') }}">{{ _('Most Requested') }}</a>
             </li>
           </ul>
         </div>
@@ -72,20 +81,20 @@
           <h3>{{ _('Show') }}</h3>
           <ul class="show">
             <li{% if not filter %} class="active"{% endif %}>
-              <a href="{{ url('questions.questions')|urlparams(sort=sort, tagged=tagged) }}">{{ _('All') }}</a>
+              <a href="{{ questions_url(filter=None) }}">{{ _('All') }}</a>
             </li>
             <li{% if filter == 'unsolved' %} class="active"{% endif %}>
-              <a href="{{ url('questions.questions')|urlparams(filter='unsolved', sort=sort, tagged=tagged) }}">{{ _('Unsolved') }}</a>
+              <a href="{{ questions_url(filter='unsolved') }}">{{ _('Unsolved') }}</a>
             </li>
             <li{% if filter == 'solved' %} class="active"{% endif %}>
-              <a href="{{ url('questions.questions')|urlparams(filter='solved', sort=sort, tagged=tagged) }}">{{ _('Solved') }}</a>
+              <a href="{{ questions_url(filter='solved') }}">{{ _('Solved') }}</a>
             </li>
             <li{% if filter == 'no-replies' %} class="active"{% endif %}>
-              <a href="{{ url('questions.questions')|urlparams(filter='no-replies', sort=sort, tagged=tagged) }}">{{ _('No Replies') }}</a>
+              <a href="{{ questions_url(filter='no-replies') }}">{{ _('No Replies') }}</a>
             </li>
             {% if user.is_authenticated() %}
               <li{% if filter == 'my-contributions' %} class="active"{% endif %}>
-                <a href="{{ url('questions.questions')|urlparams(filter='my-contributions', sort=sort, tagged=tagged) }}">{{ _('My Contributions') }}</a>
+                <a href="{{ questions_url(filter='my-contributions') }}">{{ _('My Contributions') }}</a>
               </li>
             {% endif %}
           </ul>
@@ -199,7 +208,7 @@
               {{ _('Tags') }}
               <ul class="tag-list">
                 {% for tag in tags %}
-                  <li><a class="tag-name" href="{{ url('questions.questions')|urlparams(tagged=tag.slug, filter=filter, sort=sort) }}">{{ tag }}</a></li>
+                  <li><a class="tag-name" href="{{ questions_url(tagged=tag.slug) }}">{{ tag }}</a></li>
                 {% endfor %}
               </ul>
             {% endif %}

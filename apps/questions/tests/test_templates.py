@@ -1091,6 +1091,52 @@ class QuestionsTemplateTestCase(TestCaseBase):
         eq_('/questions?tagged=mobile',
             doc('link[rel="canonical"]')[0].attrib['href'])
 
+    def test_product_filter(self):
+        p1 = product(save=True)
+        p2 = product(save=True)
+        p3 = product(save=True)
+
+        q1 = question(save=True)
+        q2 = question(save=True)
+        q2.products.add(p1)
+        q2.save()
+        q3 = question(save=True)
+        q3.products.add(p1, p2)
+        q3.save()
+
+        url = reverse('questions.questions')
+
+        def check(filter, expected):
+            response = self.client.get(urlparams(url, **filter))
+            doc = pq(response.content)
+            # Make sure all questions are there.
+
+            # This won't work, because the test case base adds more tests than
+            # we expect in it's setUp(). TODO: Fix that.
+            #eq_(len(expected), len(doc('.questions > section')))
+
+            for q in expected:
+                eq_(1, len(doc('.questions > section[id=question-%s]' % q.id)))
+
+        # No filtering -> All questions.
+        check({}, [q1, q2, q3])
+        # Filter on p1 -> only q2 and q3
+        check({'product': p1.slug}, [q2, q3])
+        # Filter on p2 -> only q3
+        check({'product': p2.slug}, [q3])
+        # Filter on p3 -> No results
+        check({'product': p3.slug}, [])
+
+    def test_product_query_params(self):
+        """Test that the urls generated include the right query parameters."""
+
+        p1 = product(save=True)
+        url = urlparams(reverse('questions.questions'), product=p1.slug)
+        resp = self.client.get(url)
+        doc = pq(resp.content)
+        assert ('product=%s' % p1.slug) in doc('.sort-by >li > a')[0].attrib['href']
+        assert ('product=%s' % p1.slug) in doc('.sort-by >li > a')[1].attrib['href']
+
 
 class QuestionsTemplateTestCaseNoFixtures(TestCase):
     client_class = LocalizingClient

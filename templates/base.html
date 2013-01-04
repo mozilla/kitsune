@@ -51,7 +51,7 @@
   {% endif %}
 
   {% if canonical_url %}
-    <link rel="canonical" href="{{ canonical_url }}" />
+    <link rel="canonical" href="{{ canonical_url|safe }}" />
   {% endif %}
 
   <!--[if lt IE 9]>
