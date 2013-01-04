@@ -27,7 +27,7 @@ class ReadoutTestCase(TestCase):
     """Test case for one readout. Provides some convenience methods."""
 
     def rows(self, locale=None, product=None):
-        """Return the rows show by tthe readout this class tests."""
+        """Return the rows show by the readout this class tests."""
         return self.readout(
             MockRequest(), locale=locale, product=product).rows()
 
