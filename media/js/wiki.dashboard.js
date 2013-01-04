@@ -54,12 +54,14 @@ $(document).ready(function() {
     // product selector page reloading
     $('#product-selector select').change(function() {
         var val = $(this).val();
+        var queryParams = k.getQueryParamsAsDict(document.location.toString());
 
         if (val === '') {
-            document.location = document.location.pathname;
+            delete queryParams['product'];
         } else {
-            document.location = document.location.pathname + '?product=' + val;
+            queryParams['product'] = val;
         }
+        document.location = document.location.pathname + '?' + $.param(queryParams);
     });
 });
 
