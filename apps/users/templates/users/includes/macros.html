@@ -51,7 +51,7 @@
       <li class="cf">{{ field|label_with_help }} {{ field }}
         {% if field.name == "password"  %}
           <br />
-          <div style="margin-left:170px;margin-top:5px;width:200px"><small>Password should be at least 8 characters long and contain at least 1 number.</small></div>
+          <div id="password-rules">{{ _("Password should be at least 8 characters long and contain at least 1 number.") }}</div>
         {% endif %}
       </li>
       {% endfor %}
