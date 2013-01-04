@@ -612,6 +612,14 @@ def question_vote(request, question_id):
             vote.anonymous_id = request.anonymous.anonymous_id
 
         vote.save()
+
+        if 'referrer' in request.REQUEST:
+            referrer = request.REQUEST.get('referrer')
+            vote.add_metadata('referrer', referrer)
+
+            if referrer == 'search' and 'query' in request.REQUEST:
+                vote.add_metadata('query', request.REQUEST.get('query'))
+
         ua = request.META.get('HTTP_USER_AGENT')
         if ua:
             vote.add_metadata('ua', ua[:1000])  # 1000 max_length
@@ -651,6 +659,14 @@ def answer_vote(request, question_id, answer_id):
             vote.anonymous_id = request.anonymous.anonymous_id
 
         vote.save()
+
+        if 'referrer' in request.REQUEST:
+            referrer = request.REQUEST.get('referrer')
+            vote.add_metadata('referrer', referrer)
+
+            if referrer == 'search' and 'query' in request.REQUEST:
+                vote.add_metadata('query', request.REQUEST.get('query'))
+
         ua = request.META.get('HTTP_USER_AGENT')
         if ua:
             vote.add_metadata('ua', ua[:1000])  # 1000 max_length

@@ -28,6 +28,7 @@
             initEmailSubscribeAjax();
             initHelpfulVote();
             initCrashIdLinking();
+            addReferrerAndQueryToVoteForm();
             new k.AjaxPreview($('#preview'));
         }
 
@@ -114,6 +115,18 @@
         if ($link.length > 0) {
             initAjaxForm($container, 'form', '#email-subscribe');
         }
+    }
+
+    function addReferrerAndQueryToVoteForm() {
+        // Add the source/referrer and query terms to the helpful vote form
+        var urlParams = k.getQueryParamsAsDict(),
+            referrer = k.getReferrer(urlParams),
+            query = k.getSearchQuery(urlParams, referrer);
+        $('form.helpful, .me-too form')
+            .append($('<input type="hidden" name="referrer"/>')
+            .attr('value', referrer))
+            .append($('<input type="hidden" name="query"/>')
+            .attr('value', query));
     }
 
     /*
