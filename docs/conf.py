@@ -41,7 +41,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'Kitsune'
-copyright = u'2011, 2012, Mozilla Foundation'
+copyright = u'2011, 2012, 2013, Mozilla Foundation'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
