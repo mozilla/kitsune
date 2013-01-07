@@ -6,6 +6,10 @@
 
 "use strict";
 
+if (!window.Highcharts) {
+    return;
+}
+
 
 /*
  * Models
