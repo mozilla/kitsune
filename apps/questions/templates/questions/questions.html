@@ -105,6 +105,9 @@
             <p>{{ _('Enter a tag. For example: "Firefox 14.0", "Windows 7", "crash"') }}</p>
             <form action="" method="get">
               <input type="hidden" class="current-tagged" value="{{ tagged }}"/>
+              {% for key, value in request.GET.items() %}
+                <input type="hidden" name="{{ key }}" value="{{ value }}"/>
+              {% endfor %}
               <input class="searchbox" type="text" name="tagged" value="" data-vocabulary="{{ tag_vocab() }}" required="required"/>
               <button type="submit" class="btn">{{ _('Filter Tag') }}</button>
             </form>

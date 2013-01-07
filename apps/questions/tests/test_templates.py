@@ -1137,6 +1137,10 @@ class QuestionsTemplateTestCase(TestCaseBase):
         assert ('product=%s' % p1.slug) in doc('.sort-by >li > a')[0].attrib['href']
         assert ('product=%s' % p1.slug) in doc('.sort-by >li > a')[1].attrib['href']
 
+        product_input = doc('#tag-filter input[type=hidden][name=product]')
+        eq_(1, len(product_input))
+        eq_(p1.slug, product_input[0].attrib['value'])
+
 
 class QuestionsTemplateTestCaseNoFixtures(TestCase):
     client_class = LocalizingClient
