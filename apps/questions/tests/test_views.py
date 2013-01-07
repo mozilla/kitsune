@@ -9,7 +9,7 @@ from pyquery import PyQuery as pq
 
 from products.tests import product
 from questions.models import Question
-from questions.tests import answer, question, questionvote
+from questions.tests import answer, question
 from search.tests.test_es import ElasticTestCase
 from sumo.helpers import urlparams
 from sumo.tests import MobileTestCase, LocalizingClient, TestCase
@@ -219,37 +219,3 @@ class TestQuestionUpdates(TestCase):
         self._request_and_no_update(url, req_type='POST', data={
                 'remove-tag-foo': 1
             })
-
-class TestQuestionSearch(TestCase):
-    client_class = LocalizingClient
-
-    def test_order_by_votes(self):
-        #set up 3 questions with same number of votes in last week
-        #but different # of total votes
-        q1 = question(title="QUEST_A", num_votes_past_week=1, save=True)
-        q2 = question(title="QUEST_B", num_votes_past_week=1, save=True)
-        q3 = question(title="QUEST_C", num_votes_past_week=1, save=True)
-        
-        questionvote(question=q1, save=True)
-
-        questionvote(question=q2, save=True)
-        questionvote(question=q2, 
-                created=datetime(2012, 7, 9, 9, 0, 0),
-                save=True)
-        questionvote(question=q2,
-                created=datetime(2012, 7, 9, 9, 0, 0),
-                save=True)
-    
-        questionvote(question=q3, save=True)
-        questionvote(question=q3,
-                created=datetime(2012, 7, 9, 9, 0, 0),
-                save=True)
-        
-        url = urlparams(
-            reverse('questions.questions'),
-            sort='requested')
-
-        response = self.client.get(url, follow=True)
-        eq_(True, response.content.find("QUEST_B") <
-                response.content.find("QUEST_C") <
-                response.content.find("QUEST_A"))
