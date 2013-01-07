@@ -203,6 +203,7 @@ def get_indexable(percent=100, search_models=None):
     :arg percent: Defaults to 100.  Allows you to specify how much of
         each doctype you want to index.  This is useful for
         development where doing a full reindex takes an hour.
+    :arg search_models: The list of models to index.
 
     """
     from search.models import get_search_models
@@ -244,13 +245,15 @@ def index_chunk(cls, chunk, reraise=False, es=None):
             log.exception('Unable to flush/refresh')
 
 
-def es_reindex_cmd(percent=100, delete=False, models=None):
+def es_reindex_cmd(percent=100, delete=False, models=None, criticalmass=False,
+                   log=log):
     """Rebuild ElasticSearch indexes
 
     :arg percent: 1 to 100--the percentage of the db to index
     :arg delete: whether or not to wipe the index before reindexing
     :arg models: list of search model names to index
-
+    :arg criticalmass: whether or not to index just a critical mass of things
+    :arg log: the logger to use
     """
     es = get_indexing_es()
 
@@ -265,8 +268,26 @@ def es_reindex_cmd(percent=100, delete=False, models=None):
         log.info('wiping and recreating %s....', WRITE_INDEX)
         recreate_index(es=es)
 
-    if models:
+    if criticalmass:
+        # The critical mass is defined as the entire KB plus the most
+        # recent 15k questions (which is about how many questions
+        # there were created in the last 180 days). We build that
+        # indexable here.
+
+        # Get only questions and wiki document stuff.
+        indexable = get_indexable(
+            search_models=['questions_question', 'wiki_document'])
+
+        # The first item is questions because we specified that
+        # order. Old questions don't show up in searches, so we nix
+        # them by reversing the list (ordered by id ascending) and
+        # slicing it.
+        indexable[0] = (indexable[0][0],
+                        list(reversed(indexable[0][1]))[:15000])
+
+    elif models:
         indexable = get_indexable(percent, models)
+
     else:
         indexable = get_indexable(percent)
 
