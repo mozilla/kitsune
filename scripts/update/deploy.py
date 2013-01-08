@@ -15,6 +15,9 @@ from commander.deploy import task, hostgroups
 import commander_settings as settings
 
 
+os.environ['DJANGO_SETTINGS_MODULE'] = 'settings_local'
+
+
 @task
 def update_code(ctx, tag):
     with ctx.lcd(settings.SRC_DIR):
