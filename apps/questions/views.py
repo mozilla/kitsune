@@ -80,11 +80,11 @@ def questions(request, template):
     product_slug = request.GET.get('product')
 
     if sort_ == 'requested':
-        order = '-num_votes_past_week'
+        order = ['-num_votes_past_week', '-_num_votes']
     elif sort_ == 'created':
-        order = '-created'
+        order = ['-created']
     else:
-        order = '-updated'
+        order = ['-updated']
 
     if product_slug:
         product = get_object_or_404(Product, slug=product_slug)
@@ -94,11 +94,12 @@ def questions(request, template):
     question_qs = Question.objects.select_related(
         'creator', 'last_answer', 'last_answer__creator')
 
-    if not waffle.switch_is_active('hide-total-question-votes'):
-        question_qs = question_qs.extra(
-            {'_num_votes': 'SELECT COUNT(*) FROM questions_questionvote WHERE '
-                           'questions_questionvote.question_id = '
-                           'questions_question.id'})
+    if (not waffle.switch_is_active('hide-total-question-votes') or
+        sort_ == 'requested'):
+            question_qs = question_qs.extra(
+                {'_num_votes': 'SELECT COUNT(*) FROM questions_questionvote WHERE '
+                               'questions_questionvote.question_id = '
+                               'questions_question.id'})
 
     question_qs = question_qs.filter(creator__is_active=1)
 
@@ -148,7 +149,7 @@ def questions(request, template):
         question_qs = question_qs.filter(products__id__exact=product.id)
 
     # Set the order.
-    question_qs = question_qs.order_by(order)
+    question_qs = question_qs.order_by(*order)
 
     try:
         with statsd.timer('questions.view.paginate.%s' % filter_):

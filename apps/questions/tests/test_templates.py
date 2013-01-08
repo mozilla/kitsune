@@ -16,7 +16,7 @@ from products.tests import product
 from questions.events import QuestionReplyEvent, QuestionSolvedEvent
 from questions.models import Question, Answer, VoteMetadata
 from questions.tests import (TestCaseBase, TaggingTestCaseBase, tags_eq,
-                             question, answer)
+                             question, answer, questionvote)
 from questions.views import UNAPPROVED_TAG, NO_TAG
 from questions.cron import cache_top_contributors
 from sumo.helpers import urlparams
@@ -1157,6 +1157,37 @@ class QuestionsTemplateTestCaseNoFixtures(TestCase):
         doc = pq(response.content)
         eq_(2, len(doc('article.questions > section')))
 
+
+    def test_order_by_votes(self):
+        #set up 3 questions with same number of votes in last week
+        #but different # of total votes
+        q1 = question(title="QUEST_A", num_votes_past_week=1, save=True)
+        q2 = question(title="QUEST_B", num_votes_past_week=1, save=True)
+        q3 = question(title="QUEST_C", num_votes_past_week=1, save=True)
+        
+        questionvote(question=q1, save=True)
+
+        questionvote(question=q2, save=True)
+        questionvote(question=q2, 
+                created=datetime(2012, 7, 9, 9, 0, 0),
+                save=True)
+        questionvote(question=q2,
+                created=datetime(2012, 7, 9, 9, 0, 0),
+                save=True)
+    
+        questionvote(question=q3, save=True)
+        questionvote(question=q3,
+                created=datetime(2012, 7, 9, 9, 0, 0),
+                save=True)
+        
+        url = urlparams(
+            reverse('questions.questions'),
+            sort='requested')
+
+        response = self.client.get(url, follow=True)
+        eq_(True, response.content.find("QUEST_B") <
+                response.content.find("QUEST_C") <
+                response.content.find("QUEST_A"))
 
 class QuestionEditingTests(TestCaseBase):
     """Tests for the question-editing view and templates"""
