@@ -26,6 +26,8 @@ VersionMetadata = namedtuple('VersionMetadata',
                              'id, name, long, slug, max_version, show_in_ui, '
                              'is_default')
 DESKTOP_FIREFOX_VERSIONS = (
+    VersionMetadata(33, _lazy(u'Firefox 19'),
+                    _lazy(u'Firefox 19'), 'fx19', 19.9999, True, False),
     VersionMetadata(31, _lazy(u'Firefox 18'),
                     _lazy(u'Firefox 18'), 'fx18', 18.9999, True, False),
     VersionMetadata(29, _lazy(u'Firefox 17'),
@@ -33,7 +35,7 @@ DESKTOP_FIREFOX_VERSIONS = (
     VersionMetadata(27, _lazy(u'Firefox 16'),
                     _lazy(u'Firefox 16'), 'fx16', 16.9999, True, False),
     VersionMetadata(25, _lazy(u'Firefox 15'),
-                    _lazy(u'Firefox 15'), 'fx15', 15.9999, True, False),
+                    _lazy(u'Firefox 15'), 'fx15', 15.9999, False, False),
     VersionMetadata(23, _lazy(u'Firefox 14'),
                     _lazy(u'Firefox 14'), 'fx14', 14.9999, False, False),
     VersionMetadata(21, _lazy(u'Firefox 13'),
@@ -62,6 +64,8 @@ DESKTOP_FIREFOX_VERSIONS = (
     VersionMetadata(3, _lazy(u'Firefox 3.0'),
                     _lazy(u'Firefox 3.0'), 'fx3', 3.4999, False, False))
 MOBILE_FIREFOX_VERSIONS = (
+    VersionMetadata(32, _lazy(u'Firefox 19'), _lazy(u'Firefox 19 for Mobile'),
+                    'm19', 19.9999, True, False),
     VersionMetadata(30, _lazy(u'Firefox 18'), _lazy(u'Firefox 18 for Mobile'),
                     'm18', 18.9999, True, False),
     VersionMetadata(28, _lazy(u'Firefox 17'), _lazy(u'Firefox 17 for Mobile'),
@@ -69,7 +73,7 @@ MOBILE_FIREFOX_VERSIONS = (
     VersionMetadata(26, _lazy(u'Firefox 16'), _lazy(u'Firefox 16 for Mobile'),
                     'm16', 16.9999, True, False),
     VersionMetadata(24, _lazy(u'Firefox 15'), _lazy(u'Firefox 15 for Mobile'),
-                    'm15', 15.9999, True, False),
+                    'm15', 15.9999, False, False),
     VersionMetadata(22, _lazy(u'Firefox 14'), _lazy(u'Firefox 14 for Mobile'),
                     'm14', 14.9999, False, False),
     # Firefox 13 for Mobile was skipped.
