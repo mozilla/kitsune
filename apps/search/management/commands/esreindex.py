@@ -21,19 +21,16 @@ class FakeLogger(object):
     def __init__(self, stdout):
         self.stdout = stdout
 
-    def _out(self, level, *args):
-        if len(args) > 0:
-            args = args[0] % args[1:]
-        else:
-            args = args[0]
+    def _out(self, level, msg, *args):
+        msg = msg % args
         self.stdout.write('%s %-8s: %s\n' % (
-                time.strftime('%H:%M:%S'), level, args))
+                time.strftime('%H:%M:%S'), level, msg))
 
-    def info(self, *args):
-        self._out('INFO', *args)
+    def info(self, msg, *args):
+        self._out('INFO', msg, *args)
 
-    def error(self, *args):
-        self._out('ERROR', *args)
+    def error(self, msg, *args):
+        self._out('ERROR', msg, *args)
 
 
 class Command(BaseCommand):
