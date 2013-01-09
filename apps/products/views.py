@@ -1,13 +1,9 @@
-from django.conf import settings
-from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 
 import jingo
 
-from landings.views import old_products
 from mobility.decorators import mobile_template
 from products.models import Product
-from sumo.urlresolvers import reverse
 from topics.models import Topic, HOT_TOPIC_SLUG
 from wiki.facets import topics_for, documents_for
 
@@ -39,7 +35,8 @@ def product_landing(request, template, slug):
         'products': Product.objects.filter(visible=True),
         'topics': topics_for(products=[product]),
         'hot_docs': hot_docs,
-        'fallback_hot_docs': fallback_hot_docs})
+        'fallback_hot_docs': fallback_hot_docs,
+        'search_params': {'product': slug}})
 
 
 @mobile_template('products/{mobile/}documents.html')
@@ -64,4 +61,5 @@ def document_listing(request, template, product_slug, topic_slug):
         'refine': refine,
         'refine_topics': topics_for(products=[product], topics=[topic]),
         'documents': documents,
-        'fallback_documents': fallback_documents})
+        'fallback_documents': fallback_documents,
+        'search_params': {'product': product_slug}})

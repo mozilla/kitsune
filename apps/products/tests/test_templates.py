@@ -58,6 +58,7 @@ class ProductViewsTestCase(ElasticTestCase):
         eq_(200, r.status_code)
         doc = pq(r.content)
         eq_(11, len(doc('#help-topics li')))
+        eq_(p.slug, doc('#support-search input[name=product]').attr['value'])
 
     @mock.patch.object(waffle, 'flag_is_active')
     def test_document_listing(self, flag_is_active):
@@ -87,6 +88,7 @@ class ProductViewsTestCase(ElasticTestCase):
         eq_(200, r.status_code)
         doc = pq(r.content)
         eq_(3, len(doc('#document-list > ul > li')))
+        eq_(p.slug, doc('#support-search input[name=product]').attr['value'])
 
         # GET the page with refine topic and verify the content.
         url = reverse('products.documents', args=[p.slug, t1.slug])
@@ -95,6 +97,7 @@ class ProductViewsTestCase(ElasticTestCase):
         eq_(200, r.status_code)
         doc = pq(r.content)
         eq_(1, len(doc('#document-list > ul > li')))
+        eq_(p.slug, doc('#support-search input[name=product]').attr['value'])
 
     @mock.patch.object(waffle, 'flag_is_active')
     def test_document_listing_order(self, flag_is_active):
