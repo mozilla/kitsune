@@ -123,7 +123,7 @@
       </div>
       <div class="cf">
         {% if not hide_header_search %}
-          {{ search_box(settings, id='support-search') }}
+          {{ search_box(settings, id='support-search', params=search_params) }}
         {% endif %}
         <a href="{{ url('home') }}"><img class="logo" alt="mozilla support" src="{{ MEDIA_URL }}img/mozilla-support.png" /></a>
       </div>
