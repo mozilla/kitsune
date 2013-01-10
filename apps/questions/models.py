@@ -36,6 +36,7 @@ from tags.models import BigVocabTaggableMixin
 from tags.utils import add_existing_tag
 from topics.models import Topic
 from upload.models import ImageAttachment
+from wiki.models import Locale
 
 
 log = logging.getLogger('k.questions')
@@ -71,6 +72,8 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
 
     # List of topics this question applies to.
     topics = models.ManyToManyField(Topic)
+
+    locale = models.ForeignKey(Locale, null=True)
 
     html_cache_key = u'question:html:%s'
     tags_cache_key = u'question:tags:%s'
