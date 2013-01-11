@@ -3,6 +3,7 @@ from optparse import make_option
 from django.core.management.base import BaseCommand, CommandError
 
 from search.es_utils import es_search_cmd
+from search.utils import FakeLogger
 
 
 class Command(BaseCommand):
@@ -18,4 +19,4 @@ class Command(BaseCommand):
 
         query = u' '.join(args)
 
-        es_search_cmd(query, pages)
+        es_search_cmd(query, pages, FakeLogger(self.stdout))

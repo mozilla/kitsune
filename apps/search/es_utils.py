@@ -331,7 +331,7 @@ def es_reindex_cmd(percent=100, delete=False, models=None, criticalmass=False,
     log.info('done! (total time: %s)', format_time(delta_time))
 
 
-def es_delete_cmd(index):
+def es_delete_cmd(index, log=log):
     """Deletes an index"""
     try:
         indexes = [name for name, count in get_indexes()]
@@ -355,7 +355,7 @@ def es_delete_cmd(index):
     log.info('Done!')
 
 
-def es_status_cmd(checkindex=False):
+def es_status_cmd(checkindex=False, log=log):
     """Shows elastic search index status"""
     try:
         try:
@@ -437,7 +437,7 @@ def es_status_cmd(checkindex=False):
             print 'There were %d missing_docs' % missing_docs
 
 
-def es_search_cmd(query, pages=1):
+def es_search_cmd(query, pages=1, log=log):
     """Simulates a front page search
 
     .. Note::
@@ -480,4 +480,5 @@ def es_search_cmd(query, pages=1):
 
             output.append('')
 
-    print '\n'.join([line.encode('ascii', 'ignore') for line in output])
+    for line in output:
+        log.info(line.encode('ascii', 'ignore'))

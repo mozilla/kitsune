@@ -1,5 +1,7 @@
 from django.core.management.base import BaseCommand, CommandError
+
 from search.es_utils import es_delete_cmd
+from search.utils import FakeLogger
 
 
 class Command(BaseCommand):
@@ -9,4 +11,4 @@ class Command(BaseCommand):
         if not args:
             raise CommandError('You must specify which index to delete.')
 
-        es_delete_cmd(args[0])
+        es_delete_cmd(args[0], FakeLogger(self.stdout))

@@ -12,6 +12,33 @@ from sumo_locales import LOCALES
 call = lambda x: subprocess.Popen(x, stdout=subprocess.PIPE).communicate()
 
 
+class FakeLogger(object):
+    """Fake logger that we can pretend is a Python Logger
+
+    Why? Well, because Django has logging settings that prevent me
+    from setting up a logger here that uses the stdout that the Django
+    BaseCommand has. At some point p while fiddling with it, I
+    figured, 'screw it--I'll just write my own' and did.
+
+    The minor ramification is that this isn't a complete
+    implementation so if it's missing stuff, we'll have to add it.
+    """
+
+    def __init__(self, stdout):
+        self.stdout = stdout
+
+    def _out(self, level, msg, *args):
+        msg = msg % args
+        self.stdout.write('%s %-8s: %s\n' % (
+                time.strftime('%H:%M:%S'), level, msg))
+
+    def info(self, msg, *args):
+        self._out('INFO', msg, *args)
+
+    def error(self, msg, *args):
+        self._out('ERROR', msg, *args)
+
+
 def clean_excerpt(excerpt):
     return bleach.clean(excerpt, tags=['b', 'i'])
 
