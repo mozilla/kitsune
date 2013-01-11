@@ -3,6 +3,7 @@ from optparse import make_option
 from django.core.management.base import BaseCommand
 
 from search.es_utils import es_status_cmd
+from search.utils import FakeLogger
 
 
 class Command(BaseCommand):
@@ -13,4 +14,4 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         checkindex = options['checkindex']
-        es_status_cmd(checkindex)
+        es_status_cmd(checkindex, FakeLogger(self.stdout))
