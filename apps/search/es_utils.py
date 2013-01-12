@@ -59,6 +59,9 @@ class Sphilastic(S):
         # SUMO uses a unified doctype, so this always returns that.
         return [SUMO_DOCTYPE]
 
+    def __repr__(self):
+        return '<S %s>' % self._build_query()
+
 
 class MappingMergeError(Exception):
     """Represents a mapping merge error"""
