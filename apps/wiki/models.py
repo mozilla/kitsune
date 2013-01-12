@@ -1,6 +1,7 @@
+import time
+import logging
 from datetime import datetime, timedelta
 from urlparse import urlparse
-import time
 
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -29,6 +30,9 @@ from wiki.config import (CATEGORIES, SIGNIFICANCES,
                          TYPO_SIGNIFICANCE, MAJOR_SIGNIFICANCE,
                          REDIRECT_HTML, REDIRECT_CONTENT, REDIRECT_TITLE,
                          REDIRECT_SLUG)
+
+
+log = logging.getLogger('k.wiki')
 
 
 class TitleCollision(Exception):
@@ -534,6 +538,8 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
         key = 'wiki_document:related_docs:%s' % self.id
         documents = cache.get(key)
         if documents:
+            log.debug('Getting MLT for {doc} from cache.'
+                .format(doc=repr(self)))
             return documents
 
         try:
@@ -549,7 +555,9 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
                     'document_summary',
                     'document_content'])
             cache.add(key, documents)
-        except (ESTimeoutError, ESMaxRetryError, ESException):
+        except (ESTimeoutError, ESMaxRetryError, ESException) as e:
+            log.error('ES error during MLT for {doc}: {err}'
+                .format(doc=repr(self), err=str(e)))
             documents = []
 
         return documents
