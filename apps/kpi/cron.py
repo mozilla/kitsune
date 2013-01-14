@@ -17,7 +17,6 @@ from kpi.models import (Metric, MetricKind,
                         VISITORS_METRIC_CODE)
 from questions.models import Answer
 from sumo import googleanalytics
-from sumo.webtrends import Webtrends
 from wiki.config import TYPO_SIGNIFICANCE, MEDIUM_SIGNIFICANCE
 from wiki.models import Revision
 
@@ -83,7 +82,7 @@ def update_l10n_metric():
     # Get the visits to each locale in the last 30 days.
     end = date.today() - timedelta(days=1)  # yesterday
     start = end - timedelta(days=30)
-    locale_visits = Webtrends.visits_by_locale(start, end)
+    locale_visits = googleanalytics.visitors_by_locale(start, end)
 
     # Total visits.
     total_visits = sum(locale_visits.itervalues())
