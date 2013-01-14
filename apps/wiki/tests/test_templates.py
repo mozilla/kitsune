@@ -1841,6 +1841,22 @@ class TranslateTests(TestCaseBase):
         eq_(r.id, new_es_rev.based_on_id)
 
 
+    def test_show_translations_page(self):
+        en = settings.WIKI_DEFAULT_LANGUAGE
+        en_doc = document(locale=en, slug='english-slug')
+        en_doc.save()
+        de_doc = document(locale='de', parent=en_doc)
+        de_doc.save()
+        
+        url = reverse('wiki.show_translations', locale=settings.WIKI_DEFAULT_LANGUAGE,
+                      args=[en_doc.slug])
+        r = self.client.get(url)
+        doc = pq(r.content)
+        translated_locales = doc(".translated_locale")
+        eq_(translated_locales.length, 2)
+        eq_("en-US", doc(".translated_locale:first").text())
+        eq_("de", doc(".translated_locale:eq(1)").text())
+
 def _test_form_maintains_based_on_rev(client, doc, view, post_data,
                                       locale=None):
     """Confirm that the based_on value set in the revision created by an edit
