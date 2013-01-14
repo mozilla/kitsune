@@ -1126,6 +1126,24 @@ def remove_contributor(request, document_slug, user_id):
     return jingo.render(request, 'wiki/confirm_remove_contributor.html',
                         {'document': document, 'contributor': user})
 
+def show_translations(request, document_slug):
+    document = get_object_or_404(
+        Document, locale=settings.WIKI_DEFAULT_LANGUAGE, slug=document_slug)
+    translated_locales = []
+    untranslated_locales = []
+
+    translated_locales.append(document.locale)
+    translated_locales.extend(document.translations.all().values_list(
+        'locale', flat=True))
+
+    for locale in settings.LANGUAGE_CHOICES:
+        if not locale[0] in translated_locales:
+            untranslated_locales.append(locale[0])
+
+    return jingo.render(request, 'wiki/show_translations.html',
+            {'document': document, 
+            'translated_locales': translated_locales,
+            'untranslated_locales': untranslated_locales})
 
 def _document_form_initial(document):
     """Return a dict with the document data pertinent for the form."""
