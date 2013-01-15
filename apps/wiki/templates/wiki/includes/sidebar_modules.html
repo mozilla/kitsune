@@ -46,6 +46,15 @@
             <a href="{{ url('wiki.translate', parent.slug) }}">{{ _('Translate Article') }}</a>
           {% endif %}
         </li>
+        {% endif %}
+      {% if document and parent and parent.is_localizable %}
+        <li{% if active == 'show_translations' %} class="active"{% endif %}> 
+          {% if active == 'show_translations' %}
+            <span>{{ _('Show Translations') }}</span>
+          {% else %}
+            <a href="{{ url('wiki.show_translations', parent.slug) }}">{{ _('Show Translations') }}</a>
+          {% endif %}
+        </li>
       {% endif %}
       {% if document %}
         <li{% if active == 'history' %} class="active"{% endif %}>
@@ -88,6 +97,11 @@
           {% if not document and not document.is_archived and parent and parent.is_localizable %}
             <li{% if active == 'localize' %} class="selected"{% endif %}>
               <a href="{{ url('wiki.translate', parent.slug) }}">{{ _('Translate Article') }}</a>
+            </li>
+          {% endif %}          
+          {% if document and parent and parent.is_localizable %}
+            <li{% if active == 'show_translations' %} class="selected"{% endif %}> 
+              <a href="{{ url('wiki.show_translations', parent.slug) }}">{{ _('Show Translations') }}</a>
             </li>
           {% endif %}
           {% if document %}

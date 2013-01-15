@@ -21,6 +21,7 @@ document_patterns = patterns('wiki.views',
         'mark_ready_for_l10n_revision',
         name='wiki.mark_ready_for_l10n_revision'),
     url(r'^/locales$', 'select_locale', name='wiki.select_locale'),
+    url(r'^/show_translations$', 'show_translations', name='wiki.show_translations'),
 
     # Un/Subscribe to document edit notifications.
     url(r'^/watch$', 'watch_document', name='wiki.document_watch'),
