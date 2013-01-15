@@ -1133,11 +1133,10 @@ def show_translations(request, document_slug):
     untranslated_locales = []
 
     translated_locales.append(document.locale)
+    translated_locales.extend(document.translations.all().values_list('locale', flat=True))
 
     for locale in settings.LANGUAGE_CHOICES:
-        if document.translated_to(locale[0]) != None:
-            translated_locales.append(locale[0])
-        elif locale[0] != document.locale:
+        if not locale[0] in translated_locales:
             untranslated_locales.append(locale[0])
     
     return jingo.render(request, 'wiki/show_translations.html',
