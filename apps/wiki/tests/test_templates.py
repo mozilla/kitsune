@@ -1843,10 +1843,8 @@ class TranslateTests(TestCaseBase):
 
     def test_show_translations_page(self):
         en = settings.WIKI_DEFAULT_LANGUAGE
-        en_doc = document(locale=en, slug='english-slug')
-        en_doc.save()
-        de_doc = document(locale='de', parent=en_doc)
-        de_doc.save()
+        en_doc = document(save=True, locale=en, slug='english-slug')
+        de_doc = document(save=True, locale='de', parent=en_doc)
         
         url = reverse('wiki.show_translations', locale=settings.WIKI_DEFAULT_LANGUAGE,
                       args=[en_doc.slug])
