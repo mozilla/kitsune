@@ -531,7 +531,8 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
     def related_documents(self):
         """Return documents that are 'morelikethis' one."""
         # Only documents in default IA categories have related.
-        if self.category not in settings.IA_DEFAULT_CATEGORIES:
+        if (self.redirect_url() or
+            self.category not in settings.IA_DEFAULT_CATEGORIES):
             return []
 
         # First try to get the results from the cache
