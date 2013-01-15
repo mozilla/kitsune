@@ -1,7 +1,8 @@
-from datetime import date, datetime, timedelta
 import json
 import logging
 import random
+import time
+from datetime import date, datetime, timedelta
 
 from django.conf import settings
 from django.contrib import auth
@@ -1084,12 +1085,16 @@ def _search_suggestions(request, text, locale, product_slugs):
 
     results = []
     try:
-        query = dict(('%s__text' % field, text)
+        # Search for relavent KB documents.
+        query_text = dict(('%s__text' % field, text)
+                      for field in Document.get_query_fields())
+        query_text_phrase = dict(('%s__text_phrase' % field, text)
                       for field in Document.get_query_fields())
         raw_results = (
             wiki_s.filter(document_locale=locale,
                           document_category__in=default_categories)
-                  .query(or_=query)
+                  .query(or_=query_text)
+                  .query(or_=query_text_phrase)
                   .values_dict('id')[:WIKI_RESULTS])
         for r in raw_results:
             try:
@@ -1106,11 +1111,20 @@ def _search_suggestions(request, text, locale, product_slugs):
             except Document.DoesNotExist:
                 pass
 
+        # Search for relavent questions.
         # Note: Questions app is en-US only.
-        query = dict(('%s__text' % field, text)
+        query_text = dict(('%s__text' % field, text)
                       for field in Question.get_query_fields())
-        raw_results = (question_s.query(or_=query)
-                                 .values_dict('id')[:QUESTIONS_RESULTS])
+        query_text_phrase = dict(('%s__text_phrase' % field, text)
+                      for field in Question.get_query_fields())
+        max_age = int(time.time()) - settings.SEARCH_DEFAULT_MAX_QUESTION_AGE
+
+        raw_results = (question_s
+            .query(or_=query_text)
+            .query(or_=query_text_phrase)
+            .filter(updated__gte=max_age)
+            .values_dict('id')[:QUESTIONS_RESULTS])
+
         for r in raw_results:
             try:
                 q = Question.objects.get(pk=r['id'])

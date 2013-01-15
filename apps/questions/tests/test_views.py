@@ -1,5 +1,6 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
 
@@ -66,6 +67,31 @@ class AAQTests(ElasticTestCase):
 
         assert 'CupcakesQuestion' in response.content
         assert 'CupcakesKB' in response.content
+
+    def test_search_suggestion_age(self):
+        """Verifies the view doesn't return old questions."""
+        topic(title='Fix problems', slug='fix-problems', save=True)
+        p = product(slug=u'firefox', save=True)
+
+        q = question(title=u'Cupcakes', save=True)
+        q.products.add(p)
+
+        max_age = settings.SEARCH_DEFAULT_MAX_QUESTION_AGE
+        two_days_ago = datetime.now() - timedelta(seconds=max_age)
+        q = question(title=u'Stale Cupcakes', created=two_days_ago, save=True)
+        q.products.add(p)
+
+        self.refresh()
+
+        url = urlparams(
+            reverse('questions.aaq_step4', args=['desktop', 'fix-problems']),
+            search='cupcakes')
+
+        response = self.client.get(url, follow=True)
+        eq_(200, response.status_code)
+
+        assert 'Cupcakes' in response.content
+        assert 'Stale Cupcakes' in response.content
 
 
 class MobileAAQTests(MobileTestCase):
