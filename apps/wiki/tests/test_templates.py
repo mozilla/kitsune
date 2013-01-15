@@ -2211,6 +2211,12 @@ class RelatedDocumentTestCase(ElasticTestCase):
         d6.current_revision = r5
         d6.save()
 
+        # A document without an approved current_revision
+        d7 = document(title='lorem ipsum ohai', save=True)
+        r7 = revision(document=d1, summary='lorem',
+                      content='lorem ipsum dolor',
+                      save=True)
+
         self.refresh()
 
         response = self.client.get(d1.get_absolute_url())
@@ -2229,6 +2235,11 @@ class RelatedDocumentTestCase(ElasticTestCase):
 
         # A document not in default category should have no related.
         response = self.client.get(d6.get_absolute_url())
+        doc = pq(response.content)
+        eq_(0, len(doc('#doc-related li a')))
+
+        # A document without a current_revision should have no related.
+        response = self.client.get(d7.get_absolute_url())
         doc = pq(response.content)
         eq_(0, len(doc('#doc-related li a')))
 
