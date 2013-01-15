@@ -2205,6 +2205,14 @@ class RelatedDocumentTestCase(ElasticTestCase):
         eq_(1, len(related))
         eq_('lorem ipsum sit', related.text())
 
+        # Change the document to a redirect and it shoulnd't show related now.
+        d1.html = '<p>REDIRECT <a href="/kb/test">test</a></p>'
+        d1.save()
+        response = self.client.get(d1.get_absolute_url() + '?redirect=no')
+        doc = pq(response.content)
+        related = doc('#doc-related li a')
+        eq_(0, len(related))
+
         # A document not in default category should have no related.
         response = self.client.get(d6.get_absolute_url())
         doc = pq(response.content)
