@@ -1,6 +1,7 @@
 from optparse import make_option
 
 from django.core.management.base import BaseCommand, CommandError
+from django.test.utils import override_settings
 
 from search.es_utils import es_reindex_cmd
 from search.utils import FakeLogger
@@ -19,6 +20,9 @@ class Command(BaseCommand):
                     help='Indexes a critical mass of things'),
         )
 
+    # We (ab)use override_settings to force ES_LIVE_INDEXING for the
+    # duration of this command so that it actually indexes stuff.
+    @override_settings(ES_LIVE_INDEXING=True)
     def handle(self, *args, **options):
         percent = options['percent']
         delete = options['delete']
