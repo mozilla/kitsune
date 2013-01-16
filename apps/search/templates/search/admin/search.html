@@ -187,6 +187,13 @@
         indexing pass unless you really know you want to.
       </p>
     {% endif %}
+    {% if not settings.ES_LIVE_INDEXING %}
+      <p class="errornote">
+        WARNING! <tt>ES_LIVE_INDEXING</tt> is False so you can't
+        reindex via the admin. Either enable <tt>ES_LIVE_INDEXING</tt>
+        or use the command line <tt>./manage.py esreindex</tt>.
+      </p>
+    {% endif %}
     {% if doctype_write_stats != None %}
       <h2>Reindex into existing index</h2>
       <p>
@@ -202,7 +209,7 @@
         {% endfor %}
         <input type="submit" name="reindex"
                value="Reindex into {{ write_index }}"
-               {% if outstanding_chunks %}disabled{% endif %}>
+               {% if not settings.ES_LIVE_INDEXING or outstanding_chunks %}disabled{% endif %}>
       </form>
     {% endif %}
     <h2>DELETE existing index, recreate it and reindex</h2>
@@ -223,7 +230,7 @@
       <input type="hidden" name="delete_index" value="1">
       <input class="DANGER" type="submit" name="reindex"
              value="DELETE index and index into {{ write_index }}"
-             {% if outstanding_chunks %}disabled{% endif %}>
+             {% if not settings.ES_LIVE_INDEXING or outstanding_chunks %}disabled{% endif %}>
     </form>
 
     <h2>RESET scoreboard</h2>
