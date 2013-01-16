@@ -34,7 +34,7 @@ SUMO_DOCTYPE = u'sumodoc'
 
 # The number of things in a chunk. This is for parallel indexing via
 # the admin.
-CHUNK_SIZE = 50000
+CHUNK_SIZE = 20000
 
 
 log = logging.getLogger('k.search.es')
