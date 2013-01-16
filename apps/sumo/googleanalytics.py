@@ -6,6 +6,8 @@ import httplib2
 from apiclient.discovery import build
 from oauth2client.client import SignedJwtAssertionCredentials
 
+from wiki.models import Document
+
 
 key = settings.GA_KEY
 account = settings.GA_ACCOUNT
@@ -66,3 +68,48 @@ def visitors_by_locale(start_date, end_date):
             visits_by_locale[path] = visitors
 
     return visits_by_locale
+
+
+def pageviews_by_document(start_date, end_date):
+    """Return the number of pageviews by document in a given date range.
+
+    * Only returns en-US documents for now since that's what we do with
+    webtrends.
+
+    Returns a dict with pageviews for each document:
+        {<document_id>: <pageviews>,
+         1: 42,
+         7: 1337,...}
+    """
+    counts = {}
+    request = _build_request()
+    start_index = 1
+    max_results = 10000
+
+    while True:  # To deal with pagination
+        results = request.get(
+            ids='ga:' + profile_id,
+            start_date=str(start_date),
+            end_date=str(end_date),
+            metrics='ga:pageviews',
+            dimensions='ga:pagePath',
+            filters='ga:pagePathLevel2==/kb/;ga:pagePathLevel1==/en-US/',
+            max_results=max_results,
+            start_index=start_index).execute()
+
+        for result in results['rows']:
+            path = result[0]
+            pageviews = int(result[1])
+            doc = Document.from_url(path, id_only=True, check_host=False)
+            if not doc:
+                continue
+
+            # The same document can appear multiple times due to url params.
+            counts[doc.pk] = counts.get(doc.pk, 0) + pageviews
+
+        # Move to next page of results.
+        start_index += max_results
+        if start_index > results['totalResults']:
+            break
+
+    return counts
