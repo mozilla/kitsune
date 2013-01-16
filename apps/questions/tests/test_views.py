@@ -73,13 +73,14 @@ class AAQTests(ElasticTestCase):
         topic(title='Fix problems', slug='fix-problems', save=True)
         p = product(slug=u'firefox', save=True)
 
-        q = question(title=u'Cupcakes', save=True)
-        q.products.add(p)
+        q1 = question(title='Fresh Cupcakes', save=True)
+        q1.products.add(p)
 
         max_age = settings.SEARCH_DEFAULT_MAX_QUESTION_AGE
-        two_days_ago = datetime.now() - timedelta(seconds=max_age)
-        q = question(title=u'Stale Cupcakes', created=two_days_ago, save=True)
-        q.products.add(p)
+        too_old = datetime.now() - timedelta(seconds=max_age * 2)
+        q2 = question(title='Stale Cupcakes', created=too_old, updated=too_old,
+            save=True)
+        q2.products.add(p)
 
         self.refresh()
 
@@ -90,8 +91,8 @@ class AAQTests(ElasticTestCase):
         response = self.client.get(url, follow=True)
         eq_(200, response.status_code)
 
-        assert 'Cupcakes' in response.content
-        assert 'Stale Cupcakes' in response.content
+        self.assertContains(response, q1.title)
+        self.assertNotContains(response, q2.title)
 
 
 class MobileAAQTests(MobileTestCase):
