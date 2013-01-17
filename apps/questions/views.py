@@ -1085,16 +1085,15 @@ def _search_suggestions(request, text, locale, product_slugs):
 
     results = []
     try:
-        # Search for relavent KB documents.
-        query_text = dict(('%s__text' % field, text)
+        # Search for relevant KB documents.
+        query = dict(('%s__text' % field, text)
                       for field in Document.get_query_fields())
-        query_text_phrase = dict(('%s__text_phrase' % field, text)
-                      for field in Document.get_query_fields())
+        query.update(dict(('%s__text_phrase' % field, text)
+                      for field in Document.get_query_fields()))
         raw_results = (
             wiki_s.filter(document_locale=locale,
                           document_category__in=default_categories)
-                  .query(or_=query_text)
-                  .query(or_=query_text_phrase)
+                  .query(or_=query)
                   .values_dict('id')[:WIKI_RESULTS])
         for r in raw_results:
             try:
@@ -1111,17 +1110,16 @@ def _search_suggestions(request, text, locale, product_slugs):
             except Document.DoesNotExist:
                 pass
 
-        # Search for relavent questions.
+        # Search for relevant questions.
         # Note: Questions app is en-US only.
-        query_text = dict(('%s__text' % field, text)
+        query = dict(('%s__text' % field, text)
                       for field in Question.get_query_fields())
-        query_text_phrase = dict(('%s__text_phrase' % field, text)
-                      for field in Question.get_query_fields())
+        query.update(dict(('%s__text_phrase' % field, text)
+                      for field in Question.get_query_fields()))
         max_age = int(time.time()) - settings.SEARCH_DEFAULT_MAX_QUESTION_AGE
 
         raw_results = (question_s
-            .query(or_=query_text)
-            .query(or_=query_text_phrase)
+            .query(or_=query)
             .filter(updated__gte=max_age)
             .values_dict('id')[:QUESTIONS_RESULTS])
 
