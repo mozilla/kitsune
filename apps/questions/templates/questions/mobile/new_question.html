@@ -6,9 +6,6 @@
 {% set title = _('Ask A Question') %}
 {% set headline = title %}
 {% set classes = 'aaq' %}
-{% if not current_category %}
-  {% set classes = classes + ' has-pulldown' %}
-{% endif %}
 {% if form %}
   {% set classes = classes + ' question-form' %}
   {% set return_url = url('questions.aaq_step3', product_key=current_product.key, category_key=current_category.key) %}
@@ -18,31 +15,24 @@
 {% endif %}
 {% set styles = ('mobile/aaq',) %}
 
-{% block after_header %}
+{% block content %}
   {% if not current_category %}
-    <div class="pulldown-menu">
-      <div class="pulldown-handle"></div>
-      <div class="pulldown-panel">
-        <section>
-          <h2>{{ _('Products and services') }}</h2>
-          <div id="product-switcher" class="swipeable">
-            <ul>
-              {% for key, product in products.iteritems() %}
-                <li class="{% if product == current_product %}selected{% endif %}">
-                  <a class="icon-{{ key }}" href="{{ url('questions.aaq_step2', product_key=key) }}">
-                    {{ product.name }}
-                  </a>
-                </li>
-              {% endfor %}
-            </ul>
-          </div>
-        </section>
+    <div class="filter-bar">
+      <h2>{{ _('Products and services') }}</h2>
+      <div id="product-switcher" class="swipeable">
+        <ul>
+          {% for key, product in products.iteritems() %}
+            <li class="{% if product == current_product %}selected{% endif %}">
+              <a class="icon-{{ key }}" href="{{ url('questions.aaq_step2', product_key=key) }}">
+                {{ product.name }}
+              </a>
+            </li>
+          {% endfor %}
+        </ul>
       </div>
     </div>
   {% endif %}
-{% endblock %}
 
-{% block content %}
   {% if not current_product %}
     {{ select_product(products) }}
   {% endif %}
