@@ -52,7 +52,7 @@
   {% endif %}
 
   {% if not tried_search and (current_articles or current_html) and not search_results and not form %}
-    {{ current_articles_and_message(current_articles, current_category, current_html, True) }}
+    {{ current_articles_and_message(current_articles, current_category, current_html) }}
     <div class="try_or_post {% if deadend %}deadend{% endif %} cf">
       <a class="btn" href="{{ url('questions.aaq_step2', product_key=current_product.key) }}">{{ _('Try another topic') }}</a>
 
