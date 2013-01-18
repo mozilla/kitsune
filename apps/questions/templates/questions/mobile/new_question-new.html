@@ -57,7 +57,8 @@
       <a class="btn" href="{{ url('questions.aaq_step2', product_key=current_product.key) }}">{{ _('Try another topic') }}</a>
 
       {% if not deadend %}
-        <form action="{% if settings.SESSION_COOKIE_SECURE %}https://{{ host }}{{ url('questions.aaq_step5', product_key=current_product.key, category_key=current_category.key) }}{% endif %}" method="get">
+        {% set form_url = url('questions.aaq_step5', product_key=current_product.key, category_key=current_category.key) %}
+        <form action="{% if settings.SESSION_COOKIE_SECURE %}https://{{ host }}{% endif %}{{ form_url }}" method="get">
           <input type="hidden" name="search" value="" />
           <input type="hidden" name="step" value="{% if user.is_authenticated() %}aaq-question{% else %}aaq-register{% endif %}" />
           <button type="submit" class="btn">{{ _('Post a question') }}</button>
