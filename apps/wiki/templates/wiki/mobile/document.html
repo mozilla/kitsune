@@ -1,5 +1,40 @@
-{% if waffle.flag('new-theme') %}
-  {% extends 'wiki/mobile/document-new.html' %}
-{% else %}
-  {% extends 'wiki/mobile/document-old.html' %}
+{% extends 'mobile/base.html' %}
+
+{% from "includes/common_macros.html" import list_view_item %}
+{% from "wiki/includes/document_macros.html" import related_articles with context %}
+{% from "wiki/includes/document_macros.html" import contributor_list, document_title, document_messages, document_content  %}
+{% from "wiki/mobile/includes/document_macros.html" import vote_form with context %}
+
+{% set title = _('{t} | {c}')|f(t=document.title, c=document.get_category_display()) %}
+{% set headline = title %}
+
+{% set show_search = 'bottom' %}
+{% set include_showfor = True %}
+{% set styles = ('mobile/wiki',) %}
+{% set classes = 'document' %}
+{% set scripts = ('mobile/wiki',) %}
+{% set canonical_url = document.get_absolute_url() %}
+{% if document.is_template or document.is_archived %}
+  {% set meta = (('robots', 'noindex'),) %}
 {% endif %}
+
+{% if document.parent %}
+  {# If there is a parent doc, use it's URL for switching locales. #}
+  {% set localizable_url = url('wiki.document', document.parent.slug, locale=settings.WIKI_DEFAULT_LANGUAGE) %}
+{% endif %}
+
+{% block content %}
+  <div class="title-bar">{{ document_title(document) }}</div>
+  <article id="wiki-doc">
+    {{ document_messages(document, redirected_from) }}
+    {{ document_content(document, fallback_reason, request, settings) }}
+
+    {{ related_articles(related, document) }}
+
+    {% if not waffle.switch('hide-voting') %}
+      {{ vote_form(document, source='mobile') }}
+    {% endif %}
+
+    {{ contributor_list(contributors) }}
+  </article>
+{% endblock %}
