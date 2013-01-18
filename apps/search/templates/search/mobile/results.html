@@ -1,5 +1,40 @@
-{% if waffle.flag('new-theme') %}
-  {% extends 'search/mobile/results-new.html' %}
-{% else %}
-  {% extends 'search/mobile/results-old.html' %}
-{% endif %}
+{# vim: set ts=2 et sts=2 sw=2: #}
+{% extends "mobile/base.html" %}
+{% set title = _('Search') %}
+{% set headline = title %}
+{% set classes = 'results' %}
+{% set styles = ('mobile/search',) %}
+
+{% from "search/basic-form.html" import mobile_results_form with context %}
+
+{% block after_header %}
+  <div class="search-bar">
+    {{ mobile_results_form(q, search_params) }}
+  </div>
+  <div class="search-filters">
+    <ul class="cf">
+      <li class="{% if w == 1 %}enabled{% endif %}"><a href="{{ request.get_full_path()|urlparams(page=1, w=1) }}">{{ _('Articles') }}</a></li>
+      <li class="{% if w == 2 %}enabled{% endif %}"><a href="{{ request.get_full_path()|urlparams(page=1, w=2) }}">{{ _('Questions') }}</a></li>
+    </ul>
+  </div>
+{% endblock %}
+
+{% block content %}
+  {% if q %}
+    {% if results %}
+      <ol class="search-results">
+        {% for doc in results %}
+          <li class="{{ doc.type }}">
+            <a href="{{ doc.url|urlparams(s=q,as='s') }}">
+              <span class="title">{{ doc.title }}</span>
+              {{ doc.search_summary|safe }}
+            </a>
+          </li>
+        {% endfor %}
+      </ol>
+      {{ pages|mobile_paginator }}
+    {% else %}
+      {{ _('No results found') }}
+    {% endif %}
+  {% endif %}
+{% endblock %}

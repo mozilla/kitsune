@@ -53,10 +53,7 @@ MOZILLA_NEWS_DOC = 'Mozilla News'
 @never_cache
 def desktop_or_mobile(request):
     """Redirect mobile browsers to /mobile and others to /home."""
-    if waffle.flag_is_active(request, 'new-theme'):
-        mobile = 'products'
-    else:
-        mobile = 'home.mobile'
+    mobile = 'products'
     url_name = mobile if request.MOBILE else 'home'
     return redirect_to(request, url_name, permanent=False)
 
@@ -64,7 +61,7 @@ def desktop_or_mobile(request):
 def home(request):
     """The home page."""
     if request.MOBILE:
-        return old_home(request)
+        return redirect_to(request, 'products', permanent=False)
 
     products = Product.objects.filter(visible=True)
     topics = Topic.objects.filter(visible=True)
@@ -87,25 +84,10 @@ def home(request):
         'moz_news': moz_news})
 
 
-@mobile_template('landings/{mobile/}old-home.html')
-def old_home(request, template=None):
-    if waffle.flag_is_active(request, 'new-theme'):
-        return redirect_to(request, 'products', permanent=False)
-    else:
-        docs = HOME_DOCS_FOR_MOBILE
-        return jingo.render(request, template,
-                            _data(docs, request.locale, 'firefox', 'desktop'))
-
-
 @mobile_template('landings/{mobile/}mobile.html')
 def mobile(request, template=None):
-    if not request.MOBILE or waffle.flag_is_active(request, 'new-theme'):
-        return redirect_to(
-            request, 'products.product', slug='mobile', permanent=False)
-
-    docs = MOBILE_DOCS_FOR_MOBILE
-    return jingo.render(request, template,
-                        _data(docs, request.locale, 'mobile', 'mobile'))
+    return redirect_to(
+        request, 'products.product', slug='mobile', permanent=False)
 
 
 @mobile_template('landings/{mobile/}sync.html')
