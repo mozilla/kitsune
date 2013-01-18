@@ -168,8 +168,8 @@ class MobileAAQTests(MobileTestCase):
         """
         res = self._new_question()
         doc = pq(res.content)
-        eq_(1, len(doc('#login_form input[name=login]')))
-        eq_(1, len(doc('#register_form input[name=register]')))
+        eq_(1, len(doc('#login-form input[name=login]')))
+        eq_(1, len(doc('#register-form input[name=register]')))
 
 
 class TestQuestionUpdates(TestCase):

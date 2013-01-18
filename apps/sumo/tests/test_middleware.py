@@ -78,7 +78,7 @@ class MobileSwitchTestCase(TestCase):
         eq_(self.client.cookies.get(mobility.middleware.COOKIE).value, 'off')
 
     def test_mobile_1(self):
-        response = self.client.get(u'/en-US/home?mobile=1')
+        response = self.client.get(u'/en-US/home?mobile=1', follow=True)
         eq_(response.status_code, 200)
         # Make sure a mobile template was used
         assert any('mobile' in t.name for t in response.templates)

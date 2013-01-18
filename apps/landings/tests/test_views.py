@@ -6,19 +6,6 @@ from sumo.urlresolvers import reverse
 
 
 class MobileHomeTests(MobileTestCase):
-    def test_desktop_home_for_mobile(self):
-        r = self._check_template('home', 'landings/mobile/old-home.html')
-        doc = pq(r.content)
-        eq_('desktop', doc('#search input[name="q_tags"]')[0].attrib['value'])
-        eq_('firefox',
-            doc('#search input[name="product"]')[0].attrib['value'])
-
-    def test_mobile_home_for_mobile(self):
-        r = self._check_template('home.mobile', 'landings/mobile/mobile.html')
-        doc = pq(r.content)
-        eq_('mobile', doc('#search input[name="q_tags"]')[0].attrib['value'])
-        eq_('mobile', doc('#search input[name="product"]')[0].attrib['value'])
-
     def test_sync_home_for_mobile(self):
         self._check_template('home.sync', 'landings/mobile/sync.html')
 
@@ -63,4 +50,4 @@ class RootRedirectForMobileTests(MobileTestCase):
         response = self.client.get(reverse('home.default', locale='en-US'),
                                    follow=False)
         eq_(302, response.status_code)
-        eq_('http://testserver/en-US/mobile', response['location'])
+        eq_('http://testserver/en-US/products', response['location'])
