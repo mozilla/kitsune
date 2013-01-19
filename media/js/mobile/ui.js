@@ -5,6 +5,18 @@
             $('#page').toggleClass('exposed');
         });
 
+        function showNotification(notification) {
+            $(notification).first().fadeIn(600, function() {
+                $(this).delay(5000).fadeOut(600, function() {
+                    var next = $(this).next();
+                    $(this).remove();
+                    showNotification(next);
+                });
+            });
+        }
+
+        showNotification($('#notifications > li').fadeOut(0));
+
         $(document).on('click', '.overlay > header', function() {
             $(this).closest('.overlay').hide();
         });
