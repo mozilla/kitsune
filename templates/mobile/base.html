@@ -109,6 +109,14 @@
       {% block footer %}
       {% endblock %}
     </footer>
+
+    {% if messages %}
+      <ul id="notifications">
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
   </div>
 </div>
 
