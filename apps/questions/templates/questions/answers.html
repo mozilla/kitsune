@@ -170,7 +170,7 @@
 
       {% set products = question.products.all() %}
       {% if products %}
-        <div class="sidebox tight">
+        <div class="sidebox tight condensed">
           <span class="title">{{ _('Product') }}</span>
           {% for p in products %}
             {{ p.title }}
@@ -181,7 +181,7 @@
 
       {% set topics = question.topics.all() %}
       {% if topics %}
-        <div class="sidebox tight">
+        <div class="sidebox tight condensed">
           <span class="title">{{ _('Topic') }}</span>
           {% for t in topics %}
             {{ t.title }}
