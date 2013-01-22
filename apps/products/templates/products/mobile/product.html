@@ -8,6 +8,24 @@
 {% block title %}{{ _('{product} Help')|f(product=_(product.title, 'DB: products.Product.title')) }}{% endblock %}
 
 {% block content %}
+  {% if docs or fallback_docs %}
+    <div id="hot-topics" class="collapsable expanded">
+      <h2 class="toggle">{{ _('Hot Topics') }}</h2>
+      <article>
+        <ul>
+          {% for doc in docs %}
+            <li><a href="{{ doc['url'] }}">{{ doc['document_title'] }}</a></li>
+          {% endfor %}
+          {% if fallback_docs %}
+            <li class="fallback">{{ _('In English') }}</li>
+            {% for doc in fallback_docs %}
+              <li><a href="{{ doc['url']|replace('/'+ settings.WIKI_DEFAULT_LANGUAGE +'/', '/' + request.locale + '/') }}">{{ doc['document_title'] }}</a></li>
+            {% endfor %}
+          {% endif %}
+        </ul>
+      </article>
+    </div>
+  {% endif %}
   <ul id="topics">
     {% for topic in topics[:5] %}
       <li>

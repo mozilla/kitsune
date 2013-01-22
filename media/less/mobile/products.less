@@ -59,6 +59,62 @@
   }
 }
 
+#hot-topics {
+  background: @mobileNavBackground url("../../img/grain.png");
+
+  h2 {
+    .linear-gradient-top(#253132, #2c393b, 0, #253132, 100%, url('../../img/grain.png'));
+    color: #fff;
+    font-family: @Moz;
+    font-size: 18px;
+    font-weight: normal;
+    margin: 0;
+    padding: 10px 16px;
+
+    &:after {
+      background: url('../../img/mobile/icons-sprite.png') -52px -552px no-repeat;
+      content: '';
+      float: right;
+      height: 12px;
+      margin-top: 5px;
+      width: 20px;
+    }
+  }
+
+  &.expanded {
+    h2 {
+      &:after {
+        background-position: -52px -427px;
+      }
+    }
+  }
+
+  ul {
+    color: #fff;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+
+    > li {
+      border-bottom: 1px solid #929E9E;
+
+      &:last-of-type {
+        border-bottom: 0;
+      }
+
+      &.fallback {
+        padding: 10px 16px;
+      }
+
+      a {
+        color:  #fff;
+        display: block;
+        padding: 10px 16px;
+      }
+    }
+  }
+}
+
 #products,
 #topics {
   font-size: 14px;
@@ -91,4 +147,13 @@
 
 #topics {
   font-size: 18px;
+}
+
+@media only screen and (-webkit-min-device-pixel-ratio: 2), only screen and (min-device-pixel-ratio: 2) {
+  h2 {
+    &:after {
+      background-image: url('../../img/mobile/icons-sprite-2x.png');
+      .background-size(124px 620px);
+    }
+  }
 }
