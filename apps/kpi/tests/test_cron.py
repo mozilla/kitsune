@@ -4,7 +4,8 @@ from mock import patch
 from nose.tools import eq_
 
 import kpi.cron
-from kpi.cron import update_visitors_metric, update_l10n_metric, Webtrends
+from kpi.cron import (update_visitors_metric, update_l10n_metric, Webtrends,
+                      googleanalytics)
 from kpi.models import Metric, VISITORS_METRIC_CODE, L10N_METRIC_CODE
 from kpi.tests import metric_kind
 from sumo.tests import TestCase
@@ -14,11 +15,11 @@ from wiki.tests import document, revision
 
 
 class CronJobTests(TestCase):
-    @patch.object(Webtrends, 'visits')
-    def test_update_visitors_cron(self, visits):
+    @patch.object(googleanalytics, 'visitors')
+    def test_update_visitors_cron(self, visitors):
         """Verify the cron job inserts the right rows."""
         visitor_kind = metric_kind(code=VISITORS_METRIC_CODE, save=True)
-        visits.return_value = {'2012-01-13': 42,
+        visitors.return_value = {'2012-01-13': 42,
                                '2012-01-14': 193,
                                '2012-01-15': 33}
 

@@ -16,6 +16,7 @@ from kpi.models import (Metric, MetricKind,
                         SUPPORT_FORUM_CONTRIBUTORS_METRIC_CODE,
                         VISITORS_METRIC_CODE)
 from questions.models import Answer
+from sumo import googleanalytics
 from sumo.webtrends import Webtrends
 from wiki.config import TYPO_SIGNIFICANCE, MEDIUM_SIGNIFICANCE
 from wiki.models import Revision
@@ -23,7 +24,7 @@ from wiki.models import Revision
 
 @cronjobs.register
 def update_visitors_metric():
-    """Get new visitor data from webtrends and save."""
+    """Get new visitor data from Google Analytics and save."""
     # Start updating the day after the last updated.
     latest_metric = _get_latest_metric(VISITORS_METRIC_CODE)
     if latest_metric is not None:
@@ -35,8 +36,8 @@ def update_visitors_metric():
     # Collect up until yesterday
     end = date.today() - timedelta(days=1)
 
-    # Get the visitor data from webtrends.
-    visitors = Webtrends.visits(start, end)
+    # Get the visitor data from Google Analytics.
+    visitors = googleanalytics.visitors(start, end)
 
     # Create the metrics.
     metric_kind = MetricKind.objects.get(code=VISITORS_METRIC_CODE)
