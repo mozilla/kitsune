@@ -40,29 +40,3 @@ def visitors(start_date, end_date):
             metrics='ga:visitors').execute()['rows'][0][0])
         date += timedelta(days=1)
     return visitors
-
-
-def visitors_by_locale(start_date, end_date):
-    """Return the number of unique visits by locale in a given date range.
-
-    Returns a dict with visits for each locale:
-        {u'en-US': 7683415,
-         u'de': 1293052,
-         u'es': 830521,...}
-    """
-    visits_by_locale = {}
-    request = _build_request()
-    results = request.get(
-        ids='ga:' + profile_id,
-        start_date=str(start_date),
-        end_date=str(end_date),
-        metrics='ga:visitors',
-        dimensions='ga:pagePathLevel1').execute()
-
-    for result in results['rows']:
-        path = result[0][1:-1]  # Strip leading and trailing slash.
-        visitors = int(result[1])
-        if path in settings.SUMO_LANGUAGES:
-            visits_by_locale[path] = visitors
-
-    return visits_by_locale
