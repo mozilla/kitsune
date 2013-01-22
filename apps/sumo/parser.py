@@ -1,7 +1,7 @@
 from django.conf import settings
 
 import jingo
-from tower import ugettext_lazy as _lazy
+from tower import ugettext_lazy as _lazy, ugettext as _
 from wikimarkup.parser import Parser
 
 from gallery.models import Image
@@ -234,12 +234,14 @@ class WikiParser(Parser):
             return u'<a href="%s">%s</a>' % (hash, text)
 
         link = _get_wiki_link(title, self.locale)
-        a_cls = ''
+        extra_a_attr = ''
         if not link['found']:
-            a_cls = ' class="new"'
+            extra_a_attr += (' class="new" title="{tooltip}"'
+                             .format(tooltip=_('Page does not exist.')))
         if not text:
             text = link['text']
-        return u'<a href="%s%s"%s>%s</a>' % (link['url'], hash, a_cls, text)
+        return u'<a href="{url}{hash}"{extra}>{text}</a>'.format(
+            url=link['url'], hash=hash, extra=extra_a_attr, text=text)
 
     def _hook_image_tag(self, parser, space, name):
         """Adds syntax for inserting images."""
