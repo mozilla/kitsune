@@ -92,9 +92,8 @@ Configuration
 Most of our ``settings.py`` is under version control, but can be
 overridden in a file called ``settings_local.py`` in the base of the
 app (the same place as ``settings.py``). You can see example settings
-in ``settings/settings_local.prod.py>``:
+in the :ref:`hacking-howto-chapter`.
 
-.. literalinclude:: settings/settings_local.prod.py
 
 
 File Permissions
