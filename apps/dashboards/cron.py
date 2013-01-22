@@ -15,7 +15,8 @@ def reload_wiki_traffic_stats():
 
     for period, _ in PERIODS:
         try:
-            WikiDocumentVisits.reload_period_from_analytics(period)
+            WikiDocumentVisits.reload_period_from_json(
+                     period, WikiDocumentVisits.json_for(period))
         except:
             transaction.rollback()
             raise

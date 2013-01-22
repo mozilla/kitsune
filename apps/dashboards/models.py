@@ -1,5 +1,5 @@
+import json
 import logging
-from datetime import date, timedelta
 
 from django.conf import settings
 from django.contrib.auth.models import Group
@@ -11,27 +11,28 @@ from dashboards import (LAST_7_DAYS, LAST_30_DAYS, LAST_90_DAYS, ALL_TIME,
                         PERIODS)
 from dashboards.personal import GROUP_DASHBOARDS
 from sumo.models import ModelBase
-from sumo import googleanalytics
+from sumo.webtrends import Webtrends, StatsException
 from wiki.models import Document
 
 
 log = logging.getLogger('k.dashboards')
 
 
-def period_dates(period):
-    """Return when each period begins and ends."""
-    end = date.today() - timedelta(days=1)  # yesterday
+def period_dates():
+    """Return when each period begins and ends, relative to now.
 
-    if period == LAST_7_DAYS:
-        start = end - timedelta(days=7)
-    elif period == LAST_30_DAYS:
-        start = end - timedelta(days=30)
-    elif period == LAST_90_DAYS:
-        start = end - timedelta(days=90)
-    elif ALL_TIME:
-        start = settings.GA_START_DATE
+    Return values are in the format WebTrends likes: "2010m01d30" or
+    "current_day-7".
 
-    return start, end
+    """
+    # WebTrends' server apparently runs in UTC, FWIW.
+    yesterday = 'current_day-1'  # Start at yesterday so we get a full week of
+                                 # data.
+    return {LAST_7_DAYS: ('current_day-7', yesterday),
+            LAST_30_DAYS: ('current_day-30', yesterday),
+            LAST_90_DAYS: ('current_day-90', yesterday),
+            ALL_TIME: (settings.WEBTRENDS_EPOCH.strftime('%Ym%md%d'),
+                       yesterday)}
 
 
 class WikiDocumentVisits(ModelBase):
@@ -45,9 +46,9 @@ class WikiDocumentVisits(ModelBase):
         unique_together = ('period', 'document')
 
     @classmethod
-    def reload_period_from_analytics(cls, period):
-        """Replace the stats for the given period from Google Analytics."""
-        counts = googleanalytics.pageviews_by_document(*period_dates(period))
+    def reload_period_from_json(cls, period, json_data):
+        """Replace the stats for the given period with the given JSON."""
+        counts = cls._visit_counts(json_data)
         if counts:
             # Delete and remake the rows:
             # Horribly inefficient until
@@ -58,8 +59,61 @@ class WikiDocumentVisits(ModelBase):
                                    period=period)
         else:
             # Don't erase interesting data if there's nothing to replace it:
-            log.warning('Google Analytics returned no interesting data,'
-                        ' so I kept what I had.')
+            log.warning('WebTrends returned no interesting data, so I kept '
+                        'what I had.')
+
+    @classmethod
+    def _visit_counts(cls, json_data):
+        """Given WebTrends JSON data, return a dict of doc IDs and visits:
+
+            {document ID: number of visits, ...}
+
+        If there is no interesting data in the given JSON, return {}.
+
+        """
+        # We're very defensive here, as WebTrends has been known to return
+        # invalid garbage of various sorts.
+        try:
+            data = json.loads(json_data)['data']
+        except (ValueError, KeyError, TypeError):
+            raise StatsException('Error extracting data from WebTrends JSON')
+
+        try:
+            pages = (data[data.keys()[0]]['SubRows'] if data.keys()
+                     else {}).iteritems()
+        except (AttributeError, IndexError, KeyError, TypeError):
+            raise StatsException('Error extracting pages from WebTrends data')
+
+        counts = {}
+        for url, page_info in pages:
+            doc = Document.from_url(
+                url,
+                required_locale=settings.LANGUAGE_CODE,
+                id_only=True,
+                check_host=False)
+            if not doc:
+                continue
+
+            # Get visit count:
+            try:
+                visits = int(page_info['measures']['Visits'])
+            except (ValueError, KeyError, TypeError):
+                continue
+
+            # Sometimes WebTrends repeats a URL modulo a space, .com vs .org,
+            # etc. These resolve to the same document so we add them.
+            if doc.pk in counts:
+                counts[doc.pk] += visits
+            else:
+                counts[doc.pk] = visits
+
+        return counts
+
+    @classmethod
+    def json_for(cls, period):
+        """Return the JSON-formatted WebTrends stats for the given period."""
+        start, end = period_dates()[period]
+        return Webtrends.wiki_report(start, end)
 
 
 class GroupDashboard(ModelBase):
