@@ -967,6 +967,7 @@ WEBTRENDS_EPOCH = date(2010, 8, 1)  # When WebTrends started gathering
 GA_KEY = 'longkey'  # Google API client key
 GA_ACCOUNT = 'something@developer.gserviceaccount.com'  # Google API Service Account email address
 GA_PROFILE_ID = '12345678'  # Google Analytics profile id for SUMO prod
+GA_START_DATE = date(2012, 11, 10)
 
 MOBILE_COOKIE = 'msumo'
 MOBILE_USER_AGENTS = 'android|fennec|mobile|iphone|opera (?:mini|mobi)'
