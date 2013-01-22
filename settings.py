@@ -944,6 +944,14 @@ TIDINGS_REVERSE = 'sumo.urlresolvers.reverse'
 CHAT_SERVER = 'https://chat-support.mozilla.com:9091'
 CHAT_CACHE_KEY = 'sumo-chat-queue-status'
 
+# Webtrends settings.
+WEBTRENDS_PROFILE_ID = 'ABC123'  # Profile id for SUMO
+WEBTRENDS_WIKI_REPORT_URL = 'https://example.com/see_production.rst'
+WEBTRENDS_USER = r'someaccount\someusername'
+WEBTRENDS_PASSWORD = 'password'
+WEBTRENDS_EPOCH = date(2010, 8, 1)  # When WebTrends started gathering stats on
+                                    # the KB
+
 # Google Analytics settings.
 GA_KEY = 'longkey'  # Google API client key
 GA_ACCOUNT = 'something@developer.gserviceaccount.com'  # Google API Service Account email address
