@@ -192,7 +192,6 @@ class NotificationsTests(KBForumTestCase):
 
         u = user(save=True)
         d = document(title='an article title', save=True)
-        #t = thread(title='Sticky Thread', document=d, save=True)
         f = self._toggle_watch_kbforum_as(u.username, d, turn_on=True)
         t = thread(title='Sticky Thread', document=d, save=True)
         u2 = user(username='jsocol', save=True)
