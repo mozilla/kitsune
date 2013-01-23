@@ -41,8 +41,6 @@ AAQSystemInfo.prototype = {
         $('a.expander').on('click', function(ev) {
             ev.preventDefault();
             var selector = $(this).attr('href');
-            console.log(selector);
-            console.log($(selector));
             $(selector).fadeToggle();
         });
 
@@ -50,7 +48,6 @@ AAQSystemInfo.prototype = {
         $('#install-troubleshooting-addon .btn').on('click', function(ev) {
             if (!addOnInstalling) {
                 // Do not prevent default.
-                console.log(this);
                 $(this).toggleClass('btn-important btn-submit')
                     .text('Click here when installation is complete.');
                 addOnInstalling = true;
@@ -146,11 +143,11 @@ AAQSystemInfo.prototype = {
             // No trouble shooting form, so no point. Bail out.
             return;
         }
-        console.log('checking for the addon');
         if (window.mozTroubleshoot !== undefined) {
             // Yeah! The user has the addon installed, let's use it.
             $('#install-troubleshooting-addon').remove();
             window.mozTroubleshoot.snapshotJSON(function(json) {
+                // This parse/stringify trick makes `json` pretty printed.
                 json = JSON.parse(json);
                 json = JSON.stringify(json, null, "  ");
                 $('#id_troubleshooting').val(json).prop('disabled', true);
