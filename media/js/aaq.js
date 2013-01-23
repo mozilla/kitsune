@@ -1,3 +1,4 @@
+/*globals console, BrowserDetect, gettext*/
 /*
  * Prepopulate system info in AAQ form
  */
@@ -35,6 +36,20 @@ AAQSystemInfo.prototype = {
                 $input.val(self.getPlugins());
             }
         }
+
+        // Expanders.
+        $('a.expander').on('click', function(ev) {
+            ev.preventDefault();
+            var selector = $(this).attr('href');
+            $(selector).fadeToggle();
+        });
+
+        $('#troubleshooting-install .btn').on('click', function(ev) {
+            // Do not prevent default.
+            $(this).toggleClass('btn-important btn-disable').html(gettext('Installing...'));
+        });
+
+        self.getTroubleshootingInfo();
     },
     getOS: function() {
         // Returns a string representing the user's operating system
@@ -113,6 +128,33 @@ AAQSystemInfo.prototype = {
     isMobileFF: function() {
         // Is the question for FF on mobile?
         return document.location.pathname.indexOf('mobile') >= 0;
+    },
+    getTroubleshootingInfo: function(addEvent) {
+        var self = this;
+        if (addEvent === undefined) addEvent = true;
+        // If the troubleshoot input exists, try to find the extension.
+        if ($('#id_troubleshooting').length === 0) {
+            // No troubleshooting form, so no point in looking for the plugin.
+            return;
+        }
+        if ('mozTroubleshoot' in window) {
+            // Yeah! The user has the addon installed, let's use it.
+            $('#troubleshooting-install').remove();
+            window.mozTroubleshoot.snapshotJSON(function(json) {
+                // This parse/stringify trick makes `json` pretty printed.
+                json = JSON.parse(json);
+                json = JSON.stringify(json, null, "  ");
+                $('#id_troubleshooting').val(json).prop('disabled', true);
+                $('#troubleshooting-manual').remove();
+                $('#troubleshooting-explanation').show();
+            });
+        } else {
+            if (addEvent) {
+                // Well, the user might install it later, so set up a listener.
+                window.addEventListener('mozTroubleshootDidBecomeAvailable',
+                    self.getTroubleshootingInfo.bind(self, false));
+            }
+        }
     }
 };
 
