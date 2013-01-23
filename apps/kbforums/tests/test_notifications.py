@@ -7,10 +7,11 @@ from nose.tools import eq_
 
 from kbforums.events import NewPostEvent, NewThreadEvent
 from kbforums.models import Thread, Post
-from kbforums.tests import KBForumTestCase
+from kbforums.tests import KBForumTestCase, thread
 from sumo.tests import post, attrs_eq, starts_with
 from users.models import Setting
-from wiki.models import Document
+from users.tests import user
+from wiki.tests import document
 
 
 # Some of these contain a locale prefix on included links, while others don't.
@@ -30,7 +31,7 @@ a post
 To view this post on the site, click the following link, or
 paste it into your browser's location bar:
 
-https://testserver/en-US/kb/article-title/discuss/2#post-%s
+https://testserver/en-US/kb/%s/discuss/%s#post-%s
 
 --
 Unsubscribe from these emails:
@@ -49,7 +50,7 @@ a post
 To view this post on the site, click the following link, or
 paste it into your browser's location bar:
 
-https://testserver/en-US/kb/article-title/discuss/%s
+https://testserver/en-US/kb/%s/discuss/%s
 
 --
 Unsubscribe from these emails:
@@ -62,8 +63,9 @@ class NotificationsTests(KBForumTestCase):
     @mock.patch.object(NewPostEvent, 'fire')
     def test_fire_on_reply(self, fire):
         """The event fires when there is a reply."""
-        t = Thread.objects.get(pk=2)
-        self.client.login(username='jsocol', password='testpass')
+        t = thread(save=True)
+        u = user(save=True)
+        self.client.login(username=u.username, password='testpass')
         post(self.client, 'wiki.discuss.reply', {'content': 'a post'},
              args=[t.document.slug, t.id])
         # NewPostEvent.fire() is called.
@@ -72,17 +74,17 @@ class NotificationsTests(KBForumTestCase):
     @mock.patch.object(NewThreadEvent, 'fire')
     def test_fire_on_new_thread(self, fire):
         """The event fires when there is a new thread."""
-        d = Document.objects.get(pk=1)
-        self.client.login(username='jsocol', password='testpass')
+        d = document(save=True)
+        u = user(save=True)
+        self.client.login(username=u.username, password='testpass')
         post(self.client, 'wiki.discuss.new_thread',
              {'title': 'a title', 'content': 'a post'},
              args=[d.slug])
         # NewThreadEvent.fire() is called.
         assert fire.called
 
-    def _toggle_watch_thread_as(self, username, turn_on=True, thread_id=2):
+    def _toggle_watch_thread_as(self, username, thread, turn_on=True):
         """Watch a thread and return it."""
-        thread = Thread.objects.get(pk=thread_id)
         self.client.login(username=username, password='testpass')
         user = User.objects.get(username=username)
         watch = 'yes' if turn_on else 'no'
@@ -91,15 +93,14 @@ class NotificationsTests(KBForumTestCase):
         # Watch exists or not, depending on watch.
         if turn_on:
             assert NewPostEvent.is_notifying(user, thread), (
-                   'NewPostEvent should be notifying.')
+                'NewPostEvent should be notifying.')
         else:
             assert not NewPostEvent.is_notifying(user, thread), (
-                   'NewPostEvent should not be notifying.')
+                'NewPostEvent should not be notifying.')
         return thread
 
-    def _toggle_watch_kbforum_as(self, username, turn_on=True, document_id=1):
+    def _toggle_watch_kbforum_as(self, username, document, turn_on=True):
         """Watch a discussion forum and return it."""
-        document = Document.objects.get(pk=document_id)
         self.client.login(username=username, password='testpass')
         user = User.objects.get(username=username)
         watch = 'yes' if turn_on else 'no'
@@ -108,35 +109,43 @@ class NotificationsTests(KBForumTestCase):
         # Watch exists or not, depending on watch.
         if turn_on:
             assert NewThreadEvent.is_notifying(user, document), (
-                   'NewThreadEvent should be notifying.')
+                'NewThreadEvent should be notifying.')
         else:
-            assert not NewPostEvent.is_notifying(user, document), (
-                   'NewThreadEvent should not be notifying.')
+            assert not NewThreadEvent.is_notifying(user, document), (
+                'NewThreadEvent should not be notifying.')
         return document
 
     @mock.patch.object(Site.objects, 'get_current')
     def test_watch_thread_then_reply(self, get_current):
         """The event fires and sends emails when watching a thread."""
         get_current.return_value.domain = 'testserver'
-
-        t = self._toggle_watch_thread_as('pcraciunoiu', turn_on=True)
-        self.client.login(username='jsocol', password='testpass')
+        u = user(username='jsocol', save=True)
+        u_b = user(username='berkerpeksag', save=True)
+        d = document(title='an article title', save=True)
+        _t = thread(title='Sticky Thread', document=d, is_sticky=True,
+                    save=True)
+        t = self._toggle_watch_thread_as(u_b.username, _t, turn_on=True)
+        self.client.login(username=u.username, password='testpass')
         post(self.client, 'wiki.discuss.reply', {'content': 'a post'},
              args=[t.document.slug, t.id])
 
         p = Post.objects.all().order_by('-id')[0]
-        attrs_eq(mail.outbox[0], to=['user47963@nowhere'],
+        print mail.outbox[0]
+        attrs_eq(mail.outbox[0], to=[u_b.email],
                  subject='Re: an article title - Sticky Thread')
-        starts_with(mail.outbox[0].body, REPLY_EMAIL % p.id)
+        starts_with(mail.outbox[0].body, REPLY_EMAIL % (d.slug, t.id, p.id))
 
-        self._toggle_watch_thread_as('pcraciunoiu', turn_on=False)
+        self._toggle_watch_thread_as(u_b.username, _t, turn_on=False)
 
     def test_watch_other_thread_then_reply(self):
         """Watching a different thread than the one we're replying to shouldn't
         notify."""
-        t = self._toggle_watch_thread_as('pcraciunoiu', turn_on=True)
-        t2 = Thread.objects.exclude(pk=t.pk)[0]
-        self.client.login(username='jsocol', password='testpass')
+        u_b = user(username='berkerpeksag', save=True)
+        _t = thread(save=True)
+        self._toggle_watch_thread_as(u_b.username, _t, turn_on=True)
+        u = user(save=True)
+        t2 = thread(save=True)
+        self.client.login(username=u.username, password='testpass')
         post(self.client, 'wiki.discuss.reply', {'content': 'a post'},
              args=[t2.document.slug, t2.id])
 
@@ -147,17 +156,20 @@ class NotificationsTests(KBForumTestCase):
         """Watching a forum and creating a new thread should send email."""
         get_current.return_value.domain = 'testserver'
 
-        f = self._toggle_watch_kbforum_as('pcraciunoiu', turn_on=True)
-        self.client.login(username='jsocol', password='testpass')
+        u = user(save=True)
+        d = document(title='an article title', save=True)
+        f = self._toggle_watch_kbforum_as(u.username, d, turn_on=True)
+        u2 = user(username='jsocol', save=True)
+        self.client.login(username=u2.username, password='testpass')
         post(self.client, 'wiki.discuss.new_thread',
              {'title': 'a title', 'content': 'a post'}, args=[f.slug])
 
         t = Thread.objects.all().order_by('-id')[0]
-        attrs_eq(mail.outbox[0], to=['user47963@nowhere'],
+        attrs_eq(mail.outbox[0], to=[u.email],
                  subject=u'an article title - a title')
-        starts_with(mail.outbox[0].body, NEW_THREAD_EMAIL % t.id)
+        starts_with(mail.outbox[0].body, NEW_THREAD_EMAIL % (d.slug, t.id))
 
-        self._toggle_watch_kbforum_as('pcraciunoiu', turn_on=False)
+        self._toggle_watch_kbforum_as(u.username, d, turn_on=False)
 
     @mock.patch.object(Site.objects, 'get_current')
     def test_watch_forum_then_new_thread_as_self(self, get_current):
@@ -165,8 +177,10 @@ class NotificationsTests(KBForumTestCase):
         send email."""
         get_current.return_value.domain = 'testserver'
 
-        f = self._toggle_watch_kbforum_as('pcraciunoiu', turn_on=True)
-        self.client.login(username='pcraciunoiu', password='testpass')
+        u = user(save=True)
+        d = document(save=True)
+        f = self._toggle_watch_kbforum_as(u.username, d, turn_on=True)
+        self.client.login(username=u.username, password='testpass')
         post(self.client, 'wiki.discuss.new_thread',
              {'title': 'a title', 'content': 'a post'}, args=[f.slug])
         # Assert no email is sent.
@@ -177,25 +191,31 @@ class NotificationsTests(KBForumTestCase):
         """Watching a forum and replying to a thread should send email."""
         get_current.return_value.domain = 'testserver'
 
-        f = self._toggle_watch_kbforum_as('pcraciunoiu', turn_on=True)
-        t = f.thread_set.all()[0]
-        self.client.login(username='jsocol', password='testpass')
+        u = user(save=True)
+        d = document(title='an article title', save=True)
+        #t = thread(title='Sticky Thread', document=d, save=True)
+        f = self._toggle_watch_kbforum_as(u.username, d, turn_on=True)
+        t = thread(title='Sticky Thread', document=d, save=True)
+        u2 = user(username='jsocol', save=True)
+        self.client.login(username=u2.username, password='testpass')
         post(self.client, 'wiki.discuss.reply', {'content': 'a post'},
              args=[f.slug, t.id])
 
         p = Post.objects.all().order_by('-id')[0]
-        attrs_eq(mail.outbox[0], to=['user47963@nowhere'],
+        attrs_eq(mail.outbox[0], to=[u.email],
                  subject='Re: an article title - Sticky Thread')
-        starts_with(mail.outbox[0].body, REPLY_EMAIL % p.id)
+        starts_with(mail.outbox[0].body, REPLY_EMAIL % (d.slug, t.id, p.id))
 
     @mock.patch.object(Site.objects, 'get_current')
     def test_watch_forum_then_new_post_as_self(self, get_current):
         """Watching a forum and replying as myself should not send email."""
         get_current.return_value.domain = 'testserver'
 
-        f = self._toggle_watch_kbforum_as('pcraciunoiu', turn_on=True)
-        t = f.thread_set.all()[0]
-        self.client.login(username='pcraciunoiu', password='testpass')
+        u = user(save=True)
+        d = document(title='an article title', save=True)
+        f = self._toggle_watch_kbforum_as(u.username, d, turn_on=True)
+        t = thread(document=d, save=True)
+        self.client.login(username=u.username, password='testpass')
         post(self.client, 'wiki.discuss.reply', {'content': 'a post'},
              args=[f.slug, t.id])
         # Assert no email is sent.
@@ -206,70 +226,74 @@ class NotificationsTests(KBForumTestCase):
         """Watching both and replying to a thread should send ONE email."""
         get_current.return_value.domain = 'testserver'
 
-        f = self._toggle_watch_kbforum_as('pcraciunoiu', turn_on=True)
-        t = f.thread_set.all()[0]
-        self._toggle_watch_thread_as('pcraciunoiu', turn_on=True,
-                                     thread_id=t.id)
-        self.client.login(username='jsocol', password='testpass')
+        u = user(save=True)
+        d = document(title='an article title', save=True)
+        f = self._toggle_watch_kbforum_as(u.username, d, turn_on=True)
+        t = thread(title='Sticky Thread', document=d, save=True)
+        self._toggle_watch_thread_as(u.username, t, turn_on=True)
+        u2 = user(username='jsocol', save=True)
+        self.client.login(username=u2.username, password='testpass')
         post(self.client, 'wiki.discuss.reply', {'content': 'a post'},
              args=[f.slug, t.id])
 
         eq_(1, len(mail.outbox))
         p = Post.objects.all().order_by('-id')[0]
-        attrs_eq(mail.outbox[0], to=['user47963@nowhere'],
+        attrs_eq(mail.outbox[0], to=[u.email],
                  subject='Re: an article title - Sticky Thread')
-        starts_with(mail.outbox[0].body, REPLY_EMAIL % p.id)
+        starts_with(mail.outbox[0].body, REPLY_EMAIL % (d.slug, t.id, p.id))
 
-        self._toggle_watch_kbforum_as('pcraciunoiu', turn_on=False)
-        self._toggle_watch_thread_as('pcraciunoiu', turn_on=False)
+        self._toggle_watch_kbforum_as(u.username, d, turn_on=False)
+        self._toggle_watch_thread_as(u.username, t, turn_on=False)
 
     @mock.patch.object(Site.objects, 'get_current')
     def test_watch_locale_then_new_post(self, get_current):
         """Watching locale and reply to a thread."""
         get_current.return_value.domain = 'testserver'
 
-        d = Document.objects.filter(locale='en-US')[0]
-        t = d.thread_set.all()[0]
-        # Log in as pcraciunoiu.
-        self.client.login(username='pcraciunoiu', password='testpass')
+        d = document(title='an article title', locale='en-US', save=True)
+        t = thread(document=d, title='Sticky Thread', save=True)
+        u = user(save=True)
+        self.client.login(username=u.username, password='testpass')
         post(self.client, 'wiki.discuss.watch_locale', {'watch': 'yes'})
 
         # Reply as jsocol to document d.
-        self.client.login(username='jsocol', password='testpass')
+        u2 = user(username='jsocol', save=True)
+        self.client.login(username=u2.username, password='testpass')
         post(self.client, 'wiki.discuss.reply', {'content': 'a post'},
              args=[d.slug, t.id])
 
         # Email was sent as expected.
         eq_(1, len(mail.outbox))
         p = Post.objects.all().order_by('-id')[0]
-        attrs_eq(mail.outbox[0], to=['user47963@nowhere'],
+        attrs_eq(mail.outbox[0], to=[u.email],
                  subject='Re: an article title - Sticky Thread')
-        starts_with(mail.outbox[0].body, REPLY_EMAIL % p.id)
+        starts_with(mail.outbox[0].body, REPLY_EMAIL % (d.slug, t.id, p.id))
 
     @mock.patch.object(Site.objects, 'get_current')
     def test_watch_all_then_new_post(self, get_current):
         """Watching document + thread + locale and reply to thread."""
         get_current.return_value.domain = 'testserver'
 
-        d = self._toggle_watch_kbforum_as('pcraciunoiu', turn_on=True)
-        t = d.thread_set.all()[0]
-        self._toggle_watch_thread_as('pcraciunoiu', turn_on=True,
-                                     thread_id=t.id)
-        # Log in as pcraciunoiu.
-        self.client.login(username='pcraciunoiu', password='testpass')
+        u = user(save=True)
+        _d = document(title='an article title', save=True)
+        d = self._toggle_watch_kbforum_as(u.username, _d, turn_on=True)
+        t = thread(title='Sticky Thread', document=d, save=True)
+        self._toggle_watch_thread_as(u.username, t, turn_on=True)
+        self.client.login(username=u.username, password='testpass')
         post(self.client, 'wiki.discuss.watch_locale', {'watch': 'yes'})
 
         # Reply as jsocol to document d.
-        self.client.login(username='jsocol', password='testpass')
+        u2 = user(username='jsocol', save=True)
+        self.client.login(username=u2.username, password='testpass')
         post(self.client, 'wiki.discuss.reply', {'content': 'a post'},
              args=[d.slug, t.id])
 
         # Only ONE email was sent. As expected.
         eq_(1, len(mail.outbox))
         p = Post.objects.all().order_by('-id')[0]
-        attrs_eq(mail.outbox[0], to=['user47963@nowhere'],
+        attrs_eq(mail.outbox[0], to=[u.email],
                  subject='Re: an article title - Sticky Thread')
-        starts_with(mail.outbox[0].body, REPLY_EMAIL % p.id)
+        starts_with(mail.outbox[0].body, REPLY_EMAIL % (d.slug, t.id, p.id))
 
     @mock.patch.object(Site.objects, 'get_current')
     def test_watch_other_locale_then_new_thread(self, get_current):
@@ -277,14 +301,14 @@ class NotificationsTests(KBForumTestCase):
         notify."""
         get_current.return_value.domain = 'testserver'
 
-        d = Document.objects.filter(locale='en-US')[0]
-        # Log in as pcraciunoiu.
-        self.client.login(username='pcraciunoiu', password='testpass')
+        d = document(locale='en-US', save=True)
+        u = user(username='berkerpeksag', save=True)
+        self.client.login(username=u.username, password='testpass')
         post(self.client, 'wiki.discuss.watch_locale', {'watch': 'yes'},
              locale='ja')
 
-        # Create new thread as jsocol for document d.
-        self.client.login(username='jsocol', password='testpass')
+        u2 = user(save=True)
+        self.client.login(username=u2.username, password='testpass')
         post(self.client, 'wiki.discuss.new_thread',
              {'title': 'a title', 'content': 'a post'}, args=[d.slug])
 
@@ -296,66 +320,67 @@ class NotificationsTests(KBForumTestCase):
         """Watching locale and create a thread."""
         get_current.return_value.domain = 'testserver'
 
-        d = Document.objects.filter(locale='en-US')[0]
-        # Log in as pcraciunoiu.
-        self.client.login(username='pcraciunoiu', password='testpass')
+        d = document(title='an article title', locale='en-US', save=True)
+        u = user(username='berkerpeksag', save=True)
+        self.client.login(username=u.username, password='testpass')
         post(self.client, 'wiki.discuss.watch_locale', {'watch': 'yes'})
 
-        # Create new thread as jsocol for document d.
-        self.client.login(username='jsocol', password='testpass')
+        u2 = user(username='jsocol', save=True)
+        self.client.login(username=u2.username, password='testpass')
         post(self.client, 'wiki.discuss.new_thread',
              {'title': 'a title', 'content': 'a post'}, args=[d.slug])
 
         # Email was sent as expected.
         t = Thread.objects.all().order_by('-id')[0]
-        attrs_eq(mail.outbox[0], to=['user47963@nowhere'],
+        attrs_eq(mail.outbox[0], to=[u.email],
                  subject=u'an article title - a title')
-        starts_with(mail.outbox[0].body, NEW_THREAD_EMAIL % t.id)
+        starts_with(mail.outbox[0].body, NEW_THREAD_EMAIL % (d.slug, t.id))
 
     @mock.patch.object(Site.objects, 'get_current')
     def test_autowatch_new_thread(self, get_current):
         """Creating a new thread should email responses"""
         get_current.return_value.domain = 'testserver'
 
-        d = Document.objects.all()[0]
-        self.client.login(username='jsocol', password='testpass')
-        user = User.objects.get(username='jsocol')
-        s = Setting.objects.create(user=user, name='kbforums_watch_new_thread',
+        d = document(save=True)
+        u = user(save=True)
+        self.client.login(username=u.username, password='testpass')
+        s = Setting.objects.create(user=u, name='kbforums_watch_new_thread',
                                    value='False')
         data = {'title': 'a title', 'content': 'a post'}
         post(self.client, 'wiki.discuss.new_thread', data, args=[d.slug])
 
-        t1 = Thread.objects.all().order_by('-id')[0]
-        assert not NewPostEvent.is_notifying(user, t1), (
+        t1 = thread(document=d, save=True)
+        assert not NewPostEvent.is_notifying(u, t1), (
             'NewPostEvent should not be notifying.')
 
         s.value = 'True'
         s.save()
         post(self.client, 'wiki.discuss.new_thread', data, args=[d.slug])
         t2 = Thread.uncached.all().order_by('-id')[0]
-        assert NewPostEvent.is_notifying(user, t2), (
+        assert NewPostEvent.is_notifying(u, t2), (
             'NewPostEvent should be notifying')
 
     @mock.patch.object(Site.objects, 'get_current')
     def test_autowatch_reply(self, get_current):
         get_current.return_value.domain = 'testserver'
 
-        user = User.objects.get(username='jsocol')
-        t1, t2 = Thread.objects.filter(is_locked=False)[0:2]
-        assert not NewPostEvent.is_notifying(user, t1)
-        assert not NewPostEvent.is_notifying(user, t2)
+        u = user(save=True)
+        t1 = thread(is_locked=False, save=True)
+        t2 = thread(is_locked=False, save=True)
+        assert not NewPostEvent.is_notifying(u, t1)
+        assert not NewPostEvent.is_notifying(u, t2)
 
-        self.client.login(username='jsocol', password='testpass')
-        s = Setting.objects.create(user=user,
+        self.client.login(username=u.username, password='testpass')
+        s = Setting.objects.create(user=u,
                                    name='kbforums_watch_after_reply',
                                    value='True')
         data = {'content': 'some content'}
         post(self.client, 'wiki.discuss.reply', data,
              args=[t1.document.slug, t1.pk])
-        assert NewPostEvent.is_notifying(user, t1)
+        assert NewPostEvent.is_notifying(u, t1)
 
         s.value = 'False'
         s.save()
         post(self.client, 'wiki.discuss.reply', data,
              args=[t2.document.slug, t2.pk])
-        assert not NewPostEvent.is_notifying(user, t2)
+        assert not NewPostEvent.is_notifying(u, t2)
