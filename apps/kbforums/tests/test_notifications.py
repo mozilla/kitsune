@@ -130,7 +130,6 @@ class NotificationsTests(KBForumTestCase):
              args=[t.document.slug, t.id])
 
         p = Post.objects.all().order_by('-id')[0]
-        print mail.outbox[0]
         attrs_eq(mail.outbox[0], to=[u_b.email],
                  subject='Re: an article title - Sticky Thread')
         starts_with(mail.outbox[0].body, REPLY_EMAIL % (d.slug, t.id, p.id))
