@@ -1,9 +1,5 @@
 {# vim: set ts=2 et sts=2 sw=2: #}
 {% from 'includes/common_macros.html' import search_box, aux_nav with context %}
-{% if not top_link %}
-  {% set top_link = url('home') %}
-{% endif %}
-
 {% if request.locale == settings.WIKI_DEFAULT_LANGUAGE and waffle.flag('surveygizmo') %}
   {% set SURVEY_GIZMOS = (SURVEY_GIZMOS or []) + ['site_survey'] %}
 {% endif %}
