@@ -1,3 +1,4 @@
+/*globals console, BrowserDetect*/
 /*
  * Prepopulate system info in AAQ form
  */
@@ -35,6 +36,31 @@ AAQSystemInfo.prototype = {
                 $input.val(self.getPlugins());
             }
         }
+
+        // Expanders.
+        $('a.expander').on('click', function(ev) {
+            ev.preventDefault();
+            var selector = $(this).attr('href');
+            console.log(selector);
+            console.log($(selector));
+            $(selector).fadeToggle();
+        });
+
+        var addOnInstalling = false;
+        $('#install-troubleshooting-addon .btn').on('click', function(ev) {
+            if (!addOnInstalling) {
+                // Do not prevent default.
+                console.log(this);
+                $(this).toggleClass('btn-important btn-submit')
+                    .text('Click here when installation is complete.');
+                addOnInstalling = true;
+            } else {
+                ev.preventDefault();
+                window.location.reload();
+            }
+        });
+
+        self.getTroubleshootingInfo();
     },
     getOS: function() {
         // Returns a string representing the user's operating system
@@ -113,6 +139,25 @@ AAQSystemInfo.prototype = {
     isMobileFF: function() {
         // Is the question for FF on mobile?
         return document.location.pathname.indexOf('mobile') >= 0;
+    },
+    getTroubleshootingInfo: function() {
+        // If the troubleshoot input exists, try to find the extension.
+        if ($('#id_troubleshooting').count === 0) {
+            // No trouble shooting form, so no point. Bail out.
+            return;
+        }
+        console.log('checking for the addon');
+        if (window.mozTroubleshoot !== undefined) {
+            // Yeah! The user has the addon installed, let's use it.
+            $('#install-troubleshooting-addon').remove();
+            window.mozTroubleshoot.snapshotJSON(function(json) {
+                json = JSON.parse(json);
+                json = JSON.stringify(json, null, "  ");
+                $('#id_troubleshooting').val(json).prop('disabled', true);
+                $('#troubleshooting-manual').remove();
+                $('#troubleshooting-explanation').show();
+            });
+        }
     }
 };
 

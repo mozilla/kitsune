@@ -195,3 +195,47 @@
   {% endif %}
 {%- endmacro %}
 
+
+{% macro troubleshooting_instructions(field) %}
+  <span id="install-troubleshooting-addon">
+    <a href="http://people.mozilla.com/~adw/troubleshooter/troubleshooter-69e870c.xpi"
+        class="btn btn-important" id="install-troubleshooting-addon">
+      {{ _('Automatically add') }}
+    </a>
+    <span>
+      {{ _('A window will open in the top corner. Click <em>Allow</em>, and then click <em>Install</em>.') }}
+    </span>
+  </span>
+  <span id="troubleshooting-manual">
+    {{ _('If the automated way doesn't work,
+         <a class="expander" href="#troubleshooting-help">try these manual steps</a>.') }}
+  </span>
+  <span id="troubleshooting-explanation">
+    {{ _('This field was populated automatically with the add-on called <em>Troubleshooter</em>.') }}
+  </span>
+  <ol id="troubleshooting-help">
+    {% trans %}
+    <li>Open <em>Help &gt; Troubleshooting Information</em>.
+      <ul>
+        <li>Look at the top of your screen, and click the menu item called <em>Help</em>.</li>
+        <li>A small box will open. Click on an item called <em>Troubleshooting Information</em>.</li>
+      </ul>
+    </li>
+    <li>A new window will open. Click on a button called <em>Copy text to clipboard</em>.</li>
+    <li>Paste the info in the text box below.
+      <ul>
+        <li>Click on the empty box above this text.</li>
+        <li>Look at the top of your screen, and click the menu item called <em>Edit</em>.</li>
+        <li>
+          A small box will open. Click on the item called <em>Paste</em>.
+          Alternatively, type <em>Ctrl+V</em> or <em>Command+V</em>.
+        </li>
+        <li>Some text will appear in the empty box.</li>
+      </ul>
+    </li>
+  </ol>
+  {% endtrans %}
+  <p>
+    {{ field }}
+  </p>
+{% endmacro %}

@@ -12,7 +12,8 @@ we can compute the edit-title URL.
 {% extends "questions/base.html" %}
 {% from "layout/errorlist.html" import errorlist %}
 {% from "includes/common_macros.html" import content_editor %}
-{% from "questions/includes/aaq_macros-new.html" import selected_product, selected_category %}
+{% from "questions/includes/aaq_macros-new.html" import selected_product, selected_category,
+    troubleshooting_instructions %}
 {% set classes = 'new-question' %}
 
 {% block content %}
@@ -81,6 +82,8 @@ we can compute the edit-title URL.
                         </div>
                       {% elif field.name == 'content' %}
                         {{ content_editor(field) }}
+                      {% elif field.name == 'troubleshooting' %}
+                        {{ troubleshooting_instructions(field) }}
                       {% else %}
                         {{ field|safe }}
                       {% endif %}
@@ -89,11 +92,11 @@ we can compute the edit-title URL.
                         <p class="help-text">{{ field.help_text|safe }}</p>
                       {% endif %}
                     </li>
-
+                    
                   {% endfor %}
 
                   <li class="submit">
-                    <button type="submit" data-type="submit" class="btn btn-important big">{% block submit_button_value %}Save Question{% endblock %}</button>
+                    <button type="submit" data-type="submit" class="btn btn-submit big">{% block submit_button_value %}Save Question{% endblock %}</button>
                     {% block more_submit_buttons %}{% endblock %}
                   </li>
                 </ol>
