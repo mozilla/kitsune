@@ -195,3 +195,45 @@
   {% endif %}
 {%- endmacro %}
 
+
+{% macro troubleshooting_instructions(field) %}
+  <span id="troubleshooting-install">
+    <a href="/media/addons/troubleshooter.xpi" class="btn btn-important" id="install-troubleshooting-addon">
+      {{ _('Automatically add') }}
+    </a>
+    <span>
+      {{ _('A window will open in the top corner. Click <em>Allow</em>, and then click <em>Install</em>.') }}
+    </span>
+  </span>
+  <span id="troubleshooting-manual">
+    {{ _('If the automated way doesn\'t work, <a class="expander" href="#troubleshooting-help">try these manual steps</a>.') }}
+  </span>
+  <span id="troubleshooting-explanation">
+    {{ _('This field was populated automatically with the add-on called <em>Troubleshooter</em>.') }}
+  </span>
+  <ol id="troubleshooting-help">
+    <li>{{ _('Open <em>Help &gt; Troubleshooting Information</em>.') }}
+      <ul>
+        <li>{{ _('Look at the top of your screen, and click the menu item called <em>Help</em>.') }}</li>
+        <li>{{ _('A small box will open. Click on an item called <em>Troubleshooting Information</em>.') }}</li>
+      </ul>
+    </li>
+    <li>{{ _('A new window will open. Click on a button called <em>Copy text to clipboard</em>.') }}</li>
+    <li>{{ _('Paste the info in the text box below.') }}
+      <ul>
+        <li>{{ _('Click on the empty box above this text.') }}</li>
+        <li>{{ _('Look at the top of your screen, and click the menu item called <em>Edit</em>.') }}</li>
+        <li>
+          {% trans %}
+            A small box will open. Click on the item called <em>Paste</em>.
+            Alternatively, type <em>Ctrl+V</em> or <em>Command+V</em>.
+          {% endtrans %}
+        </li>
+        <li>{{ _('Some text will appear in the empty box.') }}</li>
+      </ul>
+    </li>
+  </ol>
+  <p>
+    {{ field }}
+  </p>
+{% endmacro %}
