@@ -3,7 +3,6 @@
 {% if request.locale == settings.WIKI_DEFAULT_LANGUAGE and waffle.flag('surveygizmo') %}
   {% set SURVEY_GIZMOS = (SURVEY_GIZMOS or []) + ['site_survey'] %}
 {% endif %}
-
 <!DOCTYPE html>
 <html class="no-js" lang="{{ request.locale }}" {% if DIR %}dir="{{ DIR }}"{% endif %}>
 <head>
@@ -66,6 +65,7 @@
       {% else %}
         data-survey-gizmos="[]"
       {% endif %}
+      data-ga-push="{{ ga_push_attribute() }}"
 {% if extra_body_attrs -%}
   {% for attr, val in extra_body_attrs.items() %}{{ attr }}="{{ val }}" {% endfor %}
 {%- endif %}>

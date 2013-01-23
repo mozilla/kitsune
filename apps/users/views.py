@@ -8,7 +8,8 @@ from django.contrib.auth.models import User
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.sites.models import Site
 from django.core import mail
-from django.http import HttpResponsePermanentRedirect, HttpResponseRedirect, Http404
+from django.http import (HttpResponsePermanentRedirect, HttpResponseRedirect,
+                         Http404)
 from django.views.decorators.http import require_http_methods, require_GET
 from django.shortcuts import get_object_or_404
 from django.template.loader import render_to_string
@@ -78,6 +79,8 @@ def login(request, template):
     form = handle_login(request)
 
     if request.user.is_authenticated():
+        # Add a parameter so we know the user just logged in.
+        next_url = urlparams(next_url, fpa=1)  # first page authed
         res = HttpResponseRedirect(next_url)
         max_age = (None if settings.SESSION_EXPIRE_AT_BROWSER_CLOSE
                         else settings.SESSION_COOKIE_AGE)
@@ -132,6 +135,7 @@ def register(request, template, contributor=False):
         })
 
     return user_auth(request, register_form=form)
+
 
 def register_contributor(request):
     """Register a new user from the superheroes page."""
