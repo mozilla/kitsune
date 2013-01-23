@@ -106,6 +106,7 @@ def details(request):
     daterange = form.cleaned_data.get('daterange') or '1y'
     counts = {}
     count_func = mgr.monthly_counts
+    form.cleaned_data.pop('daterange')
     if daterange == '1w':
         count_func = mgr.daily_counts
     for t in KarmaManager.action_types.keys():
