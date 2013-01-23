@@ -368,3 +368,34 @@ def is_idevice(request):
         ua = request.META.get('HTTP_USER_AGENT', '').lower()
         return IDEVICE_USER_AGENTS.search(ua)
     return False
+
+
+@register.function
+@jinja2.contextfunction
+def ga_push_attribute(context):
+    """Return the json for the data-ga-push attribute.
+
+    This is used to defined custom variables and other special tracking with
+    Google Analytics.
+    """
+    request = context.get('request')
+    ga_push = context.get('ga_push', [])
+
+    # If the user is on the first page after logging in,
+    # we add a "User Type" custom variable.
+    if request.GET.get('fpa') == '1' and request.user.is_authenticated():
+        user = request.user
+        group_names = user.groups.values_list('name', flat=True)
+
+        # If they belong to the Administrator group:
+        if 'Administrators' in group_names:
+            ga_push.append(
+                ['_setCustomVar', 1, 'User Type', 'Contributor - Admin', 1])
+        # If they belong to the Contributors group:
+        elif 'Contributors' in group_names:
+            ga_push.append(['_setCustomVar', 1, 'User Type', 'Contributor', 1])
+        # If they don't belong to any of these groups:
+        else:
+            ga_push.append(['_setCustomVar', 1, 'User Type', 'Registered', 1])
+
+    return jsonlib.dumps(ga_push)

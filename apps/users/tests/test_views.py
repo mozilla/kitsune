@@ -55,7 +55,8 @@ class RegisterTests(TestCase):
                                     {'username': 'newbie',
                                      'password': 'foobar22'}, follow=True)
         eq_(200, response.status_code)
-        eq_('http://testserver/en-US/home', response.redirect_chain[0][0])
+        eq_('http://testserver/en-US/home?fpa=1',
+            response.redirect_chain[0][0])
 
     @mock.patch.object(mail, 'send_mail')
     @mock.patch.object(Site.objects, 'get_current')
@@ -91,7 +92,7 @@ class RegisterTests(TestCase):
                                     {'username': 'cjkuser',
                                      'password': u_str}, follow=True)
         eq_(200, response.status_code)
-        eq_('http://testserver/ja/home', response.redirect_chain[0][0])
+        eq_('http://testserver/ja/home?fpa=1', response.redirect_chain[0][0])
 
     @mock.patch.object(Site.objects, 'get_current')
     def test_new_user_activation(self, get_current):

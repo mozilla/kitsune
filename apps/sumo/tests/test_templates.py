@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.utils import translation
 
-from nose.tools import eq_, raises
+from nose.tools import eq_
 from pyquery import PyQuery as pq
 import jingo
 import mock
@@ -31,6 +31,7 @@ class MockRequestTests(TestCase):
     def setUp(self):
         super(MockRequestTests, self).setUp()
         request = RequestFactory()
+        request.GET = {}
         request.locale = 'en-US'
         self.request = request
 
