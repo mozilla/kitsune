@@ -69,8 +69,8 @@
             });
         }
 
-        if($('body').is('.aaq')) {
-            // Prepolate form with user's system info
+        if ($('body').is('.aaq')) {
+            // Pre-populate form with user's system info
             new AAQSystemInfo($('#question-form'));
         }
     });
