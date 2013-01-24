@@ -139,7 +139,7 @@ AAQSystemInfo.prototype = {
     },
     getTroubleshootingInfo: function() {
         // If the troubleshoot input exists, try to find the extension.
-        if ($('#id_troubleshooting').count === 0) {
+        if ($('#id_troubleshooting').length === 0) {
             // No trouble shooting form, so no point. Bail out.
             return;
         }
