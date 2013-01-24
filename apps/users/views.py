@@ -80,7 +80,8 @@ def login(request, template):
 
     if request.user.is_authenticated():
         # Add a parameter so we know the user just logged in.
-        next_url = urlparams(next_url, fpa=1)  # first page authed
+        # fpa =  "first page authed" or something.
+        next_url = urlparams(next_url, fpa=1)
         res = HttpResponseRedirect(next_url)
         max_age = (None if settings.SESSION_EXPIRE_AT_BROWSER_CLOSE
                         else settings.SESSION_COOKIE_AGE)

@@ -118,11 +118,11 @@ class LoginTests(TestCaseBase):
 
     def test_ga_custom_variable_on_login(self):
         """After logging in, there should be a ga-push data attr on body."""
-        u = self.u
+        user_ = self.u
 
         # User should be "Registered":
         response = self.client.post(reverse('users.login'),
-                                    {'username': u.username,
+                                    {'username': user_.username,
                                      'password': 'testpass'},
                                     follow=True)
         eq_(200, response.status_code)
@@ -130,9 +130,9 @@ class LoginTests(TestCaseBase):
         assert '"Registered"' in doc('body').attr('data-ga-push')
 
         # Add user to Contributors and so should be "Contributor":
-        u.groups.add(group(name='Contributors', save=True))
+        user_.groups.add(group(name='Contributors', save=True))
         response = self.client.post(reverse('users.login'),
-                                    {'username': u.username,
+                                    {'username': user_.username,
                                      'password': 'testpass'},
                                     follow=True)
         eq_(200, response.status_code)
@@ -140,9 +140,9 @@ class LoginTests(TestCaseBase):
         assert '"Contributor"' in doc('body').attr('data-ga-push')
 
         # Add user to Administrators and so should be "Contributor - Admin":
-        u.groups.add(group(name='Administrators', save=True))
+        user_.groups.add(group(name='Administrators', save=True))
         response = self.client.post(reverse('users.login'),
-                                    {'username': u.username,
+                                    {'username': user_.username,
                                      'password': 'testpass'},
                                     follow=True)
         eq_(200, response.status_code)
