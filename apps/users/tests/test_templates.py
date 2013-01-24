@@ -1,5 +1,4 @@
 from copy import copy
-import hashlib
 import os
 from smtplib import SMTPRecipientsRefused
 
@@ -22,7 +21,7 @@ from sumo.helpers import urlparams
 from sumo.tests import post, get
 from users import ERROR_SEND_EMAIL
 from users.models import Profile, RegistrationProfile, RegistrationManager
-from users.tests import TestCaseBase, user, add_permission, profile
+from users.tests import TestCaseBase, user, add_permission, profile, group
 from wiki.tests import revision
 
 
@@ -73,7 +72,7 @@ class LoginTests(TestCaseBase):
                                      'password': 'testpass'})
         eq_(302, response.status_code)
         eq_('http://testserver' +
-            reverse('home', locale=settings.LANGUAGE_CODE),
+            reverse('home', locale=settings.LANGUAGE_CODE) + '?fpa=1',
             response['location'])
 
     def test_login_next_parameter(self):
@@ -93,7 +92,7 @@ class LoginTests(TestCaseBase):
                                      'password': 'testpass',
                                      'next': next})
         eq_(302, response.status_code)
-        eq_('http://testserver' + next, response['location'])
+        eq_('http://testserver' + next + '?fpa=1', response['location'])
 
     @mock.patch.object(Site.objects, 'get_current')
     def test_login_invalid_next_parameter(self, get_current):
@@ -115,7 +114,40 @@ class LoginTests(TestCaseBase):
                                      'password': 'testpass',
                                      'next': invalid_next})
         eq_(302, response.status_code)
-        eq_('http://testserver' + valid_next, response['location'])
+        eq_('http://testserver' + valid_next + '?fpa=1', response['location'])
+
+    def test_ga_custom_variable_on_login(self):
+        """After logging in, there should be a ga-push data attr on body."""
+        user_ = self.u
+
+        # User should be "Registered":
+        response = self.client.post(reverse('users.login'),
+                                    {'username': user_.username,
+                                     'password': 'testpass'},
+                                    follow=True)
+        eq_(200, response.status_code)
+        doc = pq(response.content)
+        assert '"Registered"' in doc('body').attr('data-ga-push')
+
+        # Add user to Contributors and so should be "Contributor":
+        user_.groups.add(group(name='Contributors', save=True))
+        response = self.client.post(reverse('users.login'),
+                                    {'username': user_.username,
+                                     'password': 'testpass'},
+                                    follow=True)
+        eq_(200, response.status_code)
+        doc = pq(response.content)
+        assert '"Contributor"' in doc('body').attr('data-ga-push')
+
+        # Add user to Administrators and so should be "Contributor - Admin":
+        user_.groups.add(group(name='Administrators', save=True))
+        response = self.client.post(reverse('users.login'),
+                                    {'username': user_.username,
+                                     'password': 'testpass'},
+                                    follow=True)
+        eq_(200, response.status_code)
+        doc = pq(response.content)
+        assert '"Contributor - Admin"' in doc('body').attr('data-ga-push')
 
 
 class PasswordResetTests(TestCaseBase):
