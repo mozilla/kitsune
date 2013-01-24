@@ -68,5 +68,10 @@
                 }
             });
         }
+
+        if ($('body').is('.aaq')) {
+            // Pre-populate form with user's system info
+            new AAQSystemInfo($('#question-form'));
+        }
     });
 })(jQuery)
