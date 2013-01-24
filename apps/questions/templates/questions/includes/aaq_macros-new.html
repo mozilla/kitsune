@@ -213,27 +213,27 @@
     {{ _('This field was populated automatically with the add-on called <em>Troubleshooter</em>.') }}
   </span>
   <ol id="troubleshooting-help">
-    {% trans %}
-    <li>Open <em>Help &gt; Troubleshooting Information</em>.
+    <li>{{ _('Open <em>Help &gt; Troubleshooting Information</em>.') }}
       <ul>
-        <li>Look at the top of your screen, and click the menu item called <em>Help</em>.</li>
-        <li>A small box will open. Click on an item called <em>Troubleshooting Information</em>.</li>
+        <li>{{ _('Look at the top of your screen, and click the menu item called <em>Help</em>.') }}</li>
+        <li>{{ _('A small box will open. Click on an item called <em>Troubleshooting Information</em>.') }}</li>
       </ul>
     </li>
-    <li>A new window will open. Click on a button called <em>Copy text to clipboard</em>.</li>
-    <li>Paste the info in the text box below.
+    <li>{{ _('A new window will open. Click on a button called <em>Copy text to clipboard</em>.') }}</li>
+    <li>{{ _('Paste the info in the text box below.') }}
       <ul>
-        <li>Click on the empty box above this text.</li>
-        <li>Look at the top of your screen, and click the menu item called <em>Edit</em>.</li>
+        <li>{{ _('Click on the empty box above this text.') }}</li>
+        <li>{{ _('Look at the top of your screen, and click the menu item called <em>Edit</em>.') }}</li>
         <li>
-          A small box will open. Click on the item called <em>Paste</em>.
-          Alternatively, type <em>Ctrl+V</em> or <em>Command+V</em>.
+          {% trans %}
+            A small box will open. Click on the item called <em>Paste</em>.
+            Alternatively, type <em>Ctrl+V</em> or <em>Command+V</em>.
+          {% endtrans %}
         </li>
-        <li>Some text will appear in the empty box.</li>
+        <li>{{ _('Some text will appear in the empty box.') }}</li>
       </ul>
     </li>
   </ol>
-  {% endtrans %}
   <p>
     {{ field }}
   </p>

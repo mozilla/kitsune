@@ -140,7 +140,7 @@ AAQSystemInfo.prototype = {
     getTroubleshootingInfo: function() {
         // If the troubleshoot input exists, try to find the extension.
         if ($('#id_troubleshooting').length === 0) {
-            // No trouble shooting form, so no point. Bail out.
+            // No troubleshooting form, so no point in looking for the plugin.
             return;
         }
         if (window.mozTroubleshoot !== undefined) {
