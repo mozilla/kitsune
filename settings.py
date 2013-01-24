@@ -710,9 +710,12 @@ MINIFY_BUNDLES = {
             'js/analytics.js',
         ),
         'mobile-new': (
+            'js/libs/underscore.js',
             'js/libs/jquery-1.8.2.min.js',
-            'js/mobile/ui.js',
             'js/libs/modernizr-2.6.1.js',
+            'js/browserdetect.js',
+            'js/aaq.js',
+            'js/mobile/ui.js',
             'js/analytics.js',
         ),
         'messages': (
