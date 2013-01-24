@@ -76,8 +76,11 @@ k = {};
         '"': '&quot;'
     };
     k.safeString = function(str) {
-        return str.replace(new RegExp('[&<>\'"]', 'g'),
-                           function(m) { return UNSAFE_CHARS[m]; });
+        if (str) {
+            return str.replace(new RegExp('[&<>\'"]', 'g'),
+                               function(m) { return UNSAFE_CHARS[m]; });
+        }
+        return str;
     };
 
     k.safeInterpolate = function(fmt, obj, named) {
