@@ -116,9 +116,9 @@ class LoginTests(TestCaseBase):
         eq_(302, response.status_code)
         eq_('http://testserver' + valid_next + '?fpa=1', response['location'])
 
-    def test_ga_custom_variable_on_login(self):
+    def test_ga_custom_variable_on_registered_login(self):
         """After logging in, there should be a ga-push data attr on body."""
-        user_ = self.u
+        user_ = profile().user
 
         # User should be "Registered":
         response = self.client.post(reverse('users.login'),
@@ -129,6 +129,10 @@ class LoginTests(TestCaseBase):
         doc = pq(response.content)
         assert '"Registered"' in doc('body').attr('data-ga-push')
 
+    def test_ga_custom_variable_on_contributor_login(self):
+        """After logging in, there should be a ga-push data attr on body."""
+        user_ = profile().user
+
         # Add user to Contributors and so should be "Contributor":
         user_.groups.add(group(name='Contributors', save=True))
         response = self.client.post(reverse('users.login'),
@@ -138,6 +142,10 @@ class LoginTests(TestCaseBase):
         eq_(200, response.status_code)
         doc = pq(response.content)
         assert '"Contributor"' in doc('body').attr('data-ga-push')
+
+    def test_ga_custom_variable_on_admin_login(self):
+        """After logging in, there should be a ga-push data attr on body."""
+        user_ = profile().user
 
         # Add user to Administrators and so should be "Contributor - Admin":
         user_.groups.add(group(name='Administrators', save=True))
