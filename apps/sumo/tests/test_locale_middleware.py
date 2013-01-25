@@ -19,9 +19,9 @@ class TestLocaleMiddleware(TestCase):
                                    HTTP_ACCEPT_LANGUAGE='fr-fr')
         self.assertRedirects(response, '/fr/search', status_code=302)
 
-        # User wants xx, we send en-US
+        # User wants xy (which doesn't exist), we send en-US
         response = self.client.get('/search', follow=True,
-                                   HTTP_ACCEPT_LANGUAGE='xx')
+                                   HTTP_ACCEPT_LANGUAGE='xy')
         self.assertRedirects(response, '/en-US/search', status_code=302)
 
         # User doesn't know what they want, we send en-US
@@ -77,7 +77,7 @@ class BestLanguageTests(TestCase):
         eq_('fr', best)
 
     def test_non_existent(self):
-        best = get_best_language('xx-YY, xx;q=0.8')
+        best = get_best_language('xy-YY, xy;q=0.8')
         eq_(False, best)
 
     def test_prefix_matching(self):
@@ -100,7 +100,7 @@ class NonSupportedTests(TestCase):
         eq_(None, get_non_supported('yy'))
 
     @mock.patch.object(settings._wrapped, 'NON_SUPPORTED_LOCALES',
-                       {'nn-NO': 'no', 'xx': None})
+                       {'nn-NO': 'no', 'xy': None})
     def test_middleware(self):
         response = self.client.get('/nn-NO/home', follow=True)
         self.assertRedirects(response, '/no/home', status_code=302)
@@ -108,5 +108,5 @@ class NonSupportedTests(TestCase):
         response = self.client.get('/nn-no/home', follow=True)
         self.assertRedirects(response, '/no/home', status_code=302)
 
-        response = self.client.get('/xx/home', follow=True)
+        response = self.client.get('/xy/home', follow=True)
         self.assertRedirects(response, '/en-US/home', status_code=302)

@@ -301,10 +301,54 @@ By default, this will write all the strings to `apps/sumo/db_strings.py`
 and they will get picked up during the normal string extraction (see below).
 
 
+Testing localized strings
+=========================
+
+When we add strings that need to be localized, it can take a couple of
+weeks for us to get translations of those localized strings. This
+makes it difficult to find localization issues.
+
+Enter poxx.
+
+Requirements:
+
+1. Install polib - ``pip install polib``
+2. Get ``compile-mo.sh``. You can do this by getting the
+   localizations. See :ref:`getting-localizations`.
+
+After getting requirements::
+
+    $ ./scripts/test_locales.sh
+
+It'll extract all the strings, create a ``.pot`` file, then create a
+Pirate translation of all strings. The Pirate strings are available in
+the xx locale. After running the ``test_locales.sh`` script, you can
+access the xx locale with:
+
+    http://localhost:8000/xx/
+
+Strings in the Pirate translation have the following properties:
+
+1. they are longer than the English string: helps us find layout and
+   wrapping issues
+2. they have at least one unicode character: helps us find unicode
+   issues
+3. they are easily discernable from the English versions: helps us
+   find strings that aren't translated
+
+
+.. Note::
+
+   The xx locale is only available on your local machine. It is not
+   available on -dev, -stage, or -prod.
+
+
+.. _getting-localizations:
+
 Getting the Localizations
 =========================
 
-Localizations are not stored in this repository, but are in Mozilla's SVN::
+Localizations are not stored in this repository, but are in Mozilla's SVN:
 
     http://svn.mozilla.org/projects/sumo/locales
 

@@ -548,5 +548,10 @@
         "iso639_1": null,
         "english": "Songhay",
         "native": "So\u014Bay"
+    },
+    "xx": {
+        "iso639_1": "xx",
+        "english": "Pirate",
+        "native": "Pirate ARrr!"
     }
 }
