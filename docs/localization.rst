@@ -326,6 +326,10 @@ update the data on `Verbatim <http://localize.mozilla.org/>`_. If you commit
 new strings to SVN and they are not updated right away on Verbatim, there will
 be big merging headaches.
 
+Make sure you have the following installed:
+
+* Bable: ``pip install Babel``
+
 Updating strings is pretty easy. Check out the localizations as above, then::
 
     $ python manage.py extract
