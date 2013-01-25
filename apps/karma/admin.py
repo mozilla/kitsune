@@ -88,30 +88,31 @@ admin.site.register_view('karma', karma, 'Karma')
 def _user_karma_alltime(user, kmgr):
     return {
         'user': user,
-        'points': kmgr.count(user, type='points'),
-        'answers': kmgr.count(user, type=AnswerAction.action_type),
-        'first_answers': kmgr.count(user, type=FirstAnswerAction.action_type),
+        'points': kmgr.count(user=user, type='points'),
+        'answers': kmgr.count(user=user, type=AnswerAction.action_type),
+        'first_answers': kmgr.count(
+            user=user, type=FirstAnswerAction.action_type),
         'helpful_votes': kmgr.count(
-            user, type=AnswerMarkedHelpfulAction.action_type),
+            user=user, type=AnswerMarkedHelpfulAction.action_type),
         'nothelpful_votes': kmgr.count(
-            user, type=AnswerMarkedNotHelpfulAction.action_type),
-        'solutions': kmgr.count(user, type=SolutionAction.action_type),
+            user=user, type=AnswerMarkedNotHelpfulAction.action_type),
+        'solutions': kmgr.count(user=user, type=SolutionAction.action_type),
     }
 
 
 def _user_karma_week(user, kmgr):
     return {
         'user': user,
-        'points': kmgr.count(user, daterange='1w', type='points'),
+        'points': kmgr.count(daterange='1w', user=user, type='points'),
         'answers': kmgr.count(
-            user, daterange='1w', type=AnswerAction.action_type),
+            daterange='1w', user=user, type=AnswerAction.action_type),
         'first_answers': kmgr.count(
-            user, daterange='1w', type=FirstAnswerAction.action_type),
+            daterange='1w', user=user, type=FirstAnswerAction.action_type),
         'helpful_votes': kmgr.count(
-            user, daterange='1w', type=AnswerMarkedHelpfulAction.action_type),
+            daterange='1w', user=user, type=AnswerMarkedHelpfulAction.action_type),
         'nothelpful_votes': kmgr.count(
-            user, daterange='1w',
+            daterange='1w', user=user,
             type=AnswerMarkedNotHelpfulAction.action_type),
         'solutions': kmgr.count(
-            user, daterange='1w', type=SolutionAction.action_type),
+            daterange='1w', user=user, type=SolutionAction.action_type),
     }
