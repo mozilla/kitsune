@@ -9,6 +9,7 @@ import jingo
 from nose.tools import eq_
 from pyquery import PyQuery as pq
 
+from products.tests import product
 from questions.tests import question, answer, answervote
 from search.tests.test_es import ElasticTestCase
 from sumo.tests import LocalizingClient
@@ -87,3 +88,23 @@ class SearchTest(ElasticTestCase):
 
         doc = pq(response.content)
         assert 'script' not in doc('div.result').text()
+
+    def test_ga_zero_results_event(self):
+        """If there are no results, verify ga-push data attr on body."""
+        doc = document(title=u'audio', locale=u'en-US', category=10, save=True)
+        doc.products.add(product(title=u'firefox', slug=u'desktop', save=True))
+        revision(document=doc, is_approved=True, save=True)
+
+        self.refresh()
+
+        # If there are results, data-ga-push should be an empty list.
+        response = self.client.get(reverse('search'), {'q': 'audio'})
+        eq_(200, response.status_code)
+        doc = pq(response.content)
+        eq_('[]', doc('body').attr('data-ga-push'))
+
+        # If there are no results, then Zero Search Results event is there.
+        response = self.client.get(reverse('search'), {'q': 'piranha'})
+        eq_(200, response.status_code)
+        doc = pq(response.content)
+        assert '"Zero Search Results"' in doc('body').attr('data-ga-push')

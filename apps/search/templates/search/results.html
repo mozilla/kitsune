@@ -5,6 +5,10 @@
 {% from "search/includes/macros.html" import basic_search_form with context %}
 {% set meta = (('WT.oss', q), ('WT.oss_r', num_results)) %}
 
+{% if num_results == 0 %}
+  {% set ga_push = [['_trackEvent', 'Zero Search Results', q]] %}
+{% endif %}
+
 {% block content %}
   <div id="search-results">
     <div class="grid_12">
