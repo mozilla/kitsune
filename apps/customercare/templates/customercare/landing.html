@@ -12,7 +12,7 @@
 
   <div class="cf">
     <div class="grid_6">
-      <h1>{{ _('Join our Army of Awesome')|safe }}</h1>
+      <h1>{{ _('Join our Army of Awesome') }}</h1>
       <h2>
         {% trans %}
           Love Firefox and have a few moments to help?<br />
@@ -33,10 +33,20 @@
 
   {% set percent = recent_replied_count * 100 / goal %}
   <div id="stats" class="grid_12">
-    <span>{{ _('Total tweets to answer') }}: <strong>{{ goal }}</strong></span>
+    <span>
+      {%- trans %}
+        Total tweets to answer: <strong>{{ goal }}</strong>
+      {% endtrans -%}
+    </span>
     <p>
-      {% trans %}<strong>{{ recent_replied_count }} tweets</strong> in the last{% endtrans %}
-      <strong>{{ _('24 hours') }}</strong> {{ _('have replies') }}
+      {# L10n: Refers to the number of tweets that have had replies. #}
+      {%- trans %}
+        <strong>{{ recent_replied_count }} tweet</strong>
+        in the last <strong>24 hours</strong> has a reply
+        {% pluralize %}
+        <strong>{{ recent_replied_count }} tweets</strong>
+        in the last <strong>24 hours</strong> have replies
+      {% endtrans -%}
     </p>
     <div class="progress-bar {% if percent >= 100 %}complete{% endif %}">
       <div style="width: {{ percent|int|max(100) }}%;">
