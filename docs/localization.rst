@@ -2,6 +2,10 @@
 Localization
 ============
 
+.. contents::
+   :local:
+
+
 Kitsune is localized with `gettext <http://www.gnu.org/software/gettext/>`_.
 User-facing strings in the code or templates need to be marked for gettext
 localization.
@@ -328,7 +332,7 @@ be big merging headaches.
 
 Make sure you have the following installed:
 
-* Bable: ``pip install Babel``
+* Babel: ``pip install Babel``
 
 Updating strings is pretty easy. Check out the localizations as above, then::
 
