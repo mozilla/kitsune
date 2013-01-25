@@ -1,11 +1,14 @@
 {# vim: set ts=2 et sts=2 sw=2: #}
 {% extends "mobile/base.html" %}
+{% from "search/basic-form.html" import mobile_results_form with context %}
 {% set title = _('Search') %}
 {% set headline = title %}
 {% set classes = 'results' %}
 {% set styles = ('mobile/search',) %}
 
-{% from "search/basic-form.html" import mobile_results_form with context %}
+{% if num_results == 0 %}
+  {% set ga_push = [['_trackEvent', 'Zero Search Results', q]] %}
+{% endif %}
 
 {% block after_header %}
   <div class="search-bar">
