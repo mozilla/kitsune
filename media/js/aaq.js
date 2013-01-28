@@ -1,4 +1,4 @@
-/*globals console, BrowserDetect*/
+/*globals console, BrowserDetect, gettext*/
 /*
  * Prepopulate system info in AAQ form
  */
@@ -44,9 +44,9 @@ AAQSystemInfo.prototype = {
             $(selector).fadeToggle();
         });
 
-        $('#install-troubleshooting-addon .btn').on('click', function(ev) {
+        $('#troubleshooting-install .btn').on('click', function(ev) {
             // Do not prevent default.
-            $(this).toggleClass('btn-important btn-disable').text('Installing...');
+            $(this).toggleClass('btn-important btn-disable').html(gettext('Installing...'));
         });
 
         self.getTroubleshootingInfo();
