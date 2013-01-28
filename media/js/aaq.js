@@ -44,17 +44,9 @@ AAQSystemInfo.prototype = {
             $(selector).fadeToggle();
         });
 
-        var addOnInstalling = false;
         $('#install-troubleshooting-addon .btn').on('click', function(ev) {
-            if (!addOnInstalling) {
-                // Do not prevent default.
-                $(this).toggleClass('btn-important btn-submit')
-                    .text('Click here when installation is complete.');
-                addOnInstalling = true;
-            } else {
-                ev.preventDefault();
-                window.location.reload();
-            }
+            // Do not prevent default.
+            $(this).toggleClass('btn-important btn-disable').text('Installing...');
         });
 
         self.getTroubleshootingInfo();
@@ -137,13 +129,14 @@ AAQSystemInfo.prototype = {
         // Is the question for FF on mobile?
         return document.location.pathname.indexOf('mobile') >= 0;
     },
-    getTroubleshootingInfo: function() {
+    getTroubleshootingInfo: function(addEvent) {
+        if (addEvent === undefined) addEvent = true;
         // If the troubleshoot input exists, try to find the extension.
         if ($('#id_troubleshooting').length === 0) {
             // No troubleshooting form, so no point in looking for the plugin.
             return;
         }
-        if (window.mozTroubleshoot !== undefined) {
+        if ('mozTroubleshoot' in window) {
             // Yeah! The user has the addon installed, let's use it.
             $('#install-troubleshooting-addon').remove();
             window.mozTroubleshoot.snapshotJSON(function(json) {
@@ -154,6 +147,15 @@ AAQSystemInfo.prototype = {
                 $('#troubleshooting-manual').remove();
                 $('#troubleshooting-explanation').show();
             });
+        } else {
+            if (addEvent) {
+                console.log('Registering listener.');
+                // Well, the user might install it later, so set up a listener.
+                window.addEventListener('mozTroubleshootDidBecomeAvailable', function() {
+                    'Got mozTroubleshootDidBecomeAvailable event!';
+                    this.getTroubleshootingInfo(false);
+                });
+            }
         }
     }
 };
