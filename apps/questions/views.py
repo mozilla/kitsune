@@ -907,10 +907,7 @@ def watch_question(request, question_id):
         user_or_email = (request.user if request.user.is_authenticated()
                                       else form.cleaned_data['email'])
         try:
-            if form.cleaned_data['event_type'] == 'reply':
-                QuestionReplyEvent.notify(user_or_email, question)
-            else:
-                QuestionSolvedEvent.notify(user_or_email, question)
+            QuestionSolvedEvent.notify(user_or_email, question)
             statsd.incr('questions.watches.new')
         except ActivationRequestFailed:
             msg = _('Could not send a message to that email address.')
@@ -924,28 +921,16 @@ def watch_question(request, question_id):
                             'to confirm your subscription.'))
             return HttpResponse(json.dumps({'message': msg}))
 
-        if request.POST.get('from_vote'):
-            tmpl = 'questions/includes/question_vote_thanks.html'
-        else:
-            tmpl = 'questions/includes/email_subscribe.html'
+        html = jingo.render_to_string(
+            request,
+            'questions/includes/question_vote_thanks.html',
+            {'question': question, 'watch_form': form})
 
-        html = jingo.render_to_string(request, tmpl, {'question': question,
-                                                      'watch_form': form})
         return HttpResponse(json.dumps({'html': html}))
 
     if msg:
         messages.add_message(request, messages.ERROR, msg)
 
-    return HttpResponseRedirect(question.get_absolute_url())
-
-
-@require_POST
-@login_required
-def unwatch_question(request, question_id):
-    """Stop watching a question."""
-    question = get_object_or_404(Question, pk=question_id)
-    QuestionReplyEvent.stop_notifying(request.user, question)
-    QuestionSolvedEvent.stop_notifying(request.user, question)
     return HttpResponseRedirect(question.get_absolute_url())
 
 
