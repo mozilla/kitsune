@@ -48,7 +48,7 @@
             $(this).closest('.collapsable').toggleClass('expanded');
         });
 
-        //Swipeable lists
+        // Swipeable lists
         $('.swipeable').each(function() {
             var width = 0;
             $(this).children('ul').find('li').each(function() {
@@ -73,5 +73,32 @@
             // Pre-populate form with user's system info
             new AAQSystemInfo($('#question-form'));
         }
+
+        // iOS overscroll fix
+        document.addEventListener('touchmove', function(e) {
+            e.preventDefault();
+        }, false);
+
+        $('.scrollable').each(function() {
+            var y = 0;
+            var isTop = false;
+            var isBottom = false;
+
+            this.addEventListener('touchstart', function(e) {
+                y = e.pageY;
+                isTop = this.scrollTop <= 0;
+                isBottom = this.scrollHeight - this.scrollTop <= this.clientHeight;
+            }, true);
+
+            this.addEventListener('touchmove', function(e) {
+                var scrollUp = e.pageY > y;
+
+                if ((scrollUp && !isTop) || (!scrollUp && !isBottom)) {
+                    e.stopPropagation();
+                } else {
+                    e.preventDefault();
+                }
+            }, true);
+        });
     });
 })(jQuery)

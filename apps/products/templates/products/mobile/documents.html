@@ -42,7 +42,7 @@
 {% block after_main %}
   <div id="filter-overlay" class="overlay" style="display: none;">
     <header>{{ _('Showing') }}</header>
-    <div class="wrapper">
+    <div class="wrapper scrollable">
       <ul class="select-list">
         <li {{ refine|class_selected(None) }}><a href="{{ request.path }}">{{ _('All') }}</a></li>
         {% for topic_ in refine_topics if topic_ != topic %}
