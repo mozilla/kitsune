@@ -130,6 +130,7 @@ AAQSystemInfo.prototype = {
         return document.location.pathname.indexOf('mobile') >= 0;
     },
     getTroubleshootingInfo: function(addEvent) {
+        var self = this;
         if (addEvent === undefined) addEvent = true;
         // If the troubleshoot input exists, try to find the extension.
         if ($('#id_troubleshooting').length === 0) {
@@ -138,7 +139,7 @@ AAQSystemInfo.prototype = {
         }
         if ('mozTroubleshoot' in window) {
             // Yeah! The user has the addon installed, let's use it.
-            $('#install-troubleshooting-addon').remove();
+            $('#troubleshooting-install').remove();
             window.mozTroubleshoot.snapshotJSON(function(json) {
                 // This parse/stringify trick makes `json` pretty printed.
                 json = JSON.parse(json);
@@ -149,12 +150,9 @@ AAQSystemInfo.prototype = {
             });
         } else {
             if (addEvent) {
-                console.log('Registering listener.');
                 // Well, the user might install it later, so set up a listener.
-                window.addEventListener('mozTroubleshootDidBecomeAvailable', function() {
-                    'Got mozTroubleshootDidBecomeAvailable event!';
-                    this.getTroubleshootingInfo(false);
-                });
+                window.addEventListener('mozTroubleshootDidBecomeAvailable',
+                    self.getTroubleshootingInfo.bind(self, false));
             }
         }
     }
