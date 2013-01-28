@@ -91,7 +91,7 @@
 {% block after_main %}
   <div id="sort-overlay" class="overlay" style="display: none;">
     <header>{{ _('Sort by') }}</header>
-    <div class="wrapper">
+    <div class="wrapper scrollable">
       <ul class="select-list">
         <li{% if not sort %} class="selected"{% endif %}>
           <a href="{{ url('questions.questions')|urlparams(filter=filter, tagged=tagged) }}">{{ _('Most Recent') }}</a>
@@ -105,7 +105,7 @@
 
   <div id="show-overlay" class="overlay" style="display: none;">
     <header>{{ _('Show') }}</header>
-    <div class="wrapper">
+    <div class="wrapper scrollable">
       <ul class="select-list">
         <li{% if not filter %} class="selected"{% endif %}>
           <a href="{{ url('questions.questions')|urlparams(sort=sort, tagged=tagged) }}">{{ _('All') }}</a>
@@ -130,7 +130,7 @@
 
   <div id="filter-overlay" class="overlay" style="display: none;">
     <header>{{ _('Filter') }}</header>
-    <div class="wrapper padded">
+    <div class="wrapper scrollable padded">
       <p>{{ _('Enter a tag. For example: "Firefox 14.0", "Windows 7", "crash"') }}</p>
       <form action="" method="get">
         <input type="hidden" class="current-tagged" value="{{ tagged }}"/>

@@ -34,7 +34,7 @@
       data-for-version="{{ for_version|json }}"
       data-orientation="{% if page_align %}{{ page_align }}{% else %}right{% endif %}"
       data-ga-push="{{ ga_push_attribute() }}">
-<nav>
+<nav class="scrollable">
   <div id="search-bar">
     {{ mobile_nav_form(q, search_params) }}
   </div>
@@ -93,7 +93,7 @@
   {% block after_header %}
   {% endblock %}
 
-  <div class="wrapper">
+  <div class="wrapper scrollable">
     <section id="content">
       {% block content %}{% endblock %}
 
