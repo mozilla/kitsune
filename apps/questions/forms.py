@@ -18,9 +18,9 @@ CRASH_ID_HELP = _lazy(u"If you submit information to Mozilla when you crash, "
                       u"accurate_help_with_your_Firefox_crash' "
                       u"target='_blank'>Click for detailed instructions</a>.")
 TROUBLESHOOTING_LABEL = _lazy(u'Troubleshooting Information')
-TROUBLESHOOTING_HELP = _lazy(u'Copy and paste the information from '
-                             u'<strong>Help &gt; Troubleshooting '
-                             u'Information</strong>.')
+TROUBLESHOOTING_HELP = _lazy(u'This information gives details about the '
+                             u'internal workings of your browser that will '
+                             u'help in answering your question.')
 FREQUENCY_LABEL = _lazy(u'This happens')
 FREQUENCY_CHOICES = [(u'', u''),
                      (u'NOT_SURE', _lazy(u'Not sure how often')),
