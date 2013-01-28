@@ -156,12 +156,16 @@ SUMO_LANGUAGES = (
     'tr',
     'uk',
     'vi',
+    'xx',  # This is a test locale
     'zh-CN',
     'zh-TW',
     'zu',
 )
 
-LANGUAGE_CHOICES = tuple([(i, LOCALES[i].native) for i in SUMO_LANGUAGES])
+# Languages that should show up in language switcher.
+LANGUAGE_CHOICES = tuple(
+    [(lang, LOCALES[lang].native) for lang in SUMO_LANGUAGES
+     if lang != 'xx'])
 LANGUAGES = dict([(i.lower(), LOCALES[i].native) for i in SUMO_LANGUAGES])
 
 LANGUAGE_URL_MAP = dict([(i.lower(), i) for i in SUMO_LANGUAGES])

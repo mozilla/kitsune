@@ -3,6 +3,9 @@
 {% if request.locale == settings.WIKI_DEFAULT_LANGUAGE and waffle.flag('surveygizmo') %}
   {% set SURVEY_GIZMOS = (SURVEY_GIZMOS or []) + ['site_survey'] %}
 {% endif %}
+{% if request.locale == 'xx' %}
+  {% set meta = [('robots', 'noindex')] %}
+{% endif %}
 <!DOCTYPE html>
 <html class="no-js" lang="{{ request.locale }}" {% if DIR %}dir="{{ DIR }}"{% endif %}>
 <head>
