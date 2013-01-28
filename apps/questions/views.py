@@ -464,6 +464,8 @@ def edit_question(request, question_id):
     question = get_object_or_404(Question, pk=question_id)
     user = request.user
 
+    # Locked questions can't be edited unless the user has the permission to.
+    # (Question creators can't edit locked questions.)
     if not user.has_perm('questions.change_question') and question.is_locked:
         raise PermissionDenied
 
