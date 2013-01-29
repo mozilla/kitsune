@@ -6,9 +6,10 @@ from smtplib import SMTPRecipientsRefused
 
 from django.conf import settings
 from django.test.client import Client
+from django.test.utils import override_settings
 
 from nose.tools import eq_
-from test_utils import TestCase  # just for others to import
+from test_utils import TestCase as OriginalTestCase
 
 from sumo.urlresolvers import reverse, split_path
 import sumo
@@ -16,6 +17,12 @@ import sumo
 
 get = lambda c, v, **kw: c.get(reverse(v, **kw), follow=True)
 post = lambda c, v, data={}, **kw: c.post(reverse(v, **kw), data, follow=True)
+
+
+@override_settings(ES_LIVE_INDEX=False)
+class TestCase(OriginalTestCase):
+    """A modification of ``test_utils.TestCase`` that skips live indexing."""
+    pass
 
 
 def attrs_eq(received, **expected):

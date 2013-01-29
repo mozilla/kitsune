@@ -4,6 +4,7 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
 from django.core import mail
+from django.test.utils import override_settings
 
 import mock
 from nose.tools import eq_
@@ -19,15 +20,11 @@ from users.tests import profile, user, group
 
 
 class RegisterTests(TestCase):
-
     def setUp(self):
-        self.old_debug = settings.DEBUG
-        settings.DEBUG = True
         self.client.logout()
+        super(RegisterTests, self).setUp()
 
-    def tearDown(self):
-        settings.DEBUG = self.old_debug
-
+    @override_settings(DEBUG=True)
     @mock.patch.object(Site.objects, 'get_current')
     def test_new_user(self, get_current):
         get_current.return_value.domain = 'su.mo.com'
@@ -58,6 +55,7 @@ class RegisterTests(TestCase):
         eq_('http://testserver/en-US/home?fpa=1',
             response.redirect_chain[0][0])
 
+    @override_settings(DEBUG=True)
     @mock.patch.object(mail, 'send_mail')
     @mock.patch.object(Site.objects, 'get_current')
     def test_new_user_smtp_error(self, get_current, send_mail):
@@ -72,6 +70,7 @@ class RegisterTests(TestCase):
         self.assertContains(response, unicode(ERROR_SEND_EMAIL))
         assert not User.objects.filter(username='newbie').exists()
 
+    @override_settings(DEBUG=True)
     @mock.patch.object(Site.objects, 'get_current')
     def test_unicode_password(self, get_current):
         u_str = u'a1\xe5\xe5\xee\xe9\xf8\xe7\u6709\u52b9'
@@ -97,15 +96,15 @@ class RegisterTests(TestCase):
     @mock.patch.object(Site.objects, 'get_current')
     def test_new_user_activation(self, get_current):
         get_current.return_value.domain = 'su.mo.com'
-        user = RegistrationProfile.objects.create_inactive_user(
+        user_ = RegistrationProfile.objects.create_inactive_user(
             'sumouser1234', 'testpass', 'sumouser@test.com')
-        assert not user.is_active
+        assert not user_.is_active
         key = RegistrationProfile.objects.all()[0].activation_key
-        url = reverse('users.activate', args=[user.id, key])
+        url = reverse('users.activate', args=[user_.id, key])
         response = self.client.get(url, follow=True)
         eq_(200, response.status_code)
-        user = User.objects.get(pk=user.pk)
-        assert user.is_active
+        user_ = User.objects.get(pk=user_.pk)
+        assert user_.is_active
 
     @mock.patch.object(Site.objects, 'get_current')
     def test_new_user_claim_watches(self, get_current):
@@ -113,38 +112,39 @@ class RegisterTests(TestCase):
         watch(email='sumouser@test.com', save=True)
 
         get_current.return_value.domain = 'su.mo.com'
-        user = RegistrationProfile.objects.create_inactive_user(
+        user_ = RegistrationProfile.objects.create_inactive_user(
             'sumouser1234', 'testpass', 'sumouser@test.com')
         key = RegistrationProfile.objects.all()[0].activation_key
-        self.client.get(reverse('users.activate', args=[user.id, key]),
+        self.client.get(reverse('users.activate', args=[user_.id, key]),
                         follow=True)
 
         # Watches are claimed.
-        assert user.watch_set.exists()
+        assert user_.watch_set.exists()
 
     @mock.patch.object(Site.objects, 'get_current')
     def test_new_user_with_questions(self, get_current):
         """The user's questions are mentioned on the confirmation page."""
         get_current.return_value.domain = 'su.mo.com'
         # TODO: remove this test once we drop unconfirmed questions.
-        user = RegistrationProfile.objects.create_inactive_user(
+        user_ = RegistrationProfile.objects.create_inactive_user(
             'sumouser1234', 'testpass', 'sumouser@test.com')
 
         # Before we activate, let's create a question.
-        q = Question.objects.create(title='test_question', creator=user,
+        q = Question.objects.create(title='test_question', creator=user_,
                                     content='test')
 
         # Activate account.
         key = RegistrationProfile.objects.all()[0].activation_key
-        url = reverse('users.activate', args=[user.id, key])
+        url = reverse('users.activate', args=[user_.id, key])
         response = self.client.get(url, follow=True)
         eq_(200, response.status_code)
 
-        q = Question.objects.get(creator=user)
+        q = Question.objects.get(creator=user_)
         # Question is listed on the confirmation page.
         assert 'test_question' in response.content
         assert q.get_absolute_url() in response.content
 
+    @override_settings(DEBUG=True)
     def test_duplicate_username(self):
         u = user(save=True)
         response = self.client.post(reverse('users.register', locale='en-US'),
@@ -154,6 +154,7 @@ class RegisterTests(TestCase):
                                      'password2': 'foo'}, follow=True)
         self.assertContains(response, 'already exists')
 
+    @override_settings(DEBUG=True)
     def test_duplicate_email(self):
         u = user(email='noob@example.com', save=True)
         User.objects.create(username='noob', email='noob@example.com').save()
@@ -164,6 +165,7 @@ class RegisterTests(TestCase):
                                      'password2': 'foo'}, follow=True)
         self.assertContains(response, 'already exists')
 
+    @override_settings(DEBUG=True)
     def test_no_match_passwords(self):
         u = user(save=True)
         response = self.client.post(reverse('users.register', locale='en-US'),
@@ -203,6 +205,7 @@ class RegisterTests(TestCase):
         user = User.objects.get(pk=user.pk)
         assert user.is_active
 
+    @override_settings(DEBUG=True)
     @mock.patch.object(Site.objects, 'get_current')
     def test_new_contributor(self, get_current):
         """Verify that interested contributors are added to group."""
@@ -238,6 +241,7 @@ class ChangeEmailTestCase(TestCase):
         self.u = user(save=True)
         profile(user=self.u)
         self.client.login(username=self.u.username, password='testpass')
+        super(ChangeEmailTestCase, self).setUp()
 
     def test_redirect(self):
         """Test our redirect from old url to new one."""
@@ -323,11 +327,13 @@ class AvatarTests(TestCase):
         self.u = user(save=True)
         self.p = profile(user=self.u)
         self.client.login(username=self.u.username, password='testpass')
+        super(AvatarTests, self).setUp()
 
     def tearDown(self):
         p = Profile.uncached.get(user=self.u)
         if os.path.exists(p.avatar.path):
             os.unlink(p.avatar.path)
+        super(AvatarTests, self).tearDown()
 
     def test_upload_avatar(self):
         assert not self.p.avatar, 'User has no avatar.'
@@ -363,9 +369,10 @@ class SessionTests(TestCase):
     def setUp(self):
         self.u = user(save=True)
         self.client.logout()
+        super(SessionTests, self).setUp()
 
     # Need to set DEBUG = True for @ssl_required to not freak out.
-    @mock.patch.object(settings._wrapped, 'DEBUG', True)
+    @override_settings(DEBUG=True)
     def test_login_sets_extra_cookie(self):
         """On login, set the SESSION_EXISTS_COOKIE."""
         url = reverse('users.login')
@@ -375,7 +382,7 @@ class SessionTests(TestCase):
         c = res.cookies[settings.SESSION_EXISTS_COOKIE]
         assert 'secure' not in c.output().lower()
 
-    @mock.patch.object(settings._wrapped, 'DEBUG', True)
+    @override_settings(DEBUG=True)
     def test_logout_deletes_cookie(self):
         """On logout, delete the SESSION_EXISTS_COOKIE."""
         url = reverse('users.logout')
@@ -384,9 +391,8 @@ class SessionTests(TestCase):
         c = res.cookies[settings.SESSION_EXISTS_COOKIE]
         assert '1970' in c['expires']
 
-    @mock.patch.object(settings._wrapped, 'DEBUG', True, create=True)
-    @mock.patch.object(settings._wrapped, 'SESSION_EXPIRE_AT_BROWSER_CLOSE',
-                       True, create=True)
+    @override_settings(DEBUG=True,
+                       SESSION_EXPIRE_AT_BROWSER_CLOSE=True)
     def test_expire_at_browser_close(self):
         """If SESSION_EXPIRE_AT_BROWSER_CLOSE, do expire then."""
         url = reverse('users.login')
@@ -395,11 +401,9 @@ class SessionTests(TestCase):
         c = res.cookies[settings.SESSION_EXISTS_COOKIE]
         eq_('', c['max-age'])
 
-    @mock.patch.object(settings._wrapped, 'DEBUG', True, create=True)
-    @mock.patch.object(settings._wrapped, 'SESSION_EXPIRE_AT_BROWSER_CLOSE',
-                       False, create=True)
-    @mock.patch.object(settings._wrapped, 'SESSION_COOKIE_AGE', 123,
-                       create=True)
+    @override_settings(DEBUG=True,
+                       SESSION_EXPIRE_AT_BROWSER_CLOSE=False,
+                       SESSION_COOKIE_AGE=123)
     def test_expire_in_a_long_time(self):
         """If not SESSION_EXPIRE_AT_BROWSER_CLOSE, set an expiry date."""
         url = reverse('users.login')
@@ -414,6 +418,7 @@ class UserSettingsTests(TestCase):
         self.u = user(save=True)
         self.p = profile(user=self.u)
         self.client.login(username=self.u.username, password='testpass')
+        super(UserSettingsTests, self).setUp()
 
     def test_create_setting(self):
         url = reverse('users.edit_settings', locale='en-US')
@@ -432,6 +437,7 @@ class UserProfileTests(TestCase):
         self.profile = profile(user=self.u)
         self.url = reverse('users.profile', args=[self.u.pk],
                            locale='en-US')
+        super(UserProfileTests, self).setUp()
 
     def test_profile(self):
         res = self.client.get(self.url)

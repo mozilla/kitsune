@@ -1,11 +1,13 @@
-from datetime import datetime, timedelta
 import json
+from datetime import datetime, timedelta
 
-import mock
 from django.conf import settings
 from django.contrib.sites.models import Site
 from django.http import QueryDict
 from django.utils.http import urlquote
+from django.test.utils import override_settings
+
+import mock
 from elasticutils.contrib.django import get_es
 from nose import SkipTest
 from nose.tools import eq_
@@ -15,8 +17,8 @@ from test_utils import TestCase
 import search as constants
 from forums.tests import forum, thread, post
 from products.tests import product
-from questions.tests import question, answer, answervote, questionvote
 from questions.models import Question
+from questions.tests import question, answer, answervote, questionvote
 from search import es_utils
 from search.models import generate_tasks
 from sumo.tests import LocalizingClient
@@ -26,6 +28,7 @@ from users.tests import user
 from wiki.tests import document, revision, helpful_vote
 
 
+@override_settings(ES_LIVE_INDEXING=True)
 class ElasticTestCase(TestCase):
     """Base class for Elastic Search tests, providing some conveniences"""
     skipme = False
@@ -47,11 +50,11 @@ class ElasticTestCase(TestCase):
             cls.skipme = True
             return
 
-        # Swap out for better versions.
+        # Swap out for better versions that use ES_INDEX_PREFIX.
         cls._old_read_index = es_utils.READ_INDEX
         cls._old_write_index = es_utils.WRITE_INDEX
-        es_utils.READ_INDEX = u'sumo_test'
-        es_utils.WRITE_INDEX = u'sumo_test'
+        es_utils.READ_INDEX = settings.ES_INDEX_PREFIX + u'sumo_testindex'
+        es_utils.WRITE_INDEX = settings.ES_INDEX_PREFIX + u'sumo_testindex'
 
     @classmethod
     def tearDownClass(cls):
@@ -92,23 +95,9 @@ class ElasticTestCase(TestCase):
         # ones with mappings and all that.
         es_reindex_cmd(delete=True)
 
-        # TODO: This is kind of bad.  If setup_indexes gets called in
-        # a setUp and that setUp at some point throws an exception, we
-        # could end up in a situation where setUp throws an exception,
-        # so tearDown doesn't get called and we never set
-        # ES_LIVE_INDEXING to False and thus ES_LIVE_INDEXING is True
-        # for a bunch of tests it shouldn't be true for.
-        #
-        # For settings like this, it's better to mock it in the class
-        # because the mock will set it back regardless of whether the
-        # test fails.
-        settings.ES_LIVE_INDEXING = True
-
     def teardown_indexes(self):
         es = get_es()
         es.delete_index_if_exists(es_utils.READ_INDEX)
-
-        settings.ES_LIVE_INDEXING = False
 
 
 class ElasticSearchTasksTests(ElasticTestCase):
@@ -907,7 +896,7 @@ class ElasticSearchUnifiedViewTests(ElasticTestCase):
     def test_archived(self):
         """Ensure archived articles show only when requested."""
         doc = document(title=u'impalas', locale=u'en-US',
-                 is_archived=True, save=True)
+                       is_archived=True, save=True)
         revision(document=doc, summary=u'impalas',
                  is_approved=True, save=True)
 
@@ -1015,7 +1004,7 @@ class ElasticSearchSuggestionsTests(ElasticTestCase):
         get_current.return_value.domain = 'testserver'
 
         doc = document(title=u'doc1 audio', locale=u'en-US',
-                 is_archived=False, save=True)
+                       is_archived=False, save=True)
         revision(document=doc, summary=u'audio', content=u'audio',
                  is_approved=True, save=True)
 

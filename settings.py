@@ -26,12 +26,19 @@ MANAGERS = ADMINS
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',  # Add 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
-        'NAME': 'kitsune',  # Or path to database file if using sqlite3.
-        'USER': '',  # Not used with sqlite3.
-        'PASSWORD': '',  # Not used with sqlite3.
-        'HOST': '',  # Set to empty string for localhost. Not used with sqlite3.
-        'PORT': '',  # Set to empty string for default. Not used with sqlite3.
+        # Add 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3'
+        # or 'oracle'.
+        'ENGINE': 'django.db.backends.mysql',
+        # Or path to database file if sqlite3.
+        'NAME': 'kitsune',
+        # Not used with sqlite3.
+        'USER': '',
+        # Not used with sqlite3.
+        'PASSWORD': '',
+        # Set to empty string for localhost. Not used with sqlite3.
+        'HOST': '',
+        # Set to empty string for default. Not used with sqlite3.
+        'PORT': '',
         'OPTIONS': {'init_command': 'SET storage_engine=InnoDB'},
     }
 }
@@ -72,8 +79,8 @@ TIME_ZONE = 'US/Pacific'
 LANGUAGE_CODE = 'en-US'
 
 # Supported languages
-# Note: We periodically add locales to this list and it is easier to review
-# with changes with one locale per line.
+# Note: We periodically add locales to this list and it is easier to
+# review with changes with one locale per line.
 SUMO_LANGUAGES = (
     'ach',
     'ak',
@@ -170,8 +177,8 @@ LANGUAGES = dict([(i.lower(), LOCALES[i].native) for i in SUMO_LANGUAGES])
 
 LANGUAGE_URL_MAP = dict([(i.lower(), i) for i in SUMO_LANGUAGES])
 
-# Locales that are known but unsupported. Keys are the locale, values are
-# an optional fallback locale, or None, to use the LANGUAGE_CODE.
+# Locales that are known but unsupported. Keys are the locale, values
+# are an optional fallback locale, or None, to use the LANGUAGE_CODE.
 NON_SUPPORTED_LOCALES = {
     'af': None,
     'an': 'es',
@@ -190,8 +197,8 @@ TEXT_DOMAIN = 'messages'
 SITE_ID = 1
 
 
-# If you set this to False, Django will make some optimizations so as not
-# to load the internationalization machinery.
+# If you set this to False, Django will make some optimizations so as
+# not to load the internationalization machinery.
 USE_I18N = True
 USE_L10N = True
 
@@ -240,11 +247,12 @@ SUPPORTED_NONLOCALES = ('media', 'admin', 'robots.txt', 'services', '1',
 # Make this unique, and don't share it with anybody.
 SECRET_KEY = '#%tc(zja8j01!r#h_y)=hy!^k)9az74k+-ib&ij&+**s3-e^_z'
 
-# List of callables that know how to import templates from various sources.
+# List of callables that know how to import templates from various
+# sources.
 TEMPLATE_LOADERS = (
     'django.template.loaders.filesystem.Loader',
     'django.template.loaders.app_directories.Loader',
-#     'django.template.loaders.eggs.Loader',
+    # 'django.template.loaders.eggs.Loader',
 )
 
 TEMPLATE_CONTEXT_PROCESSORS = (
@@ -269,12 +277,13 @@ MIDDLEWARE_CLASSES = (
     'commonware.response.middleware.GraphiteMiddleware',
     'commonware.request.middleware.SetRemoteAddrFromForwardedFor',
 
-    # This gives us atomic success or failure on multi-row writes. It does not
-    # give us a consistent per-transaction snapshot for reads; that would need
-    # the serializable isolation level (which InnoDB does support) and code to
-    # retry transactions that roll back due to serialization failures. It's a
-    # possibility for the future. Keep in mind that memcache defeats
-    # snapshotted reads where we don't explicitly use the "uncached" manager.
+    # This gives us atomic success or failure on multi-row writes. It
+    # does not give us a consistent per-transaction snapshot for
+    # reads; that would need the serializable isolation level (which
+    # InnoDB does support) and code to retry transactions that roll
+    # back due to serialization failures. It's a possibility for the
+    # future. Keep in mind that memcache defeats snapshotted reads
+    # where we don't explicitly use the "uncached" manager.
     'django.middleware.transaction.TransactionMiddleware',
 
     # LocaleURLMiddleware must be before any middleware that uses
@@ -332,8 +341,8 @@ TEMPLATE_DIRS = (
     path('templates'),
 )
 
-# TODO: Figure out why changing the order of apps (for example, moving taggit
-# higher in the list) breaks tests.
+# TODO: Figure out why changing the order of apps (for example, moving
+# taggit higher in the list) breaks tests.
 INSTALLED_APPS = (
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -409,7 +418,7 @@ def JINJA_CONFIG():
                              'jinja2.ext.with_'],
               'finalize': lambda x: x if x is not None else ''}
     if (hasattr(cache, 'scheme') and 'memcached' in cache.scheme and
-        not settings.DEBUG):
+            not settings.DEBUG):
         # We're passing the _cache object directly to jinja because
         # Django can't store binary directly; it enforces unicode on it.
         # Details: http://jinja.pocoo.org/2/documentation/api#bytecode-cache
@@ -426,8 +435,8 @@ TOWER_KEYWORDS = {
     '_lazy': None,
 }
 
-# Tells the extract script what files to look for l10n in and what function
-# handles the extraction.  The Tower library expects this.
+# Tells the extract script what files to look for l10n in and what
+# function handles the extraction.  The Tower library expects this.
 DOMAIN_METHODS = {
     'messages': [
         ('apps/forums/**.py', 'ignore'),
@@ -459,14 +468,14 @@ DOMAIN_METHODS = {
     ],
 }
 
-# These domains will not be merged into messages.pot and will use separate PO
-# files. See the following URL for an example of how to set these domains
-# in DOMAIN_METHODS.
-# http://github.com/jbalogh/zamboni/blob/d4c64239c24aa2f1e91276909823d1d1b290f0ee/settings.py#L254
+# These domains will not be merged into messages.pot and will use
+# separate PO files. See the following URL for an example of how to
+# set these domains in DOMAIN_METHODS.
+# http://github.com/jbalogh/zamboni/blob/d4c64239c24aa2f1e91276909823d1d1b290f0ee/settings.py#L254 # nopep8
 STANDALONE_DOMAINS = [
     TEXT_DOMAIN,
     'javascript',
-    ]
+]
 
 # If you have trouble extracting strings with Tower, try setting this
 # to True
@@ -780,9 +789,9 @@ ES_INDEXES = {'default': 'sumo-20121227'}
 # and write to the same index.
 ES_WRITE_INDEXES = ES_INDEXES
 # This is prepended to index names to get the final read/write index
-# names used by kitsune. This is so that you can have multiple environments
-# pointed at the same ElasticSearch cluster and not have them bump into
-# one another.
+# names used by kitsune. This is so that you can have multiple
+# environments pointed at the same ElasticSearch cluster and not have
+# them bump into one another.
 ES_INDEX_PREFIX = 'sumo'
 # Keep indexes up to date as objects are made/deleted.
 ES_LIVE_INDEXING = False
@@ -806,8 +815,8 @@ SEARCH_DEFAULT_MAX_QUESTION_AGE = 180 * 24 * 60 * 60  # seconds
 # IA default settings
 IA_DEFAULT_CATEGORIES = (10, 20,)
 
-# The length for which we would like the user to cache search forms and
-# results, in minutes.
+# The length for which we would like the user to cache search forms
+# and results, in minutes.
 SEARCH_CACHE_PERIOD = 15
 
 # Maximum length of the filename. Forms should use this and raise
@@ -955,8 +964,8 @@ WEBTRENDS_PROFILE_ID = 'ABC123'  # Profile id for SUMO
 WEBTRENDS_WIKI_REPORT_URL = 'https://example.com/see_production.rst'
 WEBTRENDS_USER = r'someaccount\someusername'
 WEBTRENDS_PASSWORD = 'password'
-WEBTRENDS_EPOCH = date(2010, 8, 1)  # When WebTrends started gathering stats on
-                                    # the KB
+WEBTRENDS_EPOCH = date(2010, 8, 1)  # When WebTrends started gathering
+                                    # stats on the KB
 
 MOBILE_COOKIE = 'msumo'
 MOBILE_USER_AGENTS = 'android|fennec|mobile|iphone|opera (?:mini|mobi)'
