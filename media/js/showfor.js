@@ -459,33 +459,6 @@ var ShowFor = {
         updateForsAndToc(true);
 
         updateShowforSelectors();
-
-        // Track showfor changes in Google Analytics:
-        $osMenu.change(function() {
-            if(_gaq) {
-                _gaq.push(['_trackEvent',
-                           'ShowFor Switch',
-                           'OS - ' + $(this).val(),
-                           getEnglishSlug() + ' / ' + getLocale()]);
-            }
-        });
-
-        $browserMenu.change(function() {
-            if(_gaq) {
-                _gaq.push(['_trackEvent',
-                           'ShowFor Switch',
-                           'Version - ' + $(this).val(),
-                           getEnglishSlug() + ' / ' + getLocale()]);
-            }
-        });
-
-        function getLocale() {
-            return $('html').attr('lang');
-        }
-
-        function getEnglishSlug() {
-            return $('body').data('default-slug');
-        }
     },
 
     // Return a table of contents (an <ul>) listing the visible headers within
