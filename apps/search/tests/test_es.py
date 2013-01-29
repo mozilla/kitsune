@@ -1,11 +1,12 @@
-from datetime import datetime, timedelta
 import json
+from datetime import datetime, timedelta
 
-import mock
 from django.conf import settings
 from django.contrib.sites.models import Site
 from django.http import QueryDict
 from django.utils.http import urlquote
+
+import mock
 from elasticutils.contrib.django import get_es
 from nose import SkipTest
 from nose.tools import eq_
@@ -15,8 +16,8 @@ from test_utils import TestCase
 import search as constants
 from forums.tests import forum, thread, post
 from products.tests import product
-from questions.tests import question, answer, answervote, questionvote
 from questions.models import Question
+from questions.tests import question, answer, answervote, questionvote
 from search import es_utils
 from search.models import generate_tasks
 from sumo.tests import LocalizingClient
