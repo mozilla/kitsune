@@ -96,15 +96,15 @@ class RegisterTests(TestCase):
     @mock.patch.object(Site.objects, 'get_current')
     def test_new_user_activation(self, get_current):
         get_current.return_value.domain = 'su.mo.com'
-        user = RegistrationProfile.objects.create_inactive_user(
+        user_ = RegistrationProfile.objects.create_inactive_user(
             'sumouser1234', 'testpass', 'sumouser@test.com')
-        assert not user.is_active
+        assert not user_.is_active
         key = RegistrationProfile.objects.all()[0].activation_key
-        url = reverse('users.activate', args=[user.id, key])
+        url = reverse('users.activate', args=[user_.id, key])
         response = self.client.get(url, follow=True)
         eq_(200, response.status_code)
-        user = User.objects.get(pk=user.pk)
-        assert user.is_active
+        user_ = User.objects.get(pk=user_.pk)
+        assert user_.is_active
 
     @mock.patch.object(Site.objects, 'get_current')
     def test_new_user_claim_watches(self, get_current):
@@ -112,34 +112,34 @@ class RegisterTests(TestCase):
         watch(email='sumouser@test.com', save=True)
 
         get_current.return_value.domain = 'su.mo.com'
-        user = RegistrationProfile.objects.create_inactive_user(
+        user_ = RegistrationProfile.objects.create_inactive_user(
             'sumouser1234', 'testpass', 'sumouser@test.com')
         key = RegistrationProfile.objects.all()[0].activation_key
-        self.client.get(reverse('users.activate', args=[user.id, key]),
+        self.client.get(reverse('users.activate', args=[user_.id, key]),
                         follow=True)
 
         # Watches are claimed.
-        assert user.watch_set.exists()
+        assert user_.watch_set.exists()
 
     @mock.patch.object(Site.objects, 'get_current')
     def test_new_user_with_questions(self, get_current):
         """The user's questions are mentioned on the confirmation page."""
         get_current.return_value.domain = 'su.mo.com'
         # TODO: remove this test once we drop unconfirmed questions.
-        user = RegistrationProfile.objects.create_inactive_user(
+        user_ = RegistrationProfile.objects.create_inactive_user(
             'sumouser1234', 'testpass', 'sumouser@test.com')
 
         # Before we activate, let's create a question.
-        q = Question.objects.create(title='test_question', creator=user,
+        q = Question.objects.create(title='test_question', creator=user_,
                                     content='test')
 
         # Activate account.
         key = RegistrationProfile.objects.all()[0].activation_key
-        url = reverse('users.activate', args=[user.id, key])
+        url = reverse('users.activate', args=[user_.id, key])
         response = self.client.get(url, follow=True)
         eq_(200, response.status_code)
 
-        q = Question.objects.get(creator=user)
+        q = Question.objects.get(creator=user_)
         # Question is listed on the confirmation page.
         assert 'test_question' in response.content
         assert q.get_absolute_url() in response.content
