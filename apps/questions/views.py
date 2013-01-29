@@ -648,7 +648,7 @@ def question_vote(request, question_id):
 
         if request.is_ajax():
             tmpl = 'questions/includes/question_vote_thanks.html'
-            form = _init_watch_form(request)
+            form = WatchQuestionForm(request.user)
             html = jingo.render_to_string(request, tmpl, {'question': question,
                                                           'watch_form': form})
             return HttpResponse(json.dumps({'html': html}))
@@ -1160,7 +1160,6 @@ def _answers_data(request, question_id, form=None, watch_form=None,
             'answers': answers_,
             'form': form or AnswerForm(),
             'answer_preview': answer_preview,
-            'watch_form': watch_form or _init_watch_form(request, 'reply'),
             'feeds': feed_urls,
             'frequencies': frequencies,
             'is_watching_question': is_watching_question,
@@ -1199,9 +1198,3 @@ def _get_top_contributors():
     These are the users with the most solutions in the last week.
     """
     return cache.get(settings.TOP_CONTRIBUTORS_CACHE_KEY)
-
-
-# Initialize a WatchQuestionForm
-def _init_watch_form(request, event_type='solution'):
-    initial = {'event_type': event_type}
-    return WatchQuestionForm(request.user, initial=initial)
