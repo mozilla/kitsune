@@ -655,6 +655,7 @@ MINIFY_BUNDLES = {
             'js/tags.js',
             'js/dashboards.js',
             'js/editable.js',
+            'js/wiki.metrics.js',
         ),
         'mobile/wiki': (
             'js/libs/underscore.js',
@@ -664,6 +665,7 @@ MINIFY_BUNDLES = {
             'js/showfor.js',
             'js/ajaxform.js',
             'js/mobile/wiki.js'
+            'js/wiki.metrics.js',
         ),
         'wiki.history': (
             'js/historycharts.js',
