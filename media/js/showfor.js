@@ -9,7 +9,7 @@
 
 (function($) {
 
-"use strict";  // following the Ricky kbox awesomeness
+"use strict";
 
 
 var OSES, BROWSERS, VERSIONS, MISSING_MSG;
