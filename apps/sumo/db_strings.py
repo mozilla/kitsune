@@ -71,26 +71,16 @@ _("""Webmail""", "DB: topics.Topic.title")
 _("""Webmail""", "DB: topics.Topic.description")
 _("""Firefox""", "DB: products.Product.title")
 _("""Web browser for Windows, Mac and Linux""", "DB: products.Product.description")
-_("""Firefox for mobile""", "DB: products.Product.title")
+_("""Firefox for Android""", "DB: products.Product.title")
 _("""Web browser for Android smartphones and tablets""", "DB: products.Product.description")
 _("""Firefox OS""", "DB: products.Product.title")
 _("""Firefox OS""", "DB: products.Product.description")
+_("""Firefox Marketplace""", "DB: products.Product.title")
+_("""Firefox Marketplace""", "DB: products.Product.description")
 _("""Mozilla Persona""", "DB: products.Product.title")
 _("""Mozilla Persona""", "DB: products.Product.description")
 # This is a karma title.
 _("""Administrator""", "DB: karma.Title.name")
-# This is a karma title.
-_("""Cadet/Soldier""", "DB: karma.Title.name")
-# This is a karma title.
-_("""Captain/Major""", "DB: karma.Title.name")
-# This is a karma title.
-_("""Chief Commander""", "DB: karma.Title.name")
-# This is a karma title.
-_("""Colonel""", "DB: karma.Title.name")
-# This is a karma title.
-_("""Drill Instructor""", "DB: karma.Title.name")
-# This is a karma title.
-_("""Lieutenant""", "DB: karma.Title.name")
 # This is a karma title.
 _("""Moderator""", "DB: karma.Title.name")
 # This is a karma title.
