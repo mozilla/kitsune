@@ -49,6 +49,15 @@ class TestFacetHelpersMixin(object):
         doc4.topics.add(self.bookmarks)
         doc4.products.add(self.desktop)
 
+        # An article without current revision should be "invisible"
+        # to everything.
+        doc5 = revision(is_approved=False, save=True).document
+        doc5.topics.add(self.general)
+        doc5.topics.add(self.bookmarks)
+        doc5.topics.add(self.sync)
+        doc5.products.add(self.desktop)
+        doc5.products.add(self.mobile)
+
 
 class TestFacetHelpers(TestCase, TestFacetHelpersMixin):
     def setUp(self):
