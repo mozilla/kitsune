@@ -32,7 +32,7 @@ IMAGE_PARAMS = ['alt', 'align', 'caption', 'valign', 'frame', 'page', 'link',
 IMAGE_PARAM_VALUES = {
     'align': ('none', 'left', 'center', 'right'),
     'valign': ('baseline', 'sub', 'super', 'top', 'text-top', 'middle',
-              'bottom', 'text-bottom'),
+               'bottom', 'text-bottom'),
 }
 
 
@@ -44,8 +44,8 @@ def wiki_to_html(wiki_markup, locale=settings.WIKI_DEFAULT_LANGUAGE,
 
 
 def get_object_fallback(cls, title, locale, default=None, **kwargs):
-    """Return an instance of cls matching title and locale, or fall back to the
-    default locale.
+    """Return an instance of cls matching title and locale, or fall
+    back to the default locale.
 
     When falling back to the default locale, follow any wiki redirects
     internally.
@@ -71,12 +71,13 @@ def get_object_fallback(cls, title, locale, default=None, **kwargs):
             if trans and trans.current_revision:
                 return trans
 
-        # Follow redirects internally in an attempt to find a translation of
-        # the final redirect target in the requested locale. This happens a lot
-        # when an English article is renamed and a redirect is left in its
-        # wake: we wouldn't want the non-English user to be linked to the
-        # English redirect, which would happily redirect them to the English
-        # final article.
+        # Follow redirects internally in an attempt to find a
+        # translation of the final redirect target in the requested
+        # locale. This happens a lot when an English article is
+        # renamed and a redirect is left in its wake: we wouldn't want
+        # the non-English user to be linked to the English redirect,
+        # which would happily redirect them to the English final
+        # article.
         if hasattr(default_lang_doc, 'redirect_document'):
             target = default_lang_doc.redirect_document()
             if target:
@@ -98,9 +99,9 @@ def _get_wiki_link(title, locale):
     found is False if the document does not exist.
 
     """
-    # Prevent circular import. sumo is conceptually a utils apps and shouldn't
-    # have import-time (or really, any, but that's not going to happen)
-    # dependencies on client apps.
+    # Prevent circular import. sumo is conceptually a utils apps and
+    # shouldn't have import-time (or really, any, but that's not going
+    # to happen) dependencies on client apps.
     from wiki.models import Document
 
     d = get_object_fallback(Document, locale=locale, title=title,
@@ -177,7 +178,8 @@ def build_hook_params(string, locale, allowed_params=[],
 
 
 class WikiParser(Parser):
-    """Wrapper for wikimarkup which adds Kitsune-specific callbacks and setup.
+    """Wrapper for wikimarkup which adds Kitsune-specific callbacks
+    and setup.
     """
 
     def __init__(self, base_url=None):
@@ -192,12 +194,14 @@ class WikiParser(Parser):
               nofollow=False):
         """Given wiki markup, return HTML.
 
-        Pass a locale to get all the hooks to look up Documents or Media
-        (Video, Image) for that locale. We key Documents by title and locale,
-        so both are required to identify it for a e.g. link.
+        Pass a locale to get all the hooks to look up Documents or
+        Media (Video, Image) for that locale. We key Documents by
+        title and locale, so both are required to identify it for a
+        e.g. link.
 
-        Since py-wikimarkup's hooks don't offer custom paramters for callbacks,
-        we're using self.locale to keep things simple."""
+        Since py-wikimarkup's hooks don't offer custom paramters for
+        callbacks, we're using self.locale to keep things simple.
+        """
         self.locale = locale
 
         parser_kwargs = {'tags': tags} if tags else {}
