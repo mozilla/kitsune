@@ -1,11 +1,13 @@
-{% load i18n %}{# L10n: This is an email.  Whitespace matters! #}{% blocktrans %}
-It seems your account has already been activated.
+{# L10n: This is an email.  Whitespace matters! #}
+{{ _('It seems your account has already been activated.') }}
 
-You can log in at:
+{# L10n: This is an email.  Whitespace matters! #}
+{{ _('You can log in at:') }}
 
 https://{{ domain }}{{ login_url }}
 
-Thanks!
+{# L10n: This is at the end of an email. #}
+{{ _('Thanks!') }}
 
-The {{ domain }} team
-{% endblocktrans %}
+{# L10n: This is at the end of an email. #}
+{{ _('The {domain} team')|f(domain=domain) }}

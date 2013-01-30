@@ -9,7 +9,6 @@ from django.contrib.auth.models import User, Group
 from django.contrib.sites.models import Site
 from django.core import mail
 from django.db import models
-from django.template.loader import render_to_string
 
 from celery.task import task
 from statsd import statsd
@@ -18,6 +17,7 @@ from tower import ugettext as _
 from tower import ugettext_lazy as _lazy
 
 from countries import COUNTRIES
+from sumo import email_utils
 from sumo.models import ModelBase, LocaleField
 from sumo.urlresolvers import reverse
 from sumo.utils import auto_delete_files, chunked
@@ -133,7 +133,18 @@ class ConfirmationManager(models.Manager):
                         'activate_url': url,
                         'login_url': reverse('users.login')}
         email_kwargs.update(kwargs)
-        message = render_to_string(email_template, email_kwargs)
+
+        # RegistrationProfile doesn't have a locale attribute. So if
+        # we get one of those, then we have to get the real profile
+        # from the user.
+        if hasattr(confirmation_profile, 'locale'):
+            locale = confirmation_profile.locale
+        else:
+            locale = confirmation_profile.user.profile.locale
+
+        with email_utils.uselocale(locale):
+            message = email_utils.render_email(email_template, email_kwargs)
+
         mail.send_mail(subject, message, settings.DEFAULT_FROM_EMAIL,
                        [send_to])
 

@@ -7,7 +7,7 @@ from nose.tools import eq_
 
 from questions.models import Question, QuestionVote, Answer, AnswerVote
 from sumo.tests import LocalizingClient, TestCase, with_save
-from users.tests import user
+from users.tests import user, profile
 
 
 class TestCaseBase(TestCase):
@@ -53,7 +53,7 @@ def question(**kwargs):
                     is_locked=0)
     defaults.update(kwargs)
     if 'creator' not in kwargs and 'creator_id' not in kwargs:
-        defaults['creator'] = user(save=True)
+        defaults['creator'] = profile().user
     return Question(**defaults)
 
 
@@ -64,7 +64,7 @@ def questionvote(**kwargs):
     if 'question' not in kwargs and 'queation_id' not in kwargs:
         defaults['question'] = question(save=True)
     if 'creator' not in kwargs and 'creator_id' not in kwargs:
-        defaults['creator'] = user(save=True)
+        defaults['creator'] = profile().user
     return QuestionVote(**defaults)
 
 

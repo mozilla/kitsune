@@ -10,6 +10,7 @@ from django.template import Context, loader
 
 from tower import ugettext as _, ugettext_lazy as _lazy
 
+from sumo import email_utils
 from sumo.urlresolvers import reverse
 from sumo.widgets import ImageWidget
 from upload.forms import clean_image_extension
@@ -304,7 +305,7 @@ class ForgotUsernameForm(forms.Form):
         current_site = get_current_site(request)
         site_name = current_site.name
         domain = current_site.domain
-        t = loader.get_template(email_template)
+
         c = {
             'email': user.email,
             'domain': domain,
@@ -312,9 +313,12 @@ class ForgotUsernameForm(forms.Form):
             'site_name': site_name,
             'username': user.username,
             'protocol': use_https and 'https' or 'http'}
-        send_mail(
-            _("Your username on %s") % site_name,
-            t.render(Context(c)), settings.TIDINGS_FROM_ADDRESS, [user.email])
+
+        subject = _("Your username on %s") % site_name
+        message = email_utils.render_email(email_template, c)
+
+        send_mail(subject, message, settings.TIDINGS_FROM_ADDRESS,
+                  [user.email])
 
 
 def _check_password(password):

@@ -1,24 +1,38 @@
-{% load i18n %}{% load unsubscribe_instructions %}{# L10n: This is an email. Whitespace matters! #}{% autoescape off %}{% if username %}{% blocktrans %}Hi {{ username }},{% endblocktrans %}
+{% from "includes/unsubscribe_text.ltxt" import unsubscribe_text with context %}
+{# L10n: This is an email. Whitespace matters! #}
+{% if username %}{{ _('Hi {username},')|f(username=username) }}
 
-{% endif %}{% blocktrans %}We just wanted to let you know that {{ answerer }}
+{% endif %}
+{# L10n: This is an email. Whitespace matters! #}
+{% trans %}
+We just wanted to let you know that {{ answerer }}
 has found a solution to a Firefox question that you're following.
-The question
+{% endtrans %}
 
+
+{{ _('The question:') }}
 {{ question_title }}
 
-was marked as solved by its asker, {{ asker }}.
+{{ _('was marked as solved by its asker, {asker}.')|f(asker=asker) }}
 
-You can view the solution using the link below.
+{{ _('You can view the solution using the link below.') }}
 
+{% trans %}
 Did this answer also help you? Did you find another post more
 helpful? Let other Firefox users know by voting next to the
 answer.
+{% endtrans %}
+
 
 https://{{ host }}{{ solution_url }}
 
+{% trans %}
 Did you know that {{ answerer }} is a Firefox user
 just like you? Get started helping other Firefox users by
 browsing questions at
 https://{{ host }}/questions?filter=unsolved -- you
 might just make someone's day!
-{% endblocktrans %}{% endautoescape %}{% unsubscribe_instructions watch %}
+{% endtrans %}
+
+
+{{ unsubscribe_text(watch) }}
