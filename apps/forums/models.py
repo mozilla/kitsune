@@ -40,7 +40,7 @@ class Forum(NotificationsMixin, ModelBase):
     slug = models.SlugField(unique=True)
     description = models.TextField(null=True)
     last_post = models.ForeignKey('Post', related_name='last_post_in_forum',
-                                  null=True)
+                                  null=True, on_delete=models.SET_NULL)
 
     # Dictates the order in which forums are displayed in the forum list.
     display_order = models.IntegerField(default=1, db_index=True)
@@ -105,7 +105,7 @@ class Thread(NotificationsMixin, ModelBase, SearchMixin):
                                    db_index=True)
     creator = models.ForeignKey(User)
     last_post = models.ForeignKey('Post', related_name='last_post_in',
-                                  null=True)
+                                  null=True, on_delete=models.SET_NULL)
     replies = models.IntegerField(default=0)
     is_locked = models.BooleanField(default=False)
     is_sticky = models.BooleanField(default=False, db_index=True)

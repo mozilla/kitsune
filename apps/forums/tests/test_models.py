@@ -164,6 +164,18 @@ class ForumModelTestCase(ForumTestCase):
         f.delete()
         assert not NewThreadEvent.is_notifying('me@me.com', f)
 
+    def test_last_post_creator_deleted(self):
+        """Delete the creator of the last post and verify forum survives."""
+        # Create a post and verify it is the last one in the forum.
+        post_ = post(content="test", save=True)
+        forum_ = post_.thread.forum
+        eq_(forum_.last_post.id, post_.id)
+
+        # Delete the post creator, then check the forum still exists
+        post_.author.delete()
+        forum_ = Forum.objects.get(id=forum_.id)
+        eq_(forum_.last_post, None)
+
 
 class ThreadModelTestCase(ForumTestCase):
     def test_delete_thread_with_last_forum_post(self):
