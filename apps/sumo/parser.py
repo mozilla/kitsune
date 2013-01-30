@@ -236,7 +236,7 @@ class WikiParser(Parser):
         link = _get_wiki_link(title, self.locale)
         extra_a_attr = ''
         if not link['found']:
-            extra_a_attr += (' class="new" title="{tooltip}"'
+            extra_a_attr += (u' class="new" title="{tooltip}"'
                              .format(tooltip=_('Page does not exist.')))
         if not text:
             text = link['text']
