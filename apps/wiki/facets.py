@@ -22,6 +22,7 @@ def products_for(topics):
     docs = Document.objects.filter(
         locale=settings.WIKI_DEFAULT_LANGUAGE,
         is_archived=False,
+        current_revision__isnull=False,
         category__in=settings.IA_DEFAULT_CATEGORIES)
 
     for topic in topics:
@@ -41,6 +42,7 @@ def topics_for(products, topics=None):
     docs = Document.objects.filter(
         locale=settings.WIKI_DEFAULT_LANGUAGE,
         is_archived=False,
+        current_revision__isnull=False,
         category__in=settings.IA_DEFAULT_CATEGORIES)
 
     for product in products:
@@ -136,9 +138,11 @@ def _es_documents_for(locale, topics, products=None):
 
 def _db_documents_for(locale, topics, products=None):
     """DB implementation of topics_for."""
-    qs = (Document.objects
-        .filter(locale=locale, is_archived=False,
-                category__in=settings.IA_DEFAULT_CATEGORIES))
+    qs = Document.objects.filter(
+        locale=locale,
+        is_archived=False,
+        current_revision__isnull=False,
+        category__in=settings.IA_DEFAULT_CATEGORIES)
     for topic in topics:
         qs = qs.filter(topics=topic)
     for product in products or []:
