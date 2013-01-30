@@ -458,6 +458,10 @@ DOMAIN_METHODS = {
 
         ('**/templates/**.lhtml', tower_tmpl)
     ],
+    'ltxt': [
+        ('apps/questions/templates/**.ltxt', tower_tmpl),
+        ('apps/users/templates/**.ltxt', tower_tmpl),
+    ],
     'javascript': [
         # We can't say **.js because that would dive into any libraries.
         ('media/js/*-all.js', 'ignore'),

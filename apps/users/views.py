@@ -443,6 +443,14 @@ def password_reset(request, template):
         form = PasswordResetForm(request.POST)
         was_valid = form.is_valid()
         if was_valid:
+            # TODO: Since we're using Jingo in a way that doesn't
+            # override the Django template loader, the pw_reset.ltxt
+            # email template must be a Django template and not a Jinja
+            # template.
+            #
+            # After we switch all the rendering everywhere, we can
+            # probably change this back. Until then, I'm pretty sure
+            # this won't get translated.
             try_send_email_with_form(
                 form.save, form, 'email',
                 use_https=request.is_secure(),

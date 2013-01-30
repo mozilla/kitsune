@@ -1,21 +1,25 @@
-{% load i18n %}{% load unsubscribe_instructions %}{# L10n: This is an email. Whitespace matters! #}{% autoescape off %}{% blocktrans %}Hi {{ username }},
+{% from "includes/unsubscribe_text.ltxt" import unsubscribe_text with context %}
+{# L10n: This is an email. Whitespace matters! #}
+{{ _('Hi {username},')|f(username=username) }}
 
-{{ answerer }} has posted an answer to your question on {{ host }}:
+{{ _('{answerer} has posted an answer to your question on {host}:')|f(answerer=answerer, host=host) }}
 {{ question_title }}
 https://{{ host }}{{ answer_url }}
 
-{{ answerer }} wrote:
+{{ _('{answerer} wrote:')|f(answerer=answerer) }}
 "{{ answer }}"
 
-See the answer:
+{{ _('See the answer:') }}
 https://{{ host }}{{ answer_url }}
 
-If this answer solves your problem, please mark it as "solved":
+{{ _('If this answer solves your problem, please mark it as "solved":') }}
 https://{{ host }}{{ solution_url }}
-This will help other Firefox users find good answers to their questions!
 
-Help other Firefox users by browsing for unsolved questions on {{ host }}:
+{{ _('This will help other Firefox users find good answers to their questions!') }}
+
+{{ _('Help other Firefox users by browsing for unsolved questions on {host}:')|f(host=host) }}
 https://{{ host }}/questions?filter=unsolved
 
-You might just make someone's day!
-{% endblocktrans %}{% endautoescape %}{% unsubscribe_instructions watch %}
+{{ _('You might just make someone\'s day!') }}
+
+{{ unsubscribe_text(watch) }}

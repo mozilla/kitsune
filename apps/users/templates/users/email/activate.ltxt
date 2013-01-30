@@ -1,17 +1,29 @@
-{% load i18n %}{# L10n: This is an email.  Whitespace matters! #}{% blocktrans %}
+{# L10n: This is an email.  Whitespace matters! #}
+{% trans %}
 Welcome to {{ domain }}.
+{% endtrans %}
 
+
+{# L10n: This is an email.  Whitespace matters! #}
+{% trans %}
 Before you can use your new account you must activate it -
 this ensures the e-mail address you used is valid and belongs
 to you.  To activate your account, click the link below or
 copy and paste the whole thing into your browser's location bar:
+{% endtrans %}
+
 
 https://{{ domain }}{{ activate_url }}?reg=main
 
+{# L10n: This is an email.  Whitespace matters! #}
+{% trans %}
 Once you've successfully activated your account, you can throw
 away this e-mail.
+{% endtrans %}
 
-Thanks!
 
-The {{ domain }} team
-{% endblocktrans %}
+{# L10n: This is at the end of an email. #}
+{{ _('Thanks!') }}
+
+{# L10n: This is at the end of an email. #}
+{{ _('The {domain} team')|f(domain=domain) }}
