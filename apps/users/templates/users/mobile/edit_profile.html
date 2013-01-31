@@ -15,8 +15,11 @@
 {% block content %}
   <form id="edit-form" class="details" method="post" action="{{ request.path }}">
     {{ csrf() }}
-    <img class="avatar" src="{{ profile_avatar(profile.user) }}">
-    {{ form['name'] }}
+
+    <div class="cf">
+      <img class="avatar" src="{{ profile_avatar(profile.user) }}">
+      {{ form['name'] }}
+    </div>
 
     <div id="email-field">
       <label>{{ _('Email') }}</label>
