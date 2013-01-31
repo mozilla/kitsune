@@ -27,9 +27,9 @@ import sys
 try:
     import polib  # from http://bitbucket.org/izi/polib
 except ImportError:
-    print "You need to install polib.  Do:"
-    print ""
-    print "   pip install polib"
+    print 'You need to install polib.  Do:'
+    print ''
+    print '   pip install polib'
     sys.exit()
 
 
@@ -61,11 +61,15 @@ def debug(*args):
 
 
 def wc(c):
-    return c == "'" or c in string.letters
+    return c == '\'' or c in string.letters
 
 
 def nwc(c):
     return not wc(c)
+
+
+def is_whitespace(s):
+    return re.match('^\\s*$', s) != None
 
 
 # List of transform rules. The tuples have:
@@ -80,45 +84,59 @@ def nwc(c):
 # See the transform code for details.
 TRANSFORM = (
     # INW?, NIW?, match, WC?, NW?, replacement
+    # Anti-replacements: need these so that we make sure these words
+    # don't get screwed up by later rules.
+    (False, True, 'need', False, True, 'need'),
+    (False, True, 'Need', False, True, 'Need'),
+
     # Replace entire words
-    (False, True, "add-on", False, True, "bilge rat"),
-    (False, True, "add-ons", False, True, "bilge rats"),
-    (False, True, "are", False, True, "bee"),
-    (False, True, "browser", False, True, "corsair"),
-    (False, True, "my", False, True, "me"),
-    (False, True, "no", False, True, "nay"),
-    (False, True, "of", False, True, "o'"),
-    (False, True, "over", False, True, "o'er"),
-    (False, True, "plugin", False, True, "mug o' grog"),
-    (False, True, "plugins", False, True, "mugs o' grog"),
-    (False, True, "program", False, True, "Jolly Roger"),
-    (False, True, "the", False, True, "th'"),
-    (False, True, "there", False, True, "tharr"),
-    (False, True, "want", False, True, "wants"),
-    (False, True, "where", False, True, "'erre"),
-    (False, True, "with", False, True, "wit'"),
-    (False, True, "yes", False, True, "aye"),
-    (False, True, "you", False, True, "ye'"),
-    (False, True, "You", False, True, "Ye'"),
-    (False, True, "your", False, True, "yer'"),
-    (False, True, "Your", False, True, "Yer'"),
+    (False, True, 'add-on', False, True, 'bilge rat'),
+    (False, True, 'add-ons', False, True, 'bilge rats'),
+    (False, True, 'are', False, True, 'bee'),
+    (False, True, 'browser', False, True, 'corsair'),
+    (False, True, 'Hi', False, True, 'H\'ello'),
+    (False, True, 'my', False, True, 'me'),
+    (False, True, 'no', False, True, 'nay'),
+    (False, True, 'of', False, True, 'o\''),
+    (False, True, 'over', False, True, 'o\'er'),
+    (False, True, 'plugin', False, True, 'mug o\' grog'),
+    (False, True, 'plugins', False, True, 'mugs o\' grog'),
+    (False, True, 'program', False, True, 'Jolly Roger'),
+    (False, True, 'the', False, True, 'th\''),
+    (False, True, 'there', False, True, 'tharr'),
+    (False, True, 'want', False, True, 'wants'),
+    (False, True, 'where', False, True, '\'erre'),
+    (False, True, 'with', False, True, 'wit\''),
+    (False, True, 'yes', False, True, 'aye'),
+    (False, True, 'you', False, True, 'ye\''),
+    (False, True, 'You', False, True, 'Ye\''),
+    (False, True, 'your', False, True, 'yer\''),
+    (False, True, 'Your', False, True, 'Yer\''),
 
     # Prefixes
-    (False, True, "hel", True, False, "'el"),
-    (False, True, "Hel", True, False, "'el"),
+    (False, True, 'hel', True, False, '\'el'),
+    (False, True, 'Hel', True, False, '\'el'),
 
     # Mid-word
-    (True, False, "er", True, False, "ar"),
+    (True, False, 'er', True, False, 'ar'),
 
     # Suffixes
-    (True, False, "a", False, True, "ar"),
-    (True, False, "ed", False, True, "'d"),
-    (True, False, "ing", False, True, "in'"),
-    (True, False, "ort", False, True, "art"),
+    (True, False, 'a', False, True, 'ar'),
+    (True, False, 'ed', False, True, '\'d'),
+    (True, False, 'ing', False, True, 'in\''),
+    (True, False, 'ort', False, True, 'art'),
+    (True, False, 'w', False, True, 'ww'),
 )
 
 
 def pirate_transform(s):
+    """Transforms a string into Pirate.
+
+    :arg s: The string to transform.
+
+    :returns: Pirated string.
+
+    """
     old_s = s
     out = []
 
@@ -126,7 +144,7 @@ def pirate_transform(s):
 
     # TODO: This is awful--better to do a real lexer
     while s:
-        if s.startswith((".", "!", "?")):
+        if s.startswith(('.', '!', '?')):
             in_word = False
             out.append(s[0])
             s = s[1:]
@@ -137,16 +155,16 @@ def pirate_transform(s):
         for mem in TRANSFORM:
             # Match inside a word? (Not a prefix.)
             if in_word and not mem[0]:
-                debug(mem, "not in word")
+                debug(mem, 'not in word')
                 continue
 
             # Not match inside a word? (Prefix.)
             if not in_word and not mem[1]:
-                debug(mem, "in word")
+                debug(mem, 'in word')
                 continue
 
             if not s.startswith(mem[2]):
-                debug(mem, "not match")
+                debug(mem, 'not match')
                 continue
 
             # Check the character after the match to see if it's a
@@ -154,12 +172,12 @@ def pirate_transform(s):
             try:
                  # WC: word character
                 if mem[3] and not wc(s[len(mem[2])]):
-                    debug(mem, "not wc")
+                    debug(mem, 'not wc')
                     continue
             except IndexError:
                 # We don't count EOS as a word character.
                 if mem[3]:
-                    debug(mem, "not wc")
+                    debug(mem, 'not wc')
                     continue
 
             # Check the character after the match to see if it's not a
@@ -167,12 +185,12 @@ def pirate_transform(s):
             try:
                 # NW: not word character
                 if mem[4] and not nwc(s[len(mem[2])]):
-                    debug(mem, "wc")
+                    debug(mem, 'wc')
                     continue
             except IndexError:
                 # We count EOS as a non-word character.
                 if not mem[4]:
-                    debug(mem, "wc")
+                    debug(mem, 'wc')
                     continue
 
             out.append(mem[5])
@@ -186,19 +204,24 @@ def pirate_transform(s):
             s = s[1:]
 
     # print old_s, "->", out
-    new_s = u"".join(out)
+    new_s = u''.join(out)
 
     # This guarantees every translated string has changed and is
     # longer than the previous string.
-    if old_s == new_s or len(old_s) == len(new_s):
-        new_s = new_s + u"'"
+    if (not is_whitespace(new_s)
+        and (old_s == new_s or len(old_s) == len(new_s))):
+
+        if wc(new_s[-1]):
+            new_s = new_s + u'\''
+        else:
+            new_s = new_s[:-1] + u'\'' + new_s[-1]
     return new_s
 
 
 class HtmlAwareMessageMunger(HTMLParser.HTMLParser):
     def __init__(self):
         HTMLParser.HTMLParser.__init__(self)
-        self.s = ""
+        self.s = ''
 
     def result(self):
         return self.s
@@ -207,9 +230,9 @@ class HtmlAwareMessageMunger(HTMLParser.HTMLParser):
         return pirate_transform(s)
 
     def handle_starttag(self, tag, attrs, closed=False):
-        self.s += "<" + tag
+        self.s += '<' + tag
         for name, val in attrs:
-            self.s += " "
+            self.s += ' '
             self.s += name
             self.s += '="'
             if name in ['alt', 'title']:
@@ -218,14 +241,14 @@ class HtmlAwareMessageMunger(HTMLParser.HTMLParser):
                 self.s += val
             self.s += '"'
         if closed:
-            self.s += " /"
-        self.s += ">"
+            self.s += ' /'
+        self.s += '>'
 
     def handle_startendtag(self, tag, attrs):
         self.handle_starttag(tag, attrs, closed=True)
 
     def handle_endtag(self, tag):
-        self.s += "</" + tag + ">"
+        self.s += '</' + tag + '>'
 
     def handle_data(self, data):
         # We don't want to munge placeholders, so split on them,
@@ -238,67 +261,73 @@ class HtmlAwareMessageMunger(HTMLParser.HTMLParser):
                 self.s += self.xform(tok)
 
     def handle_charref(self, name):
-        self.s += "&#" + name + ";"
+        self.s += '&#' + name + ';'
 
     def handle_entityref(self, name):
-        self.s += "&" + name + ";"
+        self.s += '&' + name + ';'
 
 
 def translate_string(s):
+    # If it consists solely of whitespace, skip it.
+    if is_whitespace(s):
+        return s
+
     hamm = HtmlAwareMessageMunger()
     hamm.feed(s)
     out = hamm.result()
 
-    if out.endswith(" >"):
-        out = out[:-2] + u" arr! >"
-    elif out.endswith("\n"):
-        out = out[:-2] + u" arrRRRrrr!\n"
+    if out.endswith(' >'):
+        out = out[:-2] + u' arr! >'
+    elif out.endswith('\n'):
+        out = out[:-2] + u' arrRRRrrr!\n'
+    elif out.startswith('\n'):
+        out = out + u' arrRRRrrr!'
     else:
         out = COLOR[len(out) % len(COLOR)].format(out)
 
     # This guarantees that every string has at least one
     # unicode charater
     if "'" not in out:
-        out = out + u"'"
+        out = out + u'\''
 
     # Replace all ' with related unicode character.
-    out = out.replace(u"'", u"\u2019")
+    out = out.replace(u'\'', u'\u2019')
     return out
 
 
 def munge_one_file(fname):
     po = polib.pofile(fname)
-    po.metadata["Language"] = "Pirate"
-    po.metadata["Plural-Forms"] = "nplurals=2; plural= n != 1"
-    po.metadata["Content-Type"] = "text/plain; charset=UTF-8"
+    po.metadata['Language'] = 'Pirate'
+    po.metadata['Plural-Forms'] = 'nplurals=2; plural= n != 1'
+    po.metadata['Content-Type'] = 'text/plain; charset=UTF-8'
     count = 0
     for entry in po:
         if entry.msgid_plural:
-            entry.msgstr_plural["0"] = translate_string(entry.msgid)
-            entry.msgstr_plural["1"] = translate_string(entry.msgid_plural)
+            entry.msgstr_plural['0'] = translate_string(entry.msgid)
+            entry.msgstr_plural['1'] = translate_string(entry.msgid_plural)
         else:
             entry.msgstr = translate_string(entry.msgid)
 
         if 'fuzzy' in entry.flags:
             entry.flags.remove('fuzzy')  # clear the fuzzy flag
         count += 1
-    print "Munged %d messages in %s" % (count, fname)
+    print 'Munged %d messages in %s' % (count, fname)
     po.save()
 
 
 def run_tests():
     for mem in [
-        "Products and Services",
-        "Get community support",
-        "Your input helps make Mozilla better.",
-        "Super browsing",
+        'Products and Services',
+        'Get community support',
+        'Your input helps make Mozilla better.',
+        'Super browsing',
         ]:
         print repr(mem), '->', repr(pirate_transform(mem))
 
     return 0
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     if '--test' in sys.argv:
         sys.exit(run_tests())
 
