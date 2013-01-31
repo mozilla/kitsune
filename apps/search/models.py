@@ -128,8 +128,7 @@ class SearchMixin(object):
         return '%s:%s' % (cls.get_model_name(), id_)
 
     @classmethod
-    def index(cls, document, bulk=False, force_insert=False, refresh=False,
-              es=None):
+    def index(cls, document, bulk=False, force_insert=False, es=None):
         """Indexes a single document"""
         if not settings.ES_LIVE_INDEXING:
             return
@@ -146,9 +145,6 @@ class SearchMixin(object):
                  bulk=bulk,
                  force_insert=force_insert)
 
-        if refresh:
-            es.refresh(es_utils.WRITE_INDEX, timesleep=0)
-
     @classmethod
     def unindex(cls, id_, es=None):
         """Removes a document from the index"""
@@ -164,9 +160,6 @@ class SearchMixin(object):
             es.delete(es_utils.WRITE_INDEX, es_utils.SUMO_DOCTYPE,
                       cls.get_document_id(id_))
 
-            # Refresh after the delete, but only if the delete was
-            # successful.
-            es.refresh(es_utils.WRITE_INDEX, timesleep=0)
         except pyes.exceptions.NotFoundException:
             # Ignore the case where we try to delete something that's
             # not there.

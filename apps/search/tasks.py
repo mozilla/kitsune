@@ -86,7 +86,7 @@ def index_task(cls, ids, **kw):
         # data.
         pin_this_thread()
         for id in cls.uncached.filter(id__in=ids).values_list('id', flat=True):
-            cls.index(cls.extract_document(id), refresh=True)
+            cls.index(cls.extract_document(id))
     except Exception as exc:
         retries = index_task.request.retries
         if retries >= MAX_RETRIES:
