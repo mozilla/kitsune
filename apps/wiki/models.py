@@ -417,7 +417,8 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
     def allows_vote(self, request):
         """Return whether `user` can vote on this document."""
         return (not self.is_archived and self.current_revision and
-                not self.current_revision.has_voted(request))
+                not self.current_revision.has_voted(request) and 
+                not self.redirect_document)
 
     def translated_to(self, locale):
         """Return the translation of me to the given locale.
