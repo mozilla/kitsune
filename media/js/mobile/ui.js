@@ -15,6 +15,12 @@
             });
         }
 
+        $('#cancel-button').on('click', function() {
+           if (!confirm(gettext('Are you sure you wish to cancel?'))) {
+               return false;
+           }
+        });
+
         showNotification($('#notifications > li').fadeOut(0));
 
         $(document).on('click', '.overlay > header', function() {
@@ -42,6 +48,10 @@
 
         $(document).on('click', '[data-expand]', function() {
             $('#' + $(this).data('expand')).addClass('expanded');
+        });
+
+        $(document).on('click', '[data-submit]', function() {
+            $('#' + $(this).data('submit')).submit();
         });
 
         $(document).on('click', '.collapsable .toggle', function() {

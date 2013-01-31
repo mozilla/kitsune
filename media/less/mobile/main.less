@@ -1,6 +1,7 @@
 @import '../fonts.less';
 @import '../variables.less';
 @import '../vendors.less';
+@import 'mixins.less';
 
 .fonts('../../fonts');
 
@@ -130,7 +131,10 @@ fieldset {
 input[type='text'],
 input[type='password'],
 input[type='email'],
+input[type='url'],
+select,
 textarea {
+  background: #fff;
   border: 1px solid @mobileInputBorder;
   .border-radius(3px);
   .box-shadow(0 1px 2px 0 rgba(0, 0, 0, 0.1) inset);
@@ -138,10 +142,15 @@ textarea {
   display: block;
   font-family: @Moz;
   font-size: 14px;
-  outline: none;
   margin: 0 0 12px 0;
+  outline: none;
   padding: 10px 12px;
   width: 100%;
+}
+
+select {
+  -webkit-appearance: none;
+  height: 41px;
 }
 
 .btn,
@@ -209,6 +218,16 @@ textarea {
   }
 }
 
+.edit-button {
+  background-position: -36px -657px;
+  float: right;
+  height: 24px;
+  margin: 0 -10px 0 10px;
+  padding: 13px;
+  text-indent: -9999px;
+  width: 24px;
+}
+
 .errorlist {
   list-style: none;
   margin: 0 0 12px 0;
@@ -228,7 +247,7 @@ textarea {
 }
 
 .icon-sprite {
-  background: url('../../img/mobile/icons-sprite.png') 0 0 no-repeat;
+  .icons-sprite();
 }
 
 .logo-sprite {
@@ -532,6 +551,18 @@ textarea {
   }
 }
 
+#cancel-button {
+  background-position: -53px -781px;
+  border-right: 1px solid @mobileHeaderBorder;
+  .box-shadow(0 0 0 1px rgba(255, 255, 255, 0.3));
+  float: left;
+  height: 24px;
+  margin: 0 8px 0 0;
+  padding: 13px 4px 13px 2px;
+  text-indent: -9999px;
+  width: 12px;
+}
+
 #page {
   background: #fff;
   bottom: 0;
@@ -618,8 +649,7 @@ textarea {
 
 @media only screen and (-webkit-min-device-pixel-ratio: 2), only screen and (min-device-pixel-ratio: 2) {
   .icon-sprite {
-    background-image: url('../../img/mobile/icons-sprite-2x.png');
-    .background-size(124px 620px);
+    .icons-sprite-2x();
   }
 
   .logo-sprite {

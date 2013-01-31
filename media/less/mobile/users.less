@@ -1,4 +1,5 @@
 @import '../variables.less';
+@import '../vendors.less';
 
 .login,
 .register {
@@ -40,5 +41,227 @@
     form {
       padding: 14px;
     }
+  }
+}
+
+.profile,
+.edit-profile {
+  .details {
+    padding: 0 16px;
+
+    > section {
+      border-bottom: 1px solid @borderLightGrey;
+      padding: 16px 0;
+
+      &:last-of-type {
+        border-bottom: 0;
+      }
+
+      > article {
+        padding: 6px;
+      }
+
+      > header {
+        margin-bottom: 4px;
+        padding: 0 6px;
+        text-transform: uppercase;
+      }
+    }
+
+    h2 {
+      font-size: 20px;
+      font-weight: bold;
+      margin: 1px 0 0 60px;
+    }
+
+    h3 {
+      font-size: 15px;
+      font-weight: normal;
+      margin: 0 0 0 60px;
+    }
+
+    .avatar {
+      border: 0;
+      float: left;
+      height: 48px;
+      width: 48px;
+    }
+
+    .detail {
+      background: #fff;
+      border: 1px solid @borderLightGrey;
+      .border-radius(3px);
+      .box-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
+      color: #000;
+      display: block;
+      font-weight: bold;
+      margin-bottom: 6px;
+      padding: 10px 8px;
+
+      > a {
+        color: #000;
+        display: block;
+      }
+    }
+  }
+
+  .done-button {
+    border-left: 1px solid rgba(255, 255, 255, 0.3);
+    .box-shadow(-1px 0 0 0 @mobileHeaderBorder);
+    color: #fff;
+    cursor: pointer;
+    float: right;
+    font-weight: bold;
+    height: 50px;
+    line-height: 50px;
+    margin: 0 -10px 0 10px;
+    padding: 0 10px;
+  }
+
+  #page {
+    background: @mobileFormBackground;
+  }
+}
+
+.edit-profile {
+  .details {
+    padding: 16px;
+
+    > p:first-child {
+      margin-top: 0;
+    }
+
+    label {
+      background: #fff;
+      border-color: @mobileInputBorder;
+      border-style: solid;
+      border-width: 1px 0 1px 1px;
+      .border-radius(3px 0 0 3px);
+      .box-shadow(0 1px 2px 0 rgba(0, 0, 0, 0.1) inset);
+      .box-sizing(border-box);
+      display: block;
+      float: left;
+      font-family: @Moz;
+      font-size: 14px;
+      margin: 0 0 12px 0;
+      padding: 10px 12px;
+      text-transform: uppercase;
+      width: 96px;
+
+      & + input,
+      & + select,
+      & + textarea,
+      & + .value,
+      & + .field-button {
+        .border-radius(0 3px 3px 0);
+        margin-left: 96px;
+        width: calc(~'100% - 96px');
+        width: -moz-calc(~'100% - 96px');
+        width: -webkit-calc(~'100% - 96px');
+      }
+
+      &.big {
+        width: 180px;
+
+        & + input,
+        & + select,
+        & + textarea,
+        & + .value,
+        & + .field-button {
+          margin-left: 150px;
+          width: calc(~'100% - 180px');
+          width: -moz-calc(~'100% - 180px');
+          width: -webkit-calc(~'100% - 180px');
+        }
+      }
+    }
+
+    .avatar + input {
+      margin-left: 60px;
+      margin-top: 3px;
+      width: calc(~'100% - 60px');
+      width: -moz-calc(~'100% - 60px');
+      width: -webkit-calc(~'100% - 60px');
+    }
+
+    .field-button {
+      background: @mobileFormBackground;
+      border: 1px solid @mobileInputBorder;
+      .border-radius(0 3px 3px 0);
+      .box-sizing(border-box);
+      color: #000;
+      display: block;
+      font-family: @Moz;
+      font-size: 14px;
+      font-weight: bold;
+      margin-bottom: 12px;
+      padding: 10px 12px;
+      position: relative;
+
+      &:after {
+        border-color: transparent transparent transparent #000;
+        border-style: solid;
+        border-width: 7px;
+        content: '';
+        height: 0;
+        position: absolute;
+        right: 1px;
+        top: 12px;
+        width: 0;
+      }
+    }
+
+    .value {
+      background: @mobileFormBackground;
+      border: 1px solid @mobileInputBorder;
+      .box-shadow(0 1px 2px 0 rgba(0, 0, 0, 0.1) inset);
+      .box-sizing(border-box);
+      display: block;
+      font-family: @Moz;
+      font-size: 14px;
+      margin: 0 0 12px 0;
+      padding: 10px 12px;
+    }
+
+    #bio-field {
+      label,
+      textarea {
+        height: 80px;
+      }
+    }
+
+    #email-field {
+      label {
+        .border-radius(3px 0 0 0);
+        margin-bottom: 0;
+      }
+
+      .value {
+        .border-radius(0 3px 0 0);
+        margin-bottom: 0;
+      }
+
+      .field-button {
+        .border-radius(0 0 3px 3px);
+        border-width: 0 1px 1px 1px;
+      }
+    }
+  }
+}
+
+.edit-email,
+.edit-password {
+  .btn {
+    float: left;
+    height: 39px;
+    line-height: 29px;
+    width: calc(~'50% - 5px');
+    width: -moz-calc(~'50% - 5px');
+    width: -webkit-calc(~'50% - 5px');
+  }
+
+  .btn-submit {
+    line-height: normal;
+    margin-left: 10px;
   }
 }
