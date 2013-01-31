@@ -112,7 +112,7 @@ def document(request, document_slug, template=None):
         except Document.DoesNotExist:
             pass
 
-    related = doc.related_documents[:5]
+    related = doc.related_documents[:3]
 
     contributors = doc.contributors.all()
 
