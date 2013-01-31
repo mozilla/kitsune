@@ -230,7 +230,8 @@ def resend_confirmation(request):
 
 @login_required
 @require_http_methods(['GET', 'POST'])
-def change_email(request):
+@mobile_template('users/{mobile/}')
+def change_email(request, template):
     """Change user's email. Send confirmation first."""
     if request.method == 'POST':
         form = EmailChangeForm(request.user, request.POST)
@@ -244,13 +245,12 @@ def change_email(request):
             EmailChange.objects.send_confirmation_email(
                 email_change, form.cleaned_data['email'])
             return jingo.render(request,
-                                'users/change_email_done.html',
+                                template + 'change_email_done.html',
                                 {'email': form.cleaned_data['email']})
     else:
         form = EmailChangeForm(request.user,
                                initial={'email': request.user.email})
-    return jingo.render(request, 'users/change_email.html',
-                        {'form': form})
+    return jingo.render(request, template + 'change_email.html', {'form': form})
 
 
 @require_GET
@@ -279,12 +279,13 @@ def confirm_change_email(request, activation_key):
 
 
 @require_GET
-def profile(request, user_id):
+@mobile_template('users/{mobile/}profile.html')
+def profile(request, template, user_id):
     user_profile = get_object_or_404(
         Profile, user__id=user_id, user__is_active=True)
 
     groups = user_profile.user.groups.all()
-    return jingo.render(request, 'users/profile.html', {
+    return jingo.render(request, template, {
         'profile': user_profile,
         'groups': groups,
         'num_questions': user_num_questions(user_profile.user),
@@ -337,7 +338,8 @@ def edit_settings(request):
 
 @login_required
 @require_http_methods(['GET', 'POST'])
-def edit_profile(request):
+@mobile_template('users/{mobile/}edit_profile.html')
+def edit_profile(request, template):
     """Edit user profile."""
     try:
         user_profile = request.user.get_profile()
@@ -361,7 +363,7 @@ def edit_profile(request):
     # TODO: detect timezone automatically from client side, see
     # http://rocketscience.itteco.org/2010/03/13/automatic-users-timezone-determination-with-javascript-and-django-timezones/
 
-    return jingo.render(request, 'users/edit_profile.html',
+    return jingo.render(request, template,
                         {'form': form, 'profile': user_profile})
 
 
@@ -512,7 +514,8 @@ def password_reset_complete(request):
 
 
 @login_required
-def password_change(request):
+@mobile_template('users/{mobile/}pw_change.html')
+def password_change(request, template):
     """Change password form page."""
     if request.method == 'POST':
         form = PasswordChangeForm(user=request.user, data=request.POST)
@@ -521,13 +524,14 @@ def password_change(request):
             return HttpResponseRedirect(reverse('users.pw_change_complete'))
     else:
         form = PasswordChangeForm(user=request.user)
-    return jingo.render(request, 'users/pw_change.html', {'form': form})
+    return jingo.render(request, template, {'form': form})
 
 
 @login_required
-def password_change_complete(request):
+@mobile_template('users/{mobile/}pw_change_complete.html')
+def password_change_complete(request, template):
     """Change password complete page."""
-    return jingo.render(request, 'users/pw_change_complete.html')
+    return jingo.render(request, template)
 
 
 @anonymous_csrf

@@ -1,5 +1,6 @@
 @import '../variables.less';
 @import '../vendors.less';
+@import 'mixins.less';
 
 .documents {
   h2 {
@@ -72,7 +73,7 @@
     padding: 10px 16px;
 
     &:after {
-      background: url('../../img/mobile/icons-sprite.png') -52px -552px no-repeat;
+      .icons-sprite();
       content: '';
       float: right;
       height: 12px;
@@ -153,8 +154,7 @@
   #hot-topics {
     h2 {
       &:after {
-        background-image: url('../../img/mobile/icons-sprite-2x.png');
-        .background-size(124px 620px);
+        .icons-sprite-2x();
       }
     }
   }

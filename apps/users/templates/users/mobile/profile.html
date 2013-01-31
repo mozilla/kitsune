@@ -1,0 +1,97 @@
+{% extends 'mobile/base.html' %}
+
+{% set headline = profile.user.username %}
+{% set title = headline %}
+
+{% set styles = ('mobile/users',) %}
+{% set classes = "profile" %}
+
+{% block header_buttons %}
+  {% if profile.user.id == request.user.id %}
+    <a href="{{ url('users.edit_profile') }}" class="edit-button icon-sprite"
+       xmlns="http://www.w3.org/1999/html">Edit Profile</a>
+  {% endif %}
+{% endblock %}
+
+{% block content %}
+  <div class="details">
+    <section>
+      <img class="avatar" src="{{ profile_avatar(profile.user) }}" alt="">
+      <h2>{{ display_name(profile.user) }}</h2>
+      <h3>
+        {% if profile.city and profile.country %}
+          {{ _('{city}, {country}')|f(city=profile.city,
+                                          country=profile.country) }}
+        {% elif profile.city %}
+          {{ profile.city }}
+        {% elif profile.country %}
+          {{ profile.country }}
+        {% endif %}
+      </h3>
+    </section>
+    {% if num_answers or num_questions or num_solutions or num_documents %}
+      <section>
+        <header>{{ _('Contributions') }}</header>
+        {% if num_questions %}
+          <a class="detail" href="{{ url('search')|urlparams(asked_by=profile.user.username, sortby=1, a=1, w=2) }}">
+            {{ ngettext('{0} question', '{0} questions', num_questions)|f(num_questions) }}
+          </a>
+        {% endif %}
+        {% if num_answers %}
+          <a class="detail" href="{{ url('search')|urlparams(answered_by=profile.user.username, sortby=1, a=1, w=2) }}">
+            {{ ngettext('{0} answer', '{0} answers', num_answers)|f(num_answers) }}
+          </a>
+        {% endif %}
+        {% if num_solutions %}
+          <div class="detail">
+            {{ ngettext('{0} solution', '{0} solutions', num_solutions)|f(num_solutions) }}
+          </div>
+        {% endif %}
+        {% if num_documents %}
+          <a class="detail" href="{{ url('users.documents', profile.user.id) }}">
+            {{ ngettext('{0} documents', '{0} documents', num_documents)|f(num_documents) }}
+          </a>
+        {% endif %}
+      </section>
+    {% endif %}
+    {% if profile.bio %}
+      <section>
+        <header>{{ _('Bio') }}</header>
+        <article>{{ profile.bio|wiki_to_html(nofollow=True) }}</article>
+      </section>
+    {% endif %}
+    {% if profile.public_email or profile.website or profile.twitter or
+          profile.facebook or profile.irc_handle %}
+      <section>
+        {% if profile.public_email and request.user.is_authenticated() %}
+          <header>{{ _('Email') }}</header>
+          <div class="detail">{{ profile.user.email|public_email }}</div>
+        {% endif %}
+        {% if profile.website %}
+          <header>{{ _('Website') }}</header>
+          <a class="detail" rel="nofollow" href="{{ profile.website }}">{{ profile.website }}</a>
+        {% endif %}
+        {% if profile.twitter %}
+          <header>{{ _('Twitter') }}</header>
+          <a class="detail" rel="nofollow" href="{{ profile.twitter }}">{{ profile.twitter }}</a>
+        {% endif %}
+        {% if profile.facebook %}
+          <header>{{ _('Facebook') }}</header>
+          <a class="detail" rel="nofollow" href="{{ profile.facebook }}">{{ profile.facebook }}</a>
+        {% endif %}
+        {% if profile.irc_handle %}
+          <header>{{ _('IRC') }}</header>
+          <div class="detail">{{ profile.irc_handle }}</div>
+        {% endif %}
+      </section>
+    {% endif %}
+    {% if groups %}
+      <section>
+        <header>{{ _('Groups') }}</header>
+        {% for g in groups %}
+          <div class="detail">{{ group_link(g) }}</div>
+        {% endfor %}
+      </section>
+    {% endif %}
+  </div>
+{% endblock %}
