@@ -116,9 +116,11 @@ def log_answer(answer):
     creator = answer.creator
     created = answer.created
     question = answer.question
-    users = [a.creator for a in
-             question.answers.select_related('creator').exclude(
-                creator=creator)]
+    users = [
+        a.creator
+        for a in question.answers.select_related('creator').exclude(
+            creator=creator)
+        ]
     if question.creator != creator:
         users += [question.creator]
     users = set(users)  # Remove duplicates.
