@@ -16,7 +16,7 @@
         }
 
         $('#cancel-button').on('click', function() {
-           if (!confirm('Are you sure you wish to cancel?')) {
+           if (!confirm(gettext('Are you sure you wish to cancel?'))) {
                return false;
            }
         });

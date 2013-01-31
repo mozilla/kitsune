@@ -11,10 +11,10 @@
 {% block content %}
   <form class="details" method="post" action="{{ request.path }}">
     <p>
-      {% trans %}
+      {%- trans %}
         You will need to confirm the newly set email address to complete the
         change.
-      {% endtrans %}
+      {% endtrans -%}
     </p>
 
     {{ csrf() }}

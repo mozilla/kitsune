@@ -11,10 +11,10 @@
 {% block content %}
   <div class="details">
     <p>
-      {% trans new_email=email %}
+      {%- trans new_email=email %}
         We've sent a confirmation to {{ new_email }}. Please follow the link
         in the confirmation to change your account's email.
-      {% endtrans %}
+      {% endtrans -%}
     </p>
   </div>
 {% endblock %}

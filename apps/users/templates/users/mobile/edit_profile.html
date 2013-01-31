@@ -9,13 +9,13 @@
 {% set cancel_url = profile_url(user) %}
 
 {% block header_buttons %}
-  <div class="done-button" data-submit="edit-form">Done</div>
+  <div class="done-button" data-submit="edit-form">{{ _('Done') }}</div>
 {% endblock %}
 
 {% block content %}
   <form id="edit-form" class="details" method="post" action="{{ request.path }}">
     {{ csrf() }}
-    <img class="avatar" src="{{ profile_avatar(profile.user) }}" alt="">
+    <img class="avatar" src="{{ profile_avatar(profile.user) }}">
     {{ form['name'] }}
 
     <div id="email-field">

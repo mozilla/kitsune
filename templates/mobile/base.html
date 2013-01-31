@@ -90,8 +90,7 @@
 <div id="page">
   <header>
     <div id="menu-button" class="icon-sprite"></div>
-    {% block header_buttons %}
-    {% endblock %}
+    {% block header_buttons %}{% endblock %}
     {% if cancel_url %}
       <a href="{{ cancel_url }}" id="cancel-button" class="icon-sprite">Cancel</a>
     {% endif %}
@@ -103,8 +102,7 @@
     {% endblock %}
   </header>
 
-  {% block after_header %}
-  {% endblock %}
+  {% block after_header %}{% endblock %}
 
   <div class="wrapper scrollable">
     <section id="content">
@@ -116,8 +114,7 @@
     </section>
 
     <footer>
-      {% block footer %}
-      {% endblock %}
+      {% block footer %}{% endblock %}
     </footer>
 
     {% if messages %}

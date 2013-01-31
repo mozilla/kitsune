@@ -16,7 +16,7 @@
 {% block content %}
   <div class="details">
     <section>
-      <img class="avatar" src="{{ profile_avatar(profile.user) }}" alt="">
+      <img class="avatar" src="{{ profile_avatar(profile.user) }}">
       <h2>{{ display_name(profile.user) }}</h2>
       <h3>
         {% if profile.city and profile.country %}
