@@ -7,7 +7,7 @@ from django.conf import settings
 from django.db import reset_queries
 
 import pyes
-from elasticutils.contrib.django import S, F
+from elasticutils.contrib.django import S, F  # noqa
 
 from search.utils import chunked
 
@@ -157,7 +157,7 @@ def format_time(time_to_go):
     """Returns minutes and seconds string for given time in seconds"""
     if time_to_go < 60:
         return "%ds" % time_to_go
-    return  "%dm %ds" % (time_to_go / 60, time_to_go % 60)
+    return "%dm %ds" % (time_to_go / 60, time_to_go % 60)
 
 
 def get_documents(cls, ids):
