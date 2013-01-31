@@ -243,9 +243,8 @@ def index_chunk(cls, chunk, reraise=False, es=None):
         # that many things are broken, so just move on.
         try:
             es.flush_bulk(forced=True)
-            es.refresh(WRITE_INDEX, timesleep=0)
         except Exception:
-            log.exception('Unable to flush/refresh')
+            log.exception('Unable to flush')
 
 
 def es_reindex_cmd(percent=100, delete=False, models=None, criticalmass=False,

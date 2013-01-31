@@ -89,7 +89,7 @@ def update_question_vote_chunk(data):
                 num = id_to_num[int(doc[u'id'])]
                 doc[u'question_num_votes_past_week'] = num
 
-                Question.index(doc, refresh=True)
+                Question.index(doc)
         except (ESTimeoutError, ESMaxRetryError, ESException):
             # Something happened with ES, so let's push index updating
             # into an index_task which retries when it fails because

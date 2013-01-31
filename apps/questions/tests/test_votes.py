@@ -54,6 +54,7 @@ class TestVotesWithElasticSearch(ElasticTestCase):
         q.save()
 
         update_weekly_votes()
+        self.refresh()
 
         q = Question.objects.get(pk=q.pk)
         eq_(1, q.num_votes_past_week)
