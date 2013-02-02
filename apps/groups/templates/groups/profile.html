@@ -67,7 +67,7 @@
             <input type="submit" value="{{ _('Add Member') }}" />
           </form>
         {% endif %}
-        <ul class="users members">
+        <ul class="users members members-list">
           {% for user in members %}
             <li>
               {{ user_row(user) }}
@@ -80,19 +80,19 @@
           {% endfor %}
         </ul>
       </div>
-	  <div class="pagination">
-		<span class="step-links">
-		  {% if members.has_previous() %}
-			<a href="?page={{ members.previous_page_number() }}">{{ _('previous') }}</a>
-		  {% endif %}
-			<span class="current">
-				Page {{ members.number }} {{ _('of') }} {{ members.paginator.num_pages }}.
-			</span>
-		  {% if members.has_next() %}
-			<a href="?page={{ members.next_page_number() }}">{{ _('next') }}</a>
-		  {% endif %}
-		</span>
-	  </div>
+      <div class="pagination">
+        <span class="step-links">
+        {% if members.has_previous() %}
+   		  	<a href="?page={{ members.previous_page_number() }}">{{ _('previous') }}</a>
+        {% endif %}
+   			<span class="current">
+		  	{{ _('Page') }} {{ members.number }} {{ _('of') }} {{ members.paginator.num_pages }}.
+			  </span>
+    		{% if members.has_next() %}
+		     	<a href="?page={{ members.next_page_number() }}">{{ _('next') }}</a>
+        {% endif %}
+		    </span>
+  	  </div>
     </section>
   </article>
 {% endblock %}

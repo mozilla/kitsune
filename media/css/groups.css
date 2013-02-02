@@ -133,3 +133,7 @@ div.editor {
 .html-rtl #change-avatar div.submit {
     padding: 10px 188px 0 0;
 }
+
+ul .members-list li {
+    display: inline;
+}
