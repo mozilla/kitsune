@@ -214,7 +214,9 @@ Now install LESS using::
 Ensure that `LESS_BIN` was configured correctly in your local
 settings.
 
-.. note:: If you see empty CSS files when you are running the
+.. Note::
+
+   If you see empty CSS files when you are running the
    dev server, you have to remove all empty files having a
    ``.less.css`` since they are empty and should be regenerated.
 
