@@ -214,6 +214,17 @@ Now install LESS using::
 Ensure that `LESS_BIN` was configured correctly in your local
 settings.
 
+.. note:: If you see empty CSS files when you are running the
+   dev server, you have to remove all empty files having a
+   ``.less.css`` since they are empty and should be regenerated.
+
+   To do this, run the following command on the top directory
+   of your Kitsune clone::
+
+       $ rm **/*.less.css
+
+   and *hard-refresh* your pages on the browser via *Ctrl + Shift + R*.
+
 
 Database
 --------
