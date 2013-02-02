@@ -82,15 +82,16 @@
       </div>
 	  <div class="pagination">
 		<span class="step-links">
-		  {% if members.has_previous %}
-			<a href="?page={{ members.previous_page_number }}">{{ _('previous') }}</a>
+		  {% if members.has_previous() %}
+			<a href="?page={{ members.previous_page_number() }}">{{ _('previous') }}</a>
 		  {% endif %}
 			<span class="current">
 				Page {{ members.number }} {{ _('of') }} {{ members.paginator.num_pages }}.
 			</span>
-		  {% if members.has_next %}
-			<a href="?page={{ members.next_page_number }}">{{ _('next') }}</a>
+		  {% if members.has_next() %}
+			<a href="?page={{ members.next_page_number() }}">{{ _('next') }}</a>
 		  {% endif %}
+		</span>
 	  </div>
     </section>
   </article>

@@ -37,6 +37,7 @@ def profile(request, group_slug, member_form=None, leader_form=None):
         members = paginator.page(1)
     except EmptyPage:
         members = paginator.page(paginator.num_pages)
+
     user_can_edit = _user_can_edit(request.user, prof)
     user_can_manage_leaders = _user_can_manage_leaders(request.user, prof)
     return jingo.render(request, 'groups/profile.html',
