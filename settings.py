@@ -680,7 +680,7 @@ MINIFY_BUNDLES = {
         ),
         'wiki.editor': (
             'js/libs/ace/src-min/ace.js',
-            'js/libs/ace.mode-sumo.js',
+            'js/ace.mode-sumo.js',
         ),
         'wiki.dashboard': (
             'js/libs/backbone.js',
