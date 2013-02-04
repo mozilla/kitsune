@@ -9,10 +9,10 @@
       {{ csrf() }}
 
       <label for="id_new_password1">{{ _('New password') }}</label>
-      {{ form.new_password1|safe }}
+      {{ form.new_password1 }}
 
       <label for="id_new_password2">{{ _('Confirm password') }}</label>
-      {{ form.new_password2|safe }}
+      {{ form.new_password2 }}
 
       <button type="submit" class="btn btn-submit">{{ _('Change password') }}</button>
     </form>
