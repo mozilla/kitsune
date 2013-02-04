@@ -182,7 +182,6 @@ class RegistrationManager(ConfirmationManager):
             except self.model.DoesNotExist:
                 profile = None
                 statsd.incr('user.activate-error.does-not-exist')
-                msg = 'Key: {k}\nRequest:\n'.format(k=activation_key)
                 reason = 'key not found'
             if profile:
                 if not profile.activation_key_expired():
@@ -204,13 +203,9 @@ class RegistrationManager(ConfirmationManager):
                     return user
                 else:
                     statsd.incr('user.activate-error.expired')
-                    msg = 'Username: {u}\nJoined: {d}\nRequest:\n'
-                    msg = msg.format(u=profile.user.username,
-                                     d=profile.user.date_joined)
                     reason = 'key expired'
         else:
             statsd.incr('user.activate-error.invalid-key')
-            msg = 'Key: {k}\nRequest:\n'.format(k=activation_key)
             reason = 'invalid key'
 
         log.warning(u'User activation failure ({r}): {k}'.format(
