@@ -41,7 +41,7 @@ DEBUG = False
 
 
 INTERP_RE = re.compile(
-    r'(%(?:[(].+?[)])?[#0 +-]?[.\d*]*[hlL]?[diouxXeEfFgGcrs%])')
+    r'((?:%(?:[(].+?[)])?[#0 +-]?[.\d*]*[hlL]?[diouxXeEfFgGcrs%])|(?:\{.+?\}))')
 
 
 COLOR = [
@@ -259,6 +259,7 @@ class HtmlAwareMessageMunger(HTMLParser.HTMLParser):
         # We don't want to munge placeholders, so split on them,
         # keeping them in the list, then xform every other token.
         toks = INTERP_RE.split(data)
+
         for i, tok in enumerate(toks):
             if i % 2:
                 self.s += tok
@@ -322,12 +323,17 @@ def munge_one_file(fname):
 
 def run_tests():
     for mem in [
+        'Hello %s',
+        'Hello %(username)s',
+        'Hello %(user)s%(name)s',
+        'Hello {username}',
+        'Hello {user}{name}',
         'Products and Services',
         'Get community support',
         'Your input helps make Mozilla better.',
         'Super browsing',
         ]:
-        print repr(mem), '->', repr(pirate_transform(mem))
+        print repr(mem), '->', repr(translate_string(mem))
 
     return 0
 
@@ -350,7 +356,7 @@ if __name__ == '__main__':
 
     if options.strings:
         for arg in args:
-            print pirate_transform(arg)
+            print translate_string(arg)
         sys.exit(0)
 
     for arg in args:
