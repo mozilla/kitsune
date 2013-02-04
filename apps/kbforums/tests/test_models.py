@@ -61,14 +61,15 @@ class KBSaveDateTestCase(KBForumTestCase):
     and updated dates.
     """
 
-    delta = datetime.timedelta(milliseconds=300)
+    delta = datetime.timedelta(milliseconds=600)
 
     def setUp(self):
         super(KBSaveDateTestCase, self).setUp()
 
         self.user = user(save=True)
         self.doc = document(save=True)
-        self.thread = thread(save=True)
+        self.thread = thread(created=datetime.datetime(2010, 1, 12, 9, 48, 23),
+                             save=True)
 
     def assertDateTimeAlmostEqual(self, a, b, delta, msg=None):
         """
