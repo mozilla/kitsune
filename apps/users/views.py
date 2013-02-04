@@ -144,7 +144,8 @@ def register_contributor(request):
 
 
 @anonymous_csrf  # This view renders a login form
-def activate(request, activation_key, user_id=None):
+@mobile_template('users/{mobile/}activate.html')
+def activate(request, template, activation_key, user_id=None):
     """Activate a User account."""
     activation_key = activation_key.lower()
 
@@ -170,7 +171,7 @@ def activate(request, activation_key, user_id=None):
 
         my_questions = Question.uncached.filter(creator=account)
 
-    return jingo.render(request, 'users/activate.html',
+    return jingo.render(request, template,
                         {'account': account, 'questions': my_questions,
                          'form': form})
 
