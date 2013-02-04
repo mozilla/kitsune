@@ -673,7 +673,7 @@ MINIFY_BUNDLES = {
             'js/browserdetect.js',
             'js/showfor.js',
             'js/ajaxform.js',
-            'js/mobile/wiki.js'
+            'js/mobile/wiki.js',
             'js/wiki.metrics.js',
         ),
         'wiki.history': (
