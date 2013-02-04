@@ -177,7 +177,8 @@ def activate(request, template, activation_key, user_id=None):
 
 
 @anonymous_csrf
-def resend_confirmation(request):
+@mobile_template('users/{mobile/}')
+def resend_confirmation(request, template):
     """Resend confirmation email."""
     if request.method == 'POST':
         form = EmailConfirmationForm(request.POST)
@@ -221,11 +222,11 @@ def resend_confirmation(request):
             # Form may now be invalid if email failed to send.
             if form.is_valid():
                 return jingo.render(request,
-                                    'users/resend_confirmation_done.html',
+                                    template + 'resend_confirmation_done.html',
                                     {'email': email})
     else:
         form = EmailConfirmationForm()
-    return jingo.render(request, 'users/resend_confirmation.html',
+    return jingo.render(request, template + 'resend_confirmation.html',
                         {'form': form})
 
 
@@ -431,7 +432,8 @@ def delete_avatar(request):
 
 
 @anonymous_csrf
-def password_reset(request):
+@mobile_template('users/{mobile/}pw_reset_form.html')
+def password_reset(request, template):
     """Password reset form.
 
     Based on django.contrib.auth.views. This view sends the email.
@@ -457,22 +459,24 @@ def password_reset(request):
     else:
         form = PasswordResetForm()
 
-    return jingo.render(request, 'users/pw_reset_form.html', {'form': form})
+    return jingo.render(request, template, {'form': form})
 
 
-def password_reset_sent(request):
+@mobile_template('users/{mobile/}pw_reset_sent.html')
+def password_reset_sent(request, template):
     """Password reset email sent.
 
     Based on django.contrib.auth.views. This view shows a success message after
     email is sent.
 
     """
-    return jingo.render(request, 'users/pw_reset_sent.html')
+    return jingo.render(request, template)
 
 
 @ssl_required
 @anonymous_csrf
-def password_reset_confirm(request, uidb36=None, token=None):
+@mobile_template('users/{mobile/}pw_reset_confirm.html')
+def password_reset_confirm(request, template, uidb36=None, token=None):
     """View that checks the hash in a password reset link and presents a
     form for entering a new password.
 
@@ -500,18 +504,18 @@ def password_reset_confirm(request, uidb36=None, token=None):
         context['validlink'] = False
         form = None
     context['form'] = form
-    return jingo.render(request, 'users/pw_reset_confirm.html', context)
+    return jingo.render(request, template, context)
 
 
-def password_reset_complete(request):
+@mobile_template('users/{mobile/}pw_reset_complete.html')
+def password_reset_complete(request, template):
     """Password reset complete.
 
     Based on django.contrib.auth.views. Show a success message.
 
     """
     form = AuthenticationForm()
-    return jingo.render(request, 'users/pw_reset_complete.html',
-                        {'form': form})
+    return jingo.render(request, template, {'form': form})
 
 
 @login_required
@@ -536,7 +540,8 @@ def password_change_complete(request, template):
 
 
 @anonymous_csrf
-def forgot_username(request):
+@mobile_template('users/{mobile/}forgot_username.html')
+def forgot_username(request, template):
     """Forgot username form page.
 
     On POST, this view sends an email with the username.
@@ -565,4 +570,4 @@ def forgot_username(request):
     else:
         form = ForgotUsernameForm()
 
-    return jingo.render(request, 'users/forgot_username.html', {'form': form})
+    return jingo.render(request, template, {'form': form})
