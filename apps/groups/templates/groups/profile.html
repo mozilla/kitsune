@@ -1,4 +1,4 @@
-{# vim: set ts=2 et sts=2 sw=2: #}
+﻿{# vim: set ts=2 et sts=2 sw=2: #}
 {% extends "groups/base.html" %}
 {% from "layout/errorlist.html" import errorlist %}
 {% set title = _('{group} | Groups')|f(group=profile.group.name) %}
@@ -80,6 +80,19 @@
           {% endfor %}
         </ul>
       </div>
+      <div class="pagination">
+        <span class="step-links">
+        {% if members.has_previous() %}
+   		  	<a href="?page={{ members.previous_page_number() }}">{{ _('previous') }}</a>
+        {% endif %}
+   			<span class="current">
+		  	{{ _('Page {0} of {1}.')|fe(members.number, members.paginator.num_pages) }}
+			  </span>
+    		{% if members.has_next() %}
+		     	<a href="?page={{ members.next_page_number() }}">{{ _('next') }}</a>
+        {% endif %}
+		    </span>
+  	  </div>
     </section>
   </article>
 {% endblock %}

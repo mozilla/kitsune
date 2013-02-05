@@ -7,6 +7,7 @@ from django.core.exceptions import PermissionDenied
 from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.views.decorators.http import require_POST, require_http_methods
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 import jingo
 from tower import ugettext as _
@@ -27,7 +28,16 @@ def list(request):
 def profile(request, group_slug, member_form=None, leader_form=None):
     prof = get_object_or_404(GroupProfile, slug=group_slug)
     leaders = prof.leaders.all().select_related('profile')
-    members = prof.group.user_set.all().select_related('profile')
+    members_list = prof.group.user_set.all().select_related('profile')
+    paginator = Paginator(members_list, 30)
+    page = request.GET.get('page')
+    try:
+        members = paginator.page(page)
+    except PageNotAnInteger:
+        members = paginator.page(1)
+    except EmptyPage:
+        members = paginator.page(paginator.num_pages)
+
     user_can_edit = _user_can_edit(request.user, prof)
     user_can_manage_leaders = _user_can_manage_leaders(request.user, prof)
     return jingo.render(request, 'groups/profile.html',
