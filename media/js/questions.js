@@ -210,15 +210,15 @@
         if(!container) {
             return;
         }
-        var crashIDRegex = new RegExp("(bp-)?([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})", "g");
+        var crashIDRegex = new RegExp("([^{])(bp-[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})([^}])", "g");
         var crashStatsBase = "https://crash-stats.mozilla.com/report/index/";
         var helpingWithCrashesArticle = "/kb/helping-crashes";
         var iconPath = "/media/img/questions/icon.questionmark.png";
         var crashReportContainer =
-            "<span class='crash-report'>" +
+            "$1<span class='crash-report'>" +
             "<a href='" + crashStatsBase + "$2' target='_blank'>$2</a>" +
             "<a href='" + helpingWithCrashesArticle + "' target='_blank'>" +
-            "<img src='" + iconPath + "'></img></a></span>";
+            "<img src='" + iconPath + "'></img></a></span>$3";
 
         container.html(
             container.html().replace(crashIDRegex,
@@ -232,7 +232,7 @@
      * Initialize the automatic linking of crash IDs
      */
     function initCrashIdLinking() {
-        var postContents = $("#answers .content, #question .content, #more-system-details");
+        var postContents = $(".question .main-content, .answer .main-content, #more-system-details");
         postContents.each(function() {
             linkCrashIds($(this));
         });
