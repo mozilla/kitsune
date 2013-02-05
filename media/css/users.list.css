@@ -9,7 +9,6 @@ ul.users {
 ul.users li {
     padding: 5px 0;
     vertical-align: top;
-    display: inline-block;
 }
 
 ul.users div.avatar {
@@ -33,7 +32,7 @@ ul.users div.info {
     min-height: 45px;
     padding: 3px 0 0;
     vertical-align: top;
-    width: 220px;
+    min-width: 220px;
 }
 
 ul.users p.pm {
