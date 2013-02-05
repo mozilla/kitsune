@@ -23,6 +23,7 @@
             $(options.bindTo).on('click', function(ev) {
                 var $this = $(this);
                 var $form = $this.closest('form');
+                var url = $form.attr('action');
                 var $buttons = $form.find(self.options.bindTo);
                 var formDataArray = $form.serializeArray();
                 var data = {};
@@ -59,7 +60,7 @@
                 }
 
                 $.ajax({
-                    url: $form.attr('action'),
+                    url: url,
                     type: 'POST',
                     data: data,
                     dataType: 'json',
@@ -83,7 +84,7 @@
                         }
 
                         // Trigger a document event for others to listen for.
-                        $(document).trigger('vote', data);
+                        $(document).trigger('vote', $.extend(data, {url: url}));
                     },
                     error: function() {
                         var msg = self.options.errorText;
