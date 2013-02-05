@@ -42,7 +42,7 @@ def profile(request, group_slug, member_form=None, leader_form=None):
     user_can_edit = _user_can_edit(request.user, prof)
     user_can_manage_leaders = _user_can_manage_leaders(request.user, prof)
     return jingo.render(request, 'groups/profile.html',
-                        {'profile': prof, 'leaders': leaders, 
+                        {'profile': prof, 'leaders': leaders,
                          'members': members, 'user_can_edit': user_can_edit,
                          'user_can_manage_leaders': user_can_manage_leaders,
                          'is_paginated' : is_paginated,
