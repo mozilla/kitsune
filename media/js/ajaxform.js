@@ -63,14 +63,14 @@
                     type: 'POST',
                     data: data,
                     dataType: 'json',
-                    success: function(data) {
+                    success: function(response) {
                         if (typeof self.options.beforeComplete === 'function') {
                             self.options.beforeComplete();
                         }
-                        if (data.survey) {
-                            $form.after(data.survey);
+                        if (response.survey) {
+                            $form.after(response.survey);
                         } else {
-                            $form.after($('<p></p>').html(data.message));
+                            $form.after($('<p></p>').html(response.message));
                         }
                         if (self.options.removeForm) {
                             $form.remove();
@@ -81,6 +81,9 @@
                         if (typeof self.options.afterComplete === 'function') {
                             self.options.afterComplete();
                         }
+
+                        // Trigger a document event for others to listen for.
+                        $(document).trigger('vote', data);
                     },
                     error: function() {
                         var msg = self.options.errorText;

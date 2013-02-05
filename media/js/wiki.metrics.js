@@ -8,6 +8,27 @@
             return;
         }
 
+        // Collect metrics on article votes.
+        $(document).on('vote', function(t, data) {
+            var value;
+            if (_gaq) {
+                if ('helpful' in data) {
+                    value = 'Helpful';
+                } else if ('not-helpful' in data) {
+                    value = 'Not Helpful';
+                } else {
+                    // This isn't the kb vote form.
+                    // (It's the survey or some other ajax form.)
+                    return;
+                }
+
+                _gaq.push(['_trackEvent',
+                           'Article Vote',
+                           data.source + ' - ' + value,
+                           getEnglishSlug() + ' / ' + getLocale()]);
+            }
+        });
+
         // Track showfor changes in Google Analytics:
         $('#os').change(function() {
             if (_gaq) {
