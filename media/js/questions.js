@@ -161,29 +161,35 @@
         $container.delegate(formSelector, 'submit', function(ev){
             ev.preventDefault();
             var $form = $(this);
+            var url = $form.attr('action');
+            var data = $form.serialize();
+
             $.ajax({
-                url: $form.attr('action'),
+                url: url,
                 type: 'POST',
-                data: $form.serialize(),
+                data: data,
                 dataType: 'json',
-                success: function(data) {
-                    if (data.html) {
+                success: function(response) {
+                    if (response.html) {
                         if($(boxSelector).length === 0) {
                             // We don't have a modal set up yet.
-                            var kbox = new KBox(data.html, {
+                            var kbox = new KBox(response.html, {
                                container: $container,
                                preClose: onKboxClose
                             });
                             kbox.open();
                         } else {
-                            $(boxSelector).html($(data.html).children());
+                            $(boxSelector).html($(response.html).children());
                         }
-                    } else if (data.message) {
+                    } else if (response.message) {
                         var html = '<div class="msg"></div>';
                         $(boxSelector)
                             .html(html)
-                            .find('.msg').text(data.message);
+                            .find('.msg').text(response.message);
                     }
+
+                    // Trigger a document event for others to listen for.
+                    $(document).trigger('vote', $.extend(data, {url: url}));
                 },
                 error: function() {
                     var message = gettext("There was an error.");
