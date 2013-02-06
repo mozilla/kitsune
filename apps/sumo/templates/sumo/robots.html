@@ -3,6 +3,6 @@ User-Agent: *
 
 Disallow: /admin/
 {% for (l, n) in settings.LANGUAGE_CHOICES %}
-Disallow: /{{ l }}/forums/
+Disallow: /{{ l }}/forums
 Disallow: /{{ l }}/users/activate/
 {% endfor %}
