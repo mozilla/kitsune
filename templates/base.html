@@ -9,6 +9,7 @@
 <!DOCTYPE html>
 <html class="no-js" lang="{{ request.locale }}" {% if DIR %}dir="{{ DIR }}"{% endif %}>
 <head>
+  {% block top_of_head %}{% endblock %}
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
   <title>{% block title %}{% if title %}{{ title }} | {% endif %}{{ _('Mozilla Support', 'site_title') }}{% endblock %}</title>
 
