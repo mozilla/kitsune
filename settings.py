@@ -606,7 +606,7 @@ MINIFY_BUNDLES = {
             'js/analytics.js',
             'js/surveygizmo.js',
         ),
-        'mobile': (
+        'mobile/common': (
             'js/i18n.js',
             'js/libs/underscore.js',
             'js/libs/jquery-1.8.2.min.js',

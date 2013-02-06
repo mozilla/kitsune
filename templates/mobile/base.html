@@ -130,7 +130,7 @@
 {% block after_main %}{% endblock %}
 
 <script src="{{ url('jsi18n') }}/build:{{ BUILD_ID_JS }}"></script>
-{{ js('mobile') }}
+{{ js('mobile/common') }}
 {% for script in scripts %}
   {{ js(script) }}
 {% endfor %}
