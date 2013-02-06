@@ -437,28 +437,26 @@ TOWER_KEYWORDS = {
 
 # Tells the extract script what files to look for l10n in and what
 # function handles the extraction.  The Tower library expects this.
+tower_tmpl = 'tower.management.commands.extract.extract_tower_template'
+tower_python = 'tower.management.commands.extract.extract_tower_python'
 DOMAIN_METHODS = {
     'messages': [
         ('apps/forums/**.py', 'ignore'),
         ('apps/forums/**.html', 'ignore'),
-        ('apps/questions/**.py', 'ignore'),
-        ('apps/questions/**.html', 'ignore'),
         ('apps/chat/**.py', 'ignore'),
         ('apps/chat/**.html', 'ignore'),
         ('apps/**/tests/**.py', 'ignore'),
         ('apps/**/management/**.py', 'ignore'),
-        ('apps/**.py',
-            'tower.management.commands.extract.extract_tower_python'),
-        ('apps/**/templates/**.html',
-            'tower.management.commands.extract.extract_tower_template'),
-        ('templates/**.html',
-            'tower.management.commands.extract.extract_tower_template'),
+
+        ('apps/**.py', tower_python),
+        ('apps/**/templates/**.html', tower_tmpl),
+        ('templates/**.html', tower_tmpl),
     ],
     'lhtml': [
         ('apps/forums/**.lhtml', 'ignore'),
         ('apps/questions/**.lhtml', 'ignore'),
-        ('**/templates/**.lhtml',
-            'tower.management.commands.extract.extract_tower_template'),
+
+        ('**/templates/**.lhtml', tower_tmpl)
     ],
     'javascript': [
         # We can't say **.js because that would dive into any libraries.
