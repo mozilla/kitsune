@@ -25,7 +25,6 @@
                 .val(k.unquote($.cookie('last_search')));
 
             initHaveThisProblemTooAjax();
-            initEmailSubscribeAjax();
             initHelpfulVote();
             initCrashIdLinking();
             addReferrerAndQueryToVoteForm();
@@ -118,17 +117,6 @@
             ev.preventDefault();
             $container.unbind().remove();
         });
-    }
-
-    /*
-     * Ajaxify email subscribe
-     */
-    function initEmailSubscribeAjax() {
-        var $container = $('#question li.email, .sidebar-nav li.email'),
-            $link = $('#email-subscribe-link');
-        if ($link.length > 0) {
-            initAjaxForm($container, 'form', '#email-subscribe');
-        }
     }
 
     function addReferrerAndQueryToVoteForm() {
