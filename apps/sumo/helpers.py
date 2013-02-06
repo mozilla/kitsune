@@ -178,8 +178,8 @@ def _babel_locale(locale):
 
 def _contextual_locale(context):
     """Return locale from the context, falling back to a default if invalid."""
-    locale = context['request'].locale
-    if not localedata.exists(locale):
+    request = context.get('request')
+    if not localedata.exists(request.LANGUAGE_CODE):
         locale = settings.LANGUAGE_CODE
     return locale
 
