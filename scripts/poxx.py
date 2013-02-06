@@ -20,6 +20,7 @@ Contributors:
 """
 
 import HTMLParser
+import optparse
 import re
 import string
 import sys
@@ -33,11 +34,14 @@ except ImportError:
     sys.exit()
 
 
+USAGE = 'usage: %prog --test OR %prog -s STRING1 [...] OR %prog FILENAME1 [...]'
+
+
 DEBUG = False
 
 
 INTERP_RE = re.compile(
-    r'(%(?:[(].+?[)])?[#0 +-]?[.\d*]*[hlL]?[diouxXeEfFgGcrs%])')
+    r'((?:%(?:[(].+?[)])?[#0 +-]?[.\d*]*[hlL]?[diouxXeEfFgGcrs%])|(?:\{.+?\}))')
 
 
 COLOR = [
@@ -93,15 +97,15 @@ TRANSFORM = (
     (False, True, 'add-on', False, True, 'bilge rat'),
     (False, True, 'add-ons', False, True, 'bilge rats'),
     (False, True, 'are', False, True, 'bee'),
-    (False, True, 'browser', False, True, 'corsair'),
+    (False, True, 'browser', False, True, 'corsairr'),
     (False, True, 'Hi', False, True, 'H\'ello'),
     (False, True, 'my', False, True, 'me'),
     (False, True, 'no', False, True, 'nay'),
     (False, True, 'of', False, True, 'o\''),
-    (False, True, 'over', False, True, 'o\'er'),
+    (False, True, 'over', False, True, 'o\'err'),
     (False, True, 'plugin', False, True, 'mug o\' grog'),
     (False, True, 'plugins', False, True, 'mugs o\' grog'),
-    (False, True, 'program', False, True, 'Jolly Roger'),
+    (False, True, 'program', False, True, 'Jolly Rogerr'),
     (False, True, 'the', False, True, 'th\''),
     (False, True, 'there', False, True, 'tharr'),
     (False, True, 'want', False, True, 'wants'),
@@ -110,21 +114,22 @@ TRANSFORM = (
     (False, True, 'yes', False, True, 'aye'),
     (False, True, 'you', False, True, 'ye\''),
     (False, True, 'You', False, True, 'Ye\''),
-    (False, True, 'your', False, True, 'yer\''),
-    (False, True, 'Your', False, True, 'Yer\''),
+    (False, True, 'your', False, True, 'yerr'),
+    (False, True, 'Your', False, True, 'Yerr'),
 
     # Prefixes
     (False, True, 'hel', True, False, '\'el'),
     (False, True, 'Hel', True, False, '\'el'),
 
     # Mid-word
-    (True, False, 'er', True, False, 'ar'),
+    (True, False, 'er', True, False, 'arr'),
 
     # Suffixes
     (True, False, 'a', False, True, 'ar'),
     (True, False, 'ed', False, True, '\'d'),
     (True, False, 'ing', False, True, 'in\''),
-    (True, False, 'ort', False, True, 'art'),
+    (True, False, 'ort', False, True, 'arrt'),
+    (True, False, 'r', False, True, 'rr'),
     (True, False, 'w', False, True, 'ww'),
 )
 
@@ -254,6 +259,7 @@ class HtmlAwareMessageMunger(HTMLParser.HTMLParser):
         # We don't want to munge placeholders, so split on them,
         # keeping them in the list, then xform every other token.
         toks = INTERP_RE.split(data)
+
         for i, tok in enumerate(toks):
             if i % 2:
                 self.s += tok
@@ -317,19 +323,41 @@ def munge_one_file(fname):
 
 def run_tests():
     for mem in [
+        'Hello %s',
+        'Hello %(username)s',
+        'Hello %(user)s%(name)s',
+        'Hello {username}',
+        'Hello {user}{name}',
         'Products and Services',
         'Get community support',
         'Your input helps make Mozilla better.',
         'Super browsing',
         ]:
-        print repr(mem), '->', repr(pirate_transform(mem))
+        print repr(mem), '->', repr(translate_string(mem))
 
     return 0
 
 
 if __name__ == '__main__':
-    if '--test' in sys.argv:
+    parser = optparse.OptionParser(usage=USAGE)
+    parser.add_option('--test', action='store_true', dest='runtests',
+                      default=False,
+                      help='runs tests')
+    parser.add_option('-s', '--string', action='store_true', dest='strings',
+                      help='translates specified string args')
+    (options, args) = parser.parse_args()
+
+    if options.runtests:
         sys.exit(run_tests())
 
-    for fname in sys.argv[1:]:
-        munge_one_file(fname)
+    if not args:
+        parser.print_help()
+        sys.exit(1)
+
+    if options.strings:
+        for arg in args:
+            print translate_string(arg)
+        sys.exit(0)
+
+    for arg in args:
+        munge_one_file(arg)

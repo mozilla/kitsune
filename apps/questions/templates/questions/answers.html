@@ -231,7 +231,7 @@
         </div>
       </section>
 
-      {% set tags = question.tags.all() %}
+      {% set tags = question.my_tags %}
       {% if tags or can_tag %}
         <div class="sidebox tight cf" id="tags">
           <span class="title">{{ _('Tags') }}</span>

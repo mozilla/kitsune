@@ -142,16 +142,20 @@ window.KpiDashboard = Backbone.View.extend({
             }]
         });
 
-        this.ctrView = new BasicChartView({
+        this.ctrView = new StockChartView({
             model: this.elasticCtrChart,
             title: gettext('Search Clickthrough Rate'),
             percent: true,
             series: [{
+                name: gettext('CTR %'),
                 mapper: function(o) {
                     return {
                         x: Date.parse(o['start']),
                         y: o['clicks'] / o['searches'] * 100
                     };
+                },
+                tooltip: {
+                    yDecimals: 1
                 }
             }]
         });

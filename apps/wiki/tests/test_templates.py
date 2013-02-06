@@ -246,6 +246,20 @@ class DocumentTests(TestCaseBase):
         doc = pq(response.content)
         eq_(target_url, doc('link[rel=canonical]').attr('href'))
 
+    def test_redirect_no_vote(self):
+        """Make sure documents with REDIRECT directives have no vote form.
+        """
+        target = document(save=True)
+        target_url = target.get_absolute_url()
+        redirect = document(
+                    html='<p>REDIRECT <a href="%s">Boo</a></p>' % target_url)
+        redirect.save()
+        redirect_url = redirect.get_absolute_url()
+        response = self.client.get(redirect_url + '?redirect=no')
+        doc = pq(response.content)
+        assert not doc('.document-vote')
+
+
     def test_redirect_from_nonexistent(self):
         """The template shouldn't crash or print a backlink if the "from" page
         doesn't exist."""

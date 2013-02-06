@@ -554,11 +554,6 @@ MINIFY_BUNDLES = {
         'monitor': (
             'css/monitor.css',
         ),
-        'mobile': (
-            'global/mobile.css',
-            'css/mobile.css',
-            'css/wiki_syntax.css',
-        ),
         'mobile/new': (
             'css/normalize.css',
             'less/mobile/main.less',
@@ -673,7 +668,7 @@ MINIFY_BUNDLES = {
             'js/browserdetect.js',
             'js/showfor.js',
             'js/ajaxform.js',
-            'js/mobile/wiki.js'
+            'js/mobile/wiki.js',
             'js/wiki.metrics.js',
         ),
         'wiki.history': (
@@ -709,20 +704,6 @@ MINIFY_BUNDLES = {
         'users': (
             'js/users.js',
             'js/reportabuse.js',
-        ),
-        'mobile': (
-            'js/libs/underscore.js',
-            'global/mobilefeatures.js',
-            'js/i18n.js',
-            'js/libs/jquery.min.js',
-            'js/libs/jquery.cookie.js',
-            'js/libs/jquery.lazyload.js',
-            'js/browserdetect.js',
-            'js/showfor.js',
-            'js/ajaxvote.js',
-            'js/aaq.js',
-            'js/mobile.js',
-            'js/analytics.js',
         ),
         'mobile-new': (
             'js/libs/underscore.js',

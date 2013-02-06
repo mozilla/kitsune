@@ -11,16 +11,6 @@
     }
   }
 
-  .login-help {
-    list-style: none;
-    margin: 14px 0;
-    padding: 0;
-
-    li {
-      margin: 10px 0;
-    }
-  }
-
   .top-section {
     background: #fff;
     padding: 14px;
@@ -40,6 +30,20 @@
 
     form {
       padding: 14px;
+    }
+  }
+}
+
+.login,
+.register,
+.activate {
+  .login-help {
+    list-style: none;
+    margin: 14px 0;
+    padding: 0;
+
+    li {
+      margin: 10px 0;
     }
   }
 }
@@ -267,5 +271,48 @@
   .btn-submit {
     line-height: normal;
     margin-left: 10px;
+  }
+}
+
+.activate {
+  h4 {
+    margin: 0;
+  }
+
+  #content {
+    > section {
+      background: #fff;
+      padding: 16px;
+
+      &.form {
+        background: transparent;
+      }
+    }
+  }
+
+  #page {
+    background: @mobileFormBackground;
+  }
+}
+
+.forgot-username,
+.pwreset,
+.resend-confirmation {
+  label {
+    display: block;
+    padding: 0 6px;
+    text-transform: uppercase;
+  }
+
+  #content {
+    padding: 16px;
+
+    > p:first-of-type {
+      margin-top: 0;
+    }
+  }
+
+  #page {
+    background: @mobileFormBackground;
   }
 }
