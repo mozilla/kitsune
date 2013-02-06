@@ -59,7 +59,7 @@ class LocaleURLMiddleware(object):
             return response
 
         request.path_info = '/' + prefixer.shortened_path
-        request.locale = prefixer.locale
+        request.LANGUAGE_CODE = prefixer.locale
         tower.activate(prefixer.locale)
 
     def process_response(self, request, response):
@@ -109,7 +109,7 @@ class PlusToSpaceMiddleware(object):
                 new = u'%s?%s' % (new,
                                   smart_unicode(request.META['QUERY_STRING']))
             if hasattr(request, 'locale'):
-                new = u'/%s%s' % (request.locale, new)
+                new = u'/%s%s' % (request.LANGUAGE_CODE, new)
             return HttpResponsePermanentRedirect(new)
 
 

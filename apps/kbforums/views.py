@@ -31,7 +31,7 @@ def get_document(slug, request):
     """Given a slug and a request, get the document or 404."""
     return get_object_or_404(Document,
                              slug=slug,
-                             locale=request.locale,
+                             locale=request.LANGUAGE_CODE,
                              allow_discussion=True)
 
 
@@ -358,7 +358,7 @@ def watch_thread(request, document_slug, thread_id):
 @login_required
 def watch_locale(request):
     """Watch/unwatch a locale."""
-    locale = request.locale
+    locale = request.LANGUAGE_CODE
     if request.POST.get('watch') == 'yes':
         NewPostInLocaleEvent.notify(request.user, locale=locale)
         NewThreadInLocaleEvent.notify(request.user, locale=locale)
@@ -397,8 +397,8 @@ def post_preview_async(request, document_slug):
 
 
 def locale_discussions(request):
-    locale_name = LOCALES[request.locale].native
-    threads = Thread.objects.filter(document__locale=request.locale,
+    locale_name = LOCALES[request.LANGUAGE_CODE].native
+    threads = Thread.objects.filter(document__locale=request.LANGUAGE_CODE,
                                     document__allow_discussion=True)
     try:
         sort = int(request.GET.get('sort', 0))
@@ -419,7 +419,7 @@ def locale_discussions(request):
                         per_page=kbforums.THREADS_PER_PAGE)
     is_watching_locale = (request.user.is_authenticated() and
                           NewThreadInLocaleEvent.is_notifying(
-                            request.user, locale=request.locale))
+                            request.user, locale=request.LANGUAGE_CODE))
     return jingo.render(request, 'kbforums/discussions.html',
                         {'locale_name': locale_name, 'threads': threads_,
                          'desc_toggle': desc_toggle,

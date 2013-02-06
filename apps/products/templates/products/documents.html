@@ -49,7 +49,7 @@
         {% for document in fallback_documents %}
           {% if loop.first %}<ul class="topic-list">{% endif %}
           <li>
-            <a href="{{ document['url']|replace('/'+ settings.WIKI_DEFAULT_LANGUAGE +'/', '/' + request.locale + '/') }}">{{ document['document_title'] }}</a>
+            <a href="{{ document['url']|replace('/'+ settings.WIKI_DEFAULT_LANGUAGE +'/', '/' + request.LANGUAGE_CODE + '/') }}">{{ document['document_title'] }}</a>
           </li>
           {% if loop.last %}</ul>{% endif %}
         {% endfor %}

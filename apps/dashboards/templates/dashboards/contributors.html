@@ -16,7 +16,7 @@
 
       <h1>{{ title }}</h1>
 
-      {% if default_locale_name != request_locale_name %}
+      {% if default_locale_name != request.LANGUAGE_CODE_name %}
         <div class="choice-list">
           <label>{{ _('Show information for:') }}</label>
           <ul>
@@ -24,7 +24,7 @@
               {{ default_locale_name }}
             </li>
             <li>
-              <a href="{{ url('dashboards.localization') }}">{{ request_locale_name }}</a>
+              <a href="{{ url('dashboards.localization') }}">{{ request.LANGUAGE_CODE_name }}</a>
             </li>
           </ul>
         </div>
@@ -32,7 +32,7 @@
 
       {% if not user.is_anonymous() %}
         {{ print_subscription_menu(default_locale_name,
-                                   request_locale_name,
+                                   request.LANGUAGE_CODE_name,
                                    on_default_locale,
                                    is_watching_default_locale,
                                    is_watching_other_locale,

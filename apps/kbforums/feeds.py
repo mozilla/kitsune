@@ -16,7 +16,7 @@ class ThreadsFeed(Feed):
     def get_object(self, request, document_slug):
         return get_object_or_404(Document,
                                  slug=document_slug,
-                                 locale=request.locale,
+                                 locale=request.LANGUAGE_CODE,
                                  allow_discussion=True)
 
     def title(self, document):
@@ -45,7 +45,7 @@ class PostsFeed(Feed):
     def get_object(self, request, document_slug, thread_id):
         doc = get_object_or_404(Document,
                                 slug=document_slug,
-                                locale=request.locale,
+                                locale=request.LANGUAGE_CODE,
                                 allow_discussion=True)
         return get_object_or_404(Thread, pk=thread_id, document=doc)
 

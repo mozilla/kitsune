@@ -20,7 +20,7 @@
         <form action="" method="post" data-json-url="{{ url('wiki.json') }}">
           {{ csrf() }}
           <ul>
-            {% for field in document_form.visible_fields() if (field.name != 'is_localizable' or settings.WIKI_DEFAULT_LANGUAGE == request.locale) %}
+            {% for field in document_form.visible_fields() if (field.name != 'is_localizable' or settings.WIKI_DEFAULT_LANGUAGE == request.LANGUAGE_CODE) %}
               <li>{{ field|label_with_help }}{{ field|safe }}</li>
             {% endfor %}
           </ul>

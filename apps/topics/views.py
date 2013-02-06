@@ -25,7 +25,7 @@ def topic_landing(request, slug):
         data.update(products=products_for(topics=[topic]))
     else:
         docs, fallback = documents=documents_for(
-            locale=request.locale, topics=[topic])
+            locale=request.LANGUAGE_CODE, topics=[topic])
         data.update(documents=docs, fallback_documents=fallback)
 
     return jingo.render(request, 'topics/topic.html', data)

@@ -118,7 +118,7 @@ def more_tweets(request):
     filter = raw_filter if raw_filter in FILTERS else 'recent'
 
     return jingo.render(request, 'customercare/tweets.html',
-                        {'tweets': _get_tweets(locale=request.locale,
+                        {'tweets': _get_tweets(locale=request.LANGUAGE_CODE,
                                                max_id=max_id,
                                                filter=filter,
                                                https=request.is_secure())})
@@ -159,8 +159,8 @@ def landing(request):
 
     return jingo.render(request, 'customercare/landing.html', {
         'contributor_stats': contributor_stats,
-        'canned_responses': get_common_replies(request.locale),
-        'tweets': _get_tweets(locale=request.locale,
+        'canned_responses': get_common_replies(request.LANGUAGE_CODE),
+        'tweets': _get_tweets(locale=request.LANGUAGE_CODE,
                               https=request.is_secure()),
         'authed': request.twitter.authed,
         'twitter_user': twitter_user,

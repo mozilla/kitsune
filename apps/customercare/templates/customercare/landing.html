@@ -81,7 +81,7 @@
       {{ csrf() }}{# CSRF token for AJAX actions. #}
       {% if not tweets %}
         <div class="warning-box">
-          {% trans language=settings.LOCALES[request.locale].native %}
+          {% trans language=settings.LOCALES[request.LANGUAGE_CODE].native %}
             We couldn't find any matching tweets for {{ language }} at this time.
             Please check again later, choose a different tweet type from the
             menu above, or view tweets for other languages by using the
