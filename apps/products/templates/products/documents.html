@@ -47,10 +47,9 @@ valueOf()+(h?'&utmxhash='+escape(h.substr(1)):'')+
       {# Temporary A/B test for bug 830753
          If we are on /products/firefox/fix-problems and
          ?b is passed in the query string,
-         we don't show the Focus and Refine section.
+         we show the Focus and Refine section expanded.
       #}
-      {% if product.slug != 'firefox' or topic.slug != 'fix-problems' or not 'b' in request.GET %}
-      <div id="focus-and-refine" class="feature-box{% if not refine %} collapsed{% endif %}" data-ui-type="folding-section">
+      <div id="focus-and-refine" class="feature-box{% if not refine and (product.slug != 'firefox' or topic.slug != 'fix-problems' or not 'b' in request.GET) %} collapsed{% endif %}" data-ui-type="folding-section">
         <header>
           <h2 class="nomargin">{{ _('Refine and Focus') }}</h2>
         </header>
@@ -63,7 +62,6 @@ valueOf()+(h?'&utmxhash='+escape(h.substr(1)):'')+
           </ul>
         </section>
       </div>
-      {% endif %}
 
       {% for document in documents %}
         {% if loop.first %}<ul class="topic-list">{% endif %}
