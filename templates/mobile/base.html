@@ -19,7 +19,7 @@
   <link rel="shortcut icon" type="image/x-icon" href="{{ MEDIA_URL }}img/favicon.ico">
   <link rel="search" type="application/opensearchdescription+xml" title="{{ _('Firefox Help') }}" href="{{ url('search.plugin') }}"/>
 
-  {{ css('mobile/new') }}
+  {{ css('mobile/common') }}
   {% for style in styles %}
     {{ css(style) }}
   {% endfor %}
@@ -139,7 +139,7 @@
 </div>
 
 <script src="{{ url('jsi18n') }}/build:{{ BUILD_ID_JS }}"></script>
-{{ js('mobile-new') }}
+{{ js('mobile/common') }}
 {% for script in scripts %}
   {{ js(script) }}
 {% endfor %}

@@ -490,6 +490,10 @@ MINIFY_BUNDLES = {
             'css/normalize.css',
             'less/main.less',
         ),
+        'mobile/common': (
+            'css/normalize.css',
+            'less/mobile/main.less',
+        ),
         'print': (
             'css/print.css',
         ),
@@ -556,10 +560,6 @@ MINIFY_BUNDLES = {
         'monitor': (
             'css/monitor.css',
         ),
-        'mobile/new': (
-            'css/normalize.css',
-            'less/mobile/main.less',
-        ),
         'messages': (
             'css/users.autocomplete.css',
             'less/messages.less',
@@ -610,6 +610,16 @@ MINIFY_BUNDLES = {
             'js/ui.js',
             'js/analytics.js',
             'js/surveygizmo.js',
+        ),
+        'mobile/common': (
+            'js/i18n.js',
+            'js/libs/underscore.js',
+            'js/libs/jquery-1.8.2.min.js',
+            'js/libs/modernizr-2.6.1.js',
+            'js/browserdetect.js',
+            'js/aaq.js',
+            'js/mobile/ui.js',
+            'js/analytics.js',
         ),
         'ie6-8': (
             'js/libs/nwmatcher-1.2.5.js',
@@ -711,15 +721,6 @@ MINIFY_BUNDLES = {
         'users': (
             'js/users.js',
             'js/reportabuse.js',
-        ),
-        'mobile-new': (
-            'js/libs/underscore.js',
-            'js/libs/jquery-1.8.2.min.js',
-            'js/libs/modernizr-2.6.1.js',
-            'js/browserdetect.js',
-            'js/aaq.js',
-            'js/mobile/ui.js',
-            'js/analytics.js',
         ),
         'messages': (
             'js/markup.js',
