@@ -38,96 +38,105 @@
       data-for-version="{{ for_version|json }}"
       data-orientation="{% if page_align %}{{ page_align }}{% else %}right{% endif %}"
       data-ga-push="{{ ga_push_attribute() }}"
+      data-usernames-api="{{ url('users.api.usernames') }}"
 {% if extra_body_attrs -%}
   {% for attr, val in extra_body_attrs.items() %}{{ attr }}="{{ val }}" {% endfor %}
 {%- endif %}>
 
-<nav class="scrollable">
-  <div id="search-bar">
-    {{ mobile_nav_form(q, search_params) }}
+<div id="container">
+  <nav class="scrollable">
+    <div id="search-bar">
+      {{ mobile_nav_form(q, search_params) }}
+    </div>
+
+    <a href="{{ url('products') }}">{{ _('Home') }}</a>
+    {% if request.locale == settings.WIKI_DEFAULT_LANGUAGE %}
+      {% set ask_url = url('questions.aaq_step1') %}
+    {% else %}
+      {% set ask_url = url('wiki.document', 'get-community-support') %}
+    {% endif %}
+    <a href="{{ ask_url }}">{{ _('Ask a question') }}</a>
+
+    <header>{{ _('Navigation') }}</header>
+    <a href="{{ url('topics.topic', slug='hot') }}">{{ _('Hot topics') }}</a>
+    <a href="{{ url('wiki.document', 'mozilla-news') }}">{{ _('Mozilla news') }}</a>
+    <a href="{{ url('wiki.document', 'superheroes-wanted') }}">{{ _('Help other users') }}</a>
+    <a href="{{ url('wiki.document', 'suggestion-box') }}">{{ _('Suggestion box') }}</a>
+
+    <header>{{ _('Profile') }}</header>
+    {% if user.is_authenticated() %}
+      <a href="{{ profile_url(user) }}">{{ user.username }}</a>
+      <a href="{{ url('messages.inbox') }}">
+        {{ _('Inbox') }}
+        {% if unread_message_count > 0 %}
+          ({{ unread_message_count }})
+        {% endif %}
+      </a>
+      <a href="{{ url('dashboards.default') }}">{{ _('Dashboard') }}</a>
+      <a href="{{ url('users.edit_settings') }}">{{ _('Settings') }}</a>
+      <a href="{{ url('users.logout') }}" class="sign-out">{{ _('Sign Out') }}</a>
+    {% else %}
+      <a href="{{ url('users.login') }}">{{ _('Sign in') }}</a>
+      <a href="{{ url('users.register') }}">{{ _('Register') }}</a>
+    {% endif %}
+
+    <header>{{ _('Languages') }}</header>
+    {% set locale_url = url('sumo.locales') %}
+    {% if localizable_url %}
+      {% set locale_url = locale_url|urlparams(next=localizable_url) %}
+    {% endif %}
+    <a href="{{ locale_url }}" class="locale-picker">{{ _('Switch language') }}</a>
+    <a href="?{{ request.QUERY_STRING}}&mobile=0">{{ _('Switch to desktop site') }}</a>
+  </nav>
+
+  <div id="page">
+    <header>
+      <div id="menu-button" class="icon-sprite"></div>
+      {% block header_buttons %}{% endblock %}
+      {% if cancel_url %}
+        <a href="{{ cancel_url }}" id="cancel-button" class="icon-sprite">Cancel</a>
+      {% endif %}
+      {% if return_url %}
+        <a href="{{ return_url }}" class="return-button icon-sprite">Back</a>
+      {% endif %}
+      {% block header %}
+        <h1>
+          {% if headline %}
+            {{ headline }}
+          {% else %}
+            {{ _('Mozilla Support') }}
+          {% endif %}
+        </h1>
+      {% endblock %}
+    </header>
+
+    {% block after_header %}{% endblock %}
+
+    <div class="wrapper scrollable">
+      <section id="content">
+        {% block content %}{% endblock %}
+
+        {% if include_showfor %}
+          {{ show_for() }}
+        {% endif %}
+      </section>
+
+      <footer>
+        {% block footer %}{% endblock %}
+      </footer>
+
+      {% if messages %}
+        <ul id="notifications">
+          {% for message in messages %}
+            <li>{{ message }}</li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+    </div>
   </div>
 
-  <a href="{{ url('products') }}">{{ _('Home') }}</a>
-  {% if request.locale == settings.WIKI_DEFAULT_LANGUAGE %}
-    {% set ask_url = url('questions.aaq_step1') %}
-  {% else %}
-    {% set ask_url = url('wiki.document', 'get-community-support') %}
-  {% endif %}
-  <a href="{{ ask_url }}">{{ _('Ask a question') }}</a>
-
-  <header>{{ _('Navigation') }}</header>
-  <a href="{{ url('topics.topic', slug='hot') }}">{{ _('Hot topics') }}</a>
-  <a href="{{ url('wiki.document', 'mozilla-news') }}">{{ _('Mozilla news') }}</a>
-  <a href="{{ url('wiki.document', 'superheroes-wanted') }}">{{ _('Help other users') }}</a>
-  <a href="{{ url('wiki.document', 'suggestion-box') }}">{{ _('Suggestion box') }}</a>
-
-  <header>{{ _('Profile') }}</header>
-  {% if user.is_authenticated() %}
-    <a href="{{ profile_url(user) }}">{{ user.username }}</a>
-    <a href="{{ url('messages.inbox') }}">
-      {{ _('Inbox') }}
-      {% if unread_message_count > 0 %}
-        ({{ unread_message_count }})
-      {% endif %}
-    </a>
-    <a href="{{ url('dashboards.default') }}">{{ _('Dashboard') }}</a>
-    <a href="{{ url('users.edit_settings') }}">{{ _('Settings') }}</a>
-    <a href="{{ url('users.logout') }}" class="sign-out">{{ _('Sign Out') }}</a>
-  {% else %}
-    <a href="{{ url('users.login') }}">{{ _('Sign in') }}</a>
-    <a href="{{ url('users.register') }}">{{ _('Register') }}</a>
-  {% endif %}
-
-  <header>{{ _('Languages') }}</header>
-  {% set locale_url = url('sumo.locales') %}
-  {% if localizable_url %}
-    {% set locale_url = locale_url|urlparams(next=localizable_url) %}
-  {% endif %}
-  <a href="{{ locale_url }}" class="locale-picker">{{ _('Switch language') }}</a>
-  <a href="?{{ request.QUERY_STRING}}&mobile=0">{{ _('Switch to desktop site') }}</a>
-</nav>
-
-<div id="page">
-  <header>
-    <div id="menu-button" class="icon-sprite"></div>
-    {% block header_buttons %}{% endblock %}
-    {% if cancel_url %}
-      <a href="{{ cancel_url }}" id="cancel-button" class="icon-sprite">Cancel</a>
-    {% endif %}
-    {% if return_url %}
-      <a href="{{ return_url }}" class="return-button icon-sprite">Back</a>
-    {% endif %}
-    {% block header %}
-      <h1>{% if headline %}{{ headline }}{% else %}{{ _('Mozilla Support') }}{% endif %}</h1>
-    {% endblock %}
-  </header>
-
-  {% block after_header %}{% endblock %}
-
-  <div class="wrapper scrollable">
-    <section id="content">
-      {% block content %}{% endblock %}
-
-      {% if include_showfor %}
-        {{ show_for() }}
-      {% endif %}
-    </section>
-
-    <footer>
-      {% block footer %}{% endblock %}
-    </footer>
-
-    {% if messages %}
-      <ul id="notifications">
-        {% for message in messages %}
-          <li>{{ message }}</li>
-        {% endfor %}
-      </ul>
-    {% endif %}
-  </div>
+  {% block after_main %}{% endblock %}
 </div>
-
-{% block after_main %}{% endblock %}
 
 <script src="{{ url('jsi18n') }}/build:{{ BUILD_ID_JS }}"></script>
 {{ js('mobile-new') }}
