@@ -63,7 +63,7 @@ def search(request, template=None):
             json.dumps({'error': _('Invalid callback function.')}),
             mimetype=mimetype, status=400)
 
-    language = locale_or_default(request.GET.get('language', request.locale))
+    language = locale_or_default(request.GET.get('language', request.LANGUAGE_CODE))
     r = request.GET.copy()
     a = request.GET.get('a', '0')
 
@@ -499,7 +499,7 @@ def suggestions(request):
         return HttpResponseBadRequest(mimetype=mimetype)
 
     site = Site.objects.get_current()
-    locale = locale_or_default(request.locale)
+    locale = locale_or_default(request.LANGUAGE_CODE)
     try:
         query = dict(('%s__text' % field, term)
                      for field in Document.get_query_fields())
@@ -537,7 +537,7 @@ def plugin(request):
     """Render an OpenSearch Plugin."""
     site = Site.objects.get_current()
     return jingo.render(request, 'search/plugin.html',
-                        {'site': site, 'locale': request.locale},
+                        {'site': site, 'locale': request.LANGUAGE_CODE},
                         mimetype='application/opensearchdescription+xml')
 
 

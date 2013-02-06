@@ -80,9 +80,9 @@ def localization_detail(request, readout_slug):
 @require_GET
 def localization(request):
     """Render aggregate data about articles in a non-default locale."""
-    if request.locale == settings.WIKI_DEFAULT_LANGUAGE:
+    if request.LANGUAGE_CODE == settings.WIKI_DEFAULT_LANGUAGE:
         return HttpResponseRedirect(reverse('dashboards.contributors'))
-    locales = Locale.objects.filter(locale=request.locale)
+    locales = Locale.objects.filter(locale=request.LANGUAGE_CODE)
     if locales:
         permission = user_can_announce(request.user, locales[0])
     else:
@@ -91,7 +91,7 @@ def localization(request):
     product = _get_product(request)
 
     data = {
-      'overview_rows': overview_rows(request.locale, product=product),
+      'overview_rows': overview_rows(request.LANGUAGE_CODE, product=product),
       'user_can_announce': permission
     }
     return render_readouts(request, L10N_READOUTS, 'localization.html',

@@ -27,7 +27,7 @@
           <label for="select-locale">{{ _('Show media for:') }}</label>
           <select id="select-locale" name="lang" class="autosubmit">
             {% for lang in settings.LANGUAGE_CHOICES %}
-              <option value="{{ lang[0] }}" {% if lang[0] == request.locale %}selected="selected"{% endif %}>{{ lang[1] }} ({{ lang[0] }})</option>
+              <option value="{{ lang[0] }}" {% if lang[0] == request.LANGUAGE_CODE %}selected="selected"{% endif %}>{{ lang[1] }} ({{ lang[0] }})</option>
             {% endfor %}
           </select>
           <noscript>

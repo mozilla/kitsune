@@ -76,7 +76,7 @@ class TestHelpers(TestCase):
         eq_('No', yesno(0))
 
     def test_number(self):
-        context = {'request': namedtuple('R', 'locale')('en-US')}
+        context = {'request': namedtuple('R', 'LANGUAGE_CODE')('en-US')}
         eq_('5,000', number(context, 5000))
         eq_('', number(context, None))
 
@@ -103,7 +103,7 @@ class TestDateTimeFormat(TestCase):
         self.locale = 'en_US'
         url_ = reverse('forums.threads', args=['testslug'])
         self.context = {'request': test_utils.RequestFactory().get(url_)}
-        self.context['request'].locale = self.locale
+        self.context['request'].LANGUAGE_CODE = self.locale
         user_profile = profile(timezone=self.timezone, locale=self.locale)
         self.context['request'].user = user_profile
         self.context['request'].user.is_authenticated = Mock(return_value=True)
@@ -134,7 +134,7 @@ class TestDateTimeFormat(TestCase):
 
     def test_locale(self):
         """Expects shortdatetime in French."""
-        self.context['request'].locale = 'fr'
+        self.context['request'].LANGUAGE_CODE = 'fr'
         self._get_datetime_result('fr', self.timezone)
 
     def test_default(self):
@@ -178,7 +178,7 @@ class TestDateTimeFormat(TestCase):
     def test_timezone(self):
         """Expects Europe/Paris timezone."""
         fr_timezone = timezone('Europe/Paris')
-        self.context['request'].locale = 'fr'
+        self.context['request'].LANGUAGE_CODE = 'fr'
         self.context['request'].session = {'timezone': fr_timezone}
         self._get_datetime_result('fr', fr_timezone,
                                           'medium', 'datetime')
@@ -186,7 +186,7 @@ class TestDateTimeFormat(TestCase):
     def test_timezone_different_locale(self):
         """Expects Europe/Paris timezone with different locale."""
         fr_timezone = timezone('Europe/Paris')
-        self.context['request'].locale = 'tr'
+        self.context['request'].LANGUAGE_CODE = 'tr'
         self.context['request'].session = {'timezone': fr_timezone}
         self._get_datetime_result('tr', fr_timezone,
                                           'medium', 'datetime')

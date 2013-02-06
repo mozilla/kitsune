@@ -1,13 +1,13 @@
 {# vim: set ts=2 et sts=2 sw=2: #}
 {% from 'includes/common_macros.html' import search_box, aux_nav with context %}
-{% if request.locale == settings.WIKI_DEFAULT_LANGUAGE and waffle.flag('surveygizmo') %}
+{% if request.LANGUAGE_CODE == settings.WIKI_DEFAULT_LANGUAGE and waffle.flag('surveygizmo') %}
   {% set SURVEY_GIZMOS = (SURVEY_GIZMOS or []) + ['site_survey'] %}
 {% endif %}
-{% if request.locale == 'xx' %}
+{% if request.LANGUAGE_CODE == 'xx' %}
   {% set meta = [('robots', 'noindex')] %}
 {% endif %}
 <!DOCTYPE html>
-<html class="no-js" lang="{{ request.locale }}" {% if DIR %}dir="{{ DIR }}"{% endif %}>
+<html class="no-js" lang="{{ request.LANGUAGE_CODE }}" {% if DIR %}dir="{{ DIR }}"{% endif %}>
 <head>
   {% block top_of_head %}{% endblock %}
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
@@ -27,7 +27,7 @@
     {{ css(style) }}
   {% endfor %}
 
-  {% if request.locale == 'en-US' %}
+  {% if request.LANGUAGE_CODE == 'en-US' %}
     {# tabzilla is en-US only for now #}
     <link href="//www.mozilla.org/tabzilla/media/css/tabzilla.css" rel="stylesheet" />
   {% endif %}
@@ -58,7 +58,7 @@
 <script src="{{ MEDIA_URL }}js/libs/html5-shiv.js"></script>
 <![endif]-->
 </head>
-<body class="html-{{ DIR }} {{ classes }} {{ request.locale }}"
+<body class="html-{{ DIR }} {{ classes }} {{ request.LANGUAGE_CODE }}"
       data-readonly="{{ settings.READ_ONLY|json }}"
       data-for-os="{{ for_os|json }}"
       data-for-version="{{ for_version|json }}"
@@ -103,7 +103,7 @@
 <header>
   <div class="container_12 cf">
     <div class="grid_12">
-      {% if request.locale == 'en-US' %}
+      {% if request.LANGUAGE_CODE == 'en-US' %}
         {# tabzilla is en-US only for now #}
         <a href="http://www.mozilla.org/" id="tabzilla">mozilla</a>
       {% else %}
@@ -117,7 +117,7 @@
             {% if localizable_url %}
               {% set locale_url = locale_url|urlparams(next=localizable_url) %}
             {% endif %}
-            <li><a href="{{ locale_url }}" class="locale-picker">{{ settings.LANGUAGES[request.locale.lower()] }}</a></li>
+            <li><a href="{{ locale_url }}" class="locale-picker">{{ settings.LANGUAGES[request.LANGUAGE_CODE.lower()] }}</a></li>
           </ul>
         </nav>
       </div>
@@ -212,7 +212,7 @@
   {{ js(script) }}
 {% endfor %}
 
-{% if request.locale == 'en-US' %}
+{% if request.LANGUAGE_CODE == 'en-US' %}
   {# tabzilla is en-US only for now #}
   <script src="//www.mozilla.org/tabzilla/media/js/tabzilla.js"></script>
 {% endif %}

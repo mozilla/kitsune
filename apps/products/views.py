@@ -23,7 +23,7 @@ def product_landing(request, template, slug):
 
     try:
         hot_docs, fallback_hot_docs = documents_for(
-            locale=request.locale,
+            locale=request.LANGUAGE_CODE,
             topics=[Topic.objects.get(slug=HOT_TOPIC_SLUG)],
             products=[product])
     except Topic.DoesNotExist:
@@ -52,7 +52,7 @@ def document_listing(request, template, product_slug, topic_slug):
         refine = None
         topics = [topic]
     documents, fallback_documents = documents_for(
-        locale=request.locale, products=[product], topics=topics)
+        locale=request.LANGUAGE_CODE, products=[product], topics=topics)
 
     return jingo.render(request, template, {
         'product': product,

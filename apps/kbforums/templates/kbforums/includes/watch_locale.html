@@ -2,7 +2,7 @@
 {% if user.is_authenticated() %}
   <form action="{{ url('wiki.discuss.watch_locale') }}" method="post">
     {{ csrf() }}
-    {% if is_watching_discussion_locale(user, request.locale) %}
+    {% if is_watching_discussion_locale(user, request.LANGUAGE_CODE) %}
       {% set watch = _('Turn off emails for discussion in my locale.') %}
       <input type="hidden" name="watch" value="no" />
     {% else %}

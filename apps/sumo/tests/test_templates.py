@@ -32,7 +32,7 @@ class MockRequestTests(TestCase):
         super(MockRequestTests, self).setUp()
         request = RequestFactory()
         request.GET = {}
-        request.locale = 'en-US'
+        request.LANGUAGE_CODE = 'en-US'
         self.request = request
 
 
@@ -51,7 +51,7 @@ class BaseTemplateTests(MockRequestTests):
     def test_dir_rtl(self):
         """Make sure dir attr is set to 'rtl' for RTL language."""
         translation.activate('he')
-        self.request.locale = 'he'
+        self.request.LANGUAGE_CODE = 'he'
         html = jingo.render_to_string(self.request, self.template)
         eq_('rtl', pq(html)('html').attr['dir'])
         translation.deactivate()

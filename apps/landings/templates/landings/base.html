@@ -20,7 +20,7 @@
        in the KB while we implement the real thing in templates, code, etc.
        This temporary solution is limited to en-US.
     #}
-    {% if nav and request.locale == 'en-US' %}
+    {% if nav and request.LANGUAGE_CODE == 'en-US' %}
       <div id="home-content-nav">
         {{ nav.html|safe }}
       </div>

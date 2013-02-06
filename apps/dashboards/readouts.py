@@ -298,7 +298,7 @@ class Readout(object):
 
         """
         self.request = request
-        self.locale = locale or request.locale
+        self.locale = locale or request.LANGUAGE_CODE
         self.mode = mode if mode != None else self.default_mode
         # self.mode is allowed to be invalid.
         self.product = product

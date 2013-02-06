@@ -20,7 +20,7 @@ from wiki.tests import revision, translated_revision, document
 
 
 class MockRequest(object):
-    locale = 'de'  # Same locale as translated_revision uses by default
+    LANGUAGE_CODE = 'de'  # Same locale as translated_revision uses by default
 
 
 class ReadoutTestCase(TestCase):
