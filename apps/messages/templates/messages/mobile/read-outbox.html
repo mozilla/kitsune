@@ -1,0 +1,19 @@
+{% extends 'mobile/base.html' %}
+
+{% set headline = _('Sent Message') %}
+{% set title = headline %}
+
+{% set styles = ('mobile/messages',) %}
+{% set classes = 'read-message' %}
+
+{% set return_url = url('messages.outbox') %}
+
+{% block content %}
+  <div class="meta-bar">
+    {{ _('To:') }}
+    <a class="name-tag" href="{{ profile_url(message.recipient) }}">{{ display_name(message.recipient) }}</a>
+  </div>
+  <div class="message-content">
+    {{ message.content_parsed }}
+  </div>
+{% endblock %}

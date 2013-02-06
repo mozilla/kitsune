@@ -567,6 +567,9 @@ MINIFY_BUNDLES = {
             'css/users.autocomplete.css',
             'less/messages.less',
         ),
+        'mobile/messages': (
+            'less/mobile/messages.less',
+        ),
         'products': (
             'less/products.less',
         ),
@@ -740,6 +743,10 @@ MINIFY_BUNDLES = {
             'js/users.autocomplete.js',
             'js/ajaxpreview.js',
             'js/messages.js',
+        ),
+        'mobile/messages': (
+            'js/libs/jquery.tokeninput.js',
+            'js/users.autocomplete.js',
         ),
         'groups': (
             'js/libs/jquery.tokeninput.js',

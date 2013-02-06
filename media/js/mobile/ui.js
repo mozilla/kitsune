@@ -1,4 +1,35 @@
+k = {};
+
 (function($) {
+    var UNSAFE_CHARS = {
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      "'": '&#39;',
+      '"': '&quot;'
+    };
+
+    k.safeString = function(str) {
+      if (str) {
+        return str.replace(new RegExp('[&<>\'"]', 'g'),
+            function(m) { return UNSAFE_CHARS[m]; });
+      }
+      return str;
+    };
+
+    k.safeInterpolate = function(fmt, obj, named) {
+      if (named) {
+        for (var j in obj) {
+          obj[j] = k.safeString(obj[j]);
+        }
+      } else {
+        for (var i=0, l=obj.length; i<l; i++) {
+          obj[i] = k.safeString(obj[i]);
+        }
+      }
+      return interpolate(fmt, obj, named);
+    };
+
     $(function() {
         // Menu toggling
         $('#menu-button').on('click', function() {
@@ -51,7 +82,18 @@
         });
 
         $(document).on('click', '[data-submit]', function() {
-            $('#' + $(this).data('submit')).submit();
+            var $form = $('#' + $(this).data('submit'));
+            var name = $(this).data('name');
+            if (name) {
+              if (!$form.has('input[name="' + name + '"]').length) {
+                $form.append('<input name="' + name + '" value="1" type="hidden">');
+              }
+            }
+            $form.submit();
+        });
+
+        $(document).on('click', '[data-toggle-class]', function() {
+            $('body').toggleClass($(this).data('toggle-class'));
         });
 
         $(document).on('click', '.collapsable .toggle', function() {

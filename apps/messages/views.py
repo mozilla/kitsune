@@ -16,26 +16,28 @@ from access.decorators import login_required
 from messages import send_message
 from messages.forms import MessageForm, ReplyForm
 from messages.models import InboxMessage, OutboxMessage
+from mobility.decorators import mobile_template
 from sumo.urlresolvers import reverse
 
 
 @login_required
-def inbox(request):
+@mobile_template('messages/{mobile/}inbox.html')
+def inbox(request, template):
     user = request.user
     messages = InboxMessage.uncached.filter(to=user).order_by('-created')
-    return jingo.render(request, 'messages/inbox.html',
-                        {'msgs': messages})
+    return jingo.render(request, template, {'msgs': messages})
 
 
 @login_required
-def read(request, msgid):
+@mobile_template('messages/{mobile/}read.html')
+def read(request, template, msgid):
     message = get_object_or_404(InboxMessage, pk=msgid, to=request.user)
     was_new = message.unread
     if was_new:
         message.update(read=True)
     initial = {'to': message.sender, 'in_reply_to': message.pk}
     form = ReplyForm(initial=initial)
-    response = jingo.render(request, 'messages/read.html',
+    response = jingo.render(request, template,
                             {'message': message, 'form': form})
     if was_new:
         response = mark_as_write(response)
@@ -43,24 +45,26 @@ def read(request, msgid):
 
 
 @login_required
-def read_outbox(request, msgid):
+@mobile_template('messages/{mobile/}read-outbox.html')
+def read_outbox(request, template, msgid):
     message = get_object_or_404(OutboxMessage, pk=msgid, sender=request.user)
-    return jingo.render(request, 'messages/read-outbox.html',
+    return jingo.render(request, template,
                         {'message': _add_recipients(message)})
 
 
 @login_required
-def outbox(request):
+@mobile_template('messages/{mobile/}outbox.html')
+def outbox(request, template):
     user = request.user
     messages = OutboxMessage.uncached.filter(sender=user).order_by('-created')
     for msg in messages:
         _add_recipients(msg)
-    return jingo.render(request, 'messages/outbox.html',
-                        {'msgs': messages})
+    return jingo.render(request, template, {'msgs': messages})
 
 
 @login_required
-def new_message(request):
+@mobile_template('messages/{mobile/}new.html')
+def new_message(request, template):
     """Send a new private message."""
     to = request.GET.get('to')
     if to:
@@ -88,7 +92,7 @@ def new_message(request):
                                      _('Your message was sent!'))
         return HttpResponseRedirect(reverse('messages.inbox'))
 
-    return jingo.render(request, 'messages/new.html', {'form': form})
+    return jingo.render(request, template, {'form': form})
 
 
 @login_required
