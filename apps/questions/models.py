@@ -7,6 +7,7 @@ from django.contrib.auth.models import User
 from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
 from django.core.cache import cache
+from django.conf import settings
 from django.db import models, connection
 from django.db.models.signals import post_save
 
@@ -28,7 +29,7 @@ from questions.tasks import (update_question_votes, update_answer_pages,
 from search.models import (SearchMixin, register_for_indexing,
                            register_for_unified_search)
 from sumo.helpers import urlparams
-from sumo.models import ModelBase
+from sumo.models import ModelBase, LocaleField
 from sumo.parser import wiki_to_html
 from sumo.redis_utils import RedisError
 from sumo.urlresolvers import reverse
@@ -72,6 +73,7 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
     # List of topics this question applies to.
     topics = models.ManyToManyField(Topic)
 
+    locale = LocaleField(default=settings.WIKI_DEFAULT_LANGUAGE)
 
     html_cache_key = u'question:html:%s'
     tags_cache_key = u'question:tags:%s'
