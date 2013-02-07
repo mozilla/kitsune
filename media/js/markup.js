@@ -451,7 +451,8 @@ Marky.LinkButton.prototype = $.extend({}, Marky.SimpleButton.prototype, {
                     format: 'json',
                     q: request.term,
                     a: 1,
-                    w: 1
+                    w: 1,
+                    language: $('html').attr('lang')
                 },
                 dataType: 'json',
                 success: function(data, textStatus) {
