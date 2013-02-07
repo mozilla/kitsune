@@ -203,6 +203,14 @@
       <p>The following will look like an invalid crash ID that hasn't been processed yet:</p>
       <p>765879E6-CFE7-43A7-BE93-B2F322E67649</p>
     </section>
+    <section class="content_4">
+      <p>This is a crash ID in brackets, which should not be linked:</p>
+      <p>{bp-6ec83338-f37e-4ee1-aef4-0e66c2120808}</p>
+    </section>
+    <section class="content_5">
+      <p>Now, crash IDs without 'bp-' at the beginning shouldn't get linked either</p>
+      <p>6ec83338-f37e-4ee1-aef4-0e66c2120808</p>
+    </section>
   </div>
 
   <script src="{{ url('jsi18n') }}/build:{{ BUILD_ID_JS }}"></script>

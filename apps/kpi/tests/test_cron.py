@@ -4,7 +4,8 @@ from mock import patch
 from nose.tools import eq_
 
 import kpi.cron
-from kpi.cron import update_visitors_metric, update_l10n_metric, Webtrends
+from kpi.cron import (update_visitors_metric, update_l10n_metric,
+                      googleanalytics)
 from kpi.models import Metric, VISITORS_METRIC_CODE, L10N_METRIC_CODE
 from kpi.tests import metric_kind
 from sumo.tests import TestCase
@@ -14,11 +15,11 @@ from wiki.tests import document, revision
 
 
 class CronJobTests(TestCase):
-    @patch.object(Webtrends, 'visits')
-    def test_update_visitors_cron(self, visits):
+    @patch.object(googleanalytics, 'visitors')
+    def test_update_visitors_cron(self, visitors):
         """Verify the cron job inserts the right rows."""
         visitor_kind = metric_kind(code=VISITORS_METRIC_CODE, save=True)
-        visits.return_value = {'2012-01-13': 42,
+        visitors.return_value = {'2012-01-13': 42,
                                '2012-01-14': 193,
                                '2012-01-15': 33}
 
@@ -31,8 +32,8 @@ class CronJobTests(TestCase):
         eq_(date(2012, 01, 15), metrics[2].start)
 
     @patch.object(kpi.cron, '_get_top_docs')
-    @patch.object(Webtrends, 'visits_by_locale')
-    def test_update_l10n_metric_cron(self, visits_by_locale, _get_top_docs):
+    @patch.object(googleanalytics, 'visitors_by_locale')
+    def test_update_l10n_metric_cron(self, visitors_by_locale, _get_top_docs):
         """Verify the cron job creates the correct metric."""
         l10n_kind = metric_kind(code=L10N_METRIC_CODE, save=True)
 
@@ -57,7 +58,7 @@ class CronJobTests(TestCase):
         document(parent=doc, locale='de', save=True)
 
         # Mock some calls.
-        visits_by_locale.return_value = {
+        visitors_by_locale.return_value = {
             'en-US': 50,
             'de': 20,
             'es': 25,

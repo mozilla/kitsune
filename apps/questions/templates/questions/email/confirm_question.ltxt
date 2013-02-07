@@ -1,25 +1,42 @@
-{% load i18n %}{# L10n: This is an email. Whitespace matters! #}{% autoescape off %}{% blocktrans %}
+{# L10n: This is an email. Whitespace matters! #}
+{% trans %}
 Please confirm your Firefox Help question
+{% endtrans %}
 
-Hi {{ username }},
 
+{{ _('Hi {username},')|f(username=username) }}
+
+{# L10n: This is an email. Whitespace matters! #}
+{% trans %}
 Before your Firefox Help question ({{ email_data }})
 can be seen by our support community, you need to confirm the
 account you just created by clicking on the link below:
+{% endtrans %}
+
 
 https://{{ domain }}{{ activate_url }}?reg=aaq
 
+{# L10n: This is an email. Whitespace matters! #}
+{% trans %}
 If you did not ask a question or changed your mind, simply delete
 or ignore this email; you will not receive any more email from
 us.
+{% endtrans %}
 
+
+{# L10n: This is an email. Whitespace matters! #}
+{% trans %}
 Thanks again for asking the question -- we're sorry you're having
 trouble with Firefox, but our community of volunteers is looking
 forward to helping you get it resolved as quickly as possible.
+{% endtrans %}
 
+
+{# L10n: This is an email. Whitespace matters! #}
+{% trans %}
 As you may know, Firefox Support (like all of Mozilla) is
 community powered -- help is provided by users like you!  Want to
 take part? Browse other users' questions at
 https://{{ domain }}/questions?filter=unsolved -- you might
 just make someone's day!
-{% endblocktrans %}{% endautoescape %}
+{% endtrans %}

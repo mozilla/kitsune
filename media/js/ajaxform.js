@@ -23,6 +23,7 @@
             $(options.bindTo).on('click', function(ev) {
                 var $this = $(this);
                 var $form = $this.closest('form');
+                var url = $form.attr('action');
                 var $buttons = $form.find(self.options.bindTo);
                 var formDataArray = $form.serializeArray();
                 var data = {};
@@ -59,18 +60,18 @@
                 }
 
                 $.ajax({
-                    url: $form.attr('action'),
+                    url: url,
                     type: 'POST',
                     data: data,
                     dataType: 'json',
-                    success: function(data) {
+                    success: function(response) {
                         if (typeof self.options.beforeComplete === 'function') {
                             self.options.beforeComplete();
                         }
-                        if (data.survey) {
-                            $form.after(data.survey);
+                        if (response.survey) {
+                            $form.after(response.survey);
                         } else {
-                            $form.after($('<p></p>').html(data.message));
+                            $form.after($('<p></p>').html(response.message));
                         }
                         if (self.options.removeForm) {
                             $form.remove();
@@ -81,6 +82,9 @@
                         if (typeof self.options.afterComplete === 'function') {
                             self.options.afterComplete();
                         }
+
+                        // Trigger a document event for others to listen for.
+                        $(document).trigger('vote', $.extend(data, {url: url}));
                     },
                     error: function() {
                         var msg = self.options.errorText;

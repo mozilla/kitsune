@@ -37,6 +37,7 @@ AjaxVote.prototype = {
             if (!self.voted) {
                 var $btn = $(this),
                     $form = $btn.closest('form'),
+                    url = $form.attr('action'),
                     formDataArray = $form.serializeArray(),
                     data = {},
                     i, l;
@@ -47,20 +48,24 @@ AjaxVote.prototype = {
                 }
                 data[$btn.attr('name')] = $btn.val();
                 $.ajax({
-                    url: $btn.closest('form').attr('action'),
+                    url: url,
                     type: 'POST',
                     data: data,
                     dataType: 'json',
-                    success: function(data) {
-                        if (data.survey) {
-                            self.showSurvey(data.survey, $form.parent());
+                    success: function(response) {
+                        if (response.survey) {
+                            self.showSurvey(response.survey, $form.parent());
                         } else {
-                            self.showMessage(data.message, $btn, $form);
+                            self.showMessage(response.message, $btn, $form);
                         }
                         $btn.addClass('active');
                         $btns.removeAttr('disabled');
                         $form.removeClass('busy');
                         self.voted = true;
+
+                        // Trigger a document event for others to listen for.
+                        $(document).trigger('vote', $.extend(data, {url: url}));
+
                         // Hide other forms
                         self.$form.filter(function() { return this !== $form; }).remove();
                     },

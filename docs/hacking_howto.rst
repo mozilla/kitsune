@@ -336,6 +336,7 @@ See the following chapters for installing those additional bits:
 * Redis: :ref:`redis-chapter`
 * RabbitMQ: :ref:`celery-chapter`
 * Elastic Search: :ref:`search-chapter`
+* Email: :ref:`email-chapter`
 
 If you want to install Kitsune on an Apache server in a mod_wsgi
 environment, see :ref:`wsgi-chapter`.

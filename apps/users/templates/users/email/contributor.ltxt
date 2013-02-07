@@ -1,40 +1,70 @@
-{% load i18n %}{# L10n: This is an email.  Whitespace matters! #}{% blocktrans %}
-Hi {{ username }},
+{# L10n: This is an email.  Whitespace matters! #}
+{{ _('Hi {username}')|f(username=username) }}
 
+{# L10n: This is an email.  Whitespace matters! #}
+{% trans %}
 Thanks so much for your interest in helping users of Mozilla
 technologies!
+{% endtrans %}
 
+
+{# L10n: This is an email.  Whitespace matters! #}
+{% trans %}
 We would love to find a good place for your to help users,
 so please send us an email with your username and the area
 you would like to get involved. Please feel free to add all
 your skills, we will try to find the right use for them :)
+{% endtrans %}
 
-To help you find out where to help check this site:
+
+{# L10n: This is an email.  Whitespace matters! #}
+{{ _('To help you find out where to help check this site:') }}
 
 https://support.mozilla.org/en-US/kb/contributor-news-resources
 
-There are several ways in which you can get involved:
+{# L10n: This is an email.  Whitespace matters! #}
+{{ _('There are several ways in which you can get involved:') }}
 
+{# L10n: This is an email.  Whitespace matters! #}
+{% trans %}
 Forum Contributor - Answer user support questions that are
 most-requested but have no replies:
+{% endtrans %}
+
 https://support.mozilla.org/en-US/questions?sort=requested&filter=no-replies
 
+{# L10n: This is an email.  Whitespace matters! #}
+{% trans %}
 Twitter Contributor - Respond to tweets about Firefox:
+{% endtrans %}
+
 https://support.mozilla.org/army-of-awesome
 
+{# L10n: This is an email.  Whitespace matters! #}
+{% trans %}
 KB Editor - Help to update knowledge base articles that
-need changes or write new articles.:
+need changes or write new articles:
+{% endtrans %}
+
 https://support.mozilla.org/contributors/need-changes
 
+{# L10n: This is an email.  Whitespace matters! #}
+{% trans %}
 L10N Contributor - Help to translate Firefox Help content
 to your language:
+{% endtrans %}
+
 https://support.mozilla.org/en-US/kb/localize-firefox-help
 
+{# L10n: This is an email.  Whitespace matters! #}
+{% trans %}
 Let us know which of the above you would be interested in
 and we’ll help you get started. It’s great to have you onboard!
+{% endtrans %}
 
-Welcome to SUMO!
+
+{# L10n: This is at the end of an email. #}
+{{ _('Welcome to SUMO!') }}
 
 Madalina & Rosana
 SUMO Community Managers
-{% endblocktrans %}

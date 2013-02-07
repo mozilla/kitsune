@@ -9,6 +9,28 @@
 
 {% block title %}{{ _(topic.title, 'DB: topics.Topic.title') }} | {{ _('{product} Help')|f(product=_(product.title, 'DB: products.Product.title')) }}{% endblock %}
 
+{% block top_of_head %}
+  {# Temporary A/B test for bug 830753
+     Only for /products/firefox/fix-problems.
+  #}
+  {% if product.slug == 'firefox' and topic.slug == 'fix-problems' %}
+<!-- Google Analytics Content Experiment code -->
+<script>function utmx_section(){}function utmx(){}(function(){var
+k='65912487-16',d=document,l=d.location,c=d.cookie;
+if(l.search.indexOf('utm_expid='+k)>0)return;
+function f(n){if(c){var i=c.indexOf(n+'=');if(i>-1){var j=c.
+indexOf(';',i);return escape(c.substring(i+n.length+1,j<0?c.
+length:j))}}}var x=f('__utmx'),xx=f('__utmxx'),h=l.hash;d.write(
+'<sc'+'ript src="'+'http'+(l.protocol=='https:'?'s://ssl':
+'://www')+'.google-analytics.com/ga_exp.js?'+'utmxkey='+k+
+'&utmx='+(x?x:'')+'&utmxx='+(xx?xx:'')+'&utmxtime='+new Date().
+valueOf()+(h?'&utmxhash='+escape(h.substr(1)):'')+
+'" type="text/javascript" charset="utf-8"><\/sc'+'ript>')})();
+</script><script>utmx('url','A/B');</script>
+<!-- End of Google Analytics Content Experiment code -->
+  {% endif %}
+{% endblock %}
+
 {% block content %}
   <div class="grid_12">
     <h1 class="product-title cf"><img src="{{ MEDIA_URL }}img/blank.png" alt="" class="logo-sprite" style="background-image: url('{{ product.image_url }}');" />{{ _(product.title, 'DB: products.Product.title') }}</h1>
@@ -22,7 +44,12 @@
       {% if topic.image %}<img src="{{ MEDIA_URL }}img/blank.png" alt="" class="logo-sprite" style="background-image: url('{{ topic.image_url }}');" />{% endif %}
       <h1 class="topic-title cf">{{ _(topic.title, 'DB: topics.Topic.title') }}</h1>
 
-      <div id="focus-and-refine" class="feature-box{% if not refine %} collapsed{% endif %}" data-ui-type="folding-section">
+      {# Temporary A/B test for bug 830753
+         If we are on /products/firefox/fix-problems and
+         ?b is passed in the query string,
+         we show the Focus and Refine section expanded.
+      #}
+      <div id="focus-and-refine" class="feature-box{% if not refine and (product.slug != 'firefox' or topic.slug != 'fix-problems' or not 'b' in request.GET) %} collapsed{% endif %}" data-ui-type="folding-section">
         <header>
           <h2 class="nomargin">{{ _('Refine and Focus') }}</h2>
         </header>

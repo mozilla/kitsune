@@ -23,7 +23,11 @@ def main():
     if not opts.kitsune:
         parser.error("-k must be defined")
 
-    ctx = {'django': 'cd %s; %s manage.py' % (opts.kitsune, opts.python),}
+    # To pick up the right PyOpenSSL:
+    python_path = 'PYTHONPATH=/usr/local/lib64/python2.6/site-packages'
+
+    ctx = {'django': 'cd %s; %s %s manage.py' % (
+        opts.kitsune, python_path, opts.python),}
     ctx['cron'] = '%s cron' % ctx['django']
 
     if opts.user:

@@ -29,7 +29,9 @@ from users.tests import user
 # test-emails with locale prefixes are not identical to the ones sent in
 # production.
 ANSWER_EMAIL_TO_ANONYMOUS = """rrosario commented on a Firefox question on testserver:
+
 Lorem ipsum dolor sit amet?
+
 https://testserver/en-US/questions/1#answer-{answer}
 
 rrosario wrote:
@@ -38,8 +40,7 @@ rrosario wrote:
 See the comment:
 https://testserver/en-US/questions/1#answer-{answer}
 
-
-If this comment is helpful, vote on it
+If this comment is helpful, vote on it:
 https://testserver/en-US/questions/1/vote/{answer}?helpful
 
 Help other Firefox users by browsing for unsolved questions on testserver:
@@ -65,27 +66,20 @@ https://testserver/en-US/questions/1#answer-{answer}
 
 If this answer solves your problem, please mark it as "solved":"""
 SOLUTION_EMAIL_TO_ANONYMOUS = \
-"""We just wanted to let you know that pcraciunoiu
-has found a solution to a Firefox question that you're following.
-The question
+"""We just wanted to let you know that pcraciunoiu has found a solution to a Firefox question that you're following.
 
+The question:
 Lorem ipsum dolor sit amet?
 
 was marked as solved by its asker, jsocol.
 
 You can view the solution using the link below.
 
-Did this answer also help you? Did you find another post more
-helpful? Let other Firefox users know by voting next to the
-answer.
+Did this answer also help you? Did you find another post more helpful? Let other Firefox users know by voting next to the answer.
 
 https://testserver/en-US/questions/1#answer-%s
 
-Did you know that pcraciunoiu is a Firefox user
-just like you? Get started helping other Firefox users by
-browsing questions at
-https://testserver/questions?filter=unsolved -- you
-might just make someone's day!
+Did you know that pcraciunoiu is a Firefox user just like you? Get started helping other Firefox users by browsing questions at https://testserver/questions?filter=unsolved -- you might just make someone's day!
 
 --
 Unsubscribe from these emails:

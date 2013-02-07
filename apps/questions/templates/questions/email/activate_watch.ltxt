@@ -1,13 +1,22 @@
-{% load i18n %}{# L10n: This is an email.  Whitespace matters! #}{% blocktrans %}
+{# L10n: This is an email.  Whitespace matters! #}
+{% trans %}
 You are about to subscribe to:
+{% endtrans %}
+
+
 {{ watch_description }}
 
+{# L10n: This is an email.  Whitespace matters! #}
+{% trans %}
 To confirm your subscription, please click the link below
 or copy and paste the whole thing into your browser's location bar:
+{% endtrans %}
+
 
 https://{{ domain }}{{ activation_url }}
 
-Thanks!
+{# L10n: This is at the end of an email. #}
+{{ _('Thanks!') }}
 
-The {{ domain }} team
-{% endblocktrans %}
+{# L10n: This is at the end of an email. #}
+{{ _('The {domain} team')|f(domain=domain) }}

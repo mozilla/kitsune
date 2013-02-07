@@ -78,3 +78,5 @@ src/zendesk
 packages/ordereddict
 src/django-eadred
 src/raven-python
+packages/google-api-python-client
+packages/python-gflags

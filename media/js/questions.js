@@ -25,7 +25,6 @@
                 .val(k.unquote($.cookie('last_search')));
 
             initHaveThisProblemTooAjax();
-            initEmailSubscribeAjax();
             initHelpfulVote();
             initCrashIdLinking();
             addReferrerAndQueryToVoteForm();
@@ -120,17 +119,6 @@
         });
     }
 
-    /*
-     * Ajaxify email subscribe
-     */
-    function initEmailSubscribeAjax() {
-        var $container = $('#question li.email, .sidebar-nav li.email'),
-            $link = $('#email-subscribe-link');
-        if ($link.length > 0) {
-            initAjaxForm($container, 'form', '#email-subscribe');
-        }
-    }
-
     function addReferrerAndQueryToVoteForm() {
         // Add the source/referrer and query terms to the helpful vote form
         var urlParams = k.getQueryParamsAsDict(),
@@ -161,29 +149,35 @@
         $container.delegate(formSelector, 'submit', function(ev){
             ev.preventDefault();
             var $form = $(this);
+            var url = $form.attr('action');
+            var data = $form.serialize();
+
             $.ajax({
-                url: $form.attr('action'),
+                url: url,
                 type: 'POST',
-                data: $form.serialize(),
+                data: data,
                 dataType: 'json',
-                success: function(data) {
-                    if (data.html) {
+                success: function(response) {
+                    if (response.html) {
                         if($(boxSelector).length === 0) {
                             // We don't have a modal set up yet.
-                            var kbox = new KBox(data.html, {
+                            var kbox = new KBox(response.html, {
                                container: $container,
                                preClose: onKboxClose
                             });
                             kbox.open();
                         } else {
-                            $(boxSelector).html($(data.html).children());
+                            $(boxSelector).html($(response.html).children());
                         }
-                    } else if (data.message) {
+                    } else if (response.message) {
                         var html = '<div class="msg"></div>';
                         $(boxSelector)
                             .html(html)
-                            .find('.msg').text(data.message);
+                            .find('.msg').text(response.message);
                     }
+
+                    // Trigger a document event for others to listen for.
+                    $(document).trigger('vote', $.extend(data, {url: url}));
                 },
                 error: function() {
                     var message = gettext("There was an error.");
@@ -210,15 +204,15 @@
         if(!container) {
             return;
         }
-        var crashIDRegex = new RegExp("(bp-)?([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})", "g");
+        var crashIDRegex = new RegExp("([^{])(bp-[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})([^}])", "g");
         var crashStatsBase = "https://crash-stats.mozilla.com/report/index/";
         var helpingWithCrashesArticle = "/kb/helping-crashes";
         var iconPath = "/media/img/questions/icon.questionmark.png";
         var crashReportContainer =
-            "<span class='crash-report'>" +
+            "$1<span class='crash-report'>" +
             "<a href='" + crashStatsBase + "$2' target='_blank'>$2</a>" +
             "<a href='" + helpingWithCrashesArticle + "' target='_blank'>" +
-            "<img src='" + iconPath + "'></img></a></span>";
+            "<img src='" + iconPath + "'></img></a></span>$3";
 
         container.html(
             container.html().replace(crashIDRegex,
@@ -232,7 +226,7 @@
      * Initialize the automatic linking of crash IDs
      */
     function initCrashIdLinking() {
-        var postContents = $("#answers .content, #question .content, #more-system-details");
+        var postContents = $(".question .main-content, .answer .main-content, #more-system-details");
         postContents.each(function() {
             linkCrashIds($(this));
         });

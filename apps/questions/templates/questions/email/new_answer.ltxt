@@ -1,21 +1,32 @@
-{% load i18n %}{% load unsubscribe_instructions %}{# L10n: This is an email. Whitespace matters! #}{% autoescape off %}{% if username %}{% blocktrans %}Hi {{ username }},{% endblocktrans %}
+{% from "includes/unsubscribe_text.ltxt" import unsubscribe_text with context %}
+{# L10n: This is an email. Whitespace matters! #}
+{% if username %}{{ _('Hi {username},')|f(username=username) }}
 
-{% endif %}{% blocktrans %}{{ answerer }} commented on a Firefox question on {{ host }}:
+{% endif %}
+{# L10n: This is an email. Whitespace matters! #}
+{{ _('{answerer} commented on a Firefox question on {host}:')|f(answerer=answerer, host=host) }}
+
 {{ question_title }}
+
 https://{{ host }}{{ answer_url }}
 
-{{ answerer }} wrote:
+{# L10n: This is in an email. #}
+{{ _('{answerer} wrote:')|f(answerer=answerer) }}
 "{{ answer }}"
 
-See the comment:
+{# L10n: This is in an email. #}
+{{ _('See the comment:') }}
 https://{{ host }}{{ answer_url }}
 
-
-If this comment is helpful, vote on it
+{# L10n: This is in an email. #}
+{{ _('If this comment is helpful, vote on it:') }}
 https://{{ host }}{{ helpful_url }}
 
-Help other Firefox users by browsing for unsolved questions on {{ host }}:
+{# L10n: This is in an email. #}
+{{ _('Help other Firefox users by browsing for unsolved questions on {host}:')|f(host=host) }}
 https://{{ host }}/questions?filter=unsolved
 
-You might just make someone's day!
-{% endblocktrans %}{% endautoescape %}{% unsubscribe_instructions watch %}
+{# L10n: This is in an email. #}
+{{ _('You might just make someone\'s day!') }}
+
+{{ unsubscribe_text(watch) }}

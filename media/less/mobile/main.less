@@ -28,86 +28,20 @@ body {
     -webkit-transform: translateZ(0px);
   }
 
-  > nav {
-    background: @mobileNavBackground url('../../img/grain.png') 0 0 repeat;
-    bottom: 0;
-    color: #fff;
-    left: 0;
-    overflow: auto;
-    position: absolute;
-    top: 0;
-    width: 270px;
-    z-index: 0;
-
-    > a,
-    > header {
-      border-bottom: 1px solid #929e9e;
-    }
-
-    > a,
-    > a:visited,
-    > a:hover {
-      color: #fff;
-      display: block;
-      font-size: 17px;
-      padding: 16px 16px 10px 16px;
-      text-decoration: none;
-    }
-
-    > header {
-      .linear-gradient-top(#1a2122, #1a2122, 0, #1b2324, 100%, url('../../img/grain.png'));
-      font-size: 14px;
-      font-weight: bold;
-      height: 29px;
-      line-height: 29px;
-      padding: 0 16px;
-    }
-
-    #search-bar {
-      .linear-gradient-top(#253132, #2c393b, 0, #253132, 100%, url('../../img/grain.png'));
-      .box-shadow(0 0 3px 0 rgba(0, 0, 0, 0.75));
-      padding: 10px 16px;
-
-      form {
-        display: block;
-        position: relative;
-        width: 238px;
-
-        button[type='submit'] {
-          background-color: transparent;
-          background-position: -54px -177px;
-          border: 0;
-          height: 18px;
-          margin: 0;
-          outline: 0;
-          padding: 0;
-          position: absolute;
-          right: 6px;
-          text-indent: -9999px;
-          top: 6px;
-          width: 18px;
-        }
-
-        input[type='search'] {
-          background: #283235;
-          border: 1px solid rgba(0, 0, 0, 0.25);
-          .border-radius(3px);
-          .box-shadow(2px 2px 3px 0 rgba(0, 0, 0, 0.25) inset);
-          color: #849b9f;
-          font-family: @Moz;
-          font-size: 14px;
-          outline: none;
-          padding: 5px 30px 4px 4px;
-          width: 200px;
-        }
+  &[data-orientation='right'] {
+    #container {
+      > nav {
+        left: auto;
+        right: 0;
       }
     }
-  }
 
-  &[data-orientation='right'] {
-    > nav {
-      left: auto;
-      right: 0;
+    #menu-button {
+      border-right: 0;
+      .box-shadow(0 0 0 1px @mobileHeaderBorder);
+      float: right;
+      margin-left: 10px;
+      margin-right: 0;
     }
 
     #page {
@@ -151,6 +85,19 @@ textarea {
 select {
   -webkit-appearance: none;
   height: 41px;
+}
+
+.add-button {
+  background-position: -36px -1153px;
+  border-left: 1px solid rgba(255, 255, 255, 0.3);
+  .box-shadow(0 0 0 1px @mobileHeaderBorder);
+  cursor: pointer;
+  float: right;
+  height: 24px;
+  margin: 0 -9px 0 10px;
+  padding: 13px;
+  text-indent: -9999px;
+  width: 24px;
 }
 
 .btn,
@@ -220,6 +167,7 @@ select {
 
 .edit-button {
   background-position: -36px -657px;
+  cursor: pointer;
   float: right;
   height: 24px;
   margin: 0 -10px 0 10px;
@@ -258,6 +206,44 @@ select {
   &.logo-firefox {
     background-position: -50px -50px;
   }
+}
+
+.header-overlay {
+  background: rgba(40, 40, 40, 0.98) url('../../img/grain.png') 0 0 repeat;
+  border-bottom: 1px solid #000;
+  height: 50px;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+  z-index: 100;
+
+  h2 {
+    color: #fff;
+    font-size: 24px;
+    font-weight: normal;
+    line-height: 50px;
+    margin: 0 16px;
+  }
+
+  .done-button {
+    color: #fff;
+    cursor: pointer;
+    float: right;
+    height: 50px;
+    line-height: 50px;
+    padding: 0 12px;
+  }
+}
+
+.footer-overlay {
+  background: rgba(40, 40, 40, 0.98) url('../../img/grain.png') 0 0 repeat;
+  bottom: 0;
+  height: 50px;
+  left: 0;
+  position: absolute;
+  right: 0;
+  z-index: 100;
 }
 
 .overlay {
@@ -551,16 +537,115 @@ select {
   }
 }
 
+.trash-button {
+  background-position: -36px -1400px;
+  border-left: 1px solid rgba(255, 255, 255, 0.3);
+  .box-shadow(0 0 0 1px @mobileHeaderBorder);
+  cursor: pointer;
+  float: right;
+  height: 24px;
+  margin: 0 -9px 0 10px;
+  padding: 13px;
+  text-indent: -9999px;
+  width: 24px;
+}
+
 #cancel-button {
   background-position: -53px -781px;
   border-right: 1px solid @mobileHeaderBorder;
   .box-shadow(0 0 0 1px rgba(255, 255, 255, 0.3));
+  cursor: pointer;
   float: left;
   height: 24px;
   margin: 0 8px 0 0;
   padding: 13px 4px 13px 2px;
   text-indent: -9999px;
   width: 12px;
+}
+
+#container {
+  bottom: 0;
+  left: 0;
+  overflow: hidden;
+  position: absolute;
+  right: 0;
+  top: 0;
+
+  > nav {
+    background: @mobileNavBackground url('../../img/grain.png') 0 0 repeat;
+    bottom: 0;
+    color: #fff;
+    left: 0;
+    overflow: auto;
+    position: absolute;
+    top: 0;
+    width: 270px;
+    z-index: 0;
+
+    > a,
+    > header {
+      border-bottom: 1px solid #929e9e;
+    }
+
+    > a,
+    > a:visited,
+    > a:hover {
+      color: #fff;
+      display: block;
+      font-size: 17px;
+      padding: 16px 16px 10px 16px;
+      text-decoration: none;
+    }
+
+    > header {
+      .linear-gradient-top(#1a2122, #1a2122, 0, #1b2324, 100%, url('../../img/grain.png'));
+      font-size: 14px;
+      font-weight: bold;
+      height: 29px;
+      line-height: 29px;
+      padding: 0 16px;
+    }
+
+    #search-bar {
+      .linear-gradient-top(#253132, #2c393b, 0, #253132, 100%, url('../../img/grain.png'));
+      .box-shadow(0 0 3px 0 rgba(0, 0, 0, 0.75));
+      padding: 10px 16px;
+
+      form {
+        display: block;
+        position: relative;
+        width: 238px;
+
+        button[type='submit'] {
+          background-color: transparent;
+          background-position: -54px -177px;
+          border: 0;
+          height: 18px;
+          margin: 0;
+          outline: 0;
+          padding: 0;
+          position: absolute;
+          right: 6px;
+          text-indent: -9999px;
+          top: 6px;
+          width: 18px;
+        }
+
+        input[type='search'] {
+          background: #283235;
+          border: 1px solid rgba(0, 0, 0, 0.25);
+          .border-radius(3px);
+          .box-shadow(2px 2px 3px 0 rgba(0, 0, 0, 0.25) inset);
+          color: #849b9f;
+          font-family: @Moz;
+          font-size: 14px;
+          outline: none;
+          padding: 5px 30px 4px 4px;
+          width: 200px;
+        }
+      }
+    }
+  }
 }
 
 #page {
@@ -619,11 +704,12 @@ select {
 #menu-button {
   background-position: -37px -37px;
   border-left: 1px solid rgba(255, 255, 255, 0.3);
-  .box-shadow(0 0 0 1px @mobileHeaderBorder);
+  border-right: 1px solid @mobileHeaderBorder;
+  .box-shadow(0 0 0 1px rgba(255, 255, 255, 0.3));
   cursor: pointer;
-  float: right;
+  float: left;
   height: 24px;
-  margin-left: 10px;
+  margin-right: 10px;
   padding: 13px;
   text-indent: -9999px;
   width: 24px;
@@ -645,6 +731,32 @@ select {
     background: #323C3E url("../../img/grain.png");
     padding: 16px;
   }
+}
+
+#reply-button {
+  background-position: -36px -905px;
+  border-left: 1px solid rgba(255, 255, 255, 0.3);
+  .box-shadow(0 0 0 1px @mobileHeaderBorder);
+  cursor: pointer;
+  float: right;
+  height: 24px;
+  margin: 0 -9px 0 10px;
+  padding: 13px;
+  text-indent: -9999px;
+  width: 24px;
+}
+
+#send-button {
+  background-position: -35px -1029px;
+  border-left: 1px solid rgba(255, 255, 255, 0.3);
+  .box-shadow(0 0 0 1px @mobileHeaderBorder);
+  cursor: pointer;
+  float: right;
+  height: 24px;
+  margin: 0 -9px 0 10px;
+  padding: 13px;
+  text-indent: -9999px;
+  width: 24px;
 }
 
 @media only screen and (-webkit-min-device-pixel-ratio: 2), only screen and (min-device-pixel-ratio: 2) {

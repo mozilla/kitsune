@@ -437,28 +437,30 @@ TOWER_KEYWORDS = {
 
 # Tells the extract script what files to look for l10n in and what
 # function handles the extraction.  The Tower library expects this.
+tower_tmpl = 'tower.management.commands.extract.extract_tower_template'
+tower_python = 'tower.management.commands.extract.extract_tower_python'
 DOMAIN_METHODS = {
     'messages': [
         ('apps/forums/**.py', 'ignore'),
         ('apps/forums/**.html', 'ignore'),
-        ('apps/questions/**.py', 'ignore'),
-        ('apps/questions/**.html', 'ignore'),
         ('apps/chat/**.py', 'ignore'),
         ('apps/chat/**.html', 'ignore'),
         ('apps/**/tests/**.py', 'ignore'),
         ('apps/**/management/**.py', 'ignore'),
-        ('apps/**.py',
-            'tower.management.commands.extract.extract_tower_python'),
-        ('apps/**/templates/**.html',
-            'tower.management.commands.extract.extract_tower_template'),
-        ('templates/**.html',
-            'tower.management.commands.extract.extract_tower_template'),
+
+        ('apps/**.py', tower_python),
+        ('apps/**/templates/**.html', tower_tmpl),
+        ('templates/**.html', tower_tmpl),
     ],
     'lhtml': [
         ('apps/forums/**.lhtml', 'ignore'),
         ('apps/questions/**.lhtml', 'ignore'),
-        ('**/templates/**.lhtml',
-            'tower.management.commands.extract.extract_tower_template'),
+
+        ('**/templates/**.lhtml', tower_tmpl)
+    ],
+    'ltxt': [
+        ('apps/questions/templates/**.ltxt', tower_tmpl),
+        ('apps/users/templates/**.ltxt', tower_tmpl),
     ],
     'javascript': [
         # We can't say **.js because that would dive into any libraries.
@@ -487,6 +489,10 @@ MINIFY_BUNDLES = {
         'common': (
             'css/normalize.css',
             'less/main.less',
+        ),
+        'mobile/common': (
+            'css/normalize.css',
+            'less/mobile/main.less',
         ),
         'print': (
             'css/print.css',
@@ -554,13 +560,12 @@ MINIFY_BUNDLES = {
         'monitor': (
             'css/monitor.css',
         ),
-        'mobile/new': (
-            'css/normalize.css',
-            'less/mobile/main.less',
-        ),
         'messages': (
             'css/users.autocomplete.css',
             'less/messages.less',
+        ),
+        'mobile/messages': (
+            'less/mobile/messages.less',
         ),
         'products': (
             'less/products.less',
@@ -606,6 +611,16 @@ MINIFY_BUNDLES = {
             'js/analytics.js',
             'js/surveygizmo.js',
         ),
+        'mobile/common': (
+            'js/i18n.js',
+            'js/libs/underscore.js',
+            'js/libs/jquery-1.8.2.min.js',
+            'js/libs/modernizr-2.6.1.js',
+            'js/browserdetect.js',
+            'js/aaq.js',
+            'js/mobile/ui.js',
+            'js/analytics.js',
+        ),
         'ie6-8': (
             'js/libs/nwmatcher-1.2.5.js',
             'js/libs/selectivizr-1.0.2.js',
@@ -625,9 +640,11 @@ MINIFY_BUNDLES = {
             'js/tags.filter.js',
             'js/tags.js',
             'js/reportabuse.js',
+            'js/questions.metrics.js',
         ),
         'mobile/questions': (
             'js/mobile/questions.js',
+            'js/questions.metrics.js',
         ),
         'search': (
             'js/search.js',
@@ -680,7 +697,7 @@ MINIFY_BUNDLES = {
         ),
         'wiki.editor': (
             'js/libs/ace/src-min/ace.js',
-            'js/libs/ace.mode-sumo.js',
+            'js/ace.mode-sumo.js',
         ),
         'wiki.dashboard': (
             'js/libs/backbone.js',
@@ -705,15 +722,6 @@ MINIFY_BUNDLES = {
             'js/users.js',
             'js/reportabuse.js',
         ),
-        'mobile-new': (
-            'js/libs/underscore.js',
-            'js/libs/jquery-1.8.2.min.js',
-            'js/libs/modernizr-2.6.1.js',
-            'js/browserdetect.js',
-            'js/aaq.js',
-            'js/mobile/ui.js',
-            'js/analytics.js',
-        ),
         'messages': (
             'js/markup.js',
             'js/libs/jquery.autoresize.js',
@@ -721,6 +729,10 @@ MINIFY_BUNDLES = {
             'js/users.autocomplete.js',
             'js/ajaxpreview.js',
             'js/messages.js',
+        ),
+        'mobile/messages': (
+            'js/libs/jquery.tokeninput.js',
+            'js/users.autocomplete.js',
         ),
         'groups': (
             'js/libs/jquery.tokeninput.js',
@@ -943,12 +955,11 @@ TIDINGS_REVERSE = 'sumo.urlresolvers.reverse'
 CHAT_SERVER = 'https://chat-support.mozilla.com:9091'
 CHAT_CACHE_KEY = 'sumo-chat-queue-status'
 
-WEBTRENDS_PROFILE_ID = 'ABC123'  # Profile id for SUMO
-WEBTRENDS_WIKI_REPORT_URL = 'https://example.com/see_production.rst'
-WEBTRENDS_USER = r'someaccount\someusername'
-WEBTRENDS_PASSWORD = 'password'
-WEBTRENDS_EPOCH = date(2010, 8, 1)  # When WebTrends started gathering
-                                    # stats on the KB
+# Google Analytics settings.
+GA_KEY = 'longkey'  # Google API client key
+GA_ACCOUNT = 'something@developer.gserviceaccount.com'  # Google API Service Account email address
+GA_PROFILE_ID = '12345678'  # Google Analytics profile id for SUMO prod
+GA_START_DATE = date(2012, 11, 10)
 
 MOBILE_COOKIE = 'msumo'
 MOBILE_USER_AGENTS = 'android|fennec|mobile|iphone|opera (?:mini|mobi)'
