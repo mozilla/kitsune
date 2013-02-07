@@ -45,17 +45,16 @@ INTERP_RE = re.compile(
 
 
 COLOR = [
-    u'{0} arr!',
-    u'{0}, matey!',
-    u'Ahoy! {0}',
-    u'Aye, {0}',
-    u'Aye, {0} ye scalleywag.',
-    u'Cap\'n, {0}',
-    u'Yo-ho-ho--{0}',
-
-    u'{0}',
-    u'{0}',
-    u'{0}',
+    u'arr!',
+    u'arrRRr!',
+    u'arrRRRrrr!',
+    u'matey!',
+    u'ahoy!',
+    u'aye!',
+    u'ye scalleywag!',
+    u'cap\'n!',
+    u'yo-ho-ho!',
+    u'shiver me timbers!',
     ]
 
 
@@ -98,6 +97,7 @@ TRANSFORM = (
     (False, True, 'add-ons', False, True, 'bilge rats'),
     (False, True, 'are', False, True, 'bee'),
     (False, True, 'browser', False, True, 'corsairr'),
+    (False, True, 'for', False, True, 'fer'),
     (False, True, 'Hi', False, True, 'H\'ello'),
     (False, True, 'my', False, True, 'me'),
     (False, True, 'no', False, True, 'nay'),
@@ -273,6 +273,18 @@ class HtmlAwareMessageMunger(HTMLParser.HTMLParser):
         self.s += '&' + name + ';'
 
 
+def split_ending(s):
+    ending = []
+    while s:
+        if s[-1] in '.,":;?!':
+            ending.insert(0, s[-1])
+            s = s[:-1]
+        else:
+            return s, u''.join(ending)
+
+    return u'', ''.join(ending)
+
+
 def translate_string(s):
     # If it consists solely of whitespace, skip it.
     if is_whitespace(s):
@@ -282,22 +294,17 @@ def translate_string(s):
     hamm.feed(s)
     out = hamm.result()
 
-    if out.endswith(' >'):
-        out = out[:-2] + u' arr! >'
-    elif out.endswith('\n'):
-        out = out[:-2] + u' arrRRRrrr!\n'
-    elif out.startswith('\n'):
-        out = out + u' arrRRRrrr!'
-    else:
-        out = COLOR[len(out) % len(COLOR)].format(out)
+    # Add color which causes every string to be longer.
+    s, ending = split_ending(out)
+    out = s + u' ' + COLOR[len(out) % len(COLOR)] + ending
 
     # This guarantees that every string has at least one
     # unicode charater
-    if "'" not in out:
-        out = out + u'\''
+    if '!' not in out:
+        out = out + u'!'
 
-    # Replace all ' with related unicode character.
-    out = out.replace(u'\'', u'\u2019')
+    # Replace all ! with related unicode character.
+    out = out.replace(u'!', u'\u2757')
     return out
 
 
