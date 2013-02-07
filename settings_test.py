@@ -11,6 +11,3 @@ REDIS_BACKENDS = {
     'karma': 'redis://localhost:6383?socket_timeout=0.5&db=2',
     'helpfulvotes': 'redis://localhost:6383?socket_timeout=0.5&db=2',
 }
-
-# Use fake webtrends settings.
-WEBTRENDS_PROFILE_ID = 'ABC123'
