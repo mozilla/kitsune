@@ -22,7 +22,7 @@ def uselocale(locale):
     ...
 
     In Kitsune, you can get the right locale from Profile.locale and
-    also request.LANGUAGE.
+    also request.LANGUAGE_CODE.
 
     If Kitsune is handling an HTTP request already, you don't have to
     run uselocale---the locale will already be set correctly.
