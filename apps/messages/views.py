@@ -104,12 +104,16 @@ def bulk_action(request, msgtype='inbox'):
         msgids = request.POST.getlist('id')
         messages = InboxMessage.objects.filter(pk__in=msgids, to=request.user)
         messages.update(read=True)
-
+    elif 'mark_unread' in request.POST and msgtype == 'inbox':
+        msgids = request.POST.getlist('id')
+        messages = InboxMessage.objects.filter(pk__in=msgids, to=request.user)
+        messages.update(read=False)
     return redirect('messages.%s' % msgtype)
 
 
 @login_required
-def delete(request, msgid=None, msgtype='inbox'):
+@mobile_template('messages/{mobile/}delete.html')
+def delete(request, template, msgid=None, msgtype='inbox'):
     if msgid:
         msgids = [msgid]
     else:
@@ -145,7 +149,7 @@ def delete(request, msgid=None, msgtype='inbox'):
         for message in messages:
             _add_recipients(message)
 
-    return jingo.render(request, 'messages/delete.html',
+    return jingo.render(request, template,
                         {'msgs': messages, 'msgid': msgid, 'msgtype': msgtype})
 
 

@@ -1,7 +1,99 @@
 @import '../variables.less';
 @import '../vendors.less';
 
+.half-width {
+  float: left;
+  min-height: 1px;
+  position: relative;
+  width: 50%;
+}
+
+.third-width {
+  float: left;
+  min-height: 1px;
+  position: relative;
+  width: 33.33%;
+}
+
+.read-message,
 .mailbox {
+  .mark-read-button,
+  .mark-unread-button {
+    cursor: pointer;
+    height: 50px;
+    left: 50%;
+    margin: 0 0 0 -25px;
+    position: absolute;
+    text-indent: -9999px;
+    top: 0;
+    width: 50px;
+  }
+
+  .mark-read-button {
+    background-position: -36px -1525px;
+  }
+
+  .mark-unread-button {
+    background-position: -36px -1277px;
+  }
+
+  .footer-overlay {
+    .trash-button {
+      border: 0;
+      .box-shadow(none);
+      float: none;
+      left: 50%;
+      margin: 0 0 0 -25px;
+      position: absolute;
+      top: 0;
+    }
+  }
+}
+
+.mailbox {
+  &.editing {
+    .avatar {
+      display: none;
+    }
+
+    .header-overlay,
+    .footer-overlay {
+      display: block;
+    }
+
+    .messages {
+      > li {
+        > a {
+          padding-right: 24px;
+
+          &:before {
+            display: none;
+          }
+
+          .details {
+            margin-left: 36px;
+          }
+        }
+      }
+
+      .blocker,
+      .checkbox {
+        display: block;
+      }
+    }
+
+    #page {
+      .wrapper {
+        bottom: 50px;
+      }
+    }
+  }
+
+  .header-overlay,
+  .footer-overlay {
+    display: none;
+  }
+
   .add-button {
     margin-right: 0;
   }
@@ -48,12 +140,14 @@
 
     > li {
       border-bottom: 1px solid @borderLightGrey;
+      position: relative;
 
       input[type="checkbox"] {
         display: none;
       }
 
-      > a {
+      > a,
+      > article {
         color: #000;
         display: block;
         padding: 16px 60px 16px 24px;
@@ -115,6 +209,44 @@
         }
       }
     }
+
+    .blocker {
+      bottom: 0;
+      display: none;
+      left: 0;
+      position: absolute;
+      right: 0;
+      top: 0;
+      z-index: 1;
+    }
+
+    .checkbox {
+      background: #fff;
+      border: 2px solid #b70404;
+      .border-radius(22px);
+      color: #fff;
+      cursor: pointer;
+      display: none;
+      font-size: 19px;
+      height: 18px;
+      line-height: 18px;
+      left: 19px;
+      margin-top: -11px;
+      overflow: hidden;
+      position: absolute;
+      text-align: center;
+      top: 50%;
+      width: 18px;
+      z-index: 2;
+    }
+
+    input:checked + .checkbox {
+      background: #b70404;
+
+      &:after {
+        content: '\2713';
+      }
+    }
   }
 
   #content {
@@ -123,7 +255,10 @@
       padding: 16px;
     }
   }
+}
 
+.inbox,
+.outbox {
   #page {
     .wrapper {
       top: 91px;
@@ -134,31 +269,16 @@
 .new-message,
 .read-message {
   &.replying {
-    .read-title {
-      display: none;
-    }
-
-    .reply-title {
-      display: block;
-    }
-
-    .return-button {
-      display: none;
-    }
-
-    #cancel-button {
-      display: block;
-    }
-
+    .read-title,
+    .return-button,
     #reply-button {
       display: none;
     }
 
-    #reply-form {
-      display: block;
-    }
-
-    #send-button {
+    .reply-title,
+    #reply-form,
+    #send-button,
+    #cancel-button {
       display: block;
     }
   }
@@ -199,23 +319,26 @@
     display: none;
   }
 
-  #content {
-    padding: 16px;
-  }
-
+  #message-form,
   #reply-form {
-    background: #fff;
     bottom: 0;
-    display: none;
     left: 0;
     position: absolute;
     right: 0;
-    top: 51px;
-    z-index: 12;
 
     textarea {
+      bottom: 0;
+      border: 0;
+      .border-radius(0);
+      .box-shadow(none);
+      left: 0;
+      margin: 0;
+      outline: none;
       padding: 16px;
+      position: absolute;
       top: 58px;
+      resize: none;
+      z-index: 1;
     }
 
     .meta-bar {
@@ -224,32 +347,27 @@
     }
   }
 
-  #message-form,
   #reply-form {
-    textarea {
-      bottom: 0;
-      border: 0;
-      .border-radius(0);
-      .box-shadow(none);
-      outline: none;
-      position: absolute;
-      resize: none;
-      z-index: 1;
-    }
+    background: #fff;
+    display: none;
+    top: 51px;
+    z-index: 12;
   }
 
   #message-form {
-    position: relative;
+    top: 0;
 
     textarea {
-      padding: 16px 0;
-      top: 42px;
+      height: calc(~'100% - 58px');
+      height: -moz-calc(~'100% - 58px');
+      height: -webkit-calc(~'100% - 58px');
     }
   }
 }
 
 .new-message {
   .token-input-list-facebook {
+    cursor: text;
     display: inline-block;
     list-style: none;
     margin: 0;
@@ -339,11 +457,24 @@
 }
 
 .read-message {
-  #cancel-button {
+  &.replying {
+    .footer-overlay {
+      display: none;
+    }
+  }
+
+  #cancel-button,
+  #send-button {
     display: none;
   }
 
-  #send-button {
-    display: none;
+  #content {
+    padding: 16px;
+  }
+
+  #page {
+    .wrapper {
+      bottom: 50px;
+    }
   }
 }

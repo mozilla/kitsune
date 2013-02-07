@@ -17,3 +17,9 @@
     {{ message.content_parsed }}
   </div>
 {% endblock %}
+
+{% block after_main %}
+  <div class="footer-overlay">
+    <a class="trash-button icon-sprite" href="{{ url('messages.delete', message.id) }}">{{ _('Delete message') }}</a>
+  </div>
+{% endblock %}

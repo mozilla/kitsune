@@ -208,6 +208,44 @@ select {
   }
 }
 
+.header-overlay {
+  background: rgba(40, 40, 40, 0.98) url('../../img/grain.png') 0 0 repeat;
+  border-bottom: 1px solid #000;
+  height: 50px;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+  z-index: 100;
+
+  h2 {
+    color: #fff;
+    font-size: 24px;
+    font-weight: normal;
+    line-height: 50px;
+    margin: 0 16px;
+  }
+
+  .done-button {
+    color: #fff;
+    cursor: pointer;
+    float: right;
+    height: 50px;
+    line-height: 50px;
+    padding: 0 12px;
+  }
+}
+
+.footer-overlay {
+  background: rgba(40, 40, 40, 0.98) url('../../img/grain.png') 0 0 repeat;
+  bottom: 0;
+  height: 50px;
+  left: 0;
+  position: absolute;
+  right: 0;
+  z-index: 100;
+}
+
 .overlay {
   background: rgba(40, 40, 40, 0.98) url('../../img/grain.png') 0 0 repeat;
   bottom: 0;
@@ -497,6 +535,19 @@ select {
   &.topic-get-community-support {
     background-position: -50px -790px;
   }
+}
+
+.trash-button {
+  background-position: -36px -1400px;
+  border-left: 1px solid rgba(255, 255, 255, 0.3);
+  .box-shadow(0 0 0 1px @mobileHeaderBorder);
+  cursor: pointer;
+  float: right;
+  height: 24px;
+  margin: 0 -9px 0 10px;
+  padding: 13px;
+  text-indent: -9999px;
+  width: 24px;
 }
 
 #cancel-button {

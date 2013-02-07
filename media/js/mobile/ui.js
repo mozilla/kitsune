@@ -82,18 +82,26 @@ k = {};
         });
 
         $(document).on('click', '[data-submit]', function() {
-            var $form = $('#' + $(this).data('submit'));
-            var name = $(this).data('name');
+            var $this = $(this);
+            var $form = $('#' + $this.data('submit'));
+            var name = $this.data('name');
             if (name) {
-              if (!$form.has('input[name="' + name + '"]').length) {
-                $form.append('<input name="' + name + '" value="1" type="hidden">');
-              }
+                if (!$form.has('input[name="' + name + '"]').length) {
+                  $form.append('<input name="' + name + '" value="1" type="hidden">');
+                }
             }
             $form.submit();
         });
 
         $(document).on('click', '[data-toggle-class]', function() {
             $('body').toggleClass($(this).data('toggle-class'));
+        });
+
+        $(document).on('click', '[data-checkbox]', function() {
+            var cb =  $('#' + $(this).data('checkbox'))[0];
+            if (cb) {
+                cb.checked = !cb.checked;
+            }
         });
 
         $(document).on('click', '.collapsable .toggle', function() {

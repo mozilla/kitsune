@@ -36,6 +36,18 @@
 {% endblock %}
 
 {% block after_main %}
+  <div class="footer-overlay">
+    <div class="half-width">
+      <a class="trash-button icon-sprite" href="{{ url('messages.delete', message.id) }}">{{ _('Delete message') }}</a>
+    </div>
+    <div class="half-width">
+      <form id="unread-form" action="{{ url('messages.bulk_action') }}" method="post">
+        <input type="hidden" name="id" value="{{ message.id }}">
+        {{ csrf() }}
+      </form>
+      <div data-submit="unread-form" data-name="mark_unread" class="mark-unread-button icon-sprite">{{ _('Mark unread') }}</div>
+    </div>
+  </div>
   {% if message.sender %}
     <form id="reply-form" action="{{ url('messages.new') }}" method="post">
       {{ csrf() }}
