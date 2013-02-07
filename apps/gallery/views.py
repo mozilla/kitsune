@@ -38,9 +38,9 @@ def gallery(request, media_type='image'):
 
     """
     if media_type == 'image':
-        media_qs = Image.objects.filter(locale=request.locale)
+        media_qs = Image.objects.filter(locale=request.LANGUAGE_CODE)
     elif media_type == 'video':
-        media_qs = Video.objects.filter(locale=request.locale)
+        media_qs = Video.objects.filter(locale=request.LANGUAGE_CODE)
     else:
         raise Http404
 
@@ -151,10 +151,10 @@ def gallery_async(request):
     else:
         raise Http404
 
-    if request.locale == settings.WIKI_DEFAULT_LANGUAGE:
-        media_qs = media_qs.filter(locale=request.locale)
+    if request.LANGUAGE_CODE == settings.WIKI_DEFAULT_LANGUAGE:
+        media_qs = media_qs.filter(locale=request.LANGUAGE_CODE)
     else:
-        locales = [request.locale, settings.WIKI_DEFAULT_LANGUAGE]
+        locales = [request.LANGUAGE_CODE, settings.WIKI_DEFAULT_LANGUAGE]
         media_qs = media_qs.filter(locale__in=locales)
 
     if term:
@@ -178,9 +178,9 @@ def search(request, media_type):
     filter = Q(title__icontains=term) | Q(description__icontains=term)
 
     if media_type == 'image':
-        media_qs = Image.objects.filter(filter, locale=request.locale)
+        media_qs = Image.objects.filter(filter, locale=request.LANGUAGE_CODE)
     elif media_type == 'video':
-        media_qs = Video.objects.filter(filter, locale=request.locale)
+        media_qs = Video.objects.filter(filter, locale=request.LANGUAGE_CODE)
     else:
         raise Http404
 
@@ -314,7 +314,7 @@ def _init_media_form(form_cls, request=None, obj=None,
     post_data = None
     initial = None
     if request:
-        initial = {'locale': request.locale}
+        initial = {'locale': request.LANGUAGE_CODE}
     file_data = None
     if request.method == 'POST':
         file_data = request.FILES

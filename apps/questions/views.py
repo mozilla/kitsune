@@ -282,7 +282,7 @@ def aaq(request, product_key=None, category_key=None, showform=False,
             results = _search_suggestions(
                 request,
                 search,
-                locale_or_default(request.locale),
+                locale_or_default(request.LANGUAGE_CODE),
                 product.get('products'))
             tried_search = True
         else:

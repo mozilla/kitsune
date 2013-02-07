@@ -15,7 +15,7 @@ from wiki.models import Locale
 def create_for_locale(request):
     """An ajax view to create a new announcement for the current locale."""
     user = request.user
-    locale = Locale.objects.get(locale=request.locale)
+    locale = Locale.objects.get(locale=request.LANGUAGE_CODE)
 
     if not user_can_announce(user, locale):
         return HttpResponseForbidden()
@@ -37,7 +37,7 @@ def create_for_locale(request):
 def delete(request, announcement_id):
     """An ajax view to delete an announcement."""
     user = request.user
-    locale = Locale.objects.get(locale=request.locale)
+    locale = Locale.objects.get(locale=request.LANGUAGE_CODE)
 
     if not user_can_announce(user, locale):
         return HttpResponseForbidden()

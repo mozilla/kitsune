@@ -24,7 +24,7 @@
               <div class="status-head">{{ _('Status') }}</div>
               <div class="significance-head"><abbr title="{{ _('Significance - MT: Major Content Changes. M: Content Changes. Empty: Minor Changes.') }}"> {{ _('S', "First letter of 'Significance'") }}</abbr></div>
               <div class="creator-head">{{ _('Editor') }}</div>
-              {% if request.locale == settings.WIKI_DEFAULT_LANGUAGE %}
+              {% if request.LANGUAGE_CODE == settings.WIKI_DEFAULT_LANGUAGE %}
                 <div class="l10n-head"><abbr title="{{ _('Ready for localization') }}">{{ _('R', "First letter of 'Ready for localization'") }}</abbr></div>
               {% endif %}
               <div class="comment-head">{{ _('Comment') }}</div>
@@ -75,7 +75,7 @@
               {{ rev.creator }}
             </a>
           </div>
-          {% if request.locale == settings.WIKI_DEFAULT_LANGUAGE %}
+          {% if request.LANGUAGE_CODE == settings.WIKI_DEFAULT_LANGUAGE %}
             <div class="l10n">
               {% if rev.is_ready_for_localization %}
                 {% set reached_ready_for_l10n = True %}

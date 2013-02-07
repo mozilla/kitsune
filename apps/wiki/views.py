@@ -64,7 +64,7 @@ def document(request, document_slug, template=None):
     fallback_reason = None
     # If a slug isn't available in the requested locale, fall back to en-US:
     try:
-        doc = Document.objects.get(locale=request.locale, slug=document_slug)
+        doc = Document.objects.get(locale=request.LANGUAGE_CODE, slug=document_slug)
         if (not doc.current_revision and doc.parent and
             doc.parent.current_revision):
             # This is a translation but its current_revision is None
@@ -80,7 +80,7 @@ def document(request, document_slug, template=None):
                                 locale=settings.WIKI_DEFAULT_LANGUAGE,
                                 slug=document_slug)
         # If there's a translation to the requested locale, take it:
-        translation = doc.translated_to(request.locale)
+        translation = doc.translated_to(request.LANGUAGE_CODE)
         if translation:
             url = translation.get_absolute_url()
             url = urlparams(url, query_dict=request.GET)
@@ -95,7 +95,7 @@ def document(request, document_slug, template=None):
     # redirected-to-page back to a "Redirected from..." link, so you can edit
     # the redirect.
     redirect_url = (None if request.GET.get('redirect') == 'no'
-                    else doc.redirect_url(request.locale))
+                    else doc.redirect_url(request.LANGUAGE_CODE))
     if redirect_url:
         url = urlparams(redirect_url, query_dict=request.GET,
                         redirectslug=doc.slug, redirectlocale=doc.locale)
@@ -150,7 +150,7 @@ def revision(request, document_slug, revision_id):
 @require_GET
 def list_documents(request, category=None, topic=None):
     """List wiki documents."""
-    docs = Document.objects.filter(locale=request.locale).order_by('title')
+    docs = Document.objects.filter(locale=request.LANGUAGE_CODE).order_by('title')
     if category:
         docs = docs.filter(category=category)
         try:
@@ -165,7 +165,7 @@ def list_documents(request, category=None, topic=None):
     if topic:
         topic = get_object_or_404(Topic, slug=topic)
         default_lang = settings.WIKI_DEFAULT_LANGUAGE
-        if request.locale == default_lang:
+        if request.LANGUAGE_CODE == default_lang:
             docs = docs.filter(topics=topic)
         else:
             parent_ids = Document.objects.filter(
@@ -190,7 +190,7 @@ def new_document(request):
                              'revision_form': rev_form})
 
     post_data = request.POST.copy()
-    post_data.update({'locale': request.locale})
+    post_data.update({'locale': request.LANGUAGE_CODE})
     doc_form = DocumentForm(post_data)
     rev_form = RevisionForm(post_data)
 
@@ -291,7 +291,7 @@ def _document_lock(doc_id, username):
 @login_required
 def steal_lock(request, document_slug, revision_id=None):
     doc = get_object_or_404(
-        Document, locale=request.locale, slug=document_slug)
+        Document, locale=request.LANGUAGE_CODE, slug=document_slug)
     user = request.user
 
     ok = _document_lock_steal(doc.id, user.username)
@@ -304,7 +304,7 @@ def steal_lock(request, document_slug, revision_id=None):
 def edit_document(request, document_slug, revision_id=None):
     """Create a new revision of a wiki document, or edit document metadata."""
     doc = get_object_or_404(
-        Document, locale=request.locale, slug=document_slug)
+        Document, locale=request.LANGUAGE_CODE, slug=document_slug)
     user = request.user
 
     # If this document has a parent, then the edit is handled by the
@@ -343,7 +343,7 @@ def edit_document(request, document_slug, revision_id=None):
         if which_form == 'doc':
             if doc.allows_editing_by(user):
                 post_data = request.POST.copy()
-                post_data.update({'locale': request.locale})
+                post_data.update({'locale': request.LANGUAGE_CODE})
                 doc_form = DocumentForm(
                     post_data,
                     instance=doc,
@@ -398,7 +398,7 @@ def preview_revision(request):
     wiki_content = request.POST.get('content', '')
     statsd.incr('wiki.preview')
     # TODO: Get doc ID from JSON.
-    data = {'content': wiki_to_html(wiki_content, request.locale)}
+    data = {'content': wiki_to_html(wiki_content, request.LANGUAGE_CODE)}
     data.update(showfor_data())
     return jingo.render(request, 'wiki/preview.html', data)
 
@@ -406,7 +406,7 @@ def preview_revision(request):
 @require_GET
 def document_revisions(request, document_slug, contributor_form=None):
     """List all the revisions of a given document."""
-    locale = request.GET.get('locale', request.locale)
+    locale = request.GET.get('locale', request.LANGUAGE_CODE)
     doc = get_object_or_404(
         Document, locale=locale, slug=document_slug)
     revs = Revision.objects.filter(document=doc).order_by('-created', '-id')
@@ -522,7 +522,7 @@ def compare_revisions(request, document_slug):
     The ids are passed as query string parameters (to and from).
 
     """
-    locale = request.GET.get('locale', request.locale)
+    locale = request.GET.get('locale', request.LANGUAGE_CODE)
     doc = get_object_or_404(
         Document, locale=locale, slug=document_slug)
     if 'from' not in request.GET or 'to' not in request.GET:
@@ -557,7 +557,7 @@ def translate(request, document_slug, revision_id=None):
     """Create a new translation of a wiki document.
 
     * document_slug is for the default locale
-    * translation is to the request locale
+    * translation is to the request.LANGUAGE_CODE
 
     """
     # TODO: Refactor this view into two views? (new, edit)
@@ -566,7 +566,7 @@ def translate(request, document_slug, revision_id=None):
         Document, locale=settings.WIKI_DEFAULT_LANGUAGE, slug=document_slug)
     user = request.user
 
-    if settings.WIKI_DEFAULT_LANGUAGE == request.locale:
+    if settings.WIKI_DEFAULT_LANGUAGE == request.LANGUAGE_CODE:
         # Don't translate to the default language.
         return HttpResponseRedirect(reverse(
             'wiki.edit_document', locale=settings.WIKI_DEFAULT_LANGUAGE,
@@ -583,7 +583,7 @@ def translate(request, document_slug, revision_id=None):
     disclose_description = bool(request.GET.get('opendescription'))
 
     try:
-        doc = parent_doc.translations.get(locale=request.locale)
+        doc = parent_doc.translations.get(locale=request.LANGUAGE_CODE)
     except Document.DoesNotExist:
         doc = None
         disclose_description = True
@@ -631,9 +631,9 @@ def translate(request, document_slug, revision_id=None):
         if user_has_doc_perm and which_form in ['doc', 'both']:
             disclose_description = True
             post_data = request.POST.copy()
-            post_data.update({'locale': request.locale})
+            post_data.update({'locale': request.LANGUAGE_CODE})
             doc_form = DocumentForm(post_data, instance=doc)
-            doc_form.instance.locale = request.locale
+            doc_form.instance.locale = request.LANGUAGE_CODE
             doc_form.instance.parent = parent_doc
             if which_form == 'both':
                 rev_form = RevisionForm(request.POST)
@@ -699,7 +699,7 @@ def translate(request, document_slug, revision_id=None):
     return jingo.render(request, 'wiki/translate.html',
                         {'parent': parent_doc, 'document': doc,
                          'document_form': doc_form, 'revision_form': rev_form,
-                         'locale': request.locale, 'based_on': based_on_rev,
+                         'locale': request.LANGUAGE_CODE, 'based_on': based_on_rev,
                          'disclose_description': disclose_description,
                          'show_revision_warning': show_revision_warning,
                          'recent_approved_revs': recent_approved_revs,
@@ -712,7 +712,7 @@ def translate(request, document_slug, revision_id=None):
 def watch_document(request, document_slug):
     """Start watching a document for edits."""
     document = get_object_or_404(
-        Document, locale=request.locale, slug=document_slug)
+        Document, locale=request.LANGUAGE_CODE, slug=document_slug)
     EditDocumentEvent.notify(request.user, document)
     statsd.incr('wiki.watches.document')
     return HttpResponseRedirect(document.get_absolute_url())
@@ -723,7 +723,7 @@ def watch_document(request, document_slug):
 def unwatch_document(request, document_slug):
     """Stop watching a document for edits."""
     document = get_object_or_404(
-        Document, locale=request.locale, slug=document_slug)
+        Document, locale=request.LANGUAGE_CODE, slug=document_slug)
     EditDocumentEvent.stop_notifying(request.user, document)
     return HttpResponseRedirect(document.get_absolute_url())
 
@@ -732,7 +732,7 @@ def unwatch_document(request, document_slug):
 @login_required
 def watch_locale(request):
     """Start watching a locale for revisions ready for review."""
-    ReviewableRevisionInLocaleEvent.notify(request.user, locale=request.locale)
+    ReviewableRevisionInLocaleEvent.notify(request.user, locale=request.LANGUAGE_CODE)
     statsd.incr('wiki.watches.locale')
     # A 200 so jQuery interprets it as success
     return HttpResponse()
@@ -743,7 +743,7 @@ def watch_locale(request):
 def unwatch_locale(request):
     """Stop watching a locale for revisions ready for review."""
     ReviewableRevisionInLocaleEvent.stop_notifying(request.user,
-                                                   locale=request.locale)
+                                                   locale=request.LANGUAGE_CODE)
     return HttpResponse()
 
 
@@ -751,9 +751,9 @@ def unwatch_locale(request):
 @login_required
 def watch_approved(request):
     """Start watching approved revisions in a locale."""
-    if request.locale not in settings.SUMO_LANGUAGES:
+    if request.LANGUAGE_CODE not in settings.SUMO_LANGUAGES:
         raise Http404
-    ApproveRevisionInLocaleEvent.notify(request.user, locale=request.locale)
+    ApproveRevisionInLocaleEvent.notify(request.user, locale=request.LANGUAGE_CODE)
     statsd.incr('wiki.watches.approved')
     return HttpResponse()
 
@@ -762,10 +762,10 @@ def watch_approved(request):
 @login_required
 def unwatch_approved(request):
     """Stop watching approved revisions."""
-    if request.locale not in settings.SUMO_LANGUAGES:
+    if request.LANGUAGE_CODE not in settings.SUMO_LANGUAGES:
         raise Http404
     ApproveRevisionInLocaleEvent.stop_notifying(request.user,
-                                                locale=request.locale)
+                                                locale=request.LANGUAGE_CODE)
     return HttpResponse()
 
 
@@ -773,7 +773,7 @@ def unwatch_approved(request):
 @login_required
 def watch_ready(request):
     """Start watching ready-for-l10n revisions."""
-    if request.locale != settings.WIKI_DEFAULT_LANGUAGE:
+    if request.LANGUAGE_CODE != settings.WIKI_DEFAULT_LANGUAGE:
         raise Http404
     ReadyRevisionEvent.notify(request.user)
     statsd.incr('wiki.watches.ready')
@@ -784,7 +784,7 @@ def watch_ready(request):
 @login_required
 def unwatch_ready(request):
     """Stop watching ready-for-l10n revisions."""
-    if request.locale != settings.WIKI_DEFAULT_LANGUAGE:
+    if request.LANGUAGE_CODE != settings.WIKI_DEFAULT_LANGUAGE:
         raise Http404
     ReadyRevisionEvent.stop_notifying(request.user)
     return HttpResponse()
@@ -793,7 +793,7 @@ def unwatch_ready(request):
 @require_GET
 def json_view(request):
     """Return some basic document info in a JSON blob."""
-    kwargs = {'locale': request.locale, 'current_revision__isnull': False}
+    kwargs = {'locale': request.LANGUAGE_CODE, 'current_revision__isnull': False}
     if 'title' in request.GET:
         kwargs['title'] = request.GET['title']
     elif 'slug' in request.GET:
@@ -892,7 +892,7 @@ def unhelpful_survey(request):
 @require_GET
 def get_helpful_votes_async(request, document_slug):
     document = get_object_or_404(
-        Document, locale=request.locale, slug=document_slug)
+        Document, locale=request.LANGUAGE_CODE, slug=document_slug)
 
     yes_data = []
     no_data = []
@@ -1061,7 +1061,7 @@ def mark_ready_for_l10n_revision(request, document_slug, revision_id):
 @login_required
 def delete_document(request, document_slug):
     """Delete a revision."""
-    document = get_object_or_404(Document, locale=request.locale,
+    document = get_object_or_404(Document, locale=request.LANGUAGE_CODE,
                                  slug=document_slug)
 
     # Check permission
@@ -1087,7 +1087,7 @@ def delete_document(request, document_slug):
 @permission_required('wiki.change_document')
 def add_contributor(request, document_slug):
     """Add a contributor to a document."""
-    document = get_object_or_404(Document, locale=request.locale,
+    document = get_object_or_404(Document, locale=request.LANGUAGE_CODE,
                                  slug=document_slug)
 
     form = AddContributorForm(request.POST)
@@ -1111,7 +1111,7 @@ def add_contributor(request, document_slug):
 @permission_required('wiki.change_document')
 def remove_contributor(request, document_slug, user_id):
     """Remove a contributor from a document."""
-    document = get_object_or_404(Document, locale=request.locale,
+    document = get_object_or_404(Document, locale=request.LANGUAGE_CODE,
                                  slug=document_slug)
     user = get_object_or_404(User, id=user_id)
 

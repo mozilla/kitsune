@@ -30,11 +30,11 @@ def home(request):
     products = Product.objects.filter(visible=True)
     topics = Topic.objects.filter(visible=True)
     moz_news = get_object_fallback(
-        Document, MOZILLA_NEWS_DOC, request.locale)
+        Document, MOZILLA_NEWS_DOC, request.LANGUAGE_CODE)
 
     try:
         hot_docs, fallback_hot_docs = documents_for(
-            locale=request.locale,
+            locale=request.LANGUAGE_CODE,
             topics=[Topic.objects.get(slug=HOT_TOPIC_SLUG)])
     except Topic.DoesNotExist:
         # "hot" topic doesn't exist, move on.

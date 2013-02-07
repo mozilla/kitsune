@@ -21,7 +21,7 @@
         {{ readout.render(max_rows=max_rows)|safe }}
       </table>
       <div class="table-footer">
-        <a href="{{ readout.get_absolute_url(request.locale, product) }}">{{ readout.details_link_text }}</a>
+        <a href="{{ readout.get_absolute_url(request.LANGUAGE_CODE, product) }}">{{ readout.details_link_text }}</a>
       </div>
     </details>
   {% endif %}
