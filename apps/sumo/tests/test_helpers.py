@@ -76,7 +76,7 @@ class TestHelpers(TestCase):
         eq_('No', yesno(0))
 
     def test_number(self):
-        context = {'request': namedtuple('R', 'locale')('en-US')}
+        context = {'request': namedtuple('R', 'LANGUAGE_CODE')('en-US')}
         eq_('5,000', number(context, 5000))
         eq_('', number(context, None))
 
