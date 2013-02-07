@@ -96,7 +96,7 @@ var Marky = {
                    'btn-h3', true)
         ];
     }
-}
+};
 
 
 /*
@@ -171,7 +171,7 @@ Marky.SimpleButton.prototype = {
             scrollTop = $(textarea).scrollTop(),
             session = window.highlighting && window.highlighting.session,
             editor = window.highlighting && window.highlighting.editor;
-            
+
         if(window.ace && window.highlighting && window.highlighting.isEnabled()) {
             selRange = editor.getSelectionRange();
             selText = session.getTextRange(selRange);
@@ -196,7 +196,7 @@ Marky.SimpleButton.prototype = {
             e.preventDefault();
             return false;
         }
-        
+
         textarea.focus();
 
         if (document.selection && document.selection.createRange) {
@@ -263,7 +263,7 @@ Marky.SimpleButton.prototype = {
                     opentag + line + closetag : line);
         });
     }
-}
+};
 
 /*
  * The showfor helper link.
@@ -279,7 +279,7 @@ Marky.ShowForButton = function() {
 
     this.html = interpolate('<a class="markup-toolbar-link" href="#show-for" title="%s">%s</a>',
                             [this.tooltip, this.name]);
-}
+};
 
 Marky.ShowForButton.prototype = $.extend({}, Marky.SimpleButton.prototype, {
     // Renders the html.
@@ -353,7 +353,7 @@ Marky.ShowForButton.prototype = $.extend({}, Marky.SimpleButton.prototype, {
  */
 Marky.Separator = function() {
     this.html = '<span class="separator"></span>';
-}
+};
 
 Marky.Separator.prototype = {
     node: function() {
@@ -362,7 +362,7 @@ Marky.Separator.prototype = {
     bind: function() {
         return this;
     }
-}
+};
 
 /*
  * The link helper.
@@ -380,7 +380,7 @@ Marky.LinkButton = function() {
     this.origDefaultText = this.defaultText;
 
     this.html = '<button class="markup-toolbar-button" />';
-}
+};
 
 Marky.LinkButton.prototype = $.extend({}, Marky.SimpleButton.prototype, {
     // Gets the DOM node for the button.
@@ -428,7 +428,7 @@ Marky.LinkButton.prototype = $.extend({}, Marky.SimpleButton.prototype, {
         // last character is a pound:
         var performSectionSearch = function(request) {
             return (request.term.indexOf("#") == request.term.length - 1);
-        }
+        };
 
         var results = [];
 
@@ -441,7 +441,7 @@ Marky.LinkButton.prototype = $.extend({}, Marky.SimpleButton.prototype, {
             }
 
             return null;
-        }
+        };
 
         var articleSearch = function(request, response) {
             results = [];
@@ -464,7 +464,7 @@ Marky.LinkButton.prototype = $.extend({}, Marky.SimpleButton.prototype, {
                     response(results);
                 }
             });
-        }
+        };
 
         var sectionSearch = function(request, response) {
             var articleName = request.term.split("#")[0];
@@ -481,7 +481,7 @@ Marky.LinkButton.prototype = $.extend({}, Marky.SimpleButton.prototype, {
                     var headings = $("[id^='w_']", data);
                     var array = [];
 
-                    if(headings.length == 0) {
+                    if(headings.length === 0) {
                         array.push({
                             label: gettext("No sections found"),
                             value: request.term.replace("#", ""),
@@ -505,7 +505,7 @@ Marky.LinkButton.prototype = $.extend({}, Marky.SimpleButton.prototype, {
                     response(array);
                 }
             });
-        }
+        };
 
         $html.find('input[name="internal"]').autocomplete({
             source: function(request, response) {
@@ -522,7 +522,7 @@ Marky.LinkButton.prototype = $.extend({}, Marky.SimpleButton.prototype, {
                 }
 
                 var $linktext = $html.find('input[name=link-text]');
-                if($linktext.val() == "") {
+                if($linktext.val() === "") {
                     $linktext.val(ui.item.label);
                 }
             }
@@ -568,7 +568,7 @@ Marky.LinkButton.prototype = $.extend({}, Marky.SimpleButton.prototype, {
             } else {
                 var link = $external.val();
                 if (link) {
-                    if (link.indexOf('http') != 0) {
+                    if (link.indexOf('http') !== 0) {
                         link = 'http://' + link;
                     }
                     me.openTag = '[' + link + ' ';
@@ -777,7 +777,7 @@ Marky.CannedResponsesButton = function() {
     this.everyline = false;
 
     this.html = '<button class="markup-toolbar-button" />';
-}
+};
 
 Marky.CannedResponsesButton.prototype = $.extend({}, Marky.SimpleButton.prototype, {
     // Gets the DOM node for the button.
@@ -804,8 +804,8 @@ Marky.CannedResponsesButton.prototype = $.extend({}, Marky.SimpleButton.prototyp
             $html = $(
                 '<section class="marky">' +
                 '<div class="search">' +
-                '<input type="text" name="q" id="filter-responses-field" placeholder="'
-                + gettext('Search for common responses') + '" class="searchbox"/>' +
+                '<input type="text" name="q" id="filter-responses-field" placeholder="' +
+                gettext('Search for common responses') + '" class="searchbox"/>' +
                 '</div></div>' +
                 '<div class="area">' +
                 '<div id="responses-area">' +
@@ -929,7 +929,7 @@ Marky.CannedResponsesButton.prototype = $.extend({}, Marky.SimpleButton.prototyp
         }
 
         function searchResponses(term) {
-            var term = term.toLowerCase().trim();
+            term = term.toLowerCase().trim();
             var $searchHeading = $html.find('#response-list-area .heading-label');
             var $noCategorySelected = $html.find('.nocat-label');
             var $responseLists = $html.find('.response-list ul');
@@ -990,10 +990,10 @@ Marky.CannedResponsesButton.prototype = $.extend({}, Marky.SimpleButton.prototyp
                             $otherHeadings;
 
                         $catResponses.each(function(el, i) {
-                            var $response = $(document.createElement('li')).addClass('response').text($(this).text()),
-                                response_target = $(this).attr('href'),
-                                canUseResponse = isAllowedToUseResponse(response_target),
-                                response_target = response_target.split('#')[0];
+                            var $response = $(document.createElement('li')).addClass('response').text($(this).text());
+                            var response_target = $(this).attr('href');
+                            var canUseResponse = isAllowedToUseResponse(response_target);
+                            response_target = response_target.split('#')[0];
 
                             if(canUseResponse) {
                                 $response.click(function() {
@@ -1126,14 +1126,14 @@ Marky.QuoteButton = function() {
     var previousContent = $('#read-message').attr('data-message-content');
     var previousAuthor = $('.from a').text();
     var previousAuthorLink = $('.from a').attr('href');
-    var quote = '[' + previousAuthorLink + ' ' + previousAuthor + ']'
-                + gettext(' said') + '\r\n';
+    var quote = '[' + previousAuthorLink + ' ' + previousAuthor + ']' +
+                gettext(' said') + '\r\n';
     quote += '<blockquote>\r\n';
     quote += previousContent + '\r\n';
     quote += '</blockquote>\r\n';
 
     return new Marky.SimpleButton(name, quote, '', '', 'btn-quote', true);
-}
+};
 
 window.Marky = Marky;
 
