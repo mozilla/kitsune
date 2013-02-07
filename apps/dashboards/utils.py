@@ -41,7 +41,7 @@ def render_readouts(request, readouts, template, locale=None, extra_data=None,
                 LOCALES[settings.WIKI_DEFAULT_LANGUAGE].native,
             'current_locale': current_locale,
             'current_locale_name': LOCALES[current_locale].native,
-            'request.LANGUAGE_CODE_name': LOCALES[request.LANGUAGE_CODE].native,
+            'request_locale_name': LOCALES[request.LANGUAGE_CODE].native,
             'is_watching_default_approved':
                 ApproveRevisionInLocaleEvent.is_notifying(
                     request.user, locale=settings.WIKI_DEFAULT_LANGUAGE),
