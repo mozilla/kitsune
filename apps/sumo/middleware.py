@@ -108,7 +108,7 @@ class PlusToSpaceMiddleware(object):
             if request.META['QUERY_STRING']:
                 new = u'%s?%s' % (new,
                                   smart_unicode(request.META['QUERY_STRING']))
-            if hasattr(request, 'locale'):
+            if hasattr(request, 'LANGUAGE_CODE'):
                 new = u'/%s%s' % (request.LANGUAGE_CODE, new)
             return HttpResponsePermanentRedirect(new)
 
