@@ -14,9 +14,6 @@ $(document).ready(function() {
     $('.datepicker').datepicker();
     $('.datepicker').attr('readonly', 'readonly').css('background', '#ddd');
 
-    // Force numeric input for num_votes
-    $('input.numeric').numericInput();
-
     $('select', cache_search_date).change(function () {
         if ($(this).val() == 0) {
             $('input', $(this).parent()).hide();
