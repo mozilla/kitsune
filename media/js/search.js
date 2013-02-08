@@ -34,28 +34,3 @@ $(document).ready(function() {
             tabs.tabs('select', 0);
     }
 });
-
-/**
- * Accept only numeric keystrokes.
- *
- * Based on http://snipt.net/GerryEng/jquery-making-textfield-only-accept-numeric-values
- */
-jQuery.fn.numericInput = function (options) {
-    // Only works on <input/>
-    if (!this.is('input')) {
-        return this;
-    }
-
-    this.keydown(function(event) {
-        // Allow only backspace and delete
-        if ( event.keyCode == 46 || event.keyCode == 8 ) {
-            // let it happen, don't do anything
-        } else if (event.shiftKey || event.keyCode < 48 || event.keyCode > 57) {
-            // Ensure that it is a number and stop the keypress
-            event.preventDefault();
-        }
-    });
-
-
-    return this;
-};
