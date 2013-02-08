@@ -65,7 +65,7 @@
   <article id="posts" class="grid_9">
     <h1 class="nomargin">{{ thread.title }}</h1>
     <ul class="cf" id="thread-meta">
-      {% if count %}<li>{{ count - 1 }} {% if (count-1) != 1 %}{{ _('Replies') }}{% else %}{{ _('Reply') }}</li>{% endif %}
+      {% if count %}<li>{{ count - 1 }} {% if (count-1) != 1 %}{{ _('Replies') }}{% else %}{{ _('Reply') }}{% endif %}</li>{% endif %}
       {% if last_post %}<li>{{ _('Last reply by') }} {{ last_post.author }}</li>{% endif %}
       {% if thread.is_sticky %}<li>{{ _('Sticky') }}</li>{% endif %}
       {% if thread.is_locked %}<li>{{ _('Locked') }}</li>{% endif %}
