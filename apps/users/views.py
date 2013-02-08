@@ -25,6 +25,7 @@ from tower import ugettext as _
 from access.decorators import logout_required, login_required
 from questions.models import (Question, user_num_answers, user_num_questions,
                               user_num_solutions)
+from sumo import email_utils
 from sumo.decorators import ssl_required
 from sumo.helpers import urlparams
 from sumo.urlresolvers import reverse
@@ -206,14 +207,16 @@ def resend_confirmation(request, template):
 
                     current_site = Site.objects.get_current()
                     email_kwargs = {'domain': current_site.domain,
-                        'login_url': reverse('users.login')}
-                    message = render_to_string(
+                                    'login_url': reverse('users.login')}
+
+                    subject = _('Account already activated')
+                    message = email_utils.render_email(
                                 'users/email/already_activated.ltxt',
                                 email_kwargs)
                     form = try_send_email_with_form(
                         mail.send_mail,
                         form, 'email',
-                        _('Account already activated'),
+                        subject,
                         message, settings.DEFAULT_FROM_EMAIL,
                         [user.email])
                 except User.DoesNotExist:
