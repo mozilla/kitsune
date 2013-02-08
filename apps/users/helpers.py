@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.utils.html import strip_tags
 
 from jinja2 import escape, Markup
 from jingo import register
@@ -34,8 +35,8 @@ def display_name(user):
     try:  # Also mostly for tests.
         profile = user.get_profile()
     except Profile.DoesNotExist:
-        return user.username
-    return profile.name if profile and profile.name else user.username
+        return strip_tags(user.username)
+    return strip_tags(profile.name if profile and profile.name else user.username)
 
 
 @register.filter
