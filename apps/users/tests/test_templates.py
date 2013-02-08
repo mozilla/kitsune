@@ -439,6 +439,30 @@ class ResendConfirmationTests(TestCaseBase):
         eq_(2, len(mail.outbox))
         assert mail.outbox[1].subject.find('Please confirm your email') == 0
 
+    @mock.patch.object(Site.objects, 'get_current')
+    def test_resend_confirmation_already_activated(self, get_current):
+        get_current.return_value.domain = 'testserver.com'
+        user_ = RegistrationProfile.objects.create_inactive_user(
+            'testuser', 'testpass', 'testuser@email.com')
+
+        # Activate the user
+        key = RegistrationProfile.objects.all()[0].activation_key
+        url = reverse('users.activate', args=[user_.id, key])
+        response = self.client.get(url, follow=True)
+        eq_(200, response.status_code)
+        user_ = User.objects.get(pk=user_.pk)
+        assert user_.is_active
+
+        # Delete RegistrationProfile objects.
+        RegistrationProfile.objects.all().delete()
+
+        # Resend the confirmation email
+        r = self.client.post(reverse('users.resend_confirmation'),
+                             {'email': 'testuser@email.com'})
+        eq_(200, r.status_code)
+        eq_(2, len(mail.outbox))
+        eq_(mail.outbox[1].subject.find('Account already activated'), 0)
+
     @mock.patch.object(RegistrationManager, 'send_confirmation_email')
     @mock.patch.object(Site.objects, 'get_current')
     def test_smtp_error(self, get_current, send_confirmation_email):
