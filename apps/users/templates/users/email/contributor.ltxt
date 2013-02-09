@@ -10,7 +10,7 @@ technologies!
 
 {# L10n: This is an email.  Whitespace matters! #}
 {% trans %}
-We would love to find a good place for your to help users,
+We would love to find a good place for you to help users,
 so please send us an email with your username and the area
 you would like to get involved. Please feel free to add all
 your skills, we will try to find the right use for them :)
