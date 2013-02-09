@@ -212,7 +212,6 @@ def answers(request, template, question_id, form=None, watch_form=None,
                          answer_preview)
     question = ans_['question']
     ans_['troubleshooting'] = json.loads(question.metadata['troubleshooting'])
-    extra_kwargs.update()
     
     if request.user.is_authenticated():
         ans_['images'] = question.images.filter(creator=request.user)
