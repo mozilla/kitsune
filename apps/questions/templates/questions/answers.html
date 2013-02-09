@@ -213,13 +213,12 @@
           <p>{{ question.metadata.started }}</p>
         {% endif %}
         {% if troubleshooting %}
-          <h2>{{ _('More Information') }}</h2>
           {% set graphics    = troubleshooting['graphics'] %}
           {% set application = troubleshooting['application'] %}
           {% set javascript  = troubleshooting['javaScript'] %}
           {% set extensions  = troubleshooting['extensions'] %}
           {% if application %}
-          <h3>{{ _('Application') }}</h3>
+          <h2>{{ _('Application') }}</h2>
           <div class="application">
             <ul>
             {% for key in application %}
@@ -231,19 +230,29 @@
           </div>
           {% endif %}
           {% if graphics %}
-          <h3>{{ _('Graphics') }}</h3>
+          <h2>{{ _('Graphics') }}</h2>
           <div class="graphics">
             <ul>
             {% for key in graphics %}
               {% if graphics[key] %}
-              <li>{{ key }}: {{ graphics[key] }}</li>
+              {% if key == 'info' %}
+              <li>
+                {{ key }}:
+                <ul>
+                {% for info in graphics[key] %}
+                  <li>{{ info }}: {{ graphics[key][info] }}</li>
+                {% endfor %}
+                </ul>
+              {% else %}
+               <li>{{ key }}: {{ graphics[key] }}</li>
+              {% endif %}
               {% endif %}
             {% endfor %}
             </ul>
           </div>
           {% endif %}
           {% if javascript %}
-          <h3>{{ _('JavaScript') }}</h3>
+          <h2>{{ _('JavaScript') }}</h2>
           <div class="javascript">
             <ul>
             {% for key in javascript %}
@@ -255,7 +264,7 @@
           </div>
           {% endif %}
           {% if extensions %}
-          <h3>{{ _('Extensions') }}</h3>
+          <h2>{{ _('Extensions') }}</h2>
           <div class="extensions">
             <ul>
             {% for key in extensions %}
