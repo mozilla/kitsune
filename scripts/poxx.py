@@ -49,12 +49,15 @@ COLOR = [
     u'arrRRr!',
     u'arrRRRrrr!',
     u'matey!',
+    u'me mateys!',
     u'ahoy!',
     u'aye!',
     u'ye scalleywag!',
     u'cap\'n!',
     u'yo-ho-ho!',
     u'shiver me timbers!',
+    u'ye landlubbers!',
+    u'prepare to be boarded!',
     ]
 
 
@@ -208,19 +211,7 @@ def pirate_transform(s):
             out.append(s[0])
             s = s[1:]
 
-    # print old_s, "->", out
-    new_s = u''.join(out)
-
-    # This guarantees every translated string has changed and is
-    # longer than the previous string.
-    if (not is_whitespace(new_s)
-        and (old_s == new_s or len(old_s) == len(new_s))):
-
-        if wc(new_s[-1]):
-            new_s = new_s + u'\''
-        else:
-            new_s = new_s[:-1] + u'\'' + new_s[-1]
-    return new_s
+    return u''.join(out)
 
 
 class HtmlAwareMessageMunger(HTMLParser.HTMLParser):
