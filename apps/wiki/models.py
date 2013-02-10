@@ -321,7 +321,7 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
         If the URL has a host component, we assume it does not point to this
         host and thus does not point to a Document, because that would be a
         needlessly verbose way to specify an internal link. However, if you
-        pass host_safe=True, we assume the URL's host is the one serving
+        pass check_host=False, we assume the URL's host is the one serving
         Documents, which comes in handy for analytics whose metrics return
         host-having URLs.
 
@@ -335,14 +335,21 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
             return None
         locale, path, slug = components
 
-        # Map locale-slug pair to Document ID:
-        doc_query = Document.objects.exclude(current_revision__isnull=True)
+        doc = Document.objects
         if id_only:
-            doc_query = doc_query.only('id')
+            doc = doc.only('id')
         try:
-            return doc_query.get(locale=locale, slug=slug)
+            doc = doc.get(locale=locale, slug=slug)
         except Document.DoesNotExist:
-            return None
+            try:
+                doc = doc.get(locale=settings.WIKI_DEFAULT_LANGUAGE, slug=slug)
+                translation = doc.translated_to(locale)
+                if translation:
+                    return translation
+                return doc
+            except Document.DoesNotExist:
+                return None
+        return doc
 
     def redirect_url(self, source_locale=settings.LANGUAGE_CODE):
         """If I am a redirect, return the URL to which I redirect.
