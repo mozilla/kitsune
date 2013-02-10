@@ -326,7 +326,6 @@ ACCOUNT_ACTIVATION_DAYS = 30
 
 PASSWORD_HASHERS = (
     'users.hashers.SHA256PasswordHasher',
-    'users.hashers.PasswordDisabledHasher',
 )
 
 PASSWORD_BLACKLIST = path('configs/password-blacklist.txt')
