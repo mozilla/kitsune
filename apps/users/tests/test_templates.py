@@ -58,7 +58,7 @@ class LoginTests(TestCaseBase):
 
     def test_login_password_disabled(self):
         """Test logging in as a user with PASSWORD_DISABLED doesn't 500."""
-        self.u.password = 'PASSWORD_DISABLED'
+        self.u.set_unusable_password()
         self.u.save()
         response = self.client.post(reverse('users.login'),
                                     {'username': self.u.username,
