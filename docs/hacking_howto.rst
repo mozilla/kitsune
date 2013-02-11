@@ -181,8 +181,20 @@ Now you can copy and modify any settings from ``settings.py`` into
 ``settings_local.py`` and the value will override the default.
 
 
+.. _hacking-howto-memcached:
+
 memcached
 ---------
+
+You need to have memcached running. Otherwise csrf stuff won't work.
+
+If you are running OSX and using homebrew, you can do something like::
+
+    $ brew install memcached
+
+and launch it::
+
+    $ memcached
 
 If you are running RedHat/CentOS/Fedora, once you have installed
 memcached you can start it and configure it to run on startup using::
@@ -322,6 +334,18 @@ Running the test suite is easy::
 
 For more information, see the :ref:`test documentation
 <tests-chapter>`.
+
+
+Trouble-shooting
+================
+
+Error: A csrf_token was used in a template, but the context did not provide the value
+-------------------------------------------------------------------------------------
+
+If you see this, you likely have CACHES specifying to use memcached in your
+settings_local.py file, but you don't have memcached running.
+
+See :ref:`hacking-howto-memcached`.
 
 
 Advanced install
