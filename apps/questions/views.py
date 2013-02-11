@@ -211,6 +211,7 @@ def answers(request, template, question_id, form=None, watch_form=None,
     ans_ = _answers_data(request, question_id, form, watch_form,
                          answer_preview)
     question = ans_['question']
+
     ans_['troubleshooting'] = None
     if question.metadata.get('troubleshooting'):
       ans_['troubleshooting'] = json.loads(question.metadata.get('troubleshooting'))
