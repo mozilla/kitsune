@@ -1,7 +1,6 @@
 # coding: utf-8
 
 import urlparse
-
 from datetime import datetime
 
 from nose.tools import eq_
@@ -11,8 +10,8 @@ from django.core.exceptions import ValidationError
 
 from products.tests import product
 from sumo import ProgrammingError
-from sumo.urlresolvers import reverse
 from sumo.tests import TestCase
+from sumo.urlresolvers import reverse
 from topics.tests import topic
 from wiki.models import Document
 from wiki.config import (REDIRECT_SLUG, REDIRECT_TITLE, REDIRECT_HTML,
@@ -321,11 +320,11 @@ class FromUrlTests(TestCase):
     def test_translated_document(self):
         from_url = Document.from_url
 
-        d_en = document(locale="en-US",
-                        title=u"How to delete Google Chrome?",
+        d_en = document(locale='en-US',
+                        title=u'How to delete Google Chrome?',
                         save=True)
-        d_tr = document(locale="tr",
-                        title=u"Google Chrome'u nasıl silerim?",
+        d_tr = document(locale='tr',
+                        title=u'Google Chrome\'u nasıl silerim?',
                         parent=d_en, save=True)
         self.assertEqual(d_en.translated_to('tr'),
                          from_url(d_en.translated_to('tr').get_absolute_url()))
@@ -335,16 +334,16 @@ class FromUrlTests(TestCase):
     def test_id_only(self):
         from_url = Document.from_url
 
-        d = document(locale="en-US",
-                     title=u"How to delete Google Chrome?",
+        d = document(locale='en-US',
+                     title=u'How to delete Google Chrome?',
                      save=True)
         doc = from_url(d.get_absolute_url(), id_only=True)
         self.assertEqual(d.title, doc.title)
         self.assertEqual(d.locale, doc.locale)
 
     def test_document_translate_fallback(self):
-        d_en = document(locale="en-US",
-                        title=u"How to delete Google Chrome?",
+        d_en = document(locale='en-US',
+                        title=u'How to delete Google Chrome?',
                         save=True)
         invalid_translate = reverse('wiki.document', locale='tr',
                                     args=[d_en.slug])
@@ -352,8 +351,8 @@ class FromUrlTests(TestCase):
 
     def test_check_host(self):
         from_url = Document.from_url
-        d_en = document(locale="en-US",
-                        title=u"How to delete Google Chrome?",
+        d_en = document(locale='en-US',
+                        title=u'How to delete Google Chrome?',
                         save=True)
         sumo_host = 'http://support.mozilla.org'
         invalid_url = urlparse.urljoin(sumo_host, d_en.get_absolute_url())
