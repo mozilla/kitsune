@@ -317,7 +317,7 @@ class DocumentTests(TestCase):
 class FromUrlTests(TestCase):
     """Tests for Document.from_url()"""
 
-    def test_translated_document(self):
+    def test_redirect_to_translated_document(self):
         from_url = Document.from_url
 
         d_en = document(locale='en-US',
@@ -326,10 +326,14 @@ class FromUrlTests(TestCase):
         d_tr = document(locale='tr',
                         title=u'Google Chrome\'u nasıl silerim?',
                         parent=d_en, save=True)
-        self.assertEqual(d_en.translated_to('tr'),
-                         from_url(d_en.translated_to('tr').get_absolute_url()))
+        # The /tr/kb/how-to-delete-google-chrome URL for Turkish locale
+        # should be redirected to /tr/kb/google-chromeu-nasl-silerim
+        # if there is a Turkish translation of the document.
+        tr_translate_url = reverse('wiki.document', locale='tr',
+                                   args=[d_en.slug])
+        self.assertEqual(d_en.translated_to('tr'), from_url(tr_translate_url))
+        self.assertEqual(d_tr, from_url(tr_translate_url))
         self.assertEqual(d_en, from_url(d_en.get_absolute_url()))
-        self.assertEqual(d_tr, from_url(d_tr.get_absolute_url()))
 
     def test_id_only(self):
         from_url = Document.from_url
