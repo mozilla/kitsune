@@ -212,9 +212,11 @@ def answers(request, template, question_id, form=None, watch_form=None,
                          answer_preview)
     question = ans_['question']
     ans_['troubleshooting'] = None
-    if question.metadata.get('troubleshooting'):
-      ans_['troubleshooting'] = json.loads(question.metadata.get('troubleshooting'))
-    
+    try:
+        if question.metadata.get('troubleshooting'):
+            ans_['troubleshooting'] = json.loads(question.metadata.get('troubleshooting'))
+    except ValueError:
+        pass
     if request.user.is_authenticated():
         ans_['images'] = question.images.filter(creator=request.user)
 

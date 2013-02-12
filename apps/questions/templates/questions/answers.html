@@ -213,71 +213,75 @@
           <p>{{ question.metadata.started }}</p>
         {% endif %}
         {% if troubleshooting %}
-          {% set graphics    = troubleshooting['graphics'] %}
+          {% set graphics = troubleshooting['graphics'] %}
           {% set application = troubleshooting['application'] %}
-          {% set javascript  = troubleshooting['javaScript'] %}
-          {% set extensions  = troubleshooting['extensions'] %}
+          {% set javascript = troubleshooting['javaScript'] %}
+          {% set extensions = troubleshooting['extensions'] %}
           {% if application %}
-          <h2>{{ _('Application') }}</h2>
-          <div class="application">
-            <ul>
-            {% for key in application %}
-              {% if application[key] %}
-              <li>{{ key }}: {{ application[key] }}</li>
-              {% endif %}
-            {% endfor %}
-            </ul>
-          </div>
+            <h2>{{ _('Application') }}</h2>
+            <div class="application">
+              <ul>
+                {% for key in application %}
+                  {% if application[key] %}
+                    <li>{{ key }}: {{ application[key] }}</li>
+                  {% endif %}
+                {% endfor %}
+              </ul>
+            </div>
           {% endif %}
           {% if graphics %}
-          <h2>{{ _('Graphics') }}</h2>
-          <div class="graphics">
-            <ul>
-            {% for key in graphics %}
-              {% if graphics[key] %}
-              {% if key == 'info' %}
-              <li>
-                {{ key }}:
-                <ul>
-                {% for info in graphics[key] %}
-                  <li>{{ info }}: {{ graphics[key][info] }}</li>
+            <h2>{{ _('Graphics') }}</h2>
+            <div class="graphics">
+              <ul>
+                {% for key in graphics %}
+                  {% if graphics[key] %}
+                    {% if key == 'info' %}
+                      <li>
+                      {{ key }}:
+                      <ul>
+                      {% for info in graphics[key] %}
+                        <li>{{ info }}: {{ graphics[key][info] }}</li>
+                      {% endfor %}
+                      </ul>
+                    {% else %}
+                      <li>{{ key }}: {{ graphics[key] }}</li>
+                    {% endif %}
+                  {% endif %}
                 {% endfor %}
-                </ul>
-              {% else %}
-               <li>{{ key }}: {{ graphics[key] }}</li>
-              {% endif %}
-              {% endif %}
-            {% endfor %}
-            </ul>
-          </div>
+              </ul>
+            </div>
           {% endif %}
           {% if javascript %}
-          <h2>{{ _('JavaScript') }}</h2>
-          <div class="javascript">
-            <ul>
-            {% for key in javascript %}
-              {% if javascript[key] %}
-              <li>{{ key }}: {{ javascript[key] }}</li>
-              {% endif %}
-            {% endfor %}
-            </ul>
-          </div>
+            <h2>{{ _('JavaScript') }}</h2>
+            <div class="javascript">
+              <ul>
+                {% for key in javascript %}
+                  {% if javascript[key] %}
+                    <li>{{ key }}: {{ javascript[key] }}</li>
+                  {% endif %}
+                {% endfor %}
+              </ul>
+            </div>
           {% endif %}
           {% if extensions %}
-          <h2>{{ _('Extensions') }}</h2>
-          <div class="extensions">
-            <ul>
-            {% for key in extensions %}
-              <li>
-                <ul>
-              {% for value in key %}
-                  <li>{{ value }}: {{ key[value] }}</li>
-              {% endfor %}
-                </ul>
-              </li>
-            {% endfor %}
-            </ul>
-          </div>
+            <h2>{{ _('Extensions') }}</h2>
+            <div class="extensions">
+              <ul>
+                {% for key in extensions %}
+                  <li>
+                    <ul>
+                  {% for value in key %}
+                      <li>{{ value }}: {{ key[value] }}</li>
+                  {% endfor %}
+                    </ul>
+                  </li>
+                {% endfor %}
+              </ul>
+            </div>
+          {% endif %}
+        {% else %}
+          {% if question.metadata.troubleshooting %}
+            {{ question.metadata.troubleshooting|trim|collapse_linebreaks|nl2br }}
           {% endif %}
         {% endif %}
         {% if question.metadata.plugins %}
