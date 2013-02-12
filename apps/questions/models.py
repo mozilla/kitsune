@@ -339,7 +339,9 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
             'question_num_votes': {'type': 'integer'},
             'question_num_votes_past_week': {'type': 'integer'},
             'question_answer_votes': {'type': 'integer'},
-            'question_tag': {'type': 'string', 'index': 'not_analyzed'}}
+            'question_tag': {'type': 'string', 'index': 'not_analyzed'},
+            'question_locale': {'type': 'string', 'index': 'not_analyzed'},
+            }
 
     @classmethod
     def extract_document(cls, obj_id):
@@ -350,7 +352,7 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
         obj = cls.uncached.values(
             'id', 'title', 'content', 'num_answers', 'solution_id',
             'is_locked', 'created', 'updated', 'num_votes_past_week',
-            'creator__username').get(pk=obj_id)
+            'creator__username', 'locale').get(pk=obj_id)
 
         d = {}
         d['id'] = obj['id']
@@ -393,6 +395,8 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
 
         d['question_tag'] = list(TaggedItem.tags_for(
             Question, Question(pk=obj_id)).values_list('name', flat=True))
+
+        d['question_locale'] = obj['locale']
 
         answer_values = list(Answer.objects
                                    .filter(question=obj_id)
