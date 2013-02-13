@@ -13,7 +13,7 @@ from questions.models import Question
 from questions.tests import answer, question
 from search.tests.test_es import ElasticTestCase
 from sumo.helpers import urlparams
-from sumo.tests import MobileTestCase, LocalizingClient, TestCase
+from sumo.tests import MobileTestCase, LocalizingClient, TestCase, eq_msg
 from sumo.urlresolvers import reverse
 from topics.tests import topic
 from users.tests import user
@@ -44,7 +44,7 @@ class AAQTests(ElasticTestCase):
     # TODO: test whether when _search_suggetions fails with a handled
     # error that the user can still ask a question.
 
-    def test_search_suggestions(self):
+    def test_search_suggestions_questions(self):
         """Verifies the view doesn't kick up an HTTP 500"""
         topic(title='Fix problems', slug='fix-problems', save=True)
         p = product(slug=u'firefox', save=True)
@@ -68,7 +68,7 @@ class AAQTests(ElasticTestCase):
         assert 'CupcakesQuestion' in response.content
         assert 'CupcakesKB' in response.content
 
-    def test_search_suggestion_age(self):
+    def test_search_suggestion_question_age(self):
         """Verifies the view doesn't return old questions."""
         topic(title='Fix problems', slug='fix-problems', save=True)
         p = product(slug=u'firefox', save=True)
@@ -93,6 +93,38 @@ class AAQTests(ElasticTestCase):
 
         self.assertContains(response, q1.title)
         self.assertNotContains(response, q2.title)
+
+    def test_search_suggestion_questions_locale(self):
+        """Verifies the right languages show up in search suggestions."""
+        topic(title='Fix problems', slug='fix-problems', save=True)
+        p = product(slug=u'firefox', save=True)
+
+        q1 = question(title='question cupcakes?', save=True, locale='en-US')
+        q1.products.add(p)
+        q2 = question(title='question donuts?', save=True, locale='en-US')
+        q2.products.add(p)
+        q3 = question(title='question pies?', save=True, locale='pt-BR')
+        q3.products.add(p)
+        q4 = question(title='question pastries?', save=True, locale='de')
+        q4.products.add(p)
+
+        self.refresh()
+
+        def sub_test(locale, *titles):
+            url = urlparams(reverse('questions.aaq_step4',
+                                    args=['desktop', 'fix-problems'],
+                                    locale=locale),
+                            search='question')
+            response = self.client.get(url, follow=True)
+            doc = pq(response.content)
+            eq_msg(len(doc('.result.question')), len(titles),
+                   'Wrong number of results for {0}'.format(locale))
+            for substr in titles:
+                assert substr in doc('.result.question h3 a').text()
+
+        sub_test('en-US', 'cupcakes?', 'donuts?')
+        sub_test('pt-BR', 'cupcakes?', 'donuts?', 'pies?')
+        sub_test('de', 'cupcakes?', 'donuts?', 'pastries?')
 
 
 class MobileAAQTests(MobileTestCase):

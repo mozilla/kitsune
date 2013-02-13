@@ -1191,12 +1191,16 @@ class AAQTemplateTestCase(TestCaseBase):
         super(AAQTemplateTestCase, self).tearDown()
         self.client.logout()
 
-    def _post_new_question(self):
+    def _post_new_question(self, locale=None):
         """Post a new question and return the response."""
         topic(title='Fix problems', slug='fix-problems', save=True)
         product(title='Firefox', slug='firefox', save=True)
+        extra = {}
+        if locale is not None:
+            extra['locale'] = locale
         url = urlparams(
-            reverse('questions.aaq_step5', args=['desktop', 'fix-problems']),
+            reverse('questions.aaq_step5', args=['desktop', 'fix-problems'],
+                    **extra),
             search='A test question')
         return self.client.post(url, self.data, follow=True)
 
@@ -1222,6 +1226,15 @@ class AAQTemplateTestCase(TestCaseBase):
         products = question.products.all()
         eq_(1, len(products))
         eq_('firefox', products[0].slug)
+
+    def test_localized_creation(self):
+        response = self._post_new_question(locale='de')
+        eq_(200, response.status_code)
+        assert 'Done!' in pq(response.content)('ul.user-messages li').text()
+
+        # Verify question is in db now
+        question = Question.objects.filter(title='A test question')[0]
+        eq_(question.locale, 'de')
 
     def test_full_workflow_inactive(self):
         u = User.objects.get(username='jsocol')
