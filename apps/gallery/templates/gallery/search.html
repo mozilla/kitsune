@@ -15,8 +15,7 @@
     <div class="cf">
       <div id="gallery-search" class="grid_6">
         <form action="{{ url('gallery.search', media_type) }}" method="get">
-          <input class="searchbox" type="text" name="q" value="{{ q }}" required="required" />
-          <input type="submit" value="{{ _('Search Gallery') }}">
+          <input class="searchbox" type="search" name="q" required="required" placeholder="{{ _('Search Gallery') }}" />
         </form>
       </div>
 
