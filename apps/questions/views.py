@@ -48,7 +48,7 @@ from questions.marketplace import (MARKETPLACE_CATEGORIES, submit_ticket,
 from questions.models import Question, Answer, QuestionVote, AnswerVote
 from questions.question_config import products
 from search.utils import locale_or_default, clean_excerpt
-from search.es_utils import ESTimeoutError, ESMaxRetryError, ESException
+from search.es_utils import ESTimeoutError, ESMaxRetryError, ESException, F
 from sumo.helpers import urlparams
 from sumo.urlresolvers import reverse
 from sumo.utils import paginate, simple_paginate, build_paged_url
@@ -255,7 +255,7 @@ def aaq(request, product_key=None, category_key=None, showform=False,
         if topic:
             html = None
             articles, fallback = documents_for(
-                locale=settings.WIKI_DEFAULT_LANGUAGE,  # en-US only for now.
+                locale=request.LANGUAGE_CODE,
                 products=Product.objects.filter(
                     slug__in=product.get('products')),
                 topics=[Topic.objects.get(slug=topic)])
@@ -370,7 +370,8 @@ def aaq(request, product_key=None, category_key=None, showform=False,
     if form.is_valid():
         question = Question(creator=request.user,
                             title=form.cleaned_data['title'],
-                            content=form.cleaned_data['content'])
+                            content=form.cleaned_data['content'],
+                            locale=request.LANGUAGE_CODE)
         question.save()
         # User successfully submitted a new question
         statsd.incr('questions.new')
@@ -1077,9 +1078,13 @@ def _search_suggestions(request, text, locale, product_slugs):
                       for field in Document.get_query_fields())
         query.update(dict(('%s__text_phrase' % field, text)
                       for field in Document.get_query_fields()))
+        filter = F()
+        filter |= F(document_locale=locale)
+        filter |= F(document_locale=settings.WIKI_DEFAULT_LANGUAGE)
+        filter &= F(document_category__in=default_categories)
+
         raw_results = (
-            wiki_s.filter(document_locale=locale,
-                          document_category__in=default_categories)
+            wiki_s.filter(filter)
                   .query(or_=query)
                   .values_dict('id')[:WIKI_RESULTS])
         for r in raw_results:
@@ -1098,16 +1103,25 @@ def _search_suggestions(request, text, locale, product_slugs):
                 pass
 
         # Search for relevant questions.
-        # Note: Questions app is en-US only.
         query = dict(('%s__text' % field, text)
                       for field in Question.get_query_fields())
         query.update(dict(('%s__text_phrase' % field, text)
                       for field in Question.get_query_fields()))
+
         max_age = int(time.time()) - settings.SEARCH_DEFAULT_MAX_QUESTION_AGE
+        # Filter questions by language. Questions should be either in English
+        # or in the locale's language. This is because we have some questions
+        # marked English that are really in other languages. The assumption
+        # being that if a native speakers submits a query in given language,
+        # the items that are written in that language will automatically match
+        # better, so questions incorrectly marked as english can be found too.
+        question_filter = F(question_locale=locale)
+        question_filter |= F(question_locale=settings.WIKI_DEFAULT_LANGUAGE)
+        question_filter &= F(updated__gte=max_age)
 
         raw_results = (question_s
             .query(or_=query)
-            .filter(updated__gte=max_age)
+            .filter(question_filter)
             .values_dict('id')[:QUESTIONS_RESULTS])
 
         for r in raw_results:

@@ -21,7 +21,7 @@
 
 {% macro aux_nav(user) %}
   {% if not settings.READ_ONLY %}
-    {% if request.LANGUAGE_CODE == settings.WIKI_DEFAULT_LANGUAGE %}
+    {% if request.LANGUAGE_CODE in settings.AAQ_LANGUAGES %}
       {% set ask_url = url('questions.aaq_step1') %}
     {% else %}
       {% set ask_url = url('wiki.document', 'get-community-support') %}

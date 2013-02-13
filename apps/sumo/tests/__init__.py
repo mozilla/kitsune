@@ -137,3 +137,9 @@ def with_save(func):
         return ret
 
     return saving_func
+
+
+def eq_msg(a, b, msg=None):
+    """Shorthand for 'assert a == b, "%s %r != %r" % (msg, a, b)'
+    """
+    assert a == b, (str(msg) or '') + ' (%r != %r)' % (a, b)
