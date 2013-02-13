@@ -130,19 +130,19 @@ class AnswersTemplateTestCase(TestCaseBase):
         doc = pq(response.content)
         eq_(0, len(doc('div.solution')))
 
-        answer = self.question.answers.all()[0]
+        ans = self.question.answers.all()[0]
         # Solve and verify
         response = post(self.client, 'questions.solve',
-                        args=[self.question.id, answer.id])
+                        args=[self.question.id, ans.id])
         doc = pq(response.content)
         eq_(1, len(doc('div.solution')))
         div = doc('h3.is-solution')[0].getparent().getparent()
-        eq_('answer-%s' % answer.id, div.attrib['id'])
+        eq_('answer-%s' % ans.id, div.attrib['id'])
         q = Question.uncached.get(pk=self.question.id)
-        eq_(q.solution, answer)
+        eq_(q.solution, ans)
         # Unsolve and verify
         response = post(self.client, 'questions.unsolve',
-                        args=[self.question.id, answer.id])
+                        args=[self.question.id, ans.id])
         q = Question.uncached.get(pk=self.question.id)
         eq_(q.solution, None)
 
@@ -160,14 +160,14 @@ class AnswersTemplateTestCase(TestCaseBase):
         doc = pq(response.content)
         eq_(0, len(doc('input[name="solution"]')))
 
-        answer = self.question.answers.all()[0]
+        ans = self.question.answers.all()[0]
         # Try to solve
         response = post(self.client, 'questions.solve',
-                        args=[self.question.id, answer.id])
+                        args=[self.question.id, ans.id])
         eq_(403, response.status_code)
         # Try to unsolve
         response = post(self.client, 'questions.unsolve',
-                        args=[self.question.id, answer.id])
+                        args=[self.question.id, ans.id])
         eq_(403, response.status_code)
 
     def test_solve_unsolve_with_perm(self):
@@ -175,15 +175,15 @@ class AnswersTemplateTestCase(TestCaseBase):
         u = user(save=True)
         add_permission(u, Question, 'change_solution')
         self.client.login(username=u.username, password='testpass')
-        answer = self.question.answers.all()[0]
+        ans = self.question.answers.all()[0]
         # Solve and verify
         post(self.client, 'questions.solve',
-             args=[self.question.id, answer.id])
+             args=[self.question.id, ans.id])
         q = Question.uncached.get(pk=self.question.id)
-        eq_(q.solution, answer)
+        eq_(q.solution, ans)
         # Unsolve and verify
         post(self.client, 'questions.unsolve',
-             args=[self.question.id, answer.id])
+             args=[self.question.id, ans.id])
         q = Question.uncached.get(pk=self.question.id)
         eq_(q.solution, None)
 
@@ -349,28 +349,28 @@ class AnswersTemplateTestCase(TestCaseBase):
     def test_delete_answer_without_permissions(self):
         """Deleting an answer without permissions sends 403."""
         self.client.login(username='tagger', password='testpass')
-        answer = self.question.last_answer
+        ans = self.question.last_answer
         response = get(self.client, 'questions.delete_answer',
-                       args=[self.question.id, answer.id])
+                       args=[self.question.id, ans.id])
         eq_(403, response.status_code)
 
         response = post(self.client, 'questions.delete_answer',
-                        args=[self.question.id, answer.id])
+                        args=[self.question.id, ans.id])
         eq_(403, response.status_code)
 
     def test_delete_answer_logged_out(self):
         """Deleting an answer while logged out redirects to login."""
         self.client.logout()
-        answer = self.question.last_answer
+        ans = self.question.last_answer
         response = get(self.client, 'questions.delete_answer',
-                       args=[self.question.id, answer.id])
+                       args=[self.question.id, ans.id])
         redirect = response.redirect_chain[0]
         eq_(302, redirect[1])
         eq_('http://testserver/%s%s?next=/en-US/questions/1/delete/1' %
             (settings.LANGUAGE_CODE, settings.LOGIN_URL), redirect[0])
 
         response = post(self.client, 'questions.delete_answer',
-                        args=[self.question.id, answer.id])
+                        args=[self.question.id, ans.id])
         redirect = response.redirect_chain[0]
         eq_(302, redirect[1])
         eq_('http://testserver/%s%s?next=/en-US/questions/1/delete/1' %
@@ -378,14 +378,14 @@ class AnswersTemplateTestCase(TestCaseBase):
 
     def test_delete_answer_with_permissions(self):
         """Deleting an answer with permissions."""
-        answer = self.question.last_answer
+        ans = self.question.last_answer
         self.client.login(username='admin', password='testpass')
         response = get(self.client, 'questions.delete_answer',
-                       args=[self.question.id, answer.id])
+                       args=[self.question.id, ans.id])
         eq_(200, response.status_code)
 
         response = post(self.client, 'questions.delete_answer',
-                        args=[self.question.id, answer.id])
+                        args=[self.question.id, ans.id])
         eq_(0, Answer.objects.filter(pk=self.question.id).count())
 
     def test_edit_answer_without_permission(self):
@@ -1077,29 +1077,28 @@ class QuestionsTemplateTestCaseNoFixtures(TestCase):
         doc = pq(response.content)
         eq_(2, len(doc('article.questions > section')))
 
-
     def test_order_by_votes(self):
         #set up 3 questions with same number of votes in last week
         #but different # of total votes
         q1 = question(title="QUEST_A", num_votes_past_week=1, save=True)
         q2 = question(title="QUEST_B", num_votes_past_week=1, save=True)
         q3 = question(title="QUEST_C", num_votes_past_week=1, save=True)
-        
+
         questionvote(question=q1, save=True)
 
         questionvote(question=q2, save=True)
-        questionvote(question=q2, 
+        questionvote(question=q2,
                 created=datetime(2012, 7, 9, 9, 0, 0),
                 save=True)
         questionvote(question=q2,
                 created=datetime(2012, 7, 9, 9, 0, 0),
                 save=True)
-    
+
         questionvote(question=q3, save=True)
         questionvote(question=q3,
                 created=datetime(2012, 7, 9, 9, 0, 0),
                 save=True)
-        
+
         url = urlparams(
             reverse('questions.questions'),
             sort='requested')
@@ -1108,6 +1107,7 @@ class QuestionsTemplateTestCaseNoFixtures(TestCase):
         eq_(True, response.content.find("QUEST_B") <
                 response.content.find("QUEST_C") <
                 response.content.find("QUEST_A"))
+
 
 class QuestionEditingTests(TestCaseBase):
     """Tests for the question-editing view and templates"""

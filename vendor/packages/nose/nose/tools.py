@@ -73,8 +73,10 @@ def raises(*exceptions):
     you may want to use `assert_raises` instead.
     """
     valid = ' or '.join([e.__name__ for e in exceptions])
+
     def decorate(func):
         name = func.__name__
+
         def newfunc(*arg, **kw):
             try:
                 func(*arg, **kw)
