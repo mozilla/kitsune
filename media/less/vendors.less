@@ -40,6 +40,7 @@
         .gradient(@default,@start,@stop) *
             .linear-gradient-top(@default,@color1,@stop1,@color2,@stop2,[@color3,@stop3,@color4,@stop4])*
             .linear-gradient-left(@default,@color1,@stop1,@color2,@stop2,[@color3,@stop3,@color4,@stop4])*
+        .hyphens(@args)
         .opacity(@factor)
         .transform(@args)
             .rotate(@deg)
@@ -352,4 +353,12 @@
   -moz-transition-timing-function: @function;
   -o-transition-timing-function: @function;
   transition-timing-function: @function;
+}
+
+/* Typography stuff */
+.hyphens(@args) {
+  -webkit-hyphens: @args;
+  -moz-hyphens: @args;
+  -ms-hyphens: @args;
+  hyphens: @args;
 }
