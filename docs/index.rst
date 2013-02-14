@@ -44,6 +44,7 @@ Part 3: SUMO
 
    bots
    deployments
+   sop
    sla
 
 
