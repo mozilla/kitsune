@@ -37,7 +37,7 @@ Once reviewed, the branch is rebased against ``master`` and then landed on
 ``master``.
 
 Our `dev server <https://support-dev.allizom.org/>`_ runs ``master``, and it
-updates after every commit using a Github service hook.
+updates every 15 minutes via a cron job.
 
 We deploy to production from ``master``.
 
@@ -45,8 +45,7 @@ We deploy to production from ``master``.
 Dev
 ===
 
-Dev runs whatever is in master and automatically updates whenever something
-lands.
+Dev runs whatever is in master and updates every 15 minutes via a cron job.
 
 
 Stage

@@ -93,7 +93,8 @@ database.
 Changes that involve reindexing
 ===============================
 
-With Elastic Search, it takes a while to reindex. We need to be able to reindex without taking down search.
+With Elastic Search, it takes a while to reindex. We need to be able
+to reindex without taking down search.
 
 This walks through the workflow for making changes to our Elastic
 Search code that require reindexing.
@@ -121,22 +122,55 @@ Workflow for making the changes
    2. a stage 2 commit that changes ES_INDEXES, changes
       ES_WRITE_INDEXES, and changes the search view code
 
+   **Avoid cosmetic changes** that don't need to be made (e.g. pep-8
+   fixes, etc.)
+
 5. push those changes to the same pull request
 6. get those two changes reviewed
 
 Once that's ok, then that branch should get updated from master, then
 pushed to stage to get tested.
 
-That branch should _not_ land in master, yet.
+That branch should **not** land in master, yet.
 
 
-Workflow for testing those changes
-----------------------------------
+Workflow for reviewing changes
+------------------------------
 
-Once the special branch has been pushed to stage, the new search code
-is tested.  If bugs are found, then go back to the coding
-workflow. Changes get made, a pull request is created, then things are
-rebased into the stage 1 and stage 2 commits.
+Go through and do a normal review.
+
+After everything looks good, the developer should rebase the changes
+so they're in a stage 1 commit and a stage 2 commit.
+
+At that point:
+
+1. Verify each commit individually. Make sure the code is
+   correct. Make sure the tests pass. Make sure the site is
+   functional.
+2. Verify that the `ES_INDEXES` and `ES_WRITE_INDEXES` settings have
+   the correct values in each commit.
+
+
+Workflow for pushing changes to stage
+-------------------------------------
+
+Don't land the changes in master, yet!
+
+If you hit problems, deploy the master branch back to the stage server
+and go back to coding/fixing.
+
+1. Push the branch you have your changes in to the official
+   mozilla/kitsune remote.
+2. Deploy the stage 1 commit to stage.
+3. Verify that search still works.
+4. Verify that the index settings are correct---look at the `ES_INDEXES`
+   and `ES_WRITE_INDEXES` values.
+5. Destructively reindex.
+6. Deploy the stage 2 commit to stage.
+7. Verify that search still works.
+8. Verify that the index settings are correct---look at the
+   `ES_INDEXES` and `ES_WRITE_INDEXES` values.
+9. Verify bugs that were fixed with the new search code.
 
 
 Workflow for pushing those changes to production
@@ -145,13 +179,15 @@ Workflow for pushing those changes to production
 If we're also doing a production push, first push next to production and
 verify that everything is fine. Then continue.
 
-1. rebase the special branch on top of next
-2. push the stage 1 commit to production
-3. verify that search works (maybe we should write a script for this?)
-4. reindex to the new write index
-5. when reindexing is done, push the stage 2 commit to production
-6. verify that search works
-7. verify new bugs that have been fixed with the new search code
+1. Tell the other sumo devs to hold off on pushing to master branch
+   and deploying. Preferably by email and IRC.
+2. Once you've told everyone, land the changes in master.
+3. Deploy the stage 1 commit to production.
+4. Verify that search works.
+5. Destructively reindex to the new write index.
+6. When reindexing is done, push the stage 2 commit to production.
+7. Verify that search works.
+8. Verify bugs that were fixed with the new search code.
 
 Pretty sure this process allows us to back out at any time with
 minimal downtime.
