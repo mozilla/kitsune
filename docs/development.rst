@@ -117,13 +117,13 @@ Workflow for making the changes
 3. get the pull request reviewed
 4. rebase the changes so they're in two commits:
 
-   1. a stage 1 commit that changes ES_WRITE_INDEXES, updates the
+   1. a stage 1 commit that changes ``ES_WRITE_INDEXES``, updates the
       mappings and updates the indexing code
-   2. a stage 2 commit that changes ES_INDEXES, changes
-      ES_WRITE_INDEXES, and changes the search view code
+   2. a stage 2 commit that changes ``ES_INDEXES``, changes
+      ``ES_WRITE_INDEXES``, and changes the search view code
 
-   **Avoid cosmetic changes** that don't need to be made (e.g. pep-8
-   fixes, etc.)
+   **Avoid cosmetic changes that don't need to be made (e.g. pep-8
+   fixes, etc.)**
 
 5. push those changes to the same pull request
 6. get those two changes reviewed
@@ -147,8 +147,8 @@ At that point:
 1. Verify each commit individually. Make sure the code is
    correct. Make sure the tests pass. Make sure the site is
    functional.
-2. Verify that the `ES_INDEXES` and `ES_WRITE_INDEXES` settings have
-   the correct values in each commit.
+2. Verify that the ``ES_INDEXES`` and ``ES_WRITE_INDEXES`` settings
+   have the correct values in each commit.
 
 
 Workflow for pushing changes to stage
@@ -163,13 +163,13 @@ and go back to coding/fixing.
    mozilla/kitsune remote.
 2. Deploy the stage 1 commit to stage.
 3. Verify that search still works.
-4. Verify that the index settings are correct---look at the `ES_INDEXES`
-   and `ES_WRITE_INDEXES` values.
+4. Verify that the index settings are correct---look at the
+   ``ES_INDEXES`` and ``ES_WRITE_INDEXES`` values.
 5. Destructively reindex.
 6. Deploy the stage 2 commit to stage.
 7. Verify that search still works.
 8. Verify that the index settings are correct---look at the
-   `ES_INDEXES` and `ES_WRITE_INDEXES` values.
+   ``ES_INDEXES`` and ``ES_WRITE_INDEXES`` values.
 9. Verify bugs that were fixed with the new search code.
 
 
