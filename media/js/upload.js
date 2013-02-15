@@ -112,7 +112,7 @@ $(document).ready(function () {
 
     // hijack the click on the thumb and open modal kbox
     function initImageModal() {
-        $('div.attachments-list').delegate('a.image', 'click', function(ev) {
+        $('article').on('click', '.attachments-list a.image', function(ev) {
             ev.preventDefault();
             var imgUrl = $(this).attr('href');
                 image = new Image(),
