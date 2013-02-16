@@ -144,7 +144,7 @@ AAQSystemInfo.prototype = {
                 // This parse/stringify trick makes `json` pretty printed.
                 json = JSON.parse(json);
                 json = JSON.stringify(json, null, "  ");
-                $('#id_troubleshooting').val(json).prop('disabled', true);
+                $('#id_troubleshooting').val(json);
                 $('#troubleshooting-manual').remove();
                 $('#troubleshooting-explanation').show();
             });
