@@ -40,6 +40,7 @@ users_patterns = patterns('',
     url(r'^/settings$', views.edit_settings, name='users.edit_settings'),
     url(r'^/avatar$', views.edit_avatar, name='users.edit_avatar'),
     url(r'^/avatar/delete$', views.delete_avatar, name='users.delete_avatar'),
+    url(r'^/deactivate$', views.deactivate, name='users.deactivate'),
 
     # Password reset
     url(r'^/pwreset$', views.password_reset, name='users.pw_reset'),

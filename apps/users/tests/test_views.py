@@ -16,7 +16,7 @@ from sumo.tests import TestCase, LocalizingClient, send_mail_raise_smtp
 from sumo.urlresolvers import reverse
 from users import ERROR_SEND_EMAIL
 from users.models import Profile, RegistrationProfile, EmailChange, Setting
-from users.tests import profile, user, group
+from users.tests import profile, user, group, add_permission
 
 
 class RegisterTests(TestCase):
@@ -453,3 +453,22 @@ class UserProfileTests(TestCase):
     def test_profile_post(self):
         res = self.client.post(self.url)
         eq_(405, res.status_code)
+
+    def test_profile_deactivate(self):
+        """Test user deactivation"""
+        p = profile()
+
+        self.client.login(username=self.u.username, password='testpass')
+        res = self.client.post(reverse('users.deactivate', locale='en-US'),
+                               {'user_id': p.user.id})
+
+        eq_(403, res.status_code)
+
+        add_permission(self.u, Profile, 'deactivate_users')
+        res = self.client.post(reverse('users.deactivate', locale='en-US'),
+                               {'user_id': p.user.id})
+
+        eq_(302, res.status_code)
+
+        p = Profile.objects.get(user_id=p.user_id)
+        assert not p.user.is_active
