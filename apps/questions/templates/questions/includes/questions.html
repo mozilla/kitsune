@@ -4,9 +4,13 @@
     <div class="about-support">
       <h2>{{ _('Application') }}</h2>
       <ul>
-        <li>{{ parsed.application.name }} {{ parsed.application.version }}</li>
-        <li>{{ _('User Agent') }}: {{ parsed.application.userAgent }}</li>
-        <li>{{ _('Support URL') }}: {{ parsed.application.supportURL }}</li>
+        <li>
+          {% trans app_name=parsed.application.name, app_version=parsed.application.version %}
+            {{app_name}} {{app_version}}
+          {% endtrans %}
+        </li>
+        <li>{{ _('User Agent: {user_agent}')|fe(user_agent=parsed.application.userAgent) }}</li>
+        <li>{{ _('Support URL: {support_url}')|fe(support_url=parsed.application.supportURL) }}</li>
       </ul>
 
       <h2>{{ _('Extensions') }}</h2>
@@ -14,9 +18,10 @@
         {% for ext in parsed.extensions %}
           {# title is to provide a hover tip. #}
           <li title="{{ ext.id }}" {% if not ext.isActive %}class="inactive"{% endif %}>
-            {{ ext.name }} {{ ext.version }}
-            {% if not ext.isActive %}
-              {{ _('(Inactive)') }}
+            {% if ext.isActive %}
+              {{ _('{name} {version}')|fe(name=ext.name, version=ext.version) }}
+            {% else %}
+              {{ _('{name} {version} (Inactive)')|fe(name=ext.name, version=ext.version) }}
             {% endif %}
           </li>
         {% endfor %}
@@ -26,7 +31,7 @@
       <ul>
         {% for key, value in parsed.javaScript|dictsort %}
           <li>
-            <span class="key">{{ key }}</span>: {{ value }}
+            {{ _('<span class="key">{key}</span>: {value}')|fe(key=key, value=value) }}
           </li>
         {% endfor %}
       </ul>
@@ -35,7 +40,7 @@
       <ul>
         {% for key, value in parsed.graphics|dictsort %}
           <li>
-            <span class="key">{{ key }}</span>: {{ value }}
+            {{ _('<span class="key">{key}</span>: {value}')|fe(key=key, value=value) }}
           </li>
         {% endfor %}
       </ul>
@@ -44,33 +49,31 @@
       <ul>
         {% for key, value in parsed.modifiedPreferences|dictsort %}
           <li>
-            <span class="key">{{ key }}</span>: {{ value }}
+            {{ _('<span class="key">{key}</span>: {value}')|fe(key=key, value=value) }}
           </li>
         {% endfor %}
       </ul>
 
-      <h2>Misc</h2>
+      <h2>{{ _('Misc') }}</h2>
       <ul>
         <li>
-          <span class="key">{{ _('User JS') }}</span>:
           {% if parsed.userJS.exists %}
-            {{ _('Yes') }}
+            {{ _('<span class="key">User JS</span>: Yes') }}
           {% else %}
-            {{ _('No') }}
+            {{ _('<span class="key">User JS</span>: No') }}
           {% endif %}
         </li>
         <li>
-          <span class="key">{{ _('Accesibility') }}</span>:
-          {% if parsed.accessibility.isActive %}
-            {{ _('Yes') }}
+          {% if parsed.userJS.exists %}
+            {{ _('<span class="key">Accesibility</span>: Yes') }}
           {% else %}
-            {{ _('No') }}
+            {{ _('<span class="key">Accesibility</span>: No') }}
           {% endif %}
         </li>
       </ul>
     </div>
   {% else %}
-    <h2>More Information</h2>
+    <h2>{{ _('More Information') }}</h2>
     <p>{{ question.metadata.troubleshooting|trim|collapse_linebreaks|nl2br }}</p>
   {% endif %}
 {% endmacro %}
