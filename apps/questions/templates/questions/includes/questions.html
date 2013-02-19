@@ -1,0 +1,76 @@
+{% macro troubleshooting_info(question) %}
+  {% if question.metadata.troubleshooting_parsed %}
+    {% set parsed = question.metadata.troubleshooting_parsed %}
+    <div class="about-support">
+      <h2>{{ _('Application') }}</h2>
+      <ul>
+        <li>{{ parsed.application.name }} {{ parsed.application.version }}</li>
+        <li>{{ _('User Agent') }}: {{ parsed.application.userAgent }}</li>
+        <li>{{ _('Support URL') }}: {{ parsed.application.supportURL }}</li>
+      </ul>
+
+      <h2>{{ _('Extensions') }}</h2>
+      <ul>
+        {% for ext in parsed.extensions %}
+          {# title is to provide a hover tip. #}
+          <li title="{{ ext.id }}" {% if not ext.isActive %}class="inactive"{% endif %}>
+            {{ ext.name }} {{ ext.version }}
+            {% if not ext.isActive %}
+              {{ _('(Inactive)') }}
+            {% endif %}
+          </li>
+        {% endfor %}
+      </ul>
+
+      <h2>{{ _('Javascript') }}</h2>
+      <ul>
+        {% for key, value in parsed.javaScript|dictsort %}
+          <li>
+            <span class="key">{{ key }}</span>: {{ value }}
+          </li>
+        {% endfor %}
+      </ul>
+
+      <h2>{{ _('Graphics') }}</h2>
+      <ul>
+        {% for key, value in parsed.graphics|dictsort %}
+          <li>
+            <span class="key">{{ key }}</span>: {{ value }}
+          </li>
+        {% endfor %}
+      </ul>
+
+      <h2>{{ _('Modified Preferences') }}</h2>
+      <ul>
+        {% for key, value in parsed.modifiedPreferences|dictsort %}
+          <li>
+            <span class="key">{{ key }}</span>: {{ value }}
+          </li>
+        {% endfor %}
+      </ul>
+
+      <h2>Misc</h2>
+      <ul>
+        <li>
+          <span class="key">{{ _('User JS') }}</span>:
+          {% if parsed.userJS.exists %}
+            {{ _('Yes') }}
+          {% else %}
+            {{ _('No') }}
+          {% endif %}
+        </li>
+        <li>
+          <span class="key">{{ _('Accesibility') }}</span>:
+          {% if parsed.accessibility.isActive %}
+            {{ _('Yes') }}
+          {% else %}
+            {{ _('No') }}
+          {% endif %}
+        </li>
+      </ul>
+    </div>
+  {% else %}
+    <h2>More Information</h2>
+    <p>{{ question.metadata.troubleshooting|trim|collapse_linebreaks|nl2br }}</p>
+  {% endif %}
+{% endmacro %}

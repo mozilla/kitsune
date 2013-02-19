@@ -212,6 +212,22 @@ def answers(request, template, question_id, form=None, watch_form=None,
                          answer_preview)
     question = ans_['question']
 
+    # Try to parse troubleshooting data as JSON.
+    try:
+        parsed = json.loads(question.metadata['troubleshooting'])
+        # Remove all the printing preferences. These probably aren't relavent,
+        # and are really noisy.
+        parsed['modifiedPreferences'] = dict(filter(
+                lambda item: not item[0].startswith('print'),
+                parsed['modifiedPreferences'].items()))
+        question.metadata['troubleshooting_parsed'] = parsed
+    except (ValueError, KeyError):
+        # If the field was not filled in, KeyError will be raised.
+        # If the field was filled manually and is not valid JSON,
+        # ValueError will be raised. The template will display the raw
+        # data.
+        question.metadata['troubleshooting_parsed'] = None
+
     if request.user.is_authenticated():
         ans_['images'] = question.images.filter(creator=request.user)
 
