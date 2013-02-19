@@ -70,7 +70,8 @@ class Profile(ModelBase):
                          verbose_name=_lazy(u'Preferred language for email'))
 
     class Meta(object):
-        permissions = (('view_karma_points', 'Can view karma points'),)
+        permissions = (('view_karma_points', 'Can view karma points'),
+                       ('deactivate_users', 'Can deactivate users'),)
 
     def __unicode__(self):
         return unicode(self.user)

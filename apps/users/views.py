@@ -10,7 +10,8 @@ from django.contrib.sites.models import Site
 from django.core import mail
 from django.http import (HttpResponsePermanentRedirect, HttpResponseRedirect,
                          Http404)
-from django.views.decorators.http import require_http_methods, require_GET
+from django.views.decorators.http import (require_http_methods, require_GET,
+                                          require_POST)
 from django.shortcuts import get_object_or_404
 from django.template.loader import render_to_string
 from django.utils.http import base36_to_int
@@ -22,7 +23,8 @@ from statsd import statsd
 from tidings.tasks import claim_watches
 from tower import ugettext as _
 
-from access.decorators import logout_required, login_required
+from access.decorators import (logout_required, login_required,
+                               permission_required)
 from questions.models import (Question, user_num_answers, user_num_questions,
                               user_num_solutions)
 from sumo import email_utils
@@ -35,6 +37,7 @@ from users.forms import (ProfileForm, AvatarForm, EmailConfirmationForm,
                          AuthenticationForm, EmailChangeForm, SetPasswordForm,
                          PasswordChangeForm, SettingsForm, ForgotUsernameForm,
                          RegisterForm)
+from users.helpers import profile_url
 from users.models import (Profile, RegistrationProfile,
                           EmailChange)
 from users.utils import (handle_login, handle_register,
@@ -287,7 +290,11 @@ def confirm_change_email(request, activation_key):
 @mobile_template('users/{mobile/}profile.html')
 def profile(request, template, user_id):
     user_profile = get_object_or_404(
-        Profile, user__id=user_id, user__is_active=True)
+        Profile, user__id=user_id)
+
+    if not (request.user.has_perm('users.deactivate_users')
+        or user_profile.user.is_active):
+        raise Http404('No Profile matches the given query.')
 
     groups = user_profile.user.groups.all()
     return jingo.render(request, template, {
@@ -297,6 +304,15 @@ def profile(request, template, user_id):
         'num_answers': user_num_answers(user_profile.user),
         'num_solutions': user_num_solutions(user_profile.user),
         'num_documents': user_num_documents(user_profile.user),})
+
+
+@require_POST
+@permission_required('users.deactivate_users')
+def deactivate(request):
+    user = get_object_or_404(User, id=request.POST['user_id'], is_active=True)
+    user.is_active = False
+    user.save()
+    return HttpResponseRedirect(profile_url(user))
 
 
 @require_GET

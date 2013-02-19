@@ -44,6 +44,17 @@
           {{ private_message(profile.user) }}
         {% endif %}
       </div>
+      {% if user.id != profile.user.id and user.has_perm('users.deactivate_users') %}
+        {% if profile.user.is_active %}
+          <form id="deactivate-form" method="post" action="{{ url('users.deactivate') }}">
+            {{ csrf() }}
+            <input type="hidden" name="user_id" value="{{ profile.user.id }}">
+            <input type="submit" value="{{ _('Deactivate this user') }}">
+          </form>
+        {% else %}
+          <div id="deactivated-msg">{{ _('This user has been deactivated.') }}</div>
+        {% endif %}
+      {% endif %}
       {% if num_answers or num_questions or num_solutions or num_documents %}
         <section class="contributions">
           <h2>Contributions</h2>

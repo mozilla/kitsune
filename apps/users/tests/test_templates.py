@@ -382,6 +382,24 @@ class ViewProfileTests(TestCaseBase):
         eq_(200, r.status_code)
         assert '2 documents' in r.content
 
+    def test_deactivate_button(self):
+        """Check that the deactivate button is shown appropriately"""
+        p = profile()
+        r = self.client.get(reverse('users.profile', args=[p.user.id]))
+        assert 'Deactivate this user' not in r.content
+
+        add_permission(self.u, Profile, 'deactivate_users')
+        self.client.login(username=self.u.username, password='testpass')
+        r = self.client.get(reverse('users.profile', args=[p.user.id]))
+        assert 'Deactivate this user' in r.content
+
+        p.user.is_active = False
+        p.user.save()
+        r = self.client.get(reverse('users.profile', args=[p.user.id]))
+        assert 'This user has been deactivated.' in r.content
+
+        r = self.client.get(reverse('users.profile', args=[self.u.id]))
+        assert 'Deactivate this user' not in r.content
 
 class PasswordChangeTests(TestCaseBase):
 
