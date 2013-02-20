@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
+from django.test.utils import override_settings
 
 import mock
 from nose.tools import eq_
@@ -278,3 +279,39 @@ class TestQuestionUpdates(TestCase):
         self._request_and_no_update(url, req_type='POST', data={
                 'remove-tag-foo': 1
             })
+
+
+class TestQuestionList(TestCase):
+
+    @override_settings(AAQ_LOCALES=['en-US', 'pt-BR'])
+    def test_locale_filter(self):
+        """Only questions for the current locale should be shown on the
+        questions front page for AAQ locales."""
+
+        eq_(Question.objects.count(), 0)
+        topic(title='Fix problems', slug='fix-problems', save=True)
+        p = product(slug=u'firefox', save=True)
+
+        q1 = question(title='question cupcakes?', save=True, locale='en-US')
+        q1.products.add(p)
+        q2 = question(title='question donuts?', save=True, locale='en-US')
+        q2.products.add(p)
+        q3 = question(title='question pies?', save=True, locale='pt-BR')
+        q3.products.add(p)
+        q4 = question(title='question pastries?', save=True, locale='de')
+        q4.products.add(p)
+
+        def sub_test(locale, *titles):
+            url = urlparams(reverse('questions.questions', locale=locale))
+            response = self.client.get(url, follow=True)
+            doc = pq(response.content)
+            eq_msg(len(doc('section[id^=question]')), len(titles),
+                   'Wrong number of results for {0}'.format(locale))
+            for substr in titles:
+                assert substr in doc('.questions section .content h2 a').text()
+
+        # en-US and pt-BR are both in AAQ_LOCALES, so should be filtered.
+        sub_test('en-US', 'cupcakes?', 'donuts?')
+        sub_test('pt-BR', 'pies?')
+        # de is not in AAQ_LOCALES, so should show en-US, but not pt-BR
+        sub_test('de', 'cupcakes?', 'donuts?', 'pastries?')
