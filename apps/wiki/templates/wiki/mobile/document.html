@@ -8,6 +8,14 @@
 {% set title = _('{t} | {c}')|f(t=document.title, c=document.get_category_display()) %}
 {% set headline = title %}
 
+{% if products.all()[0] and topics.all()[0] %}
+  {% set return_url = url('products.documents', product_slug=products.all()[0].slug, topic_slug=topics.all()[0].slug) %}
+{% elif products.all()[0] %}
+  {% set return_url = url('products.product', slug=products.all()[0].slug) %}
+{% else %}
+  {% set return_url = url('products') %}
+{% endif %}
+
 {% set show_search = 'bottom' %}
 {% set include_showfor = True %}
 {% set styles = ('mobile/wiki',) %}
