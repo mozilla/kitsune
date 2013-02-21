@@ -327,10 +327,20 @@ h2 {
       margin: 0;
     }
 
-    ul.system {
-      li {
-        display: inline-block;
-        padding-right: 40px;
+    div.about-support {
+      ul {
+        padding-left: 60px;
+        li {
+          list-style: disc;
+
+          &.inactive {
+            opacity: 0.5;
+          }
+
+          .key {
+            font-weight: bold;
+          }
+        }
       }
     }
 

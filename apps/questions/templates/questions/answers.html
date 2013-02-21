@@ -4,6 +4,7 @@
 {% from "upload/attachments.html" import attachments_form %}
 {% from "includes/common_macros.html" import content_editor, for_contributors %}
 {% from "wiki/includes/flag_form.html" import flag_form with context %}
+{% from "questions/includes/questions.html" import troubleshooting_info %}
 
 {# L10n: {q} is the title of the question. #}
 {% set title = _('{q} | Firefox Support Forum')|f(q=question.title) %}
@@ -195,7 +196,6 @@
 
       <section id="more-system-details" class="kbox" title="{{ _('Additional System Details') }}" data-target="#show-more-details" data-modal="true" data-id="more-system-details-kbox" data-close-on-out-click="true">
         <h1>{{ _('Additional System Details') }}</h1>
-        {{ self.system_info() }}
         {% if question.metadata.sites_affected %}
           <h2>{{ _('Sites Affected') }}</h2>
           <p>{{ question.metadata.sites_affected }}</p>
@@ -212,19 +212,14 @@
           <h2>{{ _('This started when...') }}</h2>
           <p>{{ question.metadata.started }}</p>
         {% endif %}
-        {% if question.metadata.troubleshooting %}
-          <h2>{{ _('More Information') }}</h2>
-          <p>{{ question.metadata.troubleshooting|trim|collapse_linebreaks|nl2br }}</p>
-        {% endif %}
         {% if question.metadata.plugins %}
           <h2>{{ _('Installed Plug-ins') }}</h2>
           <div class="plugins">
             {{ question.metadata.plugins|wiki_to_html }}
           </div>
         {% endif %}
-        {% if question.metadata.useragent %}
-          <h2>{{ _('User Agent') }}</h2>
-          <p>{{ question.metadata.useragent }}</p>
+        {% if question.metadata.troubleshooting %}
+          {{ troubleshooting_info(question) }}
         {% endif %}
         <div class="bottom-close">
           <a href="#close" class="kbox-cancel">{{ _('Close') }}</a>
