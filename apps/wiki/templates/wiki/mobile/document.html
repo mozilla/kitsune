@@ -8,6 +8,8 @@
 {% set title = _('{t} | {c}')|f(t=document.title, c=document.get_category_display()) %}
 {% set headline = title %}
 
+{% set return_url = url('products.documents', product_slug=products.all()[0].slug, topic_slug=topics.all()[0].slug) %}
+
 {% set show_search = 'bottom' %}
 {% set include_showfor = True %}
 {% set styles = ('mobile/wiki',) %}
