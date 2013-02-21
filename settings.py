@@ -489,6 +489,9 @@ STANDALONE_DOMAINS = [
 # to True
 TOWER_ADD_HEADERS = True
 
+# Jingo-Minify should not use the STATIC_ROOT
+JINGO_MINIFY_USE_STATIC = False
+
 # Bundles for JS/CSS Minification
 MINIFY_BUNDLES = {
     'css': {
