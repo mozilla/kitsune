@@ -1,6 +1,6 @@
 from django.conf import settings
 from django.conf.urls.defaults import patterns, url, include
-from django.views.generic.simple import redirect_to
+from django.views.generic.base import RedirectView
 
 from sumo import views
 
@@ -19,10 +19,10 @@ urlpatterns = patterns('',
     url('^locales$', views.locales, name='sumo.locales'),
 
     # Shortcuts:
-    url('^contribute/?$', redirect_to,
-        {'url': '/kb/superheroes-wanted', 'permanent': False}),
-    url(r'^windows7-support(?:\\/)?$', redirect_to,
-        {'url': '/home/?as=u', 'permanent': False}),
+    url('^contribute/?$', RedirectView.as_view(url='/kb/superheroes-wanted',
+                                               permanent=False)),
+    url(r'^windows7-support(?:\\/)?$',
+        RedirectView.as_view(url='/home/?as=u', permanent=False)),
 )
 
 
