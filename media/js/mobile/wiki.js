@@ -7,6 +7,7 @@
     }
 
     if ($body.is('.document')) {
+        var focusOn = window.location.hash;
         var $voteForm = $('.vote-bar form');
         var $voteButtons = $voteForm.find('input[type="submit"], .btn[data-type="submit"]');
 
@@ -55,6 +56,30 @@
                 $counter.addClass('too-long');
             } else {
                 $counter.removeClass('too-long');
+            }
+        });
+
+        function killFocus() {
+            focusOn = null;
+        }
+
+        function refocus(id) {
+            var scrollable = $('#content').closest('.scrollable')[0];
+            var scrollTo = $(id).position().top + scrollable.scrollTop;
+            $(document).off('scroll', killFocus);
+            scrollable.scrollTop = scrollTo;
+            $(document).on('scroll', killFocus);
+        }
+
+        $('#toc').on('click', 'a', function(e) {
+            focusOn = $(this).attr('href')
+            refocus(focusOn);
+            return false;
+        });
+
+        $('img.lazy').on('load', function() {
+            if (focusOn) {
+                refocus(focusOn);
             }
         });
     }
