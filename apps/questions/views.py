@@ -1098,6 +1098,7 @@ def _search_suggestions(request, text, locale, product_slugs):
         filter |= F(document_locale=locale)
         filter |= F(document_locale=settings.WIKI_DEFAULT_LANGUAGE)
         filter &= F(document_category__in=default_categories)
+        filter &= F(document_is_archived=False)
 
         raw_results = (
             wiki_s.filter(filter)
