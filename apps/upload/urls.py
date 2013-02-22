@@ -1,4 +1,4 @@
-from django.conf.urls.defaults import patterns, url
+from django.conf.urls import patterns, url
 
 urlpatterns = patterns('upload.views',
     url(r'^/image/(?P<model_name>\w+\.\w+)/(?P<object_pk>\d+)$',

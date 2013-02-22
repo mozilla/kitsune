@@ -1,4 +1,4 @@
-from django.conf.urls.defaults import patterns, url, include
+from django.conf.urls import patterns, url, include
 from django.contrib.contenttypes.models import ContentType
 
 from sumo.views import redirect_to
