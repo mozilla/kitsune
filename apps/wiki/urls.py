@@ -1,4 +1,4 @@
-from django.conf.urls.defaults import patterns, url, include
+from django.conf.urls import patterns, url, include
 
 from wiki import locale_views
 from wiki.locale_views import LEADER, REVIEWER, EDITOR
