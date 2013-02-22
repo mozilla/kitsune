@@ -126,6 +126,34 @@ class AAQTests(ElasticTestCase):
         sub_test('pt-BR', 'cupcakes?', 'donuts?', 'pies?')
         sub_test('de', 'cupcakes?', 'donuts?', 'pastries?')
 
+    def test_search_suggestions_archived_articles(self):
+        """Verifies that archived articles aren't shown."""
+        topic(title='Fix problems', slug='fix-problems', save=True)
+        p = product(slug=u'firefox', save=True)
+
+        d1 = document(title=u'document donut', category=10, save=True)
+        d1.products.add(p)
+        revision(document=d1, is_approved=True, save=True)
+
+        d2 = document(title=u'document cupcake', category=10, is_archived=True,
+                      save=True)
+        d2.products.add(p)
+        revision(document=d1, is_approved=True, save=True)
+
+        self.refresh()
+
+        url = urlparams(
+            reverse('questions.aaq_step4', args=['desktop', 'fix-problems']),
+            search='document')
+
+        response = self.client.get(url, follow=True)
+        eq_(200, response.status_code)
+
+        doc = pq(response.content)
+        eq_(len(doc('.result.document')), 1)
+        assert 'donut' in doc('.result.document h3 a').text()
+        assert 'cupcake' not in doc('.result.document h3 a').text()
+
 
 class MobileAAQTests(MobileTestCase):
     fixtures = ['users.json', 'questions.json']
