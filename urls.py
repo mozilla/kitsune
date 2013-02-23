@@ -1,6 +1,7 @@
 from django.conf.urls import include, patterns, url
 from django.conf import settings
 from django.contrib import admin
+from django.contrib.auth.decorators import login_required
 from django.views.i18n import javascript_catalog
 from django.views.decorators.cache import cache_page
 
@@ -11,6 +12,7 @@ from waffle.views import wafflejs
 
 admin.site = AdminSitePlus()
 admin.autodiscover()
+admin.site.login = login_required(admin.site.login)
 authority.autodiscover()
 
 urlpatterns = patterns('',
