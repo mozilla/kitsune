@@ -628,6 +628,17 @@ class AnswersTemplateTestCase(TestCaseBase):
         doc = pq(response.content)
         eq_(0, len(doc('meta[name=robots]')))
 
+    def test_empty_troubleshooting_info(self):
+        """Test a pathological but valid troubleshooting JSON."""
+        q = question(save=True)
+        q.add_metadata(troubleshooting='{"foo": "bar"}')
+
+        # This case should not raise an error.
+        response = get(self.client, 'questions.answers', args=[q.id])
+        with open('/home/mythmon/test.html', 'w') as f:
+            f.write(response.content)
+        eq_(200, response.status_code)
+
 
 class TaggedQuestionsTestCase(TaggingTestCaseBase):
     """Questions/answers template tests that require tagged questions."""

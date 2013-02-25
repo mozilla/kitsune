@@ -217,9 +217,10 @@ def answers(request, template, question_id, form=None, watch_form=None,
         parsed = json.loads(question.metadata['troubleshooting'])
         # Remove all the printing preferences. These probably aren't relavent,
         # and are really noisy.
-        parsed['modifiedPreferences'] = dict(
-            (k, v) for k, v in parsed['modifiedPreferences'].items()
-            if not k.startswith('print'))
+        if 'modifiedPreferences' in parsed:
+            parsed['modifiedPreferences'] = dict(
+                (k, v) for k, v in parsed['modifiedPreferences'].items()
+                if not k.startswith('print'))
         question.metadata['troubleshooting_parsed'] = parsed
     except (ValueError, KeyError):
         # If the field was not filled in, KeyError will be raised.
