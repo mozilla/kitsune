@@ -638,7 +638,8 @@ class AnswersTemplateTestCase(TestCaseBase):
         eq_(200, response.status_code)
 
     def test_weird_list_troubleshooting_info(self):
-        """Test this corner case."""
+        """Test the corner case in which 'modifiedPReferences' is in a
+        list in troubleshooting data. This is weird, but caused a bug."""
         q = question(save=True)
         q.add_metadata(troubleshooting='["modifiedPreferences"]')
 

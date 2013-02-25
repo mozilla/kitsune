@@ -215,7 +215,7 @@ def answers(request, template, question_id, form=None, watch_form=None,
     # Try to parse troubleshooting data as JSON.
     try:
         parsed = json.loads(question.metadata['troubleshooting'])
-        if type(parsed) != dict:
+        if not isinstance(parsed, dict):
             # If something not a dict comes out of JSON, it is probably
             # a list, and should not be treated like parsed data.
             raise TypeError
