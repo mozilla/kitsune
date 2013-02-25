@@ -637,6 +637,15 @@ class AnswersTemplateTestCase(TestCaseBase):
         response = get(self.client, 'questions.answers', args=[q.id])
         eq_(200, response.status_code)
 
+    def test_weird_list_troubleshooting_info(self):
+        """Test this corner case."""
+        q = question(save=True)
+        q.add_metadata(troubleshooting='["modifiedPreferences"]')
+
+        # This case should not raise an error.
+        response = get(self.client, 'questions.answers', args=[q.id])
+        eq_(200, response.status_code)
+
 
 class TaggedQuestionsTestCase(TaggingTestCaseBase):
     """Questions/answers template tests that require tagged questions."""

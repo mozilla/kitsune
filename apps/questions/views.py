@@ -215,6 +215,10 @@ def answers(request, template, question_id, form=None, watch_form=None,
     # Try to parse troubleshooting data as JSON.
     try:
         parsed = json.loads(question.metadata['troubleshooting'])
+        if type(parsed) != dict:
+            # If something not a dict comes out of JSON, it is probably
+            # a list, and should not be treated like parsed data.
+            raise TypeError
         # Remove all the printing preferences. These probably aren't relavent,
         # and are really noisy.
         if 'modifiedPreferences' in parsed:
@@ -222,10 +226,12 @@ def answers(request, template, question_id, form=None, watch_form=None,
                 (k, v) for k, v in parsed['modifiedPreferences'].items()
                 if not k.startswith('print'))
         question.metadata['troubleshooting_parsed'] = parsed
-    except (ValueError, KeyError):
+    except (ValueError, KeyError, TypeError):
         # If the field was not filled in, KeyError will be raised.
         # If the field was filled manually and is not valid JSON,
-        # ValueError will be raised. The template will display the raw
+        # ValueError will be raised. If the field was filled in with
+        # JSON data that is a list and not a dict, it will raise
+        # TypeError. In any case, the template will display the raw
         # data.
         question.metadata['troubleshooting_parsed'] = None
 
