@@ -635,8 +635,6 @@ class AnswersTemplateTestCase(TestCaseBase):
 
         # This case should not raise an error.
         response = get(self.client, 'questions.answers', args=[q.id])
-        with open('/home/mythmon/test.html', 'w') as f:
-            f.write(response.content)
         eq_(200, response.status_code)
 
 
