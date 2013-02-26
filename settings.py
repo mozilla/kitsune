@@ -308,7 +308,7 @@ MIDDLEWARE_CLASSES = (
     'inproduct.middleware.EuBuildMiddleware',
     'sumo.middleware.NoCacheHttpsMiddleware',
     'commonware.middleware.NoVarySessionMiddleware',
-    'commonware.middleware.FrameOptionsHeader',
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'sumo.anonymous.AnonymousIdentityMiddleware',
@@ -1003,3 +1003,6 @@ ZENDESK_USER_PASSWORD = ''
 
 # Tasty Pie
 API_LIMIT_PER_PAGE = 0
+
+# Change the default for XFrameOptionsMiddleware.
+X_FRAME_OPTIONS = 'DENY'
