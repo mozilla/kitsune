@@ -80,3 +80,4 @@ src/django-eadred
 src/raven-python
 packages/google-api-python-client
 packages/python-gflags
+src/django-statsd
