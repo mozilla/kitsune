@@ -149,6 +149,14 @@ def questions(request, template):
         # correct id.
         question_qs = question_qs.filter(products__id__exact=product.id)
 
+    # Filter by locale for AAQ locales, and by locale + default for others.
+    if request.LANGUAGE_CODE in settings.AAQ_LANGUAGES:
+        question_qs = question_qs.filter(locale=request.LANGUAGE_CODE)
+    else:
+        locale_query = Q(locale=request.LANGUAGE_CODE)
+        locale_query |= Q(locale=settings.WIKI_DEFAULT_LANGUAGE)
+        question_qs = question_qs.filter(locale_query)
+
     # Set the order.
     question_qs = question_qs.order_by(*order)
 
