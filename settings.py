@@ -281,7 +281,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
 MIDDLEWARE_CLASSES = (
     'multidb.middleware.PinningRouterMiddleware',
     'users.middleware.StaySecureMiddleware',
-    'commonware.response.middleware.GraphiteMiddleware',
+    'django_statsd.middleware.GraphiteMiddleware',
     'commonware.request.middleware.SetRemoteAddrFromForwardedFor',
 
     # This gives us atomic success or failure on multi-row writes. It
@@ -316,7 +316,7 @@ MIDDLEWARE_CLASSES = (
     'twitter.middleware.SessionMiddleware',
     'sumo.middleware.PlusToSpaceMiddleware',
     'commonware.middleware.ScrubRequestOnException',
-    'commonware.response.middleware.GraphiteRequestTimingMiddleware',
+    'django_statsd.middleware.GraphiteRequestTimingMiddleware',
     'waffle.middleware.WaffleMiddleware',
 )
 
