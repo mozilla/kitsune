@@ -11,13 +11,13 @@ from django.contrib.sites.models import Site
 from django.http import (HttpResponsePermanentRedirect, HttpResponseRedirect,
                          HttpResponse, Http404)
 from django.views.decorators.cache import never_cache
+from django.views.decorators.clickjacking import xframe_options_exempt
 from django.views.decorators.http import require_GET
 
 import django_qunit.views
 import jingo
 import pyes
 from celery.messaging import establish_connection
-from commonware.decorators import xframe_allow
 from mobility.decorators import mobile_template
 from PIL import Image
 from session_csrf import anonymous_csrf
@@ -300,7 +300,7 @@ def version_check(request):
 
 # Allows another site to embed the QUnit suite
 # in an iframe (for CI).
-@xframe_allow
+@xframe_options_exempt
 def kitsune_qunit(request, path):
     """View that hosts QUnit tests."""
     ctx = django_qunit.views.get_suite_context(request, path)

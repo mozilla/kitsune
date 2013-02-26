@@ -7,9 +7,9 @@ from django.db.models import Q
 from django.http import (HttpResponse, HttpResponseRedirect,
                          HttpResponseBadRequest, Http404)
 from django.shortcuts import get_object_or_404
+from django.views.decorators.clickjacking import xframe_options_sameorigin
 from django.views.decorators.http import require_POST
 
-from commonware.decorators import xframe_sameorigin
 import jingo
 from tower import ugettext_lazy as _lazy
 
@@ -251,7 +251,7 @@ def media(request, media_id, media_type='image'):
 
 @login_required
 @require_POST
-@xframe_sameorigin
+@xframe_options_sameorigin
 def upload_async(request, media_type='image'):
     """Upload images or videos from request.FILES."""
     # TODO(paul): validate the Submit File on upload modal async

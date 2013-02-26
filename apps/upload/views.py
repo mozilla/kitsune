@@ -5,8 +5,8 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import get_model
 from django.http import (HttpResponse, HttpResponseNotFound,
                          HttpResponseBadRequest, HttpResponseForbidden)
+from django.views.decorators.clickjacking import xframe_options_sameorigin
 
-from commonware.decorators import xframe_sameorigin
 from tower import ugettext as _
 
 from access.decorators import login_required
@@ -16,7 +16,7 @@ from upload.utils import upload_imageattachment, FileTooLargeError
 
 @login_required
 @require_POST
-@xframe_sameorigin
+@xframe_options_sameorigin
 def up_image_async(request, model_name, object_pk):
     """Upload all images in request.FILES."""
 
@@ -52,7 +52,7 @@ def up_image_async(request, model_name, object_pk):
 
 
 @require_POST
-@xframe_sameorigin
+@xframe_options_sameorigin
 def del_image_async(request, image_id):
     """Delete an image given its object id."""
     user = request.user
