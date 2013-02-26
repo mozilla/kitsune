@@ -13,9 +13,9 @@ from sumo.tests import TestCase, LocalizingClient
 from sumo.urlresolvers import reverse
 from users.tests import user, add_permission
 from wiki.models import Document
-from wiki.config import VersionMetadata, TEMPLATES_CATEGORY
+from wiki.config import VersionMetadata, TEMPLATES_CATEGORY, MAJOR_SIGNIFICANCE
 from wiki.tests import (doc_rev, document, helpful_vote, new_document_data,
-                        revision)
+                        revision, translated_revision)
 from wiki.showfor import _version_groups
 from wiki.views import (_document_lock_check, _document_lock_clear,
                         _document_lock_steal)
@@ -94,6 +94,65 @@ class LocaleRedirectTests(TestCase):
         de_rev = revision(document=de_doc, is_approved=True)
         de_rev.save()
         return en_doc, de_doc
+
+
+class LocalizationAnalyticsTests(TestCase):
+
+    def setUp(self):
+        super(LocalizationAnalyticsTests, self).setUp()
+        product(save=True)
+
+    def test_not_fired(self):
+        """Test that the Not Localized and Not Updated events don't fire
+        when they are not appropriate."""
+        trans = translated_revision(is_approved=True, save=True)
+        trans_doc = trans.document
+
+        url = reverse('wiki.document', args=[trans_doc.slug],
+                      locale=trans_doc.locale)
+        response = self.client.get(url, follow=True)
+        eq_(200, response.status_code)
+
+        doc = pq(response.content)
+        assert '"Not Localized"' not in doc('body').attr('data-ga-push')
+        assert '"Not Updated"' not in doc('body').attr('data-ga-push')
+
+    def test_custom_event_out_of_date(self):
+        """If a document's parent has major edits and the document has
+        not been updated, it should fire a "Not Updated" GA event."""
+
+        # Make a document, and a translation of it.
+        trans = translated_revision(is_approved=True, save=True)
+
+        # Add a parent revision of MAJOR significance:
+        revision(document=trans.document.parent, is_approved=True,
+                     is_ready_for_localization=True,
+                     significance=MAJOR_SIGNIFICANCE, save=True)
+
+        assert trans.document.is_majorly_outdated()
+
+        url = reverse('wiki.document', args=[trans.document.slug],
+                      locale=trans.document.locale)
+        response = self.client.get(url, follow=True)
+        eq_(200, response.status_code)
+
+        doc = pq(response.content)
+        assert '"Not Localized"' not in doc('body').attr('data-ga-push')
+        assert '"Not Updated"' in doc('body').attr('data-ga-push')
+
+    def test_custom_event_not_translated(self):
+        """If a document is requested in a locale it is not translated
+        to, it should fire a "Not Localized" GA event."""
+        # This will make a document and revision suitable for translation.
+        r = revision(is_approved=True, is_ready_for_localization=True,
+                     save=True)
+        url = reverse('wiki.document', args=[r.document.slug], locale='fr')
+        response = self.client.get(url)
+        eq_(200, response.status_code)
+
+        doc = pq(response.content)
+        assert '"Not Localized"' in doc('body').attr('data-ga-push')
+        assert '"Not Updated"' not in doc('body').attr('data-ga-push')
 
 
 class ViewTests(TestCase):

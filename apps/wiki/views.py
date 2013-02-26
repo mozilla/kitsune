@@ -64,7 +64,8 @@ def document(request, document_slug, template=None):
     fallback_reason = None
     # If a slug isn't available in the requested locale, fall back to en-US:
     try:
-        doc = Document.objects.get(locale=request.LANGUAGE_CODE, slug=document_slug)
+        doc = Document.objects.get(locale=request.LANGUAGE_CODE,
+                                   slug=document_slug)
         if (not doc.current_revision and doc.parent and
             doc.parent.current_revision):
             # This is a translation but its current_revision is None
@@ -124,6 +125,16 @@ def document(request, document_slug, template=None):
 
     topics = Topic.objects.filter(visible=True)
 
+    ga_push = []
+    if fallback_reason is not None:
+        ga_push.append(
+            ['_trackEvent', 'Incomplete L10n', 'Not Localized',
+            '%s/%s' % (doc.slug, request.LANGUAGE_CODE)])
+    elif doc.is_majorly_outdated():
+        ga_push.append(
+            ['_trackEvent', 'Incomplete L10n', 'Not Updated',
+            '%s/%s' % (doc.parent.slug, request.LANGUAGE_CODE)])
+
     hide_voting = False
     if (doc.category == TEMPLATES_CATEGORY or
         waffle.switch_is_active('hide-voting')):
@@ -133,7 +144,7 @@ def document(request, document_slug, template=None):
             'fallback_reason': fallback_reason,
             'is_aoa_referral': request.GET.get('ref') == 'aoa',
             'topics': topics, 'product': product, 'products': products,
-            'hide_voting': hide_voting}
+            'hide_voting': hide_voting, 'ga_push': ga_push}
     data.update(showfor_data(products))
     return jingo.render(request, template, data)
 
