@@ -6,8 +6,12 @@
   {% set title = _('Email changed for user {username}')|f(username=username) %}
 {% endif %}
 {% set classes = 'register' %}
-{% set crumbs = [(profile_url(user), user.username),
-                 (None, title)] %}
+{% if user.is_authenticated() %}
+  {% set crumbs = [(profile_url(user), user.username),
+                   (None, title)] %}
+{% else %}
+  {% set crumbs = [] %}
+{% endif %}
 
 {% block content %}
   <div class="grid_9">
