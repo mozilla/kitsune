@@ -318,6 +318,10 @@ MIDDLEWARE_CLASSES = (
     'commonware.middleware.ScrubRequestOnException',
     'django_statsd.middleware.GraphiteRequestTimingMiddleware',
     'waffle.middleware.WaffleMiddleware',
+    'commonware.middleware.ContentTypeOptionsHeader',
+    'commonware.middleware.StrictTransportMiddleware',
+    'commonware.middleware.XSSProtectionHeader',
+    'commonware.middleware.RobotsTagHeader',
 )
 
 # Auth
