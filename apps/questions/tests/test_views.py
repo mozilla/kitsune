@@ -11,9 +11,11 @@ from pyquery import PyQuery as pq
 from products.tests import product
 from questions.models import Question
 from questions.tests import answer, question
+from questions.views import parse_troubleshooting
 from search.tests.test_es import ElasticTestCase
 from sumo.helpers import urlparams
-from sumo.tests import MobileTestCase, LocalizingClient, TestCase, eq_msg
+from sumo.tests import (get, MobileTestCase, LocalizingClient, TestCase,
+                        eq_msg)
 from sumo.urlresolvers import reverse
 from topics.tests import topic
 from users.tests import user
@@ -306,3 +308,79 @@ class TestQuestionUpdates(TestCase):
         self._request_and_no_update(url, req_type='POST', data={
                 'remove-tag-foo': 1
             })
+
+
+def TroubleshootingParsingTests(TestCase):
+
+    def test_empty_troubleshooting_info(self):
+        """Test a troubleshooting value that is valid JSON, but junk.
+        This should trigger the parser to return None, which should not
+        cause a 500.
+        """
+        q = question(save=True)
+        q.add_metadata(troubleshooting='{"foo": "bar"}')
+
+        # This case should not raise an error.
+        response = get(self.client, 'questions.answers', args=[q.id])
+        eq_(200, response.status_code)
+
+    def test_weird_list_troubleshooting_info(self):
+        """Test the corner case in which 'modifiedPReferences' is in a
+        list in troubleshooting data. This is weird, but caused a bug."""
+        q = question(save=True)
+        q.add_metadata(troubleshooting='["modifiedPreferences"]')
+
+        # This case should not raise an error.
+        response = get(self.client, 'questions.answers', args=[q.id])
+        eq_(200, response.status_code)
+
+    def test_string_keys_troubleshooting(self):
+        """Test something that looks like troubleshooting data, but
+        isn't formatted quite right. The parser should return None to
+        indicate that something isn't right."""
+        mock_question = mock.Mock()
+        mock_question.metadata = {'troubleshooting': '''{
+            "accessibility": {
+                "isActive": true
+            },
+            "application": {
+                "name": "Firefox",
+                "supportURL": "Some random url.",
+                "userAgent": "A user agent.",
+                "version": "42.2"
+            },
+            "extensions": [],
+            "graphics": "This really should not be a string."
+            "javaScript": {},
+            "modifiedPreferences": {},
+            "userJS": {
+                "exists": False
+            }
+        }'''}
+
+        assert parse_troubleshooting(mock_question) is None
+
+    def test_troubleshooting_parser(self):
+        """Test that the troubleshooting parser likes good data."""
+        mock_question = mock.Mock()
+        mock_question.metadata = {'troubleshooting': '''
+            {
+                "accessibility": {
+                    "isActive": true
+                },
+                "application": {
+                    "name": "Firefox",
+                    "supportURL": "Some random url.",
+                    "userAgent": "A user agent.",
+                    "version": "42.2"
+                },
+                "extensions": [],
+                "graphics": {},
+                "javaScript": {},
+                "modifiedPreferences": {},
+                "userJS": {
+                    "exists": False
+                }
+            }'''}
+
+        assert parse_troubleshooting(mock_question) is not None
