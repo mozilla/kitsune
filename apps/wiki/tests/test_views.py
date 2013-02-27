@@ -158,8 +158,6 @@ class LocalizationAnalyticsTests(TestCase):
                  is_ready_for_localization=True,
                  significance=MEDIUM_SIGNIFICANCE, save=True)
 
-        assert trans.document.is_majorly_outdated()
-
         url = reverse('wiki.document', args=[trans.document.slug],
                       locale=trans.document.locale)
         response = self.client.get(url, follow=True)
