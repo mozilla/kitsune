@@ -1,20 +1,16 @@
 {% macro troubleshooting_info(question) %}
-  {% if question.metadata.troubleshooting_parsed %}
-    {% set parsed = question.metadata.troubleshooting_parsed %}
-    <div class="about-support">
+  <div class="about-support">
+    {% if question.metadata.troubleshooting_parsed %}
+      {% set parsed = question.metadata.troubleshooting_parsed %}
       <h2>{{ _('Application') }}</h2>
       <ul>
-        {% if parsed.application %}
-          <li>
-            {% trans app_name=parsed.application.me, app_version=parsed.application.version %}
-              {{app_name}} {{app_version}}
-            {% endtrans %}
-          </li>
-          <li>{{ _('User Agent: {user_agent}')|fe(user_agent=parsed.application.userAgent) }}</li>
-          <li>{{ _('Support URL: {support_url}')|fe(support_url=parsed.application.supportURL) }}</li>
-        {% elif question.metadata.useragent %}
-          {{ _('Useragent: {useragent}')|fe(useragent=question.metadata.useragent) }}
-        {% endif %}
+        <li>
+          {% trans app_name=parsed.application.name, app_version=parsed.application.version %}
+            {{app_name}} {{app_version}}
+          {% endtrans %}
+        </li>
+        <li>{{ _('User Agent: {user_agent}')|fe(user_agent=parsed.application.userAgent) }}</li>
+        <li>{{ _('Support URL: {support_url}')|fe(support_url=parsed.application.supportURL) }}</li>
       </ul>
 
       <h2>{{ _('Extensions') }}</h2>
@@ -31,59 +27,57 @@
         {% endfor %}
       </ul>
 
-      {% if parsed.javaScript %}
-        <h2>{{ _('Javascript') }}</h2>
-        <ul>
-          {% for key, value in parsed.javaScript|dictsort %}
-            <li>
-              {{ _('<span class="key">{key}</span>: {value}')|fe(key=key, value=value) }}
-            </li>
-          {% endfor %}
-        </ul>
-      {% endif %}
+      <h2>{{ _('Javascript') }}</h2>
+      <ul>
+        {% for key, value in parsed.javaScript|dictsort %}
+          <li>
+            {{ _('<span class="key">{key}</span>: {value}')|fe(key=key, value=value) }}
+          </li>
+        {% endfor %}
+      </ul>
 
-      {% if parsed.graphics %}
-        <h2>{{ _('Graphics') }}</h2>
-        <ul>
-          {% for key, value in parsed.graphics|dictsort %}
-            <li>
-              {{ _('<span class="key">{key}</span>: {value}')|fe(key=key, value=value) }}
-            </li>
-          {% endfor %}
-        </ul>
-      {% endif %}
+      <h2>{{ _('Graphics') }}</h2>
+      <ul>
+        {% for key, value in parsed.graphics|dictsort %}
+          <li>
+            {{ _('<span class="key">{key}</span>: {value}')|fe(key=key, value=value) }}
+          </li>
+        {% endfor %}
+      </ul>
 
-      {% if parsed.modifiedPreferences %}
-        <h2>{{ _('Modified Preferences') }}</h2>
-        <ul>
-          {% for key, value in parsed.modifiedPreferences|dictsort %}
-            <li>
-              {{ _('<span class="key">{key}</span>: {value}')|fe(key=key, value=value) }}
-            </li>
-          {% endfor %}
-        </ul>
-      {% endif %}
+      <h2>{{ _('Modified Preferences') }}</h2>
+      <ul>
+        {% for key, value in parsed.modifiedPreferences|dictsort %}
+          <li>
+            {{ _('<span class="key">{key}</span>: {value}')|fe(key=key, value=value) }}
+          </li>
+        {% endfor %}
+      </ul>
 
       <h2>{{ _('Misc') }}</h2>
       <ul>
         <li>
-          {% if parsed.userJS and parsed.userJS.exists %}
+          {% if parsed.userJS.exists %}
             {{ _('<span class="key">User JS</span>: Yes') }}
           {% else %}
             {{ _('<span class="key">User JS</span>: No') }}
           {% endif %}
         </li>
         <li>
-          {% if parsed.accesibility and parsed.accesibility.exists %}
-            {{ _('<span class="key">Accesibility</span>: Yes') }}
+          {% if parsed.accessibility.isActive %}
+            {{ _('<span class="key">Accessibility</span>: Yes') }}
           {% else %}
-            {{ _('<span class="key">Accesibility</span>: No') }}
+            {{ _('<span class="key">Accessibility</span>: No') }}
           {% endif %}
         </li>
       </ul>
-    </div>
-  {% else %}
-    <h2>{{ _('More Information') }}</h2>
-    <p>{{ question.metadata.troubleshooting|trim|collapse_linebreaks|nl2br }}</p>
-  {% endif %}
+    {% else %}
+      <h2>{{ _('Application') }}</h2>
+      <ul>
+        <li>{{ _('User Agent: {ua}')|fe(ua=question.metadata.useragent) }}</li>
+      </ul>
+      <h2>{{ _('More Information') }}</h2>
+      <p>{{ question.metadata.troubleshooting|trim|collapse_linebreaks|nl2br }}</p>
+    {% endif %}
+  </div>
 {% endmacro %}

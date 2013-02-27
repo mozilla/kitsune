@@ -203,6 +203,69 @@ def questions(request, template):
         return jingo.render(request, template, data)
 
 
+def parse_troubleshooting(troubleshooting_json):
+    """Normalizes the troubleshooting data from `question`.
+
+    Returns a normalized version, or `None` if something was wrong.
+    This does not try very hard to fix bad data.
+    """
+    if not troubleshooting_json:
+        return None
+    try:
+        parsed = json.loads(troubleshooting_json)
+    except ValueError:
+        return None
+
+    # This is a spec of what is expected to be in the parsed
+    # troubleshooting data. The format here is a list of tuples. The
+    # first item in the tuple is a list of keys to access to get to the
+    # item in question. The second item in the tuple is the type the
+    # referenced item should be. For example, this line
+    #
+    #   (('application', 'name'), basestring),
+    #
+    # means that parse['application']['name'] must be a basestring.
+    #
+    # An empty path means the parsed json.
+    spec = (
+        ((), dict),
+        (('accessibility', ), dict),
+        (('accessibility', 'isActive'), bool),
+        (('application', ), dict),
+        (('application', 'name'), basestring),
+        (('application', 'supportURL'), basestring),
+        (('application', 'userAgent'), basestring),
+        (('application', 'version'), basestring),
+        (('extensions', ), list),
+        (('graphics', ), dict),
+        (('javaScript', ), dict),
+        (('modifiedPreferences', ), dict),
+        (('userJS', ), dict),
+        (('userJS', 'exists'), bool),
+    )
+
+    for path, type_ in spec:
+        item = parsed
+        for piece in path:
+            item = item.get(piece)
+            if item is None:
+                return None
+
+        if not isinstance(item, type_):
+            return None
+
+    # The data has been inspected, and should be in the right format.
+    # Now remove all the printing preferences, because they are noisy.
+    # TODO: If the UI for this gets better, we can include these prefs
+    # and just make them collapsible.
+
+    parsed['modifiedPreferences'] = dict(
+        (key, val) for (key, val) in parsed['modifiedPreferences'].items()
+        if not key.startswith('print'))
+
+    return parsed
+
+
 @mobile_template('questions/{mobile/}answers.html')
 @anonymous_csrf  # Need this so the anon csrf gets set for watch forms.
 def answers(request, template, question_id, form=None, watch_form=None,
@@ -213,27 +276,9 @@ def answers(request, template, question_id, form=None, watch_form=None,
     question = ans_['question']
 
     # Try to parse troubleshooting data as JSON.
-    try:
-        parsed = json.loads(question.metadata['troubleshooting'])
-        if not isinstance(parsed, dict):
-            # If something not a dict comes out of JSON, it is probably
-            # a list, and should not be treated like parsed data.
-            raise TypeError
-        # Remove all the printing preferences. These probably aren't relavent,
-        # and are really noisy.
-        if 'modifiedPreferences' in parsed:
-            parsed['modifiedPreferences'] = dict(
-                (k, v) for k, v in parsed['modifiedPreferences'].items()
-                if not k.startswith('print'))
-        question.metadata['troubleshooting_parsed'] = parsed
-    except (ValueError, KeyError, TypeError):
-        # If the field was not filled in, KeyError will be raised.
-        # If the field was filled manually and is not valid JSON,
-        # ValueError will be raised. If the field was filled in with
-        # JSON data that is a list and not a dict, it will raise
-        # TypeError. In any case, the template will display the raw
-        # data.
-        question.metadata['troubleshooting_parsed'] = None
+    troubleshooting_json = question.metadata.get('troubleshooting')
+    question.metadata['troubleshooting_parsed'] = (
+                        parse_troubleshooting(troubleshooting_json))
 
     if request.user.is_authenticated():
         ans_['images'] = question.images.filter(creator=request.user)

@@ -218,9 +218,7 @@
             {{ question.metadata.plugins|wiki_to_html }}
           </div>
         {% endif %}
-        {% if question.metadata.troubleshooting %}
-          {{ troubleshooting_info(question) }}
-        {% endif %}
+        {{ troubleshooting_info(question) }}
         <div class="bottom-close">
           <a href="#close" class="kbox-cancel">{{ _('Close') }}</a>
         </div>
