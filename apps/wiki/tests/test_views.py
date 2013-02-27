@@ -13,7 +13,9 @@ from sumo.tests import TestCase, LocalizingClient
 from sumo.urlresolvers import reverse
 from users.tests import user, add_permission
 from wiki.models import Document
-from wiki.config import VersionMetadata, TEMPLATES_CATEGORY, MAJOR_SIGNIFICANCE
+from wiki.config import (VersionMetadata, TEMPLATES_CATEGORY,
+                         TYPO_SIGNIFICANCE, MEDIUM_SIGNIFICANCE,
+                         MAJOR_SIGNIFICANCE)
 from wiki.tests import (doc_rev, document, helpful_vote, new_document_data,
                         revision, translated_revision)
 from wiki.showfor import _version_groups
@@ -108,6 +110,12 @@ class LocalizationAnalyticsTests(TestCase):
         trans = translated_revision(is_approved=True, save=True)
         trans_doc = trans.document
 
+        # Add a parent revision of TYPO significance. This shouldn't do
+        # anything, since it isn't significant enough.
+        revision(document=trans.document.parent, is_approved=True,
+                 is_ready_for_localization=True,
+                 significance=TYPO_SIGNIFICANCE, save=True)
+
         url = reverse('wiki.document', args=[trans_doc.slug],
                       locale=trans_doc.locale)
         response = self.client.get(url, follow=True)
@@ -117,7 +125,7 @@ class LocalizationAnalyticsTests(TestCase):
         assert '"Not Localized"' not in doc('body').attr('data-ga-push')
         assert '"Not Updated"' not in doc('body').attr('data-ga-push')
 
-    def test_custom_event_out_of_date(self):
+    def test_custom_event_majorly_out_of_date(self):
         """If a document's parent has major edits and the document has
         not been updated, it should fire a "Not Updated" GA event."""
 
@@ -126,8 +134,29 @@ class LocalizationAnalyticsTests(TestCase):
 
         # Add a parent revision of MAJOR significance:
         revision(document=trans.document.parent, is_approved=True,
-                     is_ready_for_localization=True,
-                     significance=MAJOR_SIGNIFICANCE, save=True)
+                 is_ready_for_localization=True,
+                 significance=MAJOR_SIGNIFICANCE, save=True)
+
+        url = reverse('wiki.document', args=[trans.document.slug],
+                      locale=trans.document.locale)
+        response = self.client.get(url, follow=True)
+        eq_(200, response.status_code)
+
+        doc = pq(response.content)
+        assert '"Not Localized"' not in doc('body').attr('data-ga-push')
+        assert '"Not Updated"' in doc('body').attr('data-ga-push')
+
+    def test_custom_event_medium_out_of_date(self):
+        """If a document's parent has medium edits and the document has
+        not been updated, it should fire a "Not Updated" GA event."""
+
+        # Make a document, and a translation of it.
+        trans = translated_revision(is_approved=True, save=True)
+
+        # Add a parent revision of MEDIUM significance:
+        revision(document=trans.document.parent, is_approved=True,
+                 is_ready_for_localization=True,
+                 significance=MEDIUM_SIGNIFICANCE, save=True)
 
         assert trans.document.is_majorly_outdated()
 

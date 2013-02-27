@@ -130,7 +130,7 @@ def document(request, document_slug, template=None):
         ga_push.append(
             ['_trackEvent', 'Incomplete L10n', 'Not Localized',
             '%s/%s' % (doc.slug, request.LANGUAGE_CODE)])
-    elif doc.is_majorly_outdated():
+    elif doc.is_outdated():
         ga_push.append(
             ['_trackEvent', 'Incomplete L10n', 'Not Updated',
             '%s/%s' % (doc.parent.slug, request.LANGUAGE_CODE)])

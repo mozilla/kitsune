@@ -26,8 +26,8 @@ from sumo.urlresolvers import reverse, split_path
 from tags.models import BigVocabTaggableMixin
 from topics.models import Topic
 from wiki import TEMPLATE_TITLE_PREFIX
-from wiki.config import (CATEGORIES, SIGNIFICANCES,
-                         TYPO_SIGNIFICANCE, MAJOR_SIGNIFICANCE,
+from wiki.config import (CATEGORIES, SIGNIFICANCES, TYPO_SIGNIFICANCE,
+                         MEDIUM_SIGNIFICANCE, MAJOR_SIGNIFICANCE,
                          REDIRECT_HTML, REDIRECT_CONTENT, REDIRECT_TITLE,
                          REDIRECT_SLUG)
 
@@ -480,6 +480,28 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
                    (latest(self.revisions) if include_rejected else None))
         return rev
 
+    def is_outdated(self, level=MEDIUM_SIGNIFICANCE):
+        """Return whether an update of a given magnitude has occured
+        to the parent document since this translation had an approved
+        update and such revision is ready for l10n.
+
+        If this is not a translation or has never been approved, return
+        False.
+
+        level: The significance of an edit that is "enough". Defaults to
+            MEDIUM_SIGNIFICANCE.
+
+        """
+        if not (self.parent and self.current_revision):
+            return False
+
+        based_on_id = self.current_revision.based_on_id
+        more_filters = {'id__gt': based_on_id} if based_on_id else {}
+
+        return self.parent.revisions.filter(
+            is_approved=True, is_ready_for_localization=True,
+            significance__gte=level, **more_filters).exists()
+
     def is_majorly_outdated(self):
         """Return whether a MAJOR_SIGNIFICANCE-level update has occurred to the
         parent document since this translation had an approved update and such
@@ -488,14 +510,7 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
         If this is not a translation or has never been approved, return False.
 
         """
-        if not (self.parent and self.current_revision):
-            return False
-
-        based_on_id = self.current_revision.based_on_id
-        more_filters = {'id__gt': based_on_id} if based_on_id else {}
-        return self.parent.revisions.filter(
-            is_approved=True, is_ready_for_localization=True,
-            significance__gte=MAJOR_SIGNIFICANCE, **more_filters).exists()
+        return self.is_outdated(level=MAJOR_SIGNIFICANCE)
 
     def is_watched_by(self, user):
         """Return whether `user` is notified of edits to me."""
