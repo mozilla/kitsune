@@ -203,15 +203,13 @@ def questions(request, template):
         return jingo.render(request, template, data)
 
 
-def parse_troubleshooting(question):
+def parse_troubleshooting(troubleshooting_json):
     """Normalizes the troubleshooting data from `question`.
 
     Returns a normalized version, or `None` if something was wrong.
     This does not try very hard to fix bad data.
     """
-
-    troubleshooting_json = question.metadata.get('troubleshooting')
-    if troubleshooting_json is None:
+    if not troubleshooting_json:
         return None
     try:
         parsed = json.loads(troubleshooting_json)
@@ -278,8 +276,9 @@ def answers(request, template, question_id, form=None, watch_form=None,
     question = ans_['question']
 
     # Try to parse troubleshooting data as JSON.
+    troubleshooting_json = question.metadata.get('troubleshooting')
     question.metadata['troubleshooting_parsed'] = (
-            parse_troubleshooting(question))
+                        parse_troubleshooting(troubleshooting_json))
 
     if request.user.is_authenticated():
         ans_['images'] = question.images.filter(creator=request.user)

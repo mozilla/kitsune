@@ -338,8 +338,7 @@ def TroubleshootingParsingTests(TestCase):
         """Test something that looks like troubleshooting data, but
         isn't formatted quite right. The parser should return None to
         indicate that something isn't right."""
-        mock_question = mock.Mock()
-        mock_question.metadata = {'troubleshooting': '''{
+        troubleshooting = '''{
             "accessibility": {
                 "isActive": true
             },
@@ -356,14 +355,13 @@ def TroubleshootingParsingTests(TestCase):
             "userJS": {
                 "exists": False
             }
-        }'''}
+        }'''
 
-        assert parse_troubleshooting(mock_question) is None
+        assert parse_troubleshooting(troubleshooting) is None
 
     def test_troubleshooting_parser(self):
         """Test that the troubleshooting parser likes good data."""
-        mock_question = mock.Mock()
-        mock_question.metadata = {'troubleshooting': '''
+        troubleshooting = '''
             {
                 "accessibility": {
                     "isActive": true
@@ -381,6 +379,6 @@ def TroubleshootingParsingTests(TestCase):
                 "userJS": {
                     "exists": False
                 }
-            }'''}
+            }'''
 
-        assert parse_troubleshooting(mock_question) is not None
+        assert parse_troubleshooting(troubleshooting) is not None
