@@ -125,7 +125,7 @@ def _filter_tweet(item, allow_links=False):
     Used to exclude replies and such from incoming tweets.
     """
     # No replies, no mentions
-    if item['to_user_id'] or MENTION_REGEX.search(item['text']):
+    if item.get('to_user_id') or MENTION_REGEX.search(item['text']):
         statsd.incr('customercare.tweet.rejected.reply_or_mention')
         return None
 
