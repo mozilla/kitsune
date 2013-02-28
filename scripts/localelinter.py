@@ -52,14 +52,20 @@ def equal(id_tokens, str_tokens):
     return True
 
 
-def verify(msgid, id_tokens, str_tokens, index):
-    if not equal(id_tokens, str_tokens):
-        print ('\nError: {msgid}\n{key}: {id_tokens}\n'
-               'msgstr{index}: {str_tokens}'.format(
+def verify(msgid, id_text, id_tokens, str_text, str_tokens, index):
+    # If the token lists aren't equal and there's a msgstr, then that's
+    # a problem. If there's no msgstr, it means it hasn't been translated.
+    if not equal(id_tokens, str_tokens) and str_text.strip():
+        print ('\nError for msgid: {msgid}\n'
+               'tokens: {id_tokens} VS. {str_tokens}\n'
+               '{key}: {id_text}\n'
+               'msgstr{index}: {str_text}'.format(
             index='[{index}]'.format(index=index) if index is not None else '',
             key='id' if index in (None, '0') else 'plural',
             msgid=msgid,
+            id_text=id_text,
             id_tokens=', '.join(id_tokens),
+            str_text=str_text.encode('ascii', 'replace'),
             str_tokens=', '.join(str_tokens)))
 
         return False
@@ -78,19 +84,22 @@ def verify_file(fname):
                 continue
             id_tokens = extract_tokens(entry.msgid)
             str_tokens = extract_tokens(entry.msgstr)
-            if not verify(entry.msgid, id_tokens, str_tokens, None):
+            if not verify(entry.msgid, entry.msgid, id_tokens, entry.msgstr,
+                          str_tokens, None):
                 bad_count += 1
 
         else:
             for key in sorted(entry.msgstr_plural.keys()):
                 if key == '0':
                     # This is the 1 case.
-                    id_tokens = extract_tokens(entry.msgid)
+                    text = entry.msgid
                 else:
-                    id_tokens = extract_tokens(entry.msgid_plural)
+                    text = entry.msgid_plural
+                id_tokens = extract_tokens(text)
 
                 str_tokens = extract_tokens(entry.msgstr_plural[key])
-                if not verify(entry.msgid, id_tokens, str_tokens, key):
+                if not verify(entry.msgid, text, id_tokens,
+                              entry.msgstr_plural[key], str_tokens, key):
                     bad_count += 1
 
         count += 1
