@@ -21,15 +21,13 @@ from wiki.tests import TestCaseBase, revision
 
 REVIEWED_EMAIL_CONTENT = """Your revision has been reviewed.
 
-admin has approved your revision to the document
-%s.
+admin has approved your revision to the document %s.
 
 Message from the reviewer:
 
 %s
 
-To view the history of this document, click the following
-link, or paste it into your browser's location bar:
+To view the history of this document, click the following link, or paste it into your browser's location bar:
 
 https://testserver/en-US/kb/%s/history
 """

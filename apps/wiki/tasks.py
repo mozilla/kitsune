@@ -5,7 +5,7 @@ from django.conf import settings
 from django.contrib.sites.models import Site
 from django.core.cache import cache
 from django.core.exceptions import ValidationError
-from django.core.mail import send_mail, mail_admins, send_mass_mail
+from django.core.mail import EmailMessage, send_mail, mail_admins
 from django.db import transaction
 from django.template import Context, loader
 
@@ -16,6 +16,7 @@ from statsd import statsd
 from tower import ugettext as _
 import waffle
 
+from sumo import email_utils
 from sumo.urlresolvers import reverse
 from sumo.utils import chunked
 from wiki.models import (Document, points_to_document_view, SlugCollision,
@@ -29,55 +30,93 @@ log = logging.getLogger('k.task')
 def send_reviewed_notification(revision, document, message):
     """Send notification of review to the revision creator."""
     if revision.reviewer == revision.creator:
-        log.debug('Revision (id=%s) reviewed by creator, skipping email' % \
+        log.debug('Revision (id=%s) reviewed by creator, skipping email' %
                   revision.id)
         return
 
     log.debug('Sending reviewed email for revision (id=%s)' % revision.id)
-    if revision.is_approved:
-        subject = _(u'Your revision has been approved: {title}')
-    else:
-        subject = _(u'Your revision has been reviewed: {title}')
-    subject = subject.format(title=document.title)
-    t = loader.get_template('wiki/email/reviewed.ltxt')
+
     url = reverse('wiki.document_revisions', locale=document.locale,
                   args=[document.slug])
-    content = t.render(Context({'document_title': document.title,
-                                'approved': revision.is_approved,
-                                'reviewer': revision.reviewer,
-                                'message': message,
-                                'url': url,
-                                'host': Site.objects.get_current().domain}))
-    send_mass_mail(
-        ((subject, content, settings.TIDINGS_FROM_ADDRESS, [who.email])
-                    for who in [revision.creator, revision.reviewer]))
+
+    c = {'document_title': document.title,
+         'approved': revision.is_approved,
+         'reviewer': revision.reviewer,
+         'message': message,
+         'url': url,
+         'host': Site.objects.get_current().domain}
+
+    msgs = []
+
+    for user in [revision.creator, revision.reviewer]:
+        if hasattr(user, 'profile'):
+            locale = user.profile.locale
+        else:
+            locale = settings.WIKI_DEFAULT_LANGUAGE
+
+        with email_utils.uselocale(locale):
+            if revision.is_approved:
+                subject = _(u'Your revision has been approved: {title}')
+            else:
+                subject = _(u'Your revision has been reviewed: {title}')
+            subject = subject.format(title=document.title)
+
+            template = 'wiki/email/reviewed.ltxt'
+            msg = email_utils.render_email(template, c)
+
+        msgs.append(EmailMessage(subject,
+                                 msg,
+                                 settings.TIDINGS_FROM_ADDRESS,
+                                 [user.email]))
+
+    email_utils.send_messages(msgs)
 
 
 @task
 def send_contributor_notification(based_on, revision, document, message):
     """Send notification of review to the contributors of revisions."""
-    if revision.is_approved:
-        subject = _(u'A revision you contributed to has '
-                    'been approved: {title}')
-    else:
-        subject = _(u'A revision you contributed to has '
-                    'been reviewed: {title}')
-    subject = subject.format(title=document.title)
-    t = loader.get_template('wiki/email/reviewed_contributors.ltxt')
+
+    template = 'wiki/email/reviewed_contributors.ltxt'
     url = reverse('wiki.document_revisions', locale=document.locale,
                   args=[document.slug])
-    content = t.render(Context({'document_title': document.title,
-                                'approved': revision.is_approved,
-                                'reviewer': revision.reviewer,
-                                'message': message,
-                                'url': url,
-                                'host': Site.objects.get_current().domain}))
+    c = {'document_title': document.title,
+         'approved': revision.is_approved,
+         'reviewer': revision.reviewer,
+         'message': message,
+         'url': url,
+         'host': Site.objects.get_current().domain}
 
-    # Send email to all contributors except the reviewer and the creator
-    # of the approved revision.
-    send_mail(subject, content, settings.TIDINGS_FROM_ADDRESS,
-              [r.creator.email for r in based_on
-               if r.creator not in [revision.creator, revision.reviewer]])
+    msgs = []
+    for r in based_on:
+        # Send email to all contributors except the reviewer and the creator
+        # of the approved revision.
+        if r.creator in [revision.creator, revision.reviewer]:
+            continue
+
+        user = r.creator
+
+        if hasattr(user, 'profile'):
+            locale = user.profile.locale
+        else:
+            locale = settings.WIKI_DEFAULT_LANGUAGE
+
+        with email_utils.uselocale(locale):
+            if revision.is_approved:
+                subject = _(u'A revision you contributed to has '
+                            'been approved: {title}')
+            else:
+                subject = _(u'A revision you contributed to has '
+                            'been reviewed: {title}')
+            subject = subject.format(title=document.title)
+
+            msg = email_utils.render_email(template, c)
+
+        msgs.append(EmailMessage(subject,
+                                 msg,
+                                 settings.TIDINGS_FROM_ADDRESS,
+                                 [user.email]))
+
+    email_utils.send_messages(msgs)
 
 
 def schedule_rebuild_kb():

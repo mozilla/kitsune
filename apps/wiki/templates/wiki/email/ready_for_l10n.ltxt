@@ -1,17 +1,27 @@
-{% autoescape off %}{% load i18n %}{% load unsubscribe_instructions %}{# L10n: This is an email. Whitespace matters! #}{% blocktrans %}The document {{ document_title }} has a new revision
+{# This is an email. Whitespace matters! #}
+{% from "includes/unsubscribe_text.ltxt" import unsubscribe_text with context %}
+{% autoescape false %}
+{% trans document_title=document_title %}
+The document {{ document_title }} has a new revision
 that is ready for localization.
+{% endtrans %}
 
+
+{% trans %}
 To localize the document, click the following link, or paste it into
 your browser's location bar:
-{% endblocktrans %}
+{% endtrans %}
+
 https://{{ host }}{{ url }}
 
 {% if diff %}--
-{% blocktrans %}Changes:{% endblocktrans %}
+{# L10n: This is in an email. #}
+{{ _('Changes:') }}
 {{ diff|safe }}
 
 {% endif %}
 --
-{% blocktrans %}Text of the new revision:{% endblocktrans %}
+{{ _('Text of the new revision:') }}
 {{ fulltext|safe }}
-{% unsubscribe_instructions watch %}{% endautoescape %}
+
+{{ unsubscribe_text(watch) }}{% endautoescape %}
