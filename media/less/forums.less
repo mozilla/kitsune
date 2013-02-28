@@ -178,6 +178,10 @@
         margin: 1.5em;
         padding: 1em;
       }
+
+      img {
+        max-width: 100%;
+      }
     }
 
     .content-raw {
@@ -358,4 +362,11 @@
 
 .warning-box {
   margin-top: 0;
+}
+
+/* We don't support inserting videos in the forums */
+#media-modal {
+  li[data-type=video] {
+    display: none;
+  }
 }
