@@ -1,14 +1,28 @@
-{% autoescape off %}{% load i18n %}{% load unsubscribe_instructions %}{# L10n: This is an email. Whitespace matters! #}{% blocktrans %}{{ reviewer }} has approved the revision to the document {{ document_title }}.
+{# This is an email.  Whitespace matters! #}
+{% from "includes/unsubscribe_text.ltxt" import unsubscribe_text with context %}
+{% autoescape false %}
+{% trans reviewer=reviewer, document_title=document_title %}
+{{ reviewer }} has approved the revision to the document
+{{ document_title }}.
+{% endtrans %}
 
-To view the updated document, click the following link, or paste it into your browser's location bar:
-{% endblocktrans %}
+
+{% trans %}
+To view the updated document, click the following link, or paste it
+into your browser's location bar:
+{% endtrans %}
+
+
 https://{{ host }}{{ url }}
 
 --
-{% trans "Summary:" %}
+{# L10n: This is in an email. #}
+{{ _('Summary:') }}
 {{ summary|safe }}
 
 --
-{% blocktrans %}Changes:{% endblocktrans %}
+{# L10n: This is in an email. #}
+{{ _('Changes:') }}
 {{ diff|safe }}
-{% unsubscribe_instructions watch %}{% endautoescape %}
+
+{{ unsubscribe_text(watch) }}{% endautoescape %}
