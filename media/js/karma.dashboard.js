@@ -410,5 +410,4 @@ window.App = new KarmaDashboard({
     el: document.getElementById('karma-dash')
 });
 
-
 }(jQuery));
