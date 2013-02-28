@@ -7,7 +7,11 @@
 (function($){
 
     function init() {
-        Marky.createSimpleToolbar('.editor-tools', '#reply-content, #id_content');
+        Marky.createSimpleToolbar(
+            '.editor-tools',
+            '#reply-content, #id_content',
+            {mediaButton: true});
+
         new k.AjaxPreview($('#preview'));
 
         $('span.post-action a.reply').click(function() {
@@ -26,6 +30,8 @@
             return true;
         });
         watchDiscussion();
+
+        $('img.lazy').lazyload();
     }
     function watchDiscussion() {
         // For a thread on the all discussions for a locale.

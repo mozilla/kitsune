@@ -47,6 +47,9 @@ var Marky = {
             new SB(gettext('Bulleted List'), '* ', '',
                    gettext('Bulleted list item'), 'btn-ul', true)
         ];
+        if (settings.mediaButton) {
+            buttons.splice(4, 0, new Marky.MediaButton());
+        }
         if (settings.cannedResponses) {
             buttons.push(new Marky.Separator(),
                          new Marky.CannedResponsesButton());
