@@ -1,6 +1,8 @@
 # The test system uses this to override settings in settings.py and
 # settings_local.py with settings appropriate for testing.
 
+ES_LIVE_INDEXING = False
+
 # Make sure Celery is EAGER.
 CELERY_ALWAYS_EAGER = True
 
