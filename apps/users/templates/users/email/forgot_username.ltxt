@@ -1,3 +1,4 @@
+{% autoescape false %}
 {# L10n: This is an email. Whitespace matters! #}
 {% trans %}
 We've just received a request to send the username linked
@@ -22,4 +23,4 @@ further action.
 {{ _('Thanks,') }}
 
 {# L10n: This is at the end of an email. #}
-{{ _('The {sitename} team')|f(sitename=site_name) }}
+{{ _('The {sitename} team')|f(sitename=site_name) }}{% endautoescape %}

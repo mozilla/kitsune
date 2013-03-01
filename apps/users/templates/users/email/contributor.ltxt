@@ -1,3 +1,4 @@
+{% autoescape false %}
 {# L10n: This is an email.  Whitespace matters! #}
 {{ _('Hi {username}')|f(username=username) }}
 
@@ -67,4 +68,4 @@ and we’ll help you get started. It’s great to have you onboard!
 {{ _('Welcome to SUMO!') }}
 
 Madalina & Rosana
-SUMO Community Managers
+SUMO Community Managers{% endautoescape %}
