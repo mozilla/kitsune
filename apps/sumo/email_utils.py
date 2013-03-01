@@ -1,10 +1,20 @@
 from contextlib import contextmanager
 
+from django.core import mail
 from django.utils import translation
 
 import jingo
 import tower
 from test_utils import RequestFactory
+
+
+def send_messages(messages):
+    """Sends a a bunch of EmailMessages."""
+    conn = mail.get_connection(fail_silently=True)
+    conn.open()
+
+    for msg in messages:
+        conn.send_messages([msg])
 
 
 @contextmanager
