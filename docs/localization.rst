@@ -115,8 +115,8 @@ rules, and require different phrases for, say 0, 1, 2-3, 4-10, >10. That's
 absolutely fine, and gettext makes it possible.
 
 
-Strings in Templates
---------------------
+Strings in HTML Templates
+-------------------------
 
 When putting new text into a template, all you need to do is wrap it in a
 ``_()`` call::
@@ -267,14 +267,16 @@ convert it to a ``unicode`` object::
         unicode(WELCOME) % request.user.username
 
 
-Strings in the database
+Strings in the Database
 -----------------------
 
 There is some user generated content that needs to be localizable. For
 example, karma titles can be created in the admin site and need to be
 localized when displayed to users. A django management command is used
 for this. The first step to making a model's field localizable is adding
-it to ``DB_LOCALIZE`` in ``settings.py``::
+it to ``DB_LOCALIZE`` in ``settings.py``:
+
+.. code-block:: python
 
     DB_LOCALIZE = {
         'karma': {
@@ -291,14 +293,68 @@ it to ``DB_LOCALIZE`` in ``settings.py``::
         }
     }
 
+
 Then, all you need to do is run the ``extract_db`` management command::
 
     $ python manage.py extract_db
+
 
 *Be sure to have a recent database from production when running the command.*
 
 By default, this will write all the strings to `apps/sumo/db_strings.py`
 and they will get picked up during the normal string extraction (see below).
+
+
+Strings in Email Templates
+--------------------------
+
+Currently, email templates are text-based and not in HTML. Because of that
+you should use this style guide:
+
+1. The entire email should be wrapped in autoescape. e.g.
+
+   .. code-block:: html+jinja
+      :linenos:
+
+      {% autoescape false %}
+      {% trans %}
+      The entire email should be wrapped in autoescape.
+      {% endtrans %}
+
+
+      ...
+      {% endautoescape %}
+
+
+2. After an ``{% endtrans %}``, you need two blank lines (three carriage
+   returns). The first is eaten by the tag. The other two show up in
+   the email. e.g.
+
+   .. code-block:: jinja
+      :linenos:
+
+      {% trans %}
+      To confirm your subscription, stand up, put your hands on
+      your hips and do the hokey pokey.
+      {% endtrans %}
+
+
+      {{ _('Thanks!') }}
+
+
+   Produces this:
+
+   .. code-block:: text
+      :linenos:
+
+      To confirm your subscription, stand up, put your hands on
+      your hips and do the hokey pokey.
+
+      Thanks!
+
+
+3. Putting in line breaks in a ``trans`` block doesn't have an effect
+   since ``trans`` blocks get gettexted and whitespace is collapsed.
 
 
 Testing localized strings
