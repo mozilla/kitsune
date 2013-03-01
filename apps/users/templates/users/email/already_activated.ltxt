@@ -1,3 +1,4 @@
+{% autoescape false %}
 {# L10n: This is an email.  Whitespace matters! #}
 {{ _('It seems your account has already been activated.') }}
 
@@ -10,4 +11,4 @@ https://{{ domain }}{{ login_url }}
 {{ _('Thanks!') }}
 
 {# L10n: This is at the end of an email. #}
-{{ _('The {domain} team')|f(domain=domain) }}
+{{ _('The {domain} team')|f(domain=domain) }}}{% endautoescape %}
