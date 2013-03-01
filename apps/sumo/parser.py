@@ -5,6 +5,7 @@ from tower import ugettext_lazy as _lazy, ugettext as _
 from wikimarkup.parser import Parser
 
 from gallery.models import Image
+from sumo import email_utils
 from sumo.urlresolvers import reverse
 
 
@@ -205,14 +206,16 @@ class WikiParser(Parser):
         self.locale = locale
 
         parser_kwargs = {'tags': tags} if tags else {}
-        return super(WikiParser, self).parse(
-            text,
-            show_toc=show_toc,
-            attributes=attributes or ALLOWED_ATTRIBUTES,
-            styles=styles or ALLOWED_STYLES,
-            nofollow=nofollow,
-            strip_comments=True,
-            **parser_kwargs)
+
+        with email_utils.uselocale(locale):
+            return super(WikiParser, self).parse(
+                text,
+                show_toc=show_toc,
+                attributes=attributes or ALLOWED_ATTRIBUTES,
+                styles=styles or ALLOWED_STYLES,
+                nofollow=nofollow,
+                strip_comments=True,
+                **parser_kwargs)
 
     def _hook_internal_link(self, parser, space, name):
         """Parses text and returns internal link."""
