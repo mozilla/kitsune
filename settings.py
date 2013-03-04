@@ -425,7 +425,7 @@ def JINJA_CONFIG():
     from django.conf import settings
     from caching.base import cache
     config = {'extensions': ['tower.template.i18n', 'caching.ext.cache',
-                             'jinja2.ext.with_'],
+                             'jinja2.ext.autoescape', 'jinja2.ext.with_'],
               'finalize': lambda x: x if x is not None else ''}
     if (hasattr(cache, 'scheme') and 'memcached' in cache.scheme and
             not settings.DEBUG):
@@ -471,6 +471,7 @@ DOMAIN_METHODS = {
     'ltxt': [
         ('apps/questions/templates/**.ltxt', tower_tmpl),
         ('apps/users/templates/**.ltxt', tower_tmpl),
+        ('apps/wiki/templates/**.ltxt', tower_tmpl),
     ],
     'javascript': [
         # We can't say **.js because that would dive into any libraries.

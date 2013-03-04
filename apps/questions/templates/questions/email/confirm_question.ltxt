@@ -1,3 +1,4 @@
+{% autoescape false %}
 {# L10n: This is an email. Whitespace matters! #}
 {% trans %}
 Please confirm your Firefox Help question
@@ -39,4 +40,4 @@ community powered -- help is provided by users like you!  Want to
 take part? Browse other users' questions at
 https://{{ domain }}/questions?filter=unsolved -- you might
 just make someone's day!
-{% endtrans %}
+{% endtrans %}{% endautoescape %}

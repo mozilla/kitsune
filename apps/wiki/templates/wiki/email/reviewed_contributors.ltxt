@@ -1,16 +1,28 @@
-{% autoescape off %}{% load i18n %}{# L10n: This is an email. Whitespace matters! #}{% if approved %}
-{% blocktrans %}A revision you contributed to has been approved.
-{{ reviewer }} has approved a revision to the document {{ document_title }}.{% endblocktrans %}
+{# This is an email.  Whitespace matters! #}
+{% autoescape false %}
+{% if approved %}
+{% trans reviewer=reviewer %}
+A revision you contributed to has been approved.  {{ reviewer }} has
+approved a revision to the document {{ document_title }}.
+{% endtrans %}
 {% else %}
-{% blocktrans %}A revision you contributed to has been reviewed.
-{{ reviewer }} has reviewed a revision to the document {{ document_title }}.{% endblocktrans %}
+{% trans %}
+A revision you contributed to has been reviewed.  {{ reviewer }} has
+reviewed a revision to the document {{ document_title }}.
+{% endtrans %}
 {% endif %}
 
-{% blocktrans %}Message from the reviewer:
+
+{{ _('Message from the reviewer:') }}
 
 {{ message }}
 
-To view the history of this document, click the following
-link, or paste it into your browser's location bar:
-{% endblocktrans %}
-https://{{ host }}{{ url }}{% endautoescape %}
+
+{% trans %}
+To view the history of this document, click the following link, or
+paste it into your browser's location bar:
+{% endtrans %}
+
+
+https://{{ host }}{{ url }}
+{% endautoescape %}

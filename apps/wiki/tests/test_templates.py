@@ -36,11 +36,9 @@ from wiki.tests import (TestCaseBase, document, revision, new_document_data,
 
 
 READY_FOR_REVIEW_EMAIL_CONTENT = (
-"""admin submitted a new revision to the document
-%(title)s.
+"""admin submitted a new revision to the document %(title)s.
 
-To review this revision, click the following
-link, or paste it into your browser's location bar:
+To review this revision, click the following link, or paste it into your browser's location bar:
 
 https://testserver/en-US/kb/%(slug)s/review/%(new_id)s
 
@@ -59,11 +57,9 @@ https://testserver/en-US/unsubscribe/%(watcher)s?s=%(secret)s
 
 
 DOCUMENT_EDITED_EMAIL_CONTENT = (
-"""admin created a new revision to the document
-%(title)s.
+"""admin created a new revision to the document %(title)s.
 
-To view this document's history, click the following
-link, or paste it into your browser's location bar:
+To view this document's history, click the following link, or paste it into your browser's location bar:
 
 https://testserver/en-US/kb/%(slug)s/history
 

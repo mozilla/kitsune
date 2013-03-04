@@ -12,6 +12,7 @@ from tidings.events import InstanceEvent, Event, EventUnion
 from tower import ugettext as _
 from wikimarkup.parser import ALLOWED_TAGS, ALLOWED_ATTRIBUTES
 
+from sumo import email_utils
 from sumo.urlresolvers import reverse
 from users.models import Profile
 from wiki.models import Document
@@ -87,18 +88,28 @@ def context_dict(revision, ready_for_l10n=False, revision_approved=False):
 def notification_mails(revision, subject, template, url, users_and_watches):
     """Return EmailMessages in the KB's standard notification mail format."""
     document = revision.document
-    subject = subject.format(title=document.title, creator=revision.creator,
-                             locale=document.locale)
-    t = loader.get_template(template)
-    c = context_dict(revision)
-    mail = EmailMessage(subject, '', settings.TIDINGS_FROM_ADDRESS)
 
     for u, w in users_and_watches:
-        c['watch'] = w[0]  # TODO: Expose all watches.
-        c['url'] = url
-        mail.to = [u.email]
-        mail.body = t.render(Context(c))
-        yield mail
+        if hasattr(u, 'profile'):
+            locale = u.profile.locale
+        else:
+            locale = document.locale
+
+        with email_utils.uselocale(locale):
+            c = context_dict(revision)
+            # TODO: Expose all watches
+            c['watch'] = w[0]
+            c['url'] = url
+
+            subject = subject.format(title=document.title,
+                                     creator=revision.creator,
+                                     locale=document.locale)
+            msg = email_utils.render_email(template, c)
+
+        yield EmailMessage(subject,
+                           msg,
+                           settings.TIDINGS_FROM_ADDRESS,
+                           [u.email])
 
 
 class EditDocumentEvent(InstanceEvent):
@@ -114,6 +125,9 @@ class EditDocumentEvent(InstanceEvent):
         document = self.revision.document
         log.debug('Sending edited notification email for document (id=%s)' %
                   document.id)
+
+        # Note: This is a lazy_gettext, so it gets localized in the
+        # locale that's in effect when .format() is called on it.
         subject = _(u'{title} was edited by {creator}')
         url = reverse('wiki.document_revisions', locale=document.locale,
                       args=[document.slug])
@@ -146,8 +160,8 @@ class ReviewableRevisionInLocaleEvent(_RevisionConstructor,
                                       _LocaleFilter,
                                       Event):
     """Event fired when any revision in a certain locale is ready for review"""
-    # Our event_type suffices to limit our scope, so we don't bother setting
-    # content_type.
+    # Our event_type suffices to limit our scope, so we don't bother
+    # setting content_type.
     event_type = 'reviewable wiki in locale'
 
     def _mails(self, users_and_watches):
@@ -178,29 +192,28 @@ class ReadyRevisionEvent(_RevisionConstructor, Event):
         document = revision.document
         log.debug('Sending ready notifications for revision (id=%s)' %
                   revision.id)
-        ready_subject = _(
-            u'{title} has a revision ready for localization').format(
-                title=document.title,
-                creator=revision.creator,
-                locale=document.locale)
 
-        ready_template = loader.get_template(
-                                'wiki/email/ready_for_l10n.ltxt')
-
-        c = context_dict(revision, ready_for_l10n=True)
         for user, watches in users_and_watches:
-            c['watch'] = watches[0]  # TODO: Expose all watches.
-
-            try:
-                profile = user.profile
-            except Profile.DoesNotExist:
-                locale = settings.WIKI_DEFAULT_LANGUAGE
+            if hasattr(user, 'profile'):
+                locale = user.profile.locale
             else:
-                locale = profile.locale
-            c['url'] = django_reverse('wiki.select_locale',
-                                      args=[document.slug])
-            yield EmailMessage(ready_subject,
-                               ready_template.render(Context(c)),
+                locale = document.locale
+
+            with email_utils.uselocale(locale):
+                subject = _(u'{title} has a revision ready for '
+                            'localization').format(title=document.title)
+                template = 'wiki/email/ready_for_l10n.ltxt'
+
+                c = context_dict(revision, ready_for_l10n=True)
+                # TODO: Expose all watches
+                c['watch'] = watches[0]
+                c['url'] = django_reverse('wiki.select_locale',
+                                          args=[document.slug])
+
+                msg = email_utils.render_email(template, c)
+
+            yield EmailMessage(subject,
+                               msg,
                                settings.TIDINGS_FROM_ADDRESS,
                                [user.email])
 
@@ -239,44 +252,52 @@ class ApprovedOrReadyUnion(EventUnion):
         is_ready = revision.is_ready_for_localization
         log.debug('Sending approved/ready notifications for revision (id=%s)' %
                   revision.id)
-        ready_subject, approved_subject = [s.format(
-            title=document.title,
-            reviewer=revision.reviewer.username,
-            locale=document.locale) for s in
-                [_(u'{title} has a revision ready for localization'),
-                 _(u'{title} ({locale}) has a new approved revision '
-                    '({reviewer})')]]
-        ready_template = loader.get_template('wiki/email/ready_for_l10n.ltxt')
-        approved_template = loader.get_template('wiki/email/approved.ltxt')
-        approved_url = reverse('wiki.document',
-                               locale=document.locale,
-                               args=[document.slug])
+
         for user, watches in users_and_watches:
-            if (is_ready and
-                ReadyRevisionEvent.event_type in
-                    (w.event_type for w in watches)):
-                c = context_dict(revision, ready_for_l10n=True)
-                c['watch'] = watches[0]  # TODO: Expose all watches.
-                # We should send a "ready" mail.
-                try:
-                    profile = user.profile
-                except Profile.DoesNotExist:
-                    locale = settings.WIKI_DEFAULT_LANGUAGE
-                else:
-                    locale = profile.locale
-                c['url'] = django_reverse('wiki.select_locale',
-                                          args=[document.slug])
-                yield EmailMessage(ready_subject,
-                                   ready_template.render(Context(c)),
-                                   settings.TIDINGS_FROM_ADDRESS,
-                                   [user.email])
+            # Figure out the locale to use for l10n.
+            if hasattr(user, 'profile'):
+                locale = user.profile.locale
             else:
-                c = context_dict(revision, revision_approved=True)
-                c['url'] = approved_url
-                c['watch'] = watches[0]  # TODO: Expose all watches.
-                c['reviewer'] = revision.reviewer.username
-                # Send an "approved" mail:
-                yield EmailMessage(approved_subject,
-                                   approved_template.render(Context(c)),
-                                   settings.TIDINGS_FROM_ADDRESS,
-                                   [user.email])
+                locale = document.locale
+
+            # Localize the subject and message with the appropriate
+            # context.
+            with email_utils.uselocale(locale):
+                if (is_ready and
+                    ReadyRevisionEvent.event_type in
+                    (w.event_type for w in watches)):
+                    c = context_dict(revision, ready_for_l10n=True)
+                    # TODO: Expose all watches
+                    c['watch'] = watches[0]
+                    c['url'] = django_reverse('wiki.select_locale',
+                                              args=[document.slug])
+
+                    subject = _(u'{title} has a revision ready for '
+                                'localization')
+                    template = 'wiki/email/ready_for_l10n.ltxt'
+
+                else:
+                    c = context_dict(revision, revision_approved=True)
+                    approved_url = reverse('wiki.document',
+                                           locale=document.locale,
+                                           args=[document.slug])
+
+                    c['url'] = approved_url
+                    # TODO: Expose all watches.
+                    c['watch'] = watches[0]
+                    c['reviewer'] = revision.reviewer.username
+
+                    subject = _(u'{title} ({locale}) has a new approved '
+                                'revision ({reviewer})')
+                    template = 'wiki/email/approved.ltxt'
+
+                subject = subject.format(
+                    title=document.title,
+                    reviewer=revision.reviewer.username,
+                    locale=document.locale)
+                msg = email_utils.render_email(template, c)
+
+            yield EmailMessage(subject,
+                               msg,
+                               settings.TIDINGS_FROM_ADDRESS,
+                               [user.email])
