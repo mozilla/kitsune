@@ -951,7 +951,8 @@ CC_BANNED_USERS = ['lucasbytegenius']  # Twitter handles banned from AoA
 TWITTER_COOKIE_SECURE = True
 TWITTER_CONSUMER_KEY = ''
 TWITTER_CONSUMER_SECRET = ''
-
+TWITTER_ACCESS_TOKEN = ''
+TWITTER_ACCESS_TOKEN_SECRET = ''
 
 TIDINGS_FROM_ADDRESS = 'notifications@support.mozilla.org'
 # Anonymous watches must be confirmed.

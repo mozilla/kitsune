@@ -4,9 +4,7 @@ import json
 import logging
 import re
 import rfc822
-import time
 import urllib
-import urllib2
 
 from django.conf import settings
 from django.db.utils import IntegrityError
@@ -14,6 +12,7 @@ from django.db.utils import IntegrityError
 import cronjobs
 from multidb.pinning import pin_this_thread
 import tweepy
+from tweepy.parsers import RawParser
 from sumo.redis_utils import redis_client, RedisError
 from statsd import statsd
 
@@ -33,6 +32,15 @@ log = logging.getLogger('k.twitter')
 def collect_tweets():
     """Collect new tweets about Firefox."""
     with statsd.timer('customercare.tweets.time_elapsed'):
+        auth = tweepy.OAuthHandler(settings.TWITTER_CONSUMER_KEY,
+                                   settings.TWITTER_CONSUMER_SECRET,
+                                   secure=True)
+
+        auth.set_access_token(settings.TWITTER_ACCESS_TOKEN,
+                              settings.TWITTER_ACCES_TOKEN_SECRET)
+
+        api = tweepy.API(auth)
+
         search_options = {
             'q': 'firefox OR #fxinput',
             'rpp': settings.CC_TWEETS_PERPAGE,  # Items per page.
@@ -51,9 +59,8 @@ def collect_tweets():
 
         # Retrieve Tweets
         try:
-            raw_data = json.load(urllib.urlopen('%s?%s' % (
-                SEARCH_URL, urllib.urlencode(search_options))))
-        except Exception, e:
+            raw_data = json.loads(str(api.search(**search_options)))
+        except tweepy.TweepError, e:
             log.warning('Twitter request failed: %s' % e)
             return
 
