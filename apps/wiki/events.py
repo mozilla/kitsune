@@ -160,8 +160,8 @@ class ReviewableRevisionInLocaleEvent(_RevisionConstructor,
                                       _LocaleFilter,
                                       Event):
     """Event fired when any revision in a certain locale is ready for review"""
-    # Our event_type suffices to limit our scope, so we don't bother setting
-    # content_type.
+    # Our event_type suffices to limit our scope, so we don't bother
+    # setting content_type.
     event_type = 'reviewable wiki in locale'
 
     def _mails(self, users_and_watches):
@@ -201,10 +201,7 @@ class ReadyRevisionEvent(_RevisionConstructor, Event):
 
             with email_utils.uselocale(locale):
                 subject = _(u'{title} has a revision ready for '
-                            'localization').format(
-                    title=document.title,
-                    creator=revision.creator,
-                    locale=document.locale)
+                            'localization').format(title=document.title)
                 template = 'wiki/email/ready_for_l10n.ltxt'
 
                 c = context_dict(revision, ready_for_l10n=True)
@@ -263,7 +260,8 @@ class ApprovedOrReadyUnion(EventUnion):
             else:
                 locale = document.locale
 
-            # Localize the subject and message with the appropriate context.
+            # Localize the subject and message with the appropriate
+            # context.
             with email_utils.uselocale(locale):
                 if (is_ready and
                     ReadyRevisionEvent.event_type in
@@ -274,7 +272,8 @@ class ApprovedOrReadyUnion(EventUnion):
                     c['url'] = django_reverse('wiki.select_locale',
                                               args=[document.slug])
 
-                    subject = _(u'{title} has a revision ready for localization')
+                    subject = _(u'{title} has a revision ready for '
+                                'localization')
                     template = 'wiki/email/ready_for_l10n.ltxt'
 
                 else:
@@ -288,8 +287,8 @@ class ApprovedOrReadyUnion(EventUnion):
                     c['watch'] = watches[0]
                     c['reviewer'] = revision.reviewer.username
 
-                    subject = _(u'{title} ({locale}) has a new approved revision '
-                                '({reviewer})')
+                    subject = _(u'{title} ({locale}) has a new approved '
+                                'revision ({reviewer})')
                     template = 'wiki/email/approved.ltxt'
 
                 subject = subject.format(
