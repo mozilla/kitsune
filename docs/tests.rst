@@ -165,3 +165,27 @@ additional tips:
 
 .. _Qunit: http://docs.jquery.com/Qunit
 .. _`$.mockjax`: http://enterprisejquery.com/2010/07/mock-your-ajax-requests-with-mockjax-for-rapid-development/
+
+
+.. _tests-chapter-qa-test-suite:
+
+The QA test suite
+=================
+
+QA has their own test suite. The code is located on github at
+`<https://github.com/mozilla/sumo-tests/>`_.
+
+There are three test suites. They differ in what they do and where
+they run:
+
+    ============  ===========================================================
+    name          description
+    ============  ===========================================================
+    sumo.fft      runs on -dev
+    sumo.release  runs on -stage
+    sumo.prod     runs on -prod and is read-only (it doesn't change any data)
+    ============  ===========================================================
+
+There's a qatestbot in IRC. You can ask it to run the QA tests by::
+
+    qatestbot build <test-suite>

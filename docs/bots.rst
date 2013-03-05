@@ -38,3 +38,12 @@ like to make her more useful.
 ``kitsunebot`` filters commits by branch and triggers the correct Jenkins
 build. She also announces changes in IRC, but only shows the full list of
 changes committed for certain branches.
+
+
+``qatestbot``
+=============
+
+``qatestbot`` tells us when the QA test suite fails and also allows us to
+kick off QA test suite runs.
+
+See :ref:`tests-chapter-qa-test-suite` for details.
