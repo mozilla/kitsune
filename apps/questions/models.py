@@ -420,7 +420,7 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
         start = datetime.now() - timedelta(hours=72)
         qs = cls.objects.filter(created__gt=start, creator__is_active=True)
         if extra_filter:
-            qs.filter(extra_filter)
+            qs = qs.filter(extra_filter)
         return qs.count()
 
     @classmethod
@@ -433,7 +433,7 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
             num_answers=0, created__gt=start, is_locked=False,
             creator__is_active=1)
         if extra_filter:
-            qs.filter(extra_filter)
+            qs = qs.filter(extra_filter)
         return qs.count()
 
 
