@@ -8,12 +8,11 @@ from django.contrib.sites.models import Site
 from django.core import mail
 from django.utils.encoding import smart_str
 
-from bleach import clean
 import mock
+from bleach import clean
 from nose import SkipTest
 from nose.tools import eq_
 from pyquery import PyQuery as pq
-import waffle
 from wikimarkup.parser import ALLOWED_TAGS, ALLOWED_ATTRIBUTES
 
 from products.tests import product
@@ -96,25 +95,6 @@ Changes:
 Unsubscribe from these emails:
 https://testserver/en-US/unsubscribe/%(watcher)s?s=%(secret)s
 """)
-
-
-class LandingTests(TestCaseBase):
-    """Tests for the wiki landing page (/kb)."""
-    @mock.patch.object(waffle, 'flag_is_active')
-    def test_kb_landing_page(self, flag_is_active):
-        """Verify that /products page renders products."""
-        flag_is_active.return_value = True
-
-        product(save=True)
-        product(save=True)
-        topic(save=True)
-        topic(save=True)
-
-        r = self.client.get(reverse('wiki.landing'))
-        eq_(200, r.status_code)
-        doc = pq(r.content)
-        eq_(2, len(doc('#help-topics li')))
-        eq_(2, len(doc('.products ul li')))
 
 
 class DocumentTests(TestCaseBase):
@@ -1850,12 +1830,11 @@ class TranslateTests(TestCaseBase):
         new_es_rev = es_doc.revisions.order_by('-id')[0]
         eq_(r.id, new_es_rev.based_on_id)
 
-
     def test_show_translations_page(self):
         en = settings.WIKI_DEFAULT_LANGUAGE
         en_doc = document(save=True, locale=en, slug='english-slug')
         de_doc = document(save=True, locale='de', parent=en_doc)
-        
+
         url = reverse('wiki.show_translations', locale=settings.WIKI_DEFAULT_LANGUAGE,
                       args=[en_doc.slug])
         r = self.client.get(url)
@@ -1864,6 +1843,7 @@ class TranslateTests(TestCaseBase):
         eq_(translated_locales.length, 2)
         eq_("en-US", doc(".translated_locale:first").text())
         eq_("de", doc(".translated_locale:eq(1)").text())
+
 
 def _test_form_maintains_based_on_rev(client, doc, view, post_data,
                                       locale=None):

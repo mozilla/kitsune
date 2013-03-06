@@ -47,17 +47,6 @@ log = logging.getLogger('k.wiki')
 
 
 @require_GET
-def landing(request, template='wiki/landing.html'):
-    """The KB landing page.
-
-    Lists topics and products.
-    """
-    return jingo.render(request, template, {
-        'products': Product.objects.filter(visible=True),
-        'topics': Topic.objects.filter(visible=True)})
-
-
-@require_GET
 @mobile_template('wiki/{mobile/}document.html')
 def document(request, document_slug, template=None):
     """View a wiki document."""
@@ -1137,6 +1126,7 @@ def remove_contributor(request, document_slug, user_id):
     return jingo.render(request, 'wiki/confirm_remove_contributor.html',
                         {'document': document, 'contributor': user})
 
+
 def show_translations(request, document_slug):
     document = get_object_or_404(
         Document, locale=settings.WIKI_DEFAULT_LANGUAGE, slug=document_slug)
@@ -1152,9 +1142,10 @@ def show_translations(request, document_slug):
             untranslated_locales.append(locale[0])
 
     return jingo.render(request, 'wiki/show_translations.html',
-            {'document': document, 
+            {'document': document,
             'translated_locales': translated_locales,
             'untranslated_locales': untranslated_locales})
+
 
 def _document_form_initial(document):
     """Return a dict with the document data pertinent for the form."""

@@ -1,5 +1,6 @@
 from django.conf.urls import patterns, url, include
 
+from sumo.views import redirect_to
 from wiki import locale_views
 from wiki.locale_views import LEADER, REVIEWER, EDITOR
 
@@ -21,7 +22,8 @@ document_patterns = patterns('wiki.views',
         'mark_ready_for_l10n_revision',
         name='wiki.mark_ready_for_l10n_revision'),
     url(r'^/locales$', 'select_locale', name='wiki.select_locale'),
-    url(r'^/show_translations$', 'show_translations', name='wiki.show_translations'),
+    url(r'^/show_translations$', 'show_translations',
+        name='wiki.show_translations'),
 
     # Un/Subscribe to document edit notifications.
     url(r'^/watch$', 'watch_document', name='wiki.document_watch'),
@@ -71,7 +73,8 @@ locale_patterns = patterns('wiki.locale_views',
 )
 
 urlpatterns = patterns('wiki.views',
-    url(r'^$', 'landing', name='wiki.landing'),
+    url(r'^$', redirect_to,
+        {'url': 'products.product', 'slug': 'firefox'}, name='wiki.landing'),
 
     url(r'^/locales$', locale_views.locale_list, name='wiki.locales'),
     url(r'^/locales/(?P<locale_code>[^/]+)', include(locale_patterns)),
