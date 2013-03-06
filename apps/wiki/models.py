@@ -744,7 +744,8 @@ class Revision(ModelBase):
     class Meta(object):
         permissions = [('review_revision', 'Can review a revision'),
                        ('mark_ready_for_l10n',
-                        'Can mark revision as ready for localization')]
+                        'Can mark revision as ready for localization'),
+                       ('edit_keywords', 'Can edit keywords')]
 
     def _based_on_is_clean(self):
         """Return a tuple: (the correct value of based_on, whether the old
