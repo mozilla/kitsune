@@ -4,7 +4,6 @@ import json
 import logging
 import re
 import rfc822
-import urllib
 
 from django.conf import settings
 from django.db.utils import IntegrityError
