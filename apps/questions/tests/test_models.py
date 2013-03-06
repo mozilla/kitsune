@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 
 from django.contrib.auth.models import User
+from django.db.models import Q
 
 import mock
 from nose import SkipTest
@@ -343,6 +344,34 @@ class QuestionTests(TestCaseBase):
         # Only 3 are recent from last 72 hours, 1 has an answer.
         eq_(3, Question.recent_asked_count())
         eq_(1, Question.recent_unanswered_count())
+
+    def test_recent_counts_with_filter(self):
+        """Verify that recent_asked_count and recent_unanswered_count
+        respect filters passed."""
+
+        now = datetime.now()
+        question(created=now, locale='en-US', save=True)
+        q = question(created=now, locale='en-US', save=True)
+        answer(question=q, save=True)
+
+        question(created=now, locale='pt-BR', save=True)
+        question(created=now, locale='pt-BR', save=True)
+        q = question(created=now, locale='pt-BR', save=True)
+        answer(question=q, save=True)
+
+        # 5 asked recently, 3 are unanswered
+        eq_(5, Question.recent_asked_count())
+        eq_(3, Question.recent_unanswered_count())
+
+        # check english (2 asked, 1 unanswered)
+        locale_filter = Q(locale='en-US')
+        eq_(2, Question.recent_asked_count(locale_filter))
+        eq_(1, Question.recent_unanswered_count(locale_filter))
+
+        # check pt-BR (3 asked, 2 unanswered)
+        locale_filter = Q(locale='pt-BR')
+        eq_(3, Question.recent_asked_count(locale_filter))
+        eq_(2, Question.recent_unanswered_count(locale_filter))
 
 
 class AddExistingTagTests(TaggingTestCaseBase):
