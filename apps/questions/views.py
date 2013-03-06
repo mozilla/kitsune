@@ -151,11 +151,12 @@ def questions(request, template):
 
     # Filter by locale for AAQ locales, and by locale + default for others.
     if request.LANGUAGE_CODE in settings.AAQ_LANGUAGES:
-        question_qs = question_qs.filter(locale=request.LANGUAGE_CODE)
+        locale_query = Q(locale=request.LANGUAGE_CODE)
     else:
         locale_query = Q(locale=request.LANGUAGE_CODE)
         locale_query |= Q(locale=settings.WIKI_DEFAULT_LANGUAGE)
-        question_qs = question_qs.filter(locale_query)
+
+    question_qs = question_qs.filter(locale_query)
 
     # Set the order.
     question_qs = question_qs.order_by(*order)
@@ -172,8 +173,8 @@ def questions(request, template):
             return HttpResponseRedirect(urlparams(url, page=1))
 
     # Recent answered stats
-    recent_asked_count = Question.recent_asked_count()
-    recent_unanswered_count = Question.recent_unanswered_count()
+    recent_asked_count = Question.recent_asked_count(locale_query)
+    recent_unanswered_count = Question.recent_unanswered_count(locale_query)
     if recent_asked_count:
         recent_answered_percent = int(
             (float(recent_asked_count - recent_unanswered_count) /

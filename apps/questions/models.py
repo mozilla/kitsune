@@ -415,14 +415,16 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
         return d
 
     @classmethod
-    def recent_asked_count(cls):
+    def recent_asked_count(cls, extra_filter=None):
         """Returns the number of questions asked in the last 72 hours."""
         start = datetime.now() - timedelta(hours=72)
         qs = cls.objects.filter(created__gt=start, creator__is_active=True)
+        if extra_filter:
+            qs.filter(extra_filter)
         return qs.count()
 
     @classmethod
-    def recent_unanswered_count(cls):
+    def recent_unanswered_count(cls, extra_filter=None):
         """Returns the number of questions that have not been answered in the
         last 72 hours
         """
@@ -430,6 +432,8 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
         qs = cls.objects.filter(
             num_answers=0, created__gt=start, is_locked=False,
             creator__is_active=1)
+        if extra_filter:
+            qs.filter(extra_filter)
         return qs.count()
 
 
