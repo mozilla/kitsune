@@ -37,10 +37,32 @@ def generate_sampledata(options):
     topic(title='Cookies', slug='cookies', save=True)
     topic(title='Tabs', slug='tabs', save=True)
     topic(title='Websites', slug='websites', save=True)
+    topic(title='Hot topics', slug='hot', save=True)
 
     # There are two products in our schema
-    firefox = Product.objects.get(slug='firefox')
-    mobile = Product.objects.get(slug='mobile')
+    try:
+        firefox = Product.objects.get(slug='firefox')
+    except Product.DoesNotExist:
+        # Note: This matches migration 156. When run in the tests, the
+        # migrations don't happen.
+        firefox = Product(title='Firefox',
+                          description='Web browser for Windows, Mac and Linux',
+                          display_order=1,
+                          visible=True,
+                          slug='firefox')
+        firefox.save()
+
+    try:
+        mobile = Product.objects.get(slug='mobile')
+    except Product.DoesNotExist:
+        # Note: This matches migration 156. When run in the tests, the
+        # migrations don't happen.
+        mobile = Product(title='Firefox for Mobile',
+                         description='Web browser for Android smartphones and tablets',
+                         display_order=2,
+                         visible=True,
+                         slug='mobile')
+        mobile.save()
 
     # Create the special documents that are linked to from the home page
     moznews = document(title='Mozilla News', slug='mozilla-news', save=True)
