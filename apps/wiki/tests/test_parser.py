@@ -502,6 +502,19 @@ class TestWikiVideo(TestCase):
         assert cdn_url in doc('source').eq(0).attr('src')
         assert cdn_url in doc('source').eq(1).attr('src')
 
+    def test_youtube_video(self):
+        """Verify youtube embeds."""
+        urls = ['http://www.youtube.com/watch?v=oHg5SJYRHA0',
+                'https://youtube.com/watch?v=oHg5SJYRHA0'
+                'http://youtu.be/oHg5SJYRHA0'
+                'https://youtu.be/oHg5SJYRHA0']
+        parser = WikiParser()
+
+        for url in urls:
+            doc = pq(parser.parse('[[V:%s]]' % url))
+            assert doc('iframe')[0].attrib['src'].startswith(
+                '//www.youtube.com/embed/oHg5SJYRHA0')
+
 
 def parsed_eq(want, to_parse):
     p = WikiParser()
