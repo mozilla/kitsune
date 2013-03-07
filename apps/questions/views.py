@@ -40,7 +40,7 @@ from questions.events import QuestionReplyEvent, QuestionSolvedEvent
 from questions.feeds import QuestionsFeed, AnswersFeed, TaggedQuestionsFeed
 from questions.forms import (NewQuestionForm, EditQuestionForm, AnswerForm,
                              WatchQuestionForm, FREQUENCY_CHOICES,
-                             MarketplaceAaqForm)
+                             MarketplaceAaqForm, StatsForm)
 from questions.karma_actions import (SolutionAction, AnswerMarkedHelpfulAction,
                                      AnswerMarkedNotHelpfulAction)
 from questions.marketplace import (MARKETPLACE_CATEGORIES, submit_ticket,
@@ -48,7 +48,8 @@ from questions.marketplace import (MARKETPLACE_CATEGORIES, submit_ticket,
 from questions.models import Question, Answer, QuestionVote, AnswerVote
 from questions.question_config import products
 from search.utils import locale_or_default, clean_excerpt
-from search.es_utils import ESTimeoutError, ESMaxRetryError, ESException, F
+from search.es_utils import (ESTimeoutError, ESMaxRetryError, ESException,
+                             Sphilastic, F)
 from sumo.helpers import urlparams
 from sumo.urlresolvers import reverse
 from sumo.utils import paginate, simple_paginate, build_paged_url
@@ -1111,6 +1112,130 @@ def marketplace_category(request, category_slug, template=None):
 def marketplace_success(request, template=None):
     """Confirmation of ticket submitted successfully."""
     return jingo.render(request, template)
+
+
+def stats_topic_data(bucket_days, start, end):
+    """Gets a zero filled histogram for each question topic.
+
+    Uses elastic search.
+    """
+    # Woah! object?! Yeah, so what happens is that Sphilastic is
+    # really an elasticutils.S and that requires a Django ORM model
+    # argument. That argument only gets used if you want object
+    # results--for every hit it gets back from ES, it creates an
+    # object of the type of the Django ORM model you passed in. We use
+    # object here to satisfy the need for a type in the constructor
+    # and make sure we don't ever ask for object results.
+    #
+    # The above comment was copy/pasted from search/views.py.
+    search = Sphilastic(object)
+
+    bucket = 24 * 60 * 60 * bucket_days
+
+    # datetime is a subclass of date.
+    if isinstance(start, date):
+        start = int(time.mktime(start.timetuple()))
+    if isinstance(end, date):
+        end = int(time.mktime(end.timetuple()))
+
+    f = F(model='questions_question')
+    f &= F(created__gt=start)
+    f &= F(created__lt=end)
+
+    topics = Topic.objects.values('slug', 'title')
+    facets = {}
+    # TODO: If we change to using datetimes in ES, 'histogram' below
+    # should change to 'date_histogram'.
+    for topic in topics:
+        facets[topic['title']] = {
+            'histogram': {'interval': bucket, 'field': 'created'},
+            'facet_filter': (f & F(topic=topic['slug'])).filters,
+        }
+
+    # Get some sweet histogram data.
+    search = search.facet_raw(**facets).values_dict()
+    try:
+        histograms_data = search.facet_counts()
+    except (ESTimeoutError, ESMaxRetryError, ESException):
+        return []
+
+    # The data looks like this right now:
+    # {
+    #   'topic-1': [{'key': 1362774285, 'count': 100}, ...],
+    #   'topic-2': [{'key': 1362774285, 'count': 100}, ...],
+    # }
+
+    # Massage the data to achieve 2 things:
+    # - All points between the earliest and the latest values have data,
+    #   at a resolution of 1 day.
+    # - It is in a format Rickshaw will like.
+
+    # Construct a intermediatery data structure that allows for easy
+    # manipulation. Also find the min and max data at the same time.
+    # {'topic-1': [{1362774285: 100}, {1362784285: 200} ...}
+    for series in histograms_data.values():
+        if series:
+            earliest_point = series[0]['key']
+            break
+    else:
+        return []
+
+    latest_point = earliest_point
+    interim_data = {}
+
+    for key, data in histograms_data.iteritems():
+        if not data:
+            continue
+        interim_data[key] = {}
+        for point in data:
+            x = point['key']
+            y = point['count']
+            earliest_point = min(earliest_point, x)
+            latest_point = max(latest_point, x)
+            interim_data[key][x] = y
+
+    # Zero fill the interim data.
+    timestamp = earliest_point
+    while timestamp <= latest_point:
+        for key in interim_data:
+            if timestamp not in interim_data[key]:
+                interim_data[key][timestamp] = 0
+        timestamp += bucket
+
+    # Convert it into a format Rickshaw will be happy with.
+    histograms = [
+        {
+            'name': name,
+            'data': sorted(({'x': x, 'y': y} for x, y in data.iteritems()),
+                           key=lambda p: p['x']),
+        }
+        for name, data in interim_data.iteritems()
+    ]
+
+    return histograms
+
+
+def stats(request):
+    template = 'questions/stats.html'
+
+    form = StatsForm(request.GET)
+    if form.is_valid():
+        bucket_days = form.cleaned_data['bucket']
+        start = form.cleaned_data['start']
+        end = form.cleaned_data['end']
+    else:
+        bucket_days = 1
+        start = date.today() - timedelta(days=30)
+        end = date.today()
+
+    histogram = stats_topic_data(bucket_days, start, end)
+
+    data = {
+        'histogram': histogram,
+        'form': form,
+    }
+
+    return jingo.render(request, template, data)
 
 
 def _search_suggestions(request, text, locale, product_slugs):

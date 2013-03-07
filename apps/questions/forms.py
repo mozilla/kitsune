@@ -1,3 +1,5 @@
+from datetime import date, timedelta
+
 from django import forms
 
 from tower import ugettext_lazy as _lazy, ugettext as _
@@ -287,3 +289,36 @@ class MarketplaceAaqForm(forms.Form):
     category = forms.ChoiceField(
         label=_lazy(u'Category:'),
         choices=CATEGORY_CHOICES)
+
+
+bucket_choices = [(1, '1 day'), (7, '1 week'), (30, '1 month')]
+
+
+class StatsForm(forms.Form):
+    bucket = forms.IntegerField(
+        min_value=1, required=False, label=_lazy(u'Interval'),
+        widget=forms.Select(choices=bucket_choices))
+    start = forms.DateField(required=False, label=_lazy(u'Start'))
+    end = forms.DateField(required=False, label=_lazy(u'End'))
+
+    def clean_bucket(self):
+        if self.cleaned_data.get('bucket') is None:
+            return 1
+        return self.cleaned_data['bucket']
+
+    def clean_start(self):
+        if self.cleaned_data.get('start') is None:
+            return date.today() - timedelta(days=30)
+        return self.cleaned_data['start']
+
+    def clean_end(self):
+        if self.cleaned_data.get('end') is None:
+            return date.today()
+        return self.cleaned_data['end']
+
+    def clean(self):
+        start = self.cleaned_data.get('start')
+        end = self.cleaned_data.get('end')
+        if start and end and start > end:
+            raise forms.ValidationError('Start must be less than end.')
+        return self.cleaned_data

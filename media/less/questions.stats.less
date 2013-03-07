@@ -1,0 +1,83 @@
+@import 'vendors.less';
+
+.graph-container {
+  .border-box();
+  padding-left: 40px;
+  position: relative;
+
+  .y-axis {
+    bottom: 5px;
+    left: 0;
+    position: absolute;
+    top: 0;
+    width: 40px;
+  }
+
+  .graph {
+    padding-bottom: 20px;
+  }
+}
+
+.controls {
+
+  > div {
+    .border-radius(2px);
+    background: #444;
+    color: #fff;
+    margin-bottom: 10px;
+    overflow: hidden;
+    padding: 12px 5px;
+    width: 220px;
+
+    > form {
+      label {
+        display: inline-block;
+        min-width: 80px;
+        padding-left: 2px;
+      }
+
+      input[type=text],
+      input[type=date] {
+        // These next two styles emulate jQuery's UI, since they style
+        // the [type=text] elements.
+        .box-shadow(0px 0px 0px 1px rgb(239, 239, 239));
+        .border-radius(5px);
+        width: 110px;
+      }
+
+      > ul {
+        margin: 0;
+        padding: 0;
+
+        > li {
+          list-style: none;
+          margin-bottom: 8px;
+        }
+      }
+    }
+
+    &.legend {
+      .line {
+        max-width: 200px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+
+        .action {
+          opacity: 0.8;
+
+          &:hover {
+            opacity: 1.0;
+          }
+        }
+      }
+
+      .line.disabled {
+        opacity: 0.3;
+
+        .action {
+          opacity: 0.5;
+        }
+      }
+    }
+  }
+}
