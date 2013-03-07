@@ -530,6 +530,11 @@ MINIFY_BUNDLES = {
         'mobile/aaq': (
             'less/mobile/aaq.less',
         ),
+        'questions.stats': (
+            'css/jqueryui/jqueryui-rickshaw.css',
+            'css/rickshaw.min.css',
+            'less/questions.stats.less',
+        ),
         'search': (
             'less/search.less',
         ),
@@ -655,6 +660,13 @@ MINIFY_BUNDLES = {
             'js/tags.js',
             'js/reportabuse.js',
             'js/questions.metrics.js',
+        ),
+        'questions.stats': (
+            'js/libs/jqueryui.rickshaw.min.js',
+            'js/libs/d3.v3.min.js',
+            'js/libs/d3.layout.min.js',
+            'js/libs/rickshaw.min.js',
+            'js/questions.stats.js',
         ),
         'mobile/questions': (
             'js/mobile/questions.js',

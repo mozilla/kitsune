@@ -3,4 +3,6 @@
 {% if not styles %}
   {% set styles = ('questions', 'jqueryui/jqueryui') %}
 {% endif %}
-{% set scripts = ('questions', 'libs/jqueryui') %}
+{% if not scripts %}
+  {% set scripts = ('questions', 'libs/jqueryui') %}
+{% endif %}
