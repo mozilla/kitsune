@@ -128,7 +128,7 @@
               {% endfor %}
             </ol>
             <ol start="6">
-              {% for u in karma_top[5:] %}
+              {% for u in karma_top[5:10] %}
                 <li{% if u == user %} class="me"{% endif %}>{{ u.username }}</li>
               {% endfor %}
             </ol>

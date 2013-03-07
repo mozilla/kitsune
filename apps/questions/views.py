@@ -199,7 +199,7 @@ def questions(request, template):
     if (waffle.flag_is_active(request, 'karma') and
         waffle.switch_is_active('karma')):
         kmgr = KarmaManager()
-        data.update(karma_top=kmgr.top_users('3m'))
+        data.update(karma_top=kmgr.top_users('3m', count=20))
         if request.user.is_authenticated():
             ranking = kmgr.ranking('3m', request.user)
             if ranking <= constants.HIGHEST_RANKING:
