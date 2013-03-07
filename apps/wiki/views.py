@@ -378,7 +378,7 @@ def edit_document(request, document_slug, revision_id=None):
                 rev_form = RevisionForm(request.POST)
                 rev_form.instance.document = doc  # for rev_form.clean()
                 if rev_form.is_valid():
-                    _save_rev_and_notify(rev_form, user, doc)
+                    _save_rev_and_notify(rev_form, user, doc, base_rev=rev)
                     if 'notify-future-changes' in request.POST:
                         EditDocumentEvent.notify(request.user, doc)
 
@@ -682,7 +682,8 @@ def translate(request, document_slug, revision_id=None):
                     # Keep what was in the form.
                     based_on_id = None
 
-                _save_rev_and_notify(rev_form, request.user, doc, based_on_id)
+                _save_rev_and_notify(
+                    rev_form, request.user, doc, based_on_id, base_rev=base_rev)
 
                 if 'notify-future-changes' in request.POST:
                     EditDocumentEvent.notify(request.user, doc)
@@ -1172,9 +1173,10 @@ def _document_form_initial(document):
             'needs_change_comment': document.needs_change_comment}
 
 
-def _save_rev_and_notify(rev_form, creator, document, based_on_id=None):
+def _save_rev_and_notify(rev_form, creator, document, based_on_id=None,
+                         base_rev=None):
     """Save the given RevisionForm and send notifications."""
-    new_rev = rev_form.save(creator, document, based_on_id)
+    new_rev = rev_form.save(creator, document, based_on_id, base_rev)
     statsd.incr('wiki.revision')
 
     # Enqueue notifications

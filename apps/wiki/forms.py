@@ -232,7 +232,8 @@ class RevisionForm(forms.ModelForm):
         self.fields['comment'].widget = forms.TextInput(
             attrs={'maxlength': MAX_REVISION_COMMENT_LENGTH})
 
-    def save(self, creator, document, based_on_id=None, **kwargs):
+    def save(self, creator, document, based_on_id=None, base_rev=None,
+             **kwargs):
         """Persist me, and return the saved Revision.
 
         Take several other necessary pieces of data that aren't from the
@@ -244,8 +245,14 @@ class RevisionForm(forms.ModelForm):
 
         new_rev.document = document
         new_rev.creator = creator
+
         if based_on_id:
             new_rev.based_on_id = based_on_id
+
+        # If the user doesn't have edit keywords permission, don't change.
+        if base_rev and not creator.has_perm('wiki.edit_keywords'):
+            new_rev.keywords = base_rev.keywords
+
         new_rev.save()
         return new_rev
 
