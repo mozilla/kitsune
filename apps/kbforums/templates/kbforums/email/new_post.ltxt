@@ -1,16 +1,26 @@
-{% load i18n %}{% load unsubscribe_instructions %}{# L10n: This is an email. Whitespace matters! #}{% blocktrans %}Reply to thread: {{ thread_title }}
+{% from "includes/unsubscribe_text.ltxt" import unsubscribe_text with context %}
+{% autoescape false %}
+{# This is an email. Whitespace matters! #}
+{{ _('Reply to thread: {title}')|f(title=thread) }}
 
+{% trans author=author %}
 User {{ author }} has replied to a thread you're watching. Here
 is their reply:
-{% endblocktrans %}
+{% endtrans %}
+
+
 ========
-{% autoescape off %}
+
 {{ post }}
-{% endautoescape %}
+
 ========
-{% blocktrans %}
+
+{% trans %}
 To view this post on the site, click the following link, or
 paste it into your browser's location bar:
-{% endblocktrans %}
+{% endtrans %}
+
+
 https://{{ host }}{{ post_url }}
-{% unsubscribe_instructions watch %}
+
+{{ unsubscribe_text(watch) }}{% endautoescape %}

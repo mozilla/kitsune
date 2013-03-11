@@ -1,24 +1,25 @@
 from django.contrib.sites.models import Site
 
 from tidings.events import InstanceEvent, EventUnion, Event
-from tidings.utils import emails_with_users_and_watches
-from tower import ugettext as _
+from tower import ugettext_lazy as _lazy
 
 from kbforums.models import Thread
+from sumo.email_utils import emails_with_users_and_watches
 from wiki.models import Document
 
 
 def new_post_mails(reply, users_and_watches):
     """Return an interable of EmailMessages to send when a new post is
     created."""
-    c = {'post': reply.content, 'author': reply.creator.username,
+    c = {'post': reply.content,
+         'author': reply.creator.username,
          'host': Site.objects.get_current().domain,
-         'thread_title': reply.thread.title,
+         'thread': reply.thread.title,
+         'forum': reply.thread.document.title,
          'post_url': reply.get_absolute_url()}
-    thread = reply.thread
+
     return emails_with_users_and_watches(
-        _(u'Re: {forum} - {thread}').format(forum=thread.document.title,
-                                            thread=thread.title),
+        _lazy(u'Re: {forum} - {thread}'),
         'kbforums/email/new_post.ltxt',
         c,
         users_and_watches)
@@ -27,16 +28,15 @@ def new_post_mails(reply, users_and_watches):
 def new_thread_mails(post, users_and_watches):
     """Return an interable of EmailMessages to send when a new thread is
     created."""
-    subject = _(u'New thread in %s: %s') % (
-        post.thread.document.title, post.thread.title)
-    c = {'post': post.content, 'author': post.creator.username,
+    c = {'post': post.content,
+         'author': post.creator.username,
          'host': Site.objects.get_current().domain,
-         'thread_title': post.thread.title,
+         'thread': post.thread.title,
+         'forum': post.thread.document.title,
          'post_url': post.thread.get_absolute_url()}
-    thread = post.thread
+
     return emails_with_users_and_watches(
-        _(u'{forum} - {thread}').format(forum=thread.document.title,
-                                        thread=thread.title),
+        _lazy(u'{forum} - {thread}'),
         'kbforums/email/new_thread.ltxt',
         c,
         users_and_watches)

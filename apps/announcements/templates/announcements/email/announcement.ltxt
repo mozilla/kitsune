@@ -1,7 +1,7 @@
-{% load i18n %}{# L10n: This is an email.  Whitespace matters! #}{% blocktrans %}
+{% autoescape false %}
+{# This is an email. Whitespace matters! #}
 {{ content }}
 
 ---
 
-The {{ domain }} team
-{% endblocktrans %}
+{{ _('The {domain} team')|f(domain=domain) }}{% endautoescape %}
