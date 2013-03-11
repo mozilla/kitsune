@@ -63,9 +63,18 @@ Let us know which of the above you would be interested in
 and we’ll help you get started. It’s great to have you onboard!
 {% endtrans %}
 
+{# L10n: This is an email.  Whitespace matters! #}
+{% trans %}
+You can also apply to our buddy program and get guidance from our more experienced volunteers
+{% endtrans %}
+
+http://mzl.la/16m82GK
 
 {# L10n: This is at the end of an email. #}
 {{ _('Welcome to SUMO!') }}
 
 Madalina & Rosana
+
+rosana@mozilla.com
+mana@mozilla.com
 SUMO Community Managers{% endautoescape %}
