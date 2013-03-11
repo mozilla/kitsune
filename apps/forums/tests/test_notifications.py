@@ -20,10 +20,9 @@ from users.tests import user
 # Some of these contain a locale prefix on included links, while others don't.
 # This depends on whether the tests use them inside or outside the scope of a
 # request. See the long explanation in questions.tests.test_notifications.
-REPLY_EMAIL = u"""Reply to thread: {thread_title}
+REPLY_EMAIL = u"""Reply to thread: {thread}
 
-User {username} has replied to a thread you're watching. Here
-is their reply:
+User {username} has replied to a thread you're watching. Here is their reply:
 
 ========
 
@@ -31,8 +30,7 @@ a post
 
 ========
 
-To view this post on the site, click the following link, or
-paste it into your browser's location bar:
+To view this post on the site, click the following link, or paste it into your browser's location bar:
 
 https://testserver/en-US/forums/{forum_slug}/{thread_id}#post-{post_id}
 
@@ -40,10 +38,9 @@ https://testserver/en-US/forums/{forum_slug}/{thread_id}#post-{post_id}
 Unsubscribe from these emails:
 https://testserver/en-US/unsubscribe/"""
 
-NEW_THREAD_EMAIL = u"""New thread: {thread_title}
+NEW_THREAD_EMAIL = u"""New thread: {thread}
 
-User {username} has posted a new thread in a forum you're watching.
-Here is the thread:
+User {username} has posted a new thread in a forum you're watching. Here is the thread:
 
 ========
 
@@ -51,8 +48,7 @@ a post
 
 ========
 
-To view this post on the site, click the following link, or
-paste it into your browser's location bar:
+To view this post on the site, click the following link, or paste it into your browser's location bar:
 
 https://testserver/en-US/forums/{forum_slug}/{thread_id}
 
@@ -136,7 +132,7 @@ class NotificationsTests(ForumTestCase):
         body = REPLY_EMAIL.format(
             username=poster.username,
             forum_slug=f.slug,
-            thread_title=t.title,
+            thread=t.title,
             thread_id=t.id,
             post_id=p.id)
         starts_with(mail.outbox[0].body, body)
@@ -176,7 +172,7 @@ class NotificationsTests(ForumTestCase):
         body = NEW_THREAD_EMAIL.format(
             username=poster.username,
             forum_slug=f.slug,
-            thread_title=t.title,
+            thread=t.title,
             thread_id=t.id)
         starts_with(mail.outbox[0].body, body)
 
@@ -218,7 +214,7 @@ class NotificationsTests(ForumTestCase):
         body = REPLY_EMAIL.format(
             username=poster.username,
             forum_slug=f.slug,
-            thread_title=t.title,
+            thread=t.title,
             thread_id=t.id,
             post_id=p.id)
         starts_with(mail.outbox[0].body, body)
@@ -266,7 +262,7 @@ class NotificationsTests(ForumTestCase):
         body = REPLY_EMAIL.format(
             username=poster.username,
             forum_slug=f.slug,
-            thread_title=t.title,
+            thread=t.title,
             thread_id=t.id,
             post_id=p.id)
         starts_with(mail.outbox[0].body, body)

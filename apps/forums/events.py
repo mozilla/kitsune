@@ -1,10 +1,10 @@
 from django.contrib.sites.models import Site
 
 from tidings.events import InstanceEvent, EventUnion
-from tidings.utils import emails_with_users_and_watches
-from tower import ugettext as _
+from tower import ugettext_lazy as _lazy
 
 from forums.models import Thread, Forum
+from sumo.email_utils import emails_with_users_and_watches
 
 
 class NewPostEvent(InstanceEvent):
@@ -26,14 +26,15 @@ class NewPostEvent(InstanceEvent):
         return EventUnion(self, NewThreadEvent(self.reply)).fire(**kwargs)
 
     def _mails(self, users_and_watches):
-        c = {'post': self.reply.content, 'author': self.reply.author.username,
+        c = {'post': self.reply.content,
+             'author': self.reply.author.username,
              'host': Site.objects.get_current().domain,
-             'thread_title': self.instance.title,
+             'thread': self.reply.thread.title,
+             'forum': self.reply.thread.forum.name,
              'post_url': self.reply.get_absolute_url()}
-        thread = self.reply.thread
+
         return emails_with_users_and_watches(
-            _(u'Re: {forum} - {thread}').format(forum=thread.forum.name,
-                                                thread=thread.title),
+            _lazy(u'Re: {forum} - {thread}'),
             'forums/email/new_post.ltxt',
             c,
             users_and_watches)
@@ -51,14 +52,15 @@ class NewThreadEvent(InstanceEvent):
         self.post = post
 
     def _mails(self, users_and_watches):
-        c = {'post': self.post.content, 'author': self.post.author.username,
+        c = {'post': self.post.content,
+             'author': self.post.author.username,
              'host': Site.objects.get_current().domain,
-             'thread_title': self.post.thread.title,
+             'thread': self.post.thread.title,
+             'forum': self.post.thread.forum.name,
              'post_url': self.post.thread.get_absolute_url()}
-        thread = self.post.thread
+
         return emails_with_users_and_watches(
-            _(u'{forum} - {thread}').format(forum=thread.forum.name,
-                                            thread=thread.title),
+            _lazy(u'{forum} - {thread}'),
             'forums/email/new_thread.ltxt',
             c,
             users_and_watches)

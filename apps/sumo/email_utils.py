@@ -1,6 +1,8 @@
 from contextlib import contextmanager
 
+from django.conf import settings
 from django.core import mail
+from django.core.mail import EmailMessage
 from django.utils import translation
 
 import jingo
@@ -51,3 +53,51 @@ def render_email(template, context):
     req.locale = translation.get_language()
 
     return jingo.render_to_string(req, template, context)
+
+
+def emails_with_users_and_watches(subject,
+                                  template_path,
+                                  context_vars,
+                                  users_and_watches,
+                                  from_email=settings.TIDINGS_FROM_ADDRESS,
+                                  default_locale=settings.WIKI_DEFAULT_LANGUAGE,
+                                  **extra_kwargs):
+    """Return iterable of EmailMessages with user and watch values substituted.
+
+    A convenience function for generating emails by repeatedly
+    rendering a Django template with the given ``context_vars`` plus a
+    ``user`` and ``watches`` key for each pair in
+    ``users_and_watches``
+
+    .. Note::
+
+       This is a locale-aware re-write of the same function in django-tidings.
+       It's kind of goofy--I ain't gonna lie.
+
+    :arg subject: lazy gettext subject string
+    :arg template_path: path to template file
+    :arg context_vars: a map which becomes the Context passed in to the template
+        and the subject string
+    :arg from_email: the from email address
+    :arg default_local: the local to default to if not user.profile.locale
+    :arg extra_kwargs: additional kwargs to pass into EmailMessage constructor
+
+    :returns: generator of EmailMessage objects
+
+    """
+    for u, w in users_and_watches:
+        if hasattr(u, 'profile'):
+            locale = u.profile.locale
+        else:
+            locale = default_locale
+
+        with uselocale(locale):
+            context_vars['user'] = u
+            context_vars['watch'] = w[0]
+            context_vars['watches'] = w
+
+            yield EmailMessage(subject.format(**context_vars),
+                               render_email(template_path, context_vars),
+                               from_email,
+                               [u.email],
+                               **extra_kwargs)

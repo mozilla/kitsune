@@ -2,13 +2,13 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
 from django.core.mail import EmailMessage, get_connection
-from django.template import loader
 
 import bleach
 from celery.task import task
-from tower import activate, ugettext as _
+from tower import ugettext as _
 
 from announcements.models import Announcement
+from sumo.email_utils import uselocale, render_email
 
 
 @task
@@ -30,14 +30,16 @@ def send_group_email(announcement_id):
     try:
         for u in users:
             # Localize email each time.
-            activate(u.profile.locale or settings.LANGUAGE_CODE)
-            subject = _('New announcement for {group}').format(
-                group=group.name)
-            message = loader.render_to_string(template, email_kwargs)
-            m = EmailMessage(subject, message,
+            with uselocale(u.profile.locale or settings.LANGUAGE_CODE):
+                subject = _('New announcement for {group}').format(
+                    group=group.name)
+                msg = render_email(template, email_kwargs)
+
+            m = EmailMessage(subject,
+                             msg,
                              settings.TIDINGS_FROM_ADDRESS,
                              [u.email])
             connection.send_messages([m])
+
     finally:
-        activate(settings.LANGUAGE_CODE)
         connection.close()
