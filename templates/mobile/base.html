@@ -38,6 +38,9 @@
       data-for-version="{{ for_version|json }}"
       data-orientation="{% if page_align %}{{ page_align }}{% else %}right{% endif %}"
       data-ga-push="{{ ga_push_attribute() }}"
+      {% if ga_alternate_url %}
+        data-ga-alternate-url="{{ ga_alternate_url }}"
+      {% endif %}
       data-usernames-api="{{ url('users.api.usernames') }}"
 {% if extra_body_attrs -%}
   {% for attr, val in extra_body_attrs.items() %}{{ attr }}="{{ val }}" {% endfor %}

@@ -1,5 +1,6 @@
 var _gaq = _gaq || [];
 var extraPush = $('body').data('ga-push');
+var alternateUrl = $('body').data('ga-alternate-url');
 
 _gaq.push(['_setAccount', 'UA-36116321-2']);
 
@@ -10,7 +11,12 @@ if (extraPush && extraPush.length) {
   }
 }
 
-_gaq.push(['_trackPageview']);
+if (alternateUrl) {
+  _gaq.push(['_trackPageview', alternateUrl]);
+} else {
+  _gaq.push(['_trackPageview']);
+}
+
 
 (function() {
   var ga = document.createElement('script');
