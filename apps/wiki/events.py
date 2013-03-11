@@ -10,6 +10,7 @@ from django.template import Context, loader
 from bleach import clean
 from tidings.events import InstanceEvent, Event, EventUnion
 from tower import ugettext as _
+from tower import ugettext_lazy as _lazy
 from wikimarkup.parser import ALLOWED_TAGS, ALLOWED_ATTRIBUTES
 
 from sumo import email_utils
@@ -126,9 +127,7 @@ class EditDocumentEvent(InstanceEvent):
         log.debug('Sending edited notification email for document (id=%s)' %
                   document.id)
 
-        # Note: This is a lazy_gettext, so it gets localized in the
-        # locale that's in effect when .format() is called on it.
-        subject = _(u'{title} was edited by {creator}')
+        subject = _lazy(u'{title} was edited by {creator}')
         url = reverse('wiki.document_revisions', locale=document.locale,
                       args=[document.slug])
         return notification_mails(self.revision, subject,
@@ -169,7 +168,7 @@ class ReviewableRevisionInLocaleEvent(_RevisionConstructor,
         document = revision.document
         log.debug('Sending ready for review email for revision (id=%s)' %
                   revision.id)
-        subject = _(u'{title} is ready for review ({creator})')
+        subject = _lazy(u'{title} is ready for review ({creator})')
         url = reverse('wiki.review_revision',
                       locale=document.locale,
                       args=[document.slug,
