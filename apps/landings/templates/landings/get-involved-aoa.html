@@ -38,24 +38,24 @@
     <div class="grid_12">
       <h3>{{ _('How it works') }}</h3>
     </div>
-    <div class="grid_3">
+    <div class="grid_6">
       <span class="bullet">1</span>
       <div><a href="{{ url('customercare.landing') }}">{{ _('Go to Army of Awesome') }}</a></div>
-    </div>
-    <div class="grid_3">
+
       <span class="bullet">2</span>
       <div>{{ _('Connect your Twitter account') }}</div>
-    </div>
-    <div class="grid_3">
+
       <span class="bullet">3</span>
       <div>
         {% trans %}
-          Answer to Twitter users that need help. It's super easy with our
-          canned responses.
+            Answer to Twitter users that need help. It's super easy with our
+            canned responses.
         {% endtrans %}
       </div>
     </div>
-    <div class="grid_3"><div class="placeholder"></div></div>
+    <div class="grid_6">
+        <img src="{{ MEDIA_URL }}/img/gi-visual-aoa.png" alt="">
+    </div>
   </div>
 
   <div class="row cf pick-a-way">
@@ -63,19 +63,19 @@
       <h3>{{ _('Other ways to get involved') }}</h3>
     </div>
     <div class="grid_3">
-      <div class="placeholder"></div>
+      <div class="get-involved-icon questions"></div>
       <a href="{{ url('landings.get_involved_questions') }}">
         {{ _('Answer questions in the support forum') }} &raquo;
       </a>
     </div>
     <div class="grid_3">
-      <div class="placeholder"></div>
+      <div class="get-involved-icon kb"></div>
       <a href="{{ url('wiki.document', 'improve-knowledge-base') }}">
         {{ _('Write help articles') }} &raquo;
       </a>
     </div>
     <div class="grid_3">
-      <div class="placeholder"></div>
+      <div class="get-involved-icon localize"></div>
       <a href="{{ url('wiki.document', 'localize-firefox-help') }}">
         {{ _('Translate help to your languages') }} &raquo;
       </a>

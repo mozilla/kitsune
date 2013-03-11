@@ -28,7 +28,11 @@ h3 {
   width: 32px;
 
   + div {
-    clear: both;
+    margin: 0 0 20px 42px;
+
+    > a {
+      margin-top: 0;
+    }
   }
 }
 
@@ -43,6 +47,27 @@ h3 {
 .content-box {
   padding-bottom: 20px;
   padding-top: 20px;
+}
+
+.get-involved-icon {
+  background: url('../../img/get-involved-icons.png') no-repeat 0 0;
+  height: 118px;
+
+  &.aoa {
+    background-position: 0 -50px;
+  }
+
+  &.kb {
+    background-position: 0 -486px;
+  }
+
+  &.localize {
+    background-position: 0 -704px;
+  }
+
+  &.questions {
+    background-position: 0 -268px;
+  }
 }
 
 .headlines {
