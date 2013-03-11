@@ -11,7 +11,15 @@ from wiki.facets import topics_for, documents_for
 @mobile_template('products/{mobile/}products.html')
 def product_list(request, template):
     """The product picker page."""
-    products = Product.objects.filter(visible=True)
+    products = list(Product.objects.filter(visible=True))
+
+    # A/B test for Bug 846756:
+    if 'b' in request.GET:
+        # Flip the first two products
+        first = products[0]
+        products[0] = products[1]
+        products[1] = first
+
     return jingo.render(request, template, {
         'products': products})
 
