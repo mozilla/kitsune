@@ -6,29 +6,34 @@
 {% set styles = ('questions.stats', ) %}
 
 {% block content %}
-  <h1 class="grid_12">Question Statistics</h1>
+  <h1>{{ _('Question Statistics') }}</h1>
 
-  <div id="topic-stats" data-histogram="{{ histogram|json }}">
-    <h2 class="grid_12">{{ _('Topics') }}</h2>
+  {% if histogram %}
+    <div id="topic-stats" data-histogram="{{ histogram|json }}">
+      <h2 class="grid_12">{{ _('Topics') }}</h2>
 
+      <div class="graph-container grid_9 alpha">
+        <div class="graph"></div>
+        <div class="y-axis"></div>
+      </div>
 
-    <div class="graph-container grid_9 alpha">
-      <div class="graph"></div>
-      <div class="y-axis"></div>
-    </div>
-
-    <div class="controls grid_3 omega">
-      <div class="legend"></div>
-      <div class="search">
-        <form>
-          <ul>
-            {{ form.as_ul() }}
-            <li><input type="submit" /></li>
-          </ul>
-        </form>
+      <div class="controls grid_3 omega">
+        <div class="legend"></div>
+        <div class="search">
+          <form>
+            <ul>
+              {{ form.as_ul() }}
+              <li><input type="submit" /></li>
+            </ul>
+          </form>
+        </div>
       </div>
     </div>
-  </div>
+  {% else %}
+    <p>
+      {{ _('Data is temporarily unavailable, please try again in a few minutes.') }}
+    </p>
+  {% endif %}
 {% endblock %}
 
 {% block side %}

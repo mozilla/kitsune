@@ -1115,6 +1115,19 @@ def marketplace_success(request, template=None):
 
 
 def stats_topic_data(bucket_days, start, end):
+    """Gets a zero filled histogram for each question topic.
+
+    Uses elastic search.
+    """
+    # Woah! object?! Yeah, so what happens is that Sphilastic is
+    # really an elasticutils.S and that requires a Django ORM model
+    # argument. That argument only gets used if you want object
+    # results--for every hit it gets back from ES, it creates an
+    # object of the type of the Django ORM model you passed in. We use
+    # object here to satisfy the need for a type in the constructor
+    # and make sure we don't ever ask for object results.
+    #
+    # The above comment was copy/pasted from search/views.py.
     search = Sphilastic(object)
 
     bucket = 24 * 60 * 60 * bucket_days
@@ -1131,6 +1144,8 @@ def stats_topic_data(bucket_days, start, end):
 
     topics = Topic.objects.values('slug', 'title')
     facets = {}
+    # TODO: If we change to using datetimes in ES, 'histogram' below
+    # should change to 'date_histogram'.
     for topic in topics:
         facets[topic['title']] = {
             'histogram': {'interval': bucket, 'field': 'created'},
@@ -1138,14 +1153,19 @@ def stats_topic_data(bucket_days, start, end):
         }
 
     # Get some sweet histogram data.
-    histograms_data = search.facet_raw(**facets).values_dict().facet_counts()
+    search = search.facet_raw(**facets).values_dict()
+    try:
+        histograms_data = search.facet_counts()
+    except (ESTimeoutError, ESMaxRetryError, ESException):
+        return []
+
     # The data looks like this right now:
     # {
     #   'topic-1': [{'key': 1362774285, 'count': 100}, ...],
     #   'topic-2': [{'key': 1362774285, 'count': 100}, ...],
     # }
 
-    # Massage the data to achieve N things:
+    # Massage the data to achieve 2 things:
     # - All points between the earliest and the latest values have data,
     #   at a resolution of 1 day.
     # - It is in a format Rickshaw will like.
@@ -1153,7 +1173,13 @@ def stats_topic_data(bucket_days, start, end):
     # Construct a intermediatery data structure that allows for easy
     # manipulation. Also find the min and max data at the same time.
     # {'topic-1': [{1362774285: 100}, {1362784285: 200} ...}
-    earliest_point = [v for v in histograms_data.values() if v][0][0]['key']
+    for series in histograms_data.values():
+        if series:
+            earliest_point = series[0]['key']
+            break
+    else:
+        return []
+
     latest_point = earliest_point
     interim_data = {}
 

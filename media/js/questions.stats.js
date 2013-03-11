@@ -7,7 +7,7 @@ function prepareData(data) {
 
 function makeGraph($elem, data) {
   $elem.find('.graph, .legend, .y-axis').empty();
- var graph = new Rickshaw.Graph({element: $elem.find('.graph')[0], series: prepareData(data),
+  var graph = new Rickshaw.Graph({element: $elem.find('.graph')[0], series: prepareData(data),
     renderer: 'bar'
   });
 
