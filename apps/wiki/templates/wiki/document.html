@@ -12,7 +12,10 @@
 {% block title %}{{ document.title }} | {% if not products or products|count > 1 %}{{ _('Mozilla Support', 'site_title') }}{% else %}{{ _('{product} Help')|f(product=_(product.title, 'DB: products.Product.title')) }}{% endif %}{% endblock %}
 
 {% if document.parent %}
-  {# If there is a parent doc, use it's URL for switching locales. #}
+  {# If there is a parent doc, use it's slug for Google Analytics tracking. #}
+  {% set ga_alternate_url = url('wiki.document', document.parent.slug) %}
+
+  {# And use it's URL for switching locales. #}
   {% set localizable_url = url('wiki.document', document.parent.slug, locale=settings.WIKI_DEFAULT_LANGUAGE) %}
 {% endif %}
 
