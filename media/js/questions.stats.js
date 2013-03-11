@@ -46,12 +46,11 @@ function makeGraph($elem, data) {
 }
 
 function init() {
-  $topics = $('#topic-stats');
-
-  $topics.find('input[type=date]').datepicker({
+  $('input[type=date]').datepicker({
     dateFormat: 'yy-mm-dd'
   });
 
+  $topics = $('#topic-stats');
   makeGraph($topics, $topics.data('histogram'));
 }
 

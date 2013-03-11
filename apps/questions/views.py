@@ -1224,7 +1224,7 @@ def stats(request):
         start = form.cleaned_data['start']
         end = form.cleaned_data['end']
     else:
-        bucket_days = 1,
+        bucket_days = 1
         start = date.today() - timedelta(days=30)
         end = date.today()
 

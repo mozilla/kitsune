@@ -662,7 +662,7 @@ MINIFY_BUNDLES = {
             'js/questions.metrics.js',
         ),
         'questions.stats': (
-            'js/libs/jqueryui.rickshaw.min.js',
+            'js/libs/jqueryui.rickshaw.js',
             'js/libs/d3.v3.min.js',
             'js/libs/d3.layout.min.js',
             'js/libs/rickshaw.min.js',

@@ -291,9 +291,13 @@ class MarketplaceAaqForm(forms.Form):
         choices=CATEGORY_CHOICES)
 
 
+bucket_choices = [(1, '1 day'), (7, '1 week'), (30, '1 month')]
+
+
 class StatsForm(forms.Form):
-    bucket = forms.IntegerField(min_value=1, required=False,
-                                label=_lazy(u'Interval'))
+    bucket = forms.IntegerField(
+        min_value=1, required=False, label=_lazy(u'Interval'),
+        widget=forms.Select(choices=bucket_choices))
     start = forms.DateField(required=False, label=_lazy(u'Start'))
     end = forms.DateField(required=False, label=_lazy(u'End'))
 
@@ -313,6 +317,8 @@ class StatsForm(forms.Form):
         return self.cleaned_data['end']
 
     def clean(self):
-        if self.cleaned_data.get('end') < self.cleaned_data.get('start'):
+        start = self.cleaned_data.get('start')
+        end = self.cleaned_data.get('end')
+        if start and end and start > end:
             raise forms.ValidationError('Start must be less than end.')
         return self.cleaned_data
