@@ -108,3 +108,23 @@ class SearchTest(ElasticTestCase):
         eq_(200, response.status_code)
         doc = pq(response.content)
         assert '"Zero Search Results"' in doc('body').attr('data-ga-push')
+
+    def test_fallback_for_zero_results(self):
+        """If there are no results, fallback to a list of top articles."""
+        firefox = product(title=u'firefox', slug=u'desktop', save=True)
+        doc = document(title=u'audio1', locale=u'en-US', category=10, save=True)
+        doc.products.add(firefox)
+        revision(document=doc, is_approved=True, save=True)
+        doc = document(title=u'audio2', locale=u'en-US', category=10, save=True)
+        doc.products.add(firefox)
+        revision(document=doc, is_approved=True, save=True)
+
+        self.refresh()
+
+        # Verify there are no real results but 2 fallback results are rendered
+        response = self.client.get(reverse('search'), {'q': 'piranha'})
+        eq_(200, response.status_code)
+
+        assert "We couldn't find any results for" in response.content
+        doc = pq(response.content)
+        eq_(2, len(doc('#search-results .result')))

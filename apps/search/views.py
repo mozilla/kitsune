@@ -581,8 +581,6 @@ def _fallback_results(locale, product_slugs):
             pass
 
     docs, fallback = documents_for(locale, products=products)
-
-    if len(docs) < 20 and fallback:
-        docs = docs + fallback
+    docs = docs + (fallback or [])
 
     return docs[:20]
