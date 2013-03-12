@@ -76,23 +76,39 @@
     </div>
 
     <div class="grid_9">
-      <h2>
-        {# L10n: {n} is the number of search results, {q} is the search query, {l} is the language searched. #}
-        {{ ngettext('Found <strong>{n}</strong> result for <strong>{q}</strong> in <strong>{l}</strong>',
-                'Found <strong>{n}</strong> results for <strong>{q}</strong> in <strong>{l}</strong>',
-                num_results)|fe(n=num_results, q=q, l=lang_name) }}
-      </h2>
+      {% if num_results > 0 %}
+        <h2>
+          {# L10n: {n} is the number of search results, {q} is the search query, {l} is the language searched. #}
+          {{ ngettext('Found <strong>{n}</strong> result for <strong>{q}</strong> in <strong>{l}</strong>',
+                  'Found <strong>{n}</strong> results for <strong>{q}</strong> in <strong>{l}</strong>',
+                  num_results)|fe(n=num_results, q=q, l=lang_name) }}
+        </h2>
 
-      <div class="content-box">
+        <div class="content-box">
           {% for doc in results %}
             {{ search_result(doc, s=q, r=doc.rank) }}
           {% endfor %}
-      </div>
+        </div>
 
-      {{ pages|paginator }}
+        {{ pages|paginator }}
+      {% else %}
+        <h2>
+          {# L10n: {q} is the search query, {l} is the language searched. #}
+          {{ _("We couldn't find any results for <strong>{q}</strong> in <strong>{l}</strong>. Maybe one of these articles will be helpful?")|fe(q=q, l=lang_name) }}
+        </h2>
+
+        <div class="content-box">
+          {% for doc in fallback_results %}
+            <div class="result document">
+              <h3><a class="title" href="{{ doc.url }}">{{ doc.document_title }}</a></h3>
+              <a tabindex="-1" href="{{ doc.url }}">{{ doc.document_summary }}</a>
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
     </div>
     <div class="grid_12">
-      {% if num_results > 3 %}
+      {% if num_results > 3 or num_results == 0 %}
         {{ basic_search_form() }}
       {% endif %}
     </div>
