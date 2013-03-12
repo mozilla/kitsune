@@ -7,15 +7,15 @@
   {% else %}
     {% set esab = 'b' %}
   {% endif %}
-  <form {% if id %}id="{{ id }}"{% endif %} action="{{ url('search') }}" method="get" {% if target %} target="{{ target }}"{% endif %}>
+  <form {% if id %}id="{{ id }}"{% endif %} action="{{ url('search') }}" method="get" {% if target %} target="{{ target }}"{% endif %} class="search-form">
     <input type="hidden" name="esab" value="{{ esab }}">
     {% if params %}
       {% for k, v in params.items() %}
         <input type="hidden" name="{{ k }}" value="{{ v }}" />
       {% endfor %}
     {% endif %}
-    <input type="text" name="q" required="required" placeholder="{{ _('Search Mozilla Support') }}" />
-    <button type="submit" title="{{ _('Search') }}">{{ _('Search') }}</button>
+    <input type="search" name="q" required="required" placeholder="{{ _('Search Mozilla Support') }}" class="searchbox" />
+    <button type="submit" title="{{ _('Search') }}" class="submit-button">{{ _('Search') }}</button>
   </form>
 {% endmacro %}
 
