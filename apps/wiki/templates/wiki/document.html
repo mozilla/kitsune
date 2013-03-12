@@ -11,7 +11,7 @@
 
 {% block title %}{{ document.title }} | {% if not products or products|count > 1 %}{{ _('Mozilla Support', 'site_title') }}{% else %}{{ _('{product} Help')|f(product=_(product.title, 'DB: products.Product.title')) }}{% endif %}{% endblock %}
 
-{% if request.locale != settings.WIKI_DEFAULT_LANGUAGE %}
+{% if request.LANGUAGE_CODE != settings.WIKI_DEFAULT_LANGUAGE %}
   {# If we are on a non default locale, use default locale's slug for Google Analytics tracking. #}
   {% set ga_alternate_url = url('wiki.document', document.parent.slug if document.parent else document.slug) %}
 {% endif %}
