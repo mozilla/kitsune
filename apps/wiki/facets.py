@@ -56,7 +56,7 @@ def topics_for(products, topics=None):
                  .distinct())
 
 
-def documents_for(locale, topics, products=None):
+def documents_for(locale, topics=None, products=None):
     """Returns a tuple of lists of articles that apply to topics and products.
 
     The first item in the tuple is the list of articles for the locale
@@ -65,7 +65,7 @@ def documents_for(locale, topics, products=None):
     is en-US, the second item will be None.
 
     :arg locale: the locale
-    :arg topics: a list of Topic instances
+    :arg topics: (optional) a list of Topic instances
     :arg products: (optional) a list of Product instances
 
     The articles are returned as a list of dicts with the following keys:
@@ -93,7 +93,7 @@ def documents_for(locale, topics, products=None):
     return documents, fallback_documents
 
 
-def _documents_for(locale, topics, products=None):
+def _documents_for(locale, topics=None, products=None):
     """Returns a list of articles that apply to passed in topics and products.
 
     """
@@ -121,14 +121,15 @@ def _documents_for(locale, topics, products=None):
     return documents
 
 
-def _es_documents_for(locale, topics, products=None):
+def _es_documents_for(locale, topics=None, products=None):
     """ES implementation of documents_for."""
     s = (Document.search()
-        .values_dict('id', 'document_title', 'url', 'document_parent_id')
+        .values_dict('id', 'document_title', 'url', 'document_parent_id',
+                     'document_summary')
         .filter(document_locale=locale, document_is_archived=False,
                 document_category__in=settings.IA_DEFAULT_CATEGORIES))
 
-    for topic in topics:
+    for topic in topics or []:
         s = s.filter(topic=topic.slug)
     for product in products or []:
         s = s.filter(product=product.slug)
@@ -136,14 +137,14 @@ def _es_documents_for(locale, topics, products=None):
     return list(s.order_by('-document_recent_helpful_votes')[:100])
 
 
-def _db_documents_for(locale, topics, products=None):
+def _db_documents_for(locale, topics=None, products=None):
     """DB implementation of topics_for."""
     qs = Document.objects.filter(
         locale=locale,
         is_archived=False,
         current_revision__isnull=False,
         category__in=settings.IA_DEFAULT_CATEGORIES)
-    for topic in topics:
+    for topic in topics or []:
         qs = qs.filter(topics=topic)
     for product in products or []:
         qs = qs.filter(products=product)
@@ -155,7 +156,8 @@ def _db_documents_for(locale, topics, products=None):
             id=d.id,
             document_title=d.title,
             url=d.get_absolute_url(),
-            document_parent_id=d.parent_id))
+            document_parent_id=d.parent_id,
+            document_summary=d.current_revision.summary))
     return doc_dicts
 
 
@@ -163,6 +165,6 @@ def _documents_for_cache_key(locale, topics, products):
     m = hashlib.md5()
     m.update('{locale}:{topics}:{products}'.format(
         locale=locale,
-        topics=','.join(sorted([t.slug for t in topics])),
+        topics=','.join(sorted([t.slug for t in topics or []])),
         products=','.join(sorted([p.slug for p in products or []]))))
     return 'documents_for:%s' % m.hexdigest()

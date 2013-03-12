@@ -28,6 +28,7 @@ from search.forms import SearchForm
 from search.es_utils import (ESTimeoutError, ESMaxRetryError, ESException,
                              Sphilastic, F)
 from sumo.utils import paginate, smart_int
+from wiki.facets import documents_for
 from wiki.models import Document
 
 
@@ -63,7 +64,8 @@ def search(request, template=None):
             json.dumps({'error': _('Invalid callback function.')}),
             mimetype=mimetype, status=400)
 
-    language = locale_or_default(request.GET.get('language', request.LANGUAGE_CODE))
+    language = locale_or_default(
+        request.GET.get('language', request.LANGUAGE_CODE))
     r = request.GET.copy()
     a = request.GET.get('a', '0')
 
@@ -467,9 +469,14 @@ def search(request, template=None):
 
         return HttpResponse(json_data, mimetype=mimetype)
 
+    fallback_results = None
+    if num_results == 0:
+        fallback_results = _fallback_results(language, cleaned['product'])
+
     results_ = jingo.render(request, template, {
         'num_results': num_results,
         'results': results,
+        'fallback_results': fallback_results,
         'q': cleaned['q'],
         'w': cleaned['w'],
         'product': cleaned['product'],
@@ -561,3 +568,21 @@ def _build_es_excerpt(result):
          chain(*result._highlight.values()) if m])
 
     return jinja2.Markup(clean_excerpt(excerpt))
+
+
+def _fallback_results(locale, product_slugs):
+    """Return the top 20 articles by votes for the given product(s)."""
+    products = []
+    for slug in product_slugs:
+        try:
+            p = Product.objects.get(slug=slug)
+            products.append(p)
+        except Product.DoesNotExist:
+            pass
+
+    docs, fallback = documents_for(locale, products=products)
+
+    if len(docs) < 20 and fallback:
+        docs = docs + fallback
+
+    return docs[:20]
