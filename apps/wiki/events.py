@@ -86,33 +86,6 @@ def context_dict(revision, ready_for_l10n=False, revision_approved=False):
     }
 
 
-def notification_mails(revision, subject, template, url, users_and_watches):
-    """Return EmailMessages in the KB's standard notification mail format."""
-    document = revision.document
-
-    for u, w in users_and_watches:
-        if hasattr(u, 'profile'):
-            locale = u.profile.locale
-        else:
-            locale = document.locale
-
-        with email_utils.uselocale(locale):
-            c = context_dict(revision)
-            # TODO: Expose all watches
-            c['watch'] = w[0]
-            c['url'] = url
-
-            subject = subject.format(title=document.title,
-                                     creator=revision.creator,
-                                     locale=document.locale)
-            msg = email_utils.render_email(template, c)
-
-        yield EmailMessage(subject,
-                           msg,
-                           settings.TIDINGS_FROM_ADDRESS,
-                           [u.email])
-
-
 class EditDocumentEvent(InstanceEvent):
     """Event fired when a certain document is edited"""
     event_type = 'wiki edit document'
@@ -123,16 +96,27 @@ class EditDocumentEvent(InstanceEvent):
         self.revision = revision
 
     def _mails(self, users_and_watches):
-        document = self.revision.document
+        revision = self.revision
+        document = revision.document
         log.debug('Sending edited notification email for document (id=%s)' %
                   document.id)
 
         subject = _lazy(u'{title} was edited by {creator}')
         url = reverse('wiki.document_revisions', locale=document.locale,
                       args=[document.slug])
-        return notification_mails(self.revision, subject,
-                                  'wiki/email/edited.ltxt', url,
-                                  users_and_watches)
+
+        context = context_dict(revision)
+        context['url'] = url
+        context['locale'] = document.locale
+        context['title'] = document.title
+        context['creator'] = revision.creator
+
+        return email_utils.emails_with_users_and_watches(
+            subject,
+            'wiki/email/edited.ltxt',
+            context,
+            users_and_watches,
+            default_locale=document.locale)
 
 
 class _RevisionConstructor(object):
@@ -173,9 +157,19 @@ class ReviewableRevisionInLocaleEvent(_RevisionConstructor,
                       locale=document.locale,
                       args=[document.slug,
                       revision.id])
-        return notification_mails(revision, subject,
-                                  'wiki/email/ready_for_review.ltxt', url,
-                                  users_and_watches)
+
+        context = context_dict(revision)
+        context['url'] = url
+        context['locale'] = document.locale
+        context['title'] = document.title
+        context['creator'] = revision.creator
+
+        return email_utils.emails_with_users_and_watches(
+            subject,
+            'wiki/email/ready_for_review.ltxt',
+            context,
+            users_and_watches,
+            default_locale=document.locale)
 
 
 class ReadyRevisionEvent(_RevisionConstructor, Event):
@@ -192,29 +186,16 @@ class ReadyRevisionEvent(_RevisionConstructor, Event):
         log.debug('Sending ready notifications for revision (id=%s)' %
                   revision.id)
 
-        for user, watches in users_and_watches:
-            if hasattr(user, 'profile'):
-                locale = user.profile.locale
-            else:
-                locale = document.locale
+        subject = _lazy(u'{title} has a revision ready for localization')
 
-            with email_utils.uselocale(locale):
-                subject = _(u'{title} has a revision ready for '
-                            'localization').format(title=document.title)
-                template = 'wiki/email/ready_for_l10n.ltxt'
+        context = {'title': document.title}
 
-                c = context_dict(revision, ready_for_l10n=True)
-                # TODO: Expose all watches
-                c['watch'] = watches[0]
-                c['url'] = django_reverse('wiki.select_locale',
-                                          args=[document.slug])
-
-                msg = email_utils.render_email(template, c)
-
-            yield EmailMessage(subject,
-                               msg,
-                               settings.TIDINGS_FROM_ADDRESS,
-                               [user.email])
+        return email_utils.emails_with_users_and_watches(
+            subject,
+            'wiki/email/ready_for_l10n.ltxt',
+            context,
+            users_and_watches,
+            default_locale=document.locale)
 
 
 class ApproveRevisionInLocaleEvent(_RevisionConstructor, _LocaleFilter, Event):
