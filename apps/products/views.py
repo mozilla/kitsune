@@ -16,9 +16,7 @@ def product_list(request, template):
     # A/B test for Bug 846756:
     if 'b' in request.GET:
         # Flip the first two products
-        first = products[0]
-        products[0] = products[1]
-        products[1] = first
+        products[0], products[1] = products[1], products[0]
 
     return jingo.render(request, template, {
         'products': products})
