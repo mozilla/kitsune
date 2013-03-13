@@ -27,8 +27,7 @@ There's an installation guide on the Elastic Search site.
 
 http://www.elasticsearch.org/guide/reference/setup/installation.html
 
-We're currently using 0.17.x in production. Most of us use 0.17.10
-or 0.19.8.
+We're currently using 0.20.5 in production. Most of us use that version.
 
 .. Note::
 
