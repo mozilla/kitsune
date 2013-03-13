@@ -831,7 +831,6 @@ def helpful_vote(request, document_slug):
 
     if not revision.has_voted(request):
         ua = request.META.get('HTTP_USER_AGENT', '')[:1000]  # 1000 max_length
-        source = request.POST.get('source')
         vote = HelpfulVote(revision=revision, user_agent=ua)
 
         if 'helpful' in request.POST:
