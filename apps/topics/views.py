@@ -1,12 +1,7 @@
-from django.conf import settings
-from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
 
-from products.models import Product
-from sumo.urlresolvers import reverse
 from topics.models import Topic
 from wiki.facets import products_for, documents_for
-from wiki.models import Document
 
 
 def topic_landing(request, slug):
@@ -22,7 +17,7 @@ def topic_landing(request, slug):
     if request.GET.get('selectproduct') == '1':
         data.update(products=products_for(topics=[topic]))
     else:
-        docs, fallback = documents=documents_for(
+        docs, fallback = documents_for(
             locale=request.LANGUAGE_CODE, topics=[topic])
         data.update(documents=docs, fallback_documents=fallback)
 

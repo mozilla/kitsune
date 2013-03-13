@@ -11,7 +11,6 @@ from django.shortcuts import render
 from django.views.decorators.http import require_POST, require_GET
 from django.utils.datastructures import SortedDict
 
-from babel.numbers import format_number
 import bleach
 from session_csrf import anonymous_csrf
 from statsd import statsd
