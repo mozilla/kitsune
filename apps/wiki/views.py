@@ -10,7 +10,7 @@ from django.core.exceptions import PermissionDenied
 from django.db import connection
 from django.http import (HttpResponse, HttpResponseRedirect,
                          Http404, HttpResponseBadRequest)
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, render
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import (require_GET, require_POST,
                                           require_http_methods)
@@ -135,7 +135,7 @@ def document(request, document_slug, template=None):
             'topics': topics, 'product': product, 'products': products,
             'hide_voting': hide_voting, 'ga_push': ga_push}
     data.update(showfor_data(products))
-    return jingo.render(request, template, data)
+    return render(request, template, data)
 
 
 def revision(request, document_slug, revision_id):
@@ -144,7 +144,7 @@ def revision(request, document_slug, revision_id):
                             document__slug=document_slug)
     data = {'document': rev.document, 'revision': rev}
     data.update(showfor_data())
-    return jingo.render(request, 'wiki/revision.html', data)
+    return render(request, 'wiki/revision.html', data)
 
 
 @require_GET
@@ -173,10 +173,10 @@ def list_documents(request, category=None, topic=None):
             docs = docs.filter(parent__in=parent_ids)
 
     docs = paginate(request, docs, per_page=DOCUMENTS_PER_PAGE)
-    return jingo.render(request, 'wiki/list_documents.html',
-                        {'documents': docs,
-                         'category': category,
-                         'topic': topic.title if topic else None})
+    return render(request, 'wiki/list_documents.html', {
+        'documents': docs,
+        'category': category,
+        'topic': topic.title if topic else None})
 
 
 @login_required
@@ -185,9 +185,9 @@ def new_document(request):
     if request.method == 'GET':
         doc_form = DocumentForm(initial_title=request.GET.get('title'))
         rev_form = RevisionForm()
-        return jingo.render(request, 'wiki/new_document.html',
-                            {'document_form': doc_form,
-                             'revision_form': rev_form})
+        return render(request, 'wiki/new_document.html', {
+            'document_form': doc_form,
+            'revision_form': rev_form})
 
     post_data = request.POST.copy()
     post_data.update({'locale': request.LANGUAGE_CODE})
@@ -200,9 +200,9 @@ def new_document(request):
         return HttpResponseRedirect(reverse('wiki.document_revisions',
                                     args=[doc.slug]))
 
-    return jingo.render(request, 'wiki/new_document.html',
-                        {'document_form': doc_form,
-                         'revision_form': rev_form})
+    return render(request, 'wiki/new_document.html', {
+        'document_form': doc_form,
+        'revision_form': rev_form})
 
 
 _document_lock_key = 'sumo::wiki::document::{id}::lock'
@@ -381,14 +381,14 @@ def edit_document(request, document_slug, revision_id=None):
 
     locked, locked_by = _document_lock(doc.id, user.username)
 
-    return jingo.render(request, 'wiki/edit.html',
-                        {'revision_form': rev_form,
-                         'document_form': doc_form,
-                         'disclose_description': disclose_description,
-                         'document': doc,
-                         'show_revision_warning': show_revision_warning,
-                         'locked': locked,
-                         'locked_by': locked_by})
+    return render(request, 'wiki/edit.html', {
+        'revision_form': rev_form,
+        'document_form': doc_form,
+        'disclose_description': disclose_description,
+        'document': doc,
+        'show_revision_warning': show_revision_warning,
+        'locked': locked,
+        'locked_by': locked_by})
 
 
 @login_required
@@ -400,7 +400,7 @@ def preview_revision(request):
     # TODO: Get doc ID from JSON.
     data = {'content': wiki_to_html(wiki_content, request.LANGUAGE_CODE)}
     data.update(showfor_data())
-    return jingo.render(request, 'wiki/preview.html', data)
+    return render(request, 'wiki/preview.html', data)
 
 
 @require_GET
@@ -417,9 +417,9 @@ def document_revisions(request, document_slug, contributor_form=None):
         template = 'wiki/history.html'
 
     form = contributor_form or AddContributorForm()
-    return jingo.render(request, template,
-                        {'revisions': revs, 'document': doc,
-                         'contributor_form': form})
+    return render(request, template, {
+        'revisions': revs, 'document': doc,
+        'contributor_form': form})
 
 
 @login_required
@@ -512,7 +512,7 @@ def review_revision(request, document_slug, revision_id):
             'revision_contributors': list(revision_contributors),
             'should_ask_significance': should_ask_significance}
     data.update(showfor_data())
-    return jingo.render(request, template, data)
+    return render(request, template, data)
 
 
 @require_GET
@@ -538,9 +538,9 @@ def compare_revisions(request, document_slug):
     else:
         template = 'wiki/compare_revisions.html'
 
-    return jingo.render(request, template,
-                        {'document': doc, 'revision_from': revision_from,
-                         'revision_to': revision_to})
+    return render(request, template, {
+        'document': doc, 'revision_from': revision_from,
+        'revision_to': revision_to})
 
 
 @login_required
@@ -548,7 +548,7 @@ def select_locale(request, document_slug):
     """Select a locale to translate the document to."""
     doc = get_object_or_404(
         Document, locale=settings.WIKI_DEFAULT_LANGUAGE, slug=document_slug)
-    return jingo.render(request, 'wiki/select_locale.html', {'document': doc})
+    return render(request, 'wiki/select_locale.html', {'document': doc})
 
 
 @require_http_methods(['GET', 'POST'])
@@ -574,8 +574,9 @@ def translate(request, document_slug, revision_id=None):
 
     if not parent_doc.is_localizable:
         message = _lazy(u'You cannot translate this document.')
-        return jingo.render(request, 'handlers/400.html',
-                            {'message': message}, status=400)
+        return render(request, 'handlers/400.html', {
+            'message': message},
+            status=400)
 
     based_on_rev = parent_doc.localizable_or_latest_revision(
         include_rejected=True)
@@ -697,15 +698,15 @@ def translate(request, document_slug, revision_id=None):
     else:
         locked, locked_by = False, None
 
-    return jingo.render(request, 'wiki/translate.html',
-                        {'parent': parent_doc, 'document': doc,
-                         'document_form': doc_form, 'revision_form': rev_form,
-                         'locale': request.LANGUAGE_CODE, 'based_on': based_on_rev,
-                         'disclose_description': disclose_description,
-                         'show_revision_warning': show_revision_warning,
-                         'recent_approved_revs': recent_approved_revs,
-                         'locked': locked,
-                         'locked_by': locked_by})
+    return render(request, 'wiki/translate.html', {
+        'parent': parent_doc, 'document': doc,
+        'document_form': doc_form, 'revision_form': rev_form,
+        'locale': request.LANGUAGE_CODE, 'based_on': based_on_rev,
+        'disclose_description': disclose_description,
+        'show_revision_warning': show_revision_warning,
+        'recent_approved_revs': recent_approved_revs,
+        'locked': locked,
+        'locked_by': locked_by})
 
 
 @require_POST
@@ -1022,10 +1023,10 @@ def delete_revision(request, document_slug, revision_id):
 
     if request.method == 'GET':
         # Render the confirmation page
-        return jingo.render(request, 'wiki/confirm_revision_delete.html',
-                            {'revision': revision, 'document': document,
-                             'only_revision': only_revision,
-                             'has_votes': has_votes})
+        return render(request, 'wiki/confirm_revision_delete.html', {
+            'revision': revision, 'document': document,
+            'only_revision': only_revision,
+            'has_votes': has_votes})
 
     # Don't delete the only revision of a document
     if only_revision:
@@ -1071,16 +1072,16 @@ def delete_document(request, document_slug):
 
     if request.method == 'GET':
         # Render the confirmation page
-        return jingo.render(request, 'wiki/confirm_document_delete.html',
-                            {'document': document})
+        return render(request, 'wiki/confirm_document_delete.html', {
+            'document': document})
 
     # Handle confirm delete form POST
     log.warning('User %s is deleting document: %s (id=%s)' %
                 (request.user, document.title, document.id))
     document.delete()
 
-    return jingo.render(request, 'wiki/confirm_document_delete.html',
-                        {'document': document, 'delete_confirmed': True})
+    return render(request, 'wiki/confirm_document_delete.html', {
+        'document': document, 'delete_confirmed': True})
 
 
 @login_required
@@ -1124,8 +1125,8 @@ def remove_contributor(request, document_slug, user_id):
         return HttpResponseRedirect(reverse('wiki.document_revisions',
                                             args=[document_slug]))
 
-    return jingo.render(request, 'wiki/confirm_remove_contributor.html',
-                        {'document': document, 'contributor': user})
+    return render(request, 'wiki/confirm_remove_contributor.html', {
+        'document': document, 'contributor': user})
 
 
 def show_translations(request, document_slug):
@@ -1142,10 +1143,10 @@ def show_translations(request, document_slug):
         if not locale[0] in translated_locales:
             untranslated_locales.append(locale[0])
 
-    return jingo.render(request, 'wiki/show_translations.html',
-            {'document': document,
-            'translated_locales': translated_locales,
-            'untranslated_locales': untranslated_locales})
+    return render(request, 'wiki/show_translations.html', {
+        'document': document,
+        'translated_locales': translated_locales,
+        'untranslated_locales': untranslated_locales})
 
 
 def _document_form_initial(document):

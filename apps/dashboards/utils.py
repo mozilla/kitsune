@@ -1,8 +1,7 @@
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
+from django.shortcuts import render
 from django.utils.datastructures import SortedDict
-
-import jingo
 
 from announcements.models import Announcement
 from announcements.forms import AnnouncementForm
@@ -66,4 +65,4 @@ def render_readouts(request, readouts, template, locale=None, extra_data=None,
         }
     if extra_data:
         data.update(extra_data)
-    return jingo.render(request, 'dashboards/' + template, data)
+    return render(request, 'dashboards/' + template, data)

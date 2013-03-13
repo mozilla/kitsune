@@ -3,10 +3,9 @@ from datetime import datetime
 
 from django.core.exceptions import PermissionDenied
 from django.http import HttpResponseRedirect, Http404
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, render
 from django.views.decorators.http import require_POST
 
-import jingo
 from authority.decorators import permission_required_or_403
 from statsd import statsd
 
@@ -33,8 +32,8 @@ def forums(request):
                                           'WHERE forums_thread.forum_id = '
                                           'forums_forum.id'})
     forums_ = [f for f in qs if f.allows_viewing_by(request.user)]
-    return jingo.render(request, 'forums/forums.html',
-                       {'forums': paginate(request, forums_)})
+    return render(request, 'forums/forums.html', {
+        'forums': paginate(request, forums_)})
 
 
 def sort_threads(threads_, sort=0, desc=0):
@@ -83,11 +82,11 @@ def threads(request, forum_slug):
 
     is_watching_forum = (request.user.is_authenticated() and
                          NewThreadEvent.is_notifying(request.user, forum))
-    return jingo.render(request, 'forums/threads.html',
-                        {'forum': forum, 'threads': threads_,
-                         'is_watching_forum': is_watching_forum,
-                         'sort': sort, 'desc_toggle': desc_toggle,
-                         'feeds': feed_urls})
+    return render(request, 'forums/threads.html', {
+        'forum': forum, 'threads': threads_,
+        'is_watching_forum': is_watching_forum,
+        'sort': sort, 'desc_toggle': desc_toggle,
+        'feeds': feed_urls})
 
 
 def posts(request, forum_slug, thread_id, form=None, post_preview=None,
@@ -129,15 +128,15 @@ def posts(request, forum_slug, thread_id, form=None, post_preview=None,
 
     is_watching_thread = (request.user.is_authenticated() and
                           NewPostEvent.is_notifying(request.user, thread))
-    return jingo.render(request, 'forums/posts.html',
-                        {'forum': forum, 'thread': thread,
-                         'posts': posts_, 'form': form,
-                         'count': count,
-                         'last_post': last_post,
-                         'post_preview': post_preview,
-                         'is_watching_thread': is_watching_thread,
-                         'feeds': feed_urls,
-                         'forums': Forum.objects.all()})
+    return render(request, 'forums/posts.html', {
+        'forum': forum, 'thread': thread,
+        'posts': posts_, 'form': form,
+        'count': count,
+        'last_post': last_post,
+        'post_preview': post_preview,
+        'is_watching_thread': is_watching_thread,
+        'feeds': feed_urls,
+        'forums': Forum.objects.all()})
 
 
 @require_POST
@@ -196,8 +195,8 @@ def new_thread(request, forum_slug):
 
     if request.method == 'GET':
         form = NewThreadForm()
-        return jingo.render(request, 'forums/new_thread.html',
-                            {'form': form, 'forum': forum})
+        return render(request, 'forums/new_thread.html', {
+            'form': form, 'forum': forum})
 
     form = NewThreadForm(request.POST)
     post_preview = None
@@ -227,9 +226,9 @@ def new_thread(request, forum_slug):
             url = reverse('forums.posts', args=[forum_slug, thread.id])
             return HttpResponseRedirect(urlparams(url, last=post.id))
 
-    return jingo.render(request, 'forums/new_thread.html',
-                        {'form': form, 'forum': forum,
-                         'post_preview': post_preview})
+    return render(request, 'forums/new_thread.html', {
+        'form': form, 'forum': forum,
+        'post_preview': post_preview})
 
 
 # TODO: permission_required_... decorators leak the existence of unviewable
@@ -287,8 +286,8 @@ def edit_thread(request, forum_slug, thread_id):
 
     if request.method == 'GET':
         form = EditThreadForm(instance=thread)
-        return jingo.render(request, 'forums/edit_thread.html',
-                            {'form': form, 'forum': forum, 'thread': thread})
+        return render(request, 'forums/edit_thread.html', {
+            'form': form, 'forum': forum, 'thread': thread})
 
     form = EditThreadForm(request.POST)
 
@@ -301,8 +300,8 @@ def edit_thread(request, forum_slug, thread_id):
         url = reverse('forums.posts', args=[forum_slug, thread_id])
         return HttpResponseRedirect(url)
 
-    return jingo.render(request, 'forums/edit_thread.html',
-                        {'form': form, 'forum': forum, 'thread': thread})
+    return render(request, 'forums/edit_thread.html', {
+        'form': form, 'forum': forum, 'thread': thread})
 
 
 @login_required
@@ -315,8 +314,8 @@ def delete_thread(request, forum_slug, thread_id):
 
     if request.method == 'GET':
         # Render the confirmation page
-        return jingo.render(request, 'forums/confirm_thread_delete.html',
-                            {'forum': forum, 'thread': thread})
+        return render(request, 'forums/confirm_thread_delete.html', {
+            'forum': forum, 'thread': thread})
 
     # Handle confirm delete form POST
     log.warning('User %s is deleting thread with id=%s' %
@@ -375,9 +374,9 @@ def edit_post(request, forum_slug, thread_id, post_id):
 
     if request.method == 'GET':
         form = EditPostForm({'content': post.content})
-        return jingo.render(request, 'forums/edit_post.html',
-                            {'form': form, 'forum': forum,
-                             'thread': thread, 'post': post})
+        return render(request, 'forums/edit_post.html', {
+            'form': form, 'forum': forum,
+            'thread': thread, 'post': post})
 
     form = EditPostForm(request.POST)
     post_preview = None
@@ -393,10 +392,10 @@ def edit_post(request, forum_slug, thread_id, post_id):
             post.save()
             return HttpResponseRedirect(post.get_absolute_url())
 
-    return jingo.render(request, 'forums/edit_post.html',
-                        {'form': form, 'forum': forum,
-                         'thread': thread, 'post': post,
-                         'post_preview': post_preview})
+    return render(request, 'forums/edit_post.html', {
+        'form': form, 'forum': forum,
+        'thread': thread, 'post': post,
+        'post_preview': post_preview})
 
 
 @login_required
@@ -410,9 +409,8 @@ def delete_post(request, forum_slug, thread_id, post_id):
 
     if request.method == 'GET':
         # Render the confirmation page
-        return jingo.render(request, 'forums/confirm_post_delete.html',
-                            {'forum': forum, 'thread': thread,
-                             'post': post})
+        return render(request, 'forums/confirm_post_delete.html', {
+            'forum': forum, 'thread': thread, 'post': post})
 
     # Handle confirm delete form POST
     log.warning("User %s is deleting post with id=%s" %
@@ -473,5 +471,5 @@ def post_preview_async(request):
     post = Post(author=request.user, content=request.POST.get('content', ''))
     post.author_post_count = 1
 
-    return jingo.render(
-        request, 'forums/includes/post_preview.html', {'post_preview': post})
+    return render(request, 'forums/includes/post_preview.html', {
+        'post_preview': post})

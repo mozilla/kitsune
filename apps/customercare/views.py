@@ -7,12 +7,12 @@ import logging
 from django.conf import settings
 from django.http import (HttpResponse, HttpResponseBadRequest,
                          HttpResponseNotFound, HttpResponseServerError)
+from django.shortcuts import render
 from django.views.decorators.http import require_POST, require_GET
 from django.utils.datastructures import SortedDict
 
 from babel.numbers import format_number
 import bleach
-import jingo
 from session_csrf import anonymous_csrf
 from statsd import statsd
 from tower import ugettext as _, ugettext_lazy as _lazy
@@ -117,11 +117,12 @@ def more_tweets(request):
     raw_filter = request.GET.get('filter')
     filter = raw_filter if raw_filter in FILTERS else 'recent'
 
-    return jingo.render(request, 'customercare/tweets.html',
-                        {'tweets': _get_tweets(locale=request.LANGUAGE_CODE,
-                                               max_id=max_id,
-                                               filter=filter,
-                                               https=request.is_secure())})
+    return render(request, 'customercare/tweets.html', {
+        'tweets': _get_tweets(
+            locale=request.LANGUAGE_CODE,
+            max_id=max_id,
+            filter=filter,
+            https=request.is_secure())})
 
 
 @require_GET
@@ -157,7 +158,7 @@ def landing(request):
 
     recent_replied_count = _count_answered_tweets(since=yesterday)
 
-    return jingo.render(request, 'customercare/landing.html', {
+    return render(request, 'customercare/landing.html', {
         'contributor_stats': contributor_stats,
         'canned_responses': get_common_replies(request.LANGUAGE_CODE),
         'tweets': _get_tweets(locale=request.LANGUAGE_CODE,
@@ -166,8 +167,7 @@ def landing(request):
         'twitter_user': twitter_user,
         'filters': FILTERS,
         'goal': settings.CC_REPLIES_GOAL,
-        'recent_replied_count': recent_replied_count,
-    })
+        'recent_replied_count': recent_replied_count})
 
 
 @require_POST
@@ -193,8 +193,8 @@ def twitter_post(request):
     try:
         username = request.twitter.api.auth.get_username()
         if username in settings.CC_BANNED_USERS:
-            return jingo.render(request, 'customercare/tweets.html',
-                {'tweets': []})
+            return render(request, 'customercare/tweets.html',
+                          {'tweets': []})
         result = request.twitter.api.update_status(content, reply_to_id)
     except tweepy.TweepError, e:
         # L10n: {message} is an error coming from our twitter api library
@@ -245,8 +245,8 @@ def twitter_post(request):
     )
 
     # We could optimize by not encoding and then decoding JSON.
-    return jingo.render(request, 'customercare/tweets.html',
-        {'tweets': [_tweet_for_template(tweet, request.is_secure())]})
+    return render(request, 'customercare/tweets.html', {
+        'tweets': [_tweet_for_template(tweet, request.is_secure())]})
 
 
 @require_POST

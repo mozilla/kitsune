@@ -12,11 +12,9 @@ from django.http import (HttpResponsePermanentRedirect, HttpResponseRedirect,
                          Http404)
 from django.views.decorators.http import (require_http_methods, require_GET,
                                           require_POST)
-from django.shortcuts import get_object_or_404
-from django.template.loader import render_to_string
+from django.shortcuts import get_object_or_404, render
 from django.utils.http import base36_to_int
 
-import jingo
 from mobility.decorators import mobile_template
 from session_csrf import anonymous_csrf
 from statsd import statsd
@@ -62,12 +60,11 @@ def user_auth(request, contributor=False, register_form=None,
     if register_form == None:
         register_form = RegisterForm()
 
-    return jingo.render(request, 'users/auth.html', {
+    return render(request, 'users/auth.html', {
         'login_form': login_form,
         'register_form': register_form,
         'contributor': contributor,
-        'next_url': next_url
-    })
+        'next_url': next_url})
 
 
 @ssl_required
@@ -96,9 +93,8 @@ def login(request, template):
         return res
 
     if request.MOBILE:
-        return jingo.render(request, template, {
-            'form': form,
-        })
+        return render(request, template, {
+            'form': form})
 
     return user_auth(request, login_form=form)
 
@@ -132,12 +128,11 @@ def register(request, template, contributor=False):
 
     form = handle_register(request)
     if form.is_valid():
-        return jingo.render(request, template + 'register_done.html')
+        return render(request, template + 'register_done.html')
 
     if request.MOBILE:
-        return jingo.render(request, template + 'register.html', {
-            'form': form,
-        })
+        return render(request, template + 'register.html', {
+            'form': form})
 
     return user_auth(request, register_form=form)
 
@@ -175,9 +170,9 @@ def activate(request, template, activation_key, user_id=None):
 
         my_questions = Question.uncached.filter(creator=account)
 
-    return jingo.render(request, template,
-                        {'account': account, 'questions': my_questions,
-                         'form': form})
+    return render(request, template, {
+        'account': account, 'questions': my_questions,
+        'form': form})
 
 
 @anonymous_csrf
@@ -227,13 +222,13 @@ def resend_confirmation(request, template):
                     pass
             # Form may now be invalid if email failed to send.
             if form.is_valid():
-                return jingo.render(request,
-                                    template + 'resend_confirmation_done.html',
-                                    {'email': email})
+                return render(
+                    request, template + 'resend_confirmation_done.html',
+                    {'email': email})
     else:
         form = EmailConfirmationForm()
-    return jingo.render(request, template + 'resend_confirmation.html',
-                        {'form': form})
+    return render(request, template + 'resend_confirmation.html', {
+        'form': form})
 
 
 @login_required
@@ -252,13 +247,13 @@ def change_email(request, template):
                 user=request.user, email=form.cleaned_data['email'])
             EmailChange.objects.send_confirmation_email(
                 email_change, form.cleaned_data['email'])
-            return jingo.render(request,
-                                template + 'change_email_done.html',
-                                {'email': form.cleaned_data['email']})
+            return render(
+                request, template + 'change_email_done.html',
+                {'email': form.cleaned_data['email']})
     else:
         form = EmailChangeForm(request.user,
                                initial={'email': request.user.email})
-    return jingo.render(request, template + 'change_email.html', {'form': form})
+    return render(request, template + 'change_email.html', {'form': form})
 
 
 @require_GET
@@ -281,9 +276,9 @@ def confirm_change_email(request, activation_key):
     # Delete the activation profile now, we don't need it anymore.
     email_change.delete()
 
-    return jingo.render(request, 'users/change_email_complete.html',
-                        {'old_email': old_email, 'new_email': new_email,
-                         'username': u.username, 'duplicate': duplicate})
+    return render(request, 'users/change_email_complete.html', {
+        'old_email': old_email, 'new_email': new_email,
+        'username': u.username, 'duplicate': duplicate})
 
 
 @require_GET
@@ -297,7 +292,7 @@ def profile(request, template, user_id):
         raise Http404('No Profile matches the given query.')
 
     groups = user_profile.user.groups.all()
-    return jingo.render(request, template, {
+    return render(request, template, {
         'profile': user_profile,
         'groups': groups,
         'num_questions': user_num_questions(user_profile.user),
@@ -320,7 +315,7 @@ def documents_contributed(request, user_id):
     user_profile = get_object_or_404(
         Profile, user__id=user_id, user__is_active=True)
 
-    return jingo.render(request, 'users/documents_contributed.html', {
+    return render(request, 'users/documents_contributed.html', {
         'profile': user_profile,
         'documents': user_documents(user_profile.user),})
 
@@ -337,8 +332,8 @@ def edit_settings(request):
                                  _(u'Your settings have been saved.'))
             return HttpResponseRedirect(reverse('users.edit_settings'))
         # Invalid form
-        return jingo.render(request, 'users/edit_settings.html',
-                        {'form': form})
+        return render(request, 'users/edit_settings.html', {
+            'form': form})
 
     # Pass the current user's settings as the initial values.
     values = request.user.settings.values()
@@ -353,8 +348,8 @@ def edit_settings(request):
             # but failed so leave it a string.
             initial[v['name']] = v['value']
     form = SettingsForm(initial=initial)
-    return jingo.render(request, 'users/edit_settings.html',
-                        {'form': form})
+    return render(request, 'users/edit_settings.html', {
+        'form': form})
 
 
 @login_required
@@ -384,8 +379,8 @@ def edit_profile(request, template):
     # TODO: detect timezone automatically from client side, see
     # http://rocketscience.itteco.org/2010/03/13/automatic-users-timezone-determination-with-javascript-and-django-timezones/
 
-    return jingo.render(request, template,
-                        {'form': form, 'profile': user_profile})
+    return render(request, template, {
+        'form': form, 'profile': user_profile})
 
 
 @login_required
@@ -424,8 +419,8 @@ def edit_avatar(request):
     else:  # request.method == 'GET'
         form = AvatarForm(instance=user_profile)
 
-    return jingo.render(request, 'users/edit_avatar.html',
-                        {'form': form, 'profile': user_profile})
+    return render(request, 'users/edit_avatar.html', {
+        'form': form, 'profile': user_profile})
 
 
 @login_required
@@ -446,8 +441,8 @@ def delete_avatar(request):
         return HttpResponseRedirect(reverse('users.edit_profile'))
     # else:  # request.method == 'GET'
 
-    return jingo.render(request, 'users/confirm_avatar_delete.html',
-                        {'profile': user_profile})
+    return render(request, 'users/confirm_avatar_delete.html', {
+        'profile': user_profile})
 
 
 @anonymous_csrf
@@ -487,7 +482,7 @@ def password_reset(request, template):
     else:
         form = PasswordResetForm()
 
-    return jingo.render(request, template, {'form': form})
+    return render(request, template, {'form': form})
 
 
 @mobile_template('users/{mobile/}pw_reset_sent.html')
@@ -498,7 +493,7 @@ def password_reset_sent(request, template):
     email is sent.
 
     """
-    return jingo.render(request, template)
+    return render(request, template)
 
 
 @ssl_required
@@ -532,7 +527,7 @@ def password_reset_confirm(request, template, uidb36=None, token=None):
         context['validlink'] = False
         form = None
     context['form'] = form
-    return jingo.render(request, template, context)
+    return render(request, template, context)
 
 
 @mobile_template('users/{mobile/}pw_reset_complete.html')
@@ -543,7 +538,7 @@ def password_reset_complete(request, template):
 
     """
     form = AuthenticationForm()
-    return jingo.render(request, template, {'form': form})
+    return render(request, template, {'form': form})
 
 
 @login_required
@@ -557,14 +552,14 @@ def password_change(request, template):
             return HttpResponseRedirect(reverse('users.pw_change_complete'))
     else:
         form = PasswordChangeForm(user=request.user)
-    return jingo.render(request, template, {'form': form})
+    return render(request, template, {'form': form})
 
 
 @login_required
 @mobile_template('users/{mobile/}pw_change_complete.html')
 def password_change_complete(request, template):
     """Change password complete page."""
-    return jingo.render(request, template)
+    return render(request, template)
 
 
 @anonymous_csrf
@@ -598,4 +593,4 @@ def forgot_username(request, template):
     else:
         form = ForgotUsernameForm()
 
-    return jingo.render(request, template, {'form': form})
+    return render(request, template, {'form': form})

@@ -6,10 +6,9 @@ import math
 from django.conf import settings
 from django.contrib.auth.models import Group
 from django.http import Http404, HttpResponseRedirect, HttpResponse
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, render
 from django.views.decorators.http import require_GET
 
-import jingo
 from tower import ugettext as _
 
 from access.decorators import login_required
@@ -47,14 +46,14 @@ def _kb_readout(request, readout_slug, readouts, locale=None, mode=None,
 def _kb_detail(request, readout_slug, readouts, main_view_name,
                main_dash_title, locale=None, product=None):
     """Show all the rows for the given KB article statistics table."""
-    return jingo.render(request, 'dashboards/kb_detail.html',
-        {'readout': _kb_readout(request, readout_slug, readouts, locale,
-                                product=product),
-         'locale': locale,
-         'main_dash_view': main_view_name,
-         'main_dash_title': main_dash_title,
-         'product': product,
-         'products': Product.objects.filter(visible=True)})
+    return render(request, 'dashboards/kb_detail.html', {
+        'readout': _kb_readout(request, readout_slug, readouts, locale,
+                               product=product),
+        'locale': locale,
+        'main_dash_view': main_view_name,
+        'main_dash_title': main_dash_title,
+        'product': product,
+        'products': Product.objects.filter(visible=True)})
 
 
 @require_GET
@@ -131,9 +130,9 @@ def review(request):
     threads = paginate(request, threads,
                        per_page=forum_constants.THREADS_PER_PAGE, count=count)
 
-    return jingo.render(request, 'dashboards/review.html',
-                        {'threads': threads,
-                         'announcements': Announcement.get_site_wide()})
+    return render(request, 'dashboards/review.html', {
+        'threads': threads,
+        'announcements': Announcement.get_site_wide()})
 
 
 @require_GET
@@ -161,7 +160,7 @@ def default_dashboard(request):
 @login_required
 def welcome(request):
     """Welcome dashboard for users not in the Contributors group."""
-    return jingo.render(request, 'dashboards/welcome.html', {})
+    return render(request, 'dashboards/welcome.html', {})
 
 
 @require_GET

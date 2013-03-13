@@ -1,5 +1,5 @@
-import jingo
+from django.shortcuts import render
 
 
 def dashboard(request):
-    return jingo.render(request, 'kpi/dashboard.html')
+    return render(request, 'kpi/dashboard.html')

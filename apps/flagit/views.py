@@ -1,12 +1,11 @@
 import json
 
 from django.http import HttpResponseRedirect, HttpResponse
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, render
+from django.contrib import messages
 from django.contrib.contenttypes.models import ContentType
 from django.views.decorators.http import require_POST
-from django.contrib import messages
 
-import jingo
 from tower import ugettext as _
 
 from access.decorators import permission_required, login_required
@@ -55,8 +54,8 @@ def flag(request, content_type=None, object_id=None, **kwargs):
 @permission_required('flagit.can_moderate')
 def queue(request, content_type=None):
     """The moderation queue."""
-    return jingo.render(request, 'flagit/queue.html',
-                        {'objects': FlaggedObject.objects.pending()})
+    return render(request, 'flagit/queue.html', {
+        'objects': FlaggedObject.objects.pending()})
 
 
 @require_POST

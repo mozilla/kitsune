@@ -7,12 +7,12 @@ import time
 from django.conf import settings
 from django.contrib.sites.models import Site
 from django.http import HttpResponse, HttpResponseBadRequest
+from django.shortcuts import render
 from django.utils.html import escape
 from django.utils.http import urlquote
 from django.views.decorators.cache import cache_page
 
 import bleach
-import jingo
 import jinja2
 from elasticutils.utils import format_explanation
 from mobility.decorators import mobile_template
@@ -100,9 +100,9 @@ def search(request, template=None):
                 status=400)
 
         t = template if request.MOBILE else 'search/form.html'
-        search_ = jingo.render(request, t,
-                               {'advanced': a, 'request': request,
-                                'search_form': search_form})
+        search_ = render(request, t, {
+            'advanced': a, 'request': request,
+            'search_form': search_form})
         search_['Cache-Control'] = 'max-age=%s' % \
                                    (settings.SEARCH_CACHE_PERIOD * 60)
         search_['Expires'] = (datetime.utcnow() +
@@ -447,7 +447,7 @@ def search(request, template=None):
         logging.exception(exc)
 
         t = 'search/mobile/down.html' if request.MOBILE else 'search/down.html'
-        return jingo.render(request, t, {'q': cleaned['q']}, status=503)
+        return render(request, t, {'q': cleaned['q']}, status=503)
 
     items = [(k, v) for k in search_form.fields for
              v in r.getlist(k) if v and k != 'a']
@@ -473,7 +473,7 @@ def search(request, template=None):
     if num_results == 0:
         fallback_results = _fallback_results(language, cleaned['product'])
 
-    results_ = jingo.render(request, template, {
+    results_ = render(request, template, {
         'num_results': num_results,
         'results': results,
         'fallback_results': fallback_results,
@@ -543,9 +543,9 @@ def suggestions(request):
 def plugin(request):
     """Render an OpenSearch Plugin."""
     site = Site.objects.get_current()
-    return jingo.render(request, 'search/plugin.html',
-                        {'site': site, 'locale': request.LANGUAGE_CODE},
-                        mimetype='application/opensearchdescription+xml')
+    return render(request, 'search/plugin.html', {
+        'site': site, 'locale': request.LANGUAGE_CODE},
+        content_type='application/opensearchdescription+xml')
 
 
 def _ternary_filter(ternary_value):

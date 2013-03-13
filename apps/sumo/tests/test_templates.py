@@ -1,10 +1,10 @@
 from django.conf import settings
 from django.utils import translation
 
-from nose.tools import eq_
-from pyquery import PyQuery as pq
 import jingo
 import mock
+from nose.tools import eq_
+from pyquery import PyQuery as pq
 from test_utils import RequestFactory
 
 from sumo.tests import LocalizingClient, TestCase
@@ -62,8 +62,8 @@ class BaseTemplateTests(MockRequestTests):
         feed_urls = (('/feed_one', 'First Feed'),
                      ('/feed_two', 'Second Feed'),)
 
-        doc = pq(jingo.render_to_string(self.request, self.template,
-                                        {'feeds': feed_urls}))
+        doc = pq(jingo.render_to_string(self.request, self.template, {
+            'feeds': feed_urls}))
         feeds = doc('link[type="application/atom+xml"]')
         eq_(2, len(feeds))
         eq_('First Feed', feeds[0].attrib['title'])
