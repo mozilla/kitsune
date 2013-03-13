@@ -408,6 +408,7 @@ input[type=button],
     .gradient(#ccc, #ddd, #bbb);
     .border-radius(6px);
     .box-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+    .hyphens(auto);
     float: left;
     margin: 0 10px 20px 10px;
     padding: 1px;
@@ -1244,19 +1245,19 @@ input[type=button],
     padding: 6px 42px 6px 20px; 
   
     &:focus {
-    outline: none;
+      outline: none;
+  
+      &::-webkit-input-placeholder {
+        color: rgba(255, 255, 255, 0);
+      }
+    }
   
     &::-webkit-input-placeholder {
-      color: rgba(255, 255, 255, 0);
-    }
-    }
-  
-    &::-webkit-input-placeholder {
-    color: #fff;
+      color: #fff;
     }
   
     &:-moz-placeholder {
-    color: #fff;
+      color: #fff;
     }
   }
 }
