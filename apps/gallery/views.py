@@ -6,11 +6,10 @@ from django.conf import settings
 from django.db.models import Q
 from django.http import (HttpResponse, HttpResponseRedirect,
                          HttpResponseBadRequest, Http404)
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, render
 from django.views.decorators.clickjacking import xframe_options_sameorigin
 from django.views.decorators.http import require_POST
 
-import jingo
 from tower import ugettext_lazy as _lazy
 
 from access.decorators import login_required
@@ -49,12 +48,12 @@ def gallery(request, media_type='image'):
     drafts = _get_drafts(request.user)
     image_form, video_form, upload_type_form = _init_forms(request, drafts)
 
-    return jingo.render(request, 'gallery/gallery.html',
-                        {'media': media,
-                         'media_type': media_type,
-                         'upload_type_form': upload_type_form,
-                         'image_form': image_form,
-                         'video_form': video_form})
+    return render(request, 'gallery/gallery.html', {
+        'media': media,
+        'media_type': media_type,
+        'upload_type_form': upload_type_form,
+        'image_form': image_form,
+        'video_form': video_form})
 
 
 @login_required
@@ -163,8 +162,8 @@ def gallery_async(request):
 
     media = paginate(request, media_qs, per_page=ITEMS_PER_PAGE)
 
-    return jingo.render(request, 'gallery/includes/media_list.html',
-                        {'media_list': media})
+    return render(request, 'gallery/includes/media_list.html', {
+        'media_list': media})
 
 
 def search(request, media_type):
@@ -186,10 +185,10 @@ def search(request, media_type):
 
     media = paginate(request, media_qs, per_page=ITEMS_PER_PAGE)
 
-    return jingo.render(request, 'gallery/search.html',
-                        {'media': media,
-                         'media_type': media_type,
-                         'q': term})
+    return render(request, 'gallery/search.html', {
+        'media': media,
+        'media_type': media_type,
+        'q': term})
 
 
 @login_required
@@ -201,9 +200,10 @@ def delete_media(request, media_id, media_type='image'):
 
     if request.method == 'GET':
         # Render the confirmation page
-        return jingo.render(request, 'gallery/confirm_media_delete.html',
-                            {'media': media, 'media_type': media_type,
-                             'media_format': media_format})
+        return render(request, 'gallery/confirm_media_delete.html', {
+            'media': media,
+            'media_type': media_type,
+            'media_format': media_format})
 
     # Handle confirm delete form POST
     log.warning('User %s is deleting %s with id=%s' %
@@ -233,20 +233,20 @@ def edit_media(request, media_id, media_type='image'):
         return HttpResponseRedirect(
             reverse('gallery.media', args=[media_type, media_id]))
 
-    return jingo.render(request, 'gallery/edit_media.html',
-                        {'media': media,
-                         'media_format': media_format,
-                         'form': media_form,
-                         'media_type': media_type})
+    return render(request, 'gallery/edit_media.html', {
+        'media': media,
+        'media_format': media_format,
+        'form': media_form,
+        'media_type': media_type})
 
 
 def media(request, media_id, media_type='image'):
     """The media page."""
     media, media_format = _get_media_info(media_id, media_type)
-    return jingo.render(request, 'gallery/media.html',
-                        {'media': media,
-                         'media_format': media_format,
-                         'media_type': media_type})
+    return render(request, 'gallery/media.html', {
+        'media': media,
+        'media_format': media_format,
+        'media_type': media_type})
 
 
 @login_required

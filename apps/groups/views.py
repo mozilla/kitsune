@@ -5,11 +5,10 @@ from django.contrib import messages
 from django.contrib.auth.models import User, Group
 from django.core.exceptions import PermissionDenied
 from django.http import HttpResponseRedirect
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, render
 from django.views.decorators.http import require_POST, require_http_methods
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
-import jingo
 from tower import ugettext as _
 
 from access.decorators import login_required
@@ -22,7 +21,7 @@ from upload.tasks import _create_image_thumbnail
 
 def list(request):
     groups = GroupProfile.objects.select_related('group').all()
-    return jingo.render(request, 'groups/list.html', {'groups': groups})
+    return render(request, 'groups/list.html', {'groups': groups})
 
 
 def profile(request, group_slug, member_form=None, leader_form=None):
@@ -41,13 +40,13 @@ def profile(request, group_slug, member_form=None, leader_form=None):
     is_paginated = paginator.num_pages > 1
     user_can_edit = _user_can_edit(request.user, prof)
     user_can_manage_leaders = _user_can_manage_leaders(request.user, prof)
-    return jingo.render(request, 'groups/profile.html',
-                        {'profile': prof, 'leaders': leaders,
-                         'members': members, 'user_can_edit': user_can_edit,
-                         'user_can_manage_leaders': user_can_manage_leaders,
-                         'is_paginated' : is_paginated,
-                         'member_form': member_form or AddUserForm(),
-                         'leader_form': leader_form or AddUserForm()})
+    return render(request, 'groups/profile.html', {
+        'profile': prof, 'leaders': leaders,
+        'members': members, 'user_can_edit': user_can_edit,
+        'user_can_manage_leaders': user_can_manage_leaders,
+        'is_paginated' : is_paginated,
+        'member_form': member_form or AddUserForm(),
+        'leader_form': leader_form or AddUserForm()})
 
 
 @login_required
@@ -65,8 +64,8 @@ def edit(request, group_slug):
                              _('Group information updated successfully!'))
         return HttpResponseRedirect(prof.get_absolute_url())
 
-    return jingo.render(request, 'groups/edit.html',
-                        {'form': form, 'profile': prof})
+    return render(request, 'groups/edit.html', {
+        'form': form, 'profile': prof})
 
 
 @login_required
@@ -101,8 +100,8 @@ def edit_avatar(request, group_slug):
         prof.avatar.save(name, content, save=True)
         return HttpResponseRedirect(prof.get_absolute_url())
 
-    return jingo.render(request, 'groups/edit_avatar.html',
-                        {'form': form, 'profile': prof})
+    return render(request, 'groups/edit_avatar.html', {
+        'form': form, 'profile': prof})
 
 
 @login_required
@@ -120,8 +119,8 @@ def delete_avatar(request, group_slug):
             prof.avatar.delete()
         return HttpResponseRedirect(prof.get_absolute_url())
 
-    return jingo.render(request, 'groups/confirm_avatar_delete.html',
-                        {'profile': prof})
+    return render(request, 'groups/confirm_avatar_delete.html', {
+        'profile': prof})
 
 
 @login_required
@@ -167,8 +166,8 @@ def remove_member(request, group_slug, user_id):
         messages.add_message(request, messages.SUCCESS, msg)
         return HttpResponseRedirect(prof.get_absolute_url())
 
-    return jingo.render(request, 'groups/confirm_remove_member.html',
-                        {'profile': prof, 'member': user})
+    return render(request, 'groups/confirm_remove_member.html', {
+        'profile': prof, 'member': user})
 
 
 @login_required
@@ -214,8 +213,8 @@ def remove_leader(request, group_slug, user_id):
         messages.add_message(request, messages.SUCCESS, msg)
         return HttpResponseRedirect(prof.get_absolute_url())
 
-    return jingo.render(request, 'groups/confirm_remove_leader.html',
-                        {'profile': prof, 'leader': user})
+    return render(request, 'groups/confirm_remove_leader.html', {
+        'profile': prof, 'leader': user})
 
 
 @login_required

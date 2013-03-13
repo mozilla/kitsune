@@ -2,10 +2,9 @@ from django.contrib import messages
 from django.contrib.auth.models import User
 from django.core.exceptions import PermissionDenied
 from django.http import HttpResponseRedirect
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, render
 from django.views.decorators.http import require_POST, require_http_methods
 
-import jingo
 from tower import ugettext as _
 
 from access.decorators import login_required
@@ -26,8 +25,8 @@ ROLE_ATTRS = {
 def locale_list(request):
     """List the support KB locales."""
     locales = Locale.objects.all()
-    return jingo.render(request, 'wiki/locale_list.html',
-                        {'locales': locales})
+    return render(request, 'wiki/locale_list.html', {
+        'locales': locales})
 
 
 def locale_details(request, locale_code, leader_form=None, reviewer_form=None,
@@ -38,7 +37,7 @@ def locale_details(request, locale_code, leader_form=None, reviewer_form=None,
     reviewers = locale.reviewers.all().select_related('profile')
     editors = locale.editors.all().select_related('profile')
     user_can_edit = _user_can_edit(request.user, locale)
-    return jingo.render(
+    return render(
         request,
         'wiki/locale_details.html',
         {'locale': locale,
@@ -91,7 +90,7 @@ def remove_from_locale(request, locale_code, user_id, role):
         messages.add_message(request, messages.SUCCESS, msg)
         return HttpResponseRedirect(locale.get_absolute_url())
 
-    return jingo.render(request, 'wiki/confirm_remove_from_locale.html',
+    return render(request, 'wiki/confirm_remove_from_locale.html',
                         {'locale': locale, 'leader': user, 'role': role})
 
 

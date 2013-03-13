@@ -10,12 +10,12 @@ from django.conf import settings
 from django.contrib.sites.models import Site
 from django.http import (HttpResponsePermanentRedirect, HttpResponseRedirect,
                          HttpResponse, Http404)
+from django.shortcuts import render
 from django.views.decorators.cache import never_cache
 from django.views.decorators.clickjacking import xframe_options_exempt
 from django.views.decorators.http import require_GET
 
 import django_qunit.views
-import jingo
 import pyes
 from celery.messaging import establish_connection
 from mobility.decorators import mobile_template
@@ -37,7 +37,7 @@ log = logging.getLogger('k.services')
 def locales(request, template):
     """The locale switcher page."""
 
-    return jingo.render(request, template, dict(
+    return render(request, template, dict(
         next_url=get_next_url(request) or reverse('home')))
 
 
@@ -50,20 +50,20 @@ def handle403(request):
         no_cookies = (referer.endswith(reverse('users.login'))
                       or referer.endswith(reverse('users.register')))
 
-    return jingo.render(request, 'handlers/403.html',
-                        {'form': AuthenticationForm(),
-                         'no_cookies': no_cookies},
-                        status=403)
+    return render(request, 'handlers/403.html', {
+        'form': AuthenticationForm(),
+        'no_cookies': no_cookies},
+        status=403)
 
 
 def handle404(request):
     """A handler for 404s"""
-    return jingo.render(request, 'handlers/404.html', status=404)
+    return render(request, 'handlers/404.html', status=404)
 
 
 def handle500(request):
     """A 500 message that looks nicer than the normal Apache error page"""
-    return jingo.render(request, 'handlers/500.html', status=500)
+    return render(request, 'handlers/500.html', status=500)
 
 
 def redirect_to(request, url, permanent=True, **kwargs):
@@ -82,8 +82,8 @@ def deprecated_redirect(request, url, **kwargs):
     dest = reverse(url, kwargs=kwargs)
     proto = 'https://' if request.is_secure() else 'http://'
     host = Site.objects.get_current().domain
-    return jingo.render(request, 'sumo/deprecated.html',
-                        {'dest': dest, 'proto': proto, 'host': host})
+    return render(request, 'sumo/deprecated.html', {
+        'dest': dest, 'proto': proto, 'host': host})
 
 
 def robots(request):
@@ -91,7 +91,7 @@ def robots(request):
     if not settings.ENGAGE_ROBOTS:
         template = 'User-Agent: *\nDisallow: /'
     else:
-        template = jingo.render(request, 'sumo/robots.html')
+        template = render(request, 'sumo/robots.html')
     return HttpResponse(template, mimetype='text/plain')
 
 
@@ -269,10 +269,10 @@ def monitor(request):
         else:
             status_summary[component] = True
 
-    return jingo.render(request, 'services/monitor.html',
-                        {'component_status': status,
-                         'status_summary': status_summary},
-                        status=status_code)
+    return render(request, 'services/monitor.html', {
+        'component_status': status,
+        'status_summary': status_summary},
+        status=status_code)
 
 
 @never_cache
@@ -305,4 +305,4 @@ def kitsune_qunit(request, path):
     """View that hosts QUnit tests."""
     ctx = django_qunit.views.get_suite_context(request, path)
     ctx.update(timestamp=time())
-    return jingo.render(request, 'tests/qunit.html', ctx)
+    return render(request, 'tests/qunit.html', ctx)

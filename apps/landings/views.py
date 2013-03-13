@@ -1,6 +1,5 @@
+from django.shortcuts import render
 from django.views.decorators.cache import never_cache
-
-import jingo
 
 from products.models import Product
 from sumo.parser import get_object_fallback
@@ -40,7 +39,7 @@ def home(request):
         # "hot" topic doesn't exist, move on.
         hot_docs = fallback_hot_docs = None
 
-    return jingo.render(request, 'landings/home.html', {
+    return render(request, 'landings/home.html', {
         'products': products,
         'topics': topics,
         'hot_docs': hot_docs,
@@ -49,4 +48,4 @@ def home(request):
 
 
 def integrity_check(request):
-    return jingo.render(request, 'landings/integrity-check.html')
+    return render(request, 'landings/integrity-check.html')

@@ -5,9 +5,8 @@ from django.contrib.auth.models import User
 from django.http import (HttpResponseRedirect, HttpResponse,
                          HttpResponseBadRequest)
 from django.views.decorators.http import require_POST
-from django.shortcuts import get_object_or_404, redirect
+from django.shortcuts import get_object_or_404, redirect, render
 
-import jingo
 from multidb.pinning import mark_as_write
 from tower import ugettext as _
 from statsd import statsd
@@ -25,7 +24,7 @@ from sumo.urlresolvers import reverse
 def inbox(request, template):
     user = request.user
     messages = InboxMessage.uncached.filter(to=user).order_by('-created')
-    return jingo.render(request, template, {'msgs': messages})
+    return render(request, template, {'msgs': messages})
 
 
 @login_required
@@ -37,8 +36,8 @@ def read(request, template, msgid):
         message.update(read=True)
     initial = {'to': message.sender, 'in_reply_to': message.pk}
     form = ReplyForm(initial=initial)
-    response = jingo.render(request, template,
-                            {'message': message, 'form': form})
+    response = render(request, template, {
+        'message': message, 'form': form})
     if was_new:
         response = mark_as_write(response)
     return response
@@ -48,8 +47,8 @@ def read(request, template, msgid):
 @mobile_template('messages/{mobile/}read-outbox.html')
 def read_outbox(request, template, msgid):
     message = get_object_or_404(OutboxMessage, pk=msgid, sender=request.user)
-    return jingo.render(request, template,
-                        {'message': _add_recipients(message)})
+    return render(request, template, {
+        'message': _add_recipients(message)})
 
 
 @login_required
@@ -59,7 +58,7 @@ def outbox(request, template):
     messages = OutboxMessage.uncached.filter(sender=user).order_by('-created')
     for msg in messages:
         _add_recipients(msg)
-    return jingo.render(request, template, {'msgs': messages})
+    return render(request, template, {'msgs': messages})
 
 
 @login_required
@@ -92,7 +91,7 @@ def new_message(request, template):
                                      _('Your message was sent!'))
         return HttpResponseRedirect(reverse('messages.inbox'))
 
-    return jingo.render(request, template, {'form': form})
+    return render(request, template, {'form': form})
 
 
 @login_required
@@ -149,8 +148,8 @@ def delete(request, template, msgid=None, msgtype='inbox'):
         for message in messages:
             _add_recipients(message)
 
-    return jingo.render(request, template,
-                        {'msgs': messages, 'msgid': msgid, 'msgtype': msgtype})
+    return render(request, template, {
+        'msgs': messages, 'msgid': msgid, 'msgtype': msgtype})
 
 
 @require_POST
@@ -160,8 +159,8 @@ def preview_async(request):
     statsd.incr('forums.preview')
     m = OutboxMessage(sender=request.user,
                       message=request.POST.get('content', ''))
-    return jingo.render(request, 'messages/includes/message_preview.html',
-                        {'message': m})
+    return render(request, 'messages/includes/message_preview.html', {
+        'message': m})
 
 
 def _add_recipients(msg):

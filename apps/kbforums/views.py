@@ -3,10 +3,9 @@ from datetime import datetime
 
 from django.core.exceptions import PermissionDenied
 from django.http import HttpResponseRedirect
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, render
 from django.views.decorators.http import require_POST
 
-import jingo
 from statsd import statsd
 
 from access.decorators import permission_required, login_required
@@ -75,11 +74,11 @@ def threads(request, document_slug):
 
     is_watching_forum = (request.user.is_authenticated() and
                          NewThreadEvent.is_notifying(request.user, doc))
-    return jingo.render(request, 'kbforums/threads.html',
-                        {'document': doc, 'threads': threads_,
-                         'is_watching_forum': is_watching_forum,
-                         'sort': sort, 'desc_toggle': desc_toggle,
-                         'feeds': feed_urls})
+    return render(request, 'kbforums/threads.html', {
+        'document': doc, 'threads': threads_,
+        'is_watching_forum': is_watching_forum,
+        'sort': sort, 'desc_toggle': desc_toggle,
+        'feeds': feed_urls})
 
 
 def posts(request, document_slug, thread_id, form=None, post_preview=None):
@@ -106,14 +105,14 @@ def posts(request, document_slug, thread_id, form=None, post_preview=None):
 
     is_watching_thread = (request.user.is_authenticated() and
                           NewPostEvent.is_notifying(request.user, thread))
-    return jingo.render(request, 'kbforums/posts.html',
-                        {'document': doc, 'thread': thread,
-                         'posts': posts_, 'form': form,
-                         'count': count,
-                         'last_post': last_post,
-                         'post_preview': post_preview,
-                         'is_watching_thread': is_watching_thread,
-                         'feeds': feed_urls})
+    return render(request, 'kbforums/posts.html', {
+        'document': doc, 'thread': thread,
+        'posts': posts_, 'form': form,
+        'count': count,
+        'last_post': last_post,
+        'post_preview': post_preview,
+        'is_watching_thread': is_watching_thread,
+        'feeds': feed_urls})
 
 
 @login_required
@@ -157,8 +156,8 @@ def new_thread(request, document_slug):
 
     if request.method == 'GET':
         form = NewThreadForm()
-        return jingo.render(request, 'kbforums/new_thread.html',
-                            {'form': form, 'document': doc})
+        return render(request, 'kbforums/new_thread.html', {
+            'form': form, 'document': doc})
 
     form = NewThreadForm(request.POST)
     post_preview = None
@@ -187,9 +186,9 @@ def new_thread(request, document_slug):
             return HttpResponseRedirect(
                 reverse('wiki.discuss.posts', args=[document_slug, thread.id]))
 
-    return jingo.render(request, 'kbforums/new_thread.html',
-                        {'form': form, 'document': doc,
-                         'post_preview': post_preview})
+    return render(request, 'kbforums/new_thread.html', {
+        'form': form, 'document': doc,
+        'post_preview': post_preview})
 
 
 @require_POST
@@ -235,8 +234,8 @@ def edit_thread(request, document_slug, thread_id):
 
     if request.method == 'GET':
         form = EditThreadForm(instance=thread)
-        return jingo.render(request, 'kbforums/edit_thread.html',
-                            {'form': form, 'document': doc, 'thread': thread})
+        return render(request, 'kbforums/edit_thread.html', {
+            'form': form, 'document': doc, 'thread': thread})
 
     form = EditThreadForm(request.POST)
 
@@ -249,8 +248,8 @@ def edit_thread(request, document_slug, thread_id):
         url = reverse('wiki.discuss.posts', args=[document_slug, thread_id])
         return HttpResponseRedirect(url)
 
-    return jingo.render(request, 'kbforums/edit_thread.html',
-                        {'form': form, 'document': doc, 'thread': thread})
+    return render(request, 'kbforums/edit_thread.html', {
+        'form': form, 'document': doc, 'thread': thread})
 
 
 @permission_required('kbforums.delete_thread')
@@ -261,8 +260,8 @@ def delete_thread(request, document_slug, thread_id):
 
     if request.method == 'GET':
         # Render the confirmation page
-        return jingo.render(request, 'kbforums/confirm_thread_delete.html',
-                            {'document': doc, 'thread': thread})
+        return render(request, 'kbforums/confirm_thread_delete.html', {
+            'document': doc, 'thread': thread})
 
     # Handle confirm delete form POST
     log.warning('User %s is deleting KB thread with id=%s' %
@@ -286,9 +285,9 @@ def edit_post(request, document_slug, thread_id, post_id):
 
     if request.method == 'GET':
         form = EditPostForm({'content': post.content})
-        return jingo.render(request, 'kbforums/edit_post.html',
-                            {'form': form, 'document': doc,
-                             'thread': thread, 'post': post})
+        return render(request, 'kbforums/edit_post.html', {
+            'form': form, 'document': doc,
+            'thread': thread, 'post': post})
 
     form = EditPostForm(request.POST)
     post_preview = None
@@ -304,10 +303,10 @@ def edit_post(request, document_slug, thread_id, post_id):
             post.save()
             return HttpResponseRedirect(post.get_absolute_url())
 
-    return jingo.render(request, 'kbforums/edit_post.html',
-                        {'form': form, 'document': doc,
-                         'thread': thread, 'post': post,
-                         'post_preview': post_preview})
+    return render(request, 'kbforums/edit_post.html', {
+        'form': form, 'document': doc,
+        'thread': thread, 'post': post,
+        'post_preview': post_preview})
 
 
 @permission_required('kbforums.delete_post')
@@ -319,8 +318,8 @@ def delete_post(request, document_slug, thread_id, post_id):
 
     if request.method == 'GET':
         # Render the confirmation page
-        return jingo.render(request, 'kbforums/confirm_post_delete.html',
-                            {'document': doc, 'thread': thread, 'post': post})
+        return render(request, 'kbforums/confirm_post_delete.html', {
+            'document': doc, 'thread': thread, 'post': post})
 
     # Handle confirm delete form POST
     log.warning("User %s is deleting KB post with id=%s" %
@@ -392,8 +391,8 @@ def post_preview_async(request, document_slug):
     """Ajax preview of posts."""
     statsd.incr('forums.preview')
     post = Post(creator=request.user, content=request.POST.get('content', ''))
-    return jingo.render(request, 'kbforums/includes/post_preview.html',
-                        {'post_preview': post})
+    return render(request, 'kbforums/includes/post_preview.html', {
+        'post_preview': post})
 
 
 def locale_discussions(request):
@@ -420,7 +419,7 @@ def locale_discussions(request):
     is_watching_locale = (request.user.is_authenticated() and
                           NewThreadInLocaleEvent.is_notifying(
                             request.user, locale=request.LANGUAGE_CODE))
-    return jingo.render(request, 'kbforums/discussions.html',
-                        {'locale_name': locale_name, 'threads': threads_,
-                         'desc_toggle': desc_toggle,
-                         'is_watching_locale': is_watching_locale})
+    return render(request, 'kbforums/discussions.html', {
+        'locale_name': locale_name, 'threads': threads_,
+        'desc_toggle': desc_toggle,
+        'is_watching_locale': is_watching_locale})

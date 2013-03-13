@@ -16,12 +16,13 @@ from django.core.paginator import EmptyPage, PageNotAnInteger
 from django.db.models import Q
 from django.http import (HttpResponseRedirect, HttpResponse, Http404,
                          HttpResponseBadRequest, HttpResponseForbidden)
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, render
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import (require_POST, require_GET,
                                           require_http_methods)
 
 import jingo
+import waffle
 from mobility.decorators import mobile_template
 from session_csrf import anonymous_csrf
 from statsd import statsd
@@ -29,7 +30,6 @@ from taggit.models import Tag
 from tidings.events import ActivationRequestFailed
 from tidings.models import Watch
 from tower import ugettext as _, ugettext_lazy as _lazy
-import waffle
 
 from access.decorators import (has_perm_or_owns_or_403, permission_required,
                                login_required)
@@ -210,7 +210,7 @@ def questions(request, template):
         data.update(top_contributors=_get_top_contributors())
 
     with statsd.timer('questions.view.render'):
-        return jingo.render(request, template, data)
+        return render(request, template, data)
 
 
 def parse_troubleshooting(troubleshooting_json):
@@ -302,7 +302,7 @@ def answers(request, template, question_id, form=None, watch_form=None,
             question.created < datetime.now() - timedelta(days=30)):
             extra_kwargs.update(robots_noindex=True)
 
-    return jingo.render(request, template, extra_kwargs)
+    return render(request, template, extra_kwargs)
 
 
 @mobile_template('questions/{mobile/}new_question.html')
@@ -377,11 +377,11 @@ def aaq(request, product_key=None, category_key=None, showform=False,
                 statsd.incr('questions.aaq.login-or-register')
                 login_form = AuthenticationForm()
                 register_form = RegisterForm()
-                return jingo.render(request, login_t,
-                                    {'product': product, 'category': category,
-                                     'title': search,
-                                     'register_form': register_form,
-                                     'login_form': login_form})
+                return render(request, login_t, {
+                    'product': product, 'category': category,
+                    'title': search,
+                    'register_form': register_form,
+                    'login_form': login_form})
             form = NewQuestionForm(product=product,
                                    category=category,
                                    initial={'title': search})
@@ -393,18 +393,18 @@ def aaq(request, product_key=None, category_key=None, showform=False,
                 # User is on the article and questions suggestions step
                 statsd.incr('questions.aaq.suggestions')
 
-        return jingo.render(request, template,
-                            {'form': form,
-                             'results': results,
-                             'tried_search': tried_search,
-                             'products': products,
-                             'current_product': product,
-                             'current_category': category,
-                             'current_html': html,
-                             'current_articles': articles,
-                             'current_step': step,
-                             'deadend': deadend,
-                             'host': Site.objects.get_current().domain})
+        return render(request, template, {
+            'form': form,
+            'results': results,
+            'tried_search': tried_search,
+            'products': products,
+            'current_product': product,
+            'current_category': category,
+            'current_html': html,
+            'current_articles': articles,
+            'current_step': step,
+            'deadend': deadend,
+            'host': Site.objects.get_current().domain})
 
     # Handle the form post.
     if not request.user.is_authenticated():
@@ -427,8 +427,8 @@ def aaq(request, product_key=None, category_key=None, showform=False,
         else:
             # L10n: This shouldn't happen unless people tamper with POST data.
             message = _lazy('Request type not recognized.')
-            return jingo.render(request, 'handlers/400.html',
-                            {'message': message}, status=400)
+            return render(request, 'handlers/400.html', {
+                'message': message}, status=400)
         if request.user.is_authenticated():
             # Redirect to GET the current URL replacing the step parameter.
             # This is also required for the csrf middleware to set the auth'd
@@ -436,11 +436,11 @@ def aaq(request, product_key=None, category_key=None, showform=False,
             url = urlparams(request.get_full_path(), step='aaq-question')
             return HttpResponseRedirect(url)
         else:
-            return jingo.render(request, login_t,
-                                {'product': product, 'category': category,
-                                 'title': request.POST.get('title'),
-                                 'register_form': register_form,
-                                 'login_form': login_form})
+            return render(request, login_t, {
+                'product': product, 'category': category,
+                'title': request.POST.get('title'),
+                'register_form': register_form,
+                'login_form': login_form})
 
     form = NewQuestionForm(product=product, category=category,
                            data=request.POST)
@@ -489,11 +489,11 @@ def aaq(request, product_key=None, category_key=None, showform=False,
         return HttpResponseRedirect(reverse('questions.aaq_confirm'))
 
     statsd.incr('questions.aaq.details-form-error')
-    return jingo.render(request, template,
-                        {'form': form, 'products': products,
-                         'current_product': product,
-                         'current_category': category,
-                         'current_articles': articles})
+    return render(request, template, {
+        'form': form, 'products': products,
+        'current_product': product,
+        'current_category': category,
+        'current_articles': articles})
 
 
 def aaq_step2(request, product_key):
@@ -530,7 +530,7 @@ def aaq_confirm(request):
 
     confirm_t = ('questions/mobile/confirm_email.html' if request.MOBILE
                      else 'questions/confirm_email.html')
-    return jingo.render(request, confirm_t, {'email': email})
+    return render(request, confirm_t, {'email': email})
 
 
 @require_http_methods(['GET', 'POST'])
@@ -572,11 +572,11 @@ def edit_question(request, question_id):
             return HttpResponseRedirect(reverse('questions.answers',
                                         kwargs={'question_id': question.id}))
 
-    return jingo.render(request, 'questions/edit_question.html',
-                        {'question': question,
-                         'form': form,
-                         'current_product': question.product,
-                         'current_category': question.category})
+    return render(request, 'questions/edit_question.html', {
+        'question': question,
+        'form': form,
+        'current_product': question.product,
+        'current_category': question.category})
 
 
 @require_POST
@@ -728,8 +728,9 @@ def question_vote(request, question_id):
         if request.is_ajax():
             tmpl = 'questions/includes/question_vote_thanks.html'
             form = WatchQuestionForm(request.user)
-            html = jingo.render_to_string(request, tmpl, {'question': question,
-                                                          'watch_form': form})
+            html = jingo.render_to_string(request, tmpl, {
+                'question': question,
+                'watch_form': form})
             return HttpResponse(json.dumps({'html': html}))
 
     return HttpResponseRedirect(question.get_absolute_url())
@@ -799,7 +800,7 @@ def add_tag(request, question_id):
         template_data = _answers_data(request, question_id)
         template_data['tag_adding_error'] = UNAPPROVED_TAG
         template_data['tag_adding_value'] = request.POST.get('tag-name', '')
-        return jingo.render(request, 'questions/answers.html', template_data)
+        return render(request, 'questions/answers.html', template_data)
 
     if canonical_name:  # success
         question.clear_cached_tags()
@@ -809,7 +810,7 @@ def add_tag(request, question_id):
     # No tag provided
     template_data = _answers_data(request, question_id)
     template_data['tag_adding_error'] = NO_TAG
-    return jingo.render(request, 'questions/answers.html', template_data)
+    return render(request, 'questions/answers.html', template_data)
 
 
 @permission_required('questions.tag_question')
@@ -889,8 +890,8 @@ def delete_question(request, question_id):
 
     if request.method == 'GET':
         # Render the confirmation page
-        return jingo.render(request, 'questions/confirm_question_delete.html',
-                            {'question': question})
+        return render(request, 'questions/confirm_question_delete.html', {
+            'question': question})
 
     # Handle confirm delete form POST
     log.warning('User %s is deleting question with id=%s' %
@@ -908,8 +909,8 @@ def delete_answer(request, question_id, answer_id):
 
     if request.method == 'GET':
         # Render the confirmation page
-        return jingo.render(request, 'questions/confirm_answer_delete.html',
-                            {'answer': answer})
+        return render(request, 'questions/confirm_answer_delete.html', {
+            'answer': answer})
 
     # Handle confirm delete form POST
     log.warning('User %s is deleting answer with id=%s' %
@@ -950,8 +951,8 @@ def edit_answer(request, question_id, answer_id):
 
     if request.method == 'GET':
         form = AnswerForm({'content': answer.content})
-        return jingo.render(request, 'questions/edit_answer.html',
-                            {'form': form, 'answer': answer})
+        return render(request, 'questions/edit_answer.html', {
+            'form': form, 'answer': answer})
 
     form = AnswerForm(request.POST)
 
@@ -967,9 +968,9 @@ def edit_answer(request, question_id, answer_id):
             answer.save()
             return HttpResponseRedirect(answer.get_absolute_url())
 
-    return jingo.render(request, 'questions/edit_answer.html',
-                        {'form': form, 'answer': answer,
-                         'answer_preview': answer_preview})
+    return render(request, 'questions/edit_answer.html', {
+        'form': form, 'answer': answer,
+        'answer_preview': answer_preview})
 
 
 @require_POST
@@ -1025,8 +1026,8 @@ def unsubscribe_watch(request, watch_id, secret):
         QuestionSolvedEvent.stop_notifying(user_or_email, question)
         success = True
 
-    return jingo.render(request, 'questions/unsubscribe_watch.html',
-                        {'question': question, 'success': success})
+    return render(request, 'questions/unsubscribe_watch.html', {
+        'question': question, 'success': success})
 
 
 @require_GET
@@ -1038,11 +1039,11 @@ def activate_watch(request, watch_id, secret):
         watch.activate().save()
         statsd.incr('questions.watches.activate')
 
-    return jingo.render(request, 'questions/activate_watch.html',
-                        {'question': question,
-                         'unsubscribe_url': reverse('questions.unsubscribe',
-                                                    args=[watch_id, secret]),
-                         'is_active': watch.is_active})
+    return render(request, 'questions/activate_watch.html', {
+        'question': question,
+        'unsubscribe_url': reverse('questions.unsubscribe',
+                                args=[watch_id, secret]),
+        'is_active': watch.is_active})
 
 
 @login_required
@@ -1054,13 +1055,13 @@ def answer_preview_async(request):
                     content=request.POST.get('content', ''))
     template = 'questions/includes/answer_preview.html'
 
-    return jingo.render(request, template, {'answer_preview': answer})
+    return render(request, template, {'answer_preview': answer})
 
 
 @mobile_template('questions/{mobile/}marketplace.html')
 def marketplace(request, template=None):
     """AAQ landing page for Marketplace."""
-    return jingo.render(request, template, {
+    return render(request, template, {
         'categories': MARKETPLACE_CATEGORIES})
 
 
@@ -1100,7 +1101,7 @@ def marketplace_category(request, category_slug, template=None):
                 return HttpResponseRedirect(
                     reverse('questions.marketplace_aaq_success'))
 
-    return jingo.render(request, template, {
+    return render(request, template, {
         'category': category_name,
         'category_slug': category_slug,
         'categories': MARKETPLACE_CATEGORIES,
@@ -1111,7 +1112,7 @@ def marketplace_category(request, category_slug, template=None):
 @mobile_template('questions/{mobile/}marketplace_success.html')
 def marketplace_success(request, template=None):
     """Confirmation of ticket submitted successfully."""
-    return jingo.render(request, template)
+    return render(request, template)
 
 
 def stats_topic_data(bucket_days, start, end):
@@ -1235,7 +1236,7 @@ def stats(request):
         'form': form,
     }
 
-    return jingo.render(request, template, data)
+    return render(request, template, data)
 
 
 def _search_suggestions(request, text, locale, product_slugs):

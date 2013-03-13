@@ -1,6 +1,4 @@
-from django.shortcuts import get_object_or_404
-
-import jingo
+from django.shortcuts import get_object_or_404, render
 
 from mobility.decorators import mobile_template
 from products.models import Product
@@ -18,7 +16,7 @@ def product_list(request, template):
         # Flip the first two products
         products[0], products[1] = products[1], products[0]
 
-    return jingo.render(request, template, {
+    return render(request, template, {
         'products': products})
 
 
@@ -36,7 +34,7 @@ def product_landing(request, template, slug):
         # "hot" topic doesn't exist, move on.
         hot_docs = fallback_hot_docs = None
 
-    return jingo.render(request, template, {
+    return render(request, template, {
         'product': product,
         'products': Product.objects.filter(visible=True),
         'topics': topics_for(products=[product]),
@@ -60,7 +58,7 @@ def document_listing(request, template, product_slug, topic_slug):
     documents, fallback_documents = documents_for(
         locale=request.LANGUAGE_CODE, products=[product], topics=topics)
 
-    return jingo.render(request, template, {
+    return render(request, template, {
         'product': product,
         'topic': topic,
         'topics': topics_for(products=[product]),

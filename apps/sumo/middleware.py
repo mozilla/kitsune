@@ -6,10 +6,10 @@ from django.core.urlresolvers import is_valid_path
 from django.db.utils import DatabaseError
 from django.http import HttpResponseRedirect, HttpResponsePermanentRedirect
 from django.http import HttpResponseForbidden
+from django.shortcuts import render
 from django.utils.encoding import iri_to_uri, smart_str, smart_unicode
 
 import mobility
-import jingo
 import tower
 
 from sumo.helpers import urlparams
@@ -117,11 +117,11 @@ class ReadOnlyMiddleware(object):
 
     def process_request(self, request):
         if request.method == 'POST':
-            return jingo.render(request, 'sumo/read-only.html', status=503)
+            return render(request, 'sumo/read-only.html', status=503)
 
     def process_exception(self, request, exception):
         if isinstance(exception, DatabaseError):
-            return jingo.render(request, 'sumo/read-only.html', status=503)
+            return render(request, 'sumo/read-only.html', status=503)
 
 
 class RemoveSlashMiddleware(object):

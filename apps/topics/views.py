@@ -1,8 +1,6 @@
 from django.conf import settings
 from django.http import HttpResponseRedirect
-from django.shortcuts import get_object_or_404
-
-import jingo
+from django.shortcuts import get_object_or_404, render
 
 from products.models import Product
 from sumo.urlresolvers import reverse
@@ -28,4 +26,4 @@ def topic_landing(request, slug):
             locale=request.LANGUAGE_CODE, topics=[topic])
         data.update(documents=docs, fallback_documents=fallback)
 
-    return jingo.render(request, 'topics/topic.html', data)
+    return render(request, 'topics/topic.html', data)

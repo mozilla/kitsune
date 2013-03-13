@@ -1,16 +1,15 @@
 from django.conf import settings
 from django.core.cache import cache
 from django.http import HttpResponse
+from django.shortcuts import render
 from django.views.decorators.cache import never_cache
 from django.views.decorators.http import require_GET
-
-import jingo
 
 
 @require_GET
 def chat(request):
     """Display the current state of the chat queue."""
-    return jingo.render(request, 'chat/chat.html')
+    return render(request, 'chat/chat.html')
 
 
 @never_cache
