@@ -474,7 +474,8 @@ def password_reset(request, template):
                 form.save, form, 'email',
                 use_https=request.is_secure(),
                 token_generator=default_token_generator,
-                email_template_name='users/email/pw_reset.ltxt')
+                email_template_name='users/email/pw_reset.ltxt',
+                subject_template_name='users/email/pw_reset_subject.ltxt')
         # Form may now be invalid if email failed to send.
         # PasswordResetForm is invalid iff there is no user with the entered
         # email address.
