@@ -72,10 +72,6 @@ def generate_sampledata(options):
                           save=True)
     revision(content=SUGGESTION_BOX_CONTENT, document=suggestion,
              is_approved=True, reviewed=datetime.now(), save=True)
-    superheroes = document(title='Superheroes Wanted!',
-                           slug='superheroes-wanted', save=True)
-    revision(content=SUPERHEROES_CONTENT, document=superheroes,
-             is_approved=True, reviewed=datetime.now(), save=True)
     community = document(title='Get community support',
                          slug='get-community-support', save=True)
     revision(content=COMMUNITY_CONTENT, document=community,

@@ -19,7 +19,7 @@ urlpatterns = patterns('',
     url('^locales$', views.locales, name='sumo.locales'),
 
     # Shortcuts:
-    url('^contribute/?$', RedirectView.as_view(url='/kb/superheroes-wanted',
+    url('^contribute/?$', RedirectView.as_view(url='/get-involved',
                                                permanent=False)),
     url(r'^windows7-support(?:\\/)?$',
         RedirectView.as_view(url='/home/?as=u', permanent=False)),

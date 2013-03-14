@@ -104,7 +104,7 @@
 {%- endmacro %}
 
 {% macro _for_contributor_links(user, default_language, active=None) -%}
-  <li><a href="{{ url('wiki.document', 'superheroes-wanted') }}">{{ _('Quickstart Guide') }}</a></li>
+  <li><a href="{{ url('landings.get_involved') }}">{{ _('Quickstart Guide') }}</a></li>
   <li><a href="{{ url('wiki.document', 'contributor-news-resources') }}">{{ _('News &amp; Resources') }}</a></li>
   <li {{ active|class_selected('forums') }}><a href="{{ url('forums.forums') }}">{{ _('Contributor Forums') }}</a></li>
   <li {{ active|class_selected('article-discussions') }}><a href="{{ url('wiki.locale_discussions') }}">{{ _('Article Discussions') }}</a></li>
