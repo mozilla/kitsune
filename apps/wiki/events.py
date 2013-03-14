@@ -188,7 +188,10 @@ class ReadyRevisionEvent(_RevisionConstructor, Event):
 
         subject = _lazy(u'{title} has a revision ready for localization')
 
-        context = {'title': document.title}
+        context = context_dict(revision, ready_for_l10n=True)
+        context['url'] = django_reverse('wiki.select_locale',
+                                        args=[document.slug])
+        context['title'] = document.title
 
         return email_utils.emails_with_users_and_watches(
             subject,
