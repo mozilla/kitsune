@@ -4,30 +4,26 @@
 {% set styles = ('landings/get-involved',) %}
 
 {% block content %}
-  <div class="grid_12 headlines">
-    <h1>{{ _('Save the world') }}</h1>
-    <h2>{{ _('from the comfort of your couch') }}</h2>
-  </div>
-
-  <div class="row cf">
-    <div class="grid_4"><div class="placeholder"></div></div>
-    <div class="grid_4">
-      <h3>{{ _('We need your help!') }}</h3>
-      {% trans %}
-        Used by more than 400 million people, Firefox support is fully powered by
-        volunteers, and it’s more important than ever. This is where you come in.
-      {% endtrans %}
-    </div>
-    <div class="grid_4">
-      <h3>{{ _('Why should I help?') }}</h3>
-      {% trans %}
-        Help millions of Firefox users get the most out of their favourite
-        browser. Your contributions will reach millions of users worldwide, and
-        you can do it from the comfort of your couch! Help millions of Firefox
-        users get the most out of their favourite browser. Your contributions
-        will reach millions of users worldwide, and you can do it from the
-        comfort of your couch!
-      {% endtrans %}
+  <div class="grid_12">
+    <div class="hero-bar cf">
+      <h1>{{ _('Save the world') }}</h1>
+      <h2>{{ _('from the comfort of your couch') }}</h2>
+      <div class="column">
+        <h4>{{ _('We need your help!') }}</h4>
+        {% trans %}
+          Used by more than 400 million people, Firefox support is fully powered by
+          volunteers, and it’s more important than ever. This is where you come in.
+        {% endtrans %}
+      </div>
+      <div class="column">
+        <h4>{{ _('Why should I help?') }}</h4>
+        {% trans %}
+          Help millions of Firefox users get the most out of their favourite
+          browser. Your contributions will reach millions of users worldwide, and
+          you can do it from the comfort of your couch!
+        {% endtrans %}
+      </div>
+      <img class="hero-butler" src="{{ MEDIA_URL }}/img/gi-hero-butler.png" alt="">
     </div>
   </div>
 
@@ -40,7 +36,7 @@
         adventure!
       {% endtrans %}
     </div>
-    <div class="grid_8"><div class="placeholder"></div></div>
+    <div class="grid_8"><img class="moz-heroes" src="{{ MEDIA_URL }}/img/moz-heroes.jpg" alt=""></div>
   </div>
 
   <div class="row cf pick-a-way">
@@ -61,13 +57,13 @@
     </div>
     <div class="grid_3">
       <div class="get-involved-icon kb"></div>
-      <a href="{{ url('wiki.document', 'improve-knowledge-base') }}">
+      <a href="{{ url('landings.get_involved_kb') }}">
         {{ _('Write help articles') }} &raquo;
       </a>
     </div>
     <div class="grid_3">
       <div class="get-involved-icon localize"></div>
-      <a href="{{ url('wiki.document', 'localize-firefox-help') }}">
+      <a href="{{ url('landings.get_involved_l10n') }}">
         {{ _('Translate help to your languages') }} &raquo;
       </a>
     </div>

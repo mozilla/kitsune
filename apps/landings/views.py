@@ -60,5 +60,13 @@ def get_involved_questions(request):
     return jingo.render(request, 'landings/get-involved-questions.html')
 
 
+def get_involved_kb(request):
+    return jingo.render(request, 'landings/get-involved-kb.html')
+
+
+def get_involved_l10n(request):
+    return jingo.render(request, 'landings/get-involved-l10n.html')
+
+
 def integrity_check(request):
     return jingo.render(request, 'landings/integrity-check.html')

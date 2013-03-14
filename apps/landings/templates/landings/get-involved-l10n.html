@@ -5,16 +5,15 @@
 
 {% block content %}
   <div class="grid_12">
-    <div class="hero-bar secondary questions cf">
+    <div class="hero-bar secondary l10n cf">
       <div class="column">
-        <h1>{{ _('Answer questions in the forum') }}</h1>
-        <h2>{{ _('Where all the action happens') }}</h2>
+        <h1>{{ _('Translate help articles!') }}</h1>
+        <h2>{{ _("Let's make Firefox speak your language!") }}</h2>
         <p>
           {% trans %}
-            From hardcore web developers to "how do I install Firefox" first time
-            users, everybody needs your help in the forum! Share your Firefox
-            knowledge by pointing people to the right help articles and providing
-            troubleshooting steps for their individual questions.
+            Help articles are not available in your language yet? You want to
+            join the amazing team translating them? You will help millions of
+            users in your language. Pretty heroic, right?
           {% endtrans %}
         </p>
       </div>
@@ -40,23 +39,16 @@
 
       <span class="bullet">2</span>
       <div>
-        <a href="{{ url('questions.questions') }}">
-          {% trans %}
-            Go to our support forum and choose a question to answer
-          {% endtrans %}
+        <a href="{{ url('wiki.document', 'localize-firefox-help') }}">
+          {{ _('Check our documentation') }}
         </a>
       </div>
 
-        <span class="bullet">3</span>
-        <div>
-          {{ _('Start answering!') }}<br>
-          <a href="{{ url('wiki.document', 'answering-questions-support-forum') }}">
-            {{ _('Read this for some help to get started') }}
-          </a>
-        </div>
+      <span class="bullet">3</span>
+      <div>{{ _('Just edit articles in your language!') }}</div>
     </div>
     <div class="grid_6">
-      <img src="{{ MEDIA_URL }}/img/gi-visual-questions.png" alt="">
+      <img src="{{ MEDIA_URL }}/img/gi-visual-l10n.png" alt="">
     </div>
   </div>
 
@@ -71,15 +63,15 @@
       </a>
     </div>
     <div class="grid_3">
-      <div class="get-involved-icon kb"></div>
-      <a href="{{ url('landings.get_involved_kb') }}">
-        {{ _('Write help articles') }} &raquo;
+      <div class="get-involved-icon questions"></div>
+      <a href="{{ url('landings.get_involved_questions') }}">
+        {{ _('Answer questions in the support forum') }} &raquo;
       </a>
     </div>
     <div class="grid_3">
-      <div class="get-involved-icon localize"></div>
-      <a href="{{ url('landings.get_involved_l10n') }}">
-        {{ _('Translate help to your languages') }} &raquo;
+      <div class="get-involved-icon kb"></div>
+      <a href="{{ url('landings.get_involved_kb') }}">
+        {{ _('Write help articles') }} &raquo;
       </a>
     </div>
   </div>

@@ -5,23 +5,21 @@
 
 {% block content %}
   <div class="grid_12">
-    <h2>{{ _('Join our Army of Awesome') }}</h2>
-  </div>
-
-  <div class="row cf">
-    <div class="grid_6"><div class="placeholder"></div></div>
-    <div class="grid_6">
-      <h3>{{ _('Love Firefox? Love Twitter?') }}</h3>
-      {% trans %}
-        <p>
-          Now you can combine both and help Firefox users on Twitter. It's
-          quick, it's easy, and you don't have to be a tech superstar to do it.
-          We call it our Army of Awesome.
-        </p>
-        <p>
-          It's fun and addictive and the Awesome is you!
-        </p>
-      {% endtrans %}
+    <div class="hero-bar secondary aoa cf">
+      <div class="column">
+        <h1>{{ _('Join our Army of Awesome') }}</h1>
+        <h2>{{ _('Love Firefox? Love Twitter?') }}</h2>
+        {% trans %}
+          <p>
+            Now you can combine both and help Firefox users on Twitter. It's
+            quick, it's easy, and you don't have to be a tech superstar to do it.
+            We call it our Army of Awesome.
+          </p>
+          <p>
+            It's fun and addictive and the Awesome is you!
+          </p>
+        {% endtrans %}
+      </div>
     </div>
   </div>
 
@@ -70,13 +68,13 @@
     </div>
     <div class="grid_3">
       <div class="get-involved-icon kb"></div>
-      <a href="{{ url('wiki.document', 'improve-knowledge-base') }}">
+      <a href="{{ url('landings.get_involved_kb') }}">
         {{ _('Write help articles') }} &raquo;
       </a>
     </div>
     <div class="grid_3">
       <div class="get-involved-icon localize"></div>
-      <a href="{{ url('wiki.document', 'localize-firefox-help') }}">
+      <a href="{{ url('landings.get_involved_l10n') }}">
         {{ _('Translate help to your languages') }} &raquo;
       </a>
     </div>
