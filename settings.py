@@ -1021,3 +1021,6 @@ API_LIMIT_PER_PAGE = 0
 
 # Change the default for XFrameOptionsMiddleware.
 X_FRAME_OPTIONS = 'DENY'
+
+# Where to find the about:support troubleshooting addon.
+TROUBLESHOOTER_ADDON_URL = 'https://addons.mozilla.org/firefox/downloads/file/198009/troubleshooter-1.1a-fx.xpi'

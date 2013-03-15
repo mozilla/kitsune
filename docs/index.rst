@@ -33,6 +33,7 @@ Part 2: Developer's Guide
    karma
    vendor
    wikidocs
+   notes
    licenses
 
 

@@ -198,7 +198,7 @@
 
 {% macro troubleshooting_instructions(field) %}
   <span id="troubleshooting-install">
-    <a href="/media/addons/troubleshooter.xpi" class="btn btn-important" id="install-troubleshooting-addon">
+    <a href="{{ settings.TROUBLESHOOTER_ADDON_URL }}" class="btn btn-important" id="install-troubleshooting-addon">
       {{ _('Automatically add') }}
     </a>
     <span>
