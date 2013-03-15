@@ -704,6 +704,10 @@ class OutOfDateReadout(Readout):
         # higher. We could arguably knock this up to MAJOR, but technically it
         # is out of date when the original gets anything more than typo
         # corrections.
+
+        # TODO: This is wrong because it uses the reviewed date to calculate
+        # "Out of date since", instead of using the ready for l10n date.
+        # To fix it is pretty hairy though. What a query!!!
         query = ('SELECT transdoc.slug, transdoc.title, engrev.reviewed, '
             'dashboards_wikidocumentvisits.visits '
             'FROM wiki_document transdoc '

@@ -465,6 +465,12 @@ def review_revision(request, document_slug, revision_id):
                 rev.is_ready_for_localization = form.cleaned_data[
                     'is_ready_for_localization']
 
+                # If the revision is ready for l10n, store the date
+                # and the user.
+                if rev.is_ready_for_localization:
+                    rev.readied_for_localization = rev.reviewed
+                    rev.readied_for_localization_by = rev.reviewer
+
             rev.save()
 
             # Update the needs change bit (if approved, default language and
@@ -1050,6 +1056,8 @@ def mark_ready_for_l10n_revision(request, document_slug, revision_id):
         # We don't use update(), because that wouldn't update
         # Document.latest_localizable_revision.
         revision.is_ready_for_localization = True
+        revision.readied_for_localization = datetime.now()
+        revision.readied_for_localization_by = request.user
         revision.save()
 
         ReadyRevisionEvent(revision).fire(exclude=request.user)
