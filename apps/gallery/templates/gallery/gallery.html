@@ -15,7 +15,7 @@
 {% block content %}
   <div class="cf">
     <div class="grid_6">
-      <form action="{{ url('gallery.search', media_type=media_type) }}" method="get" class="search-form" id="gallery-search">
+      <form action="{{ url('gallery.search', media_type=media_type) }}" method="get" class="simple-search-form" id="gallery-search">
         <input class="searchbox" type="search" name="q" required="required" placeholder="{{ _('Search Gallery') }}" />
         <button class="submit-button" title="{{ _('Search') }}" type="submit">
         </button>
