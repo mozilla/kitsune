@@ -400,3 +400,13 @@ def ga_push_attribute(context):
             ga_push.append(['_setCustomVar', 1, 'User Type', 'Registered', 1])
 
     return jsonlib.dumps(ga_push)
+
+
+@register.function
+@jinja2.contextfunction
+def is_secure(context):
+    request = context.get('request')
+    if request and hasattr(request, 'is_secure'):
+        return context.get('request').is_secure()
+
+    return False
