@@ -37,10 +37,6 @@
               <strong>{{ _('Reviewed:') }}</strong>
               <span>{{ revision.reviewed|yesno }}</span>
             </li>
-            <li>
-              <strong>{{ _('Ready for localization:') }}</strong>
-              <span>{{ revision.is_ready_for_localization|yesno }}</span>
-            </li>
             {% if revision.reviewed %}
               <li>
                 <strong>{{ _('Reviewed:') }}</strong>
@@ -57,6 +53,20 @@
               <li>
                 <strong>{{ _('Is current revision?') }}</strong>
                 <span>{{ (revision == document.current_revision)|yesno }}</span>
+              </li>
+            {% endif %}
+            <li>
+              <strong>{{ _('Ready for localization:') }}</strong>
+              <span>{{ revision.is_ready_for_localization|yesno }}</span>
+            </li>
+            {% if revision.is_ready_for_localization %}
+              <li>
+                <strong>{{ _('Readied for localization:') }}</strong>
+                <span>{{ datetimeformat(revision.readied_for_localization, format='datetime') }}</span>
+              </li>
+              <li>
+                <strong>{{ _('Readied for localization by:') }}</strong>
+                <span>{{ revision.readied_for_localization_by }}</span>
               </li>
             {% endif %}
             {% if user.is_authenticated() %}

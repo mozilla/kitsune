@@ -379,13 +379,14 @@ class RevisionTests(TestCaseBase):
     @mock.patch.object(ReadyRevisionEvent, 'fire')
     def test_mark_as_ready_POST(self, fire):
         """HTTP POST to mark a revision as ready for l10n."""
+        u = user(save=True)
+        add_permission(u, Revision, 'mark_ready_for_l10n')
+        self.client.login(username=u.username, password='testpass')
 
         r = revision(is_approved=True,
                      is_ready_for_localization=False,
                      significance=MEDIUM_SIGNIFICANCE,
                      save=True)
-
-        self.client.login(username='admin', password='testpass')
 
         url = reverse('wiki.mark_ready_for_l10n_revision',
                       args=[r.document.slug, r.id])
@@ -398,6 +399,8 @@ class RevisionTests(TestCaseBase):
 
         assert fire.called
         assert r2.is_ready_for_localization
+        assert r2.readied_for_localization
+        eq_(r2.readied_for_localization_by, u)
         eq_(r2.document.latest_localizable_revision, r2)
 
     @mock.patch.object(ReadyRevisionEvent, 'fire')
@@ -1194,6 +1197,7 @@ class ReviewRevisionTests(TestCaseBase):
         assert r.reviewed
         assert r.is_approved
         assert r.document.needs_change
+        assert not r.is_ready_for_localization
         eq_('comment', r.document.needs_change_comment)
 
         # Verify that revision creator is now in contributors
@@ -1253,6 +1257,25 @@ class ReviewRevisionTests(TestCaseBase):
                      (self.document.title, self.document.locale),
                  body=expected_body,
                  to=['joe@example.com'])
+
+    def test_approve_and_ready_for_l10n_revision(self):
+        """Verify revision approval with ready for l10n."""
+        # Approve something:
+        significance = SIGNIFICANCES[0][0]
+        response = post(self.client, 'wiki.review_revision',
+                        {'approve': 'Approve Revision',
+                         'significance': significance,
+                         'comment': 'something',
+                         'needs_change': True,
+                         'needs_change_comment': 'comment',
+                         'is_ready_for_localization': True},
+                        args=[self.document.slug, self.revision.id])
+
+        eq_(200, response.status_code)
+        r = Revision.uncached.get(pk=self.revision.id)
+        assert r.is_ready_for_localization
+        eq_(r.reviewer, r.readied_for_localization_by)
+        eq_(r.reviewed, r.readied_for_localization)
 
     @mock.patch.object(send_reviewed_notification, 'delay')
     @mock.patch.object(Site.objects, 'get_current')
