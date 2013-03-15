@@ -55,7 +55,8 @@ AjaxVote.prototype = {
                     success: function(response) {
                         if (response.survey) {
                             self.showSurvey(response.survey, $form.parent());
-                        } else {
+                        }
+                        if (response.message) {
                             self.showMessage(response.message, $btn, $form);
                         }
                         $btn.addClass('active');
@@ -63,8 +64,10 @@ AjaxVote.prototype = {
                         $form.removeClass('busy');
                         self.voted = true;
 
-                        // Trigger a document event for others to listen for.
-                        $(document).trigger('vote', $.extend(data, {url: url}));
+                        if (!data.ignored) {
+                            // Trigger a document event for others to listen for.
+                            $(document).trigger('vote', $.extend(data, {url: url}));
+                        }
 
                         // Hide other forms
                         self.$form.filter(function() { return this !== $form; }).remove();
