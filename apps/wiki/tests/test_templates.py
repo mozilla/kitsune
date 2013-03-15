@@ -357,6 +357,7 @@ class RevisionTests(TestCaseBase):
         r = d.current_revision
         r.created = datetime(2011, 1, 1)
         r.reviewed = datetime(2011, 1, 2)
+        r.readied_for_localization = datetime(2011, 1, 3)
         r.save()
         url = reverse('wiki.revision', args=[d.slug, r.id])
         response = self.client.get(url)
@@ -370,7 +371,7 @@ class RevisionTests(TestCaseBase):
         eq_('Created:\n              Jan 1, 2011 12:00:00 AM',
             doc('.revision-info li')[1].text_content().strip())
         eq_('Reviewed:\n                Jan 2, 2011 12:00:00 AM',
-            doc('.revision-info li')[6].text_content().strip())
+            doc('.revision-info li')[5].text_content().strip())
         # is reviewed?
         eq_('Yes', doc('.revision-info li').eq(4).find('span').text())
         # is current revision?
