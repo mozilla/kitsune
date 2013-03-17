@@ -1,7 +1,7 @@
 {# vim: set ts=2 et sts=2 sw=2: #}
 {% extends "forums/base.html" %}
 {% from "layout/errorlist.html" import errorlist %}
-{% from "includes/common_macros.html" import content_editor %}
+{% from "includes/common_macros.html" import content_editor with context %}
 {# L10n: {f} if the name of the forum, {t} if the name of the thread. #}
 {% set title = _('Edit a post | {t} | {f} | Forums')|f(t=thread.title,f=forum.name) %}
 {% set crumbs = [(url('forums.forums'), _('Forums')),

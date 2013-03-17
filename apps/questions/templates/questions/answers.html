@@ -2,7 +2,8 @@
 {% extends "questions/base.html" %}
 {% from "layout/errorlist.html" import errorlist %}
 {% from "upload/attachments.html" import attachments_form %}
-{% from "includes/common_macros.html" import content_editor, for_contributors %}
+{% from "includes/common_macros.html" import content_editor with context %}
+{% from "includes/common_macros.html" import for_contributors %}
 {% from "wiki/includes/flag_form.html" import flag_form with context %}
 {% from "questions/includes/questions.html" import troubleshooting_info %}
 
