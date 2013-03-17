@@ -269,6 +269,7 @@ JINGO_EXCLUDE_APPS = [
     'admin',
     'adminplus',
     'authority',
+    'waffle',
 ]
 
 TEMPLATE_CONTEXT_PROCESSORS = (
