@@ -38,7 +38,7 @@ def collect_tweets():
         auth.set_access_token(settings.TWITTER_ACCESS_TOKEN,
                               settings.TWITTER_ACCESS_TOKEN_SECRET)
 
-        api = tweepy.API(auth)
+        api = tweepy.API(auth, parser=RawParser())
 
         search_options = {
             'q': 'firefox OR #fxinput',
