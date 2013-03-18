@@ -21,7 +21,7 @@ is:
 - https://support.mozilla.org/
 - https://support.allizom.org/
 - https://support-dev.allizom.org/
-- http://localhost:8000//
+- http://localhost:8000/
 
 Note that the protocol and port are significant. If you try and run the site on
 http://localhost:8900/, the add-on will not provide any data.
