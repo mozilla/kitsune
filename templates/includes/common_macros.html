@@ -58,6 +58,13 @@
     <div class="editor-tools"></div>
     <div>{{ field|safe }}</div>
   </div>
+  <div style="display: none;">
+    <select id="_languages-select-box">
+      {% for lang in settings.LANGUAGE_CHOICES %}
+        <option value="{{ lang[0] }}" {% if lang[0] == request.LANGUAGE_CODE %}selected="selected"{% endif %}>{{ lang[1] }} ({{ lang[0] }})</option>
+      {% endfor %}
+    </select>
+  </div>
 {% endmacro %}
 
 {% macro list_view_item(url, label, class=None, icon_url=None) %}

@@ -647,12 +647,14 @@ Marky.MediaButton.prototype = $.extend({}, Marky.SimpleButton.prototype, {
             // TODO: look at using a js template solution (jquery-tmpl?)
             $html = $(
                 '<section class="marky">' +
-                '<div class="filter"><div class="type">' +
+                '<div class="filter cf">' +
+                '<div class="search"><input type="text" name="q" />' +
+                '<button class="btn btn-important">' + gettext('Search Gallery') + '</button></div>' +
+                '<div class="type">' +
                 '<span>' + gettext('Show:') + '</span>' +
                 '<ol><li data-type="image" class="selected">' + gettext('Images') + '</li>' +
                 '<li data-type="video">' + gettext('Videos') + '</li></ol></div>' +
-                '<div class="search"><input type="text" name="q" />' +
-                '<button class="btn btn-important">' + gettext('Search Gallery') + '</button></div></div>' +
+                '<div class="locale-filter">' + gettext('Show media for:') + ' <select /></div></div>' +
                 '<div class="placeholder" /><div class="submit">' +
                 '<button class="btn btn-important">' + gettext('Insert Media') + '</button>' +
                 '<a href="' + galleryUrl + '#upload" class="upload" target="_blank">' +
@@ -663,6 +665,7 @@ Marky.MediaButton.prototype = $.extend({}, Marky.SimpleButton.prototype, {
             selectedText = me.getSelectedText(),
             mediaType = $html.find('div.type li.selected').data('type'),
             mediaQ = '',
+            mediaLocale = $('html').attr('lang'),
             mediaPage = 1,
             kbox;
 
@@ -679,6 +682,15 @@ Marky.MediaButton.prototype = $.extend({}, Marky.SimpleButton.prototype, {
             e.preventDefault();
             return false;
         });
+
+        // Handle locale filter
+        var $lf = $html.find('div.locale-filter select');
+        $lf.html($('#_languages-select-box').html())
+        $lf.on('change', function() {
+            mediaPage = 1
+            mediaLocale = $(this).val();
+            updateResults();
+        })
 
         // Handle Search button
         $html.find('div.search button').click(function(e) {
@@ -730,7 +742,8 @@ Marky.MediaButton.prototype = $.extend({}, Marky.SimpleButton.prototype, {
             $.ajax({
                 url: mediaSearchUrl,
                 type: 'GET',
-                data: {type: mediaType, q: mediaQ, page: mediaPage},
+                data: {type: mediaType, q: mediaQ, page: mediaPage,
+                    locale: mediaLocale},
                 dataType: 'html',
                 success: function(html) {
                     $html.find('div.placeholder').html(html);

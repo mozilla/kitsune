@@ -1,4 +1,4 @@
-{% from "includes/common_macros.html" import content_editor %}
+{% from "includes/common_macros.html" import content_editor with context %}
 
 {% macro avatar_link(user=None) -%}
   {% if user %}

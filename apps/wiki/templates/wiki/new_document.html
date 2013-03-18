@@ -2,7 +2,7 @@
 {% extends "wiki/base.html" %}
 {% from "includes/common_macros.html" import for_contributors_sidebar %}
 {% from "layout/errorlist.html" import errorlist %}
-{% from "includes/common_macros.html" import content_editor %}
+{% from "includes/common_macros.html" import content_editor with context %}
 {% from "wiki/includes/document_macros.html" import submit_revision %}
 {% set title = _('Create a New Article | Knowledge Base') %}
 {# TODO: Change KB url to landing page when we have one #}
