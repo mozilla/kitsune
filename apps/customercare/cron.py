@@ -36,7 +36,7 @@ def collect_tweets():
                                    secure=True)
 
         auth.set_access_token(settings.TWITTER_ACCESS_TOKEN,
-                              settings.TWITTER_ACCES_TOKEN_SECRET)
+                              settings.TWITTER_ACCESS_TOKEN_SECRET)
 
         api = tweepy.API(auth)
 
