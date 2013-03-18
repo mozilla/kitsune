@@ -269,6 +269,7 @@ JINGO_EXCLUDE_APPS = [
     'admin',
     'adminplus',
     'authority',
+    'kadmin',
     'waffle',
 ]
 
