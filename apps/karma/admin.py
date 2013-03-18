@@ -2,8 +2,7 @@ from django.contrib import admin, messages
 from django.contrib.auth.models import User
 from django.core.exceptions import PermissionDenied
 from django.http import HttpResponseRedirect
-from django.shortcuts import render_to_response
-from django.template import RequestContext
+from django.shortcuts import render
 
 from karma.manager import KarmaManager
 from karma.models import Title, Points
@@ -74,13 +73,14 @@ def karma(request):
         except User.DoesNotExist:
             pass
 
-    return render_to_response('karma/admin/karma.html',
-                              {'title': 'Karma',
-                               'top_alltime': top_alltime,
-                               'top_week': top_week,
-                               'username': username,
-                               'user_karma': user_karma},
-                              RequestContext(request, {}))
+    return render(
+        request,
+        'admin/karma.html',
+        {'title': 'Karma',
+         'top_alltime': top_alltime,
+         'top_week': top_week,
+         'username': username,
+         'user_karma': user_karma})
 
 admin.site.register_view('karma', karma, 'Karma')
 

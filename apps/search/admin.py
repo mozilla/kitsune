@@ -7,8 +7,7 @@ from django.conf import settings
 from django.contrib import admin
 from django.core.exceptions import PermissionDenied
 from django.http import HttpResponseRedirect, Http404
-from django.shortcuts import render_to_response
-from django.template import RequestContext
+from django.shortcuts import render
 
 from search import es_utils
 from search.es_utils import (get_doctype_stats, get_indexes, delete_index,
@@ -212,8 +211,9 @@ def search(request):
 
     recent_records = Record.uncached.order_by('-starttime')[:20]
 
-    return render_to_response(
-        'search/admin/search.html',
+    return render(
+        request,
+        'admin/search_maintenance.html',
         {'title': 'Search',
          'doctype_stats': stats,
          'doctype_write_stats': write_stats,
@@ -224,8 +224,7 @@ def search(request):
          'recent_records': recent_records,
          'outstanding_chunks': outstanding_chunks,
          'now': datetime.now(),
-         },
-        RequestContext(request, {}))
+         })
 
 
 admin.site.register_view('search', search, 'Search - Index Maintenance')
@@ -280,16 +279,16 @@ def index_view(request):
                                  .order_by('-indexed_on')[:20]))
             for cls_name, cls in bucket_to_model.items()]
 
-    return render_to_response(
-        'search/admin/index.html',
+    return render(
+        request,
+        'admin/search_index.html',
         {'title': 'Index Browsing',
          'buckets': [cls_name for cls_name, cls in bucket_to_model.items()],
          'last_20_by_bucket': last_20_by_bucket,
          'requested_bucket': requested_bucket,
          'requested_id': requested_id,
          'requested_data': data
-         },
-        RequestContext(request, {}))
+         })
 
 
 admin.site.register_view('index', index_view, 'Search - Index Browsing')
@@ -311,12 +310,12 @@ def mapping_view(request):
     # necessary.
     merged_mapping = pformat(merged_mapping, indent=4)
 
-    return render_to_response(
-        'search/admin/mapping.html',
+    return render(
+        request,
+        'admin/search_mapping.html',
         {'title': 'Mapping Browsing',
          'mapping': merged_mapping
-         },
-        RequestContext(request, {}))
+         })
 
 
 admin.site.register_view('mapping', mapping_view, 'Search - Mapping Browsing')
@@ -401,12 +400,12 @@ def troubleshooting_view(request):
 
     diff_list = diff_it_for_realz(last_50_indexed, last_50_reviewed)
 
-    return render_to_response(
-        'search/admin/troubleshooting.html',
+    return render(
+        request,
+        'admin/search_troubleshooting.html',
         {'title': 'Index Troubleshooting',
          'diffs': diff_list,
-         },
-        RequestContext(request, {}))
+         })
 
 
 admin.site.register_view('troubleshooting', troubleshooting_view,
