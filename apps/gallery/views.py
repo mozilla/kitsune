@@ -143,6 +143,7 @@ def gallery_async(request):
     # Maybe refactor this into existing views and check request.is_ajax?
     media_type = request.GET.get('type', 'image')
     term = request.GET.get('q')
+    media_locale = request.GET.get('locale', settings.WIKI_DEFAULT_LANGUAGE)
     if media_type == 'image':
         media_qs = Image.objects
     elif media_type == 'video':
@@ -150,11 +151,7 @@ def gallery_async(request):
     else:
         raise Http404
 
-    if request.LANGUAGE_CODE == settings.WIKI_DEFAULT_LANGUAGE:
-        media_qs = media_qs.filter(locale=request.LANGUAGE_CODE)
-    else:
-        locales = [request.LANGUAGE_CODE, settings.WIKI_DEFAULT_LANGUAGE]
-        media_qs = media_qs.filter(locale__in=locales)
+    media_qs = media_qs.filter(locale=media_locale)
 
     if term:
         media_qs = media_qs.filter(Q(title__icontains=term) |

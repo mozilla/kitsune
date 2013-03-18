@@ -1,5 +1,5 @@
 {% extends "messages/base.html" %}
-{% from "messages/includes/macros.html" import message_form %}
+{% from "messages/includes/macros.html" import message_form with context %}
 {% set title = _('New Message') %}
 {% set crumbs = [(url('messages.inbox'), _('Messages')), (None, title)] %}
 {% set active_tab = 'new' %}
