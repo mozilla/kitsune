@@ -740,6 +740,9 @@ class Revision(ModelBase):
     # translatable version). If is_approved=False or this revision belongs to a
     # non-default-language Document, this must be False.
     is_ready_for_localization = models.BooleanField(default=False)
+    readied_for_localization = models.DateTimeField(null=True)
+    readied_for_localization_by = models.ForeignKey(
+        User, related_name='readied_for_l10n_revisions', null=True)
 
     class Meta(object):
         permissions = [('review_revision', 'Can review a revision'),
