@@ -1046,6 +1046,42 @@ class QuestionsTemplateTestCase(TestCaseBase):
         # Filter on p3 -> No results
         check({'product': p3.slug}, [])
 
+    def test_topic_filter(self):
+        t1 = topic(save=True)
+        t2 = topic(save=True)
+        t3 = topic(save=True)
+
+        q1 = question(save=True)
+        q2 = question(save=True)
+        q2.topics.add(t1)
+        q2.save()
+        q3 = question(save=True)
+        q3.topics.add(t1, t2)
+        q3.save()
+
+        url = reverse('questions.questions')
+
+        def check(filter, expected):
+            response = self.client.get(urlparams(url, **filter))
+            doc = pq(response.content)
+            # Make sure all questions are there.
+
+            # This won't work, because the test case base adds more tests than
+            # we expect in it's setUp(). TODO: Fix that.
+            #eq_(len(expected), len(doc('.questions > section')))
+
+            for q in expected:
+                eq_(1, len(doc('.questions > section[id=question-%s]' % q.id)))
+
+        # No filtering -> All questions.
+        check({}, [q1, q2, q3])
+        # Filter on p1 -> only q2 and q3
+        check({'topic': t1.slug}, [q2, q3])
+        # Filter on p2 -> only q3
+        check({'topic': t2.slug}, [q3])
+        # Filter on p3 -> No results
+        check({'topic': t3.slug}, [])
+
     def test_product_query_params(self):
         """Test that the urls generated include the right query parameters."""
 
