@@ -1,7 +1,7 @@
 {# vim: set ts=2 et sts=2 sw=2: #}
 {% extends "questions/base.html" %}
 {% from "includes/common_macros.html" import for_contributors %}
-{% from "dashboards/includes/macros.html" import product_selector %}
+{% from "dashboards/includes/macros.html" import product_selector, topic_selector %}
 {% set title = _('Firefox Support Forum') %}
 {% set classes = 'questions' %}
 {% set crumbs = [(None, _('Support Forum'))] %}
@@ -18,6 +18,7 @@
 
 {% block content %}
   <div class="grid_12">
+    {{ topic_selector(topic_list, topic) }}
     {{ product_selector(product_list, product) }}
 
     <h1>{{ _('Support Forum') }}</h1>

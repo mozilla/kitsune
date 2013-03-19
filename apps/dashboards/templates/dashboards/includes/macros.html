@@ -158,3 +158,16 @@
     </select>
   </div>
 {% endmacro %}
+
+{% macro topic_selector(topics, current) %}
+  <div id="topic-selector">
+    <select>
+      <option value="">{{ _('All Topics') }}</option>
+      {% for t in topics %}
+        <option value="{{ t.slug }}" {% if current == t %}selected="selected"{% endif %}>
+          {{ _(t.title, 'DB: topics.Topic.title') }}
+        </option>
+      {% endfor %}
+    </select>
+  </div>
+{% endmacro %}

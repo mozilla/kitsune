@@ -34,7 +34,7 @@
         Marky.createSimpleToolbar('.editor-tools', '#reply-content, #id_content', {cannedResponses: !$body.is('.new-question')});
 
         // product selector page reloading
-        $('#product-selector select').change(function() {
+        $('#product-selector select').on('change', function() {
             var val = $(this).val();
             var queryParams = k.getQueryParamsAsDict(document.location.toString());
 
@@ -42,6 +42,19 @@
                 delete queryParams['product'];
             } else {
                 queryParams['product'] = val;
+            }
+            document.location = document.location.pathname + '?' + $.param(queryParams);
+        });
+
+        // topic selector page reloading
+        $('#topic-selector select').on('change', function() {
+            var val = $(this).val();
+            var queryParams = k.getQueryParamsAsDict(document.location.toString());
+
+            if (val === '') {
+                delete queryParams['topic'];
+            } else {
+                queryParams['topic'] = val;
             }
             document.location = document.location.pathname + '?' + $.param(queryParams);
         });

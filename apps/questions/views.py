@@ -80,6 +80,7 @@ def questions(request, template):
     tags = None
     sort_ = request.GET.get('sort', None)
     product_slug = request.GET.get('product')
+    topic_slug = request.GET.get('topic')
 
     if sort_ == 'requested':
         order = ['-num_votes_past_week', '-_num_votes']
@@ -92,6 +93,11 @@ def questions(request, template):
         product = get_object_or_404(Product, slug=product_slug)
     else:
         product = None
+
+    if topic_slug:
+        topic = get_object_or_404(Topic, slug=topic_slug)
+    else:
+        topic = None
 
     question_qs = Question.objects.select_related(
         'creator', 'last_answer', 'last_answer__creator')
@@ -150,6 +156,12 @@ def questions(request, template):
         # correct id.
         question_qs = question_qs.filter(products__id__exact=product.id)
 
+    # Filter by topic.
+    if topic:
+        # This filter will match if any of the topics on a question have the
+        # correct id.
+        question_qs = question_qs.filter(topics__id__exact=topic.id)
+
     # Filter by locale for AAQ locales, and by locale + default for others.
     if request.LANGUAGE_CODE in settings.AAQ_LANGUAGES:
         locale_query = Q(locale=request.LANGUAGE_CODE)
@@ -186,6 +198,9 @@ def questions(request, template):
     # List of products to fill the selector.
     product_list = Product.objects.filter(visible=True)
 
+    # List of topics to fill the selector.
+    topic_list = Topic.objects.filter(visible=True)
+
     data = {'questions': questions_page,
             'feeds': feed_urls,
             'filter': filter_,
@@ -196,7 +211,9 @@ def questions(request, template):
             'recent_unanswered_count': recent_unanswered_count,
             'recent_answered_percent': recent_answered_percent,
             'product_list': product_list,
-            'product': product}
+            'product': product,
+            'topic_list': topic_list,
+            'topic': topic}
 
     if (waffle.flag_is_active(request, 'karma') and
         waffle.switch_is_active('karma')):
