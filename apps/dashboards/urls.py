@@ -3,8 +3,6 @@ from django.conf.urls import patterns, url
 
 urlpatterns = patterns('dashboards.views',
     url(r'^dashboard$', 'default_dashboard', name='dashboards.default'),
-    url(r'^dashboard/welcome$', 'welcome', name='dashboards.welcome'),
-    url(r'^dashboard/forums$', 'review', name='dashboards.review'),
     url(r'^dashboard/(?P<group_id>\d+)$', 'group_dashboard',
         name='dashboards.group'),
     url(r'^dashboards/get_helpful_graph_async$', 'get_helpful_graph_async',

@@ -136,26 +136,3 @@ class HelpfulVotesGraphTests(TestCase):
         eq_(r.document.title, result['data'][0]['data'][0]['title'])
         eq_(0.0, result['data'][0]['data'][0]['colorsize'])
         eq_('0.00', result['data'][0]['data'][0]['currperc'])
-
-
-class DefaultDashboardRedirect(TestCase):
-    def setUp(self):
-        super(DefaultDashboardRedirect, self).setUp()
-        self.user = user(save=True)
-        self.client.login(username=self.user.username, password='testpass')
-        self.group = group(name='Contributors', save=True)
-
-    def test_redirect_non_contributor(self):
-        """Test redirect from /dashboard to dashboard/wecome."""
-        r = self.client.get(reverse('dashboards.default', locale='en-US'),
-                            follow=False)
-        eq_(302, r.status_code)
-        eq_('http://testserver/en-US/dashboard/welcome', r['location'])
-
-    def test_redirect_contributor(self):
-        """Test redirect from /dashboard to dashboard/forums."""
-        self.user.groups.add(self.group)
-        r = self.client.get(reverse('dashboards.default', locale='en-US'),
-                            follow=False)
-        eq_(302, r.status_code)
-        eq_('http://testserver/en-US/dashboard/forums', r['location'])

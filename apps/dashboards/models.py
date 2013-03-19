@@ -12,6 +12,7 @@ from dashboards import (LAST_7_DAYS, LAST_30_DAYS, LAST_90_DAYS, ALL_TIME,
 from dashboards.personal import GROUP_DASHBOARDS
 from sumo.models import ModelBase
 from sumo import googleanalytics
+from sumo.urlresolvers import reverse
 from wiki.models import Document
 
 
@@ -91,3 +92,6 @@ class GroupDashboard(ModelBase):
 
     def __unicode__(self):
         return u'%s (%s)' % (self.dashboard, self.parameters)
+
+    def get_absolute_url(self):
+        return reverse('dashboards.group', args=[self.group.id])
