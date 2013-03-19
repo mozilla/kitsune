@@ -335,11 +335,11 @@ class QuestionTests(TestCaseBase):
         # create a question for each of past 4 days
         now = datetime.now()
         question(created=now, save=True)
-        question(created=now - timedelta(hours=24), save=True, is_locked=True)
-        q = question(created=now - timedelta(hours=48), save=True)
+        question(created=now - timedelta(hours=12), save=True, is_locked=True)
+        q = question(created=now - timedelta(hours=23), save=True)
         answer(question=q, save=True)
-        # 73 hours instead of 72 to avoid random test fails.
-        question(created=now - timedelta(hours=73), save=True)
+        # 25 hours instead of 24 to avoid random test fails.
+        question(created=now - timedelta(hours=25), save=True)
 
         # Only 3 are recent from last 72 hours, 1 has an answer.
         eq_(3, Question.recent_asked_count())

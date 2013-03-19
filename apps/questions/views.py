@@ -121,8 +121,8 @@ def questions(request, template):
         criteria = Q(answers__creator=request.user) | Q(creator=request.user)
         question_qs = question_qs.filter(criteria).distinct()
     elif filter_ == 'recent-unanswered':
-        # Only unanswered questions from the last 72 hours.
-        start = datetime.now() - timedelta(hours=72)
+        # Only unanswered questions from the last 24 hours.
+        start = datetime.now() - timedelta(hours=24)
         question_qs = question_qs.filter(
             num_answers=0, created__gt=start, is_locked=False)
     else:
