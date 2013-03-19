@@ -32,15 +32,15 @@
         <h3>
           {% if recent_unanswered_count > 0 %}
             {% trans recent_unanswered_count, url=questions_url(filter='recent-unanswered') %}
-              <strong>{{recent_unanswered_count}}</strong> question in the last <strong>3 days</strong> has no reply.
+              <strong>{{recent_unanswered_count}}</strong> question in the last <strong>24 hours</strong> has no reply.
               <a href="{{url}}">Help solve it!</a>
               {% pluralize recent_unanswered_count %}
-              <strong>{{recent_unanswered_count}}</strong> questions in the last <strong>3 days</strong> have no reply.
+              <strong>{{recent_unanswered_count}}</strong> questions in the last <strong>24 hours</strong> have no reply.
               <a href="{{url}}">Help solve them!</a>
             {% endtrans %}
           {% else %}
             {% trans %}
-              <strong>0</strong> questions in the last <strong>3 days</strong> have no reply. <strong>Good job!</strong>
+              <strong>0</strong> questions in the last <strong>24 hours</strong> have no reply. <strong>Good job!</strong>
             {% endtrans %}
           {% endif %}
         </h3>

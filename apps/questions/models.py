@@ -416,8 +416,8 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
 
     @classmethod
     def recent_asked_count(cls, extra_filter=None):
-        """Returns the number of questions asked in the last 72 hours."""
-        start = datetime.now() - timedelta(hours=72)
+        """Returns the number of questions asked in the last 24 hours."""
+        start = datetime.now() - timedelta(hours=24)
         qs = cls.objects.filter(created__gt=start, creator__is_active=True)
         if extra_filter:
             qs = qs.filter(extra_filter)
@@ -426,9 +426,9 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
     @classmethod
     def recent_unanswered_count(cls, extra_filter=None):
         """Returns the number of questions that have not been answered in the
-        last 72 hours
+        last 24 hours.
         """
-        start = datetime.now() - timedelta(hours=72)
+        start = datetime.now() - timedelta(hours=24)
         qs = cls.objects.filter(
             num_answers=0, created__gt=start, is_locked=False,
             creator__is_active=1)
