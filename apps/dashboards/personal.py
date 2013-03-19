@@ -2,9 +2,8 @@ from functools import partial
 
 from django.conf import settings
 from django.http import HttpResponse
+from django.shortcuts import render
 from django.utils.datastructures import SortedDict
-
-import jingo
 
 from announcements.models import Announcement
 from dashboards.readouts import (
@@ -44,10 +43,12 @@ class QuestionsDashboard(Dashboard):
     slug = 'forum'
 
     def render(self):
-        return jingo.render(self._request, 'dashboards/questions.html',
-                            {'actions': model_actions(Answer, self._request),
-                             'active_tab': self._id,
-                             'announcements': Announcement.get_for_group_id(self._id)})
+        return render(
+            self._request,
+            'dashboards/questions.html',
+            {'actions': model_actions(Answer, self._request),
+             'active_tab': self._id,
+             'announcements': Announcement.get_for_group_id(self._id)})
 
 
 class LocaleDashboard(Dashboard):

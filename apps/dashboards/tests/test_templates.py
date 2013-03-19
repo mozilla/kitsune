@@ -2,12 +2,10 @@ import mock
 from nose.tools import eq_
 from pyquery import PyQuery as pq
 
-from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
 
 from announcements.tests import announcement
 from dashboards.tests import group_dashboard
-from forums.models import Thread, Forum
 from sumo.tests import TestCase
 from sumo.urlresolvers import reverse
 from users.tests import user, group, profile
@@ -95,84 +93,6 @@ class LocalizationDashTests(TestCase):
         self.assertContains(response, untranslated.document.title)
 
 
-class ContributorForumDashTests(TestCase):
-    fixtures = ['users.json', 'posts.json', 'forums_permissions.json']
-
-    def test_no_activity(self):
-        """Test the page with no activity."""
-        self.client.login(username='rrosario', password='testpass')
-        response = self.client.get(reverse('dashboards.review'), follow=True)
-        eq_(200, response.status_code)
-        doc = pq(response.content)
-        eq_(1, len(doc('#forums-dashboard p')))
-
-    def test_with_activity(self):
-        """Test the page with some activity."""
-        self.client.login(username='pcraciunoiu', password='testpass')
-        # Verify threads appear on the page
-        response = self.client.get(reverse('dashboards.review'), follow=True)
-        eq_(200, response.status_code)
-        doc = pq(response.content)
-        eq_(1, len(doc('ol.threads > li')))
-
-    def test_anonymous_user(self):
-        """Checks the forums dashboard doesn't load for an anonymous user."""
-        self.client.logout()
-        response = self.client.get(reverse('dashboards.review',
-                                   locale='en-US'))
-        eq_(302, response.status_code)
-        assert '/users/login' in response['location']
-
-    def test_activity_multiple_forums(self):
-        """Checks links are correct when there is activity from >1 forum."""
-        jsocol = User.objects.get(username='jsocol')
-        rrosario = User.objects.get(username='rrosario')
-        forum = Forum.objects.get(slug='another-forum')
-        # Create new thread in Another Forum
-        thread = Thread(creator=jsocol, title='foobartest', forum=forum)
-        thread.save()
-        post = thread.new_post(author=jsocol, content='loremipsumdolor')
-        post.save()
-        # Add a reply
-        post = thread.new_post(author=rrosario, content='replyhi')
-        post.save()
-        # Verify links
-        self.client.login(username='jsocol', password='testpass')
-        response = self.client.get(reverse('dashboards.review'), follow=True)
-        eq_(200, response.status_code)
-        doc = pq(response.content)
-        links = doc('ol.threads div.title a')
-        hrefs = [link.attrib['href'] for link in links]
-        eq_(5, len(hrefs))
-        for i in range(5):
-            if i == 2:
-                assert hrefs[i].startswith('/en-US/forums/another-forum/')
-            else:
-                assert hrefs[i].startswith('/en-US/forums/test-forum/')
-
-
-class AnnouncementForumDashTests(TestCase):
-    fixtures = ['users.json']
-
-    def setUp(self):
-        super(AnnouncementForumDashTests, self).setUp()
-        self.client.login(username='jsocol', password='testpass')
-        self.creator = User.objects.all()[0]
-
-    def test_active(self):
-        """Active announcement shows."""
-        announcement(creator=self.creator).save()
-
-        response = self.client.get(reverse('dashboards.review'), follow=True)
-        self.assertContains(response, 'stardate 43124.5')
-
-    def test_no_announcements(self):
-        """Template renders with no announcements."""
-        response = self.client.get(reverse('dashboards.review'), follow=True)
-        doc = pq(response.content)
-        assert not len(doc('ol.announcements'))
-
-
 class GroupLocaleDashTests(TestCase):
 
     def setUp(self):
@@ -216,7 +136,7 @@ class GroupLocaleDashTests(TestCase):
         eq_(200, response.status_code)
         doc = pq(response.content)
         # The locale dash tab shows up.
-        eq_(5, len(doc('#user-nav li')))
+        eq_(4, len(doc('#user-nav li')))
         # The locale dash tabs shows up and is active
         eq_(u'A group', doc('#user-nav li.selected').text())
         # The subtitle shows French.

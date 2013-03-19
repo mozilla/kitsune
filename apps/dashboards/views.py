@@ -13,17 +13,15 @@ from tower import ugettext as _
 
 from access.decorators import login_required
 from announcements.views import user_can_announce
-from announcements.models import Announcement
-from dashboards.personal import GROUP_DASHBOARDS
+from dashboards.personal import GROUP_DASHBOARDS, personal_dashboards
 from dashboards.readouts import (overview_rows, READOUTS, L10N_READOUTS,
                                  CONTRIBUTOR_READOUTS)
 from dashboards.utils import render_readouts
-import forums as forum_constants
-from forums.models import Thread
 from products.models import Product
 from sumo.redis_utils import redis_client, RedisError
 from sumo.urlresolvers import reverse
-from sumo.utils import paginate, smart_int
+from sumo.utils import smart_int
+from users.helpers import profile_url
 from wiki.models import Locale
 
 
@@ -102,8 +100,12 @@ def contributors(request):
     """Render aggregate data about the articles in the default locale."""
     product = _get_product(request)
 
-    return render_readouts(request, CONTRIBUTOR_READOUTS, 'contributors.html',
-                           locale=settings.WIKI_DEFAULT_LANGUAGE, product=product)
+    return render_readouts(
+        request,
+        CONTRIBUTOR_READOUTS,
+        'contributors.html',
+        locale=settings.WIKI_DEFAULT_LANGUAGE,
+        product=product)
 
 
 @require_GET
@@ -121,22 +123,6 @@ def wiki_rows(request, readout_slug):
 
 @require_GET
 @login_required
-def review(request):
-    """Review dashboard for a user, forum threads, announcements, etc."""
-    threads = Thread.objects.filter(post__author=request.user).distinct()
-    count = threads.count()
-    threads = threads.select_related('creator', 'last_post',
-                                     'last_post__author')
-    threads = paginate(request, threads,
-                       per_page=forum_constants.THREADS_PER_PAGE, count=count)
-
-    return render(request, 'dashboards/review.html', {
-        'threads': threads,
-        'announcements': Announcement.get_site_wide()})
-
-
-@require_GET
-@login_required
 def group_dashboard(request, group_id):
     try:
         group = request.user.groups.get(pk=group_id)
@@ -150,17 +136,13 @@ def group_dashboard(request, group_id):
 @require_GET
 @login_required
 def default_dashboard(request):
-    if request.user.groups.filter(name='Contributors').exists():
-        return HttpResponseRedirect(reverse('dashboards.review'))
+    dashboards = personal_dashboards(request)
+    if len(dashboards) > 0:
+      # Redirect to the first dashboard
+      return HttpResponseRedirect(dashboards[0].get_absolute_url())
     else:
-        return HttpResponseRedirect(reverse('dashboards.welcome'))
-
-
-@require_GET
-@login_required
-def welcome(request):
-    """Welcome dashboard for users not in the Contributors group."""
-    return render(request, 'dashboards/welcome.html', {})
+      # Redirect to the profile page
+      return HttpResponseRedirect(profile_url(request.user))
 
 
 @require_GET
