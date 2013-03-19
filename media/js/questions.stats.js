@@ -11,7 +11,7 @@ function makeGraph($elem, data) {
     renderer: 'bar'
   });
 
-  var hoverDetail = new Rickshaw.Graph.HoverDetail( {
+  var hoverDetail = new Rickshaw.Graph.BarHoverDetail( {
     graph: graph
   });
 

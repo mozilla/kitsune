@@ -678,6 +678,7 @@ MINIFY_BUNDLES = {
             'js/libs/d3.v3.min.js',
             'js/libs/d3.layout.min.js',
             'js/libs/rickshaw.min.js',
+            'js/Rickshaw.Graph.BarHoverDetail.js',
             'js/questions.stats.js',
         ),
         'mobile/questions': (
