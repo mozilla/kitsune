@@ -62,8 +62,16 @@ window.KpiDashboard = Backbone.View.extend({
                     yDecimals: 1
                 }
             }, {
+                name: gettext('Responded in 24 hours'),
+                numerator: 'responded_24',
+                denominator: 'questions',
+                tooltip: {
+                    ySuffix: '%',
+                    yDecimals: 1
+                }
+            }, {
                 name: gettext('Responded in 72 hours'),
-                numerator: 'responded',
+                numerator: 'responded_72',
                 denominator: 'questions',
                 tooltip: {
                     ySuffix: '%',

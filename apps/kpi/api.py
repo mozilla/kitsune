@@ -174,18 +174,25 @@ class QuestionsResource(CachedResource):
     """
     date = fields.DateField('date')
     questions = fields.IntegerField('questions', default=0)
-    responded = fields.IntegerField('responded', default=0)
+    responded_72 = fields.IntegerField('responded_72', default=0)
+    responded_24 = fields.IntegerField('responded_24', default=0)
     solved = fields.IntegerField('solved', default=0)
 
     def get_object_list(self, request):
         # Set up the query for the data we need.
         qs = _daily_qs_for(Question)
 
-        # All answers tht were created within 3 days of the question.
-        aq = Answer.objects.filter(
+        # All answers that were created within 3 days of the question.
+        aq_72 = Answer.objects.filter(
                 created__lt=F('question__created') + timedelta(days=3))
         # Questions of said answers.
-        rs = qs.filter(id__in=aq.values_list('question'))
+        rs_72 = qs.filter(id__in=aq_72.values_list('question'))
+
+        # All answers that were created within 24 hours of the question.
+        aq_24 = Answer.objects.filter(
+                created__lt=F('question__created') + timedelta(hours=24))
+        # Questions of said answers.
+        rs_24 = qs.filter(id__in=aq_24.values_list('question'))
 
         # Questions with a solution.
         qs_with_solutions = qs.exclude(solution_id=None)
@@ -193,7 +200,8 @@ class QuestionsResource(CachedResource):
         return merge_results(
             questions=qs,
             solved=qs_with_solutions,
-            responded=rs)
+            responded_72=rs_72,
+            responded_24=rs_24)
 
     class Meta(object):
         cache = SimpleCache()

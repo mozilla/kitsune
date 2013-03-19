@@ -62,7 +62,8 @@ class KpiApiTests(TestCase):
 
         r = self._get_api_result('kpi_questions')
         eq_(r['objects'][0]['solved'], 1)
-        eq_(r['objects'][0]['responded'], 2)
+        eq_(r['objects'][0]['responded_24'], 2)
+        eq_(r['objects'][0]['responded_72'], 2)
         eq_(r['objects'][0]['questions'], 3)
 
     def test_questions_inactive_user(self):
