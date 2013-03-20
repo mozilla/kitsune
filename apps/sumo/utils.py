@@ -178,5 +178,6 @@ def user_or_ip(request):
     if hasattr(request, 'user') and request.user.is_authenticated():
         key = str(request.user.pk)
     else:
-        key = request.META['REMOTE_ADDR']
+        key = request.META.get('HTTP_X_FORWARDED_FOR',
+                               request.META['REMOTE_ADDR'])
     return 'uip:%s' % key
