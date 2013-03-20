@@ -43,7 +43,7 @@
     {% endif %}
     {% if is_preview %}
       {# Don't use cached content_parsed #}
-      {{ answer.content|wiki_to_html }}
+      {{ answer.content|wiki_to_html(locale=request.LANGUAGE_CODE) }}
     {% else %}
       {{ answer.content_parsed|safe }}
     {% endif %}

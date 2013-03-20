@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from datetime import datetime, timedelta
 
 from django.contrib.auth.models import User
@@ -26,6 +27,7 @@ from questions.question_config import products
 from sumo.tests import TestCase
 from tags.utils import add_existing_tag
 from users.tests import user
+from wiki.tests import translated_revision
 
 
 class TestAnswer(TestCaseBase):
@@ -178,6 +180,18 @@ class TestAnswer(TestCaseBase):
 
         eq_(answer.creator_num_solutions, 1)
         eq_(answer.creator_num_answers, 2)
+
+    def test_content_parsed_with_locale(self):
+        """Make sure links to localized articles work."""
+        rev = translated_revision(locale='es', is_approved=True, save=True)
+        doc = rev.document
+        doc.title = u'Un mejor título'
+        doc.save()
+
+        q = question(locale='es', save=True)
+        a = answer(question=q, content='[[%s]]' % doc.title, save=True)
+
+        assert 'es/kb/%s' % doc.slug in a.content_parsed
 
 
 class TestQuestionMetadata(TestCaseBase):

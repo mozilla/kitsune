@@ -93,7 +93,7 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
 
     @property
     def content_parsed(self):
-        return _content_parsed(self)
+        return _content_parsed(self, self.locale)
 
     def clear_cached_html(self):
         cache.delete(self.html_cache_key % self.id)
@@ -491,7 +491,7 @@ class Answer(ActionMixin, ModelBase):
 
     @property
     def content_parsed(self):
-        return _content_parsed(self)
+        return _content_parsed(self, self.question.locale)
 
     def clear_cached_html(self):
         cache.delete(self.html_cache_key % self.id)
@@ -754,11 +754,11 @@ def _has_beta(version, dev_releases):
                        for s in dev_releases.keys()]
 
 
-def _content_parsed(obj):
+def _content_parsed(obj, locale):
     cache_key = obj.html_cache_key % obj.id
     html = cache.get(cache_key)
     if html is None:
-        html = wiki_to_html(obj.content)
+        html = wiki_to_html(obj.content, locale)
         cache.add(cache_key, html, CACHE_TIMEOUT)
     return html
 
