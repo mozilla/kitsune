@@ -1096,6 +1096,13 @@ class QuestionsTemplateTestCase(TestCaseBase):
         eq_(1, len(product_input))
         eq_(p1.slug, product_input[0].attrib['value'])
 
+    def test_robots_noindex(self):
+        """Verify the page is set for noindex by robots."""
+        response = get(self.client, 'questions.questions')
+        eq_(200, response.status_code)
+        doc = pq(response.content)
+        eq_(1, len(doc('meta[name=robots]')))
+
 
 class QuestionsTemplateTestCaseNoFixtures(TestCase):
     client_class = LocalizingClient
