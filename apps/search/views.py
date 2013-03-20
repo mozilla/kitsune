@@ -299,7 +299,7 @@ def search(request, template=None):
             post_content=1.0,
             document_title=6.0,
             document_content=1.0,
-            document_keywords=4.0,
+            document_keywords=8.0,
             document_summary=2.0,
 
             # Text phrases in document titles and content get an extra
