@@ -30,3 +30,23 @@ if (alternateUrl) {
   var s = document.getElementsByTagName('script')[0];
   s.parentNode.insertBefore(ga, s);
 })();
+
+
+// Additional tracking:
+$(document).ready(function() {
+  // Track clicks to the product download button:
+  $('a.download-button').on('click', function(ev) {
+    ev.preventDefault();
+
+    var pathParts = document.location.pathname.split('/');
+    var productSlug = pathParts[pathParts.length - 1];
+
+    _gaq.push(['_trackEvent', 'Download Click', productSlug]);
+
+    // Delay the outbound click by 100ms to ensure the event is tracked.
+    var href = $(this).attr('href');
+    setTimeout(function() {
+      document.location.href = href;
+    }, 100);
+  });
+});
