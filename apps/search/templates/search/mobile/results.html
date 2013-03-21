@@ -23,6 +23,21 @@
 {% endblock %}
 
 {% block content %}
+  <div class="filter-bar">
+    <h2>{{ _('Products and services') }}</h2>
+    <div id="product-switcher" class="swipeable">
+      <ul>
+        {% for p in products %}
+          <li class="{% if p.slug == product[0] %}selected{% endif %}">
+            <a class="icon-{{ p.slug }}" href="{{ request.get_full_path()|urlparams(product=p.slug) }}">
+              {{ p.title }}
+            </a>
+          </li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+
   {% if q %}
     {% if results %}
       <ol class="search-results">

@@ -1,6 +1,8 @@
 @import '../variables.less';
 @import '../vendors.less';
 
+@import 'includes/product-switcher.less';
+
 .aaq {
   .try_or_post {
     padding: 10px 8px;
@@ -55,71 +57,6 @@
           color: @textGrey;
           display: block;
           padding: 10px 16px;
-        }
-      }
-    }
-  }
-
-  #product-switcher {
-    ul {
-      list-style: none;
-      margin: 10px 0 0 0;
-      padding: 0;
-
-      li {
-        float: left;
-        margin-right: 16px;
-        position: relative;
-        text-align: center;
-
-        &:last-of-type {
-          margin-right: 0;
-        }
-
-        a {
-          color: rgba(255, 255, 255, 0.4);
-          display: block;
-          padding: 70px 10px 0 10px;
-          position: relative;
-          width: 90px;
-          z-index: 1;
-
-          &:before {
-            background: url('../../img/mobile/logos-sprite.png') -50px -50px no-repeat;
-            content: '';
-            height: 48px;
-            left: 50%;
-            margin-left: -24px;
-            position: absolute;
-            top: 10px;
-            width: 48px;
-          }
-
-          &.icon-other {
-            &:before {
-              background-position: -50px -198px;
-            }
-          }
-        }
-
-        &.selected {
-          &:before {
-            background: rgba(0, 0, 0, 0.3);
-            .border-radius(6px);
-            .box-shadow(0 0 10px 0 rgba(0, 0, 0, 0.2) inset);
-            content: '';
-            height: 68px;
-            left: 50%;
-            margin-left: -34px;
-            position: absolute;
-            top: 0;
-            width: 68px;
-            z-index: 0;
-          }
-
-          a {
-            color: #fff;
-          }
         }
       }
     }
