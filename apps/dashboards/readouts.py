@@ -21,7 +21,7 @@ from sumo.urlresolvers import reverse
 from sumo.redis_utils import redis_client, RedisError
 from wiki.models import Document
 from wiki.config import (MEDIUM_SIGNIFICANCE, MAJOR_SIGNIFICANCE,
-                         TYPO_SIGNIFICANCE)
+                         TYPO_SIGNIFICANCE, REDIRECT_HTML)
 
 
 log = logging.getLogger('k.dashboards.readouts')
@@ -169,6 +169,8 @@ def overview_rows(locale, product=None):
         current_revision__isnull=False,
         is_localizable=True,
         latest_localizable_revision__isnull=False)
+    total = total.exclude(
+        html__startswith=REDIRECT_HTML)
 
     if product:
         total = total.filter(products=product)
@@ -202,6 +204,7 @@ def overview_rows(locale, product=None):
             'AND NOT transdoc.is_archived '
             'AND engdoc.latest_localizable_revision_id IS NOT NULL '
             'AND engdoc.is_localizable '
+            'AND engdoc.html NOT LIKE "<p>REDIRECT <a%%" '
             'AND NOT EXISTS ' +
                 ANY_SIGNIFICANT_UPDATES)
     translated_docs = single_result(
@@ -611,6 +614,10 @@ class NavigationTranslationsReadout(Readout):
 
 class UntranslatedReadout(Readout):
     title = _lazy(u'Untranslated')
+    description = _lazy(
+        u'This indicates there are no approved translations of these articles. '
+         'Some of the articles may have proposed translations waiting to be '
+         'reviewed and will appear in the Unreviewed Changes section as well.')
     short_title = _lazy(u'Untranslated')
     details_link_text = _lazy(u'All untranslated articles...')
     slug = 'untranslated'
@@ -646,7 +653,8 @@ class UntranslatedReadout(Readout):
                 'dashboards_wikidocumentvisits.period=%s '
             + extra_joins +
             'WHERE '
-            'translated.id IS NULL AND engdoc.is_localizable AND '
+            '(translated.id IS NULL OR translated.current_revision_id IS NULL) '
+            'AND engdoc.is_localizable AND '
             'engdoc.category in (10, 20, 60) AND '
             'engdoc.locale=%s AND NOT engdoc.is_archived '
             'AND wiki_revision.content NOT LIKE "REDIRECT%%" '
