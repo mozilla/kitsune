@@ -43,6 +43,20 @@ class ReadoutTestCase(TestCase):
 
 class OverviewTests(TestCase):
     """Tests for Overview readout"""
+
+    def setUp(self):
+        super(OverviewTests, self).setUp()
+
+        # A redirect shouldn't affect any of the tests.
+        r = revision(document=document(title='A redirect',
+                                       is_localizable=True,
+                                       is_template=True,
+                                       save=True),
+                     is_ready_for_localization=True,
+                     is_approved=True,
+                     content='REDIRECT [[An article]]',
+                     save=True)
+
     def test_counting_unready_templates(self):
         """Templates without a ready-for-l10n rev shouldn't count in total."""
         # Make a template with an approved but not-ready-for-l10n rev:
@@ -703,3 +717,29 @@ class UntranslatedTests(ReadoutTestCase):
         # Add the product to the document, and verify it shows up.
         d.products.add(p)
         eq_(self.row(product=p)['title'], d.title)
+
+    def test_deferred_translation(self):
+        """Verify a translation with only a deferred revision appears."""
+        d = document(title='Foo', save=True)
+        untranslated = revision(is_approved=True,
+                                is_ready_for_localization=True,
+                                document=d,
+                                save=True)
+
+        # There should be 1.
+        eq_(1, len(self.titles(locale='es')))
+
+        translation = document(
+            parent=untranslated.document, locale='es', save=True)
+        deferred = revision(is_approved=False,
+                            reviewed=datetime.now(),
+                            document=translation,
+                            save=True)
+
+        # There should still be 1.
+        eq_(1, len(self.titles(locale='es')))
+
+        # Mark that rev as approved and there should then be 0.
+        deferred.is_approved = True
+        deferred.save()
+        eq_(0, len(self.titles(locale='es')))
