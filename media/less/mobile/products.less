@@ -51,11 +51,14 @@
 
     > span {
       float: left;
+      width: 80px;
     }
 
     .select-box {
       margin: 0 10px;
-      width: 180px;
+      width: calc(~'100% - 130px');
+      width: -moz-calc(~'100% - 130px');
+      width: -webkit-calc(~'100% - 130px');
     }
   }
 }
