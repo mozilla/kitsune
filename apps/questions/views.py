@@ -24,6 +24,7 @@ from django.views.decorators.http import (require_POST, require_GET,
 import jingo
 import waffle
 from mobility.decorators import mobile_template
+from ratelimit.decorators import ratelimit
 from session_csrf import anonymous_csrf
 from statsd import statsd
 from taggit.models import Tag
@@ -52,7 +53,7 @@ from search.es_utils import (ESTimeoutError, ESMaxRetryError, ESException,
                              Sphilastic, F)
 from sumo.helpers import urlparams
 from sumo.urlresolvers import reverse
-from sumo.utils import paginate, simple_paginate, build_paged_url
+from sumo.utils import paginate, simple_paginate, build_paged_url, user_or_ip
 from tags.utils import add_existing_tag
 from topics.models import Topic
 from upload.models import ImageAttachment
@@ -714,6 +715,7 @@ def unsolve(request, question_id, answer_id):
 
 @require_POST
 @csrf_exempt
+@ratelimit(keys=user_or_ip, ip=False, rate='10/d')
 def question_vote(request, question_id):
     """I have this problem too."""
     question = get_object_or_404(Question, pk=question_id)
@@ -728,19 +730,20 @@ def question_vote(request, question_id):
         else:
             vote.anonymous_id = request.anonymous.anonymous_id
 
-        vote.save()
+        if not request.limited:
+            vote.save()
 
-        if 'referrer' in request.REQUEST:
-            referrer = request.REQUEST.get('referrer')
-            vote.add_metadata('referrer', referrer)
+            if 'referrer' in request.REQUEST:
+                referrer = request.REQUEST.get('referrer')
+                vote.add_metadata('referrer', referrer)
 
-            if referrer == 'search' and 'query' in request.REQUEST:
-                vote.add_metadata('query', request.REQUEST.get('query'))
+                if referrer == 'search' and 'query' in request.REQUEST:
+                    vote.add_metadata('query', request.REQUEST.get('query'))
 
-        ua = request.META.get('HTTP_USER_AGENT')
-        if ua:
-            vote.add_metadata('ua', ua[:1000])  # 1000 max_length
-        statsd.incr('questions.votes.question')
+            ua = request.META.get('HTTP_USER_AGENT')
+            if ua:
+                vote.add_metadata('ua', ua[:1000])  # 1000 max_length
+            statsd.incr('questions.votes.question')
 
         if request.is_ajax():
             tmpl = 'questions/includes/question_vote_thanks.html'
@@ -748,17 +751,28 @@ def question_vote(request, question_id):
             html = jingo.render_to_string(request, tmpl, {
                 'question': question,
                 'watch_form': form})
-            return HttpResponse(json.dumps({'html': html}))
+
+            return HttpResponse(json.dumps({
+                'html': html,
+                'ignored': request.limited
+            }))
 
     return HttpResponseRedirect(question.get_absolute_url())
 
 
 @csrf_exempt
+@ratelimit(keys=user_or_ip, ip=False, rate='10/d')
 def answer_vote(request, question_id, answer_id):
     """Vote for Helpful/Not Helpful answers"""
     answer = get_object_or_404(Answer, pk=answer_id, question=question_id)
     if answer.question.is_locked:
         raise PermissionDenied
+
+    if request.limited:
+        if request.is_ajax():
+            return HttpResponse(json.dumps({"ignored": True}))
+        else:
+            return HttpResponseRedirect(answer.get_absolute_url())
 
     if not answer.has_voted(request):
         vote = AnswerVote(answer=answer)

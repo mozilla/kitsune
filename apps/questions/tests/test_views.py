@@ -1,3 +1,4 @@
+import json
 from datetime import datetime, timedelta
 
 from django.conf import settings
@@ -10,7 +11,7 @@ from nose.tools import eq_
 from pyquery import PyQuery as pq
 
 from products.tests import product
-from questions.models import Question
+from questions.models import Question, QuestionVote, AnswerVote
 from questions.tests import answer, question
 from questions.views import parse_troubleshooting
 from search.tests.test_es import ElasticTestCase
@@ -419,3 +420,117 @@ class TestQuestionList(TestCase):
         sub_test('pt-BR', 'pies?')
         # de is not in AAQ_LOCALES, so should show en-US, but not pt-BR
         sub_test('de', 'cupcakes?', 'donuts?', 'pastries?')
+
+
+class TestRateLimiting(TestCase):
+
+    def _check_question_vote(self, q, ignored):
+        """Try and vote on `q`. If `ignored` is false, assert the
+        request worked. If `ignored` is True, assert the request didn't
+        do anything."""
+        url = reverse('questions.vote', args=[q.id], locale='en-US')
+        votes = QuestionVote.objects.filter(question=q).count()
+
+        res = self.client.post(url, HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+        eq_(res.status_code, 200)
+
+        data = json.loads(res.content)
+        eq_(data.get('ignored', False), ignored)
+
+        if ignored:
+            eq_(QuestionVote.objects.filter(question=q).count(), votes)
+        else:
+            eq_(QuestionVote.objects.filter(question=q).count(), votes + 1)
+
+    def _check_answer_vote(self, q, a, ignored):
+        """Try and vote on `a`. If `ignored` is false, assert the
+        request worked. If `ignored` is True, assert the request didn't
+        do anything."""
+        url = reverse('questions.answer_vote', args=[q.id, a.id],
+                      locale='en-US')
+        votes = AnswerVote.objects.filter(answer=a).count()
+
+        res = self.client.post(url, HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+        eq_(res.status_code, 200)
+
+        data = json.loads(res.content)
+        eq_(data.get('ignored', False), ignored)
+
+        if ignored:
+            eq_(AnswerVote.objects.filter(answer=a).count(), votes)
+        else:
+            eq_(AnswerVote.objects.filter(answer=a).count(), votes + 1)
+
+    def test_question_vote_limit(self):
+        """Test that an anonymous user's votes are ignored after 10
+        question votes."""
+        questions = [question(save=True) for _ in range(11)]
+
+        # The rate limit is 10 per day. So make 10 requests. (0 through 9)
+        for i in range(10):
+            self._check_question_vote(questions[i], False)
+
+        # Now make another, it should fail.
+        self._check_question_vote(questions[10], True)
+
+    def test_answer_vote_limit(self):
+        """Test that an anonymous user's votes are ignored after 10
+        answer votes."""
+        q = question(save=True)
+        answers = [answer(question=q, save=True) for _ in range(11)]
+
+        # The rate limit is 10 per day. So make 10 requests. (0 through 9)
+        for i in range(10):
+            self._check_answer_vote(q, answers[i], False)
+
+        # Now make another, it should fail.
+        self._check_answer_vote(q, answers[10], True)
+
+    def test_question_vote_logged_in(self):
+        """This exhausts the rate limit, then logs in, and exhausts it
+        again."""
+        questions = [question(save=True) for _ in range(11)]
+        u = user(password='testpass', save=True)
+
+        # The rate limit is 10 per day. So make 10 requests. (0 through 9)
+        for i in range(10):
+            self._check_question_vote(questions[i], False)
+        # The rate limit has been hit, so this fails.
+        self._check_question_vote(questions[10], True)
+
+        # Login.
+        self.client.login(username=u.username, password='testpass')
+        for i in range(10):
+            self._check_question_vote(questions[i], False)
+
+        # Now the user has hit the rate limit too, so this should fail.
+        self._check_question_vote(questions[10], True)
+
+        # Logging out out won't help
+        self.client.logout()
+        self._check_question_vote(questions[10], True)
+
+    def test_answer_vote_logged_in(self):
+        """This exhausts the rate limit, then logs in, and exhausts it
+        again."""
+        q = question(save=True)
+        answers = [answer(question=q, save=True) for _ in range(12)]
+        u = user(password='testpass', save=True)
+
+        # The rate limit is 10 per day. So make 10 requests. (0 through 9)
+        for i in range(10):
+            self._check_answer_vote(q, answers[i], False)
+        # The ratelimit has been hit, so the next request will fail.
+        self._check_answer_vote(q, answers[11], True)
+
+        # Login.
+        self.client.login(username=u.username, password='testpass')
+        for i in range(10):
+            self._check_answer_vote(q, answers[i], False)
+
+        # Now the user has hit the rate limit too, so this should fail.
+        self._check_answer_vote(q, answers[10], True)
+
+        # Logging out out won't help
+        self.client.logout()
+        self._check_answer_vote(q, answers[11], True)

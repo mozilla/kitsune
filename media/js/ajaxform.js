@@ -83,8 +83,10 @@
                             self.options.afterComplete();
                         }
 
-                        // Trigger a document event for others to listen for.
-                        $(document).trigger('vote', $.extend(data, {url: url}));
+                        if (!response.ignored) {
+                            // Trigger a document event for others to listen for.
+                            $(document).trigger('vote', $.extend(data, {url: url}));
+                        }
                     },
                     error: function() {
                         var msg = self.options.errorText;
