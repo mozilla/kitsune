@@ -1,6 +1,8 @@
 @import '../variables.less';
 @import '../vendors.less';
 
+@import 'includes/product-switcher.less';
+
 .results {
   ol {
     list-style: none;
@@ -25,6 +27,18 @@
           font-weight: bold;
         }
       }
+    }
+  }
+
+  .filter-bar {
+    background: @mobileNavBackground url('../../img/grain.png');
+    padding: 10px 16px;
+
+    h2 {
+      color: #fff;
+      font-size: 16px;
+      margin: 0;
+      padding: 0;
     }
   }
 
