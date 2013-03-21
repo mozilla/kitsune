@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from django.views.decorators.cache import never_cache
 
+from mobility.decorators import mobile_template
 from products.models import Product
 from sumo.parser import get_object_fallback
 from sumo.views import redirect_to
@@ -47,24 +48,29 @@ def home(request):
         'moz_news': moz_news})
 
 
-def get_involved(request):
-    return render(request, 'landings/get-involved.html')
+@mobile_template('landings/{mobile/}get-involved.html')
+def get_involved(request, template):
+    return render(request, template)
 
 
-def get_involved_aoa(request):
-    return render(request, 'landings/get-involved-aoa.html')
+@mobile_template('landings/{mobile/}get-involved-aoa.html')
+def get_involved_aoa(request, template):
+    return render(request, template)
 
 
-def get_involved_questions(request):
-    return render(request, 'landings/get-involved-questions.html')
+@mobile_template('landings/{mobile/}get-involved-questions.html')
+def get_involved_questions(request, template):
+    return render(request, template)
 
 
-def get_involved_kb(request):
-    return render(request, 'landings/get-involved-kb.html')
+@mobile_template('landings/{mobile/}get-involved-kb.html')
+def get_involved_kb(request, template):
+    return render(request, template)
 
 
-def get_involved_l10n(request):
-    return render(request, 'landings/get-involved-l10n.html')
+@mobile_template('landings/{mobile/}get-involved-l10n.html')
+def get_involved_l10n(request, template):
+    return render(request, template)
 
 
 def integrity_check(request):

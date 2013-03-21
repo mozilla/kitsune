@@ -1,0 +1,75 @@
+{% extends 'mobile/base.html' %}
+
+{% set title = _('Join our Army of Awesome') %}
+{% set headline = title %}
+
+{% set styles = ('mobile/landings/get-involved',) %}
+
+{% block content %}
+  <div class="padded">
+    <h3>{{ _('Answer questions in the forum') }}</h3>
+    <div class="centered">
+      <img class="smart-width" src="{{ MEDIA_URL }}img/gi-hero-questions.png" alt="">
+    </div>
+    <h3>{{ _('Where all the action happens') }}</h3>
+    <p>
+      {% trans %}
+        From hardcore web developers to "how do I install Firefox" first time
+        users, everybody needs your help in the forum! Share your Firefox
+        knowledge by pointing people to the right help articles and providing
+        troubleshooting steps for their individual questions.
+      {% endtrans %}
+    </p>
+
+    <div class="centered">
+      <img class="smart-width" src="{{ MEDIA_URL }}img/gi-visual-questions.png" alt="">
+    </div>
+
+    <h4>{{ _('How it works') }}</h4>
+    <ol>
+      <li>
+        <a href="{{ url('customercare.landing') }}">
+          {{ _('Go to Army of Awesome') }}
+        </a>
+      </li>
+      <li>
+        <a href="{{ url('questions.questions') }}">
+          {% trans %}
+            Go to our support forum and choose a question to answer
+          {% endtrans %}
+        </a>
+      </li>
+      <li>
+        {{ _('Start answering!') }}<br>
+        <a href="{{ url('wiki.document', 'answering-questions-support-forum') }}">
+          {{ _('Read this for some help to get started') }}
+        </a>
+      </li>
+    </ol>
+
+    <h4>{{ _('Pick a way to get involved') }}</h4>
+  </div>
+  <ul class="gi-links">
+    <li>
+      <a href="{{ url('landings.get_involved_aoa') }}">
+        {{ _('Army of Awesome: help users on Twitter') }}
+      </a>
+    </li>
+    <li>
+      <a href="{{ url('landings.get_involved_kb') }}">
+        {{ _('Write help articles') }}
+      </a>
+    </li>
+    <li>
+      <a href="{{ url('landings.get_involved_l10n') }}">
+        {{ _('Translate help to your languages') }}
+      </a>
+    </li>
+  </ul>
+  <div class="sign-up">
+    <h3>{{ _('Sign up as a volunteer') }}</h3>
+    <a class="btn btn-submit" href="{{ url('users.auth_contributor') }}">
+      {{ _('Sign me up') }}
+    </a>
+  </div>
+{% endblock %}
