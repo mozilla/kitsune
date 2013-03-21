@@ -89,7 +89,7 @@
       {% set locale_url = locale_url|urlparams(next=localizable_url) %}
     {% endif %}
     <a href="{{ locale_url }}" class="locale-picker">{{ _('Switch language') }}</a>
-    <a href="?{{ request.QUERY_STRING}}&mobile=0">{{ _('Switch to desktop site') }}</a>
+    <a href="?{{ request.QUERY_STRING}}&amp;mobile=0">{{ _('Switch to desktop site') }}</a>
   </nav>
 
   <div id="page">

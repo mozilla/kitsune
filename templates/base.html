@@ -97,7 +97,7 @@
 {% else %}
   <div class="mobile-banner">
     <div class="close-button">X</div>
-    <a href="?{{ request.QUERY_STRING }}&mobile=1">
+    <a href="?{{ request.QUERY_STRING }}&amp;mobile=1">
       {{ _('Tap here to go to the mobile version of the site.') }}
     </a>
   </div>
@@ -198,7 +198,7 @@
         <li><a href="http://www.twitter.com/mozilla">{{ _('Twitter') }}</a></li>
         <li><a href="http://www.facebook.com/mozilla">{{ _('Facebook') }}</a></li>
         <li><a href="http://affiliates.mozilla.org/">{{ _('Firefox Affiliates') }}</a></li>
-        <li><a href="?{{ request.QUERY_STRING }}&mobile=1">{{ _('Switch to mobile site') }}</a></li>
+        <li><a href="?{{ request.QUERY_STRING }}&amp;mobile=1">{{ _('Switch to mobile site') }}</a></li>
       </ul>
     </div>
   </div>
