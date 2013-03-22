@@ -207,7 +207,8 @@ class WikiParser(Parser):
 
         parser_kwargs = {'tags': tags} if tags else {}
 
-        with email_utils.uselocale(locale):
+        @email_utils.safe_translation
+        def _parse(locale):
             return super(WikiParser, self).parse(
                 text,
                 show_toc=show_toc,
@@ -216,6 +217,8 @@ class WikiParser(Parser):
                 nofollow=nofollow,
                 strip_comments=True,
                 **parser_kwargs)
+
+        return _parse(locale)
 
     def _hook_internal_link(self, parser, space, name):
         """Parses text and returns internal link."""

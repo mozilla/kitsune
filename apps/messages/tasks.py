@@ -4,13 +4,12 @@ from django.conf import settings
 from django.contrib.sites.models import Site
 from django.core.mail import send_mail
 from django.core.urlresolvers import reverse
-from django.template import Context, loader
 
 from celery.task import task
 from tower import ugettext as _
 
 from messages.models import InboxMessage
-from sumo.email_utils import uselocale, render_email
+from sumo.email_utils import safe_translation, render_email
 
 
 log = logging.getLogger('k.task')
@@ -28,10 +27,10 @@ def email_private_message(inbox_message_id):
     else:
         locale = settings.WIKI_DEFAULT_LANGUAGE
 
-    with uselocale(locale):
+    @safe_translation
+    def _send_mail(locale):
         subject = _(u'[SUMO] You have a new private message from [{sender}]')
         subject = subject.format(sender=inbox_message.sender.username)
-
 
         context = {
             'sender': inbox_message.sender.username,
@@ -44,5 +43,7 @@ def email_private_message(inbox_message_id):
         template = 'messages/email/private_message.ltxt'
         msg = render_email(template, context)
 
-    send_mail(subject, msg, settings.TIDINGS_FROM_ADDRESS,
-              [inbox_message.to.email])
+        send_mail(subject, msg, settings.TIDINGS_FROM_ADDRESS,
+                  [inbox_message.to.email])
+
+    _send_mail(locale)

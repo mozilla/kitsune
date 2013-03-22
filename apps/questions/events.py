@@ -31,7 +31,8 @@ class QuestionEvent(InstanceEvent):
         else:
             locale = 'en-US'
 
-        with email_utils.uselocale(locale):
+        @email_utils.safe_translation
+        def _make_mail(locale):
             subject = _('Please confirm your email address')
             email_kwargs = {'activation_url': cls._activation_url(watch),
                             'domain': Site.objects.get_current().domain,
@@ -39,8 +40,10 @@ class QuestionEvent(InstanceEvent):
             template = 'questions/email/activate_watch.ltxt'
             message = email_utils.render_email(template, email_kwargs)
 
-        return EmailMessage(subject, message,
-                            settings.TIDINGS_FROM_ADDRESS, [email])
+            return EmailMessage(subject, message,
+                                settings.TIDINGS_FROM_ADDRESS, [email])
+
+        return _make_mail(locale)
 
     @classmethod
     def _activation_url(cls, watch):
@@ -78,7 +81,8 @@ class QuestionReplyEvent(QuestionEvent):
             else:
                 locale = 'en-US'
 
-            with email_utils.uselocale(locale):
+            @email_utils.safe_translation
+            def _make_mail(locale):
                 is_asker = asker_id == u.id
                 if is_asker:
                     subject = _(u'%s posted an answer to your question "%s"' %
@@ -92,10 +96,12 @@ class QuestionReplyEvent(QuestionEvent):
 
                 msg = email_utils.render_email(template, c)
 
-            yield EmailMessage(subject,
-                               msg,
-                               settings.TIDINGS_FROM_ADDRESS,
-                               [u.email])
+                return EmailMessage(subject,
+                                    msg,
+                                    settings.TIDINGS_FROM_ADDRESS,
+                                    [u.email])
+
+            yield _make_mail(locale)
 
     @classmethod
     def description_of_watch(cls, watch):
@@ -131,16 +137,16 @@ class QuestionSolvedEvent(QuestionEvent):
             else:
                 locale = 'en-US'
 
-            with email_utils.uselocale(locale):
+            @email_utils.safe_translation
+            def _make_mail(locale):
                 subject = _(u'Solution found to Firefox Help question')
                 content = email_utils.render_email(
                     'questions/email/solution.ltxt', c)
 
-            yield EmailMessage(
-                subject,
-                content,
-                settings.TIDINGS_FROM_ADDRESS,
-                [u.email])
+                return EmailMessage(subject, content,
+                                    settings.TIDINGS_FROM_ADDRESS, [u.email])
+
+            yield _make_mail(locale)
 
     @classmethod
     def description_of_watch(cls, watch):

@@ -244,11 +244,12 @@ class ApprovedOrReadyUnion(EventUnion):
                 locale = document.locale
 
             # Localize the subject and message with the appropriate
-            # context.
-            with email_utils.uselocale(locale):
+            # context. If there is an error, fall back to English.
+            @email_utils.safe_translation
+            def _make_mail(locale):
                 if (is_ready and
-                    ReadyRevisionEvent.event_type in
-                    (w.event_type for w in watches)):
+                        ReadyRevisionEvent.event_type in
+                        (w.event_type for w in watches)):
                     c = context_dict(revision, ready_for_l10n=True)
                     # TODO: Expose all watches
                     c['watch'] = watches[0]
@@ -280,7 +281,9 @@ class ApprovedOrReadyUnion(EventUnion):
                     locale=document.locale)
                 msg = email_utils.render_email(template, c)
 
-            yield EmailMessage(subject,
-                               msg,
-                               settings.TIDINGS_FROM_ADDRESS,
-                               [user.email])
+                return EmailMessage(subject,
+                                    msg,
+                                    settings.TIDINGS_FROM_ADDRESS,
+                                    [user.email])
+
+            yield _make_mail(locale)

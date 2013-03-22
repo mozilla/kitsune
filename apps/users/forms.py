@@ -6,7 +6,6 @@ from django.contrib.auth import authenticate, forms as auth_forms
 from django.contrib.auth.models import User
 from django.contrib.sites.models import get_current_site
 from django.core.mail import send_mail
-from django.template import Context, loader
 
 from tower import ugettext as _, ugettext_lazy as _lazy
 
@@ -305,6 +304,10 @@ class ForgotUsernameForm(forms.Form):
         current_site = get_current_site(request)
         site_name = current_site.name
         domain = current_site.domain
+        try:
+            locale = user.profile.locale or settings.WIKI_DEFAULT_LANGUAGE
+        except Profile.DoesNotExist:
+            locale = settings.WIKI_DEFAULT_LANGUAGE
 
         c = {
             'email': user.email,
@@ -314,11 +317,15 @@ class ForgotUsernameForm(forms.Form):
             'username': user.username,
             'protocol': use_https and 'https' or 'http'}
 
-        subject = _("Your username on %s") % site_name
-        message = email_utils.render_email(email_template, c)
+        @email_utils.safe_translation
+        def _send_mail(locale):
+            subject = _("Your username on %s") % site_name
+            message = email_utils.render_email(email_template, c)
 
-        send_mail(subject, message, settings.TIDINGS_FROM_ADDRESS,
-                  [user.email])
+            send_mail(subject, message, settings.TIDINGS_FROM_ADDRESS,
+                      [user.email])
+
+        _send_mail(locale)
 
 
 def _check_password(password):

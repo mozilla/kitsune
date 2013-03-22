@@ -53,7 +53,8 @@ def send_reviewed_notification(revision, document, message):
         else:
             locale = settings.WIKI_DEFAULT_LANGUAGE
 
-        with email_utils.uselocale(locale):
+        @email_utils.safe_translation
+        def _make_mail(locale):
             if revision.is_approved:
                 subject = _(u'Your revision has been approved: {title}')
             else:
@@ -63,10 +64,11 @@ def send_reviewed_notification(revision, document, message):
             template = 'wiki/email/reviewed.ltxt'
             msg = email_utils.render_email(template, c)
 
-        msgs.append(EmailMessage(subject,
-                                 msg,
-                                 settings.TIDINGS_FROM_ADDRESS,
-                                 [user.email]))
+            msgs.append(EmailMessage(subject, msg,
+                                     settings.TIDINGS_FROM_ADDRESS,
+                                     [user.email]))
+
+        _make_mail(locale)
 
     email_utils.send_messages(msgs)
 
@@ -99,7 +101,8 @@ def send_contributor_notification(based_on, revision, document, message):
         else:
             locale = settings.WIKI_DEFAULT_LANGUAGE
 
-        with email_utils.uselocale(locale):
+        @email_utils.safe_translation
+        def _make_mail(locale):
             if revision.is_approved:
                 subject = _(u'A revision you contributed to has '
                             'been approved: {title}')
@@ -110,10 +113,11 @@ def send_contributor_notification(based_on, revision, document, message):
 
             msg = email_utils.render_email(template, c)
 
-        msgs.append(EmailMessage(subject,
-                                 msg,
-                                 settings.TIDINGS_FROM_ADDRESS,
-                                 [user.email]))
+            msgs.append(EmailMessage(subject, msg,
+                                     settings.TIDINGS_FROM_ADDRESS,
+                                     [user.email]))
+
+        _make_mail(locale)
 
     email_utils.send_messages(msgs)
 
