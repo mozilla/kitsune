@@ -8,7 +8,7 @@ from celery.task import task
 from tower import ugettext as _
 
 from announcements.models import Announcement
-from sumo.email_utils import uselocale, render_email
+from sumo.email_utils import render_email, safe_translation
 
 
 @task
@@ -27,19 +27,21 @@ def send_group_email(announcement_id):
     email_kwargs = {'content': plain_content,
                     'domain': Site.objects.get_current().domain}
     template = 'announcements/email/announcement.ltxt'
+
+    @safe_translation
+    def _make_mail(locale, user):
+        subject = _('New announcement for {group}').format(
+            group=group.name)
+        msg = render_email(template, email_kwargs)
+
+        m = EmailMessage(subject, msg, settings.TIDINGS_FROM_ADDRESS,
+                         [user.email])
+        return [m]
+
     try:
         for u in users:
             # Localize email each time.
-            with uselocale(u.profile.locale or settings.LANGUAGE_CODE):
-                subject = _('New announcement for {group}').format(
-                    group=group.name)
-                msg = render_email(template, email_kwargs)
-
-            m = EmailMessage(subject,
-                             msg,
-                             settings.TIDINGS_FROM_ADDRESS,
-                             [u.email])
-            connection.send_messages([m])
-
+            locale = u.profile.locale or settings.LANGUAGE_CODE
+            connection.send_messages(_make_mail(locale, u))
     finally:
         connection.close()

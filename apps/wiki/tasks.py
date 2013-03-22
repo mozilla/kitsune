@@ -47,26 +47,28 @@ def send_reviewed_notification(revision, document, message):
 
     msgs = []
 
+    @email_utils.safe_translation
+    def _make_mail(locale, user):
+        if revision.is_approved:
+            subject = _(u'Your revision has been approved: {title}')
+        else:
+            subject = _(u'Your revision has been reviewed: {title}')
+        subject = subject.format(title=document.title)
+
+        template = 'wiki/email/reviewed.ltxt'
+        msg = email_utils.render_email(template, c)
+
+        msgs.append(EmailMessage(subject, msg,
+                                 settings.TIDINGS_FROM_ADDRESS,
+                                 [user.email]))
+
     for user in [revision.creator, revision.reviewer]:
         if hasattr(user, 'profile'):
             locale = user.profile.locale
         else:
             locale = settings.WIKI_DEFAULT_LANGUAGE
 
-        with email_utils.uselocale(locale):
-            if revision.is_approved:
-                subject = _(u'Your revision has been approved: {title}')
-            else:
-                subject = _(u'Your revision has been reviewed: {title}')
-            subject = subject.format(title=document.title)
-
-            template = 'wiki/email/reviewed.ltxt'
-            msg = email_utils.render_email(template, c)
-
-        msgs.append(EmailMessage(subject,
-                                 msg,
-                                 settings.TIDINGS_FROM_ADDRESS,
-                                 [user.email]))
+        _make_mail(locale, user)
 
     email_utils.send_messages(msgs)
 
@@ -86,6 +88,23 @@ def send_contributor_notification(based_on, revision, document, message):
          'host': Site.objects.get_current().domain}
 
     msgs = []
+
+    @email_utils.safe_translation
+    def _make_mail(locale, user):
+        if revision.is_approved:
+            subject = _(u'A revision you contributed to has '
+                        'been approved: {title}')
+        else:
+            subject = _(u'A revision you contributed to has '
+                        'been reviewed: {title}')
+        subject = subject.format(title=document.title)
+
+        msg = email_utils.render_email(template, c)
+
+        msgs.append(EmailMessage(subject, msg,
+                                 settings.TIDINGS_FROM_ADDRESS,
+                                 [user.email]))
+
     for r in based_on:
         # Send email to all contributors except the reviewer and the creator
         # of the approved revision.
@@ -99,21 +118,7 @@ def send_contributor_notification(based_on, revision, document, message):
         else:
             locale = settings.WIKI_DEFAULT_LANGUAGE
 
-        with email_utils.uselocale(locale):
-            if revision.is_approved:
-                subject = _(u'A revision you contributed to has '
-                            'been approved: {title}')
-            else:
-                subject = _(u'A revision you contributed to has '
-                            'been reviewed: {title}')
-            subject = subject.format(title=document.title)
-
-            msg = email_utils.render_email(template, c)
-
-        msgs.append(EmailMessage(subject,
-                                 msg,
-                                 settings.TIDINGS_FROM_ADDRESS,
-                                 [user.email]))
+        _make_mail(locale, user)
 
     email_utils.send_messages(msgs)
 

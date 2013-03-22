@@ -236,6 +236,49 @@ class ApprovedOrReadyUnion(EventUnion):
         log.debug('Sending approved/ready notifications for revision (id=%s)' %
                   revision.id)
 
+        # Localize the subject and message with the appropriate
+        # context. If there is an error, fall back to English.
+        @email_utils.safe_translation
+        def _make_mail(locale, user, watches):
+            if (is_ready and
+                    ReadyRevisionEvent.event_type in
+                    (w.event_type for w in watches)):
+                c = context_dict(revision, ready_for_l10n=True)
+                # TODO: Expose all watches
+                c['watch'] = watches[0]
+                c['url'] = django_reverse('wiki.select_locale',
+                                          args=[document.slug])
+
+                subject = _(u'{title} has a revision ready for '
+                            'localization')
+                template = 'wiki/email/ready_for_l10n.ltxt'
+
+            else:
+                c = context_dict(revision, revision_approved=True)
+                approved_url = reverse('wiki.document',
+                                       locale=document.locale,
+                                       args=[document.slug])
+
+                c['url'] = approved_url
+                # TODO: Expose all watches.
+                c['watch'] = watches[0]
+                c['reviewer'] = revision.reviewer.username
+
+                subject = _(u'{title} ({locale}) has a new approved '
+                            'revision ({reviewer})')
+                template = 'wiki/email/approved.ltxt'
+
+            subject = subject.format(
+                title=document.title,
+                reviewer=revision.reviewer.username,
+                locale=document.locale)
+            msg = email_utils.render_email(template, c)
+
+            return EmailMessage(subject,
+                                msg,
+                                settings.TIDINGS_FROM_ADDRESS,
+                                [user.email])
+
         for user, watches in users_and_watches:
             # Figure out the locale to use for l10n.
             if hasattr(user, 'profile'):
@@ -243,44 +286,4 @@ class ApprovedOrReadyUnion(EventUnion):
             else:
                 locale = document.locale
 
-            # Localize the subject and message with the appropriate
-            # context.
-            with email_utils.uselocale(locale):
-                if (is_ready and
-                    ReadyRevisionEvent.event_type in
-                    (w.event_type for w in watches)):
-                    c = context_dict(revision, ready_for_l10n=True)
-                    # TODO: Expose all watches
-                    c['watch'] = watches[0]
-                    c['url'] = django_reverse('wiki.select_locale',
-                                              args=[document.slug])
-
-                    subject = _(u'{title} has a revision ready for '
-                                'localization')
-                    template = 'wiki/email/ready_for_l10n.ltxt'
-
-                else:
-                    c = context_dict(revision, revision_approved=True)
-                    approved_url = reverse('wiki.document',
-                                           locale=document.locale,
-                                           args=[document.slug])
-
-                    c['url'] = approved_url
-                    # TODO: Expose all watches.
-                    c['watch'] = watches[0]
-                    c['reviewer'] = revision.reviewer.username
-
-                    subject = _(u'{title} ({locale}) has a new approved '
-                                'revision ({reviewer})')
-                    template = 'wiki/email/approved.ltxt'
-
-                subject = subject.format(
-                    title=document.title,
-                    reviewer=revision.reviewer.username,
-                    locale=document.locale)
-                msg = email_utils.render_email(template, c)
-
-            yield EmailMessage(subject,
-                               msg,
-                               settings.TIDINGS_FROM_ADDRESS,
-                               [user.email])
+            yield _make_mail(locale, user, watches)

@@ -143,10 +143,12 @@ class ConfirmationManager(models.Manager):
         else:
             locale = confirmation_profile.user.profile.locale
 
-        with email_utils.uselocale(locale):
-            message = email_utils.render_email(email_template, email_kwargs)
+        @email_utils.safe_translation
+        def _message(locale):
+            return email_utils.render_email(email_template, email_kwargs)
 
-        mail.send_mail(subject, message, settings.DEFAULT_FROM_EMAIL,
+
+        mail.send_mail(subject, _message(locale), settings.DEFAULT_FROM_EMAIL,
                        [send_to])
 
     def send_confirmation_email(self, *args, **kwargs):

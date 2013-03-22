@@ -26,12 +26,9 @@ class QuestionEvent(InstanceEvent):
         # If the watch has an associated user, use that
         # locale. Otherwise it's an anonymous watch and we don't know
         # what locale they want, so we give them en-US.
-        if watch.user:
-            locale = watch.user.profile.locale
-        else:
-            locale = 'en-US'
 
-        with email_utils.uselocale(locale):
+        @email_utils.safe_translation
+        def _make_mail(locale):
             subject = _('Please confirm your email address')
             email_kwargs = {'activation_url': cls._activation_url(watch),
                             'domain': Site.objects.get_current().domain,
@@ -39,8 +36,15 @@ class QuestionEvent(InstanceEvent):
             template = 'questions/email/activate_watch.ltxt'
             message = email_utils.render_email(template, email_kwargs)
 
-        return EmailMessage(subject, message,
-                            settings.TIDINGS_FROM_ADDRESS, [email])
+            return EmailMessage(subject, message,
+                                settings.TIDINGS_FROM_ADDRESS, [email])
+
+        if watch.user:
+            locale = watch.user.profile.locale
+        else:
+            locale = 'en-US'
+
+        return _make_mail(locale)
 
     @classmethod
     def _activation_url(cls, watch):
@@ -64,6 +68,25 @@ class QuestionReplyEvent(QuestionEvent):
              'host': Site.objects.get_current().domain,
              'answer_url': self.answer.get_absolute_url()}
 
+        @email_utils.safe_translation
+        def _make_mail(locale, user, context):
+            is_asker = asker_id == user.id
+            if is_asker:
+                subject = _(u'%s posted an answer to your question "%s"' %
+                            (self.answer.creator.username, self.instance.title))
+                template = 'questions/email/new_answer_to_asker.ltxt'
+            else:
+                subject = _(u'%s commented on a Firefox question '
+                            "you're watching" % self.answer.creator.username)
+                template = 'questions/email/new_answer.ltxt'
+
+            msg = email_utils.render_email(template, context)
+
+            return EmailMessage(subject,
+                                msg,
+                                settings.TIDINGS_FROM_ADDRESS,
+                                [user.email])
+
         for u, w in users_and_watches:
             c['helpful_url'] = self.answer.get_helpful_answer_url()
             c['solution_url'] = self.answer.get_solution_url(watch=w[0])
@@ -78,24 +101,7 @@ class QuestionReplyEvent(QuestionEvent):
             else:
                 locale = 'en-US'
 
-            with email_utils.uselocale(locale):
-                is_asker = asker_id == u.id
-                if is_asker:
-                    subject = _(u'%s posted an answer to your question "%s"' %
-                                (self.answer.creator.username, self.instance.title))
-                    template = 'questions/email/new_answer_to_asker.ltxt'
-
-                else:
-                    subject = _(u'%s commented on a Firefox question '
-                                "you're watching" % self.answer.creator.username)
-                    template = 'questions/email/new_answer.ltxt'
-
-                msg = email_utils.render_email(template, c)
-
-            yield EmailMessage(subject,
-                               msg,
-                               settings.TIDINGS_FROM_ADDRESS,
-                               [u.email])
+            yield _make_mail(locale, u, c)
 
     @classmethod
     def description_of_watch(cls, watch):
@@ -112,6 +118,15 @@ class QuestionSolvedEvent(QuestionEvent):
         # (bug 585029)
         question.solution = self.answer
         question.solution.question = question
+
+        @email_utils.safe_translation
+        def _make_mail(locale, user, context):
+            subject = _(u'Solution found to Firefox Help question')
+            content = email_utils.render_email(
+                'questions/email/solution.ltxt', context)
+
+            return EmailMessage(subject, content,
+                                settings.TIDINGS_FROM_ADDRESS, [user.email])
 
         c = {'answerer': question.solution.creator,
              'asker': question.creator.username,
@@ -131,16 +146,7 @@ class QuestionSolvedEvent(QuestionEvent):
             else:
                 locale = 'en-US'
 
-            with email_utils.uselocale(locale):
-                subject = _(u'Solution found to Firefox Help question')
-                content = email_utils.render_email(
-                    'questions/email/solution.ltxt', c)
-
-            yield EmailMessage(
-                subject,
-                content,
-                settings.TIDINGS_FROM_ADDRESS,
-                [u.email])
+            yield _make_mail(locale, u, c)
 
     @classmethod
     def description_of_watch(cls, watch):
