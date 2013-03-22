@@ -123,7 +123,6 @@ k = {};
 
         initAutoSubmitSelects();
         disableFormsOnSubmit();
-        lazyLoadScripts();
     });
 
     /*
@@ -167,39 +166,6 @@ k = {};
                 setTimeout(enableForm, 5000);
             }
         });
-    }
-
-    /*
-     * This lazy loads our jQueryUI script.
-     */
-    function lazyLoadScripts() {
-        var scripts = ['js/libs/jqueryui-min.js'],
-            styles = [],  // was: ['css/jqueryui/jqueryui-min.css']
-                          // turns out this messes with search
-            i;
-
-        // Don't lazy load scripts that have already been loaded
-        $.each($('script'), function () {
-            var this_src = $(this).attr('src');
-            if (!this_src) return ;
-            remove_item(scripts, this_src);
-        });
-
-        // Don't lazy load stylesheets that have already been loaded
-        $.each($('link[rel="stylesheet"]'), function () {
-            remove_item(styles, $(this).attr('href'));
-        });
-
-        setTimeout(function lazyLoad() {
-            for (i in scripts) {
-                $.get(k.MEDIA_URL + scripts[i]);
-            }
-            for (i in styles) {
-                $('head').append(
-                    '<link rel="stylesheet" type="text/css" href="' +
-                    k.MEDIA_URL + styles[i] + '">');
-            }
-        }, k.LAZY_DELAY);
     }
 
     /*
@@ -248,4 +214,33 @@ k = {};
             $cards.height(max);
         });
     }
+
+    function pad(str, length, padChar) {
+        str = '' + str;
+        while (str.length < length) {
+            str = padChar + str;
+        }
+        return str;
+    }
+
+    k.dateFormat = function(format, d) {
+        var dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday',
+                        'Friday', 'Saturday'];
+
+        var month = pad(d.getMonth() + 1, 2, '0');
+        var date = pad(d.getDate(), 2, '0');
+        var hours = pad(d.getHours(), 2, '0');
+        var minutes = pad(d.getMinutes(), 2, '0');
+        var seconds = pad(d.getSeconds(), 2, '0');
+
+        return interpolate(format, {
+            'year': d.getFullYear(),
+            'month': month,
+            'date': date,
+            'day': dayNames[d.getDay()],
+            'hours': hours,
+            'minutes': minutes,
+            'seconds': seconds
+        }, true);
+    };
 })();

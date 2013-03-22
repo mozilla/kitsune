@@ -1,3 +1,103 @@
+(function($) {
+
+window.k = k || {};
+window.k.rickshaw = {};
+
+k.rickshaw.prepareData = function(data) {
+  var palette = new Rickshaw.Color.Palette();
+  return new Rickshaw.Series(data, palette);
+};
+
+k.rickshaw.makeGraph = function($elem, data, options) {
+  options = $.extend({
+    graph: {
+      renderer: 'bar'
+    },
+    annotations: false,
+  }, options);
+
+  var i;
+  var render = [];
+  var graph;
+  var hoverClass, hoverDetail;
+  var $legend, legend;
+  var $yaxis, xaxis, yaxis;
+  var $slider, slider;
+
+  render = [];
+
+  $elem.find('.graph, .legend, .y-axis').empty();
+  graph = new Rickshaw.Graph({
+    element: $elem.find('.graph')[0],
+    series: k.rickshaw.prepareData(data),
+    renderer: options.graph.renderer,
+    interpolation: 'linear'
+  });
+  render.push(graph);
+
+  if (options.graph.renderer === 'bar') {
+    hoverClass = Rickshaw.Graph.BarHoverDetail;
+  } else {
+    hoverClass = Rickshaw.Graph.HoverDetail;
+  }
+  hoverDetail = new hoverClass({
+    graph: graph
+  });
+
+  $legend = $elem.find('.legend');
+  if ($legend.length) {
+    legend = new Rickshaw.Graph.Legend( {
+      graph: graph,
+      element: $legend[0]
+    });
+
+    new Rickshaw.Graph.Behavior.Series.Toggle({
+      graph: graph,
+      legend: legend
+    });
+
+    new Rickshaw.Graph.Behavior.Series.Order({
+      graph: graph,
+      legend: legend
+    });
+    render.push(legend);
+  }
+
+  $yaxis = $elem.find('.y-axis');
+  if ($yaxis.length) {
+    xaxis = new Rickshaw.Graph.Axis.Time({
+      graph: graph
+    });
+
+    yaxis = new Rickshaw.Graph.Axis.Y({
+      graph: graph,
+      orientation: 'left',
+      element: $elem.find('.y-axis')[0]
+    });
+    render.push(yaxis);
+  }
+
+  $slider = $elem.find('.slider');
+  if ($slider.length) {
+    slider = new Rickshaw.Graph.RangeSlider({
+      graph: graph,
+      element: $slider
+    });
+  }
+
+  for (i=0; i<render.length; i++) {
+    render[i].render();
+  }
+
+  $yaxis.css({'top': $elem.find('.graph').position().top});
+
+  return {
+    'graph': graph,
+    'slider': slider.element
+  };
+};
+
+
 Rickshaw.namespace('Rickshaw.Graph.BarHoverDetail');
 
 /* This is a mostly intact version of Rickshaw.Graph.HoverDetail that
@@ -151,3 +251,4 @@ Rickshaw.Graph.BarHoverDetail = Rickshaw.Class.create(Rickshaw.Graph.HoverDetail
   }
 });
 
+})(jQuery);
