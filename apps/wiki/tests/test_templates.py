@@ -2105,15 +2105,13 @@ class HelpfulVoteTests(TestCaseBase):
                    args=[r.document.slug])
         eq_(200, resp.status_code)
         data = json.loads(resp.content)
-        eq_(4, len(data['data']))
-        eq_('Yes', data['data'][0]['name'])
-        eq_(1, len(data['data'][0]['data']))
-        eq_('No', data['data'][1]['name'])
-        eq_(1, len(data['data'][1]['data']))
-        eq_('Helpfulness Percentage', data['data'][2]['name'])
-        eq_(1, len(data['data'][2]['data']))
-
-        eq_(1, len(data['date_to_rev_id']))
+        eq_(3, len(data['series']))
+        eq_('yes', data['series'][0]['slug'])
+        eq_(1, len(data['series'][0]['data']))
+        eq_('no', data['series'][1]['slug'])
+        eq_(1, len(data['series'][1]['data']))
+        eq_('percent', data['series'][2]['slug'])
+        eq_(1, len(data['series'][2]['data']))
 
     def test_helpfulvotes_graph_async_no(self):
         r = self.document.current_revision
@@ -2126,17 +2124,13 @@ class HelpfulVoteTests(TestCaseBase):
                    args=[r.document.slug])
         eq_(200, resp.status_code)
         data = json.loads(resp.content)
-        eq_(4, len(data['data']))
-        eq_('Yes', data['data'][0]['name'])
-        eq_(1, len(data['data'][0]['data']))
-        eq_('No', data['data'][1]['name'])
-        eq_(1, len(data['data'][1]['data']))
-        eq_('Helpfulness Percentage', data['data'][2]['name'])
-        eq_(1, len(data['data'][2]['data']))
-
-        eq_('flags', data['data'][3]['type'])
-
-        eq_(1, len(data['date_to_rev_id']))
+        eq_(3, len(data['series']))
+        eq_('yes', data['series'][0]['slug'])
+        eq_(1, len(data['series'][0]['data']))
+        eq_('no', data['series'][1]['slug'])
+        eq_(1, len(data['series'][1]['data']))
+        eq_('percent', data['series'][2]['slug'])
+        eq_(1, len(data['series'][2]['data']))
 
     def test_helpfulvotes_graph_async_no_votes(self):
         r = self.document.current_revision
@@ -2145,9 +2139,7 @@ class HelpfulVoteTests(TestCaseBase):
                    args=[r.document.slug])
         eq_(200, resp.status_code)
         data = json.loads(resp.content)
-        eq_(0, len(data['data']))
-
-        eq_(0, len(data['date_to_rev_id']))
+        eq_(0, len(data['series']))
 
 
 class SelectLocaleTests(TestCaseBase):

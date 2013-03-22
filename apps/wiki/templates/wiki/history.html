@@ -2,7 +2,8 @@
 {% extends "wiki/base.html" %}
 {% from "wiki/includes/sidebar_modules.html" import document_tools with context %}
 {% from "layout/errorlist.html" import errorlist %}
-{% set scripts = ('wiki', 'libs/jqueryui', 'wiki.history', 'highcharts') %}
+{% set styles = ('wiki', 'rickshaw') %}
+{% set scripts = ('wiki', 'rickshaw', 'wiki.history') %}
 {% set meta = (('robots', 'noindex'),) %}
 {% set title = _('Revision History | {document}')|fe(document=document.title) %}
 {% set crumbs = [(document.get_absolute_url(), document.title),
@@ -25,7 +26,25 @@
           </li>
         </ul>
       </div>
-      <div id="helpful-chart" data-url="{{ url('wiki.get_helpful_votes_async', document.slug) }}"></div>
+
+      <div id="helpful-graph" data-url="{{ url('wiki.get_helpful_votes_async', document.slug) }}">
+        <div class="inline-controls">
+          <div>
+            <input type="radio" name="seriesset" value="percent">{{ _('Percent') }}</input>
+            <input type="radio" name="seriesset" value="votes">{{ _('Votes') }}</input>
+          </div>
+          <div>
+            <label for="slider">...</label>
+          </div>
+        </div>
+        <div class="graph-container">
+          <div class="slider"></div>
+          <div class="graph"></div>
+          <div class="y-axis"></div>
+          <div class="timelines"></div>
+        </div>
+      </div>
+
       {% include 'wiki/includes/revision_list.html' %}
 
       {% include 'wiki/includes/ready_for_l10n_modal.html' %}

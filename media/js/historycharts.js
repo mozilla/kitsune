@@ -1,224 +1,130 @@
 /*
- * Scripts to support charts on wiki article history.
+ * Scripts to support Graphs on wiki article history.
  */
 
 (function ($) {
     function init() {
-        $('#show-chart').unbind('click');
-        $('#show-chart').html(gettext('Loading...'));
-        $('#show-chart').css('color', '#333333').css('cursor', 'auto').css('text-decoration', 'none');
-        initChart();
+        $('#show-graph').unbind('click');
+        $('#show-graph').html(gettext('Loading...'));
+        $('#show-graph').css('color', '#333333').css('cursor', 'auto').css('text-decoration', 'none');
+        initGraph();
     }
 
-    function initChart() {
+    function initGraph() {
         var data, dateToRevID;
         $.ajax({
             type: "GET",
-            url: $('#helpful-chart').data('url'),
-            data: null,
-            success: function (response) {
-                data = response['data'];
-                dateToRevID = response['date_to_rev_id'];
-                dateTooltip = response['date_tooltip'];
-                if(data.length > 0) {
-                    $('#helpful-chart').show('fast', function () {
-                        stockChart(data, dateToRevID, dateTooltip);
-                        $('#helpful-chart').append('<div id="chart-footnote">' + gettext('Query took: ') + response['query'] + gettext(' seconds') + '</div>')
-                    });
-                }
-                else {
-                    $('#show-chart').html(gettext('No votes data'));
-                    $('#show-chart').unbind('click');
+            url: $('#helpful-graph').data('url'),
+            success: function (data) {
+                if (data.series.length > 0) {
+                    rickshawGraph(data);
+                    $('#show-graph').hide();
+                } else {
+                    $('#show-graph').html(gettext('No votes data'));
+                    $('#show-graph').unbind('click');
                 }
             },
             error: function () {
-                $('#show-chart').html(gettext('Error loading chart'));
-                $('#show-chart').unbind('click');
+                $('#show-graph').html(gettext('Error loading graph'));
+                $('#show-graph').unbind('click');
             }
         });
     }
 
-    /*
-     * stockChart()
-     * Creates the StockChart object with the defined options.
-     * Requires data and dateToRevID to be passed in, populated via AJAX.
-     * The graph is drawn upon creation of the StockChart object.
-     * Returns: nothing
-     */
-    function stockChart(data, dateToRevID, dateTooltip) {
-        Highcharts.setOptions({
-            lang: {
-                months: [gettext('January'), gettext('February'), gettext('March'), gettext('April'), gettext('May'), gettext('June'), gettext('July'), gettext('August'), gettext('September'), gettext('October'), gettext('November'), gettext('December')],
-                weekdays: [gettext('Sunday'), gettext('Monday'), gettext('Tuesday'), gettext('Wednesday'), gettext('Thursday'), gettext('Friday'), gettext('Saturday')],
-                /* L10n: short for the individual months */
-                shortMonths: [gettext('Jan'), gettext('Feb'), gettext('Mar'), gettext('Apr'), gettext('May'), gettext('Jun'), gettext('Jul'), gettext('Aug'), gettext('Sep'), gettext('Oct'), gettext('Nov'), gettext('Dec')],
-                loading: gettext('Loading...'),
-                rangeSelectorFrom: gettext('From'),
-                rangeSelectorTo: gettext('To'),
-                rangeSelectorZoom: gettext('Zoom'),
-                resetZoom: gettext('Reset zoom'),
-                resetZoomTitle: gettext('Reset zoom level 1:1')
+    function rickshawGraph(data) {
+        var $container = $('#helpful-graph');
+        var i, j;
+        var lines, series, s;
+        var annotations, $timelines;
+        var annot, $timeline;
+        var desiredMin;
+
+        $container.show();
+        var graphObjects = k.rickshaw.makeGraph($container, data.series, {
+            graph: {
+                renderer: 'line'
+            },
+            legend: false,
+            hover: {
+                xFormatter: function(seconds) {
+                    var date = new Date(seconds * 1000);
+                    return k.dateFormat('Week of %(year)s-%(month)s-%(date)s', date);
+                },
+                yFormatter: function(value) {
+                    if (value > 0 && value <= 1.0) {
+                        // This is probably a percentage.
+                        return Math.floor(value * 100) + '%';
+                    } else {
+                        return Math.floor(value);
+                    }
+                }
             }
         });
 
-        chart = new Highcharts.StockChart({
-            chart: {
-                renderTo: 'helpful-chart',
-                spacingBottom: 40,
-            },
-            legend: {
-                enabled: true,
-                y: 40,
-                verticalAlign: 'top'
-            },
-            rangeSelector: {
-                selected: 2,
-                buttons: [{
-                    type: 'month',
-                    count: 1,
-                    /* L10n: short for "1 month" */
-                    text: gettext('1m')
-                }, {
-                    type: 'month',
-                    count: 3,
-                    /* L10n: short for "3 months" */
-                    text: gettext('3m')
-                }, {
-                    type: 'month',
-                    count: 6,
-                    /* L10n: short for "6 months" */
-                    text: gettext('6m')
-                }, {
-                    type: 'ytd',
-                    /* L10n: short for "Year To Date" */
-                    text: gettext('YTD')
-                }, {
-                    type: 'year',
-                    count: 1,
-                    /* L10n: short for "1 year" */
-                    text: gettext('1y')
-                }, {
-                    type: 'all',
-                    text: gettext('All')
-                }],
-                buttonTheme: {
-                    width: null
-                },
-                inputStyle: {
-                    fontSize: '10px'
-                }
-            },
-            title: {
-                text: gettext('Helpfulness Votes')
-            },
-            xAxis: {
-                type: 'datetime',
-                maxZoom: 14 * 24 * 3600000,  // fourteen days
-                title: {
-                    text: null
-                }
-            },
-            yAxis: [{ // Primary yAxis
-                     labels: {
-                        style: {
-                           color: '#89A54E'
-                        },
-                        formatter: function() {
-                           return this.value*100 +'%';
-                        }
-                     },
-                     title: {
-                        text: 'Percent Helpfulness',
-                        style: {
-                           color: '#89A54E'
-                        }
-                     }
-                  }, { // Secondary yAxis
-                     gridLineWidth: 1,
-                     gridLineColor: '#4572A7',
-                     gridLineDashStyle: 'shortDash',
-                     title: {
-                        text: gettext('Number of Votes'),
-                        style: {
-                           color: '#4572A7'
-                        }
-                     },
-                     labels: {
-                        style: {
-                           color: '#4572A7'
-                        }
-                     },
-                     opposite: true,
-                     min: 0
-                  }],
-            tooltip: {
-                style: {
-                    width: 200
-                },
-                formatter: function(){
-                    var x = this.x,
-                        s;
+        lines = {};
+        series = graphObjects.graph.series;
+        for (i=0; i<series.length; i++) {
+            s = series[i];
+            lines[s.slug] = s;
+        }
 
-                    if('key' in this) {
-                        // revision/important date flag
-                        s = ['<span style="font-size: 10px">' +
-                            Highcharts.dateFormat('%b %e, %Y', x) +
-                            '</span>',
-                            '<strong>' + this.point.text + '</strong>']
-                    }
-                    else {
-                        // data point element
-                        s = ['<span style="font-size: 10px">' +
-                            Highcharts.dateFormat('%A, %b %e, %Y', x) +
-                            '</span>',
-                            gettext('Yes') + ': <strong>' + dateTooltip[x].yes + '</strong>',
-                            gettext('No') + ': <strong>' + dateTooltip[x].no + '</strong>',
-                            gettext('Percent') + ': <strong>' + dateTooltip[x].percent + '%</strong>'
-                            ]
-                    }
-                    return s.join('<br/>');
-                },
-                shared: true
-            },
-            credits: {
-                enabled: false
-            },
-            plotOptions: {
-                series: {
-                    cursor: 'pointer',
-                    point: {
-                        events: {
-                            mouseOver: function () {
-                                $('#rev-list-' + dateToRevID[this.x]).addClass('graph-hover');
-                            },
-                            mouseOut: function () {
-                                $('#rev-list-' + dateToRevID[this.x]).removeClass('graph-hover');
-                            }
-                        }
-                    },
-                    marker: {
-                        lineWidth: 1
-                    },
-                    stickyTracking: true,
-                    events: {
-                        hide: function(a) {
-                            this.yAxis.axisTitle.hide();
-                        },
-                        show: function() {
-                            this.yAxis.axisTitle.show();
-                        }
-                    },
-                    dataGrouping: {
-                        enabled: false,
-                    }
-                }
-            },
-            series: data
-        }, function () {
-            $('#show-chart').hide();  // loading complete callback
+        lines.yes.color = '#21de2b';
+        lines.no.color = '#de2b21';
+        lines.percent.color = '#2b21de';
+
+        $container.on('change', 'input[name=seriesset]', function(e) {
+            switch($(this).val()) {
+                case 'percent':
+                    lines.percent.disabled = false;
+                    lines.yes.disabled = true;
+                    lines.no.disabled = true;
+                    graphObjects.graph.max = 1.0;
+                    break;
+                case 'votes':
+                    lines.percent.disabled = true;
+                    lines.yes.disabled = false;
+                    lines.no.disabled = false;
+                    graphObjects.graph.max = undefined;
+                    break;
+            }
+            graphObjects.graph.update();
         });
-        chart.series[0].hide();
-        chart.series[1].hide();
+
+        $container.find('input[name=seriesset][value=percent]')
+            .prop('checked', true)
+            .trigger('change');
+
+        $timelines = $container.find('.timelines');
+        for (i=0; i < data.annotations.length; i++) {
+            annot = data.annotations[i];
+            $timeline = $('<div class="timeline"/>').appendTo($timelines);
+            annotations = new Rickshaw.Graph.Annotate({
+                'graph': graphObjects.graph,
+                'element': $timeline[0]
+            });
+
+            for (j=0; j < annot.data.length; j++) {
+                annotations.add(annot.data[j].x, annot.data[j].text);
+            }
+        }
+
+        // About 6 months ago, as epoch seconds.
+        desiredMin = (new Date() - (1000 * 60 * 60 * 24 * 180)) / 1000;
+        graphObjects.graph.window.xMin = desiredMin;
+        graphObjects.graph.update();
+
+        graphObjects.slider.slider('values', 0, desiredMin);
+        function onSlide(event, ui) {
+            var start = new Date(ui.values[0] * 1000);
+            var end = new Date(ui.values[1] * 1000 - (1000 * 60 * 60 * 24));
+            var fmt = '%(year)s-%(month)s-%(date)s';
+            var label = interpolate('From %s to %s', [k.dateFormat(fmt, start),
+                                                      k.dateFormat(fmt, end)]);
+            $('label[for=slider]').text(label);
+        }
+        graphObjects.slider.on('slide', onSlide);
+        onSlide(null, {values: graphObjects.slider.slider('values')} );
     }
-    $('#show-chart').click(init);
+
+    $('#show-graph').click(init);
 }(jQuery));

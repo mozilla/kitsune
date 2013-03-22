@@ -3,7 +3,7 @@
   {% if revisions %}
     <form action="{{ url('wiki.compare_revisions', document.slug)  }}" method="get">
       <input type="hidden" name="locale" value="{{ document.locale }}">
-      <a id="show-chart">{{ _('Show Helpfulness Votes Chart') }}</a>
+      <a id="show-graph">{{ _('Show Helpfulness Votes Chart') }}</a>
       {% if revisions.count() > 1 %}
         <div class="compare top">
           <input type="submit" class="link-btn" value="{% if document.parent %}{{ _('Compare Selected Translations') }}{% else %}{{ _('Compare Selected Revisions') }}{% endif %}" />

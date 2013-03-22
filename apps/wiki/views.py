@@ -904,60 +904,45 @@ def get_helpful_votes_async(request, document_slug):
     yes_data = []
     no_data = []
     perc_data = []
-    date_to_rev_id = {}
-    date_tooltip = {}
     flag_data = []
     rev_data = []
-    revisions = set([])
+    revisions = set()
     created_list = []
 
-    start = time.time()
     cursor = connection.cursor()
 
     cursor.execute('SELECT wiki_helpfulvote.revision_id, '
-                             'SUM(wiki_helpfulvote.helpful), '
-                             'SUM(NOT(wiki_helpfulvote.helpful)), '
-                             'wiki_helpfulvote.created '
-                        'FROM wiki_helpfulvote '
-                        'INNER JOIN wiki_revision ON '
-                            'wiki_helpfulvote.revision_id=wiki_revision.id '
-                        'WHERE wiki_revision.document_id=%s '
-                        'GROUP BY DATE(wiki_helpfulvote.created)',
-                        [document.id])
+                   '    SUM(wiki_helpfulvote.helpful), '
+                   '    SUM(NOT(wiki_helpfulvote.helpful)), '
+                   '    wiki_helpfulvote.created '
+                   'FROM wiki_helpfulvote '
+                   'INNER JOIN wiki_revision ON '
+                   '    wiki_helpfulvote.revision_id=wiki_revision.id '
+                   'WHERE wiki_revision.document_id=%s '
+                   'GROUP BY YEARWEEK(wiki_helpfulvote.created)', [document.id])
 
     results = cursor.fetchall()
     for res in results:
-        created = 1000 * (int(time.mktime(res[3].timetuple()) / 86400) * 86400)
+        created = int(time.mktime(res[3].timetuple()) / 86400) * 86400
         percent = float(res[1]) / (float(res[1]) + float(res[2]))
         yes_data.append({'x': created, 'y': int(res[1])})
         no_data.append({'x': created, 'y': int(res[2])})
         perc_data.append({'x': created, 'y': percent})
-        date_to_rev_id[created] = res[0]
-        date_tooltip[created] = {'yes': int(res[1]),
-                                 'no': int(res[2]),
-                                 'percent': round(percent * 100, 2)}
         revisions.add(int(res[0]))
         created_list.append(res[3])
 
-    if created_list == []:
-        send = {'data': [],
-                'date_to_rev_id': [],
-                'date_tooltip': [],
-                'query': 0}
-
-        return HttpResponse(json.dumps(send),
-                        mimetype='application/json')
+    if not created_list:
+        send = {'series': [], 'annotations': []}
+        return HttpResponse(json.dumps(send), mimetype='application/json')
 
     min_created = min(created_list)
     max_created = max(created_list)
 
     for flag in ImportantDate.uncached.filter(date__gte=min_created,
-                                             date__lte=max_created):
+                                              date__lte=max_created):
         flag_data.append({
-            'x': 1000 * int(time.mktime(flag.date.timetuple())),
-            'title': _(flag.text),
+            'x': int(time.mktime(flag.date.timetuple())),
             'text': _(flag.text)
-            #'url': 'http://www.google.com/'  # Not supported yet
         })
 
     for rev in Revision.objects.filter(pk__in=revisions,
@@ -965,54 +950,47 @@ def get_helpful_votes_async(request, document_slug):
                                        created__lte=max_created):
         rdate = rev.reviewed or rev.created
         rev_data.append({
-                    'x': 1000 * int(time.mktime(rdate.timetuple())),
-                    # L10n: 'R' is the first letter of "Revision".
-                    'title': _('R', 'revision_heading'),
-                    'text': unicode(_('Revision %s')) % rev.created
-                    #'url': 'http://www.google.com/'  # Not supported yet
-                })
+            'x': int(time.mktime(rdate.timetuple())),
+            'text': unicode(_('Revision %s')) % rev.created
+        })
 
-    end = time.time()
+    # Rickshaw wants data like
+    # [{'name': 'series1', 'data': [{'x': 1362774285, 'y': 100}, ...]},]
+    send = {'series': [], 'annotations': []}
 
-    send = {'data': [{'name': _('Yes'),
-                      'id': 'yes_data',
-                      'data': yes_data,
-                      'yAxis': 1},
-                     {'name': _('No'),
-                      'id': 'no_data',
-                      'data': no_data,
-                      'yAxis': 1},
-                     {'name': _('Helpfulness Percentage'),
-                      'id': 'perc_data',
-                      'data': perc_data},
-                     {'type': 'flags',
-                      'data': rev_data,
-                      'shape': 'circlepin',
-                      'width': 16,
-                      'zIndex': 100,
-                      'showInLegend': False,
-                      'onSeries': 'perc_data'},
-                     {'type': 'flags',
-                      'data': flag_data,
-                      'shape': 'squarepin',
-                      'stickyTracking': False,
-                      'zIndex': 50,
-                      'showInLegend': False}],
-            'date_to_rev_id': date_to_rev_id,
-            'date_tooltip': date_tooltip,
-            'query': round(end - start, 2)}
+    if yes_data:
+        send['series'].append({
+            'name': _('Yes'),
+            'slug': 'yes',
+            'data': yes_data,
+        })
+    if no_data:
+        send['series'].append({
+            'name': _('No'),
+            'slug': 'no',
+            'data': no_data,
+        })
+    if perc_data:
+        send['series'].append({
+            'name': _('Percent Helpful'),
+            'slug': 'percent',
+            'data': perc_data,
+        })
 
-    if len(send['data'][3]['data']) == 0:
-        send['data'].pop(3)
-    if len(send['data'][2]['data']) == 0:
-        send['data'].pop(2)
-    if len(send['data'][1]['data']) == 0:
-        send['data'].pop(1)
-    if len(send['data'][0]['data']) == 0:
-        send['data'].pop(0)
+    if flag_data:
+        send['annotations'].append({
+            'name': _('Firefox Releases'),
+            'slug': 'releases',
+            'data': flag_data,
+        })
+    if rev_data:
+        send['annotations'].append({
+            'name': _('Article Revisions'),
+            'slug': 'revisions',
+            'data': rev_data,
+        })
 
-    return HttpResponse(json.dumps(send),
-                        mimetype='application/json')
+    return HttpResponse(json.dumps(send), mimetype='application/json')
 
 
 @login_required
