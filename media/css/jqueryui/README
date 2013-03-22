@@ -6,6 +6,7 @@ multiple bundles. Here is what is in each bundle:
 * Rickshaw
     - Sortable
     - Datepicker
+    - Slider
 
 The bundles include more, but these are things that shuld be checked on the
 jQuery UI custom builder. They pull in dependencies like 'Core' or 'Mouse'.
