@@ -146,16 +146,6 @@ class RemoveSlashMiddleware(object):
         return response
 
 
-class ReverseProxyMiddleware(object):
-    """Monkey-patches request.is_secure() when we're running behind a
-    reverse proxy like nginx or Apache with mod_proxy.
-    """
-    def process_request(self, request):
-        if 'HTTP_X_SCHEME' in request.META:
-            is_secure = lambda: request.META['HTTP_X_SCHEME'] == 'https'
-            request.is_secure = is_secure
-
-
 @contextlib.contextmanager
 def safe_query_string(request):
     """
