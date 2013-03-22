@@ -92,7 +92,7 @@ class NoCacheHttpsMiddleware(object):
     and not equal to 'off'.
     """
     def process_response(self, request, response):
-        if 'HTTPS' in request.META and request.META['HTTPS'] != 'off':
+        if request.is_secure():
             response['Expires'] = 'Thu, 19 Nov 1981 08:52:00 GMT'
             response['Cache-Control'] = 'no-cache, must-revalidate'
             response['Pragma'] = 'no-cache'
