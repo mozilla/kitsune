@@ -506,7 +506,6 @@ TOWER_ADD_HEADERS = True
 
 # Jingo-Minify should not use the STATIC_ROOT
 JINGO_MINIFY_USE_STATIC = False
-
 JAVA_BIN = '/usr/bin/java'
 
 LESS_BIN = 'lessc'

@@ -31,10 +31,10 @@ MINIFY_BUNDLES = {
         'mobile/aaq': (
             'less/mobile/aaq.less',
         ),
-        'questions.stats': (
+        'rickshaw': (
             'css/jqueryui/jqueryui-rickshaw.css',
             'css/rickshaw.min.css',
-            'less/questions.stats.less',
+            'less/rickshaw.sumo.less',
         ),
         'search': (
             'less/search.less',
@@ -169,11 +169,6 @@ MINIFY_BUNDLES = {
             'js/questions.metrics.js',
         ),
         'questions.stats': (
-            'js/libs/jqueryui.rickshaw.js',
-            'js/libs/d3.v3.min.js',
-            'js/libs/d3.layout.min.js',
-            'js/libs/rickshaw.min.js',
-            'js/Rickshaw.Graph.BarHoverDetail.js',
             'js/questions.stats.js',
         ),
         'mobile/questions': (
@@ -212,6 +207,13 @@ MINIFY_BUNDLES = {
             'js/dashboards.js',
             'js/editable.js',
             'js/wiki.metrics.js',
+        ),
+        'rickshaw': (
+            'js/libs/jqueryui.rickshaw.js',
+            'js/libs/d3.v3.min.js',
+            'js/libs/d3.layout.min.js',
+            'js/libs/rickshaw.min.js',
+            'js/rickshaw_utils.js',
         ),
         'mobile/wiki': (
             'js/libs/underscore.js',

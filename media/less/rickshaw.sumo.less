@@ -18,8 +18,15 @@
   }
 }
 
-.controls {
+.timeline {
+  margin: 10px 0;
+}
 
+.slider {
+  margin: 10px 0;
+}
+
+.controls {
   > div {
     .border-radius(2px);
     background: #444;
@@ -78,6 +85,21 @@
           opacity: 0.5;
         }
       }
+    }
+  }
+}
+
+.inline-controls {
+  margin-left: 40px;
+
+  div {
+    display: inline-block;
+    margin-right: 10px;
+    background: rgba(0, 0, 0, 0.05);
+    padding: 4px;
+
+    input, label {
+      margin-right: 5px;
     }
   }
 }

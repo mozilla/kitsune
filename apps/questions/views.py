@@ -1235,6 +1235,10 @@ def stats_topic_data(bucket_days, start, end):
         timestamp += bucket
 
     # Convert it into a format Rickshaw will be happy with.
+    # [
+    #   {'name': 'series1', 'data': [{'x': 1362774285, 'y': 100}, ...]},
+    #   ...
+    # ]
     histograms = [
         {
             'name': name,
