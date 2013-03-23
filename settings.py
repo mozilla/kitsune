@@ -292,7 +292,6 @@ TEMPLATE_CONTEXT_PROCESSORS = (
 
 MIDDLEWARE_CLASSES = (
     'multidb.middleware.PinningRouterMiddleware',
-    'users.middleware.StaySecureMiddleware',
     'django_statsd.middleware.GraphiteMiddleware',
     'commonware.request.middleware.SetRemoteAddrFromForwardedFor',
 
