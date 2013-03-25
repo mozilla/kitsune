@@ -10,16 +10,17 @@
         var opts = $.extend($.fn.lazyload.defaults, options);
         var elements = this;
         var didScroll = false;
+        var boundElem = opts['bindTo']
         loaded = elements.length;
 
-        $(window).bind('scroll', function(e){
+        $(boundElem).bind('scroll', function(e){
             didScroll = true;
         });
 
         loadAboveTheFoldImages(elements, opts, null);
 
         // Safari doesn't load images until scroll, sometimes
-        $(window).trigger('scroll');
+        $(boundElem).trigger('scroll');
 
         var prevHash = window.location.hash;
 
@@ -28,7 +29,7 @@
 
         var intv = setInterval(function() {
             if(loaded <= 0) {
-                $(window).unbind('scroll');
+                $(boundElem).unbind('scroll');
                 clearInterval(intv);
                 return;
             }
@@ -49,7 +50,7 @@
         return this;
     };
 
-    $.fn.lazyload.defaults = {threshold: 750};
+    $.fn.lazyload.defaults = {threshold: 750, bindTo: window};
 
     function resetHashPosition() {
        if(window.location.hash) {
@@ -59,7 +60,8 @@
     }
 
     function aboveTheFold(element, options){
-        var fold = $(window).height() + $(window).scrollTop();
+        var boundElem = options['bindTo'];
+        var fold = $(boundElem).height() + $(boundElem).scrollTop();
         return fold >= $(element).offset().top - (options['threshold']);
     };
 

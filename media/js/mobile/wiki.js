@@ -84,5 +84,5 @@
         });
     }
 
-    $('img.lazy').lazyload();
+    $('img.lazy').lazyload({bindTo: $('#page > .scrollable')});
 })(jQuery);
