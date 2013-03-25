@@ -59,11 +59,13 @@
               <strong>{{ _('Ready for localization:') }}</strong>
               <span>{{ revision.is_ready_for_localization|yesno }}</span>
             </li>
-            {% if revision.is_ready_for_localization %}
+            {% if revision.readied_for_localization %}
               <li>
                 <strong>{{ _('Readied for localization:') }}</strong>
                 <span>{{ datetimeformat(revision.readied_for_localization, format='datetime') }}</span>
               </li>
+            {% endif %}
+            {% if revision.readied_for_localization_by %}
               <li>
                 <strong>{{ _('Readied for localization by:') }}</strong>
                 <span>{{ revision.readied_for_localization_by }}</span>
