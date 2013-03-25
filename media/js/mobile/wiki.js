@@ -85,4 +85,4 @@
     }
 
     $('img.lazy').lazyload();
-})(jQuery)
+})(jQuery);
