@@ -94,7 +94,7 @@
 {%- endmacro %}
 
 {% macro aaq_search_form(product, category, settings, host, request) -%}
-  <form id="ask-search-form" class="search-form cf" action="{% if settings.SESSION_COOKIE_SECURE %}https://{{ host }}{{ url('questions.aaq_step4', product_key=product.key, category_key=category.key) }}{% endif %}#summarize-question" method="get">
+  <form id="ask-search-form" class="simple-search-form cf" action="{% if settings.SESSION_COOKIE_SECURE %}https://{{ host }}{{ url('questions.aaq_step4', product_key=product.key, category_key=category.key) }}{% endif %}#summarize-question" method="get">
     <input type="text" class="searchbox" name="search" value="{{ request.GET.search }}" required="required" maxlength="160" placeholder="{{ _('Summarize your question in a sentence') }}" />
     <span data-type="submit" class="btn btn-important big">{{ _('Ask this') }}</span>
   </form>

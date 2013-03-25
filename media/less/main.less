@@ -693,14 +693,6 @@ input[type=button],
   }
 }
 
-.search-form {
-  background: url('../img/grain.png') #eff2f4;
-  border: 1px solid #b9c9d1;
-  .border-radius(6px);
-  display: block;
-  padding: 12px;
-}
-
 .sidebar-nav {
   font-family: @OpenSans;
   font-size: 13px;
@@ -1233,7 +1225,7 @@ input[type=button],
     top: 6px;
     width: 17px;
   }
-  
+
   .searchbox {
     .linear-gradient-top(#8d969e, #8d969e, 0%, #a8b0b7, 100%, url('../img/grain.png'));
     border: 0;
@@ -1243,19 +1235,19 @@ input[type=button],
     font-size: 14px;
     height: 18px;
     padding: 6px 42px 6px 20px; 
-  
+
     &:focus {
       outline: none;
-  
-      &::-webkit-input-placeholder {
+
+      &:-webkit-input-placeholder {
         color: rgba(255, 255, 255, 0);
       }
     }
-  
-    &::-webkit-input-placeholder {
+
+    &:-webkit-input-placeholder {
       color: #fff;
     }
-  
+
     &:-moz-placeholder {
       color: #fff;
     }
@@ -1266,13 +1258,13 @@ input[type=button],
   #support-search {
     float: left;
   }
-  
+
   .simple-search-form {
     .submit-button {
       left: 12px;
       right: auto;
     }
-    
+
     .searchbox {
       padding: 6px 20px 6px 42px;
     }
@@ -1283,7 +1275,7 @@ input[type=button],
   display: block;
   float: right;
   margin: 35px 0 0 0;
-  
+
   .searchbox {
     width: 240px;
   }
