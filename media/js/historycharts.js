@@ -34,19 +34,37 @@
     function rickshawGraph(data) {
         var $container = $('#helpful-graph');
         var i, j;
+        var lines, series, s;
+        var annotations, $timelines;
+        var annot, $timeline;
+        var desiredMin;
 
         $container.show();
         var graphObjects = k.rickshaw.makeGraph($container, data.series, {
             graph: {
                 renderer: 'line'
             },
-            legend: false
+            legend: false,
+            hover: {
+                xFormatter: function(seconds) {
+                    var date = new Date(seconds * 1000);
+                    return k.dateFormat('Week of %(year)s-%(month)s-%(date)s', date);
+                },
+                yFormatter: function(value) {
+                    if (value > 0 && value <= 1.0) {
+                        // This is probably a percentage.
+                        return Math.floor(value * 100) + '%';
+                    } else {
+                        return Math.floor(value);
+                    }
+                }
+            }
         });
 
-        var lines = {};
-        var series = graphObjects.graph.series;
+        lines = {};
+        series = graphObjects.graph.series;
         for (i=0; i<series.length; i++) {
-            var s = series[i];
+            s = series[i];
             lines[s.slug] = s;
         }
 
@@ -72,17 +90,14 @@
             graphObjects.graph.update();
         });
 
-        window.graphObjects = graphObjects;
-
         $container.find('input[name=seriesset][value=percent]')
             .prop('checked', true)
             .trigger('change');
 
-        var annotations;
-        var $timelines = $container.find('.timelines');
+        $timelines = $container.find('.timelines');
         for (i=0; i < data.annotations.length; i++) {
-            var annot = data.annotations[i];
-            var $timeline = $('<div class="timeline"/>').appendTo($timelines);
+            annot = data.annotations[i];
+            $timeline = $('<div class="timeline"/>').appendTo($timelines);
             annotations = new Rickshaw.Graph.Annotate({
                 'graph': graphObjects.graph,
                 'element': $timeline[0]
@@ -94,7 +109,7 @@
         }
 
         // About 6 months ago, as epoch seconds.
-        var desiredMin = (new Date() - (1000 * 60 * 60 * 24 * 180)) / 1000;
+        desiredMin = (new Date() - (1000 * 60 * 60 * 24 * 180)) / 1000;
         graphObjects.graph.window.xMin = desiredMin;
         graphObjects.graph.update();
 

@@ -13,7 +13,10 @@ k.rickshaw.makeGraph = function($elem, data, options) {
     graph: {
       renderer: 'bar'
     },
-    annotations: false,
+    hover: {
+      xFormatter: undefined,
+      yFormatter: undefined
+    }
   }, options);
 
   var i;
@@ -27,12 +30,11 @@ k.rickshaw.makeGraph = function($elem, data, options) {
   render = [];
 
   $elem.find('.graph, .legend, .y-axis').empty();
-  graph = new Rickshaw.Graph({
+  graph = new Rickshaw.Graph($.extend({
     element: $elem.find('.graph')[0],
     series: k.rickshaw.prepareData(data),
-    renderer: options.graph.renderer,
     interpolation: 'linear'
-  });
+  }, options.graph));
   render.push(graph);
 
   if (options.graph.renderer === 'bar') {
@@ -40,9 +42,9 @@ k.rickshaw.makeGraph = function($elem, data, options) {
   } else {
     hoverClass = Rickshaw.Graph.HoverDetail;
   }
-  hoverDetail = new hoverClass({
+  hoverDetail = new hoverClass($.extend({
     graph: graph
-  });
+  }, options.hover));
 
   $legend = $elem.find('.legend');
   if ($legend.length) {
