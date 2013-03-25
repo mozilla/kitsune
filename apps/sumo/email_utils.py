@@ -134,22 +134,23 @@ def emails_with_users_and_watches(subject,
     :returns: generator of EmailMessage objects
 
     """
+    @safe_translation
+    def _make_mail(locale, user, watch):
+        context_vars['user'] = user
+        context_vars['watch'] = watch[0]
+        context_vars['watches'] = watch
+
+        return EmailMessage(subject.format(**context_vars),
+                            render_email(template_path, context_vars),
+                            from_email,
+                            [user.email],
+                            **extra_kwargs)
+
     for u, w in users_and_watches:
         if hasattr(u, 'profile'):
             locale = u.profile.locale
         else:
             locale = default_locale
 
-        @safe_translation
-        def _make_mail(locale):
-            context_vars['user'] = u
-            context_vars['watch'] = w[0]
-            context_vars['watches'] = w
 
-            return EmailMessage(subject.format(**context_vars),
-                                render_email(template_path, context_vars),
-                                from_email,
-                                [u.email],
-                                **extra_kwargs)
-
-        yield _make_mail(locale)
+        yield _make_mail(locale, u, w)

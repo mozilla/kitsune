@@ -27,23 +27,21 @@ def send_group_email(announcement_id):
     email_kwargs = {'content': plain_content,
                     'domain': Site.objects.get_current().domain}
     template = 'announcements/email/announcement.ltxt'
+
+    @safe_translation
+    def _make_mail(locale, user):
+        subject = _('New announcement for {group}').format(
+            group=group.name)
+        msg = render_email(template, email_kwargs)
+
+        m = EmailMessage(subject, msg, settings.TIDINGS_FROM_ADDRESS,
+                         [user.email])
+        return [m]
+
     try:
         for u in users:
             # Localize email each time.
-            @safe_translation
-            def _make_mail(locale):
-                subject = _('New announcement for {group}').format(
-                    group=group.name)
-                msg = render_email(template, email_kwargs)
-
-                m = EmailMessage(subject,
-                                 msg,
-                                 settings.TIDINGS_FROM_ADDRESS,
-                                 [u.email])
-                return [m]
-
             locale = u.profile.locale or settings.LANGUAGE_CODE
-            connection.send_messages(_make_mail(locale))
-
+            connection.send_messages(_make_mail(locale, u))
     finally:
         connection.close()

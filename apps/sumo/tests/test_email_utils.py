@@ -76,7 +76,7 @@ class SafeTranslationTests(TestCase):
         # if that fails, fall back to English.
         @safe_translation
         def bad_trans(locale):
-            return locale + _('Hello {name}').format(name='Mike')
+            return _('Hello {name}').format(name='Mike')
 
         # French should come back as English, because it has a bad
         # translation, but Spanish should come back in Spanish.
