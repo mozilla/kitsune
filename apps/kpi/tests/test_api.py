@@ -17,6 +17,7 @@ from kpi.models import (Metric,
                         VISITORS_METRIC_CODE)
 
 from kpi.tests import metric, metric_kind
+from sumo.helpers import urlparams
 from sumo.tests import TestCase, LocalizingClient
 from sumo.urlresolvers import reverse
 from questions.tests import answer, answervote, question
@@ -40,12 +41,13 @@ class KpiApiTests(TestCase):
         metric_kind(code=KB_L10N_CONTRIBUTORS_METRIC_CODE, save=True)
         metric_kind(code=SUPPORT_FORUM_CONTRIBUTORS_METRIC_CODE, save=True)
 
-    def _get_api_result(self, resource_name):
+    def _get_api_result(self, resource_name, **kwargs):
         """Helper to make API calls, parse the json and return the result."""
         url = reverse('api_dispatch_list',
                       kwargs={'resource_name': resource_name,
                               'api_name': 'v1'})
-        response = self.client.get(url + '?format=json')
+        url = urlparams(url, format='json', **kwargs)
+        response = self.client.get(url)
         eq_(200, response.status_code)
         return json.loads(response.content)
 
@@ -112,15 +114,26 @@ class KpiApiTests(TestCase):
         """Test vote API call."""
         r1 = revision(document=document(locale='en-US', save=True), save=True)
         r2 = revision(document=document(locale='es', save=True), save=True)
-        for r in [r1, r2]:
+        r3 = revision(document=document(locale='es', save=True), save=True)
+        for r in [r1, r2, r3]:
             helpful_vote(revision=r, save=True)
             helpful_vote(revision=r, save=True)
             helpful_vote(revision=r, helpful=True, save=True)
 
-        # Only the votes for r1 (locale=en-US) should be counted.
+        # All votes should be counted if we don't specify a locale
         r = self._get_api_result('kpi_kb_vote')
+        eq_(r['objects'][0]['kb_helpful'], 3)
+        eq_(r['objects'][0]['kb_votes'], 9)
+
+        # Only en-US votes:
+        r = self._get_api_result('kpi_kb_vote', locale='en-US')
         eq_(r['objects'][0]['kb_helpful'], 1)
         eq_(r['objects'][0]['kb_votes'], 3)
+
+        # Only es votes:
+        r = self._get_api_result('kpi_kb_vote', locale='es')
+        eq_(r['objects'][0]['kb_helpful'], 2)
+        eq_(r['objects'][0]['kb_votes'], 6)
 
     def test_active_contributors(self):
         """Test active contributors API call."""

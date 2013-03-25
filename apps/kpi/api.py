@@ -25,6 +25,9 @@ from wiki.models import HelpfulVote
 class CachedResource(Resource):
     def obj_get_list(self, request=None, **kwargs):
         """Override ``obj_get_list`` to use the cache."""
+        if request:
+            # Add request query params to cache key.
+            kwargs.update(**request.GET.dict())
         cache_key = self.generate_cache_key('list', **kwargs)
         obj_list = self._meta.cache.get(cache_key)
 
@@ -247,17 +250,21 @@ class KBVoteResource(CachedResource):
     def get_object_list(self, request):
         # Set up the queries for the data we need
 
-        # For now, we only care about the default locale.
-        locale = settings.WIKI_DEFAULT_LANGUAGE
+        locale = request.GET.get('locale')
 
-        qs_kb_votes = (HelpfulVote.objects
-            .filter(revision__document__locale=locale)
-            .filter(created__gte=date(2011, 1, 1)).extra(
+        qs_kb_votes = HelpfulVote.objects.filter(
+            created__gte=date(2011, 1, 1))
+
+        if locale:
+            qs_kb_votes = qs_kb_votes.filter(
+                revision__document__locale=locale)
+
+        qs_kb_votes = (qs_kb_votes
+            .extra(
                 select={
                     'day': 'extract( day from wiki_helpfulvote.created )',
                     'month': 'extract( month from wiki_helpfulvote.created )',
-                    'year': 'extract( year from wiki_helpfulvote.created )',
-                })
+                    'year': 'extract( year from wiki_helpfulvote.created )',})
             .values('year', 'month', 'day')
             .annotate(count=Count('created')))
 
