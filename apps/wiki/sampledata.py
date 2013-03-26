@@ -38,6 +38,11 @@ def generate_sampledata(options):
     topic(title='Tabs', slug='tabs', save=True)
     topic(title='Websites', slug='websites', save=True)
 
+    # 'hot' topic is created by a migration. Check for it's existence
+    # before creating a new one.
+    if not Topic.objects.filter(slug='hot').exists():
+      topic(title='Hot topics', slug='hot', save=True)
+
     # There are two products in our schema
     try:
         firefox = Product.objects.get(slug='firefox')
