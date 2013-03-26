@@ -222,6 +222,11 @@ Start with this::
 Don't forget to change ``<YOUR_PASSWORD>`` and update ``LESS_BIN``
 based on your setup.
 
+Note the two settings ``TEST_CHARSET`` and ``TEST_COLLATION``. Without
+these, the test suite will use MySQL's (moronic) defaults when
+creating the test database (see below) and lots of tests will
+fail. Hundreds.
+
 Now you can copy and modify any settings from ``settings.py`` into
 ``settings_local.py`` and the value will override the default.
 
@@ -229,15 +234,9 @@ Now you can copy and modify any settings from ``settings.py`` into
 Database
 --------
 
-At a minimum, you will need to define a database connection. See above
-for a sample database configuration.
+You defined a database connection in ``kitsune/settings_local.py``.
 
-Note the two settings ``TEST_CHARSET`` and ``TEST_COLLATION``. Without
-these, the test suite will use MySQL's (moronic) defaults when
-creating the test database (see below) and lots of tests will
-fail. Hundreds.
-
-Create the database and grant permissions to the user, based on your
+Now create the database and grant permissions to the user, based on your
 database settings. For example, using the settings above::
 
     $ mysql -u root -p
