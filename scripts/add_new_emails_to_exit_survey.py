@@ -109,6 +109,9 @@ if __name__ == '__main__':
     enddate = datetime.strptime(options.end, '%Y-%m-%d').date()
     user = options.username
     password = options.password
+
+    print 'Collecting email addresses for %s - %s' % (startdate, enddate)
+
     emails = get_email_addresses(
         startdate, enddate, user, password)
 
