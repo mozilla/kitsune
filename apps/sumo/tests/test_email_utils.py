@@ -1,7 +1,7 @@
-# -*- coding: utf8 -*-
 from mock import patch
 from nose.tools import eq_
 
+from django.conf import settings
 from django.utils.translation import get_language
 from django.utils.functional import lazy
 
@@ -37,6 +37,11 @@ def mock_gettext(f):
 
 
 class SafeTranslationTests(TestCase):
+
+    def setUp(self):
+        # These tests assume English is the fall back language. If it
+        # isn't we are gonna have a bad time.
+        eq_('en-US', settings.WIKI_DEFAULT_LANGUAGE)
 
     @mock_gettext
     def test_mocked_gettext(self):
@@ -83,6 +88,30 @@ class SafeTranslationTests(TestCase):
         eq_(bad_trans('en-US'), 'Hello Mike')
         eq_(bad_trans('fr'), 'Hello Mike')
         eq_(bad_trans('es'), 'Hola Mike')
+
+    @mock_gettext
+    @patch('sumo.email_utils.log')
+    def test_safe_translation_logging(self, mocked_log):
+        """Logging translation errors is really important, so test it."""
+        # Import tower now so it is affected by the mock.
+        from tower import ugettext as _
+
+        # Assert that bad translations cause error logging.
+        @safe_translation
+        def bad_trans(locale):
+            return _('Hello {name}').format(name='Mike')
+
+        # English and Spanish should not log anything. French should.
+        bad_trans('en-US')
+        bad_trans('es')
+        eq_(len(mocked_log.method_calls), 0)
+        bad_trans('fr')
+        eq_(len(mocked_log.method_calls), 1)
+
+        method_name, method_args, method_kwargs = mocked_log.method_calls[0]
+        eq_(method_name, 'error')
+        assert 'Bad translation' in method_args[0]
+        eq_(method_args[1], 'fr')
 
 
 class UseLocaleTests(TestCase):

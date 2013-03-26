@@ -530,6 +530,7 @@ class ForgotUsernameTests(TestCaseBase):
     def test_POST(self, get_current):
         get_current.return_value.domain = 'testserver.com'
         u = user(save=True, email='a@b.com', is_active=True)
+        profile(user=u)  # save=True is forced.
 
         r = self.client.post(reverse('users.forgot_username'),
                              {'email': u.email})

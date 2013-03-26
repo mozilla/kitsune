@@ -293,8 +293,8 @@ class ForgotUsernameForm(forms.Form):
             self.user = User.objects.get(email__iexact=email, is_active=True)
         except User.DoesNotExist:
             raise forms.ValidationError(
-                _(u"That e-mail address doesn't have an associated user"
-                   " account. Are you sure you've registered?"))
+                _(u"That e-mail address doesn't have an associated user "
+                  u"account. Are you sure you've registered?"))
         return email
 
     def save(self, email_template='users/email/forgot_username.ltxt',
@@ -304,10 +304,14 @@ class ForgotUsernameForm(forms.Form):
         current_site = get_current_site(request)
         site_name = current_site.name
         domain = current_site.domain
-        try:
-            locale = user.profile.locale or settings.WIKI_DEFAULT_LANGUAGE
-        except Profile.DoesNotExist:
-            locale = settings.WIKI_DEFAULT_LANGUAGE
+
+        @email_utils.safe_translation
+        def _send_mail(locale, user, context):
+            subject = _("Your username on %s") % site_name
+            message = email_utils.render_email(email_template, context)
+
+            send_mail(subject, message, settings.TIDINGS_FROM_ADDRESS,
+                      [user.email])
 
         c = {
             'email': user.email,
@@ -317,15 +321,12 @@ class ForgotUsernameForm(forms.Form):
             'username': user.username,
             'protocol': use_https and 'https' or 'http'}
 
-        @email_utils.safe_translation
-        def _send_mail(locale):
-            subject = _("Your username on %s") % site_name
-            message = email_utils.render_email(email_template, c)
-
-            send_mail(subject, message, settings.TIDINGS_FROM_ADDRESS,
-                      [user.email])
-
-        _send_mail(locale)
+        # The user is not logged in, the user object comes from the
+        # supplied email address, and is filled in by `clean_email`. If
+        # an invalid email address was given, an exception would have
+        # been raised already.
+        locale = user.profile.locale or settings.WIKI_DEFAULT_LANGUAGE
+        _send_mail(locale, user, c)
 
 
 def _check_password(password):

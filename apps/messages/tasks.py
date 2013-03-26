@@ -22,10 +22,6 @@ def email_private_message(inbox_message_id):
     log.debug('Sending email for user (%s)' % (inbox_message.to,))
 
     user = inbox_message.to
-    if hasattr(user, 'profile'):
-        locale = user.profile.locale
-    else:
-        locale = settings.WIKI_DEFAULT_LANGUAGE
 
     @safe_translation
     def _send_mail(locale):
@@ -45,5 +41,10 @@ def email_private_message(inbox_message_id):
 
         send_mail(subject, msg, settings.TIDINGS_FROM_ADDRESS,
                   [inbox_message.to.email])
+
+    if hasattr(user, 'profile'):
+        locale = user.profile.locale
+    else:
+        locale = settings.WIKI_DEFAULT_LANGUAGE
 
     _send_mail(locale)

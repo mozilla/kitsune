@@ -54,7 +54,7 @@ def uselocale(locale):
 def safe_translation(f):
     """Call `f` which has first argument `locale`. If `f` raises an
     exception indicative of a bad localization of a string, try again in
-    English.
+    `settings.WIKI_DEFAULT_LANGUAGE`.
 
     NB: This means `f` will be called up to two times!
     """
@@ -151,6 +151,5 @@ def emails_with_users_and_watches(subject,
             locale = u.profile.locale
         else:
             locale = default_locale
-
 
         yield _make_mail(locale, u, w)
