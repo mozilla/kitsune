@@ -316,10 +316,7 @@ test suite. You'll need to add an extra grant in MySQL for your
 database user::
 
     $ mysql -u root -p
-    mysql> GRANT ALL ON test_NAME.* TO USER@localhost;
-
-Where ``NAME`` and ``USER`` are the same as the values in your
-database configuration.
+    mysql> GRANT ALL ON test_kitsune.* TO kitsune@localhost IDENTIFIED BY '<YOUR_PASSWORD>';
 
 The test suite will create and use this database, to keep any data in
 your development database safe from tests.
