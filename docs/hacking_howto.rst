@@ -66,15 +66,56 @@ These are required for the minimum installation:
 * libxslt and headers
 * libjpeg and headers
 * zlib and headers
+* LESS
 
 These are optional:
 
 * Redis
-* LESS
 * ElasticSearch: :ref:`search-chapter`
 
 Installation for these is very system dependent. Using a package
 manager, like yum, aptitude, or brew, is encouraged.
+
+
+memcached
+---------
+
+You need to have memcached running. Otherwise CSRF stuff won't work.
+
+If you are running OSX and using homebrew, you can do something like::
+
+    $ brew install memcached
+
+and launch it::
+
+    $ memcached
+
+If you are running RedHat/CentOS/Fedora, once you have installed
+memcached you can start it and configure it to run on startup using::
+
+    $ chkconfig memcached on
+    $ /etc/init.d/memcached start
+    $ service memcached start
+
+.. Note::
+
+   This should probably be somewhere else, but the easy way to flush
+   your cache is something like this::
+
+       echo "flush_all" | nc localhost 11211
+
+   Assuming you have memcache configured to listen to 11211.
+
+
+LESS
+----
+
+To install LESS you will first need to `install Node.js and NPM
+<https://github.com/joyent/node/wiki/Installing-Node.js-via-package-manager>`_.
+
+Now install LESS using::
+
+    $ npm install less
 
 
 Getting the Source
@@ -126,11 +167,14 @@ See the :ref:`vendor library <vendor-chapter>` documentation for more
 information on getting the vendor lib and keeping it up to date.
 
 
-Configuration
-=============
+Configuration and Setup
+=======================
 
-Start by creating a file named ``settings_local.py`` in the
-``kitsune`` directory. Start with this::
+settings_local.py
+-----------------
+
+Create a file named ``settings_local.py`` in the ``kitsune`` directory.
+Start with this::
 
     from settings import *
 
@@ -175,69 +219,11 @@ Start by creating a file named ``settings_local.py`` in the
     LESS_PREPROCESS = True
     LESS_BIN = '/path/to/kitsune/node_modules/less/bin/lessc'
 
-Don't forget to change ``<YOUR_PASSWORD>``!
+Don't forget to change ``<YOUR_PASSWORD>`` and update ``LESS_BIN``
+based on your setup.
 
 Now you can copy and modify any settings from ``settings.py`` into
 ``settings_local.py`` and the value will override the default.
-
-
-.. _hacking-howto-memcached:
-
-memcached
----------
-
-You need to have memcached running. Otherwise csrf stuff won't work.
-
-If you are running OSX and using homebrew, you can do something like::
-
-    $ brew install memcached
-
-and launch it::
-
-    $ memcached
-
-If you are running RedHat/CentOS/Fedora, once you have installed
-memcached you can start it and configure it to run on startup using::
-
-    $ chkconfig memcached on
-    $ /etc/init.d/memcached start
-    $ service memcached start
-
-.. Note::
-
-   This should probably be somewhere else, but the easy way to flush
-   your cache is something like this::
-
-       echo "flush_all" | nc localhost 11211
-
-   Assuming you have memcache configured to listen to 11211.
-
-
-LESS
-----
-
-To install LESS you will first need to `install Node.js and NPM
-<https://github.com/joyent/node/wiki/Installing-Node.js-via-package-manager>`_.
-
-Now install LESS using::
-
-    $ npm install less
-
-Ensure that `LESS_BIN` was configured correctly in your local
-settings.
-
-.. Note::
-
-   If you see empty CSS files when you are running the
-   dev server, you have to remove all empty files having a
-   ``.less.css`` since they are empty and should be regenerated.
-
-   To do this, run the following command on the top directory
-   of your Kitsune clone::
-
-       $ rm **/*.less.css
-
-   and *hard-refresh* your pages on the browser via *Ctrl + Shift + R*.
 
 
 Database
@@ -306,6 +292,20 @@ To start the dev server, run ``./manage.py runserver``, then open up
 
 If everything's working, you should see a somewhat empty version of
 the SUMO home page!
+
+.. Note::
+
+   If you see an unstyled site and empty CSS files, you have to remove
+   all empty files having a ``.less.css`` since they are empty and
+   should be regenerated.
+
+   To do this, run the following command on the top directory
+   of your Kitsune clone::
+
+       $ rm **/*.less.css
+
+  Verify the ``LESS_BIN`` setting in settings_local.py.
+  Then *hard-refresh* your pages on the browser via *Ctrl + Shift + R*.
 
 
 Setting it up
