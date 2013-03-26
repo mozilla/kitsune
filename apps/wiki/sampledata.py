@@ -37,7 +37,6 @@ def generate_sampledata(options):
     topic(title='Cookies', slug='cookies', save=True)
     topic(title='Tabs', slug='tabs', save=True)
     topic(title='Websites', slug='websites', save=True)
-    topic(title='Hot topics', slug='hot', save=True)
 
     # There are two products in our schema
     try:
