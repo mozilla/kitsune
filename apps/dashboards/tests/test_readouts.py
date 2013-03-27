@@ -44,9 +44,6 @@ class ReadoutTestCase(TestCase):
 class OverviewTests(TestCase):
     """Tests for Overview readout"""
 
-    def setUp(self):
-        super(OverviewTests, self).setUp()
-
     def test_counting_unready_templates(self):
         """Templates without a ready-for-l10n rev shouldn't count in total."""
         # Make a template with an approved but not-ready-for-l10n rev:
