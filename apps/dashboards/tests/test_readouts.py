@@ -47,16 +47,6 @@ class OverviewTests(TestCase):
     def setUp(self):
         super(OverviewTests, self).setUp()
 
-        # A redirect shouldn't affect any of the tests.
-        r = revision(document=document(title='A redirect',
-                                       is_localizable=True,
-                                       is_template=True,
-                                       save=True),
-                     is_ready_for_localization=True,
-                     is_approved=True,
-                     content='REDIRECT [[An article]]',
-                     save=True)
-
     def test_counting_unready_templates(self):
         """Templates without a ready-for-l10n rev shouldn't count in total."""
         # Make a template with an approved but not-ready-for-l10n rev:
@@ -233,6 +223,25 @@ class OverviewTests(TestCase):
 
         eq_(1, overview_rows('de', product=p)['all']['numerator'])
         eq_(1, overview_rows('de', product=p)['all']['denominator'])
+
+    def test_redirects_are_ignored(self):
+        """Verify that redirects aren't counted in the overview."""
+        t = translated_revision(is_approved=True, save=True)
+
+        eq_(1, overview_rows('de')['all']['numerator'])
+
+        # A redirect shouldn't affect any of the tests.
+        revision(document=document(title='A redirect',
+                                   is_localizable=True,
+                                   is_template=True,
+                                   save=True),
+                 is_ready_for_localization=True,
+                 is_approved=True,
+                 content='REDIRECT [[An article]]',
+                 save=True)
+
+        eq_(1, overview_rows('de')['all']['numerator'])
+
 
 
 class UnreviewedChangesTests(ReadoutTestCase):
