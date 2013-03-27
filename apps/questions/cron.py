@@ -10,8 +10,7 @@ import cronjobs
 
 from questions.models import Question, QuestionVote
 from questions.tasks import update_question_vote_chunk
-from search.es_utils import (ESTimeoutError, ESMaxRetryError, ESException,
-                             WRITE_INDEX, get_documents, get_indexing_es)
+from search.es_utils import ES_EXCEPTIONS, WRITE_INDEX, get_documents, get_es
 from search.tasks import index_task
 from sumo.utils import chunked
 
@@ -89,7 +88,7 @@ def auto_lock_old_questions():
 
         if settings.ES_LIVE_INDEXING:
             try:
-                es = get_indexing_es()
+                es = get_es()
 
                 # So... the first time this runs, it'll handle 160K
                 # questions or so which stresses everything. Thus we
@@ -115,7 +114,7 @@ def auto_lock_old_questions():
                     es.flush_bulk(forced=True)
                     es.refresh(WRITE_INDEX, timesleep=0)
 
-            except (ESTimeoutError, ESMaxRetryError, ESException):
+            except ES_EXCEPTIONS:
                 # Something happened with ES, so let's push index updating
                 # into an index_task which retries when it fails because
                 # of ES issues.

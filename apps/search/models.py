@@ -1,5 +1,4 @@
 import logging
-import pyes
 from threading import local
 
 from django.conf import settings
@@ -9,6 +8,7 @@ from django.db.models.signals import pre_delete, post_save, m2m_changed
 from django.dispatch import receiver
 
 from elasticutils import MLT
+from pyelasticsearch.exceptions import ElasticHttpNotFoundError
 
 from search import es_utils
 from search.tasks import index_task, unindex_task
@@ -82,6 +82,9 @@ class SearchMixin(object):
 
         For examples, see the codebase.
 
+        :raises UnindexMeBro: if the document should be removed
+            from the index
+
         """
         raise NotImplementedError
 
@@ -111,6 +114,49 @@ class SearchMixin(object):
         _local_tasks().add((unindex_task.delay, (self.__class__, (self.id,))))
 
     @classmethod
+    def bulk_index(cls, documents, id_field='id', es=None):
+        """Adds or updates a batch of documents.
+
+        :arg documents: List of Python dicts representing individual
+            documents to be added to the index
+
+            .. Note::
+
+               This must be serializable into JSON.
+
+        :arg id_field: The name of the field to use as the document
+            id. This defaults to 'id'.
+
+        :arg es: The `ElasticSearch` to use. If you don't specify an
+            `ElasticSearch`, it'll use `cls.get_es()`.
+
+        .. Note::
+
+           If you need the documents available for searches
+           immediately, make sure to refresh the index by calling
+           ``refresh_index()``.
+
+
+        FIXME: This is copied from Indexable.
+
+        """
+        if es is None:
+            es = es_utils.get_es()
+
+        es.bulk_index(cls.get_index(),
+                      cls.get_mapping_type_name(),
+                      documents,
+                      id_field)
+
+    @classmethod
+    def get_index(cls):
+        return es_utils.WRITE_INDEX
+
+    @classmethod
+    def get_mapping_type_name(cls):
+        return es_utils.SUMO_DOCTYPE
+
+    @classmethod
     def get_query_fields(cls):
         return []
 
@@ -128,22 +174,20 @@ class SearchMixin(object):
         return '%s:%s' % (cls.get_model_name(), id_)
 
     @classmethod
-    def index(cls, document, bulk=False, force_insert=False, es=None):
+    def index(cls, document, id_=None, force_insert=False, es=None):
         """Indexes a single document"""
         if not settings.ES_LIVE_INDEXING:
             return
 
         if es is None:
-            # Use es_utils.get_indexing_es() because it uses
-            # ES_INDEXING_TIMEOUT.
-            es = es_utils.get_indexing_es()
+            es = es_utils.get_es()
 
-        es.index(document,
-                 index=es_utils.WRITE_INDEX,
-                 doc_type=es_utils.SUMO_DOCTYPE,
-                 id=cls.get_document_id(document['id']),
-                 bulk=bulk,
-                 force_insert=force_insert)
+        es.index(
+            cls.get_index(),
+            cls.get_mapping_type_name(),
+            document,
+            id=document['document_id'],
+            force_insert=force_insert)
 
     @classmethod
     def unindex(cls, id_, es=None):
@@ -152,15 +196,13 @@ class SearchMixin(object):
             return
 
         if es is None:
-            # Use es_utils.get_indexing_es() because it uses
-            # ES_INDEXING_TIMEOUT.
-            es = es_utils.get_indexing_es()
+            es = es_utils.get_es()
 
         try:
             es.delete(es_utils.WRITE_INDEX, es_utils.SUMO_DOCTYPE,
                       cls.get_document_id(id_))
 
-        except pyes.exceptions.NotFoundException:
+        except ElasticHttpNotFoundError:
             # Ignore the case where we try to delete something that's
             # not there.
             pass
@@ -174,7 +216,7 @@ class SearchMixin(object):
     def morelikethis(cls, id_, s, fields):
         """morelikethis query."""
         return list(MLT(
-            id_, s=s, fields=fields, min_term_freq=1, min_doc_freq=1))
+            id_, s=s, mlt_fields=fields, min_term_freq=1, min_doc_freq=1))
 
 
 _identity = lambda s: s

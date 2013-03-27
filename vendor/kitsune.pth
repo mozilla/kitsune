@@ -82,3 +82,5 @@ src/raven-python
 packages/google-api-python-client
 packages/python-gflags
 src/django-statsd
+src/pyelasticsearch
+src/requests

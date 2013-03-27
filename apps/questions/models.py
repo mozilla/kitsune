@@ -310,6 +310,7 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
     def get_mapping(cls):
         return {
             'id': {'type': 'long'},
+            'document_id': {'type': 'string', 'index': 'not_analyzed'},
             'model': {'type': 'string', 'index': 'not_analyzed'},
             'url': {'type': 'string', 'index': 'not_analyzed'},
             'indexed_on': {'type': 'integer'},
@@ -344,18 +345,27 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
             }
 
     @classmethod
-    def extract_document(cls, obj_id):
+    def extract_document(cls, obj_id, obj=None):
         """Extracts indexable attributes from a Question and its answers."""
+        fields = ['id', 'title', 'content', 'num_answers', 'solution_id',
+                  'is_locked', 'created', 'updated', 'num_votes_past_week',
+                  'locale']
+        composed_fields = ['creator__username']
+        all_fields = fields + composed_fields
 
-        # Note: Need to keep this in sync with
-        # tasks.update_question_vote_chunk.
-        obj = cls.uncached.values(
-            'id', 'title', 'content', 'num_answers', 'solution_id',
-            'is_locked', 'created', 'updated', 'num_votes_past_week',
-            'creator__username', 'locale').get(pk=obj_id)
+        if obj is None:
+            # Note: Need to keep this in sync with
+            # tasks.update_question_vote_chunk.
+            obj = cls.uncached.values(*all_fields).get(pk=obj_id)
+        else:
+            fixed_obj = dict([(field, getattr(obj, field))
+                              for field in fields])
+            fixed_obj['creator__username'] = obj.creator.username
+            obj = fixed_obj
 
         d = {}
         d['id'] = obj['id']
+        d['document_id'] = cls.get_document_id(obj['id'])
         d['model'] = cls.get_model_name()
 
         # We do this because get_absolute_url is an instance method

@@ -10,7 +10,7 @@ from statsd import statsd
 from activity.models import Action
 from questions import ANSWERS_PER_PAGE
 from questions.karma_actions import AnswerAction, FirstAnswerAction
-from search.es_utils import ESTimeoutError, ESMaxRetryError, ESException
+from search.es_utils import ES_EXCEPTIONS
 from search.tasks import index_task
 
 
@@ -90,7 +90,7 @@ def update_question_vote_chunk(data):
                 doc[u'question_num_votes_past_week'] = num
 
                 Question.index(doc)
-        except (ESTimeoutError, ESMaxRetryError, ESException):
+        except ES_EXCEPTIONS:
             # Something happened with ES, so let's push index updating
             # into an index_task which retries when it fails because
             # of ES issues.

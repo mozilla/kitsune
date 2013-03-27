@@ -11,8 +11,7 @@ from django.shortcuts import render
 
 from search import es_utils
 from search.es_utils import (get_doctype_stats, get_indexes, delete_index,
-                             ESTimeoutError, ESMaxRetryError,
-                             ESIndexMissingException, get_indexable,
+                             ES_EXCEPTIONS, get_indexable,
                              SUMO_DOCTYPE, merge_mappings, CHUNK_SIZE,
                              recreate_index)
 from search.models import Record, get_search_models
@@ -164,44 +163,30 @@ def search(request):
     if delete_requested:
         try:
             return handle_delete(request)
-        except DeleteError, e:
+        except DeleteError as e:
             error_messages.append(u'Error: %s' % e.message)
-        except ESMaxRetryError:
-            error_messages.append('Error: Elastic Search is not set up on '
-                                  'this machine or is not responding. '
-                                  '(MaxRetryError)')
-        except ESIndexMissingException:
-            error_messages.append('Error: Index is missing. Press the reindex '
-                                  'button below. (IndexMissingException)')
-        except ESTimeoutError:
-            error_messages.append('Error: Connection to Elastic Search timed '
-                                  'out. (TimeoutError)')
+        except ES_EXCEPTIONS as e:
+            error_messages.append('Error: {0}'.format(repr(e)))
 
     stats = None
     write_stats = None
     indexes = []
+
     try:
-        # This gets index stats, but also tells us whether ES is in
-        # a bad state.
-        try:
-            stats = get_doctype_stats(es_utils.READ_INDEX)
-        except ESIndexMissingException:
-            stats = None
-        try:
-            write_stats = get_doctype_stats(es_utils.WRITE_INDEX)
-        except ESIndexMissingException:
-            write_stats = None
+        stats = get_doctype_stats(es_utils.READ_INDEX)
+    except ES_EXCEPTIONS:
+        stats = None
+
+    try:
+        write_stats = get_doctype_stats(es_utils.WRITE_INDEX)
+    except ES_EXCEPTIONS:
+        write_stats = None
+
+    try:
         indexes = get_indexes()
         indexes.sort(key=lambda m: m[0])
-    except ESMaxRetryError:
-        error_messages.append('Error: Elastic Search is not set up on this '
-                              'machine or is not responding. (MaxRetryError)')
-    except ESIndexMissingException:
-        error_messages.append('Error: Index is missing. Press the reindex '
-                              'button below. (IndexMissingException)')
-    except ESTimeoutError:
-        error_messages.append('Error: Connection to Elastic Search timed out. '
-                              '(TimeoutError)')
+    except ES_EXCEPTIONS as e:
+        error_messages.append('Error: {0}'.format(repr(e)))
 
     try:
         client = redis_client('default')

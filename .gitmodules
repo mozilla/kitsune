@@ -133,3 +133,9 @@
 [submodule "vendor/src/django-statsd"]
 	path = vendor/src/django-statsd
 	url = git://github.com/andymckay/django-statsd.git
+[submodule "vendor/src/pyelasticsearch"]
+	path = vendor/src/pyelasticsearch
+	url = git://github.com/rhec/pyelasticsearch.git
+[submodule "vendor/src/requests"]
+	path = vendor/src/requests
+	url = git://github.com/kennethreitz/requests.git

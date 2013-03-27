@@ -25,6 +25,8 @@ import jingo
 import waffle
 from mobility.decorators import mobile_template
 from ratelimit.decorators import ratelimit
+from pyelasticsearch.exceptions import (
+    Timeout, ConnectionError, ElasticHttpError)
 from session_csrf import anonymous_csrf
 from statsd import statsd
 from taggit.models import Tag
@@ -49,8 +51,7 @@ from questions.marketplace import (MARKETPLACE_CATEGORIES, submit_ticket,
 from questions.models import Question, Answer, QuestionVote, AnswerVote
 from questions.question_config import products
 from search.utils import locale_or_default, clean_excerpt
-from search.es_utils import (ESTimeoutError, ESMaxRetryError, ESException,
-                             Sphilastic, F)
+from search.es_utils import ES_EXCEPTIONS, Sphilastic, F
 from sumo.helpers import urlparams
 from sumo.urlresolvers import reverse
 from sumo.utils import paginate, simple_paginate, build_paged_url, user_or_ip
@@ -1186,7 +1187,7 @@ def stats_topic_data(bucket_days, start, end):
     search = search.facet_raw(**facets).values_dict()
     try:
         histograms_data = search.facet_counts()
-    except (ESTimeoutError, ESMaxRetryError, ESException):
+    except ES_EXCEPTIONS:
         return []
 
     # The data looks like this right now:
@@ -1378,13 +1379,8 @@ def _search_suggestions(request, text, locale, product_slugs):
             except Question.DoesNotExist:
                 pass
 
-    except (ESTimeoutError, ESMaxRetryError, ESException) as exc:
-        if isinstance(exc, ESTimeoutError):
-            statsd.incr('questions.suggestions.timeouterror')
-        elif isinstance(exc, ESMaxRetryError):
-            statsd.incr('questions.suggestions.maxretryerror')
-        elif isinstance(exc, ESException):
-            statsd.incr('questions.suggestions.elasticsearchexception')
+    except (Timeout, ConnectionError, ElasticHttpError) as exc:
+        statsd.incr('questions.suggestions.eserror')
         log.debug(exc)
 
     return results

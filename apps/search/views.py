@@ -25,8 +25,7 @@ from search.utils import locale_or_default, clean_excerpt, ComposedList
 from questions.models import Question
 import search as constants
 from search.forms import SearchForm
-from search.es_utils import (ESTimeoutError, ESMaxRetryError, ESException,
-                             Sphilastic, F)
+from search.es_utils import ES_EXCEPTIONS, Sphilastic, F
 from sumo.utils import paginate, smart_int
 from wiki.facets import documents_for
 from wiki.models import Document
@@ -428,7 +427,7 @@ def search(request, template=None):
                     doc._explanation))
             results.append(result)
 
-    except (ESTimeoutError, ESMaxRetryError, ESException), exc:
+    except ES_EXCEPTIONS as exc:
         # Handle timeout and all those other transient errors with a
         # "Search Unavailable" rather than a Django error page.
         if is_json:
@@ -436,12 +435,10 @@ def search(request, template=None):
                                              _('Search Unavailable')}),
                                 mimetype=mimetype, status=503)
 
-        if isinstance(exc, ESTimeoutError):
-            statsd.incr('search.esunified.timeouterror')
-        elif isinstance(exc, ESMaxRetryError):
-            statsd.incr('search.esunified.maxretryerror')
-        elif isinstance(exc, ESException):
-            statsd.incr('search.esunified.elasticsearchexception')
+        # Cheating here: Convert from 'Timeout()' to 'timeout' so
+        # we have less code, but still have good stats.
+        exc_bucket = repr(exc).lower().strip('()')
+        statsd.incr('search.esunified.{0}'.format(exc_bucket))
 
         import logging
         logging.exception(exc)

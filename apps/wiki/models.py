@@ -12,12 +12,15 @@ from django.db import models
 from django.db.models import Q
 from django.http import Http404
 
+from pyelasticsearch.exceptions import (
+    Timeout, ConnectionError, ElasticHttpError)
 from pyquery import PyQuery
 from tidings.models import NotificationsMixin
 from tower import ugettext_lazy as _lazy, ugettext as _
 
+
 from products.models import Product
-from search.es_utils import ESTimeoutError, ESMaxRetryError, ESException
+from search.es_utils import UnindexMeBro
 from search.models import (SearchMixin, register_for_indexing,
                            register_for_unified_search)
 from sumo import ProgrammingError
@@ -579,7 +582,7 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
                     'document_summary',
                     'document_content'])
             cache.add(key, documents)
-        except (ESTimeoutError, ESMaxRetryError, ESException) as e:
+        except (Timeout, ConnectionError, ElasticHttpError) as e:
             log.error('ES error during MLT for {doc}: {err}'
                 .format(doc=repr(self), err=str(e)))
             documents = []
@@ -597,6 +600,7 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
     def get_mapping(cls):
         return {
             'id': {'type': 'long'},
+            'document_id': {'type': 'string', 'index': 'not_analyzed'},
             'model': {'type': 'string', 'index': 'not_analyzed'},
             'url': {'type': 'string', 'index': 'not_analyzed'},
             'indexed_on': {'type': 'integer'},
@@ -620,12 +624,21 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
             'document_recent_helpful_votes': {'type': 'integer'}}
 
     @classmethod
-    def extract_document(cls, obj_id):
-        obj = cls.uncached.select_related(
-            'current_revision', 'parent').get(pk=obj_id)
+    def extract_document(cls, obj_id, obj=None):
+        if obj is None:
+            obj = cls.uncached.select_related(
+                'current_revision', 'parent').get(pk=obj_id)
+
+        if obj.html.startswith(REDIRECT_HTML):
+            # It's possible this document is indexed and was turned
+            # into a redirect, so now we want to explicitly unindex
+            # it. The way we do that is by throwing an exception
+            # which gets handled by the indexing machinery.
+            raise UnindexMeBro()
 
         d = {}
         d['id'] = obj.id
+        d['document_id'] = cls.get_document_id(obj.id)
         d['model'] = cls.get_model_name()
         d['url'] = obj.get_absolute_url()
         d['indexed_on'] = int(time.time())

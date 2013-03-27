@@ -6,7 +6,7 @@ from celery.task import task
 from multidb.pinning import pin_this_thread, unpin_this_thread
 from statsd import statsd
 
-from search.es_utils import index_chunk
+from search.es_utils import index_chunk, UnindexMeBro
 from sumo.redis_utils import redis_client, RedisError
 
 
@@ -45,6 +45,7 @@ def index_chunk_task(write_index, batch_id, chunk):
         # Pin to master db to avoid replication lag issues and stale
         # data.
         pin_this_thread()
+
         index_chunk(cls, id_list, reraise=True)
 
     except Exception:
@@ -78,15 +79,23 @@ MAX_RETRIES = len(RETRY_TIMES)
 
 
 @task
-def index_task(cls, ids, **kw):
+def index_task(cls, id_list, **kw):
     """Index documents specified by cls and ids"""
     statsd.incr('search.tasks.index_task.%s' % cls.get_model_name())
     try:
         # Pin to master db to avoid replication lag issues and stale
         # data.
         pin_this_thread()
-        for id in cls.uncached.filter(id__in=ids).values_list('id', flat=True):
-            cls.index(cls.extract_document(id))
+
+        qs = cls.uncached.filter(id__in=id_list).values_list('id', flat=True)
+        for id_ in qs:
+            try:
+                cls.index(cls.extract_document(id_))
+            except UnindexMeBro:
+                # If extract_document throws this, then we need to
+                # remove this item from the index.
+                cls.unindex(id_)
+
     except Exception as exc:
         retries = index_task.request.retries
         if retries >= MAX_RETRIES:
@@ -103,15 +112,15 @@ def index_task(cls, ids, **kw):
 
 
 @task
-def unindex_task(cls, ids, **kw):
+def unindex_task(cls, id_list, **kw):
     """Unindex documents specified by cls and ids"""
     statsd.incr('search.tasks.unindex_task.%s' % cls.get_model_name())
     try:
         # Pin to master db to avoid replication lag issues and stale
         # data.
         pin_this_thread()
-        for id in ids:
-            cls.unindex(id)
+        for id_ in id_list:
+            cls.unindex(id_)
     except Exception as exc:
         retries = unindex_task.request.retries
         if retries >= MAX_RETRIES:
