@@ -4,10 +4,11 @@ from django.conf import settings
 from django.core.cache import cache
 from django.db.models import Count
 
+from pyelasticsearch.exceptions import (
+    Timeout, ConnectionError, ElasticHttpError)
 from statsd import statsd
 
 from products.models import Product
-from search.es_utils import ESMaxRetryError, ESTimeoutError, ESException
 from topics.models import Topic
 from wiki.models import Document
 
@@ -109,7 +110,7 @@ def _documents_for(locale, topics=None, products=None):
         cache.add(
             _documents_for_cache_key(locale, topics, products), documents)
         statsd.incr('wiki.facets.documents_for.es')
-    except (ESMaxRetryError, ESTimeoutError, ESException):
+    except (Timeout, ConnectionError, ElasticHttpError):
         # Finally, hit the database (through cache machine)
         # NOTE: The documents will be the same ones returned by ES
         # but they won't be in the correct sort (by votes in the last

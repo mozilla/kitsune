@@ -16,7 +16,6 @@ from django.views.decorators.clickjacking import xframe_options_exempt
 from django.views.decorators.http import require_GET
 
 import django_qunit.views
-import pyes
 from celery.messaging import establish_connection
 from mobility.decorators import mobile_template
 from PIL import Image
@@ -228,13 +227,9 @@ def monitor(request):
             (INFO, ('Successfully connected to ElasticSearch and index '
                     'exists.')))
 
-    except pyes.urllib3.MaxRetryError as exc:
+    except es_utils.ES_EXCEPTIONS as exc:
         es_results.append(
-            (ERROR, 'Cannot connect to ElasticSearch: %s' % str(exc)))
-
-    except pyes.exceptions.IndexMissingException:
-        es_results.append(
-            (ERROR, 'Index "%s" missing.' % es_utils.READ_INDEX))
+            (ERROR, 'ElasticSearch problem: %s' % str(exc)))
 
     except Exception as exc:
         es_results.append(

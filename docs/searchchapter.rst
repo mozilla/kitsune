@@ -29,12 +29,6 @@ http://www.elasticsearch.org/guide/reference/setup/installation.html
 
 We're currently using 0.20.5 in production. Most of us use that version.
 
-.. Note::
-
-   **Don't** install 0.19.9 or 0.19.10. They have bugs that don't work
-   in Kitsune.
-
-
 The directory you install Elastic Search in will hereafter be referred
 to as ``ELASTICDIR``.
 
@@ -45,25 +39,24 @@ Elastic Search uses several settings in ``settings.py`` that you
 need to override in ``settings_local.py``. Here's an example::
 
     # Connection information for Elastic
-    ES_HOSTS = ['127.0.0.1:9200']
+    ES_URLS = ['http://127.0.0.1:9200']
     ES_INDEXES = {'default': 'sumo_dev'}
     ES_WRITE_INDEXES = ES_INDEXES
 
 
 These settings explained:
 
-``ES_HOSTS``
+``ES_URLS``
 
-    No default.
+    Defaults to ``['http://127.0.0.1:9200']``.
 
-    Points to the ip address and port for your Elastic Search
-    instance.
+    Points to the url for your Elastic Search instance.
 
     .. Warning::
 
-       The host setting must match the host and port in
-       ``ELASTICDIR/config/elasticsearch.yml``. So if you change it
-       in one place, you must also change it in the other.
+       The url must match the host and port in
+       ``ELASTICDIR/config/elasticsearch.yml``. So if you change it in
+       one place, you must also change it in the other.
 
 
 ``ES_INDEXES``
@@ -147,15 +140,6 @@ Other things you can change:
     Elastic specific tests so we're not spending a ton of time
     indexing things we're not using.
 
-``ES_FLUSH_BULK_EVERY``
-
-    Defaults to 100.
-
-    We do bulk indexing meaning we queue up a bunch and then push them
-    through all at the same time. This requires memory to queue them,
-    so if you've got low memory, dropping this value to something
-    lower (but still greater than 1) could help.
-
 ``ES_TIMEOUT``
 
     Defaults to 5.
@@ -164,34 +148,6 @@ Other things you can change:
 
     If you're having problems with ES being slow, raising this number
     can be helpful.
-
-``ES_INDEXING_TIMEOUT``
-
-    Defaults to 30.
-
-    This affects all index-related operations including creating
-    indexes, deleting indexes, creating mappings, indexing documents
-    and calling flush_bulk.
-
-    If you're having problems with indexing operations timing out,
-    raising this number can sometimes help. Try 60.
-
-``ES_DUMP_CURL``
-
-    This defaults to None.
-
-    This is super handy for debugging our Elastic Search code and
-    otherwise not useful for anything else. See the `elasticutils
-    documentation
-    <http://elasticutils.readthedocs.org/en/latest/debugging.html#es-dump-curl>`_.
-
-``ES_TEST_SLEEP_DURATION``
-
-    This defaults to 0.
-
-    This setting is used to determine how long to sleep for after creating
-    indexes in the tests. You should set this to 1 or higher if you are
-    consistently get "No active shards" errors while running the tests.
 
 
 Using Elastic Search
@@ -287,20 +243,12 @@ On the command line, you can do::
     $ ./manage.py esdelete <index-name>
 
 
-Tools
------
-
-One tool that's helpful for Elastic Search work is `elasticsearch-head
-<https://github.com/mobz/elasticsearch-head>`_. It's like the
-phpmyadmin for Elastic Search.
-
-
 Implementation details
 ----------------------
 
-Kitsune uses `elasticutils
-<https://github.com/davedash/elasticutils>`_ and `pyes
-<https://github.com/aparo/pyes>`_.
+Kitsune uses `elasticutils <https://github.com/mozilla/elasticutils>`_
+and `pyelasticsearch
+<http://pyelasticsearch.readthedocs.org/en/latest/>`_.
 
 Most of our code is in the ``search`` app in ``apps/search/``.
 

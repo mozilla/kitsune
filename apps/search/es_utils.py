@@ -6,16 +6,9 @@ import time
 from django.conf import settings
 from django.db import reset_queries
 
-import pyes
-from elasticutils.contrib.django import S, F  # noqa
-
+from elasticutils.contrib.django import S, F, get_es, ES_EXCEPTIONS  # noqa
+from pyelasticsearch.exceptions import ElasticHttpNotFoundError
 from search.utils import chunked
-
-
-ESTimeoutError = pyes.urllib3.TimeoutError
-ESMaxRetryError = pyes.urllib3.MaxRetryError
-ESIndexMissingException = pyes.exceptions.IndexMissingException
-ESException = pyes.exceptions.ElasticSearchException
 
 
 # Calculate index names.
@@ -38,6 +31,11 @@ CHUNK_SIZE = 20000
 
 
 log = logging.getLogger('k.search.es')
+
+
+class UnindexMeBro(Exception):
+    """Raise in extract_document when doc should be removed."""
+    pass
 
 
 class Sphilastic(S):
@@ -93,12 +91,16 @@ def merge_mappings(mappings):
 
 
 def get_indexes(all_indexes=False):
-    es = get_indexing_es()
-    if all_indexes:
-        indexes = [(k, v['num_docs']) for k, v in es.get_indices().items()]
-    else:
-        indexes = [(k, v['num_docs']) for k, v in es.get_indices().items()
-                   if k.startswith(settings.ES_INDEX_PREFIX)]
+    es = get_es()
+    status = es.status()
+    indexes = status['indices']
+
+    if not all_indexes:
+        indexes = dict((k, v) for k, v in indexes.items()
+                       if k.startswith(settings.ES_INDEX_PREFIX))
+
+    indexes = [(k, v['docs']['num_docs']) for k, v in indexes.items()]
+
     return indexes
 
 
@@ -110,47 +112,31 @@ def get_doctype_stats(index):
     >>> get_doctype_stats()
     {'questions_question': 14216, 'forums_thread': 419, 'wiki_document': 759}
 
-    :throws pyes.urllib3.MaxRetryError: if it can't connect to elasticsearch
-    :throws pyes.exceptions.IndexMissingException: if the index doesn't exist
+    :throws pyelasticsearch.exceptions.Timeout: if the request
+        times out
+    :throws pyelasticsearch.exceptions.ConnectionError: if there's a
+        connection error
+    :throws pyelasticsearch.exceptions.ElasticHttpNotFound: if the
+        index doesn't exist
 
     """
     from search.models import get_search_models
 
-    conn = get_indexing_es()
+    s = Sphilastic(object)
 
     stats = {}
     for cls in get_search_models():
-        query = pyes.query.TermQuery('model', cls.get_model_name())
-        results = conn.count(query=query, indexes=[index],
-                             doc_types=[SUMO_DOCTYPE])
-        stats[cls.get_model_name()] = results[u'count']
+        model_name = cls.get_model_name()
+        stats[model_name] = s.filter(model=model_name).count()
 
     return stats
 
 
-def get_indexing_es(**kwargs):
-    """Returns a fresh ES instance for indexing
-
-    Defaults for these arguments come from settings. Specifying them
-    in the function call will override the default.
-
-    :arg server: settings.ES_HOSTS
-    :arg timeout: settings.ES_INDEXING_TIMEOUT
-    :arg bulk_size: settings.ES_FLUSH_BULK_EVERY
-
-    """
-    defaults = {
-        'server': settings.ES_HOSTS,
-        'timeout': settings.ES_INDEXING_TIMEOUT,
-        'bulk_size': settings.ES_FLUSH_BULK_EVERY
-        }
-    defaults.update(kwargs)
-
-    return pyes.ES(**defaults)
-
-
 def delete_index(index):
-    get_indexing_es().delete_index_if_exists(index)
+    try:
+        get_es().delete_index(index)
+    except ElasticHttpNotFoundError:
+        pass
 
 
 def format_time(time_to_go):
@@ -173,7 +159,7 @@ def get_documents(cls, ids):
 def recreate_index(es=None):
     """Deletes index if it's there and creates a new one"""
     if es is None:
-        es = get_indexing_es()
+        es = get_es()
 
     from search.models import get_search_models
 
@@ -225,43 +211,59 @@ def get_indexable(percent=100, search_models=None):
     return to_index
 
 
-def index_chunk(cls, chunk, reraise=False, es=None):
-    if es is None:
-        es = get_indexing_es()
+def index_chunk(cls, id_list, reraise=False):
+    """Index a chunk of documents.
 
-    try:
-        for id_ in chunk:
+    :arg cls: The MappingType class.
+    :arg id_list: Iterable of ids of that MappingType to index.
+    :arg reraise: False if you want errors to be swallowed and True
+        if you want errors to be thrown.
+
+    """
+    # Note: This bulk indexes in batches of 80. I didn't arrive at
+    # this number through a proper scientific method. It's possible
+    # there's a better number. It takes a while to fiddle with,
+    # though. Probably best to expose the number as an environment
+    # variable, then run a script that takes timings for
+    # --criticalmass, runs overnight and returns a more "optimal"
+    # number.
+    for ids in chunked(id_list, 80):
+        documents = []
+        for id_ in ids:
             try:
-                cls.index(cls.extract_document(id_), bulk=True, es=es)
+                documents.append(cls.extract_document(id_))
+
+            except UnindexMeBro:
+                # extract_document throws this in cases where we need
+                # to remove the item from the index.
+                cls.unindex(id_)
+
             except Exception:
-                log.exception('Unable to extract/index document (id: %d)', id_)
+                log.exception('Unable to extract/index document (id: %d)',
+                              id_)
                 if reraise:
                     raise
 
-    finally:
-        # Try to do these things, but if we fail, it's probably the case
-        # that many things are broken, so just move on.
-        try:
-            es.flush_bulk(forced=True)
-        except Exception:
-            log.exception('Unable to flush')
+        if documents:
+            cls.bulk_index(documents, id_field='document_id')
 
 
-def es_reindex_cmd(percent=100, delete=False, models=None, criticalmass=False,
-                   log=log):
+def es_reindex_cmd(percent=100, delete=False, models=None,
+                   criticalmass=False, log=log):
     """Rebuild ElasticSearch indexes
 
     :arg percent: 1 to 100--the percentage of the db to index
     :arg delete: whether or not to wipe the index before reindexing
     :arg models: list of search model names to index
-    :arg criticalmass: whether or not to index just a critical mass of things
+    :arg criticalmass: whether or not to index just a critical mass of
+        things
     :arg log: the logger to use
     """
-    es = get_indexing_es()
+    es = get_es()
 
     try:
         get_doctype_stats(WRITE_INDEX)
-    except ESIndexMissingException:
+    except ES_EXCEPTIONS:
         if not delete:
             log.error('The index does not exist. You must specify --delete.')
             return
@@ -277,25 +279,24 @@ def es_reindex_cmd(percent=100, delete=False, models=None, criticalmass=False,
         # indexable here.
 
         # Get only questions and wiki document stuff.
-        indexable = get_indexable(
+        all_indexable = get_indexable(
             search_models=['questions_question', 'wiki_document'])
 
         # The first item is questions because we specified that
         # order. Old questions don't show up in searches, so we nix
         # them by reversing the list (ordered by id ascending) and
         # slicing it.
-        indexable[0] = (indexable[0][0],
-                        list(reversed(indexable[0][1]))[:15000])
+        all_indexable[0] = (all_indexable[0][0],
+                            list(reversed(all_indexable[0][1]))[:15000])
 
     elif models:
-        indexable = get_indexable(percent, models)
+        all_indexable = get_indexable(percent, models)
 
     else:
-        indexable = get_indexable(percent)
+        all_indexable = get_indexable(percent)
 
     start_time = time.time()
-
-    for cls, indexable in indexable:
+    for cls, indexable in all_indexable:
         cls_start_time = time.time()
         total = len(indexable)
 
@@ -308,7 +309,7 @@ def es_reindex_cmd(percent=100, delete=False, models=None, criticalmass=False,
 
         i = 0
         for chunk in chunked(indexable, 1000):
-            index_chunk(cls, chunk, es=es)
+            index_chunk(cls, chunk)
 
             i += len(chunk)
             time_to_go = (total - i) * ((time.time() - start_time) / i)
@@ -337,8 +338,8 @@ def es_delete_cmd(index, log=log):
     """Deletes an index"""
     try:
         indexes = [name for name, count in get_indexes()]
-    except ESMaxRetryError:
-        log.error('Your elasticsearch process is not running or ES_HOSTS '
+    except ES_EXCEPTIONS:
+        log.error('Your elasticsearch process is not running or ES_URLS '
                   'is set wrong in your settings_local.py file.')
         return
 
@@ -350,6 +351,7 @@ def es_delete_cmd(index, log=log):
         ret = raw_input('"%s" is a read index. Are you sure you want '
                         'to delete it? (yes/no) ' % index)
         if ret != 'yes':
+            log.info('Not deleting the index.')
             return
 
     log.info('Deleting index "%s"...', index)
@@ -360,27 +362,27 @@ def es_delete_cmd(index, log=log):
 def es_status_cmd(checkindex=False, log=log):
     """Shows elastic search index status"""
     try:
+        read_doctype_stats = get_doctype_stats(READ_INDEX)
+    except ES_EXCEPTIONS:
+        read_doctype_stats = None
+
+    if READ_INDEX == WRITE_INDEX:
+        write_doctype_stats = read_doctype_stats
+    else:
         try:
-            read_doctype_stats = get_doctype_stats(READ_INDEX)
-        except ESIndexMissingException:
-            read_doctype_stats = None
+            write_doctype_stats = get_doctype_stats(WRITE_INDEX)
+        except ES_EXCEPTIONS:
+            write_doctype_stats = None
 
-        if READ_INDEX == WRITE_INDEX:
-            write_doctype_stats = read_doctype_stats
-        else:
-            try:
-                write_doctype_stats = get_doctype_stats(WRITE_INDEX)
-            except ESIndexMissingException:
-                write_doctype_stats = None
-
+    try:
         indexes = get_indexes(all_indexes=True)
-    except ESMaxRetryError:
-        log.error('Your elasticsearch process is not running or ES_HOSTS '
+    except ES_EXCEPTIONS:
+        log.error('Your elasticsearch process is not running or ES_URLS '
                   'is set wrong in your settings_local.py file.')
         return
 
     log.info('Settings:')
-    log.info('  ES_HOSTS              : %s', settings.ES_HOSTS)
+    log.info('  ES_URLS               : %s', settings.ES_URLS)
     log.info('  ES_INDEX_PREFIX       : %s', settings.ES_INDEX_PREFIX)
     log.info('  ES_LIVE_INDEXING      : %s', settings.ES_LIVE_INDEXING)
     log.info('  ES_INDEXES            : %s', settings.ES_INDEXES)

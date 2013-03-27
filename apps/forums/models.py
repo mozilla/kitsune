@@ -192,6 +192,7 @@ class Thread(NotificationsMixin, ModelBase, SearchMixin):
     def get_mapping(cls):
         return {
             'id': {'type': 'long'},
+            'document_id': {'type': 'string', 'index': 'not_analyzed'},
             'model': {'type': 'string', 'index': 'not_analyzed'},
             'url': {'type': 'string', 'index': 'not_analyzed'},
             'indexed_on': {'type': 'integer'},
@@ -210,12 +211,14 @@ class Thread(NotificationsMixin, ModelBase, SearchMixin):
             'post_replies': {'type': 'integer'}}
 
     @classmethod
-    def extract_document(cls, obj_id):
+    def extract_document(cls, obj_id, obj=None):
         """Extracts interesting thing from a Thread and its Posts"""
-        obj = cls.objects.select_related('last_post').get(pk=obj_id)
+        if obj is None:
+            obj = cls.objects.select_related('last_post').get(pk=obj_id)
 
         d = {}
         d['id'] = obj.id
+        d['document_id'] = cls.get_document_id(obj.id)
         d['model'] = cls.get_model_name()
         d['url'] = obj.get_absolute_url()
         d['indexed_on'] = int(time.time())

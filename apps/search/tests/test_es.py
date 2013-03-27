@@ -1,4 +1,5 @@
 import json
+import time
 from datetime import datetime, timedelta
 
 from django.conf import settings
@@ -37,16 +38,14 @@ class ElasticTestCase(TestCase):
     def setUpClass(cls):
         super(ElasticTestCase, cls).setUpClass()
 
-        if not getattr(settings, 'ES_HOSTS'):
+        if not getattr(settings, 'ES_URLS'):
             cls.skipme = True
             return
 
         # try to connect to ES and if it fails, skip ElasticTestCases.
-        import pyes.urllib3
-        import pyes.exceptions
         try:
-            get_es().collect_info()
-        except pyes.urllib3.MaxRetryError:
+            get_es().health()
+        except es_utils.ES_EXCEPTIONS:
             cls.skipme = True
             return
 
@@ -70,34 +69,41 @@ class ElasticTestCase(TestCase):
 
         super(ElasticTestCase, self).setUp()
         self.setup_indexes()
-        self.refresh(settings.ES_TEST_SLEEP_DURATION)
 
     def tearDown(self):
         super(ElasticTestCase, self).tearDown()
         self.teardown_indexes()
 
-    def refresh(self, timesleep=0):
+    def refresh(self, run_tasks=True):
         index = es_utils.WRITE_INDEX
 
-        # Any time we're doing a refresh, we're making sure that the
-        # index is ready to be queried.  Given that, it's almost
-        # always the case that we want to run all the generated tasks,
-        # then refresh.
-        generate_tasks()
+        if run_tasks:
+            # Any time we're doing a refresh, we're making sure that
+            # the index is ready to be queried. Given that, it's
+            # almost always the case that we want to run all the
+            # generated tasks, then refresh.
+            generate_tasks()
 
-        get_es().refresh(index, timesleep=timesleep)
+        get_es().refresh(index)
+        get_es().health(wait_for_status='yellow')
 
-    def setup_indexes(self):
+    def setup_indexes(self, empty=False, wait=True):
         """(Re-)create ES indexes."""
         from search.es_utils import es_reindex_cmd
 
-        # This removes the previous round of indexes and creates new
-        # ones with mappings and all that.
-        es_reindex_cmd(delete=True)
+        if empty:
+            # Removes the index and creates a new one with
+            # nothing in it (by abusing the percent argument).
+            es_reindex_cmd(delete=True, percent=0)
+        else:
+            # Removes the previous round of indexes and creates new
+            # ones with mappings and all that.
+            es_reindex_cmd(delete=True)
+
+        self.refresh(run_tasks=False)
 
     def teardown_indexes(self):
-        es = get_es()
-        es.delete_index_if_exists(es_utils.READ_INDEX)
+        es_utils.delete_index(es_utils.READ_INDEX)
 
 
 class ElasticSearchTasksTests(ElasticTestCase):

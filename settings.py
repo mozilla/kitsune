@@ -520,7 +520,7 @@ SESSION_EXISTS_COOKIE = 'sumo_session'
 
 #
 # Connection information for Elastic
-ES_HOSTS = ['127.0.0.1:9200']
+ES_URLS = ['http://127.0.0.1:9200']
 # Indexes for reading
 ES_INDEXES = {'default': 'sumo-20130205'}
 # Indexes for indexing--set this to ES_INDEXES if you want to read to
@@ -535,13 +535,6 @@ ES_INDEX_PREFIX = 'sumo'
 ES_LIVE_INDEXING = False
 # Timeout for querying requests
 ES_TIMEOUT = 5
-# Timeout for indexing requests
-ES_INDEXING_TIMEOUT = 30
-# Seconds between updating admin progress bar:
-ES_REINDEX_PROGRESS_BAR_INTERVAL = 5
-ES_FLUSH_BULK_EVERY = 100
-# Time to sleep after creating indexes for tests
-ES_TEST_SLEEP_DURATION = 0
 
 SEARCH_MAX_RESULTS = 1000
 SEARCH_RESULTS_PER_PAGE = 10
