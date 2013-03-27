@@ -10,7 +10,8 @@
 {% set crumbs = [(document.get_absolute_url(), document.title),
                  (None, _('Edit Article'))] %}
 {% set classes = 'edit' %}
-{% set scripts = ('wiki', 'wiki.diff', 'wiki.editor') %}
+{% set styles = ('wiki', 'jqueryui/jqueryui') %}
+{% set scripts = ('wiki', 'wiki.diff', 'wiki.editor', 'libs/jqueryui') %}
 
 {% block content %}
   <div class="grid_9">
