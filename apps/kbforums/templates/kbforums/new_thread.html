@@ -8,6 +8,8 @@
 {% set crumbs = [(document.get_absolute_url(), document.title),
                  (url('wiki.discuss.threads', document.slug), _('Discuss')),
                  (None, _('Create a new thread'))] %}
+{% set styles = ('forums', 'jqueryui/jqueryui') %}
+{% set scripts = ('forums', 'libs/jqueryui') %}
 
 {% block content %}
   <article id="new-thread" class="grid_9">

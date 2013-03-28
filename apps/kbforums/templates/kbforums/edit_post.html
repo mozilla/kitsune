@@ -9,6 +9,8 @@
                  (url('wiki.discuss.threads', document.slug), _('Discuss')),
                  (url('wiki.discuss.posts', document.slug, thread.id), thread.title),
                  (None, _('Edit a post'))] %}
+{% set styles = ('forums', 'jqueryui/jqueryui') %}
+{% set scripts = ('forums', 'libs/jqueryui') %}
 
 {% block content %}
   <article id="edit-post" class="grid_9">

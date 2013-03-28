@@ -2,8 +2,12 @@
 {% extends "base.html" %}
 {% from "wiki/includes/sidebar_modules.html" import document_tools with context %}
 {% from 'includes/common_macros.html' import for_contributors_sidebar %}
-{% set styles = ('forums',) %}
-{% set scripts = ('forums',) %}
+{% if not styles %}
+  {% set styles = ('forums',) %}
+{% endif %}
+{% if not scripts %}
+  {% set scripts = ('forums',) %}
+{% endif %}
 {% set meta = (('robots', 'noindex'),) %}
 
 {% block side_top %}

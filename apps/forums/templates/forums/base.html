@@ -3,7 +3,9 @@
 {% if not styles %}
   {% set styles = ('forums',) %}
 {% endif %}
-{% set scripts = ('forums',) %}
+{% if not scripts %}
+  {% set scripts = ('forums',) %}
+{% endif %}
 
 {# If we are in an Aurora forum ('aurora' in the slug), we need to tweak the template. #}
 {% if forum and 'aurora' in forum.slug %}
