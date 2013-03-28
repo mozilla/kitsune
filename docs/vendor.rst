@@ -84,6 +84,8 @@ repo::
    Use the ``git://`` url for a repository and not the ``http://``
    one. The git protocol is more resilient and faster to clone over.
 
+   Don't use the ``git@`` url. It will only bring you pain.
+
 
 Using PyPI
 ----------
