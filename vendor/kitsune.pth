@@ -31,6 +31,7 @@ packages/nose
 packages/httplib2/python2
 packages/pyes
 packages/mimeparse
+packages/simplejson
 src
 src/django-cronjobs
 src/django-cache-machine
