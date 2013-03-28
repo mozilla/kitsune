@@ -24,13 +24,13 @@ $(document).ready(function() {
 
     switch(parseInt($('#where').text(), 10)) {
         case 4:
-            tabs.tabs('select', 2);
+            tabs.tabs({active: 2});
             break;
         case 2:
-            tabs.tabs('select', 1);
+            tabs.tabs({active: 1});
             break;
         case 1:
         default:
-            tabs.tabs('select', 0);
+            tabs.tabs({active: 0});
     }
 });
