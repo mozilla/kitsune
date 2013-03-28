@@ -1,14 +1,12 @@
-Different parts of the sites need different sets of jQuery UI. I also didn't
-know what parts of jQuery UI we already had selected, so now we have
-multiple bundles. Here is what is in each bundle:
+This is the contents of the custom jQueryUI bundle here.
 
-* Unnamed bundles: ???
-* Rickshaw
-    - Sortable
-    - Datepicker
-    - Slider
+- Accordion
+- Autocomplete
+- Datepicker
+- Slider
+- Sortable
 
-The bundles include more, but these are things that shuld be checked on the
+The bundle include more, but these are things that shuld be checked on the
 jQuery UI custom builder. They pull in dependencies like 'Core' or 'Mouse'.
 Images should be shared between bundles, but CSS and JS should not be. We use
 the UI Lightness theme.
