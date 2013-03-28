@@ -152,7 +152,7 @@ MINIFY_BUNDLES = {
             'js/libs/selectivizr-1.0.2.js',
         ),
         'libs/jqueryui': (
-            'js/libs/jqueryui.min.js',
+            'js/libs/jqueryui.js',
         ),
         'questions': (
             'js/markup.js',

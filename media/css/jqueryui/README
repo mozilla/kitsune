@@ -2,7 +2,10 @@ Different parts of the sites need different sets of jQuery UI. I also didn't
 know what parts of jQuery UI we already had selected, so now we have
 multiple bundles. Here is what is in each bundle:
 
-* Unnamed bundles: ???
+* Unnamed bundle:
+    - Accordion
+    - Autocomplete
+    - Datepicker
 * Rickshaw
     - Sortable
     - Datepicker
