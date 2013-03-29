@@ -70,6 +70,8 @@
 
         initReadyForL10n();
 
+        initRevisionList();
+
         $('img.lazy').lazyload();
     }
 
@@ -596,6 +598,52 @@
                             $contentOrDiff.toggleClass('content diff');
                         }));
         }
+    }
+
+    function initRevisionList() {
+        var $form = $('#revision-list form.filter');
+        if(!$form.length) return;
+
+        // This function grabs a fragment from the server and replaces
+        // the content of the div with it.
+        function updateRevisionList(query) {
+            if (query === undefined) {
+                query = $form.serialize();
+            }
+            var url = $form.attr('action') + '?' + query;
+
+            $.get(url + '&fragment=1', function(data) {
+                $('.loading').hide();
+                $('#revisions-fragment').html(data);
+                history.replaceState({}, "", url);
+            });
+        }
+
+        // When the filter form changes, wait a tick and then update.
+        var timeout;
+        $form.on('change keyup', 'input, select', function() {
+            $('.loading').show();
+            clearTimeout(timeout);
+            timeout = setTimeout(updateRevisionList, 200);
+        });
+
+        // Catch page changes, replace with fragment loading.
+        $('#revision-list').on('click', '.pagination a', function() {
+            var query = $(this).attr('href');
+            updateRevisionList(query);
+            return false;
+        });
+
+        // Disable standard form submission
+        $form.find('.btn').remove();
+        $form.on('keydown', function(e) {
+            // 13 is enter.
+            if (e.which === 13) {
+                return false;
+            }
+        });
+
+        $form.find('input[type=date]').datepicker();
     }
 
     $(document).ready(init);

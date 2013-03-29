@@ -102,6 +102,7 @@ urlpatterns = patterns('wiki.views',
         name='wiki.unhelpful_survey'),
 
     url(r'^/json$', 'json_view', name='wiki.json'),
+    url(r'^/revisions', 'recent_revisions', name='wiki.revisions'),
 
     url(r'^/new$', 'new_document', name='wiki.new_document'),
     url(r'^/all$', 'list_documents', name='wiki.all_documents'),
@@ -110,7 +111,6 @@ urlpatterns = patterns('wiki.views',
         name='wiki.category'),
     url(r'^/topic/(?P<topic>[^/]+)$', 'list_documents', name='wiki.topic'),
     (r'^/(?P<document_slug>[^/]+)', include(document_patterns)),
-
 )
 
 urlpatterns += patterns('kbforums.views',

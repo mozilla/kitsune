@@ -1,8 +1,8 @@
 {# vim: set ts=2 et sts=2 sw=2: #}
 {% extends "base.html" %}
 {% if not scripts %}
-  {% set scripts = ('wiki', 'libs/jqueryui') %}
+  {% set scripts = ('libs/jqueryui', 'wiki') %}
 {% endif %}
 {% if not styles %}
-  {% set styles = ('wiki',) %}
+  {% set styles = ('jqueryui/jqueryui', 'wiki') %}
 {% endif %}

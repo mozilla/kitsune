@@ -34,7 +34,7 @@ from wiki.events import (EditDocumentEvent, ReviewableRevisionInLocaleEvent,
                          ApproveRevisionInLocaleEvent, ApprovedOrReadyUnion,
                          ReadyRevisionEvent)
 from wiki.forms import (AddContributorForm, DocumentForm, RevisionForm,
-                        ReviewForm)
+                        RevisionFilterForm, ReviewForm)
 from wiki.models import Document, Revision, HelpfulVote, ImportantDate
 from wiki.config import CATEGORIES, TEMPLATES_CATEGORY
 from wiki.parser import wiki_to_html
@@ -1176,3 +1176,42 @@ def _show_revision_warning(document, revision):
         return document.revisions.filter(created__gt=revision.created,
                                          reviewed=None).exists()
     return False
+
+
+def recent_revisions(request):
+    form = RevisionFilterForm(request.GET.copy())
+    # Make writable
+    request.GET = request.GET.copy()
+
+    fragment = request.GET.pop('fragment', None)
+
+    revs = Revision.objects.order_by('-created')
+
+    # We are going to ignore validation errors for the most part, but
+    # this is needed to call the functions that generate `cleaned_data`
+    # This helps in particular when bad user names are typed in.
+    form.is_valid()
+
+    # If something has gone very wrong, `cleaned_data` won't be there.
+    if hasattr(form, 'cleaned_data'):
+        if form.cleaned_data.get('locale'):
+            revs = revs.filter(document__locale=form.cleaned_data['locale'])
+        if form.cleaned_data.get('users'):
+            revs = revs.filter(creator__in=form.cleaned_data['users'])
+        if form.cleaned_data.get('start'):
+            revs = revs.filter(created__gte=form.cleaned_data['start'])
+        if form.cleaned_data.get('end'):
+            revs = revs.filter(created__lte=form.cleaned_data['end'])
+
+    revs = paginate(request, revs)
+
+    c = {
+        'revisions': revs,
+        'form': form,
+    }
+    if fragment:
+        template = 'wiki/includes/recent_revisions_fragment.html'
+    else:
+        template = 'wiki/recent_revisions.html'
+
+    return render(request, template, c)

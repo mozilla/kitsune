@@ -18,19 +18,19 @@
         {% if loop.first %}
           <ul>
             <li class="header">
-              <div class="radio-head"></div>
-              <div class="radio-head"></div>
-              <div class="date-head">{{ _('Revision') }}</div>
-              <div class="status-head">{{ _('Status') }}</div>
-              <div class="significance-head"><abbr title="{{ _('Significance - MT: Major Content Changes. M: Content Changes. Empty: Minor Changes.') }}"> {{ _('S', "First letter of 'Significance'") }}</abbr></div>
-              <div class="creator-head">{{ _('Editor') }}</div>
+              <div class="radio"></div>
+              <div class="radio"></div>
+              <div class="date">{{ _('Revision') }}</div>
+              <div class="status">{{ _('Status') }}</div>
+              <div class="significance"><abbr title="{{ _('Significance - MT: Major Content Changes. M: Content Changes. Empty: Minor Changes.') }}"> {{ _('S', "First letter of 'Significance'") }}</abbr></div>
+              <div class="creator">{{ _('Editor') }}</div>
               {% if request.LANGUAGE_CODE == settings.WIKI_DEFAULT_LANGUAGE %}
-                <div class="l10n-head"><abbr title="{{ _('Ready for localization') }}">{{ _('R', "First letter of 'Ready for localization'") }}</abbr></div>
+                <div class="l10n"><abbr title="{{ _('Ready for localization') }}">{{ _('R', "First letter of 'Ready for localization'") }}</abbr></div>
               {% endif %}
-              <div class="comment-head">{{ _('Comment') }}</div>
-              <div class="edit-head"></div>
+              <div class="comment">{{ _('Comment') }}</div>
+              <div class="edit"></div>
               {% if document.current_revision != rev and user.has_perm('wiki.delete_revision') %}
-                <div class="delete-head"></div>
+                <div class="delete"></div>
               {% endif %}
             </li>
         {% endif %}
@@ -42,7 +42,9 @@
             {% if not loop.last %}<input type="radio" name="to" value="{{ rev.id }}" {% if loop.first %}checked="checked"{% endif %} />{% endif %}
           </div>
           <div class="date">
-            <a href="{{ url('wiki.revision', document.slug, rev.id, locale=document.locale) }}" rel="nofollow, noindex">{{ datetimeformat(rev.created, format='datetime') }}</a>
+            <a href="{{ rev.get_absolute_url() }}" rel="nofollow, noindex">
+              {{ datetimeformat(rev.created, format='datetime') }}
+            </a>
           </div>
           <div class="status">
             {% if not rev.reviewed %}

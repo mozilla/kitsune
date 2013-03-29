@@ -306,6 +306,19 @@ article {
 #revision-list {
   form {
     margin: 10px 0;
+
+    select,
+    input {
+      margin: 0 10px;
+    }
+
+    input[type=text] {
+      width: 180px;
+    }
+
+    input[type=date] {
+      width: 100px;
+    }
   }
 
   ul {
@@ -313,55 +326,53 @@ article {
     margin: 5px 0;
     padding: 0;
     text-align: left;
-  }
 
-  li {
-    list-style: none;
-    padding: 4px 0;
+    li {
+      list-style: none;
+      padding: 4px 0;
 
-    &:nth-child(odd) {
-      background: #f2f2f2;
-    }
+      div {
+        display: inline-block;
+      }
 
-    &.current {
-      background: #daedf6;
-      border-bottom: solid 2px #a3b1b8;
-      border-top: solid 2px #a3b1b8;
+      &:nth-child(odd) {
+        background: #f2f2f2;
+      }
 
-      .status {
-        color: #223d61;
+      &.current {
+        background: #daedf6;
+        border-bottom: solid 2px #a3b1b8;
+        border-top: solid 2px #a3b1b8;
+
+        .status {
+          color: #223d61;
+          font-weight: bold;
+        }
+      }
+
+      &.rejected *,
+      &.rejected div.creator {
+        color: #999;
+      }
+
+      &.header {
+        color: #666 !important;
         font-weight: bold;
       }
     }
-
-    &.rejected *,
-    &.rejected div.creator {
-      color: #999;
-    }
-
-    &.header * {
-      color: #666 !important;
-      font-weight: bold;
-    }
   }
 
-  .radio,
-  .radio-head {
-    display: inline-block;
+  .radio {
     text-align: center;
     width: 15px;
   }
 
-  .date,
-  .date-head {
-    display: inline-block;
+  .date {
     padding: 0 0 0 10px;
     width: 115px;
   }
 
-  .status,
-  .status-head {
-    display: inline-block;
+  .status {
     width: 90px;
 
     a {
@@ -369,32 +380,41 @@ article {
     }
   }
 
-  .significance,
-  .significance-head {
-    display: inline-block;
+  .significance {
     width: 35px;
   }
 
-  .creator,
-  .creator-head {
+  .creator {
     color: #333;
-    display: inline-block;
     width: 105px;
   }
 
-  .comment,
-  .comment-head {
-    display: inline-block;
+  .comment {
     width: 140px;
+
+    &.wider {
+      width: 350px;
+    }
+  }
+
+  .title {
+    width: 290px;
+    padding-right: 9px;
+
+    .locale {
+      background: #ddd;
+      padding: 0 2px;
+      font-size: 0.7em;
+      box-shadow: 0 0 1px 0 rgba(0, 0, 0, 0.5);
+      position: relative;
+      bottom: 1px;
+      margin-right: 5px;
+    }
   }
 
   .l10n,
   .edit,
-  .delete,
-  .l10n-head,
-  .edit-head,
-  .delete-head {
-    display: inline-block;
+  .delete {
     text-align: center;
     text-decoration: none;
     width: 25px;
@@ -403,7 +423,6 @@ article {
   .edit {
     a {
       background: url("../img/icons.actions.png") no-repeat scroll left -25px transparent;
-      display: inline-block;
       height: 12px;
       text-decoration: none;
       width: 12px;
@@ -413,7 +432,6 @@ article {
   .delete {
     a {
       background: url("../img/icons.actions.png") no-repeat scroll left 0px transparent;
-      display: inline-block;
       height: 12px;
       width: 12px;
     }
@@ -423,7 +441,6 @@ article {
     a {
       &.yes {
         background: url("/media/img/wiki/icon-yes.gif") no-repeat scroll left top transparent;
-        display: inline-block;
         height: 12px;
         width: 12px;
       }
@@ -431,7 +448,6 @@ article {
       &.markasready,
       &.no {
         background: url("/media/img/wiki/icon-no.gif") no-repeat scroll left top transparent;
-        display: inline-block;
         height: 12px;
         width: 12px;
       }
@@ -439,7 +455,6 @@ article {
       &.markasready:hover {
         background: url("/media/img/wiki/icon-yes.gif") no-repeat scroll left top transparent;
         cursor: pointer;
-        display: inline-block;
         height: 12px;
         width: 12px;
       }
@@ -460,6 +475,13 @@ article {
       background: transparent url(../img/wiki/compare.arrows.png) no-repeat 4px -40px;
       padding-top: 10px;
     }
+  }
+
+
+  .loading {
+    display: none;
+    height: 20px;
+    width: 20px;
   }
 }
 

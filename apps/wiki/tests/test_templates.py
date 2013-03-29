@@ -1085,7 +1085,7 @@ class DocumentRevisionsTests(TestCaseBase):
         eq_(4, len(doc('#revision-list li')))
         # Verify there is no Review link
         eq_(0, len(doc('#revision-list div.status a')))
-        eq_('Unreviewed', doc('#revision-list div.status:first').text())
+        eq_('Unreviewed', doc('#revision-list li:not(.header) div.status:first').text())
 
         # Log in as user with permission to review
         self.client.login(username='admin', password='testpass')
@@ -1095,7 +1095,7 @@ class DocumentRevisionsTests(TestCaseBase):
         doc = pq(response.content)
         # Verify there are Review links now
         eq_(2, len(doc('#revision-list div.status a')))
-        eq_('Review', doc('#revision-list div.status:first').text())
+        eq_('Review', doc('#revision-list li:not(.header) div.status:first').text())
         # Verify edit revision link
         eq_('/en-US/kb/test-document/edit/{r}'.format(r=r2.id),
             doc('#revision-list div.edit a')[0].attrib['href'])
@@ -1117,7 +1117,7 @@ class DocumentRevisionsTests(TestCaseBase):
                                    args=[r1.document.slug]))
         eq_(200, response.status_code)
         doc = pq(response.content)
-        eq_(1, len(doc('#revision-list div.l10n-head')))
+        eq_(1, len(doc('#revision-list li.header div.l10n')))
 
         response = self.client.get(reverse('wiki.document_revisions',
                                    args=[d2.slug], locale='es'))
@@ -2432,21 +2432,95 @@ class DocumentDeleteTestCase(TestCaseBase):
     def test_revision_with_permission(self):
         """Deleting a document with delete_document permission should work."""
         add_permission(self.user, Document, 'delete_document')
-        self._test_delete_document_with_permission()
+
+
+class RecentRevisionsTest(TestCaseBase):
+
+    def setUp(self):
+        self.u1 = user(save=True)
+        self.u2 = user(save=True)
+
+        eq_(Document.objects.count(), 0)
+
+        _create_document(title='1', rev_kwargs={'creator': self.u1})
+        _create_document(title='2', rev_kwargs={
+                            'creator': self.u1,
+                            'created': datetime(2013, 3, 1, 0, 0, 0, 0),
+                        })
+        _create_document(title='3', locale='de', rev_kwargs={'creator': self.u2})
+        _create_document(title='4', locale='fr', rev_kwargs={'creator': self.u2})
+        _create_document(title='5', locale='fr', rev_kwargs={'creator': self.u2})
+
+        self.url = reverse('wiki.revisions')
+
+    def test_basic(self):
+        res = self.client.get(self.url)
+        eq_(res.status_code, 200)
+
+        doc = pq(res.content)
+        eq_(len(doc('#revisions-fragment ul li:not(.header)')), 5)
+
+    def test_locale_filtering(self):
+        url = urlparams(self.url, locale='fr')
+        res = self.client.get(url)
+        eq_(res.status_code, 200)
+
+        doc = pq(res.content)
+        eq_(len(doc('#revisions-fragment ul li:not(.header)')), 2)
+
+        url = urlparams(self.url, locale='de')
+        res = self.client.get(url)
+        eq_(res.status_code, 200)
+
+        doc = pq(res.content)
+        eq_(len(doc('#revisions-fragment ul li:not(.header)')), 1)
+
+    def test_bad_locale(self):
+        """A bad locale should not filter anything."""
+        url = urlparams(self.url, locale='asdf')
+        res = self.client.get(url)
+        eq_(res.status_code, 200)
+
+        doc = pq(res.content)
+        eq_(len(doc('#revisions-fragment ul li:not(.header)')), 5)
+
+    def test_user_filtering(self):
+        url = urlparams(self.url, users=self.u1.username)
+        res = self.client.get(url)
+        eq_(res.status_code, 200)
+
+        doc = pq(res.content)
+        eq_(len(doc('#revisions-fragment ul li:not(.header)')), 2)
+
+    def test_date_filtering(self):
+        url = urlparams(self.url, start='2013-03-02')
+        res = self.client.get(url)
+        eq_(res.status_code, 200)
+
+        doc = pq(res.content)
+        eq_(len(doc('#revisions-fragment ul li:not(.header)')), 4)
+
+        url = urlparams(self.url, end='2013-03-02')
+        res = self.client.get(url)
+        eq_(res.status_code, 200)
+
+        doc = pq(res.content)
+        eq_(len(doc('#revisions-fragment ul li:not(.header)')), 1)
 
 
 # TODO: Merge with wiki.tests.doc_rev()?
 def _create_document(title='Test Document', parent=None,
-                     locale=settings.WIKI_DEFAULT_LANGUAGE):
+                     locale=settings.WIKI_DEFAULT_LANGUAGE,
+                     doc_kwargs={}, rev_kwargs={}):
     d = document(title=title, html='<div>Lorem Ipsum</div>',
                  category=TROUBLESHOOTING_CATEGORY, locale=locale,
-                 parent=parent, is_localizable=True)
+                 parent=parent, is_localizable=True, **doc_kwargs)
     d.save()
-    r = Revision(document=d, keywords='key1, key2', summary='lipsum',
-                 content='<div>Lorem Ipsum</div>', creator_id=118577,
+    r = revision(document=d, keywords='key1, key2', summary='lipsum',
+                 content='<div>Lorem Ipsum</div>',
                  significance=SIGNIFICANCES[0][0], is_approved=True,
                  is_ready_for_localization=True,
-                 comment="Good job!")
+                 comment="Good job!", **rev_kwargs)
     r.created = r.created - timedelta(days=10)
     r.save()
     return d

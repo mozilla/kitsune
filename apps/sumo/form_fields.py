@@ -92,7 +92,10 @@ class MultiUsernameField(forms.Field):
     validates that users exist for each one, and returns the list of users."""
     def to_python(self, value):
         if not value:
-            raise forms.ValidationError(_(u'To field is required.'))
+            if self.required:
+                raise forms.ValidationError(_(u'To field is required.'))
+            else:
+                return []
 
         users = []
         for username in value.split(','):
