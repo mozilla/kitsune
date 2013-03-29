@@ -1,0 +1,17 @@
+{% extends "wiki/base.html" %}
+
+{% block content %}
+
+  <article id="revision-list">
+    <form class="filter" action="{{ url('wiki.revisions') }}">
+      {{ form }}
+      <button class="btn btn-submit">{{ _('Submit') }}</button>
+      <img src="/media/img/wait-trans.gif" class="loading" />
+    </form>
+
+    <div id="revisions-fragment">
+      {% include "wiki/includes/recent_revisions_fragment.html" %}
+    </div>
+  </article>
+
+{% endblock %}

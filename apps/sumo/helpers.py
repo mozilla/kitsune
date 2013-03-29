@@ -10,11 +10,12 @@ from django.utils.encoding import smart_str
 from django.utils.http import urlencode
 from django.utils.tzinfo import LocalTimezone
 
+import bleach
+import jinja2
 from babel import localedata
 from babel.dates import format_date, format_time, format_datetime
 from babel.numbers import format_decimal
 from jingo import register, env
-import jinja2
 from pytz import timezone
 from tower import ugettext_lazy as _lazy, ungettext
 
@@ -410,3 +411,8 @@ def is_secure(context):
         return context.get('request').is_secure()
 
     return False
+
+
+@register.filter
+def linkify(text):
+    return bleach.linkify(text)

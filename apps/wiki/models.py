@@ -896,8 +896,8 @@ class Revision(ModelBase):
 
     def __unicode__(self):
         return u'[%s] %s #%s: %s' % (self.document.locale,
-                                      self.document.title,
-                                      self.id, self.content[:50])
+                                     self.document.title,
+                                     self.id, self.content[:50])
 
     @property
     def content_parsed(self):
@@ -914,6 +914,10 @@ class Revision(ModelBase):
         return (self.is_approved and
                 self.significance > TYPO_SIGNIFICANCE and
                 self.document.locale == settings.WIKI_DEFAULT_LANGUAGE)
+
+    def get_absolute_url(self):
+        return reverse('wiki.revision', locale=self.document.locale,
+                       args=[self.document.slug, self.id])
 
 
 class HelpfulVote(ModelBase):

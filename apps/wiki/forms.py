@@ -314,3 +314,16 @@ class AddContributorForm(forms.Form):
     users = MultiUsernameField(
         widget=forms.TextInput(attrs={'placeholder': _lazy(u'username'),
                                       'class': 'user-autocomplete'}))
+
+
+languages = [('', 'Any')] + [(l[0], u'{1} ({0})'.format(*l))
+                             for l in settings.LANGUAGE_CHOICES]
+
+
+class RevisionFilterForm(forms.Form):
+    """Form to filter a list of revisions."""
+    locale = forms.ChoiceField(label=_lazy(u'Locale:'), choices=languages,
+                               required=False)
+    users = MultiUsernameField(label=_lazy(u'Users:'), required=False)
+    start = forms.DateField(label=_lazy(u'Start:'), required=False)
+    end = forms.DateField(label=_lazy(u'End:'), required=False)
