@@ -46,7 +46,7 @@
       {% endfor %}
 
       <div id="kb-helpfulness-chart"
-        data-vote-url="{{ url('api_dispatch_list', resource_name='kpi_kb_vote', api_name='v1') }}">
+        data-vote-url="{{ url('api_dispatch_list', resource_name='kpi_kb_vote', api_name='v1')|urlparams(locale=settings.WIKI_DEFAULT_LANGUAGE) }}">
       </div>
       <!-- Backbone View Templates -->
       <script type="text/template" id="chart-template">

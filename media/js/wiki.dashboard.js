@@ -44,7 +44,7 @@ window.KbDashboard = Backbone.View.extend({
 
 
 $(document).ready(function() {
-    if ($('body').is('contributor-dashboard')) {
+    if ($('body').is('.contributor-dashboard, .localization-dashboard')) {
         // Create the dashboard chart.
         window.App = new KbDashboard({
             el: document.getElementById('kb-helpfulness-chart')
