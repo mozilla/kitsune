@@ -3,9 +3,10 @@
 {% from "includes/common_macros.html" import for_contributors_sidebar %}
 {% from "dashboards/includes/macros.html" import print_readout, overview_section, product_selector, print_subscription_menu with context %}
 {% set title = _('Localization Dashboard') %}
-{% set scripts = ('wiki', 'wiki.dashboard') %}
+{% set scripts = ('wiki', 'highcharts', 'wiki.dashboard') %}
 {% set styles = ('kbdashboards',) %}
 {% set crumbs = [(None, title)] %}
+{% set classes = 'localization-dashboard' %}
 {# TODO: Move required dashboard scripts out of wiki.js into their own or refactor up? #}
 
 {% block content %}
@@ -88,6 +89,19 @@
       {% for readout in readouts.itervalues() %}
         {{ print_readout(readout, max_rows=20 if readout.slug == 'most-visited-translations' else 10, product=product) }}
       {% endfor %}
+
+      <div id="kb-helpfulness-chart"
+        data-vote-url="{{ url('api_dispatch_list', resource_name='kpi_kb_vote', api_name='v1')|urlparams(locale=request.LANGUAGE_CODE) }}">
+      </div>
+      <!-- Backbone View Templates -->
+      <script type="text/template" id="chart-template">
+        <select class="grouping">
+          <option value="d">{{ _('Daily') }}</option>
+          <option value="w">{{ _('Weekly') }}</option>
+          <option value="m">{{ _('Monthly') }}</option>
+        </select>
+        <div class="placeholder"></div>
+      </script>
     </article>
   </div>
 {% endblock %}
