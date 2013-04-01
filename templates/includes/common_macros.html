@@ -116,6 +116,7 @@
   <li {{ active|class_selected('forums') }}><a href="{{ url('forums.forums') }}">{{ _('Contributor Forums') }}</a></li>
   <li {{ active|class_selected('article-discussions') }}><a href="{{ url('wiki.locale_discussions') }}">{{ _('Article Discussions') }}</a></li>
   <li {{ active|class_selected('kbdashboard') }}><a href="{{ url('dashboards.localization') }}">{{ _('Knowledge Base Dashboard') }}</a></li>
+  <li><a href="{{ url('wiki.revisions') }}">{{ _('Recent Revisions') }}</a></li>
   <li><a href="{{ url('customercare.landing') }}">{{ _('Help on Twitter') }}</a></li>
   <li><a href="{{ url('questions.questions') }}">{{ _('Support Forum Home') }}</a></li>
   {% if user.has_perm('flagit.can_moderate') %}
@@ -127,5 +128,4 @@
     <li><a href="{{ url('karma.questions_dashboard') }}">{{ _('Karma Dashboard') }}</a></li>
   {% endif %}
   <li><a href="{{ url('kpi.dashboard') }}">{{ _('KPI Dashboard') }}</a></li>
-  <li><a href="{{ url('wiki.revisions') }}">{{ _('Recent Revisions') }}</a></li>
 {%- endmacro %}

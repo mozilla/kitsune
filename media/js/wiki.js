@@ -610,12 +610,20 @@
             if (query === undefined) {
                 query = $form.serialize();
             }
-            var url = $form.attr('action') + '?' + query;
+            if (query.charAt(0) !== '?') {
+                query = '?' + query;
+            }
+            var url = $form.attr('action') + query;
+
+            // scroll to the top.
+            var scrollPos = Math.min($(document).scrollTop(),
+                                     $('#revision-list').offset().top);
+            $(document).scrollTop(scrollPos);
+            history.replaceState({}, "", url);
 
             $.get(url + '&fragment=1', function(data) {
                 $('.loading').hide();
                 $('#revisions-fragment').html(data);
-                history.replaceState({}, "", url);
             });
         }
 
@@ -629,7 +637,7 @@
 
         // Catch page changes, replace with fragment loading.
         $('#revision-list').on('click', '.pagination a', function() {
-            var query = $(this).attr('href');
+            var query = $(this)[0].search;
             updateRevisionList(query);
             return false;
         });

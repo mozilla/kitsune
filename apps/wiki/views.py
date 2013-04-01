@@ -1179,12 +1179,11 @@ def _show_revision_warning(document, revision):
 
 
 def recent_revisions(request):
-    form = RevisionFilterForm(request.GET.copy())
     # Make writable
     request.GET = request.GET.copy()
 
     fragment = request.GET.pop('fragment', None)
-
+    form = RevisionFilterForm(request.GET)
     revs = Revision.objects.order_by('-created')
 
     # We are going to ignore validation errors for the most part, but
