@@ -84,7 +84,7 @@
 
     #page {
       .wrapper {
-        bottom: 50px;
+        padding-bottom: 50px;
       }
     }
   }
@@ -107,9 +107,13 @@
     font-weight: bold;
     height: 39px;
     list-style: none;
-    margin: 50px 0 0 0;
+    margin: 0;
     padding: 0;
+    position: fixed;
+    top: 50px;
     text-align: center;
+    width: 100%;
+    z-index: 1;
 
     > li {
       float: left;
@@ -474,7 +478,7 @@
 
   #page {
     .wrapper {
-      bottom: 50px;
+      padding-bottom: 50px;
     }
   }
 }
