@@ -43,17 +43,42 @@ class GetNextUrlTests(TestCase):
         self.patcher.stop()
         super(GetNextUrlTests, self).tearDown()
 
-    def test_https(self):
-        """Verify that protocol and domain get removed for https."""
-        r = self.r.post('/users/login',
-                        {'next': 'https://su.mo.com/kb/new?f=b'})
-        eq_('/kb/new?f=b', get_next_url(r))
+    def test_query_string(self):
+        """Query-strings remain intact."""
+        r = self.r.get('/', {'next': '/new?f=b'})
+        eq_('/new?f=b', get_next_url(r))
 
-    def test_http(self):
-        """Verify that protocol and domain get removed for http."""
+    def test_good_host_https(self):
+        """Full URLs work with valid hosts."""
         r = self.r.post('/users/login',
-                        {'next': 'http://su.mo.com/kb/new'})
+                        {'next': 'https://su.mo.com/kb/new'})
+        eq_('https://su.mo.com/kb/new', get_next_url(r))
+
+    def test_post(self):
+        """'next' in POST overrides GET."""
+        r = self.r.post('/?next=/foo', {'next': '/bar'})
+        eq_('/bar', get_next_url(r))
+
+    def test_get(self):
+        """'next' can be a query-string parameter."""
+        r = self.r.get('/users/login', {'next': '/kb/new'})
         eq_('/kb/new', get_next_url(r))
+
+    def test_referer(self):
+        """Use HTTP referer if nothing else."""
+        r = self.r.get('/')
+        r.META['HTTP_REFERER'] = 'http://su.mo.com/new'
+        eq_('http://su.mo.com/new', get_next_url(r))
+
+    def test_bad_host_https(self):
+        r = self.r.get('/', {'next': 'https://example.com'})
+        eq_(None, get_next_url(r))
+
+    def test_bad_host_protocol_relative(self):
+        """Protocol-relative URLs do not let bad hosts through."""
+        r = self.r.get('/', {'next': '//example.com'})
+        eq_(None, get_next_url(r))
+
 
 class JSONTests(TestCase):
     def test_truncated_noop(self):
