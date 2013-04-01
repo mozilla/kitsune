@@ -50,6 +50,19 @@ body {
 
       &.exposed {
         right: 270px;
+
+        > header,
+        .header-overlay,
+        .footer-overlay {
+          right: 270px;
+        }
+      }
+
+      > header,
+      .header-overlay,
+      .footer-overlay {
+        left: auto;
+        right: 0;
       }
     }
   }
@@ -227,9 +240,9 @@ select {
   border-bottom: 1px solid #000;
   height: 50px;
   left: 0;
-  position: absolute;
-  right: 0;
+  position: fixed;
   top: 0;
+  width: 100%;
   z-index: 100;
 
   h2 {
@@ -255,8 +268,8 @@ select {
   bottom: 0;
   height: 50px;
   left: 0;
-  position: absolute;
-  right: 0;
+  position: fixed;
+  width: 100%;
   z-index: 100;
 }
 
@@ -584,7 +597,6 @@ select {
 #container {
   bottom: 0;
   left: 0;
-  overflow: hidden;
   position: absolute;
   right: 0;
   top: 0;
@@ -595,7 +607,7 @@ select {
     color: #fff;
     left: 0;
     overflow: auto;
-    position: absolute;
+    position: fixed;
     top: 0;
     width: 270px;
     z-index: 0;
@@ -669,9 +681,7 @@ select {
 #page {
   background: #fff;
   bottom: 0;
-  .box-shadow(0 0 10px 0 rgba(0, 0, 0, 0.8));
   left: 0;
-  overflow: hidden;
   position: absolute;
   top: 0;
   .transition-property(~'left, right');
@@ -681,6 +691,10 @@ select {
 
   &.exposed {
     left: 270px;
+
+    > header {
+      left: 270px;
+    }
   }
 
   > header {
@@ -689,10 +703,11 @@ select {
     .box-shadow(0 0 4px 0 rgba(0, 0, 0, 0.75));
     color: #fff;
     height: 50px;
-    overflow: hidden;
     left: 0;
-    position: absolute;
-    right: 0;
+    overflow: hidden;
+    position: fixed;
+    .transition-property(~'left, right');
+    .transition-duration(0.5s);
     top: 0;
     width: 100%;
     z-index: 10;
@@ -710,9 +725,12 @@ select {
   }
 
   .wrapper {
-    bottom: 0;
-    overflow: auto;
+    background: #fff;
+    .box-shadow(0 0 10px 0 rgba(0, 0, 0, 0.8));
     left: 0;
+    min-height: calc(~'100% - 51px');
+    min-height: -moz-calc(~'100% - 51px');
+    min-height: -webkit-calc(~'100% - 51px');
     position: absolute;
     right: 0;
     top: 51px;

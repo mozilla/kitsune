@@ -44,12 +44,15 @@
 
   .search-bar {
     background: @mobileFormBackground;
-    height: 26px;
+    .box-sizing(border-box);
+    height: 36px;
     left: 0;
     padding: 5px 16px;
-    position: absolute;
-    right: 0;
+    position: fixed;
     top: 51px;
+    .transition-property(~'left, right');
+    .transition-duration(0.5s);
+    width: 100%;
     z-index: 12;
 
     button {
@@ -80,9 +83,11 @@
     height: 24px;
     left: 0;
     padding: 5px 0;
-    position: absolute;
-    right: 0;
+    position: fixed;
     top: 87px;
+    .transition-property(~'left, right');
+    .transition-duration(0.5s);
+    width: 100%;
     z-index: 10;
 
     ul {
@@ -113,6 +118,28 @@
           line-height: 24px;
         }
       }
+    }
+  }
+
+  .exposed {
+    .search-bar,
+    .search-filters {
+      left: 270px;
+    }
+  }
+
+  &[data-orientation='right'] {
+    .exposed {
+      .search-bar,
+      .search-filters {
+        right: 270px;
+      }
+    }
+
+    .search-bar,
+    .search-filters {
+      left: auto;
+      right: 0;
     }
   }
 
