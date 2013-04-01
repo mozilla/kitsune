@@ -10,7 +10,7 @@ import cronjobs
 
 from questions.models import Question, QuestionVote
 from questions.tasks import update_question_vote_chunk
-from search.es_utils import ES_EXCEPTIONS, WRITE_INDEX, get_documents, get_es
+from search.es_utils import ES_EXCEPTIONS, get_documents
 from search.tasks import index_task
 from sumo.utils import chunked
 
@@ -88,8 +88,6 @@ def auto_lock_old_questions():
 
         if settings.ES_LIVE_INDEXING:
             try:
-                es = get_es()
-
                 # So... the first time this runs, it'll handle 160K
                 # questions or so which stresses everything. Thus we
                 # do it in chunks because otherwise this won't work.
@@ -98,24 +96,25 @@ def auto_lock_old_questions():
                 # the chunking code.
 
                 from search.utils import chunked
-                for chunk in chunked(q_ids, 1000):
+                for chunk in chunked(q_ids, 100):
 
                     # Fetch all the documents we need to update.
                     es_docs = get_documents(Question, chunk)
 
                     log.info('Updating %d index documents', len(es_docs))
 
+                    documents = []
+
                     # For each document, update the data and stick it
                     # back in the index.
                     for doc in es_docs:
                         doc[u'question_is_locked'] = True
-                        Question.index(doc, bulk=True, es=es)
+                        documents.append(doc)
 
-                    es.flush_bulk(forced=True)
-                    es.refresh(WRITE_INDEX, timesleep=0)
+                    Question.bulk_index(documents, id_field='document_id')
 
             except ES_EXCEPTIONS:
-                # Something happened with ES, so let's push index updating
-                # into an index_task which retries when it fails because
-                # of ES issues.
+                # Something happened with ES, so let's push index
+                # updating into an index_task which retries when it
+                # fails because of ES issues.
                 index_task.delay(Question, q_ids)
