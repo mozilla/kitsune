@@ -105,8 +105,7 @@ def logout(request):
     auth.logout(request)
     statsd.incr('user.logout')
 
-    next_url = get_next_url(request) if 'next' in request.GET else ''
-    res = HttpResponseRedirect(next_url or reverse('home'))
+    res = HttpResponseRedirect(get_next_url(request) or reverse('home'))
     res.delete_cookie(settings.SESSION_EXISTS_COOKIE)
     return res
 

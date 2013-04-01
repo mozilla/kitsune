@@ -5,7 +5,7 @@ from django.conf import settings
 from django.contrib.sites.models import Site
 from django.db import models
 from django.db.models.signals import pre_delete
-from django.utils.http import urlencode
+from django.utils.http import urlencode, is_safe_url
 
 from sumo import paginator
 
@@ -117,22 +117,8 @@ def get_next_url(request):
     else:
         url = request.META.get('HTTP_REFERER')
 
-    if url:
-        parsed_url = urlparse.urlparse(url)
-        # Don't redirect outside of SUMO.
-        # Don't include protocol+domain, so if we are https we stay that way.
-        if parsed_url.scheme:
-            site_domain = Site.objects.get_current().domain
-            url_domain = parsed_url.netloc
-            if site_domain != url_domain:
-                url = None
-            else:
-                url = u'?'.join([getattr(parsed_url, x) for x in
-                                ('path', 'query') if getattr(parsed_url, x)])
-
-        # Don't redirect right back to login or logout page
-        if parsed_url.path in [settings.LOGIN_URL, settings.LOGOUT_URL]:
-            url = None
+    if not is_safe_url(url, Site.objects.get_current().domain):
+        return None
 
     return url
 
