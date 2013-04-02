@@ -1,103 +1,149 @@
 (function($) {
 
 window.k = k || {};
-window.k.rickshaw = {};
 
-k.rickshaw.prepareData = function(data) {
-  var palette = new Rickshaw.Color.Palette();
-  return new Rickshaw.Series(data, palette);
+/* class Graph */
+k.Graph = function($elem, data, extra) {
+  var defaults = {
+    toRender: [],
+    options: {
+      legend: true,
+      slider: true,
+      xaxis: true,
+      yaxis: true,
+      hover: true
+    },
+
+    graph: {
+      renderer: 'line',
+      interpolation: 'linear'
+    },
+    hover: {},
+
+    rickshaw: {},
+    dom: {}
+  };
+
+
+  // true means deep.
+  $.extend(true, this, defaults, extra);
+
+  this.dom.elem = $elem;
+  this.data = data;
+
+  this.init();
 };
 
-k.rickshaw.makeGraph = function($elem, data, options) {
-  options = $.extend({
-    graph: {
-      renderer: 'bar'
-    },
-    hover: {
-      xFormatter: undefined,
-      yFormatter: undefined
-    }
-  }, options);
+k.Graph.prototype.init = function() {
+  this.initGraph();
+  this.initSlider();
+  this.initAxises();
+  this.initLegend();
+};
 
-  var i;
-  var render = [];
-  var graph;
-  var hoverClass, hoverDetail;
-  var $legend, legend;
-  var $yaxis, xaxis, yaxis;
-  var $slider, slider;
+k.Graph.prototype.prepareData = function() {
+  var palette = new Rickshaw.Color.Palette();
+  return new Rickshaw.Series(this.data, palette);
+};
 
-  render = [];
+k.Graph.prototype.initGraph = function() {
+  var hoverClass;
+  this.dom.graph = this.dom.elem.find('.graph');
 
-  $elem.find('.graph, .legend, .y-axis').empty();
-  graph = new Rickshaw.Graph($.extend({
-    element: $elem.find('.graph')[0],
-    series: k.rickshaw.prepareData(data),
+  var graphOpts = $.extend({
+    element: this.dom.graph[0], // Graph can't handle jQuery objects.
+    series: this.prepareData(),
     interpolation: 'linear'
-  }, options.graph));
-  render.push(graph);
+  }, this.graph);
 
-  if (options.graph.renderer === 'bar') {
-    hoverClass = Rickshaw.Graph.BarHoverDetail;
-  } else {
-    hoverClass = Rickshaw.Graph.HoverDetail;
+  this.dom.elem.find('.graph').empty();
+  this.rickshaw.graph = new Rickshaw.Graph(graphOpts);
+
+  if (this.options.hover) {
+    var hoverOpts = $.extend({
+      graph: this.rickshaw.graph
+    }, this.hover);
+
+    if (this.rickshaw.graph.renderer === 'bar') {
+      hoverClass = Rickshaw.Graph.BarHoverDetail;
+    } else {
+      hoverClass = Rickshaw.Graph.HoverDetail;
+    }
+
+    this.rickshaw.hover = new hoverClass(hoverOpts);
   }
-  hoverDetail = new hoverClass($.extend({
-    graph: graph
-  }, options.hover));
 
-  $legend = $elem.find('.legend');
-  if ($legend.length) {
-    legend = new Rickshaw.Graph.Legend( {
-      graph: graph,
-      element: $legend[0]
+  this.toRender.push(this.rickshaw.graph);
+};
+
+k.Graph.prototype.initSlider = function() {
+  if (this.options.slider) {
+    this.dom.slider = this.dom.elem.find('.slider');
+    this.dom.slider.empty();
+
+    slider = new Rickshaw.Graph.RangeSlider({
+      graph: this.rickshaw.graph,
+      element: this.dom.slider
+    });
+
+    this.slider = slider.element;
+  }
+};
+
+k.Graph.prototype.initAxises = function() {
+  var yaxis;
+
+  if (this.options.xaxis) {
+    xaxis = new Rickshaw.Graph.Axis.Time({
+      graph: this.rickshaw.graph
+    });
+  }
+
+  if (this.options.yaxis) {
+    this.dom.yaxis = this.dom.elem.find('.y-axis');
+    this.dom.yaxis.empty();
+
+    yaxis = new Rickshaw.Graph.Axis.Y({
+      graph: this.rickshaw.graph,
+      orientation: 'left',
+      element: this.dom.elem.find('.y-axis')[0]
+    });
+    this.toRender.push(yaxis);
+  }
+};
+
+k.Graph.prototype.initLegend = function() {
+  if (this.options.legend) {
+    this.dom.legend = this.dom.elem.find('.legend');
+    this.dom.legend.empty();
+
+    this.rickshaw.legend = new Rickshaw.Graph.Legend( {
+      graph: this.rickshaw.graph,
+      element: this.dom.legend[0] // legend can't handle jQuery objects
     });
 
     new Rickshaw.Graph.Behavior.Series.Toggle({
-      graph: graph,
-      legend: legend
+      graph: this.rickshaw.graph,
+      legend: this.rickshaw.legend
     });
 
     new Rickshaw.Graph.Behavior.Series.Order({
-      graph: graph,
-      legend: legend
-    });
-    render.push(legend);
-  }
-
-  $yaxis = $elem.find('.y-axis');
-  if ($yaxis.length) {
-    xaxis = new Rickshaw.Graph.Axis.Time({
-      graph: graph
-    });
-
-    yaxis = new Rickshaw.Graph.Axis.Y({
-      graph: graph,
-      orientation: 'left',
-      element: $elem.find('.y-axis')[0]
-    });
-    render.push(yaxis);
-  }
-
-  $slider = $elem.find('.slider');
-  if ($slider.length) {
-    slider = new Rickshaw.Graph.RangeSlider({
-      graph: graph,
-      element: $slider
+      graph: this.rickshaw.graph,
+      legend: this.rickshaw.legend
     });
   }
-
-  for (i=0; i<render.length; i++) {
-    render[i].render();
-  }
-
-  $yaxis.css({'top': $elem.find('.graph').position().top});
-
-  return {
-    'graph': graph,
-    'slider': slider.element
-  };
 };
+
+k.Graph.prototype.render = function() {
+  for (i=0; i<this.toRender.length; i++) {
+    this.toRender[i].render();
+  }
+
+  if (this.options.yaxis) {
+    this.dom.yaxis.css({'top': this.dom.graph.position().top});
+  }
+};
+/* end Graph */
 
 
 Rickshaw.namespace('Rickshaw.Graph.BarHoverDetail');

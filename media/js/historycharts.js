@@ -40,11 +40,10 @@
         var desiredMin;
 
         $container.show();
-        var graphObjects = k.rickshaw.makeGraph($container, data.series, {
-            graph: {
-                renderer: 'line'
+        var graph = new k.Graph($container, data.series, {
+            options: {
+                legend: false
             },
-            legend: false,
             hover: {
                 xFormatter: function(seconds) {
                     var date = new Date(seconds * 1000);
@@ -62,7 +61,7 @@
         });
 
         lines = {};
-        series = graphObjects.graph.series;
+        series = graph.rickshaw.graph.series;
         for (i=0; i<series.length; i++) {
             s = series[i];
             lines[s.slug] = s;
@@ -78,16 +77,16 @@
                     lines.percent.disabled = false;
                     lines.yes.disabled = true;
                     lines.no.disabled = true;
-                    graphObjects.graph.max = 1.0;
+                    graph.rickshaw.graph.max = 1.0;
                     break;
                 case 'votes':
                     lines.percent.disabled = true;
                     lines.yes.disabled = false;
                     lines.no.disabled = false;
-                    graphObjects.graph.max = undefined;
+                    graph.rickshaw.graph.max = undefined;
                     break;
             }
-            graphObjects.graph.update();
+            graph.rickshaw.graph.update();
         });
 
         $container.find('input[name=seriesset][value=percent]')
@@ -99,7 +98,7 @@
             annot = data.annotations[i];
             $timeline = $('<div class="timeline"/>').appendTo($timelines);
             annotations = new Rickshaw.Graph.Annotate({
-                'graph': graphObjects.graph,
+                'graph': graph.rickshaw.graph,
                 'element': $timeline[0]
             });
 
@@ -110,10 +109,10 @@
 
         // About 6 months ago, as epoch seconds.
         desiredMin = (new Date() - (1000 * 60 * 60 * 24 * 180)) / 1000;
-        graphObjects.graph.window.xMin = desiredMin;
-        graphObjects.graph.update();
+        graph.rickshaw.graph.window.xMin = desiredMin;
+        graph.rickshaw.graph.update();
 
-        graphObjects.slider.slider('values', 0, desiredMin);
+        graph.slider.slider('values', 0, desiredMin);
         function onSlide(event, ui) {
             var start = new Date(ui.values[0] * 1000);
             var end = new Date(ui.values[1] * 1000 - (1000 * 60 * 60 * 24));
@@ -122,8 +121,10 @@
                                                       k.dateFormat(fmt, end)]);
             $('label[for=slider]').text(label);
         }
-        graphObjects.slider.on('slide', onSlide);
-        onSlide(null, {values: graphObjects.slider.slider('values')} );
+        graph.slider.on('slide', onSlide);
+        onSlide(null, {values: graph.slider.slider('values')} );
+
+        graph.render();
     }
 
     $('#show-graph').click(init);
