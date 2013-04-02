@@ -6,7 +6,14 @@ function init() {
   });
 
   $topics = $('#topic-stats');
-  k.rickshaw.makeGraph($topics, $topics.data('histogram'));
+  new k.Graph($topics, {
+    data: {
+      series: $topics.data('histogram')
+    },
+    options: {
+      slider: false
+    }
+  }).render();
 }
 
 $(document).ready(init);

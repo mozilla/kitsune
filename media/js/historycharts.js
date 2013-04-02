@@ -33,18 +33,19 @@
 
     function rickshawGraph(data) {
         var $container = $('#helpful-graph');
-        var i, j;
-        var lines, series, s;
-        var annotations, $timelines;
-        var annot, $timeline;
-        var desiredMin;
+        var sets = {};
+
+        sets[gettext('Votes')] = ['yes', 'no'];
+        sets[gettext('Percent')] = ['percent'];
 
         $container.show();
-        var graphObjects = k.rickshaw.makeGraph($container, data.series, {
-            graph: {
-                renderer: 'line'
+        var graph = new k.Graph($container, {
+            data: data,
+            options: {
+                legend: false,
+                sets: true
             },
-            legend: false,
+            sets: sets,
             hover: {
                 xFormatter: function(seconds) {
                     var date = new Date(seconds * 1000);
@@ -61,69 +62,7 @@
             }
         });
 
-        lines = {};
-        series = graphObjects.graph.series;
-        for (i=0; i<series.length; i++) {
-            s = series[i];
-            lines[s.slug] = s;
-        }
-
-        lines.yes.color = '#21de2b';
-        lines.no.color = '#de2b21';
-        lines.percent.color = '#2b21de';
-
-        $container.on('change', 'input[name=seriesset]', function(e) {
-            switch($(this).val()) {
-                case 'percent':
-                    lines.percent.disabled = false;
-                    lines.yes.disabled = true;
-                    lines.no.disabled = true;
-                    graphObjects.graph.max = 1.0;
-                    break;
-                case 'votes':
-                    lines.percent.disabled = true;
-                    lines.yes.disabled = false;
-                    lines.no.disabled = false;
-                    graphObjects.graph.max = undefined;
-                    break;
-            }
-            graphObjects.graph.update();
-        });
-
-        $container.find('input[name=seriesset][value=percent]')
-            .prop('checked', true)
-            .trigger('change');
-
-        $timelines = $container.find('.timelines');
-        for (i=0; i < data.annotations.length; i++) {
-            annot = data.annotations[i];
-            $timeline = $('<div class="timeline"/>').appendTo($timelines);
-            annotations = new Rickshaw.Graph.Annotate({
-                'graph': graphObjects.graph,
-                'element': $timeline[0]
-            });
-
-            for (j=0; j < annot.data.length; j++) {
-                annotations.add(annot.data[j].x, annot.data[j].text);
-            }
-        }
-
-        // About 6 months ago, as epoch seconds.
-        desiredMin = (new Date() - (1000 * 60 * 60 * 24 * 180)) / 1000;
-        graphObjects.graph.window.xMin = desiredMin;
-        graphObjects.graph.update();
-
-        graphObjects.slider.slider('values', 0, desiredMin);
-        function onSlide(event, ui) {
-            var start = new Date(ui.values[0] * 1000);
-            var end = new Date(ui.values[1] * 1000 - (1000 * 60 * 60 * 24));
-            var fmt = '%(year)s-%(month)s-%(date)s';
-            var label = interpolate('From %s to %s', [k.dateFormat(fmt, start),
-                                                      k.dateFormat(fmt, end)]);
-            $('label[for=slider]').text(label);
-        }
-        graphObjects.slider.on('slide', onSlide);
-        onSlide(null, {values: graphObjects.slider.slider('values')} );
+        graph.render();
     }
 
     $('#show-graph').click(init);
