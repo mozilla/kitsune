@@ -147,7 +147,7 @@ Other things you can change:
     This affects timeouts for search-related requests.
 
     If you're having problems with ES being slow, raising this number
-    can be helpful.
+    might be helpful.
 
 
 Using Elastic Search
