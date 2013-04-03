@@ -273,7 +273,7 @@ wiki (aka kb)::
 
     document_title__text           6
     document_content__text         1
-    document_keywords__text        4
+    document_keywords__text        8
     document_summary__text         2
 
 questions (aka support forums)::
