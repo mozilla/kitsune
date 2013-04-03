@@ -33,14 +33,12 @@
 
     function rickshawGraph(data) {
         var $container = $('#helpful-graph');
-        var i, j;
-        var lines, series, s;
-        var annotations, $timelines;
-        var annot, $timeline;
-        var desiredMin;
+        var i;
+        var lines, s;
 
         $container.show();
-        var graph = new k.Graph($container, data.series, {
+        var graph = new k.Graph($container, {
+            data: data,
             options: {
                 legend: false
             },
@@ -92,37 +90,6 @@
         $container.find('input[name=seriesset][value=percent]')
             .prop('checked', true)
             .trigger('change');
-
-        $timelines = $container.find('.timelines');
-        for (i=0; i < data.annotations.length; i++) {
-            annot = data.annotations[i];
-            $timeline = $('<div class="timeline"/>').appendTo($timelines);
-            annotations = new Rickshaw.Graph.Annotate({
-                'graph': graph.rickshaw.graph,
-                'element': $timeline[0]
-            });
-
-            for (j=0; j < annot.data.length; j++) {
-                annotations.add(annot.data[j].x, annot.data[j].text);
-            }
-        }
-
-        // About 6 months ago, as epoch seconds.
-        desiredMin = (new Date() - (1000 * 60 * 60 * 24 * 180)) / 1000;
-        graph.rickshaw.graph.window.xMin = desiredMin;
-        graph.rickshaw.graph.update();
-
-        graph.slider.slider('values', 0, desiredMin);
-        function onSlide(event, ui) {
-            var start = new Date(ui.values[0] * 1000);
-            var end = new Date(ui.values[1] * 1000 - (1000 * 60 * 60 * 24));
-            var fmt = '%(year)s-%(month)s-%(date)s';
-            var label = interpolate('From %s to %s', [k.dateFormat(fmt, start),
-                                                      k.dateFormat(fmt, end)]);
-            $('label[for=slider]').text(label);
-        }
-        graph.slider.on('slide', onSlide);
-        onSlide(null, {values: graph.slider.slider('values')} );
 
         graph.render();
     }

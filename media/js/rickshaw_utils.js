@@ -3,7 +3,7 @@
 window.k = k || {};
 
 /* class Graph */
-k.Graph = function($elem, data, extra) {
+k.Graph = function($elem, extra) {
   var defaults = {
     toRender: [],
     options: {
@@ -12,6 +12,11 @@ k.Graph = function($elem, data, extra) {
       xaxis: true,
       yaxis: true,
       hover: true
+    },
+
+    data: {
+      series: [],
+      annotations: []
     },
 
     graph: {
@@ -24,12 +29,10 @@ k.Graph = function($elem, data, extra) {
     dom: {}
   };
 
-
   // true means deep.
   $.extend(true, this, defaults, extra);
 
   this.dom.elem = $elem;
-  this.data = data;
 
   this.init();
 };
@@ -43,7 +46,7 @@ k.Graph.prototype.init = function() {
 
 k.Graph.prototype.prepareData = function() {
   var palette = new Rickshaw.Color.Palette();
-  return new Rickshaw.Series(this.data, palette);
+  return new Rickshaw.Series(this.data.series, palette);
 };
 
 k.Graph.prototype.initGraph = function() {
@@ -131,6 +134,31 @@ k.Graph.prototype.initLegend = function() {
       graph: this.rickshaw.graph,
       legend: this.rickshaw.legend
     });
+  }
+};
+
+k.Graph.prototype.initTimeline = function() {
+  var $timeline, timeline;
+
+  if (this.options.timeline) {
+    this.dom.timelines = $container.find('.timelines');
+    this.rickshaw.timelines = [];
+
+    for (i=0; i < this.data.annotations.length; i++) {
+      annot = this.data.annotations[i];
+      $timeline = $('<div class="timeline"/>').appendTo($timelines);
+
+      timeline = new Rickshaw.Graph.Annotate({
+        'graph': graph.rickshaw.graph,
+        'element': $timeline[0]
+      });
+
+      for (j=0; j < annot.data.length; j++) {
+        timeline.add(annot.data[j].x, annot.data[j].text);
+      }
+
+      this.rickshaw.timelines.push(timeline);
+    }
   }
 };
 

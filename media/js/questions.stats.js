@@ -6,7 +6,10 @@ function init() {
   });
 
   $topics = $('#topic-stats');
-  new k.Graph($topics, $topics.data('histogram'), {
+  new k.Graph($topics, {
+    data: {
+      series: $topics.data('histogram')
+    },
     options: {
       slider: false
     }
