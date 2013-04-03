@@ -2,7 +2,7 @@
 Licenses
 ========
 
-The license for Kitsune's codebase can be found in LICENSE.
+.. literalinclude:: ../LICENSE
 
 
 License Exceptions
