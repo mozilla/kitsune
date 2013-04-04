@@ -33,7 +33,10 @@ k = {};
     $(function() {
         // Menu toggling
         $('#menu-button').on('click', function() {
-            $('#page').toggleClass('exposed');
+            var $nav = $('body > nav');
+            $nav.css('display', 'block');
+            $('body').toggleClass('exposed');
+            setTimeout(function() { $nav.css('display', ''); }, 500);
         });
 
         function showNotification(notification) {

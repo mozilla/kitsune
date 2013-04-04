@@ -82,10 +82,8 @@
       }
     }
 
-    #page {
-      .wrapper {
-        padding-bottom: 50px;
-      }
+    > .wrapper {
+      padding-bottom: 50px;
     }
   }
 
@@ -112,6 +110,8 @@
     position: fixed;
     top: 50px;
     text-align: center;
+    .transition-property(~'left, right');
+    .transition-duration(0.5s);
     width: 100%;
     z-index: 1;
 
@@ -134,6 +134,25 @@
         right: 0;
         top: 0;
       }
+    }
+  }
+
+  &.exposed {
+    .mailbox-tabs {
+      left: 270px;
+    }
+  }
+
+  &[data-orientation="right"] {
+    &.exposed {
+      .mailbox-tabs {
+        right: 270px;
+      }
+    }
+
+    .mailbox-tabs {
+      left: auto;
+      right: 0;
     }
   }
 
@@ -263,10 +282,8 @@
 
 .inbox,
 .outbox {
-  #page {
-    .wrapper {
-      top: 91px;
-    }
+  > .wrapper {
+    top: 91px;
   }
 }
 
@@ -476,9 +493,7 @@
     padding: 16px;
   }
 
-  #page {
-    .wrapper {
-      padding-bottom: 50px;
-    }
+  > .wrapper {
+    padding-bottom: 50px;
   }
 }
