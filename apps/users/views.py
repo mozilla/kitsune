@@ -3,7 +3,6 @@ from ast import literal_eval
 
 from django.conf import settings
 from django.contrib import auth, messages
-from django.contrib.auth.forms import PasswordResetForm
 from django.contrib.auth.models import User
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.sites.models import Site
@@ -34,7 +33,7 @@ from upload.tasks import _create_image_thumbnail
 from users.forms import (ProfileForm, AvatarForm, EmailConfirmationForm,
                          AuthenticationForm, EmailChangeForm, SetPasswordForm,
                          PasswordChangeForm, SettingsForm, ForgotUsernameForm,
-                         RegisterForm)
+                         RegisterForm, PasswordResetForm)
 from users.helpers import profile_url
 from users.models import (Profile, RegistrationProfile,
                           EmailChange)
