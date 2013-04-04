@@ -239,6 +239,13 @@ class PasswordResetTests(TestCaseBase):
         self.u = User.objects.get(username=self.u.username)
         assert self.u.check_password(new_pw)
 
+    @mock.patch.object(Site.objects, 'get_current')
+    def test_reset_user_with_unusable_password(self, get_current):
+        """Verify that user's with unusable passwords can reset them."""
+        self.u.set_unusable_password()
+        self.u.save()
+        self.test_success()
+
 
 class EditProfileTests(TestCaseBase):
 
@@ -400,6 +407,7 @@ class ViewProfileTests(TestCaseBase):
 
         r = self.client.get(reverse('users.profile', args=[self.u.id]))
         assert 'Deactivate this user' not in r.content
+
 
 class PasswordChangeTests(TestCaseBase):
 

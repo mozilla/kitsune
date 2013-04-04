@@ -3,6 +3,8 @@ import re
 from django import forms
 from django.conf import settings
 from django.contrib.auth import authenticate, forms as auth_forms
+from django.contrib.auth.forms import (PasswordResetForm as
+                                       DjangoPasswordResetForm)
 from django.contrib.auth.models import User
 from django.contrib.sites.models import get_current_site
 from django.core.mail import send_mail
@@ -327,6 +329,17 @@ class ForgotUsernameForm(forms.Form):
         # been raised already.
         locale = user.profile.locale or settings.WIKI_DEFAULT_LANGUAGE
         _send_mail(locale, user, c)
+
+
+class PasswordResetForm(DjangoPasswordResetForm):
+    def clean_email(self):
+        """Same as django's but doesn't invalidate unusable passwords."""
+        email = self.cleaned_data["email"]
+        self.users_cache = User.objects.filter(email__iexact=email,
+                                               is_active=True)
+        if not len(self.users_cache):
+            raise forms.ValidationError(self.error_messages['unknown'])
+        return email
 
 
 def _check_password(password):
