@@ -9,8 +9,8 @@ k.Graph = function($elem, extra) {
     options: {
       legend: true,
       slider: true,
-      xaxis: true,
-      yaxis: true,
+      xAxis: true,
+      yAxis: true,
       hover: true,
       sets: false
     },
@@ -56,6 +56,7 @@ k.Graph.prototype.prepareData = function() {
 k.Graph.prototype.initGraph = function() {
   var hoverClass;
   var key;
+  var i;
   this.dom.graph = this.dom.elem.find('.graph');
 
   var graphOpts = $.extend({
@@ -132,24 +133,24 @@ k.Graph.prototype.initSlider = function() {
 };
 
 k.Graph.prototype.initAxises = function() {
-  var yaxis;
+  var yAxis;
 
-  if (this.options.xaxis) {
-    xaxis = new Rickshaw.Graph.Axis.Time({
+  if (this.options.xAxis) {
+    xAxis = new Rickshaw.Graph.Axis.Time({
       graph: this.rickshaw.graph
     });
   }
 
-  if (this.options.yaxis) {
-    this.dom.yaxis = this.dom.elem.find('.y-axis');
-    this.dom.yaxis.empty();
+  if (this.options.yAxis) {
+    this.dom.yAxis = this.dom.elem.find('.y-axis');
+    this.dom.yAxis.empty();
 
-    yaxis = new Rickshaw.Graph.Axis.Y({
+    yAxis = new Rickshaw.Graph.Axis.Y({
       graph: this.rickshaw.graph,
       orientation: 'left',
       element: this.dom.elem.find('.y-axis')[0]
     });
-    this.toRender.push(yaxis);
+    this.toRender.push(yAxis);
   }
 };
 
@@ -177,6 +178,7 @@ k.Graph.prototype.initLegend = function() {
 
 k.Graph.prototype.initTimeline = function() {
   var $timeline, timeline;
+  var i, j;
 
   if (this.options.timeline) {
     this.dom.timelines = $container.find('.timelines');
@@ -210,8 +212,8 @@ k.Graph.prototype.initSets = function() {
   for (key in this.sets) {
     if (!this.sets.hasOwnProperty(key)) continue;
 
-    $sets.append('<input type="radio" name="sets" value="' + key + '" />');
-    $sets.append('<label for="sets">' + key + '</label>');
+    $('<input type="radio" name="sets"/>').val(key).appendTo($sets);
+    $('<label for="sets">').text(key).appendTo($sets);
   }
 
   var self = this;
@@ -237,12 +239,14 @@ k.Graph.prototype.initSets = function() {
 };
 
 k.Graph.prototype.render = function() {
+  var i;
+
   for (i=0; i<this.toRender.length; i++) {
     this.toRender[i].render();
   }
 
-  if (this.options.yaxis) {
-    this.dom.yaxis.css({'top': this.dom.graph.position().top});
+  if (this.options.yAxis) {
+    this.dom.yAxis.css({'top': this.dom.graph.position().top});
   }
 };
 /* end Graph */
