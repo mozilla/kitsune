@@ -33,15 +33,19 @@
 
     function rickshawGraph(data) {
         var $container = $('#helpful-graph');
-        var i;
-        var lines, s;
+        var sets = {};
+
+        sets[gettext('Votes')] = ['yes', 'no'];
+        sets[gettext('Percent')] = ['percent'];
 
         $container.show();
         var graph = new k.Graph($container, {
             data: data,
             options: {
-                legend: false
+                legend: false,
+                sets: true
             },
+            sets: sets,
             hover: {
                 xFormatter: function(seconds) {
                     var date = new Date(seconds * 1000);
@@ -57,39 +61,6 @@
                 }
             }
         });
-
-        lines = {};
-        series = graph.rickshaw.graph.series;
-        for (i=0; i<series.length; i++) {
-            s = series[i];
-            lines[s.slug] = s;
-        }
-
-        lines.yes.color = '#21de2b';
-        lines.no.color = '#de2b21';
-        lines.percent.color = '#2b21de';
-
-        $container.on('change', 'input[name=seriesset]', function(e) {
-            switch($(this).val()) {
-                case 'percent':
-                    lines.percent.disabled = false;
-                    lines.yes.disabled = true;
-                    lines.no.disabled = true;
-                    graph.rickshaw.graph.max = 1.0;
-                    break;
-                case 'votes':
-                    lines.percent.disabled = true;
-                    lines.yes.disabled = false;
-                    lines.no.disabled = false;
-                    graph.rickshaw.graph.max = undefined;
-                    break;
-            }
-            graph.rickshaw.graph.update();
-        });
-
-        $container.find('input[name=seriesset][value=percent]')
-            .prop('checked', true)
-            .trigger('change');
 
         graph.render();
     }

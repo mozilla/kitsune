@@ -11,12 +11,15 @@ k.Graph = function($elem, extra) {
       slider: true,
       xaxis: true,
       yaxis: true,
-      hover: true
+      hover: true,
+      sets: false
     },
 
     data: {
       series: [],
-      annotations: []
+      annotations: [],
+      colors: {},
+      sets: {}
     },
 
     graph: {
@@ -42,6 +45,7 @@ k.Graph.prototype.init = function() {
   this.initSlider();
   this.initAxises();
   this.initLegend();
+  this.initSets();
 };
 
 k.Graph.prototype.prepareData = function() {
@@ -51,6 +55,7 @@ k.Graph.prototype.prepareData = function() {
 
 k.Graph.prototype.initGraph = function() {
   var hoverClass;
+  var key;
   this.dom.graph = this.dom.elem.find('.graph');
 
   var graphOpts = $.extend({
@@ -76,13 +81,29 @@ k.Graph.prototype.initGraph = function() {
     this.rickshaw.hover = new hoverClass(hoverOpts);
   }
 
+  this.rickshaw.lines = {};
+  series = this.rickshaw.graph.series;
+  for (i=0; i<series.length; i++) {
+      s = series[i];
+      this.rickshaw.lines[s.slug] = s;
+  }
+
+  for (key in this.data.colors) {
+    if (!this.data.colors.hasOwnProperty(key)) continue;
+    this.rickshaw.lines[key].color = this.data.colors[key];
+  }
+
   this.toRender.push(this.rickshaw.graph);
 };
 
 k.Graph.prototype.initSlider = function() {
+  var minDate;
+
   if (this.options.slider) {
     this.dom.slider = this.dom.elem.find('.slider');
     this.dom.slider.empty();
+
+    this.dom.elem.find('.inline-controls').append('<div><label for="slider"/></div>');
 
     slider = new Rickshaw.Graph.RangeSlider({
       graph: this.rickshaw.graph,
@@ -90,6 +111,23 @@ k.Graph.prototype.initSlider = function() {
     });
 
     this.slider = slider.element;
+
+    // About 6 months ago, as epoch seconds.
+    minDate = (new Date() - (1000 * 60 * 60 * 24 * 180)) / 1000;
+    this.rickshaw.graph.window.xMin = minDate;
+    this.rickshaw.graph.update();
+
+    this.slider.slider('values', 0, minDate);
+    function onSlide(event, ui) {
+        var start = new Date(ui.values[0] * 1000);
+        var end = new Date(ui.values[1] * 1000 - (1000 * 60 * 60 * 24));
+        var fmt = '%(year)s-%(month)s-%(date)s';
+        var label = interpolate('From %s to %s', [k.dateFormat(fmt, start),
+                                                  k.dateFormat(fmt, end)]);
+        $('label[for=slider]').text(label);
+    }
+    this.slider.on('slide', onSlide);
+    onSlide(null, {values: this.slider.slider('values')} );
   }
 };
 
@@ -149,7 +187,7 @@ k.Graph.prototype.initTimeline = function() {
       $timeline = $('<div class="timeline"/>').appendTo($timelines);
 
       timeline = new Rickshaw.Graph.Annotate({
-        'graph': graph.rickshaw.graph,
+        'graph': this.rickshaw.graph,
         'element': $timeline[0]
       });
 
@@ -160,6 +198,42 @@ k.Graph.prototype.initTimeline = function() {
       this.rickshaw.timelines.push(timeline);
     }
   }
+};
+
+k.Graph.prototype.initSets = function() {
+  if (!this.options.sets) return;
+
+  var key;
+  var $sets = $('<div class="sets"></div>')
+    .appendTo(this.dom.elem.find('.inline-controls'));
+
+  for (key in this.sets) {
+    if (!this.sets.hasOwnProperty(key)) continue;
+
+    $sets.append('<input type="radio" name="sets" value="' + key + '" />');
+    $sets.append('<label for="sets">' + key + '</label>');
+  }
+
+  var self = this;
+  $sets.on('change', 'input[name=sets]', function() {
+    var $this = $(this);
+    var key;
+    var series;
+    var i;
+    var val;
+
+    for (key in self.sets) {
+      series = self.sets[key];
+      for (i=0; i<series.length; i++) {
+        disabled = ($this.attr('value') === key) ^ $this.prop('checked');
+        self.rickshaw.lines[series[i]].disabled = disabled;
+      }
+    }
+
+    self.rickshaw.graph.update();
+  });
+
+  $sets.find('input[name=sets]').first().click();
 };
 
 k.Graph.prototype.render = function() {

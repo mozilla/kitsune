@@ -28,15 +28,7 @@
       </div>
 
       <div id="helpful-graph" data-url="{{ url('wiki.get_helpful_votes_async', document.slug) }}">
-        <div class="inline-controls">
-          <div>
-            <input type="radio" name="seriesset" value="percent">{{ _('Percent') }}</input>
-            <input type="radio" name="seriesset" value="votes">{{ _('Votes') }}</input>
-          </div>
-          <div>
-            <label for="slider">...</label>
-          </div>
-        </div>
+        <div class="inline-controls"></div>
         <div class="graph-container">
           <div class="slider"></div>
           <div class="graph"></div>
