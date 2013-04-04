@@ -245,7 +245,7 @@ def update_aoa_contributors_metric(day=None):
         else:
             # Start updating 30 days after the first reply we have.
             try:
-                first_reply = Repy.objects.order_by('created')[0]
+                first_reply = Reply.objects.order_by('created')[0]
                 start = first_reply.created.date() + timedelta(days=30)
             except IndexError:
                 # If there is no data, there is nothing to do here.
