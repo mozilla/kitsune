@@ -54,9 +54,9 @@ def user_auth(request, contributor=False, register_form=None,
     """
     next_url = get_next_url(request) or reverse('home')
 
-    if login_form == None:
+    if login_form is None:
         login_form = AuthenticationForm()
-    if register_form == None:
+    if register_form is None:
         register_form = RegisterForm()
 
     return render(request, 'users/auth.html', {
@@ -286,7 +286,7 @@ def profile(request, template, user_id):
         Profile, user__id=user_id)
 
     if not (request.user.has_perm('users.deactivate_users')
-        or user_profile.user.is_active):
+            or user_profile.user.is_active):
         raise Http404('No Profile matches the given query.')
 
     groups = user_profile.user.groups.all()
@@ -296,7 +296,7 @@ def profile(request, template, user_id):
         'num_questions': user_num_questions(user_profile.user),
         'num_answers': user_num_answers(user_profile.user),
         'num_solutions': user_num_solutions(user_profile.user),
-        'num_documents': user_num_documents(user_profile.user),})
+        'num_documents': user_num_documents(user_profile.user)})
 
 
 @require_POST
@@ -315,7 +315,7 @@ def documents_contributed(request, user_id):
 
     return render(request, 'users/documents_contributed.html', {
         'profile': user_profile,
-        'documents': user_documents(user_profile.user),})
+        'documents': user_documents(user_profile.user)})
 
 
 @login_required
