@@ -121,7 +121,7 @@
     }
   }
 
-  .exposed {
+  &.exposed {
     .search-bar,
     .search-filters {
       left: 270px;
@@ -129,7 +129,7 @@
   }
 
   &[data-orientation='right'] {
-    .exposed {
+    &.exposed {
       .search-bar,
       .search-filters {
         right: 270px;
@@ -143,10 +143,8 @@
     }
   }
 
-  #page {
-    .wrapper {
-      top: 121px;
-    }
+  > .wrapper {
+    top: 121px;
   }
 }
 
