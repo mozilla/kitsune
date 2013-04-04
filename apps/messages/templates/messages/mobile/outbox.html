@@ -31,7 +31,7 @@
               <span class="details">
                 <span class="meta">
                   <span class="name">
-                    {% if message.sender %}
+                    {% if message.recipient %}
                       {{ display_name(message.recipient) }}
                     {% else %}
                       {{ _('System') }}
