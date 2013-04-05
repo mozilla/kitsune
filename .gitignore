@@ -10,6 +10,7 @@ build.py
 **-all.js
 **-min.js
 media/uploads
+node_modules
 tmp
 locale
 docs/_build
