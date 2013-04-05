@@ -115,7 +115,7 @@ To install LESS you will first need to `install Node.js and NPM
 
 Now install LESS using::
 
-    $ npm install less
+    $ npm install -g less
 
 
 Getting the Source
