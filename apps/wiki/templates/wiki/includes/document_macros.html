@@ -16,8 +16,9 @@
 
 {% macro contributor_list(contributors) -%}
   <section id="doc-contributors">
-    {% trans contributors=user_list(contributors) %}
-        These fine people helped write this article:: {{ contributors }}. You can help too - find out <a href="http://support.mozilla.org/get-involved">how</a>.
+    {% trans contributors=user_list(contributors), link=url('landings.get_involved') %}
+      These fine people helped write this article: {{ contributors }}.
+      You can help too - find out <a href="{{ link }}">how</a>.
     {% endtrans %}
   </section>
 {%- endmacro %}
