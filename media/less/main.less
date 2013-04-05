@@ -1235,7 +1235,7 @@ input[type=button],
     color: #fff;
     font-size: 14px;
     height: 18px;
-    padding: 6px 42px 6px 20px; 
+    padding: 6px 42px 6px 20px;
 
     &:focus {
       outline: none;
@@ -1329,6 +1329,53 @@ input[type=button],
     left: auto;
     right: 0;
   }
+}
+
+#error-page {
+  background: url(../img/background-404.jpg) no-repeat;
+  background-size: 100%;
+  border-radius: 5px;
+  font-size: 18px;
+  line-height: 25px;
+  min-height: 554px;
+  padding: 10px 0;
+  text-align: center;
+
+  h1 {
+    color: #fff;
+    font-size: 45px;
+    font-weight: 100;
+    margin-bottom: 150px;
+    text-shadow: #222 1px 1px 2px;
+  }
+
+  p, div.search-empty {
+    background-color: rgba(256, 256, 256, 0.75);
+    padding: 5px;
+  }
+
+  form {
+    margin: 30px 0px;
+
+    .search-query {
+      padding: 5px;
+    }
+
+    input[type="submit"] {
+      .gradient(#3c88cc, #3c88cc, #3173ae);
+      border-bottom: 2px solid #2b659a;
+      color: #fff;
+      font-size: 17px;
+      line-height: 20px;
+      padding: 5px 15px;
+    }
+  }
+}
+
+.footnote {
+  display: inline-block;
+  font-size: 12px;
+  margin-top: 10px;
 }
 
 @media only screen and (max-device-width: 800px) {
