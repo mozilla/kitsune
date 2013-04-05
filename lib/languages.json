@@ -84,7 +84,7 @@
         "english": "Gujarati",
         "native": "\u0a97\u0ac1\u0a9c\u0ab0\u0abe\u0aa4\u0ac0"
     },
-    "sr-CYRL": {
+    "sr-Cyrl": {
         "iso639_1": "sr",
         "english": "Serbian",
         "native": "\u0421\u0440\u043f\u0441\u043a\u0438"
@@ -404,7 +404,7 @@
         "english": "Arabic",
         "native": "\u0639\u0631\u0628\u064a"
     },
-    "sr-LATN": {
+    "sr-Latn": {
         "iso639_1": "sr",
         "english": "Serbian",
         "native": "Srpski"
