@@ -45,7 +45,8 @@ We deploy to production from ``master``.
 Dev
 ===
 
-Dev runs whatever is in master and updates every 15 minutes via a cron job.
+Dev runs whatever is in master on every commit via github hooks to an updater
+script.
 
 
 Stage
