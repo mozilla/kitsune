@@ -4,9 +4,12 @@ from announcements.models import Announcement
 
 
 class AnnouncementAdmin(admin.ModelAdmin):
-    list_display = ['__unicode__', 'is_visible']
+    list_display = ['__unicode__', 'group', 'locale', 'creator', 'is_visible']
     exclude = ['created']
     readonly_fields = ['creator']
+    date_hierarchy = 'created'
+    list_filter = ['created', 'group', 'locale']
+    search_fields = ['creator__username']
 
     def is_visible(self, obj):
         visible = obj.is_visible()
