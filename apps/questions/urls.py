@@ -10,7 +10,7 @@ urlpatterns = patterns('questions.views',
     url(r'^$', 'questions', name='questions.questions'),
     url(r'^/answer-preview-async$', 'answer_preview_async',
         name='questions.answer_preview_async'),
-    url(r'^/stats$', 'stats', name='question_stats'),
+    url(r'^/stats$', 'stats', name='questions.stats'),
 
     # AAQ
     url(r'^/new$', 'aaq', name='questions.aaq_step1'),
