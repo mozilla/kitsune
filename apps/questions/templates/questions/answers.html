@@ -154,6 +154,20 @@
             </form>
           </li>
         {% endif %}
+        <li class="email">
+          {% if is_watching_question %}
+            <a data-form="unwatch-form" data-type="submit">{{ _('Stop email updates') }}</a>
+            <form id="unwatch-form" class="unwatch" action="{{ url('questions.unwatch', question.id) }}" method="post">
+              {{ csrf() }}
+            </form>
+          {% else %}
+            <a id="email-subscribe-link" href="#email-subscribe">{{ _('Get email updates') }}</a>
+            {% include "questions/includes/email_subscribe.html" %}
+          {% endif %}
+        </li>
+        <li class="rss">
+          <a href="{{ url('questions.answers.feed', question.id) }}">{{ _("Subscribe to feed") }}</a>
+        </li>
       </ul>
 
       {% set products = question.products.all() %}

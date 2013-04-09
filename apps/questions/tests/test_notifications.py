@@ -111,21 +111,32 @@ class NotificationsTests(TestCaseBase):
 
         assert fire.called
 
-    def _watch_question(self):
-        """Helper to watch a question."""
+    def _toggle_watch_question(self, event_type, turn_on=True):
+        """Helper to watch/unwatch a question. Fails if called twice with
+        the same turn_on value."""
         question = Question.objects.all()[0]
         self.client.login(username='pcraciunoiu', password='testpass')
         user = User.objects.get(username='pcraciunoiu')
+        event_cls = (QuestionReplyEvent if event_type == 'reply'
+                                        else QuestionSolvedEvent)
+        # Make sure 'before' values are the reverse.
+        if turn_on:
+            assert not event_cls.is_notifying(user, question), (
+                '%s should not be notifying.' % event_cls.__name__)
+        else:
+            assert event_cls.is_notifying(user, question), (
+                '%s should be notifying.' % event_cls.__name__)
 
-        # Make sure it isn't watching yet.
-        assert not QuestionSolvedEvent.is_notifying(user, question), (
-            '%s should not be notifying.' % QuestionSolvedEvent.__name__)
+        url = 'questions.watch' if turn_on else 'questions.unwatch'
+        data = {'event_type': event_type} if turn_on else {}
+        post(self.client, url, data, args=[question.id])
 
-        post(self.client, 'questions.watch', {}, args=[question.id])
-
-        assert QuestionSolvedEvent.is_notifying(user, question), (
-            '%s should be notifying.' % QuestionSolvedEvent.__name__)
-
+        if turn_on:
+            assert event_cls.is_notifying(user, question), (
+                '%s should be notifying.' % event_cls.__name__)
+        else:
+            assert not event_cls.is_notifying(user, question), (
+                '%s should not be notifying.' % event_cls.__name__)
         return question
 
     @mock.patch.object(Site.objects, 'get_current')
@@ -137,7 +148,7 @@ class NotificationsTests(TestCaseBase):
         # TODO: Too monolithic. Split this test into several.
         get_current.return_value.domain = 'testserver'
 
-        question = self._watch_question()
+        question = self._toggle_watch_question('solution', turn_on=True)
         QuestionSolvedEvent.notify('anon@ymous.com', question)
 
         answer = question.answers.all()[0]
@@ -155,6 +166,8 @@ class NotificationsTests(TestCaseBase):
         starts_with(mail.outbox[1].body,
                     SOLUTION_EMAIL_TO_ANONYMOUS % answer.id)
 
+        self._toggle_watch_question('solution', turn_on=False)
+
     @mock.patch.object(Site.objects, 'get_current')
     @mock.patch.object(settings._wrapped, 'TIDINGS_CONFIRM_ANONYMOUS_WATCHES',
                        False)
@@ -168,11 +181,8 @@ class NotificationsTests(TestCaseBase):
         # helpers.
         get_current.return_value.domain = 'testserver'
 
-        question = Question.objects.all()[0]
-        user = User.objects.get(username='pcraciunoiu')
-
         # An arbitrary registered user (pcraciunoiu) watches:
-        QuestionReplyEvent.notify(user, question)
+        question = self._toggle_watch_question('reply', turn_on=True)
         # An anonymous user watches:
         QuestionReplyEvent.notify('anon@ymous.com', question)
         # The question asker (jsocol) watches:
@@ -202,6 +212,8 @@ class NotificationsTests(TestCaseBase):
                          answer.creator.username)
         starts_with(mail.outbox[2].body, ANSWER_EMAIL_TO_ANONYMOUS.format(
             answer=answer.id))
+
+        self._toggle_watch_question('reply', turn_on=False)
 
     @mock.patch.object(Site.objects, 'get_current')
     def test_autowatch_reply(self, get_current):

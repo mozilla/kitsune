@@ -11,22 +11,24 @@ class WatchQuestionFormTests(TestCaseBase):
     """Tests for WatchQuestionForm."""
     def test_anonymous_watch_with_email(self):
         form = WatchQuestionForm(AnonymousUser(),
-                                 data={'email': 'wo@ot.com'})
+                                 data={'email': 'wo@ot.com',
+                                       'event_type': 'reply'})
         assert form.is_valid()
         eq_('wo@ot.com', form.cleaned_data['email'])
 
     def test_anonymous_watch_without_email(self):
-        form = WatchQuestionForm(AnonymousUser(), data={})
+        form = WatchQuestionForm(AnonymousUser(), data={'event_type': 'reply'})
         assert not form.is_valid()
         eq_('Please provide an email.', form.errors['email'][0])
 
     def test_registered_watch_with_email(self):
-        form = WatchQuestionForm(user(), data={'email': 'wo@ot.com'})
+        form = WatchQuestionForm(user(), data={'email': 'wo@ot.com',
+                                               'event_type': 'reply'})
         assert form.is_valid()
         assert not form.cleaned_data['email']
 
     def test_registered_watch_without_email(self):
-        form = WatchQuestionForm(user(), data={})
+        form = WatchQuestionForm(user(), data={'event_type': 'reply'})
         assert form.is_valid()
 
 
