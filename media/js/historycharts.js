@@ -43,21 +43,13 @@
             data: data,
             options: {
                 legend: false,
-                sets: true
+                sets: true,
+                bucket: true
             },
-            sets: sets,
-            hover: {
-                xFormatter: function(seconds) {
-                    var date = new Date(seconds * 1000);
-                    return k.dateFormat('Week of %(year)s-%(month)s-%(date)s', date);
-                },
-                yFormatter: function(value) {
-                    if (value > 0 && value <= 1.0) {
-                        // This is probably a percentage.
-                        return Math.floor(value * 100) + '%';
-                    } else {
-                        return Math.floor(value);
-                    }
+            metadata: {
+                sets: sets,
+                bucketMethods: {
+                    'percent': 'average'
                 }
             }
         });
