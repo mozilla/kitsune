@@ -12,14 +12,20 @@ k.Graph = function($elem, extra) {
       xAxis: true,
       yAxis: true,
       hover: true,
-      sets: false
+      sets: false,
+      bucket: false
     },
 
     data: {
       series: [],
       annotations: [],
+      bucketed: []
+    },
+
+    metadata: {
       colors: {},
-      sets: {}
+      sets: {},
+      bucketMethods: {}
     },
 
     graph: {
@@ -41,27 +47,145 @@ k.Graph = function($elem, extra) {
 };
 
 k.Graph.prototype.init = function() {
+  window.G = this;
+  this.initBucketUI();
+  this.initData();
   this.initGraph();
+  this.initMetadata();
   this.initSlider();
   this.initAxises();
   this.initLegend();
   this.initSets();
 };
 
-k.Graph.prototype.prepareData = function() {
+k.Graph.prototype.initData = function() {
+  var buckets;
+  var i, j, d;
+  var key;
+  var line;
+  // Empty the list.
+  this.data.bucketed.splice(0, this.data.bucketed.length);
+
+  if (this.data.bucketSize) {
+
+    for (i=0; i < this.data.series.length; i++) {
+      line = this.data.series[i];
+      buckets = {};
+
+      for (j=0; j < line.data.length; j++) {
+        // make a copy.
+        d = $.extend({}, line.data[j]);
+        d.x = Math.floor(d.x / this.data.bucketSize) * this.data.bucketSize;
+
+        if (buckets[d.x] === undefined) {
+          buckets[d.x] = [d];
+        } else {
+          buckets[d.x].push(d);
+        }
+      }
+
+      this.data.bucketed.push({
+        name: line.name,
+        slug: line.slug,
+        disabled: line.disabled,
+        color: line.color,
+        data: $.map(buckets, function(dList) {
+          var sum = 0, i, method, out;
+          out = $.extend({}, dList[0]);
+
+          for (i=0; i<dList.length; i++) {
+            sum += dList[i].y;
+          }
+
+          method = this.metadata.bucketMethods[line.slug];
+          if (method === 'average') {
+            out.y = sum / dList.length;
+          } else {
+            out.y = sum;
+          }
+
+          return out;
+        }.bind(this))
+      });
+    }
+
+  } else {
+    this.data.bucketed = this.data.series.slice();
+  }
+};
+
+k.Graph.prototype.initMetadata = function() {
+  var series, key;
+
+  this.data.lines = {};
+  series = this.data.series;
+  for (i=0; i<series.length; i++) {
+      s = series[i];
+      this.data.lines[s.slug] = s;
+  }
+
+  for (key in this.metadata.colors) {
+    if (!this.metadata.colors.hasOwnProperty(key)) continue;
+    this.data.lines[key].color = this.metadata.colors[key];
+  }
+};
+
+k.Graph.prototype.getGraphData = function() {
   var palette = new Rickshaw.Color.Palette();
-  return new Rickshaw.Series(this.data.series, palette);
+  var series = new Rickshaw.Series(this.data.bucketed, palette);
+
+  series.active = function() {
+    // filter by active.
+    return $.map(this, function(s) {
+      if (!s.disabled) {
+        return s;
+      }
+    });
+  };
+
+  return series;
+};
+
+k.Graph.prototype.initBucketUI = function() {
+  if (!this.options.bucket) return;
+
+  var i;
+  var DAY_S = 24 * 60 * 60;
+  var bucketSizes = [
+    {value: 1 * DAY_S, text: gettext('Daily')},
+    {value: 7 * DAY_S, text: gettext('Weekly')},
+    {value: 30 * DAY_S, text: gettext('Monthly')}
+  ];
+
+  var $bucket = $('<div class="bucket"></div>')
+    .appendTo(this.dom.elem.find('.inline-controls'));
+  var $select = $('<select>');
+
+  for (i=0; i < bucketSizes.length; i++) {
+    $('<option name="bucketing">')
+      .val(bucketSizes[i].value)
+      .text(bucketSizes[i].text)
+      .appendTo($select);
+  }
+  $bucket.append($select);
+
+  var self = this;
+  $select.on('change', function() {
+    self.data.bucketSize = parseInt($(this).val());
+    self.update();
+  });
 };
 
 k.Graph.prototype.initGraph = function() {
   var hoverClass;
   var key;
+  var series;
   var i;
   this.dom.graph = this.dom.elem.find('.graph');
 
   var graphOpts = $.extend({
     element: this.dom.graph[0], // Graph can't handle jQuery objects.
-    series: this.prepareData(),
+    series: this.getGraphData(),
     interpolation: 'linear'
   }, this.graph);
 
@@ -80,18 +204,6 @@ k.Graph.prototype.initGraph = function() {
     }
 
     this.rickshaw.hover = new hoverClass(hoverOpts);
-  }
-
-  this.rickshaw.lines = {};
-  series = this.rickshaw.graph.series;
-  for (i=0; i<series.length; i++) {
-      s = series[i];
-      this.rickshaw.lines[s.slug] = s;
-  }
-
-  for (key in this.data.colors) {
-    if (!this.data.colors.hasOwnProperty(key)) continue;
-    this.rickshaw.lines[key].color = this.data.colors[key];
   }
 
   this.toRender.push(this.rickshaw.graph);
@@ -206,11 +318,10 @@ k.Graph.prototype.initSets = function() {
   if (!this.options.sets) return;
 
   var key;
-  var $sets = $('<div class="sets"></div>')
-    .appendTo(this.dom.elem.find('.inline-controls'));
+  var $sets = $('<div class="sets"></div>');
 
-  for (key in this.sets) {
-    if (!this.sets.hasOwnProperty(key)) continue;
+  for (key in this.metadata.sets) {
+    if (!this.metadata.sets.hasOwnProperty(key)) continue;
 
     $('<input type="radio" name="sets"/>').val(key).appendTo($sets);
     $('<label for="sets">').text(key).appendTo($sets);
@@ -219,22 +330,23 @@ k.Graph.prototype.initSets = function() {
   var self = this;
   $sets.on('change', 'input[name=sets]', function() {
     var $this = $(this);
-    var key;
-    var series;
-    var i;
-    var val;
+    var lineName, set, i;
 
-    for (key in self.sets) {
-      series = self.sets[key];
-      for (i=0; i<series.length; i++) {
-        disabled = ($this.attr('value') === key) ^ $this.prop('checked');
-        self.rickshaw.lines[series[i]].disabled = disabled;
+    for (lineName in self.metadata.sets) {
+      set = self.metadata.sets[lineName];
+      for (i=0; i<set.length; i++) {
+        // Check or uncheck the line based on it's presence in a set and
+        // the radio's value.
+        disabled = !!(($this.attr('value') === lineName) ^ $this.prop('checked'));
+        self.data.lines[set[i]].disabled =disabled;
       }
     }
 
-    self.rickshaw.graph.update();
+    self.update();
   });
 
+
+  this.dom.elem.find('.inline-controls').append($sets);
   $sets.find('input[name=sets]').first().click();
 };
 
@@ -248,6 +360,18 @@ k.Graph.prototype.render = function() {
   if (this.options.yAxis) {
     this.dom.yAxis.css({'top': this.dom.graph.position().top});
   }
+};
+
+k.Graph.prototype.update = function() {
+  var newSeries, i;
+
+  this.initData();
+
+  this.rickshaw.graph.series = this.getGraphData();
+  this.rickshaw.graph.stackedData = false;
+  this.rickshaw.graph.update();
+
+  this.initMetadata();
 };
 /* end Graph */
 

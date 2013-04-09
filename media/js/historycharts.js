@@ -43,9 +43,15 @@
             data: data,
             options: {
                 legend: false,
-                sets: true
+                sets: true,
+                bucket: true
             },
-            sets: sets,
+            metadata: {
+                sets: sets,
+                bucketMethods: {
+                    'percent': 'average'
+                }
+            },
             hover: {
                 xFormatter: function(seconds) {
                     var date = new Date(seconds * 1000);
