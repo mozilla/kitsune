@@ -13,21 +13,20 @@
   <div class="grid_9">
     <article id="revision-history">
       <h1 class="title">{{ _('History of {title}')|fe(title=document.title) }}</h1>
-
       <div class="grid_2">
-          {{ _('Category:') }}
+        {{ _('Category:') }}
       </div>
       <div class="grid_6">
-          <a href="{{ url('wiki.category', document.category) }}">{{ document.get_category_display() }}</a>
+        <a href="{{ url('wiki.category', document.category) }}">{{ document.get_category_display() }}</a>
       </div>
       <div class="grid_2">
-          {{ _('Revision history for:') }}
+        {{ _('Revision history for:') }}
       </div>
       <div class="grid_6">
-          {% if document.parent %}
-                <a href="{{ url('wiki.document_revisions', document.parent.slug, locale=document.parent.locale) }}">{{ document.parent.language }}</a>,
-          {% endif %}
-          {{ document.language }}
+        {% if document.parent %}
+          <a href="{{ url('wiki.document_revisions', document.parent.slug, locale=document.parent.locale) }}">{{ document.parent.language }}</a>,
+        {% endif %}
+        {{ document.language }}
       </div>
 
       <div id="helpful-graph" data-url="{{ url('wiki.get_helpful_votes_async', document.slug) }}">

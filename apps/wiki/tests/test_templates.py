@@ -28,7 +28,7 @@ from wiki.events import (EditDocumentEvent, ReadyRevisionEvent,
 from wiki.models import Document, Revision, HelpfulVote, HelpfulVoteMetadata
 from wiki.config import (SIGNIFICANCES, MEDIUM_SIGNIFICANCE,
                          ADMINISTRATION_CATEGORY, TROUBLESHOOTING_CATEGORY,
-                         TEMPLATES_CATEGORY)
+                         TEMPLATES_CATEGORY, CATEGORIES)
 from wiki.tasks import send_reviewed_notification
 from wiki.tests import (TestCaseBase, document, revision, new_document_data,
                         translated_revision)
@@ -904,6 +904,16 @@ class HistoryTests(TestCaseBase):
         eq_(200, response.status_code)
         doc = pq(response.content)
         eq_('noindex', doc('meta[name=robots]')[0].attrib['content'])
+
+    def test_history_category_appears(self):
+        """Document history should have a category on page"""
+        category = CATEGORIES[1]
+        r = revision(save=True, content='Some text.', is_approved=True,
+                     document=document(category=category[0], save=True))
+        response = get(self.client, 'wiki.document_revisions',
+                       args=[r.document.slug])
+        eq_(200, response.status_code)
+        self.assertContains(response, category[1])
 
 
 class DocumentEditTests(TestCaseBase):
