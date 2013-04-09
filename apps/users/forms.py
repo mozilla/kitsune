@@ -7,7 +7,7 @@ from django.contrib.auth.forms import (PasswordResetForm as
                                        DjangoPasswordResetForm)
 from django.contrib.auth.models import User
 from django.contrib.sites.models import get_current_site
-from django.core.mail import send_mail
+from django.core.mail import EmailMultiAlternatives
 
 from tower import ugettext as _, ugettext_lazy as _lazy
 
@@ -299,8 +299,8 @@ class ForgotUsernameForm(forms.Form):
                   u"account. Are you sure you've registered?"))
         return email
 
-    def save(self, email_template='users/email/forgot_username.ltxt',
-             use_https=False, request=None):
+    def save(self, email_txt_template='users/email/forgot_username.ltxt',
+             email_html_template=None, use_https=False, request=None):
         """Sends email with username."""
         user = self.user
         current_site = get_current_site(request)
@@ -309,11 +309,20 @@ class ForgotUsernameForm(forms.Form):
 
         @email_utils.safe_translation
         def _send_mail(locale, user, context):
-            subject = _("Your username on %s") % site_name
-            message = email_utils.render_email(email_template, context)
+            subject = _('Your username on %s') % site_name
 
-            send_mail(subject, message, settings.TIDINGS_FROM_ADDRESS,
-                      [user.email])
+            msg = EmailMultiAlternatives(
+                subject,
+                email_utils.render_email(email_txt_template, context),
+                settings.TIDINGS_FROM_ADDRESS,
+                [user.email])
+
+            if email_html_template:
+                msg.attach_alternative(
+                    email_utils.render_email(
+                        email_html_template, context), 'text/html')
+
+            email_utils.send_messages([msg])
 
         c = {
             'email': user.email,

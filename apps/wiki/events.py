@@ -3,9 +3,8 @@ import logging
 
 from django.conf import settings
 from django.contrib.sites.models import Site
-from django.core.mail import EmailMessage
+from django.core.mail import EmailMultiAlternatives
 from django.core.urlresolvers import reverse as django_reverse
-from django.template import Context, loader
 
 from bleach import clean
 from tidings.events import InstanceEvent, Event, EventUnion
@@ -15,7 +14,6 @@ from wikimarkup.parser import ALLOWED_TAGS, ALLOWED_ATTRIBUTES
 
 from sumo import email_utils
 from sumo.urlresolvers import reverse
-from users.models import Profile
 from wiki.models import Document
 
 
@@ -112,10 +110,11 @@ class EditDocumentEvent(InstanceEvent):
         context['creator'] = revision.creator
 
         return email_utils.emails_with_users_and_watches(
-            subject,
-            'wiki/email/edited.ltxt',
-            context,
-            users_and_watches,
+            subject=subject,
+            text_template_path='wiki/email/edited.ltxt',
+            html_template_path=None,
+            context_vars=context,
+            users_and_watches=users_and_watches,
             default_locale=document.locale)
 
 
@@ -165,10 +164,11 @@ class ReviewableRevisionInLocaleEvent(_RevisionConstructor,
         context['creator'] = revision.creator
 
         return email_utils.emails_with_users_and_watches(
-            subject,
-            'wiki/email/ready_for_review.ltxt',
-            context,
-            users_and_watches,
+            subject=subject,
+            text_template_path='wiki/email/ready_for_review.ltxt',
+            html_template_path=None,
+            context_vars=context,
+            users_and_watches=users_and_watches,
             default_locale=document.locale)
 
 
@@ -194,10 +194,11 @@ class ReadyRevisionEvent(_RevisionConstructor, Event):
         context['title'] = document.title
 
         return email_utils.emails_with_users_and_watches(
-            subject,
-            'wiki/email/ready_for_l10n.ltxt',
-            context,
-            users_and_watches,
+            subject=subject,
+            text_template_path='wiki/email/ready_for_l10n.ltxt',
+            html_template_path=None,
+            context_vars=context,
+            users_and_watches=users_and_watches,
             default_locale=document.locale)
 
 
@@ -251,7 +252,8 @@ class ApprovedOrReadyUnion(EventUnion):
 
                 subject = _(u'{title} has a revision ready for '
                             'localization')
-                template = 'wiki/email/ready_for_l10n.ltxt'
+                text_template = 'wiki/email/ready_for_l10n.ltxt'
+                html_template = None
 
             else:
                 c = context_dict(revision, revision_approved=True)
@@ -266,18 +268,25 @@ class ApprovedOrReadyUnion(EventUnion):
 
                 subject = _(u'{title} ({locale}) has a new approved '
                             'revision ({reviewer})')
-                template = 'wiki/email/approved.ltxt'
+                text_template = 'wiki/email/approved.ltxt'
+                html_template = None
 
             subject = subject.format(
                 title=document.title,
                 reviewer=revision.reviewer.username,
                 locale=document.locale)
-            msg = email_utils.render_email(template, c)
 
-            return EmailMessage(subject,
-                                msg,
-                                settings.TIDINGS_FROM_ADDRESS,
-                                [user.email])
+            msg = EmailMultiAlternatives(
+                subject,
+                email_utils.render_email(text_template, c),
+                settings.TIDINGS_FROM_ADDRESS,
+                [user.email])
+
+            if html_template:
+                msg.attach_alternative(
+                    email_utils.render_email(html_template, c), 'text/html')
+
+            return msg
 
         for user, watches in users_and_watches:
             # Figure out the locale to use for l10n.

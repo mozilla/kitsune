@@ -7,7 +7,7 @@ import re
 from django.conf import settings
 from django.contrib.auth.models import User, Group
 from django.contrib.sites.models import Site
-from django.core import mail
+from django.core.mail import EmailMultiAlternatives
 from django.db import models
 
 from celery.task import task
@@ -122,7 +122,8 @@ class ConfirmationManager(models.Manager):
     Activation should be done in specific managers.
     """
     def _send_email(self, confirmation_profile, url,
-                    subject, email_template, send_to, **kwargs):
+                    subject, email_text_template, email_html_template,
+                    send_to, **kwargs):
         """
         Send an email using a passed in confirmation profile.
 
@@ -144,12 +145,21 @@ class ConfirmationManager(models.Manager):
             locale = confirmation_profile.user.profile.locale
 
         @email_utils.safe_translation
-        def _message(locale):
-            return email_utils.render_email(email_template, email_kwargs)
+        def _make_mail(locale):
+            msg = EmailMultiAlternatives(
+                subject,
+                email_utils.render_email(email_text_template, email_kwargs),
+                settings.DEFAULT_FROM_EMAIL,
+                [send_to])
 
+            if email_html_template:
+                msg.attach_alternative(
+                    email_utils.render_email(
+                        email_html_template, email_kwargs), 'text/html')
 
-        mail.send_mail(subject, _message(locale), settings.DEFAULT_FROM_EMAIL,
-                       [send_to])
+            return msg
+
+        email_utils.send_messages([_make_mail(locale)])
 
     def send_confirmation_email(self, *args, **kwargs):
         """This is meant to be overwritten."""
@@ -210,7 +220,8 @@ class RegistrationManager(ConfirmationManager):
                             confirmation_profile=profile,
                             url=None,
                             subject=_('Welcome to SUMO!'),
-                            email_template='users/email/contributor.ltxt',
+                            email_text_template='users/email/contributor.ltxt',
+                            email_html_template=None,
                             send_to=user.email,
                             username=user.username)
 
@@ -229,8 +240,9 @@ class RegistrationManager(ConfirmationManager):
 
     def create_inactive_user(self, username, password, email,
                              locale=settings.LANGUAGE_CODE,
-                             email_template=None, email_subject=None,
-                             email_data=None, volunteer_interest=False):
+                             email_text_template=None, email_html_template=None,
+                             email_subject=None, email_data=None,
+                             volunteer_interest=False):
         """
         Create a new, inactive ``User`` and ``Profile``, generates a
         ``RegistrationProfile`` and email its activation key to the
@@ -243,8 +255,12 @@ class RegistrationManager(ConfirmationManager):
 
         registration_profile = self.create_profile(new_user)
 
-        self.send_confirmation_email(registration_profile, email_template,
-                                     email_subject, email_data)
+        self.send_confirmation_email(
+            registration_profile,
+            email_text_template,
+            email_html_template,
+            email_subject,
+            email_data)
 
         if volunteer_interest:
             statsd.incr('user.registered-as-contributor')
@@ -254,8 +270,8 @@ class RegistrationManager(ConfirmationManager):
         return new_user
 
     def send_confirmation_email(self, registration_profile,
-                                email_template=None, email_subject=None,
-                                email_data=None):
+                                email_text_template=None, email_html_template=None,
+                                email_subject=None, email_data=None):
         """Send the user confirmation email."""
         user_id = registration_profile.user.id
         key = registration_profile.activation_key
@@ -263,7 +279,8 @@ class RegistrationManager(ConfirmationManager):
             confirmation_profile=registration_profile,
             url=reverse('users.activate', args=[user_id, key]),
             subject=email_subject or _('Please confirm your email address'),
-            email_template=email_template or 'users/email/activate.ltxt',
+            email_text_template=email_text_template or 'users/email/activate.ltxt',
+            email_html_template=email_html_template,
             send_to=registration_profile.user.email,
             expiration_days=settings.ACCOUNT_ACTIVATION_DAYS,
             username=registration_profile.user.username,
@@ -308,7 +325,8 @@ class EmailChangeManager(ConfirmationManager):
             url=reverse('users.confirm_email',
                         args=[email_change.activation_key]),
             subject=_('Please confirm your email address'),
-            email_template='users/email/confirm_email.ltxt',
+            email_text_template='users/email/confirm_email.ltxt',
+            email_html_template=None,
             send_to=new_email)
 
 

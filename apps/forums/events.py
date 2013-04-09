@@ -34,10 +34,11 @@ class NewPostEvent(InstanceEvent):
              'post_url': self.reply.get_absolute_url()}
 
         return emails_with_users_and_watches(
-            _lazy(u'Re: {forum} - {thread}'),
-            'forums/email/new_post.ltxt',
-            c,
-            users_and_watches)
+            subject=_lazy(u'Re: {forum} - {thread}'),
+            text_template_path='forums/email/new_post.ltxt',
+            html_template_path=None,
+            context_vars=c,
+            users_and_watches=users_and_watches)
 
 
 class NewThreadEvent(InstanceEvent):
@@ -60,7 +61,8 @@ class NewThreadEvent(InstanceEvent):
              'post_url': self.post.thread.get_absolute_url()}
 
         return emails_with_users_and_watches(
-            _lazy(u'{forum} - {thread}'),
-            'forums/email/new_thread.ltxt',
-            c,
-            users_and_watches)
+            subject=_lazy(u'{forum} - {thread}'),
+            text_template_path='forums/email/new_thread.ltxt',
+            html_template_path=None,
+            context_vars=c,
+            users_and_watches=users_and_watches)

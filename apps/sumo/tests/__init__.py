@@ -37,10 +37,10 @@ def starts_with(text, substring):
                                                                      substring)
 
 
-def send_mail_raise_smtp(subject, content, from_emal, recipients):
-    """Patch mail.send_mail with this in your tests to check what happens when
-    an email fails to send."""
-    raise SMTPRecipientsRefused(recipients=recipients)
+def send_mail_raise_smtp(messages):
+    """Patch email_utils.send_messages with this in your tests to check what
+    happens when an email fails to send."""
+    raise SMTPRecipientsRefused(recipients=messages[0].recipients())
 
 
 def emailmessage_raise_smtp():

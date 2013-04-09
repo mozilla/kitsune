@@ -2,14 +2,14 @@ import logging
 
 from django.conf import settings
 from django.contrib.sites.models import Site
-from django.core.mail import send_mail
+from django.core.mail import EmailMultiAlternatives
 from django.core.urlresolvers import reverse
 
 from celery.task import task
 from tower import ugettext as _
 
 from messages.models import InboxMessage
-from sumo.email_utils import safe_translation, render_email
+from sumo.email_utils import safe_translation, render_email, send_messages
 
 
 log = logging.getLogger('k.task')
@@ -36,11 +36,20 @@ def email_private_message(inbox_message_id):
             'unsubscribe_url': reverse('users.edit_settings'),
             'host': Site.objects.get_current().domain}
 
-        template = 'messages/email/private_message.ltxt'
-        msg = render_email(template, context)
+        text_template = 'messages/email/private_message.ltxt'
+        html_template = None
 
-        send_mail(subject, msg, settings.TIDINGS_FROM_ADDRESS,
-                  [inbox_message.to.email])
+        msg = EmailMultiAlternatives(
+            subject,
+            render_email(text_template, context),
+            settings.TIDINGS_FROM_ADDRESS,
+            [inbox_message.to.email])
+
+        if html_template:
+            msg.attach_alternative(
+                render_email(html_template, context), 'text/html')
+
+        send_messages([msg])
 
     if hasattr(user, 'profile'):
         locale = user.profile.locale
