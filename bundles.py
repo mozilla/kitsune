@@ -212,7 +212,7 @@ MINIFY_BUNDLES = {
             'js/libs/jqueryui.js',
             'js/libs/d3.v3.min.js',
             'js/libs/d3.layout.min.js',
-            'js/libs/rickshaw.min.js',
+            'js/libs/rickshaw.js',
             'js/rickshaw_utils.js',
         ),
         'mobile/wiki': (
