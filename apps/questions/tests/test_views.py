@@ -379,7 +379,7 @@ def TroubleshootingParsingTests(TestCase):
                 "javaScript": {},
                 "modifiedPreferences": {},
                 "userJS": {
-                    "exists": False
+                    "exists": false
                 }
             }'''
 

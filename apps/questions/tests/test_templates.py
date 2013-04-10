@@ -1223,7 +1223,28 @@ class AAQTemplateTestCase(TestCaseBase):
             'plugins': '* Shockwave Flash 10.1 r53',
             'useragent': 'Mozilla/5.0 (Macintosh; U; Intel Mac OS X '
                          '10.6; en-US; rv:1.9.2.6) Gecko/20100625 '
-                         'Firefox/3.6.6'}
+                         'Firefox/3.6.6',
+            'troubleshooting': '''{
+                "accessibility": {
+                    "isActive": true
+                },
+                "application": {
+                    "name": "Firefox",
+                    "supportURL": "Some random url.",
+                    "userAgent": "A user agent.",
+                    "version": "42.2"
+                },
+                "extensions": [],
+                "graphics": {},
+                "javaScript": {},
+                "modifiedPreferences": {
+                    "print.macosx.pagesetup": "QWERTY",
+                    "print.macosx.pagesetup-2": "POIUYT"
+                },
+                "userJS": {
+                    "exists": false
+                }
+            }'''}
 
     def setUp(self):
         super(AAQTemplateTestCase, self).setUp()
@@ -1268,6 +1289,11 @@ class AAQTemplateTestCase(TestCaseBase):
         products = question.products.all()
         eq_(1, len(products))
         eq_('firefox', products[0].slug)
+
+        # Verify troubleshooting information
+        troubleshooting = question.metadata['troubleshooting']
+        assert 'modifiedPreferences' in troubleshooting
+        assert 'print.macosx' not in troubleshooting
 
     def test_localized_creation(self):
         response = self._post_new_question(locale='de')
