@@ -1,3 +1,4 @@
+import json
 from datetime import date, timedelta
 
 from django import forms
@@ -197,6 +198,22 @@ class EditQuestionForm(forms.Form):
         for key in self.metadata_field_keys:
             if key in self.data and self.data[key] != u'':
                 clean[key] = self.cleaned_data[key]
+
+            # Clean up the troubleshooting data.
+            if key == 'troubleshooting':
+                try:
+                    parsed = json.loads(self.cleaned_data[key])
+                except ValueError:
+                    continue
+
+                # Clean out unwanted garbage preferences.
+                if ('modifiedPreferences' in parsed and
+                    isinstance(parsed['modifiedPreferences'], dict)):
+                    for pref in parsed['modifiedPreferences'].keys():
+                        if pref.startswith('print.macosx.pagesetup'):
+                            del parsed['modifiedPreferences'][pref]
+                    clean[key] = json.dumps(parsed)
+
         return clean
 
 
