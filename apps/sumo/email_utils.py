@@ -4,7 +4,7 @@ from functools import wraps
 
 from django.conf import settings
 from django.core import mail
-from django.core.mail import EmailMessage
+from django.core.mail import EmailMultiAlternatives
 from django.utils import translation
 
 import jingo
@@ -105,7 +105,8 @@ def render_email(template, context):
 
 
 def emails_with_users_and_watches(subject,
-                                  template_path,
+                                  text_template,
+                                  html_template,
                                   context_vars,
                                   users_and_watches,
                                   from_email=settings.TIDINGS_FROM_ADDRESS,
@@ -124,9 +125,10 @@ def emails_with_users_and_watches(subject,
        It's kind of goofy--I ain't gonna lie.
 
     :arg subject: lazy gettext subject string
-    :arg template_path: path to template file
-    :arg context_vars: a map which becomes the Context passed in to the template
-        and the subject string
+    :arg text_template: path to text template file
+    :arg html_template: path to html template file
+    :arg context_vars: a map which becomes the Context passed in to the
+        template and the subject string
     :arg from_email: the from email address
     :arg default_local: the local to default to if not user.profile.locale
     :arg extra_kwargs: additional kwargs to pass into EmailMessage constructor
@@ -140,11 +142,18 @@ def emails_with_users_and_watches(subject,
         context_vars['watch'] = watch[0]
         context_vars['watches'] = watch
 
-        return EmailMessage(subject.format(**context_vars),
-                            render_email(template_path, context_vars),
-                            from_email,
-                            [user.email],
-                            **extra_kwargs)
+        msg = EmailMultiAlternatives(
+            subject.format(**context_vars),
+            render_email(text_template, context_vars),
+            from_email,
+            [user.email],
+            **extra_kwargs)
+
+        if html_template:
+            msg.attach_alternative(
+                render_email(html_template, context_vars), 'text/html')
+
+        return msg
 
     for u, w in users_and_watches:
         if hasattr(u, 'profile'):

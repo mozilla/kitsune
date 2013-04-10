@@ -15,7 +15,8 @@ from questions.models import Question
 from sumo.tests import TestCase, LocalizingClient, send_mail_raise_smtp
 from sumo.urlresolvers import reverse
 from users import ERROR_SEND_EMAIL
-from users.models import Profile, RegistrationProfile, EmailChange, Setting
+from users.models import (Profile, RegistrationProfile, EmailChange, Setting,
+                          email_utils)
 from users.tests import profile, user, group, add_permission
 
 
@@ -56,12 +57,12 @@ class RegisterTests(TestCase):
             response.redirect_chain[0][0])
 
     @override_settings(DEBUG=True)
-    @mock.patch.object(mail, 'send_mail')
+    @mock.patch.object(email_utils, 'send_messages')
     @mock.patch.object(Site.objects, 'get_current')
-    def test_new_user_smtp_error(self, get_current, send_mail):
+    def test_new_user_smtp_error(self, get_current, send_messages):
         get_current.return_value.domain = 'su.mo.com'
 
-        send_mail.side_effect = send_mail_raise_smtp
+        send_messages.side_effect = send_mail_raise_smtp
         response = self.client.post(reverse('users.register', locale='en-US'),
                                     {'username': 'newbie',
                                      'email': 'newbie@example.com',

@@ -19,10 +19,11 @@ def new_post_mails(reply, users_and_watches):
          'post_url': reply.get_absolute_url()}
 
     return emails_with_users_and_watches(
-        _lazy(u'Re: {forum} - {thread}'),
-        'kbforums/email/new_post.ltxt',
-        c,
-        users_and_watches)
+        subject=_lazy(u'Re: {forum} - {thread}'),
+        text_template='kbforums/email/new_post.ltxt',
+        html_template=None,
+        context_vars=c,
+        users_and_watches=users_and_watches)
 
 
 def new_thread_mails(post, users_and_watches):
@@ -36,10 +37,11 @@ def new_thread_mails(post, users_and_watches):
          'post_url': post.thread.get_absolute_url()}
 
     return emails_with_users_and_watches(
-        _lazy(u'{forum} - {thread}'),
-        'kbforums/email/new_thread.ltxt',
-        c,
-        users_and_watches)
+        subject=_lazy(u'{forum} - {thread}'),
+        text_template='kbforums/email/new_thread.ltxt',
+        html_template=None,
+        context_vars=c,
+        users_and_watches=users_and_watches)
 
 
 class NewPostEvent(InstanceEvent):
