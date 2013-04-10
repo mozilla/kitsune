@@ -105,8 +105,8 @@ def render_email(template, context):
 
 
 def emails_with_users_and_watches(subject,
-                                  text_template_path,
-                                  html_template_path,
+                                  text_template,
+                                  html_template,
                                   context_vars,
                                   users_and_watches,
                                   from_email=settings.TIDINGS_FROM_ADDRESS,
@@ -125,8 +125,8 @@ def emails_with_users_and_watches(subject,
        It's kind of goofy--I ain't gonna lie.
 
     :arg subject: lazy gettext subject string
-    :arg text_template_path: path to text template file
-    :arg html_template_path: path to html template file
+    :arg text_template: path to text template file
+    :arg html_template: path to html template file
     :arg context_vars: a map which becomes the Context passed in to the
         template and the subject string
     :arg from_email: the from email address
@@ -144,14 +144,14 @@ def emails_with_users_and_watches(subject,
 
         msg = EmailMultiAlternatives(
             subject.format(**context_vars),
-            render_email(text_template_path, context_vars),
+            render_email(text_template, context_vars),
             from_email,
             [user.email],
             **extra_kwargs)
 
-        if html_template_path:
+        if html_template:
             msg.attach_alternative(
-                render_email(html_template_path, context_vars), 'text/html')
+                render_email(html_template, context_vars), 'text/html')
 
         return msg
 

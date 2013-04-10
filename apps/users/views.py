@@ -194,9 +194,9 @@ def resend_confirmation(request, template):
                         RegistrationProfile.objects.send_confirmation_email,
                         form, 'email',
                         reg_prof,
-                        email_text_template='users/email/already_activated.ltxt',
-                        email_html_template=None,
-                        email_subject=_('Account already activated'))
+                        text_template='users/email/already_activated.ltxt',
+                        html_template=None,
+                        subject=_('Account already activated'))
             except RegistrationProfile.DoesNotExist:
                 # Send already active email if user exists
                 try:
@@ -208,8 +208,7 @@ def resend_confirmation(request, template):
 
                     subject = _('Account already activated')
                     message = email_utils.render_email(
-                                'users/email/already_activated.ltxt',
-                                email_kwargs)
+                        'users/email/already_activated.ltxt', email_kwargs)
                     form = try_send_email_with_form(
                         mail.send_mail,
                         form, 'email',

@@ -111,8 +111,8 @@ class EditDocumentEvent(InstanceEvent):
 
         return email_utils.emails_with_users_and_watches(
             subject=subject,
-            text_template_path='wiki/email/edited.ltxt',
-            html_template_path=None,
+            text_template='wiki/email/edited.ltxt',
+            html_template=None,
             context_vars=context,
             users_and_watches=users_and_watches,
             default_locale=document.locale)
@@ -165,8 +165,8 @@ class ReviewableRevisionInLocaleEvent(_RevisionConstructor,
 
         return email_utils.emails_with_users_and_watches(
             subject=subject,
-            text_template_path='wiki/email/ready_for_review.ltxt',
-            html_template_path=None,
+            text_template='wiki/email/ready_for_review.ltxt',
+            html_template=None,
             context_vars=context,
             users_and_watches=users_and_watches,
             default_locale=document.locale)
@@ -195,8 +195,8 @@ class ReadyRevisionEvent(_RevisionConstructor, Event):
 
         return email_utils.emails_with_users_and_watches(
             subject=subject,
-            text_template_path='wiki/email/ready_for_l10n.ltxt',
-            html_template_path=None,
+            text_template='wiki/email/ready_for_l10n.ltxt',
+            html_template=None,
             context_vars=context,
             users_and_watches=users_and_watches,
             default_locale=document.locale)

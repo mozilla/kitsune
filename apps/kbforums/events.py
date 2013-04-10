@@ -20,8 +20,8 @@ def new_post_mails(reply, users_and_watches):
 
     return emails_with_users_and_watches(
         subject=_lazy(u'Re: {forum} - {thread}'),
-        text_template_path='kbforums/email/new_post.ltxt',
-        html_template_path=None,
+        text_template='kbforums/email/new_post.ltxt',
+        html_template=None,
         context_vars=c,
         users_and_watches=users_and_watches)
 
@@ -38,8 +38,8 @@ def new_thread_mails(post, users_and_watches):
 
     return emails_with_users_and_watches(
         subject=_lazy(u'{forum} - {thread}'),
-        text_template_path='kbforums/email/new_thread.ltxt',
-        html_template_path=None,
+        text_template='kbforums/email/new_thread.ltxt',
+        html_template=None,
         context_vars=c,
         users_and_watches=users_and_watches)
 

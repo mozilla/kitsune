@@ -299,8 +299,8 @@ class ForgotUsernameForm(forms.Form):
                   u"account. Are you sure you've registered?"))
         return email
 
-    def save(self, email_txt_template='users/email/forgot_username.ltxt',
-             email_html_template=None, use_https=False, request=None):
+    def save(self, text_template='users/email/forgot_username.ltxt',
+             html_template=None, use_https=False, request=None):
         """Sends email with username."""
         user = self.user
         current_site = get_current_site(request)
@@ -313,14 +313,14 @@ class ForgotUsernameForm(forms.Form):
 
             msg = EmailMultiAlternatives(
                 subject,
-                email_utils.render_email(email_txt_template, context),
+                email_utils.render_email(text_template, context),
                 settings.TIDINGS_FROM_ADDRESS,
                 [user.email])
 
-            if email_html_template:
+            if html_template:
                 msg.attach_alternative(
                     email_utils.render_email(
-                        email_html_template, context), 'text/html')
+                        html_template, context), 'text/html')
 
             email_utils.send_messages([msg])
 
@@ -344,8 +344,8 @@ class PasswordResetForm(DjangoPasswordResetForm):
     def clean_email(self):
         """Same as django's but doesn't invalidate unusable passwords."""
         email = self.cleaned_data["email"]
-        self.users_cache = User.objects.filter(email__iexact=email,
-                                               is_active=True)
+        self.users_cache = User.objects.filter(
+            email__iexact=email, is_active=True)
         if not len(self.users_cache):
             raise forms.ValidationError(self.error_messages['unknown'])
         return email

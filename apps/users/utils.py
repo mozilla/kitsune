@@ -32,9 +32,8 @@ def handle_login(request, only_active=True):
     return AuthenticationForm()
 
 
-def handle_register(request, email_text_template=None,
-                    email_html_template=None, email_subject=None,
-                    email_data=None, *args, **kwargs):
+def handle_register(request, text_template=None, html_template=None,
+                    subject=None, email_data=None, *args, **kwargs):
     """Handle to help registration."""
     if request.method == 'POST':
         form = RegisterForm(request.POST)
@@ -46,9 +45,9 @@ def handle_register(request, email_text_template=None,
                 form.cleaned_data['password'],
                 form.cleaned_data['email'],
                 locale=request.LANGUAGE_CODE,
-                email_text_template=email_text_template,
-                email_html_template=email_html_template,
-                email_subject=email_subject,
+                text_template=text_template,
+                html_template=html_template,
+                subject=subject,
                 email_data=email_data,
                 volunteer_interest=form.cleaned_data['interested'],
                 *args, **kwargs)

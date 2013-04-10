@@ -431,13 +431,13 @@ def aaq(request, product_key=None, category_key=None, showform=False,
             register_form = RegisterForm()
         elif request.POST.get('register'):
             login_form = AuthenticationForm()
-            email_text_template = 'questions/email/confirm_question.ltxt'
-            email_html_template = None
-            email_subject = _('Please confirm your Firefox Help question')
-            email_data = request.GET.get('search')
             register_form = handle_register(
-                request, email_text_template, email_html_template,
-                email_subject, email_data)
+                request=request,
+                text_template='questions/email/confirm_question.ltxt',
+                html_template=None,
+                subject=_('Please confirm your Firefox Help question'),
+                email_data=request.GET.get('search'))
+
             if register_form.is_valid():  # Now try to log in.
                 user = auth.authenticate(username=request.POST.get('username'),
                                          password=request.POST.get('password'))
