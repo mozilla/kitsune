@@ -211,8 +211,8 @@ class EditQuestionForm(forms.Form):
                                 'print.macosx.pagesetup-2']
                 if ('modifiedPreferences' in parsed and
                     isinstance(parsed['modifiedPreferences'], dict)):
-                    for pref in remove_these:
-                        if pref in parsed['modifiedPreferences']:
+                    for pref in parsed['modifiedPreferences'].keys():
+                        if pref.startswith('print.macosx.pagesetup'):
                             del parsed['modifiedPreferences'][pref]
                     clean[key] = json.dumps(parsed)
 
