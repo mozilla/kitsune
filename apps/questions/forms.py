@@ -207,8 +207,6 @@ class EditQuestionForm(forms.Form):
                     continue
 
                 # Clean out unwanted garbage preferences.
-                remove_these = ['print.macosx.pagesetup',
-                                'print.macosx.pagesetup-2']
                 if ('modifiedPreferences' in parsed and
                     isinstance(parsed['modifiedPreferences'], dict)):
                     for pref in parsed['modifiedPreferences'].keys():
