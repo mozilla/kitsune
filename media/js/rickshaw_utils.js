@@ -171,9 +171,36 @@ k.Graph.prototype.initBucketUI = function() {
 
   var self = this;
   $select.on('change', function() {
-    self.data.bucketSize = parseInt($(this).val());
+    self.data.bucketSize = parseInt($(this).val(), 10);
     self.update();
   });
+};
+
+k.Graph.prototype._xFormatter = function(seconds) {
+  var DAY_S = 24 * 60 * 60;
+
+  var sizes = {};
+  sizes[7 * DAY_S] = gettext('Week beginning %(year)s-%(month)s-%(date)s');
+  sizes[30 * DAY_S] = gettext('Month beginning %(year)s-%(month)s-%(date)s');
+
+  console.log(sizes);
+  var key = this.data.bucketSize;
+  console.log('key: ' + key + ' -> ' + sizes[key]);
+  var format = sizes[key];
+  if (format === undefined) {
+    format = '%(year)s-%(month)s-%(date)s';
+  }
+
+  return k.dateFormat(format, new Date(seconds * 1000));
+};
+
+k.Graph.prototype._yFormatter = function(value) {
+  if (value > 0 && value <= 1.0) {
+    // This is probably a percentage.
+    return Math.floor(value * 100) + '%';
+  } else {
+    return Math.floor(value);
+  }
 };
 
 k.Graph.prototype.initGraph = function() {
@@ -194,6 +221,8 @@ k.Graph.prototype.initGraph = function() {
 
   if (this.options.hover) {
     var hoverOpts = $.extend({
+      xFormatter: this._xFormatter.bind(this),
+      yFormatter: this._yFormatter.bind(this),
       graph: this.rickshaw.graph
     }, this.hover);
 
