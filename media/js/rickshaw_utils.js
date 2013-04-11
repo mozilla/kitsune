@@ -93,7 +93,7 @@ k.Graph.prototype.initData = function() {
           var sum = 0, i, method, out;
           out = $.extend({}, dList[0]);
 
-          for (i=0; i<dList.length; i++) {
+          for (i=0; i < dList.length; i++) {
             sum += dList[i].y;
           }
 
@@ -115,11 +115,11 @@ k.Graph.prototype.initData = function() {
 };
 
 k.Graph.prototype.initMetadata = function() {
-  var series, key;
+  var series, key, i;
 
   this.data.lines = {};
   series = this.data.series;
-  for (i=0; i<series.length; i++) {
+  for (i=0; i < series.length; i++) {
       s = series[i];
       this.data.lines[s.slug] = s;
   }
@@ -334,11 +334,11 @@ k.Graph.prototype.initSets = function() {
 
     for (lineName in self.metadata.sets) {
       set = self.metadata.sets[lineName];
-      for (i=0; i<set.length; i++) {
+      for (i=0; i < set.length; i++) {
         // Check or uncheck the line based on it's presence in a set and
         // the radio's value.
         disabled = !!(($this.attr('value') === lineName) ^ $this.prop('checked'));
-        self.data.lines[set[i]].disabled =disabled;
+        self.data.lines[set[i]].disabled = disabled;
       }
     }
 
@@ -353,7 +353,7 @@ k.Graph.prototype.initSets = function() {
 k.Graph.prototype.render = function() {
   var i;
 
-  for (i=0; i<this.toRender.length; i++) {
+  for (i=0; i < this.toRender.length; i++) {
     this.toRender[i].render();
   }
 
