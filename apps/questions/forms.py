@@ -199,20 +199,28 @@ class EditQuestionForm(forms.Form):
             if key in self.data and self.data[key] != u'':
                 clean[key] = self.cleaned_data[key]
 
-            # Clean up the troubleshooting data.
-            if key == 'troubleshooting':
-                try:
-                    parsed = json.loads(self.cleaned_data[key])
-                except ValueError:
-                    continue
+        # Clean up the troubleshooting data if we have it.
+        troubleshooting = clean.get('troubleshooting')
+        if troubleshooting:
+            try:
+                parsed = json.loads(troubleshooting)
+            except ValueError:
+                parsed = None
 
+            if parsed:
                 # Clean out unwanted garbage preferences.
                 if ('modifiedPreferences' in parsed and
                     isinstance(parsed['modifiedPreferences'], dict)):
                     for pref in parsed['modifiedPreferences'].keys():
                         if pref.startswith('print.macosx.pagesetup'):
                             del parsed['modifiedPreferences'][pref]
-                    clean[key] = json.dumps(parsed)
+                    clean['troubleshooting'] = json.dumps(parsed)
+
+                # Override ff_version with the version in troubleshooting
+                # which is more precise for the dot releases.
+                version = parsed.get('application', {}).get('version')
+                if version:
+                    clean['ff_version'] = version
 
         return clean
 

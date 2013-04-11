@@ -1221,9 +1221,8 @@ class AAQTemplateTestCase(TestCaseBase):
             'ff_version': '3.6.6',
             'os': 'Intel Mac OS X 10.6',
             'plugins': '* Shockwave Flash 10.1 r53',
-            'useragent': 'Mozilla/5.0 (Macintosh; U; Intel Mac OS X '
-                         '10.6; en-US; rv:1.9.2.6) Gecko/20100625 '
-                         'Firefox/3.6.6',
+            'useragent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.8.3) '
+                         'Gecko/20120221 Firefox/18.0',
             'troubleshooting': '''{
                 "accessibility": {
                     "isActive": true
@@ -1232,7 +1231,7 @@ class AAQTemplateTestCase(TestCaseBase):
                     "name": "Firefox",
                     "supportURL": "Some random url.",
                     "userAgent": "A user agent.",
-                    "version": "42.2"
+                    "version": "18.0.2"
                 },
                 "extensions": [],
                 "graphics": {},
@@ -1294,6 +1293,10 @@ class AAQTemplateTestCase(TestCaseBase):
         troubleshooting = question.metadata['troubleshooting']
         assert 'modifiedPreferences' in troubleshooting
         assert 'print.macosx' not in troubleshooting
+
+        # Verify firefox version
+        version = question.metadata['ff_version']
+        eq_('18.0.2', version)
 
     def test_localized_creation(self):
         response = self._post_new_question(locale='de')

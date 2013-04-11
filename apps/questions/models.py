@@ -183,6 +183,10 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
         to_add = self.product.get('tags', []) + self.category.get('tags', [])
 
         version = self.metadata.get('ff_version', '')
+
+        # Remove the beta (b*), aurora (a2) or nightly (a1) suffix.
+        version = re.split('[a-b]', version)[0]
+
         dev_releases = product_details.firefox_history_development_releases
         if version in dev_releases or \
            version in product_details.firefox_history_stability_releases or \
