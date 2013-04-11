@@ -269,6 +269,14 @@ class TestQuestionMetadata(TestCaseBase):
         tags_eq(q, ['desktop', 'fix-problems', 'Firefox 3.6.8', 'Firefox 3.6',
                     'green'])
 
+    def test_auto_tagging_aurora(self):
+        """Make sure versions with prerelease suffix are tagged properly."""
+        q = self.question
+        q.add_metadata(ff_version='18.0a2')
+        q.save()
+        q.auto_tag()
+        tags_eq(q, ['Firefox 18.0'])
+
     def test_auto_tagging_restraint(self):
         """Auto-tagging shouldn't tag unknown Firefox versions or OSes."""
         q = self.question
