@@ -112,12 +112,6 @@ AAQSystemInfo.prototype = {
         var version = /Firefox\/(\S+)/i.exec(navigator.userAgent);
         if (version) {
             return version[1];
-        } else {
-            // Minefield pre-betas (nightlies)
-            version = /Minefield\/(\S+)/i.exec(navigator.userAgent);
-            if (version) {
-                return version[1];
-            }
         }
         return '';
     },
