@@ -160,7 +160,8 @@ Take the Bug
 ------------
 
 To make sure no one else is working on the bug at the same time, assign it to
-yourself in Bugzilla. There's an easy "take" link next to the Assignee field.
+yourself in Bugzilla. If you have the proper permissions there's an easy "take"
+link next to the Assignee field. Ask in the IRC for details.
 
 You don't need to bother setting the bug to the ``ASSIGNED`` state.
 
