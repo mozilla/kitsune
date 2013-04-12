@@ -18,5 +18,15 @@
         });
     }
 
-    $(document).ready(makeEmailsClickable);
+    var CONFIRM_TEXT = gettext('WARNING! Are you sure you want to deactivate this user? This cannot be undone!');
+    function confirmUserDeactivation() {
+        $('#deactivate-form').submit(function() {
+            return confirm(CONFIRM_TEXT);
+        });
+    }
+
+    $(document).ready(function() {
+        makeEmailsClickable();
+        confirmUserDeactivation();
+    });
 }());
