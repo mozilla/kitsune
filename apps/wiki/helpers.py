@@ -1,7 +1,7 @@
 from jingo import register
 import jinja2
 
-from wiki import parser
+from sumo import parser
 from wiki.diff import BetterHtmlDiff
 
 

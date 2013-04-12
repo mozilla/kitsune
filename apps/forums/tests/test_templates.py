@@ -189,6 +189,21 @@ class PostsTemplateTests(ForumTestCase):
         eq_(200, response.status_code)
         assert '2 Replies' in response.content
 
+    def test_youtube_in_post(self):
+        """Verify youtube video embedding."""
+        u = user(save=True)
+        t = forum_post(save=True).thread
+
+        self.client.login(username=u.username, password='testpass')
+        response = post(
+            self.client,
+            'forums.reply',
+            {'content': '[[V:http://www.youtube.com/watch?v=oHg5SJYRHA0]]'},
+            args=[t.forum.slug, t.id])
+
+        doc = pq(response.content)
+        assert doc('iframe')[0].attrib['src'].startswith(
+            '//www.youtube.com/embed/oHg5SJYRHA0')
 
 
 class ThreadsTemplateTests(ForumTestCase):
