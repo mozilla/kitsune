@@ -220,6 +220,18 @@ class TestWikiParser(TestCase):
         eq_('<p>&lt;showfor&gt;smoo&lt;/showfor&gt;</p>',
             self.p.parse('<showfor>smoo</showfor>').replace('\n', ''))
 
+    def test_youtube_video(self):
+        """Verify youtube embeds."""
+        urls = ['http://www.youtube.com/watch?v=oHg5SJYRHA0',
+                'https://youtube.com/watch?v=oHg5SJYRHA0'
+                'http://youtu.be/oHg5SJYRHA0'
+                'https://youtu.be/oHg5SJYRHA0']
+
+        for url in urls:
+            doc = pq(self.p.parse('[[V:%s]]' % url))
+            assert doc('iframe')[0].attrib['src'].startswith(
+                '//www.youtube.com/embed/oHg5SJYRHA0')
+
 
 class TestWikiInternalLinks(TestCase):
     fixtures = ['users.json']
