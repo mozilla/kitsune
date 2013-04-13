@@ -10,20 +10,8 @@ from wiki.models import Document
 
 @cronjobs.register
 def reload_wiki_traffic_stats():
-    transaction.enter_transaction_management()
-    transaction.managed(True)
-
     for period, _ in PERIODS:
-        try:
-            WikiDocumentVisits.reload_period_from_analytics(period)
-        except:
-            transaction.rollback()
-            raise
-        else:
-            transaction.commit()
-
-    # Nice but not necessary when the process is about to exit:
-    transaction.leave_transaction_management()
+        WikiDocumentVisits.reload_period_from_analytics(period)
 
 
 def _get_old_unhelpful():
