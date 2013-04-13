@@ -1,10 +1,13 @@
+from os.path import basename
+from urlparse import urlparse, parse_qs
+
 from django.conf import settings
 
 import jingo
 from tower import ugettext_lazy as _lazy, ugettext as _
 from wikimarkup.parser import Parser
 
-from gallery.models import Image
+from gallery.models import Image, Video
 from sumo import email_utils
 from sumo.urlresolvers import reverse
 
@@ -35,6 +38,8 @@ IMAGE_PARAM_VALUES = {
     'valign': ('baseline', 'sub', 'super', 'top', 'text-top', 'middle',
                'bottom', 'text-bottom'),
 }
+VIDEO_PARAMS = ['height', 'width', 'modal', 'title', 'placeholder']
+YOUTUBE_PLACEHOLDER = 'YOUTUBE_EMBED_PLACEHOLDER_%s'
 
 
 def wiki_to_html(wiki_markup, locale=settings.WIKI_DEFAULT_LANGUAGE,
@@ -189,10 +194,14 @@ class WikiParser(Parser):
         # Register default hooks
         self.registerInternalLinkHook(None, self._hook_internal_link)
         self.registerInternalLinkHook('Image', self._hook_image_tag)
+        self.registerInternalLinkHook('Video', self._hook_video)
+        self.registerInternalLinkHook('V', self._hook_video)
+
+        self.youtube_videos = []
 
     def parse(self, text, show_toc=None, tags=None, attributes=None,
               styles=None, locale=settings.WIKI_DEFAULT_LANGUAGE,
-              nofollow=False):
+              nofollow=False, youtube_embeds=True):
         """Given wiki markup, return HTML.
 
         Pass a locale to get all the hooks to look up Documents or
@@ -218,7 +227,25 @@ class WikiParser(Parser):
                 strip_comments=True,
                 **parser_kwargs)
 
-        return _parse(locale)
+        html = _parse(locale)
+
+        # This is kind of a hack so that subclasses can skip embedding here
+        # and do it on their own at the end of parsing.
+        if youtube_embeds:
+            html = self.add_youtube_embeds(html)
+
+        return html
+
+    def add_youtube_embeds(self, html):
+        """Insert youtube embeds.
+
+        We need to play this placeholder replacement game because we don't
+        allow iframes in the wiki content.
+        """
+        for video_id in self.youtube_videos:
+            html = html.replace(YOUTUBE_PLACEHOLDER % video_id,
+                                generate_youtube_embed(video_id))
+        return html
 
     def _hook_internal_link(self, parser, space, name):
         """Parses text and returns internal link."""
@@ -267,3 +294,65 @@ class WikiParser(Parser):
         r_kwargs = {'image': image, 'params': params,
                     'MEDIA_URL': settings.MEDIA_URL}
         return template.render(r_kwargs)
+
+    # Videos are objects that can have one or more files attached to them
+    #
+    # They are keyed by title in the syntax and the locale passed to the
+    # parser.
+    def _hook_video(self, parser, space, title):
+        """Handles [[Video:video title]] with locale from parser."""
+        message = _lazy(u'The video "%s" does not exist.') % title
+
+        # params, only modal supported for now
+        title, params = build_hook_params(title, self.locale, VIDEO_PARAMS)
+
+        # If this is a youtube video, return the youtube embed placeholder
+        parsed_url = urlparse(title)
+        netloc = parsed_url.netloc
+        if netloc in ['youtu.be', 'youtube.com', 'www.youtube.com']:
+            if netloc == 'youtu.be':
+                # The video id is the path minus the leading /
+                video_id = parsed_url.path[1:]
+            else:
+                # The video id is in the v= query param
+                video_id = parse_qs(parsed_url.query)['v'][0]
+
+            self.youtube_videos.append(video_id)
+
+            return YOUTUBE_PLACEHOLDER % video_id
+
+        v = get_object_fallback(Video, title, self.locale, message)
+        if isinstance(v, basestring):
+            return v
+
+        return generate_video(v, params)
+
+
+def generate_video(v, params=[]):
+    """Takes a video object and returns HTML markup for embedding it."""
+    sources = []
+    if v.webm:
+        sources.append({'src': _get_video_url(v.webm), 'type': 'webm'})
+    if v.ogv:
+        sources.append({'src': _get_video_url(v.ogv), 'type': 'ogg'})
+    data_fallback = ''
+    # Flash fallback
+    if v.flv:
+        data_fallback = _get_video_url(v.flv)
+    return jingo.env.get_template('wikiparser/hook_video.html').render(
+        {'fallback': data_fallback, 'sources': sources, 'params': params,
+         'video': v,
+         'height': settings.WIKI_VIDEO_HEIGHT,
+         'width': settings.WIKI_VIDEO_WIDTH})
+
+
+def generate_youtube_embed(video_id):
+    """Takes a youtube video id and returns the embed markup."""
+    return jingo.env.get_template(
+        'wikiparser/hook_youtube_embed.html').render({'video_id': video_id})
+
+
+def _get_video_url(video_file):
+    if settings.GALLERY_VIDEO_URL:
+        return settings.GALLERY_VIDEO_URL + basename(video_file.name)
+    return video_file.url
