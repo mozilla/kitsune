@@ -13,8 +13,8 @@ from statsd import statsd
 from tower import ugettext as _, ugettext_lazy as _lazy
 
 import sumo.parser
+from wiki.models import Document
 from sumo.parser import (ALLOWED_ATTRIBUTES, get_object_fallback)
-
 
 BLOCK_LEVEL_ELEMENTS = ['table', 'blockquote', 'h1', 'h2', 'h3', 'h4', 'h5',
                         'h6', 'td', 'th', 'div', 'hr', 'pre', 'p', 'li', 'ul',
@@ -345,8 +345,14 @@ class WikiParser(sumo.parser.WikiParser):
         self.registerInternalLinkHook('Template', self._hook_template)
         self.registerInternalLinkHook('T', self._hook_template)
 
+        if doc_id is not None:
+            self.current_doc = Document.objects.get(pk=doc_id)
+        else:
+            self.current_doc = None
+
     def parse(self, text, **kwargs):
         """Wrap SUMO's parse() to support additional wiki-only features."""
+
         # Replace fors with inline tokens the wiki formatter will tolerate:
         text, data = ForParser.strip_fors(text)
 
@@ -376,17 +382,21 @@ class WikiParser(sumo.parser.WikiParser):
         """Returns the document's parsed content."""
         from wiki.models import Document
         message = _('The document "%s" does not exist.') % title
-        t = get_object_fallback(Document, title, locale=self.locale)
-        if not t or not t.current_revision:
+        include = get_object_fallback(Document, title, locale=self.locale)
+        if not include or not include.current_revision:
             return message
 
-        if t.id in parser.inclusions:
+        if include.id in parser.inclusions:
             return RECURSION_MESSAGE % title
         else:
-            parser.inclusions.append(t.id)
-        ret = parser.parse(t.current_revision.content, show_toc=False,
+            parser.inclusions.append(include.id)
+        ret = parser.parse(include.current_revision.content, show_toc=False,
                            locale=self.locale)
         parser.inclusions.pop()
+
+        if self.current_doc is not None:
+            self.current_doc.add_link_to(include, 'include')
+
         return ret
 
     # Wiki templates are documents that receive arguments.
@@ -405,22 +415,25 @@ class WikiParser(sumo.parser.WikiParser):
 
         message = _('The template "%s" does not exist or has no approved '
                     'revision.') % short_title
-        t = get_object_fallback(Document, template_title,
-                                locale=self.locale, is_template=True)
+        template = get_object_fallback(Document, template_title,
+                                       locale=self.locale, is_template=True)
 
-        if not t or not t.current_revision:
+        if not template or not template.current_revision:
             return message
 
-        if t.id in parser.inclusions:
+        if template.id in parser.inclusions:
             return RECURSION_MESSAGE % template_title
         else:
-            parser.inclusions.append(t.id)
-        c = t.current_revision.content.rstrip()
+            parser.inclusions.append(template.id)
+        c = template.current_revision.content.rstrip()
         # Note: this completely ignores the allowed attributes passed to the
         # WikiParser.parse() method and defaults to ALLOWED_ATTRIBUTES.
         parsed = parser.parse(c, show_toc=False, attributes=ALLOWED_ATTRIBUTES,
                               locale=self.locale)
         parser.inclusions.pop()
+
+        if self.current_doc is not None:
+            self.current_doc.add_link_to(template, 'template')
 
         # Special case for inline templates
         if '\n' not in c:
@@ -428,3 +441,16 @@ class WikiParser(sumo.parser.WikiParser):
             parsed = parsed.replace('</p>', '')
         # Do some string formatting to replace parameters
         return _format_template_content(parsed, _build_template_params(params))
+
+    def _hook_internal_link(self, parser, space, name):
+        """Records links between documents, and then calls super()."""
+
+        if self.current_doc is not None:
+            title = name.split('|')[0]
+            locale = self.current_doc.locale
+
+            linked_doc = get_object_fallback(Document, title, locale)
+            if linked_doc is not None:
+                self.current_doc.add_link_to(linked_doc, 'link')
+
+        return super(WikiParser, self)._hook_internal_link(parser, space, name)

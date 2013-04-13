@@ -798,3 +798,112 @@ class ForParserTests(TestCase):
         html = 'A<i>hi</i>B<i>there</i>C'
         p = ForParser(html)
         eq_(html, p.to_unicode())
+
+
+class WhatLinksHereTests(TestCase):
+
+    def test_links(self):
+        d1, _, _ = doc_rev_parser('', title='D1')
+        d2, _, _ = doc_rev_parser('[[D1]]', title='D2')
+        d3, _, _ = doc_rev_parser('[[D1]] [[D2]]', title='D3')
+
+        eq_(len(d1.links_to()), 2)
+        eq_(len(d1.links_from()), 0)
+        eq_(len(d2.links_to()), 1)
+        eq_(len(d2.links_from()), 1)
+        eq_(len(d3.links_to()), 0)
+        eq_(len(d3.links_from()), 2)
+
+        eq_([d.linked_from.title for d in d1.links_to()], ['D2', 'D3'])
+        eq_([d.kind for d in d1.links_to()], ['link', 'link'])
+        eq_([d.linked_from.title for d in d2.links_to()], ['D3'])
+
+    def test_templates(self):
+        d1, _, _ = doc_rev_parser('Oh hai', title='Template:D1')
+        d2, _, _ = doc_rev_parser('[[Template:D1]]', title='D2')
+
+        eq_(len(d1.links_to()), 1)
+        eq_(len(d1.links_from()), 0)
+        eq_(len(d2.links_to()), 0)
+        eq_(len(d2.links_from()), 1)
+
+        eq_(d1.links_to()[0].kind, 'template')
+
+    def test_includes(self):
+        d1, _, _ = doc_rev_parser('Oh hai', title='D1')
+        d2, _, _ = doc_rev_parser('[[Include:D1]]', title='D2')
+
+        eq_(len(d1.links_to()), 1)
+        eq_(len(d1.links_from()), 0)
+        eq_(len(d2.links_to()), 0)
+        eq_(len(d2.links_from()), 1)
+
+        eq_(d1.links_to()[0].kind, 'include')
+
+    def test_duplicates(self):
+        """Document.links_to and Document.links_from should only count
+        documents that link, not every instance of a link on a page.
+        Make sure that things work that way."""
+        d1, _, _ = doc_rev_parser('', title='D1')
+        d2, _, _ = doc_rev_parser('[[D1]] [[D1]] [[D1]]', title='D2')
+
+        eq_(len(d1.links_to()), 1)
+        eq_(len(d1.links_from()), 0)
+        eq_(len(d2.links_to()), 0)
+        eq_(len(d2.links_from()), 1)
+
+        eq_(d1.links_to()[0].kind, 'link')
+
+    def test_locales_exists(self):
+        """Links should use the correct locale."""
+        d1 = document(title='Foo', locale='en-US', save=True)
+        revision(document=d1, content='', is_approved=True, save=True)
+        d2 = document(title='Foo', locale='de', save=True)
+        revision(document=d2, content='', is_approved=True, save=True)
+        d3 = document(title='Bar', locale='de', save=True)
+        revision(document=d3, content='[[Foo]]', is_approved=True, save=True)
+
+        eq_(len(d1.links_to()), 0)
+        eq_(len(d1.links_from()), 0)
+        eq_(len(d2.links_to()), 1)
+        eq_(len(d2.links_from()), 0)
+        eq_(len(d3.links_to()), 0)
+        eq_(len(d3.links_from()), 1)
+
+        eq_(d2.links_to()[0].kind, 'link')
+
+    def test_locales_renames(self):
+        """Links should use the correct locale, even if the title has
+        been translated."""
+        d1 = document(title='Foo', locale='en-US', save=True)
+        revision(document=d1, content='', is_approved=True, save=True)
+        d2 = document(title='German Foo', locale='de', parent=d1, save=True)
+        revision(document=d2, content='', is_approved=True, save=True)
+        d3 = document(title='German Bar', locale='de', save=True)
+        revision(document=d3, content='[[Foo]]', is_approved=True, save=True)
+
+        eq_(len(d1.links_to()), 0)
+        eq_(len(d1.links_from()), 0)
+        eq_(len(d2.links_to()), 1)
+        eq_(len(d2.links_from()), 0)
+        eq_(len(d3.links_to()), 0)
+        eq_(len(d3.links_from()), 1)
+
+        eq_(d2.links_to()[0].kind, 'link')
+
+    def test_unicode(self):
+        """Unicode is hard. Test that."""
+        # \u03C0 is pi and \u2764 is a heart symbol.
+        d1 = document(title=u'\u03C0', slug='pi', save=True)
+        revision(document=d1, content=u'I \u2764 \u03C0', is_approved=True,
+                 save=True)
+        d2 = document(title=u'\u2764', slug='heart', save=True)
+        revision(document=d2, content=u'What do you think about [[\u03C0]]?',
+                 is_approved=True, save=True)
+
+        eq_(len(d1.links_to()), 1)
+        eq_(len(d1.links_from()), 0)
+        eq_(len(d2.links_to()), 0)
+        eq_(len(d2.links_from()), 1)
+
+        eq_(d1.links_to()[0].kind, 'link')
