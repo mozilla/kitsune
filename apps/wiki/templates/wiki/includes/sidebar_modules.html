@@ -105,15 +105,11 @@
             </li>
           {% endif %}
           {% if document %}
-            <li{% if active == 'history' %} class="selected"{% endif %}>
-              <a href="{% if document %}{{ url('wiki.document_revisions', document.slug) }}{% else %}{{ url('wiki.document_revisions', parent.slug, locale=settings.WIKI_DEFAULT_LANGUAGE) }}{% endif %}">{{ _('Show History') }}</a>
-            </li>
-          {% endif %}
-          {% if document %}
             <li{% if active == 'links_here' %} class="selected"{% endif %}>
-              <a href="{{ url('wiki.what_links_here', document.slug) }}">
-                {{ _('What Links Here') }}
-              </a>
+              <a href="{{ url('wiki.what_links_here', document.slug) }}">{{ _('What Links Here') }}</a>
+            </li>
+            <li{% if active == 'history' %} class="selected"{% endif %}>
+              <a href="{{ url('wiki.document_revisions', document.slug) }}">{{ _('Show History') }}</a>
             </li>
           {% endif %}
         </ul>

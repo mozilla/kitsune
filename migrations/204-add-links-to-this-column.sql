@@ -3,6 +3,7 @@ CREATE TABLE `wiki_documentlink` (
     `linked_from_id` integer NOT NULL,
     `linked_to_id` integer NOT NULL,
     `kind` varchar(16) NOT NULL
+    UNIQUE (`linked_from_id`, `linked_to_id`)
 ) ENGINE=InnoDB CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 ALTER TABLE `wiki_documentlink`

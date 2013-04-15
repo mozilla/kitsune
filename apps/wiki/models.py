@@ -8,7 +8,7 @@ from django.contrib.auth.models import User
 from django.core.cache import cache
 from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from django.core.urlresolvers import resolve
-from django.db import models
+from django.db import models, IntegrityError
 from django.db.models import Q
 from django.http import Http404
 
@@ -703,10 +703,21 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
         super(cls, cls).index(document, **kwargs)
 
     def links_from(self):
+        """Get a query set of links that are from this document to another."""
         return DocumentLink.objects.filter(linked_from=self)
 
     def links_to(self):
+        """Get a query set of links that are from another document to this."""
         return DocumentLink.objects.filter(linked_to=self)
+
+    def add_link_to(self, linked_to, kind):
+        try:
+            DocumentLink(linked_from=self,
+                         linked_to=linked_to,
+                         kind=kind).save()
+        except IntegrityError:
+            # This link already exists, ok.
+            pass
 
 
 register_for_indexing('wiki', Document)
@@ -989,6 +1000,9 @@ class DocumentLink(ModelBase):
     linked_from = models.ForeignKey(Document,
                                     related_name='documentlink_to_set')
     kind = models.CharField(max_length=16)
+
+    class Meta:
+        unique_together = ('linked_from', 'linked_to')
 
     def __repr__(self):
         return ('<DocumentLink: %s from %r to %r>' %

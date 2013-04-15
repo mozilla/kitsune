@@ -26,11 +26,15 @@
 {% block content %}
   <div class="grid_9">
     <article id="what-links-here">
-      {{ relations_list('link', _('Documents that link to "{title}"')|fe(title=document.title)) }}
-
-      {{ relations_list('include', _('Documents that include "{title}"')|fe(title=document.title)) }}
-
-      {{ relations_list('template', _('Documents that use "{title}" as a template')|fe(title=document.title)) }}
+      {% if relations %}
+        {{ relations_list('link', _('Documents that link to "{title}"')|fe(title=document.title)) }}
+        {{ relations_list('include', _('Documents that include "{title}"')|fe(title=document.title)) }}
+        {{ relations_list('template', _('Documents that use "{title}" as a template')|fe(title=document.title)) }}
+      {% else %}
+        <p>
+          {{ _('No other documents link to {title}.')|fe(title=document.title) }}
+        </p>
+      {% endif %}
     </article>
   </div>
 {% endblock %}
