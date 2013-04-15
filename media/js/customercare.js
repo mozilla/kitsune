@@ -261,7 +261,7 @@
             this.open = function(tweet) {
                 if (tweet) {
                     this.$el
-                        .find('.signin')
+                        .find('.signin-twitter')
                         .bind('click', {tweet: tweet}, function(e) {
                             memory.id = e.data.tweet.id;
                         });
@@ -324,7 +324,7 @@
         });
 
         if (signin.authed && memory.id) {
-            $('#tweet-'+ memory.id).find('.tweet-contents').trigger('click');
+            $('#tweet-'+ memory.id).find('.reply-button').trigger('click');
             memory.del();
         }
 
