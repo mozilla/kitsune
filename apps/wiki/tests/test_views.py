@@ -21,7 +21,7 @@ from wiki.tests import (doc_rev, document, helpful_vote, new_document_data,
 from wiki.showfor import _version_groups
 from wiki.views import (_document_lock_check, _document_lock_clear,
                         _document_lock_steal)
-from wiki.models import HelpfulVoteMetadata
+from wiki.models import HelpfulVoteMetadata, HelpfulVote
 
 from sumo.redis_utils import redis_client, RedisError
 
@@ -422,6 +422,18 @@ class VoteTests(TestCase):
             })
 
         eq_(HelpfulVoteMetadata.objects.filter(key='source').count(), 1)
+
+    def test_rate_limiting(self):
+        """Verify only 10 votes are counted in a day."""
+        for i in range(13):
+            rev = revision(save=True)
+            url = reverse('wiki.document_vote', kwargs={
+            'document_slug': rev.document.slug})
+            self.client.post(url, {
+                'revision_id': rev.id,
+                'helpful': True})
+
+        eq_(10, HelpfulVote.objects.count())
 
 
 class TestDocumentLocking(TestCase):

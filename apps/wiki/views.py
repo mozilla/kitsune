@@ -18,6 +18,7 @@ from django.views.decorators.http import (require_GET, require_POST,
 import jingo
 import waffle
 from mobility.decorators import mobile_template
+from ratelimit.decorators import ratelimit
 from statsd import statsd
 from tower import ugettext_lazy as _lazy
 from tower import ugettext as _
@@ -27,7 +28,8 @@ from products.models import Product
 from sumo.helpers import urlparams
 from sumo.redis_utils import redis_client, RedisError
 from sumo.urlresolvers import reverse
-from sumo.utils import paginate, smart_int, get_next_url, truncated_json_dumps
+from sumo.utils import (paginate, smart_int, get_next_url, user_or_ip,
+                        truncated_json_dumps)
 from topics.models import Topic
 from wiki import DOCUMENTS_PER_PAGE
 from wiki.events import (EditDocumentEvent, ReviewableRevisionInLocaleEvent,
@@ -823,6 +825,7 @@ def json_view(request):
 
 @require_POST
 @csrf_exempt
+@ratelimit(keys=user_or_ip('document-vote'), ip=False, rate='10/d')
 def helpful_vote(request, document_slug):
     """Vote for Helpful/Not Helpful document"""
     if 'revision_id' not in request.POST:
@@ -845,25 +848,27 @@ def helpful_vote(request, document_slug):
         else:
             message = _('Sorry to hear that.')
 
-        if request.user.is_authenticated():
-            vote.creator = request.user
-        else:
-            vote.anonymous_id = request.anonymous.anonymous_id
+        # If user is over the limit, don't save but pretend everything is ok.
+        if not request.limited:
+            if request.user.is_authenticated():
+                vote.creator = request.user
+            else:
+                vote.anonymous_id = request.anonymous.anonymous_id
 
-        vote.save()
-        statsd.incr('wiki.vote')
+            vote.save()
+            statsd.incr('wiki.vote')
 
-        # Send a survey if flag is enabled and vote wasn't helpful.
-        if 'helpful' not in request.POST:
-            survey = jingo.render_to_string(
-                request, 'wiki/includes/unhelpful_survey.html',
-                {'vote_id': vote.id})
+            # Send a survey if flag is enabled and vote wasn't helpful.
+            if 'helpful' not in request.POST:
+                survey = jingo.render_to_string(
+                    request, 'wiki/includes/unhelpful_survey.html',
+                    {'vote_id': vote.id})
 
-        # Save vote metadata: referrer and search query (if available)
-        for name in ['referrer', 'query', 'source']:
-            val = request.POST.get(name)
-            if val:
-                vote.add_metadata(name, val)
+            # Save vote metadata: referrer and search query (if available)
+            for name in ['referrer', 'query', 'source']:
+                val = request.POST.get(name)
+                if val:
+                    vote.add_metadata(name, val)
     else:
         message = _('You already voted on this Article.')
 
