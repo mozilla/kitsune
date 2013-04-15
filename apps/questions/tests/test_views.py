@@ -11,7 +11,7 @@ from nose.tools import eq_
 from pyquery import PyQuery as pq
 
 from products.tests import product
-from questions.models import Question, QuestionVote, AnswerVote
+from questions.models import Question, QuestionVote, AnswerVote, Answer
 from questions.tests import answer, question
 from questions.views import parse_troubleshooting
 from search.tests.test_es import ElasticTestCase
@@ -423,6 +423,7 @@ class TestQuestionList(TestCase):
 
 
 class TestRateLimiting(TestCase):
+    client_class = LocalizingClient
 
     def _check_question_vote(self, q, ignored):
         """Try and vote on `q`. If `ignored` is false, assert the
@@ -534,3 +535,18 @@ class TestRateLimiting(TestCase):
         # Logging out out won't help
         self.client.logout()
         self._check_answer_vote(q, answers[11], True)
+
+    def test_answers_limit(self):
+        """Only one answer per minute can be posted."""
+        # Login
+        u = user(password='testpass', save=True)
+        self.client.login(username=u.username, password='testpass')
+
+        q = question(save=True)
+        content = 'lorem ipsum dolor sit amet'
+        url = reverse('questions.reply', args=[q.id])
+        for i in range(3):
+            response = self.client.post(url, {'content': content})
+
+        eq_(1, Answer.uncached.count())
+    test_answers_limit.xx = 1
