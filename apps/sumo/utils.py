@@ -153,17 +153,22 @@ def truncated_json_dumps(obj, max_length, key, ensure_ascii=False):
     return json.dumps(dupe, ensure_ascii=ensure_ascii)
 
 
-def user_or_ip(request):
-    """Used for generating rate limiting keys. Returns IP address for
+def user_or_ip(key_prefix):
+    """Used for generating rate limiting keys. Returns a function to pass on
+    to rate limit. The function return returns a key with IP address for
     anonymous users, and pks for authenticated users.
 
     Examples
-        Anonymous: 'uip:127.0.0.1'
-        Authenticated: 'uip:17859'
+        Anonymous: 'uip:<key_prefix>:127.0.0.1'
+        Authenticated: 'uip:<key_prefix>:17859'
     """
-    if hasattr(request, 'user') and request.user.is_authenticated():
-        key = str(request.user.pk)
-    else:
-        key = request.META.get('HTTP_X_CLUSTER_CLIENT_IP',
-                               request.META['REMOTE_ADDR'])
-    return 'uip:%s' % key
+
+    def _user_or_ip(request):
+        if hasattr(request, 'user') and request.user.is_authenticated():
+            key = str(request.user.pk)
+        else:
+            key = request.META.get('HTTP_X_CLUSTER_CLIENT_IP',
+                                   request.META['REMOTE_ADDR'])
+        return 'uip:%s:%s' % (key_prefix, key)
+
+    return _user_or_ip
