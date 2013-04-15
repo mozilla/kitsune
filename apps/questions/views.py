@@ -648,7 +648,7 @@ def reply(request, question_id):
             return HttpResponseRedirect(answer.get_absolute_url())
 
     return answers(request, question_id=question_id, form=form,
-                   answer_preview=answer_preview, limited=request.limited)
+                   answer_preview=answer_preview)
 
 
 def solve(request, question_id, answer_id):
