@@ -716,7 +716,7 @@ def unsolve(request, question_id, answer_id):
 
 @require_POST
 @csrf_exempt
-@ratelimit(keys=user_or_ip, ip=False, rate='10/d')
+@ratelimit(keys=user_or_ip('question-vote'), ip=False, rate='10/d')
 def question_vote(request, question_id):
     """I have this problem too."""
     question = get_object_or_404(Question, pk=question_id)
@@ -762,7 +762,7 @@ def question_vote(request, question_id):
 
 
 @csrf_exempt
-@ratelimit(keys=user_or_ip, ip=False, rate='10/d')
+@ratelimit(keys=user_or_ip('answer-vote'), ip=False, rate='10/d')
 def answer_vote(request, question_id, answer_id):
     """Vote for Helpful/Not Helpful answers"""
     answer = get_object_or_404(Answer, pk=answer_id, question=question_id)
