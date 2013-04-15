@@ -8,7 +8,7 @@ from django.contrib.auth.models import User
 from django.core.cache import cache
 from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from django.core.urlresolvers import resolve
-from django.db import models
+from django.db import models, IntegrityError
 from django.db.models import Q
 from django.http import Http404
 
@@ -702,6 +702,23 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
 
         super(cls, cls).index(document, **kwargs)
 
+    def links_from(self):
+        """Get a query set of links that are from this document to another."""
+        return DocumentLink.objects.filter(linked_from=self)
+
+    def links_to(self):
+        """Get a query set of links that are from another document to this."""
+        return DocumentLink.objects.filter(linked_to=self)
+
+    def add_link_to(self, linked_to, kind):
+        try:
+            DocumentLink(linked_from=self,
+                         linked_to=linked_to,
+                         kind=kind).save()
+        except IntegrityError:
+            # This link already exists, ok.
+            pass
+
 
 register_for_indexing('wiki', Document)
 register_for_indexing(
@@ -901,6 +918,12 @@ class Revision(ModelBase):
 
     @property
     def content_parsed(self):
+        # Remove "what links here" reverse links, because they might be
+        # stale and re-rendering will re-add them. This cannot be done
+        # reliably in the parser's parse() function, because that is
+        # often called multiple times per document.
+        self.document.links_from().delete()
+
         from wiki.parser import wiki_to_html
         return wiki_to_html(self.content, locale=self.document.locale,
                             doc_id=self.document.id)
@@ -964,6 +987,26 @@ class Locale(ModelBase):
 
     def __unicode__(self):
         return self.locale
+
+
+class DocumentLink(ModelBase):
+    """Model a link between documents.
+
+    If article A contains [[Link:B]], then `linked_to` is B,
+    `linked_from` is A, and kind is 'link'.
+    """
+    linked_to = models.ForeignKey(Document,
+                                  related_name='documentlink_from_set')
+    linked_from = models.ForeignKey(Document,
+                                    related_name='documentlink_to_set')
+    kind = models.CharField(max_length=16)
+
+    class Meta:
+        unique_together = ('linked_from', 'linked_to')
+
+    def __repr__(self):
+        return ('<DocumentLink: %s from %r to %r>' %
+                (self.kind, self.linked_from, self.linked_to))
 
 
 def _doc_components_from_url(url, required_locale=None, check_host=True):

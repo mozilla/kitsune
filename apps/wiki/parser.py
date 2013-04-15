@@ -19,6 +19,7 @@ import sumo.parser
 from gallery.models import Video
 from sumo.parser import (ALLOWED_ATTRIBUTES, get_object_fallback,
                          build_hook_params)
+from wiki.models import Document
 
 
 BLOCK_LEVEL_ELEMENTS = ['table', 'blockquote', 'h1', 'h2', 'h3', 'h4', 'h5',
@@ -356,8 +357,14 @@ class WikiParser(sumo.parser.WikiParser):
 
         self.youtube_videos = []
 
+        if doc_id is not None:
+            self.current_doc = Document.objects.get(pk=doc_id)
+        else:
+            self.current_doc = None
+
     def parse(self, text, **kwargs):
         """Wrap SUMO's parse() to support additional wiki-only features."""
+
         # Replace fors with inline tokens the wiki formatter will tolerate:
         text, data = ForParser.strip_fors(text)
 
@@ -391,17 +398,21 @@ class WikiParser(sumo.parser.WikiParser):
         """Returns the document's parsed content."""
         from wiki.models import Document
         message = _('The document "%s" does not exist.') % title
-        t = get_object_fallback(Document, title, locale=self.locale)
-        if not t or not t.current_revision:
+        include = get_object_fallback(Document, title, locale=self.locale)
+        if not include or not include.current_revision:
             return message
 
-        if t.id in parser.inclusions:
+        if include.id in parser.inclusions:
             return RECURSION_MESSAGE % title
         else:
-            parser.inclusions.append(t.id)
-        ret = parser.parse(t.current_revision.content, show_toc=False,
+            parser.inclusions.append(include.id)
+        ret = parser.parse(include.current_revision.content, show_toc=False,
                            locale=self.locale)
         parser.inclusions.pop()
+
+        if self.current_doc is not None:
+            self.current_doc.add_link_to(include, 'include')
+
         return ret
 
     # Wiki templates are documents that receive arguments.
@@ -420,22 +431,25 @@ class WikiParser(sumo.parser.WikiParser):
 
         message = _('The template "%s" does not exist or has no approved '
                     'revision.') % short_title
-        t = get_object_fallback(Document, template_title,
-                                locale=self.locale, is_template=True)
+        template = get_object_fallback(Document, template_title,
+                                       locale=self.locale, is_template=True)
 
-        if not t or not t.current_revision:
+        if not template or not template.current_revision:
             return message
 
-        if t.id in parser.inclusions:
+        if template.id in parser.inclusions:
             return RECURSION_MESSAGE % template_title
         else:
-            parser.inclusions.append(t.id)
-        c = t.current_revision.content.rstrip()
+            parser.inclusions.append(template.id)
+        c = template.current_revision.content.rstrip()
         # Note: this completely ignores the allowed attributes passed to the
         # WikiParser.parse() method and defaults to ALLOWED_ATTRIBUTES.
         parsed = parser.parse(c, show_toc=False, attributes=ALLOWED_ATTRIBUTES,
                               locale=self.locale)
         parser.inclusions.pop()
+
+        if self.current_doc is not None:
+            self.current_doc.add_link_to(template, 'template')
 
         # Special case for inline templates
         if '\n' not in c:
@@ -475,6 +489,21 @@ class WikiParser(sumo.parser.WikiParser):
             return v
 
         return generate_video(v, params)
+
+    def _hook_internal_link(self, parser, space, name):
+        """Records links between documents, and then calls super()."""
+
+        if self.current_doc is not None:
+            title = name.split('|')[0]
+            locale = self.current_doc.locale
+            try:
+                linked_doc = Document.objects.get(title=title, locale=locale)
+                self.current_doc.add_link_to(linked_doc, 'link')
+            except Document.DoesNotExist:
+                # Broken link, oh well.
+                pass
+
+        return super(WikiParser, self)._hook_internal_link(parser, space, name)
 
 
 def generate_video(v, params=[]):

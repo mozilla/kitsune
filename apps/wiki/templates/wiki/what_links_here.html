@@ -1,0 +1,44 @@
+{# vim: set ts=2 et sts=2 sw=2: #}
+{% extends "wiki/base.html" %}
+{% from "wiki/includes/sidebar_modules.html" import document_tools with context %}
+{% set meta = (('robots', 'noindex'),) %}
+{% set title = _('What Links Here | {document}')|fe(document=document.title) %}
+{% set crumbs = [(document.get_absolute_url(), document.title),
+                 (None, _('What Links Here'))] %}
+
+
+{% macro relations_list(name, title) %}
+  {% if relations[name] %}
+    <section>
+      <h2>{{ title }}</h2>
+      <ul>
+        {% for doc in relations[name] %}
+          <li>
+            <a href="{{ doc.get_absolute_url() }}">{{ doc.title }}</a>
+          </li>
+        {% endfor %}
+      </ul>
+    </section>
+    {% endif %}
+{% endmacro %}
+
+
+{% block content %}
+  <div class="grid_9">
+    <article id="what-links-here">
+      {% if relations %}
+        {{ relations_list('link', _('Documents that link to "{title}"')|fe(title=document.title)) }}
+        {{ relations_list('include', _('Documents that include "{title}"')|fe(title=document.title)) }}
+        {{ relations_list('template', _('Documents that use "{title}" as a template')|fe(title=document.title)) }}
+      {% else %}
+        <p>
+          {{ _('No other documents link to {title}.')|fe(title=document.title) }}
+        </p>
+      {% endif %}
+    </article>
+  </div>
+{% endblock %}
+
+{% block side_top %}
+  {{ document_tools(document, document.parent, user, 'links_here', settings) }}
+{% endblock %}
