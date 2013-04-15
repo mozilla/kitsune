@@ -1,7 +1,5 @@
 import json
-import urlparse
 
-from django.conf import settings
 from django.contrib.sites.models import Site
 from django.db import models
 from django.db.models.signals import pre_delete
