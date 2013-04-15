@@ -90,7 +90,15 @@
             <a href="{{ profile_url(answer.creator) }}">{{ answer.creator }}</a>
             {{ answer.created|timesince }}
           </header>
-          <article>{{ answer.content_parsed|safe }}</article>
+          <article>
+            {{ answer.content_parsed|safe }}
+
+            {% for image in answer.images.all() %}
+              <a class="attachment" href="{{ image.file.url }}">
+                <img src="{{ image.file.url }}" alt="">
+              </a>
+            {% endfor %}
+          </article>
           <footer id="reply-footer-{{ answer.id }}" class="cf">
             {% if answer.id and not question.is_locked %}
               {% if user != answer.creator and not answer.has_voted(request) %}
