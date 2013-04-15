@@ -605,7 +605,8 @@ def _delete_or_upload(request):
 
 @require_POST
 @login_required
-@ratelimit(keys=user_or_ip('answer'), skip_if=_delete_or_upload, ip=False, rate='1/m')
+@ratelimit(keys=user_or_ip('answer'), skip_if=_delete_or_upload, ip=False,
+           rate='1/m')
 def reply(request, question_id):
     """Post a new answer to a question."""
     question = get_object_or_404(Question, pk=question_id)
