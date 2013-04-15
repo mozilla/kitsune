@@ -598,8 +598,15 @@ def edit_question(request, question_id):
         'current_category': question.category})
 
 
+def _delete_or_upload(request):
+    """Exclude image uploading and deleting from the reply rate limiting."""
+    return 'delete_images' in request.POST or 'upload_image' in request.POST
+
+
 @require_POST
 @login_required
+@ratelimit(keys=user_or_ip('answer'), skip_if=_delete_or_upload, ip=False,
+           rate='1/m')
 def reply(request, question_id):
     """Post a new answer to a question."""
     question = get_object_or_404(Question, pk=question_id)
@@ -621,7 +628,7 @@ def reply(request, question_id):
         upload_imageattachment(request, question)
         return answers(request, question_id=question_id, form=form)
 
-    if form.is_valid():
+    if form.is_valid() and not request.limited:
         answer = Answer(question=question, creator=request.user,
                         content=form.cleaned_data['content'])
         if 'preview' in request.POST:
