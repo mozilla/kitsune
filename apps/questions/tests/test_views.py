@@ -549,4 +549,3 @@ class TestRateLimiting(TestCase):
             response = self.client.post(url, {'content': content})
 
         eq_(1, Answer.uncached.count())
-    test_answers_limit.xx = 1
