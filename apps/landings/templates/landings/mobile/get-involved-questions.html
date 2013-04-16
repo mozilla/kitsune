@@ -28,16 +28,20 @@
     <h4>{{ _('How it works') }}</h4>
     <ol>
       <li>
-        <a href="{{ url('customercare.landing') }}">
-          {{ _('Go to Army of Awesome') }}
-        </a>
+        {% set message =  _('Sign up as a volunteer') %}
+        {% if request.LANGUAGE_CODE in settings.AAQ_LANGUAGES %}
+          <a href="{{ url('users.auth_contributor') }}">{{ message }}</a>
+        {% else %}
+          {{ message }}
+        {% endif %}
       </li>
       <li>
-        <a href="{{ url('questions.questions') }}">
-          {% trans %}
-            Go to our support forum and choose a question to answer
-          {% endtrans %}
-        </a>
+        {% set message = _('Go to our support forum and choose a question to answer') %}
+        {% if request.LANGUAGE_CODE in settings.AAQ_LANGUAGES %}
+          <a href="{{ url('questions.questions') }}">{{ message }}</a>
+        {% else %}
+          {{ message }}
+        {% endif %}
       </li>
       <li>
         {{ _('Start answering!') }}<br>

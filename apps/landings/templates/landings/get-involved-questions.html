@@ -36,24 +36,32 @@
     </div>
     <div class="grid_6">
       <span class="bullet">1</span>
-      <div><a href="{{ url('users.auth_contributor') }}">{{ _('Sign up as a volunteer') }}</a></div>
+      <div>
+        {% set message =  _('Sign up as a volunteer') %}
+        {% if request.LANGUAGE_CODE in settings.AAQ_LANGUAGES %}
+          <a href="{{ url('users.auth_contributor') }}">{{ message }}</a>
+        {% else %}
+          {{ message }}
+        {% endif %}
+      </div>
 
       <span class="bullet">2</span>
       <div>
-        <a href="{{ url('questions.questions') }}">
-          {% trans %}
-            Go to our support forum and choose a question to answer
-          {% endtrans %}
-        </a>
+        {% set message = _('Go to our support forum and choose a question to answer') %}
+        {% if request.LANGUAGE_CODE in settings.AAQ_LANGUAGES %}
+          <a href="{{ url('questions.questions') }}">{{ message }}</a>
+        {% else %}
+          {{ message }}
+        {% endif %}
       </div>
 
-        <span class="bullet">3</span>
-        <div>
-          {{ _('Start answering!') }}<br>
-          <a href="{{ url('wiki.document', 'answering-questions-support-forum') }}">
-            {{ _('Read this for some help to get started') }}
-          </a>
-        </div>
+      <span class="bullet">3</span>
+      <div>
+        {{ _('Start answering!') }}<br>
+        <a href="{{ url('wiki.document', 'answering-questions-support-forum') }}">
+          {{ _('Read this for some help to get started') }}
+        </a>
+      </div>
     </div>
     <div class="grid_6">
       <img src="{{ MEDIA_URL }}img/gi-visual-questions.png" alt="">
