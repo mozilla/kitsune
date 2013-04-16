@@ -10,7 +10,7 @@
 {# L10n: {q} is the title of the question. #}
 {% set title = _('{q} | Firefox Support Forum')|f(q=question.title) %}
 {% set classes = 'answers' %}
-{% set crumbs = [(url('questions.questions'), _('Forum')), (None, question.title)] %}
+{% set crumbs = [(url('questions.questions'), _('Support Forum')), (None, question.title)] %}
 {% set canonical_url = unlocalized_url('questions.answers', question.id) %}
 {% if answers.number > 1 %}
   {% set canonical_url = canonical_url|urlparams(page=answers.number) %}
