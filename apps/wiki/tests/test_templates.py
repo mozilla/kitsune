@@ -887,6 +887,41 @@ class NewRevisionTests(TestCaseBase):
         l10n.save()
         self._test_new_revision_warning(l10n)
 
+    def test_keywords_require_permission(self):
+        """Test keywords require permission."""
+        doc = self.d
+        old_rev = doc.current_revision
+
+        u = user(save=True)
+        self.client.login(username=u.username, password='testpass')
+
+        # Edit the document:
+        response = self.client.post(
+            reverse('wiki.edit_document', args=[doc.slug]),
+            {'summary': 'A brief summary', 'content': 'The article content',
+             'keywords': 'keyword1 keyword2',
+             'based_on': old_rev.id, 'form': 'rev'})
+        eq_(302, response.status_code)
+
+        # Keywords should remain the same as in old revision.
+        new_rev = Revision.objects.filter(document=doc).order_by('-id')[0]
+        eq_(old_rev.keywords, new_rev.keywords)
+
+        # Grant the permission.
+        add_permission(u, Revision, 'edit_keywords')
+
+        # Edit the document:
+        response = self.client.post(
+            reverse('wiki.edit_document', args=[doc.slug]),
+            {'summary': 'A brief summary', 'content': 'The article content',
+             'keywords': 'keyword1 keyword2',
+             'based_on': old_rev.id, 'form': 'rev'})
+        eq_(302, response.status_code)
+
+        # Keywords should be updated now
+        new_rev = Revision.uncached.filter(document=doc).order_by('-id')[0]
+        eq_('keyword1 keyword2', new_rev.keywords)
+
 
 class HistoryTests(TestCaseBase):
     """Test the history listing of a document."""
@@ -1877,6 +1912,27 @@ class TranslateTests(TestCaseBase):
         eq_(translated_locales.length, 2)
         eq_("en-US", doc(".translated_locale:first").text())
         eq_("de", doc(".translated_locale:eq(1)").text())
+
+    def test_keywords_dont_require_permission(self):
+        """Test keywords don't require permission when translating."""
+        old_rev = self._create_and_approve_first_translation()
+        doc = old_rev.document
+
+        u = user(save=True)
+        self.client.login(username=u.username, password='testpass')
+
+        # Edit the document:
+        response = self.client.post(
+            reverse('wiki.edit_document', args=[doc.slug], locale=doc.locale),
+            {'summary': 'A brief summary', 'content': 'The article content',
+             'keywords': 'keyword1 keyword2',
+             'based_on': doc.parent.current_revision_id, 'form': 'rev'})
+        print response.content
+        eq_(302, response.status_code)
+
+        # Keywords should be updated
+        new_rev = Revision.objects.filter(document=doc).order_by('-id')[0]
+        eq_('keyword1 keyword2', new_rev.keywords)
 
 
 def _test_form_maintains_based_on_rev(client, doc, view, post_data,
