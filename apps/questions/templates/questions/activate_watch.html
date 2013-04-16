@@ -6,7 +6,9 @@
   {% set title = _('There was a problem confirming your subscription.') %}
 {% endif %}
 {% set classes = 'questions notifications' %}
-{% set crumbs = [(url('questions.questions'), _('Forum')), (question.get_absolute_url(), question.title), (None, _('Email updates'))] %}
+{% set crumbs = [(url('questions.questions'), _('Support Forum')), 
+                 (question.get_absolute_url(), question.title), 
+                 (None, _('Email updates'))] %}
 
 {% block content %}
   <div class="grid_12">
