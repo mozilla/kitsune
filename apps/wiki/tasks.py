@@ -176,8 +176,7 @@ def _rebuild_kb_chunk(data):
                 not document.redirect_document()):
                 log.warn('Invalid redirect document: %d' % pk)
 
-            html = Revision.objects.get(
-                id=document.current_revision_id).content_parsed
+            html = document.parse_and_calculate_links()
             if document.html != html:
                 # We are calling update here to so we only update the html
                 # column instead of all of them. This bypasses post_save

@@ -907,3 +907,30 @@ class WhatLinksHereTests(TestCase):
         eq_(len(d2.links_from()), 1)
 
         eq_(d1.links_to()[0].kind, 'link')
+
+    def test_old_revisions(self):
+        """Bug 862436. Updating old revisions could cause bad WLH data."""
+        d1 = document(title='D1', save=True)
+        revision(document=d1, content='', is_approved=True, save=True)
+        d2 = document(title='D2', save=True)
+        revision(document=d2, content='', is_approved=True, save=True)
+
+        # Make D3, then make a revision that links to D1, then a
+        # revision that links to D2. Only the link to D2 should count.
+        d3 = document(title='D3', save=True)
+        r3_old = revision(document=d3, content='[[D1]]', is_approved=True,
+                          save=True)
+        r3_new = revision(document=d3, content='[[D2]]', is_approved=True,
+                          save=True)
+
+        # This could cause stale data
+        r3_old.content_parsed
+
+        # D1 is not linked to in any current revisions.
+        eq_(len(d1.links_to()), 0)
+        eq_(len(d1.links_from()), 0)
+        eq_(len(d2.links_to()), 1)
+        eq_(len(d2.links_from()), 0)
+        eq_(len(d3.links_to()), 0)
+        eq_(len(d3.links_from()), 1)
+

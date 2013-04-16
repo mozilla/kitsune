@@ -278,6 +278,8 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
             if title_changed:
                 del self.old_title
 
+        self.parse_and_calculate_links()
+
     def __setattr__(self, name, value):
         """Trap setting slug and title, recording initial value."""
         # Public API: delete the old_title or old_slug attrs after changing
@@ -702,6 +704,27 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
 
         super(cls, cls).index(document, **kwargs)
 
+    def parse_and_calculate_links(self):
+        """Calculate What Links Here data for links going out from this.
+
+        Also returns a parsed version of the current html, because that
+        is a byproduct of the process, and is useful.
+        """
+        if not self.current_revision:
+            return ''
+
+        # Remove "what links here" reverse links, because they might be
+        # stale and re-rendering will re-add them. This cannot be done
+        # reliably in the parser's parse() function, because that is
+        # often called multiple times per document.
+        self.links_from().delete()
+
+        from wiki.parser import wiki_to_html, WhatLinksHereParser
+        return wiki_to_html(self.current_revision.content,
+                            locale=self.locale,
+                            doc_id=self.id,
+                            parser_cls=WhatLinksHereParser)
+
     def links_from(self):
         """Get a query set of links that are from this document to another."""
         return DocumentLink.objects.filter(linked_from=self)
@@ -919,12 +942,6 @@ class Revision(ModelBase):
 
     @property
     def content_parsed(self):
-        # Remove "what links here" reverse links, because they might be
-        # stale and re-rendering will re-add them. This cannot be done
-        # reliably in the parser's parse() function, because that is
-        # often called multiple times per document.
-        self.document.links_from().delete()
-
         from wiki.parser import wiki_to_html
         return wiki_to_html(self.content, locale=self.document.locale,
                             doc_id=self.document.id)
