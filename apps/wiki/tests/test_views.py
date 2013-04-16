@@ -198,6 +198,17 @@ class ViewTests(TestCase):
         data = json.loads(resp.content)
         eq_('an article title', data['title'])
 
+    def test_what_links_here(self):
+        d1 = document(title='D1', save=True)
+        revision(document=d1, content='', is_approved=True, save=True)
+        d2 = document(title='D2', save=True)
+        revision(document=d2, content='[[D1]]', is_approved=True, save=True)
+
+        url = reverse('wiki.what_links_here', args=[d1.slug])
+        resp = self.client.get(url, follow=True)
+        eq_(200, resp.status_code)
+        assert 'D2' in resp.content
+
 
 class DocumentEditingTests(TestCase):
     """Tests for the document-editing view"""

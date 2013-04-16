@@ -1223,10 +1223,10 @@ def what_links_here(request, document_slug):
     doc = get_object_or_404(Document, locale=locale, slug=document_slug)
 
     links = {}
-    for l in doc.links_from():
+    for l in doc.links_to():
         if l.kind not in links:
             links[l.kind] = []
-        links[l.kind].append(l.linked_to)
+        links[l.kind].append(l.linked_from)
 
     c = {
         'document': doc,
