@@ -711,6 +711,7 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
         return DocumentLink.objects.filter(linked_to=self)
 
     def add_link_to(self, linked_to, kind):
+        """Create a DocumentLink to another Document."""
         try:
             DocumentLink(linked_from=self,
                          linked_to=linked_to,

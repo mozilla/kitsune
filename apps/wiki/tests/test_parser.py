@@ -872,17 +872,24 @@ class WhatLinksHereTests(TestCase):
 
         eq_(d2.links_to()[0].kind, 'link')
 
-    def test_locales_fallback(self):
-        """Fallbacks should not count for links."""
+    def test_locales_renames(self):
+        """Links should use the correct locale, even if the title has
+        been translated."""
         d1 = document(title='Foo', locale='en-US', save=True)
         revision(document=d1, content='', is_approved=True, save=True)
-        d2 = document(title='Bar', locale='de', save=True)
-        revision(document=d2, content='[[Foo]]', is_approved=True, save=True)
+        d2 = document(title='German Foo', locale='de', parent=d1, save=True)
+        revision(document=d2, content='', is_approved=True, save=True)
+        d3 = document(title='German Bar', locale='de', save=True)
+        revision(document=d3, content='[[Foo]]', is_approved=True, save=True)
 
         eq_(len(d1.links_to()), 0)
         eq_(len(d1.links_from()), 0)
-        eq_(len(d2.links_to()), 0)
+        eq_(len(d2.links_to()), 1)
         eq_(len(d2.links_from()), 0)
+        eq_(len(d3.links_to()), 0)
+        eq_(len(d3.links_from()), 1)
+
+        eq_(d2.links_to()[0].kind, 'link')
 
     def test_unicode(self):
         """Unicode is hard. Test that."""

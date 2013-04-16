@@ -496,12 +496,10 @@ class WikiParser(sumo.parser.WikiParser):
         if self.current_doc is not None:
             title = name.split('|')[0]
             locale = self.current_doc.locale
-            try:
-                linked_doc = Document.objects.get(title=title, locale=locale)
+
+            linked_doc = get_object_fallback(Document, title, locale)
+            if linked_doc is not None:
                 self.current_doc.add_link_to(linked_doc, 'link')
-            except Document.DoesNotExist:
-                # Broken link, oh well.
-                pass
 
         return super(WikiParser, self)._hook_internal_link(parser, space, name)
 
