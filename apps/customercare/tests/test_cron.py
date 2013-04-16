@@ -11,7 +11,7 @@ from nose.tools import eq_
 
 from customercare.tests import tweet, reply
 from customercare.cron import (_filter_tweet, _get_oldest_tweet, purge_tweets,
-                               get_customercare_stats)
+                               get_customercare_stats, FIREFOX_USER_ID)
 from customercare.models import Tweet, Reply
 from sumo.tests import TestCase
 from sumo.redis_utils import redis_client, RedisError
@@ -61,7 +61,7 @@ class TwitterCronTestCase(TestCase):
 
     def test_firefox_replies(self):
         """Don't filter out @firefox replies."""
-        self.tweet['to_user_id'] = 12345
+        self.tweet['to_user_id'] = FIREFOX_USER_ID
         self.tweet['text'] = '@firefox Hello!'
         eq_(self.tweet, _filter_tweet(self.tweet))
 

@@ -24,6 +24,8 @@ LINK_REGEX = re.compile('https?\:', re.IGNORECASE)
 MENTION_REGEX = re.compile('(^|\W)@')
 RT_REGEX = re.compile('^rt\W', re.IGNORECASE)
 
+FIREFOX_USER_ID = 2142731
+
 log = logging.getLogger('k.twitter')
 
 
@@ -133,7 +135,8 @@ def _filter_tweet(item, allow_links=False):
     """
     text = item['text']
     # No replies, except to @firefox
-    if not text.startswith('@firefox') and item.get('to_user_id'):
+    to_user_id = item.get('to_user_id')
+    if to_user_id and to_user_id != FIREFOX_USER_ID:
         statsd.incr('customercare.tweet.rejected.reply_or_mention')
         return None
 
