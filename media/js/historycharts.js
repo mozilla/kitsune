@@ -48,6 +48,11 @@
             },
             metadata: {
                 sets: sets,
+                colors: {
+                    'yes': '#21de2b',
+                    'no': '#de2b21',
+                    'percent': '#2b21de'
+                },
                 bucketMethods: {
                     'percent': 'average'
                 }
