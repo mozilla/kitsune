@@ -50,7 +50,7 @@
 
     <div class="ans-attachments attachments-list">
       {% for image in answer.images.all() %}
-        {{ attachment(image, user) }}
+        {{ attachment(image, user, False) }}
       {% endfor %}
     </div>
     {% if answer.updated_by %}
