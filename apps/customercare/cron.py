@@ -18,8 +18,6 @@ from statsd import statsd
 from customercare.models import Tweet, Reply
 
 
-SEARCH_URL = 'http://search.twitter.com/search.json'
-
 LINK_REGEX = re.compile('https?\:', re.IGNORECASE)
 MENTION_REGEX = re.compile('(^|\W)@')
 RT_REGEX = re.compile('^rt\W', re.IGNORECASE)
