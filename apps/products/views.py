@@ -9,13 +9,7 @@ from wiki.facets import topics_for, documents_for
 @mobile_template('products/{mobile/}products.html')
 def product_list(request, template):
     """The product picker page."""
-    products = list(Product.objects.filter(visible=True))
-
-    # A/B test for Bug 846756:
-    if 'b' in request.GET:
-        # Flip the first two products
-        products[0], products[1] = products[1], products[0]
-
+    products = Product.objects.filter(visible=True)
     return render(request, template, {
         'products': products})
 
