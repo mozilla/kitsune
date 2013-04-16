@@ -175,7 +175,7 @@
       <table cellpadding="0" cellspacing="0" border="0" align="center" id="main">
         <thead>
           <tr>
-            <th><img src="http://support.cdn.mozilla.net/media/email/img/mozilla-support.png" alt="Mozilla Support"></th>
+            <th><img src="{{ MEDIA_URL }}email/img/mozilla-support.png" alt="Mozilla Support"></th>
           </tr>
         </thead>
         <tbody>
@@ -187,7 +187,7 @@
           <tr>
             <td>
               {% block footer %}
-                <a href="#">Change your email preferences</a>
+                <a href="{{ url('users.edit_settings') }}">Change your email preferences</a>
               {% endblock %}
             </td>
           </tr>
