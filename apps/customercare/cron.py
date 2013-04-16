@@ -134,13 +134,11 @@ def _filter_tweet(item, allow_links=False):
     text = item['text']
     # No replies, except to @firefox
     if not text.startswith('@firefox') and item.get('to_user_id'):
-        print 'here 1'
         statsd.incr('customercare.tweet.rejected.reply_or_mention')
         return None
 
     # No mentions, except of @firefox
     if MENTION_REGEX.search(text.replace('@firefox', '')):
-        print re.sub(r'\b@firefox\b', '', text)
         statsd.incr('customercare.tweet.rejected.reply_or_mention')
         return None
 
