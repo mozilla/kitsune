@@ -2595,7 +2595,6 @@ def _create_document(title='Test Document', parent=None,
 def _translation_data():
     return {
         'title': 'Un Test Articulo', 'slug': 'un-test-articulo',
-        'tags': 'tagUno,tagDos,tagTres',
         'keywords': 'keyUno, keyDos, keyTres',
         'summary': 'lipsumo',
         'content': 'loremo ipsumo doloro sito ameto'}
