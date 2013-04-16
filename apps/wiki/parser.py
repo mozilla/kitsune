@@ -25,10 +25,13 @@ TEMPLATE_ARG_REGEX = re.compile('{{{([^{]+?)}}}')
 
 
 def wiki_to_html(wiki_markup, locale=settings.WIKI_DEFAULT_LANGUAGE,
-                 doc_id=None):
+                 doc_id=None, parser_cls=None):
     """Wiki Markup -> HTML with the wiki app's enhanced parser"""
+    if parser_cls is None:
+        parser_cls = WikiParser
+
     with statsd.timer('wiki.render'):
-        content = WikiParser(doc_id=doc_id).parse(wiki_markup, show_toc=False,
+        content = parser_cls(doc_id=doc_id).parse(wiki_markup, show_toc=False,
                                                   locale=locale)
     return content
 
@@ -345,11 +348,6 @@ class WikiParser(sumo.parser.WikiParser):
         self.registerInternalLinkHook('Template', self._hook_template)
         self.registerInternalLinkHook('T', self._hook_template)
 
-        if doc_id is not None:
-            self.current_doc = Document.objects.get(pk=doc_id)
-        else:
-            self.current_doc = None
-
     def parse(self, text, **kwargs):
         """Wrap SUMO's parse() to support additional wiki-only features."""
 
@@ -380,7 +378,6 @@ class WikiParser(sumo.parser.WikiParser):
 
     def _hook_include(self, parser, space, title):
         """Returns the document's parsed content."""
-        from wiki.models import Document
         message = _('The document "%s" does not exist.') % title
         include = get_object_fallback(Document, title, locale=self.locale)
         if not include or not include.current_revision:
@@ -394,9 +391,6 @@ class WikiParser(sumo.parser.WikiParser):
                            locale=self.locale)
         parser.inclusions.pop()
 
-        if self.current_doc is not None:
-            self.current_doc.add_link_to(include, 'include')
-
         return ret
 
     # Wiki templates are documents that receive arguments.
@@ -408,7 +402,6 @@ class WikiParser(sumo.parser.WikiParser):
     def _hook_template(self, parser, space, title):
         """Handles Template:Template name, formatting the content using given
         args"""
-        from wiki.models import Document
         params = title.split('|')
         short_title = params.pop(0)
         template_title = 'Template:' + short_title
@@ -432,9 +425,6 @@ class WikiParser(sumo.parser.WikiParser):
                               locale=self.locale)
         parser.inclusions.pop()
 
-        if self.current_doc is not None:
-            self.current_doc.add_link_to(template, 'template')
-
         # Special case for inline templates
         if '\n' not in c:
             parsed = parsed.replace('<p>', '')
@@ -442,15 +432,47 @@ class WikiParser(sumo.parser.WikiParser):
         # Do some string formatting to replace parameters
         return _format_template_content(parsed, _build_template_params(params))
 
+
+class WhatLinksHereParser(WikiParser):
+    """An extension of the wiki that deals with what links here data."""
+
+    def __init__(self, doc_id, **kwargs):
+        self.current_doc = Document.objects.get(pk=doc_id)
+        return (super(WhatLinksHereParser, self)
+                .__init__(doc_id=doc_id, **kwargs))
+
     def _hook_internal_link(self, parser, space, name):
         """Records links between documents, and then calls super()."""
 
-        if self.current_doc is not None:
-            title = name.split('|')[0]
-            locale = self.current_doc.locale
+        title = name.split('|')[0]
+        locale = self.current_doc.locale
 
-            linked_doc = get_object_fallback(Document, title, locale)
-            if linked_doc is not None:
-                self.current_doc.add_link_to(linked_doc, 'link')
+        linked_doc = get_object_fallback(Document, title, locale)
+        if linked_doc is not None:
+            self.current_doc.add_link_to(linked_doc, 'link')
 
-        return super(WikiParser, self)._hook_internal_link(parser, space, name)
+        return (super(WhatLinksHereParser, self)
+                ._hook_internal_link(parser, space, name))
+
+    def _hook_template(self, parser, space, name):
+        """Record a template link between documents, and then call super()."""
+
+        params = name.split('|')
+        template = get_object_fallback(Document, 'Template:' + params.pop(0),
+                                       locale=self.locale, is_template=True)
+
+        if template:
+            self.current_doc.add_link_to(template, 'template')
+
+        return (super(WhatLinksHereParser, self)
+                ._hook_template(parser, space, name))
+
+    def _hook_include(self, parser, space, name):
+        """Record an include link between documents, and then call super()."""
+        include = get_object_fallback(Document, name, locale=self.locale)
+
+        if include:
+            self.current_doc.add_link_to(include, 'include')
+
+        return (super(WhatLinksHereParser, self)
+                ._hook_include(parser, space, name))
