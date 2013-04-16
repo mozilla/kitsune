@@ -73,7 +73,6 @@ body {
       form {
         display: block;
         position: relative;
-        width: 238px;
 
         button[type='submit'] {
           background-color: transparent;
@@ -95,29 +94,32 @@ body {
           border: 1px solid rgba(0, 0, 0, 0.25);
           .border-radius(3px);
           .box-shadow(2px 2px 3px 0 rgba(0, 0, 0, 0.25) inset);
+          .box-sizing(border-box);
           color: #849b9f;
           font-family: @Moz;
           font-size: 14px;
           outline: none;
           padding: 5px 30px 4px 4px;
-          width: 200px;
+          width: 100%;
         }
       }
     }
   }
 
   &.exposed {
-    > header {
-      left: 270px;
-    }
-
     > nav {
       display: block;
     }
 
-    > .wrapper {
+    .slide-on-exposed {
       left: 270px;
     }
+  }
+
+  .slide-on-exposed {
+    left: 0;
+    .transition-property(~'left, right');
+    .transition-duration(0.5s);
   }
 
   > header {
@@ -126,11 +128,8 @@ body {
     .box-shadow(0 0 4px 0 rgba(0, 0, 0, 0.75));
     color: #fff;
     height: 50px;
-    left: 0;
     overflow: hidden;
     position: fixed;
-    .transition-property(~'left, right');
-    .transition-duration(0.5s);
     top: 0;
     width: 100%;
     z-index: 10;
@@ -150,20 +149,18 @@ body {
   > .wrapper {
     background: #fff;
     .box-shadow(0 0 10px 0 rgba(0, 0, 0, 0.8));
-    left: 0;
     min-height: calc(~'100% - 51px');
     min-height: -moz-calc(~'100% - 51px');
     min-height: -webkit-calc(~'100% - 51px');
     position: absolute;
     top: 51px;
-    .transition-property(~'left, right');
-    .transition-duration(0.5s);
     width: 100%;
     z-index: 1;
   }
 
   &[data-orientation='right'] {
-    > nav {
+    > nav,
+    .slide-on-exposed {
       left: auto;
       right: 0;
     }
@@ -177,23 +174,9 @@ body {
     }
 
     &.exposed {
-      > header,
-      .header-overlay,
-      .footer-overlay {
+      .slide-on-exposed {
         right: 270px;
       }
-
-      > .wrapper {
-        right: 270px;
-      }
-    }
-
-    > header,
-    > .wrapper,
-    .header-overlay,
-    .footer-overlay {
-      left: auto;
-      right: 0;
     }
   }
 }
@@ -371,7 +354,6 @@ input[type="submit"]:visited {
   background: rgba(40, 40, 40, 0.98) url('../../img/grain.png') 0 0 repeat;
   border-bottom: 1px solid #000;
   height: 50px;
-  left: 0;
   position: fixed;
   top: 0;
   width: 100%;
@@ -399,7 +381,6 @@ input[type="submit"]:visited {
   background: rgba(40, 40, 40, 0.98) url('../../img/grain.png') 0 0 repeat;
   bottom: 0;
   height: 50px;
-  left: 0;
   position: fixed;
   width: 100%;
   z-index: 100;
@@ -824,6 +805,35 @@ input[type="submit"]:visited {
   font-size: 12px;
   margin: 10px auto;
   max-width: 530px;
+}
+
+@media only screen and (max-width: 319px) {
+  body {
+    > nav {
+      width: calc(~'100% - 50px');
+      width: -moz-calc(~'100% - 50px');
+      width: -webkit-calc(~'100% - 50px');
+    }
+
+    &.exposed {
+      .slide-on-exposed {
+        left: calc(~'100% - 50px');
+        left: -moz-calc(~'100% - 50px');
+        left: -moz-calc(~'100% - 50px');
+      }
+    }
+
+    &[data-orientation='right'] {
+      &.exposed {
+        .slide-on-exposed {
+          left: auto;
+          right: calc(~'100% - 50px');
+          right: -moz-calc(~'100% - 50px');
+          right: -moz-calc(~'100% - 50px');
+        }
+      }
+    }
+  }
 }
 
 @media only screen and (-webkit-min-device-pixel-ratio: 2), only screen and (min-device-pixel-ratio: 2) {
