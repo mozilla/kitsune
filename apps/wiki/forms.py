@@ -249,8 +249,8 @@ class RevisionForm(forms.ModelForm):
         if based_on_id:
             new_rev.based_on_id = based_on_id
 
-        # If this is an default locale document the user doesn't
-        # have edit keywords permission, don't change.
+        # If this revision is in the default locale and the user doesn't
+        # have edit_keywords permission, keep the old value.
         if (base_rev and document.locale == settings.WIKI_DEFAULT_LANGUAGE and
                 not creator.has_perm('wiki.edit_keywords')):
             new_rev.keywords = base_rev.keywords
