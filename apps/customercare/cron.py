@@ -46,7 +46,8 @@ def collect_tweets():
             'result_type': 'recent',  # Retrieve tweets by date.
         }
 
-        # If we already have some tweets, collect nothing older than what we have.
+        # If we already have some tweets, collect nothing older than what we
+        # have.
         try:
             latest_tweet = Tweet.latest()
         except Tweet.DoesNotExist:
@@ -130,18 +131,26 @@ def _filter_tweet(item, allow_links=False):
     May modify tweet. If None is returned, tweet will be discarded.
     Used to exclude replies and such from incoming tweets.
     """
-    # No replies, no mentions
-    if item.get('to_user_id') or MENTION_REGEX.search(item['text']):
+    text = item['text']
+    # No replies, except to @firefox
+    if not text.startswith('@firefox') and item.get('to_user_id'):
+        print 'here 1'
+        statsd.incr('customercare.tweet.rejected.reply_or_mention')
+        return None
+
+    # No mentions, except of @firefox
+    if MENTION_REGEX.search(text.replace('@firefox', '')):
+        print re.sub(r'\b@firefox\b', '', text)
         statsd.incr('customercare.tweet.rejected.reply_or_mention')
         return None
 
     # No retweets
-    if RT_REGEX.search(item['text']) or item['text'].find('(via ') > -1:
+    if RT_REGEX.search(text) or text.find('(via ') > -1:
         statsd.incr('customercare.tweet.rejected.retweet')
         return None
 
     # No links
-    if not allow_links and LINK_REGEX.search(item['text']):
+    if not allow_links and LINK_REGEX.search(text):
         statsd.incr('customercare.tweet.rejected.link')
         return None
 
@@ -151,7 +160,7 @@ def _filter_tweet(item, allow_links=False):
         return None
 
     # Exclude tweets that don't contain 'firefox' in the text
-    if 'firefox' not in item['text'].lower():
+    if 'firefox' not in text.lower():
        return None
 
     return item

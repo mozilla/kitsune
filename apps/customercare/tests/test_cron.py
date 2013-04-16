@@ -48,10 +48,22 @@ class TwitterCronTestCase(TestCase):
         self.tweet['text'] = 'Hey @someone!'
         assert _filter_tweet(self.tweet) is None
 
+    def test_firefox_mention(self):
+        """Don't filter out @firefox mentions."""
+        self.tweet['text'] = 'Hey @firefox!'
+        eq_(self.tweet, _filter_tweet(self.tweet))
+
     def test_replies(self):
+        """Filter out replies."""
         self.tweet['to_user_id'] = 12345
         self.tweet['text'] = '@someone Hello!'
         assert _filter_tweet(self.tweet) is None
+
+    def test_firefox_replies(self):
+        """Don't filter out @firefox replies."""
+        self.tweet['to_user_id'] = 12345
+        self.tweet['text'] = '@firefox Hello!'
+        eq_(self.tweet, _filter_tweet(self.tweet))
 
     def test_retweets(self):
         """No retweets or 'via'"""
@@ -124,7 +136,6 @@ class PurgeTweetsTestCase(TestCase):
 
     def setUp(self):
         # 4 'en' and 2 'r'
-        created = datetime.now()
         for i in range(0, 6):
             if i >= 4:
                 locale = 'ro'
@@ -165,8 +176,9 @@ class TopContributors(TestCase):
         two_weeks_ago = now - timedelta(days=14)
         two_months_ago = now - timedelta(days=60)
 
-        # Moe has the most in the last day, curly has the most in the last week,
-        # larry has the most in the last month, and moe has the most overall.
+        # Moe has the most in the last day, curly has the most in the last
+        # week, larry has the most in the last month, and moe has the most
+        # overall.
         data = {
             'moe': [(now, 3), (two_days_ago, 2), (two_months_ago, 20)],
             'curly': [(two_days_ago, 6), (two_weeks_ago, 2)],
