@@ -9,7 +9,7 @@
 {% set page_align = 'left' %}
 
 {% block after_header %}
-  <ul class="mailbox-tabs">
+  <ul class="mailbox-tabs slide-on-exposed">
     <li>{{ _('Inbox') }}</li>
     <li><a href="{{ url('messages.outbox') }}">{{ _('Sent Messages') }}</a></li>
   </ul>
@@ -56,11 +56,11 @@
 {% endblock %}
 
 {% block after_main %}
-  <div class="header-overlay">
+  <div class="header-overlay slide-on-exposed">
     <div data-toggle-class="editing" class="done-button">Done</div>
     <h2>{{ _('Edit') }}</h2>
   </div>
-  <div class="footer-overlay">
+  <div class="footer-overlay slide-on-exposed">
     <div class="third-width">
       <div data-submit="bulk-form" data-name="delete" class="trash-button icon-sprite">{{ _('Trash') }}</div>
     </div>

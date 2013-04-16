@@ -92,7 +92,7 @@
   <a href="?{{ request.QUERY_STRING}}&amp;mobile=0">{{ _('Switch to desktop site') }}</a>
 </nav>
 
-<header>
+<header class="slide-on-exposed">
   <div id="menu-button" class="icon-sprite"></div>
   {% block header_buttons %}{% endblock %}
   {% if cancel_url %}
@@ -114,7 +114,7 @@
 
 {% block after_header %}{% endblock %}
 
-<div class="wrapper">
+<div class="wrapper slide-on-exposed">
   <section id="content">
     {% block content %}{% endblock %}
 
