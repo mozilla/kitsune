@@ -455,7 +455,8 @@ Say you wanted to add ``fa-IR``::
     $ mkdir -p locale/fa-IR/LC_MESSAGES
     $ python manage.py merge
 
-Then add 'fa-IR' to SUMO_LANGUAGES in settings.py.
+Then add 'fa-IR' to SUMO_LANGUAGES in settings.py and make sure there is
+an entry in lib/languages.json (if not, add it).
 
 And finally, add a migration with::
 
