@@ -3,7 +3,7 @@
 {% from "wiki/includes/sidebar_modules.html" import document_tools with context %}
 {% from "wiki/includes/document_macros.html" import show_for, revision_diff with context %}
 {% set title = _('Review Revision {id} | {document}')|f(document=document.title, id=revision.id) %}
-{% set crumbs = [(document.get_absolute_url(), document.title), (None, 'Review Revision')] %}
+{% set crumbs = [(document.get_absolute_url(), document.title), (None, _('Review Revision'))] %}
 {% set classes = 'review' %}
 {% set scripts = ('wiki', 'wiki.diff') %}
 
