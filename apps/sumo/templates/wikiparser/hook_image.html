@@ -22,7 +22,7 @@
 
 {% for i in ['lazy', ''] %}
   {% if i != 'lazy' %}<noscript>{% endif %}
-  <img class="{% if not has_frame %}frameless{% endif %} {{ i }}"
+  <img class="{% if not has_frame %}frameless{% endif %} {{ i }} wiki-image"
     {% if i == 'lazy' %}src="{{ MEDIA_URL }}img/placeholder.gif"
     data-original-{% endif %}src="{{ image.file.url }}"
     alt="{% if 'alt' in params %}{{ params['alt'] }}{% else %}{{ params['caption'] }}{% endif %}"

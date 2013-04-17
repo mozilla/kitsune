@@ -114,7 +114,7 @@ $(document).ready(function () {
     function initImageModal() {
         $('article').on('click', '.attachments-list a.image', function(ev) {
             ev.preventDefault();
-            var imgUrl = $(this).attr('href');
+            var imgUrl = $(this).attr('href'),
                 image = new Image(),
                 html = '<div><img class="loading" /></div>',
                 kbox = new KBox(html, {
