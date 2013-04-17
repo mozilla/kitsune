@@ -549,6 +549,16 @@
         "english": "Songhay",
         "native": "So\u014Bay"
     },
+    "az": {
+        "iso639_1": "az",
+        "english": "Azerbaijani",
+        "native": "Azərbaycanca"
+    },
+    "sw": {
+        "iso639_1": "sw",
+        "english": "Swahili",
+        "native": "Kiswahili"
+    },
     "xx": {
         "iso639_1": "xx",
         "english": "Pirate",
