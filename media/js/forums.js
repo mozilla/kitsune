@@ -49,6 +49,40 @@
 
     }
 
+    // Lightbox for all images on click
+    $('.wiki-image').each(function() {
+        var $this = $(this);
+
+        // If the image is already linked do not do this
+        if ($this.parents('a').length == 0) {
+            $this.on('click', function(ev) {
+                ev.preventDefault();
+                var imgUrl = $this.attr('src'),
+                    image = new Image(),
+                    html = '<div><img class="loading" /></div>',
+                    kbox = new KBox(html, {
+                        modal: true,
+                        title: gettext('Image Attachment'),
+                        id: 'wiki-image-kbox',
+                        destroy: true
+                    });
+                kbox.open();
+
+                function setWidth() {
+                    $('#wiki-image-kbox').width(image.width)
+                        .find('img').removeClass('loading').attr('src', imgUrl);
+                    kbox.setPosition();
+                }
+
+                image.onload = setWidth;
+                image.src = imgUrl;
+                if (image.width) {
+                    setWidth();
+                }
+            });
+        }
+    });
+
     $(document).ready(init);
 
 }(jQuery));
