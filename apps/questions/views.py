@@ -598,14 +598,19 @@ def edit_question(request, question_id):
         'current_category': question.category})
 
 
-def _delete_or_upload(request):
-    """Exclude image uploading and deleting from the reply rate limiting."""
-    return 'delete_images' in request.POST or 'upload_image' in request.POST
+def _skip_answer_ratelimit(request):
+    """Exclude image uploading and deleting from the reply rate limiting.
+
+    Also exclude users with the questions.bypass_ratelimit permission.
+    """
+    return ('delete_images' in request.POST or
+            'upload_image' in request.POST or
+            request.user.has_perm('questions.bypass_answer_ratelimit'))
 
 
 @require_POST
 @login_required
-@ratelimit(keys=user_or_ip('answer'), skip_if=_delete_or_upload, ip=False,
+@ratelimit(keys=user_or_ip('answer'), skip_if=_skip_answer_ratelimit, ip=False,
            rate='1/m')
 def reply(request, question_id):
     """Post a new answer to a question."""

@@ -499,6 +499,10 @@ class Answer(ActionMixin, ModelBase):
 
     class Meta:
         ordering = ['created']
+        permissions = (
+            ('bypass_answer_ratelimit',
+             'Can bypass answering ratelimit'),
+        )
 
     def __unicode__(self):
         return u'%s: %s' % (self.question.title, self.content[:50])
