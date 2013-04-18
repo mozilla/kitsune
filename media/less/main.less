@@ -713,6 +713,7 @@ input[type=button],
       cursor: pointer;
       display: block;
       padding: 16px 20px;
+      position: relative;
       text-decoration: none;
     }
 
@@ -740,6 +741,7 @@ input[type=button],
       }
 
       &:after {
+        background: url('../img/sidebar-arrow.gif') 0 3px no-repeat;
         content: '';
         height: 30px;
         left: 0;
@@ -747,11 +749,6 @@ input[type=button],
         position: absolute;
         top: 50%;
         width: 15px;
-
-      }
-
-      &:after {
-        background: url('../img/sidebar-arrow.gif') 0 3px no-repeat;
       }
     }
   }
@@ -762,31 +759,19 @@ input[type=button],
       position: relative;
 
       &:after {
-        background: url('../img/icons-sprite.png') -50px -282px no-repeat;
-        content: '';
-        height: 16px;
-        left: auto;
-        margin: 0;
-        position: absolute;
-        top: 18px;
-        right: 16px;
-        width: 16px;
-      }
-
-      &:before {
         display: none;
       }
 
       &.selected {
-        &:after {
-          background-position: -50px -396px;
-          top: 16px;
-        }
-
         > span,
         > a,
         > a:visited {
           background: @sidebarBackground url('../img/grain.png');
+
+          &:after {
+            background-position: -50px -396px;
+            margin-top: -10px;
+          }
         }
 
         > span:hover,
@@ -794,7 +779,8 @@ input[type=button],
           background-color: @sidebarBackgroundHover;
         }
 
-        > .sidebar-nav {
+        > .sidebar-nav,
+        > .folder {
           display: block;
         }
       }
@@ -802,10 +788,38 @@ input[type=button],
       &:last-of-type {
         border: 0;
       }
+
+      > .sidebar-nav,
+      > .folder {
+        display: none;
+      }
+
+      > span,
+      > a,
+      > a:visited {
+        padding-right: 46px;
+
+        &:after {
+          background: url('../img/icons-sprite.png') -50px -282px no-repeat;
+          content: '';
+          height: 16px;
+          margin: -8px 0 0 0;
+          position: absolute;
+          top: 50%;
+          right: 16px;
+          width: 16px;
+        }
+      }
     }
 
-    .sidebar-nav {
-      display: none;
+    &.tight {
+      > li {
+        > span,
+        > a,
+        > a:visited {
+          padding-right: 46px;
+        }
+      }
     }
 
     + .products,
@@ -821,9 +835,9 @@ input[type=button],
 
   &.tight {
     > li {
-      span,
-      a,
-      a:visited {
+      > span,
+      > a,
+      > a:visited {
         font-size: 12px;
         padding: 12px 20px;
       }
@@ -831,21 +845,23 @@ input[type=button],
   }
 
   .sidebar-nav {
-    span,
-    a,
-    a:visited {
-      font-size: 12px;
-      padding: 10px 20px 10px 40px;
-    }
+    > li {
+      > span,
+      > a,
+      > a:visited {
+        font-size: 12px;
+        padding: 10px 20px 10px 40px;
+      }
 
-    span:hover,
-    a:hover {
-      background: #fff;
-    }
+      > span:hover,
+      > a:hover {
+        background: #fff;
+      }
 
-    .selected {
-      a:hover {
-        background-color: @sidebarBackgroundSelected;
+      &.selected {
+        > a:hover {
+          background-color: @sidebarBackgroundSelected;
+        }
       }
     }
   }

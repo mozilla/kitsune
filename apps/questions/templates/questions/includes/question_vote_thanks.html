@@ -12,6 +12,7 @@
     </p>
     <input type="hidden" name="from_vote" value="yes" />
     {{ errorlist(watch_form) }}
+    {{ watch_form.event_type.as_hidden()|safe }}
 
     {% if user.is_authenticated() %}
       {{ watch_form.email.as_hidden()|safe }}
