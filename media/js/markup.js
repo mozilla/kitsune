@@ -648,8 +648,10 @@ Marky.MediaButton.prototype = $.extend({}, Marky.SimpleButton.prototype, {
             $html = $(
                 '<section class="marky">' +
                 '<div class="filter cf">' +
-                '<div class="search"><input type="text" name="q" />' +
-                '<button class="btn btn-important">' + gettext('Search Gallery') + '</button></div>' +
+                '<form class="simple-search-form" id="gallery-modal-search"><input type="text" name="q" class="searchbox"' +
+                'placeholder="' + gettext('Search Gallery') + '" />' +
+                '<button type="submit" class="submit-button" title="' + gettext('Search Gallery') + '">' +
+                gettext('Search Gallery') + '</button></form>' +
                 '<div class="type">' +
                 '<span>' + gettext('Show:') + '</span>' +
                 '<ol><li data-type="image" class="selected">' + gettext('Images') + '</li>' +
@@ -692,8 +694,8 @@ Marky.MediaButton.prototype = $.extend({}, Marky.SimpleButton.prototype, {
             updateResults();
         })
 
-        // Handle Search button
-        $html.find('div.search button').click(function(e) {
+        // Handle Search
+        $html.find('form#gallery-modal-search').submit(function(e) {
             mediaQ = $html.find('input[name="q"]').val();
             mediaPage = 1;
             updateResults();
