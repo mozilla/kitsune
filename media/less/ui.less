@@ -1,3 +1,26 @@
+@import 'variables.less';
+
 .ui-tabs-hide {
   display: none;
+}
+
+.ui-truncatable {
+  > .short-text {
+    display: none;
+
+    > .show-more-link {
+      color: @textBlue;
+      cursor: pointer;
+    }
+  }
+
+  &.truncated {
+    > .short-text {
+      display: block;
+    }
+
+    > .long-text {
+      display: none;
+    }
+  }
 }
