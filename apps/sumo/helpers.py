@@ -109,13 +109,14 @@ def wiki_to_html(wiki_markup, locale=settings.WIKI_DEFAULT_LANGUAGE,
 
 
 @register.filter
-def truncate_question(text, length):
-    print len(text)
+def truncate_question(text, length, longtext=None):
     if len(text) > length:
-        tpl = '<p class="short-text">%s&hellip; ' + \
-              '<span class="show-more-link">(' + _('read more') + ')</span>' +\
-              '</p><p class="long-text">%s</p>'
-        return tpl % (text[:length], text)
+        if longtext is None:
+            longtext = text
+        f = '<p class="short-text">%s&hellip; ' + \
+            '<span class="show-more-link">(' + _('read more') + ')</span>' + \
+            '</p><div class="long-text">%s</div>'
+        return f % (text[:length], longtext)
     else:
         return '<p>%s</p>' % text
 

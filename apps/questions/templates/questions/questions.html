@@ -181,7 +181,7 @@
 
             <div class="content ui-truncatable truncated">
               <h2><a href="{{ question.get_absolute_url() }}">{{ question.title }}</a></h2>
-              {{ question.content_parsed|striptags()|truncate_question(170)|safe }}
+              {{ question.content_parsed|striptags()|truncate_question(170, question.content_parsed)|safe }}
             </div>
 
             <div class="thread-meta">
