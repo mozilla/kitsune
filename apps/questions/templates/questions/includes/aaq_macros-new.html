@@ -19,7 +19,6 @@
 {%- endmacro  %}
 
 {% macro select_product(products) -%}
-  {{ aaq_progress() }}
   <h2>{{ _('Which product would you like to post a question about?') }}</h2>
   <ul id="product-picker" class="card-grid cf">
     {% for key, product in products.iteritems() %}
