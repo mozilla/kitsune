@@ -6,6 +6,11 @@
   $(document).ready(function() {
     initFolding();
 
+    $('.ui-truncatable .show-more-link').click(function(ev) {
+      ev.preventDefault();
+      $(this).closest('.ui-truncatable').removeClass('truncated');
+    });
+
     $('.close-button').click(function() {
       var $this = $(this);
       if ($this.data('close-id')) {
