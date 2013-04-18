@@ -17,7 +17,7 @@ from babel.dates import format_date, format_time, format_datetime
 from babel.numbers import format_decimal
 from jingo import register, env
 from pytz import timezone
-from tower import ugettext_lazy as _lazy, ungettext
+from tower import ugettext_lazy as _lazy, ugettext as _, ungettext
 
 import sumo.parser
 from sumo.urlresolvers import reverse
@@ -106,6 +106,18 @@ def wiki_to_html(wiki_markup, locale=settings.WIKI_DEFAULT_LANGUAGE,
     """Wiki Markup -> HTML jinja2.Markup object"""
     return jinja2.Markup(sumo.parser.wiki_to_html(wiki_markup, locale=locale,
                                                   nofollow=nofollow))
+
+
+@register.filter
+def truncate_question(text, length):
+    print len(text)
+    if len(text) > length:
+        tpl = '<p class="short-text">%s&hellip; ' + \
+              '<span class="show-more-link">(' + _('read more') + ')</span>' +\
+              '</p><p class="long-text">%s</p>'
+        return tpl % (text[:length], text)
+    else:
+        return '<p>%s</p>' % text
 
 
 class Paginator(object):
