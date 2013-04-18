@@ -323,7 +323,7 @@
   <div id="question-reply" class="grid_9 suffix_3">
     {% if request.limited %}
       <div class="warning-box">
-        {{ _('You have exceeded the number of answers that can be posted in a minute. Please try again shortly.') }}
+        {{ _('You have exceeded the number of answers that can be posted in a given amount of time. Please try again shortly.') }}
       </div>
     {% endif %}
     {% if not question.is_locked %}
