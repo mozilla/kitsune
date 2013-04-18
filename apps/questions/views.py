@@ -610,8 +610,10 @@ def _skip_answer_ratelimit(request):
 
 @require_POST
 @login_required
-@ratelimit(keys=user_or_ip('answer'), skip_if=_skip_answer_ratelimit, ip=False,
-           rate='1/m')
+@ratelimit(keys=user_or_ip('answer-min'), skip_if=_skip_answer_ratelimit,
+           ip=False, rate='1/m')
+@ratelimit(keys=user_or_ip('answer-day'), skip_if=_skip_answer_ratelimit,
+           ip=False, rate='50/d')
 def reply(request, question_id):
     """Post a new answer to a question."""
     question = get_object_or_404(Question, pk=question_id)
