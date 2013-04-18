@@ -199,7 +199,7 @@ def questions(request, template):
     product_list = Product.objects.filter(visible=True)
 
     # List of topics to fill the selector.
-    topic_list = Topic.objects.filter(visible=True)
+    topic_list = Topic.objects.filter(visible=True)[:10]
 
     data = {'questions': questions_page,
             'feeds': feed_urls,
