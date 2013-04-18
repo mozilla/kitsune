@@ -120,6 +120,8 @@
     $(document).ready(function() {
 
         $('#accordion').accordion({
+            'heightStyle': 'content',
+            'clearStyle': true,
             'icons': false,
             'autoHeight': false,
             'collapsible': true,
