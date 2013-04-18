@@ -26,12 +26,14 @@ VersionMetadata = namedtuple('VersionMetadata',
                              'id, name, long, slug, max_version, show_in_ui, '
                              'is_default')
 DESKTOP_FIREFOX_VERSIONS = (
+    VersionMetadata(39, _lazy(u'Firefox 22'),
+                    _lazy(u'Firefox 22'), 'fx22', 22.9999, True, False),
     VersionMetadata(37, _lazy(u'Firefox 21'),
                     _lazy(u'Firefox 21'), 'fx21', 21.9999, True, False),
     VersionMetadata(35, _lazy(u'Firefox 20'),
                     _lazy(u'Firefox 20'), 'fx20', 20.9999, True, True),
     VersionMetadata(33, _lazy(u'Firefox 19'),
-                    _lazy(u'Firefox 19'), 'fx19', 19.9999, True, False),
+                    _lazy(u'Firefox 19'), 'fx19', 19.9999, False, False),
     VersionMetadata(31, _lazy(u'Firefox 18'),
                     _lazy(u'Firefox 18'), 'fx18', 18.9999, False, False),
     VersionMetadata(29, _lazy(u'Firefox ESR'),
@@ -68,12 +70,14 @@ DESKTOP_FIREFOX_VERSIONS = (
     VersionMetadata(3, _lazy(u'Firefox 3.0'),
                     _lazy(u'Firefox 3.0'), 'fx3', 3.4999, False, False))
 MOBILE_FIREFOX_VERSIONS = (
+    VersionMetadata(38, _lazy(u'Firefox 22'), _lazy(u'Firefox 22 for Mobile'),
+                    'm22', 22.9999, True, False),
     VersionMetadata(36, _lazy(u'Firefox 21'), _lazy(u'Firefox 21 for Mobile'),
                     'm21', 21.9999, True, False),
     VersionMetadata(34, _lazy(u'Firefox 20'), _lazy(u'Firefox 20 for Mobile'),
                     'm20', 20.9999, True, True),
     VersionMetadata(32, _lazy(u'Firefox 19'), _lazy(u'Firefox 19 for Mobile'),
-                    'm19', 19.9999, True, False),
+                    'm19', 19.9999, False, False),
     VersionMetadata(30, _lazy(u'Firefox 18'), _lazy(u'Firefox 18 for Mobile'),
                     'm18', 18.9999, False, False),
     VersionMetadata(28, _lazy(u'Firefox 17'), _lazy(u'Firefox 17 for Mobile'),
