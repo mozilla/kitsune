@@ -103,7 +103,7 @@ MINIFY_BUNDLES = {
             'css/karma.dashboard.css',
         ),
         'kpi.dashboard': (
-            'css/kpi.dashboard.css',
+            'less/kpi.dashboard.less',
         ),
         'locale-switcher': (
             'less/locale-switcher.less',

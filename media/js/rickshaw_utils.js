@@ -2,6 +2,14 @@
 
 window.k = k || {};
 
+function findOrMakeElem(parent, selector, elemString) {
+  var $elem = $(parent).find(selector);
+  if (!$elem.length) {
+    $elem = $(elemString).appendTo(parent);
+  }
+  return $elem;
+}
+
 /* class Graph */
 k.Graph = function($elem, extra) {
   var defaults = {

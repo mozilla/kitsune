@@ -1,237 +1,211 @@
-/*
- * KPI Dashboard backbonejs app.
- */
+(function() {
 
-(function($){
+function _makePercent(numerator, denominator) {
+  return function(d) {
+    return d[numerator] / d[denominator];
+  };
+}
 
-"use strict";
+function _makeIdentity(key) {
+  return function(d) {
+    return d[key];
+  };
+}
 
-/*
- * Application
- */
-window.KpiDashboard = Backbone.View.extend({
-    initialize: function() {
-        // Create the models.
-        this.questionsChart = new ChartModel([], {
-            url: $(this.el).data('questions-url')
-        });
+function init() {
+  window.App = new KpiDashboard({
+    el: document.getElementById('kpi-dash-app')
+  });
 
-        this.voteChart = new ChartModel([], {
-            url: $(this.el).data('vote-url')
-        });
-
-        this.activeContributorsChart = new ChartModel([], {
-            url: $(this.el).data('active-contributors-url')
-        });
-
-        this.elasticCtrChart = new ChartModel([], {
-            url: $(this.el).data('elastic-ctr-url')
-        });
-        this.elasticCtrChart.name = 'Elastic';
-
-        this.visitorsChart = new ChartModel([], {
-            url: $(this.el).data('visitors-url')
-        });
-
-        this.l10nChart = new ChartModel([], {
-            url: $(this.el).data('l10n-coverage-url')
-        });
-
-        // Create the views.
-        this.questionsView = new StockChartView({
-            model: this.questionsChart,
-            title: gettext('Questions'),
-            percent: true,
-            series: [{
-                name: gettext('Questions'),
-                type: 'area',
-                yAxis: 1,
-                approximation: 'sum',
-                mapper: function(o) {
-                    return {
-                        x: Date.parse(o['date']),
-                        y: o['questions']
-                    }
-                }
-            }, {
-                name: gettext('Solved'),
-                numerator: 'solved',
-                denominator: 'questions',
-                tooltip: {
-                    ySuffix: '%',
-                    yDecimals: 1
-                }
-            }, {
-                name: gettext('Responded in 24 hours'),
-                numerator: 'responded_24',
-                denominator: 'questions',
-                tooltip: {
-                    ySuffix: '%',
-                    yDecimals: 1
-                }
-            }, {
-                name: gettext('Responded in 72 hours'),
-                numerator: 'responded_72',
-                denominator: 'questions',
-                tooltip: {
-                    ySuffix: '%',
-                    yDecimals: 1
-                }
-            }]
-        });
-
-        this.voteChartView = new StockChartView({
-            model: this.voteChart,
-            title: gettext('Helpful Votes'),
-            percent: true,
-            series: [{
-                name: gettext('Article Votes: % Helpful'),
-                numerator: 'kb_helpful',
-                denominator: 'kb_votes',
-                tooltip: {
-                  ySuffix: '%',
-                  yDecimals: 1
-                }
-            }, {
-                name: gettext('Answer Votes: % Helpful'),
-                numerator: 'ans_helpful',
-                denominator: 'ans_votes',
-                tooltip: {
-                  ySuffix: '%',
-                  yDecimals: 1
-                }
-            }/* TODO: Leave this out for now, it overlaps the article votes.
-            , {
-                name: 'Total Votes: % Helpful',
-                mapper: function(o) {
-                    return {
-                        x: Date.parse(o['date']),
-                        y: (o['ans_helpful'] + o['kb_helpful']) / (o['kb_votes'] + o['ans_votes']) * 100
-                    };
-                }
-            }*/]
-        });
-
-        this.activeContributorsView = new StockChartView({
-            model: this.activeContributorsChart,
-            title: gettext('Active Contributors'),
-            series: [{
-                name: gettext('en-US KB'),
-                mapper: function(o) {
-                    return {
-                        x: Date.parse(o['date']),
-                        y: o['en_us']
-                    };
-                }
-            }, {
-                name: gettext('non en-US KB'),
-                mapper: function(o) {
-                    return {
-                        x: Date.parse(o['date']),
-                        y: o['non_en_us']
-                    };
-                }
-            }, {
-                name: gettext('Support Forum'),
-                mapper: function(o) {
-                    return {
-                        x: Date.parse(o['date']),
-                        y: o['support_forum']
-                    };
-                }
-            }, {
-                name: gettext('Army of Awesome'),
-                mapper: function(o) {
-                    return {
-                        x: Date.parse(o['date']),
-                        y: o['aoa']
-                    };
-                }
-            }]
-        });
-
-        this.ctrView = new StockChartView({
-            model: this.elasticCtrChart,
-            title: gettext('Search Clickthrough Rate'),
-            percent: true,
-            series: [{
-                name: gettext('CTR %'),
-                mapper: function(o) {
-                    return {
-                        x: Date.parse(o['start']),
-                        y: o['clicks'] / o['searches'] * 100
-                    };
-                },
-                tooltip: {
-                    yDecimals: 1
-                }
-            }]
-        });
-
-        this.visitorsView = new StockChartView({
-            model: this.visitorsChart,
-            title: gettext('Visitors'),
-            series: [{
-                name: gettext('Daily Unique Visitors'),
-                mapper: function(o) {
-                    return {
-                        x: Date.parse(o['date']),
-                        y: o['visitors']
-                    };
-                },
-                tooltip: {
-                    yDecimals: 0
-                }
-            }]
-        });
-
-        this.l10nView = new BasicChartView({
-            model: this.l10nChart,
-            title: gettext('L10n Coverage'),
-            percent: true,
-            series: [{
-                name: gettext('L10n Coverage'),
-                mapper: function(o) {
-                    return {
-                        x: Date.parse(o['date']),
-                        y: o['coverage']
-                    };
-                }
-            }]
-        });
-
-        // Render the views.
-        $(this.el)
-            .append(this.questionsView.render().el)
-            .append($('#kpi-legend-questions'))
-            .append(this.voteChartView.render().el)
-            .append($('#kpi-legend-vote'))
-            .append(this.activeContributorsView.render().el)
-            .append($('#kpi-legend-active-contributors'))
-            .append(this.ctrView.render().el)
-            .append($('#kpi-legend-ctr'))
-            .append(this.visitorsView.render().el)
-            .append(this.l10nView.render().el)
-            .append($('#kpi-legend-l10n'));
-
-
-        // Load up the models.
-        this.questionsChart.fetch();
-        this.activeContributorsChart.fetch();
-        this.voteChart.fetch();
-        this.elasticCtrChart.fetch();
-        this.visitorsChart.fetch();
-        this.l10nChart.fetch();
+  makeKPIGraph($('#kpi-vote'), [
+    {
+      'name': gettext('Article Votes: % Helpful'),
+      'slug': 'wiki_percent',
+      'func': _makePercent('kb_helpful', 'kb_votes')
+    },
+    {
+      'name': gettext('Article Votes: % Helpful'),
+      'slug': 'ans_percent',
+      'func': _makePercent('ans_helpful', 'ans_votes')
     }
-});
+  ]);
 
+  makeKPIGraph($('#kpi-active-contributors'), [
+    {
+      name: gettext('en-US KB'),
+      slug: 'en_us',
+      func: _makeIdentity('en_us')
+    },
+    {
+      name: gettext('non en-US KB'),
+      slug: 'non_en_us',
+      func: _makeIdentity('non_en_us')
+    },
+    {
+      name: gettext('Support Forum'),
+      slug: 'support_forum',
+      func: _makeIdentity('support_forum')
+    },
+    {
+      name: gettext('Army of Awesome'),
+      slug: 'aoa',
+      func: _makeIdentity('aoa')
+    }
+  ]);
 
-$(document).ready(function() {
-    // Kick off the application
-    window.App = new KpiDashboard({
-        el: document.getElementById('kpi-dash-app')
+  makeKPIGraph($('#kpi-ctr'), [
+    {
+      name: gettext('CTR %'),
+      slug: 'ctr',
+      func: _makePercent('clicks', 'searches')
+    }
+  ]);
+
+  makeKPIGraph($('#kpi-visitors'), [
+    {
+      name: gettext('Visitors'),
+      slug: 'visitors',
+      func: _makeIdentity('visitors')
+    }
+  ]);
+
+  makeKPIGraph($('#kpi-l10n'), [
+    {
+      name: gettext('L10n Coverage'),
+      slug: 'l10n',
+      // the api returns 0 to 100, we want 0.0 to 1.0.
+      func: function(d) { return d['coverage'] / 100; }
+    }
+  ]);
+
+}
+
+// parseInt and _.map don't get along because parseInt takes a second arg.
+// This doesn't have that problem.
+function parseNum(n) {
+  return parseInt(n, 10);
+}
+
+/* Take an array of datums and make a set of named x/y series, suitable
+ * for Rickshaw. Each series is generated by one of the key functions.
+ *
+ * `keys` is an array of objects that define a name, a slug, and a
+ * function to calculate data. Each data function will be used as a map
+ * function on the datum objects to generate a series.
+ */
+function makeSeries(objects, descriptors) {
+  var i, j;
+  var datum, series = [];
+  var split, date;
+
+  for (i = 0; i < descriptors.length; i++) {
+    var key = descriptors[i];
+    series[i] = {
+      name: key.name,
+      slug: key.slug,
+      data: _.map(objects, function(datum) {
+        date = datum.date || datum.start;
+        split = _.map(date.split('-'), parseNum);
+        // The Data constructor takes months as 0 through 11. Wtf.
+        date = +new Date(split[0], split[1] - 1, split[2]) / 1000;
+
+        return {x: date, y: key.func(datum)};
+      })
+    };
+  }
+
+  // Rickshaw gets angry when its data isn't sorted.
+  for (i = 0; i < descriptors.length; i++) {
+    series[i].data.sort(function(a, b) { return a.x - b.x; });
+  }
+
+  return series;
+}
+
+function makeKPIGraph($container, descriptors) {
+  $.getJSON($container.data('url'), function(data) {
+    var series = makeSeries(data.objects, descriptors);
+
+    var graph = new k.Graph($container, {
+      data: {
+        series: series
+      },
+      options: {
+        legend: false,
+        slider: true,
+        bucket: true
+      },
+      graph: {
+        width: 880,
+        height: 300
+      }
     });
+    graph.render();
+  });
+}
+
+// Backbone View for the questions chart.
+
+window.KpiDashboard = Backbone.View.extend({
+  initialize: function() {
+    // Create the models.
+    this.questionsChart = new ChartModel([], {
+      url: $(this.el).data('questions-url')
+    });
+
+    // Create the views.
+    this.questionsView = new StockChartView({
+      model: this.questionsChart,
+      title: gettext('Questions'),
+      percent: true,
+      series: [{
+        name: gettext('Questions'),
+        type: 'area',
+        yAxis: 1,
+        approximation: 'sum',
+        mapper: function(o) {
+          return {
+            x: Date.parse(o['date']),
+            y: o['questions']
+          };
+        }
+      }, {
+        name: gettext('Solved'),
+        numerator: 'solved',
+        denominator: 'questions',
+        tooltip: {
+          ySuffix: '%',
+          yDecimals: 1
+        }
+      }, {
+        name: gettext('Responded in 24 hours'),
+        numerator: 'responded_24',
+        denominator: 'questions',
+        tooltip: {
+          ySuffix: '%',
+          yDecimals: 1
+        }
+      }, {
+        name: gettext('Responded in 72 hours'),
+        numerator: 'responded_72',
+        denominator: 'questions',
+        tooltip: {
+          ySuffix: '%',
+          yDecimals: 1
+        }
+      }]
+    });
+
+    // Render the view.
+    $(this.el)
+      .prepend($('#kpi-legend-questions'))
+      .prepend(this.questionsView.render().el);
+
+    // Load up the model.
+    this.questionsChart.fetch();
+  }
 });
 
+$(init);
 
-}(jQuery));
+})();
