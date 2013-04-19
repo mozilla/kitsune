@@ -9,7 +9,8 @@ from django.db import connection, transaction
 
 import cronjobs
 
-from questions.models import Question, QuestionVote, QuestionMappingType
+from questions.models import (Question, QuestionVote, QuestionMappingType,
+                              QuestionVisits)
 from questions.tasks import update_question_vote_chunk
 from search.es_utils import ES_EXCEPTIONS, get_documents
 from search.tasks import index_task
@@ -121,3 +122,14 @@ def auto_lock_old_questions():
                 # updating into an index_task which retries when it
                 # fails because of ES issues.
                 index_task.delay(QuestionMappingType, q_ids)
+
+
+@cronjobs.register
+def reload_question_traffic_stats():
+    """Reload question views from the analytics."""
+    if settings.STAGE:
+        print ('Skipped reload_question_traffic_stats(). '
+               'Set settings.STAGE to False to run it for real.')
+        return
+
+    QuestionVisits.reload_from_analytics()
