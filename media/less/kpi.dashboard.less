@@ -1,0 +1,47 @@
+@import 'vendors.less';
+
+#kpi-dash-rickshaw {
+  section {
+
+    &:not(:last-child) {
+      border-bottom: 1px solid black;
+    }
+
+    > div {
+      background: #fff;
+      border-radius: 5px;
+      padding: 20px 10px;
+    }
+  }
+}
+
+/**
+* Old KPI Dashoard styles
+*/
+
+#kpi-dash-app {
+  min-height: 600px;
+}
+
+#kpi-dash-app section {
+  height: 400px;
+  margin: 20px 0;
+  width: 800px;
+}
+
+#kpi-dash-app .graph {
+  border-bottom: solid 1px #909090;
+  padding: 10px;
+  position: relative;
+}
+
+#kpi-dash-app .grouping {
+  position: absolute;
+  right: 20px;
+  top: 50px;
+  z-index: 2;
+}
+
+#kpi-dash-app .placeholder {
+  z-index: 1;
+}

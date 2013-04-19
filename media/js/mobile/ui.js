@@ -1,4 +1,4 @@
-k = {};
+window.k = window.k || {};
 
 (function($) {
     var UNSAFE_CHARS = {

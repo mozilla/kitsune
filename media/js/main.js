@@ -1,5 +1,5 @@
 // Use a global k to share data accross JS files
-k = {};
+window.k = window.k || {};
 
 (function () {
     k.LAZY_DELAY = 500;  // delay to lazy loading scripts, in ms
