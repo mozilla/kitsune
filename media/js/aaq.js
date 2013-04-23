@@ -49,6 +49,12 @@ AAQSystemInfo.prototype = {
             $(this).toggleClass('btn-important btn-disable').html(gettext('Installing...'));
         });
 
+        $('#show-login a').on('click', function(ev) {
+            $('#login-form').show();
+            $(this).remove();
+            return false;
+        });
+
         self.getTroubleshootingInfo();
     },
     getOS: function() {

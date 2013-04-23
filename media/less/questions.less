@@ -739,6 +739,11 @@ h2 {
 
 #register-form,
 #login-form {
+  background: #fff;
+  margin-bottom: 60px;
+  padding-top: 30px;
+  padding-bottom: 30px;
+
   fieldset {
     border: 0;
     margin: 0;
@@ -757,13 +762,14 @@ h2 {
 
     input {
       float: left;
-      width: 214px;
+      width: 300px;
     }
 
     label {
       float: left;
       padding-right: 12px;
       text-align: right;
+      width: 130px;
     }
 
     li {
@@ -777,29 +783,29 @@ h2 {
 
     .btn {
       margin-right: 121px;
+      margin-left: 130px;
     }
   }
 }
 
-#login-form {
-  ul {
-    label {
-      width: 80px;
-    }
-  }
+#show-login {
+  text-align: center;
+}
 
-  .submit {
-    .btn {
-      margin-left: 80px;
-    }
-  }
+#login-form {
+  display: none;
+}
+
+#login-help {
+  margin-top: 10px;
+  text-align: center;
 }
 
 #username-rules, #password-rules {
   font-size: 85%;
   margin: 5px 0 0 140px;
   text-align: left;
-  width: 240px;
+  width: 300px;
   clear: both;
 }
 
@@ -919,20 +925,6 @@ h2 {
 
   #troubleshooting-explanation {
     display: none;
-  }
-}
-
-#register-form {
-  ul {
-    label {
-      width: 130px;
-    }
-  }
-
-  .submit {
-    .btn {
-      margin-left: 130px;
-    }
   }
 }
 
