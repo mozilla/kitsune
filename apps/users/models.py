@@ -63,9 +63,6 @@ class Profile(ModelBase):
     # No city validation
     city = models.CharField(max_length=255, null=True, blank=True,
                             verbose_name=_lazy(u'City'))
-    livechat_id = models.CharField(default=None, null=True, blank=True,
-                                   max_length=255,
-                                   verbose_name=_lazy(u'Livechat ID'))
     locale = LocaleField(default=settings.LANGUAGE_CODE,
                          verbose_name=_lazy(u'Preferred language for email'))
 
