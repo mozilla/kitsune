@@ -67,9 +67,6 @@ MINIFY_BUNDLES = {
         'customercare': (
             'less/customercare.less',
         ),
-        'chat': (
-            'css/chat.css',
-        ),
         'users': (
             'less/users.less',
             'less/reportabuse.less',
@@ -251,9 +248,6 @@ MINIFY_BUNDLES = {
             'js/libs/jquery.bullseye-1.0.min.js',
             'js/customercare.js',
             'js/users.js',
-        ),
-        'chat': (
-            'js/chat.js',
         ),
         'users': (
             'js/users.js',

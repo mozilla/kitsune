@@ -355,7 +355,7 @@ class ViewProfileTests(TestCaseBase):
         doc = pq(r.content)
         eq_(0, doc('#edit-profile-link').length)
         eq_(self.u.username, doc('h1.user').text())
-        # No name set and livechat_id is not different => no optional fields.
+        # No name set => no optional fields.
         eq_(0, doc('.contact').length)
         # Check canonical url
         eq_('/user/%d' % self.u.id,
