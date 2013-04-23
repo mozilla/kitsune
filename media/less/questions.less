@@ -739,10 +739,10 @@ h2 {
 
 #register-form,
 #login-form {
+  .border-box();
   background: #fff;
   margin-bottom: 60px;
-  padding-top: 30px;
-  padding-bottom: 30px;
+  padding: 0 60px 30px;
 
   fieldset {
     border: 0;
@@ -750,15 +750,10 @@ h2 {
     padding: 0;
   }
 
-  h2 {
-    text-align: center;
-  }
-
   ul {
     list-style: none;
     margin: 10px 0;
     padding: 0;
-    text-align: center;
 
     input {
       float: left;
@@ -779,11 +774,8 @@ h2 {
   }
 
   .submit {
-    text-align: center;
-
     .btn {
-      margin-right: 121px;
-      margin-left: 130px;
+      margin-left: 141px;
     }
   }
 }
@@ -798,7 +790,6 @@ h2 {
 
 #login-help {
   margin-top: 10px;
-  text-align: center;
 }
 
 #username-rules, #password-rules {

@@ -128,15 +128,15 @@
 
 {% macro register_login_forms(register, login, csrf) -%}
   {{ aaq_progress(step=2) }}
-  <div id="register-form" class="grid_6 alpha omega prefix_3 suffix_3">
+  <div id="register-form" class="grid_12 alpha omega">
     <h2>{{ _('Before you continue, please create a support account') }}</h2>
     <p>{{ _('A support account lets us alert you when people respond to your question.') }}</p>
     {{ register_form(register, csrf=csrf, action='') }}
   </div>
 
-  <h3 id="show-login"><a href="#">{{ _('I already have an account') }}</a></h3>
-  <div id="login-form" class="grid_6 alpha prefix_3 suffix_3 omega">
-    <h2 id="show-login">{{ _('Log in to an existing account') }}</h2>
+  <h3 id="show-login"><a href="#login-form">{{ _('I already have an account') }}</a></h3>
+  <div id="login-form" class="grid_12 alpha omega">
+    <h2>{{ _('Log in to an existing account') }}</h2>
     {{ login_form(login, csrf=csrf, action='', only_pwreset=True) }}
   </div>
 {%- endmacro %}
