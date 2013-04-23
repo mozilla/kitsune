@@ -4,6 +4,7 @@ from django.contrib import admin
 from django.contrib.auth.decorators import login_required
 from django.views.i18n import javascript_catalog
 from django.views.decorators.cache import cache_page
+from django.views.generic.base import RedirectView
 
 from adminplus import AdminSitePlus
 import authority
@@ -24,7 +25,7 @@ urlpatterns = patterns('',
     (r'^kb', include('wiki.urls')),
     (r'^gallery', include('gallery.urls')),
     (r'^army-of-awesome', include('customercare.urls')),
-    (r'^chat', include('chat.urls')),
+    (r'^chat', RedirectView.as_view(url='questions/new')),
     (r'^messages', include('messages.urls')),
     (r'^1', include('inproduct.urls')),
     (r'^postcrash', include('postcrash.urls')),
