@@ -20,8 +20,7 @@ class ProfileAdmin(admin.ModelAdmin):
                        ('avatar', 'delete_avatar'), 'bio'],
         }),
         ('Contact Info', {
-            'fields': ['website', 'twitter', 'facebook', 'irc_handle',
-                       'livechat_id'],
+            'fields': ['website', 'twitter', 'facebook', 'irc_handle'],
             'classes': ['collapse'],
         }),
         ('Location', {

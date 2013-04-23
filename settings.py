@@ -402,7 +402,6 @@ INSTALLED_APPS = (
     'gallery',
     'customercare',
     'twitter',
-    'chat',
     'inproduct',
     'postcrash',
     'landings',
@@ -466,8 +465,6 @@ DOMAIN_METHODS = {
     'messages': [
         ('apps/forums/**.py', 'ignore'),
         ('apps/forums/**.html', 'ignore'),
-        ('apps/chat/**.py', 'ignore'),
-        ('apps/chat/**.html', 'ignore'),
         ('apps/**/tests/**.py', 'ignore'),
         ('apps/**/management/**.py', 'ignore'),
 
@@ -689,10 +686,6 @@ TIDINGS_CONFIRM_ANONYMOUS_WATCHES = True
 TIDINGS_MODEL_BASE = 'sumo.models.ModelBase'
 TIDINGS_REVERSE = 'sumo.urlresolvers.reverse'
 
-
-# URL of the chat server.
-CHAT_SERVER = 'https://chat-support.mozilla.com:9091'
-CHAT_CACHE_KEY = 'sumo-chat-queue-status'
 
 # Google Analytics settings.
 GA_KEY = 'longkey'  # Google API client key

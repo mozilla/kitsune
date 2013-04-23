@@ -1879,7 +1879,6 @@ CREATE TABLE `users_profile` (
   `timezone` varchar(100) DEFAULT NULL,
   `country` varchar(2) DEFAULT NULL,
   `city` varchar(255) DEFAULT NULL,
-  `livechat_id` varchar(255) DEFAULT NULL,
   `locale` varchar(7) NOT NULL DEFAULT 'en-US',
   PRIMARY KEY (`user_id`),
   CONSTRAINT `user_id_refs_id_21617f27` FOREIGN KEY (`user_id`) REFERENCES `auth_user` (`id`)
