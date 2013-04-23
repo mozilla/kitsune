@@ -429,6 +429,12 @@ def aaq(request, product_key=None, category_key=None, showform=False,
             login_form = handle_login(request, only_active=False)
             statsd.incr('questions.user.login')
             register_form = RegisterForm()
+
+            if login_form.is_valid():
+                statsd.incr('questions.user.login.success')
+            else:
+                statsd.incr('questions.user.login.fail')
+
         elif request.POST.get('register'):
             login_form = AuthenticationForm()
             register_form = handle_register(

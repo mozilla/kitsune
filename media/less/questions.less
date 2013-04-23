@@ -739,31 +739,32 @@ h2 {
 
 #register-form,
 #login-form {
+  .border-box();
+  background: #fff;
+  margin-bottom: 60px;
+  padding: 0 60px 30px;
+
   fieldset {
     border: 0;
     margin: 0;
     padding: 0;
   }
 
-  h2 {
-    text-align: center;
-  }
-
   ul {
     list-style: none;
     margin: 10px 0;
     padding: 0;
-    text-align: center;
 
     input {
       float: left;
-      width: 214px;
+      width: 300px;
     }
 
     label {
       float: left;
       padding-right: 12px;
       text-align: right;
+      width: 130px;
     }
 
     li {
@@ -773,33 +774,29 @@ h2 {
   }
 
   .submit {
-    text-align: center;
-
     .btn {
-      margin-right: 121px;
+      margin-left: 141px;
     }
   }
 }
 
-#login-form {
-  ul {
-    label {
-      width: 80px;
-    }
-  }
+#show-login {
+  text-align: center;
+}
 
-  .submit {
-    .btn {
-      margin-left: 80px;
-    }
-  }
+#login-form {
+  display: none;
+}
+
+#login-help {
+  margin-top: 10px;
 }
 
 #username-rules, #password-rules {
   font-size: 85%;
   margin: 5px 0 0 140px;
   text-align: left;
-  width: 240px;
+  width: 300px;
   clear: both;
 }
 
@@ -919,20 +916,6 @@ h2 {
 
   #troubleshooting-explanation {
     display: none;
-  }
-}
-
-#register-form {
-  ul {
-    label {
-      width: 130px;
-    }
-  }
-
-  .submit {
-    .btn {
-      margin-left: 130px;
-    }
   }
 }
 
