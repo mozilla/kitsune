@@ -28,7 +28,12 @@ function init() {
       'slug': 'ans_percent',
       'func': _makePercent('ans_helpful', 'ans_votes')
     }
-  ]);
+  ], {
+    bucketMethods: {
+      wiki_percent: 'average',
+      ans_percent: 'average'
+    }
+  });
 
   makeKPIGraph($('#kpi-active-contributors'), [
     {
@@ -59,7 +64,11 @@ function init() {
       slug: 'ctr',
       func: _makePercent('clicks', 'searches')
     }
-  ]);
+  ], {
+    bucketMethods: {
+      ctr: 'average',
+    }
+  });
 
   makeKPIGraph($('#kpi-visitors'), [
     {
@@ -76,7 +85,11 @@ function init() {
       // the api returns 0 to 100, we want 0.0 to 1.0.
       func: function(d) { return d['coverage'] / 100; }
     }
-  ]);
+  ], {
+    bucketMethods: {
+      ctr: 'average'
+    }
+  });
 
 }
 
@@ -122,7 +135,7 @@ function makeSeries(objects, descriptors) {
   return series;
 }
 
-function makeKPIGraph($container, descriptors) {
+function makeKPIGraph($container, descriptors, metadata) {
   $.getJSON($container.data('url'), function(data) {
     var series = makeSeries(data.objects, descriptors);
 
@@ -138,7 +151,8 @@ function makeKPIGraph($container, descriptors) {
       graph: {
         width: 880,
         height: 300
-      }
+      },
+      metadata: metadata
     });
     graph.render();
   });
