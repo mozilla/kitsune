@@ -384,24 +384,42 @@ class VoteTests(TestCase):
     def test_unhelpful_survey(self):
         """The unhelpful survey is stored as vote metadata"""
         vote = helpful_vote(save=True)
-        response = self.client.post(reverse('wiki.unhelpful_survey'),
-                                    {'vote_id': vote.id,
-                                     'button': 'Submit',
-                                     'confusing': 1,
-                                     'too-long': 1,
-                                     'comment': 'lorem ipsum dolor'})
+        url = reverse('wiki.unhelpful_survey')
+        data = {'vote_id': vote.id,
+                'button': 'Submit',
+                'confusing': 1,
+                'too-long': 1,
+                'comment': 'lorem ipsum dolor'}
+        response = self.client.post(url, data)
         eq_(200, response.status_code)
         eq_('{"message": "Thanks for making us better!"}',
             response.content)
 
-        vote_meta = vote.metadata.all()[0]
-        eq_('survey', vote_meta.key)
+        vote_meta = vote.metadata.all()
+        eq_(1, len(vote_meta))
+        eq_('survey', vote_meta[0].key)
 
-        survey = json.loads(vote_meta.value)
+        survey = json.loads(vote_meta[0].value)
         eq_(3, len(survey.keys()))
         assert 'confusing' in survey
         assert 'too-long' in survey
         eq_('lorem ipsum dolor', survey['comment'])
+
+        # Posting the survey again shouldn't add a new survey result.
+        self.client.post(url, data)
+        eq_(1, vote.metadata.filter(key='survey').count())
+
+    def test_unhelpful_survey_on_helpful_vote(self):
+        """Verify a survey doesn't get saved on helpful votes."""
+        vote = helpful_vote(helpful=True, save=True)
+        url = reverse('wiki.unhelpful_survey')
+        data = {'vote_id': vote.id,
+                'button': 'Submit',
+                'confusing': 1,
+                'too-long': 1,
+                'comment': 'lorem ipsum dolor'}
+        self.client.post(url, data)
+        eq_(0, vote.metadata.count())
 
     def test_unhelpful_truncation(self):
         """Give helpful_vote a survey that is too long.
