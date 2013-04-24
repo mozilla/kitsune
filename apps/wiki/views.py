@@ -886,16 +886,20 @@ def helpful_vote(request, document_slug):
 @csrf_exempt
 def unhelpful_survey(request):
     """Ajax only view: Unhelpful vote survey processing."""
-    vote = get_object_or_404(HelpfulVote,
-                             id=smart_int(request.POST.get('vote_id')))
+    vote = get_object_or_404(
+        HelpfulVote, id=smart_int(request.POST.get('vote_id')))
 
-    # The survey is the posted data, minus the vote_id and button value.
-    survey = request.POST.copy()
-    survey.pop('vote_id')
-    survey.pop('button')
+    # Only save the survey if it was for a not helpful vote and a survey
+    # doesn't exist for it already.
+    if not vote.helpful and not vote.metadata.filter(key='survey').exists():
+        # The survey is the posted data, minus the vote_id and button value.
+        survey = request.POST.copy()
+        survey.pop('vote_id')
+        survey.pop('button')
 
-    # Save the survey in JSON format, taking care not to exceed 1000 chars.
-    vote.add_metadata('survey', truncated_json_dumps(survey, 1000, 'comment'))
+        # Save the survey in JSON format, taking care not to exceed 1000 chars.
+        vote.add_metadata(
+            'survey', truncated_json_dumps(survey, 1000, 'comment'))
 
     return HttpResponse(
         json.dumps({'message': _('Thanks for making us better!')}))
