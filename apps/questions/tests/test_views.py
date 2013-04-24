@@ -537,7 +537,7 @@ class TestRateLimiting(TestCase):
         self._check_answer_vote(q, answers[11], True)
 
     def test_answers_limit(self):
-        """Only one answer per minute can be posted."""
+        """Only four answers per minute can be posted."""
         # Login
         u = user(password='testpass', save=True)
         self.client.login(username=u.username, password='testpass')
@@ -545,7 +545,7 @@ class TestRateLimiting(TestCase):
         q = question(save=True)
         content = 'lorem ipsum dolor sit amet'
         url = reverse('questions.reply', args=[q.id])
-        for i in range(3):
+        for i in range(7):
             response = self.client.post(url, {'content': content})
 
-        eq_(1, Answer.uncached.count())
+        eq_(4, Answer.uncached.count())
