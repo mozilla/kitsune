@@ -451,6 +451,64 @@ class MostVisitedDefaultLanguageReadout(Readout):
                                if view_name else '')
 
 
+class TemplateReadout(Readout):
+    title = _lazy(u'Templates')
+    slug = 'templates'
+    details_link_text = _lazy(u'All templates...')
+    column3_label = _lazy(u'Visits')
+    modes = PERIODS
+    default_mode = LAST_30_DAYS
+
+    def _query_and_params(self, max):
+        if self.mode in [m[0] for m in self.modes]:
+            period = self.mode
+        else:
+            period = self.default_mode
+
+        # Filter by product if specified.
+        if self.product:
+            extra_joins = PRODUCT_FILTER
+            params = (period, self.product.id, self.locale)
+        else:
+            extra_joins = ''
+            params = (period, self.locale)
+
+        # Review Needed: link to /history.
+        query = (
+            'SELECT engdoc.slug, engdoc.title, '
+            'dashboards_wikidocumentvisits.visits, '
+            'count(engrev.document_id) '
+            'FROM wiki_document engdoc '
+            'LEFT JOIN dashboards_wikidocumentvisits ON '
+            'engdoc.id=dashboards_wikidocumentvisits.document_id '
+            'AND dashboards_wikidocumentvisits.period=%s '
+            'LEFT JOIN wiki_revision engrev ON '
+            'engrev.document_id=engdoc.id '
+            'AND engrev.reviewed IS NULL '
+            'AND engrev.id>engdoc.current_revision_id '
+            + extra_joins +
+            'WHERE engdoc.locale=%s AND '
+            'engdoc.is_template AND '
+            'NOT engdoc.is_archived '
+            'GROUP BY engdoc.id '
+            'ORDER BY dashboards_wikidocumentvisits.visits DESC, '
+            'engdoc.title ASC' + self._limit_clause(max))
+
+        return query, params
+
+    def _format_row(self, (slug, title, visits, num_unreviewed)):
+        needs_review = int(num_unreviewed > 0)
+        status, view_name, dummy = REVIEW_STATUSES[needs_review]
+        return dict(title=title,
+                    url=reverse('wiki.document', args=[slug],
+                                locale=self.locale),
+                    visits=visits,
+                    status=status,
+                    status_url=reverse(view_name, args=[slug],
+                                       locale=self.locale)
+                    if view_name else '')
+
+
 class MostVisitedTranslationsReadout(MostVisitedDefaultLanguageReadout):
     """Most-Visited readout for non-default languages
 
@@ -1037,8 +1095,9 @@ L10N_READOUTS = SortedDict((t.slug, t) for t in
 
 # Contributors ones:
 CONTRIBUTOR_READOUTS = SortedDict((t.slug, t) for t in
-    [MostVisitedDefaultLanguageReadout, UnreviewedReadout,
-     NeedsChangesReadout, UnreadyForLocalizationReadout, UnhelpfulReadout])
+    [MostVisitedDefaultLanguageReadout, TemplateReadout,
+     UnreviewedReadout, NeedsChangesReadout, UnreadyForLocalizationReadout,
+     UnhelpfulReadout])
 
 # All:
 READOUTS = L10N_READOUTS.copy()
