@@ -4,7 +4,6 @@ from django.core.cache import cache
 from django.conf import settings
 
 
-PASSWORD_CACHE_KEY = 'password-blacklist'
 USERNAME_CACHE_KEY = 'username-blacklist'
 
 
@@ -26,12 +25,3 @@ def username_allowed(username):
         usernames.add(u)
     # Do any match the bad words?
     return not usernames.intersection(blacklist)
-
-
-def password_allowed(password):
-    blacklist = cache.get(PASSWORD_CACHE_KEY)
-    if blacklist is None:
-        f = open(settings.PASSWORD_BLACKLIST, 'r')
-        blacklist = [w.strip() for w in f.readlines()]
-        cache.set(PASSWORD_CACHE_KEY, blacklist)
-    return password not in blacklist
