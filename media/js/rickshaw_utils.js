@@ -2,14 +2,6 @@
 
 window.k = k || {};
 
-function findOrMakeElem(parent, selector, elemString) {
-  var $elem = $(parent).find(selector);
-  if (!$elem.length) {
-    $elem = $(elemString).appendTo(parent);
-  }
-  return $elem;
-}
-
 /* class Graph */
 k.Graph = function($elem, extra) {
   var defaults = {
@@ -41,6 +33,7 @@ k.Graph = function($elem, extra) {
       interpolation: 'linear'
     },
     hover: {},
+    yAxis: {},
 
     rickshaw: {},
     dom: {}
@@ -282,10 +275,10 @@ k.Graph.prototype.initSlider = function() {
 };
 
 k.Graph.prototype.initAxises = function() {
-  var yAxis;
+  var opts;
 
   if (this.options.xAxis) {
-    xAxis = new Rickshaw.Graph.Axis.Time({
+    new Rickshaw.Graph.Axis.Time({
       graph: this.rickshaw.graph
     });
   }
@@ -294,12 +287,14 @@ k.Graph.prototype.initAxises = function() {
     this.dom.yAxis = this.dom.elem.find('.y-axis');
     this.dom.yAxis.empty();
 
-    yAxis = new Rickshaw.Graph.Axis.Y({
+    opts = $.extend({
       graph: this.rickshaw.graph,
       orientation: 'left',
+      tickFormat: Rickshaw.Fixtures.Number.formatKMBT,
       element: this.dom.elem.find('.y-axis')[0]
-    });
-    this.toRender.push(yAxis);
+    }, this.yAxis);
+
+    this.toRender.push(new Rickshaw.Graph.Axis.Y(opts));
   }
 };
 
