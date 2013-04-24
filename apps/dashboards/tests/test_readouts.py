@@ -11,11 +11,15 @@ from dashboards.readouts import (UnreviewedReadout, OutOfDateReadout,
                                  UnreadyForLocalizationReadout,
                                  NeedsChangesReadout,
                                  NavigationTranslationsReadout,
-                                 UntranslatedReadout)
+                                 UntranslatedReadout,
+                                 TemplateReadout,
+                                 HowToContributeReadout,
+                                 AdministrationReadout)
 from sumo.tests import TestCase
 from products.tests import product
 from wiki.config import (MAJOR_SIGNIFICANCE, MEDIUM_SIGNIFICANCE,
-                         TYPO_SIGNIFICANCE)
+                         TYPO_SIGNIFICANCE, HOW_TO_CONTRIBUTE_CATEGORY,
+                         ADMINISTRATION_CATEGORY)
 from wiki.tests import revision, translated_revision, document
 
 
@@ -300,6 +304,109 @@ class MostVisitedDefaultLanguageTests(ReadoutTestCase):
         # Add the product to the document, and verify it shows up.
         d.products.add(p)
         eq_(self.row(locale=locale, product=p)['title'], d.title)
+
+
+class TemplateTests(ReadoutTestCase):
+    readout = TemplateReadout
+
+    def test_only_templates(self):
+        """Test that only templates are shown"""
+        locale = settings.WIKI_DEFAULT_LANGUAGE
+        p = product(title='Firefox', slug='firefox', save=True)
+
+        d = document(save=True)
+        t = document(title='Template:test', save=True)
+
+        revision(document=d, is_approved=True, save=True)
+        revision(document=t, is_approved=True, save=True)
+
+        d.products.add(p)
+        t.products.add(p)
+
+        eq_(1, len(self.rows(locale=locale, product=p)))
+        eq_(t.title, self.row(locale=locale, product=p)['title'])
+        eq_(u'', self.row(locale=locale, product=p)['status'])
+
+    def test_needs_changes(self):
+        """Test status for article that needs changes"""
+        locale = settings.WIKI_DEFAULT_LANGUAGE
+        d = document(title='Template:test', needs_change=True, save=True)
+        revision(document=d, is_approved=True, save=True)
+
+        row = self.row(locale=locale)
+
+        eq_(row['title'], d.title)
+        eq_(unicode(row['status']), u'Changes Needed')
+
+    def test_needs_review(self):
+        """Test status for article that needs review"""
+        locale = settings.WIKI_DEFAULT_LANGUAGE
+        d = document(title='Template:test', save=True)
+        revision(document=d, save=True)
+
+        row = self.row(locale=locale)
+
+        eq_(row['title'], d.title)
+        eq_(unicode(row['status']), u'Review Needed')
+
+    def test_unready_for_l10n(self):
+        """Test status for article that is not ready for l10n"""
+        locale = settings.WIKI_DEFAULT_LANGUAGE
+        d = document(title='Template:test', save=True)
+        revision(document=d, is_ready_for_localization=True, save=True)
+        revision(document=d, is_ready_for_localization=False, is_approved=True,
+                 significance=MAJOR_SIGNIFICANCE, save=True)
+
+        row = self.row(locale=locale)
+
+        eq_(row['title'], d.title)
+        eq_(unicode(row['status']), u'Changes Not Ready For Localization')
+
+
+class HowToContributeTests(ReadoutTestCase):
+    readout = HowToContributeReadout
+
+    def test_only_how_to_contribute(self):
+        """Test that only How To Contribute articles are shown"""
+        locale = settings.WIKI_DEFAULT_LANGUAGE
+        p = product(title='Firefox', slug='firefox', save=True)
+
+        d1 = document(save=True)
+        d2 = document(title='How To', category=HOW_TO_CONTRIBUTE_CATEGORY,
+                      save=True)
+
+        revision(document=d1, is_approved=True, save=True)
+        revision(document=d2, is_approved=True, save=True)
+
+        d1.products.add(p)
+        d2.products.add(p)
+
+        eq_(1, len(self.rows(locale=locale, product=p)))
+        eq_(d2.title, self.row(locale=locale, product=p)['title'])
+        eq_(u'', self.row(locale=locale, product=p)['status'])
+
+
+class AdministrationTests(ReadoutTestCase):
+    readout = AdministrationReadout
+
+    def test_only_how_to_contribute(self):
+        """Test that only Administration articles are shown"""
+        locale = settings.WIKI_DEFAULT_LANGUAGE
+        p = product(title='Firefox', slug='firefox', save=True)
+
+        d1 = document(save=True)
+        d2 = document(title='Admin', category=ADMINISTRATION_CATEGORY,
+                      save=True)
+
+        revision(document=d1, is_approved=True, save=True)
+        revision(document=d2, is_approved=True, save=True)
+
+        d1.products.add(p)
+        d2.products.add(p)
+
+        eq_(1, len(self.rows(locale=locale, product=p)))
+        eq_(d2.title, self.row(locale=locale, product=p)['title'])
+        eq_(u'', self.row(locale=locale, product=p)['status'])
 
 
 class MostVisitedTranslationsTests(ReadoutTestCase):

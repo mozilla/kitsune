@@ -21,7 +21,8 @@ from sumo.urlresolvers import reverse
 from sumo.redis_utils import redis_client, RedisError
 from wiki.models import Document
 from wiki.config import (MEDIUM_SIGNIFICANCE, MAJOR_SIGNIFICANCE,
-                         TYPO_SIGNIFICANCE, REDIRECT_HTML)
+                         TYPO_SIGNIFICANCE, REDIRECT_HTML,
+                         HOW_TO_CONTRIBUTE_CATEGORY, ADMINISTRATION_CATEGORY)
 
 
 log = logging.getLogger('k.dashboards.readouts')
@@ -94,6 +95,32 @@ NEEDS_REVIEW = (
          'AND transrev.reviewed IS NULL '
          'AND (transrev.id>transdoc.current_revision_id OR '
               'transdoc.current_revision_id IS NULL)'
+        ')'
+    ') ')
+
+# Whether there are unreviewed revisions of the English doc:
+NEEDS_REVIEW_ENG = (
+    '(SELECT EXISTS '
+        '(SELECT * '
+         'FROM wiki_revision engrev '
+         'WHERE engrev.document_id=engdoc.id '
+         'AND engrev.reviewed IS NULL '
+         'AND (engrev.id>engdoc.current_revision_id OR '
+              'engdoc.current_revision_id IS NULL)'
+         ')'
+    ') ')
+
+# Whether the current revision is not ready for localization
+UNREADY_FOR_L10N = (
+    '(SELECT EXISTS '
+        '(SELECT * '
+        'FROM wiki_revision rev '
+        'WHERE rev.document_id=engdoc.id '
+        'AND (rev.id>engdoc.latest_localizable_revision_id OR '
+             'engdoc.latest_localizable_revision_id IS NULL) '
+        'AND rev.is_approved '
+        'AND NOT rev.is_ready_for_localization '
+        'AND (rev.significance>%s OR rev.significance IS NULL)'
         ')'
     ') ')
 
@@ -449,6 +476,87 @@ class MostVisitedDefaultLanguageReadout(Readout):
                     status_url=reverse(view_name, args=[slug],
                                        locale=self.locale)
                                if view_name else '')
+
+
+class CategoryReadout(Readout):
+    column3_label = _lazy(u'Visits')
+    modes = []
+    default_mode = None
+    where_clause = ''
+
+    def _query_and_params(self, max):
+        # Filter by product if specified.
+        if self.product:
+            extra_joins = PRODUCT_FILTER
+            params = (TYPO_SIGNIFICANCE, LAST_30_DAYS, self.product.id,
+                      self.locale)
+        else:
+            extra_joins = ''
+            params = (TYPO_SIGNIFICANCE, LAST_30_DAYS, self.locale)
+
+        # Review Needed: link to /history.
+        query = (
+            'SELECT engdoc.slug, engdoc.title, '
+                'dashboards_wikidocumentvisits.visits, '
+                'engdoc.needs_change, '
+                + NEEDS_REVIEW_ENG + ', '
+                + UNREADY_FOR_L10N +
+            'FROM wiki_document engdoc '
+            'LEFT JOIN dashboards_wikidocumentvisits ON '
+                'engdoc.id=dashboards_wikidocumentvisits.document_id '
+                'AND dashboards_wikidocumentvisits.period=%s '
+            + extra_joins +
+            'WHERE engdoc.locale=%s AND '
+                    'NOT engdoc.is_archived '
+                    + self.where_clause +
+                'GROUP BY engdoc.id '
+                'ORDER BY dashboards_wikidocumentvisits.visits DESC, '
+                    'engdoc.title ASC' + self._limit_clause(max))
+
+        return query, params
+
+    def _format_row(self, (slug, title, visits, needs_changes, needs_review,
+                           unready_for_l10n)):
+        if needs_review:
+            status, view_name, dummy = REVIEW_STATUSES[needs_review]
+        elif needs_changes:
+            status = _lazy(u'Changes Needed')
+            view_name = 'wiki.document_revisions'
+        elif unready_for_l10n:
+            status = _lazy(u'Changes Not Ready For Localization')
+            view_name = 'wiki.document_revisions'
+        else:
+            status, view_name, dummy = REVIEW_STATUSES[0]
+
+        return dict(title=title,
+                    url=reverse('wiki.document', args=[slug],
+                                locale=self.locale),
+                    visits=visits,
+                    status=status,
+                    status_url=reverse(view_name, args=[slug],
+                                       locale=self.locale)
+                    if view_name else '')
+
+
+class TemplateReadout(CategoryReadout):
+    title = _lazy(u'Templates')
+    slug = 'templates'
+    details_link_text = _lazy(u'All templates...')
+    where_clause = 'AND engdoc.is_template '
+
+
+class HowToContributeReadout(CategoryReadout):
+    title = _lazy(u'How To Contribute')
+    slug = 'how-to-contribute'
+    details_link_text = _lazy(u'All How To Contribute articles...')
+    where_clause = 'AND engdoc.category=%s ' % HOW_TO_CONTRIBUTE_CATEGORY
+
+
+class AdministrationReadout(CategoryReadout):
+    title = _lazy(u'Administration')
+    slug = 'administration'
+    details_link_text = _lazy(u'All Administration articles...')
+    where_clause = 'AND engdoc.category=%s ' % ADMINISTRATION_CATEGORY
 
 
 class MostVisitedTranslationsReadout(MostVisitedDefaultLanguageReadout):
@@ -1037,7 +1145,8 @@ L10N_READOUTS = SortedDict((t.slug, t) for t in
 
 # Contributors ones:
 CONTRIBUTOR_READOUTS = SortedDict((t.slug, t) for t in
-    [MostVisitedDefaultLanguageReadout, UnreviewedReadout,
+    [MostVisitedDefaultLanguageReadout, TemplateReadout,
+     HowToContributeReadout, AdministrationReadout, UnreviewedReadout,
      NeedsChangesReadout, UnreadyForLocalizationReadout, UnhelpfulReadout])
 
 # All:
