@@ -17,7 +17,7 @@ from sumo.widgets import ImageWidget
 from upload.forms import clean_image_extension
 from upload.utils import check_file_size, FileTooLargeError
 from users.models import Profile
-from users.passwords import password_allowed, username_allowed
+from users.passwords import username_allowed
 from users.widgets import FacebookURLWidget, TwitterURLWidget
 
 
@@ -353,11 +353,6 @@ class PasswordResetForm(DjangoPasswordResetForm):
 
 def _check_password(password):
     if password:  # Oddly, empty password validation happens after this.
-        if not password_allowed(password):
-            msg = _('The password entered is known to be commonly used and '
-                    'is not allowed.')
-            raise forms.ValidationError(msg)
-
         if not password_re.search(password):
             msg = _('At least one number and one English letter are required '
                     'in the password.')

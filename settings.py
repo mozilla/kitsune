@@ -352,7 +352,6 @@ PASSWORD_HASHERS = (
     'users.hashers.SHA256PasswordHasher',
 )
 
-PASSWORD_BLACKLIST = path('configs/password-blacklist.txt')
 USERNAME_BLACKLIST = path('configs/username-blacklist.txt')
 
 ROOT_URLCONF = '%s.urls' % ROOT_PACKAGE
