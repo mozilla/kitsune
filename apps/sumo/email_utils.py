@@ -9,6 +9,7 @@ from django.utils import translation
 
 import jingo
 import tower
+from premailer import transform
 from test_utils import RequestFactory
 
 
@@ -150,8 +151,8 @@ def emails_with_users_and_watches(subject,
             **extra_kwargs)
 
         if html_template:
-            msg.attach_alternative(
-                render_email(html_template, context_vars), 'text/html')
+            html = transform(render_email(html_template, context_vars))
+            msg.attach_alternative(html, 'text/html')
 
         return msg
 
