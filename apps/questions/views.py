@@ -51,7 +51,7 @@ from questions.marketplace import (MARKETPLACE_CATEGORIES, submit_ticket,
 from questions.models import Question, Answer, QuestionVote, AnswerVote
 from questions.question_config import products
 from search.utils import locale_or_default, clean_excerpt
-from search.es_utils import ES_EXCEPTIONS, Sphilastic, F
+from search.es_utils import ES_EXCEPTIONS, SphilasticUnified, F
 from sumo.helpers import urlparams
 from sumo.urlresolvers import reverse
 from sumo.utils import paginate, simple_paginate, build_paged_url, user_or_ip
@@ -1186,7 +1186,7 @@ def stats_topic_data(bucket_days, start, end):
 
     Uses elastic search.
     """
-    # Woah! object?! Yeah, so what happens is that Sphilastic is
+    # Woah! object?! Yeah, so what happens is that SphilasticUnified is
     # really an elasticutils.S and that requires a Django ORM model
     # argument. That argument only gets used if you want object
     # results--for every hit it gets back from ES, it creates an
@@ -1195,7 +1195,7 @@ def stats_topic_data(bucket_days, start, end):
     # and make sure we don't ever ask for object results.
     #
     # The above comment was copy/pasted from search/views.py.
-    search = Sphilastic(object)
+    search = SphilasticUnified(object)
 
     bucket = 24 * 60 * 60 * bucket_days
 

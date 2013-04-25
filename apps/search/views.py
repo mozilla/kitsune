@@ -25,7 +25,7 @@ from search.utils import locale_or_default, clean_excerpt, ComposedList
 from questions.models import Question
 import search as constants
 from search.forms import SearchForm
-from search.es_utils import ES_EXCEPTIONS, Sphilastic, F
+from search.es_utils import ES_EXCEPTIONS, SphilasticUnified, F
 from sumo.utils import paginate, smart_int
 from wiki.facets import documents_for
 from wiki.models import Document
@@ -124,14 +124,14 @@ def search(request, template=None):
     else:
         lang_name = ''
 
-    # Woah! object?! Yeah, so what happens is that Sphilastic is
+    # Woah! object?! Yeah, so what happens is that SphilasticUnified is
     # really an elasticutils.S and that requires a Django ORM model
     # argument. That argument only gets used if you want object
     # results--for every hit it gets back from ES, it creates an
     # object of the type of the Django ORM model you passed in. We use
     # object here to satisfy the need for a type in the constructor
     # and make sure we don't ever ask for object results.
-    searcher = Sphilastic(object)
+    searcher = SphilasticUnified(object)
 
     wiki_f = F(model='wiki_document')
     question_f = F(model='questions_question')

@@ -38,7 +38,7 @@ class UnindexMeBro(Exception):
     pass
 
 
-class Sphilastic(S):
+class SphilasticUnified(S):
     """Shim around elasticutils.contrib.django.S.
 
     Implements some Kitsune-specific behavior to make our lives
@@ -49,8 +49,8 @@ class Sphilastic(S):
         pprint.pprint(self._build_query())
 
     def get_indexes(self):
-        # Sphilastic is a searcher and so it's _always_ used in a read
-        # context. Therefore, we always return the READ_INDEX.
+        # SphilasticUnified is a searcher and so it's _always_ used in
+        # a read context. Therefore, we always return the READ_INDEX.
         return [READ_INDEX]
 
     def get_doctypes(self):
@@ -122,7 +122,7 @@ def get_doctype_stats(index):
     """
     from search.models import get_search_models
 
-    s = Sphilastic(object)
+    s = SphilasticUnified(object)
 
     stats = {}
     for cls in get_search_models():
