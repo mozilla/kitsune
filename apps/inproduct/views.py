@@ -1,5 +1,9 @@
+from django.conf import settings
+from django.contrib.sites.models import Site
 from django.http import HttpResponseRedirect, Http404
 from django.views.decorators.cache import cache_page
+
+import waffle
 
 from inproduct.models import Redirect
 from sumo.helpers import urlparams
@@ -90,6 +94,11 @@ def redirect(request, product, version, platform, locale, topic=None):
             params['eu'] = 1
         target = u'/%s/%s' % (locale, destination.target.lstrip('/'))
         target = urlparams(target, **params)
+
+        # Switch over to HTTPS if we DEBUG=False and sample is active.
+        if not settings.DEBUG and waffle.sample_is_active('inproduct-https'):
+            domain = Site.objects.get_current().domain
+            target = 'https://%s%s' % (domain, target)
 
     # 302 because these can change over time.
     return HttpResponseRedirect(target)
