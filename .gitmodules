@@ -139,3 +139,6 @@
 [submodule "vendor/src/requests"]
 	path = vendor/src/requests
 	url = git://github.com/kennethreitz/requests.git
+[submodule "vendor/src/premailer"]
+	path = vendor/src/premailer
+	url = git://github.com/peterbe/premailer.git

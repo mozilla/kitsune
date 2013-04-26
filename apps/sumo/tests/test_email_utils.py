@@ -5,8 +5,10 @@ from django.conf import settings
 from django.utils.translation import get_language
 from django.utils.functional import lazy
 
-from sumo.email_utils import uselocale, safe_translation
+from sumo.email_utils import (uselocale, safe_translation,
+                              emails_with_users_and_watches)
 from sumo.tests import TestCase
+from users.tests import user
 
 
 mock_translations = {
@@ -124,3 +126,26 @@ class UseLocaleTests(TestCase):
             eq_(get_language(), 'de')
         with uselocale('fr'):
             eq_(get_language(), 'fr')
+
+
+class PremailerTests(TestCase):
+
+    def test_styles_inlining(self):
+        """Test that styles tags are converted to inline styles"""
+        with patch('jingo.render_to_string') as mocked:
+            mocked.return_value = ('<html>'
+                                   '<head>'
+                                   '<style>a { color: #000; }</style>'
+                                   '</head>'
+                                   '<body>'
+                                   '<a href="#">Hyperlink</a>'
+                                   '</body>'
+                                   '</html>')
+
+            u = user(save=True)
+            msg = emails_with_users_and_watches('test', 'a.ltxt',
+                                                'a.html', {}, [(u, [None])])
+
+            for m in msg:
+                self.assertIn('<a href="#" style="color:#000">Hyperlink</a>',
+                              str(m.message()))

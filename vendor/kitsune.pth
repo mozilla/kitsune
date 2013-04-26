@@ -84,3 +84,4 @@ packages/python-gflags
 src/django-statsd
 src/pyelasticsearch
 src/requests
+src/premailer
