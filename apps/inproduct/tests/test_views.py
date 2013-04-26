@@ -1,5 +1,9 @@
 from urlparse import urlparse
 
+from django.contrib.sites.models import Site
+
+import mock
+import waffle
 from nose.tools import eq_
 
 from sumo.tests import TestCase
@@ -63,3 +67,15 @@ class RedirectTestCase(TestCase):
                 final = urlparse(r[0][0])
                 eq_(output, final.path)
                 eq_(querystring, final.query)
+
+    @mock.patch.object(Site.objects, 'get_current')
+    @mock.patch.object(waffle, 'sample_is_active')
+    def test_switch_to_https(self, sample_is_active, get_current):
+        """Verify we switch to https when sample is active."""
+        get_current.return_value.domain = 'example.com'
+        sample_is_active.return_value = True
+
+        response = self.client.get(
+            u'/1/firefox/4.0/Linux/en-US/prefs-applications')
+        eq_(302, response.status_code)
+        assert response['location'].startswith('https://example.com/')
