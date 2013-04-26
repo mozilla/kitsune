@@ -16,12 +16,11 @@
     <div class="img-inner">
 {% endif %}
 
-{% if params['link'] %}
-  <a href="{{ params['link'] }}"{% if params['page'] and not params['found'] %} class="new"{% endif %}>
-{% endif %}
-
 {% for i in ['lazy', ''] %}
   {% if i != 'lazy' %}<noscript>{% endif %}
+  {% if params['link'] %}
+    <a href="{{ params['link'] }}"{% if params['page'] and not params['found'] %} class="new"{% endif %}>
+  {% endif %}
   <img class="{% if not has_frame %}frameless{% endif %} {{ i }} wiki-image"
     {% if i == 'lazy' %}src="{{ MEDIA_URL }}img/placeholder.gif"
     data-original-{% endif %}src="{{ image.file.url }}"
@@ -39,15 +38,13 @@
       style="vertical-align:{{ params['valign'] }}"
     {% endif %}
     />
+  {% if params['link'] %}
+    </a>
+  {% endif %}
   {% if i != 'lazy' %}</noscript>{% endif %}
 {% endfor %}
 
-{% if params['link'] %}
-  </a>
-{% endif %}
-
 {% if has_frame %}
-
   {% if params['caption'] %}
     <div class="caption"
       {% if params['width'] %}
