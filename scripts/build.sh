@@ -58,6 +58,7 @@ DATABASES['default']['TEST_COLLATION'] = 'utf8_general_ci'
 CELERY_ALWAYS_EAGER = True
 CACHE_BACKEND = 'caching.backends.locmem://'
 ES_INDEX_PREFIX = 'sumo_$BUILD_NAME'
+ES_URLS = ['http://jenkins-es20:9200']
 SETTINGS
 
 echo "Starting tests..." `date`
