@@ -13,15 +13,15 @@ from django.db.models import Q
 from django.http import Http404
 
 from pyelasticsearch.exceptions import (
-    Timeout, ConnectionError, ElasticHttpError)
+    Timeout, ConnectionError, ElasticHttpError, ElasticHttpNotFoundError)
 from pyquery import PyQuery
 from tidings.models import NotificationsMixin
 from tower import ugettext_lazy as _lazy, ugettext as _
 
-
 from products.models import Product
 from search.es_utils import UnindexMeBro
-from search.models import (SearchMixin, register_for_indexing,
+from search.models import (SearchMappingType, SearchMixin,
+                           register_for_indexing, register_mapping_type,
                            register_for_unified_search)
 from sumo import ProgrammingError
 from sumo.models import ModelBase, LocaleField
@@ -592,6 +592,10 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
         return documents
 
     @classmethod
+    def get_mapping_type(cls):
+        return DocumentMappingType
+
+    @classmethod
     def get_query_fields(cls):
         return ['document_title',
                 'document_content',
@@ -742,6 +746,132 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
         except IntegrityError:
             # This link already exists, ok.
             pass
+
+
+@register_mapping_type
+class DocumentMappingType(SearchMappingType):
+    @classmethod
+    def get_model(cls):
+        return Document
+
+    @classmethod
+    def get_query_fields(cls):
+        return ['document_title',
+                'document_content',
+                'document_summary',
+                'document_keywords']
+
+    @classmethod
+    def get_mapping(cls):
+        return {
+            'properties': {
+                'id': {'type': 'long'},
+                'model': {'type': 'string', 'index': 'not_analyzed'},
+                'url': {'type': 'string', 'index': 'not_analyzed'},
+                'indexed_on': {'type': 'integer'},
+                'updated': {'type': 'integer'},
+
+                'product': {'type': 'string', 'index': 'not_analyzed'},
+                'topic': {'type': 'string', 'index': 'not_analyzed'},
+
+                'document_title': {'type': 'string', 'analyzer': 'snowball'},
+                'document_locale': {'type': 'string', 'index': 'not_analyzed'},
+                'document_current_id': {'type': 'integer'},
+                'document_parent_id': {'type': 'integer'},
+                'document_content': {'type': 'string', 'analyzer': 'snowball',
+                                     'store': 'yes',
+                                     'term_vector': 'with_positions_offsets'},
+                'document_category': {'type': 'integer'},
+                'document_slug': {'type': 'string', 'index': 'not_analyzed'},
+                'document_is_archived': {'type': 'boolean'},
+                'document_summary': {'type': 'string', 'analyzer': 'snowball'},
+                'document_keywords': {'type': 'string', 'analyzer': 'snowball'},
+                'document_recent_helpful_votes': {'type': 'integer'}
+            }
+        }
+
+    @classmethod
+    def extract_document(cls, obj_id, obj=None):
+        if obj is None:
+            model = cls.get_model()
+            obj = model.uncached.select_related(
+                'current_revision', 'parent').get(pk=obj_id)
+
+        if obj.html.startswith(REDIRECT_HTML):
+            # It's possible this document is indexed and was turned
+            # into a redirect, so now we want to explicitly unindex
+            # it. The way we do that is by throwing an exception
+            # which gets handled by the indexing machinery.
+            raise UnindexMeBro()
+
+        d = {}
+        d['id'] = obj.id
+        d['model'] = cls.get_mapping_type_name()
+        d['url'] = obj.get_absolute_url()
+        d['indexed_on'] = int(time.time())
+
+        d['topic'] = [t.slug for t in obj.get_topics(True)]
+        d['product'] = [p.slug for p in obj.get_products(True)]
+
+        d['document_title'] = obj.title
+        d['document_locale'] = obj.locale
+        d['document_parent_id'] = obj.parent.id if obj.parent else None
+        d['document_content'] = obj.html
+        d['document_category'] = obj.category
+        d['document_slug'] = obj.slug
+        d['document_is_archived'] = obj.is_archived
+
+        if obj.current_revision is not None:
+            d['document_summary'] = obj.current_revision.summary
+            d['document_keywords'] = obj.current_revision.keywords
+            d['updated'] = int(time.mktime(
+                    obj.current_revision.created.timetuple()))
+            d['document_current_id'] = obj.current_revision.id
+            d['document_recent_helpful_votes'] = obj.recent_helpful_votes
+        else:
+            d['document_summary'] = None
+            d['document_keywords'] = None
+            d['updated'] = None
+            d['document_current_id'] = None
+            d['document_recent_helpful_votes'] = 0
+
+        # Don't query for helpful votes if the document doesn't have a current
+        # revision, or is a template, or is a redirect, or is in Navigation
+        # category (50).
+        if (obj.current_revision and
+            not obj.is_template and
+            not obj.html.startswith(REDIRECT_HTML) and
+            not obj.category == 50):
+            d['document_recent_helpful_votes'] = obj.recent_helpful_votes
+        else:
+            d['document_recent_helpful_votes'] = 0
+
+        return d
+
+    @classmethod
+    def get_indexable(cls):
+        # This function returns all the indexable things, but we
+        # really need to handle the case where something was indexable
+        # and isn't anymore. Given that, this returns everything that
+        # has a revision.
+        indexable = super(cls, cls).get_indexable()
+        indexable = indexable.filter(current_revision__isnull=False)
+        return indexable
+
+    @classmethod
+    def index(cls, document, **kwargs):
+        # If there are no revisions or the current revision is a
+        # redirect, we want to remove it from the index.
+        if (document['document_current_id'] is None or
+            document['document_content'].startswith(REDIRECT_HTML)):
+            try:
+                cls.unindex(document['id'], es=kwargs.get('es', None))
+            except ElasticHttpNotFoundError:
+                # If it's not there, no need to remove it.
+                pass
+            return
+
+        super(cls, cls).index(document, **kwargs)
 
 
 register_for_indexing('wiki', Document)

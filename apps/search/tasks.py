@@ -60,7 +60,7 @@ def index_chunk_task(write_index, batch_id, chunk):
     cls, id_list = chunk
 
     task_name = '{0} {1} -> {2}'.format(
-        cls.get_model_name(), id_list[0], id_list[-1])
+        cls.get_mapping_type_name(), id_list[0], id_list[-1])
 
     rec = Record(
         starttime=datetime.datetime.now(),
@@ -111,13 +111,14 @@ MAX_RETRIES = len(RETRY_TIMES)
 @task
 def index_task(cls, id_list, **kw):
     """Index documents specified by cls and ids"""
-    statsd.incr('search.tasks.index_task.%s' % cls.get_model_name())
+    statsd.incr('search.tasks.index_task.%s' % cls.get_mapping_type_name())
     try:
         # Pin to master db to avoid replication lag issues and stale
         # data.
         pin_this_thread()
 
-        qs = cls.uncached.filter(id__in=id_list).values_list('id', flat=True)
+        qs = cls.get_model().uncached.filter(id__in=id_list).values_list(
+            'id', flat=True)
         for id_ in qs:
             try:
                 cls.index(cls.extract_document(id_))
@@ -146,7 +147,7 @@ def index_task(cls, id_list, **kw):
 @task
 def unindex_task(cls, id_list, **kw):
     """Unindex documents specified by cls and ids"""
-    statsd.incr('search.tasks.unindex_task.%s' % cls.get_model_name())
+    statsd.incr('search.tasks.unindex_task.%s' % cls.get_mapping_type_name())
     try:
         # Pin to master db to avoid replication lag issues and stale
         # data.

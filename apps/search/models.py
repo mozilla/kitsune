@@ -7,7 +7,7 @@ from django.db import models
 from django.db.models.signals import pre_delete, post_save, m2m_changed
 from django.dispatch import receiver
 
-from elasticutils import MLT
+from elasticutils.contrib.django import MappingType, Indexable, MLT
 from pyelasticsearch.exceptions import ElasticHttpNotFoundError
 
 from search import es_utils
@@ -17,10 +17,16 @@ from sumo.models import ModelBase
 log = logging.getLogger('k.search.es')
 
 
+# TODO: Nix this
 # db_table name -> model Class for search models
 _search_models = {}
 
 
+# db_table_name -> MappingType class
+_search_mapping_types = {}
+
+
+# TODO: Nix this
 def get_search_models(models=None):
     """Returns a list of model classes"""
     # TODO: if we do weakrefs, then we should remove dead refs here.
@@ -32,6 +38,18 @@ def get_search_models(models=None):
 
     # Sort to stabilize.
     values.sort(key=lambda cls: cls._meta.db_table)
+    return values
+
+
+def get_mapping_types(mapping_types=None):
+    """Returns a list of MappingTypes"""
+    if mapping_types is None:
+        values = _search_mapping_types.values()
+    else:
+        values = [_search_mapping_types[name] for name in mapping_types]
+
+    # Sort to stabilize
+    values.sort(key=lambda cls: cls.get_mapping_type_name())
     return values
 
 
@@ -63,6 +81,17 @@ class SearchMixin(object):
 
     """
     @classmethod
+    def get_mapping_type(cls):
+        """Return the MappingType for this model"""
+        raise NotImplementedError
+
+    # TODO: Nix this
+    @classmethod
+    def get_model(cls):
+        return cls
+
+    # TODO: Nix this
+    @classmethod
     def get_mapping(self):
         """Return the ES mapping properties for this document type.
 
@@ -73,6 +102,7 @@ class SearchMixin(object):
         """
         raise NotImplementedError
 
+    # TODO: Nix this
     @classmethod
     def extract_document(cls, obj_id):
         """Extracts the ES index document for this instance
@@ -88,6 +118,7 @@ class SearchMixin(object):
         """
         raise NotImplementedError
 
+    # TODO: Nix this
     @classmethod
     def get_model_name(cls):
         """Returns model name for this model class
@@ -96,6 +127,7 @@ class SearchMixin(object):
         """
         return cls._meta.db_table
 
+    # TODO: Nix this
     @classmethod
     def search(cls):
         """Returns an S for this class
@@ -108,12 +140,19 @@ class SearchMixin(object):
 
     def index_later(self):
         """Register myself to be indexed at the end of the request."""
+        # TODO: Nix this
         _local_tasks().add((index_task.delay, (self.__class__, (self.id,))))
+        _local_tasks().add((index_task.delay, (
+                    self.get_mapping_type(), (self.id,))))
 
     def unindex_later(self):
         """Register myself to be unindexed at the end of the request."""
+        # TODO: Nix this
         _local_tasks().add((unindex_task.delay, (self.__class__, (self.id,))))
+        _local_tasks().add((unindex_task.delay, (
+                    self.get_mapping_type(), (self.id,))))
 
+    # TODO: Nix this
     @classmethod
     def bulk_index(cls, documents, id_field='id', es=None):
         """Adds or updates a batch of documents.
@@ -149,18 +188,22 @@ class SearchMixin(object):
                       documents,
                       id_field)
 
+    # TODO: Nix this
     @classmethod
     def get_index(cls):
         return es_utils.WRITE_INDEX
 
+    # TODO: Nix this
     @classmethod
     def get_mapping_type_name(cls):
         return es_utils.SUMO_DOCTYPE
 
+    # TODO: Nix this
     @classmethod
     def get_query_fields(cls):
         return []
 
+    # TODO: Nix this
     @classmethod
     def get_indexable(cls):
         # Some models have a gazillion instances. So we want to go
@@ -169,11 +212,13 @@ class SearchMixin(object):
         # and pull the objects one at a time.
         return cls.objects.order_by('id').values_list('id', flat=True)
 
+    # TODO: Nix this
     @classmethod
     def get_document_id(cls, id_):
         """Generates a composed elasticsearch document id"""
         return '%s:%s' % (cls.get_model_name(), id_)
 
+    # TODO: Nix this
     @classmethod
     def index(cls, document, id_=None, force_insert=False, es=None):
         """Indexes a single document"""
@@ -190,6 +235,7 @@ class SearchMixin(object):
             id=document['document_id'],
             force_insert=force_insert)
 
+    # TODO: Nix this
     @classmethod
     def unindex(cls, id_, es=None):
         """Removes a document from the index"""
@@ -208,16 +254,83 @@ class SearchMixin(object):
             # not there.
             pass
 
+    # TODO: Fix this
     @classmethod
     def get_s(cls):
         """Get an S."""
         return es_utils.SphilasticUnified(object).values_dict()
 
+    # TODO: Fix this
     @classmethod
     def morelikethis(cls, id_, s, fields):
         """morelikethis query."""
         return list(MLT(
             id_, s=s, mlt_fields=fields, min_term_freq=1, min_doc_freq=1))
+
+
+class SearchMappingType(MappingType, Indexable):
+    """Contains helpers on top of what ElasticUtils provides
+
+    Subclasses should implement the following:
+
+    1. get_mapping needs to return {'properties': { ... fields ... }}
+    2. get_query_fields should return a list of fields for query
+    3. extract_document
+    4. get_model
+    5. the mapping type class should be decorated with
+       ``@register_mapping_type``
+
+    Then make sure to:
+
+    6. implement get_mapping_type on the related model
+
+    """
+    @classmethod
+    def search(cls):
+        return es_utils.Sphilastic(cls)
+
+    @classmethod
+    def get_index(cls):
+        return es_utils.WRITE_INDEX
+
+    @classmethod
+    def get_query_fields(cls):
+        """Return the list of fields for query"""
+        raise NotImplementedError
+
+    @classmethod
+    def get_indexable(cls):
+        # Some models have a gazillion instances. So we want to go
+        # through them one at a time in a way that doesn't pull all
+        # the data into memory all at once. So we iterate through ids
+        # and pull objects one at a time.
+        return cls.get_model().objects.order_by('id').values_list(
+            'id', flat=True)
+
+    @classmethod
+    def index(cls, *args, **kwargs):
+        if not settings.ES_LIVE_INDEXING:
+            return
+
+        super(SearchMappingType, cls).index(*args, **kwargs)
+
+    @classmethod
+    def unindex(cls, *args, **kwargs):
+        if not settings.ES_LIVE_INDEXING:
+            return
+
+        try:
+            super(SearchMappingType, cls).unindex(*args, **kwargs)
+        except ElasticHttpNotFoundError:
+            # Ignore the case where we try to delete something that's
+            # not there.
+            pass
+
+    @classmethod
+    def morelikethis(cls, id_, s, fields):
+        """MoreLikeThis API"""
+        return list(MLT(
+                id_, s=s, mlt_fields=fields, min_term_freq=1, min_doc_freq=1))
 
 
 _identity = lambda s: s
@@ -315,10 +428,17 @@ def register_for_indexing(app,
             delete if instance_to_indexee is _identity else update)
 
 
+# TODO: Nix this
 def register_for_unified_search(model_cls):
     """Class decorator for registering models for unified search."""
     _search_models[model_cls._meta.db_table] = model_cls
     return model_cls
+
+
+def register_mapping_type(cls):
+    """Class decorator for registering MappingTypes for search"""
+    _search_mapping_types[cls.get_mapping_type_name()] = cls
+    return cls
 
 
 def generate_tasks(**kwargs):

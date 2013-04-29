@@ -38,8 +38,9 @@ class UnindexMeBro(Exception):
     pass
 
 
+# TODO: Nix this
 class SphilasticUnified(S):
-    """Shim around elasticutils.contrib.django.S.
+    """Shim around elasticutils.contrib.django.S. (Unified)
 
     Implements some Kitsune-specific behavior to make our lives
     easier.
@@ -57,16 +58,41 @@ class SphilasticUnified(S):
         # SUMO uses a unified doctype, so this always returns that.
         return [SUMO_DOCTYPE]
 
-    def __repr__(self):
-        return '<S %s>' % self._build_query()
+
+class Sphilastic(S):
+    """Shim around elasticutils.contrib.django.S.
+
+    Implements some Kitsune-specific behavior to make our lives
+    easier.
+
+    .. Note::
+
+       This looks at the READ_INDEX. If you need to look at something
+       different, build your own S.
+
+    """
+    def print_query(self):
+        pprint.pprint(self._build_query())
+
+    def get_indexes(self):
+        # SphilasticUnified is a searcher and so it's _always_ used in
+        # a read context. Therefore, we always return the READ_INDEX.
+        return [READ_INDEX]
 
 
+# TODO: Nix this
 class MappingMergeError(Exception):
     """Represents a mapping merge error"""
     pass
 
 
-def merge_mappings(mappings):
+def get_mappings():
+    # TODO: Nix this merged mapping stuff
+
+    from search.models import get_search_models
+    mappings = [(cls._meta.db_table, cls.get_mapping())
+                for cls in get_search_models()]
+
     merged_mapping = {}
 
     for cls_name, mapping in mappings:
@@ -87,7 +113,18 @@ def merge_mappings(mappings):
     # Remove cls_name annotations from final mapping
     merged_mapping = dict(
         [(key, val[0]) for key, val in merged_mapping.items()])
-    return merged_mapping
+
+    mappings = {
+        SUMO_DOCTYPE: {
+            'properties': merged_mapping
+        }
+    }
+
+    from search.models import get_mapping_types
+    for cls in get_mapping_types():
+        mappings[cls.get_mapping_type_name()] = cls.get_mapping()
+
+    return mappings
 
 
 def get_indexes(all_indexes=False):
@@ -99,9 +136,23 @@ def get_indexes(all_indexes=False):
         indexes = dict((k, v) for k, v in indexes.items()
                        if k.startswith(settings.ES_INDEX_PREFIX))
 
-    indexes = [(k, v['docs']['num_docs']) for k, v in indexes.items()]
+    return [(name, value['docs']['num_docs'])
+            for name, value in indexes.items()]
 
-    return indexes
+
+def get_doctypes_for_index(index):
+    """Retrieves the list of doctypes in an index
+
+    Technically, this retrieves the list of names of mappings in the
+    index. In our case, that's the same list as the list of doctypes
+    in an index since we always specify mappings for our doctypes.
+
+    """
+    es = get_es()
+    cluster_state = es.cluster_state()['metadata']['indices']
+    if index in cluster_state:
+        return cluster_state[index]['mappings'].keys()
+    return []
 
 
 def get_doctype_stats(index):
@@ -120,14 +171,22 @@ def get_doctype_stats(index):
         index doesn't exist
 
     """
+    # TODO: Nix the unified doctype stats here
     from search.models import get_search_models
 
-    s = SphilasticUnified(object)
+    from elasticutils import S
+    s = S().es(urls=settings.ES_URLS).indexes(index)
 
     stats = {}
     for cls in get_search_models():
         model_name = cls.get_model_name()
-        stats[model_name] = s.filter(model=model_name).count()
+        stats['U: ' + model_name] = (s.doctypes(SUMO_DOCTYPE)
+                                      .filter(model=model_name).count())
+
+    for doctype in get_doctypes_for_index(index):
+        # We build our own S here because we just want counts and
+        # don't want to tie it to a MappingType.
+        stats[doctype] = s.doctypes(doctype).count()
 
     return stats
 
@@ -151,7 +210,10 @@ def get_documents(cls, ids):
 
     :arg cls: the class with a ``.search()`` to use
     :arg ids: the list of ids to retrieve documents for
+
+    :returns: list of documents
     """
+    # TODO: Can probably ditch the values_dict() here.
     ret = cls.search().filter(id__in=ids).values_dict()[:len(ids)]
     return list(ret)
 
@@ -161,19 +223,10 @@ def recreate_index(es=None):
     if es is None:
         es = get_es()
 
-    from search.models import get_search_models
-
-    search_models = get_search_models()
-    merged_mapping = {
-        SUMO_DOCTYPE: {
-            'properties': merge_mappings(
-                [(cls._meta.db_table, cls.get_mapping())
-                 for cls in search_models])
-            }
-        }
-
     index = WRITE_INDEX
     delete_index(index)
+
+    mappings = get_mappings()
 
     # There should be no mapping-conflict race here since the index doesn't
     # exist. Live indexing should just fail.
@@ -183,9 +236,16 @@ def recreate_index(es=None):
     # and infer a bogus mapping (which ES then freaks out over when we
     # try to lay in an incompatible explicit mapping).
 
-    es.create_index(index, settings={'mappings': merged_mapping})
+    es.create_index(index, settings={'mappings': mappings})
 
 
+def get_index_settings(index):
+    """Returns ES settings for this index"""
+    es = get_es()
+    return es.get_settings(index).get(index, {}).get('settings', {})
+
+
+# TODO: Nix this
 def get_indexable(percent=100, search_models=None):
     """Returns a list of (class, iterable) for all the things to index
 
@@ -203,6 +263,32 @@ def get_indexable(percent=100, search_models=None):
     to_index = []
     percent = float(percent) / 100
     for cls in search_models:
+        indexable = cls.get_indexable()
+        if percent < 1:
+            indexable = indexable[:int(indexable.count() * percent)]
+        to_index.append((cls, indexable))
+
+    return to_index
+
+
+# TODO: Rename this back to get_indexable
+def get_indexable_for_mapping_types(percent=100, mapping_types=None):
+    """Returns a list of (class, iterable) for all the things to index
+
+    :arg percent: Defaults to 100.  Allows you to specify how much of
+        each doctype you want to index.  This is useful for
+        development where doing a full reindex takes an hour.
+    :arg mapping_types: The list of mapping types to index.
+
+    """
+    from search.models import get_mapping_types
+
+    # Note: Passing in None will get all the mapping types
+    mapping_types = get_mapping_types(mapping_types)
+
+    to_index = []
+    percent = float(percent) / 100
+    for cls in mapping_types:
         indexable = cls.get_indexable()
         if percent < 1:
             indexable = indexable[:int(indexable.count() * percent)]
@@ -245,19 +331,25 @@ def index_chunk(cls, id_list, reraise=False):
                     raise
 
         if documents:
-            cls.bulk_index(documents, id_field='document_id')
+            cls.bulk_index(documents, id_field='id')
+
+        if settings.DEBUG:
+            # Nix queries so that this doesn't become a complete
+            # memory hog and make Will's computer sad when DEBUG=True.
+            reset_queries()
 
 
-def es_reindex_cmd(percent=100, delete=False, models=None,
+def es_reindex_cmd(percent=100, delete=False, mapping_types=None,
                    criticalmass=False, log=log):
     """Rebuild ElasticSearch indexes
 
     :arg percent: 1 to 100--the percentage of the db to index
     :arg delete: whether or not to wipe the index before reindexing
-    :arg models: list of search model names to index
+    :arg mapping_types: list of mapping types to index
     :arg criticalmass: whether or not to index just a critical mass of
         things
     :arg log: the logger to use
+
     """
     es = get_es()
 
@@ -278,22 +370,26 @@ def es_reindex_cmd(percent=100, delete=False, models=None,
         # there were created in the last 180 days). We build that
         # indexable here.
 
-        # Get only questions and wiki document stuff.
-        all_indexable = get_indexable(
-            search_models=['questions_question', 'wiki_document'])
-
-        # The first item is questions because we specified that
-        # order. Old questions don't show up in searches, so we nix
-        # them by reversing the list (ordered by id ascending) and
-        # slicing it.
+        all_indexable = get_indexable_for_mapping_types(
+            mapping_types=['questions_question', 'wiki_document'])
         all_indexable[0] = (all_indexable[0][0],
                             list(reversed(all_indexable[0][1]))[:15000])
 
-    elif models:
-        all_indexable = get_indexable(percent, models)
+    elif mapping_types:
+        all_indexable = get_indexable_for_mapping_types(percent, mapping_types)
 
     else:
-        all_indexable = get_indexable(percent)
+        all_indexable = get_indexable_for_mapping_types(percent)
+
+    # We're doing a lot of indexing, so we get the refresh_interval
+    # currently in the index, then nix refreshing. Later we'll restore
+    # it.
+    old_refresh = get_index_settings(WRITE_INDEX).get(
+        'index.refresh_interval', '1s')
+
+    # Disable automatic refreshing
+    es.update_settings(
+        WRITE_INDEX, {'index': {'refresh_interval': '-1'}})
 
     log.info('using index: %s', WRITE_INDEX)
 
@@ -306,7 +402,7 @@ def es_reindex_cmd(percent=100, delete=False, models=None,
             continue
 
         log.info('reindexing %s. %s to index....',
-                 cls.get_model_name(), total)
+                 cls.get_mapping_type_name(), total)
 
         i = 0
         for chunk in chunked(indexable, 1000):
@@ -326,18 +422,14 @@ def es_reindex_cmd(percent=100, delete=False, models=None,
                      format_time(time_to_go)
             )
 
-            # We call this every 1000 or so because we're
-            # essentially loading the whole db and if DEBUG=True,
-            # then Django saves every sql statement which causes
-            # our memory to go up up up. So we reset it and that
-            # makes things happier even in DEBUG environments.
-            reset_queries()
-
         delta_time = time.time() - cls_start_time
         log.info('   done! (%s total, %s/1000 avg)',
                  format_time(delta_time),
                  format_time(delta_time / (total / 1000.0)))
 
+    # Re-enable automatic refreshing
+    es.update_settings(
+        WRITE_INDEX, {'index': {'refresh_interval': old_refresh}})
     delta_time = time.time() - start_time
     log.info('done! (%s total)', format_time(delta_time))
 
@@ -390,23 +482,23 @@ def es_status_cmd(checkindex=False, log=log):
         return
 
     log.info('Settings:')
-    log.info('  ES_URLS               : %s', settings.ES_URLS)
-    log.info('  ES_INDEX_PREFIX       : %s', settings.ES_INDEX_PREFIX)
-    log.info('  ES_LIVE_INDEXING      : %s', settings.ES_LIVE_INDEXING)
-    log.info('  ES_INDEXES            : %s', settings.ES_INDEXES)
-    log.info('  ES_WRITE_INDEXES      : %s', settings.ES_WRITE_INDEXES)
+    log.info('  ES_URLS                 : %s', settings.ES_URLS)
+    log.info('  ES_INDEX_PREFIX         : %s', settings.ES_INDEX_PREFIX)
+    log.info('  ES_LIVE_INDEXING        : %s', settings.ES_LIVE_INDEXING)
+    log.info('  ES_INDEXES              : %s', settings.ES_INDEXES)
+    log.info('  ES_WRITE_INDEXES        : %s', settings.ES_WRITE_INDEXES)
 
     log.info('Index stats:')
 
     if indexes:
         log.info('  List of indexes:')
-        for name, count in indexes:
+        for name, count in sorted(indexes):
             read_write = []
             if name == READ_INDEX:
                 read_write.append('READ')
             if name == WRITE_INDEX:
                 read_write.append('WRITE')
-            log.info('    %-20s: %s %s', name, count,
+            log.info('    %-22s: %s %s', name, count,
                      '/'.join(read_write))
     else:
         log.info('  There are no %s indexes.', settings.ES_INDEX_PREFIX)
@@ -415,16 +507,16 @@ def es_status_cmd(checkindex=False, log=log):
         log.info('  Read index does not exist. (%s)', READ_INDEX)
     else:
         log.info('  Read index (%s):', READ_INDEX)
-        for name, count in read_doctype_stats.items():
-            log.info('    %-20s: %d', name, count)
+        for name, count in sorted(read_doctype_stats.items()):
+            log.info('    %-22s: %d', name, count)
 
     if READ_INDEX != WRITE_INDEX:
         if write_doctype_stats is None:
             log.info('  Write index does not exist. (%s)', WRITE_INDEX)
         else:
             log.info('  Write index (%s):', WRITE_INDEX)
-            for name, count in write_doctype_stats.items():
-                log.info('    %-20s: %d', name, count)
+            for name, count in sorted(write_doctype_stats.items()):
+                log.info('    %-22s: %d', name, count)
     else:
         log.info('  Write index is same as read index.')
 
@@ -449,6 +541,7 @@ def es_status_cmd(checkindex=False, log=log):
             print 'There were %d missing_docs' % missing_docs
 
 
+# TODO: Fix this to use mapping types
 def es_search_cmd(query, pages=1, log=log):
     """Simulates a front page search
 
@@ -494,3 +587,105 @@ def es_search_cmd(query, pages=1, log=log):
 
     for line in output:
         log.info(line.encode('ascii', 'ignore'))
+
+
+def es_verify_cmd(log=log):
+    log.info('Behold! I am the magificent esverify command and I shall verify')
+    log.info('all things verifyable so that you can rest assured that your')
+    log.info('changes are bereft of the tawdry clutches of whimsy and')
+    log.info('misfortune.')
+    log.info('')
+
+    mappings = get_mappings()
+
+    log.info('Verifying mappings do not conflict.')
+
+    # Verify mappings don't conflict
+    merged_mapping = {}
+
+    start_time = time.time()
+    for cls_name, mapping in mappings.items():
+        mapping = mapping['properties']
+        for key, val in mapping.items():
+            if key not in merged_mapping:
+                merged_mapping[key] = (val, [cls_name])
+                continue
+
+            # FIXME - We're comparing two dicts here. This might not
+            # work for non-trivial dicts.
+            if merged_mapping[key][0] != val:
+                raise MappingMergeError(
+                    '%s key different for %s and %s' %
+                    (key, cls_name, merged_mapping[key][1]))
+
+            merged_mapping[key][1].append(cls_name)
+
+    log.info('Done! {0}'.format(format_time(time.time() - start_time)))
+    log.info('')
+
+    log.info('Verifying all documents are correctly typed.')
+
+    # Note: This is some goofy type coercion between ES and Python
+    # types and Python type behavior
+    type_map = {
+        'string': basestring,
+        'integer': (int, long),
+        'long': (int, long),
+        'boolean': bool
+    }
+
+    def verify_obj(mt_name, cls, mapping, obj_id):
+        try:
+            doc = cls.extract_document(obj_id=obj_id)
+        except UnindexMeBro:
+            return
+
+        for field, type_ in mapping.items():
+            python_type = type_map[type_['type']]
+            item = doc.get(field)
+
+            if item is None or isinstance(item, python_type):
+                continue
+
+            if isinstance(item, (tuple, list)):
+                for mem in item:
+                    if not isinstance(mem, python_type):
+                        log.error('   bad type: {0} {1} {2} {3}'.format(
+                                mt_name, field, type_['type'], item))
+                continue
+
+            log.error('   bad type: {0} {1} {2} {3}'.format(
+                    mt_name, field, type_['type'], item))
+
+    start_time = time.time()
+
+    log.info('MappingType indexable.')
+    for cls, indexable in get_indexable_for_mapping_types():
+        count = 0
+        cls_time = time.time()
+
+        mt_name = cls.get_mapping_type_name()
+        mapping = mappings[mt_name]
+        if 'properties' in mapping:
+            mapping = mapping['properties']
+
+        log.info('   Working on {0}'.format(mt_name))
+        for obj in indexable:
+            verify_obj(mt_name, cls, mapping, obj)
+
+            count += 1
+            if count % 1000 == 0:
+                log.info('      {0} ({1}/1000 avg)'.format(
+                        count,
+                        format_time((time.time() - cls_time) * 1000 / count)))
+
+                if settings.DEBUG:
+                    # Nix queries so that this doesn't become a complete
+                    # memory hog and make Will's computer sad when DEBUG=True.
+                    reset_queries()
+
+        log.info('      Done! {0} ({1}/1000 avg)'.format(
+                format_time(time.time() - cls_time),
+                format_time((time.time() - cls_time) * 1000 / count)))
+
+    log.info('Done! {0}'.format(format_time(time.time() - start_time)))
