@@ -2,6 +2,20 @@ import os
 import site
 from datetime import datetime
 
+try:
+    import newrelic.agent
+except ImportError:
+    newrelic = False
+
+
+if newrelic:
+    newrelic_ini = os.getenv('NEWRELIC_PYTHON_INI_FILE', False)
+    if newrelic_ini:
+        newrelic.agent.initialize(newrelic_ini)
+    else:
+        newrelic = False
+
+
 # Remember when mod_wsgi loaded this file so we can track it in nagios.
 wsgi_loaded = datetime.now()
 
