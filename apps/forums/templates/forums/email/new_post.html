@@ -1,0 +1,16 @@
+{% extends 'email/base.html' %}
+
+{% block content %}
+  <p>{{ _('Reply to thread: {title}')|f(title=thread) }}</p>
+
+  <p>
+    {% trans author=author %}
+      User {{ author }} has replied to a thread you're watching. Here is their
+      reply:
+    {% endtrans %}
+  </p>
+
+  <p>{{ post }}</p>
+
+  <p><a href="https://{{ host }}{{ post_url }}">{{ _('View this post on the site.') }}</a></p>
+{% endblock %}

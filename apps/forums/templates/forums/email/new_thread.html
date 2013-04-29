@@ -1,0 +1,16 @@
+{% extends 'email/base.html' %}
+
+{% block content %}
+  <p>{{ _('New thread: {title}')|f(title=thread) }}</p>
+
+  <p>
+    {% trans author=author %}
+      User {{ author }} has posted a new thread in a forum you're watching.
+      Here is the thread:
+    {% endtrans %}
+  </p>
+
+  <p>{{ post }}</p>
+
+  <p><a href="https://{{ host }}{{ post_url }}">{{ _('View this post on the site.') }}</a></p>
+{% endblock %}
