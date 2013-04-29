@@ -458,10 +458,14 @@ class MostVisitedDefaultLanguageReadout(Readout):
                 'AND engrev.id>engdoc.current_revision_id '
             + extra_joins +
             'WHERE engdoc.locale=%s AND '
-                    'NOT engdoc.is_archived '
-                'GROUP BY engdoc.id '
-                'ORDER BY dashboards_wikidocumentvisits.visits DESC, '
-                         'engdoc.title ASC' + self._limit_clause(max))
+            'NOT engdoc.is_archived AND '
+            'NOT engdoc.category IN ('
+                + str(ADMINISTRATION_CATEGORY) + ', '
+                + str(HOW_TO_CONTRIBUTE_CATEGORY) + ') AND '
+            'NOT engdoc.is_template '
+            'GROUP BY engdoc.id '
+            'ORDER BY dashboards_wikidocumentvisits.visits DESC, '
+                'engdoc.title ASC' + self._limit_clause(max))
 
         return query, params
 
