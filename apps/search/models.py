@@ -103,7 +103,8 @@ class SearchMixin(object):
         This applies a filter on doctype=cls._meta.db_table which
         makes sure to return results specific to this class.
         """
-        return es_utils.Sphilastic(cls).filter(model=cls.get_model_name())
+        return es_utils.SphilasticUnified(cls).filter(
+            model=cls.get_model_name())
 
     def index_later(self):
         """Register myself to be indexed at the end of the request."""
@@ -210,7 +211,7 @@ class SearchMixin(object):
     @classmethod
     def get_s(cls):
         """Get an S."""
-        return es_utils.Sphilastic(object).values_dict()
+        return es_utils.SphilasticUnified(object).values_dict()
 
     @classmethod
     def morelikethis(cls, id_, s, fields):

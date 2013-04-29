@@ -13,5 +13,4 @@ class Command(BaseCommand):
                     help='Checks the index contents'),)
 
     def handle(self, *args, **options):
-        checkindex = options['checkindex']
-        es_status_cmd(checkindex, FakeLogger(self.stdout))
+        es_status_cmd(options['checkindex'], log=FakeLogger(self.stdout))

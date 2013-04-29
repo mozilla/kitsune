@@ -38,7 +38,7 @@ class UnindexMeBro(Exception):
     pass
 
 
-class Sphilastic(S):
+class SphilasticUnified(S):
     """Shim around elasticutils.contrib.django.S.
 
     Implements some Kitsune-specific behavior to make our lives
@@ -49,8 +49,8 @@ class Sphilastic(S):
         pprint.pprint(self._build_query())
 
     def get_indexes(self):
-        # Sphilastic is a searcher and so it's _always_ used in a read
-        # context. Therefore, we always return the READ_INDEX.
+        # SphilasticUnified is a searcher and so it's _always_ used in
+        # a read context. Therefore, we always return the READ_INDEX.
         return [READ_INDEX]
 
     def get_doctypes(self):
@@ -122,7 +122,7 @@ def get_doctype_stats(index):
     """
     from search.models import get_search_models
 
-    s = Sphilastic(object)
+    s = SphilasticUnified(object)
 
     stats = {}
     for cls in get_search_models():
@@ -334,7 +334,7 @@ def es_reindex_cmd(percent=100, delete=False, models=None,
     log.info('done! (total time: %s)', format_time(delta_time))
 
 
-def es_delete_cmd(index, log=log):
+def es_delete_cmd(index, interactive=False, log=log):
     """Deletes an index"""
     try:
         indexes = [name for name, count in get_indexes()]
@@ -347,7 +347,7 @@ def es_delete_cmd(index, log=log):
         log.error('Index "%s" is not a valid index.', index)
         return
 
-    if index == READ_INDEX:
+    if index == READ_INDEX and interactive:
         ret = raw_input('"%s" is a read index. Are you sure you want '
                         'to delete it? (yes/no) ' % index)
         if ret != 'yes':
