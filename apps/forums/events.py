@@ -27,6 +27,7 @@ class NewPostEvent(InstanceEvent):
 
     def _mails(self, users_and_watches):
         c = {'post': self.reply.content,
+             'post_html': self.reply.content_parsed,
              'author': self.reply.author.username,
              'host': Site.objects.get_current().domain,
              'thread': self.reply.thread.title,
@@ -36,7 +37,7 @@ class NewPostEvent(InstanceEvent):
         return emails_with_users_and_watches(
             subject=_lazy(u'Re: {forum} - {thread}'),
             text_template='forums/email/new_post.ltxt',
-            html_template=None,
+            html_template='forums/email/new_post.html',
             context_vars=c,
             users_and_watches=users_and_watches)
 
@@ -54,6 +55,7 @@ class NewThreadEvent(InstanceEvent):
 
     def _mails(self, users_and_watches):
         c = {'post': self.post.content,
+             'post_html': self.post.content_parsed,
              'author': self.post.author.username,
              'host': Site.objects.get_current().domain,
              'thread': self.post.thread.title,
@@ -63,6 +65,6 @@ class NewThreadEvent(InstanceEvent):
         return emails_with_users_and_watches(
             subject=_lazy(u'{forum} - {thread}'),
             text_template='forums/email/new_thread.ltxt',
-            html_template=None,
+            html_template='forums/email/new_thread.html',
             context_vars=c,
             users_and_watches=users_and_watches)
