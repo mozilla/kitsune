@@ -12,7 +12,8 @@ from django.shortcuts import render
 from search import es_utils
 from search.es_utils import (get_doctype_stats, get_indexes, delete_index,
                              ES_EXCEPTIONS, get_indexable,
-                             SUMO_DOCTYPE, merge_mappings, CHUNK_SIZE,
+                             get_indexable_for_mapping_types,
+                             SUMO_DOCTYPE, get_mappings, CHUNK_SIZE,
                              recreate_index)
 from search.models import Record, get_search_models
 from search.tasks import OUTSTANDING_INDEX_CHUNKS, index_chunk_task
@@ -83,11 +84,16 @@ def handle_reindex(request):
         # Coming from the delete form, so we reindex all models.
         models_to_index = None
     else:
-        # Coming from the reindex form, so we reindex whatever we're
-        # told.
-        models_to_index = [name.replace('check_', '')
-                           for name in request.POST.keys()
-                           if name.startswith('check_')]
+        # TODO: Re-enable this. Need to nix it now because the values
+        # in the form are nonsense since we're mixing models with
+        # mapping types.
+
+        # # Coming from the reindex form, so we reindex whatever we're
+        # # told.
+        # models_to_index = [name.replace('check_', '')
+        #                    for name in request.POST.keys()
+        #                    if name.startswith('check_')]
+        models_to_index = None
 
     # TODO: If this gets fux0rd, then it's possible this could be
     # non-zero and we really want to just ignore it. Need the ability
@@ -113,7 +119,9 @@ def handle_reindex(request):
     # Break up all the things we want to index into chunks. This
     # chunkifies by class then by chunk size.
     chunks = []
-    for cls, indexable in get_indexable(search_models=models_to_index):
+
+    mtypes = get_indexable_for_mapping_types(mapping_types=models_to_index)
+    for cls, indexable in mtypes:
         chunks.extend(
             (cls, chunk) for chunk in chunked(indexable, CHUNK_SIZE))
 
@@ -280,10 +288,11 @@ admin.site.register_view('index', index_view, 'Search - Index Browsing')
 
 
 def mapping_view(request):
+    # TODO: Nix this
     search_models = get_search_models()
     merged_mapping = {
         SUMO_DOCTYPE: {
-            'properties': merge_mappings(
+            'properties': get_mappings(
                 [(cls._meta.db_table, cls.get_mapping())
                  for cls in search_models])
             }

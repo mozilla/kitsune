@@ -14,8 +14,9 @@ class Command(BaseCommand):
                     help='Reindex a percentage of things'),
         make_option('--delete', action='store_true', dest='delete',
                     help='Wipes index before reindexing'),
-        make_option('--models', type='string', dest='models', default=None,
-                    help='Comma-separated list of models to index'),
+        make_option('--mapping_types', type='string', dest='mapping_types',
+                    default=None,
+                    help='Comma-separated list of mapping types to index'),
         make_option('--criticalmass', action='store_true', dest='criticalmass',
                     help='Indexes a critical mass of things'),
         )
@@ -26,16 +27,21 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         percent = options['percent']
         delete = options['delete']
-        models = options['models']
+        mapping_types = options['mapping_types']
         criticalmass = options['criticalmass']
-        if models:
-            models = models.split(',')
+        if mapping_types:
+            mapping_types = mapping_types.split(',')
         if not 1 <= percent <= 100:
             raise CommandError('percent should be between 1 and 100')
         if percent < 100 and criticalmass:
             raise CommandError('you can\'t specify criticalmass and percent')
-        if models and criticalmass:
-            raise CommandError('you can\'t specify criticalmass and models')
+        if mapping_types and criticalmass:
+            raise CommandError(
+                'you can\'t specify criticalmass and mapping_types')
 
-        es_reindex_cmd(percent, delete, models, criticalmass,
-                       FakeLogger(self.stdout))
+        es_reindex_cmd(
+            percent=percent,
+            delete=delete,
+            mapping_types=mapping_types,
+            criticalmass=criticalmass,
+            log=FakeLogger(self.stdout))
