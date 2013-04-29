@@ -910,9 +910,7 @@ def get_helpful_votes_async(request, document_slug):
     document = get_object_or_404(
         Document, locale=request.LANGUAGE_CODE, slug=document_slug)
 
-    yes_data = []
-    no_data = []
-    perc_data = []
+    datums = []
     flag_data = []
     rev_data = []
     revisions = set()
@@ -932,16 +930,17 @@ def get_helpful_votes_async(request, document_slug):
 
     results = cursor.fetchall()
     for res in results:
-        created = int(time.mktime(res[3].timetuple()) / 86400) * 86400
-        percent = float(res[1]) / (float(res[1]) + float(res[2]))
-        yes_data.append({'x': created, 'y': int(res[1])})
-        no_data.append({'x': created, 'y': int(res[2])})
-        perc_data.append({'x': created, 'y': percent})
         revisions.add(int(res[0]))
         created_list.append(res[3])
 
+        datums.append({
+            'yes': int(res[1]),
+            'no': int(res[2]),
+            'date': int(time.mktime(res[3].timetuple()) / 86400) * 86400,
+        })
+
     if not created_list:
-        send = {'series': [], 'annotations': []}
+        send = {'datums': [], 'annotations': []}
         return HttpResponse(json.dumps(send), mimetype='application/json')
 
     min_created = min(created_list)
@@ -965,26 +964,7 @@ def get_helpful_votes_async(request, document_slug):
 
     # Rickshaw wants data like
     # [{'name': 'series1', 'data': [{'x': 1362774285, 'y': 100}, ...]},]
-    send = {'series': [], 'annotations': []}
-
-    if yes_data:
-        send['series'].append({
-            'name': _('Yes'),
-            'slug': 'yes',
-            'data': yes_data,
-        })
-    if no_data:
-        send['series'].append({
-            'name': _('No'),
-            'slug': 'no',
-            'data': no_data,
-        })
-    if perc_data:
-        send['series'].append({
-            'name': _('Percent Helpful'),
-            'slug': 'percent',
-            'data': perc_data,
-        })
+    send = {'datums': datums, 'annotations': []}
 
     if flag_data:
         send['annotations'].append({

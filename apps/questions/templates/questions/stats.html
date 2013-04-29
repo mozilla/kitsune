@@ -8,8 +8,8 @@
 {% block content %}
   <h1>{{ _('Question Statistics') }}</h1>
 
-  {% if histogram %}
-    <div id="topic-stats" data-histogram="{{ histogram|json }}">
+  {% if graph %}
+    <div id="topic-stats" data-graph="{{ graph|json }}">
       <h2 class="grid_12">{{ _('Topics') }}</h2>
 
       <div class="graph-container grid_9 alpha">

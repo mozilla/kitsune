@@ -1235,12 +1235,10 @@ def stats_topic_data(bucket_days, start, end):
     # Massage the data to achieve 2 things:
     # - All points between the earliest and the latest values have data,
     #   at a resolution of 1 day.
-    # - It is in a format Rickshaw will like.
+    # - It is in a format usable by k.Graph.
+    #   - ie: [{"created": 1362774285, 'topic-1': 10, 'topic-2': 20}, ...]
 
-    # Construct a intermediatery data structure that allows for easy
-    # manipulation. Also find the min and max data at the same time.
-    # {'topic-1': [{1362774285: 100}, {1362784285: 200} ...}
-    for series in histograms_data.values():
+    for series in histograms_data.itervalues():
         if series:
             earliest_point = series[0]['key']
             break
@@ -1253,37 +1251,33 @@ def stats_topic_data(bucket_days, start, end):
     for key, data in histograms_data.iteritems():
         if not data:
             continue
-        interim_data[key] = {}
         for point in data:
-            x = point['key']
-            y = point['count']
-            earliest_point = min(earliest_point, x)
-            latest_point = max(latest_point, x)
-            interim_data[key][x] = y
+            timestamp = point['key']
+            value = point['count']
+
+            earliest_point = min(earliest_point, timestamp)
+            latest_point = max(latest_point, timestamp)
+
+            datum = interim_data.get(timestamp, {'date': timestamp})
+            datum[key] = value
+            interim_data[timestamp] = datum
+
+    # Interim data is now like
+    # {
+    #   1362774285: {'date': 1362774285, 'topic-1': 100, 'topic-2': 200},
+    # }
 
     # Zero fill the interim data.
     timestamp = earliest_point
     while timestamp <= latest_point:
-        for key in interim_data:
-            if timestamp not in interim_data[key]:
-                interim_data[key][timestamp] = 0
+        datum = interim_data.get(timestamp, {'date': timestamp})
+        for key in histograms_data.iterkeys():
+            if key not in datum:
+                datum[key] = 0
         timestamp += bucket
 
-    # Convert it into a format Rickshaw will be happy with.
-    # [
-    #   {'name': 'series1', 'data': [{'x': 1362774285, 'y': 100}, ...]},
-    #   ...
-    # ]
-    histograms = [
-        {
-            'name': name,
-            'data': sorted(({'x': x, 'y': y} for x, y in data.iteritems()),
-                           key=lambda p: p['x']),
-        }
-        for name, data in interim_data.iteritems()
-    ]
-
-    return histograms
+    # The keys are irrelevant, and the values are exactly what we want.
+    return interim_data.values()
 
 
 def stats(request):
@@ -1299,10 +1293,8 @@ def stats(request):
         start = date.today() - timedelta(days=30)
         end = date.today()
 
-    histogram = stats_topic_data(bucket_days, start, end)
-
     data = {
-        'histogram': histogram,
+        'graph': stats_topic_data(bucket_days, start, end),
         'form': form,
     }
 

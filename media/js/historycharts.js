@@ -16,7 +16,7 @@
             type: "GET",
             url: $('#helpful-graph').data('url'),
             success: function (data) {
-                if (data.series.length > 0) {
+                if (data.datums.length > 0) {
                     rickshawGraph(data);
                     $('#show-graph').hide();
                 } else {
@@ -38,6 +38,27 @@
         sets[gettext('Votes')] = ['yes', 'no'];
         sets[gettext('Percent')] = ['percent'];
 
+        data.seriesSpec = [
+            {
+                name: gettext('Yes'),
+                slug: 'yes',
+                func: k.Graph.identity('yes'),
+                color: '#21de2b'
+            },
+            {
+                name: gettext('No'),
+                slug: 'no',
+                func: k.Graph.identity('no'),
+                color: '#de2b21'
+            },
+            {
+                name: gettext('Percent'),
+                slug: 'percent',
+                func: k.Graph.percentage('yes', 'no'),
+                color: '#2b21de'
+            }
+        ];
+
         $container.show();
         var graph = new k.Graph($container, {
             data: data,
@@ -47,15 +68,7 @@
                 bucket: true
             },
             metadata: {
-                sets: sets,
-                colors: {
-                    'yes': '#21de2b',
-                    'no': '#de2b21',
-                    'percent': '#2b21de'
-                },
-                bucketMethods: {
-                    'percent': 'average'
-                }
+                sets: sets
             }
         });
 
