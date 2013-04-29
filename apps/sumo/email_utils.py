@@ -3,6 +3,7 @@ from contextlib import contextmanager
 from functools import wraps
 
 from django.conf import settings
+from django.contrib.sites.models import Site
 from django.core import mail
 from django.core.mail import EmailMultiAlternatives
 from django.utils import translation
@@ -151,7 +152,8 @@ def emails_with_users_and_watches(subject,
             **extra_kwargs)
 
         if html_template:
-            html = transform(render_email(html_template, context_vars))
+            html = transform(render_email(html_template, context_vars),
+                             'https://' + Site.objects.get_current().domain)
             msg.attach_alternative(html, 'text/html')
 
         return msg
