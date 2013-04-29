@@ -11,4 +11,7 @@ class Command(BaseCommand):
         if not args:
             raise CommandError('You must specify which index to delete.')
 
-        es_delete_cmd(args[0], FakeLogger(self.stdout))
+        es_delete_cmd(
+            args[0],
+            interactive=options['interactive'],
+            log=FakeLogger(self.stdout))

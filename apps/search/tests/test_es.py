@@ -1,19 +1,14 @@
 import json
-import time
 from datetime import datetime, timedelta
 
 from django.conf import settings
 from django.contrib.sites.models import Site
 from django.http import QueryDict
 from django.utils.http import urlquote
-from django.test.utils import override_settings
 
 import mock
-from elasticutils.contrib.django import get_es
-from nose import SkipTest
 from nose.tools import eq_
 from pyquery import PyQuery as pq
-from test_utils import TestCase
 
 import search as constants
 from forums.tests import forum, thread, post
@@ -22,88 +17,12 @@ from questions.models import Question
 from questions.tests import question, answer, answervote, questionvote
 from search import es_utils
 from search.models import generate_tasks
+from search.tests import ElasticTestCase
 from sumo.tests import LocalizingClient
 from sumo.urlresolvers import reverse
 from topics.tests import topic
 from users.tests import user
 from wiki.tests import document, revision, helpful_vote
-
-
-@override_settings(ES_LIVE_INDEXING=True)
-class ElasticTestCase(TestCase):
-    """Base class for Elastic Search tests, providing some conveniences"""
-    skipme = False
-
-    @classmethod
-    def setUpClass(cls):
-        super(ElasticTestCase, cls).setUpClass()
-
-        if not getattr(settings, 'ES_URLS'):
-            cls.skipme = True
-            return
-
-        # try to connect to ES and if it fails, skip ElasticTestCases.
-        try:
-            get_es().health()
-        except es_utils.ES_EXCEPTIONS:
-            cls.skipme = True
-            return
-
-        # Swap out for better versions that use ES_INDEX_PREFIX.
-        cls._old_read_index = es_utils.READ_INDEX
-        cls._old_write_index = es_utils.WRITE_INDEX
-        es_utils.READ_INDEX = settings.ES_INDEX_PREFIX + u'sumo_testindex'
-        es_utils.WRITE_INDEX = settings.ES_INDEX_PREFIX + u'sumo_testindex'
-
-    @classmethod
-    def tearDownClass(cls):
-        super(ElasticTestCase, cls).tearDownClass()
-        if not cls.skipme:
-            # Restore old settings.
-            es_utils.READ_INDEX = cls._old_read_index
-            es_utils.WRITE_INDEX = cls._old_write_index
-
-    def setUp(self):
-        if self.skipme:
-            raise SkipTest
-
-        super(ElasticTestCase, self).setUp()
-        self.setup_indexes()
-
-    def tearDown(self):
-        super(ElasticTestCase, self).tearDown()
-        self.teardown_indexes()
-
-    def refresh(self, run_tasks=True):
-        index = es_utils.WRITE_INDEX
-
-        if run_tasks:
-            # Any time we're doing a refresh, we're making sure that
-            # the index is ready to be queried. Given that, it's
-            # almost always the case that we want to run all the
-            # generated tasks, then refresh.
-            generate_tasks()
-
-        get_es().refresh(index)
-        get_es().health(wait_for_status='yellow')
-
-    def setup_indexes(self, empty=False, wait=True):
-        """(Re-)create ES indexes."""
-        from search.es_utils import es_reindex_cmd
-
-        if empty:
-            # Removes the index and creates a new one with
-            # nothing in it (by abusing the percent argument).
-            es_reindex_cmd(delete=True, percent=0)
-        else:
-            # Removes the previous round of indexes and creates new
-            # ones with mappings and all that.
-            es_reindex_cmd(delete=True)
-
-        self.refresh(run_tasks=False)
-
-    def teardown_indexes(self):
-        es_utils.delete_index(es_utils.READ_INDEX)
 
 
 class ElasticSearchTasksTests(ElasticTestCase):
