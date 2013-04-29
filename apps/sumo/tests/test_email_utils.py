@@ -2,6 +2,7 @@ from mock import patch
 from nose.tools import eq_
 
 from django.conf import settings
+from django.contrib.sites.models import Site
 from django.utils.translation import get_language
 from django.utils.functional import lazy
 
@@ -138,7 +139,7 @@ class PremailerTests(TestCase):
                                    '<style>a { color: #000; }</style>'
                                    '</head>'
                                    '<body>'
-                                   '<a href="#">Hyperlink</a>'
+                                   '<a href="/test">Hyperlink</a>'
                                    '</body>'
                                    '</html>')
 
@@ -147,5 +148,7 @@ class PremailerTests(TestCase):
                                                 'a.html', {}, [(u, [None])])
 
             for m in msg:
-                self.assertIn('<a href="#" style="color:#000">Hyperlink</a>',
+                tag = ('<a href="https://%s/test" style="color:#000">'
+                       'Hyperlink</a>')
+                self.assertIn(tag % Site.objects.get_current().domain,
                               str(m.message()))
