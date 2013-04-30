@@ -116,7 +116,7 @@ k.Graph.prototype.initData = function() {
  *   disabled: If true, this graph will not be drawn. The default is false.
  */
 k.Graph.prototype.makeSeries = function(objects, descriptors) {
-  var i, j;
+  var i;
   var datum, series = [];
   var split, date;
   var desc;
@@ -443,7 +443,7 @@ k.Graph.fraction = function(topKey, bottomKey) {
 };
 
 /* Takes two or more arguments. The arguments are the keys that
- * represent an entire collection (all peices in a pie). The first key
+ * represent an entire collection (all pieces in a pie). The first key
  * is the current slice of the pie. Returns what percent the first key
  * is of the total, as a decimal between 0.0 and 1.0.
  *
