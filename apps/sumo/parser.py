@@ -188,6 +188,8 @@ class WikiParser(Parser):
     and setup.
     """
 
+    image_template = 'wikiparser/hook_image.html'
+
     def __init__(self, base_url=None):
         super(WikiParser, self).__init__(base_url)
 
@@ -290,7 +292,7 @@ class WikiParser(Parser):
         if isinstance(image, basestring):
             return image
 
-        template = jingo.env.get_template('wikiparser/hook_image.html')
+        template = jingo.env.get_template(self.image_template)
         r_kwargs = {'image': image, 'params': params,
                     'MEDIA_URL': settings.MEDIA_URL}
         return template.render(r_kwargs)

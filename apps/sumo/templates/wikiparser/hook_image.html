@@ -11,18 +11,9 @@
   {% set has_frame = True %}
 {% endif %}
 
-{% if has_frame %}
-  <div class="{{ classes }}">
-    <div class="img-inner">
-{% endif %}
-
-{% for i in ['lazy', ''] %}
-  {% if i != 'lazy' %}<noscript>{% endif %}
-  {% if params['link'] %}
-    <a href="{{ params['link'] }}"{% if params['page'] and not params['found'] %} class="new"{% endif %}>
-  {% endif %}
+{% macro render_image(lazy=False) -%}
   <img class="{% if not has_frame %}frameless{% endif %} {{ i }} wiki-image"
-    {% if i == 'lazy' %}src="{{ MEDIA_URL }}img/placeholder.gif"
+    {% if lazy %}src="{{ MEDIA_URL }}img/placeholder.gif"
     data-original-{% endif %}src="{{ image.file.url }}"
     alt="{% if 'alt' in params %}{{ params['alt'] }}{% else %}{{ params['caption'] }}{% endif %}"
     {% if 'alt' in params and params['alt'] != params['caption'] %}
@@ -38,11 +29,32 @@
       style="vertical-align:{{ params['valign'] }}"
     {% endif %}
     />
-  {% if params['link'] %}
-    </a>
-  {% endif %}
-  {% if i != 'lazy' %}</noscript>{% endif %}
-{% endfor %}
+{%- endmacro %}
+
+{% if has_frame %}
+  <div class="{{ classes }}">
+    <div class="img-inner">
+{% endif %}
+
+{% if params['link'] %}
+  <a href="{{ params['link'] }}"{% if params['page'] and not params['found'] %} class="new"{% endif %}>
+{% endif %}
+{{ render_image(lazy=lazy_enabled) }}
+{% if params['link'] %}
+  </a>
+{% endif %}
+
+{% if lazy_enabled %}
+  <noscript>
+    {% if params['link'] %}
+      <a href="{{ params['link'] }}"{% if params['page'] and not params['found'] %} class="new"{% endif %}>
+    {% endif %}
+    {{ render_image() }}
+    {% if params['link'] %}
+      </a>
+    {% endif %}
+  </noscript>
+{% endif %}
 
 {% if has_frame %}
   {% if params['caption'] %}
@@ -55,4 +67,3 @@
   </div>
   </div>{# /classes #}
 {% endif %}
-

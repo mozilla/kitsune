@@ -330,6 +330,9 @@ class WikiParser(sumo.parser.WikiParser):
     {for} tags, inclusions, and templates--oh my!
 
     """
+
+    image_template = 'wikiparser/hook_image_lazy.html'
+
     def __init__(self, base_url=None, doc_id=None):
         """
         doc_id -- If you want to be nice, pass the ID of the Document you are
