@@ -157,7 +157,7 @@ class SimpleSyntaxTestCase(TestCase):
         rev = revision(is_approved=True, save=True)
         doc = rev.document
         doc.current_revision = rev
-        doc.title='Real article'
+        doc.title = 'Real article'
         doc.save()
 
         # Change the slug of the article to create a redirected article
@@ -171,6 +171,7 @@ class SimpleSyntaxTestCase(TestCase):
             '<p><a href="/en-US/kb/%s">%s</a>\n</p>' % (doc.slug, doc.title))
         eq_(p.parse('[[%s]]' % redirect.title),
             '<p><a href="/en-US/kb/%s">%s</a>\n</p>' % (doc.slug, doc.title))
+
 
 class TestWikiTemplate(TestCase):
     def test_template(self):
@@ -934,3 +935,21 @@ class WhatLinksHereTests(TestCase):
         eq_(len(d3.links_to()), 0)
         eq_(len(d3.links_from()), 1)
 
+
+class TestLazyWikiImageTags(TestCase):
+    def setUp(self):
+        self.d, self.r, self.p = doc_rev_parser(
+            'Test content', 'Installing Firefox')
+        self.img = image(title='test.jpg')
+
+    def tearDown(self):
+        self.img.delete()
+
+    def test_simple(self):
+        """Simple image tag markup."""
+        doc = pq(self.p.parse('[[Image:test.jpg]]',
+                 locale=settings.WIKI_DEFAULT_LANGUAGE))
+        img = doc('img')
+        eq_('test.jpg', img.attr('alt'))
+        eq_(self.img.file.url, img.attr('data-original-src'))
+        assert 'placeholder.gif' in img.attr('src')
