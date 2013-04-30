@@ -16,7 +16,6 @@
       // Put last search query into search box
       $('#support-search input[name=q]')
           .val(k.unquote($.cookie('last_search')));
-      makeSectionsCollapsable();
       ShowFor.initForTags();
       addReferrerAndQueryToVoteForm();
       new k.AjaxVote('.document-vote form', {
@@ -73,37 +72,6 @@
     initRevisionList();
 
     $('img.lazy').lazyload();
-  }
-
-  function makeSectionsCollapsable() {
-    $('#doc-content h1').each(function() {
-      var $this = $(this);
-      var $siblings = $(this).nextAll();
-
-      var sectionElems = [];
-      $siblings.each(function() {
-        if ($(this).is('h1')) {
-          return false;
-        }
-        sectionElems.push(this);
-      });
-
-      var $foldingSection = $('<div />');
-      $foldingSection.addClass('wiki-section').addClass('collapsed');
-      $this.before($foldingSection);
-      $foldingSection.append($this);
-
-      var $section = $('<section />');
-      $foldingSection.append($section);
-
-      for (var i=0; i < sectionElems.length; i++) {
-        $section.append(sectionElems[i]);
-      }
-    });
-
-    $('#doc-content').on('click', 'h1', function() {
-      $(this).closest('.wiki-section').toggleClass('collapsed');
-    });
   }
 
   // Make <summary> and <details> tags work even if the browser doesn't support them.
@@ -686,6 +654,42 @@
   }
 
   $(document).ready(init);
+
+  window.k.makeWikiCollapsable = function() {
+    // Hide the TOC
+    $('#toc').hide();
+
+    // Make sections collapsable
+    $('#doc-content h1').each(function() {
+      var $this = $(this);
+      var $siblings = $(this).nextAll();
+
+      var sectionElems = [];
+      $siblings.each(function() {
+        if ($(this).is('h1')) {
+          return false;
+        }
+        sectionElems.push(this);
+      });
+
+      var $foldingSection = $('<div />');
+      $foldingSection.addClass('wiki-section').addClass('collapsed');
+      $this.before($foldingSection);
+      $foldingSection.append($this);
+
+      var $section = $('<section />');
+      $foldingSection.append($section);
+
+      for (var i=0; i < sectionElems.length; i++) {
+        $section.append(sectionElems[i]);
+      }
+    });
+
+    // Make the header the trigger for toggling state
+    $('#doc-content').on('click', 'h1', function() {
+      $(this).closest('.wiki-section').toggleClass('collapsed');
+    });
+  }
 
 }(jQuery));
 
