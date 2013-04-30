@@ -12,8 +12,8 @@ we can compute the edit-title URL.
 {% extends "questions/base.html" %}
 {% from "layout/errorlist.html" import errorlist %}
 {% from "includes/common_macros.html" import content_editor with context %}
-{% from "questions/includes/aaq_macros-new.html" import selected_product, selected_category %}
-{% from "questions/includes/aaq_macros-new.html" import troubleshooting_instructions with context %}
+{% from "questions/includes/aaq_macros.html" import selected_product, selected_category %}
+{% from "questions/includes/aaq_macros.html" import troubleshooting_instructions with context %}
 {% set classes = 'new-question' %}
 
 {% block content %}

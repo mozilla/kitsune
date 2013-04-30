@@ -1,7 +1,7 @@
 {# vim: set ts=2 et sts=2 sw=2: #}
 {% extends "questions/includes/question_editing_frame.html" %}
-{% from "questions/includes/aaq_macros-new.html" import select_category, current_articles_and_message %}
-{% from "questions/includes/aaq_macros-new.html" import select_product, aaq_search_form with context %}
+{% from "questions/includes/aaq_macros.html" import select_category, current_articles_and_message %}
+{% from "questions/includes/aaq_macros.html" import select_product, aaq_search_form with context %}
 {% from "search/includes/result.html" import search_result with context %}
 {% set title = _('Ask a Question') %}
 {% set can_edit_product = True %}

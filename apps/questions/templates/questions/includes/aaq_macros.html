@@ -6,33 +6,27 @@
   {% set steps = (_('Pick a product'), _('Pick a topic and try some solutions'),
                   _('Register or Sign In'), _('Fill in details'),
                   _('Confirm registration'), _('DONE')) %}
-  <div id="aaq_progress">
-    <div class="graph{% if percent == 100 %} complete{% endif %}">
-      <ul>
-        <li></li>
-        <li></li>
-        <li></li>
-        <li></li>
-      </ul>
+  <div id="aaq_progress" class="cf">
+    <div class="progress-bar{% if percent == 100 %} complete{% endif %}">
       <div style="width: {{ percent }}%;"></div>
+      <ul class="legend">
+        {% for step_name in steps %}
+          <li {% if steps.index(step_name) == step %}class="current"{% endif %}>{{ step_name }}</li>
+        {% endfor %}
+      </ul>
     </div>
-    <ul class="graph_labels">
-      {% for step_name in steps %}
-        <li {% if steps.index(step_name) == step %}class="current"{% endif %}>{{ step_name }}</li>
-      {% endfor %}
-    </ul>
   </div>
 {%- endmacro  %}
 
 {% macro select_product(products) -%}
-  {{ aaq_progress() }}
   <h2>{{ _('Which product would you like to post a question about?') }}</h2>
-  <ul class="products select-one">
+  <ul id="product-picker" class="card-grid cf">
     {% for key, product in products.iteritems() %}
-      <li class="{{ key }}-icon {{ product.class }}">
-        <a href="{{ url('questions.aaq_step2', product_key=key) }}">
-          {{ product.name }}
-          <span>{{ product.subtitle }}</span>
+      <li>
+        <a class="cf" href="{{ url('questions.aaq_step2', product_key=key) }}">
+          <img src="{{ MEDIA_URL }}img/blank.png" alt="" class="logo-sprite logo-{{ key }}">
+          <span class="title">{{ product.name }}</span>
+          <span class="description">{{ product.subtitle }}</span>
         </a>
       </li>
     {% endfor %}
@@ -44,73 +38,81 @@
     {{ aaq_progress(step=step) }}
   {% endif %}
 
-  <div class="selected">
+  <div id="selected-product">
     <label>{{ _('Product') }}:</label>
     <span>{{ product.name }}</span>
     {% if can_change %}
-      <a href="{{ url('questions.aaq_step1') }}">{{ _('change') }}</a>
+      <a href="{{ url('questions.aaq_step1') }}">{{ _('change product') }}</a>
     {% endif %}
   </div>
 {%- endmacro %}
 
 {% macro select_category(product) -%}
-  <h2>{{ _('Which category best describes your problem?') }}</h2>
-  <ul class="select-one">
-    {% for key, category in product.categories.iteritems() %}
-      <li>
-        <a href="{{ url('questions.aaq_step3', product_key=product.key, category_key=key) }}">{{ category.name }}</a>
-      </li>
-    {% endfor %}
-  </ul>
+  <div class="highlight-box">
+    <h2>{{ _('Which category best describes your problem?') }}</h2>
+    <ul class="select-one">
+      {% for key, category in product.categories.iteritems() %}
+        <li>
+          <a href="{{ url('questions.aaq_step3', product_key=product.key, category_key=key) }}">{{ category.name }}</a>
+        </li>
+      {% endfor %}
+    </ul>
+  </div>
 {%- endmacro %}
 
 {% macro selected_category(category, product, can_change) -%}
-  <div class="selected">
+  <div id="selected-category">
     <label>{{ _('Category') }}:</label>
     <span>{{ category.name }}</span>
     {% if can_change %}
-      <a href="{{ url('questions.aaq_step2', product_key=product.key) }}">{{ _('change') }}</a>
+      <a href="{{ url('questions.aaq_step2', product_key=product.key) }}">{{ _('change category') }}</a>
     {% endif %}
   </div>
 {%- endmacro %}
 
-{% macro current_articles_and_message(articles, category, html=None) -%}
-  {% if html %}
-    <h2>{{ html|safe }}</h2>
-  {% else %}
-    <h2>{{ _('We have lots of helpful articles on that topic. Try one of the following:') }}</h2>
-  {% endif %}
-  {% if articles %}
-    <ul class="articles select-one">
-      {% for article in articles %}
-        <li>
-          <a href="{{ article.url }}" target="_blank">{{ article.title }}</a>
-        </li>
-      {% endfor %}
-    </ul>
-  {% endif %}
+{% macro current_articles_and_message(articles, category, html=None, all_articles=False) -%}
+  <div class="highlight-box">
+    {% if html %}
+      <h2>{{ html|safe }}</h2>
+    {% else %}
+      <h2>{{ _('Try one of these articles:') }}</h2>
+    {% endif %}
+    {% if articles %}
+      <ul class="articles select-one">
+        {% if not all_articles %}
+          {% set articles = articles[:5] %}
+        {% endif %}
+        {% for article in articles %}
+          <li>
+            <a href="{{ article.url }}" target="_blank">{{ article.document_title }}</a>
+          </li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+  </div>
 {%- endmacro %}
 
 {% macro aaq_search_form(product, category, settings, host, request) -%}
-  <form id="ask-search-form" class="aaq search" action="{% if settings.SESSION_COOKIE_SECURE %}https://{{ host }}{{ url('questions.aaq_step4', product_key=product.key, category_key=category.key) }}{% endif %}" method="get">
-    <input type="text" class="question" name="search" value="{{ request.GET.search }}" required="required" maxlength="160" placeholder="{{ _('Summarize your question in a sentence') }}" />
-    <input type="submit" class="btn btn-important" value="{{ _('Ask this') }}" />
+  <form id="ask-search-form" class="simple-search-form cf" action="{% if settings.SESSION_COOKIE_SECURE %}https://{{ host }}{{ url('questions.aaq_step4', product_key=product.key, category_key=category.key) }}{% endif %}#summarize-question" method="get">
+    <input type="text" class="searchbox" name="search" value="{{ request.GET.search }}" required="required" maxlength="160" placeholder="{{ _('Summarize your question in a sentence') }}" />
+    <span data-type="submit" class="btn btn-important big">{{ _('Ask this') }}</span>
   </form>
 {%- endmacro %}
 
 {% macro show_results(search_results, product, category, request) -%}
   {% if search_results %}
-    <h2>{{ _("We've found some articles and previously answered questions that may solve your issue:") }}</h2>
-    <ul class="select-one search-results">
-      {% for result in search_results %}
-        <li>
-          <a href="{{ result['url'] }}">{{ result['title'] }}</a>
-          <p>
-            {{ result['excerpt_html']|safe }}
-          </p>
-        </li>
-      {% endfor %}
-    </ul>
+    <div class="highlight-box">
+      <ul class="select-one search-results">
+        {% for result in search_results %}
+          <li>
+            <a href="{{ result['url'] }}">{{ result['title'] }}</a>
+            <p>
+              {{ result['excerpt_html']|safe }}
+            </p>
+          </li>
+        {% endfor %}
+      </ul>
+    </div>
     {% set button_text = _('None of these solve my problem') %}
   {% else %}
     <h2 class="no-results">{{ _('This question has not been asked before.') }}</h2>
@@ -119,23 +121,36 @@
 
   <form action="{{ url('questions.aaq_step5', product_key=product.key, category_key=category.key) }}" method="get">
     <input type="hidden" name="search" value="{{ request.GET.search }}" />
+    <input type="hidden" name="step" value="{% if user.is_authenticated() %}aaq-question{% else %}aaq-register{% endif %}" />
     <input type="submit" id="show-form-btn" class="btn" value="{{ button_text }}" />
   </form>
 {%- endmacro %}
 
 {% macro register_login_forms(register, login, csrf) -%}
   {{ aaq_progress(step=2) }}
-  <h2>{{ _('Before you continue, we ask you to create a support account so we can contact you.') }}</h2>
-  <p>{{ _('A support account lets us alert you when people respond to your question.') }}</p>
-  <div id="register_form" class="slidebox">
-{# TODO: these may have regressed the layout, h2 -> h3. Check! #}
-    <h3 class="slide">{{ _('Create an account') }}</h3>
+  <div id="register-form" class="grid_12 alpha omega">
+    <h2>{{ _('Before you continue, please create a support account') }}</h2>
+    <p>{{ _('A support account lets us alert you when people respond to your question.') }}</p>
     {{ register_form(register, csrf=csrf, action='') }}
   </div>
 
-  <div id="login_form" class="slidebox">
-    <h3 class="slide">{{ _('I already have an account') }}</h3>
+  <h3 id="show-login"><a href="#login-form">{{ _('I already have an account') }}</a></h3>
+  <div id="login-form" class="grid_12 alpha omega">
+    <h2>{{ _('Log in to an existing account') }}</h2>
     {{ login_form(login, csrf=csrf, action='', only_pwreset=True) }}
+  </div>
+{%- endmacro %}
+
+{% macro mobile_register_forms(register, csrf) -%}
+  <h2>{{ _('To post your question, please create a support account') }}</h2>
+  <p>
+    {{ _('A support account lets us alert you when people respond to your question.') }}
+    <span class="btn btn-login" data-overlay="login-overlay">{{ _('Already have an account? Sign in') }}</span>
+  </p>
+  <div id="register-form" class="grid_6 alpha">
+    <h2>{{ _('Create a support account') }}</h2>
+    {{ register_form(register, csrf=csrf, action='') }}
+    <span class="btn btn-login" data-overlay="login-overlay">{{ _('Already have an account? Sign in') }}</span>
   </div>
 {%- endmacro %}
 
@@ -145,7 +160,7 @@
       {% trans %}
         Please visit the
         <a href="https://www.paypal.com/cgi-bin/helpweb?cmd=_help">
-        Paypal Help Center</a>.
+          Paypal Help Center</a>.
       {% endtrans %}
     </h2>
   {% elif category_slug == 'applications' %}
@@ -173,3 +188,46 @@
     </form>
   {% endif %}
 {%- endmacro %}
+
+
+{% macro troubleshooting_instructions(field) %}
+<span id="troubleshooting-install">
+    <a href="{{ settings.TROUBLESHOOTER_ADDON_URL }}" class="btn btn-important" id="install-troubleshooting-addon">
+      {{ _('Automatically add') }}
+    </a>
+    <span>
+      {{ _('A window will open in the top corner. Click <em>Allow</em>, and then click <em>Install</em>.') }}
+    </span>
+  </span>
+<span id="troubleshooting-manual">
+  {{ _('If the automated way doesn\'t work, <a class="expander" href="#troubleshooting-help">try these manual steps</a>.') }}
+  </span>
+  <span id="troubleshooting-explanation">
+    {{ _('This field was populated automatically with the add-on called <em>Troubleshooter</em>.') }}
+  </span>
+  <ol id="troubleshooting-help">
+    <li>{{ _('Open <em>Help &gt; Troubleshooting Information</em>.') }}
+      <ul>
+        <li>{{ _('Look at the top of your screen, and click the menu item called <em>Help</em>.') }}</li>
+        <li>{{ _('A small box will open. Click on an item called <em>Troubleshooting Information</em>.') }}</li>
+      </ul>
+    </li>
+    <li>{{ _('A new window will open. Click on a button called <em>Copy text to clipboard</em>.') }}</li>
+    <li>{{ _('Paste the info in the text box below.') }}
+      <ul>
+        <li>{{ _('Click on the empty box above this text.') }}</li>
+        <li>{{ _('Look at the top of your screen, and click the menu item called <em>Edit</em>.') }}</li>
+        <li>
+          {% trans %}
+            A small box will open. Click on the item called <em>Paste</em>.
+            Alternatively, type <em>Ctrl+V</em> or <em>Command+V</em>.
+          {% endtrans %}
+        </li>
+        <li>{{ _('Some text will appear in the empty box.') }}</li>
+      </ul>
+    </li>
+  </ol>
+  <p>
+    {{ field }}
+  </p>
+{% endmacro %}
