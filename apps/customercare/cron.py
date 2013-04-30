@@ -22,7 +22,10 @@ LINK_REGEX = re.compile('https?\:', re.IGNORECASE)
 MENTION_REGEX = re.compile('(^|\W)@')
 RT_REGEX = re.compile('^rt\W', re.IGNORECASE)
 
-FIREFOX_USER_ID = 2142731
+ALLOWED_USERS = [
+    {'id': 2142731, 'username': 'Firefox'},
+    {'id': 150793437, 'username': 'FirefoxBrasil'},
+]
 
 log = logging.getLogger('k.twitter')
 
@@ -41,7 +44,7 @@ def collect_tweets():
         api = tweepy.API(auth, parser=RawParser())
 
         search_options = {
-            'q': 'firefox OR #fxinput',
+            'q': 'firefox OR #fxinput OR @firefoxbrasil OR #firefoxos',
             'rpp': settings.CC_TWEETS_PERPAGE,  # Items per page.
             'result_type': 'recent',  # Retrieve tweets by date.
         }
@@ -131,15 +134,20 @@ def _filter_tweet(item, allow_links=False):
     May modify tweet. If None is returned, tweet will be discarded.
     Used to exclude replies and such from incoming tweets.
     """
-    text = item['text']
-    # No replies, except to @firefox
+    text = item['text'].lower()
+    # No replies, except to ALLOWED_USERS
     to_user_id = item.get('to_user_id')
-    if to_user_id and to_user_id != FIREFOX_USER_ID:
+    if to_user_id and to_user_id not in [u['id'] for u in ALLOWED_USERS]:
         statsd.incr('customercare.tweet.rejected.reply_or_mention')
         return None
 
-    # No mentions, except of @firefox
-    if MENTION_REGEX.search(text.replace('@firefox', '')):
+    # No mentions, except of ALLOWED_USERS. Let's remove
+    # these from the text before checking for mentions.
+    # Note: This has some edge cases like @firefoxrocks that will pass by.
+    filtered_text = text
+    for username in [u['username'].lower() for u in ALLOWED_USERS]:
+        filtered_text = filtered_text.replace('@%s' % username, '')
+    if MENTION_REGEX.search(filtered_text):
         statsd.incr('customercare.tweet.rejected.reply_or_mention')
         return None
 
@@ -157,10 +165,6 @@ def _filter_tweet(item, allow_links=False):
     if item['from_user'] in settings.CC_IGNORE_USERS:
         statsd.incr('customercare.tweet.rejected.user')
         return None
-
-    # Exclude tweets that don't contain 'firefox' in the text
-    if 'firefox' not in text.lower():
-       return None
 
     return item
 

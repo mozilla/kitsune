@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import copy
 import json
 from datetime import datetime, timedelta
@@ -11,7 +12,7 @@ from nose.tools import eq_
 
 from customercare.tests import tweet, reply
 from customercare.cron import (_filter_tweet, _get_oldest_tweet, purge_tweets,
-                               get_customercare_stats, FIREFOX_USER_ID)
+                               get_customercare_stats)
 from customercare.models import Tweet, Reply
 from sumo.tests import TestCase
 from sumo.redis_utils import redis_client, RedisError
@@ -53,6 +54,11 @@ class TwitterCronTestCase(TestCase):
         self.tweet['text'] = 'Hey @firefox!'
         eq_(self.tweet, _filter_tweet(self.tweet))
 
+    def test_firefoxbrasil_mention(self):
+        """Don't filter out @FirefoxBrasil mentions."""
+        self.tweet['text'] = 'Olá @FirefoxBrasil!'
+        eq_(self.tweet, _filter_tweet(self.tweet))
+
     def test_replies(self):
         """Filter out replies."""
         self.tweet['to_user_id'] = 12345
@@ -61,8 +67,14 @@ class TwitterCronTestCase(TestCase):
 
     def test_firefox_replies(self):
         """Don't filter out @firefox replies."""
-        self.tweet['to_user_id'] = FIREFOX_USER_ID
+        self.tweet['to_user_id'] = 2142731
         self.tweet['text'] = '@firefox Hello!'
+        eq_(self.tweet, _filter_tweet(self.tweet))
+
+    def test_firefoxbrasil_replies(self):
+        """Don't filter out @FirefoxBrasil replies."""
+        self.tweet['to_user_id'] = 150793437
+        self.tweet['text'] = '@FirefoxBrasil Olá!'
         eq_(self.tweet, _filter_tweet(self.tweet))
 
     def test_retweets(self):
@@ -81,12 +93,6 @@ class TwitterCronTestCase(TestCase):
     def test_fx4status(self):
         """Ensure fx4status tweets are filtered out."""
         self.tweet['from_user'] = 'fx4status'
-        assert _filter_tweet(self.tweet) is None
-
-    def test_username_contains_firefox(self):
-        """Do not display tweets with 'firefox' in the title"""
-        self.tweet['from_user'] = 'ilovefirefox4ever'
-        self.tweet['text'] = 'I love teh Internetz'
         assert _filter_tweet(self.tweet) is None
 
     def test_username_and_tweet_contain_firefox(self):
