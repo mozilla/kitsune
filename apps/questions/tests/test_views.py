@@ -12,7 +12,7 @@ from pyquery import PyQuery as pq
 
 from products.tests import product
 from questions.models import Question, QuestionVote, AnswerVote, Answer
-from questions.tests import answer, question
+from questions.tests import answer, question, answervote
 from questions.views import parse_troubleshooting
 from search.tests.test_es import ElasticTestCase
 from sumo.helpers import urlparams
