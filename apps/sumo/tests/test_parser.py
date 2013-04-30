@@ -38,8 +38,6 @@ build_hook_params_default = partial(build_hook_params,
 
 
 class GetObjectFallbackTests(TestCase):
-    fixtures = ['users.json']
-
     def test_empty(self):
         """get_object_fallback returns message when no objects."""
         # English does not exist
@@ -142,8 +140,6 @@ class GetObjectFallbackTests(TestCase):
 
 
 class TestWikiParser(TestCase):
-    fixtures = ['users.json']
-
     def setUp(self):
         self.d, self.r, self.p = doc_rev_parser(
             'Test content', 'Installing Firefox')
@@ -232,8 +228,6 @@ class TestWikiParser(TestCase):
 
 
 class TestWikiInternalLinks(TestCase):
-    fixtures = ['users.json']
-
     def setUp(self):
         self.d, self.r, self.p = doc_rev_parser(
             'Test content', 'Installing Firefox')
@@ -337,8 +331,6 @@ class TestWikiInternalLinks(TestCase):
 
 
 class TestWikiImageTags(TestCase):
-    fixtures = ['users.json']
-
     def setUp(self):
         self.d, self.r, self.p = doc_rev_parser(
             'Test content', 'Installing Firefox')
