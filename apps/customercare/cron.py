@@ -22,7 +22,10 @@ LINK_REGEX = re.compile('https?\:', re.IGNORECASE)
 MENTION_REGEX = re.compile('(^|\W)@')
 RT_REGEX = re.compile('^rt\W', re.IGNORECASE)
 
-FIREFOX_USER_ID = 2142731
+ALLOWED_USER_IDS = [
+    2142731,  # @Firefox
+    150793437,  # @FirefoxBrasil
+]
 
 log = logging.getLogger('k.twitter')
 
@@ -41,7 +44,7 @@ def collect_tweets():
         api = tweepy.API(auth, parser=RawParser())
 
         search_options = {
-            'q': 'firefox OR #fxinput',
+            'q': 'firefox OR #fxinput OR @firefoxbrasil OR #firefoxos',
             'rpp': settings.CC_TWEETS_PERPAGE,  # Items per page.
             'result_type': 'recent',  # Retrieve tweets by date.
         }
@@ -131,15 +134,16 @@ def _filter_tweet(item, allow_links=False):
     May modify tweet. If None is returned, tweet will be discarded.
     Used to exclude replies and such from incoming tweets.
     """
-    text = item['text']
+    text = item['text'].lower()
     # No replies, except to @firefox
     to_user_id = item.get('to_user_id')
-    if to_user_id and to_user_id != FIREFOX_USER_ID:
+    if to_user_id and to_user_id not in ALLOWED_USER_IDS:
         statsd.incr('customercare.tweet.rejected.reply_or_mention')
         return None
 
-    # No mentions, except of @firefox
-    if MENTION_REGEX.search(text.replace('@firefox', '')):
+    # No mentions, except of @firefox or @firefoxbrasil
+    if MENTION_REGEX.search(
+            text.replace('@firefox', '').replace('@firefoxbrasil', '')):
         statsd.incr('customercare.tweet.rejected.reply_or_mention')
         return None
 
@@ -157,10 +161,6 @@ def _filter_tweet(item, allow_links=False):
     if item['from_user'] in settings.CC_IGNORE_USERS:
         statsd.incr('customercare.tweet.rejected.user')
         return None
-
-    # Exclude tweets that don't contain 'firefox' in the text
-    if 'firefox' not in text.lower():
-       return None
 
     return item
 
