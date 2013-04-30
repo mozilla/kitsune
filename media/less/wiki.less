@@ -158,6 +158,42 @@ article {
     white-space: nowrap;
   }
 
+  .wiki-section {
+    > header,
+    > section {
+      padding: 0;
+    }
+
+    > h1 {
+      cursor: pointer;
+      position: relative;
+
+      &:after {
+        background: url('../img/icons-sprite.png') -50px -396px no-repeat;
+        content: '';
+        height: 16px;
+        left: auto;
+        margin: 10px 0 0 0;
+        position: absolute;
+        right: 0;
+        top: 50%;
+        width: 16px;
+      }
+    }
+
+    &.collapsed {
+      > h1 {
+        &:after {
+          background-position: -50px -282px;
+        }
+      }
+
+      > section {
+        display: none;
+      }
+    }
+  }
+
   .key,
   .button {
     background: #f0f0f0;
