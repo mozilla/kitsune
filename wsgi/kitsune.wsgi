@@ -52,6 +52,11 @@ def application(env, start_response):
         env['SCRIPT_URL'] = env['SCRIPT_NAME'] = ''
     env['wsgi.loaded'] = wsgi_loaded
     env['platform.name'] = django.conf.settings.PLATFORM_NAME
+
+    if newrelic:
+        return newrelic.agent.wsgi_application()(
+            django_app(env, start_response))
+
     return django_app(env, start_response)
 
 
