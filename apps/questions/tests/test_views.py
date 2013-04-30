@@ -573,4 +573,4 @@ class TestStats(ElasticTestCase):
 
         # If there's histogram data, this is probably good enough to
         # denote its existence.
-        assert ' data-histogram="[' in response.content
+        assert ' data-graph="[' in response.content
