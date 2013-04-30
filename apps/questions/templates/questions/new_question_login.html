@@ -5,6 +5,8 @@
 {% set title = _('Ask a Question') %}
 {% set no_headline = True %}
 
+{% block breadcrumbs %}{% endblock %}
+
 {% block articles_and_search_results %}
   {{ register_login_forms(register_form, login_form, csrf()) }}
 {% endblock %}
