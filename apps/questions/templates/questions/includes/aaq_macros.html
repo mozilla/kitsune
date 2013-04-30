@@ -71,7 +71,7 @@
 {%- endmacro %}
 
 {% macro current_articles_and_message(articles, category, html=None, all_articles=False) -%}
-  <div class="highlight-box">
+  <div class="highlight-box" id="try-an-article">
     {% if html %}
       <h2>{{ html|safe }}</h2>
     {% else %}

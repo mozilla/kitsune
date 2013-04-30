@@ -25,21 +25,29 @@ we can compute the edit-title URL.
         {% endif %}
         <div class="inner-wrap">
 
-          {% block product %}
-            {% if current_product %}
-              {% if current_step %}
-                {{ selected_product(current_product, can_edit_product, current_step) }}
-              {% else %}
-                {{ selected_product(current_product, can_edit_product, -1) }}
+          <div class="cf">
+            {% block product %}
+              {% if current_product %}
+                {% if current_step %}
+                  {% if not current_category %}
+                    <div class="cf">
+                  {% endif %}
+                    {{ selected_product(current_product, can_edit_product, current_step) }}
+                  {% if not current_category %}
+                    </div>
+                  {% endif %}
+                {% else %}
+                  {{ selected_product(current_product, can_edit_product, -1) }}
+                {% endif %}
               {% endif %}
-            {% endif %}
-          {% endblock %}
+            {% endblock %}
 
-          {% block category %}
-            {% if current_product and current_category %}
-              {{ selected_category(current_category, current_product, can_edit_category) }}
-            {% endif %}
-          {% endblock %}
+            {% block category %}
+              {% if current_product and current_category %}
+                {{ selected_category(current_category, current_product, can_edit_category) }}
+              {% endif %}
+            {% endblock %}
+          </div>
 
           {% block articles_and_search_results %}
           {% endblock %}
