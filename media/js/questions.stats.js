@@ -30,7 +30,8 @@ function init() {
       seriesSpec: seriesSpec
     },
     graph: {
-      renderer: 'bar'
+      renderer: 'bar',
+      width: 690
     },
     options: {
       slider: false

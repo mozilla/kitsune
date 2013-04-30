@@ -1,20 +1,54 @@
 @import 'vendors.less';
 
+.rickshaw {
+  position: relative;
+}
+
+.multi-y-axis {
+  display: inline-block;
+  height: 200px;
+  margin-top: 40px;
+  position: relative;
+  top: -10px;
+  vertical-align: top;
+  width: 40px;
+}
+
 .graph-container {
   .border-box();
-  padding-left: 40px;
-  position: relative;
+  display: inline-block;
+  margin-top: 40px;
+}
 
-  .y-axis {
-    bottom: 5px;
-    left: 0;
-    position: absolute;
-    top: 0;
-    width: 40px;
+.multi-y-axis {
+  border: 1px solid black;
+  display: inline-block;
+  height: 250px;
+  vertical-align: top;
+  width: 40px;
+
+  &.axis-left {
+    margin-right: 10px;
   }
+  &.axis-right {
+    margin-left: 20px;
+  }
+}
+
+.graph-container {
+  .border-box();
+  display: inline-block;
+  margin-top: 40px;
+  position: relative;
 
   .graph {
     padding-bottom: 20px;
+  }
+
+  .slider {
+    position: absolute;
+    top: -30px;
+    width: 90%;
   }
 }
 
@@ -93,9 +127,9 @@
   margin-left: 40px;
 
   div {
+    background: rgba(0, 0, 0, 0.05);
     display: inline-block;
     margin-right: 10px;
-    background: rgba(0, 0, 0, 0.05);
     padding: 4px;
 
     input, label {

@@ -43,25 +43,31 @@
                 name: gettext('Yes'),
                 slug: 'yes',
                 func: k.Graph.identity('yes'),
-                color: '#21de2b'
+                color: '#21de2b',
+                axisGroup: 'votes'
             },
             {
                 name: gettext('No'),
                 slug: 'no',
                 func: k.Graph.identity('no'),
-                color: '#de2b21'
+                color: '#de2b21',
+                axisGroup: 'votes'
             },
             {
                 name: gettext('Percent'),
                 slug: 'percent',
                 func: k.Graph.percentage('yes', 'no'),
-                color: '#2b21de'
+                color: '#2b21de',
+                axisGroup: 'percent'
             }
         ];
 
         $container.show();
         var graph = new k.Graph($container, {
             data: data,
+            graph: {
+                width: 600
+            },
             options: {
                 legend: false,
                 sets: true,
