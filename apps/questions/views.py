@@ -1214,9 +1214,10 @@ def stats_topic_data(bucket_days, start, end):
     # TODO: If we change to using datetimes in ES, 'histogram' below
     # should change to 'date_histogram'.
     for topic in topics:
+        filters = search._process_filters([f & F(topic=topic['slug'])])
         facets[topic['title']] = {
             'histogram': {'interval': bucket, 'field': 'created'},
-            'facet_filter': (f & F(topic=topic['slug'])).filters,
+            'facet_filter': filters
         }
 
     # Get some sweet histogram data.

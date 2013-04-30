@@ -549,3 +549,28 @@ class TestRateLimiting(TestCase):
             response = self.client.post(url, {'content': content})
 
         eq_(4, Answer.uncached.count())
+
+
+class TestStats(ElasticTestCase):
+    client_class = LocalizingClient
+
+    def test_stats(self):
+        """Tests questions/stats view"""
+        t = topic(title='Websites', slug='websites', save=True)
+
+        q = question(
+            title=u'cupcakes',
+            content=u'Cupcakes rock!',
+            created=datetime.now() - timedelta(days=1),
+            save=True)
+        q.topics.add(t)
+        q.save()
+
+        self.refresh()
+
+        response = self.client.get(reverse('questions.stats'))
+        eq_(200, response.status_code)
+
+        # If there's histogram data, this is probably good enough to
+        # denote its existence.
+        assert ' data-histogram="[' in response.content
