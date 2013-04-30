@@ -8,8 +8,7 @@
                  (None, _('Ask a New Question'))] %}
 {% set can_edit_product = True %}
 {% set can_edit_category = True %}
-
-{% block headline %}{{ _('Ask a New Question') }}{% endblock %}
+{% set no_headline = True %}
 
 {% block product %}
   {% if not current_product %}

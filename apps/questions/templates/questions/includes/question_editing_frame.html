@@ -20,7 +20,9 @@ we can compute the edit-title URL.
   <div class="grid_12">
     <article class="main">
       <div id="ask-question">
-        <h1>{% block headline %}Do Something to a Question{% endblock %}</h1>
+        {% if not no_headline %}
+          <h1>{% block headline %}Do Something to a Question{% endblock %}</h1>
+        {% endif %}
         <div class="inner-wrap">
 
           {% block product %}

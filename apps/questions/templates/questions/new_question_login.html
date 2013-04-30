@@ -3,8 +3,7 @@
 {% from "layout/errorlist.html" import errorlist %}
 {% from "questions/includes/aaq_macros-new.html" import register_login_forms %}
 {% set title = _('Ask a Question') %}
-
-{% block headline %}{{ _('Ask a New Question') }}{% endblock %}
+{% set no_headline = True %}
 
 {% block articles_and_search_results %}
   {{ register_login_forms(register_form, login_form, csrf()) }}
