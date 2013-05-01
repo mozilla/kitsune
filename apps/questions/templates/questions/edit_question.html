@@ -5,6 +5,8 @@
                  (url('questions.answers', question.id), question.title),
                  (None, _('Edit the question'))] %}
 
+{% set classes = 'edit-question' %}
+
 {% block headline %}{{ _('Edit a Question') }}{% endblock %}
 
 {% block major_detail_instructions %}
