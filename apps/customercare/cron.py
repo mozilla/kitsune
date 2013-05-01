@@ -22,9 +22,9 @@ LINK_REGEX = re.compile('https?\:', re.IGNORECASE)
 MENTION_REGEX = re.compile('(^|\W)@')
 RT_REGEX = re.compile('^rt\W', re.IGNORECASE)
 
-ALLOWED_USER_IDS = [
-    2142731,  # @Firefox
-    150793437,  # @FirefoxBrasil
+ALLOWED_USERS = [
+    {'id': 2142731, 'username': 'Firefox'},
+    {'id': 150793437, 'username': 'FirefoxBrasil'},
 ]
 
 log = logging.getLogger('k.twitter')
@@ -135,15 +135,19 @@ def _filter_tweet(item, allow_links=False):
     Used to exclude replies and such from incoming tweets.
     """
     text = item['text'].lower()
-    # No replies, except to @firefox
+    # No replies, except to ALLOWED_USERS
     to_user_id = item.get('to_user_id')
-    if to_user_id and to_user_id not in ALLOWED_USER_IDS:
+    if to_user_id and to_user_id not in [u['id'] for u in ALLOWED_USERS]:
         statsd.incr('customercare.tweet.rejected.reply_or_mention')
         return None
 
-    # No mentions, except of @firefox or @firefoxbrasil
-    if MENTION_REGEX.search(
-            text.replace('@firefox', '').replace('@firefoxbrasil', '')):
+    # No mentions, except of ALLOWED_USERS. Let's remove
+    # these from the text before checking for mentions.
+    # Note: This has some edge cases like @firefoxrocks that will pass by.
+    filtered_text = text
+    for username in [u['username'].lower() for u in ALLOWED_USERS]:
+        filtered_text = filtered_text.replace('@%s' % username, '')
+    if MENTION_REGEX.search(filtered_text):
         statsd.incr('customercare.tweet.rejected.reply_or_mention')
         return None
 
