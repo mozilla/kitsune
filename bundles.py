@@ -233,8 +233,6 @@ MINIFY_BUNDLES = {
             'js/ace.mode-sumo.js',
         ),
         'wiki.dashboard': (
-            'js/libs/backbone.js',
-            'js/charts.js',
             'js/wiki.dashboard.js',
             'js/helpfuldashcharts.js',
         ),
