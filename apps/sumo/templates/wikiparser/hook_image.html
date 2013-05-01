@@ -12,7 +12,7 @@
 {% endif %}
 
 {% macro render_image(lazy=False) -%}
-  <img class="{% if not has_frame %}frameless{% endif %} {{ i }} wiki-image"
+  <img class="wiki-image{% if not has_frame %} frameless{% endif %}{% if lazy %} lazy{% endif %}"
     {% if lazy %}src="{{ MEDIA_URL }}img/placeholder.gif"
     data-original-{% endif %}src="{{ image.file.url }}"
     alt="{% if 'alt' in params %}{{ params['alt'] }}{% else %}{{ params['caption'] }}{% endif %}"
