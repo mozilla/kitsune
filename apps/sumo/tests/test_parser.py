@@ -226,6 +226,11 @@ class TestWikiParser(TestCase):
             assert doc('iframe')[0].attrib['src'].startswith(
                 '//www.youtube.com/embed/oHg5SJYRHA0')
 
+    def test_iframe_in_markup(self):
+        """Verify iframe in wiki markup is escaped."""
+        doc = pq(self.p.parse('<iframe src="http://example.com"></iframe>'))
+        eq_(0, len(doc('iframe')))
+
 
 class TestWikiInternalLinks(TestCase):
     def setUp(self):
