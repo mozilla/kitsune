@@ -12,6 +12,7 @@ def new_post_mails(reply, users_and_watches):
     """Return an interable of EmailMessages to send when a new post is
     created."""
     c = {'post': reply.content,
+         'post_html': reply.content_parsed,
          'author': reply.creator.username,
          'host': Site.objects.get_current().domain,
          'thread': reply.thread.title,
@@ -21,7 +22,7 @@ def new_post_mails(reply, users_and_watches):
     return emails_with_users_and_watches(
         subject=_lazy(u'Re: {forum} - {thread}'),
         text_template='kbforums/email/new_post.ltxt',
-        html_template=None,
+        html_template='kbforums/email/new_post.html',
         context_vars=c,
         users_and_watches=users_and_watches)
 
@@ -30,6 +31,7 @@ def new_thread_mails(post, users_and_watches):
     """Return an interable of EmailMessages to send when a new thread is
     created."""
     c = {'post': post.content,
+         'post_html': post.content_parsed,
          'author': post.creator.username,
          'host': Site.objects.get_current().domain,
          'thread': post.thread.title,
@@ -39,7 +41,7 @@ def new_thread_mails(post, users_and_watches):
     return emails_with_users_and_watches(
         subject=_lazy(u'{forum} - {thread}'),
         text_template='kbforums/email/new_thread.ltxt',
-        html_template=None,
+        html_template='kbforums/email/new_thread.html',
         context_vars=c,
         users_and_watches=users_and_watches)
 
