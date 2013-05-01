@@ -1213,9 +1213,10 @@ def what_links_here(request, document_slug):
 
     links = {}
     for l in doc.links_to():
-        if l.kind not in links:
-            links[l.kind] = []
-        links[l.kind].append(l.linked_from)
+        if doc.locale == l.linked_from.locale:
+            if l.kind not in links:
+                links[l.kind] = []
+            links[l.kind].append(l.linked_from)
 
     c = {
         'document': doc,
