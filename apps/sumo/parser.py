@@ -248,9 +248,7 @@ class WikiParser(Parser):
                 strip_comments=True,
                 **parser_kwargs)
 
-        html = _parse(locale)
-
-        return html
+        return _parse(locale)
 
     def _hook_internal_link(self, parser, space, name):
         """Parses text and returns internal link."""
