@@ -30,8 +30,6 @@
             return true;
         });
         watchDiscussion();
-
-        $('img.lazy').lazyload();
     }
     function watchDiscussion() {
         // For a thread on the all discussions for a locale.

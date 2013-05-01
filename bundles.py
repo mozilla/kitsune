@@ -176,7 +176,6 @@ MINIFY_BUNDLES = {
             'js/search.js',
         ),
         'forums': (
-            'js/libs/jquery.lazyload.js',
             'js/markup.js',
             'js/ajaxpreview.js',
             'js/forums.js',
