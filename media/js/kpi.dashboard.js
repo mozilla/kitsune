@@ -1,5 +1,7 @@
 (function() {
 
+"use strict";
+
 function init() {
   window.App = new KpiDashboard({
     el: document.getElementById('kpi-dash-app')
@@ -76,7 +78,7 @@ function parseNum(n) {
 
 function makeKPIGraph($container, descriptors, metadata) {
   $.getJSON($container.data('url'), function(data) {
-    var date, series, graph;
+    var date, series, graph, split;
 
     $.each(data.objects, function(d) {
       date = this.date || this.created || this.start;

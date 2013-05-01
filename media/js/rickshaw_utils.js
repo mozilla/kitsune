@@ -1,5 +1,8 @@
 (function($) {
 
+// TODO: Figure out why this one causes strange errors.
+//"use strict";
+
 window.k = k || {};
 
 /* class Graph */

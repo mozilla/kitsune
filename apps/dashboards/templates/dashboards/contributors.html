@@ -3,8 +3,9 @@
 {% from "includes/common_macros.html" import for_contributors_sidebar %}
 {% from "dashboards/includes/macros.html" import print_readout, product_selector, print_subscription_menu with context %}
 {% set title = _('Knowledge Base Dashboard') %}
-{% set scripts = ('wiki', 'highcharts', 'wiki.dashboard', ) %}
-{% set styles = ('kbdashboards',) %}
+{# TODO: Remove Highcharts when we remove the aggregate helpfulness graph. #}
+{% set scripts = ('wiki', 'highcharts', 'rickshaw', 'wiki.dashboard') %}
+{% set styles = ('rickshaw', 'kbdashboards') %}
 {% set crumbs = [(None, title)] %}
 {% set classes = 'contributor-dashboard' %}
 {# TODO: Move required dashboard scripts out of wiki.js into their own #}
@@ -45,18 +46,17 @@
         {{ print_readout(readout, locale=default_locale, product=product) }}
       {% endfor %}
 
-      <div id="kb-helpfulness-chart"
-        data-vote-url="{{ url('api_dispatch_list', resource_name='kpi_kb_vote', api_name='v1')|urlparams(locale=settings.WIKI_DEFAULT_LANGUAGE) }}">
-      </div>
-      <!-- Backbone View Templates -->
-      <script type="text/template" id="chart-template">
-        <select class="grouping">
-          <option value="d">{{ _('Daily') }}</option>
-          <option value="w">{{ _('Weekly') }}</option>
-          <option value="m">{{ _('Monthly') }}</option>
-        </select>
-        <div class="placeholder"></div>
-      </script>
+      <section id="kpi-vote" data-url="{{ url('api_dispatch_list', resource_name='kpi_kb_vote', api_name='v1')|urlparams(locale=settings.WIKI_DEFAULT_LANGUAGE) }}">
+        <h2>{{ _('Helpful Votes') }}</h2>
+        <div class="rickshaw">
+          <div class="inline-controls"></div>
+          <div class="graph-container">
+            <div class="slider"></div>
+            <div class="graph"></div>
+            <div class="y-axis"></div>
+          </div>
+        </div>
+      </section>
 
       <a id="show-chart">{{ _('Show Aggregate Helpfulness Chart') }}</a>
       <div id="helpful-chart-tall" data-url="{{ url('dashboards.get_helpful_graph_async') }}"></div>
