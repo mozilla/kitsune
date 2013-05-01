@@ -16,7 +16,7 @@ if (DEBUG && window.console) {
     console.log = function(msg) {};
 }
 
-if (!waffle['switch']('track-article-reads')) {
+if (!waffle['switch_is_active']('track-article-reads')) {
     return;
 }
 
