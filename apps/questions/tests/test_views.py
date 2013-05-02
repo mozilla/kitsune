@@ -25,7 +25,6 @@ from wiki.tests import document, revision
 
 
 class AAQTests(ElasticTestCase):
-    fixtures = ['users.json']
     client_class = LocalizingClient
 
     def test_bleaching(self):
@@ -175,7 +174,8 @@ class AAQTests(ElasticTestCase):
             reverse('questions.aaq_step5', args=['desktop', 'fix-problems']),
             search='A test question')
 
-        self.client.login(username='jsocol', password='testpass')
+        u = user(save=True)
+        self.client.login(username=u.username, password='testpass')
 
         for i in range(0, 5):
             self.client.post(url, data, follow=True)
