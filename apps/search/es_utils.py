@@ -342,7 +342,7 @@ def es_reindex_cmd(percent=100, delete=False, models=None,
     log.info('done! (%s total)', format_time(delta_time))
 
 
-def es_delete_cmd(index, interactive=False, log=log):
+def es_delete_cmd(index, noinput=False, log=log):
     """Deletes an index"""
     try:
         indexes = [name for name, count in get_indexes()]
@@ -355,7 +355,7 @@ def es_delete_cmd(index, interactive=False, log=log):
         log.error('Index "%s" is not a valid index.', index)
         return
 
-    if index == READ_INDEX and interactive:
+    if index == READ_INDEX and not noinput:
         ret = raw_input('"%s" is a read index. Are you sure you want '
                         'to delete it? (yes/no) ' % index)
         if ret != 'yes':
