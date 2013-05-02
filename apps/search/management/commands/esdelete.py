@@ -1,3 +1,5 @@
+from optparse import make_option
+
 from django.core.management.base import BaseCommand, CommandError
 
 from search.es_utils import es_delete_cmd
@@ -6,6 +8,10 @@ from search.utils import FakeLogger
 
 class Command(BaseCommand):
     help = 'Delete an index from elastic search.'
+    option_list = BaseCommand.option_list + (
+        make_option('--noinput', action='store_true', dest='noinput',
+                    help='Do not ask for input--just do it'),
+    )
 
     def handle(self, *args, **options):
         if not args:
@@ -13,5 +19,5 @@ class Command(BaseCommand):
 
         es_delete_cmd(
             args[0],
-            interactive=options['interactive'],
+            noinput=options['noinput'],
             log=FakeLogger(self.stdout))

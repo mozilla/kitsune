@@ -55,4 +55,4 @@ class ESCommandTests(ElasticTestCase):
         # have to do one.
         for index in [es_utils.READ_INDEX,
                       'cupcakerainbow_index']:
-            call_command('esdelete', index, interactive=False)
+            call_command('esdelete', index, noinput=True)
