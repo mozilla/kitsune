@@ -261,9 +261,12 @@ class ElasticSearchUnifiedViewTests(ElasticTestCase):
         r2 = revision(is_approved=True, save=True)
         helpful_vote(revision=r2, helpful=True, save=True)
 
-        # r2.document should come first with 1 vote.
+        # Note: We have to wipe and rebuild the index because new
+        # helpful_votes don't update the index data.
         self.setup_indexes()
-        self.refresh()
+        self.reindex_and_refresh()
+
+        # r2.document should come first with 1 vote.
         response = self.client.get(reverse('search'), {
             'w': '1', 'a': '1', 'sortby_documents': 'helpful',
             'format': 'json'})
@@ -277,7 +280,8 @@ class ElasticSearchUnifiedViewTests(ElasticTestCase):
         helpful_vote(revision=r1, helpful=True, save=True)
 
         self.setup_indexes()
-        self.refresh()
+        self.reindex_and_refresh()
+
         response = self.client.get(reverse('search'), {
             'w': '1', 'a': '1', 'sortby_documents': 'helpful',
             'format': 'json'})

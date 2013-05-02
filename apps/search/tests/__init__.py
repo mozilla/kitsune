@@ -73,20 +73,18 @@ class ElasticTestCase(TestCase):
         get_es().refresh(index)
         get_es().health(wait_for_status='yellow')
 
-    def setup_indexes(self, empty=False, wait=True):
-        """(Re-)create ES indexes."""
+    def reindex_and_refresh(self):
+        """Reindexes anything in the db"""
         from search.es_utils import es_reindex_cmd
-
-        if empty:
-            # Removes the index and creates a new one with
-            # nothing in it (by abusing the percent argument).
-            es_reindex_cmd(delete=True, percent=0)
-        else:
-            # Removes the previous round of indexes and creates new
-            # ones with mappings and all that.
-            es_reindex_cmd(delete=True)
-
+        es_reindex_cmd()
         self.refresh(run_tasks=False)
 
+    def setup_indexes(self, empty=False, wait=True):
+        """(Re-)create WRITE_INDEX"""
+        from search.es_utils import recreate_index
+        recreate_index()
+        get_es().health(wait_for_status='yellow')
+
     def teardown_indexes(self):
-        es_utils.delete_index(es_utils.READ_INDEX)
+        """Tear down WRITE_INDEX"""
+        es_utils.delete_index(es_utils.WRITE_INDEX)

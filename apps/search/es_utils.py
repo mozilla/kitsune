@@ -157,7 +157,7 @@ def get_documents(cls, ids):
 
 
 def recreate_index(es=None):
-    """Deletes index if it's there and creates a new one"""
+    """Deletes WRITE_INDEX if it's there and creates a new one"""
     if es is None:
         es = get_es()
 
