@@ -295,6 +295,8 @@ def es_reindex_cmd(percent=100, delete=False, models=None,
     else:
         all_indexable = get_indexable(percent)
 
+    log.info('using index: %s', WRITE_INDEX)
+
     start_time = time.time()
     for cls, indexable in all_indexable:
         cls_start_time = time.time()
@@ -303,20 +305,26 @@ def es_reindex_cmd(percent=100, delete=False, models=None,
         if total == 0:
             continue
 
-        log.info('reindex %s into %s index. %s to index....',
-                 cls.get_model_name(),
-                 WRITE_INDEX, total)
+        log.info('reindexing %s. %s to index....',
+                 cls.get_model_name(), total)
 
         i = 0
         for chunk in chunked(indexable, 1000):
+            chunk_start_time = time.time()
             index_chunk(cls, chunk)
 
             i += len(chunk)
-            time_to_go = (total - i) * ((time.time() - start_time) / i)
-            per_1000 = (time.time() - start_time) / (i / 1000.0)
-            log.info('%s/%s... (%s to go, %s per 1000 docs)', i, total,
-                     format_time(time_to_go),
-                     format_time(per_1000))
+            time_to_go = (total - i) * ((time.time() - cls_start_time) / i)
+            per_1000 = (time.time() - cls_start_time) / (i / 1000.0)
+            this_1000 = time.time() - chunk_start_time
+
+            log.info('   %s/%s %s... (%s/1000 avg, %s ETA)',
+                     i,
+                     total,
+                     format_time(this_1000),
+                     format_time(per_1000),
+                     format_time(time_to_go)
+            )
 
             # We call this every 1000 or so because we're
             # essentially loading the whole db and if DEBUG=True,
@@ -326,12 +334,12 @@ def es_reindex_cmd(percent=100, delete=False, models=None,
             reset_queries()
 
         delta_time = time.time() - cls_start_time
-        log.info('done! (%s, %s per 1000 docs)',
+        log.info('   done! (%s total, %s/1000 avg)',
                  format_time(delta_time),
                  format_time(delta_time / (total / 1000.0)))
 
     delta_time = time.time() - start_time
-    log.info('done! (total time: %s)', format_time(delta_time))
+    log.info('done! (%s total)', format_time(delta_time))
 
 
 def es_delete_cmd(index, interactive=False, log=log):
