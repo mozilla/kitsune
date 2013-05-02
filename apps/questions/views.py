@@ -25,6 +25,7 @@ import jingo
 import waffle
 from mobility.decorators import mobile_template
 from ratelimit.decorators import ratelimit
+from ratelimit.helpers import is_ratelimited
 from pyelasticsearch.exceptions import (
     Timeout, ConnectionError, ElasticHttpError)
 from session_csrf import anonymous_csrf
@@ -470,7 +471,9 @@ def aaq(request, product_key=None, category_key=None, showform=False,
     form = NewQuestionForm(product=product, category=category,
                            data=request.POST)
 
-    if form.is_valid():
+    if form.is_valid() and not is_ratelimited(request, increment=True,
+                                              rate='5/d', ip=False,
+                                              keys=user_or_ip('aaq-day')):
         question = Question(creator=request.user,
                             title=form.cleaned_data['title'],
                             content=form.cleaned_data['content'],
@@ -512,6 +515,9 @@ def aaq(request, product_key=None, category_key=None, showform=False,
             return HttpResponseRedirect(url)
 
         return HttpResponseRedirect(reverse('questions.aaq_confirm'))
+
+    if getattr(request, 'limited', False):
+        raise PermissionDenied
 
     statsd.incr('questions.aaq.details-form-error')
     return render(request, template, {
