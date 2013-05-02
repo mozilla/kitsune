@@ -158,6 +158,31 @@ class AAQTests(ElasticTestCase):
         assert 'donut' in doc('.result.document h3 a').text()
         assert 'cupcake' not in doc('.result.document h3 a').text()
 
+    def test_ratelimit(self):
+        """Make sure posting new questions is ratelimited"""
+        data = {'title': 'A test question',
+                'content': 'I have this question that I hope...',
+                'sites_affected': 'http://example.com',
+                'ff_version': '3.6.6',
+                'os': 'Intel Mac OS X 10.6',
+                'plugins': '* Shockwave Flash 10.1 r53',
+                'useragent': 'Mozilla/5.0 (Macintosh; U; Intel Mac OS X '
+                             '10.6; en-US; rv:1.9.2.6) Gecko/20100625 '
+                             'Firefox/3.6.6'}
+        topic(title='Fix problems', slug='fix-problems', save=True)
+        url = urlparams(
+            reverse('questions.aaq_step5', args=['desktop', 'fix-problems']),
+            search='A test question')
+
+        u = user(save=True)
+        self.client.login(username=u.username, password='testpass')
+
+        for i in range(0, 5):
+            self.client.post(url, data, follow=True)
+
+        response = self.client.post(url, data, follow=True)
+        eq_(403, response.status_code)
+
 
 class MobileAAQTests(MobileTestCase):
     fixtures = ['users.json', 'questions.json']
@@ -312,7 +337,7 @@ class TestQuestionUpdates(TestCase):
             })
 
 
-def TroubleshootingParsingTests(TestCase):
+class TroubleshootingParsingTests(TestCase):
 
     def test_empty_troubleshooting_info(self):
         """Test a troubleshooting value that is valid JSON, but junk.
