@@ -288,7 +288,6 @@ k.Graph.prototype.initGraph = function() {
   var hoverClass;
   var i, key;
   var series;
-  var originalFormatter;
   this.dom.graph = this.dom.elem.find('.graph');
 
   var graphOpts = $.extend({
@@ -545,9 +544,6 @@ k.Graph.percentage = function(partKey /* *restKeys */) {
 };
 
 
-Rickshaw.namespace('Rickshaw.Graph.BarHoverDetail');
-
-/* This
 Rickshaw.namespace('Rickshaw.Graph.ScaledHoverDetail');
 
 /* This is a mostly intact version of Rickshaw.Graph.HoverDetail that
@@ -626,7 +622,7 @@ Rickshaw.Graph.ScaledHoverDetail = Rickshaw.Class.create(Rickshaw.Graph.HoverDet
  *
  * The `update` method has changed to modify the hover behavior.
  */
-
+Rickshaw.namespace('Rickshaw.Graph.ScaledBarHoverDetail');
 Rickshaw.Graph.ScaledBarHoverDetail = Rickshaw.Class.create(Rickshaw.Graph.ScaledHoverDetail, {
 
   update: function(e) {
