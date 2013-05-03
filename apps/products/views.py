@@ -1,3 +1,4 @@
+from django.db.models import Count
 from django.shortcuts import get_object_or_404, render
 
 from mobility.decorators import mobile_template
@@ -52,10 +53,15 @@ def document_listing(request, template, product_slug, topic_slug):
     documents, fallback_documents = documents_for(
         locale=request.LANGUAGE_CODE, products=[product], topics=topics)
 
+    subtopics = (Topic.objects
+                      .filter(parent=topic)
+                      .annotate(num_docs=Count('document')))
+
     return render(request, template, {
         'product': product,
         'topic': topic,
         'topics': topics_for(products=[product]),
+        'subtopics': subtopics,
         'refine': refine,
         'refine_topics': topics_for(products=[product], topics=[topic]),
         'documents': documents,
