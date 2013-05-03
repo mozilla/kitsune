@@ -7,7 +7,6 @@ from pyquery import PyQuery as pq
 
 from products.tests import product
 from search.tests.test_es import ElasticTestCase
-from sumo.helpers import urlparams
 from sumo.urlresolvers import reverse
 from topics.models import HOT_TOPIC_SLUG
 from topics.tests import topic
@@ -67,7 +66,6 @@ class ProductViewsTestCase(ElasticTestCase):
 
         # Create a topic and product.
         t1 = topic(save=True)
-        t2 = topic(save=True)
         p = product(save=True)
 
         # Create 3 documents with the topic and product and one without.
@@ -75,8 +73,6 @@ class ProductViewsTestCase(ElasticTestCase):
             doc = revision(is_approved=True, save=True).document
             doc.topics.add(t1)
             doc.products.add(p)
-            if i == 1:  # Only one document with t2
-                doc.topics.add(t2)
 
         doc = revision(is_approved=True, save=True).document
 
@@ -88,15 +84,6 @@ class ProductViewsTestCase(ElasticTestCase):
         eq_(200, r.status_code)
         doc = pq(r.content)
         eq_(3, len(doc('#document-list > ul > li')))
-        eq_(p.slug, doc('#support-search input[name=product]').attr['value'])
-
-        # GET the page with refine topic and verify the content.
-        url = reverse('products.documents', args=[p.slug, t1.slug])
-        url = urlparams(url, refine=t2.slug)
-        r = self.client.get(url, follow=True)
-        eq_(200, r.status_code)
-        doc = pq(r.content)
-        eq_(1, len(doc('#document-list > ul > li')))
         eq_(p.slug, doc('#support-search input[name=product]').attr['value'])
 
     @mock.patch.object(waffle, 'flag_is_active')
@@ -186,10 +173,9 @@ class ProductViewsTestCase(ElasticTestCase):
         eq_(0, len(doc('ul.subtopics')))
 
         # Create a subtopic and verify it is listed
-        st = topic(parent=t, save=True)
+        topic(parent=t, save=True)
         url = reverse('products.documents', args=[p.slug, t.slug])
         r = self.client.get(url, follow=True)
         eq_(200, r.status_code)
         doc = pq(r.content)
         eq_(1, len(doc('ul.subtopics')))
-
