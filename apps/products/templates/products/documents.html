@@ -24,15 +24,44 @@
 
       <div id="focus-and-refine" class="feature-box{% if not refine %} collapsed{% endif %}" data-ui-type="folding-section">
         <header>
-          <h2 class="nomargin">{{ _('Refine and Focus') }}</h2>
+          <h2 class="nomargin">
+            {% if subtopics %}
+              {{ _('Related Topics') }}
+            {% else %}
+              {{ _('Refine and Focus') }}
+            {% endif %}
+          </h2>
         </header>
         <section class="cf">
-          <ul>
-            <li {{ refine|class_selected(None) }}><a href="{{ request.path }}">{{ _('All') }}</a></li>
-            {% for topic_ in refine_topics if topic_ != topic %}
-              <li {{ refine|class_selected(topic_) }}><a href="?refine={{ _(topic_.slug) }}">{{ _(topic_.title, 'DB: topics.Topic.title') }} ({{ topic_.num_docs }})</a></li>
-            {% endfor %}
-          </ul>
+          {# TODO: Delete the Refine and Focus code here and in the view once all the data changes happen #}
+          {% if subtopics %}
+            <ul class="subtopics cf">
+              {% for topic_ in subtopics %}
+                <li>
+                  <a href="{{ url('products.documents', product_slug=product.slug, topic_slug=topic_.slug) }}">
+                    {{ _(topic_.title, 'DB: topics.Topic.title') }} ({{ topic_.num_docs }})
+                  </a>
+                </li>
+              {% endfor %}
+            </ul>
+            {% if refine_topics %}
+              <h3 class="">{{ _('Refine and Focus') }}</h3>
+            {% endif %}
+          {% endif %}
+          {% if refine_topics %}
+            <ul>
+              <li {{ refine|class_selected(None) }}>
+                <a href="{{ request.path }}">{{ _('All') }}</a>
+              </li>
+              {% for topic_ in refine_topics if topic_ != topic %}
+                <li {{ refine|class_selected(topic_) }}>
+                  <a href="?refine={{ _(topic_.slug) }}">
+                    {{ _(topic_.title, 'DB: topics.Topic.title') }} ({{ topic_.num_docs }})
+                  </a>
+                </li>
+              {% endfor %}
+            </ul>
+          {% endif %}
         </section>
       </div>
 
