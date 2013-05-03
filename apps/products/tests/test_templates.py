@@ -164,3 +164,32 @@ class ProductViewsTestCase(ElasticTestCase):
         eq_(200, r.status_code)
         doc = pq(r.content)
         eq_(7, len(doc('#hot-topics li')))
+
+    def test_subtopics(self):
+        """Verifies subtopics appear on document listing page."""
+        # Create a topic and product.
+        t = topic(save=True)
+        p = product(save=True)
+
+        # Create a documents with the topic and product
+        doc = revision(is_approved=True, save=True).document
+        doc.topics.add(t)
+        doc.products.add(p)
+
+        self.refresh()
+
+        # GET the page and verify no subtopics yet.
+        url = reverse('products.documents', args=[p.slug, t.slug])
+        r = self.client.get(url, follow=True)
+        eq_(200, r.status_code)
+        doc = pq(r.content)
+        eq_(0, len(doc('ul.subtopics')))
+
+        # Create a subtopic and verify it is listed
+        st = topic(parent=t, save=True)
+        url = reverse('products.documents', args=[p.slug, t.slug])
+        r = self.client.get(url, follow=True)
+        eq_(200, r.status_code)
+        doc = pq(r.content)
+        eq_(1, len(doc('ul.subtopics')))
+
