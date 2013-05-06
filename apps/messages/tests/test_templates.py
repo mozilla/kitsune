@@ -59,6 +59,17 @@ class SendMessageTestCase(TestCase):
         eq_(pq(response.content)('read').text(),
             pq(response.content)('read').html())
 
+    def test_send_message_ratelimited(self):
+        """Verify that after 50 messages, no more are sent."""
+        # Try to send 53 messages.
+        for i in range(53):
+            self.client.post(
+                reverse('messages.new', locale='en-US'),
+                {'to': self.user2.username, 'message': 'hi there %s' % i})
+
+        # Verify only 50 are sent.
+        eq_(50, OutboxMessage.objects.filter(sender=self.user1).count())
+
 
 class MessagePreviewTests(TestCase):
     """Tests for preview."""
