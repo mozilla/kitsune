@@ -9,14 +9,14 @@
     <section class="actions">
       <a href="{{ url('messages.new') }}">{{ _('New Message') }}</a>
     </section>
-    <article id="inbox" class="main message-list">
+    <article id="inbox" class="main">
       <h1>{{ title }}</h1>
       {% if msgs %}
         <form action="{{ url('messages.bulk_action') }}" method="POST">
           <input type="submit" name="mark_read" value="{{ _('Mark Selected as Read') }}">
           <input type="submit" name="delete" value="{{ _('Delete Selected') }}">
-          <ol>
-            {% for message in msgs %}
+          <ol class="message-list">
+            {% for message in msgs.object_list %}
               <li class="{% if message.unread %}unread{% endif %} {% if message.replied %}replied{% endif %}">
                 <input type="checkbox" name="id" value="{{ message.id }}">
                 <span class="avatar">
@@ -35,6 +35,7 @@
           </ol>
           {{ csrf() }}
         </form>
+        {{ msgs|paginator }}
       {% else %}
         <p>{{ _('There are no messages here.') }}</p>
       {% endif %}

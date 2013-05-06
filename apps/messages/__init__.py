@@ -4,6 +4,10 @@ from messages.tasks import email_private_message
 from users.models import Setting
 
 
+# The number of threads per page.
+MESSAGES_PER_PAGE = 20
+
+
 def send_message(to, text, sender=None):
     """Send a private message.
 
