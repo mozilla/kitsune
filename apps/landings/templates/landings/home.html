@@ -56,11 +56,3 @@
 
 {% block breadcrumbs %}
 {% endblock %}
-
-{% block footer_script %}
-  {# Ethnio tracking - see bugs 683643 and 673544 #}
-  {% if waffle.flag('ethnio-home') %}
-    <script type="text/javascript" language="javascript" src="//ethn.io/remotes/92398" async="true" charset="utf-8"> </script>
-  {% endif %}
-  {# End Ethnio #}
-{% endblock %}
