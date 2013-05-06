@@ -8,16 +8,13 @@
 {% block title %}{{ _(topic.title, 'DB: topics.Topic.title') }} | {{ _('{product} Help')|f(product=_(product.title, 'DB: products.Product.title')) }}{% endblock %}
 
 {% block content %}
-  <div class="filter-bar">
-    <span>{{ _('Showing') }}</span>
-    <div class="select-box" data-overlay="filter-overlay">
-      {% if refine %}
-        {{ _(refine.title, 'DB: topics.Topic.title') }}
-      {% else %}
-        {{ _('All articles') }}
-      {% endif %}
+  {% if subtopics or topic.parent %}
+    <div class="filter-bar">
+      <div class="select-box" data-overlay="filter-overlay">
+        {{ _('Related Topics') }}
+      </div>
     </div>
-  </div>
+  {% endif %}
 
   <ul class="document-list">
     {% for document in documents %}
@@ -41,12 +38,22 @@
 
 {% block after_main %}
   <div id="filter-overlay" class="overlay" style="display: none;">
-    <header>{{ _('Showing') }}</header>
+    <header>{{ _('Related Topics') }}</header>
     <div class="wrapper scrollable">
       <ul class="select-list">
-        <li {{ refine|class_selected(None) }}><a href="{{ request.path }}">{{ _('All') }}</a></li>
-        {% for topic_ in refine_topics if topic_ != topic %}
-          <li {{ refine|class_selected(topic_) }}><a href="?refine={{ _(topic_.slug) }}">{{ _(topic_.title, 'DB: topics.Topic.title') }} ({{ topic_.num_docs }})</a></li>
+        {% if topic.parent %}
+          <li>
+            <a href="{{ url('products.documents', product_slug=product.slug, topic_slug=topic.parent.slug) }}">
+              {{ _('Go back to {topic}')|f(topic=_(topic.parent.title, 'DB: topics.Topic.title'))}}
+            </a>
+          </li>
+        {% endif %}
+        {% for topic_ in subtopics %}
+          <li>
+            <a href="{{ url('products.documents', product_slug=product.slug, topic_slug=topic_.slug) }}">
+              {{ _(topic_.title, 'DB: topics.Topic.title') }}
+            </a>
+          </li>
         {% endfor %}
       </ul>
     </div>
