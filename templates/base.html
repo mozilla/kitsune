@@ -225,7 +225,7 @@
 {% endif %}
 
 {# Ethnio tracking - see bugs 683643 and 673544 #}
-{% if waffle.flag('ethnio-all') %}
+{% if request.LANGUAGE_CODE == 'en-US' and waffle.flag('ethnio-all') %}
   <script type="text/javascript" language="javascript" src="//ethn.io/remotes/92398" async="true" charset="utf-8"> </script>
 {% endif %}
 {# End Ethnio #}
