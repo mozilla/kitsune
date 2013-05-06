@@ -9,50 +9,6 @@ from users.tests import user, add_permission
 from wiki.tests import document
 
 
-class ThreadAuthorityPermissionsTests(KBForumTestCase):
-    """Test thread views authority permissions."""
-
-    def setUp(self):
-        self.u = user(save=True)
-
-    def test_new_thread_without_view_permission(self):
-        """Making a new thread without view permission should 404."""
-        self.client.login(username=self.u.username, password='testpass')
-        response = post(self.client, 'wiki.discuss.new_thread',
-                        {'title': 'Blahs', 'content': 'Blahs'},
-                        args=['restricted-forum'])
-        eq_(404, response.status_code)
-
-    def test_watch_GET_405(self):
-        """Watch forum with HTTP GET results in 405."""
-        self.client.login(username=self.u.username, password='testpass')
-        d = document(save=True)
-        response = get(self.client, 'wiki.discuss.watch_forum', args=[d.slug])
-        eq_(405, response.status_code)
-
-    def test_watch_forum_without_permission(self):
-        """Watching forums without the view_in_forum permission should 404."""
-        self.client.login(username=self.u.username, password='testpass')
-        response = self.client.post(reverse('wiki.discuss.watch_forum',
-                                            args=['restricted-forum']),
-                                    {'watch': 'yes'}, follow=False)
-        eq_(404, response.status_code)
-
-    def test_watch_thread_without_permission(self):
-        """Watching threads without the view_in_forum permission should 404."""
-        self.client.login(username=self.u.username, password='testpass')
-        response = self.client.post(reverse('wiki.discuss.watch_thread',
-                                            args=['restricted-forum', 6]),
-                                    {'watch': 'yes'}, follow=False)
-        eq_(404, response.status_code)
-
-    def test_read_without_permission(self):
-        """Listing threads without the view_in_forum permission should 404."""
-        response = get(self.client, 'wiki.discuss.threads',
-                       args=['restricted-forum'])
-        eq_(404, response.status_code)
-
-
 class ThreadTests(KBForumTestCase):
     """Test thread views."""
 
