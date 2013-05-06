@@ -13,12 +13,12 @@ from tower import ugettext as _
 from statsd import statsd
 
 from access.decorators import login_required
-from messages import send_message
+from messages import send_message, MESSAGES_PER_PAGE
 from messages.forms import MessageForm, ReplyForm
 from messages.models import InboxMessage, OutboxMessage
 from mobility.decorators import mobile_template
 from sumo.urlresolvers import reverse
-from sumo.utils import user_or_ip
+from sumo.utils import user_or_ip, paginate
 
 
 @login_required
@@ -26,6 +26,11 @@ from sumo.utils import user_or_ip
 def inbox(request, template):
     user = request.user
     messages = InboxMessage.uncached.filter(to=user).order_by('-created')
+    count = messages.count()
+
+    messages = paginate(
+        request, messages, per_page=MESSAGES_PER_PAGE, count=count)
+
     return render(request, template, {'msgs': messages})
 
 
@@ -58,8 +63,14 @@ def read_outbox(request, template, msgid):
 def outbox(request, template):
     user = request.user
     messages = OutboxMessage.uncached.filter(sender=user).order_by('-created')
-    for msg in messages:
+    count = messages.count()
+
+    messages = paginate(
+        request, messages, per_page=MESSAGES_PER_PAGE, count=count)
+
+    for msg in messages.object_list:
         _add_recipients(msg)
+
     return render(request, template, {'msgs': messages})
 
 
