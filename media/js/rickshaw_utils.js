@@ -153,7 +153,7 @@ k.Graph.prototype.initData = function() {
  *       false.
  *   axisGroup: The name of the axisGroup this series belongs to.
  *
- * Output will have all the above values, as well as the min and max
+ * Output will have all the above values, as well as the maximum
  * values within the current graph window.
  */
 k.Graph.prototype.makeSeries = function(objects, descriptors) {
@@ -161,7 +161,7 @@ k.Graph.prototype.makeSeries = function(objects, descriptors) {
   var datum, series = [];
   var split, date;
   var desc;
-  var min, max, data;
+  var max, data;
   var windowMin, windowMax;
 
   if (this.rickshaw.graph) {
@@ -173,7 +173,6 @@ k.Graph.prototype.makeSeries = function(objects, descriptors) {
   }
 
   for (i = 0; i < descriptors.length; i++) {
-    min = +Infinity;
     max = -Infinity;
     desc = descriptors[i];
 
@@ -185,12 +184,15 @@ k.Graph.prototype.makeSeries = function(objects, descriptors) {
       }
 
       if (windowMin <= datum.date && datum.date <= windowMax) {
-        min = Math.min(min, val);
         max = Math.max(max, val);
       }
 
       return {x: datum.date, y: val};
     });
+
+    if (max <= 0 || isNaN(max) || !isFinite(max)) {
+      max = 1;
+    }
 
     series[i] = {
       name: desc.name,
@@ -198,7 +200,6 @@ k.Graph.prototype.makeSeries = function(objects, descriptors) {
       color: desc.color,
       disabled: desc.disabled || false,
       axisGroup: desc.axisGroup,
-      min: min,
       max: max,
       data: data
     };
