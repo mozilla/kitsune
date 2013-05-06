@@ -4,7 +4,7 @@ from nose.tools import eq_
 from pyquery import PyQuery as pq
 
 from flagit.models import FlaggedObject
-from kbforums.models import Post
+from kbforums.models import Post, Thread
 from kbforums.tests import KBForumTestCase, thread, post as post_
 from sumo.urlresolvers import reverse
 from sumo.tests import get, post
@@ -337,3 +337,34 @@ class FlaggedPostTests(KBForumTestCase):
         eq_(200, response.status_code)
         doc = pq(response.content)
         eq_(1, len(doc('#flagged-queue li')))
+
+
+class TestRatelimiting(KBForumTestCase):
+
+    def test_post_ratelimit(self):
+        """Verify that rate limiting kicks in after 4 threads or replies."""
+        d = document(save=True)
+        u = user(save=True)
+        self.client.login(username=u.username, password='testpass')
+
+        # Create 2 threads:
+        for i in range(2):
+            response = post(self.client, 'wiki.discuss.new_thread',
+                            {'title': 'Topic', 'content': 'hellooo'},
+                            args=[d.slug])
+            eq_(200, response.status_code)
+
+        # Now 3 replies (only 2 should save):
+        t = Thread.objects.all()[0]
+        for i in range(3):
+            response = post(self.client, 'wiki.discuss.reply',
+                            {'content': 'hellooo'}, args=[d.slug, t.id])
+            eq_(200, response.status_code)
+
+        # And another thread that shouldn't save:
+        response = post(self.client, 'wiki.discuss.new_thread',
+                        {'title': 'Topic', 'content': 'hellooo'},
+                        args=[d.slug])
+
+        # We should only have 4 posts (each thread and reply creates a post).
+        eq_(4, Post.objects.count())
