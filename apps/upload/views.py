@@ -14,18 +14,23 @@ from upload.models import ImageAttachment
 from upload.utils import upload_imageattachment, FileTooLargeError
 
 
+ALLOWED_MODELS = ['questions.Question', 'questions.Answer']
+
+
 @login_required
 @require_POST
 @xframe_options_sameorigin
 def up_image_async(request, model_name, object_pk):
     """Upload all images in request.FILES."""
 
-    # Lookup the model's content type
-    m = get_model(*model_name.split('.'))
-    if m is None:
-        message = _('Model does not exist.')
+    # Verify the model agaist our white-list
+    if model_name not in ALLOWED_MODELS:
+        message = _('Model not allowed.')
         return HttpResponseBadRequest(
             json.dumps({'status': 'error', 'message': message}))
+
+    # Get the model
+    m = get_model(*model_name.split('.'))
 
     # Then look up the object by pk
     try:

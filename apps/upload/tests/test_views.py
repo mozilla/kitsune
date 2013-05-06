@@ -26,14 +26,14 @@ class UploadImageTestCase(TestCase):
         ImageAttachment.objects.all().delete()
         super(UploadImageTestCase, self).tearDown()
 
-    def test_model_invalid(self):
-        """Specifying an invalid model returns 400."""
-        r = self._make_post_request(image='', args=['invalid.model', 123])
+    def test_model_not_whitelisted(self):
+        """Specifying a model we don't allow returns 400."""
+        r = self._make_post_request(image='', args=['wiki.Document', 123])
 
         eq_(400, r.status_code)
         json_r = json.loads(r.content)
         eq_('error', json_r['status'])
-        eq_('Model does not exist.', json_r['message'])
+        eq_('Model not allowed.', json_r['message'])
 
     def test_object_notexist(self):
         """Upload nothing returns 404 error and html content."""
