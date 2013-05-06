@@ -8,6 +8,7 @@ from django.views.decorators.http import require_POST
 from django.shortcuts import get_object_or_404, redirect, render
 
 from multidb.pinning import mark_as_write
+from ratelimit.helpers import is_ratelimited
 from tower import ugettext as _
 from statsd import statsd
 
@@ -17,6 +18,7 @@ from messages.forms import MessageForm, ReplyForm
 from messages.models import InboxMessage, OutboxMessage
 from mobility.decorators import mobile_template
 from sumo.urlresolvers import reverse
+from sumo.utils import user_or_ip
 
 
 @login_required
@@ -77,7 +79,9 @@ def new_message(request, template):
 
     form = MessageForm(request.POST or None, initial={'to': to})
 
-    if request.method == 'POST' and form.is_valid():
+    if (request.method == 'POST' and form.is_valid() and
+            not is_ratelimited(request, increment=True, rate='50/d', ip=False,
+                           keys=user_or_ip('private-message-day'))):
         send_message(form.cleaned_data['to'], form.cleaned_data['message'],
                      request.user)
         if form.cleaned_data['in_reply_to']:

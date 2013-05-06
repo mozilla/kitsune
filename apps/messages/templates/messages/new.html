@@ -9,6 +9,11 @@
     <article class="main">
       <h1>{{ title }}</h1>
       <section id="new-message">
+        {% if request.limited %}
+          <div class="warning-box">
+            {{ _('You have exceeded the number of private messages that can be sent in a day.') }}
+          </div>
+        {% endif %}
         <form action="" method="post">
           {{ csrf() }}
           {{ message_form(form) }}
