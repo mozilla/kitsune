@@ -16,9 +16,10 @@ from kbforums.feeds import ThreadsFeed, PostsFeed
 from kbforums.forms import (ReplyForm, NewThreadForm,
                             EditThreadForm, EditPostForm)
 from kbforums.models import Thread, Post
+from ratelimit.helpers import is_ratelimited
 from sumo_locales import LOCALES
 from sumo.urlresolvers import reverse
-from sumo.utils import paginate, get_next_url
+from sumo.utils import paginate, get_next_url, user_or_ip
 from users.models import Setting
 from wiki.models import Document
 
@@ -115,6 +116,18 @@ def posts(request, document_slug, thread_id, form=None, post_preview=None):
         'feeds': feed_urls})
 
 
+def _is_ratelimited(request):
+    """Ratelimiting helper for kbforum threads and replies.
+
+    They are ratelimited together with the same key.
+    """
+    return (
+        is_ratelimited(request, increment=True, rate='4/m', ip=False,
+                       keys=user_or_ip('kbforum-post-min')) or
+        is_ratelimited(request, increment=True, rate='50/d', ip=False,
+                       keys=user_or_ip('kbforum-post-day')))
+
+
 @login_required
 @require_POST
 def reply(request, document_slug, thread_id):
@@ -132,7 +145,7 @@ def reply(request, document_slug, thread_id):
             reply_.creator = request.user
             if 'preview' in request.POST:
                 post_preview = reply_
-            else:
+            elif not _is_ratelimited(request):
                 reply_.save()
                 statsd.incr('kbforums.reply')
 
@@ -167,7 +180,7 @@ def new_thread(request, document_slug):
                             title=form.cleaned_data['title'])
             post_preview = Post(thread=thread, creator=request.user,
                                 content=form.cleaned_data['content'])
-        else:
+        elif not _is_ratelimited(request):
             thread = doc.thread_set.create(creator=request.user,
                                              title=form.cleaned_data['title'])
             thread.save()

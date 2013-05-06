@@ -16,6 +16,12 @@
     {{ kbforums_warning(document, user) }}
     <h1>{{ _('Create a new thread') }}</h1>
 
+    {% if request.limited %}
+      <div class="warning-box">
+        {{ _('You have exceeded the number of threads and replies that can be posted in a given amount of time. Please try again shortly.') }}
+      </div>
+    {% endif %}
+
     <form action="{{ url('wiki.discuss.new_thread', document.slug) }}" method="post" class="new-thread">
       {{ csrf() }}
       {{ errorlist(form) }}
