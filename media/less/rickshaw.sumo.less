@@ -111,13 +111,38 @@
   margin-left: 40px;
 
   div {
-    background: rgba(0, 0, 0, 0.05);
+    background: #DDD;
     display: inline-block;
-    margin-right: 10px;
+    height: 24px;
+    margin: 0 10px 10px 0;
     padding: 4px;
 
     input, label {
       margin-right: 5px;
+    }
+  }
+
+  .legend {
+    ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+
+      li {
+        display: inline-block;
+
+        &:not(:last-child) {
+          margin-right: 10px;
+        }
+
+        .color-square {
+          display: inline-block;
+          height: 16px;
+          margin-right: 4px;
+          transform: translate(0, 3px);
+          width: 16px;
+        }
+      }
     }
   }
 }
