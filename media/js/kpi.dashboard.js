@@ -12,21 +12,21 @@ function init() {
       axisGroup: 'questions'
     },
     {
-      name: gettext('Solved'),
+      name: gettext('% Solved'),
       slug: 'solved',
       func: k.Graph.fraction('solved', 'questions'),
       color: '#aa4643',
       axisGroup: 'percent'
     },
     {
-      name: gettext('Responded in 24 hours'),
+      name: gettext('% Responded in 24 hours'),
       slug: 'responded_24',
       func: k.Graph.fraction('responded_24', 'questions'),
       color: '#89a54e',
       axisGroup: 'percent'
     },
     {
-      name: gettext('Responded in 72 hours'),
+      name: gettext('% Responded in 72 hours'),
       slug: 'responded_72',
       func: k.Graph.fraction('responded_72', 'questions'),
       color: '#80699b',
@@ -72,7 +72,7 @@ function init() {
 
   makeKPIGraph($('#kpi-ctr'), [
     {
-      name: gettext('CTR %'),
+      name: gettext('Click Through Rate %'),
       slug: 'ctr',
       func: k.Graph.fraction('clicks', 'searches')
     }
@@ -123,7 +123,7 @@ function makeKPIGraph($container, descriptors, metadata) {
         seriesSpec: descriptors
       },
       options: {
-        legend: false,
+        legend: 'mini',
         slider: true,
         bucket: true
       },

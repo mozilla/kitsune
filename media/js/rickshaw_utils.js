@@ -395,7 +395,29 @@ k.Graph.prototype.initAxises = function() {
 };
 
 k.Graph.prototype.initLegend = function() {
-  if (this.options.legend) {
+  if (this.options.legend == 'mini') {
+
+    var i;
+    var series, line;
+    var $legend, $series, $li;
+
+    $legend = $('<div class="legend"></div>')
+      .appendTo(this.dom.elem.find('.inline-controls'));
+    $series = $('<ul>');
+
+    for (i=0; i < this.data.series.length; i++) {
+      line = this.data.series[i];
+      $li = $('<li>').appendTo($series);
+      $('<span class="color-square">')
+        .css('background', line.color)
+        .appendTo($li);
+      $('<span>').text(line.name).appendTo($li);
+    }
+
+    $legend.append($series);
+
+  } else if (this.options.legend) {
+
     this.dom.legend = this.dom.elem.find('.legend');
     this.dom.legend.empty();
 
