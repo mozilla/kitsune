@@ -36,14 +36,14 @@ function init() {
 
   makeKPIGraph($('#kpi-vote'), [
     {
-      'name': gettext('Article Votes: % Helpful'),
-      'slug': 'wiki_percent',
-      'func': k.Graph.fraction('kb_helpful', 'kb_votes')
+      name: gettext('Article Votes: % Helpful'),
+      slug: 'wiki_percent',
+      func: k.Graph.fraction('kb_helpful', 'kb_votes')
     },
     {
-      'name': gettext('Answer Votes: % Helpful'),
-      'slug': 'ans_percent',
-      'func': k.Graph.fraction('ans_helpful', 'ans_votes')
+      name: gettext('Answer Votes: % Helpful'),
+      slug: 'ans_percent',
+      func: k.Graph.fraction('ans_helpful', 'ans_votes')
     }
   ]);
 
