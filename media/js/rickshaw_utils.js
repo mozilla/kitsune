@@ -782,6 +782,8 @@ Rickshaw.Graph.Axis.ScaledY.prototype.render = function() {
     .call(axis);
   if (this.side === 'left') {
       group.attr('transform', 'translate(40, 0)');
+  } else {
+    group.select('path.domain').attr('style', 'transform: translate(1px, 0)');
   }
 };
 

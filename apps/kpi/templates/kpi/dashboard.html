@@ -3,54 +3,45 @@
 
 {% set classes = ('kpi-dashboard ') %}
 {% set title = _('KPI Dashboard') %}
-{% set scripts = ('common', 'highcharts', 'rickshaw', 'kpi.dashboard') %}
+{% set scripts = ('rickshaw', 'kpi.dashboard') %}
 {% set styles = ('rickshaw', 'kpi.dashboard') %}
 
 {% block content %}
-  <article id="kpi-dash">
-
-    <h1>{{ title }}</h1>
-
-    {# Old Backbone+Highcharts because Rickshaw can't do multiple
-       Y-axises yet, and that is important for this graph. #}
-    <div id="kpi-dash-app"
-      data-questions-url="{{ url('api_dispatch_list', resource_name='kpi_questions', api_name='v1') }}">
-    </div>
-
-    <ul class="kpi-legend" id="kpi-legend-questions">
-      <li>
-        <p><strong>{% trans %}Questions solved{% endtrans %}</strong></p>
-        <p>{% trans %}
-          Definition: Percentage of threads that have answer marked as a
-          solution{% endtrans %}
-        </p>
-      </li>
-      <li>
-        <p><strong>{% trans %}
-          Questions responded to within X hours{% endtrans %}
-        </strong></p>
-        <p>{% trans %}
-          Definition: Percentage of questions that get an action within X
-          hours{% endtrans %}
-        </p>
-      </li>
-    </ul>
-
-    <!-- Backbone View Templates -->
-    <script type="text/template" id="chart-template">
-      <select class="grouping">
-        <option value="d">{{ _('Daily') }}</option>
-        <option value="w">{{ _('Weekly') }}</option>
-        <option value="m">{{ _('Monthly') }}</option>
-      </select>
-      <div class="placeholder"></div>
-    </script>
-
-  </article>
-
   <article id="kpi-dash-rickshaw">
 
-    {# New hotness: Rickshaw graphs #}
+    <section id="kpi-questions"
+     data-url="{{ url('api_dispatch_list', resource_name='kpi_questions', api_name='v1') }}">
+
+     <h2>{{ _('Questions') }}</h2>
+
+      <div class="rickshaw">
+        <div class="inline-controls"></div>
+        <div class="graph-container">
+          <div class="slider"></div>
+          <div class="graph"></div>
+        </div>
+      </div>
+
+      <ul class="kpi-legend" id="kpi-legend-questions">
+        <li>
+          <p><strong>{% trans %}Questions solved{% endtrans %}</strong></p>
+          <p>{% trans %}
+            Definition: Percentage of threads that have answer marked as a
+            solution{% endtrans %}
+          </p>
+        </li>
+        <li>
+          <p><strong>{% trans %}
+            Questions responded to within X hours{% endtrans %}
+          </strong></p>
+          <p>{% trans %}
+            Definition: Percentage of questions that get an action within X
+            hours{% endtrans %}
+          </p>
+        </li>
+      </ul>
+    </section>
+
     <section id="kpi-vote"
      data-url="{{ url('api_dispatch_list', resource_name='kpi_vote', api_name='v1') }}">
 
