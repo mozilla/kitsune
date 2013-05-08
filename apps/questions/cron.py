@@ -8,7 +8,7 @@ from django.db import connection, transaction
 
 import cronjobs
 
-from questions.models import Question, QuestionVote
+from questions.models import Question, QuestionVote, QuestionMappingType
 from questions.tasks import update_question_vote_chunk
 from search.es_utils import ES_EXCEPTIONS, get_documents
 from search.tasks import index_task
@@ -99,7 +99,7 @@ def auto_lock_old_questions():
                 for chunk in chunked(q_ids, 100):
 
                     # Fetch all the documents we need to update.
-                    es_docs = get_documents(Question, chunk)
+                    es_docs = get_documents(QuestionMappingType, chunk)
 
                     log.info('Updating %d index documents', len(es_docs))
 
@@ -111,7 +111,8 @@ def auto_lock_old_questions():
                         doc[u'question_is_locked'] = True
                         documents.append(doc)
 
-                    Question.bulk_index(documents, id_field='document_id')
+                    QuestionMappingType.bulk_index(
+                        documents, id_field='document_id')
 
             except ES_EXCEPTIONS:
                 # Something happened with ES, so let's push index

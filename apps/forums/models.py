@@ -13,8 +13,7 @@ from sumo.helpers import urlparams, wiki_to_html
 from sumo.urlresolvers import reverse
 from sumo.models import ModelBase
 from search.models import (SearchMappingType, SearchMixin,
-                           register_for_indexing, register_mapping_type,
-                           register_for_unified_search)
+                           register_for_indexing, register_mapping_type)
 
 
 def _last_post_from(posts, exclude_post=None):
@@ -98,7 +97,6 @@ class Forum(NotificationsMixin, ModelBase):
         self.last_post = _last_post_from(posts, exclude_post=exclude_post)
 
 
-@register_for_unified_search
 class Thread(NotificationsMixin, ModelBase, SearchMixin):
     title = models.CharField(max_length=255)
     forum = models.ForeignKey('Forum')
@@ -189,89 +187,13 @@ class Thread(NotificationsMixin, ModelBase, SearchMixin):
     def get_mapping_type(cls):
         return ThreadMappingType
 
-    @classmethod
-    def get_query_fields(cls):
-        # TODO: Nix this
-        return ['post_title', 'post_content']
-
-    @classmethod
-    def get_mapping(cls):
-        # TODO: Nix this
-        return {
-            'id': {'type': 'long'},
-            'document_id': {'type': 'string', 'index': 'not_analyzed'},
-            'model': {'type': 'string', 'index': 'not_analyzed'},
-            'url': {'type': 'string', 'index': 'not_analyzed'},
-            'indexed_on': {'type': 'integer'},
-            'created': {'type': 'integer'},
-            'updated': {'type': 'integer'},
-
-            'post_forum_id': {'type': 'integer'},
-            'post_title': {'type': 'string', 'analyzer': 'snowball'},
-            'post_is_sticky': {'type': 'boolean'},
-            'post_is_locked': {'type': 'boolean'},
-            'post_author_id': {'type': 'integer'},
-            'post_author_ord': {'type': 'string', 'index': 'not_analyzed'},
-            'post_content': {'type': 'string', 'analyzer': 'snowball',
-                             'store': 'yes',
-                             'term_vector': 'with_positions_offsets'},
-            'post_replies': {'type': 'integer'}}
-
-    @classmethod
-    def extract_document(cls, obj_id, obj=None):
-        # TODO: Nix this
-        """Extracts interesting thing from a Thread and its Posts"""
-        if obj is None:
-            obj = cls.objects.select_related('last_post').get(pk=obj_id)
-
-        d = {}
-        d['id'] = obj.id
-        d['document_id'] = cls.get_document_id(obj.id)
-        d['model'] = cls.get_model_name()
-        d['url'] = obj.get_absolute_url()
-        d['indexed_on'] = int(time.time())
-
-        # TODO: Sphinx stores created and updated as seconds since the
-        # epoch, so we convert them to that format here so that the
-        # search view works correctly. When we ditch Sphinx, we should
-        # see if it's faster to filter on ints or whether we should
-        # switch them to dates.
-        d['created'] = int(time.mktime(obj.created.timetuple()))
-
-        if obj.last_post is not None:
-            d['updated'] = int(time.mktime(obj.last_post.created.timetuple()))
-        else:
-            d['updates'] = None
-
-        d['post_forum_id'] = obj.forum.id
-        d['post_title'] = obj.title
-        d['post_is_sticky'] = obj.is_sticky
-        d['post_is_locked'] = obj.is_locked
-
-        d['post_replies'] = obj.replies
-
-        author_ids = set()
-        author_ords = set()
-        content = []
-
-        for post in obj.post_set.select_related('author').all():
-            author_ids.add(post.author.id)
-            author_ords.add(post.author.username)
-            content.append(post.content)
-
-        d['post_author_id'] = list(author_ids)
-        d['post_author_ord'] = list(author_ords)
-        d['post_content'] = content
-
-        return d
-
-    @classmethod
-    def search(cls):
-        return super(Thread, cls).search().order_by('created')
-
 
 @register_mapping_type
 class ThreadMappingType(SearchMappingType):
+    @classmethod
+    def search(cls):
+        return super(ThreadMappingType, cls).search().order_by('created')
+
     @classmethod
     def get_model(cls):
         return Thread

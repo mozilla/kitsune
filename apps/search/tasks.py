@@ -121,7 +121,7 @@ def index_task(cls, id_list, **kw):
             'id', flat=True)
         for id_ in qs:
             try:
-                cls.index(cls.extract_document(id_))
+                cls.index(cls.extract_document(id_), id_=id_)
             except UnindexMeBro:
                 # If extract_document throws this, then we need to
                 # remove this item from the index.

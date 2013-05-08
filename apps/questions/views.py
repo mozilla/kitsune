@@ -49,10 +49,11 @@ from questions.karma_actions import (SolutionAction, AnswerMarkedHelpfulAction,
                                      AnswerMarkedNotHelpfulAction)
 from questions.marketplace import (MARKETPLACE_CATEGORIES, submit_ticket,
                                    ZendeskError)
-from questions.models import Question, Answer, QuestionVote, AnswerVote
+from questions.models import (Question, Answer, QuestionVote, AnswerVote,
+                              QuestionMappingType)
 from questions.question_config import products
 from search.utils import locale_or_default, clean_excerpt
-from search.es_utils import ES_EXCEPTIONS, SphilasticUnified, F
+from search.es_utils import ES_EXCEPTIONS, Sphilastic, F
 from sumo.helpers import urlparams
 from sumo.urlresolvers import reverse
 from sumo.utils import paginate, simple_paginate, build_paged_url, user_or_ip
@@ -63,7 +64,7 @@ from upload.views import upload_imageattachment
 from users.forms import RegisterForm
 from users.models import Setting
 from users.utils import handle_login, handle_register
-from wiki.models import Document
+from wiki.models import Document, DocumentMappingType
 from wiki.facets import documents_for
 
 
@@ -1192,16 +1193,7 @@ def stats_topic_data(bucket_days, start, end):
 
     Uses elastic search.
     """
-    # Woah! object?! Yeah, so what happens is that SphilasticUnified is
-    # really an elasticutils.S and that requires a Django ORM model
-    # argument. That argument only gets used if you want object
-    # results--for every hit it gets back from ES, it creates an
-    # object of the type of the Django ORM model you passed in. We use
-    # object here to satisfy the need for a type in the constructor
-    # and make sure we don't ever ask for object results.
-    #
-    # The above comment was copy/pasted from search/views.py.
-    search = SphilasticUnified(object)
+    search = Sphilastic(QuestionMappingType)
 
     bucket = 24 * 60 * 60 * bucket_days
 
@@ -1331,8 +1323,8 @@ def _search_suggestions(request, text, locale, product_slugs):
     """
     # TODO: this can be reworked to pull data from ES rather than
     # hit the db.
-    question_s = Question.search()
-    wiki_s = Document.search()
+    question_s = QuestionMappingType.search()
+    wiki_s = DocumentMappingType.search()
 
     # Max number of search results per type.
     WIKI_RESULTS = QUESTIONS_RESULTS = 3
@@ -1347,9 +1339,9 @@ def _search_suggestions(request, text, locale, product_slugs):
     try:
         # Search for relevant KB documents.
         query = dict(('%s__text' % field, text)
-                      for field in Document.get_query_fields())
+                      for field in DocumentMappingType.get_query_fields())
         query.update(dict(('%s__text_phrase' % field, text)
-                      for field in Document.get_query_fields()))
+                      for field in DocumentMappingType.get_query_fields()))
         filter = F()
         filter |= F(document_locale=locale)
         filter |= F(document_locale=settings.WIKI_DEFAULT_LANGUAGE)
@@ -1377,9 +1369,9 @@ def _search_suggestions(request, text, locale, product_slugs):
 
         # Search for relevant questions.
         query = dict(('%s__text' % field, text)
-                      for field in Question.get_query_fields())
+                      for field in QuestionMappingType.get_query_fields())
         query.update(dict(('%s__text_phrase' % field, text)
-                      for field in Question.get_query_fields()))
+                      for field in QuestionMappingType.get_query_fields()))
 
         max_age = int(time.time()) - settings.SEARCH_DEFAULT_MAX_QUESTION_AGE
         # Filter questions by language. Questions should be either in English
@@ -1414,7 +1406,7 @@ def _search_suggestions(request, text, locale, product_slugs):
             except Question.DoesNotExist:
                 pass
 
-    except (Timeout, ConnectionError, ElasticHttpError) as exc:
+    except ES_EXCEPTIONS as exc:
         statsd.incr('questions.suggestions.eserror')
         log.debug(exc)
 

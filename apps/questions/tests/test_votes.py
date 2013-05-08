@@ -1,6 +1,6 @@
 from nose.tools import eq_
 
-from questions.models import Question, QuestionVote
+from questions.models import Question, QuestionMappingType, QuestionVote
 from questions.tests import TestCaseBase, question, questionvote
 from questions.cron import update_weekly_votes
 from search.tests.test_es import ElasticTestCase
@@ -43,9 +43,9 @@ class TestVotesWithElasticSearch(ElasticTestCase):
         # NB: Need to call .values_dict() here and later otherwise we
         # get a Question object which has data from the database and
         # not the index.
-        document = (Question.search()
-                            .values_dict('question_num_votes_past_week')
-                            .filter(id=q.id))[0]
+        document = (QuestionMappingType.search()
+                    .values_dict('question_num_votes_past_week')
+                    .filter(id=q.id))[0]
         eq_(document['question_num_votes_past_week'], 0)
 
         vote = questionvote(question=q, anonymous_id='abc123')
@@ -59,7 +59,7 @@ class TestVotesWithElasticSearch(ElasticTestCase):
         q = Question.objects.get(pk=q.pk)
         eq_(1, q.num_votes_past_week)
 
-        document = (Question.search()
-                            .values_dict('question_num_votes_past_week')
-                            .filter(id=q.id))[0]
+        document = (QuestionMappingType.search()
+                    .values_dict('question_num_votes_past_week')
+                    .filter(id=q.id))[0]
         eq_(document['question_num_votes_past_week'], 1)

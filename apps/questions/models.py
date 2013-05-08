@@ -27,8 +27,8 @@ from questions.question_config import products
 from questions.tasks import (update_question_votes, update_answer_pages,
                              log_answer)
 from search.models import (SearchMappingType, SearchMixin,
-                           register_for_indexing, register_mapping_type,
-                           register_for_unified_search)
+                           register_for_indexing, register_mapping_type)
+
 from sumo.helpers import urlparams
 from sumo.models import ModelBase, LocaleField
 from sumo.parser import wiki_to_html
@@ -46,7 +46,6 @@ log = logging.getLogger('k.questions')
 CACHE_TIMEOUT = 10800  # 3 hours
 
 
-@register_for_unified_search
 class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
     """A support question."""
     title = models.CharField(max_length=255)
@@ -308,133 +307,6 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
     @classmethod
     def get_mapping_type(cls):
         return QuestionMappingType
-
-    @classmethod
-    def get_query_fields(cls):
-        # TODO: Nix this
-        return ['question_title',
-                'question_content',
-                'question_answer_content']
-
-    @classmethod
-    def get_mapping(cls):
-        # TODO: Nix this
-        return {
-            'id': {'type': 'long'},
-            'document_id': {'type': 'string', 'index': 'not_analyzed'},
-            'model': {'type': 'string', 'index': 'not_analyzed'},
-            'url': {'type': 'string', 'index': 'not_analyzed'},
-            'indexed_on': {'type': 'integer'},
-            'created': {'type': 'integer'},
-            'updated': {'type': 'integer'},
-
-            'product': {'type': 'string', 'index': 'not_analyzed'},
-            'topic': {'type': 'string', 'index': 'not_analyzed'},
-
-            'question_title': {'type': 'string', 'analyzer': 'snowball'},
-            'question_content':
-                {'type': 'string', 'analyzer': 'snowball',
-                # TODO: Stored because originally, this is the
-                # only field we were excerpting on. Standardize
-                # one way or the other.
-                 'store': 'yes', 'term_vector': 'with_positions_offsets'},
-            'question_answer_content':
-                {'type': 'string', 'analyzer': 'snowball'},
-            'question_num_answers': {'type': 'integer'},
-            'question_is_solved': {'type': 'boolean'},
-            'question_is_locked': {'type': 'boolean'},
-            'question_has_answers': {'type': 'boolean'},
-            'question_has_helpful': {'type': 'boolean'},
-            'question_creator': {'type': 'string', 'index': 'not_analyzed'},
-            'question_answer_creator':
-                {'type': 'string', 'index': 'not_analyzed'},
-            'question_num_votes': {'type': 'integer'},
-            'question_num_votes_past_week': {'type': 'integer'},
-            'question_answer_votes': {'type': 'integer'},
-            'question_tag': {'type': 'string', 'index': 'not_analyzed'},
-            'question_locale': {'type': 'string', 'index': 'not_analyzed'},
-            }
-
-    @classmethod
-    def extract_document(cls, obj_id, obj=None):
-        """Extracts indexable attributes from a Question and its answers."""
-        # TODO: Nix this
-        fields = ['id', 'title', 'content', 'num_answers', 'solution_id',
-                  'is_locked', 'created', 'updated', 'num_votes_past_week',
-                  'locale']
-        composed_fields = ['creator__username']
-        all_fields = fields + composed_fields
-
-        if obj is None:
-            # Note: Need to keep this in sync with
-            # tasks.update_question_vote_chunk.
-            obj = cls.uncached.values(*all_fields).get(pk=obj_id)
-        else:
-            fixed_obj = dict([(field, getattr(obj, field))
-                              for field in fields])
-            fixed_obj['creator__username'] = obj.creator.username
-            obj = fixed_obj
-
-        d = {}
-        d['id'] = obj['id']
-        d['document_id'] = cls.get_document_id(obj['id'])
-        d['model'] = cls.get_model_name()
-
-        # We do this because get_absolute_url is an instance method
-        # and we don't want to create an instance because it's a DB
-        # hit and expensive. So we do it by hand. get_absolute_url
-        # doesn't change much, so this is probably ok.
-        d['url'] = reverse('questions.answers',
-                           kwargs={'question_id': obj['id']})
-
-        d['indexed_on'] = int(time.time())
-
-        # TODO: Sphinx stores created and updated as seconds since the
-        # epoch, so we convert them to that format here so that the
-        # search view works correctly. When we ditch Sphinx, we should
-        # see if it's faster to filter on ints or whether we should
-        # switch them to dates.
-        d['created'] = int(time.mktime(obj['created'].timetuple()))
-        d['updated'] = int(time.mktime(obj['updated'].timetuple()))
-
-        topics = Topic.uncached.filter(question__id=obj['id'])
-        products = Product.uncached.filter(question__id=obj['id'])
-        d['topic'] = [t.slug for t in topics]
-        d['product'] = [p.slug for p in products]
-
-        d['question_title'] = obj['title']
-        d['question_content'] = obj['content']
-        d['question_num_answers'] = obj['num_answers']
-        d['question_is_solved'] = bool(obj['solution_id'])
-        d['question_is_locked'] = obj['is_locked']
-        d['question_has_answers'] = bool(obj['num_answers'])
-
-        d['question_creator'] = obj['creator__username']
-        d['question_num_votes'] = (QuestionVote.objects
-                                               .filter(question=obj['id'])
-                                               .count())
-        d['question_num_votes_past_week'] = obj['num_votes_past_week']
-
-        d['question_tag'] = list(TaggedItem.tags_for(
-            Question, Question(pk=obj_id)).values_list('name', flat=True))
-
-        d['question_locale'] = obj['locale']
-
-        answer_values = list(Answer.objects
-                                   .filter(question=obj_id)
-                                   .values_list('content',
-                                                'creator__username'))
-
-        d['question_answer_content'] = [a[0] for a in answer_values]
-        d['question_answer_creator'] = list(set(a[1] for a in answer_values))
-
-        if not answer_values:
-            d['question_has_helpful'] = False
-        else:
-            d['question_has_helpful'] = Answer.objects.filter(
-                question=obj_id).filter(votes__helpful=True).exists()
-
-        return d
 
     @classmethod
     def recent_asked_count(cls, extra_filter=None):
