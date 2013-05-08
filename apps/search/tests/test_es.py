@@ -26,41 +26,6 @@ from users.tests import user
 from wiki.tests import document, revision, helpful_vote
 
 
-# TODO: Nix this
-class ElasticSearchTasksTests(ElasticTestCase):
-    @mock.patch.object(Question, 'index')
-    def test_tasks(self, index_fun):
-        """Tests to make sure tasks are added and run"""
-        q = question()
-        # Don't call self.refresh here since that calls generate_tasks().
-
-        eq_(index_fun.call_count, 0)
-
-        q.save()
-        generate_tasks()
-
-        eq_(index_fun.call_count, 1)
-
-    @mock.patch.object(Question, 'index')
-    def test_tasks_squashed(self, index_fun):
-        """Tests to make sure tasks are squashed"""
-        q = question()
-        # Don't call self.refresh here since that calls generate_tasks().
-
-        eq_(index_fun.call_count, 0)
-
-        q.save()
-        q.save()
-        q.save()
-        q.save()
-
-        eq_(index_fun.call_count, 0)
-
-        generate_tasks()
-
-        eq_(index_fun.call_count, 1)
-
-
 class ElasticSearchViewPagingTests(ElasticTestCase):
     client_class = LocalizingClient
 
@@ -257,40 +222,40 @@ class ElasticSearchUnifiedViewTests(ElasticTestCase):
         content = json.loads(response.content)
         eq_(content['total'], 1)
 
-    # def test_advanced_search_sortby_documents_helpful(self):
-    #     """Tests advanced search with a sortby_documents by helpful"""
-    #     r1 = revision(is_approved=True, save=True)
-    #     r2 = revision(is_approved=True, save=True)
-    #     helpful_vote(revision=r2, helpful=True, save=True)
+    def test_advanced_search_sortby_documents_helpful(self):
+        """Tests advanced search with a sortby_documents by helpful"""
+        r1 = revision(is_approved=True, save=True)
+        r2 = revision(is_approved=True, save=True)
+        helpful_vote(revision=r2, helpful=True, save=True)
 
-    #     # Note: We have to wipe and rebuild the index because new
-    #     # helpful_votes don't update the index data.
-    #     self.setup_indexes()
-    #     self.reindex_and_refresh()
+        # Note: We have to wipe and rebuild the index because new
+        # helpful_votes don't update the index data.
+        self.setup_indexes()
+        self.reindex_and_refresh()
 
-    #     # r2.document should come first with 1 vote.
-    #     response = self.client.get(reverse('search'), {
-    #         'w': '1', 'a': '1', 'sortby_documents': 'helpful',
-    #         'format': 'json'})
-    #     eq_(200, response.status_code)
+        # r2.document should come first with 1 vote.
+        response = self.client.get(reverse('search'), {
+            'w': '1', 'a': '1', 'sortby_documents': 'helpful',
+            'format': 'json'})
+        eq_(200, response.status_code)
 
-    #     content = json.loads(response.content)
-    #     eq_(r2.document.title, content['results'][0]['title'])
+        content = json.loads(response.content)
+        eq_(r2.document.title, content['results'][0]['title'])
 
-    #     # Vote twice on r1, now it should come first.
-    #     helpful_vote(revision=r1, helpful=True, save=True)
-    #     helpful_vote(revision=r1, helpful=True, save=True)
+        # Vote twice on r1, now it should come first.
+        helpful_vote(revision=r1, helpful=True, save=True)
+        helpful_vote(revision=r1, helpful=True, save=True)
 
-    #     self.setup_indexes()
-    #     self.reindex_and_refresh()
+        self.setup_indexes()
+        self.reindex_and_refresh()
 
-    #     response = self.client.get(reverse('search'), {
-    #         'w': '1', 'a': '1', 'sortby_documents': 'helpful',
-    #         'format': 'json'})
-    #     eq_(200, response.status_code)
+        response = self.client.get(reverse('search'), {
+            'w': '1', 'a': '1', 'sortby_documents': 'helpful',
+            'format': 'json'})
+        eq_(200, response.status_code)
 
-    #     content = json.loads(response.content)
-    #     eq_(r1.document.title, content['results'][0]['title'])
+        content = json.loads(response.content)
+        eq_(r1.document.title, content['results'][0]['title'])
 
     def test_advanced_search_questions_num_votes(self):
         """Tests advanced search for questions num_votes filter"""
@@ -908,16 +873,6 @@ class ElasticSearchUnifiedViewTests(ElasticTestCase):
         facet_text = doc('#product-filter').text()
         assert 'Firefox (2)' in facet_text
         assert 'Firefox for mobile (1)' in facet_text
-
-
-# TODO: Nix this
-class ElasticSearchUtilsTests(ElasticTestCase):
-    def test_get_documents(self):
-        q = question(save=True)
-        self.refresh()
-        docs = es_utils.get_documents(Question, [q.id])
-        docs = [int(mem[u'id']) for mem in docs]
-        eq_(docs, [q.id])
 
 
 class ElasticSearchSuggestionsTests(ElasticTestCase):

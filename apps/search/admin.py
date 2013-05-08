@@ -1,7 +1,6 @@
 import logging
 from datetime import datetime
 from difflib import SequenceMatcher
-from pprint import pformat
 
 from django.conf import settings
 from django.contrib import admin
@@ -11,11 +10,9 @@ from django.shortcuts import render
 
 from search import es_utils
 from search.es_utils import (get_doctype_stats, get_indexes, delete_index,
-                             ES_EXCEPTIONS, get_indexable,
-                             get_indexable_for_mapping_types,
-                             SUMO_DOCTYPE, get_mappings, CHUNK_SIZE,
+                             ES_EXCEPTIONS, get_indexable, CHUNK_SIZE,
                              recreate_index)
-from search.models import Record, get_search_models
+from search.models import Record, get_mapping_types
 from search.tasks import OUTSTANDING_INDEX_CHUNKS, index_chunk_task
 from search.utils import chunked, create_batch_id
 from sumo.redis_utils import redis_client, RedisError
@@ -82,18 +79,13 @@ def handle_reindex(request):
 
     if delete_index_first:
         # Coming from the delete form, so we reindex all models.
-        models_to_index = None
+        mapping_types_to_index = None
     else:
-        # TODO: Re-enable this. Need to nix it now because the values
-        # in the form are nonsense since we're mixing models with
-        # mapping types.
-
-        # # Coming from the reindex form, so we reindex whatever we're
-        # # told.
-        # models_to_index = [name.replace('check_', '')
-        #                    for name in request.POST.keys()
-        #                    if name.startswith('check_')]
-        models_to_index = None
+        # Coming from the reindex form, so we reindex whatever we're
+        # told.
+        mapping_types_to_index = [name.replace('check_', '')
+                                  for name in request.POST.keys()
+                                  if name.startswith('check_')]
 
     # TODO: If this gets fux0rd, then it's possible this could be
     # non-zero and we really want to just ignore it. Need the ability
@@ -119,9 +111,7 @@ def handle_reindex(request):
     # Break up all the things we want to index into chunks. This
     # chunkifies by class then by chunk size.
     chunks = []
-
-    mtypes = get_indexable_for_mapping_types(mapping_types=models_to_index)
-    for cls, indexable in mtypes:
+    for cls, indexable in get_indexable(mapping_types=mapping_types_to_index):
         chunks.extend(
             (cls, chunk) for chunk in chunked(indexable, CHUNK_SIZE))
 
@@ -241,7 +231,7 @@ def index_view(request):
     data = None
 
     bucket_to_model = dict(
-        [(cls._meta.db_table, cls) for cls in get_search_models()])
+        [(cls.get_mapping_type_name(), cls) for cls in get_mapping_types()])
 
     if requested_bucket and requested_id:
         # Nix whitespace because I keep accidentally picking up spaces
@@ -285,34 +275,6 @@ def index_view(request):
 
 
 admin.site.register_view('index', index_view, 'Search - Index Browsing')
-
-
-def mapping_view(request):
-    # TODO: Nix this
-    search_models = get_search_models()
-    merged_mapping = {
-        SUMO_DOCTYPE: {
-            'properties': get_mappings(
-                [(cls._meta.db_table, cls.get_mapping())
-                 for cls in search_models])
-            }
-        }
-
-    # TODO: This indents poorly and the results are hard to read.  I
-    # think to do it better, we'd need to write our own pretty-printer
-    # which isn't hard, but I'm pushing it off until we decide it's
-    # necessary.
-    merged_mapping = pformat(merged_mapping, indent=4)
-
-    return render(
-        request,
-        'admin/search_mapping.html',
-        {'title': 'Mapping Browsing',
-         'mapping': merged_mapping
-         })
-
-
-admin.site.register_view('mapping', mapping_view, 'Search - Mapping Browsing')
 
 
 class HashableWrapper(object):

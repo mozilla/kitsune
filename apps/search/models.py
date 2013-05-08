@@ -17,28 +17,8 @@ from sumo.models import ModelBase
 log = logging.getLogger('k.search.es')
 
 
-# TODO: Nix this
-# db_table name -> model Class for search models
-_search_models = {}
-
-
 # db_table_name -> MappingType class
 _search_mapping_types = {}
-
-
-# TODO: Nix this
-def get_search_models(models=None):
-    """Returns a list of model classes"""
-    # TODO: if we do weakrefs, then we should remove dead refs here.
-
-    if models is None:
-        values = _search_models.values()
-    else:
-        values = [_search_models[name] for name in models]
-
-    # Sort to stabilize.
-    values.sort(key=lambda cls: cls._meta.db_table)
-    return values
 
 
 def get_mapping_types(mapping_types=None):
@@ -85,187 +65,15 @@ class SearchMixin(object):
         """Return the MappingType for this model"""
         raise NotImplementedError
 
-    # TODO: Nix this
-    @classmethod
-    def get_model(cls):
-        return cls
-
-    # TODO: Nix this
-    @classmethod
-    def get_mapping(self):
-        """Return the ES mapping properties for this document type.
-
-        For example... ::
-
-            {'id': {'type': 'integer'}, ...}
-
-        """
-        raise NotImplementedError
-
-    # TODO: Nix this
-    @classmethod
-    def extract_document(cls, obj_id):
-        """Extracts the ES index document for this instance
-
-        This must be implemented. It should return a dict representing
-        the document to be indexed.
-
-        For examples, see the codebase.
-
-        :raises UnindexMeBro: if the document should be removed
-            from the index
-
-        """
-        raise NotImplementedError
-
-    # TODO: Nix this
-    @classmethod
-    def get_model_name(cls):
-        """Returns model name for this model class
-
-        By default this is ``cls._meta.db_table``.
-        """
-        return cls._meta.db_table
-
-    # TODO: Nix this
-    @classmethod
-    def search(cls):
-        """Returns an S for this class
-
-        This applies a filter on doctype=cls._meta.db_table which
-        makes sure to return results specific to this class.
-        """
-        return es_utils.SphilasticUnified(cls).filter(
-            model=cls.get_model_name())
-
     def index_later(self):
         """Register myself to be indexed at the end of the request."""
-        # TODO: Nix this
-        _local_tasks().add((index_task.delay, (self.__class__, (self.id,))))
         _local_tasks().add((index_task.delay, (
                     self.get_mapping_type(), (self.id,))))
 
     def unindex_later(self):
         """Register myself to be unindexed at the end of the request."""
-        # TODO: Nix this
-        _local_tasks().add((unindex_task.delay, (self.__class__, (self.id,))))
         _local_tasks().add((unindex_task.delay, (
                     self.get_mapping_type(), (self.id,))))
-
-    # TODO: Nix this
-    @classmethod
-    def bulk_index(cls, documents, id_field='id', es=None):
-        """Adds or updates a batch of documents.
-
-        :arg documents: List of Python dicts representing individual
-            documents to be added to the index
-
-            .. Note::
-
-               This must be serializable into JSON.
-
-        :arg id_field: The name of the field to use as the document
-            id. This defaults to 'id'.
-
-        :arg es: The `ElasticSearch` to use. If you don't specify an
-            `ElasticSearch`, it'll use `cls.get_es()`.
-
-        .. Note::
-
-           If you need the documents available for searches
-           immediately, make sure to refresh the index by calling
-           ``refresh_index()``.
-
-
-        FIXME: This is copied from Indexable.
-
-        """
-        if es is None:
-            es = es_utils.get_es()
-
-        es.bulk_index(cls.get_index(),
-                      cls.get_mapping_type_name(),
-                      documents,
-                      id_field)
-
-    # TODO: Nix this
-    @classmethod
-    def get_index(cls):
-        return es_utils.WRITE_INDEX
-
-    # TODO: Nix this
-    @classmethod
-    def get_mapping_type_name(cls):
-        return es_utils.SUMO_DOCTYPE
-
-    # TODO: Nix this
-    @classmethod
-    def get_query_fields(cls):
-        return []
-
-    # TODO: Nix this
-    @classmethod
-    def get_indexable(cls):
-        # Some models have a gazillion instances. So we want to go
-        # through them one at a time in a way that doesn't pull all
-        # the data into memory all at once. So we iterate through ids
-        # and pull the objects one at a time.
-        return cls.objects.order_by('id').values_list('id', flat=True)
-
-    # TODO: Nix this
-    @classmethod
-    def get_document_id(cls, id_):
-        """Generates a composed elasticsearch document id"""
-        return '%s:%s' % (cls.get_model_name(), id_)
-
-    # TODO: Nix this
-    @classmethod
-    def index(cls, document, id_=None, force_insert=False, es=None):
-        """Indexes a single document"""
-        if not settings.ES_LIVE_INDEXING:
-            return
-
-        if es is None:
-            es = es_utils.get_es()
-
-        es.index(
-            cls.get_index(),
-            cls.get_mapping_type_name(),
-            document,
-            id=document['document_id'],
-            force_insert=force_insert)
-
-    # TODO: Nix this
-    @classmethod
-    def unindex(cls, id_, es=None):
-        """Removes a document from the index"""
-        if not settings.ES_LIVE_INDEXING:
-            return
-
-        if es is None:
-            es = es_utils.get_es()
-
-        try:
-            es.delete(es_utils.WRITE_INDEX, es_utils.SUMO_DOCTYPE,
-                      cls.get_document_id(id_))
-
-        except ElasticHttpNotFoundError:
-            # Ignore the case where we try to delete something that's
-            # not there.
-            pass
-
-    # TODO: Fix this
-    @classmethod
-    def get_s(cls):
-        """Get an S."""
-        return es_utils.SphilasticUnified(object).values_dict()
-
-    # TODO: Fix this
-    @classmethod
-    def morelikethis(cls, id_, s, fields):
-        """morelikethis query."""
-        return list(MLT(
-            id_, s=s, mlt_fields=fields, min_term_freq=1, min_doc_freq=1))
 
 
 class SearchMappingType(MappingType, Indexable):
@@ -426,13 +234,6 @@ def register_for_indexing(app,
             # and delete it from the index. Otherwise, we just want to
             # update whatever model it's related to.
             delete if instance_to_indexee is _identity else update)
-
-
-# TODO: Nix this
-def register_for_unified_search(model_cls):
-    """Class decorator for registering models for unified search."""
-    _search_models[model_cls._meta.db_table] = model_cls
-    return model_cls
 
 
 def register_mapping_type(cls):

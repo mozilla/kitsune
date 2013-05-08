@@ -77,9 +77,9 @@ def update_question_vote_chunk(data):
 
         try:
             # Fetch all the documents we need to update.
-            from questions.models import Question
+            from questions.models import QuestionMappingType
             from search import es_utils
-            es_docs = es_utils.get_documents(Question, data)
+            es_docs = es_utils.get_documents(QuestionMappingType, data)
 
             # For each document, update the data and stick it back in the
             # index.
@@ -89,12 +89,12 @@ def update_question_vote_chunk(data):
                 num = id_to_num[int(doc[u'id'])]
                 doc[u'question_num_votes_past_week'] = num
 
-                Question.index(doc)
+                QuestionMappingType.index(doc, id_=doc['id'])
         except ES_EXCEPTIONS:
             # Something happened with ES, so let's push index updating
             # into an index_task which retries when it fails because
             # of ES issues.
-            index_task.delay(Question, id_to_num.keys())
+            index_task.delay(QuestionMappingType, id_to_num.keys())
 
 
 @task(rate_limit='4/m')

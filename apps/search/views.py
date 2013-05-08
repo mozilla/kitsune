@@ -14,21 +14,24 @@ from django.views.decorators.cache import cache_page
 
 import bleach
 import jinja2
+from elasticutils import S as UntypedS
 from elasticutils.utils import format_explanation
 from mobility.decorators import mobile_template
 from statsd import statsd
 from tower import ugettext as _, ugettext_lazy as _lazy
 
+from forums.models import ThreadMappingType
 from products.models import Product
-from search.models import get_search_models
+from search.models import get_mapping_types
 from search.utils import locale_or_default, clean_excerpt, ComposedList
-from questions.models import Question
+from questions.models import Question, QuestionMappingType
 import search as constants
+from search import es_utils
 from search.forms import SearchForm
-from search.es_utils import ES_EXCEPTIONS, SphilasticUnified, F
+from search.es_utils import ES_EXCEPTIONS, Sphilastic, F
 from sumo.utils import paginate, smart_int
 from wiki.facets import documents_for
-from wiki.models import Document
+from wiki.models import Document, DocumentMappingType
 
 
 EXCERPT_JOINER = _lazy(u'...', 'between search excerpts')
@@ -124,14 +127,10 @@ def search(request, template=None):
     else:
         lang_name = ''
 
-    # Woah! object?! Yeah, so what happens is that SphilasticUnified is
-    # really an elasticutils.S and that requires a Django ORM model
-    # argument. That argument only gets used if you want object
-    # results--for every hit it gets back from ES, it creates an
-    # object of the type of the Django ORM model you passed in. We use
-    # object here to satisfy the need for a type in the constructor
-    # and make sure we don't ever ask for object results.
-    searcher = SphilasticUnified(object)
+    # We use a regular S here because we want to search across
+    # multiple doctypes.
+    searcher = (UntypedS().es(urls=settings.ES_URLS)
+                          .indexes(es_utils.READ_INDEX))
 
     wiki_f = F(model='wiki_document')
     question_f = F(model='questions_question')
@@ -169,7 +168,6 @@ def search(request, template=None):
     # Start - support questions filters
 
     if cleaned['w'] & constants.WHERE_SUPPORT:
-
         # Solved is set by default if using basic search
         if a == '0' and not cleaned['has_helpful']:
             cleaned['has_helpful'] = constants.TERNARY_YES
@@ -260,16 +258,21 @@ def search(request, template=None):
     # Done with all the filtery stuff--time  to generate results
 
     # Combine all the filters and add to the searcher
+    doctypes = []
     final_filter = F()
     if cleaned['w'] & constants.WHERE_WIKI:
+        doctypes.append(DocumentMappingType.get_mapping_type_name())
         final_filter |= wiki_f
 
     if cleaned['w'] & constants.WHERE_SUPPORT:
+        doctypes.append(QuestionMappingType.get_mapping_type_name())
         final_filter |= question_f
 
     if cleaned['w'] & constants.WHERE_DISCUSSION:
+        doctypes.append(ThreadMappingType.get_mapping_type_name())
         final_filter |= discussion_f
 
+    searcher = searcher.doctypes(*doctypes)
     searcher = searcher.filter(final_filter)
 
     if 'explain' in request.GET and request.GET['explain'] == '1':
@@ -331,7 +334,7 @@ def search(request, template=None):
         # Build the query
         if cleaned_q:
             query_fields = chain(*[cls.get_query_fields()
-                                   for cls in get_search_models()])
+                                   for cls in get_mapping_types()])
 
             query = {}
             # Create text and text_phrase queries for every field
@@ -340,7 +343,7 @@ def search(request, template=None):
                 for query_type in ['text', 'text_phrase']:
                     query['%s__%s' % (field, query_type)] = cleaned_q
 
-            searcher = searcher.query(or_=query)
+            searcher = searcher.query(should=True, **query)
 
         num_results = min(searcher.count(), settings.SEARCH_MAX_RESULTS)
 
@@ -506,22 +509,22 @@ def suggestions(request):
     locale = locale_or_default(request.LANGUAGE_CODE)
     try:
         query = dict(('%s__text' % field, term)
-                     for field in Document.get_query_fields())
-        wiki_s = (Document.search()
+                     for field in DocumentMappingType.get_query_fields())
+        wiki_s = (DocumentMappingType.search()
                   .filter(document_is_archived=False)
                   .filter(document_locale=locale)
                   .values_dict('document_title', 'url')
                   .query(or_=query)[:5])
 
         query = dict(('%s__text' % field, term)
-                     for field in Question.get_query_fields())
-        question_s = (Question.search()
+                     for field in QuestionMappingType.get_query_fields())
+        question_s = (QuestionMappingType.search()
                       .filter(question_has_helpful=True)
                       .values_dict('question_title', 'url')
                       .query(or_=query)[:5])
 
         results = list(chain(question_s, wiki_s))
-    except (ESTimeoutError, ESMaxRetryError, ESException):
+    except ES_EXCEPTIONS:
         # If we have ES problems, we just send back an empty result
         # set.
         results = []

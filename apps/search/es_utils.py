@@ -38,27 +38,6 @@ class UnindexMeBro(Exception):
     pass
 
 
-# TODO: Nix this
-class SphilasticUnified(S):
-    """Shim around elasticutils.contrib.django.S. (Unified)
-
-    Implements some Kitsune-specific behavior to make our lives
-    easier.
-
-    """
-    def print_query(self):
-        pprint.pprint(self._build_query())
-
-    def get_indexes(self):
-        # SphilasticUnified is a searcher and so it's _always_ used in
-        # a read context. Therefore, we always return the READ_INDEX.
-        return [READ_INDEX]
-
-    def get_doctypes(self):
-        # SUMO uses a unified doctype, so this always returns that.
-        return [SUMO_DOCTYPE]
-
-
 class Sphilastic(S):
     """Shim around elasticutils.contrib.django.S.
 
@@ -80,45 +59,8 @@ class Sphilastic(S):
         return [READ_INDEX]
 
 
-# TODO: Nix this
-class MappingMergeError(Exception):
-    """Represents a mapping merge error"""
-    pass
-
-
 def get_mappings():
-    # TODO: Nix this merged mapping stuff
-
-    from search.models import get_search_models
-    mappings = [(cls._meta.db_table, cls.get_mapping())
-                for cls in get_search_models()]
-
-    merged_mapping = {}
-
-    for cls_name, mapping in mappings:
-        for key, val in mapping.items():
-            if key not in merged_mapping:
-                merged_mapping[key] = (val, [cls_name])
-                continue
-
-            # FIXME - We're comparing two dicts here. This might not
-            # work for non-trivial dicts.
-            if merged_mapping[key][0] != val:
-                raise MappingMergeError(
-                    '%s key different for %s and %s' %
-                    (key, cls_name, merged_mapping[key][1]))
-
-            merged_mapping[key][1].append(cls_name)
-
-    # Remove cls_name annotations from final mapping
-    merged_mapping = dict(
-        [(key, val[0]) for key, val in merged_mapping.items()])
-
-    mappings = {
-        SUMO_DOCTYPE: {
-            'properties': merged_mapping
-        }
-    }
+    mappings = {}
 
     from search.models import get_mapping_types
     for cls in get_mapping_types():
@@ -140,21 +82,6 @@ def get_indexes(all_indexes=False):
             for name, value in indexes.items()]
 
 
-def get_doctypes_for_index(index):
-    """Retrieves the list of doctypes in an index
-
-    Technically, this retrieves the list of names of mappings in the
-    index. In our case, that's the same list as the list of doctypes
-    in an index since we always specify mappings for our doctypes.
-
-    """
-    es = get_es()
-    cluster_state = es.cluster_state()['metadata']['indices']
-    if index in cluster_state:
-        return cluster_state[index]['mappings'].keys()
-    return []
-
-
 def get_doctype_stats(index):
     """Returns a dict of name -> count for documents indexed.
 
@@ -171,22 +98,11 @@ def get_doctype_stats(index):
         index doesn't exist
 
     """
-    # TODO: Nix the unified doctype stats here
-    from search.models import get_search_models
-
-    from elasticutils import S
-    s = S().es(urls=settings.ES_URLS).indexes(index)
-
     stats = {}
-    for cls in get_search_models():
-        model_name = cls.get_model_name()
-        stats['U: ' + model_name] = (s.doctypes(SUMO_DOCTYPE)
-                                      .filter(model=model_name).count())
 
-    for doctype in get_doctypes_for_index(index):
-        # We build our own S here because we just want counts and
-        # don't want to tie it to a MappingType.
-        stats[doctype] = s.doctypes(doctype).count()
+    from search.models import get_mapping_types
+    for cls in get_mapping_types():
+        stats[cls.get_mapping_type_name()] = cls.search().count()
 
     return stats
 
@@ -211,9 +127,8 @@ def get_documents(cls, ids):
     :arg cls: the class with a ``.search()`` to use
     :arg ids: the list of ids to retrieve documents for
 
-    :returns: list of documents
+    :returns: list of documents as dicts
     """
-    # TODO: Can probably ditch the values_dict() here.
     ret = cls.search().filter(id__in=ids).values_dict()[:len(ids)]
     return list(ret)
 
@@ -245,34 +160,7 @@ def get_index_settings(index):
     return es.get_settings(index).get(index, {}).get('settings', {})
 
 
-# TODO: Nix this
-def get_indexable(percent=100, search_models=None):
-    """Returns a list of (class, iterable) for all the things to index
-
-    :arg percent: Defaults to 100.  Allows you to specify how much of
-        each doctype you want to index.  This is useful for
-        development where doing a full reindex takes an hour.
-    :arg search_models: The list of models to index.
-
-    """
-    from search.models import get_search_models
-
-    # Note: Passing in None will get all the models.
-    search_models = get_search_models(search_models)
-
-    to_index = []
-    percent = float(percent) / 100
-    for cls in search_models:
-        indexable = cls.get_indexable()
-        if percent < 1:
-            indexable = indexable[:int(indexable.count() * percent)]
-        to_index.append((cls, indexable))
-
-    return to_index
-
-
-# TODO: Rename this back to get_indexable
-def get_indexable_for_mapping_types(percent=100, mapping_types=None):
+def get_indexable(percent=100, mapping_types=None):
     """Returns a list of (class, iterable) for all the things to index
 
     :arg percent: Defaults to 100.  Allows you to specify how much of
@@ -370,16 +258,22 @@ def es_reindex_cmd(percent=100, delete=False, mapping_types=None,
         # there were created in the last 180 days). We build that
         # indexable here.
 
-        all_indexable = get_indexable_for_mapping_types(
+        # Get only questions and wiki document stuff.
+        all_indexable = get_indexable(
             mapping_types=['questions_question', 'wiki_document'])
+
+        # The first item is questions because we specified that
+        # order. Old questions don't show up in searches, so we nix
+        # them by reversing the list (ordered by id ascending) and
+        # slicing it.
         all_indexable[0] = (all_indexable[0][0],
                             list(reversed(all_indexable[0][1]))[:15000])
 
     elif mapping_types:
-        all_indexable = get_indexable_for_mapping_types(percent, mapping_types)
+        all_indexable = get_indexable(percent, mapping_types)
 
     else:
-        all_indexable = get_indexable_for_mapping_types(percent)
+        all_indexable = get_indexable(percent)
 
     # We're doing a lot of indexing, so we get the refresh_interval
     # currently in the index, then nix refreshing. Later we'll restore
@@ -541,7 +435,6 @@ def es_status_cmd(checkindex=False, log=log):
             print 'There were %d missing_docs' % missing_docs
 
 
-# TODO: Fix this to use mapping types
 def es_search_cmd(query, pages=1, log=log):
     """Simulates a front page search
 
