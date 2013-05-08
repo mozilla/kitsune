@@ -1,0 +1,7 @@
+{% extends 'email/base.html' %}
+
+{% block content %}
+  {{ content_html }}
+  <p>---</p>
+  <p>{{ _('The {domain} team')|f(domain=domain) }}</p>
+{% endblock %}

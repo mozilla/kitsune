@@ -24,9 +24,10 @@ def send_group_email(announcement_id):
     plain_content = bleach.clean(announcement.content_parsed,
                                  tags=[], strip=True).strip()
     email_kwargs = {'content': plain_content,
+                    'content_html': announcement.content_parsed,
                     'domain': Site.objects.get_current().domain}
     text_template = 'announcements/email/announcement.ltxt'
-    html_template = None
+    html_template = 'announcements/email/announcement.html'
 
     @safe_translation
     def _make_mail(locale, user):
