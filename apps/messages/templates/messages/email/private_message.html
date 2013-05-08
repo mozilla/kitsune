@@ -1,0 +1,9 @@
+{% extends 'email/base.html' %}
+
+{% block content %}
+  <p>{{ _('{sender} sent you the following message:')|f(sender=sender) }}</p>
+
+  {{ message_html }}
+
+  <p><a href="https://{{ host }}{{ url }}">{{ _('View this message on the web') }}</a></p>
+{% endblock %}
