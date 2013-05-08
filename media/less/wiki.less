@@ -351,7 +351,7 @@ article {
       list-style: none;
       padding: 4px 0;
 
-      div {
+      > div {
         display: inline-block;
       }
 
@@ -418,7 +418,20 @@ article {
     width: 140px;
 
     &.wider {
-      width: 350px;
+      width: 330px;
+    }
+  }
+
+  .showdiff {
+    margin: 2px;
+    width: 16px;
+
+    .loading {
+      height: 16px;
+      width: 16px;
+    }
+    .close-diff {
+      display: none;
     }
   }
 

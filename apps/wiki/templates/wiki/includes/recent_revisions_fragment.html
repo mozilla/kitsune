@@ -7,11 +7,25 @@
         {{ datetimeformat(rev.created, format='datetime') }}
       </a>
     </div>
+    <div class="showdiff">
+      {% if rev.based_on.id %}
+        <a class="show-diff"
+         href="{{ url('wiki.compare_revisions', rev.document.slug)|urlparams(from=rev.based_on.id, to=rev.id) }}">
+          <img class="icon-search" src="{{ MEDIA_URL }}img/blank.png" alt="{{ _('View Diff') }}" />
+        </a>
+        <img class="loading" src="/media/img/wait-trans.gif">
+        <a class="close-diff" href="">
+          <img class="icon-back" src="{{ MEDIA_URL }}img/blank.png" alt="{{ _('Close Diff') }}" />
+        </a>
+      {% endif %}
+    </div>
     <div class="title">
       <span class="locale">{{ rev.document.locale }}</span>
       <a href="{{ rev.document.get_absolute_url() }}">{{ rev.document.title }}</a>
     </div>
-    <div class="comment wider">{{ rev.comment|linkify|safe }}</div>
+    <div class="comment wider">
+      {{ rev.comment|linkify|safe }}
+    </div>
     <div class="creator">
       <a href="{{ rev.creator.get_absolute_url() }}">
         {{ display_name(rev.creator) }}
@@ -24,6 +38,7 @@
 <ul>
   <li class="header">
     <div class="date">{{ _('Revision') }}</div>
+    <div class="showdiff"> </div>
     <div class="title">{{ _('Title') }}</div>
     <div class="comment wider">{{ _('Comment') }}</div>
     <div class="creator">{{ _('Editor') }}</div>
