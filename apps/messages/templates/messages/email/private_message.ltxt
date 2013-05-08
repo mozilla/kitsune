@@ -6,7 +6,7 @@
 
 {{ _('View this message on the web:') }}
 
-https://{{ host }}{{ url }}
+https://{{ host }}{{ message_url }}
 
 {{ _('Change your email preferences:') }}
 

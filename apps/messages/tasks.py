@@ -32,8 +32,8 @@ def email_private_message(inbox_message_id):
             'sender': inbox_message.sender.username,
             'message': inbox_message.message,
             'message_html': inbox_message.content_parsed,
-            'url': reverse('messages.read',
-                           kwargs={'msgid': inbox_message.id}),
+            'message_url': reverse('messages.read',
+                                   kwargs={'msgid': inbox_message.id}),
             'unsubscribe_url': reverse('users.edit_settings'),
             'host': Site.objects.get_current().domain}
 
