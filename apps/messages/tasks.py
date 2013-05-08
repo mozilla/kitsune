@@ -31,13 +31,14 @@ def email_private_message(inbox_message_id):
         context = {
             'sender': inbox_message.sender.username,
             'message': inbox_message.message,
-            'url': reverse('messages.read',
-                           kwargs={'msgid': inbox_message.id}),
+            'message_html': inbox_message.content_parsed,
+            'message_url': reverse('messages.read',
+                                   kwargs={'msgid': inbox_message.id}),
             'unsubscribe_url': reverse('users.edit_settings'),
             'host': Site.objects.get_current().domain}
 
         text_template = 'messages/email/private_message.ltxt'
-        html_template = None
+        html_template = 'messages/email/private_message.html'
 
         msg = EmailMultiAlternatives(
             subject,
