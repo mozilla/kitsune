@@ -677,3 +677,11 @@ class RevisionTests(TestCase):
         # Now delete the final revision. It still shouldn't crash.
         unapproved.delete()
         eq_('', d.content_parsed)
+
+    def test_previous(self):
+        r1 = revision(is_approved=True, save=True)
+        d = r1.document
+        r2 = revision(document=d, is_approved=True, save=True)
+
+        eq_(r1.previous, None)
+        eq_(r2.previous.id, r1.id)

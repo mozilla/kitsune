@@ -970,6 +970,18 @@ class Revision(ModelBase):
         return reverse('wiki.revision', locale=self.document.locale,
                        args=[self.document.slug, self.id])
 
+    @property
+    def previous(self):
+        """Get the revision that came before this in the document's history."""
+        older_revs = Revision.objects.filter(document=self.document,
+                                             id__lt=self.id,
+                                             is_approved=True)
+        older_revs = older_revs.order_by('-created')
+        try:
+            return older_revs[0]
+        except IndexError:
+            return None
+
 
 class HelpfulVote(ModelBase):
     """Helpful or Not Helpful vote on Revision."""
