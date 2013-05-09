@@ -106,6 +106,29 @@ def render_email(template, context):
     return _render(translation.get_language())
 
 
+def make_mail(subject,
+              text_template,
+              html_template,
+              context_vars,
+              from_email,
+              to_email,
+              **extra_kwargs):
+    """Return an instance of EmailMultiAlternative with both plaintext and
+    html versions."""
+    mail = EmailMultiAlternatives(subject,
+                                  render_email(text_template, context_vars),
+                                  from_email,
+                                  [to_email],
+                                  **extra_kwargs)
+
+    if html_template:
+        html = transform(render_email(html_template, context_vars),
+                         'https://' + Site.objects.get_current().domain)
+        mail.attach_alternative(html, 'text/html')
+
+    return mail
+
+
 def emails_with_users_and_watches(subject,
                                   text_template,
                                   html_template,
@@ -144,19 +167,11 @@ def emails_with_users_and_watches(subject,
         context_vars['watch'] = watch[0]
         context_vars['watches'] = watch
 
-        msg = EmailMultiAlternatives(
-            subject.format(**context_vars),
-            render_email(text_template, context_vars),
-            from_email,
-            [user.email],
-            **extra_kwargs)
+        mail = make_mail(subject.format(**context_vars), text_template,
+                         html_template, context_vars, from_email, user.email,
+                         **extra_kwargs)
 
-        if html_template:
-            html = transform(render_email(html_template, context_vars),
-                             'https://' + Site.objects.get_current().domain)
-            msg.attach_alternative(html, 'text/html')
-
-        return msg
+        return mail
 
     for u, w in users_and_watches:
         if hasattr(u, 'profile'):

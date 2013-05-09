@@ -30,14 +30,20 @@ class QuestionEvent(InstanceEvent):
         @email_utils.safe_translation
         def _make_mail(locale):
             subject = _('Please confirm your email address')
-            email_kwargs = {'activation_url': cls._activation_url(watch),
-                            'domain': Site.objects.get_current().domain,
-                            'watch_description': cls.description_of_watch(watch)}
-            template = 'questions/email/activate_watch.ltxt'
-            message = email_utils.render_email(template, email_kwargs)
+            context = {
+                'activation_url': cls._activation_url(watch),
+                'domain': Site.objects.get_current().domain,
+                'watch_description': cls.description_of_watch(watch)}
 
-            return EmailMessage(subject, message,
-                                settings.TIDINGS_FROM_ADDRESS, [email])
+            mail = email_utils.make_mail(
+                subject=subject,
+                text_template='questions/email/activate_watch.ltxt',
+                html_template='questions/email/activate_watch.html',
+                context_vars=context,
+                from_email=settings.TIDINGS_FROM_ADDRESS,
+                to_email=email)
+
+            return mail
 
         if watch.user:
             locale = watch.user.profile.locale
@@ -63,6 +69,7 @@ class QuestionReplyEvent(QuestionEvent):
         asker_id = self.answer.question.creator.id
 
         c = {'answer': self.answer.content,
+             'answer_html': self.answer.content_parsed,
              'answerer': self.answer.creator.username,
              'question_title': self.instance.title,
              'host': Site.objects.get_current().domain,
@@ -74,18 +81,23 @@ class QuestionReplyEvent(QuestionEvent):
             if is_asker:
                 subject = _(u'%s posted an answer to your question "%s"' %
                             (self.answer.creator.username, self.instance.title))
-                template = 'questions/email/new_answer_to_asker.ltxt'
+                text_template = 'questions/email/new_answer_to_asker.ltxt'
+                html_template = 'questions/email/new_answer_to_asker.html'
             else:
                 subject = _(u'%s commented on a Firefox question '
                             "you're watching" % self.answer.creator.username)
-                template = 'questions/email/new_answer.ltxt'
+                text_template = 'questions/email/new_answer.ltxt'
+                html_template = 'questions/email/new_answer.html'
 
-            msg = email_utils.render_email(template, context)
+            mail = email_utils.make_mail(
+                subject=subject,
+                text_template=text_template,
+                html_template=html_template,
+                context_vars=context,
+                from_email=settings.TIDINGS_FROM_ADDRESS,
+                to_email=user.email)
 
-            return EmailMessage(subject,
-                                msg,
-                                settings.TIDINGS_FROM_ADDRESS,
-                                [user.email])
+            return mail
 
         for u, w in users_and_watches:
             c['helpful_url'] = self.answer.get_helpful_answer_url()
@@ -122,11 +134,16 @@ class QuestionSolvedEvent(QuestionEvent):
         @email_utils.safe_translation
         def _make_mail(locale, user, context):
             subject = _(u'Solution found to Firefox Help question')
-            content = email_utils.render_email(
-                'questions/email/solution.ltxt', context)
 
-            return EmailMessage(subject, content,
-                                settings.TIDINGS_FROM_ADDRESS, [user.email])
+            mail = email_utils.make_mail(
+                subject=subject,
+                text_template='questions/email/solution.ltxt',
+                html_template='questions/email/solution.html',
+                context_vars=context,
+                from_email=settings.TIDINGS_FROM_ADDRESS,
+                to_email=user.email)
+
+            return mail
 
         c = {'answerer': question.solution.creator,
              'asker': question.creator.username,

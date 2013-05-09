@@ -1,0 +1,23 @@
+{% extends 'email/base.html' %}
+
+{% block content %}
+  {% if username %}
+    <p>{{ _('Hi {username},')|f(username=username) }}</p>
+  {% endif %}
+
+  <p>{{ _('{answerer} commented on a Firefox question on {host}:')|f(answerer=answerer, host=host) }}</p>
+
+  <p><a href="https://{{ host }}{{ answer_url }}">{{ question_title }}</a></p>
+
+  <p>{{ _('{answerer} wrote:')|f(answerer=answerer) }}</p>
+
+  {{ answer_html }}
+
+  <p><a href="https://{{ host }}{{ answer_url }}">{{ _('See the comment.') }}</a></p>
+
+  <p><a href="https://{{ host }}{{ helpful_url }}">{{ _('If this comment is helpful, vote on it.') }}</a></p>
+
+  <p><a href="https://{{ host }}/questions?filter=unsolved">{{ _('Help other Firefox users by browsing for unsolved questions on {host}.')|f(host=host) }}</a></p>
+
+  <p>{{ _("You might just make someone's day!") }}</p>
+{% endblock %}
