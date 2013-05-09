@@ -219,7 +219,7 @@ class RegistrationManager(ConfirmationManager):
                             url=None,
                             subject=_('Welcome to SUMO!'),
                             text_template='users/email/contributor.ltxt',
-                            html_template=None,
+                            html_template='users/email/contributor.html',
                             send_to=user.email,
                             username=user.username)
 
@@ -278,7 +278,7 @@ class RegistrationManager(ConfirmationManager):
             url=reverse('users.activate', args=[user_id, key]),
             subject=subject or _('Please confirm your email address'),
             text_template=text_template or 'users/email/activate.ltxt',
-            html_template=html_template,
+            html_template=html_template or 'users/email/activate.html',
             send_to=registration_profile.user.email,
             expiration_days=settings.ACCOUNT_ACTIVATION_DAYS,
             username=registration_profile.user.username,
@@ -324,7 +324,7 @@ class EmailChangeManager(ConfirmationManager):
                         args=[email_change.activation_key]),
             subject=_('Please confirm your email address'),
             text_template='users/email/confirm_email.ltxt',
-            html_template=None,
+            html_template='users/email/confirm_email.html',
             send_to=new_email)
 
 

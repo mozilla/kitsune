@@ -1,0 +1,34 @@
+{% extends 'email/base.html' %}
+
+{% block content %}
+  <p>
+    {% trans %}
+      Welcome to {{ domain }}.
+    {% endtrans %}
+  </p>
+
+  <p>
+    {% trans %}
+      Before you can use your new account you must activate it -
+      this ensures the e-mail address you used is valid and belongs
+      to you.  To activate your account, click the link below or
+      copy and paste the whole thing into your browser's location bar:
+    {% endtrans %}
+  </p>
+
+  <p><a href="https://{{ domain }}{{ activate_url }}?reg=main">https://{{ domain }}{{ activate_url }}?reg=main</a></p>
+
+  <p>
+    {% trans %}
+      Once you've successfully activated your account, you can throw
+      away this e-mail.
+    {% endtrans %}
+  </p>
+
+  <p>
+    {{ _('Thanks!') }}
+    <br />{{ _('The {domain} team')|f(domain=domain) }}
+  </p>
+{% endblock %}
+
+{% block footer %}{% endblock %}
