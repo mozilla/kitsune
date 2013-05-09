@@ -144,18 +144,15 @@ class ConfirmationManager(models.Manager):
 
         @email_utils.safe_translation
         def _make_mail(locale):
-            msg = EmailMultiAlternatives(
-                subject,
-                email_utils.render_email(text_template, email_kwargs),
-                settings.DEFAULT_FROM_EMAIL,
-                [send_to])
+            mail = email_utils.make_mail(
+                subject=subject,
+                text_template=text_template,
+                html_template=html_template,
+                context_vars=email_kwargs,
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                to_email=send_to)
 
-            if html_template:
-                msg.attach_alternative(
-                    email_utils.render_email(
-                        html_template, email_kwargs), 'text/html')
-
-            return msg
+            return mail
 
         email_utils.send_messages([_make_mail(locale)])
 

@@ -276,17 +276,15 @@ class ApprovedOrReadyUnion(EventUnion):
                 reviewer=revision.reviewer.username,
                 locale=document.locale)
 
-            msg = EmailMultiAlternatives(
-                subject,
-                email_utils.render_email(text_template, c),
-                settings.TIDINGS_FROM_ADDRESS,
-                [user.email])
+            mail = email_utils.make_mail(
+                subject=subject,
+                text_template=text_template,
+                html_template=html_template,
+                context_vars=c,
+                from_email=settings.TIDINGS_FROM_ADDRESS,
+                to_email=user.email)
 
-            if html_template:
-                msg.attach_alternative(
-                    email_utils.render_email(html_template, c), 'text/html')
-
-            return msg
+            return mail
 
         for user, watches in users_and_watches:
             # Figure out the locale to use for l10n.

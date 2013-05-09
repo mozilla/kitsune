@@ -9,7 +9,8 @@ from celery.task import task
 from tower import ugettext as _
 
 from messages.models import InboxMessage
-from sumo.email_utils import safe_translation, render_email, send_messages
+from sumo.email_utils import (make_mail, safe_translation, render_email,
+                              send_messages)
 
 
 log = logging.getLogger('k.task')
@@ -37,20 +38,14 @@ def email_private_message(inbox_message_id):
             'unsubscribe_url': reverse('users.edit_settings'),
             'host': Site.objects.get_current().domain}
 
-        text_template = 'messages/email/private_message.ltxt'
-        html_template = 'messages/email/private_message.html'
+        mail = make_mail(subject=subject,
+                         text_template='messages/email/private_message.ltxt',
+                         html_template='messages/email/private_message.html',
+                         context_vars=context,
+                         from_email=settings.TIDINGS_FROM_EMAIL,
+                         to_email=inbox_message.to.email)
 
-        msg = EmailMultiAlternatives(
-            subject,
-            render_email(text_template, context),
-            settings.TIDINGS_FROM_ADDRESS,
-            [inbox_message.to.email])
-
-        if html_template:
-            msg.attach_alternative(
-                render_email(html_template, context), 'text/html')
-
-        send_messages([msg])
+        send_messages([mail])
 
     if hasattr(user, 'profile'):
         locale = user.profile.locale

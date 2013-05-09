@@ -7,7 +7,7 @@ from django.db.models.signals import post_save
 
 from sumo.models import ModelBase
 from wiki.models import Locale
-from wiki.parser import wiki_to_html
+from sumo.helpers import wiki_to_html
 
 
 class Announcement(ModelBase):

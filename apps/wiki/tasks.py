@@ -55,12 +55,15 @@ def send_reviewed_notification(revision, document, message):
             subject = _(u'Your revision has been reviewed: {title}')
         subject = subject.format(title=document.title)
 
-        template = 'wiki/email/reviewed.ltxt'
-        msg = email_utils.render_email(template, c)
+        mail = email_utils.make_mail(
+            subject=subject,
+            text_template='wiki/email/reviewed.ltxt',
+            html_template=None,
+            context_vars=c,
+            from_email=settings.TIDINGS_FROM_ADDRESS,
+            to_email=user.email)
 
-        msgs.append(EmailMessage(subject, msg,
-                                 settings.TIDINGS_FROM_ADDRESS,
-                                 [user.email]))
+        msgs.append(mail)
 
     for user in [revision.creator, revision.reviewer]:
         if hasattr(user, 'profile'):
@@ -77,7 +80,8 @@ def send_reviewed_notification(revision, document, message):
 def send_contributor_notification(based_on, revision, document, message):
     """Send notification of review to the contributors of revisions."""
 
-    template = 'wiki/email/reviewed_contributors.ltxt'
+    text_template = 'wiki/email/reviewed_contributors.ltxt'
+    html_template = None
     url = reverse('wiki.document_revisions', locale=document.locale,
                   args=[document.slug])
     c = {'document_title': document.title,
@@ -99,11 +103,15 @@ def send_contributor_notification(based_on, revision, document, message):
                         'been reviewed: {title}')
         subject = subject.format(title=document.title)
 
-        msg = email_utils.render_email(template, c)
+        mail = email_utils.make_mail(
+            subject=subject,
+            text_template=text_template,
+            html_template=html_template,
+            context_vars=c,
+            from_email=settings.TIDINGS_FROM_ADDRESS,
+            to_email=user.email)
 
-        msgs.append(EmailMessage(subject, msg,
-                                 settings.TIDINGS_FROM_ADDRESS,
-                                 [user.email]))
+        msgs.append(mail)
 
     for r in based_on:
         # Send email to all contributors except the reviewer and the creator

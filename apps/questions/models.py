@@ -31,7 +31,7 @@ from search.models import (SearchMappingType, SearchMixin,
 
 from sumo.helpers import urlparams
 from sumo.models import ModelBase, LocaleField
-from sumo.parser import wiki_to_html
+from sumo.helpers import wiki_to_html
 from sumo.redis_utils import RedisError
 from sumo.urlresolvers import reverse
 from tags.models import BigVocabTaggableMixin
