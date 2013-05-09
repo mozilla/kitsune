@@ -8,7 +8,8 @@ from celery.task import task
 from tower import ugettext as _
 
 from announcements.models import Announcement
-from sumo.email_utils import render_email, safe_translation, send_messages
+from sumo.email_utils import (make_mail, render_email, safe_translation,
+                              send_messages)
 
 
 @task
@@ -34,17 +35,14 @@ def send_group_email(announcement_id):
         subject = _('New announcement for {group}').format(
             group=group.name)
 
-        msg = EmailMultiAlternatives(
-            subject,
-            render_email(text_template, email_kwargs),
-            settings.TIDINGS_FROM_ADDRESS,
-            [user.email])
+        mail = make_mail(subject=subject,
+                         text_template=text_template,
+                         html_template=html_template,
+                         context_vars=email_kwargs,
+                         from_email=settings.TIDINGS_FROM_ADDRESS,
+                         to_email=user.email)
 
-        if html_template:
-            msg.attach_alternative(
-                render_email(html_template, email_kwargs), 'text/html')
-
-        return msg
+        return mail
 
     messages = []
     for u in users:
