@@ -1,4 +1,5 @@
 import logging
+import time
 from datetime import datetime, timedelta
 
 from django.conf import settings
@@ -109,6 +110,7 @@ def auto_lock_old_questions():
                     # back in the index.
                     for doc in es_docs:
                         doc[u'question_is_locked'] = True
+                        doc[u'indexed_on'] = int(time.time())
                         documents.append(doc)
 
                     QuestionMappingType.bulk_index(
