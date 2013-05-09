@@ -1,0 +1,17 @@
+{% extends 'email/base.html' %}
+
+{% block content %}
+  <p>{{ _('It seems your account has already been activated.') }}</p>
+
+  <p>
+    {{ _('You can log in at:') }}
+    <br /><a href="https://{{ domain }}{{ login_url }}">https://{{ domain }}{{ login_url }}</a>
+  </p>
+
+  <p>
+    {{ _('Thanks!') }}
+    <br />{{ _('The {domain} team')|f(domain=domain) }}}
+  </p>
+{% endblock %}
+
+{% block footer %}{% endblock %}

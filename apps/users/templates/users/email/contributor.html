@@ -1,0 +1,87 @@
+{% extends 'email/base.html' %}
+
+{% block content %}
+  <p>{{ _('Hi {username}')|f(username=username) }}</p>
+
+  <p>
+    {% trans %}
+      Thanks so much for your interest in helping users of Mozilla
+      technologies!
+    {% endtrans %}
+  </p>
+
+  <p>
+    {% trans %}
+      We would love to find a good place for you to help users,
+      so please send us an email with your username and the area
+      you would like to get involved. Please feel free to add all
+      your skills, we will try to find the right use for them :)
+    {% endtrans %}
+  </p>
+
+  <p>
+    <a href="https://support.mozilla.org/en-US/kb/contributor-news-resources">
+      {{ _('Click here to help you find out where to help.') }}
+    </a>
+  </p>
+
+  <p>{{ _('There are several ways in which you can get involved:') }}</p>
+
+  <ul>
+    <li>
+      {% trans %}
+        <a href="https://support.mozilla.org/en-US/questions?sort=requested&filter=no-replies">Forum Contributor</a>
+        - Answer user support questions that are
+        most-requested but have no replies.
+      {% endtrans %}
+      </a>
+    </li>
+    <li>
+      {% trans %}
+        <a href="https://support.mozilla.org/army-of-awesome">Twitter Contributor</a>
+        - Respond to tweets about Firefox.
+      {% endtrans %}
+    </li>
+    <li>
+      {% trans %}
+        <a href="https://support.mozilla.org/contributors/need-changes">KB Editor</a>
+        - Help to update knowledge base articles that
+        need changes or write new articles.
+      {% endtrans %}
+    </li>
+    <li>
+      {% trans %}
+        <a href="https://support.mozilla.org/en-US/kb/localize-firefox-help">L10N Contributor</a>
+        - Help to translate Firefox Help content
+        to your language.
+      {% endtrans %}
+    </li>
+  </ul>
+
+  <p>
+    {% trans %}
+      Let us know which of the above you would be interested in
+      and we’ll help you get started. It’s great to have you onboard!
+    {% endtrans %}
+  </p>
+
+  <p>
+    {% trans %}
+      You can also apply to our buddy program and get guidance from
+      our more experienced volunteers:
+    {% endtrans %}
+    <br /><a href="http://mzl.la/16m82GK">http://mzl.la/16m82GK</a>
+  </p>
+
+  <p>{{ _('Welcome to SUMO!') }}</p>
+
+  <p>Madalina &amp; Rosana</p>
+
+  <p>
+    rosana@mozilla.com
+    <br />mana@mozilla.com
+    <br />SUMO Community Managers
+  </p>
+{% endblock %}
+
+{% block footer %}{% endblock %}

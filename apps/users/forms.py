@@ -300,7 +300,8 @@ class ForgotUsernameForm(forms.Form):
         return email
 
     def save(self, text_template='users/email/forgot_username.ltxt',
-             html_template=None, use_https=False, request=None):
+             html_template='users/email/forgot_username.html', use_https=False,
+             request=None):
         """Sends email with username."""
         user = self.user
         current_site = get_current_site(request)
