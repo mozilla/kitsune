@@ -3,10 +3,7 @@ from datetime import datetime
 from django.contrib.auth.models import User
 from django.db import models
 
-from jinja2 import Markup
-
 from sumo.models import ModelBase
-from sumo.helpers import wiki_to_html
 
 
 class InboxMessage(ModelBase):
@@ -26,7 +23,8 @@ class InboxMessage(ModelBase):
 
     @property
     def content_parsed(self):
-        return Markup(wiki_to_html(self.message))
+        from sumo.helpers import wiki_to_html
+        return wiki_to_html(self.message)
 
 
 class OutboxMessage(ModelBase):
@@ -41,4 +39,5 @@ class OutboxMessage(ModelBase):
 
     @property
     def content_parsed(self):
-        return Markup(wiki_to_html(self.message))
+        from sumo.helpers import wiki_to_html
+        return wiki_to_html(self.message)
