@@ -6,7 +6,7 @@ from django.db import models
 from jinja2 import Markup
 
 from sumo.models import ModelBase
-from sumo.parser import wiki_to_html
+from sumo.helpers import wiki_to_html
 
 
 class InboxMessage(ModelBase):
