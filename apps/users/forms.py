@@ -312,18 +312,15 @@ class ForgotUsernameForm(forms.Form):
         def _send_mail(locale, user, context):
             subject = _('Your username on %s') % site_name
 
-            msg = EmailMultiAlternatives(
-                subject,
-                email_utils.render_email(text_template, context),
-                settings.TIDINGS_FROM_ADDRESS,
-                [user.email])
+            mail = email_utils.make_mail(
+                subject=subject,
+                text_template=text_template,
+                html_template=html_template,
+                context_vars=context,
+                from_email=settings.TIDINGS_FROM_ADDRESS,
+                to_email=user.email)
 
-            if html_template:
-                msg.attach_alternative(
-                    email_utils.render_email(
-                        html_template, context), 'text/html')
-
-            email_utils.send_messages([msg])
+            email_utils.send_messages([mail])
 
         c = {
             'email': user.email,
