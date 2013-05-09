@@ -1,0 +1,14 @@
+{% extends 'email/base.html' %}
+
+{% block content %}
+  <p>{{ _('You are about to subscribe to:') }}</p>
+
+  <p>{{ watch_description }}</p>
+
+  <p><a href="https://{{ domain }}{{ activation_url }}">{{ _('Confirm your subscription') }}</a></p>
+
+  <p>
+    {{ _('Thanks!') }}
+    <br>{{ _('The {domain} team')|f(domain=domain) }}
+  </p>
+{% endblock %}

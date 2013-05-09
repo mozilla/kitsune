@@ -441,7 +441,7 @@ def aaq(request, product_key=None, category_key=None, showform=False,
             register_form = handle_register(
                 request=request,
                 text_template='questions/email/confirm_question.ltxt',
-                html_template=None,
+                html_template='questions/email/confirm_question.html',
                 subject=_('Please confirm your Firefox Help question'),
                 email_data=request.GET.get('search'))
 
