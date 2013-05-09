@@ -13,11 +13,16 @@
 
   <p><a href="https://{{ host }}{{ answer_url }}">{{ _('See the answer.') }}</a></p>
 
-  <p><a href="https://{{ host }}{{ solution_url }}">{{ _('If this answer solves your problem, please mark it as "solved":') }}</a></p>
+  <p>
+    {% trans %}
+      If this answer solves your problem, please
+      <a href="https://{{ host }}{{ solution_url }}">mark it as "solved"</a>.
+    {% endtrans %}
+  </p>
 
   <p>{{ _('This will help other Firefox users find good answers to their questions!') }}</p>
 
-  <p><a href="https://{{ host }}/questions?filter=unsolved">{{ _('Help other Firefox users by browsing for unsolved questions on {host}:')|f(host=host) }}</a></p>
+  <p><a href="https://{{ host }}/questions?filter=unsolved">{{ _('Help other Firefox users by browsing for unsolved questions on {host}.')|f(host=host) }}</a></p>
 
   <p>{{ _("You might just make someone's day!") }}</p>
 {% endblock %}
