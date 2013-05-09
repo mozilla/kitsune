@@ -16,7 +16,7 @@ from search.models import Record, get_mapping_types
 from search.tasks import OUTSTANDING_INDEX_CHUNKS, index_chunk_task
 from search.utils import chunked, create_batch_id
 from sumo.redis_utils import redis_client, RedisError
-from wiki.models import Document
+from wiki.models import Document, DocumentMappingType
 
 
 log = logging.getLogger('k.es')
@@ -346,7 +346,7 @@ def diff_it_for_realz(seq_a, seq_b):
 
 def troubleshooting_view(request):
     # Build a list of the most recently indexed 50 wiki documents.
-    last_50_indexed = list(_fix_value_dicts(Document.search()
+    last_50_indexed = list(_fix_value_dicts(DocumentMappingType.search()
                                             .values_dict()
                                             .order_by('-indexed_on')[:50]))
 
