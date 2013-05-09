@@ -58,6 +58,15 @@
               have this problem
             {% endtrans %}
           </li>
+          {% if question.num_visits %}
+            <li class="visits">
+              {% trans count=question.num_visits %}
+                {{count}} view
+              {% pluralize %}
+                {{count}} views
+              {% endtrans %}
+            </li>
+          {% endif %}
           {% if question.last_answer %}
             <li>
               <a href="{{ question.last_answer.get_absolute_url() }}">

@@ -1,17 +1,43 @@
+import logging
 from datetime import timedelta
+from functools import wraps
 
 from django.conf import settings
 
 import httplib2
 from apiclient.discovery import build
+from apiclient.errors import HttpError
 from oauth2client.client import SignedJwtAssertionCredentials
 
+from questions.models import Question
 from wiki.models import Document
+
+
+log = logging.getLogger('k.googleanalytics')
 
 
 key = settings.GA_KEY
 account = settings.GA_ACCOUNT
 profile_id = settings.GA_PROFILE_ID
+
+
+def retry_503(f):
+    """Call `f`. If `f` raises an HTTP 503 exception, try again once.
+
+    This is what Google Analytics recommends:
+    https://developers.google.com/analytics/devguides/config/mgmt/v3/errors
+    """
+    @wraps(f)
+    def wrapper(*args, **kwargs):
+        try:
+            return f(*args, **kwargs)
+        except HttpError as e:
+            log.error('HTTP Error calling Google Analytics: %s', e)
+
+            if e.resp.status == 503:
+                return f(*args, **kwargs)
+
+    return wrapper
 
 
 def _build_request():
@@ -54,12 +80,17 @@ def visitors_by_locale(start_date, end_date):
     """
     visits_by_locale = {}
     request = _build_request()
-    results = request.get(
-        ids='ga:' + profile_id,
-        start_date=str(start_date),
-        end_date=str(end_date),
-        metrics='ga:visitors',
-        dimensions='ga:pagePathLevel1').execute()
+
+    @retry_503
+    def _make_request():
+        return request.get(
+            ids='ga:' + profile_id,
+            start_date=str(start_date),
+            end_date=str(end_date),
+            metrics='ga:visitors',
+            dimensions='ga:pagePathLevel1').execute()
+
+    results = _make_request()
 
     for result in results['rows']:
         path = result[0][1:-1]  # Strip leading and trailing slash.
@@ -87,15 +118,20 @@ def pageviews_by_document(start_date, end_date):
     max_results = 10000
 
     while True:  # To deal with pagination
-        results = request.get(
-            ids='ga:' + profile_id,
-            start_date=str(start_date),
-            end_date=str(end_date),
-            metrics='ga:pageviews',
-            dimensions='ga:pagePath',
-            filters='ga:pagePathLevel2==/kb/;ga:pagePathLevel1==/en-US/',
-            max_results=max_results,
-            start_index=start_index).execute()
+
+        @retry_503
+        def _make_request():
+            return request.get(
+                ids='ga:' + profile_id,
+                start_date=str(start_date),
+                end_date=str(end_date),
+                metrics='ga:pageviews',
+                dimensions='ga:pagePath',
+                filters='ga:pagePathLevel2==/kb/;ga:pagePathLevel1==/en-US/',
+                max_results=max_results,
+                start_index=start_index).execute()
+
+        results = _make_request()
 
         for result in results['rows']:
             path = result[0]
@@ -106,6 +142,54 @@ def pageviews_by_document(start_date, end_date):
 
             # The same document can appear multiple times due to url params.
             counts[doc.pk] = counts.get(doc.pk, 0) + pageviews
+
+        # Move to next page of results.
+        start_index += max_results
+        if start_index > results['totalResults']:
+            break
+
+    return counts
+
+
+def pageviews_by_question(start_date, end_date):
+    """Return the number of pageviews by question in a given date range.
+
+    Returns a dict with pageviews for each document:
+        {question_id>: <pageviews>,
+         1: 42,
+         7: 1337,...}
+    """
+    counts = {}
+    request = _build_request()
+    start_index = 1
+    max_results = 10000
+
+    while True:  # To deal with pagination
+
+        @retry_503
+        def _make_request():
+            return request.get(
+                ids='ga:' + profile_id,
+                start_date=str(start_date),
+                end_date=str(end_date),
+                metrics='ga:pageviews',
+                dimensions='ga:pagePath',
+                filters='ga:pagePathLevel2==/questions/',
+                max_results=max_results,
+                start_index=start_index).execute()
+
+        results = _make_request()
+
+        for result in results['rows']:
+            path = result[0]
+            pageviews = int(result[1])
+            question_id = Question.from_url(path, id_only=True)
+            if not question_id:
+                continue
+
+            # The same question can appear multiple times due to url params
+            # and locale.
+            counts[question_id] = counts.get(question_id, 0) + pageviews
 
         # Move to next page of results.
         start_index += max_results

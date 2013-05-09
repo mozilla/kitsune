@@ -307,8 +307,9 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
     def get_absolute_url(self):
         return reverse('wiki.document', locale=self.locale, args=[self.slug])
 
-    @staticmethod
-    def from_url(url, required_locale=None, id_only=False, check_host=True):
+    @classmethod
+    def from_url(cls, url, required_locale=None, id_only=False,
+                 check_host=True):
         """Return the approved Document the URL represents, None if there isn't
         one.
 
@@ -336,19 +337,19 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
             return None
         locale, path, slug = components
 
-        doc = Document.objects
+        doc = cls.uncached
         if id_only:
             doc = doc.only('id')
         try:
             doc = doc.get(locale=locale, slug=slug)
-        except Document.DoesNotExist:
+        except cls.DoesNotExist:
             try:
                 doc = doc.get(locale=settings.WIKI_DEFAULT_LANGUAGE, slug=slug)
                 translation = doc.translated_to(locale)
                 if translation:
                     return translation
                 return doc
-            except Document.DoesNotExist:
+            except cls.DoesNotExist:
                 return None
         return doc
 

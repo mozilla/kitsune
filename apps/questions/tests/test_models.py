@@ -17,13 +17,14 @@ from sumo.redis_utils import RedisError, redis_client
 from questions.cron import auto_lock_old_questions
 from questions.events import QuestionReplyEvent
 from questions.karma_actions import SolutionAction, AnswerAction
-from questions.models import (Question, QuestionMetaData, Answer,
+from questions.models import (Answer, Question, QuestionMetaData, QuestionVisits,
                               _tenths_version, _has_beta, user_num_questions,
                               user_num_answers, user_num_solutions)
 from questions.tasks import update_answer_pages
 from questions.tests import (TestCaseBase, TaggingTestCaseBase, tags_eq,
                              question, answer)
 from questions.question_config import products
+from sumo import googleanalytics
 from sumo.tests import TestCase
 from tags.utils import add_existing_tag
 from users.tests import user
@@ -395,6 +396,30 @@ class QuestionTests(TestCaseBase):
         eq_(3, Question.recent_asked_count(locale_filter))
         eq_(2, Question.recent_unanswered_count(locale_filter))
 
+    def test_from_url(self):
+        """Verify question returned from valid URL."""
+        q = question(save=True)
+
+        eq_(q, Question.from_url('/en-US/questions/%s' % q.id))
+        eq_(q, Question.from_url('/es/questions/%s' % q.id))
+        eq_(q, Question.from_url('/questions/%s' % q.id))
+
+    def test_from_url_id_only(self):
+        """Verify question returned from valid URL."""
+        # When requesting the id, the existence of the question isn't checked.
+        eq_(123, Question.from_url('/en-US/questions/123', id_only=True))
+        eq_(234, Question.from_url('/es/questions/234', id_only=True))
+        eq_(345, Question.from_url('/questions/345', id_only=True))
+
+    def test_from_invalid_url(self):
+        """Verify question returned from valid URL."""
+        q = question(save=True)
+
+        eq_(None, Question.from_url('/en-US/questions/%s/edit' % q.id))
+        eq_(None, Question.from_url('/en-US/kb/%s' % q.id))
+        eq_(None, Question.from_url('/random/url'))
+        eq_(None, Question.from_url('/en-US/questions/stats'))
+
 
 class AddExistingTagTests(TaggingTestCaseBase):
     """Tests for the add_existing_tag helper function."""
@@ -504,3 +529,39 @@ class UserActionCounts(TestCase):
         eq_(user_num_solutions(u), 1)
         a2.delete()
         eq_(user_num_solutions(u), 0)
+
+
+class QuestionVisitsTests(TestCase):
+    """Tests for the pageview statistics gathering."""
+
+    @mock.patch.object(googleanalytics, 'pageviews_by_question')
+    def test_visit_count_from_analytics(self, pageviews_by_question):
+        """Verify stored visit counts from mocked data."""
+        q1 = question(save=True)
+        q2 = question(save=True)
+        q3 = question(save=True)
+
+        pageviews_by_question.return_value = {
+            q1.id: 42,
+            q2.id: 27,
+            q3.id: 1337,
+            123459: 3,
+        }
+
+        QuestionVisits.reload_from_analytics()
+        eq_(3, QuestionVisits.objects.count())
+        eq_(42, QuestionVisits.objects.get(question_id=q1.id).visits)
+        eq_(27, QuestionVisits.objects.get(question_id=q2.id).visits)
+        eq_(1337, QuestionVisits.objects.get(question_id=q3.id).visits)
+
+        # Change the data and run again to cover the update case.
+        pageviews_by_question.return_value = {
+            q1.id: 100,
+            q2.id: 200,
+            q3.id: 300,
+        }
+        QuestionVisits.reload_from_analytics()
+        eq_(3, QuestionVisits.uncached.count())
+        eq_(100, QuestionVisits.uncached.get(question_id=q1.id).visits)
+        eq_(200, QuestionVisits.uncached.get(question_id=q2.id).visits)
+        eq_(300, QuestionVisits.uncached.get(question_id=q3.id).visits)

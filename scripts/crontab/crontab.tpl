@@ -21,6 +21,7 @@ HOME = /tmp
 
 # Once per day.
 0 16 * * * {{ cron }} reload_wiki_traffic_stats
+0 23 * * * {{ cron }} reload_question_traffic_stats
 40 1 * * * {{ cron }} update_weekly_votes
 42 0 * * * {{ cron }} update_top_contributors
 0 21 * * * {{ cron }} cache_most_unhelpful_kb_articles
