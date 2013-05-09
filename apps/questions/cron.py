@@ -118,4 +118,4 @@ def auto_lock_old_questions():
                 # Something happened with ES, so let's push index
                 # updating into an index_task which retries when it
                 # fails because of ES issues.
-                index_task.delay(Question, q_ids)
+                index_task.delay(QuestionMappingType, q_ids)

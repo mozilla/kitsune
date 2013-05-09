@@ -9,7 +9,7 @@ import waffle
 
 from search.tasks import index_task
 from wiki import tasks
-from wiki.models import Document
+from wiki.models import DocumentMappingType
 
 
 log = logging.getLogger('k.migratehelpful')
@@ -39,4 +39,4 @@ def get_highcharts():
 @cronjobs.register
 def reindex_kb():
     """Reindex wiki_document."""
-    index_task.delay(Document, Document.get_indexable())
+    index_task.delay(DocumentMappingType, DocumentMappingType.get_indexable())
