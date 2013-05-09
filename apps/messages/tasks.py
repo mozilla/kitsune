@@ -42,7 +42,7 @@ def email_private_message(inbox_message_id):
                          text_template='messages/email/private_message.ltxt',
                          html_template='messages/email/private_message.html',
                          context_vars=context,
-                         from_email=settings.TIDINGS_FROM_EMAIL,
+                         from_email=settings.TIDINGS_FROM_ADDRESS,
                          to_email=inbox_message.to.email)
 
         send_messages([mail])
