@@ -1,15 +1,19 @@
 import logging
 import re
 import time
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
+from urlparse import urlparse
 
 from django.contrib.auth.models import User
 from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
 from django.core.cache import cache
+from django.core.urlresolvers import resolve
 from django.conf import settings
 from django.db import models, connection
 from django.db.models.signals import post_save
+from django.db.utils import IntegrityError
+from django.http import Http404
 
 import waffle
 from product_details import product_details
@@ -33,7 +37,7 @@ from sumo.helpers import urlparams
 from sumo.models import ModelBase, LocaleField
 from sumo.helpers import wiki_to_html
 from sumo.redis_utils import RedisError
-from sumo.urlresolvers import reverse
+from sumo.urlresolvers import reverse, split_path
 from tags.models import BigVocabTaggableMixin
 from tags.utils import add_existing_tag
 from topics.models import Topic
@@ -330,6 +334,54 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
             qs = qs.filter(extra_filter)
         return qs.count()
 
+    @classmethod
+    def from_url(cls, url, id_only=False):
+        """Returns the question that the URL represents.
+
+        If the question doesn't exist or the URL isn't a question URL,
+        this returns None.
+
+        If id_only is requested, we just return the question id and
+        we don't validate the existence of the question (this saves us
+        from making a million or so db calls).
+        """
+        parsed = urlparse(url)
+        locale, path = split_path(parsed.path)
+
+        path = '/' + path
+
+        try:
+            view, view_args, view_kwargs = resolve(path)
+        except Http404:
+            return None
+
+        import questions.views  # Views import models; models import views.
+        if view != questions.views.answers:
+            return None
+
+        question_id = view_kwargs['question_id']
+
+        if id_only:
+            return int(question_id)
+
+        try:
+            question = cls.objects.get(id=question_id)
+        except cls.DoesNotExist:
+            return None
+
+        return question
+
+    @property
+    def num_visits(self):
+        """Get the number of visits for this question."""
+        if not hasattr(self, '_num_visits'):
+            try:
+                self._num_visits = QuestionVisits.objects.get(question=self).visits
+            except QuestionVisits.DoesNotExist:
+                self._num_visits = None
+
+        return self._num_visits
+
 
 @register_mapping_type
 class QuestionMappingType(SearchMappingType):
@@ -485,6 +537,40 @@ class QuestionMetaData(ModelBase):
 
     def __unicode__(self):
         return u'%s: %s' % (self.name, self.value[:50])
+
+
+class QuestionVisits(ModelBase):
+    """Web stats for questions."""
+    question = models.ForeignKey(Question, unique=True)
+    visits = models.IntegerField(db_index=True)
+
+    @classmethod
+    def reload_from_analytics(cls):
+        """Update the stats from Google Analytics."""
+        from sumo import googleanalytics
+        counts = googleanalytics.pageviews_by_question(
+            settings.GA_START_DATE, date.today())
+        if counts:
+            for question_id, visits in counts.iteritems():
+                # We are trying to minimize db calls here. Let's try to update
+                # first, that will be the common case.
+                num = cls.objects.filter(
+                    question_id=question_id).update(visits=visits)
+
+                # If we were able to update, we are done.
+                if num > 0:
+                    continue
+
+                # If it doesn't exist yet, create it.
+                try:
+                    cls.objects.create(
+                        question_id=question_id, visits=visits)
+                except IntegrityError:
+                    # The question doesn't exist anymore, move on.
+                    continue
+        else:
+            log.warning('Google Analytics returned no interesting data,'
+                        ' so I kept what I had.')
 
 
 class Answer(ActionMixin, ModelBase):

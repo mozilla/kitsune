@@ -60,6 +60,20 @@ class GoogleAnalyticsTests(TestCase):
         eq_(39, pageviews[documents[3].pk])
         eq_(46, pageviews[documents[4].pk])
 
+    @patch.object(googleanalytics, '_build_request')
+    def test_pageviews_by_question(self, _build_request):
+        """Test googleanalytics.pageviews_by_question()."""
+        execute = _build_request.return_value.get.return_value.execute
+        execute.return_value = PAGEVIEWS_BY_QUESTION_RESPONSE
+
+        pageviews = googleanalytics.pageviews_by_question(
+            date(2013, 01, 16), date(2013, 01, 16))
+
+        eq_(3, len(pageviews))
+        eq_(3, pageviews[1])
+        eq_(2, pageviews[2])
+        eq_(11, pageviews[3])
+
 
 VISITORS_RESPONSE = {
     u'kind': u'analytics#gaData',
@@ -253,3 +267,48 @@ PAGEVIEWS_BY_DOCUMENT_RESPONSE = {
         u'totalResults': 10,
         u'id': u'https://www.googleapis.com/analytics/v3/data/ga?ids=ga:1234567890&dimensions=ga:pagePath&metrics=ga:pageviews&filters=ga:pagePathLevel2%3D%3D/kb/;ga:pagePathLevel1%3D%3D/en-US/&start-date=2013-01-17&end-date=2013-01-17&start-index=1&max-results=10',
         u'selfLink': u'https://www.googleapis.com/analytics/v3/data/ga?ids=ga:1234567890&dimensions=ga:pagePath&metrics=ga:pageviews&filters=ga:pagePathLevel2%3D%3D/kb/;ga:pagePathLevel1%3D%3D/en-US/&start-date=2013-01-17&end-date=2013-01-17&start-index=1&max-results=10'}
+
+
+PAGEVIEWS_BY_QUESTION_RESPONSE = {
+    u'columnHeaders': [
+        {u'columnType': u'DIMENSION',
+         u'dataType': u'STRING',
+         u'name': u'ga:pagePath'},
+        {u'columnType': u'METRIC',
+         u'dataType': u'INTEGER',
+         u'name': u'ga:pageviews'}],
+    u'containsSampledData': False,
+    u'id': u'https://www.googleapis.com/analytics/v3/data/ga?ids=ga:65912487&dimensions=ga:pagePath&metrics=ga:pageviews&filters=ga:pagePathLevel2%3D%3D/questions/&start-date=2013-01-01&end-date=2013-01-02&start-index=1&max-results=10',
+    u'itemsPerPage': 10,
+    u'kind': u'analytics#gaData',
+    u'nextLink': u'https://www.googleapis.com/analytics/v3/data/ga?ids=ga:65912487&dimensions=ga:pagePath&metrics=ga:pageviews&filters=ga:pagePathLevel2%3D%3D/questions/&start-date=2013-01-01&end-date=2013-01-02&start-index=11&max-results=10',
+    u'profileInfo': {
+        u'accountId': u'36116321',
+        u'internalWebPropertyId': u'64136921',
+        u'profileId': u'65912487',
+        u'profileName': u'support.mozilla.org - Production Only',
+        u'tableId': u'ga:65912487',
+        u'webPropertyId': u'UA-36116321-2'},
+    u'query': {
+        u'dimensions': u'ga:pagePath',
+        u'end-date': u'2013-01-02',
+        u'filters': u'ga:pagePathLevel2==/questions/',
+        u'ids': u'ga:65912487',
+        u'max-results': 10,
+        u'metrics': [u'ga:pageviews'],
+        u'start-date': u'2013-01-01',
+        u'start-index': 1},
+    u'rows': [
+        [u'/en-US/questions/1', u'2'],  # Counts as a pageview.
+        [u'/es/questions/1', u'1'],  # Counts as a pageview.
+        [u'/en-US/questions/1/edit', u'3'],  # Doesn't count as a pageview (different view)
+        [u'/en-US/questions/stats', u'1'],  # Doesn't count as a pageview (different view)
+        [u'/en-US/questions/2', u'1'],  # Counts as a pageview.
+        [u'/en-US/questions/2?mobile=1', u'1'],  # Counts as a pageview.
+        [u'/en-US/questions/2/foo', u'2'],  # Doesn't count as a pageview (different view)
+        [u'/en-US/questions/bar', u'1'],  # Doesn't count as a pageview (different view)
+        [u'/es/questions/3?mobile=0', u'10'],  # Counts as a pageview.
+        [u'/es/questions/3?lang=en-US', u'1']],  # Counts as a pageview.
+    u'selfLink': u'https://www.googleapis.com/analytics/v3/data/ga?ids=ga:65912487&dimensions=ga:pagePath&metrics=ga:pageviews&filters=ga:pagePathLevel2%3D%3D/questions/&start-date=2013-01-01&end-date=2013-01-02&start-index=1&max-results=10',
+    u'totalResults': 10,
+    u'totalsForAllResults': {u'ga:pageviews': u'242403'}}
