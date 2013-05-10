@@ -1,0 +1,18 @@
+{% extends 'email/base.html' %}
+
+{% block content %}
+  <p>
+    {% trans creator=creator, document_title=document_title %}
+      {{ creator }} submitted a new revision to the document
+      {{ document_title }}.
+    {% endtrans %}
+  </p>
+
+  <p><a href="https://{{ host }}{{ revision_url }}">{{ _('Review this revision') }}</a></p>
+
+  <p><strong>{{ _('Summary:') }}</strong></p>
+  <div class="quote">{{ summary|safe }}</div>
+
+  <p><strong>{{ _('Changes:') }}</strong></p>
+  <div class="quote pre">{{ diff|safe }}</div>
+{% endblock %}

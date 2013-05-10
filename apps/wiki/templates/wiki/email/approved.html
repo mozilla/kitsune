@@ -1,0 +1,18 @@
+{% extends 'email/base.html' %}
+
+{% block content %}
+  <p>
+    {% trans reviewer=reviewer, document_title=document_title %}
+      {{ reviewer }} has approved the revision to the document
+      {{ document_title }}.
+    {% endtrans %}
+  </p>
+
+  <p><a href="https://{{ host }}{{ document_url }}">{{ _('View the updated document') }}</a></p>
+
+  <p><strong>{{ _('Summary:') }}</strong></p>
+  <div class="quote">{{ summary|safe }}</div>
+
+  <p><strong>{{ _('Changes:') }}</strong></p>
+  <div class="quote pre">{{ diff|safe }}</div>
+{% endblock %}

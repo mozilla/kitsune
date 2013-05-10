@@ -104,7 +104,7 @@ class EditDocumentEvent(InstanceEvent):
                       args=[document.slug])
 
         context = context_dict(revision)
-        context['url'] = url
+        context['revisions_url'] = url
         context['locale'] = document.locale
         context['title'] = document.title
         context['creator'] = revision.creator
@@ -112,7 +112,7 @@ class EditDocumentEvent(InstanceEvent):
         return email_utils.emails_with_users_and_watches(
             subject=subject,
             text_template='wiki/email/edited.ltxt',
-            html_template=None,
+            html_template='wiki/email/edited.html',
             context_vars=context,
             users_and_watches=users_and_watches,
             default_locale=document.locale)
@@ -158,7 +158,7 @@ class ReviewableRevisionInLocaleEvent(_RevisionConstructor,
                       revision.id])
 
         context = context_dict(revision)
-        context['url'] = url
+        context['revision_url'] = url
         context['locale'] = document.locale
         context['title'] = document.title
         context['creator'] = revision.creator
@@ -166,7 +166,7 @@ class ReviewableRevisionInLocaleEvent(_RevisionConstructor,
         return email_utils.emails_with_users_and_watches(
             subject=subject,
             text_template='wiki/email/ready_for_review.ltxt',
-            html_template=None,
+            html_template='wiki/email/ready_for_review.html',
             context_vars=context,
             users_and_watches=users_and_watches,
             default_locale=document.locale)
@@ -189,14 +189,14 @@ class ReadyRevisionEvent(_RevisionConstructor, Event):
         subject = _lazy(u'{title} has a revision ready for localization')
 
         context = context_dict(revision, ready_for_l10n=True)
-        context['url'] = django_reverse('wiki.select_locale',
+        context['l10n_url'] = django_reverse('wiki.select_locale',
                                         args=[document.slug])
         context['title'] = document.title
 
         return email_utils.emails_with_users_and_watches(
             subject=subject,
             text_template='wiki/email/ready_for_l10n.ltxt',
-            html_template=None,
+            html_template='wiki/email/ready_for_l10n.html',
             context_vars=context,
             users_and_watches=users_and_watches,
             default_locale=document.locale)
@@ -247,13 +247,13 @@ class ApprovedOrReadyUnion(EventUnion):
                 c = context_dict(revision, ready_for_l10n=True)
                 # TODO: Expose all watches
                 c['watch'] = watches[0]
-                c['url'] = django_reverse('wiki.select_locale',
+                c['l10n_url'] = django_reverse('wiki.select_locale',
                                           args=[document.slug])
 
                 subject = _(u'{title} has a revision ready for '
                             'localization')
                 text_template = 'wiki/email/ready_for_l10n.ltxt'
-                html_template = None
+                html_template = 'wiki/email/ready_for_l10n.html'
 
             else:
                 c = context_dict(revision, revision_approved=True)
@@ -261,7 +261,7 @@ class ApprovedOrReadyUnion(EventUnion):
                                        locale=document.locale,
                                        args=[document.slug])
 
-                c['url'] = approved_url
+                c['document_url'] = approved_url
                 # TODO: Expose all watches.
                 c['watch'] = watches[0]
                 c['reviewer'] = revision.reviewer.username
@@ -269,7 +269,7 @@ class ApprovedOrReadyUnion(EventUnion):
                 subject = _(u'{title} ({locale}) has a new approved '
                             'revision ({reviewer})')
                 text_template = 'wiki/email/approved.ltxt'
-                html_template = None
+                html_template = 'wiki/email/approved.html'
 
             subject = subject.format(
                 title=document.title,

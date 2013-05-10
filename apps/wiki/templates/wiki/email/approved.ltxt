@@ -13,7 +13,7 @@ into your browser's location bar:
 {% endtrans %}
 
 
-https://{{ host }}{{ url }}
+https://{{ host }}{{ document_url }}
 
 --
 {# L10n: This is in an email. #}

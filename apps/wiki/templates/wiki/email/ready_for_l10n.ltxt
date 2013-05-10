@@ -12,7 +12,7 @@ To localize the document, click the following link, or paste it into
 your browser's location bar:
 {% endtrans %}
 
-https://{{ host }}{{ url }}
+https://{{ host }}{{ l10n_url }}
 
 {% if diff %}--
 {# L10n: This is in an email. #}

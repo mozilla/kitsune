@@ -1,0 +1,20 @@
+{% extends 'email/base.html' %}
+
+{% block content %}
+  <p>
+    {% trans document_title=document_title %}
+      The document {{ document_title }} has a new revision
+      that is ready for localization.
+    {% endtrans %}
+  </p>
+
+  <p><a href="https://{{ host }}{{ l10n_url }}">{{ _('Localize the document') }}</a></p>
+
+  {% if diff %}
+    <p><strong>{{ _('Changes:') }}</strong></p>
+    <div class="quote pre">{{ diff|safe }}</div>
+  {% endif %}
+
+  <p><strong>{{ _('Text of the new revision:') }}</strong></p>
+  <div class="quote">{{ fulltext|safe }}</div>
+{% endblock %}

@@ -42,7 +42,7 @@ def send_reviewed_notification(revision, document, message):
          'approved': revision.is_approved,
          'reviewer': revision.reviewer,
          'message': message,
-         'url': url,
+         'revisions_url': url,
          'host': Site.objects.get_current().domain}
 
     msgs = []
@@ -58,7 +58,7 @@ def send_reviewed_notification(revision, document, message):
         mail = email_utils.make_mail(
             subject=subject,
             text_template='wiki/email/reviewed.ltxt',
-            html_template=None,
+            html_template='wiki/email/reviewed.html',
             context_vars=c,
             from_email=settings.TIDINGS_FROM_ADDRESS,
             to_email=user.email)
@@ -81,14 +81,14 @@ def send_contributor_notification(based_on, revision, document, message):
     """Send notification of review to the contributors of revisions."""
 
     text_template = 'wiki/email/reviewed_contributors.ltxt'
-    html_template = None
+    html_template = 'wiki/email/reviewed_contributors.html'
     url = reverse('wiki.document_revisions', locale=document.locale,
                   args=[document.slug])
     c = {'document_title': document.title,
          'approved': revision.is_approved,
          'reviewer': revision.reviewer,
          'message': message,
-         'url': url,
+         'revisions_url': url,
          'host': Site.objects.get_current().domain}
 
     msgs = []
