@@ -8,9 +8,10 @@
       </a>
     </div>
     <div class="showdiff">
-      {% if rev.based_on.id %}
+      {% set prev_rev = rev.previous %}
+      {% if prev_rev %}
         {% set diff_url = url('wiki.compare_revisions', rev.document.slug) %}
-        {% set diff_url = diff_url|urlparams(from=rev.previous.id, to=rev.id, locale=rev.document.locale) %}
+        {% set diff_url = diff_url|urlparams(from=prev_rev.id, to=rev.id, locale=rev.document.locale) %}
         <a class="show-diff" href="{{ diff_url }}">
           <img class="icon-search" src="{{ MEDIA_URL }}img/blank.png" alt="{{ _('View Diff') }}" />
         </a>
