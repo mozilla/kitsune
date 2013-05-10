@@ -12,7 +12,7 @@
 
   {% if diff %}
     <p><strong>{{ _('Changes:') }}</strong></p>
-    <div class="quote">{{ diff|safe }}</div>
+    <div class="quote pre">{{ diff|safe }}</div>
   {% endif %}
 
   <p><strong>{{ _('Text of the new revision:') }}</strong></p>
