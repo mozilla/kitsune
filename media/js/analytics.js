@@ -35,7 +35,7 @@ if (alternateUrl) {
 // Additional tracking:
 $(document).ready(function() {
   // Track clicks to the product download button:
-  $('a.download-button').on('click', function(ev) {
+  $(document).on('click', 'a.download-button', function(ev) {
     ev.preventDefault();
 
     var pathParts = document.location.pathname.split('/');

@@ -203,6 +203,11 @@
   </div>
 </footer>{# /#footer #}
 
+{% if request.LANGUAGE_CODE == 'en-US' %}
+  {# tabzilla is en-US only for now #}
+  <script src="//www.mozilla.org/tabzilla/media/js/tabzilla.js"></script>
+{% endif %}
+
 <script src="{{ url('jsi18n') }}build:{{ BUILD_ID_JS }}"></script>
 <script src="{{ url('wafflejs') }}"></script>
 {{ js('common') }}
@@ -218,11 +223,6 @@
   <script src="//cdn.optimizely.com/js/25134714.js"></script>
 {% endif %}
 {# End Optimizely #}
-
-{% if request.LANGUAGE_CODE == 'en-US' %}
-  {# tabzilla is en-US only for now #}
-  <script src="//www.mozilla.org/tabzilla/media/js/tabzilla.js"></script>
-{% endif %}
 
 {# Ethnio tracking - see bugs 683643 and 673544 #}
 {% if request.LANGUAGE_CODE == 'en-US' and waffle.flag('ethnio-all') %}
