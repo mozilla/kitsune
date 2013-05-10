@@ -6,12 +6,15 @@
   $(document).ready(function() {
     initFolding();
 
+    // Non supported Firefox version
+    notifyOutdatedFirefox();
+
     $('.ui-truncatable .show-more-link').click(function(ev) {
       ev.preventDefault();
       $(this).closest('.ui-truncatable').removeClass('truncated');
     });
 
-    $('.close-button').click(function() {
+    $(document).on('click', '.close-button', function() {
       var $this = $(this);
       if ($this.data('close-id')) {
         $('#' + $this.data('close-id')).hide();
@@ -96,6 +99,47 @@
           }
         }
       });
+    }
+  }
+
+  function notifyOutdatedFirefox() {
+    var b = BrowserDetect.browser;
+    var v = BrowserDetect.version;
+
+    if (Modernizr.localstorage) {
+      var closed = localStorage.getItem('notify-outdated.closed') === 'true';
+    }
+
+    if (b == 'fx' && (v <= 3.6 || (v >= 12 && v <= 16)) && !closed) {
+      // Ensure that the notify bar appears above tabzilla's panel
+      $(document).on('click', '#tabzilla', function() {
+        $('body').prepend($('#notify-outdated-bar'));
+      });
+
+      var $notifyBar = $('<div />').attr('id', 'notify-outdated-bar');
+
+      var $container = $('<div />').addClass('grid_12');
+      $notifyBar.append($container);
+      $container.wrap($('<div />').addClass('container_12'));
+
+      var $closeButton = $('<div />').addClass('close-button');
+      $closeButton.data('close-id', 'notify-outdated-bar');
+      $container.append($closeButton);
+
+      var $downloadButton = $('<a />').addClass('download-button');
+      $downloadButton.attr('href', 'http://www.mozilla.org/firefox#desktop');
+      $downloadButton.html(gettext('Upgrade Firefox'));
+      $container.prepend($downloadButton);
+
+      $container.prepend($('<span />').html(gettext('Your Firefox is out of date and may contain a security risk!')));
+
+      if (Modernizr.localstorage) {
+        $closeButton.on('click', function() {
+          localStorage.setItem('notify-outdated.closed', true);
+        });
+      }
+
+      $('body').prepend($notifyBar);
     }
   }
 
