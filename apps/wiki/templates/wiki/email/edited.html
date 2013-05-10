@@ -1,0 +1,18 @@
+{% extends 'email/base.html' %}
+
+{% block content %}
+  <p>
+    {% trans creator=creator, document_title=document_title %}
+      {{ creator }} created a new revision to the document
+      {{ document_title }}.
+    {% endtrans %}
+  </p>
+
+  <p><a href="https://{{ host }}{{ revisions_url }}">{{ _("View this document's history") }}</a></p>
+
+  <p><strong></strong>{{ _('Summary:') }}</p>
+  <div class="quote">{{ summary|safe }}</div>
+
+  <p><strong>{{ _('Changes:') }}</strong></p>
+  <div class="quote">{{ diff|safe }}</div>
+{% endblock %}

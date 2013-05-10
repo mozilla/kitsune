@@ -24,5 +24,5 @@ paste it into your browser's location bar:
 {% endtrans %}
 
 
-https://{{ host }}{{ url }}
+https://{{ host }}{{ revisions_url }}
 {% endautoescape %}
