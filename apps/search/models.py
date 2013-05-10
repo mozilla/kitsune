@@ -49,8 +49,7 @@ class SearchMixin(object):
 
     When using this mixin, make sure to implement:
 
-    * get_mapping
-    * extract_document
+    * get_mapping_type
 
     Additionally, after defining your model, remember to register it and any
     related models which affect it::
