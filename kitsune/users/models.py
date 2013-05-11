@@ -2,6 +2,7 @@ import hashlib
 import logging
 import random
 import re
+import time
 from datetime import datetime, timedelta
 
 from django.conf import settings
@@ -16,6 +17,10 @@ from tower import ugettext as _
 from tower import ugettext_lazy as _lazy
 
 from kitsune.lib.countries import COUNTRIES
+from kitsune.search.es_utils import UnindexMeBro
+from kitsune.search.models import (
+    SearchMappingType, SearchMixin, register_for_indexing,
+    register_mapping_type)
 from kitsune.sumo import email_utils
 from kitsune.sumo.models import ModelBase, LocaleField
 from kitsune.sumo.urlresolvers import reverse
@@ -50,7 +55,7 @@ add_introspection_rules(rules=[(
 
 
 @auto_delete_files
-class Profile(ModelBase):
+class Profile(ModelBase, SearchMixin):
     """Profile model for django users, get it with user.get_profile()."""
 
     user = models.OneToOneField(User, primary_key=True,
@@ -107,6 +112,115 @@ class Profile(ModelBase):
     @property
     def display_name(self):
         return self.name if self.name else self.user.username
+
+    @classmethod
+    def get_mapping_type(cls):
+        return UserMappingType
+
+
+@register_mapping_type
+class UserMappingType(SearchMappingType):
+    @classmethod
+    def get_model(cls):
+        return Profile
+
+    @classmethod
+    def get_index_group(cls):
+        return 'non-critical'
+
+    @classmethod
+    def get_mapping(cls):
+        return {
+            'properties': {
+                'id': {'type': 'long'},
+                'model': {'type': 'string', 'index': 'not_analyzed'},
+                'url': {'type': 'string', 'index': 'not_analyzed'},
+                'indexed_on': {'type': 'integer'},
+
+                'username': {'type': 'string', 'analyzer': 'simple'},
+                'display_name': {'type': 'string', 'analyzer': 'simple'},
+
+                'suggest': {
+                    'type': 'completion',
+                    'index_analyzer': 'simple',
+                    'search_analyzer': 'simple',
+                    'payloads': True,
+                }
+            }
+        }
+
+    @classmethod
+    def extract_document(cls, obj_id, obj=None):
+        """Extracts interesting thing from a Thread and its Posts"""
+        if obj is None:
+            model = cls.get_model()
+            obj = model.objects.select_related('user').get(pk=obj_id)
+
+        if not obj.user.is_active:
+            raise UnindexMeBro()
+
+        d = {}
+        d['id'] = obj.pk
+        d['model'] = cls.get_mapping_type_name()
+        d['url'] = obj.get_absolute_url()
+        d['indexed_on'] = int(time.time())
+
+        d['username'] = obj.user.username
+        d['display_name'] = obj.display_name
+
+        d['suggest'] = {
+            'input': [
+                d['username'],
+                d['display_name'],
+                obj.irc_handle.lower() if obj.irc_handle else None,
+                obj.user.email.lower()
+                # TODO: Add twitter handle to the mix.
+                # I still need to figure out the best way to grab and save the
+                # twitter handle while the user is using AoA. Leaving this for
+                # later.
+            ],
+            'output': _(u'{displayname} ({username})').format(
+                displayname=d['display_name'], username=d['username']),
+            'payload' : { 'user_id' : d['id'] },
+        }
+
+        return d
+
+    @classmethod
+    def suggest_completions(cls, text):
+        """Suggest completions for the text provided."""
+        USER_SUGGEST = 'user-suggest'
+        es = UserMappingType.search().get_es()
+        results = es.suggest(cls.get_index(), {
+            USER_SUGGEST : {
+                'text': text,
+                'completion' : {
+                    'field' : 'suggest'
+                }
+            }
+        })
+
+        if results[USER_SUGGEST][0]['length'] > 0:
+            return results[USER_SUGGEST][0]['options']
+
+        return []
+
+
+register_for_indexing('users', Profile)
+
+
+def _get_profile(u):
+    try:
+        return u.get_profile()
+    except Profile.DoesNotExist:
+        return None
+
+
+register_for_indexing(
+    'users',
+    User,
+    instance_to_indexee=(
+        lambda u: _get_profile(u)))
 
 
 class Setting(ModelBase):

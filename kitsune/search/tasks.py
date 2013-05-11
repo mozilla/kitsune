@@ -158,8 +158,8 @@ def index_task(cls, id_list, **kw):
         # data.
         pin_this_thread()
 
-        qs = cls.get_model().uncached.filter(id__in=id_list).values_list(
-            'id', flat=True)
+        qs = cls.get_model().uncached.filter(pk__in=id_list).values_list(
+            'pk', flat=True)
         for id_ in qs:
             try:
                 cls.index(cls.extract_document(id_), id_=id_)
