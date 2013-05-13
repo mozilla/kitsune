@@ -10,7 +10,9 @@
     {% endtrans %}
   </p>
 
-  {{ post_html }}
+  <div class="quote">
+    {{ post_html }}
+  </div>
 
   <p><a href="https://{{ host }}{{ post_url }}">{{ _('View this post on the site.') }}</a></p>
 {% endblock %}

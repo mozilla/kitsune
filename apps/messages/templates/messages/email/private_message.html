@@ -3,7 +3,9 @@
 {% block content %}
   <p>{{ _('{sender} sent you the following message:')|f(sender=sender) }}</p>
 
-  {{ message_html }}
+  <div class="quote">
+    {{ message_html }}
+  </div>
 
   <p><a href="https://{{ host }}{{ message_url }}">{{ _('View this message on the web') }}</a></p>
 {% endblock %}
