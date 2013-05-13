@@ -55,7 +55,7 @@ def application(env, start_response):
 
     if newrelic:
         return newrelic.agent.wsgi_application()(
-            django_app(env, start_response))
+            django_app)(env, start_response)
 
     return django_app(env, start_response)
 
