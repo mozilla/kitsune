@@ -99,26 +99,32 @@
       }
 
       .update:after {
-        content: '\25C6';
+        content: '\25C6'; /* Diamond */
         color: #f8e687;
         font-size: 130%; /* Compromise between looking huge on Windows and tiny on the Mac. Using an explicit font-family avails not. */
       }
 
       .out-of-date:after {
-        content: '\25C6';
+        content: '\25C6'; /* Diamond */
         color: orange;
         font-size: 130%;
       }
 
       .untranslated:after {
-        content: '\25B2';
-        color: red;
+        content: '\25B2'; /* Triangle */
+        color: #f00;
         font-size: 120%;
       }
 
       .ok:after {
-        content: '\25CF';
+        content: '\25CF'; /* Circle */
         color: #add575;
+        font-size: 200%;
+      }
+
+      .review:after {
+        content: '\25A0'; /* Square */
+        color: #7580d5;
         font-size: 200%;
       }
     }
