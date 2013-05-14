@@ -731,6 +731,9 @@
     $('#doc-content').on('click', 'h1', function() {
       $(this).closest('.wiki-section').toggleClass('collapsed');
     });
+
+    // Uncollapse the first visible one
+    $('#doc-content h1:visible').first().click();
   }
 
 }(jQuery));
