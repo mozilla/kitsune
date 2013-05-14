@@ -16,7 +16,7 @@ class UsernamesTests(TestCase):
     url = reverse('users.api.usernames', locale='en-US')
 
     def setUp(self):
-        self.u = user(save=True)
+        self.u = user(username='testUser', save=True)
         self.client.login(username=self.u.username, password='testpass')
 
     def tearDown(self):
