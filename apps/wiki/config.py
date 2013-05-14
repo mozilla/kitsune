@@ -177,6 +177,7 @@ HOW_TO_CONTRIBUTE_CATEGORY = 30
 ADMINISTRATION_CATEGORY = 40
 NAVIGATION_CATEGORY = 50
 TEMPLATES_CATEGORY = 60
+CANNED_RESPONSES_CATEGORY = 70
 
 CATEGORIES = (
     (TROUBLESHOOTING_CATEGORY, _lazy(u'Troubleshooting')),
@@ -185,6 +186,7 @@ CATEGORIES = (
     (ADMINISTRATION_CATEGORY, _lazy(u'Administration')),
     (NAVIGATION_CATEGORY, _lazy(u'Navigation')),
     (TEMPLATES_CATEGORY, _lazy(u'Templates')),
+    (CANNED_RESPONSES_CATEGORY, _lazy(u'Canned Responses')),
 )
 
 REDIRECT_HTML = '<p>REDIRECT <a '  # how a redirect looks as rendered HTML

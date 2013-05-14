@@ -22,7 +22,8 @@ from sumo.redis_utils import redis_client, RedisError
 from wiki.models import Document
 from wiki.config import (MEDIUM_SIGNIFICANCE, MAJOR_SIGNIFICANCE,
                          TYPO_SIGNIFICANCE, REDIRECT_HTML,
-                         HOW_TO_CONTRIBUTE_CATEGORY, ADMINISTRATION_CATEGORY)
+                         HOW_TO_CONTRIBUTE_CATEGORY, ADMINISTRATION_CATEGORY,
+                         CANNED_RESPONSES_CATEGORY)
 
 
 log = logging.getLogger('k.dashboards.readouts')
@@ -30,7 +31,6 @@ log = logging.getLogger('k.dashboards.readouts')
 
 MOST_VIEWED = 1
 MOST_RECENT = 2
-
 
 # FROM clause for selecting most-visited translations:
 #
@@ -377,9 +377,9 @@ class Readout(object):
             {'rows': rows, 'column3_label': self.column3_label,
              'column4_label': self.column4_label})
 
-    @staticmethod
-    def should_show_to(user):
-        """Whether this readout should be shown to the user"""
+    @classmethod
+    def should_show_to(cls, request):
+        """Whether this readout should be shown on the request."""
         return True
 
     # To override:
@@ -1143,11 +1143,60 @@ class NeedsChangesReadout(Readout):
                     column4_data=comment)
 
 
+class CannedResponsesReadout(Readout):
+    title = _lazy(u'Canned Responses')
+    description = _lazy(u'Localization status of all canned responses')
+    slug = 'canned-responses'
+    details_link_text = _lazy(u'All canned responses articles...')
+
+    @classmethod
+    def should_show_to(cls, request):
+        return request.LANGUAGE_CODE in settings.AAQ_LANGUAGES
+
+    def _query_and_params(self, max):
+
+        if self.product:
+            params = [self.locale, LAST_30_DAYS, self.product.id,
+                      CANNED_RESPONSES_CATEGORY,
+                      settings.WIKI_DEFAULT_LANGUAGE]
+            extra_joins = PRODUCT_FILTER
+        else:
+            params = [self.locale, LAST_30_DAYS, CANNED_RESPONSES_CATEGORY,
+                      settings.WIKI_DEFAULT_LANGUAGE]
+            extra_joins = ''
+
+        query = (
+            'SELECT engdoc.slug, engdoc.title, '
+                'transdoc.slug, transdoc.title, '
+                'engvisits.visits, ' +
+                MOST_SIGNIFICANT_CHANGE_READY_TO_TRANSLATE + ', ' +
+                NEEDS_REVIEW +
+            'FROM wiki_document engdoc '
+            'LEFT JOIN wiki_document transdoc ON '
+                'transdoc.parent_id=engdoc.id '
+                'AND transdoc.locale=%s '
+            'LEFT JOIN dashboards_wikidocumentvisits engvisits ON '
+                'engdoc.id=engvisits.document_id '
+                'AND engvisits.period=%s '
+            + extra_joins +
+            'WHERE engdoc.category = %s '
+                'AND engdoc.locale = %s '
+                'AND NOT engdoc.is_archived '
+            'ORDER BY engvisits.visits DESC '
+            + self._limit_clause(max)
+        )
+
+        return query, params
+
+    def _format_row(self, row):
+        return _format_row_with_out_of_dateness(self.locale, *row)
+
+
 # L10n Dashboard tables that have their own whole-page views:
 L10N_READOUTS = SortedDict((t.slug, t) for t in
     [MostVisitedTranslationsReadout, NavigationTranslationsReadout,
-     TemplateTranslationsReadout, UntranslatedReadout,
-     OutOfDateReadout, NeedingUpdatesReadout, UnreviewedReadout])
+     TemplateTranslationsReadout, UntranslatedReadout, OutOfDateReadout,
+     NeedingUpdatesReadout, UnreviewedReadout, CannedResponsesReadout])
 
 # Contributors ones:
 CONTRIBUTOR_READOUTS = SortedDict((t.slug, t) for t in

@@ -14,12 +14,12 @@ from dashboards.readouts import (UnreviewedReadout, OutOfDateReadout,
                                  UntranslatedReadout,
                                  TemplateReadout,
                                  HowToContributeReadout,
-                                 AdministrationReadout)
+                                 AdministrationReadout, CannedResponsesReadout)
 from sumo.tests import TestCase
 from products.tests import product
 from wiki.config import (MAJOR_SIGNIFICANCE, MEDIUM_SIGNIFICANCE,
                          TYPO_SIGNIFICANCE, HOW_TO_CONTRIBUTE_CATEGORY,
-                         ADMINISTRATION_CATEGORY)
+                         ADMINISTRATION_CATEGORY, CANNED_RESPONSES_CATEGORY)
 from wiki.tests import revision, translated_revision, document
 
 
@@ -42,7 +42,7 @@ class ReadoutTestCase(TestCase):
     def titles(self, locale=None, product=None):
         """Return the titles shown by the Unreviewed Changes readout."""
         return [row['title'] for row in self.readout(
-                    MockRequest(), locale=locale, product=product).rows()]
+                MockRequest(), locale=locale, product=product).rows()]
 
 
 class OverviewTests(TestCase):
@@ -242,7 +242,6 @@ class OverviewTests(TestCase):
                  save=True)
 
         eq_(1, overview_rows('de')['all']['numerator'])
-
 
 
 class UnreviewedChangesTests(ReadoutTestCase):
@@ -856,3 +855,73 @@ class UntranslatedTests(ReadoutTestCase):
         deferred.is_approved = True
         deferred.save()
         eq_(0, len(self.titles(locale='es')))
+
+
+class CannedResponsesTests(ReadoutTestCase):
+    readout = CannedResponsesReadout
+
+    def test_canned(self):
+        """Test the readout."""
+        d = document(title='Foo', category=CANNED_RESPONSES_CATEGORY,
+                     save=True)
+        revision(is_approved=True,
+                 is_ready_for_localization=True,
+                 document=d,
+                 save=True)
+
+        eq_(1, len(self.rows()))
+
+    def test_translation_state(self):
+        eng_doc = document(category=CANNED_RESPONSES_CATEGORY, save=True)
+        eng_rev = revision(is_approved=True, is_ready_for_localization=True,
+                 document=eng_doc, save=True)
+
+        eq_('untranslated', self.row()['status_class'])
+
+        # Now translate it, but don't approve
+        de_doc = document(category=CANNED_RESPONSES_CATEGORY, parent=eng_doc,
+                          locale='de', save=True)
+        de_rev = revision(is_approved=False, document=de_doc, based_on=eng_rev,
+                 save=True)
+
+        eq_('review', self.row()['status_class'])
+
+        # Approve it, so now every this is ok.
+        de_rev.is_approved = True
+        de_rev.save()
+
+        eq_('ok', self.row()['status_class'])
+
+        # Now update the parent, so it becomes minorly out of date
+        revision(is_approved=True, is_ready_for_localization=True,
+                 document=eng_doc, significance=MEDIUM_SIGNIFICANCE,
+                 save=True)
+
+        eq_('update', self.row()['status_class'])
+
+        # Now update the parent, so it becomes majorly out of date
+        revision(is_approved=True, is_ready_for_localization=True,
+                 document=eng_doc, significance=MAJOR_SIGNIFICANCE,
+                 save=True)
+
+        eq_('out-of-date', self.row()['status_class'])
+
+
+
+    def test_by_product(self):
+        """Test the product filtering of the readout."""
+        p = product(title='Firefox', slug='firefox', save=True)
+        d = document(title='Foo', category=CANNED_RESPONSES_CATEGORY,
+                     save=True)
+        revision(is_approved=True,
+                 is_ready_for_localization=True,
+                 document=d,
+                 save=True)
+
+        # There shouldn't be any rows yet.
+        eq_(0, len(self.rows(product=p)))
+
+        # Add the product to the document, and verify it shows up.
+        d.products.add(p)
+        eq_(1, len(self.rows(product=p)))
+        eq_(self.row(product=p)['title'], d.title)
