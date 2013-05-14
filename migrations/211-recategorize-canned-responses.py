@@ -12,8 +12,11 @@ from wiki.config import CANNED_RESPONSES_CATEGORY
 
 to_move = list(Document.objects.filter(slug__startswith='forum-response-',
                                        locale=settings.WIKI_DEFAULT_LANGUAGE))
-to_move.append(Document.objects.get(slug='common-forum-responses',
-                                    locale=settings.WIKI_DEFAULT_LANGUAGE))
+try:
+    to_move.append(Document.objects.get(slug='common-forum-responses',
+                                        locale=settings.WIKI_DEFAULT_LANGUAGE))
+except Document.DoesNotExist:
+    pass
 
 print 'Recategorizing %d common response articles.' % len(to_move)
 
