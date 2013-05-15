@@ -234,7 +234,6 @@ MINIFY_BUNDLES = {
         ),
         'wiki.dashboard': (
             'js/wiki.dashboard.js',
-            'js/helpfuldashcharts.js',
         ),
         'highcharts': (
             'js/libs/highstock.src.js',
