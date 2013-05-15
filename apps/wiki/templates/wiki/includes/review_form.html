@@ -54,7 +54,7 @@
           </label>
         </div>
       {% endif %}
-      {% if document.locale == settings.WIKI_DEFAULT_LANGUAGE and document.allows_editing_by(user) %}
+      {% if document.locale == settings.WIKI_DEFAULT_LANGUAGE and user.has_perm('wiki.edit_needs_change') %}
         <div class="needs-change">
           {{ form.needs_change }}
           {{ form.needs_change|label_with_help }}

@@ -229,9 +229,9 @@ class DocumentEditingTests(TestCase):
 
     def setUp(self):
         super(DocumentEditingTests, self).setUp()
-        u = user(save=True)
-        add_permission(u, Document, 'change_document')
-        self.client.login(username=u.username, password='testpass')
+        self.u = user(save=True)
+        add_permission(self.u, Document, 'change_document')
+        self.client.login(username=self.u.username, password='testpass')
 
     def test_retitling(self):
         """When the title of an article is edited, a redirect is made."""
@@ -325,12 +325,22 @@ class DocumentEditingTests(TestCase):
         data.update({'needs_change': True,
                      'needs_change_comment': comment,
                      'form': 'doc'})
+
+        # Verify that needs_change can't be set if the user doesn't have
+        # the permission.
+        self.client.post(reverse('wiki.edit_document', args=[doc.slug]), data)
+        doc = Document.uncached.get(pk=doc.pk)
+        assert not doc.needs_change
+        assert not doc.needs_change_comment
+
+        # Give the user permission, now it should work.
+        add_permission(self.u, Document, 'edit_needs_change')
         self.client.post(reverse('wiki.edit_document', args=[doc.slug]), data)
         doc = Document.uncached.get(pk=doc.pk)
         assert doc.needs_change
         eq_(comment, doc.needs_change_comment)
 
-        # Clear out needs_change
+        # Clear out needs_change.
         data.update({'needs_change': False,
                      'needs_change_comment': comment})
         self.client.post(reverse('wiki.edit_document', args=[doc.slug]), data)
