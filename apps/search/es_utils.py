@@ -58,6 +58,19 @@ class Sphilastic(S):
         # a read context. Therefore, we always return the READ_INDEX.
         return [READ_INDEX]
 
+    def process_query_mlt(self, key, val, action):
+        """Add support for a more like this query to our S.
+
+        val is expected to be a dict like:
+            {
+                'fields': ['field1', 'field2'],
+                'like_text': 'text like this one',
+            }
+        """
+        return {
+            'more_like_this': val,
+        }
+
 
 def get_mappings():
     mappings = {}
