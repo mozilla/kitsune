@@ -958,11 +958,6 @@ class TestTasks(ElasticTestCase):
         eq_(index_fun.call_count, 1)
 
 
-class MappingMergeError(Exception):
-    """Represents a mapping merge error"""
-    pass
-
-
 class TestMappings(unittest.TestCase):
     def test_mappings(self):
         # This is more of a linter than a test. If it passes, then
@@ -988,7 +983,7 @@ class TestMappings(unittest.TestCase):
                 # FIXME - We're comparing two dicts here. This might
                 # not work for non-trivial dicts.
                 if merged_mapping[key][0] != val:
-                    raise MappingMergeError(
+                    raise es_utils.MappingMergeError(
                         '%s key different for %s and %s' %
                         (key, cls_name, merged_mapping[key][1]))
 

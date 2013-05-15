@@ -33,6 +33,11 @@ CHUNK_SIZE = 20000
 log = logging.getLogger('k.search.es')
 
 
+class MappingMergeError(Exception):
+    """Represents a mapping merge error"""
+    pass
+
+
 class UnindexMeBro(Exception):
     """Raise in extract_document when doc should be removed."""
     pass
@@ -553,7 +558,7 @@ def es_verify_cmd(log=log):
     start_time = time.time()
 
     log.info('MappingType indexable.')
-    for cls, indexable in get_indexable_for_mapping_types():
+    for cls, indexable in get_indexable():
         count = 0
         cls_time = time.time()
 
