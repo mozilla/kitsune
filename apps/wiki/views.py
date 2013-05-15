@@ -104,7 +104,8 @@ def document(request, document_slug, template=None):
         except Document.DoesNotExist:
             pass
 
-    related = doc.related_documents[:3]
+    related_documents = doc.related_documents[:3]
+    related_questions = doc.related_questions[:3]
 
     contributors = doc.contributors.all()
 
@@ -131,7 +132,9 @@ def document(request, document_slug, template=None):
         waffle.switch_is_active('hide-voting')):
         hide_voting = True
     data = {'document': doc, 'redirected_from': redirected_from,
-            'related': related, 'contributors': contributors,
+            'related_documents': related_documents,
+            'related_questions': related_questions,
+            'contributors': contributors,
             'fallback_reason': fallback_reason,
             'is_aoa_referral': request.GET.get('ref') == 'aoa',
             'topics': topics, 'product': product, 'products': products,

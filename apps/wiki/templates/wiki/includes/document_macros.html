@@ -1,12 +1,12 @@
 {# vim: set ts=2 et sts=2 sw=2: #}
-{% macro related_articles(related, document) -%}
-    {% if related %}
+{% macro related(related_things, header, title_field) -%}
+    {% if related_things %}
       <aside id="doc-related" class="folding-section">
-        <header>{{ _('Related Articles') }}</header>
+        <header>{{ header }}</header>
         <section>
           <ul>
-            {% for art in related %}
-              <li><a href="{{ art['url'] }}">{{ art['document_title'] }}</a></li>
+            {% for thing in related_things %}
+              <li><a href="{{ thing['url'] }}">{{ thing[title_field] }}</a></li>
             {% endfor %}
           </ul>
         </section>

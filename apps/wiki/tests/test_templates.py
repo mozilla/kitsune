@@ -16,6 +16,7 @@ from pyquery import PyQuery as pq
 from wikimarkup.parser import ALLOWED_TAGS, ALLOWED_ATTRIBUTES
 
 from products.tests import product
+from questions.tests import question, answer, answervote
 from search.tests.test_es import ElasticTestCase
 from sumo.helpers import urlparams
 from sumo.tests import post, get, attrs_eq, MobileTestCase
@@ -2220,12 +2221,13 @@ class SelectLocaleTests(TestCaseBase):
             len(doc('#select-locale ul.locales li')))
 
 
-class RelatedDocumentTestCase(ElasticTestCase):
+class RelatedThingsTestCase(ElasticTestCase):
     def setUp(self):
-        super(RelatedDocumentTestCase, self).setUp()
-        product(save=True)
+        super(RelatedThingsTestCase, self).setUp()
+        self.product = product(save=True)
 
     def test_related_documents(self):
+        """Verify Related Documents are rendered as expected."""
         # The document
         d1 = document(title='lorem ipsum', save=True)
         r1 = revision(document=d1, summary='lorem',
@@ -2308,6 +2310,44 @@ class RelatedDocumentTestCase(ElasticTestCase):
         response = self.client.get(d7.get_absolute_url())
         doc = pq(response.content)
         eq_(0, len(doc('#doc-related li a')))
+
+    def test_related_questions(self):
+        """Verify Related Questions are rendered as expected."""
+        # The document
+        d = document(title='lorem ipsum', save=True)
+        d.current_revision = revision(
+            document=d, summary='lorem', content='lorem ipsum dolor',
+            is_approved=True, save=True)
+        d.save()
+        d.products.add(self.product)
+
+        # There should be no related anything yet.
+        response = self.client.get(d.get_absolute_url())
+        doc = pq(response.content)
+        eq_(0, len(doc('#doc-related li a')))
+
+        # Create a question with helpful answer.
+        q = question(title='lorem ipsum question', content='lorem', save=True)
+        a = answer(question=q, save=True)
+        answervote(answer=a, helpful=True, save=True)
+
+        self.refresh()
+
+        # There should still be no related anything yet.
+        response = self.client.get(d.get_absolute_url())
+        doc = pq(response.content)
+        eq_(0, len(doc('#doc-related li a')))
+
+        # Add the product to the question
+        q.products.add(self.product)
+
+        self.refresh()
+
+        response = self.client.get(d.get_absolute_url())
+        doc = pq(response.content)
+        related = doc('#doc-related li a')
+        eq_(1, len(related))
+        eq_('lorem ipsum question', related.text())
 
 
 class RevisionDeleteTestCase(TestCaseBase):
