@@ -54,6 +54,7 @@ class DocumentForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         # Quasi-kwargs:
         can_archive = kwargs.pop('can_archive', False)
+        can_edit_needs_change = kwargs.pop('can_edit_needs_change', False)
         initial_title = kwargs.pop('initial_title', '')
 
         super(DocumentForm, self).__init__(*args, **kwargs)
@@ -74,6 +75,12 @@ class DocumentForm(forms.ModelForm):
         # causes save() to skip it as well.
         if not can_archive:
             del self.fields['is_archived']
+
+        # If user hasn't permission to mess with needs_change*, remove the
+        # fields. This causes save() to skip it as well.
+        if not can_edit_needs_change:
+            del self.fields['needs_change']
+            del self.fields['needs_change_comment']
 
     title = StrippedCharField(
         min_length=5, max_length=255,

@@ -312,6 +312,9 @@ def edit_document(request, document_slug, revision_id=None):
         Document, locale=request.LANGUAGE_CODE, slug=document_slug)
     user = request.user
 
+    can_edit_needs_change = user.has_perm('wiki.edit_needs_change')
+    can_archive = user.has_perm('wiki.archive_document')
+
     # If this document has a parent, then the edit is handled by the
     # translate view. Pass it on.
     if doc.parent:
@@ -331,7 +334,8 @@ def edit_document(request, document_slug, revision_id=None):
     if doc.allows_editing_by(user):
         doc_form = DocumentForm(
             initial=_document_form_initial(doc),
-            can_archive=user.has_perm('wiki.archive_document'))
+            can_archive=can_archive,
+            can_edit_needs_change=can_edit_needs_change)
 
     if request.method == 'GET':
         if not (rev_form or doc_form):
@@ -352,7 +356,8 @@ def edit_document(request, document_slug, revision_id=None):
                 doc_form = DocumentForm(
                     post_data,
                     instance=doc,
-                    can_archive=user.has_perm('wiki.archive_document'))
+                    can_archive=can_archive,
+                    can_edit_needs_change=can_edit_needs_change)
                 if doc_form.is_valid():
                     # Get the possibly new slug for the imminent redirection:
                     doc = doc_form.save(None)
@@ -481,7 +486,9 @@ def review_revision(request, document_slug, revision_id):
             # Update the needs change bit (if approved, default language and
             # user has permission).
             if (doc.locale == settings.WIKI_DEFAULT_LANGUAGE and
-                doc.allows_editing_by(request.user) and rev.is_approved):
+                request.user.has_perm('wiki.edit_needs_change') and
+                rev.is_approved):
+
                 doc.needs_change = form.cleaned_data['needs_change']
                 doc.needs_change_comment = \
                     form.cleaned_data['needs_change_comment']
