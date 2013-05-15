@@ -18,7 +18,6 @@ from dashboards.readouts import (overview_rows, READOUTS, L10N_READOUTS,
                                  CONTRIBUTOR_READOUTS)
 from dashboards.utils import render_readouts
 from products.models import Product
-from sumo.redis_utils import redis_client, RedisError
 from sumo.urlresolvers import reverse
 from sumo.utils import smart_int
 from users.helpers import profile_url
