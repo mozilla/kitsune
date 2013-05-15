@@ -150,6 +150,7 @@ SUMO_LANGUAGES = (
     'ro',
     'ru',
     'rw',
+    'sah',
     'si',
     'sk',
     'sl',
