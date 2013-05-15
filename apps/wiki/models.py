@@ -623,6 +623,7 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
                         'min_doc_freq': 1,
                     }
                 )
+            questions = list(questions)
             cache.add(key, questions)
         except ES_EXCEPTIONS as exc:
             log.error('ES error during questions MLT for {doc}: {err}'.format(
