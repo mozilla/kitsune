@@ -17,6 +17,7 @@ from tidings.models import NotificationsMixin
 from tower import ugettext_lazy as _lazy, ugettext as _
 
 from products.models import Product
+from questions.models import Question
 from search.es_utils import UnindexMeBro, ES_EXCEPTIONS
 from search.models import (SearchMappingType, SearchMixin,
                            register_for_indexing, register_mapping_type)
@@ -587,6 +588,44 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
             documents = []
 
         return documents
+
+    @property
+    def related_questions(self):
+        """Return questions that are 'morelikethis' document."""
+        # Only documents in default IA categories have related.
+        if (self.redirect_url() or not self.current_revision or
+            self.category not in settings.IA_DEFAULT_CATEGORIES):
+            return []
+
+        # First try to get the results from the cache
+        key = 'wiki_document:related_questions:%s' % self.id
+        questions = cache.get(key)
+        if questions:
+            log.debug('Getting MLT questions for {doc} from cache.'
+                .format(doc=repr(self)))
+            return questions
+
+        try:
+            s = Question.get_mapping_type().search()
+            questions = s.filter(
+                    question_locale=self.locale,
+                    product__in=[p.slug for p in self.get_products()],
+                    question_has_helpful=True
+                ).query(
+                    __mlt={
+                        'fields': ['question_title', 'question_content'],
+                        'like_text': self.title,
+                        'min_term_freq': 1,
+                        'min_doc_freq': 1,
+                    }
+                )
+            cache.add(key, questions)
+        except ES_EXCEPTIONS as exc:
+            log.error('ES error during questions MLT for {doc}: {err}'.format(
+                    doc=repr(self), err=str(exc)))
+            questions = []
+
+        return questions
 
     @classmethod
     def get_mapping_type(cls):
