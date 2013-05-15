@@ -3,8 +3,7 @@
 {% from "includes/common_macros.html" import for_contributors_sidebar %}
 {% from "dashboards/includes/macros.html" import print_readout, product_selector, print_subscription_menu with context %}
 {% set title = _('Knowledge Base Dashboard') %}
-{# TODO: Remove Highcharts when we remove the aggregate helpfulness graph. #}
-{% set scripts = ('wiki', 'highcharts', 'rickshaw', 'wiki.dashboard') %}
+{% set scripts = ('wiki', 'rickshaw', 'wiki.dashboard') %}
 {% set styles = ('rickshaw', 'kbdashboards') %}
 {% set crumbs = [(None, title)] %}
 {% set classes = 'contributor-dashboard' %}
@@ -56,9 +55,6 @@
           </div>
         </div>
       </section>
-
-      <a id="show-chart">{{ _('Show Aggregate Helpfulness Chart') }}</a>
-      <div id="helpful-chart-tall" data-url="{{ url('dashboards.get_helpful_graph_async') }}"></div>
     </article>
   </div>
 {% endblock %}
