@@ -10,13 +10,14 @@ k.Graph = function($elem, extra) {
   var defaults = {
     toRender: [],
     options: {
+      bucket: false,
+      daterange: true,
+      hover: true,
       legend: true,
+      sets: false,
       slider: true,
       xAxis: true,
-      yAxis: true,
-      hover: true,
-      sets: false,
-      bucket: false
+      yAxis: true
     },
 
     data: {
@@ -62,6 +63,7 @@ k.Graph.prototype.init = function() {
   this.initGraph();
   this.initAxises();
   this.initSlider();
+  this.initDateRange();
   this.initLegend();
   this.initSets();
 };
@@ -321,32 +323,11 @@ k.Graph.prototype.initGraph = function() {
 
 k.Graph.prototype.initSlider = function() {
   var self = this;
-  var now, minDate, ytd_ago, all_ago;
-  var $inlines, $slider, $presets;
-  var self = this;
-  var DAY = 24 * 60 * 60;
-
-  now = new Date();
-  ytd_ago = (now - new Date(now.getFullYear(), 0, 0)) / 1000;
-  all_ago = ((now / 1000) - this.data.series[0].data[0].x);
-
-  presets = [
-    [30 * DAY, gettext('1m', 'Short for 1 month')],
-    [90 * DAY, gettext('3m', 'Short for 3 months')],
-    [180 * DAY, gettext('6m', 'Short for 6 months')],
-    [ytd_ago, gettext('YTD', 'Short "Year to Date"')],
-    [365 * DAY, gettext('1y', 'Short for 1 year')],
-    [all_ago, gettext('All')]
-  ];
+  var minDate;
 
   if (this.options.slider) {
     this.dom.slider = this.dom.elem.find('.slider');
     this.dom.slider.empty();
-
-    $inlines = this.dom.elem.find('.inline-controls');
-    $sliderLabel = $('<label for="slider"/>')
-      .appendTo($('<div class="range-slider"/>').appendTo($inlines));
-    $presets = $('<div class="range-presets"/>').appendTo($inlines);
 
     slider = new Rickshaw.Graph.RangeSlider({
       graph: this.rickshaw.graph,
@@ -363,19 +344,78 @@ k.Graph.prototype.initSlider = function() {
     this.update();
 
     this.slider.slider('values', 0, minDate);
-    function onSlide(event, ui) {
-      var start = new Date(ui.values[0] * 1000);
-      var end = new Date(ui.values[1] * 1000 - (1000 * 60 * 60 * 24));
-      var fmt = '%(year)s-%(month)s-%(date)s';
-      var label = interpolate('From %s to %s', [k.dateFormat(fmt, start),
-                                                k.dateFormat(fmt, end)]);
-      $sliderLabel.text(label);
-
+    function onSlide() {
       self.initData();
       self.update();
     }
     this.slider.on('slide', onSlide);
-    onSlide(null, {values: this.slider.slider('values')} );
+  }
+};
+
+k.Graph.prototype.initDateRange = function() {
+  var self = this, i;
+  var now, minDate, ytd_ago, all_ago;
+  var $inlines, $slider, $presets;
+  var DAY = 24 * 60 * 60;
+  var label_html;
+
+  now = new Date();
+  ytd_ago = (now - new Date(now.getFullYear(), 0, 0)) / 1000;
+  all_ago = ((now / 1000) - this.data.series[0].data[0].x);
+
+  presets = [
+    [30 * DAY, gettext('1m', 'Short for 1 month')],
+    [90 * DAY, gettext('3m', 'Short for 3 months')],
+    [180 * DAY, gettext('6m', 'Short for 6 months')],
+    [ytd_ago, gettext('YTD', 'Short "Year to Date"')],
+    [365 * DAY, gettext('1y', 'Short for 1 year')],
+    [all_ago, gettext('All')]
+  ];
+
+  if (this.options.daterange) {
+    label_html = interpolate(gettext('From %(from_input)s to %(to_input)s'), {
+      from_input: '<input type="date" name="start" />',
+      to_input: '<input type="date" name="end" />'
+    }, true);
+
+    $inlines = this.dom.elem.find('.inline-controls');
+    $label = $('<label/>')
+      .html(label_html)
+      .appendTo($('<div class="range"/>').appendTo($inlines));
+    $presets = $('<div class="range-presets"/>').appendTo($inlines);
+
+    $label.find('input[type=date]').datepicker({
+      dateFormat: 'yy-mm-dd'
+    });
+
+    $label.on('change', 'input', function() {
+      var $this = $(this);
+      var val = $this.val();
+      if ($this.prop('name') === 'start') {
+        self.setRange(val, undefined);
+      } else {
+        self.setRange(undefined, val);
+      }
+    });
+
+    this.rickshaw.graph.onUpdate(function() {
+      var window = self.rickshaw.graph.window;
+
+      var now = +new Date() / 1000;
+      var start = window.xMin || (now - all_ago);
+      var end = window.xMax || now;
+
+      if (self.options.slider) {
+        self.slider.slider('values', [start, end]);
+      }
+
+      start = new Date(start * 1000);
+      end = new Date(end * 1000);
+
+      var fmt = '%(year)s-%(month)s-%(date)s';
+      $label.find('[name=start]').val(k.dateFormat(fmt, start));
+      $label.find('[name=end]').val(k.dateFormat(fmt, end));
+    });
 
     for (i = 0; i < presets.length; i++) {
       $('<button />')
@@ -385,10 +425,14 @@ k.Graph.prototype.initSlider = function() {
         .on('click', function() {
           var now = +new Date() / 1000;
           var min = (now - $(this).data('days-ago'));
+
           self.rickshaw.graph.window.xMin = min;
           self.rickshaw.graph.window.xMax = undefined;
-          self.slider.slider('values', 0, min);
-          self.slider.slider('values', 1, now);
+          if (self.options.slider) {
+            self.slider.slider('values', [min, now]);
+          }
+
+          self.initData();
           self.update();
         });
     }
@@ -561,6 +605,30 @@ k.Graph.prototype.update = function() {
   this.rickshaw.graph.stackedData = false;
   this.rickshaw.graph.update();
 };
+
+/* Accepts start and end as one of:
+ *  - Seconds since epoch
+ *  - Date objects
+ *  - Strings formatted as YYYY-MM-DD
+ */
+k.Graph.prototype.setRange = function(start, end) {
+  var window = this.rickshaw.graph.window;
+
+  if (start === undefined) {
+    start = window.xMin;
+  }
+  if (end === undefined) {
+    end = window.xMax;
+  }
+
+  start = k.Graph.toSeconds(start);
+  end = k.Graph.toSeconds(end);
+
+  window.xMin = start;
+  window.xMax = end;
+  this.initData();
+  this.update();
+};
 /* end Graph */
 
 /* These are datum transforming methods. They take an object like
@@ -582,6 +650,26 @@ k.Graph.fraction = function(topKey, bottomKey) {
     return d[topKey] / d[bottomKey];
   };
 };
+
+// Takes a date in one of the followign formats and returns seconds
+// since the epoch: Date objects, strings in the format 'YYYY-MM-DD',
+// Integers in second since the epoch form..
+k.Graph.toSeconds = function(obj) {
+  var type = typeof obj;
+  if (type === 'object') {
+    return obj / 1000;
+  }
+  if (type === 'string') {
+    var split = obj.split('-');
+    // Date constructer takes months as 0-based.
+    var date = new Date(split[0], split[1] - 1, split[2]);
+    return date / 1000;
+  }
+  if (type === 'number') {
+    return obj;
+  }
+  return undefined;
+}
 
 /* Takes two or more arguments. The arguments are the keys that
  * represent an entire collection (all pieces in a pie). The first key
