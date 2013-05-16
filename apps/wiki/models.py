@@ -13,6 +13,7 @@ from django.db.models import Q
 from django.http import Http404
 
 from pyquery import PyQuery
+from statsd import statsd
 from tidings.models import NotificationsMixin
 from tower import ugettext_lazy as _lazy, ugettext as _
 
@@ -566,11 +567,13 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
         key = 'wiki_document:related_docs:%s' % self.id
         documents = cache.get(key)
         if documents:
+            statsd.incr('wiki.related_documents.cache.hit')
             log.debug('Getting MLT for {doc} from cache.'
                 .format(doc=repr(self)))
             return documents
 
         try:
+            statsd.incr('wiki.related_documents.cache.miss')
             mt = self.get_mapping_type()
             documents = mt.morelikethis(
                 self.id,
@@ -584,7 +587,8 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
                     'document_content'])
             cache.add(key, documents)
         except ES_EXCEPTIONS as exc:
-            log.error('ES error during MLT for {doc}: {err}'.format(
+            statsd.incr('wiki.related_documents.esexception')
+            log.error('ES MLT {err} related_documents for {doc}'.format(
                     doc=repr(self), err=str(exc)))
             documents = []
 
@@ -602,11 +606,13 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
         key = 'wiki_document:related_questions:%s' % self.id
         questions = cache.get(key)
         if questions:
+            statsd.incr('wiki.related_questions.cache.hit')
             log.debug('Getting MLT questions for {doc} from cache.'
                 .format(doc=repr(self)))
             return questions
 
         try:
+            statsd.incr('wiki.related_questions.cache.miss')
             max_age = settings.SEARCH_DEFAULT_MAX_QUESTION_AGE
             start_date = int(time.time()) - max_age
 
@@ -627,7 +633,8 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
             questions = list(questions)
             cache.add(key, questions)
         except ES_EXCEPTIONS as exc:
-            log.error('ES error during questions MLT for {doc}: {err}'.format(
+            statsd.incr('wiki.related_questions.esexception')
+            log.error('ES MLT {err} related_questions for {doc}'.format(
                     doc=repr(self), err=str(exc)))
             questions = []
 
