@@ -321,13 +321,32 @@ k.Graph.prototype.initGraph = function() {
 
 k.Graph.prototype.initSlider = function() {
   var self = this;
-  var minDate;
+  var now, minDate, ytd_ago, all_ago;
+  var $inlines, $slider, $presets;
+  var self = this;
+  var DAY = 24 * 60 * 60;
+
+  now = new Date();
+  ytd_ago = (now - new Date(now.getFullYear(), 0, 0)) / 1000;
+  all_ago = ((now / 1000) - this.data.series[0].data[0].x);
+
+  presets = [
+    [30 * DAY, gettext('1m', 'Short for 1 month')],
+    [90 * DAY, gettext('3m', 'Short for 3 months')],
+    [180 * DAY, gettext('6m', 'Short for 6 months')],
+    [ytd_ago, gettext('YTD', 'Short "Year to Date"')],
+    [365 * DAY, gettext('1y', 'Short for 1 year')],
+    [all_ago, gettext('All')]
+  ];
 
   if (this.options.slider) {
     this.dom.slider = this.dom.elem.find('.slider');
     this.dom.slider.empty();
 
-    this.dom.elem.find('.inline-controls').append('<div><label for="slider"/></div>');
+    $inlines = this.dom.elem.find('.inline-controls');
+    $sliderLabel = $('<label for="slider"/>')
+      .appendTo($('<div class="range-slider"/>').appendTo($inlines));
+    $presets = $('<div class="range-presets"/>').appendTo($inlines);
 
     slider = new Rickshaw.Graph.RangeSlider({
       graph: this.rickshaw.graph,
@@ -350,13 +369,29 @@ k.Graph.prototype.initSlider = function() {
       var fmt = '%(year)s-%(month)s-%(date)s';
       var label = interpolate('From %s to %s', [k.dateFormat(fmt, start),
                                                 k.dateFormat(fmt, end)]);
-      $('label[for=slider]').text(label);
+      $sliderLabel.text(label);
 
       self.initData();
       self.update();
     }
     this.slider.on('slide', onSlide);
     onSlide(null, {values: this.slider.slider('values')} );
+
+    for (i = 0; i < presets.length; i++) {
+      $('<button />')
+        .data('days-ago', presets[i][0])
+        .text(presets[i][1])
+        .appendTo($presets)
+        .on('click', function() {
+          var now = +new Date() / 1000;
+          var min = (now - $(this).data('days-ago'));
+          self.rickshaw.graph.window.xMin = min;
+          self.rickshaw.graph.window.xMax = undefined;
+          self.slider.slider('values', 0, min);
+          self.slider.slider('values', 1, now);
+          self.update();
+        });
+    }
   }
 };
 
