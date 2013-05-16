@@ -41,7 +41,7 @@
           return false;
         }
       });
-
+      initExitSupportFor();
       initArticlePreview();
       initPreviewDiff();
       initTitleAndSlugCheck();
@@ -734,6 +734,12 @@
 
     // Uncollapse the first visible one
     $('#doc-content h1:visible').first().click();
+  }
+
+  function initExitSupportFor() {
+    $('#support-for-exit').live('click', function() {
+      $('#support-for').remove();
+    });
   }
 
 }(jQuery));
