@@ -41,7 +41,7 @@
           return false;
         }
       });
-
+      initExitSupportFor();
       initArticlePreview();
       initPreviewDiff();
       initTitleAndSlugCheck();
@@ -730,6 +730,12 @@
     // Make the header the trigger for toggling state
     $('#doc-content').on('click', 'h1', function() {
       $(this).closest('.wiki-section').toggleClass('collapsed');
+    });
+  }
+
+  function initExitSupportFor() {
+    $('#support-for-exit').live('click', function() {
+      $('#support-for').remove();
     });
   }
 
