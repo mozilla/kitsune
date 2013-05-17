@@ -323,10 +323,7 @@ k.Graph.prototype.initGraph = function() {
 
 k.Graph.prototype.initSlider = function() {
   var self = this;
-  var now, minDate, ytd_ago, all_ago;
-  var $inlines, $slider, $presets;
-  var self = this;
-  var DAY = 24 * 60 * 60;
+  var minDate;
 
   if (this.options.slider) {
     this.dom.slider = this.dom.elem.find('.slider');
@@ -356,10 +353,11 @@ k.Graph.prototype.initSlider = function() {
 };
 
 k.Graph.prototype.initDateRange = function() {
-  var self = this;
+  var self = this, i;
   var now, minDate, ytd_ago, all_ago;
   var $inlines, $slider, $presets;
   var DAY = 24 * 60 * 60;
+  var label_html;
 
   now = new Date();
   ytd_ago = (now - new Date(now.getFullYear(), 0, 0)) / 1000;
@@ -375,9 +373,14 @@ k.Graph.prototype.initDateRange = function() {
   ];
 
   if (this.options.daterange) {
+    label_html = interpolate(gettext('From %(from_input)s to %(to_input)s'), {
+      from_input: '<input type="date" name="start" />',
+      to_input: '<input type="date" name="end" />'
+    }, true);
+
     $inlines = this.dom.elem.find('.inline-controls');
-    $label = $('<label for="slider"/>')
-      .html('From <input type="date" name="start"/> to <input type="date" name="end"/>')
+    $label = $('<label/>')
+      .html(label_html)
       .appendTo($('<div class="range"/>').appendTo($inlines));
     $presets = $('<div class="range-presets"/>').appendTo($inlines);
 
@@ -388,7 +391,7 @@ k.Graph.prototype.initDateRange = function() {
     $label.on('change', 'input', function() {
       var $this = $(this);
       var val = $this.val();
-      if ($this.prop('name') == 'start') {
+      if ($this.prop('name') === 'start') {
         self.setRange(val, undefined);
       } else {
         self.setRange(undefined, val);
