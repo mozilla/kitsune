@@ -1,7 +1,10 @@
 import collections
 
 from django import forms
-from django.utils.safestring import mark_safe
+from django.conf import settings
+
+import jingo
+from test_utils import RequestFactory
 
 from topics.models import Topic
 from wiki.config import SIGNIFICANCES_HELP
@@ -14,40 +17,37 @@ class TopicsAndSubtopicsWidget(forms.widgets.SelectMultiple):
         topics_and_subtopics = Topic.objects.all()
         topics = [t for t in topics_and_subtopics if t.parent_id is None]
 
-        output = [u'<ul class="topics">']
         for topic in topics:
-            output.append(u'<li>')
-            output.append(
-                self.render_topic(name, value, topic.id, topic.title))
+            self.process_topic(value, topic)
 
-            subtopics = [t for t in topics_and_subtopics
-                         if t.parent_id == topic.id]
-            if subtopics:
-                output.append(u'<ul class="subtopics">')
-                for subtopic in subtopics:
-                    output.append(u'<li>')
-                    output.append(self.render_topic(
-                        name, value, subtopic.id, subtopic.title))
-                    output.append(u'</li>')
-                output.append(u'</ul>')
-            output.append(u'</li>')
+            topic.my_subtopics = [t for t in topics_and_subtopics
+                                  if t.parent_id == topic.id]
 
-        output.append(u'</ul>')
-        return mark_safe(u'\n'.join(output))
+            for subtopic in topic.my_subtopics:
+                self.process_topic(value, subtopic)
 
-    def render_topic(self, name, value, topic_id, title):
-        if isinstance(value, (int, long)) and topic_id == value:
-            checked = u' checked'
+        # Create a fake request to make jingo happy.
+        req = RequestFactory()
+        req.META = {}
+        req.locale = settings.WIKI_DEFAULT_LANGUAGE
+
+        return jingo.render_to_string(
+            req,
+            'wiki/includes/topics_widget.html',
+            {
+                'topics': topics,
+                'name': name,
+            })
+
+    def process_topic(self, value, topic):
+        if isinstance(value, (int, long)) and topic.id == value:
+            topic.checked = True
         elif (not isinstance(value, basestring)
               and isinstance(value, collections.Iterable)
-              and topic_id in value):
-            checked = u' checked'
+              and topic.id in value):
+            topic.checked = True
         else:
-            checked = u''
-
-        return (
-            u'<label><input type="checkbox" name="%s" value="%s"%s/> %s'
-            u'</label>' % (name, topic_id, checked, title))
+            topic.checked = False
 
 
 class RadioInputWithHelpText(forms.widgets.RadioInput):

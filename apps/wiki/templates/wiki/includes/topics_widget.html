@@ -1,0 +1,22 @@
+<ul class="topics">
+  {% for topic in topics %}
+    <li>
+      <label>
+        <input type="checkbox" name="{{ name }}" value="{{ topic.id }}"{% if topic.checked %} checked{% endif %}/>
+        {{ topic.title }}
+      </label>
+      {% if topic.my_subtopics %}
+        <ul class="subtopics">
+          {% for subtopic in topic.my_subtopics %}
+            <li>
+              <label>
+                <input type="checkbox" name="{{ name }}" value="{{ subtopic.id }}"{% if subtopic.checked %} checked{% endif %}/>
+                {{ subtopic.title }}
+              </label>
+            </li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+    </li>
+  {% endfor %}
+</ul>
