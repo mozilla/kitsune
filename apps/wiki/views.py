@@ -104,8 +104,8 @@ def document(request, document_slug, template=None):
         except Document.DoesNotExist:
             pass
 
-    related_documents = doc.related_documents[:3]
-    related_questions = doc.related_questions[:3]
+    related_documents = doc.related_documents
+    related_questions = doc.related_questions
 
     contributors = doc.contributors.all()
 
