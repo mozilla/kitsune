@@ -5,16 +5,17 @@ from django import forms
 from django.conf import settings
 from django.template.defaultfilters import slugify
 from django.utils.encoding import smart_str
-from django.utils.safestring import mark_safe
 
 from tower import ugettext_lazy as _lazy
 
 from products.models import Product
 from sumo.form_fields import MultiUsernameField, StrippedCharField
 from topics.models import Topic
+from wiki.config import (GROUPED_FIREFOX_VERSIONS, GROUPED_OPERATING_SYSTEMS,
+                         SIGNIFICANCES, CATEGORIES)
 from wiki.models import Document, Revision, MAX_REVISION_COMMENT_LENGTH
-from wiki.config import (SIGNIFICANCES_HELP, GROUPED_FIREFOX_VERSIONS,
-                         SIGNIFICANCES, GROUPED_OPERATING_SYSTEMS, CATEGORIES)
+from wiki.widgets import (RadioFieldRendererWithHelpText,
+                          TopicsAndSubtopicsWidget)
 
 
 TITLE_REQUIRED = _lazy(u'Please provide a title.')
@@ -133,7 +134,7 @@ class DocumentForm(forms.ModelForm):
     topics = forms.MultipleChoiceField(
         label=_lazy(u'Topics:'),
         required=False,
-        widget=forms.CheckboxSelectMultiple())
+        widget=TopicsAndSubtopicsWidget())
 
     locale = forms.CharField(widget=forms.HiddenInput())
 
@@ -264,30 +265,6 @@ class RevisionForm(forms.ModelForm):
 
         new_rev.save()
         return new_rev
-
-
-class RadioInputWithHelpText(forms.widgets.RadioInput):
-    """Extend django's RadioInput with some <div class="help-text" />."""
-    # NOTE: I tried to have the help text be part of the choices tuple,
-    # but it caused all sorts of validation errors in django. For now,
-    # just using SIGNIFICANCES_HELP directly here.
-    def __init__(self, name, value, attrs, choice, index):
-        super(RadioInputWithHelpText, self).__init__(name, value, attrs,
-                                                     choice, index)
-        self.choice_help = SIGNIFICANCES_HELP[choice[0]]
-
-    def __unicode__(self):
-        label = super(RadioInputWithHelpText, self).__unicode__()
-        return mark_safe('%s<div class="help-text">%s</div>' %
-                         (label, self.choice_help))
-
-
-class RadioFieldRendererWithHelpText(forms.widgets.RadioFieldRenderer):
-    """Modifies django's RadioFieldRenderer to use RadioInputWithHelpText."""
-    def __iter__(self):
-        for i, choice in enumerate(self.choices):
-            yield RadioInputWithHelpText(self.name, self.value,
-                                         self.attrs.copy(), choice, i)
 
 
 class ReviewForm(forms.Form):
