@@ -617,7 +617,7 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
             start_date = int(time.time()) - max_age
 
             s = Question.get_mapping_type().search()
-            questions = s.values_dict().filter(
+            questions = s.values_dict('id', 'question_title', 'url').filter(
                     question_locale=self.locale,
                     product__in=[p.slug for p in self.get_products()],
                     question_has_helpful=True,
