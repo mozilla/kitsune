@@ -286,57 +286,6 @@ window.OverviewView = Backbone.View.extend({
     }
 });
 
-window.ChartView = Backbone.View.extend({
-    template: _.template($("#chart-template").html()),
-    tagName: 'section',
-    id: 'chart',
-
-    initialize: function() {
-        _.bindAll(this, 'render');
-
-        this.model.bind('change', this.render);
-        chart1 = new Highcharts.Chart({
-            chart: {
-                renderTo: this.el,
-                type: 'column'
-            },
-            credits: {
-                enabled: false
-            },
-            yAxis: {
-                min: 0,
-                title: {
-                    text: ''
-                }
-            },
-            title: {
-                text: '',
-            }
-        });
-    },
-
-    render: function() {
-        var counts = this.model.get('counts');
-        var time_units = this.model.get('time_units');
-        if(counts) {
-            chart1.xAxis[0].setCategories(time_units);
-            _.each(counts, function(data, label){
-                var zipped_data = _.zip(time_units, data);
-                if(chart1.get(label)){
-                   chart1.get(label).remove();
-                };
-                chart1.addSeries({
-                    data: zipped_data,
-                    id: label,
-                    name: deslugify(label)
-                });
-            });
-        };
-        return this;
-    }
-});
-
-
 /*
  * Application
  */
@@ -375,16 +324,11 @@ window.KarmaDashboard = Backbone.View.extend({
             collection: window.users,
             settings: settings
         });
-        this.chartView = new ChartView({
-            model: chart,
-            settings: settings
-        });
 
         // Render the views.
         $(this.el)
             .append(this.dateRangeView.render().el)
             .append(this.overviewView.render().el)
-            .append(this.chartView.render().el)
             .append(this.userListView.render().el);
 
         // Load up the collections and models.
@@ -405,9 +349,84 @@ window.KarmaDashboard = Backbone.View.extend({
     }
 });
 
+function makeGraph() {
+    var $container = $('#karma-dash');
+    var url = $container.data('details-url');
+    var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+                  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    var now = new Date();
+
+    $.getJSON(url, function(raw) {
+        var i, l = raw.time_units.length;
+        var data = [];
+        var date, month, year;
+        for (i = 0; i < l; i++) {
+            month = months.indexOf(raw.time_units[i]);
+            year = month > now.getMonth() ? now.getFullYear() - 1 : now.getFullYear();
+            date = new Date(year, month, 0) / 1000;
+
+            data.push({
+                answer: raw.counts.answer[i],
+                nothelpful: raw.counts['nothelpful-answer'][i],
+                solution: raw.counts.solution[i],
+                helpful: raw.counts['helpful-answer'][i],
+                first: raw.counts['first-answer'][i],
+                date: date
+            });
+        }
+
+        new k.Graph($container.find('.rickshaw'), {
+            data: {
+                datums: data,
+                seriesSpec: [
+                    {
+                        name: gettext('Answers'),
+                        func: k.Graph.identity('answer'),
+                        color: '#4572A7'
+                    },
+                    {
+                        name: gettext('Unhelpful Answers'),
+                        func: k.Graph.identity('nothelpful'),
+                        color: '#AA4643'
+                    },
+                    {
+                        name: gettext('Solutions'),
+                        func: k.Graph.identity('solution'),
+                        color: '#89A54E'
+                    },
+                    {
+                        name: gettext('Helpful Answers'),
+                        func: k.Graph.identity('helpful'),
+                        color: '#80699B'
+                    },
+                    {
+                        name: gettext('First Answers'),
+                        func: k.Graph.identity('first'),
+                        color: '#3D96AE'
+                    }
+                ]
+            },
+            options: {
+                legend: 'mini',
+                slider: false,
+                bucket: false
+            },
+            graph: {
+                width: 600,
+                height: 300,
+                renderer: 'bar',
+                unstack: true,
+                gapSize: 0.4
+            }
+        }).render();
+    });
+}
+
 // Kick off the application
 window.App = new KarmaDashboard({
     el: document.getElementById('karma-dash')
 });
+
+makeGraph();
 
 }(jQuery));

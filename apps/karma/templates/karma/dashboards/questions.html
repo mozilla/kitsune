@@ -2,15 +2,25 @@
 {% extends "karma/dashboards/base.html" %}
 {% set classes = ('karma-dashboard questions') %}
 {% set title = _('Support Forum Karma Dashboard') %}
+{% set styles = ('rickshaw', 'karma.dashboard',) %}
+{% set scripts = ('rickshaw', 'karma.dashboard', 'common',) %}
 
 {% block content %}
   <h1>{{ title }}</h1>
-
 
   <article id="karma-dash"
     data-userlist-url="{{ url('karma.api.users') }}"
     data-overview-url="{{ url('karma.api.overview') }}"
     data-details-url="{{ url('karma.api.details') }}">
+
+    <section class="rickshaw">
+      <div class="inline-controls"></div>
+      <div class="graph-container">
+        <div class="slider"></div>
+        <div class="graph"></div>
+      </div>
+    </section>
+
   </article>
 
   <!-- View Templates -->

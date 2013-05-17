@@ -97,7 +97,7 @@ MINIFY_BUNDLES = {
             'css/wiki_syntax.css',
         ),
         'karma.dashboard': (
-            'css/karma.dashboard.css',
+            'less/karma.dashboard.less',
         ),
         'kpi.dashboard': (
             'less/kpi.dashboard.less',

@@ -58,6 +58,7 @@ k.Graph = function($elem, extra) {
 };
 
 k.Graph.prototype.init = function() {
+  window.G = this;
   this.initBucketUI();
   this.initData();
   this.initGraph();
@@ -779,19 +780,27 @@ Rickshaw.Graph.ScaledBarHoverDetail = Rickshaw.Class.create(Rickshaw.Graph.Scale
 
     if (!e.target.nodeName.match(/^(path|svg|rect)$/)) return;
 
+    var active = this.graph.series.active();
     var graph = this.graph;
-    var barWidth = graph.renderer.barWidth() + graph.renderer.gapSize;
+    var barStride = 0,
+        barWidth = graph.renderer.barWidth() + graph.renderer.gapSize;
+
+    if (graph.renderer.unstack) {
+      barWidth = graph.renderer.barWidth() / active.length;
+    }
 
     var eventX = e.offsetX || e.layerX;
     var eventY = e.offsetY || e.layerY;
 
-    var j = 0;
+    var i, j = 0, k;
     var points = [];
     var nearestPoint;
 
     // Iterate through each series, and find the point that most closely
     // matches the mouse pointer.
-    this.graph.series.active().forEach( function(series) {
+
+    for (i = 0; i < active.length; i++) {
+      series = active[i];
 
       var data = this.graph.stackedData[j++];
       var domainX = graph.x.invert(eventX);
@@ -803,23 +812,25 @@ Rickshaw.Graph.ScaledBarHoverDetail = Rickshaw.Class.create(Rickshaw.Graph.Scale
       var approximateIndex = Math.round(domainIndexScale(domainX));
       var dataIndex = Math.min(approximateIndex || 0, data.length - 1);
 
-      var i = approximateIndex;
-      while (i < data.length - 1) {
+      k = approximateIndex;
+      while (k < data.length - 1) {
 
-        if (!data[i] || !data[i + 1]) break;
+        if (!data[k] || !data[k + 1]) break;
 
-        if (data[i].x <= domainX && data[i + 1].x > domainX) {
-          dataIndex = i;
+        if (data[k].x <= domainX && data[k + 1].x > domainX) {
+          dataIndex = k;
           break;
         }
 
-        if (data[i + 1].x <= domainX) { i++; } else { i--; }
+        if (data[k + 1].x <= domainX) { k++; } else { k--; }
       }
 
       if (dataIndex < 0) dataIndex = 0;
       var value = data[dataIndex];
 
-      var left = graph.x(value.x);
+      var barOffset = graph.renderer.unstack ? i * barWidth : 0;
+
+      var left = graph.x(value.x) + barOffset;
       var right = left + barWidth;
       var bottom = graph.y(value.y0);
       var top = graph.y(value.y + value.y0);
@@ -839,7 +850,7 @@ Rickshaw.Graph.ScaledBarHoverDetail = Rickshaw.Class.create(Rickshaw.Graph.Scale
 
       points.push(point);
 
-    }, this );
+    }
 
     var renderArgs = {
       points: points,
@@ -858,9 +869,14 @@ Rickshaw.Graph.ScaledBarHoverDetail = Rickshaw.Class.create(Rickshaw.Graph.Scale
   },
 
   getHoverPoint: function(point) {
-    var barWidth = this.graph.renderer.barWidth() + this.graph.renderer.gapSize;
+    var barWidth = this.graph.renderer.barWidth();
+    var x = this.graph.x(point.value.x);
+    if (this.graph.renderer.unstack) {
+      barWidth /= this.graph.series.active().length;
+      x += barWidth * (point.order - 1);
+    }
     return {
-      left: this.graph.x(point.value.x) + barWidth / 2,
+      left: x + barWidth / 2,
       top: this.graph.y(point.value.y0 + point.value.y / 2)
     };
   }
