@@ -584,7 +584,7 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
                 fields=[
                     'document_title',
                     'document_summary',
-                    'document_content'])
+                    'document_content'])[:3]
             cache.add(key, documents)
         except ES_EXCEPTIONS as exc:
             statsd.incr('wiki.related_documents.esexception')
@@ -617,7 +617,7 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
             start_date = int(time.time()) - max_age
 
             s = Question.get_mapping_type().search()
-            questions = s.filter(
+            questions = s.values_dict().filter(
                     question_locale=self.locale,
                     product__in=[p.slug for p in self.get_products()],
                     question_has_helpful=True,
@@ -629,7 +629,7 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
                         'min_term_freq': 1,
                         'min_doc_freq': 1,
                     }
-                )
+                )[:3]
             questions = list(questions)
             cache.add(key, questions)
         except ES_EXCEPTIONS as exc:
