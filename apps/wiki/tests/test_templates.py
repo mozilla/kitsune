@@ -6,6 +6,7 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
 from django.core import mail
+from django.core.cache import cache
 from django.utils.encoding import smart_str
 
 import mock
@@ -2332,6 +2333,7 @@ class RelatedThingsTestCase(ElasticTestCase):
         answervote(answer=a, helpful=True, save=True)
 
         self.refresh()
+        cache.clear()
 
         # There should still be no related anything yet.
         response = self.client.get(d.get_absolute_url())
@@ -2342,6 +2344,7 @@ class RelatedThingsTestCase(ElasticTestCase):
         q.products.add(self.product)
 
         self.refresh()
+        cache.clear()
 
         response = self.client.get(d.get_absolute_url())
         doc = pq(response.content)

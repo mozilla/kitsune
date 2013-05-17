@@ -566,7 +566,7 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
         # First try to get the results from the cache
         key = 'wiki_document:related_docs:%s' % self.id
         documents = cache.get(key)
-        if documents:
+        if documents is not None:
             statsd.incr('wiki.related_documents.cache.hit')
             log.debug('Getting MLT for {doc} from cache.'
                 .format(doc=repr(self)))
@@ -605,7 +605,7 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
         # First try to get the results from the cache
         key = 'wiki_document:related_questions:%s' % self.id
         questions = cache.get(key)
-        if questions:
+        if questions is not None:
             statsd.incr('wiki.related_questions.cache.hit')
             log.debug('Getting MLT questions for {doc} from cache.'
                 .format(doc=repr(self)))
