@@ -1,7 +1,11 @@
 {# vim: set ts=2 et sts=2 sw=2: #}
 {% extends "base.html" %}
-{% set styles = ('karma.dashboard',) %}
-{% set scripts = ('highcharts', 'karma.dashboard', 'common',) %}
+{% if not styles %}
+  {% set styles = ('karma.dashboard',) %}
+{% endif %}
+{% if not styles %}
+  {% set scripts = ('karma.dashboard', 'common',) %}
+{% endif %}
 
 {% block content %}
 {% endblock %}

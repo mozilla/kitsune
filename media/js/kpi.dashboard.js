@@ -103,7 +103,7 @@ function parseNum(n) {
   return parseInt(n, 10);
 }
 
-function makeKPIGraph($container, descriptors, metadata) {
+function makeKPIGraph($container, descriptors) {
   $.getJSON($container.data('url'), function(data) {
     var date, series, graph, split;
 
@@ -131,7 +131,6 @@ function makeKPIGraph($container, descriptors, metadata) {
         width: 880,
         height: 300
       },
-      metadata: metadata
     }).render();
   });
 }

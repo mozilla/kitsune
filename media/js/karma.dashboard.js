@@ -177,6 +177,47 @@ window.ChartModel = Backbone.Model.extend({
     },
     settingsChanged: function() {
         this.fetch();
+    },
+    parse: function(response, options) {
+        var i, l = response.time_units.length;
+        var data = [];
+        var date, day, month, year, weekDay;
+
+        var now = new Date();
+        var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+                      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        var days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday',
+                    'Thursday', 'Friday', 'Saturday'];
+        // graph lines line up nicely.
+        var offset = -now.getTimezoneOffset() / 60;
+
+        for (i = 0; i < l; i++) {
+            month = months.indexOf(response.time_units[i]);
+            year = now.getFullYear();
+            if (month === -1) {
+                // If it isn't months, it must be days. assume the data
+                // is the last 7 days. HACK HACK HACK.
+                day = now.getDate() - (6 - i);
+                month = now.getMonth();
+            } else {
+                day = 1;
+                if (month > now.getMonth()) {
+                    year -= 1;
+                }
+            }
+            date = new Date(year, month, day, offset) / 1000;
+
+            data.push({
+                answer: response.counts.answer[i],
+                nothelpful: response.counts['nothelpful-answer'][i],
+                solution: response.counts.solution[i],
+                helpful: response.counts['helpful-answer'][i],
+                first: response.counts['first-answer'][i],
+                date: date
+            });
+        }
+
+        return {data: data};
     }
 });
 
@@ -286,57 +327,6 @@ window.OverviewView = Backbone.View.extend({
     }
 });
 
-window.ChartView = Backbone.View.extend({
-    template: _.template($("#chart-template").html()),
-    tagName: 'section',
-    id: 'chart',
-
-    initialize: function() {
-        _.bindAll(this, 'render');
-
-        this.model.bind('change', this.render);
-        chart1 = new Highcharts.Chart({
-            chart: {
-                renderTo: this.el,
-                type: 'column'
-            },
-            credits: {
-                enabled: false
-            },
-            yAxis: {
-                min: 0,
-                title: {
-                    text: ''
-                }
-            },
-            title: {
-                text: '',
-            }
-        });
-    },
-
-    render: function() {
-        var counts = this.model.get('counts');
-        var time_units = this.model.get('time_units');
-        if(counts) {
-            chart1.xAxis[0].setCategories(time_units);
-            _.each(counts, function(data, label){
-                var zipped_data = _.zip(time_units, data);
-                if(chart1.get(label)){
-                   chart1.get(label).remove();
-                };
-                chart1.addSeries({
-                    data: zipped_data,
-                    id: label,
-                    name: deslugify(label)
-                });
-            });
-        };
-        return this;
-    }
-});
-
-
 /*
  * Application
  */
@@ -375,16 +365,11 @@ window.KarmaDashboard = Backbone.View.extend({
             collection: window.users,
             settings: settings
         });
-        this.chartView = new ChartView({
-            model: chart,
-            settings: settings
-        });
 
         // Render the views.
         $(this.el)
             .append(this.dateRangeView.render().el)
             .append(this.overviewView.render().el)
-            .append(this.chartView.render().el)
             .append(this.userListView.render().el);
 
         // Load up the collections and models.
@@ -405,9 +390,76 @@ window.KarmaDashboard = Backbone.View.extend({
     }
 });
 
+function makeGraph() {
+    var $container = $('#karma-dash');
+    var rendered = false;
+    var graph = new k.Graph($container.find('.rickshaw'), {
+        data: {
+            datums: [],
+            seriesSpec: [
+                {
+                    name: gettext('Answers'),
+                    func: k.Graph.identity('answer'),
+                    color: '#4572A7'
+                },
+                {
+                    name: gettext('Unhelpful Answers'),
+                    func: k.Graph.identity('nothelpful'),
+                    color: '#AA4643'
+                },
+                {
+                    name: gettext('Solutions'),
+                    func: k.Graph.identity('solution'),
+                    color: '#89A54E'
+                },
+                {
+                    name: gettext('Helpful Answers'),
+                    func: k.Graph.identity('helpful'),
+                    color: '#80699B'
+                },
+                {
+                    name: gettext('First Answers'),
+                    func: k.Graph.identity('first'),
+                    color: '#3D96AE'
+                }
+            ]
+        },
+        options: {
+            legend: 'mini',
+            slider: false,
+            bucket: false,
+            init: false
+        },
+        graph: {
+            width: 600,
+            height: 300,
+            renderer: 'bar',
+            unstack: true,
+            gapSize: 0.2
+        }
+    });
+
+    chart.bind('change', function() {
+        var d;
+
+        graph.data.datums = chart.get('data');
+
+        if (rendered) {
+            graph.initData();
+            graph.update();
+        } else {
+            graph.init();
+            graph.render();
+            rendered = true;
+        }
+    });
+}
+
 // Kick off the application
 window.App = new KarmaDashboard({
     el: document.getElementById('karma-dash')
 });
+
+makeGraph();
 
 }(jQuery));
