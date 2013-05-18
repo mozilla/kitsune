@@ -235,9 +235,6 @@ MINIFY_BUNDLES = {
         'wiki.dashboard': (
             'js/wiki.dashboard.js',
         ),
-        'highcharts': (
-            'js/libs/highstock.src.js',
-        ),
         'customercare': (
             'js/libs/jquery.NobleCount.js',
             'js/libs/jquery.cookie.js',
@@ -276,8 +273,6 @@ MINIFY_BUNDLES = {
             'js/karma.dashboard.js',
         ),
         'kpi.dashboard': (
-            'js/libs/backbone.js',
-            'js/charts.js',
             'js/kpi.dashboard.js',
         ),
     },
