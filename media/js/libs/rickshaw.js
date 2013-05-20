@@ -2365,7 +2365,7 @@ Rickshaw.Graph.Renderer.Bar = Rickshaw.Class.create( Rickshaw.Graph.Renderer, {
 			}
 		} );
 
-		this._frequentInterval = function() { return frequentInterval };
+		//this._frequentInterval = function() { return frequentInterval };
 
 		return frequentInterval;
 	}

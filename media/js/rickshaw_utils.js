@@ -10,13 +10,14 @@ k.Graph = function($elem, extra) {
   var defaults = {
     toRender: [],
     options: {
+      bucket: false,
+      hover: true,
+      init: true,
       legend: true,
+      sets: false,
       slider: true,
       xAxis: true,
-      yAxis: true,
-      hover: true,
-      sets: false,
-      bucket: false
+      yAxis: true
     },
 
     data: {
@@ -48,12 +49,14 @@ k.Graph = function($elem, extra) {
     }
   };
 
-  // true means deep.
+  // true means do a deep merge.
   $.extend(true, this, defaults, extra);
 
   this.dom.elem = $elem;
 
-  this.init();
+  if (this.options.init) {
+    this.init();
+  }
 };
 
 k.Graph.prototype.init = function() {
@@ -127,6 +130,7 @@ k.Graph.prototype.initData = function() {
     series = this.data.series[i];
     axisGroup = this.axisGroups[series.axisGroup];
     series.data = _.map(series.data, function(point) {
+      console.log("Point:", point.x, ",", point.y / axisGroup.max);
       return {
         x: point.x,
         y: point.y / axisGroup.max
@@ -316,6 +320,9 @@ k.Graph.prototype.initGraph = function() {
 
     this.rickshaw.hover = new hoverClass(hoverOpts);
   }
+
+  // :(
+  k.Graph.monkeyPatch(this.rickshaw.graph);
 
   this.toRender.push(this.rickshaw.graph);
 };
@@ -524,7 +531,7 @@ k.Graph.prototype.update = function() {
   var newSeries, i;
 
   this.rickshaw.graph.series = this.getGraphData();
-  this.rickshaw.graph.stackedData = false;
+  this.rickshaw.graph.stackedData = null;
   this.rickshaw.graph.update();
 };
 /* end Graph */
@@ -565,6 +572,49 @@ k.Graph.percentage = function(partKey /* *restKeys */) {
     });
     return d[partKey] / sum;
   };
+};
+
+
+// Monkey Patches. Agh!
+k.Graph.monkeyPatch = function(graph) {
+
+  // The bar render's _frequentInterval function normally replaces itself
+  // after the first call as a way of memoization. Unfortunatly this
+  // prevents it from reacting to future data updates (like rebucketing).
+  // This is a problem. The version removes the memoization bit, and makes
+  // the frequentInterval always include a magnitude value.
+  if (graph.renderer._frequentInterval) {
+    graph.renderer._frequentInterval = function() {
+      var stackedData = this.graph.stackedData || this.graph.stackData();
+      var data = stackedData.slice(-1).shift();
+
+      var intervalCounts = {};
+
+      for (var i = 0; i < data.length - 1; i++) {
+        var interval = data[i + 1].x - data[i].x;
+        intervalCounts[interval] = intervalCounts[interval] || 0;
+        intervalCounts[interval]++;
+      }
+
+      // The magnitude key in this object was added in the monkey patch.
+      var frequentInterval = { count: 0, magnitude: 1 };
+
+      Rickshaw.keys(intervalCounts).forEach( function(i) {
+        if (frequentInterval.count < intervalCounts[i]) {
+
+          frequentInterval = {
+            count: intervalCounts[i],
+            magnitude: i
+          };
+        }
+      } );
+
+      // This is the line the monkey patch rips out.
+      //this._frequentInterval = function() { return frequentInterval };
+
+      return frequentInterval;
+    };
+  }
 };
 
 

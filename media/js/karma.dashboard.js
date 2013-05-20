@@ -177,6 +177,47 @@ window.ChartModel = Backbone.Model.extend({
     },
     settingsChanged: function() {
         this.fetch();
+    },
+    parse: function(response, options) {
+        var i, l = response.time_units.length;
+        var data = [];
+        var date, day, month, year, weekDay;
+
+        var now = new Date();
+        var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+                      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        var days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday',
+                    'Thursday', 'Friday', 'Saturday'];
+        // graph lines line up nicely.
+        var offset = -now.getTimezoneOffset() / 60;
+
+        for (i = 0; i < l; i++) {
+            month = months.indexOf(response.time_units[i]);
+            year = now.getFullYear();
+            if (month === -1) {
+                // If it isn't months, it must be days. assume the data
+                // is the last 7 days. HACK HACK HACK.
+                day = now.getDate() - (6 - i);
+                month = now.getMonth();
+            } else {
+                day = 1;
+                if (month > now.getMonth()) {
+                    year -= 1;
+                }
+            }
+            date = new Date(year, month, day, offset) / 1000;
+
+            data.push({
+                answer: response.counts.answer[i],
+                nothelpful: response.counts['nothelpful-answer'][i],
+                solution: response.counts.solution[i],
+                helpful: response.counts['helpful-answer'][i],
+                first: response.counts['first-answer'][i],
+                date: date
+            });
+        }
+
+        return {data: data};
     }
 });
 
@@ -351,74 +392,66 @@ window.KarmaDashboard = Backbone.View.extend({
 
 function makeGraph() {
     var $container = $('#karma-dash');
-    var url = $container.data('details-url');
-    var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-                  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    var now = new Date();
-
-    $.getJSON(url, function(raw) {
-        var i, l = raw.time_units.length;
-        var data = [];
-        var date, month, year;
-        for (i = 0; i < l; i++) {
-            month = months.indexOf(raw.time_units[i]);
-            year = month > now.getMonth() ? now.getFullYear() - 1 : now.getFullYear();
-            date = new Date(year, month, 0) / 1000;
-
-            data.push({
-                answer: raw.counts.answer[i],
-                nothelpful: raw.counts['nothelpful-answer'][i],
-                solution: raw.counts.solution[i],
-                helpful: raw.counts['helpful-answer'][i],
-                first: raw.counts['first-answer'][i],
-                date: date
-            });
+    var rendered = false;
+    var graph = new k.Graph($container.find('.rickshaw'), {
+        data: {
+            datums: [],
+            seriesSpec: [
+                {
+                    name: gettext('Answers'),
+                    func: k.Graph.identity('answer'),
+                    color: '#4572A7'
+                },
+                {
+                    name: gettext('Unhelpful Answers'),
+                    func: k.Graph.identity('nothelpful'),
+                    color: '#AA4643'
+                },
+                {
+                    name: gettext('Solutions'),
+                    func: k.Graph.identity('solution'),
+                    color: '#89A54E'
+                },
+                {
+                    name: gettext('Helpful Answers'),
+                    func: k.Graph.identity('helpful'),
+                    color: '#80699B'
+                },
+                {
+                    name: gettext('First Answers'),
+                    func: k.Graph.identity('first'),
+                    color: '#3D96AE'
+                }
+            ]
+        },
+        options: {
+            legend: 'mini',
+            slider: false,
+            bucket: false,
+            init: false
+        },
+        graph: {
+            width: 600,
+            height: 300,
+            renderer: 'bar',
+            unstack: true,
+            gapSize: 0.2
         }
+    });
 
-        new k.Graph($container.find('.rickshaw'), {
-            data: {
-                datums: data,
-                seriesSpec: [
-                    {
-                        name: gettext('Answers'),
-                        func: k.Graph.identity('answer'),
-                        color: '#4572A7'
-                    },
-                    {
-                        name: gettext('Unhelpful Answers'),
-                        func: k.Graph.identity('nothelpful'),
-                        color: '#AA4643'
-                    },
-                    {
-                        name: gettext('Solutions'),
-                        func: k.Graph.identity('solution'),
-                        color: '#89A54E'
-                    },
-                    {
-                        name: gettext('Helpful Answers'),
-                        func: k.Graph.identity('helpful'),
-                        color: '#80699B'
-                    },
-                    {
-                        name: gettext('First Answers'),
-                        func: k.Graph.identity('first'),
-                        color: '#3D96AE'
-                    }
-                ]
-            },
-            options: {
-                legend: 'mini',
-                slider: false,
-                bucket: false
-            },
-            graph: {
-                width: 600,
-                height: 300,
-                renderer: 'bar',
-                unstack: true,
-                gapSize: 0.4
-            }
-        }).render();
+    chart.bind('change', function() {
+        var d;
+
+        graph.data.datums = chart.get('data');
+
+        if (rendered) {
+            graph.initData();
+            graph.update();
+        } else {
+            graph.init();
+            graph.render();
+            rendered = true;
+        }
     });
 }
 
