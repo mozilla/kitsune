@@ -38,12 +38,6 @@ body {
   min-width: 1000px;
   text-align: left;
 
-  &.en-US {
-    > header {
-      border-top-color: #fff;
-    }
-  }
-
   &.html-rtl {
     margin: 0;
     padding: 0;
@@ -53,7 +47,7 @@ body {
   > header {
     .linear-gradient-top(#dee7ee, #cae1f4, 0%, #dee7ee, 65%, #d4dce4, 100%, url('../img/grain.png'));
     border-bottom: 1px solid #b3b8bc;
-    border-top: 2px solid #686868;
+    border-top: 2px solid #fff;
     margin-bottom: 20px;
     padding-bottom: 20px;
 
@@ -61,23 +55,12 @@ body {
       float: left;
       margin-top: 20px;
     }
-
-    .mozilla-tab {
-      display: block;
-      float: right;
-      position: relative;
-      z-index: 999;
-    }
   }
 
   .html-rtl {
     header {
       .logo {
         float: right;
-      }
-
-      .mozilla-tab {
-        float: left;
       }
     }
   }
