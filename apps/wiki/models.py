@@ -32,6 +32,7 @@ from wiki.config import (CATEGORIES, SIGNIFICANCES, TYPO_SIGNIFICANCE,
                          MEDIUM_SIGNIFICANCE, MAJOR_SIGNIFICANCE,
                          REDIRECT_HTML, REDIRECT_CONTENT, REDIRECT_TITLE,
                          REDIRECT_SLUG)
+from wiki.permissions import DocumentPermissionMixin
 
 
 log = logging.getLogger('k.wiki')
@@ -50,7 +51,7 @@ class _NotDocumentView(Exception):
 
 
 class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
-               SearchMixin):
+               SearchMixin, DocumentPermissionMixin):
     """A localized knowledgebase document, not revision-specific."""
     title = models.CharField(max_length=255, db_index=True)
     slug = models.CharField(max_length=255, db_index=True)
@@ -396,35 +397,6 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
 
     def __unicode__(self):
         return '[%s] %s' % (self.locale, self.title)
-
-    def allows_revision_by(self, user):
-        """Return whether `user` is allowed to create new revisions of me.
-
-        The motivation behind this method is that templates and other types of
-        docs may have different permissions.
-
-        """
-        # TODO: Add tests for templateness or whatever is required.
-        # Leaving this method signature untouched for now in case we do need
-        # to use it in the future. ~james
-        return True
-
-    def allows_editing_by(self, user):
-        """Return whether `user` is allowed to edit document-level metadata.
-
-        If the Document doesn't have a current_revision (nothing approved) then
-        all the Document fields are still editable. Once there is an approved
-        Revision, the Document fields can only be edited by privileged users.
-
-        """
-        return (not self.current_revision or
-                user.has_perm('wiki.change_document'))
-
-    def allows_deleting_by(self, user):
-        """Return whether `user` is allowed to delete this document."""
-        return (user.has_perm('wiki.delete_document') or
-                user.has_perm('wiki.delete_document_{locale}'.format(
-                              locale=self.locale)))
 
     def allows_vote(self, request):
         """Return whether `user` can vote on this document."""

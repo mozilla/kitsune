@@ -29,7 +29,7 @@
               {% endif %}
               <div class="comment">{{ _('Comment') }}</div>
               <div class="edit"></div>
-              {% if document.current_revision != rev and user.has_perm('wiki.delete_revision') %}
+              {% if document.current_revision != rev and document.allows(user, 'delete_revision') %}
                 <div class="delete"></div>
               {% endif %}
             </li>
@@ -48,7 +48,7 @@
           </div>
           <div class="status">
             {% if not rev.reviewed %}
-              {% if not reached_current and user.has_perm('wiki.review_revision') %}
+              {% if not reached_current and document.allows(user, 'review_revision') %}
                 <a href="{{ url('wiki.review_revision', document.slug, rev.id, locale=document.locale) }}">{{ _('Review') }}</a>
               {% else %}
                 <span class="unreviewed">{{ _('Unreviewed', 'revision') }}</span>
@@ -83,7 +83,7 @@
                 {% set reached_ready_for_l10n = True %}
                 <a class="yes" title="{{ _('This revision is ready for localization.') }}"></a>
               {% elif rev.can_be_readied_for_localization() %}
-                {% if not reached_ready_for_l10n and user.has_perm('wiki.mark_ready_for_l10n') %}
+                {% if not reached_ready_for_l10n and document.allows(user, 'mark_ready_for_l10n') %}
                   <a class="markasready" id="rev-{{ rev.id }}-l10n-no" data-revdate="{{ rev.created }}" data-url="{{ url('wiki.mark_ready_for_l10n_revision', document.slug, rev.id, locale=document.locale) }}" title="{{ _('This revision is not ready for localization.') }}"></a>
                 {% else %}
                   <a class="no" title="{{ _('This revision is not ready for localization.') }}"></a>
@@ -99,7 +99,7 @@
               <a href="{{ url('wiki.new_revision_based_on', document.slug, rev.id, locale=document.locale) }}" title="{{ _('Edit article based on this revision') }}"></a>
             </div>
           {% endif %}
-          {% if document.current_revision != rev and user.has_perm('wiki.delete_revision') %}
+          {% if document.current_revision != rev and document.allows(user, 'delete_revision') %}
             <div class="delete">
               <a href="{{ url('wiki.delete_revision', document.slug, rev.id, locale=document.locale) }}" title="{{ _('Delete this revision') }}"></a>
             </div>

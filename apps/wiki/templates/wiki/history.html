@@ -43,7 +43,7 @@
       {% include 'wiki/includes/ready_for_l10n_modal.html' %}
 
       <section id="contributors" class="editable">
-        {% if user.has_perm('wiki.change_document') %}
+        {% if document.allows(user, 'edit') %}
           <a class="edit" href="#contributors">{{ _('Edit contributors') }}</a>
         {% endif %}
         <h1>{{ _('Document contributors') }}</h1>
@@ -60,7 +60,7 @@
                   {{ display_name(u) }}
                 </a>
               </div>
-              {% if user.has_perm('wiki.change_document') %}
+              {% if document.allows(user, 'edit') %}
                 <div class="remove edit-mode">
                   <a href="{{ url('wiki.remove_contributor', document.slug, u.id) }}" title="{{ _('Remove user from contributors') }}">&#x2716;</a>
                 </div>
@@ -68,7 +68,7 @@
             </li>
           {% endfor %}
         </ul>
-        {% if user.has_perm('wiki.change_document') %}
+        {% if document.allows(user, 'edit') %}
           <form id="add-contributor-form" class="edit-mode" action="{{ url('wiki.add_contributor', document.slug) }}" method="POST">
             {{ csrf() }}
             {{ errorlist(contributor_form) }}
@@ -78,7 +78,7 @@
         {% endif %}
       </section>
 
-      {% if document.allows_deleting_by(user) %}
+      {% if document.allows(user, 'delete') %}
         <div id="delete-doc">
           <a href="{{ url('wiki.document_delete', document.slug) }}">Delete this document</a>
         </div>

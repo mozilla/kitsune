@@ -20,7 +20,7 @@
           <a href="{{ url('wiki.discuss.threads', document.slug) }}">{{ _('Discussion') }}</a>
         </li>
       {% endif %}
-      {% if document and not document.is_archived and (document.allows_revision_by(user) or document.allows_editing_by(user)) %}
+      {% if document and not document.is_archived and (document.allows(user, 'create_revision') or document.allows(user, 'edit')) %}
         <li class="edit{% if active == 'edit' %} active{% endif %}">
           {% if active == 'edit' %}
             <span>{{ _('Edit Article') }}</span>
@@ -84,7 +84,7 @@
               <a href="{{ url('wiki.discuss.threads', document.slug) }}">{{ _('Discussion') }}</a>
             </li>
           {% endif %}
-          {% if document and not document.is_archived and (document.allows_revision_by(user) or document.allows_editing_by(user)) %}
+          {% if document and not document.is_archived and (document.allows(user, 'create_revision') or document.allows(user, 'edit')) %}
             <li{% if active == 'edit' %} class="selected"{% endif %}>
               <a href="{{ url('wiki.edit_document', document.slug) }}">{{ _('Edit Article') }}</a>
             </li>

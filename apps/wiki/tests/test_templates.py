@@ -2527,11 +2527,6 @@ class DocumentDeleteTestCase(TestCaseBase):
                         args=[self.document.slug])
         eq_(0, Document.objects.filter(pk=self.document.id).count())
 
-    def test_document_with_l10n_permission(self):
-        """Deleting a document with permissions should work."""
-        add_permission(self.user, Document, 'delete_document_en-US')
-        self._test_delete_document_with_permission()
-
     def test_revision_with_permission(self):
         """Deleting a document with delete_document permission should work."""
         add_permission(self.user, Document, 'delete_document')
