@@ -84,7 +84,7 @@
         {% endif %}
         {% for article in articles %}
           <li>
-            <a href="{{ article.url }}" target="_blank">{{ article.document_title }}</a>
+            <a href="{{ article.url }}" {% if not request.MOBILE %}target="_blank"{% endif %}>{{ article.document_title }}</a>
           </li>
         {% endfor %}
       </ul>
