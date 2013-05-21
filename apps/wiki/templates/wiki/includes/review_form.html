@@ -46,7 +46,7 @@
           <textarea id="id-approve-comment" required name="comment">{% if form.initial %}{{ form.initial.comment }}{% else %}{{ form.comment.data }}{% endif %}</textarea>
         </div>
       {% endif %}
-      {% if document.is_localizable and user.has_perm('wiki.mark_ready_for_l10n') %}
+      {% if document.allows(user, 'mark_ready_for_l10n') %}
         <div class="ready-for-l10n">
           <label>
             {{ form.is_ready_for_localization }}
@@ -54,7 +54,7 @@
           </label>
         </div>
       {% endif %}
-      {% if document.locale == settings.WIKI_DEFAULT_LANGUAGE and user.has_perm('wiki.edit_needs_change') %}
+      {% if document.allows(user, 'edit_needs_change') %}
         <div class="needs-change">
           {{ form.needs_change }}
           {{ form.needs_change|label_with_help }}

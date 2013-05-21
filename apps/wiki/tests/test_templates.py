@@ -33,7 +33,7 @@ from wiki.config import (SIGNIFICANCES, MEDIUM_SIGNIFICANCE,
                          TEMPLATES_CATEGORY, CATEGORIES)
 from wiki.tasks import send_reviewed_notification
 from wiki.tests import (TestCaseBase, document, revision, new_document_data,
-                        translated_revision)
+                        translated_revision, locale)
 
 
 READY_FOR_REVIEW_EMAIL_CONTENT = (
@@ -1377,6 +1377,28 @@ class ReviewRevisionTests(TestCaseBase):
                         args=[self.document.slug, self.revision.id])
         eq_(403, response.status_code)
 
+    def test_review_as_l10n_leader(self):
+        """Reviewing a revision as an l10n leader should work."""
+        u = user(save=True)
+        l10n = locale(locale='en-US', save=True)
+        l10n.leaders.add(u)
+        self.client.login(username=u.username, password='testpass')
+        response = post(self.client, 'wiki.review_revision',
+                        {'reject': 'Reject Revision'},
+                        args=[self.document.slug, self.revision.id])
+        eq_(200, response.status_code)
+
+    def test_review_as_l10n_reviewer(self):
+        """Reviewing a revision as an l10n reviewer should work."""
+        u = user(save=True)
+        l10n = locale(locale='en-US', save=True)
+        l10n.reviewers.add(u)
+        self.client.login(username=u.username, password='testpass')
+        response = post(self.client, 'wiki.review_revision',
+                        {'reject': 'Reject Revision'},
+                        args=[self.document.slug, self.revision.id])
+        eq_(200, response.status_code)
+
     def test_review_logged_out(self):
         """Make sure logged out users can't review revisions."""
         self.client.logout()
@@ -2354,8 +2376,6 @@ class RelatedThingsTestCase(ElasticTestCase):
 
 
 class RevisionDeleteTestCase(TestCaseBase):
-    fixtures = ['users.json']
-
     def setUp(self):
         super(RevisionDeleteTestCase, self).setUp()
         self.d = _create_document()
@@ -2364,7 +2384,8 @@ class RevisionDeleteTestCase(TestCaseBase):
 
     def test_delete_revision_without_permissions(self):
         """Deleting a revision without permissions sends 403."""
-        self.client.login(username='rrosario', password='testpass')
+        u = user(save=True)
+        self.client.login(username=u.username, password='testpass')
         response = get(self.client, 'wiki.delete_revision',
                        args=[self.d.slug, self.r.id])
         eq_(403, response.status_code)
@@ -2393,9 +2414,7 @@ class RevisionDeleteTestCase(TestCaseBase):
                 self.r.id),
             redirect[0])
 
-    def test_delete_revision_with_permissions(self):
-        """Deleting a revision with permissions should work."""
-        self.client.login(username='admin', password='testpass')
+    def _test_delete_revision_with_permission(self):
         response = get(self.client, 'wiki.delete_revision',
                        args=[self.d.slug, self.r.id])
         eq_(200, response.status_code)
@@ -2404,10 +2423,35 @@ class RevisionDeleteTestCase(TestCaseBase):
                         args=[self.d.slug, self.r.id])
         eq_(0, Revision.objects.filter(pk=self.r.id).count())
 
+    def test_delete_revision_with_permission(self):
+        """Deleting a revision with permissions should work."""
+        u = user(save=True)
+        add_permission(u, Revision, 'delete_revision')
+        self.client.login(username=u.username, password='testpass')
+        self._test_delete_revision_with_permission()
+
+    def test_delete_revision_as_l10n_leader(self):
+        """Deleting a revision as l10n leader should work."""
+        u = user(save=True)
+        l10n = locale(locale='en-US', save=True)
+        l10n.leaders.add(u)
+        self.client.login(username=u.username, password='testpass')
+        self._test_delete_revision_with_permission()
+
+    def test_delete_revision_as_l10n_reviewer(self):
+        """Deleting a revision as l10n reviewer should work."""
+        u = user(save=True)
+        l10n = locale(locale='en-US', save=True)
+        l10n.reviewers.add(u)
+        self.client.login(username=u.username, password='testpass')
+        self._test_delete_revision_with_permission()
+
     def test_delete_current_revision(self):
         """Deleting the current_revision of a document should update
         the current_revision to previous version."""
-        self.client.login(username='admin', password='testpass')
+        u = user(save=True)
+        add_permission(u, Revision, 'delete_revision')
+        self.client.login(username=u.username, password='testpass')
         prev_revision = self.d.current_revision
         prev_revision.reviewed = datetime.now() - timedelta(days=1)
         prev_revision.save()
@@ -2424,7 +2468,9 @@ class RevisionDeleteTestCase(TestCaseBase):
 
     def test_delete_only_revision(self):
         """If there is only one revision, it can't be deleted."""
-        self.client.login(username='admin', password='testpass')
+        u = user(save=True)
+        add_permission(u, Revision, 'delete_revision')
+        self.client.login(username=u.username, password='testpass')
 
         # Create document with only 1 revision
         doc = document(save=True)
@@ -2517,6 +2563,18 @@ class DocumentDeleteTestCase(TestCaseBase):
              self.document.slug),
             redirect[0])
 
+    def test_document_as_l10n_leader(self):
+        """Deleting a document as l10n leader should work."""
+        l10n = locale(locale='en-US', save=True)
+        l10n.leaders.add(self.user)
+        self._test_delete_document_with_permission()
+
+    def test_document_as_l10n_reviewer(self):
+        """Deleting a document as l10n leader should NOT work."""
+        l10n = locale(locale='en-US', save=True)
+        l10n.reviewers.add(self.user)
+        self.test_delete_document_without_permissions()
+
     def _test_delete_document_with_permission(self):
         self.client.login(username='testuser', password='testpass')
         response = get(self.client, 'wiki.document_delete',
@@ -2527,14 +2585,10 @@ class DocumentDeleteTestCase(TestCaseBase):
                         args=[self.document.slug])
         eq_(0, Document.objects.filter(pk=self.document.id).count())
 
-    def test_document_with_l10n_permission(self):
-        """Deleting a document with permissions should work."""
-        add_permission(self.user, Document, 'delete_document_en-US')
-        self._test_delete_document_with_permission()
-
     def test_revision_with_permission(self):
         """Deleting a document with delete_document permission should work."""
         add_permission(self.user, Document, 'delete_document')
+        self._test_delete_document_with_permission()
 
 
 class RecentRevisionsTest(TestCaseBase):
@@ -2550,9 +2604,12 @@ class RecentRevisionsTest(TestCaseBase):
                             'creator': self.u1,
                             'created': datetime(2013, 3, 1, 0, 0, 0, 0),
                         })
-        _create_document(title='3', locale='de', rev_kwargs={'creator': self.u2})
-        _create_document(title='4', locale='fr', rev_kwargs={'creator': self.u2})
-        _create_document(title='5', locale='fr', rev_kwargs={'creator': self.u2})
+        _create_document(
+            title='3', locale='de', rev_kwargs={'creator': self.u2})
+        _create_document(
+            title='4', locale='fr', rev_kwargs={'creator': self.u2})
+        _create_document(
+            title='5', locale='fr', rev_kwargs={'creator': self.u2})
 
         self.url = reverse('wiki.revisions')
 

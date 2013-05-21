@@ -61,7 +61,7 @@
                 {% for field in revision_form.visible_fields() %}
                   <li>
                     {% if field.name not in ['comment', 'content'] %}
-                      {% if not field.name == 'keywords' or user.has_perm('wiki.edit_keywords') %}
+                      {% if not field.name == 'keywords' or document.allows(user, 'edit_keywords') %}
                         {{ field|label_with_help }}{{ field|safe }}
                       {% endif %}
                     {% elif field.name == 'content' %}

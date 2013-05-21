@@ -23,7 +23,7 @@ from statsd import statsd
 from tower import ugettext_lazy as _lazy
 from tower import ugettext as _
 
-from access.decorators import permission_required, login_required
+from access.decorators import login_required
 from products.models import Product
 from sumo.helpers import urlparams
 from sumo.redis_utils import redis_client, RedisError
@@ -304,16 +304,15 @@ def steal_lock(request, document_slug, revision_id=None):
 
 
 @require_http_methods(['GET', 'POST'])
-@login_required  # TODO: Stop repeating this knowledge here and in
-                 # Document.allows_editing_by.
+@login_required
 def edit_document(request, document_slug, revision_id=None):
     """Create a new revision of a wiki document, or edit document metadata."""
     doc = get_object_or_404(
         Document, locale=request.LANGUAGE_CODE, slug=document_slug)
     user = request.user
 
-    can_edit_needs_change = user.has_perm('wiki.edit_needs_change')
-    can_archive = user.has_perm('wiki.archive_document')
+    can_edit_needs_change = doc.allows(user, 'edit_needs_change')
+    can_archive = doc.allows(user, 'archive')
 
     # If this document has a parent, then the edit is handled by the
     # translate view. Pass it on.
@@ -327,11 +326,11 @@ def edit_document(request, document_slug, revision_id=None):
 
     disclose_description = bool(request.GET.get('opendescription'))
     doc_form = rev_form = None
-    if doc.allows_revision_by(user):
+    if doc.allows(user, 'create_revision'):
         rev_form = RevisionForm(
             instance=rev,
             initial={'based_on': rev.id, 'comment': ''})
-    if doc.allows_editing_by(user):
+    if doc.allows(user, 'edit'):
         doc_form = DocumentForm(
             initial=_document_form_initial(doc),
             can_archive=can_archive,
@@ -350,7 +349,7 @@ def edit_document(request, document_slug, revision_id=None):
         _document_lock_clear(doc.id, user.username)
 
         if which_form == 'doc':
-            if doc.allows_editing_by(user):
+            if doc.allows(user, 'edit'):
                 post_data = request.POST.copy()
                 post_data.update({'locale': request.LANGUAGE_CODE})
                 doc_form = DocumentForm(
@@ -373,7 +372,7 @@ def edit_document(request, document_slug, revision_id=None):
             else:
                 raise PermissionDenied
         elif which_form == 'rev':
-            if doc.allows_revision_by(user):
+            if doc.allows(user, 'create_revision'):
                 rev_form = RevisionForm(request.POST)
                 rev_form.instance.document = doc  # for rev_form.clean()
                 if rev_form.is_valid():
@@ -433,12 +432,15 @@ def document_revisions(request, document_slug, contributor_form=None):
 
 
 @login_required
-@permission_required('wiki.review_revision')
 def review_revision(request, document_slug, revision_id):
     """Review a revision of a wiki document."""
     rev = get_object_or_404(Revision, pk=revision_id,
                             document__slug=document_slug)
     doc = rev.document
+
+    if not doc.allows(request.user, 'review_revision'):
+        raise PermissionDenied
+
     form = ReviewForm(
         initial={'needs_change': doc.needs_change,
                  'needs_change_comment': doc.needs_change_comment})
@@ -470,8 +472,8 @@ def review_revision(request, document_slug, revision_id):
 
             # If document is localizable and revision was approved and
             # user has permission, set the is_ready_for_localization value.
-            if (doc.is_localizable and rev.is_approved and
-                request.user.has_perm('wiki.mark_ready_for_l10n')):
+            if (doc.allows(request.user, 'mark_ready_for_l10n') and
+                rev.is_approved):
                 rev.is_ready_for_localization = form.cleaned_data[
                     'is_ready_for_localization']
 
@@ -486,7 +488,7 @@ def review_revision(request, document_slug, revision_id):
             # Update the needs change bit (if approved, default language and
             # user has permission).
             if (doc.locale == settings.WIKI_DEFAULT_LANGUAGE and
-                request.user.has_perm('wiki.edit_needs_change') and
+                doc.allows(request.user, 'edit_needs_change') and
                 rev.is_approved):
 
                 doc.needs_change = form.cleaned_data['needs_change']
@@ -607,8 +609,8 @@ def translate(request, document_slug, revision_id=None):
         doc = None
         disclose_description = True
 
-    user_has_doc_perm = ((not doc) or (doc and doc.allows_editing_by(user)))
-    user_has_rev_perm = ((not doc) or (doc and doc.allows_revision_by(user)))
+    user_has_doc_perm = not doc or doc.allows(user, 'edit')
+    user_has_rev_perm = not doc or doc.allows(user, 'create_revision')
     if not user_has_doc_perm and not user_has_rev_perm:
         # User has no perms, bye.
         raise PermissionDenied
@@ -1009,12 +1011,15 @@ def get_helpful_votes_async(request, document_slug):
 
 
 @login_required
-@permission_required('wiki.delete_revision')
 def delete_revision(request, document_slug, revision_id):
     """Delete a revision."""
     revision = get_object_or_404(Revision, pk=revision_id,
                                  document__slug=document_slug)
     document = revision.document
+
+    if not document.allows(request.user, 'delete_revision'):
+        raise PermissionDenied
+
     only_revision = document.revisions.count() == 1
     helpful_votes = HelpfulVote.objects.filter(revision=revision.id)
     has_votes = helpful_votes.exists()
@@ -1038,12 +1043,14 @@ def delete_revision(request, document_slug, revision_id):
 
 
 @login_required
-@permission_required('wiki.mark_ready_for_l10n')
 @require_POST
 def mark_ready_for_l10n_revision(request, document_slug, revision_id):
     """Mark a revision as ready for l10n."""
     revision = get_object_or_404(Revision, pk=revision_id,
                                  document__slug=document_slug)
+
+    if not revision.document.allows(request.user, 'mark_ready_for_l10n'):
+        raise PermissionDenied
 
     if revision.can_be_readied_for_localization():
         # We don't use update(), because that wouldn't update
@@ -1067,7 +1074,7 @@ def delete_document(request, document_slug):
                                  slug=document_slug)
 
     # Check permission
-    if not document.allows_deleting_by(request.user):
+    if not document.allows(request.user, 'delete'):
         raise PermissionDenied
 
     if request.method == 'GET':
@@ -1086,11 +1093,13 @@ def delete_document(request, document_slug):
 
 @login_required
 @require_POST
-@permission_required('wiki.change_document')
 def add_contributor(request, document_slug):
     """Add a contributor to a document."""
     document = get_object_or_404(Document, locale=request.LANGUAGE_CODE,
                                  slug=document_slug)
+
+    if not document.allows(request.user, 'edit'):
+        raise PermissionDenied
 
     form = AddContributorForm(request.POST)
     if form.is_valid():
@@ -1110,11 +1119,14 @@ def add_contributor(request, document_slug):
 
 @login_required
 @require_http_methods(['GET', 'POST'])
-@permission_required('wiki.change_document')
 def remove_contributor(request, document_slug, user_id):
     """Remove a contributor from a document."""
     document = get_object_or_404(Document, locale=request.LANGUAGE_CODE,
                                  slug=document_slug)
+
+    if not document.allows(request.user, 'edit'):
+        raise PermissionDenied
+
     user = get_object_or_404(User, id=user_id)
 
     if request.method == 'POST':
