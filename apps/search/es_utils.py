@@ -168,8 +168,10 @@ def recreate_index(es=None):
     # indexing doesn't get a chance to index anything between the two
     # and infer a bogus mapping (which ES then freaks out over when we
     # try to lay in an incompatible explicit mapping).
-
     es.create_index(index, settings={'mappings': mappings})
+
+    # Wait until the index is there.
+    es.health(wait_for_status='yellow')
 
 
 def get_index_settings(index):
