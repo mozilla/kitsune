@@ -18,12 +18,10 @@ class DocumentPermissionMixin(object):
         # If this is kicking up a KeyError it's probably because you typoed!
         return getattr(self, 'allows_%s' % action)(user)
 
-
     def allows_create_revision(self, user):
         """Can the user create a revision for the document?"""
         # For now (ever?), creating revisions isn't restricted at all.
         return True
-
 
     def allows_edit(self, user):
         """Can the user edit the document?"""
@@ -40,7 +38,6 @@ class DocumentPermissionMixin(object):
         # And finally, fallback to the actual django permission.
         return user.has_perm('wiki.change_document')
 
-
     def allows_delete(self, user):
         """Can the user delete the document?"""
         # Locale leaders can delete documents in their locale.
@@ -51,12 +48,10 @@ class DocumentPermissionMixin(object):
         # Fallback to the django permission.
         return user.has_perm('wiki.delete_document')
 
-
     def allows_archive(self, user):
         """Can the user archive the document?"""
         # Just use the django permission.
         return user.has_perm('wiki.archive_document')
-
 
     def allows_edit_keywords(self, user):
         """Can the user edit the document's keywords?"""
@@ -66,7 +61,6 @@ class DocumentPermissionMixin(object):
         return (self.locale != settings.WIKI_DEFAULT_LANGUAGE or
                 user.has_perm('wiki.edit_keywords'))
 
-
     def allows_edit_needs_change(self, user):
         """Can the user edit the needs change fields for the document?"""
         # If the document is in the default locale, just use the
@@ -75,14 +69,12 @@ class DocumentPermissionMixin(object):
         return (self.locale == settings.WIKI_DEFAULT_LANGUAGE and
                 user.has_perm('wiki.edit_needs_change'))
 
-
     def allows_mark_ready_for_l10n(self, user):
         """"Can the user mark the document as ready for localization?"""
         # If the document is localizable and the user has the django
         # permission, then the user can mark as ready for l10n.
         return (self.is_localizable and
                 user.has_perm('wiki.mark_ready_for_l10n'))
-
 
     def allows_review_revision(self, user):
         """Can the user review a revision for the document?"""
@@ -94,7 +86,6 @@ class DocumentPermissionMixin(object):
 
         # Fallback to the django permission.
         return user.has_perm('wiki.review_revision')
-
 
     def allows_delete_revision(self, user):
         """Can the user delete a document's revisions?"""
