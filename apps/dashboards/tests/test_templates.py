@@ -22,8 +22,6 @@ class LocalizationDashTests(TestCase):
 
     """
 
-    fixtures = ['users.json']
-
     @staticmethod
     def _assert_readout_contains(doc, slug, contents):
         """Assert `doc` contains `contents` within the `slug` readout."""
