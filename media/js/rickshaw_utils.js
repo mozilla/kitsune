@@ -132,7 +132,6 @@ k.Graph.prototype.initData = function() {
     series = this.data.series[i];
     axisGroup = this.axisGroups[series.axisGroup];
     series.data = _.map(series.data, function(point) {
-      console.log("Point:", point.x, ",", point.y / axisGroup.max);
       return {
         x: point.x,
         y: point.y / axisGroup.max
@@ -168,7 +167,7 @@ k.Graph.prototype.makeSeries = function(objects, descriptors) {
   var datum, series = [];
   var split, date;
   var desc;
-  var max, data;
+  var min, max, data;
   var windowMin, windowMax;
 
   if (this.rickshaw.graph) {
@@ -180,6 +179,7 @@ k.Graph.prototype.makeSeries = function(objects, descriptors) {
   }
 
   for (i = 0; i < descriptors.length; i++) {
+    min = Infinity;
     max = -Infinity;
     desc = descriptors[i];
 
@@ -191,6 +191,7 @@ k.Graph.prototype.makeSeries = function(objects, descriptors) {
       }
 
       if (windowMin <= datum.date && datum.date <= windowMax) {
+        min = Math.min(min, val);
         max = Math.max(max, val);
       }
 
@@ -207,9 +208,16 @@ k.Graph.prototype.makeSeries = function(objects, descriptors) {
       color: desc.color,
       disabled: desc.disabled || false,
       axisGroup: desc.axisGroup,
+      min: min,
       max: max,
       data: data
     };
+
+    if (0 <= min && min <= 1 && 0 <= max && max <= 1) {
+      series[i].yFormatter = function(value) {
+        return Math.floor(value * 100) + '%';
+      };
+    }
   }
 
   // Rickshaw gets angry when its data isn't sorted.
@@ -283,15 +291,6 @@ k.Graph.prototype._xFormatter = function(seconds) {
   return k.dateFormat(format, new Date(seconds * 1000));
 };
 
-k.Graph.prototype._yFormatter = function(value) {
-  if (value > 0 && value <= 1.0) {
-    // This is probably a percentage.
-    return Math.floor(value * 100) + '%';
-  } else {
-    return Math.floor(value);
-  }
-};
-
 k.Graph.prototype.initGraph = function() {
   var hoverClass;
   var i, key;
@@ -310,7 +309,7 @@ k.Graph.prototype.initGraph = function() {
   if (this.options.hover) {
     var hoverOpts = $.extend({
       xFormatter: this._xFormatter.bind(this),
-      yFormatter: this._yFormatter.bind(this),
+      yFormatter: Math.floor,
       graph: this.rickshaw.graph
     }, this.hover);
 
@@ -768,9 +767,12 @@ Rickshaw.Graph.ScaledHoverDetail = Rickshaw.Class.create(Rickshaw.Graph.HoverDet
 
     if (!point || point.value.y === null) return;
 
+    var xFormatter = point.series.xFormatter || this.xFormatter;
+    var yFormatter = point.series.yFormatter || this.yFormatter;
+
     var scaledY = point.value.y * (point.series.scale || 1);
-    var formattedXValue = this.xFormatter(point.value.x);
-    var formattedYValue = this.yFormatter(scaledY);
+    var formattedXValue = xFormatter(point.value.x);
+    var formattedYValue = yFormatter(scaledY);
 
     var hoverPoint = this.getHoverPoint(point);
 
