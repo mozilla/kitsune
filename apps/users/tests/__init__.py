@@ -19,7 +19,7 @@ def profile(**kwargs):
     defaults = {'name': 'Test K. User', 'bio': 'Some bio.',
                 'website': 'http://support.mozilla.com',
                 'timezone': None, 'country': 'US', 'city': 'Mountain View',
-                'locale': 'en_US'}
+                'locale': 'en-US'}
     if 'user' not in kwargs:
         u = user(save=True)
         defaults['user'] = u
