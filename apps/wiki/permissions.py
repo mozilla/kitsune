@@ -15,103 +15,97 @@ class DocumentPermissionMixin(object):
     def allows(self, user, action):
         """Check if the user has the permission on the document."""
 
-        enforcer = action_police.get(action)
-
-        if not enforcer:
-            # The action doesn't exist. Log an error and deny permission.
-            log.error('Permission requested for an unknown action: %s' % action)
-            return False
-
-        return enforcer(self, user)
+        # If this is kicking up a KeyError it's probably because you typoed!
+        return getattr(self, 'allows_%s' % action)(user)
 
 
-def _can_create_revision(document, user):
-    """Can the user create a revision for the document?"""
-    # For now (ever?), creating revisions isn't restricted at all.
-    return True
-
-
-def _can_edit(document, user):
-    """Can the user edit the document?"""
-    # Document editing isn't restricted until it has an approved
-    # revision.
-    if not document.current_revision:
+    def allows_create_revision(self, user):
+        """Can the user create a revision for the document?"""
+        # For now (ever?), creating revisions isn't restricted at all.
         return True
 
-    # Locale leaders and reviewers can edit in their locale.
-    locale = document.locale
-    if _is_leader(locale, user) or _is_reviewer(locale, user):
-        return True
 
-    # And finally, fallback to the actual django permission.
-    return user.has_perm('wiki.change_document')
+    def allows_edit(self, user):
+        """Can the user edit the document?"""
+        # Document editing isn't restricted until it has an approved
+        # revision.
+        if not self.current_revision:
+            return True
 
+        # Locale leaders and reviewers can edit in their locale.
+        locale = self.locale
+        if _is_leader(locale, user) or _is_reviewer(locale, user):
+            return True
 
-def _can_delete(document, user):
-    """Can the user delete the document?"""
-    # Locale leaders can delete documents in their locale.
-    locale = document.locale
-    if _is_leader(locale, user):
-        return True
-
-    # Fallback to the django permission.
-    return user.has_perm('wiki.delete_document')
+        # And finally, fallback to the actual django permission.
+        return user.has_perm('wiki.change_document')
 
 
-def _can_archive(document, user):
-    """Can the user archive the document?"""
-    # Just use the django permission.
-    return user.has_perm('wiki.archive_document')
+    def allows_delete(self, user):
+        """Can the user delete the document?"""
+        # Locale leaders can delete documents in their locale.
+        locale = self.locale
+        if _is_leader(locale, user):
+            return True
+
+        # Fallback to the django permission.
+        return user.has_perm('wiki.delete_document')
 
 
-def _can_edit_keywords(document, user):
-    """Can the user edit the document's keywords?"""
-    # If the document is in the default locale, just use the
-    # django permission.
-    # Editing keywords isn't restricted in other locales.
-    return (document.locale != settings.WIKI_DEFAULT_LANGUAGE or
-            user.has_perm('wiki.edit_keywords'))
+    def allows_archive(self, user):
+        """Can the user archive the document?"""
+        # Just use the django permission.
+        return user.has_perm('wiki.archive_document')
 
 
-def _can_edit_needs_change(document, user):
-    """Can the user edit the needs change fields for the document?"""
-    # If the document is in the default locale, just use the
-    # django permission.
-    # Needs change isn't used for other locales (yet?).
-    return (document.locale == settings.WIKI_DEFAULT_LANGUAGE and
-            user.has_perm('wiki.edit_needs_change'))
+    def allows_edit_keywords(self, user):
+        """Can the user edit the document's keywords?"""
+        # If the document is in the default locale, just use the
+        # django permission.
+        # Editing keywords isn't restricted in other locales.
+        return (self.locale != settings.WIKI_DEFAULT_LANGUAGE or
+                user.has_perm('wiki.edit_keywords'))
 
 
-def _can_mark_ready_for_l10n(document, user):
-    """"Can the user mark the document as ready for localization?"""
-    # If the document is localizable and the user has the django
-    # permission, then the user can mark as ready for l10n.
-    return (document.is_localizable and
-            user.has_perm('wiki.mark_ready_for_l10n'))
+    def allows_edit_needs_change(self, user):
+        """Can the user edit the needs change fields for the document?"""
+        # If the document is in the default locale, just use the
+        # django permission.
+        # Needs change isn't used for other locales (yet?).
+        return (self.locale == settings.WIKI_DEFAULT_LANGUAGE and
+                user.has_perm('wiki.edit_needs_change'))
 
 
-def _can_review_revision(document, user):
-    """Can the user review a revision for the document?"""
-    # Locale leaders and reviewers can review revisions in their
-    # locale.
-    locale = document.locale
-    if _is_leader(locale, user) or _is_reviewer(locale, user):
-        return True
-
-    # Fallback to the django permission.
-    return user.has_perm('wiki.review_revision')
+    def allows_mark_ready_for_l10n(self, user):
+        """"Can the user mark the document as ready for localization?"""
+        # If the document is localizable and the user has the django
+        # permission, then the user can mark as ready for l10n.
+        return (self.is_localizable and
+                user.has_perm('wiki.mark_ready_for_l10n'))
 
 
-def _can_delete_revision(document, user):
-    """Can the user delete a document's revisions?"""
-    # Locale leaders and reviewers can delete revisions in their
-    # locale.
-    locale = document.locale
-    if _is_leader(locale, user) or _is_reviewer(locale, user):
-        return True
+    def allows_review_revision(self, user):
+        """Can the user review a revision for the document?"""
+        # Locale leaders and reviewers can review revisions in their
+        # locale.
+        locale = self.locale
+        if _is_leader(locale, user) or _is_reviewer(locale, user):
+            return True
 
-    # Fallback to the django permission.
-    return user.has_perm('wiki.delete_revision')
+        # Fallback to the django permission.
+        return user.has_perm('wiki.review_revision')
+
+
+    def allows_delete_revision(self, user):
+        """Can the user delete a document's revisions?"""
+        # Locale leaders and reviewers can delete revisions in their
+        # locale.
+        locale = self.locale
+        if _is_leader(locale, user) or _is_reviewer(locale, user):
+            return True
+
+        # Fallback to the django permission.
+        return user.has_perm('wiki.delete_revision')
 
 
 def _is_leader(locale, user):
@@ -144,16 +138,3 @@ def _is_reviewer(locale, user):
         return False
 
     return user in locale_team.reviewers.all()
-
-
-action_police = {
-    'create_revision': _can_create_revision,
-    'edit': _can_edit,
-    'delete': _can_delete,
-    'archive': _can_archive,
-    'edit_keywords': _can_edit_keywords,
-    'edit_needs_change': _can_edit_needs_change,
-    'mark_ready_for_l10n': _can_mark_ready_for_l10n,
-    'review_revision': _can_review_revision,
-    'delete_revision': _can_delete_revision,
-}
