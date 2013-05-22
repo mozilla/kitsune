@@ -1,4 +1,9 @@
+import logging
+
 from django.conf import settings
+
+
+log = logging.getLogger('k.wiki')
 
 
 # Why is this a mixin if it can only be used for the Document model?
@@ -82,20 +87,32 @@ class DocumentPermissionMixin(object):
 
 
 def _is_leader(locale, user):
+    """Checks if the user is a leader for the given locale.
+
+    Returns False if the locale doesn't exist. This will should only happen
+    if we forgot to insert a new locale when enabling it or during testing.
+    """
     from wiki.models import Locale
     try:
         locale_team = Locale.objects.get(locale=locale)
     except Locale.DoesNotExist:
+        log.warning('Locale not created for %s' % locale)
         return False
 
     return user in locale_team.leaders.all()
 
 
 def _is_reviewer(locale, user):
+    """Checks if the user is a reviewer for the given locale.
+
+    Returns False if the locale doesn't exist. This will should only happen
+    if we forgot to insert a new locale when enabling it or during testing.
+    """
     from wiki.models import Locale
     try:
         locale_team = Locale.objects.get(locale=locale)
     except Locale.DoesNotExist:
+        log.warning('Locale not created for %s' % locale)
         return False
 
     return user in locale_team.reviewers.all()
