@@ -64,7 +64,7 @@ class Profile(ModelBase):
     city = models.CharField(max_length=255, null=True, blank=True,
                             verbose_name=_lazy(u'City'))
     locale = LocaleField(default=settings.LANGUAGE_CODE,
-                         verbose_name=_lazy(u'Preferred language for email'))
+                         verbose_name=_lazy(u'Preferred language'))
 
     class Meta(object):
         permissions = (('view_karma_points', 'Can view karma points'),

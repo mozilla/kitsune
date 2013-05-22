@@ -5,10 +5,8 @@ from django.core.handlers.wsgi import WSGIRequest
 from django.core.urlresolvers import reverse as django_reverse
 from django.utils.translation.trans_real import parse_accept_lang_header
 
-
 # Thread-local storage for URL prefixes. Access with (get|set)_url_prefix.
 _locals = threading.local()
-
 
 def set_url_prefixer(prefixer):
     """Set the Prefixer for the current thread."""
@@ -124,9 +122,31 @@ def split_path(path):
 class Prefixer(object):
     def __init__(self, request=None, locale=None):
         """If request is omitted, fall back to a default locale."""
+        # to avoid circular imports
+        from users.models import Profile
+
         self.request = request or WSGIRequest({'REQUEST_METHOD': 'bogus',
                                                'wsgi.input': None})
         self.locale, self.shortened_path = split_path(self.request.path_info)
+
+        # Need to make sure 'user' exists for request. Test
+        # test_deprecated_redirect (sumo.tests.test_views.RedirectTests)
+        # does not have user in request.
+        # We also need to check to see if locale is already given in the url,
+        # as that serves as an override.
+        if not self.locale and request and hasattr(request, 'user'):
+            if request.user.is_anonymous():
+                language = request.session.get(settings.LANGUAGE_COOKIE_NAME)
+                if language:
+                    self.locale = language
+            else:
+                try:
+                    profile = request.user.get_profile()
+                except Profile.DoesNotExist:
+                    pass
+                else:
+                    self.locale = profile.locale
+
         if locale:
             self.locale = locale
 
@@ -153,7 +173,9 @@ class Prefixer(object):
         path = path.lstrip('/')
         url_parts = [self.request.META['SCRIPT_NAME']]
 
-        if path.partition('/')[0] not in settings.SUPPORTED_NONLOCALES:
+        first_part = path.partition('/')[0]
+        if (first_part not in settings.SUPPORTED_NONLOCALES and
+            first_part not in settings.LANGUAGE_URL_MAP):
             locale = self.locale if self.locale else self.get_language()
             url_parts.append(locale)
 

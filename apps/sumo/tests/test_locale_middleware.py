@@ -89,6 +89,17 @@ class BestLanguageTests(TestCase):
         """sr -> sr-CYRL, not sr-LATN."""
         eq_('sr-CYRL', get_best_language('sr'))
 
+class PreferredLanguageTests(TestCase):
+    def test_anonymous_change_language(self):
+        # should set the cookie for the correct language.
+        self.client.get('/?lang=zh-CN', follow=True)
+        response = self.client.get('/', follow=True)
+        self.assertRedirects(response, '/zh-CN/home')
+
+        self.client.get('/?lang=en-US', follow=True)
+        response = self.client.get('/', follow=True)
+        self.assertRedirects(response, '/en-US/home')
+
 
 class NonSupportedTests(TestCase):
     @mock.patch.object(settings._wrapped, 'NON_SUPPORTED_LOCALES',

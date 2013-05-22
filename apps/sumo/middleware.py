@@ -2,6 +2,7 @@ import contextlib
 import re
 import urllib
 
+from django.conf import settings
 from django.core.urlresolvers import is_valid_path
 from django.db.utils import DatabaseError
 from django.http import HttpResponseRedirect, HttpResponsePermanentRedirect
@@ -39,6 +40,12 @@ class LocaleURLMiddleware(object):
             new_path = prefixer.fix(prefixer.shortened_path)
             query = dict((smart_str(k), v) for
                          k, v in request.GET.iteritems() if k != 'lang')
+
+            # This means that we're setting (the language changing page use
+            # lang). Logged in users have language preferences.
+            if request.user.is_anonymous():
+                request.session[settings.LANGUAGE_COOKIE_NAME] = request.GET['lang']
+
             return HttpResponseRedirect(urlparams(new_path, **query))
 
         if full_path != request.path:
