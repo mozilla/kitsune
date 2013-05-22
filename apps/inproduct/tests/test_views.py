@@ -6,11 +6,11 @@ import mock
 import waffle
 from nose.tools import eq_
 
+from inproduct.tests import redirect
 from sumo.tests import TestCase
 
 
 class RedirectTestCase(TestCase):
-    fixtures = ['inproduct/redirects.json']
     test_urls = (
         ('firefox/3.6.12/WINNT/en-US/', '/en-US/home'),
         ('mobile/4.0/Android/en-US/', '/en-US/products/mobile'),
@@ -44,6 +44,20 @@ class RedirectTestCase(TestCase):
         ('mobile/4.0/martian/en-US/eu/', 'http://martian.com'),
         ('firefox/4.0/Android/en-US/eu/foo', 404),
     )
+
+    def setUp(self):
+        super(RedirectTestCase, self).setUp()
+
+        # Create redirects to test with.
+        redirect(target='kb/Applications', topic='prefs-applications',
+                 save=True)
+        redirect(target='home', save=True)
+        redirect(product='mobile', target='/products/mobile', save=True)
+        redirect(platform='iPhone', target='home', save=True)
+        redirect(product='mobile', platform='Android', topic='foo',
+                 target='home', save=True)
+        redirect(version='5.0', target='does-not-exist', save=True)
+        redirect(platform='martian', target='http://martian.com', save=True)
 
     def test_target(self):
         """Test that we can vary on any parameter and targets work."""
