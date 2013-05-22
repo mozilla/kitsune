@@ -3,6 +3,7 @@ from django.conf import settings
 import mock
 from nose.tools import eq_
 
+from users.tests import user, profile
 from sumo.tests import TestCase
 from sumo.urlresolvers import get_best_language, get_non_supported
 
@@ -88,6 +89,47 @@ class BestLanguageTests(TestCase):
     def test_serbian(self):
         """sr -> sr-CYRL, not sr-LATN."""
         eq_('sr-CYRL', get_best_language('sr'))
+
+class PreferredLanguageTests(TestCase):
+    def test_anonymous_change_language(self):
+        # should set the cookie for the correct language.
+        self.client.get('/?lang=zh-CN', follow=True)
+        response = self.client.get('/', follow=True)
+        self.assertRedirects(response, '/zh-CN/home')
+
+        self.client.get('/?lang=en-US', follow=True)
+        response = self.client.get('/', follow=True)
+        self.assertRedirects(response, '/en-US/home')
+
+    def test_loggedin_preferred_language(self):
+        u = user(save=True)
+        profile(user=u, locale='zh-CN')
+        self.client.login(username=u.username, password='testpass')
+        response = self.client.get('/', follow=True)
+        self.assertRedirects(response, '/zh-CN/home')
+
+        self.client.logout()
+        response = self.client.get('/', follow=True, HTTP_ACCEPT_LANGUAGE='xx')
+        self.assertRedirects(response, '/xx/home')
+
+    def test_anonymous_change_to_login(self):
+        u = user(save=True)
+        profile(user=u, locale='zh-CN')
+
+        # anonymous is fr
+        self.client.get('/?lang=fr', follow=True)
+        response = self.client.get('/', follow=True)
+        self.assertRedirects(response, '/fr/home')
+
+        # logged in is zh-CN
+        self.client.login(username=u.username, password='testpass')
+        response = self.client.get('/', follow=True)
+        self.assertRedirects(response, '/zh-CN/home')
+
+        # anonymous again, session is now destroyed
+        self.client.logout()
+        response = self.client.get('/', follow=True, HTTP_ACCEPT_LANGUAGE='xx')
+        self.assertRedirects(response, '/xx/home')
 
 
 class NonSupportedTests(TestCase):

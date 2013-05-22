@@ -307,6 +307,11 @@ MIDDLEWARE_CLASSES = (
     # where we don't explicitly use the "uncached" manager.
     'django.middleware.transaction.TransactionMiddleware',
 
+    # LocaleURLMiddleware requires access to request.user. These two must be
+    # loaded before the LocaleURLMiddleware
+    'commonware.middleware.NoVarySessionMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+
     # LocaleURLMiddleware must be before any middleware that uses
     # sumo.urlresolvers.reverse() to add locale prefixes to URLs:
     'sumo.middleware.LocaleURLMiddleware',
@@ -321,9 +326,7 @@ MIDDLEWARE_CLASSES = (
     'sumo.middleware.RemoveSlashMiddleware',
     'inproduct.middleware.EuBuildMiddleware',
     'sumo.middleware.NoCacheHttpsMiddleware',
-    'commonware.middleware.NoVarySessionMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'sumo.anonymous.AnonymousIdentityMiddleware',
     'session_csrf.CsrfMiddleware',

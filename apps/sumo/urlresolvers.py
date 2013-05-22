@@ -124,9 +124,26 @@ def split_path(path):
 class Prefixer(object):
     def __init__(self, request=None, locale=None):
         """If request is omitted, fall back to a default locale."""
+        # to avoid circular imports
+        from users.models import Profile
+
         self.request = request or WSGIRequest({'REQUEST_METHOD': 'bogus',
                                                'wsgi.input': None})
         self.locale, self.shortened_path = split_path(self.request.path_info)
+
+        # We also need to check to see if locale is already given in the url,
+        # as that serves as an override.
+        if not self.locale and request:
+            if request.user.is_anonymous():
+                language = request.session.get(settings.LANGUAGE_COOKIE_NAME)
+                if language:
+                    self.locale = language
+            else:
+                try:
+                    self.locale = request.user.get_profile().locale
+                except Profile.DoesNotExist:
+                    pass
+
         if locale:
             self.locale = locale
 
@@ -153,7 +170,9 @@ class Prefixer(object):
         path = path.lstrip('/')
         url_parts = [self.request.META['SCRIPT_NAME']]
 
-        if path.partition('/')[0] not in settings.SUPPORTED_NONLOCALES:
+        first_part = path.partition('/')[0]
+        if (first_part not in settings.SUPPORTED_NONLOCALES and
+            first_part not in settings.LANGUAGE_URL_MAP):
             locale = self.locale if self.locale else self.get_language()
             url_parts.append(locale)
 
