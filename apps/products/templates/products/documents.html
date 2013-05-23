@@ -11,7 +11,11 @@
 
 {% block content %}
   <div class="grid_12">
-    <h1 class="product-title cf"><img src="{{ MEDIA_URL }}img/blank.png" alt="" class="logo-sprite" style="background-image: url('{{ product.image_url }}');" />{{ _(product.title, 'DB: products.Product.title') }}</h1>
+    <h1 class="product-title cf">
+      {% set prod_url = url('products.product', slug=product.slug) %}
+      <img src="{{ MEDIA_URL }}img/blank.png" alt="" class="logo-sprite" style="background-image: url('{{ product.image_url }}');" />
+      <a href="{{ prod_url }}">{{ _(product.title, 'DB: products.Product.title') }}</a>
+    </h1>
   </div>
   <aside class="grid_3">
     {{ for_contributors_sidebar(user, settings.WIKI_DEFAULT_LANGUAGE) }}

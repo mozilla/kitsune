@@ -32,7 +32,12 @@
 {% endif %}
 
 {% block above_main %}
-  <h1 class="product-title cf"><img src="{{ MEDIA_URL }}img/blank.png" alt="" class="logo-sprite" style="background-image: url('{{ product.image_url }}');" />{{ _(product.title, 'DB: products.Product.title') }} {{ show_for(header=False) }}</h1>
+  <h1 class="product-title cf">
+    {% set prod_url = url('products.product', slug=product.slug) %}
+    <img src="{{ MEDIA_URL }}img/blank.png" alt="" class="logo-sprite" style="background-image: url('{{ product.image_url }}');" />
+    <a href="{{ prod_url }}">{{ _(product.title, 'DB: products.Product.title') }}</a>
+    {{ show_for(header=False) }}
+  </h1>
 {% endblock %}
 
 {% block content %}
