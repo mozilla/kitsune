@@ -307,6 +307,8 @@ MIDDLEWARE_CLASSES = (
     # where we don't explicitly use the "uncached" manager.
     'django.middleware.transaction.TransactionMiddleware',
 
+    # LocaleURLMiddleware requires access to request.user. These two must be
+    # loaded before the LocaleURLMiddleware
     'commonware.middleware.NoVarySessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
 
