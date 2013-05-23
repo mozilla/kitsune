@@ -12,18 +12,18 @@ from products.tests import product
 from sumo.tests import TestCase, LocalizingClient
 from sumo.urlresolvers import reverse
 from users.tests import user, add_permission
-from wiki.models import Document
+
+from sumo.redis_utils import redis_client, RedisError
 from wiki.config import (VersionMetadata, TEMPLATES_CATEGORY,
                          TYPO_SIGNIFICANCE, MEDIUM_SIGNIFICANCE,
                          MAJOR_SIGNIFICANCE)
+from wiki.models import Document, HelpfulVoteMetadata, HelpfulVote
+from wiki.showfor import _version_groups
 from wiki.tests import (doc_rev, document, helpful_vote, new_document_data,
                         revision, translated_revision)
-from wiki.showfor import _version_groups
+
 from wiki.views import (_document_lock_check, _document_lock_clear,
                         _document_lock_steal)
-from wiki.models import HelpfulVoteMetadata, HelpfulVote
-
-from sumo.redis_utils import redis_client, RedisError
 
 
 class VersionGroupTests(TestCase):
@@ -44,8 +44,6 @@ class VersionGroupTests(TestCase):
 class RedirectTests(TestCase):
     """Tests for the REDIRECT wiki directive"""
 
-    fixtures = ['users.json']
-
     def setUp(self):
         super(RedirectTests, self).setUp()
         product(save=True)
@@ -62,8 +60,6 @@ class RedirectTests(TestCase):
 class LocaleRedirectTests(TestCase):
     """Tests for fallbacks to en-US and such for slug lookups."""
     # Some of these may fail or be invalid if your WIKI_DEFAULT_LANGUAGE is de.
-
-    fixtures = ['users.json']
 
     def setUp(self):
         super(LocaleRedirectTests, self).setUp()
@@ -182,22 +178,38 @@ class LocalizationAnalyticsTests(TestCase):
         assert '"Not Updated"' not in doc('body').attr('data-ga-push')
 
 
-class ViewTests(TestCase):
-    fixtures = ['users.json', 'search/documents.json']
+class JsonViewTests(TestCase):
+    def setUp(self):
+        super(JsonViewTests, self).setUp()
 
-    def test_json_view(self):
+        d = document(
+            title='an article title', slug='article-title', save=True)
+        revision(document=d, is_approved=True, save=True)
+
+    def test_json_view_by_title(self):
+        """Verify checking for an article by title."""
         url = reverse('wiki.json', force_locale=True)
-
         resp = self.client.get(url, {'title': 'an article title'})
         eq_(200, resp.status_code)
         data = json.loads(resp.content)
         eq_('article-title', data['slug'])
 
+    def test_json_view_by_slug(self):
+        """Verify checking for an article by slug."""
+        url = reverse('wiki.json', force_locale=True)
         resp = self.client.get(url, {'slug': 'article-title'})
         eq_(200, resp.status_code)
         data = json.loads(resp.content)
         eq_('an article title', data['title'])
 
+    def test_json_view_404(self):
+        """Searching for something that doesn't exist should 404."""
+        url = reverse('wiki.json', force_locale=True)
+        resp = self.client.get(url, {'title': 'an article title ok.'})
+        eq_(404, resp.status_code)
+
+
+class WhatLinksWhereTests(TestCase):
     def test_what_links_here(self):
         d1 = document(title='D1', save=True)
         revision(document=d1, content='', is_approved=True, save=True)
@@ -224,7 +236,6 @@ class ViewTests(TestCase):
 class DocumentEditingTests(TestCase):
     """Tests for the document-editing view"""
 
-    fixtures = ['users.json']
     client_class = LocalizingClient
 
     def setUp(self):
