@@ -59,8 +59,11 @@ class AccessTests(TestCase):
         assert not access.has_perm(user, perm, self.forum_2)
 
     def test_perm_is_defined_on(self):
-        """Test whether we check for permission relationship, independent of
-        whether the permission is actually assigned to anyone."""
+        """Test permission relationship
+
+        Test whether we check for permission relationship, independent
+        of whether the permission is actually assigned to anyone.
+        """
         perm = 'forums_forum.view_in_forum'
         assert access.perm_is_defined_on(perm, Forum.objects.get(pk=3))
         assert not access.perm_is_defined_on(perm, Forum.objects.get(pk=2))

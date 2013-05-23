@@ -1,25 +1,20 @@
 from datetime import timedelta, datetime
-import json
 
-from django.conf import settings
-
-from nose import SkipTest
 from nose.tools import eq_
 
 from announcements.tests import announcement
-from dashboards.cron import cache_most_unhelpful_kb_articles
 from dashboards.readouts import CONTRIBUTOR_READOUTS
 from sumo.tests import TestCase
 from sumo.urlresolvers import reverse
-from sumo.redis_utils import redis_client, RedisError
-from users.tests import user, group
+from users.tests import user
 from wiki.models import HelpfulVote
-from wiki.tests import revision, locale
+from wiki.tests import locale
 
 
 class LocalizationDashTests(TestCase):
     def test_redirect_to_contributor_dash(self):
-        """Should redirect to Contributor Dash if the locale is the default"""
+        """Should redirect to Contributor Dash if the locale is the default
+        """
         response = self.client.get(reverse('dashboards.localization',
                                            locale='en-US'),
                                    follow=True)
@@ -28,7 +23,6 @@ class LocalizationDashTests(TestCase):
 
 
 def LocalizationDashAnnouncementsTests(TestCase):
-
     def setUp(self):
         self.locale1 = locale(save=True, locale='es')
 
@@ -74,7 +68,8 @@ class ContributorDashTests(TestCase):
         eq_(200, response.status_code)
 
     def test_detail_view(self):
-        """Assert the detail page of the contributor dash resolves, renders."""
+        """Assert the detail page of the contributor dash resolves, renders.
+        """
         response = self.client.get(reverse('dashboards.contributors_detail',
             args=[CONTRIBUTOR_READOUTS[CONTRIBUTOR_READOUTS.keys()[0]].slug],
             locale='en-US'))

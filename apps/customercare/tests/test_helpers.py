@@ -46,6 +46,5 @@ class UTCTimesinceTests(TestCase):
             utctimesince(datetime(2000, 1, 2), now=datetime(2001, 2, 3)))
 
     def test_future(self):
-        """Test behavior when date is in the future and also when omitting the
-        `now` kwarg."""
+        """Test future date and omitting "now" kwarg"""
         eq_('', utctimesince(datetime(9999, 1, 2)))

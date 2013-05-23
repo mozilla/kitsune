@@ -19,7 +19,7 @@ class DashboardsTests(TestCase):
                        'GROUP_DASHBOARDS',
                        {ATestDashboard.slug: ATestDashboard})
     def test_personal_dashboards(self):
-        """Just run through it to make sure there aren't obvious explosions."""
+        """Verify no obvious explosions"""
         g = group(name='winners', save=True)
         g2 = group(name='losers', save=True)
         u = user(save=True)

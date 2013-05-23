@@ -89,7 +89,8 @@ class CannedResponsesTestCase(TestCase):
         eq_(3, len(doc('#accordion a.reply-topic')))
 
     def test_list_canned_responses_nondefault_locale(self):
-        """Listing canned responses gives all snippets regardless of locale."""
+        """Listing canned responses gives all snippets regardless of locale.
+        """
         # Create the canned responses article.
         self._create_doc(CANNED_RESPONSES_WIKI)
 

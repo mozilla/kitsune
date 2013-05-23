@@ -74,10 +74,8 @@ class ForumTestPermissions(ForumTestCase):
                             self.forum_2)
 
     def test_has_perm_thread_sticky(self):
-        """
-        User in group can change sticky status of thread in forum_1, but not
-        in forum_2.
-        """
+        # User in group can change sticky status of thread in forum_1,
+        # but not in forum_2.
         u = user(save=True)
         self.group.user_set.add(u)
 
@@ -88,10 +86,8 @@ class ForumTestPermissions(ForumTestCase):
                             self.forum_2)
 
     def test_has_perm_thread_locked(self):
-        """
-        Sanity check: user in group has no permission to change locked
-        status in forum_1.
-        """
+        # Sanity check: user in group has no permission to change
+        # locked status in forum_1.
         u = user(save=True)
         self.group.user_set.add(u)
 
@@ -122,9 +118,7 @@ class ForumTestPermissions(ForumTestCase):
                             self.forum_2)
 
     def test_no_perm_thread_delete(self):
-        """
-        User not in group cannot delete thread in any forum.
-        """
+        """User not in group cannot delete thread in any forum."""
         self.context['request'].user = user(save=True)
         assert not has_perm(self.context, 'forums_forum.thread_delete_forum',
                             self.forum_1)

@@ -52,8 +52,8 @@ class TweetListTests(TestCase):
         tweets_2 = _get_tweets(max_id=max_id)
         assert tweets_2
 
-        # Make sure this id is not in the result, and all tweets are older than
-        # max_id.
+        # Make sure this id is not in the result, and all tweets are
+        # older than max_id.
         for tweet in tweets_2:
             assert tweet['id'] < max_id
 
@@ -144,8 +144,11 @@ class FilterTests(FilterTestCase):
     """Test tweet filtering"""
 
     def setUp(self):
-        """Make a tweet, an answer to it, an unanswered tweet, and a hidden
-        one."""
+        """Set up FilterTests
+
+        Make a tweet, an answer to it, an unanswered tweet, and a
+        hidden one.
+        """
         super(FilterTests, self).setUp()
 
         tweet(text='YO_UNANSWERED').save()
@@ -184,8 +187,7 @@ class FilterCachingTests(FilterTestCase):
     """Test interaction of caching with filters"""
 
     def test_caching(self):
-        """Ensure refiltering the list after replying shows the replied-to
-        tweet as such."""
+        """Refiltering list after replying shows replied-to tweet"""
         # We need at least one existing answer to get the list of answered
         # tweets to cache:
         question = tweet(save=True)
