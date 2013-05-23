@@ -41,12 +41,12 @@ class LocaleURLMiddleware(object):
             query = dict((smart_str(k), v) for
                          k, v in request.GET.iteritems() if k != 'lang')
 
-
             # 'lang' is only used on the language selection page. If this is
             # present it is safe to set language preference for the current
             # user.
             if request.user.is_anonymous():
-                request.session[settings.LANGUAGE_COOKIE_NAME] = request.GET['lang']
+                request.session[settings.LANGUAGE_COOKIE_NAME] = \
+                    request.GET['lang']
 
             return HttpResponseRedirect(urlparams(new_path, **query))
 

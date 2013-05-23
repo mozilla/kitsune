@@ -131,23 +131,18 @@ class Prefixer(object):
                                                'wsgi.input': None})
         self.locale, self.shortened_path = split_path(self.request.path_info)
 
-        # Need to make sure 'user' exists for request. Test
-        # test_deprecated_redirect (sumo.tests.test_views.RedirectTests)
-        # does not have user in request.
         # We also need to check to see if locale is already given in the url,
         # as that serves as an override.
-        if not self.locale and request and hasattr(request, 'user'):
+        if not self.locale and request:
             if request.user.is_anonymous():
                 language = request.session.get(settings.LANGUAGE_COOKIE_NAME)
                 if language:
                     self.locale = language
             else:
                 try:
-                    profile = request.user.get_profile()
+                    self.locale = request.user.get_profile().locale
                 except Profile.DoesNotExist:
                     pass
-                else:
-                    self.locale = profile.locale
 
         if locale:
             self.locale = locale
