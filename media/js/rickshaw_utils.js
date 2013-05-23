@@ -73,6 +73,18 @@ k.Graph.prototype.init = function() {
 };
 
 k.Graph.prototype.initData = function() {
+  var i, d, date;
+  for (i = 0; i < this.data.datums.length; i++) {
+    d = this.data.datums[i];
+    d.date = k.Graph.toSeconds(d.date || d.created || d.start);
+    d.created = undefined;
+    d.start = undefined;
+  }
+
+  this.rebucket();
+};
+
+k.Graph.prototype.rebucket = function() {
   var buckets = {};
   var bucketed = [];
   var i, d, key;
@@ -270,7 +282,7 @@ k.Graph.prototype.initBucketUI = function() {
   var self = this;
   $select.on('change', function() {
     self.data.bucketSize = parseInt($(this).val(), 10);
-    self.initData();
+    self.rebucket();
     self.update();
   });
 };
@@ -347,12 +359,12 @@ k.Graph.prototype.initSlider = function() {
     minDate = (+new Date() - (1000 * 60 * 60 * 24 * 180)) / 1000;
     this.rickshaw.graph.window.xMin = minDate;
 
-    this.initData();
+    this.rebucket();
     this.update();
 
     this.slider.slider('values', 0, minDate);
     function onSlide() {
-      self.initData();
+      self.rebucket();
       self.update();
     }
     this.slider.on('slide', onSlide);
@@ -439,7 +451,7 @@ k.Graph.prototype.initDateRange = function() {
             self.slider.slider('values', [min, now]);
           }
 
-          self.initData();
+          self.rebucket();
           self.update();
         });
     }
@@ -633,7 +645,7 @@ k.Graph.prototype.setRange = function(start, end) {
 
   window.xMin = start;
   window.xMax = end;
-  this.initData();
+  this.rebucket();
   this.update();
 };
 /* end Graph */
