@@ -47,10 +47,9 @@
 }
 
 .search {
-    position: relative;
     right: 1em;
     text-align: right;
-    top: -3em;
+    top: -.6em;
 }
 
 #filter-responses-field {
@@ -67,7 +66,7 @@
     left: 0;
     overflow-y: hidden;
     position: absolute;
-    top: 4.5em;
+    top: 6.5em;
     width: 100%;
 }
 
