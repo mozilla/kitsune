@@ -3,7 +3,6 @@ import difflib
 import json
 
 from django.conf import settings
-from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
 from django.core import mail
 from django.core.cache import cache
@@ -37,7 +36,7 @@ from wiki.tests import (TestCaseBase, document, revision, new_document_data,
 
 
 READY_FOR_REVIEW_EMAIL_CONTENT = (
-"""admin submitted a new revision to the document %(title)s.
+"""%(user)s submitted a new revision to the document %(title)s.
 
 To review this revision, click the following link, or paste it into your browser's location bar:
 
@@ -58,7 +57,7 @@ https://testserver/en-US/unsubscribe/%(watcher)s?s=%(secret)s
 
 
 DOCUMENT_EDITED_EMAIL_CONTENT = (
-"""admin created a new revision to the document %(title)s.
+"""%(user)s created a new revision to the document %(title)s.
 
 To view this document's history, click the following link, or paste it into your browser's location bar:
 
@@ -101,7 +100,6 @@ https://testserver/en-US/unsubscribe/%(watcher)s?s=%(secret)s
 
 class DocumentTests(TestCaseBase):
     """Tests for the Document template"""
-    fixtures = ['users.json']
 
     def setUp(self):
         super(DocumentTests, self).setUp()
@@ -249,7 +247,8 @@ class DocumentTests(TestCaseBase):
 
     def test_watch_includes_csrf(self):
         """The watch/unwatch forms should include the csrf tag."""
-        self.client.login(username='jsocol', password='testpass')
+        u = user(save=True)
+        self.client.login(username=u.username, password='testpass')
         d = document(save=True)
         resp = self.client.get(d.get_absolute_url())
         doc = pq(resp.content)
@@ -257,7 +256,8 @@ class DocumentTests(TestCaseBase):
 
     def test_non_localizable_translate_disabled(self):
         """Non localizable document doesn't show tab for 'Localize'."""
-        self.client.login(username='jsocol', password='testpass')
+        u = user(save=True)
+        self.client.login(username=u.username, password='testpass')
         d = document(is_localizable=True, save=True)
         resp = self.client.get(d.get_absolute_url())
         doc = pq(resp.content)
@@ -347,7 +347,6 @@ class MobileArticleTemplate(MobileTestCase):
 
 class RevisionTests(TestCaseBase):
     """Tests for the Revision template"""
-    fixtures = ['users.json']
 
     def setUp(self):
         super(RevisionTests, self).setUp()
@@ -409,11 +408,12 @@ class RevisionTests(TestCaseBase):
     @mock.patch.object(ReadyRevisionEvent, 'fire')
     def test_mark_as_ready_GET(self, fire):
         """HTTP GET to mark a revision as ready for l10n must fail."""
-
         r = revision(is_approved=True,
                      is_ready_for_localization=False, save=True)
 
-        self.client.login(username='admin', password='testpass')
+        u = user(save=True)
+        add_permission(u, Revision, 'mark_ready_for_l10n')
+        self.client.login(username=u.username, password='testpass')
 
         url = reverse('wiki.mark_ready_for_l10n_revision',
                       args=[r.document.slug, r.id])
@@ -475,7 +475,9 @@ class RevisionTests(TestCaseBase):
         r = revision(is_approved=False,
                      is_ready_for_localization=False, save=True)
 
-        self.client.login(username='admin', password='testpass')
+        u = user(save=True)
+        add_permission(u, Revision, 'mark_ready_for_l10n')
+        self.client.login(username=u.username, password='testpass')
 
         url = reverse('wiki.mark_ready_for_l10n_revision',
                       args=[r.document.slug, r.id])
@@ -492,7 +494,12 @@ class RevisionTests(TestCaseBase):
 
 class NewDocumentTests(TestCaseBase):
     """Tests for the New Document template"""
-    fixtures = ['users.json']
+
+    def setUp(self):
+        super(NewDocumentTests, self).setUp()
+
+        u = user(save=True)
+        self.client.login(username=u.username, password='testpass')
 
     def test_new_document_GET_with_perm(self):
         """HTTP GET to new document URL renders the form."""
@@ -666,12 +673,13 @@ class NewDocumentTests(TestCaseBase):
 
 class NewRevisionTests(TestCaseBase):
     """Tests for the New Revision template"""
-    fixtures = ['users.json']
 
     def setUp(self):
         super(NewRevisionTests, self).setUp()
         self.d = _create_document()
-        self.client.login(username='admin', password='testpass')
+
+        self.user = user(save=True)
+        self.client.login(username=self.user.username, password='testpass')
 
     def test_new_revision_GET_logged_out(self):
         """Creating a revision without being logged in redirects to login page.
@@ -701,8 +709,11 @@ class NewRevisionTests(TestCaseBase):
         """
         r = Revision(document=self.d, keywords='ky1, kw2',
                      summary='the summary',
-                     content='<div>The content here</div>', creator_id=118577)
+                     content='<div>The content here</div>',
+                     creator_id=user(save=True).id)
         r.save()
+
+        add_permission(self.user, Revision, 'edit_keywords')
         response = self.client.get(reverse('wiki.new_revision_based_on',
                                            args=[self.d.slug, r.id]))
         eq_(200, response.status_code)
@@ -764,6 +775,7 @@ class NewRevisionTests(TestCaseBase):
                  subject=u'%s is ready for review (%s)' % (self.d.title,
                                                            new_rev.creator),
                  body=READY_FOR_REVIEW_EMAIL_CONTENT % {
+                        'user': self.user.username,
                         'title': self.d.title,
                         'slug': self.d.slug,
                         'new_id': new_rev.id,
@@ -777,6 +789,7 @@ class NewRevisionTests(TestCaseBase):
                  subject=u'%s was edited by %s' % (self.d.title,
                                                    new_rev.creator),
                  body=DOCUMENT_EDITED_EMAIL_CONTENT % {
+                        'user': self.user.username,
                         'title': self.d.title,
                         'slug': self.d.slug,
                         'watcher': edit_watch.pk,
@@ -955,12 +968,14 @@ class HistoryTests(TestCaseBase):
 
 class DocumentEditTests(TestCaseBase):
     """Test the editing of document level fields."""
-    fixtures = ['users.json']
 
     def setUp(self):
         super(DocumentEditTests, self).setUp()
         self.d = _create_document()
-        self.client.login(username='admin', password='testpass')
+
+        u = user(save=True)
+        add_permission(u, Document, 'change_document')
+        self.client.login(username=u.username, password='testpass')
 
     def test_can_save_document_with_translations(self):
         """Make sure we can save a document with translations."""
@@ -1063,7 +1078,6 @@ class DocumentEditTests(TestCaseBase):
 
 class DocumentListTests(TestCaseBase):
     """Tests for the All and Category template"""
-    fixtures = ['users.json']
 
     def setUp(self):
         super(DocumentListTests, self).setUp()
@@ -1113,12 +1127,11 @@ class DocumentListTests(TestCaseBase):
 
 class DocumentRevisionsTests(TestCaseBase):
     """Tests for the Document Revisions template"""
-    fixtures = ['users.json']
 
     def test_document_revisions_list(self):
         """Verify the document revisions list view."""
         d = _create_document()
-        user_ = User.objects.get(pk=118533)
+        user_ = user(save=True)
         r1 = revision(summary="a tweak", content='lorem ipsum dolor',
                       keywords='kw1 kw2', document=d, creator=user_)
         r1.save()
@@ -1135,7 +1148,9 @@ class DocumentRevisionsTests(TestCaseBase):
         eq_('Unreviewed', doc('#revision-list li:not(.header) div.status:first').text())
 
         # Log in as user with permission to review
-        self.client.login(username='admin', password='testpass')
+        u = user(save=True)
+        add_permission(u, Revision, 'review_revision')
+        self.client.login(username=u.username, password='testpass')
         response = self.client.get(reverse('wiki.document_revisions',
                                    args=[d.slug]))
         eq_(200, response.status_code)
@@ -1150,7 +1165,7 @@ class DocumentRevisionsTests(TestCaseBase):
     def test_revisions_ready_for_l10n(self):
         """Verify that the ready for l10n icon is only present on en-US."""
         d = _create_document()
-        user_ = User.objects.get(pk=118533)
+        user_ = user(save=True)
         r1 = revision(summary="a tweak", content='lorem ipsum dolor',
                       keywords='kw1 kw2', document=d, creator=user_)
         r1.save()
@@ -1175,12 +1190,11 @@ class DocumentRevisionsTests(TestCaseBase):
 
 class ReviewRevisionTests(TestCaseBase):
     """Tests for Review Revisions and Translations"""
-    fixtures = ['users.json']
 
     def setUp(self):
         super(ReviewRevisionTests, self).setUp()
         self.document = _create_document()
-        user_ = User.objects.get(pk=118533)
+        user_ = user(save=True)
         self.revision = Revision(summary="lipsum",
                                  content='<div>Lorem {for mac}Ipsum{/for} '
                                          'Dolor</div>',
@@ -1188,7 +1202,10 @@ class ReviewRevisionTests(TestCaseBase):
                                  creator=user_)
         self.revision.save()
 
-        self.client.login(username='admin', password='testpass')
+        self.user = user(save=True)
+        add_permission(self.user, Revision, 'review_revision')
+        add_permission(self.user, Document, 'edit_needs_change')
+        self.client.login(username=self.user.username, password='testpass')
 
     def test_fancy_renderer(self):
         """Make sure it renders the whizzy new wiki syntax."""
@@ -1226,7 +1243,7 @@ class ReviewRevisionTests(TestCaseBase):
 
         # Subscribe the approver to approvals so we can assert (by counting the
         # mails) that he didn't get notified.
-        ApproveRevisionInLocaleEvent.notify(User.objects.get(username='admin'),
+        ApproveRevisionInLocaleEvent.notify(self.user,
                                             locale='en-US').activate().save()
 
         # Approve something:
@@ -1301,13 +1318,15 @@ class ReviewRevisionTests(TestCaseBase):
 
         eq_(1, len(mail.outbox))
         attrs_eq(mail.outbox[0],
-                 subject='%s (%s) has a new approved revision (admin)' %
-                     (self.document.title, self.document.locale),
+                 subject='%s (%s) has a new approved revision (%s)' %
+                     (self.document.title, self.document.locale,
+                      self.user.username),
                  body=expected_body,
                  to=['joe@example.com'])
 
     def test_approve_and_ready_for_l10n_revision(self):
         """Verify revision approval with ready for l10n."""
+        add_permission(self.user, Revision, 'mark_ready_for_l10n')
         # Approve something:
         significance = SIGNIFICANCES[0][0]
         response = post(self.client, 'wiki.review_revision',
@@ -1371,7 +1390,8 @@ class ReviewRevisionTests(TestCaseBase):
 
     def test_review_without_permission(self):
         """Make sure unauthorized users can't review revisions."""
-        self.client.login(username='rrosario', password='testpass')
+        u = user(save=True)
+        self.client.login(username=u.username, password='testpass')
         response = post(self.client, 'wiki.review_revision',
                         {'reject': 'Reject Revision'},
                         args=[self.document.slug, self.revision.id])
@@ -1417,7 +1437,7 @@ class ReviewRevisionTests(TestCaseBase):
         """Make sure it works for localizations as well."""
         get_current.return_value.domain = 'testserver'
         doc = self.document
-        user_ = User.objects.get(pk=118533)
+        user_ = user(save=True)
 
         # Create the translated document based on the current revision
         doc_es = _create_document(locale='es', parent=doc)
@@ -1502,7 +1522,7 @@ class ReviewRevisionTests(TestCaseBase):
         has only rejected revisions should show a message.
 
         """
-        user_ = User.objects.get(pk=118533)
+        user_ = user(save=True)
         en_revision = revision(is_approved=False, save=True, reviewer=user_,
                                reviewed=datetime.now())
 
@@ -1576,20 +1596,20 @@ class ReviewRevisionTests(TestCaseBase):
 
 class CompareRevisionTests(TestCaseBase):
     """Tests for Review Revisions"""
-    fixtures = ['users.json']
 
     def setUp(self):
         super(CompareRevisionTests, self).setUp()
         self.document = _create_document()
         self.revision1 = self.document.current_revision
-        user_ = User.objects.get(pk=118533)
+        u = user(save=True)
         self.revision2 = Revision(summary="lipsum",
                                  content='<div>Lorem Ipsum Dolor</div>',
                                  keywords='kw1 kw2',
-                                 document=self.document, creator=user_)
+                                 document=self.document, creator=u)
         self.revision2.save()
 
-        self.client.login(username='admin', password='testpass')
+        u = user(save=True)
+        self.client.login(username=u.username, password='testpass')
 
     def test_compare_revisions(self):
         """Compare two revisions"""
@@ -1632,12 +1652,13 @@ class CompareRevisionTests(TestCaseBase):
 
 class TranslateTests(TestCaseBase):
     """Tests for the Translate page"""
-    fixtures = ['users.json']
 
     def setUp(self):
         super(TranslateTests, self).setUp()
         self.d = _create_document()
-        self.client.login(username='admin', password='testpass')
+
+        self.user = user(save=True)
+        self.client.login(username=self.user.username, password='testpass')
 
     def test_translate_GET_logged_out(self):
         """Try to create a translation while logged out."""
@@ -1729,7 +1750,7 @@ class TranslateTests(TestCaseBase):
         rev_enUS = Revision(summary="lipsum",
                        content='lorem ipsum dolor sit amet new',
                        significance=SIGNIFICANCES[0][0], keywords='kw1 kw2',
-                       document=self.d, creator_id=118577,
+                       document=self.d, creator_id=user(save=True).id,
                        is_ready_for_localization=True, is_approved=True)
         rev_enUS.save()
 
@@ -1770,6 +1791,7 @@ class TranslateTests(TestCaseBase):
     def test_translate_update_doc_only(self):
         """Submitting the document form should update document. No new
         revisions should be created."""
+        add_permission(self.user, Document, 'change_document')
         rev_es = self._create_and_approve_first_translation()
         url = reverse('wiki.translate', locale='es', args=[self.d.slug])
         data = _translation_data()
@@ -1836,7 +1858,7 @@ class TranslateTests(TestCaseBase):
 
     def test_translate_rejected_parent(self):
         """Translate view of rejected English document shows warning."""
-        user_ = User.objects.get(pk=118533)
+        user_ = user(save=True)
         en_revision = revision(is_approved=False, save=True, reviewer=user_,
                                reviewed=datetime.now())
 
@@ -1987,13 +2009,14 @@ def _test_form_maintains_based_on_rev(client, doc, view, post_data,
 
 class DocumentWatchTests(TestCaseBase):
     """Tests for un/subscribing to document edit notifications."""
-    fixtures = ['users.json']
 
     def setUp(self):
         super(DocumentWatchTests, self).setUp()
         self.document = _create_document()
-        self.client.login(username='rrosario', password='testpass')
         product(save=True)
+
+        self.user = user(save=True)
+        self.client.login(username=self.user.username, password='testpass')
 
     def test_watch_GET_405(self):
         """Watch document with HTTP GET results in 405."""
@@ -2009,28 +2032,28 @@ class DocumentWatchTests(TestCaseBase):
 
     def test_watch_unwatch(self):
         """Watch and unwatch a document."""
-        user_ = User.objects.get(username='rrosario')
         # Subscribe
         response = post(self.client, 'wiki.document_watch',
                        args=[self.document.slug])
         eq_(200, response.status_code)
-        assert EditDocumentEvent.is_notifying(user_, self.document), \
+        assert EditDocumentEvent.is_notifying(self.user, self.document), \
                'Watch was not created'
         # Unsubscribe
         response = post(self.client, 'wiki.document_unwatch',
                        args=[self.document.slug])
         eq_(200, response.status_code)
-        assert not EditDocumentEvent.is_notifying(user_, self.document), \
+        assert not EditDocumentEvent.is_notifying(self.user, self.document), \
                'Watch was not destroyed'
 
 
 class LocaleWatchTests(TestCaseBase):
     """Tests for un/subscribing to a locale's ready for review emails."""
-    fixtures = ['users.json']
 
     def setUp(self):
         super(LocaleWatchTests, self).setUp()
-        self.client.login(username='rrosario', password='testpass')
+
+        self.user = user(save=True)
+        self.client.login(username=self.user, password='testpass')
 
     def test_watch_GET_405(self):
         """Watch document with HTTP GET results in 405."""
@@ -2044,28 +2067,27 @@ class LocaleWatchTests(TestCaseBase):
 
     def test_watch_unwatch(self):
         """Watch and unwatch a document."""
-        user_ = User.objects.get(username='rrosario')
-
         # Subscribe
         response = post(self.client, 'wiki.locale_watch')
         eq_(200, response.status_code)
-        assert ReviewableRevisionInLocaleEvent.is_notifying(user_,
+        assert ReviewableRevisionInLocaleEvent.is_notifying(self.user,
                                                             locale='en-US')
 
         # Unsubscribe
         response = post(self.client, 'wiki.locale_unwatch')
         eq_(200, response.status_code)
-        assert not ReviewableRevisionInLocaleEvent.is_notifying(user_,
+        assert not ReviewableRevisionInLocaleEvent.is_notifying(self.user,
                                                                 locale='en-US')
 
 
 class ArticlePreviewTests(TestCaseBase):
     """Tests for preview view and template."""
-    fixtures = ['users.json']
 
     def setUp(self):
         super(ArticlePreviewTests, self).setUp()
-        self.client.login(username='rrosario', password='testpass')
+
+        u = user(save=True)
+        self.client.login(username=u.username, password='testpass')
 
     def test_preview_GET_405(self):
         """Preview with HTTP GET results in 405."""
@@ -2096,20 +2118,20 @@ class ArticlePreviewTests(TestCaseBase):
 
 
 class HelpfulVoteTests(TestCaseBase):
-    fixtures = ['users.json']
 
     def setUp(self):
         super(HelpfulVoteTests, self).setUp()
+
         self.document = _create_document()
         product(save=True)
 
     def test_vote_yes(self):
         """Test voting helpful."""
         r = self.document.current_revision
-        user_ = User.objects.get(username='rrosario')
+        user_ = user(save=True)
         referrer = 'http://google.com/?q=test'
         query = 'test'
-        self.client.login(username='rrosario', password='testpass')
+        self.client.login(username=user_.username, password='testpass')
         response = post(self.client, 'wiki.document_vote',
                         {'helpful': 'Yes', 'revision_id': r.id,
                          'referrer': referrer, 'query': query},
@@ -2127,10 +2149,10 @@ class HelpfulVoteTests(TestCaseBase):
     def test_vote_no(self):
         """Test voting not helpful."""
         r = self.document.current_revision
-        user_ = User.objects.get(username='rrosario')
+        user_ = user(save=True)
         referrer = 'inproduct'
         query = ''
-        self.client.login(username='rrosario', password='testpass')
+        self.client.login(username=user_.username, password='testpass')
         response = post(self.client, 'wiki.document_vote',
                         {'not-helpful': 'No', 'revision_id': r.id,
                          'referrer': referrer, 'query': query},
@@ -2228,12 +2250,13 @@ class HelpfulVoteTests(TestCaseBase):
 
 class SelectLocaleTests(TestCaseBase):
     """Test the locale selection page"""
-    fixtures = ['users.json']
 
     def setUp(self):
         super(SelectLocaleTests, self).setUp()
         self.d = _create_document()
-        self.client.login(username='admin', password='testpass')
+
+        u = user(save=True)
+        self.client.login(username=u.username, password='testpass')
 
     def test_page_renders_locales(self):
         """Load the page and verify it contains all the locales for l10n."""
@@ -2492,11 +2515,12 @@ class RevisionDeleteTestCase(TestCaseBase):
 
 class ApprovedWatchTests(TestCaseBase):
     """Tests for un/subscribing to revision approvals."""
-    fixtures = ['users.json']
 
     def setUp(self):
         super(ApprovedWatchTests, self).setUp()
-        self.client.login(username='rrosario', password='testpass')
+
+        self.user = user(save=True)
+        self.client.login(username=self.user.username, password='testpass')
 
     def test_watch_GET_405(self):
         """Watch with HTTP GET results in 405."""
@@ -2510,19 +2534,19 @@ class ApprovedWatchTests(TestCaseBase):
 
     def test_watch_unwatch(self):
         """Watch and unwatch a document."""
-        user_ = User.objects.get(username='rrosario')
         locale = 'es'
 
         # Subscribe
         response = post(self.client, 'wiki.approved_watch', locale=locale)
         eq_(200, response.status_code)
-        assert ApproveRevisionInLocaleEvent.is_notifying(user_, locale=locale)
+        assert ApproveRevisionInLocaleEvent.is_notifying(
+            self.user, locale=locale)
 
         # Unsubscribe
         response = post(self.client, 'wiki.approved_unwatch', locale=locale)
         eq_(200, response.status_code)
-        assert not ApproveRevisionInLocaleEvent.is_notifying(user_,
-                                                             locale=locale)
+        assert not ApproveRevisionInLocaleEvent.is_notifying(
+            self.user, locale=locale)
 
 
 class DocumentDeleteTestCase(TestCaseBase):
