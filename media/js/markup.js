@@ -822,7 +822,7 @@ Marky.CannedResponsesButton.prototype = $.extend({}, Marky.SimpleButton.prototyp
             // TODO: look at using a js template solution (jquery-tmpl?)
             $html = $(
                 '<section class="marky">' +
-                '<div class="search">' +
+                '<div class="search simple-search-form">' +
                 '<input type="text" name="q" id="filter-responses-field" placeholder="' +
                 gettext('Search for common responses') + '" class="searchbox"/>' +
                 '</div></div>' +
