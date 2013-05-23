@@ -45,8 +45,8 @@ class LocaleURLMiddleware(object):
             # present it is safe to set language preference for the current
             # user.
             if request.user.is_anonymous():
-                request.session[settings.LANGUAGE_COOKIE_NAME] = \
-                    request.GET['lang']
+                cookie = settings.LANGUAGE_COOKIE_NAME
+                request.session[cookie] = request.GET['lang']
 
             return HttpResponseRedirect(urlparams(new_path, **query))
 
